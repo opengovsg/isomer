@@ -11,11 +11,14 @@ import {
   asPageBlob,
   buildArticleBlob,
   buildCollectionIndexBlob,
+  buildConversionReport,
   CONTENT_ONLY_TYPES,
   CONTENT_TYPES,
   findDisallowedBlocks,
+  toFolderPlan,
   type ArticleBlob,
   type ContentBlob,
+  type ConversionPlan,
   type IndexBlob,
 } from "./helpers"
 
@@ -114,6 +117,168 @@ const makeArticleBlob = (
     },
     content,
   }) as unknown as ArticleBlob
+
+const makeConversionPlan = (
+  overrides?: Partial<ConversionPlan>,
+): ConversionPlan => ({
+  folder: {
+    id: "159351",
+    siteId: 1,
+    title: "Folder",
+    permalink: "folder",
+  },
+  defaultCategory: "Feature Articles",
+  indexPage: {
+    resourceId: "159352",
+    title: "Index",
+    permalink: "_index",
+    currentBlobId: "blob-index",
+    currentBlob: makeIndexBlob() as unknown as IsomerSchema,
+    nextBlob: makeIndexBlob() as unknown as IsomerSchema,
+    disallowedBlocks: [],
+  },
+  pages: [],
+  ...overrides,
+})
+
+describe("buildConversionReport", () => {
+  it("returns an empty array when no pages have disallowed blocks", () => {
+    // Arrange
+    const plan = makeConversionPlan({
+      pages: [
+        {
+          resourceId: "1",
+          title: "Clean page",
+          permalink: "clean",
+          currentBlobId: "b1",
+          currentBlob: makeContentBlob() as unknown as IsomerSchema,
+          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          disallowedBlocks: [],
+        },
+      ],
+    })
+
+    // Act + Assert
+    expect(buildConversionReport(plan)).toEqual([])
+  })
+
+  it("emits one entry per page with disallowed blocks", () => {
+    // Arrange
+    const plan = makeConversionPlan({
+      pages: [
+        {
+          resourceId: "159536",
+          title: "Flagged",
+          permalink: "flagged",
+          currentBlobId: "b1",
+          currentBlob: makeContentBlob({}, [
+            infobarBlock,
+          ]) as unknown as IsomerSchema,
+          nextBlob: makeArticleBlob({}, [
+            infobarBlock,
+          ]) as unknown as IsomerSchema,
+          disallowedBlocks: [{ index: 0, type: "infobar" }],
+        },
+        {
+          resourceId: "159537",
+          title: "Clean",
+          permalink: "clean",
+          currentBlobId: "b2",
+          currentBlob: makeContentBlob() as unknown as IsomerSchema,
+          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          disallowedBlocks: [],
+        },
+      ],
+    })
+
+    // Act
+    const report = buildConversionReport(plan)
+
+    // Assert
+    expect(report).toEqual([
+      {
+        id: "159536",
+        reason: "disallowed-in-article blocks: infobar@0",
+      },
+    ])
+  })
+
+  it("lists multiple disallowed blocks in the reason string", () => {
+    // Arrange
+    const plan = makeConversionPlan({
+      pages: [
+        {
+          resourceId: "99",
+          title: "Many flags",
+          permalink: "many",
+          currentBlobId: "b1",
+          currentBlob: makeContentBlob({}, [
+            infobarBlock,
+            infocardsBlock,
+          ]) as unknown as IsomerSchema,
+          nextBlob: makeArticleBlob({}, [
+            infobarBlock,
+            infocardsBlock,
+          ]) as unknown as IsomerSchema,
+          disallowedBlocks: [
+            { index: 0, type: "infobar" },
+            { index: 1, type: "infocards" },
+          ],
+        },
+      ],
+    })
+
+    // Act + Assert
+    expect(buildConversionReport(plan)).toEqual([
+      {
+        id: "99",
+        reason: "disallowed-in-article blocks: infobar@0, infocards@1",
+      },
+    ])
+  })
+})
+
+describe("toFolderPlan", () => {
+  it("maps folder metadata, default category, and child resource IDs", () => {
+    // Arrange
+    const plan = makeConversionPlan({
+      pages: [
+        {
+          resourceId: "159536",
+          title: "Page A",
+          permalink: "a",
+          currentBlobId: "b1",
+          currentBlob: makeContentBlob() as unknown as IsomerSchema,
+          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          disallowedBlocks: [],
+        },
+        {
+          resourceId: "159537",
+          title: "Page B",
+          permalink: "b",
+          currentBlobId: "b2",
+          currentBlob: makeContentBlob() as unknown as IsomerSchema,
+          nextBlob: makeArticleBlob() as unknown as IsomerSchema,
+          disallowedBlocks: [],
+        },
+      ],
+    })
+
+    // Act
+    const folderPlan = toFolderPlan(plan)
+
+    // Assert
+    expect(folderPlan).toEqual({
+      id: "159351",
+      siteId: 1,
+      title: "Folder",
+      permalink: "folder",
+      defaultCategory: "Feature Articles",
+      indexPageId: "159352",
+      pageIds: ["159536", "159537"],
+    })
+  })
+})
 
 describe("ARTICLE_TYPES / CONTENT_TYPES / CONTENT_ONLY_TYPES", () => {
   it("ARTICLE_TYPES is a subset of CONTENT_TYPES (article blocks all live in content)", () => {

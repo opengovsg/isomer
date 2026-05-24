@@ -227,7 +227,8 @@ export const verifyUser = async (userId: string) => {
 // Plan + report I/O
 // ---------------------------------------------------------------------------
 
-const outDir = () => join(dirname(fileURLToPath(import.meta.url)), ".out")
+const defaultOutDir = () =>
+  join(dirname(fileURLToPath(import.meta.url)), ".out")
 
 export const folderPlanFileName = (folderId: string) =>
   `convert-folder-${folderId}.json`
@@ -235,30 +236,45 @@ export const folderPlanFileName = (folderId: string) =>
 export const resourcePlanFileName = (resourceId: string) =>
   `convert-resource-${resourceId}.json`
 
-const writeJson = (fileName: string, data: unknown) => {
-  const dir = outDir()
-  mkdirSync(dir, { recursive: true })
-  const file = join(dir, fileName)
+const writeJson = (
+  fileName: string,
+  data: unknown,
+  baseDir: string = defaultOutDir(),
+) => {
+  mkdirSync(baseDir, { recursive: true })
+  const file = join(baseDir, fileName)
   writeFileSync(file, JSON.stringify(data, null, 2))
   return file
 }
 
-export const writePlanFiles = (plan: ConversionPlan): string[] => {
+export const writePlanFiles = (
+  plan: ConversionPlan,
+  baseDir: string = defaultOutDir(),
+): string[] => {
   const paths = [
-    writeJson(folderPlanFileName(plan.folder.id), toFolderPlan(plan)),
-    writeJson(resourcePlanFileName(plan.indexPage.resourceId), plan.indexPage),
-    ...plan.pages.map((p) => writeJson(resourcePlanFileName(p.resourceId), p)),
+    writeJson(folderPlanFileName(plan.folder.id), toFolderPlan(plan), baseDir),
+    writeJson(
+      resourcePlanFileName(plan.indexPage.resourceId),
+      plan.indexPage,
+      baseDir,
+    ),
+    ...plan.pages.map((p) =>
+      writeJson(resourcePlanFileName(p.resourceId), p, baseDir),
+    ),
   ]
   return paths
 }
 
-export const loadConversionPlan = (folderId: string): ConversionPlan => {
-  const folderPath = join(outDir(), folderPlanFileName(folderId))
+export const loadConversionPlan = (
+  folderId: string,
+  baseDir: string = defaultOutDir(),
+): ConversionPlan => {
+  const folderPath = join(baseDir, folderPlanFileName(folderId))
   const folderPlan = JSON.parse(readFileSync(folderPath, "utf-8")) as FolderPlan
 
   const readResource = (resourceId: string): PagePlan =>
     JSON.parse(
-      readFileSync(join(outDir(), resourcePlanFileName(resourceId)), "utf-8"),
+      readFileSync(join(baseDir, resourcePlanFileName(resourceId)), "utf-8"),
     ) as PagePlan
 
   return {
@@ -274,13 +290,19 @@ export const loadConversionPlan = (folderId: string): ConversionPlan => {
   }
 }
 
-export const loadConversionPlanFromPath = (path: string): ConversionPlan => {
+export const loadConversionPlanFromPath = (
+  path: string,
+  baseDir: string = defaultOutDir(),
+): ConversionPlan => {
   const folderPlan = JSON.parse(readFileSync(path, "utf-8")) as FolderPlan
-  return loadConversionPlan(folderPlan.id)
+  return loadConversionPlan(folderPlan.id, baseDir)
 }
 
-export const findPlanForFolder = (folderId: string): string | undefined => {
-  const file = join(outDir(), folderPlanFileName(folderId))
+export const findPlanForFolder = (
+  folderId: string,
+  baseDir: string = defaultOutDir(),
+): string | undefined => {
+  const file = join(baseDir, folderPlanFileName(folderId))
   try {
     readFileSync(file)
     return file
@@ -289,14 +311,16 @@ export const findPlanForFolder = (folderId: string): string | undefined => {
   }
 }
 
-export const writeReportFile = (plan: ConversionPlan): string => {
+export const writeReportFile = (
+  plan: ConversionPlan,
+  baseDir: string = defaultOutDir(),
+): string => {
   const fileName = folderPlanFileName(plan.folder.id).replace(
     /\.json$/,
     ".report.json",
   )
-  const dir = outDir()
-  mkdirSync(dir, { recursive: true })
-  const reportPath = join(dir, fileName)
+  mkdirSync(baseDir, { recursive: true })
+  const reportPath = join(baseDir, fileName)
   writeFileSync(
     reportPath,
     JSON.stringify(buildConversionReport(plan), null, 2),
