@@ -14,8 +14,8 @@
  *   4. Writes the converted blobs as draft blobs (overwriting any existing
  *      draft) and flips Resource.type (Folder→Collection, Page→CollectionPage)
  *      in a single transaction.
- *   5. Optionally mass-publishes all converted resources (one site rebuild
- *      at the end).
+ *   5. Optionally mass-publishes all converted resources (reminds you to
+ *      trigger a site rebuild in Studio for changes to go live).
  *
  * Usage:
  *   cd apps/studio
@@ -23,8 +23,6 @@
  */
 
 import { confirm, input } from "@inquirer/prompts"
-import { createBaseLogger } from "~/lib/logger"
-import { publishSite } from "~/server/modules/aws/codebuild.service"
 import { db, ResourceState, ResourceType } from "~/server/modules/database"
 
 import type { ConversionPlan } from "./helpers"
@@ -39,10 +37,6 @@ import {
   verifySite,
   verifyUser,
 } from "./shared"
-
-const logger = createBaseLogger({
-  path: "prisma/scripts/convert-folder-to-collection",
-})
 
 const applyConversion = async (plan: ConversionPlan) => {
   await db.transaction().execute(async (tx) => {
@@ -108,9 +102,9 @@ const massPublish = async (plan: ConversionPlan, userId: string) => {
     }
   })
 
-  console.log("\nTriggering site rebuild…")
-  await publishSite(logger, { siteId: plan.folder.siteId })
-  console.log("✓ publishSite() invoked")
+  console.log(
+    "\nReminder: trigger a new site build in Studio for these changes to appear on the live site.",
+  )
 }
 
 const main = async () => {
