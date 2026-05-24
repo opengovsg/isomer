@@ -49,6 +49,12 @@ export const getBlobOfResource = async ({
       .executeTakeFirstOrThrow()
   }
 
+  if (!publishedVersionId) {
+    throw new Error(
+      `Resource ${resourceId} has no draft blob and no published version`,
+    )
+  }
+
   return database
     .selectFrom("Blob")
     .selectAll()
@@ -84,26 +90,24 @@ export const updateBlobById = async (
     throw new Error(`Resource ${pageId} not found`)
   }
 
-  let blobIdToUpdate = page.draftBlobId
-
   if (!page.draftBlobId) {
     const newBlob = await tx
       .insertInto("Blob")
       .values({ content: jsonb(content) })
-      .returning("id")
+      .returningAll()
       .executeTakeFirstOrThrow()
-    blobIdToUpdate = newBlob.id
     await tx
       .updateTable("Resource")
       .where("id", "=", String(pageId))
       .set({ draftBlobId: newBlob.id })
       .execute()
+    return newBlob
   }
 
   return tx
     .updateTable("Blob")
     .set({ content: jsonb(content) })
-    .where("Blob.id", "=", blobIdToUpdate)
+    .where("Blob.id", "=", page.draftBlobId)
     .returningAll()
     .executeTakeFirstOrThrow()
 }
