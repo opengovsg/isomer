@@ -21,7 +21,7 @@ export const AgencySettingsSchema = Type.Object({
       "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage.",
     pattern: NON_EMPTY_STRING_REGEX,
     errorMessage: {
-      pattern: "cannot be empty or contain only spaces",
+      pattern: "Site name cannot be empty or whitespace-only",
     },
   }),
   agencyName: Type.Optional(
