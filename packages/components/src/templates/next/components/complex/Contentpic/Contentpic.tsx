@@ -12,7 +12,7 @@ const contentpicStyles = tv({
       "mb-7 flex flex-col gap-7 sm:flex-row [&:not(:first-child)]:mt-7",
     image: "aspect-[5/6] h-auto rounded object-cover sm:h-[240px] sm:w-[200px]",
     content:
-      "flex-1 break-words text-base-content lg:justify-self-start [&>ol:first-child>li:first-child]:mt-0 [&>ol:first-child]:mt-0 [&>ul:first-child>li:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "flex-1 break-words text-base-content lg:justify-self-start [&>:is(ol,ul):first-child>li:first-child]:mt-0 [&>:is(ol,ul):first-child]:mt-0",
   },
 })
 const compoundStyles = contentpicStyles()
