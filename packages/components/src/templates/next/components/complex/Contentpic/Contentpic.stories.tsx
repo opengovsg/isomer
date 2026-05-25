@@ -198,3 +198,107 @@ export const ShortParagraph: Story = {
     },
   },
 }
+
+export const UnorderedListFirst: Story = {
+  args: {
+    content: {
+      type: "prose",
+      content: [
+        {
+          type: "unorderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Feeds on grasses, leaves, and shoots.",
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Uses its horn for defence and foraging.",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Rhinos are large, sturdy mammals known for their thick, protective skin and one or two horns on their snouts. They inhabit parts of Africa and Asia and are primarily herbivores, feeding on grasses, leaves, and shoots. Despite their imposing size and strength, rhinos are endangered due to habitat loss and poaching. Conservation efforts are crucial to ensuring their survival.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
+
+export const OrderedListFirst: Story = {
+  args: {
+    content: {
+      type: "prose",
+      content: [
+        {
+          type: "orderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Feeds on grasses, leaves, and shoots.",
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Uses its horn for defence and foraging.",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Rhinos are large, sturdy mammals known for their thick, protective skin and one or two horns on their snouts. They inhabit parts of Africa and Asia and are primarily herbivores, feeding on grasses, leaves, and shoots. Despite their imposing size and strength, rhinos are endangered due to habitat loss and poaching. Conservation efforts are crucial to ensuring their survival.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
