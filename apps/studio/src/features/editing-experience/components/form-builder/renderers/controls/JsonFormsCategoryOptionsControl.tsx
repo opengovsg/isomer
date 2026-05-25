@@ -209,7 +209,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
             </Menu>
           )}
           belowDescription={
-            hasDuplicateOptionNameError ? (
+            hasDuplicateOptionNameError && (
               <HStack align="start" gap="0.5rem" mt="0.5rem" w="100%">
                 <Icon
                   as={BiSolidErrorCircle}
@@ -227,7 +227,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
                   </Text>
                 </VStack>
               </HStack>
-            ) : undefined
+            )
           }
           getListItemHasError={(index) => duplicateOptionIndices.has(index)}
           renderListItemErrorCaption={(index) =>
@@ -343,7 +343,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   return (
     <Box position="relative" w="full">
       <VStack spacing={0} align="stretch" w="full">
-        {hasDuplicateOptionNameError ? (
+        {hasDuplicateOptionNameError && (
           <HStack align="start" gap="0.5rem" mt="0.5rem" w="100%">
             <Icon
               as={BiSolidErrorCircle}
@@ -361,7 +361,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
               </Text>
             </VStack>
           </HStack>
-        ) : null}
+        )}
         <Box w="full" mt="-1.25rem">
           <Box my="0.25rem" w="full">
             <HStack
