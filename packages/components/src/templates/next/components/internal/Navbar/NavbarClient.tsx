@@ -135,7 +135,10 @@ export const NavbarClient = ({
   return (
     <div className={navbarStyles.navbar()}>
       {/* Site header */}
-      <div className={navbarStyles.navbarContainer({ isPinned })} ref={siteHeaderRef}>
+      <div
+        className={navbarStyles.navbarContainer({ isPinned })}
+        ref={siteHeaderRef}
+      >
         <div className={navbarStyles.navbarItems()}>
           {/* Logo */}
           <Link className={navbarStyles.logo()} href="/">
