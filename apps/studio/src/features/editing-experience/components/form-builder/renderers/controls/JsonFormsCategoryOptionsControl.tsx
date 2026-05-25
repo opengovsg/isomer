@@ -6,28 +6,19 @@ import {
   Icon,
   MenuButton,
   MenuList,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Portal,
   Skeleton,
   Stack,
   Text,
-  VisuallyHidden,
   VStack,
 } from "@chakra-ui/react"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import {
   Button,
-  Checkbox,
   IconButton,
   Infobox,
   Menu,
-  ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { Suspense, useMemo, useState } from "react"
@@ -37,7 +28,6 @@ import {
   BiGridVertical,
   BiInfoCircle,
   BiPurchaseTag,
-  BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
@@ -50,9 +40,11 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
+import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
+import { DeleteConfirmModal } from "./DeleteConfirmModal"
+import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
-import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 /** Matches category option rows from JsonForms (`categoryOptions` array on collection index). */
@@ -80,114 +72,17 @@ function CategoryOptionUsageCount({
   return <>{count}</>
 }
 
-/** Duplicated from tag filter options modal; diverge copy/behaviour for category options when needed. */
-const DeleteCategoryOptionModal = ({
-  isOpen,
-  label,
-  siteId,
-  pageId,
-  categoryId,
-  onClose,
-  onConfirm,
-}: {
-  isOpen: boolean
-  label: string
-  siteId: number
-  pageId: number
-  categoryId: string
-  onClose: () => void
-  onConfirm: () => void
-}) => {
-  const [isChecked, setIsChecked] = useState(false)
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader mr="3.5rem">
-          <VisuallyHidden>Delete category option</VisuallyHidden>
-          <Text as="span" aria-hidden display="block">
-            {label.length > 0 ? `Delete option "${label}"?` : "Delete option?"}
-          </Text>
-        </ModalHeader>
-        <ModalCloseButton size="lg" />
-
-        <ModalBody>
-          <VStack align="stretch" spacing="1.5rem">
-            <Infobox width="100%" size="md" variant="warning">
-              <Text textStyle="body-2">
-                This option is being used in{" "}
-                <ErrorBoundary fallbackRender={() => <>—</>}>
-                  <Suspense
-                    fallback={
-                      <Skeleton
-                        as="span"
-                        display="inline-block"
-                        verticalAlign="middle"
-                        height="1em"
-                        width="2ch"
-                      />
-                    }
-                  >
-                    <CategoryOptionUsageCount
-                      siteId={siteId}
-                      pageId={pageId}
-                      categoryId={categoryId}
-                    />
-                  </Suspense>
-                </ErrorBoundary>{" "}
-                items. To undo this change, you will need to create and
-                re-assign this option to all items.
-              </Text>
-            </Infobox>
-            <HStack align="start">
-              <Checkbox
-                isChecked={isChecked}
-                onChange={(e) => setIsChecked(e.target.checked)}
-              >
-                <Text textStyle="body-2">
-                  Yes, delete this option permanently
-                </Text>
-              </Checkbox>
-            </HStack>
-          </VStack>
-        </ModalBody>
-
-        <ModalFooter>
-          <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
-              No, keep option
-            </Button>
-            <Button
-              isDisabled={!isChecked}
-              variant="solid"
-              colorScheme="critical"
-              onClick={onConfirm}
-            >
-              Delete option
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  )
+interface CategoryOptionsExpandedEditorProps extends ArrayLayoutProps {
+  duplicateOptionIndices: Set<number>
 }
 
-function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
+function CategoryOptionsExpandedEditor({
+  duplicateOptionIndices,
+  ...props
+}: CategoryOptionsExpandedEditorProps) {
   const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
-  const { errors } = useBuilderErrors()
   const { pageId, siteId } = useQueryParse(pageSchema)
-
-  const duplicateOptionIndices = useMemo(() => {
-    const items = get(core?.data, path) as { label?: string }[] | undefined
-    return indicesWithDuplicateLabels(items)
-  }, [core?.data, path])
-
-  const hasDuplicateOptionNameError = hasUniqueItemPropertiesError({
-    errors,
-    jsonFormsPath: path,
-  })
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -245,22 +140,14 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
         </Infobox>
         <JsonFormsArrayControlView
           {...props}
+          addItemLabel="Add option"
           listItemContentProps={{ py: "0.5rem" }}
           renderListItemTrailing={(index) => (
             <Menu isLazy>
               <MenuButton
                 as={IconButton}
-                colorScheme="neutral"
                 icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
-                variant="clear"
-                h="2.125rem"
-                w="2.125rem"
-                minH="2.125rem"
-                minW="2.125rem"
-                p="0.25rem"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
+                {...ROW_ACTIONS_MENU_BUTTON_PROPS}
                 isDisabled={isRemoveItemDisabled}
                 aria-label={`Option ${index + 1} actions`}
                 onClick={(e) => e.stopPropagation()}
@@ -283,25 +170,9 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
             </Menu>
           )}
           belowDescription={
-            hasDuplicateOptionNameError ? (
-              <HStack align="start" gap="0.5rem" mt="0.5rem" w="100%">
-                <Icon
-                  as={BiSolidErrorCircle}
-                  fontSize="1rem"
-                  color="utility.feedback.critical"
-                  mt="0.125rem"
-                  flexShrink={0}
-                />
-                <VStack align="start" spacing={0}>
-                  <Text textStyle="subhead-2" color="utility.feedback.critical">
-                    Remove duplicate options before saving.
-                  </Text>
-                  <Text textStyle="body-2" color="utility.feedback.critical">
-                    Option names are not case-sensitive.
-                  </Text>
-                </VStack>
-              </HStack>
-            ) : undefined
+            duplicateOptionIndices.size > 0 && (
+              <DuplicateLabelError noun="option" />
+            )
           }
           getListItemHasError={(index) => duplicateOptionIndices.has(index)}
           renderListItemErrorCaption={(index) =>
@@ -330,12 +201,36 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
         />
       </VStack>
       {deleteTarget && (
-        <DeleteCategoryOptionModal
+        <DeleteConfirmModal
           isOpen
           label={deleteTarget.label}
-          siteId={siteId}
-          pageId={pageId}
-          categoryId={deleteTarget.categoryId}
+          noun="option"
+          warningBody={
+            <Text textStyle="body-2">
+              This option is being used in{" "}
+              <ErrorBoundary fallbackRender={() => <>—</>}>
+                <Suspense
+                  fallback={
+                    <Skeleton
+                      as="span"
+                      display="inline-block"
+                      verticalAlign="middle"
+                      height="1em"
+                      width="2ch"
+                    />
+                  }
+                >
+                  <CategoryOptionUsageCount
+                    siteId={siteId}
+                    pageId={pageId}
+                    categoryId={deleteTarget.categoryId}
+                  />
+                </Suspense>
+              </ErrorBoundary>{" "}
+              items. To undo this change, you will need to create and re-assign
+              this option to all items.
+            </Text>
+          }
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleConfirmDelete}
         />
@@ -347,7 +242,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
 function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   const { path, data, enabled } = props
   const { core } = useJsonForms()
-  const { errors, hasErrorAt } = useBuilderErrors()
+  const { hasErrorAt } = useBuilderErrors()
   const [expandedOpen, setExpandedOpen] = useState(false)
 
   const duplicateOptionIndices = useMemo(() => {
@@ -355,20 +250,14 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
     return indicesWithDuplicateLabels(items)
   }, [core?.data, path])
 
-  const hasDuplicateOptionNameError = hasUniqueItemPropertiesError({
-    errors,
-    jsonFormsPath: path,
-  })
-
   const cannotLeaveExpandedCategoryOptions = useMemo(() => {
     const items = get(core?.data, path) as { label?: string }[] | undefined
     return (
       hasBlankOptionLabel(items) ||
-      indicesWithDuplicateLabels(items).size > 0 ||
-      hasDuplicateOptionNameError ||
+      duplicateOptionIndices.size > 0 ||
       hasErrorAt(path)
     )
-  }, [core?.data, path, hasDuplicateOptionNameError, hasErrorAt])
+  }, [core?.data, path, duplicateOptionIndices, hasErrorAt])
 
   const handleCloseExpandedCategoryOptions = () => {
     if (cannotLeaveExpandedCategoryOptions) return
@@ -395,7 +284,10 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
           backAriaLabel="Return to Category"
         />
         <Box w="100%" flex={1} minH={0} px="1.5rem" py="1rem" overflow="auto">
-          <CategoryOptionsExpandedEditor {...props} />
+          <CategoryOptionsExpandedEditor
+            {...props}
+            duplicateOptionIndices={duplicateOptionIndices}
+          />
         </Box>
         <Box
           bgColor="base.canvas.default"
@@ -420,25 +312,9 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   return (
     <Box position="relative" w="full">
       <VStack spacing={0} align="stretch" w="full">
-        {hasDuplicateOptionNameError ? (
-          <HStack align="start" gap="0.5rem" mt="0.5rem" w="100%">
-            <Icon
-              as={BiSolidErrorCircle}
-              fontSize="1rem"
-              color="utility.feedback.critical"
-              mt="0.125rem"
-              flexShrink={0}
-            />
-            <VStack align="start" spacing={0}>
-              <Text textStyle="subhead-2" color="utility.feedback.critical">
-                Remove duplicate options before saving.
-              </Text>
-              <Text textStyle="body-2" color="utility.feedback.critical">
-                Option names are not case-sensitive.
-              </Text>
-            </VStack>
-          </HStack>
-        ) : null}
+        {duplicateOptionIndices.size > 0 && (
+          <DuplicateLabelError noun="option" />
+        )}
         <Box w="full" mt="-1.25rem">
           <Box my="0.25rem" w="full">
             <HStack
@@ -449,9 +325,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
               bg="white"
               transitionProperty="common"
               transitionDuration="normal"
-              aria-invalid={
-                duplicateOptionIndices.size > 0 || hasDuplicateOptionNameError
-              }
+              aria-invalid={duplicateOptionIndices.size > 0}
               _hover={{
                 bg: "interaction.muted.main.hover",
                 borderColor: "interaction.main-subtle.hover",
@@ -473,8 +347,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
               align="stretch"
               overflow="hidden"
             >
-              {(duplicateOptionIndices.size > 0 ||
-                hasDuplicateOptionNameError) && (
+              {duplicateOptionIndices.size > 0 && (
                 <Box
                   aria-hidden
                   bg="utility.feedback.critical"
@@ -557,8 +430,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                           ? "No options"
                           : `${data} ${data > 1 ? "options" : "option"}`}
                       </Text>
-                      {(duplicateOptionIndices.size > 0 ||
-                        hasDuplicateOptionNameError) && (
+                      {duplicateOptionIndices.size > 0 && (
                         <Text
                           as="span"
                           textStyle="caption-2"
