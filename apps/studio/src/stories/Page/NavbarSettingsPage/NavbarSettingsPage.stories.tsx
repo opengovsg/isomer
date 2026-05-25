@@ -71,3 +71,12 @@ export const CustomiseTabWithCTAEnabled: Story = {
   },
   play: ({ canvasElement }) => goToCustomiseTab(canvasElement),
 }
+
+export const CustomiseTabWithUtilityLinksEnabled: Story = {
+  parameters: {
+    msw: {
+      handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.withUtilityLinks()],
+    },
+  },
+  play: ({ canvasElement }) => goToCustomiseTab(canvasElement),
+}

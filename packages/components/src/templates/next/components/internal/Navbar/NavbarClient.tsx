@@ -25,8 +25,7 @@ interface Size {
 const createNavbarStyles = tv({
   slots: {
     navbar: "relative flex flex-col",
-    navbarContainer:
-      "flex min-h-16 w-full bg-white py-1 lg:min-h-[4.25rem] lg:py-0",
+    navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
     logo: "flex flex-shrink-0 rounded focus-visible:bg-utility-highlight",
     navigationSection: "flex w-full flex-col items-center justify-between",
     primaryNavigationSection: "flex w-full items-center justify-end",
@@ -58,6 +57,7 @@ const createNavbarStyles = tv({
     },
     isPinned: {
       true: {
+        navbarContainer: "py-1 lg:py-0",
         callToAction: "flex",
         searchIcon: "hidden lg:flex",
         primaryNavigationSection: "gap-3",
@@ -135,7 +135,7 @@ export const NavbarClient = ({
   return (
     <div className={navbarStyles.navbar()}>
       {/* Site header */}
-      <div className={navbarStyles.navbarContainer()} ref={siteHeaderRef}>
+      <div className={navbarStyles.navbarContainer({ isPinned })} ref={siteHeaderRef}>
         <div className={navbarStyles.navbarItems()}>
           {/* Logo */}
           <Link className={navbarStyles.logo()} href="/">
