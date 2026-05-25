@@ -81,7 +81,7 @@ export const CustomiseTabWithCTAEnabled: Story = {
 
     await userEvent.click(customiseTab)
 
-    const ctaToggle = await rootScreen.findByRole("switch")
+    const ctaToggle = await rootScreen.findByRole("checkbox")
 
     await userEvent.click(ctaToggle)
   },

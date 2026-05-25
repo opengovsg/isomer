@@ -125,6 +125,7 @@ export const NavbarAddonsSchema = Type.Object({
         title: "Utility links",
         description:
           "Make frequent actions (like login) easily accessible using utility links.",
+        format: "boxedGroup",
       },
     ),
   ),

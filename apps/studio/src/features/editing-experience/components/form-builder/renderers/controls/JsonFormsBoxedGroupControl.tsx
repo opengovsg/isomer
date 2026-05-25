@@ -74,7 +74,7 @@ function JsonFormsBoxedGroupControl({
   if (!required) {
     return (
       <HStack spacing="0.5rem" alignItems="flex-start" w="full">
-        <VStack w="full" gap="0.75rem" pt="0.5rem" alignItems="start">
+        <VStack w="full" gap="1rem" pt="0.5rem" alignItems="start">
           <HStack alignItems="space-between" w="full" spacing="1rem">
             <FormControl
               display="flex"
@@ -107,7 +107,7 @@ function JsonFormsBoxedGroupControl({
               border="1px solid"
               borderColor="base.divider.medium"
               borderRadius="0.375rem"
-              p="1rem"
+              p="1.25rem"
               w="full"
               bg="rgba(255, 255, 255, 0.50)"
             >
