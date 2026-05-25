@@ -58,3 +58,6 @@ storybook-static/
 
 .claude/worktrees/*
 .worktrees/*
+
+# Prisma generated client (regenerated at build time)
+apps/studio/prisma/generated/

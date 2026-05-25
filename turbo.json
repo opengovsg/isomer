@@ -17,7 +17,9 @@
     "SEARCHSG_API_KEY"
   ],
   "tasks": {
-    "build": {},
+    "build": {
+      "dependsOn": ["generate"]
+    },
     "build:template": {},
     "clean": {},
     "db:connect": {
@@ -58,11 +60,11 @@
       "outputs": []
     },
     "lint": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "generate"],
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "generate"],
       "outputs": ["node_modules/.cache/tsbuildinfo.json"]
     },
     "teardown": {},

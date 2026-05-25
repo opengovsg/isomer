@@ -24,7 +24,7 @@
     "dev:e2e": "dotenv -e .env.test start-server-and-test dev http://127.0.0.1:3000 test:e2e",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
-    "generate": "prisma generate && tsx prisma/generate.cts && oxlint --fix prisma/generated && pnpm exec oxfmt --write prisma/generated",
+    "generate": "prisma generate && tsx prisma/generate.cts",
     "generate:jwks": "tsx scripts/generateJwks.ts",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
