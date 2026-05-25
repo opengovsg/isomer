@@ -1796,13 +1796,13 @@ describe("resource.router", async () => {
         ...pick(collection, ["id", "type", "permalink", "title"]),
         parentId: destinationFolder.id,
       }
+      expect(result).toMatchObject(expected)
       const actual = await db
         .selectFrom("Resource")
         .where("id", "=", collection.id)
         .select(["parentId"])
         .executeTakeFirstOrThrow()
       expect(actual.parentId).toEqual(destinationFolder.id)
-      expect(result).toMatchObject(expected)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceUpdate")
