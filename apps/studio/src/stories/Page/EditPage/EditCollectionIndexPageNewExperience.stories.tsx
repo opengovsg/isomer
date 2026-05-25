@@ -133,7 +133,7 @@ async function playOpenAndCloseThreeFilterOptions(canvasElement: HTMLElement) {
       await canvas.findByRole("button", { name: new RegExp(`Item ${i}`, "i") }),
     )
     await userEvent.click(
-      await canvas.findByRole("button", { name: /Return to/i }),
+      await canvas.findByRole("button", { name: /Return to Options/i }),
     )
   }
 }
