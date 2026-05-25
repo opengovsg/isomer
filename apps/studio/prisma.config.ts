@@ -9,7 +9,9 @@ export default defineConfig({
   },
   // Only set datasource URL when available — prisma generate doesn't need a
   // live DB connection and will fail if env() throws on a missing variable.
+  // oxlint-disable-next-line node/no-process-env
   ...(process.env.DATABASE_URL
-    ? { datasource: { url: process.env.DATABASE_URL } }
+    ? // oxlint-disable-next-line node/no-process-env
+      { datasource: { url: process.env.DATABASE_URL } }
     : {}),
 })
