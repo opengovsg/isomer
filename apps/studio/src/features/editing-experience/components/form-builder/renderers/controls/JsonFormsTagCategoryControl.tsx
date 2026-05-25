@@ -10,24 +10,12 @@ import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
+import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
 import DraggableTagButton from "./DraggableTagButton"
 import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
-
-const ROW_ACTIONS_MENU_BUTTON_PROPS = {
-  colorScheme: "neutral",
-  variant: "clear",
-  h: "2.125rem",
-  w: "2.125rem",
-  minH: "2.125rem",
-  minW: "2.125rem",
-  p: "0.25rem",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-} as const
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { path, removeItems, addItem, data, arraySchema } = props

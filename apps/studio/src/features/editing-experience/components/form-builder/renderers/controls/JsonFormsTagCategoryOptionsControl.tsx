@@ -11,24 +11,12 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
 import DraggableTagButton from "./DraggableTagButton"
 import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
-
-const ROW_ACTIONS_MENU_BUTTON_PROPS = {
-  colorScheme: "neutral",
-  variant: "clear",
-  h: "2.125rem",
-  w: "2.125rem",
-  minH: "2.125rem",
-  minW: "2.125rem",
-  p: "0.25rem",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-} as const
 
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   props: ArrayLayoutProps,
