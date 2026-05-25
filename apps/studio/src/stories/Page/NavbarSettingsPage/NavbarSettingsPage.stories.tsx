@@ -6,14 +6,13 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import NavbarSettingsPage from "~/pages/sites/[siteId]/settings/navbar"
 
-const COMMON_HANDLERS = [
+const BASE_HANDLERS = [
   meHandlers.me(),
   sitesHandlers.getSiteName.default(),
   sitesHandlers.getTheme.default(),
   sitesHandlers.getLocalisedSitemap.default(),
   sitesHandlers.getConfig.default(),
   sitesHandlers.getFooter.default(),
-  sitesHandlers.getNavbar.default(),
   resourceHandlers.getRolesFor.admin(),
   resourceHandlers.search.initial(),
   pageHandlers.getRootPage.default(),
@@ -42,7 +41,7 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS],
+      handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.default()],
     },
   },
 }
@@ -51,7 +50,7 @@ export const Default: Story = {
 export const CustomiseTab: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS],
+      handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.default()],
     },
   },
   play: async ({ canvasElement }) => {
@@ -65,11 +64,11 @@ export const CustomiseTab: Story = {
   },
 }
 
-// Shows the Customise tab with the CTA BoxedGroupControl toggled on
+// Shows the Customise tab with the CTA BoxedGroupControl toggled on and isPinnedOnMobile enabled
 export const CustomiseTabWithCTAEnabled: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS],
+      handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.withCTA()],
     },
   },
   play: async ({ canvasElement }) => {
@@ -80,9 +79,5 @@ export const CustomiseTabWithCTAEnabled: Story = {
     })
 
     await userEvent.click(customiseTab)
-
-    const ctaToggle = await rootScreen.findByRole("checkbox")
-
-    await userEvent.click(ctaToggle)
   },
 }

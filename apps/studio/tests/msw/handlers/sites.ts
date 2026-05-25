@@ -225,6 +225,37 @@ export const sitesHandlers = {
         }
       })
     },
+    withCTA: () => {
+      return trpcMsw.site.getNavbar.query(() => {
+        return {
+          id: 1,
+          siteId: 1,
+          content: {
+            items: [
+              {
+                url: "/item-one",
+                name: "Expandable nav item",
+                items: [
+                  {
+                    url: "/item-one/pa-network-one",
+                    name: "PA's network one",
+                    description:
+                      "Click here and brace yourself for mild disappointment.",
+                  },
+                ],
+              },
+            ],
+            callToAction: {
+              label: "Apply now",
+              url: "https://www.isomer.gov.sg/apply",
+              isPinnedOnMobile: true,
+            },
+          } as PrismaJson.NavbarJsonContent,
+          createdAt: MOCK_STORY_DATE,
+          updatedAt: MOCK_STORY_DATE,
+        }
+      })
+    },
   },
   getLocalisedSitemap: {
     default: () => {
