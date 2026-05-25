@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@isomer/logging": "workspace:*",
+    "@t3-oss/env-core": "catalog:env",
     "pg-boss": "catalog:",
     "vitest": "catalog:vitest",
     "zod": "catalog:"
