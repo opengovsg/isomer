@@ -156,6 +156,8 @@ const config = {
   /** We already do typechecking as a separate task in CI */
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [
+    "@isomer/logging",
+    "@isomer/pgboss",
     "@sinclair/typebox",
     "@opengovsg/starter-kitty-validators",
   ],
