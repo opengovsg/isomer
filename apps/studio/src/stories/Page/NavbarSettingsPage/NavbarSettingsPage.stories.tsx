@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
+import { userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -43,5 +44,45 @@ export const Default: Story = {
     msw: {
       handlers: [...COMMON_HANDLERS],
     },
+  },
+}
+
+// Shows the Customise tab with BoxedGroupControls (CTA and utility toggles off)
+export const CustomiseTab: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const rootScreen = within(canvasElement.ownerDocument.body)
+
+    const customiseTab = await rootScreen.findByRole("tab", {
+      name: /customise/i,
+    })
+
+    await userEvent.click(customiseTab)
+  },
+}
+
+// Shows the Customise tab with the CTA BoxedGroupControl toggled on
+export const CustomiseTabWithCTAEnabled: Story = {
+  parameters: {
+    msw: {
+      handlers: [...COMMON_HANDLERS],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const rootScreen = within(canvasElement.ownerDocument.body)
+
+    const customiseTab = await rootScreen.findByRole("tab", {
+      name: /customise/i,
+    })
+
+    await userEvent.click(customiseTab)
+
+    const ctaToggle = await rootScreen.findByRole("switch")
+
+    await userEvent.click(ctaToggle)
   },
 }

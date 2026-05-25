@@ -448,3 +448,68 @@ export const CTAAndUtilityLinksMobile: Story = {
     )
   },
 }
+
+// Pinned CTA stories — isPinnedOnMobile: true
+
+export const PinnedCTA: Story = {
+  args: generateNavbarArgs({
+    callToAction: {
+      label: "Report Now",
+      url: "/report",
+      isPinnedOnMobile: true,
+    },
+  }),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
+  parameters: {
+    chromatic: withChromaticModes(["desktop", "mobile"]),
+  },
+}
+
+export const PinnedCTAMobileExpanded: Story = {
+  args: generateNavbarArgs({
+    callToAction: {
+      label: "Report Now",
+      url: "/report",
+      isPinnedOnMobile: true,
+    },
+    utility: {
+      label: "Quick links",
+      items: [
+        { name: "Link 1", url: "/link-1" },
+        { name: "Link 2", url: "/link-2" },
+        { name: "Link 3", url: "/link-3" },
+      ],
+    },
+  }),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+  },
+}
+
+export const PinnedCTATruncatedLabel: Story = {
+  name: "Pinned CTA — 25-char label (truncation)",
+  args: generateNavbarArgs({
+    callToAction: {
+      label: "Report a Safety Incident",
+      url: "/report",
+      isPinnedOnMobile: true,
+    },
+  }),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
+  parameters: {
+    chromatic: withChromaticModes(["mobileSmall", "mobile"]),
+  },
+}
