@@ -17,7 +17,7 @@
     "db:connect:uat": "bash ./scripts/connectRds.sh uat",
     "db:connect:vapt": "bash ./scripts/connectRds.sh vapt",
     "db:push": "prisma db push",
-    "db:reset": "prisma migrate reset",
+    "db:reset": "prisma migrate reset && pnpm run db:seed",
     "db:seed": "prisma db seed",
     "db:sleep": "sleep 3",
     "dev": "next dev",
@@ -36,7 +36,7 @@
     "predev": "run-s migrate",
     "prestart": "pnpm run migrate",
     "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
-    "setup": "run-s --print-label services:setup db:sleep migrate:dev db:seed",
+    "setup": "run-s --print-label services:setup db:sleep migrate:dev generate db:seed",
     "setup:test": "run-s --print-label services:setup db:sleep migrate generate",
     "start": "next start",
     "storybook": "storybook dev -p 6007",
@@ -79,6 +79,7 @@
     "@opengovsg/isomer-components": "workspace:*",
     "@opengovsg/starter-kitty-validators": "catalog:",
     "@paralleldrive/cuid2": "catalog:",
+    "@prisma/adapter-pg": "catalog:prisma",
     "@prisma/client": "catalog:prisma",
     "@sinclair/typebox": "catalog:",
     "@tanstack/query-devtools": "catalog:tanstack-query",
@@ -188,6 +189,7 @@
     "autoprefixer": "catalog:",
     "clean-webpack-plugin": "catalog:",
     "commander": "catalog:",
+    "dotenv": "catalog:",
     "dotenv-cli": "catalog:",
     "eslint-plugin-storybook": "catalog:storybook",
     "mockdate": "catalog:",
@@ -212,8 +214,5 @@
   },
   "msw": {
     "workerDirectory": "public"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   }
 }

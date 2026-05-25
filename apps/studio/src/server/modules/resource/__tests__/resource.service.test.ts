@@ -1,4 +1,4 @@
-import { ResourceType } from "@prisma/client"
+import { ResourceType } from "~prisma/generated/prisma/client"
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {

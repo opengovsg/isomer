@@ -1,6 +1,6 @@
-import type { User } from "@prisma/client"
+import type { User } from "~prisma/generated/prisma/client"
 import type { MockInstance } from "vitest"
-import { AuditLogEvent, ResourceType } from "@prisma/client"
+import { AuditLogEvent, ResourceType } from "~prisma/generated/prisma/client"
 import { addSeconds } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"

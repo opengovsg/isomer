@@ -1,5 +1,5 @@
 import type { NextPageWithLayout } from "~/lib/types"
-import { ResourceType } from "@prisma/client"
+import { ResourceType } from "~prisma/generated/prisma/client"
 import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { z } from "zod"

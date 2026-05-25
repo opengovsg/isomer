@@ -1,4 +1,4 @@
-import { ResourceState, ResourceType } from "@prisma/client"
+import { ResourceState, ResourceType } from "~prisma/generated/prisma/client"
 import fs from "fs/promises"
 import path from "path"
 import { db, jsonb } from "~/server/modules/database"

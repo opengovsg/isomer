@@ -1,4 +1,4 @@
-import { BuildStatusType } from "@prisma/client"
+import { BuildStatusType } from "~prisma/generated/prisma/client"
 import { z } from "zod"
 
 /**

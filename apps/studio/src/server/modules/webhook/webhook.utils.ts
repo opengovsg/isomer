@@ -1,5 +1,5 @@
 import type { GrowthBook } from "@growthbook/growthbook"
-import type { BuildStatusType } from "@prisma/client"
+import type { BuildStatusType } from "~prisma/generated/prisma/client"
 import type { Logger } from "pino"
 import { compact } from "lodash-es"
 import {

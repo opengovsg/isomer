@@ -1,6 +1,6 @@
 import type { Tagged } from "type-fest"
 import type { VerificationToken } from "~/server/modules/database"
-import { type User } from "@prisma/client"
+import { type User } from "~prisma/generated/prisma/client"
 import { type IronSession } from "iron-session"
 
 // Tagged type that represents the current logged in user's ID

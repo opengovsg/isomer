@@ -1,7 +1,7 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
   "extends": ["./node_modules/@isomer/oxlint-config/base.json"],
-  "ignorePatterns": [".next/**", "!.storybook/**", "./next-env.d.ts"],
+  "ignorePatterns": [".next/**", "!.storybook/**", "./next-env.d.ts", "prisma/generated/prisma/**"],
   "overrides": [
     {
       "files": ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.tsx"],

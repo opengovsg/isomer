@@ -1,5 +1,5 @@
 import type { GrowthBook } from "@growthbook/growthbook"
-import type { User } from "@prisma/client"
+import type { User } from "~prisma/generated/prisma/client"
 import type { Mock } from "vitest"
 import type { Session } from "~/lib/types/session"
 import MockDate from "mockdate"
