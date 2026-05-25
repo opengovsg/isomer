@@ -48,11 +48,13 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const utils = trpc.useUtils()
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
-      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
-      await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate()
-      await utils.page.getCategoryOptions.invalidate()
-      await utils.collection.getCategoryOptionUsageCount.invalidate()
+      await Promise.all([
+        utils.page.readPageAndBlob.invalidate({ pageId, siteId }),
+        utils.page.readPage.invalidate({ pageId, siteId }),
+        utils.page.getCategories.invalidate(),
+        utils.page.getCategoryOptions.invalidate(),
+        utils.collection.getCategoryOptionUsageCount.invalidate(),
+      ])
       toast({
         status: "success",
         title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,

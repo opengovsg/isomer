@@ -47,14 +47,16 @@ const SuspendablePublishButton = ({
 
   const { mutate, isPending } = trpc.page.publishPage.useMutation({
     onSettled: async () => {
-      await utils.page.readPage.refetch({ pageId, siteId })
-      await utils.page.getCategories.invalidate()
-      await utils.page.getCategoryOptions.invalidate()
-      await utils.collection.getCategoryOptionUsageCount.invalidate()
-      await utils.site.getLocalisedSitemap.invalidate({
-        resourceId: pageId,
-        siteId,
-      })
+      await Promise.all([
+        utils.page.readPage.refetch({ pageId, siteId }),
+        utils.page.getCategories.invalidate(),
+        utils.page.getCategoryOptions.invalidate(),
+        utils.collection.getCategoryOptionUsageCount.invalidate(),
+        utils.site.getLocalisedSitemap.invalidate({
+          resourceId: pageId,
+          siteId,
+        }),
+      ])
     },
     onSuccess: () => {
       toast({

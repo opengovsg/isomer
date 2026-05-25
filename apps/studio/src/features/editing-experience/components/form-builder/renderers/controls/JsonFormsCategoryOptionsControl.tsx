@@ -245,19 +245,23 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const [expandedOpen, setExpandedOpen] = useState(false)
 
-  const duplicateOptionIndices = useMemo(() => {
-    const items = get(core?.data, path) as { label?: string }[] | undefined
-    return indicesWithDuplicateLabels(items)
-  }, [core?.data, path])
+  const items = useMemo(
+    () => get(core?.data, path) as { label?: string }[] | undefined,
+    [core?.data, path],
+  )
 
-  const cannotLeaveExpandedCategoryOptions = useMemo(() => {
-    const items = get(core?.data, path) as { label?: string }[] | undefined
-    return (
+  const duplicateOptionIndices = useMemo(
+    () => indicesWithDuplicateLabels(items),
+    [items],
+  )
+
+  const cannotLeaveExpandedCategoryOptions = useMemo(
+    () =>
       hasBlankOptionLabel(items) ||
       duplicateOptionIndices.size > 0 ||
-      hasErrorAt(path)
-    )
-  }, [core?.data, path, duplicateOptionIndices, hasErrorAt])
+      hasErrorAt(path),
+    [items, path, duplicateOptionIndices, hasErrorAt],
+  )
 
   const handleCloseExpandedCategoryOptions = () => {
     if (cannotLeaveExpandedCategoryOptions) return

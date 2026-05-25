@@ -36,6 +36,12 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
 
+  const handleConfirmDelete = () => {
+    if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
+    removeItems(path, [deleteTarget.index])()
+    setDeleteTarget(null)
+  }
+
   return (
     <>
       {duplicateFilterIndices.size > 0 && <DuplicateLabelError noun="filter" />}
@@ -123,11 +129,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
             </Text>
           }
           onClose={() => setDeleteTarget(null)}
-          onConfirm={() => {
-            if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
-            removeItems(path, [deleteTarget.index])()
-            setDeleteTarget(null)
-          }}
+          onConfirm={handleConfirmDelete}
         />
       )}
     </>

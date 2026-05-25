@@ -58,8 +58,7 @@ export function JsonFormsCategoryIdControl({
 }: ControlProps) {
   const { siteId, pageId, linkId } = useQueryParse(collectionItemSchema)
 
-  // we enable this after we migrated category to categoryId
-  // currently feature flagged it for testing on staging
+  // Feature-flagged per site until the category-to-categoryId migration is complete for all sites.
   const { enabledSites } = useFeatureValue<{ enabledSites: string[] }>(
     CATEGORY_ID_DROPDOWN_FEATURE_KEY,
     { enabledSites: [] },
