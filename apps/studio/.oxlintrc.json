@@ -69,7 +69,7 @@
       "plugins": ["react", "nextjs", "node"]
     },
     {
-      "files": ["src/env.mjs"],
+      "files": ["src/env.mjs", "prisma.config.ts"],
       "rules": {
         "node/no-process-env": "off"
       },
