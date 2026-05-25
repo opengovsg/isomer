@@ -406,7 +406,7 @@ export const CategoryOptionsDeleteOptionModalDisabledCta: Story = {
       pointerEventsCheck: 0,
     })
     const deleteCategoryOptionDialog = await portals.findByRole("dialog", {
-      name: /Delete category option/i,
+      name: /Delete option/i,
     })
     await within(deleteCategoryOptionDialog).findByText(
       /This option is being used in 3 items\./i,
