@@ -66,6 +66,7 @@ export const Navbar = ({
                   site.siteMapArray,
                   site.assetsBaseUrl,
                 ) ?? callToAction.url,
+              isPinnedOnMobile: callToAction.isPinnedOnMobile,
             }
           : undefined
       }
