@@ -6,7 +6,7 @@ import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
-import { ResourceType } from "~prisma/generated/prisma/client"
+import { ResourceType } from "~prisma/generated/prisma/enums"
 
 const siteSettingsSchema = z.object({
   siteId: z.coerce.number(),
