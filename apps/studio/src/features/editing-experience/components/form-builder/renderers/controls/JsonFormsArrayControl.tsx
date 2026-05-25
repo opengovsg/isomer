@@ -57,10 +57,7 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   renderListItemTrailing?: (index: number) => ReactNode
   /** Caption under the list item title (e.g. option counts). */
   renderListItemSubtitle?: (index: number) => ReactNode
-  /**
-   * Extra row error state (e.g. array-level `uniqueItemPropertiesIgnoreCase` where AJV's path
-   * is the array, not each item). Merged with `hasErrorAt` for the row.
-   */
+  /** Extra row error state (e.g. duplicate label errors). Merged with `hasErrorAt` for the row. */
   getListItemHasError?: (index: number) => boolean
   /** When the row is in error, replaces the default "Fix issues before saving" caption. */
   renderListItemErrorCaption?: (index: number) => string | undefined
