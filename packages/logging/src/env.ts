@@ -6,6 +6,7 @@ import { z } from "zod"
 // this "shared" package to Next.js conventions:
 //   - A non-Next.js consumer (standalone worker, CLI) wont set NEXT_PUBLIC_*
 //     and the tracer will silently fall back to "development" / "0.0.0".
+//   - The skipValidation heuristic (npm_lifecycle_event === "lint") is brittle.
 // Follow-up: change initTracer to accept env/version as arguments from the
 // caller (which already validates env via ~/env.mjs) and delete this file.
 // This PR is a pure port of the existing logger out of apps/studio; the
