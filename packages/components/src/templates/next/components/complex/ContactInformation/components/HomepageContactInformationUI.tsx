@@ -97,7 +97,6 @@ export const HomepageContactInformationUI = ({
   methods,
   referenceLinkHref,
   label,
-  LinkComponent,
   isLoading,
   acceptHtmlTags = false,
 }: ContactInformationUIProps) => {
@@ -134,7 +133,6 @@ export const HomepageContactInformationUI = ({
           href={referenceLinkHref}
           size="base"
           variant="outline"
-          LinkComponent={LinkComponent}
           isWithFocusVisibleHighlight
         >
           {label}
@@ -184,7 +182,6 @@ export const HomepageContactInformationUI = ({
                     <ContactMethod
                       key={`contact-method-${index}`}
                       {...method}
-                      LinkComponent={LinkComponent}
                       styles={contactMethodStyles}
                     />
                   )

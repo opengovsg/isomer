@@ -22,7 +22,10 @@ import {
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
-import { assertGazetteAccess } from "./gazette.service"
+import {
+  assertGazetteAccess,
+  findCollectionLinkWithFilename,
+} from "./gazette.service"
 
 interface GazetteBlobInputs {
   ref: string
@@ -210,6 +213,23 @@ export const gazetteRouter = router({
         })
 
         const created = await db.transaction().execute(async (tx) => {
+          // Check for duplicate file ID (filename portion of ref) in the same collection
+          // ref format: /sites/{siteId}/gazettes/{uuid}/filename.pdf
+          const filename = ref.split("/").pop()
+          if (filename) {
+            const duplicate = await findCollectionLinkWithFilename({
+              trx: tx,
+              siteId,
+              parentId: String(collectionId),
+              filename,
+            })
+            if (duplicate) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A gazette with the same file ID already exists",
+              })
+            }
+          }
           const parentCollection = await tx
             .selectFrom("Resource")
             .where("Resource.id", "=", String(collectionId))
@@ -354,27 +374,49 @@ export const gazetteRouter = router({
 
         // Resolve the final ref. Preference order:
         //   1. newRef (a fresh upload) — caller has already PUT to S3
-        //   2. desiredFileName + existing ref → S3 copy now, soft-delete old
-        //      AFTER the DB commit so a tx rollback never strands the
-        //      resource pointing at a tombstoned key
+        //   2. desiredFileName + existing ref → S3 copy
         //   3. unchanged
-        // Any S3 failure here aborts before the DB transaction starts.
+        // For the rename case we pre-check for a duplicate file ID BEFORE the
+        // S3 copy so a conflict never orphans a freshly copied object; the
+        // authoritative atomic check still runs inside the transaction below.
+        // Soft-delete of the old key happens AFTER DB commit so a tx rollback
+        // never strands the resource pointing at a tombstoned key.
+        const oldFilename = existingRef.split("/").pop()
+
+        let newFilename: string | undefined
         let finalRef = existingRef
         let oldRefToCleanUp: string | null = null
         if (newRef) {
+          newFilename = newRef.split("/").pop()
           finalRef = newRef
           if (existingRef) oldRefToCleanUp = existingRef.replace(/^\//, "")
-        } else if (desiredFileName && existingRef) {
-          const currentFileName = existingRef.split("/").pop()
-          if (currentFileName !== desiredFileName) {
-            const sourceKey = existingRef.replace(/^\//, "")
-            const newKey = await copyFileWithNewName({
-              sourceKey,
-              newFileName: desiredFileName,
+        } else if (
+          desiredFileName &&
+          existingRef &&
+          desiredFileName !== oldFilename
+        ) {
+          newFilename = desiredFileName
+
+          const duplicate = await findCollectionLinkWithFilename({
+            siteId,
+            parentId: existingResource.parentId,
+            filename: newFilename,
+            excludeId: String(gazetteId),
+          })
+          if (duplicate) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A gazette with the same file ID already exists",
             })
-            finalRef = `/${newKey}`
-            oldRefToCleanUp = sourceKey
           }
+
+          const sourceKey = existingRef.replace(/^\//, "")
+          const newKey = await copyFileWithNewName({
+            sourceKey,
+            newFileName: desiredFileName,
+          })
+          finalRef = `/${newKey}`
+          oldRefToCleanUp = sourceKey
         }
 
         const newBlobContent = buildGazetteBlobContent({
@@ -388,6 +430,23 @@ export const gazetteRouter = router({
         const { resource: updatedResource, scheduledAtChanged } = await db
           .transaction()
           .execute(async (tx) => {
+            // Authoritative duplicate check inside the tx for atomicity.
+            if (newFilename && newFilename !== oldFilename) {
+              const duplicate = await findCollectionLinkWithFilename({
+                trx: tx,
+                siteId,
+                parentId: existingResource.parentId,
+                filename: newFilename,
+                excludeId: String(gazetteId),
+              })
+              if (duplicate) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A gazette with the same file ID already exists",
+                })
+              }
+            }
+
             const updatedBlob = await updateBlobById(tx, {
               content: newBlobContent,
               pageId: gazetteId,
@@ -443,8 +502,7 @@ export const gazetteRouter = router({
           })
 
         // After the DB has committed the new ref, soft-delete the file the
-        // gazette no longer points at. Best-effort: if S3 fails the lifecycle
-        // policy will reap orphans.
+        // gazette no longer points at.
         if (oldRefToCleanUp) {
           try {
             await markFileAsDeleted({ key: oldRefToCleanUp })

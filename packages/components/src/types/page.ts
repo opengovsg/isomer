@@ -33,7 +33,6 @@ const TagCategoryUuidSchema = generateUuidSchema({
 const TagCategorySchema = Type.Composite([
   Type.Object({
     label: Type.String({
-      maxLength: 70,
       title: "Filter name",
       pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
       errorMessage: {
@@ -59,7 +58,6 @@ const TagCategorySchema = Type.Composite([
     options: Type.Array(
       Type.Object({
         label: Type.String({
-          maxLength: 70,
           title: "Option name",
           pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
           errorMessage: {
@@ -72,13 +70,7 @@ const TagCategorySchema = Type.Composite([
         title: "Options",
         description:
           "Collection filter will display options in this order. Only options that are in use will appear on the Preview.",
-        addItemLabel: "Add option",
         format: "tag-category-options",
-        /**
-         * Studio AJV: duplicate option names (case-insensitive, trim) fail validation in JsonForms.
-         * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
-         */
-        uniqueItemPropertiesIgnoreCase: ["label"],
       },
     ),
   }),
@@ -90,13 +82,7 @@ const TagCategoriesSchema = Type.Object({
       title: "Filters",
       description:
         "Add filters so visitors can find what they need. Editors can assign these options on items they create.",
-      addItemLabel: "Add a filter",
       format: "tag-categories",
-      /**
-       * Studio AJV: duplicate filter names (case-insensitive, trim) fail validation in JsonForms.
-       * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
-       */
-      uniqueItemPropertiesIgnoreCase: ["label"],
     }),
   ),
 })
@@ -142,6 +128,7 @@ const CategoriesSchema = Type.Object({
 export type CollectionPageCategoryOption = NonNullable<
   Static<typeof CategoriesSchema>["categoryOptions"]
 >[number]
+
 const TaggedSchema = Type.Optional(
   // NOTE: This stores the `uuid` of the tag option
   Type.Array(TagOptionUuidSchema, {

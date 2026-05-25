@@ -23,7 +23,7 @@ const slashDateSchema = z
 
     return parse(d, "dd/mm/yyyy", new Date())
   })
-  .pipe(z.date().nullish())
+  .pipe(z.date().optional())
   .transform((d) => {
     if (!d) {
       return undefined

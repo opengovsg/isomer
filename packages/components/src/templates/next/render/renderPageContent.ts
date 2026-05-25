@@ -2,7 +2,6 @@ import type {
   IsomerComponent,
   IsomerPageLayoutType,
   IsomerSiteProps,
-  LinkComponentType,
 } from "~/types"
 
 import { doesComponentHaveImage } from "./doesComponentHaveImage"
@@ -12,7 +11,6 @@ interface RenderPageContentParams {
   content: IsomerComponent[]
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
-  LinkComponent: LinkComponentType
   permalink: string
 }
 

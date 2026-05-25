@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { AttrsDirSchema } from "../internal/AttrsDir"
@@ -30,5 +30,4 @@ export const ParagraphSchema = Type.Object(
 
 export type ParagraphProps = Static<typeof ParagraphSchema> & {
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
 }

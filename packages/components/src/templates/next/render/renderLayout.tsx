@@ -9,15 +9,7 @@ import { IndexPageLayout } from "../layouts/IndexPage"
 import { NotFoundLayout } from "../layouts/NotFound"
 import { SearchLayout } from "../layouts/Search"
 
-export const renderLayout = ({
-  LinkComponent = "a",
-  ...rest
-}: IsomerPageSchemaType) => {
-  const props = {
-    ...rest,
-    LinkComponent,
-  }
-
+export const renderLayout = (props: IsomerPageSchemaType) => {
   switch (props.layout) {
     case "article":
       return <ArticleLayout {...props} />

@@ -12,7 +12,6 @@ export const SearchableTableClient = ({
   title,
   headers,
   items,
-  LinkComponent,
   isLoading = false,
   isError = false,
 }: SearchableTableClientProps) => {
@@ -49,7 +48,6 @@ export const SearchableTableClient = ({
     <SearchableTableClientUI
       title={title}
       headers={headers}
-      LinkComponent={LinkComponent}
       isLoading={isLoading}
       isError={isError}
       search={{ input: _search, deferred: search, setSearch }}

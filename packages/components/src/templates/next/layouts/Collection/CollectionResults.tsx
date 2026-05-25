@@ -17,7 +17,6 @@ interface CollectionResultProps extends Pick<
   shouldShowDate?: boolean
   variant?: CollectionPageSchemaType["page"]["variant"]
   siteAssetsBaseUrl?: string
-  LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }
 
 const collection = tv(
@@ -51,7 +50,6 @@ export const CollectionResults = ({
   totalCount,
   shouldShowDate = true,
   siteAssetsBaseUrl,
-  LinkComponent,
   variant = "collection",
 }: CollectionResultProps) => {
   const { collectionResults } = collection({ variant })
@@ -91,7 +89,6 @@ export const CollectionResults = ({
                 {...item}
                 shouldShowDate={shouldShowDate}
                 siteAssetsBaseUrl={siteAssetsBaseUrl}
-                LinkComponent={LinkComponent}
               />
             ) : (
               <BlogCard
@@ -99,7 +96,6 @@ export const CollectionResults = ({
                 {...item}
                 shouldShowDate={shouldShowDate}
                 siteAssetsBaseUrl={siteAssetsBaseUrl}
-                LinkComponent={LinkComponent}
               />
             ),
           )}

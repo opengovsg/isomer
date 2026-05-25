@@ -36,9 +36,7 @@ import {
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
-import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 function DeleteFilterModal({
@@ -108,7 +106,6 @@ function DeleteFilterModal({
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
-  const { errors } = useBuilderErrors()
   const page = core?.data as CollectionPagePageProps | undefined
 
   const duplicateFilterIndices = useMemo(() => {
@@ -116,10 +113,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     return indicesWithDuplicateLabels(items)
   }, [core?.data, path])
 
-  const hasDuplicateFilterNameError = hasUniqueItemPropertiesError({
-    errors,
-    jsonFormsPath: path,
-  })
+  const hasDuplicateFilterNameError = duplicateFilterIndices.size > 0
 
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
@@ -170,7 +164,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               alignItems="center"
               justifyContent="center"
               isDisabled={isRemoveItemDisabled}
-              aria-label={`Filter ${index + 1} actions`}
+              aria-label="Filter actions"
               onClick={(e) => e.stopPropagation()}
             />
             <Portal>

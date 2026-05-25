@@ -1,129 +1,33 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import {
-  HStack,
-  Icon,
-  MenuButton,
-  MenuList,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Portal,
-  Text,
-  VisuallyHidden,
-  VStack,
-} from "@chakra-ui/react"
+import { MenuButton, MenuList, Portal, Text, VStack } from "@chakra-ui/react"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import {
-  Button,
-  Checkbox,
-  IconButton,
-  Infobox,
-  Menu,
-  ModalCloseButton,
-} from "@opengovsg/design-system-react"
+import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { useMemo, useState } from "react"
-import {
-  BiDotsHorizontalRounded,
-  BiSolidErrorCircle,
-  BiTrash,
-} from "react-icons/bi"
+import { BiDotsHorizontalRounded, BiTrash } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { useBuilderErrors } from "../../ErrorProvider"
+import { DeleteConfirmModal } from "./DeleteConfirmModal"
+import DraggableTagButton from "./DraggableTagButton"
+import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
-import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
-
-const DeleteOptionModal = ({
-  isOpen,
-  label,
-  onClose,
-  onConfirm,
-}: {
-  isOpen: boolean
-  label: string
-  onClose: () => void
-  onConfirm: () => void
-}) => {
-  const [isChecked, setIsChecked] = useState(false)
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader mr="3.5rem">
-          <VisuallyHidden>Delete filter option</VisuallyHidden>
-          <Text as="span" aria-hidden display="block">
-            {label.length > 0 ? `Delete option "${label}"?` : "Delete option?"}
-          </Text>
-        </ModalHeader>
-        <ModalCloseButton size="lg" />
-
-        <ModalBody>
-          <VStack align="stretch" spacing="1.5rem">
-            <Infobox width="100%" size="md" variant="warning">
-              <Text textStyle="body-2">
-                {/* TODO: replace XX with usage count from backend */}
-                This option is being used in XX items. To undo this change, you
-                will need to create and re-assign this option to all items.
-              </Text>
-            </Infobox>
-            <HStack align="start">
-              <Checkbox
-                isChecked={isChecked}
-                onChange={(e) => setIsChecked(e.target.checked)}
-              >
-                <Text textStyle="body-2">
-                  Yes, delete this option permanently
-                </Text>
-              </Checkbox>
-            </HStack>
-          </VStack>
-        </ModalBody>
-
-        <ModalFooter>
-          <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
-              No, keep option
-            </Button>
-            <Button
-              isDisabled={!isChecked}
-              variant="solid"
-              colorScheme="critical"
-              onClick={onConfirm}
-            >
-              Delete option
-            </Button>
-          </HStack>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  )
-}
 
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   props: ArrayLayoutProps,
 ) => {
   const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
-  const { errors } = useBuilderErrors()
   const duplicateOptionIndices = useMemo(() => {
     const items = get(core?.data, path) as { label?: string }[] | undefined
     return indicesWithDuplicateLabels(items)
   }, [core?.data, path])
 
-  const hasDuplicateOptionNameError = hasUniqueItemPropertiesError({
-    errors,
-    jsonFormsPath: path,
-  })
+  const hasDuplicateOptionNameError = duplicateOptionIndices.size > 0
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -153,72 +57,61 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 
   return (
     <>
+      {hasDuplicateOptionNameError && <DuplicateLabelError noun="option" />}
       <JsonFormsArrayControlView
         {...props}
-        listItemContentProps={{ py: "0.5rem" }}
-        renderListItemTrailing={(index) => (
-          <Menu isLazy>
-            <MenuButton
-              as={IconButton}
-              colorScheme="neutral"
-              icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
-              variant="clear"
-              h="2.125rem"
-              w="2.125rem"
-              minH="2.125rem"
-              minW="2.125rem"
-              p="0.25rem"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              isDisabled={isRemoveItemDisabled}
-              aria-label={`Option ${index + 1} actions`}
-              onClick={(e) => e.stopPropagation()}
+        addItemLabel="Add option"
+        renderListItem={(rowProps) => {
+          const isDuplicate = duplicateOptionIndices.has(rowProps.index)
+          return (
+            <DraggableTagButton
+              {...rowProps}
+              isError={rowProps.isError || isDuplicate}
+              listItemContentProps={{ py: "0.5rem" }}
+              listItemTrailing={
+                <Menu isLazy>
+                  <MenuButton
+                    as={IconButton}
+                    colorScheme="neutral"
+                    icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
+                    variant="clear"
+                    h="2.125rem"
+                    w="2.125rem"
+                    minH="2.125rem"
+                    minW="2.125rem"
+                    p="0.25rem"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    isDisabled={isRemoveItemDisabled}
+                    aria-label={`Option ${rowProps.index + 1} actions`}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <Portal>
+                    <MenuList>
+                      <MenuItem
+                        colorScheme="critical"
+                        icon={<BiTrash fontSize="1rem" />}
+                        isDisabled={isRemoveItemDisabled}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openDeleteModal(rowProps.index)
+                        }}
+                      >
+                        Delete option
+                      </MenuItem>
+                    </MenuList>
+                  </Portal>
+                </Menu>
+              }
+              listItemErrorCaption={
+                isDuplicate
+                  ? "An option with this name already exists."
+                  : undefined
+              }
             />
-            <Portal>
-              <MenuList>
-                <MenuItem
-                  colorScheme="critical"
-                  icon={<BiTrash fontSize="1rem" />}
-                  isDisabled={isRemoveItemDisabled}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    openDeleteModal(index)
-                  }}
-                >
-                  Delete option
-                </MenuItem>
-              </MenuList>
-            </Portal>
-          </Menu>
-        )}
-        belowDescription={
-          hasDuplicateOptionNameError ? (
-            <HStack align="start" gap="0.5rem" mt="0.5rem" w="100%">
-              <Icon
-                as={BiSolidErrorCircle}
-                fontSize="1rem"
-                color="utility.feedback.critical"
-                mt="0.125rem"
-                flexShrink={0}
-              />
-              <VStack align="start" spacing={0}>
-                <Text textStyle="subhead-2" color="utility.feedback.critical">
-                  Remove duplicate options before saving.
-                </Text>
-                <Text textStyle="body-2" color="utility.feedback.critical">
-                  Option names are not case-sensitive.
-                </Text>
-              </VStack>
-            </HStack>
-          ) : undefined
-        }
-        getListItemHasError={(index) => duplicateOptionIndices.has(index)}
-        renderListItemErrorCaption={(index) =>
-          duplicateOptionIndices.has(index)
-            ? "An option with this name already exists."
-            : undefined
-        }
+          )
+        }}
         emptyState={
           <VStack spacing="0.25rem" align="center">
             <Text
@@ -239,9 +132,17 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
         }
       />
       {deleteTarget && (
-        <DeleteOptionModal
+        <DeleteConfirmModal
           isOpen
           label={deleteTarget.label}
+          noun="option"
+          warningBody={
+            <Text textStyle="body-2">
+              {/* TODO: replace XX with usage count from backend */}
+              This option is being used in XX items. To undo this change, you
+              will need to create and re-assign this option to all items.
+            </Text>
+          }
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleConfirmDelete}
         />

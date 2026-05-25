@@ -17,7 +17,6 @@ export const FullInfopic = ({
   description,
   isTextOnRight,
   site,
-  LinkComponent,
 }: FullInfopicProps) => {
   const compoundStyles = infopicStyles({
     isTextOnRight,
@@ -55,7 +54,6 @@ export const FullInfopic = ({
               {hasLinkButton && (
                 <div className={compoundStyles.button()}>
                   <LinkButton
-                    LinkComponent={LinkComponent}
                     href={getReferenceLinkHref(
                       buttonUrl,
                       site.siteMapArray,

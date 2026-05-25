@@ -1412,7 +1412,7 @@ describe("page.router", async () => {
           to: 1,
           blocks: pageToReorder.blob.content.content,
         }),
-      ).rejects.toThrowError("Number must be greater than or equal to 0")
+      ).rejects.toThrowError("Too small: expected number to be >=0")
       await assertAuditLogRows()
     })
 
@@ -1456,7 +1456,7 @@ describe("page.router", async () => {
           to: -1,
           blocks: pageToReorder.blob.content.content,
         }),
-      ).rejects.toThrowError("Number must be greater than or equal to 0")
+      ).rejects.toThrowError("Too small: expected number to be >=0")
       await assertAuditLogRows()
     })
 
@@ -2473,6 +2473,35 @@ describe("page.router", async () => {
     })
 
     it.skip("should throw 403 if user does not have write access to page", async () => {})
+
+    it("should throw 400 if attempting to update the search page settings", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+        permalink: "search",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Title",
+        permalink: "search",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "The search page settings cannot be edited",
+        }),
+      )
+    })
   })
 
   describe("getFullPermalink", () => {

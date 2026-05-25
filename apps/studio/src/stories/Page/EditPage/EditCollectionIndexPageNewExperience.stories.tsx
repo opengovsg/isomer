@@ -99,7 +99,7 @@ async function playFillFilterNameAndAddThreeOptions(
   await canvas.findByRole("button", { name: /Item 3/i })
 }
 
-/** From “Manage filters”: open nested “Edit Category” (default category options). */
+/** From "Manage filters": open nested "Edit Category" (default category options). */
 async function playOpenCategoryOptionsEditor(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
   const openBtn = await canvas.findByRole("button", {
@@ -109,7 +109,7 @@ async function playOpenCategoryOptionsEditor(canvasElement: HTMLElement) {
   await canvas.findByText(/Edit Category/i)
 }
 
-/** Inside “Edit Category”: add three option rows (labels may be empty). */
+/** Inside "Edit Category": add three option rows (labels may be empty). */
 async function playAddThreeCategoryOptions(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
   const addOption = await canvas.findByRole("button", { name: /^Add option$/i })
@@ -121,7 +121,7 @@ async function playAddThreeCategoryOptions(canvasElement: HTMLElement) {
   await canvas.findByRole("button", { name: /Item 3/i })
 }
 
-/** Fill option names so “Save changes” enables (blank labels keep save disabled). */
+/** Fill option names so "Save changes" enables (blank labels keep save disabled). */
 async function playFillThreeCategoryOptionNames(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
   for (let i = 1; i <= 3; i += 1) {
@@ -139,7 +139,7 @@ async function playFillThreeCategoryOptionNames(canvasElement: HTMLElement) {
 
 /**
  * Each option only receives an `id` after its row is opened (hidden UUID control mounts). Fill
- * names, save to leave “Edit Category”, then open it again so delete can show the usage modal
+ * names, save to leave "Edit Category", then open it again so delete can show the usage modal
  * instead of removing the row immediately.
  */
 async function playFillNamesSaveCategoryOptionsAndReopenEditCategory(

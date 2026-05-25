@@ -35,9 +35,10 @@ import {
 } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
+import type { DraggableArrayItemRenderProps } from "./types"
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
-import DraggableDrawerButton from "./DraggableDrawerButton"
+import DraggableTagButton from "./DraggableTagButton"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
@@ -57,11 +58,11 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
   /** Caption under the list item title (e.g. option counts). */
   renderListItemSubtitle?: (index: number) => ReactNode
   /**
-   * Extra row error state (e.g. array-level `uniqueItemPropertiesIgnoreCase` where AJV’s path
+   * Extra row error state (e.g. array-level `uniqueItemPropertiesIgnoreCase` where AJV's path
    * is the array, not each item). Merged with `hasErrorAt` for the row.
    */
   getListItemHasError?: (index: number) => boolean
-  /** When the row is in error, replaces the default “Fix issues before saving” caption. */
+  /** When the row is in error, replaces the default "Fix issues before saving" caption. */
   renderListItemErrorCaption?: (index: number) => string | undefined
   /** Rendered after the schema description and before the draggable list. */
   belowDescription?: ReactNode
@@ -70,6 +71,10 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
    * Use when schema `default` would be wrong under AJV `useDefaults` (e.g. legacy rows).
    */
   mapNewArrayItem?: (item: unknown) => unknown
+  /** Custom row renderer. Receives per-row draggable wiring and metadata; must render and forward the ref. */
+  renderListItem?: (props: DraggableArrayItemRenderProps) => ReactNode
+  /** Override for the "Add item" button label; takes precedence over any schema-derived value. */
+  addItemLabel?: string
 }
 
 interface ComplexEditorNestedDrawerProps {
@@ -198,12 +203,15 @@ export function JsonFormsArrayControlView({
   renderListItemErrorCaption,
   belowDescription,
   mapNewArrayItem,
+  renderListItem,
+  addItemLabel: addItemLabelProp,
 }: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
   const arraySchemaWithExtensions = arraySchema as JsonSchema & {
     addItemLabel?: string
   }
-  const addItemLabel = arraySchemaWithExtensions.addItemLabel ?? "Add item"
+  const addItemLabel =
+    addItemLabelProp ?? arraySchemaWithExtensions.addItemLabel ?? "Add item"
   const [selectedIndex, setSelectedIndex] = useState<number>()
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -376,33 +384,40 @@ export function JsonFormsArrayControlView({
                       disableInteractiveElementBlocking
                       index={index}
                     >
-                      {({ draggableProps, dragHandleProps, innerRef }) => (
-                        <DraggableDrawerButton
-                          draggableProps={draggableProps}
-                          dragHandleProps={dragHandleProps}
-                          isError={hasError}
-                          ref={innerRef}
-                          index={index}
-                          path={path}
-                          schema={schema}
-                          enabled={enabled}
-                          handleSelect={() => () => undefined}
-                          removeItem={handleRemoveItem}
-                          selected={false}
-                          key={index}
-                          uischema={childUiSchema}
-                          childLabelProp={undefined}
-                          translations={{}}
-                          setSelectedIndex={setSelectedIndex}
-                          listItemIcon={listItemIcon}
-                          listItemContentProps={listItemContentProps}
-                          listItemTrailing={renderListItemTrailing?.(index)}
-                          listItemSubtitle={renderListItemSubtitle?.(index)}
-                          listItemErrorCaption={renderListItemErrorCaption?.(
-                            index,
-                          )}
-                        />
-                      )}
+                      {({ draggableProps, dragHandleProps, innerRef }) => {
+                        const rowProps = {
+                          draggableProps,
+                          dragHandleProps,
+                          isError: hasError,
+                          ref: innerRef,
+                          index,
+                          path,
+                          schema,
+                          enabled,
+                          handleSelect: () => () => undefined,
+                          removeItem: handleRemoveItem,
+                          selected: false,
+                          uischema: childUiSchema,
+                          childLabelProp: undefined,
+                          translations: {},
+                          setSelectedIndex,
+                        }
+                        if (renderListItem) {
+                          return renderListItem(rowProps)
+                        }
+                        return (
+                          <DraggableTagButton
+                            {...rowProps}
+                            listItemIcon={listItemIcon}
+                            listItemContentProps={listItemContentProps}
+                            listItemTrailing={renderListItemTrailing?.(index)}
+                            listItemSubtitle={renderListItemSubtitle?.(index)}
+                            listItemErrorCaption={renderListItemErrorCaption?.(
+                              index,
+                            )}
+                          />
+                        )
+                      }}
                     </Draggable>
                   )
                 })}
