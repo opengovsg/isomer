@@ -16,15 +16,29 @@ import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
+const ROW_ACTIONS_MENU_BUTTON_PROPS = {
+  colorScheme: "neutral",
+  variant: "clear",
+  h: "2.125rem",
+  w: "2.125rem",
+  minH: "2.125rem",
+  minW: "2.125rem",
+  p: "0.25rem",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+} as const
+
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { path, removeItems, addItem, data, arraySchema } = props
   const { core } = useJsonForms()
   const page = core?.data as CollectionPagePageProps | undefined
 
-  const duplicateFilterIndices = useMemo(() => {
-    const items = get(core?.data, path) as { label?: string }[] | undefined
-    return indicesWithDuplicateLabels(items)
-  }, [core?.data, path])
+  const items = get(core?.data, path) as { label?: string }[] | undefined
+  const duplicateFilterIndices = useMemo(
+    () => indicesWithDuplicateLabels(items),
+    [items],
+  )
 
   const hasDuplicateFilterNameError = duplicateFilterIndices.size > 0
 
@@ -77,17 +91,8 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                 <Menu isLazy>
                   <MenuButton
                     as={IconButton}
-                    colorScheme="neutral"
                     icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
-                    variant="clear"
-                    h="2.125rem"
-                    w="2.125rem"
-                    minH="2.125rem"
-                    minW="2.125rem"
-                    p="0.25rem"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
+                    {...ROW_ACTIONS_MENU_BUTTON_PROPS}
                     isDisabled={isRemoveItemDisabled}
                     aria-label={`Filter ${rowProps.index + 1} actions`}
                     onClick={(e) => e.stopPropagation()}
