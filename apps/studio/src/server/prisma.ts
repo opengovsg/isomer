@@ -3,8 +3,8 @@
  * @link https://www.prisma.io/docs/support/help-articles/nextjs-prisma-client-dev-practices
  */
 import { PrismaPg } from "@prisma/adapter-pg"
-import { PrismaClient } from "~prisma/generated/prisma/client"
 import { env } from "~/env.mjs"
+import { PrismaClient } from "~prisma/generated/prisma/client"
 
 const prismaGlobal = global as typeof global & {
   prisma?: PrismaClient

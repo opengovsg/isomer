@@ -1,5 +1,5 @@
-import { BuildStatusType } from "~prisma/generated/prisma/client"
 import { z } from "zod"
+import { BuildStatusType } from "~prisma/generated/prisma/client"
 
 /**
  * Extract the build ID from the ARN string. When eventbridge sends the ARN,

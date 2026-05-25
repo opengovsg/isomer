@@ -1,6 +1,5 @@
-import type { User } from "~prisma/generated/prisma/client"
 import type { MockInstance } from "vitest"
-import { AuditLogEvent, ResourceType } from "~prisma/generated/prisma/client"
+import type { User } from "~prisma/generated/prisma/client"
 import { addSeconds } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -15,6 +14,7 @@ import * as emailService from "~/features/mail/service"
 import * as awsUtils from "~/server/modules/aws/utils"
 import { db } from "~/server/modules/database"
 import * as publishPageResourceModule from "~/server/modules/resource/resource.service"
+import { AuditLogEvent, ResourceType } from "~prisma/generated/prisma/client"
 
 import {
   publishScheduledResources,
