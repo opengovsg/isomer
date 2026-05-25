@@ -9,8 +9,6 @@ import { z } from "zod"
 //   - The skipValidation heuristic (npm_lifecycle_event === "lint") is brittle.
 // Follow-up: change initTracer to accept env/version as arguments from the
 // caller (which already validates env via ~/env.mjs) and delete this file.
-// This PR is a pure port of the existing logger out of apps/studio; the
-// refactor is intentionally deferred to keep the diff minimal.
 export const env = createEnv({
   server: {
     NODE_ENV: z
