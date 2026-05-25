@@ -13,7 +13,12 @@ import {
 } from "@chakra-ui/react"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { Button, IconButton, Infobox, Menu } from "@opengovsg/design-system-react"
+import {
+  Button,
+  IconButton,
+  Infobox,
+  Menu,
+} from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { useMemo, useState } from "react"
 import {
