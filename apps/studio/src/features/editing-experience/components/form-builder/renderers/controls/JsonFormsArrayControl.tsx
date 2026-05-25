@@ -37,7 +37,8 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
-import DraggableDrawerButton from "./DraggableDrawerButton"
+import DraggableTagButton from "./DraggableTagButton"
+import type { DraggableArrayItemRenderProps } from "./types"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
@@ -383,33 +384,40 @@ export function JsonFormsArrayControlView({
                       disableInteractiveElementBlocking
                       index={index}
                     >
-                      {({ draggableProps, dragHandleProps, innerRef }) => (
-                        <DraggableDrawerButton
-                          draggableProps={draggableProps}
-                          dragHandleProps={dragHandleProps}
-                          isError={hasError}
-                          ref={innerRef}
-                          index={index}
-                          path={path}
-                          schema={schema}
-                          enabled={enabled}
-                          handleSelect={() => () => undefined}
-                          removeItem={handleRemoveItem}
-                          selected={false}
-                          key={index}
-                          uischema={childUiSchema}
-                          childLabelProp={undefined}
-                          translations={{}}
-                          setSelectedIndex={setSelectedIndex}
-                          listItemIcon={listItemIcon}
-                          listItemContentProps={listItemContentProps}
-                          listItemTrailing={renderListItemTrailing?.(index)}
-                          listItemSubtitle={renderListItemSubtitle?.(index)}
-                          listItemErrorCaption={renderListItemErrorCaption?.(
-                            index,
-                          )}
-                        />
-                      )}
+                      {({ draggableProps, dragHandleProps, innerRef }) => {
+                        const rowProps = {
+                          draggableProps,
+                          dragHandleProps,
+                          isError: hasError,
+                          ref: innerRef,
+                          index,
+                          path,
+                          schema,
+                          enabled,
+                          handleSelect: () => () => undefined,
+                          removeItem: handleRemoveItem,
+                          selected: false,
+                          uischema: childUiSchema,
+                          childLabelProp: undefined,
+                          translations: {},
+                          setSelectedIndex,
+                        }
+                        if (renderListItem) {
+                          return renderListItem(rowProps)
+                        }
+                        return (
+                          <DraggableTagButton
+                            {...rowProps}
+                            listItemIcon={listItemIcon}
+                            listItemContentProps={listItemContentProps}
+                            listItemTrailing={renderListItemTrailing?.(index)}
+                            listItemSubtitle={renderListItemSubtitle?.(index)}
+                            listItemErrorCaption={renderListItemErrorCaption?.(
+                              index,
+                            )}
+                          />
+                        )
+                      }}
                     </Draggable>
                   )
                 })}

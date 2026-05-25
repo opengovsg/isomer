@@ -46,7 +46,6 @@ import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
-import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 /** Duplicated from tag filter options modal; diverge copy/behaviour for category options when needed. */
@@ -117,17 +116,12 @@ const DeleteCategoryOptionModal = ({
 function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
   const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
-  const { errors } = useBuilderErrors()
-
   const duplicateOptionIndices = useMemo(() => {
     const items = get(core?.data, path) as { label?: string }[] | undefined
     return indicesWithDuplicateLabels(items)
   }, [core?.data, path])
 
-  const hasDuplicateOptionNameError = hasUniqueItemPropertiesError({
-    errors,
-    jsonFormsPath: path,
-  })
+  const hasDuplicateOptionNameError = duplicateOptionIndices.size > 0
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -270,7 +264,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
 function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   const { path, data, enabled } = props
   const { core } = useJsonForms()
-  const { errors, hasErrorAt } = useBuilderErrors()
+  const { hasErrorAt } = useBuilderErrors()
   const [expandedOpen, setExpandedOpen] = useState(false)
 
   const duplicateOptionIndices = useMemo(() => {
@@ -278,20 +272,16 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
     return indicesWithDuplicateLabels(items)
   }, [core?.data, path])
 
-  const hasDuplicateOptionNameError = hasUniqueItemPropertiesError({
-    errors,
-    jsonFormsPath: path,
-  })
+  const hasDuplicateOptionNameError = duplicateOptionIndices.size > 0
 
   const cannotLeaveExpandedCategoryOptions = useMemo(() => {
     const items = get(core?.data, path) as { label?: string }[] | undefined
     return (
       hasBlankOptionLabel(items) ||
       indicesWithDuplicateLabels(items).size > 0 ||
-      hasDuplicateOptionNameError ||
       hasErrorAt(path)
     )
-  }, [core?.data, path, hasDuplicateOptionNameError, hasErrorAt])
+  }, [core?.data, path, hasErrorAt])
 
   const handleCloseExpandedCategoryOptions = () => {
     if (cannotLeaveExpandedCategoryOptions) return
