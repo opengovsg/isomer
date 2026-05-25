@@ -1842,8 +1842,7 @@ describe("resource.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            "Please ensure that you are trying to move your resource into a valid destination",
+          message: "Folder items can only be moved to another folder",
         }),
       )
     })
