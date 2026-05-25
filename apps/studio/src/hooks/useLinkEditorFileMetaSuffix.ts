@@ -45,21 +45,16 @@ export function useLinkEditorFileMetaSuffix({
     initialLinkText ?? "",
   )
   const fileMetaSuffixRef = useRef<string | null>(
-    initialLinkText != null &&
-      initialLinkText !== "" &&
-      initialLinkText !== strippedLinkTextForForm
-      ? initialLinkText.slice(strippedLinkTextForForm.length)
-      : null,
+    initialLinkText?.slice(strippedLinkTextForForm.length) || null,
   )
 
   const onUploadedFile = useCallback(
     (file: File) => {
-      if (!showLinkText) return
       const suffix = buildFileUploadMetaSuffix(file)
       if (!suffix) return
       fileMetaSuffixRef.current = suffix
     },
-    [showLinkText],
+    [],
   )
 
   const buildFinalLinkTextForSave = useCallback(

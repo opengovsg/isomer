@@ -1,8 +1,8 @@
 import { formatBytes } from "@opengovsg/isomer-components"
 
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "../features/editing-experience/components/form-builder/renderers/controls/constants"
+import { getFileExtension } from "./getFileExtension"
 
-// `.pdf` → `PDF`.
 const EXTENSION_TO_DISPLAY_SUFFIX: Record<string, string> = Object.fromEntries(
   Object.keys(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING).map((ext) => [
     ext,
@@ -25,16 +25,8 @@ const FILE_UPLOAD_META_SUFFIX_RE = new RegExp(
   "i",
 )
 
-function getLowercaseExtension(fileName: string): string {
-  const lower = fileName.toLowerCase()
-  const dot = lower.lastIndexOf(".")
-  if (dot === -1) return ""
-  return lower.slice(dot)
-}
-
 export function getFileExtensionType(fileName: string): string | undefined {
-  const ext = getLowercaseExtension(fileName)
-  return EXTENSION_TO_DISPLAY_SUFFIX[ext]
+  return EXTENSION_TO_DISPLAY_SUFFIX[getFileExtension(fileName)]
 }
 
 /**
