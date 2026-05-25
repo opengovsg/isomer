@@ -204,7 +204,7 @@ function CategoryOptionsExpandedEditor({
         <DeleteConfirmModal
           isOpen
           label={deleteTarget.label}
-          noun="option"
+          noun="category option"
           warningBody={
             <Text textStyle="body-2">
               This option is being used in{" "}

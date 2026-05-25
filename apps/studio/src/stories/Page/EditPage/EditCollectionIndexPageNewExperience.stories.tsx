@@ -406,13 +406,13 @@ export const CategoryOptionsDeleteOptionModalDisabledCta: Story = {
       pointerEventsCheck: 0,
     })
     const deleteCategoryOptionDialog = await portals.findByRole("dialog", {
-      name: /Delete option/i,
+      name: /Delete category option/i,
     })
     await within(deleteCategoryOptionDialog).findByText(
       /This option is being used in 3 items\./i,
     )
     await expect(
-      await portals.findByRole("button", { name: /^Delete option$/i }),
+      await portals.findByRole("button", { name: /^Delete category option$/i }),
     ).toBeDisabled()
   },
 }
@@ -424,11 +424,11 @@ export const CategoryOptionsDeleteOptionModalEnabledCta: Story = {
     const portals = withinPortals(context.canvasElement)
     await userEvent.click(
       portals.getByRole("checkbox", {
-        name: /Yes, delete this option permanently/i,
+        name: /Yes, delete this category option permanently/i,
       }),
     )
     await expect(
-      await portals.findByRole("button", { name: /^Delete option$/i }),
+      await portals.findByRole("button", { name: /^Delete category option$/i }),
     ).not.toBeDisabled()
   },
 }
