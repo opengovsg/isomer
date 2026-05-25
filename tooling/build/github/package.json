@@ -12,6 +12,5 @@
   "dependencies": {
     "@octokit/rest": "catalog:",
     "dotenv": "catalog:"
-  },
-  "packageManager": "pnpm@11.1.2"
+  }
 }

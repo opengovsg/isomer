@@ -17,6 +17,5 @@
   },
   "devDependencies": {
     "@types/pg": "catalog:"
-  },
-  "packageManager": "pnpm@11.1.2"
+  }
 }

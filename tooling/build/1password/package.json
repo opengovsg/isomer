@@ -12,6 +12,5 @@
   "dependencies": {
     "@1password/sdk": "catalog:",
     "dotenv": "catalog:"
-  },
-  "packageManager": "pnpm@11.1.2"
+  }
 }
