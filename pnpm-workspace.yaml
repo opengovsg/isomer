@@ -68,7 +68,7 @@ catalog:
   "@sinclair/typebox": ^0.33.12
   "@tanstack/react-table": ^8.21.2
   pg: ^8.16.2
-  pino: ^9.6.0
+  pino: ^10.3.1
   pino-pretty: ^13.0.0
   postcss: ^8.5.14
   postcss-preset-env: ^11.2.1
@@ -79,6 +79,7 @@ catalog:
   tailwindcss: ^3.4.4
   testcontainers: ^11.14.0
   tsc-alias: ^1.8.16
+  "@typescript/native-preview": 7.0.0-dev.20260513.1
   type-fest: ^4.23.0
   tsx: ^4.20.4
   turbo: ^2.9.14
@@ -157,13 +158,13 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^1.7.7
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.1.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1042.0
-    "@aws-sdk/client-amplify": ^3.1042.0
-    "@aws-sdk/client-cloudfront": ^3.1042.0
-    "@aws-sdk/client-codebuild": ^3.1042.0
-    "@aws-sdk/client-s3": ^3.1042.0
-    "@aws-sdk/s3-request-presigner": ^3.1042.0
-    "@aws-sdk/credential-providers": ^3.1042.0
+    "@aws-sdk/client-acm": ^3.1046.0
+    "@aws-sdk/client-amplify": ^3.1046.0
+    "@aws-sdk/client-cloudfront": ^3.1046.0
+    "@aws-sdk/client-codebuild": ^3.1046.0
+    "@aws-sdk/client-s3": ^3.1046.0
+    "@aws-sdk/s3-request-presigner": ^3.1046.0
+    "@aws-sdk/credential-providers": ^3.1046.0
   babel:
     "@babel/plugin-transform-class-properties": ^7.27.1
     "@babel/plugin-transform-object-rest-spread": ^7.27.3
@@ -205,14 +206,14 @@ catalogs:
     "@react-stately/checkbox": ^3.8.0
     "@react-stately/toggle": ^3.10.0
   storybook:
-    storybook: ^10.3.6
-    "@storybook/addon-a11y": ^10.3.6
-    "@storybook/addon-docs": ^10.3.6
-    "@storybook/addon-links": ^10.3.6
-    "@storybook/addon-themes": ^10.3.6
-    "@storybook/nextjs": ^10.3.6
-    "@storybook/react-vite": ^10.3.6
-    eslint-plugin-storybook: ^10.3.6
+    storybook: ^10.4.0
+    "@storybook/addon-a11y": ^10.4.0
+    "@storybook/addon-docs": ^10.4.0
+    "@storybook/addon-links": ^10.4.0
+    "@storybook/addon-themes": ^10.4.0
+    "@storybook/nextjs": ^10.4.0
+    "@storybook/react-vite": ^10.4.0
+    eslint-plugin-storybook: ^10.4.0
     storybook-addon-pseudo-states: ^10.3.6
   tanstack-query:
     "@tanstack/query-devtools": ^5.100.10

@@ -50,7 +50,7 @@
     "test:load:build": "webpack-cli --config tests/load/webpack.config.cjs",
     "test:unit": "dotenv -e .env.test vitest run",
     "test:watch": "dotenv -e .env.test pnpm exec vitest watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "catalog:atlaskitPragmaticDnd",
@@ -73,6 +73,8 @@
     "@hello-pangea/dnd": "catalog:",
     "@hookform/resolvers": "catalog:",
     "@intercom/messenger-js-sdk": "catalog:",
+    "@isomer/logging": "workspace:*",
+    "@isomer/pgboss": "workspace:*",
     "@jsonforms/core": "catalog:jsonforms",
     "@jsonforms/react": "catalog:jsonforms",
     "@opengovsg/design-system-react": "catalog:",
@@ -137,8 +139,6 @@
     "openid-client": "catalog:",
     "papaparse": "catalog:",
     "pg": "catalog:",
-    "pino": "catalog:",
-    "pino-pretty": "catalog:",
     "prisma": "catalog:prisma",
     "prisma-json-types-generator": "catalog:prisma",
     "prisma-kysely": "catalog:prisma",
@@ -168,7 +168,6 @@
     "@babel/preset-typescript": "catalog:babel",
     "@chakra-ui/cli": "catalog:chakra",
     "@isomer/oxlint-config": "workspace:*",
-    "@isomer/pgboss": "workspace:*",
     "@isomer/storybook-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
     "@playwright/test": "catalog:",
@@ -184,6 +183,7 @@
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
     "@types/validator": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "@vitest/coverage-istanbul": "catalog:vitest",
     "autoprefixer": "catalog:",
     "clean-webpack-plugin": "catalog:",

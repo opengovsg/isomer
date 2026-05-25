@@ -11,12 +11,10 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { useBuilderErrors } from "../../ErrorProvider"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
 import DraggableTagButton from "./DraggableTagButton"
 import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
-import { hasUniqueItemPropertiesError } from "./utils/hasUniqueItemPropertiesError"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
@@ -24,16 +22,12 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 ) => {
   const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
-  const { errors } = useBuilderErrors()
   const duplicateOptionIndices = useMemo(() => {
     const items = get(core?.data, path) as { label?: string }[] | undefined
     return indicesWithDuplicateLabels(items)
   }, [core?.data, path])
 
-  const hasDuplicateOptionNameError = hasUniqueItemPropertiesError({
-    errors,
-    jsonFormsPath: path,
-  })
+  const hasDuplicateOptionNameError = duplicateOptionIndices.size > 0
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
@@ -66,6 +60,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
       {hasDuplicateOptionNameError && <DuplicateLabelError noun="option" />}
       <JsonFormsArrayControlView
         {...props}
+        addItemLabel="Add option"
         renderListItem={(rowProps) => {
           const isDuplicate = duplicateOptionIndices.has(rowProps.index)
           return (

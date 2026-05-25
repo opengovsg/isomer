@@ -70,6 +70,10 @@ export type JsonFormsArrayControlProps = ArrayLayoutProps & {
    * Use when schema `default` would be wrong under AJV `useDefaults` (e.g. legacy rows).
    */
   mapNewArrayItem?: (item: unknown) => unknown
+  /** Custom row renderer. Receives per-row draggable wiring and metadata; must render and forward the ref. */
+  renderListItem?: (props: DraggableArrayItemRenderProps) => ReactNode
+  /** Override for the "Add item" button label; takes precedence over any schema-derived value. */
+  addItemLabel?: string
 }
 
 interface ComplexEditorNestedDrawerProps {
@@ -198,12 +202,15 @@ export function JsonFormsArrayControlView({
   renderListItemErrorCaption,
   belowDescription,
   mapNewArrayItem,
+  renderListItem,
+  addItemLabel: addItemLabelProp,
 }: JsonFormsArrayControlProps) {
   const { hasErrorAt } = useBuilderErrors()
   const arraySchemaWithExtensions = arraySchema as JsonSchema & {
     addItemLabel?: string
   }
-  const addItemLabel = arraySchemaWithExtensions.addItemLabel ?? "Add item"
+  const addItemLabel =
+    addItemLabelProp ?? arraySchemaWithExtensions.addItemLabel ?? "Add item"
   const [selectedIndex, setSelectedIndex] = useState<number>()
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems

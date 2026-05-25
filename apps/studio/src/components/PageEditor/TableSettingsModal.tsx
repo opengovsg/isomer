@@ -27,11 +27,9 @@ const tableSettingsSchema = z.object({
     .string({
       error: "Enter a caption for this table",
     })
+    .min(1, { message: "Enter a caption for this table" })
     .max(MAX_CAPTION_LENGTH, {
       message: `Table caption should be shorter than ${MAX_CAPTION_LENGTH} characters.`,
-    })
-    .refine((value) => value.trim().length > 0, {
-      message: "Enter a caption for this table",
     }),
 })
 
@@ -88,15 +86,14 @@ export const TableSettingsModal = ({
 
             <Textarea
               placeholder="This is the caption for your table"
-              mb="0.5rem"
               {...register("caption")}
             />
 
             {errors.caption?.message ? (
               <FormErrorMessage>{errors.caption.message}</FormErrorMessage>
             ) : (
-              <FormHelperText color="base.content.medium">
-                {MAX_CAPTION_LENGTH - caption.trim().length} characters left
+              <FormHelperText mt="0.5rem" color="base.content.medium">
+                {MAX_CAPTION_LENGTH - caption.length} characters left
               </FormHelperText>
             )}
           </FormControl>
