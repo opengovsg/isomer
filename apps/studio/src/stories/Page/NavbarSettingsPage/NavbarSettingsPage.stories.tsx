@@ -46,38 +46,28 @@ export const Default: Story = {
   },
 }
 
-// Shows the Customise tab with BoxedGroupControls (CTA and utility toggles off)
+const goToCustomiseTab = async (canvasElement: HTMLElement) => {
+  const rootScreen = within(canvasElement.ownerDocument.body)
+  const customiseTab = await rootScreen.findByRole("tab", {
+    name: /customise/i,
+  })
+  await userEvent.click(customiseTab)
+}
+
 export const CustomiseTab: Story = {
   parameters: {
     msw: {
       handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.default()],
     },
   },
-  play: async ({ canvasElement }) => {
-    const rootScreen = within(canvasElement.ownerDocument.body)
-
-    const customiseTab = await rootScreen.findByRole("tab", {
-      name: /customise/i,
-    })
-
-    await userEvent.click(customiseTab)
-  },
+  play: ({ canvasElement }) => goToCustomiseTab(canvasElement),
 }
 
-// Shows the Customise tab with the CTA BoxedGroupControl toggled on and isPinnedOnMobile enabled
 export const CustomiseTabWithCTAEnabled: Story = {
   parameters: {
     msw: {
       handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.withCTA()],
     },
   },
-  play: async ({ canvasElement }) => {
-    const rootScreen = within(canvasElement.ownerDocument.body)
-
-    const customiseTab = await rootScreen.findByRole("tab", {
-      name: /customise/i,
-    })
-
-    await userEvent.click(customiseTab)
-  },
+  play: ({ canvasElement }) => goToCustomiseTab(canvasElement),
 }
