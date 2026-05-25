@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
-    "types": ["node", "vitest/globals"],
+    "types": ["node"],
     "noEmit": true,
-    "declaration": true,
-    "rootDir": "src",
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -11,9 +9,6 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "~/*": ["./src/*"]
-    },
     "lib": ["es2021"]
   },
   "include": ["src/**/*.ts"],

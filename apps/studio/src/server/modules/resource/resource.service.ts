@@ -1,5 +1,4 @@
 import type { SelectExpression } from "kysely"
-import type { Logger } from "pino"
 import type { UnwrapTagged } from "type-fest"
 import type { ResourceItemContent } from "~/schemas/resource"
 import {
@@ -17,6 +16,8 @@ import {
 } from "~/utils/sitemap"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
+
+import type { Logger } from "@isomer/logging"
 
 import type {
   Footer,
