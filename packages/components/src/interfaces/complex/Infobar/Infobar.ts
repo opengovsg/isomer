@@ -1,9 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type {
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
@@ -110,5 +106,4 @@ export type InfobarProps = Static<typeof InfobarHomepageSchema> & {
   subtitle?: string // Subtitle that is only used in the classic theme
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
 }

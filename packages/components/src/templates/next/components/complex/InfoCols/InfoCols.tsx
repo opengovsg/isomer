@@ -88,8 +88,7 @@ const InfoBoxIcon = ({
 const InfoBoxes = ({
   infoBoxes,
   site,
-  LinkComponent,
-}: Pick<InfoColsProps, "infoBoxes" | "site" | "LinkComponent">) => {
+}: Pick<InfoColsProps, "infoBoxes" | "site">) => {
   return (
     <div className={compoundStyles.infoBoxesContainer()}>
       {infoBoxes.map(
@@ -98,7 +97,6 @@ const InfoBoxes = ({
           const isExternalLink = isExternalUrl(buttonUrl)
           return (
             <Link
-              LinkComponent={LinkComponent}
               href={getReferenceLinkHref(
                 buttonUrl,
                 site.siteMapArray,
@@ -151,7 +149,6 @@ export const InfoCols = ({
   infoBoxes,
   layout,
   site,
-  LinkComponent,
 }: InfoColsProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
@@ -175,11 +172,7 @@ export const InfoCols = ({
             )}
           </div>
 
-          <InfoBoxes
-            infoBoxes={infoBoxes}
-            site={site}
-            LinkComponent={LinkComponent}
-          />
+          <InfoBoxes infoBoxes={infoBoxes} site={site} />
         </div>
       </div>
     </section>

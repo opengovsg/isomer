@@ -200,6 +200,16 @@ const webhookMiddleware = t.middleware(async ({ next, ctx }) => {
   return next()
 })
 
+// GrowthBook registers each instance in a module-level global Map on init().
+// Without destroy(), instances accumulate and are never GC'd.
+const growthbookCleanupMiddleware = t.middleware(async ({ ctx, next }) => {
+  try {
+    return await next()
+  } finally {
+    ctx.gb?.destroy()
+  }
+})
+
 const rateLimitMiddleware = t.middleware(async ({ next, ctx, meta }) => {
   if (meta?.rateLimitOptions === undefined) {
     return next()
@@ -228,6 +238,7 @@ const rateLimitMiddleware = t.middleware(async ({ next, ctx, meta }) => {
 export const router = t.router
 
 const baseProcedure = t.procedure
+  .use(growthbookCleanupMiddleware)
   .use(loggerWithVersionMiddleware)
   .use(contentTypeHeaderMiddleware)
   .use(rateLimitMiddleware)

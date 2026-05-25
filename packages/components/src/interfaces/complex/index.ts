@@ -58,7 +58,4 @@ export {
   DynamicComponentListSchema,
   type DynamicComponentListProps,
 } from "./DynamicComponentList"
-export {
-  AntiScamDisclaimerBannerSchema,
-  type AntiScamDisclaimerBannerProps,
-} from "./AntiScamDisclaimerBanner"
+export { AntiScamDisclaimerBannerSchema } from "./AntiScamDisclaimerBanner"

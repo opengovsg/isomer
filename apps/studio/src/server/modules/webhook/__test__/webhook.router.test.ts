@@ -39,6 +39,7 @@ const getCallerWithMockGrowthbook = (
   const mockRequest = createMockRequest(session)
   const mockGrowthBook: Partial<GrowthBook> = {
     isOn: vi.fn().mockReturnValue(mockReturnValue),
+    destroy: vi.fn(),
   }
   mockRequest.gb = mockGrowthBook as GrowthBook
   return createCaller(mockRequest)

@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "types": ["node", "vitest/globals"],
+    "noEmit": true,
     "declaration": true,
     "rootDir": "src",
-    "moduleResolution": "node",
-    "ignoreDeprecations": "6.0",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strict": true,
@@ -17,5 +17,5 @@
     "lib": ["es2021"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules"]
 }
