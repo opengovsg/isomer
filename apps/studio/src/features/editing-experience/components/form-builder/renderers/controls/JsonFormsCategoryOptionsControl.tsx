@@ -95,6 +95,7 @@ function CategoryOptionsExpandedEditor({
         </Infobox>
         <JsonFormsArrayControlView
           {...props}
+          addItemLabel="Add option"
           listItemContentProps={{ py: "0.5rem" }}
           renderListItemTrailing={(index) => (
             <Menu isLazy>
