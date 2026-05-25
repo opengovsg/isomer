@@ -112,14 +112,8 @@ const CategoriesSchema = Type.Object({
       }),
       {
         title: "Options",
-        addItemLabel: "Add option",
         format: "category-options",
         default: [],
-        /**
-         * Studio AJV: duplicate category names (case-insensitive, trim) fail validation in JsonForms.
-         * @see {@link ../../../../apps/studio/src/utils/ajv.ts}
-         */
-        uniqueItemPropertiesIgnoreCase: ["label"],
       },
     ),
   ),
