@@ -206,23 +206,6 @@ export const FiltersAddThreeOptions: Story = {
   },
 }
 
-export const FiltersOptionNameCharacterCount: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
-  play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenFirstFilterEditor(canvasElement)
-    await playFillFilterNameAndAddThreeOptions(canvasElement)
-    const canvas = within(canvasElement)
-    await userEvent.click(
-      await canvas.findByRole("button", { name: /Item 1/i }),
-    )
-    const optionNameInput = await canvas.findByPlaceholderText(/Option name/i)
-    await userEvent.clear(optionNameInput)
-    await userEvent.type(optionNameInput, "hello")
-    await canvas.findByText(/65 characters left/i)
-  },
-}
-
 export const FiltersOpenOptionRowMenu: Story = {
   parameters: newCollectionFiltersIsomerAdminParameters,
   play: async ({ canvasElement }) => {

@@ -11,6 +11,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
 import DraggableTagButton from "./DraggableTagButton"
 import { DuplicateLabelError } from "./DuplicateLabelError"
@@ -22,10 +23,11 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 ) => {
   const { path, removeItems, data, arraySchema } = props
   const { core } = useJsonForms()
-  const duplicateOptionIndices = useMemo(() => {
-    const items = get(core?.data, path) as { label?: string }[] | undefined
-    return indicesWithDuplicateLabels(items)
-  }, [core?.data, path])
+  const items = get(core?.data, path) as { label?: string }[] | undefined
+  const duplicateOptionIndices = useMemo(
+    () => indicesWithDuplicateLabels(items),
+    [items],
+  )
 
   const hasDuplicateOptionNameError = duplicateOptionIndices.size > 0
 
@@ -72,17 +74,8 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                 <Menu isLazy>
                   <MenuButton
                     as={IconButton}
-                    colorScheme="neutral"
                     icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
-                    variant="clear"
-                    h="2.125rem"
-                    w="2.125rem"
-                    minH="2.125rem"
-                    minW="2.125rem"
-                    p="0.25rem"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
+                    {...ROW_ACTIONS_MENU_BUTTON_PROPS}
                     isDisabled={isRemoveItemDisabled}
                     aria-label={`Option ${rowProps.index + 1} actions`}
                     onClick={(e) => e.stopPropagation()}
