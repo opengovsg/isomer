@@ -28,8 +28,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     [items],
   )
 
-  const hasDuplicateFilterNameError = duplicateFilterIndices.size > 0
-
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
     label: string
@@ -40,7 +38,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
 
   return (
     <>
-      {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
+      {duplicateFilterIndices.size > 0 && <DuplicateLabelError noun="filter" />}
       <JsonFormsArrayControlView
         {...props}
         addItemLabel="Add a filter"

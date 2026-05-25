@@ -263,14 +263,15 @@ export function JsonFormsArrayControlView({
       ),
     [uischemas, schema, uischema, path, rootSchema],
   )
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) {
-      return
-    }
-    const originalIndex = result.source.index
-    const newIndex = result.destination.index
-    handleMoveItem(path, originalIndex, newIndex)
-  }
+  const onDragEnd = useCallback(
+    (result: DropResult) => {
+      if (!result.destination) {
+        return
+      }
+      handleMoveItem(path, result.source.index, result.destination.index)
+    },
+    [path, handleMoveItem],
+  )
 
   if (selectedIndex !== undefined) {
     return (
@@ -338,7 +339,7 @@ export function JsonFormsArrayControlView({
                 spacing={0}
                 ref={innerRef}
               >
-                {data === 0 && !emptyState && (
+                {data === 0 && (
                   <Flex
                     alignItems="center"
                     flexDir="column"
@@ -348,26 +349,15 @@ export function JsonFormsArrayControlView({
                     justifyContent="center"
                     w="100%"
                   >
-                    <Text
-                      textStyle="subhead-1"
-                      textColor="base.content.default"
-                      textAlign="center"
-                    >
-                      Items you add will appear here
-                    </Text>
-                  </Flex>
-                )}
-                {data === 0 && emptyState && (
-                  <Flex
-                    alignItems="center"
-                    flexDir="column"
-                    px="1.5rem"
-                    py="3.75rem"
-                    mt="0.25rem"
-                    justifyContent="center"
-                    w="100%"
-                  >
-                    {emptyState}
+                    {emptyState ?? (
+                      <Text
+                        textStyle="subhead-1"
+                        textColor="base.content.default"
+                        textAlign="center"
+                      >
+                        Items you add will appear here
+                      </Text>
+                    )}
                   </Flex>
                 )}
 

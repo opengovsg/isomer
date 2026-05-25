@@ -29,8 +29,6 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     [items],
   )
 
-  const hasDuplicateOptionNameError = duplicateOptionIndices.size > 0
-
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
 
@@ -59,7 +57,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 
   return (
     <>
-      {hasDuplicateOptionNameError && <DuplicateLabelError noun="option" />}
+      {duplicateOptionIndices.size > 0 && <DuplicateLabelError noun="option" />}
       <JsonFormsArrayControlView
         {...props}
         addItemLabel="Add option"
