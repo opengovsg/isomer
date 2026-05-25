@@ -109,6 +109,7 @@ function JsonFormsBoxedGroupControl({
               borderRadius="0.375rem"
               p="1rem"
               w="full"
+              bg="rgba(255, 255, 255, 0.50)"
             >
               <JsonFormsDispatch
                 visible={visible}
