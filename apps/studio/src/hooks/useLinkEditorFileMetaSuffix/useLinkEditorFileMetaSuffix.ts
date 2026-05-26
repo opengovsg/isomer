@@ -1,10 +1,11 @@
 import { useCallback, useRef } from "react"
 import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 import { getLinkHrefType } from "~/features/editing-experience/components/LinkEditor/utils"
+
 import {
   buildFileUploadMetaSuffix,
   stripFileUploadMetaSuffix,
-} from "~/utils/fileUploadMetaSuffix"
+} from "./fileUploadMetaSuffix"
 
 /**
  * Computes saved link text: for file links, re-appends `[type, size]` from
@@ -48,14 +49,11 @@ export function useLinkEditorFileMetaSuffix({
     initialLinkText?.slice(strippedLinkTextForForm.length) || null,
   )
 
-  const onUploadedFile = useCallback(
-    (file: File) => {
-      const suffix = buildFileUploadMetaSuffix(file)
-      if (!suffix) return
-      fileMetaSuffixRef.current = suffix
-    },
-    [],
-  )
+  const onUploadedFile = useCallback((file: File) => {
+    const suffix = buildFileUploadMetaSuffix(file)
+    if (!suffix) return
+    fileMetaSuffixRef.current = suffix
+  }, [])
 
   const buildFinalLinkTextForSave = useCallback(
     (linkText: string, linkHref: string): string => {

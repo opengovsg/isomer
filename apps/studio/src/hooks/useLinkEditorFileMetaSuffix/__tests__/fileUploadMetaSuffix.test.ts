@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 
 import {
   buildFileUploadMetaSuffix,
-  getFileExtensionType,
   stripFileUploadMetaSuffix,
 } from "../fileUploadMetaSuffix"
 
@@ -10,35 +9,18 @@ import {
 const mockFile = (name: string, size: number): File => ({ name, size }) as File
 
 describe("fileUploadMetaSuffix", () => {
-  describe("getFileExtensionType", () => {
-    it("maps allowed extensions to display suffix", () => {
-      // Arrange + Act
-      const pdf = getFileExtensionType("report.PDF")
-      const xlsx = getFileExtensionType("data.xlsx")
-      const xls = getFileExtensionType("old.xls")
-
-      // Assert
-      expect(pdf).toBe("PDF")
-      expect(xlsx).toBe("XLSX")
-      expect(xls).toBe("XLS")
-    })
-
-    it("returns undefined for unknown extensions", () => {
-      // Arrange + Act
-      const bin = getFileExtensionType("file.bin")
-
-      // Assert
-      expect(bin).toBeUndefined()
-    })
-  })
-
   describe("buildFileUploadMetaSuffix", () => {
-    it("includes type and size for a PDF", () => {
-      // Arrange + Act
-      const suffix = buildFileUploadMetaSuffix(mockFile("speech.pdf", 286720))
-
-      // Assert
-      expect(suffix).toBe(" [PDF, 280.00 KB]")
+    it("includes type and size for allowed extensions", () => {
+      // Arrange + Act + Assert
+      expect(buildFileUploadMetaSuffix(mockFile("speech.pdf", 286720))).toBe(
+        " [PDF, 280.00 KB]",
+      )
+      expect(buildFileUploadMetaSuffix(mockFile("data.xlsx", 1024))).toBe(
+        " [XLSX, 1.00 KB]",
+      )
+      expect(buildFileUploadMetaSuffix(mockFile("old.xls", 1024))).toBe(
+        " [XLS, 1.00 KB]",
+      )
     })
 
     it("includes only size when extension is unknown", () => {
@@ -67,6 +49,22 @@ describe("fileUploadMetaSuffix", () => {
 
       // Assert
       expect(stripped).toBe("File")
+    })
+
+    it("removes trailing [type] when size is unavailable", () => {
+      // Arrange + Act
+      const stripped = stripFileUploadMetaSuffix("Download speech [PDF]")
+
+      // Assert
+      expect(stripped).toBe("Download speech")
+    })
+
+    it("removes trailing [size] when type is unknown", () => {
+      // Arrange + Act
+      const stripped = stripFileUploadMetaSuffix("Download data [100.00 B]")
+
+      // Assert
+      expect(stripped).toBe("Download data")
     })
 
     it("does not strip unrelated trailing brackets", () => {
