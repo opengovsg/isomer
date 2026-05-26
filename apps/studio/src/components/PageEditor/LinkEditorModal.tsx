@@ -84,6 +84,7 @@ const LinkEditorModalContent = ({
   const { strippedLinkText, onUploadedFile, buildFinalLinkTextForSave } =
     useLinkEditorFileMetaSuffix({
       initialLinkText: linkText,
+      initialLinkHref: linkHref,
       showLinkText,
     })
 

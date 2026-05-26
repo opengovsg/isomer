@@ -7,18 +7,27 @@ import { stripFileUploadMetaSuffix } from "./utils/stripFileUploadMetaSuffix"
 
 interface UseLinkEditorFileMetaSuffixParams {
   initialLinkText: string | undefined
+  initialLinkHref: string | undefined
   showLinkText: boolean
 }
 
 /** Tracks file-link `[type, size]` suffix state for the link editor modal. */
 export function useLinkEditorFileMetaSuffix({
   initialLinkText,
+  initialLinkHref,
   showLinkText,
 }: UseLinkEditorFileMetaSuffixParams) {
-  const strippedLinkText = stripFileUploadMetaSuffix(initialLinkText ?? "")
+  const isInitialFileLink =
+    showLinkText && getLinkHrefType(initialLinkHref) === LINK_TYPES.File
 
-  const [fileMetaSuffix, setFileMetaSuffix] = useState(
-    () => initialLinkText?.slice(strippedLinkText.length) ?? "",
+  const strippedLinkText = isInitialFileLink
+    ? stripFileUploadMetaSuffix(initialLinkText ?? "")
+    : (initialLinkText ?? "")
+
+  const [fileMetaSuffix, setFileMetaSuffix] = useState(() =>
+    isInitialFileLink
+      ? (initialLinkText?.slice(strippedLinkText.length) ?? "")
+      : "",
   )
 
   const onUploadedFile = useCallback((file: File) => {
