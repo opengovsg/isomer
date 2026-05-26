@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react"
+import { useCallback, useState } from "react"
 import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 import { getLinkHrefType } from "~/features/editing-experience/components/LinkEditor/utils"
 
@@ -15,33 +15,32 @@ export function useLinkEditorFileMetaSuffix({
   initialLinkText,
   showLinkText,
 }: UseLinkEditorFileMetaSuffixParams) {
-  const strippedLinkTextForForm = stripFileUploadMetaSuffix(
-    initialLinkText ?? "",
-  )
-  const fileMetaSuffixRef = useRef(
-    initialLinkText?.slice(strippedLinkTextForForm.length) ?? "",
+  const strippedLinkText = stripFileUploadMetaSuffix(initialLinkText ?? "")
+
+  const [fileMetaSuffix, setFileMetaSuffix] = useState(
+    () => initialLinkText?.slice(strippedLinkText.length) ?? "",
   )
 
   const onUploadedFile = useCallback((file: File) => {
     const suffix = buildFileUploadMetaSuffix(file)
     if (!suffix) return
-    fileMetaSuffixRef.current = suffix
+    setFileMetaSuffix(suffix)
   }, [])
 
   const buildFinalLinkTextForSave = useCallback(
     (linkText: string, linkHref: string): string => {
       const final =
         showLinkText && getLinkHrefType(linkHref) === LINK_TYPES.File
-          ? stripFileUploadMetaSuffix(linkText) + fileMetaSuffixRef.current
+          ? stripFileUploadMetaSuffix(linkText) + fileMetaSuffix
           : linkText
-      fileMetaSuffixRef.current = ""
+      setFileMetaSuffix("")
       return final
     },
-    [showLinkText],
+    [showLinkText, fileMetaSuffix],
   )
 
   return {
-    strippedLinkTextForForm,
+    strippedLinkText,
     onUploadedFile: showLinkText ? onUploadedFile : undefined,
     buildFinalLinkTextForSave,
   }

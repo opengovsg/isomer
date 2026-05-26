@@ -81,7 +81,7 @@ const LinkEditorModalContent = ({
   onSave,
   linkTypes,
 }: LinkEditorModalContentProps) => {
-  const { strippedLinkTextForForm, onUploadedFile, buildFinalLinkTextForSave } =
+  const { strippedLinkText, onUploadedFile, buildFinalLinkTextForSave } =
     useLinkEditorFileMetaSuffix({
       initialLinkText: linkText,
       showLinkText,
@@ -101,7 +101,7 @@ const LinkEditorModalContent = ({
       linkHref: z.string().min(1).optional(),
     }),
     defaultValues: {
-      linkText: strippedLinkTextForForm,
+      linkText: strippedLinkText,
       linkHref,
     },
     reValidateMode: "onChange",
