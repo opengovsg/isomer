@@ -2,10 +2,8 @@ import { useCallback, useRef } from "react"
 import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 import { getLinkHrefType } from "~/features/editing-experience/components/LinkEditor/utils"
 
-import {
-  buildFileUploadMetaSuffix,
-  stripFileUploadMetaSuffix,
-} from "./fileUploadMetaSuffix"
+import { buildFileUploadMetaSuffix } from "./utils/buildFileUploadMetaSuffix"
+import { stripFileUploadMetaSuffix } from "./utils/stripFileUploadMetaSuffix"
 
 interface UseLinkEditorFileMetaSuffixParams {
   initialLinkText: string | undefined
