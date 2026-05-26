@@ -9,21 +9,16 @@ import { compoundStyles } from "../common"
 export const InfoCardContainer = ({
   url,
   site,
-  LinkComponent,
   children,
   isExternalLink,
   variant = INFOCARD_VARIANT.default,
 }: PropsWithChildren<
-  Pick<
-    SingleCardWithImageProps,
-    "variant" | "url" | "site" | "isExternalLink" | "LinkComponent"
-  >
+  Pick<SingleCardWithImageProps, "variant" | "url" | "site" | "isExternalLink">
 >): JSX.Element => {
   return url ? (
     <Link
       href={getReferenceLinkHref(url, site.siteMapArray, site.assetsBaseUrl)}
       className={compoundStyles.cardContainer({ variant })}
-      LinkComponent={LinkComponent}
       isExternal={isExternalLink}
     >
       {children}

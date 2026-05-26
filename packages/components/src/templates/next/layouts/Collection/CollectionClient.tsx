@@ -4,7 +4,7 @@ import type {
   BreadcrumbProps,
   ProcessedCollectionCardProps,
 } from "~/interfaces"
-import type { CollectionPagePageProps, CollectionPageSchemaType } from "~/types"
+import type { CollectionPagePageProps } from "~/types"
 import { useRef } from "react"
 import { tv } from "~/lib/tv"
 
@@ -24,7 +24,6 @@ interface CollectionClientProps {
   shouldShowDate: boolean
   siteAssetsBaseUrl: string | undefined
   breadcrumb: BreadcrumbProps
-  LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }
 
 const createCollectionLayoutStyles = tv({
@@ -53,7 +52,6 @@ export const CollectionClient = ({
   shouldShowDate,
   siteAssetsBaseUrl,
   breadcrumb,
-  LinkComponent,
 }: CollectionClientProps) => {
   const {
     paginatedItems,
@@ -84,7 +82,6 @@ export const CollectionClient = ({
         title={page.title}
         subtitle={page.subtitle}
         breadcrumb={breadcrumb}
-        LinkComponent={LinkComponent}
       >
         <CollectionSearch
           placeholder="Start typing to search"
@@ -124,7 +121,6 @@ export const CollectionClient = ({
               totalCount={totalCount}
               shouldShowDate={shouldShowDate}
               siteAssetsBaseUrl={siteAssetsBaseUrl}
-              LinkComponent={LinkComponent}
             />
           </div>
           {paginatedItems.length > 0 && (

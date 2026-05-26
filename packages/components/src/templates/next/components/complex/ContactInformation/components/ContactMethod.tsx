@@ -13,7 +13,6 @@ import { METHODS_MAPPING } from "./mapping"
 
 type ContactMethodProps = ContactInformationUIProps["methods"][number] & {
   styles: ReturnType<typeof commonContactMethodStyles>
-  LinkComponent: ContactInformationUIProps["LinkComponent"]
 }
 
 export const ContactMethod = ({
@@ -22,7 +21,6 @@ export const ContactMethod = ({
   label,
   values,
   caption,
-  LinkComponent,
 }: ContactMethodProps) => {
   const methodMapping = method ? METHODS_MAPPING[method] : undefined
   const Icon = methodMapping?.Icon ?? BiEnvelope
@@ -48,7 +46,6 @@ export const ContactMethod = ({
                   href={value}
                   isExternal={isExternalLink}
                   showExternalIcon={isExternalLink}
-                  LinkComponent={LinkComponent}
                   className={styles.value({
                     isLink: true,
                     className: focusVisibleHighlight(),
@@ -63,7 +60,6 @@ export const ContactMethod = ({
                 <Link
                   key={value}
                   href={`mailto:${value}`}
-                  LinkComponent={LinkComponent}
                   className={styles.value({
                     isLink: true,
                     className: focusVisibleHighlight(),
@@ -78,7 +74,6 @@ export const ContactMethod = ({
                 <Link
                   key={value}
                   href={`tel:${sanitizePhoneNumber(value)}`}
-                  LinkComponent={LinkComponent}
                   className={styles.value({
                     isLink: true,
                     className: focusVisibleHighlight(),

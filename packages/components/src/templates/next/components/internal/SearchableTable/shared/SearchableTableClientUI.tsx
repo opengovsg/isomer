@@ -61,7 +61,6 @@ interface SearchableTableClientUIProps extends Omit<
 export const SearchableTableClientUI = ({
   title,
   headers,
-  LinkComponent,
   isLoading = false,
   isError = false,
   search: { input: searchInput, deferred: deferredSearch, setSearch },
@@ -114,10 +113,7 @@ export const SearchableTableClientUI = ({
                     key={index}
                     className={compoundStyles.tableCell({ isHeader: true })}
                   >
-                    <BaseParagraph
-                      content={String(header)}
-                      LinkComponent={LinkComponent}
-                    />
+                    <BaseParagraph content={String(header)} />
                   </th>
                 ))}
               </tr>
@@ -134,10 +130,7 @@ export const SearchableTableClientUI = ({
                       >
                         {/* NOTE: Reference links are NOT supported within
                             SearchableTable cell contents */}
-                        <BaseParagraph
-                          content={String(cell)}
-                          LinkComponent={LinkComponent}
-                        />
+                        <BaseParagraph content={String(cell)} />
                       </td>
                     ))}
                   </tr>

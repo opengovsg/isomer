@@ -1,5 +1,5 @@
 import type { Static, TSchema } from "@sinclair/typebox"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import {
   orderedListSchemaBuilder,
@@ -61,6 +61,5 @@ export const ListItemSchema = Type.Unsafe<ListItem>(
 
 export type ListItemProps = Static<typeof ListItemSchema> & {
   level?: number
-  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
