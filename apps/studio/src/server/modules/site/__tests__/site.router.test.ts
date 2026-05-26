@@ -467,6 +467,29 @@ describe("site.router", async () => {
         }),
       )
     })
+    it.each(["", " ", "\t", "\n", " \t\n "])(
+      "should reject empty or whitespace-only siteName",
+      async (siteName) => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        // Act
+        const result = caller.updateSiteConfig({
+          siteName,
+          logoUrl: MOCK_LOGO_URL,
+          url: "https://www.isomer.gov.sg",
+          theme: "isomer-next",
+          siteId: site.id,
+        })
+
+        // Assert
+        await expect(result).rejects.toThrowError()
+      },
+    )
     it("should update the site config if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
