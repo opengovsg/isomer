@@ -52,11 +52,28 @@ function isFileUploadMetaSuffix(content: string): boolean {
  * from link text so re-uploading a file does not stack duplicates.
  */
 export function stripFileUploadMetaSuffix(text: string): string {
-  const bracketStart = text.lastIndexOf(" [")
-  if (bracketStart === -1 || !text.endsWith("]")) return text
+  // Opening delimiter of the upload meta suffix from `buildFileUploadMetaSuffix`.
+  const META_SUFFIX_OPEN = " ["
 
-  const content = text.slice(bracketStart + 2, -1)
-  if (!isFileUploadMetaSuffix(content)) return text
+  // Closing delimiter of the upload meta suffix from `buildFileUploadMetaSuffix`.
+  const META_SUFFIX_CLOSE = "]"
 
-  return text.slice(0, bracketStart)
+  // Find the opening bracket index
+  // If not found, return the original text
+  const openBracketIndex = text.lastIndexOf(META_SUFFIX_OPEN)
+  if (openBracketIndex === -1) return text
+
+  // If the closing bracket is not found, return the original text
+  if (!text.endsWith(META_SUFFIX_CLOSE)) return text
+
+  // Extract the bracket content
+  const contentStart = openBracketIndex + META_SUFFIX_OPEN.length
+  const contentEnd = text.length - META_SUFFIX_CLOSE.length
+  const bracketContent = text.slice(contentStart, contentEnd)
+
+  // If the bracket content is not a valid file upload meta suffix, return the original text
+  if (!isFileUploadMetaSuffix(bracketContent)) return text
+
+  // Return the text up to the opening bracket
+  return text.slice(0, openBracketIndex)
 }
