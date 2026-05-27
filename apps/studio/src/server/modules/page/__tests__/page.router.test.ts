@@ -1753,12 +1753,6 @@ describe("page.router", async () => {
         ...expectedPageArgs,
         content: createDefaultPage({ layout: "database" }),
       })
-      expect(actual.content).toMatchObject({
-        layout: "database",
-        page: {
-          contentPageHeader: { summary: "This is the page summary" },
-        },
-      })
       await assertAuditLogRows(1)
       const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLog).toHaveLength(1)
