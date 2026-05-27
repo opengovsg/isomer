@@ -86,7 +86,7 @@ export const EditCollectionLinkPreview = ({
     <ViewportContainer siteId={siteId}>
       <PreviewWithCustomSitemap
         content={[]}
-        page={{ title: parentTitle }}
+        page={{ subtitle: parentTitle }}
         layout={"collection"}
         siteId={siteId}
         siteMap={siteMap}

@@ -15,7 +15,12 @@ export const createDefaultPage = ({
     case "content": {
       const contentDefaultPage = {
         layout: ISOMER_USABLE_PAGE_LAYOUTS.Content,
-        page: { contentPageHeader: { summary: "This is the page summary" } },
+        page: {
+          contentPageHeader: {
+            summary: "This is the page summary",
+            showThumbnail: false,
+          },
+        },
         content: [],
         version: "0.1.0",
       } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
@@ -41,10 +46,13 @@ export const createDefaultPage = ({
       const databaseDefaultPage = {
         layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
         page: {
-          title: "New database layout",
-          description:
-            "This is a layout where you can link your dataset from Data.gov.sg. Users can search through the table.",
+          contentPageHeader: {
+            summary:
+              "This is a layout where you can link your dataset from Data.gov.sg. Users can search through the table.",
+            showThumbnail: false,
+          },
           database: {
+            title: "New database layout",
             dataSource: {
               type: "dgs", // we only support DGS creation on studio for now
               // Hardcoded: One of the most popular datasets on Data.gov.sg, so unlikely to be removed
@@ -75,9 +83,7 @@ export const createFolderIndexPage = (title: string) => {
     // because this are used for generation of breadcrumbs
     // and the page title
     page: {
-      title,
-      lastModified: new Date().toISOString(),
-      contentPageHeader: { summary: `Pages in ${title}` },
+      contentPageHeader: { summary: `Pages in ${title}`, showThumbnail: false },
     },
     content: [DEFAULT_CHILDREN_PAGES_BLOCK],
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>

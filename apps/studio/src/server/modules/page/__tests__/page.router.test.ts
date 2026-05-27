@@ -124,6 +124,7 @@ describe("page.router", async () => {
           content: jsonb({
             layout: "article",
             page: {
+              category: "Feature Articles",
               articlePageHeader: { summary: "Article summary text" },
               image: { src: "/images/article-thumb.jpg", alt: "Article image" },
             },
@@ -175,7 +176,10 @@ describe("page.router", async () => {
           content: jsonb({
             layout: "content",
             page: {
-              contentPageHeader: { summary: "Content page summary" },
+              contentPageHeader: {
+                summary: "Content page summary",
+                showThumbnail: false,
+              },
               image: { src: "/images/content-thumb.png", alt: "Content image" },
             },
             content: [],
@@ -226,7 +230,10 @@ describe("page.router", async () => {
           content: jsonb({
             layout: "index",
             page: {
-              contentPageHeader: { summary: "Index page summary" },
+              contentPageHeader: {
+                summary: "Index page summary",
+                showThumbnail: false,
+              },
               image: { src: "/images/index-thumb.png", alt: "Index image" },
             },
             content: [],
@@ -277,7 +284,17 @@ describe("page.router", async () => {
           content: jsonb({
             layout: "database",
             page: {
-              contentPageHeader: { summary: "Database page description" },
+              contentPageHeader: {
+                summary: "Database page description",
+                showThumbnail: false,
+              },
+              database: {
+                title: "Database title",
+                dataSource: {
+                  type: "dgs",
+                  resourceId: "test-resource-id",
+                },
+              },
             },
             content: [],
             version: "0.1.0",
@@ -373,6 +390,8 @@ describe("page.router", async () => {
           content: jsonb({
             layout: "file",
             page: {
+              ref: "/files/test.pdf",
+              category: "Documents",
               description: "File description text",
               image: { src: "/images/file-thumb.png", alt: "File image" },
             },
@@ -424,6 +443,8 @@ describe("page.router", async () => {
           content: jsonb({
             layout: "link",
             page: {
+              ref: "https://example.com",
+              category: "Links",
               description: "Link description text",
               image: { src: "/images/link-thumb.png", alt: "Link image" },
             },
@@ -520,6 +541,7 @@ describe("page.router", async () => {
           content: jsonb({
             layout: "article",
             page: {
+              category: "Feature Articles",
               articlePageHeader: { summary: "Article without image" },
             },
             content: [],
@@ -624,7 +646,10 @@ describe("page.router", async () => {
           content: jsonb({
             layout: "index",
             page: {
-              contentPageHeader: { summary: "Folder index summary" },
+              contentPageHeader: {
+                summary: "Folder index summary",
+                showThumbnail: false,
+              },
               image: { src: "/images/folder-index.png", alt: "Folder" },
             },
             content: [],
@@ -1371,7 +1396,12 @@ describe("page.router", async () => {
         content: JSON.stringify({
           content: NEW_PAGE_BLOCKS,
           layout: "content",
-          page: pick(page, ["title", "permalink"]),
+          page: {
+            contentPageHeader: {
+              summary: "This is the page summary",
+              showThumbnail: false,
+            },
+          },
           version: "0.1.0",
         } as UpdatePageOutput["content"]),
       }

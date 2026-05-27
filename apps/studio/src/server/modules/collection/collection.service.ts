@@ -31,7 +31,7 @@ export const createCollectionLinkJson = ({}: {
     layout: "link",
     page: {
       ref: "",
-      summary: "",
+      description: "",
       category: "",
       date: format(new Date(), "dd/MM/yyyy"),
     },

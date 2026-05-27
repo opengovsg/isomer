@@ -200,7 +200,10 @@ export const setupBlob = async (blobId?: string) => {
     .values({
       content: jsonb({
         page: {
-          contentPageHeader: { summary: "This is the page summary" },
+          contentPageHeader: {
+            summary: "This is the page summary",
+            showThumbnail: false,
+          },
         },
         layout: "content",
         content: [

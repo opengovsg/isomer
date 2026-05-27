@@ -1,4 +1,7 @@
-import type { getLayoutPageSchema } from "@opengovsg/isomer-components"
+import type {
+  CollectionPagePageProps,
+  getLayoutPageSchema,
+} from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
@@ -85,10 +88,19 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     siteId,
   ])
 
+  // Type predicate wrapper: validateFn validates data against the collection page schema
+  const isCollectionPageProps = (
+    data: unknown,
+  ): data is CollectionPagePageProps => validateFn(data)
+
   const handleChange = (data: unknown) => {
-    if (validateFn(data)) {
+    if (
+      isCollectionPageProps(data) &&
+      previewPageState.layout === "collection"
+    ) {
       setPreviewPageState({
         ...previewPageState,
+        layout: "collection",
         page: data,
       })
     }
