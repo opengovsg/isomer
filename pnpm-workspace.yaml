@@ -160,6 +160,11 @@ catalog:
   wretch: ^3.0.7
 
 catalogs:
+  react19:
+    react: ^19.0.0
+    react-dom: ^19.0.0
+    "@types/react": ^19.0.0
+    "@types/react-dom": ^19.0.0
   atlaskitPragmaticDnd:
     "@atlaskit/pragmatic-drag-and-drop": ^1.7.7
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.1.0

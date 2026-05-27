@@ -487,6 +487,19 @@ catalogs:
     '@react-stately/toggle':
       specifier: ^3.10.0
       version: 3.10.0
+  react19:
+    '@types/react':
+      specifier: ^19.0.0
+      version: 19.2.15
+    '@types/react-dom':
+      specifier: ^19.0.0
+      version: 19.2.3
+    react:
+      specifier: ^19.0.0
+      version: 19.2.6
+    react-dom:
+      specifier: ^19.0.0
+      version: 19.2.6
   storybook:
     '@storybook/addon-a11y':
       specifier: ^10.4.0
@@ -1078,7 +1091,7 @@ importers:
         version: 11.0.0
       eslint-plugin-storybook:
         specifier: catalog:storybook
-        version: 10.4.0(eslint@9.39.4(jiti@1.21.7))(storybook@10.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)
+        version: 10.4.0(eslint@9.39.4(jiti@2.6.1))(storybook@10.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)
       happy-dom:
         specifier: 'catalog:'
         version: 20.9.0
@@ -1105,7 +1118,7 @@ importers:
         version: 8.5.14
       postcss-load-config:
         specifier: 'catalog:'
-        version: 6.0.1(jiti@1.21.7)(postcss@8.5.14)(tsx@4.21.0)(yaml@2.8.3)
+        version: 6.0.1(jiti@2.6.1)(postcss@8.5.14)(tsx@4.21.0)(yaml@2.8.3)
       start-server-and-test:
         specifier: 'catalog:'
         version: 3.0.4
@@ -1280,7 +1293,7 @@ importers:
         version: 16.10.0
       eslint-plugin-storybook:
         specifier: catalog:storybook
-        version: 10.4.0(eslint@9.39.4(jiti@2.6.1))(storybook@10.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)
+        version: 10.4.0(eslint@9.39.4(jiti@1.21.7))(storybook@10.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)
       mockdate:
         specifier: 'catalog:'
         version: 3.0.5
@@ -1779,10 +1792,10 @@ importers:
         specifier: 'catalog:'
         version: 11.3.0(postcss@8.5.14)
       react:
-        specifier: ^19.0.0
+        specifier: catalog:react19
         version: 19.2.6
       react-dom:
-        specifier: ^19.0.0
+        specifier: catalog:react19
         version: 19.2.6(react@19.2.6)
       tailwindcss:
         specifier: 'catalog:'
@@ -1804,11 +1817,11 @@ importers:
         specifier: 'catalog:'
         version: 25.9.0
       '@types/react':
-        specifier: catalog:react
-        version: 18.3.28
+        specifier: catalog:react19
+        version: 19.2.15
       '@types/react-dom':
-        specifier: catalog:react
-        version: 18.3.7(@types/react@18.3.28)
+        specifier: catalog:react19
+        version: 19.2.3(@types/react@19.2.15)
       '@typescript/native-preview':
         specifier: 'catalog:'
         version: 7.0.0-dev.20260513.1
@@ -6156,6 +6169,11 @@ packages:
     peerDependencies:
       '@types/react': ^18.0.0
 
+  '@types/react-dom@19.2.3':
+    resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
+    peerDependencies:
+      '@types/react': ^19.2.0
+
   '@types/react-transition-group@4.4.12':
     resolution: {integrity: sha512-8TV6R3h2j7a91c+1DXdJi3Syo69zzIZbz7Lg5tORM5LEJG7X/E6a1V3drRyBRZq7/utz7A+c4OgYLiLcYGHG6w==}
     peerDependencies:
@@ -6163,6 +6181,9 @@ packages:
 
   '@types/react@18.3.28':
     resolution: {integrity: sha512-z9VXpC7MWrhfWipitjNdgCauoMLRdIILQsAEV+ZesIzBq/oUlxk0m3ApZuMFCXdnS4U7KrI+l3WRUEGQ8K1QKw==}
+
+  '@types/react@19.2.15':
+    resolution: {integrity: sha512-eRwcGNHve+E8qtEQSSRl6urh+rFop4v8gm6O8rGv25CodbvFdLjA1vVQ1KkiFE0w0UPOnb8tDiFKL5lp0rtY5Q==}
 
   '@types/request@2.48.13':
     resolution: {integrity: sha512-FGJ6udDNUCjd19pp0Q3iTiDkwhYup7J8hpMW9c4k53NrccQFFWKRho6hvtPPEhnXWKvukfwAlB6DbDz4yhH5Gg==}
@@ -16582,6 +16603,10 @@ snapshots:
     dependencies:
       '@types/react': 18.3.28
 
+  '@types/react-dom@19.2.3(@types/react@19.2.15)':
+    dependencies:
+      '@types/react': 19.2.15
+
   '@types/react-transition-group@4.4.12(@types/react@18.3.28)':
     dependencies:
       '@types/react': 18.3.28
@@ -16589,6 +16614,10 @@ snapshots:
   '@types/react@18.3.28':
     dependencies:
       '@types/prop-types': 15.7.15
+      csstype: 3.2.3
+
+  '@types/react@19.2.15':
+    dependencies:
       csstype: 3.2.3
 
   '@types/request@2.48.13':
@@ -21005,6 +21034,15 @@ snapshots:
       lilconfig: 3.1.3
     optionalDependencies:
       jiti: 1.21.7
+      postcss: 8.5.14
+      tsx: 4.21.0
+      yaml: 2.8.3
+
+  postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.14)(tsx@4.21.0)(yaml@2.8.3):
+    dependencies:
+      lilconfig: 3.1.3
+    optionalDependencies:
+      jiti: 2.6.1
       postcss: 8.5.14
       tsx: 4.21.0
       yaml: 2.8.3

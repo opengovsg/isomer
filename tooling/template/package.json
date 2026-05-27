@@ -24,8 +24,8 @@
     "jsdom": "catalog:",
     "postcss": "catalog:",
     "postcss-preset-env": "catalog:",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "waku": "catalog:"
@@ -34,8 +34,8 @@
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@types/react": "catalog:react",
-    "@types/react-dom": "catalog:react",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
     "@typescript/native-preview": "catalog:",
     "tsx": "catalog:"
   }
