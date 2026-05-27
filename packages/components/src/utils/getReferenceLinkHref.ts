@@ -1,22 +1,12 @@
 import type { IsomerSitemap } from "~/types"
-import DOMPurify from "isomorphic-dompurify"
 
-// This function returns a sanitized version of the provided URL string
-const getSanitizedLinkHref = (url?: string) => {
-  if (url === undefined) {
+import { sanitizeLinkHref } from "./sanitize"
+
+const getSanitizedLinkHref = (url?: string): string | undefined => {
+  if (!url) {
     return undefined
   }
-
-  const elem = DOMPurify.sanitize(`<a href="${url}"></a>`, {
-    RETURN_DOM_FRAGMENT: true,
-  })
-  const sanitizedUrl = elem.firstElementChild?.getAttribute("href")
-
-  if (sanitizedUrl === null) {
-    return undefined
-  }
-
-  return sanitizedUrl
+  return sanitizeLinkHref(url)
 }
 
 // Convert the given reference link to the actual permalink

@@ -69,6 +69,7 @@
     "@react-stately/toggle": "catalog:react-aria",
     "@sinclair/typebox": "catalog:",
     "date-fns": "catalog:",
+    "dompurify": "catalog:",
     "interweave": "catalog:",
     "interweave-ssr": "catalog:",
     "isomorphic-dompurify": "catalog:",

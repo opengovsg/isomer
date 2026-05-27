@@ -35,6 +35,8 @@ export const Iframe = ({
   shouldLazyLoad = true,
 }: IframeProps) => {
   const sanitizedIframe = getSanitizedIframeWithTitle(content, title)
+  if (!sanitizedIframe) return null
+
   sanitizedIframe.setAttribute("loading", shouldLazyLoad ? "lazy" : "eager")
 
   const iframeUrl = sanitizedIframe.getAttribute("src")

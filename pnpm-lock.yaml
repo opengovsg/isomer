@@ -206,6 +206,9 @@ catalogs:
     dd-trace:
       specifier: ^5.102.0
       version: 5.103.0
+    dompurify:
+      specifier: ^3.4.3
+      version: 3.4.3
     dotenv:
       specifier: ^16.4.5
       version: 16.6.1
@@ -1191,6 +1194,9 @@ importers:
       date-fns:
         specifier: 'catalog:'
         version: 4.1.0
+      dompurify:
+        specifier: 'catalog:'
+        version: 3.4.3
       interweave:
         specifier: 'catalog:'
         version: 13.1.1(react@18.3.1)

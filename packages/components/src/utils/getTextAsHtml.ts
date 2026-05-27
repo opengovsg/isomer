@@ -1,10 +1,10 @@
 import type { HardBreakProps } from "~/interfaces"
 import type { Marks, TextProps } from "~/interfaces/native/Text"
 import type { IsomerSiteProps } from "~/types"
-import DOMPurify from "isomorphic-dompurify"
 import { isEqual } from "lodash-es"
 
 import { getReferenceLinkHref } from "./getReferenceLinkHref"
+import { stripAllHtmlTags } from "./sanitize"
 
 type MarkTypes = Marks["type"]
 
@@ -24,11 +24,6 @@ interface GetTextAsHtmlArgs {
   content?: (HardBreakProps | TextProps)[]
   shouldHideEmptyHardBreak?: boolean
   shouldStripContentHtmlTags?: boolean
-}
-
-// We want to prevent user-injected HTML tags from breaking the formatting
-function stripHtmlTags(input: string): string {
-  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] })
 }
 
 // Converts the text node with marks into the appropriate HTML
@@ -76,7 +71,7 @@ export const getTextAsHtml = ({
     // If there are no marks, just push the text
     if (!node.marks) {
       output.push(
-        shouldStripContentHtmlTags ? stripHtmlTags(node.text) : node.text,
+        shouldStripContentHtmlTags ? stripAllHtmlTags(node.text) : node.text,
       )
       return
     }
@@ -113,7 +108,7 @@ export const getTextAsHtml = ({
 
     // Push the text
     output.push(
-      shouldStripContentHtmlTags ? stripHtmlTags(node.text) : node.text,
+      shouldStripContentHtmlTags ? stripAllHtmlTags(node.text) : node.text,
     )
 
     // Close off all marks except for links in reverse order
