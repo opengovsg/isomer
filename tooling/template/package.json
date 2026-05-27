@@ -24,8 +24,8 @@
     "jsdom": "catalog:",
     "postcss": "catalog:",
     "postcss-preset-env": "catalog:",
-    "react": "catalog:react",
-    "react-dom": "catalog:react",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "waku": "catalog:"
