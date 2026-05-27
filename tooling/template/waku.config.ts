@@ -7,6 +7,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   distDir: "out",
   vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          // Truncate chunk names to avoid "File name too long" (OS error 36)
+          // on pages with very long URL slugs (e.g. POFMA correction notices).
+          // 100 chars leaves plenty of room for the "assets/" prefix, "-[hash]",
+          // and ".js" suffix while staying well under the 255-char FS limit.
+          chunkFileNames: (chunkInfo) => {
+            const name = chunkInfo.name.slice(0, 100)
+            return `assets/${name}-[hash].js`
+          },
+        },
+      },
+    },
     resolve: {
       alias: {
         "@": __dirname,
