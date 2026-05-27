@@ -44,14 +44,14 @@ calculate_duration $start_time
 cp sitemap.json public/
 echo "Copied sitemap to public folder"
 
-# Cleanup
-rm -rf scripts
+# Cleanup (only remove the copied JS file, not the TS scripts)
+rm -f scripts/generate-sitemap.js
 
 # Bridging the difference betwen the two types of homepage JSONs
 mv schema/index.json schema/_index.json
 
 # Create not-found.json by copying _index.json if it doesn't exist
-# Refer to tooling/template/app/not-found.tsx for more context
+# Refer to tooling/template/src/pages/404.tsx for more context
 if [ ! -f "schema/not-found.json" ]; then
   echo "Creating not-found.json..."
   cp schema/_index.json schema/not-found.json
@@ -63,6 +63,7 @@ start_time=$(date +%s)
 corepack enable
 corepack install -g pnpm@10.33.0
 pnpm add ./opengovsg-isomer-components-0.0.13.tgz
+pnpm run generate:robots
 pnpm run build:template
 calculate_duration $start_time
 

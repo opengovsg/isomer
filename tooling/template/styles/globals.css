@@ -1,3 +1,10 @@
+/* Set --font-inter so createNextPreset's font-family token resolves correctly.
+   The @font-face rules are injected by @fontsource-variable/inter (imported
+   in _layout.tsx) and expose the "Inter Variable" family name. */
+:root {
+  --font-inter: "Inter Variable", sans-serif;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

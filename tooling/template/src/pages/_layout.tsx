@@ -1,24 +1,13 @@
-import type { Metadata } from "next"
-import config from "@/data/config.json"
+import "@fontsource-variable/inter"
 import "@/styles/globals.css"
+import config from "@/data/config.json"
 import sitemap from "@/sitemap.json"
 import {
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
 } from "@opengovsg/isomer-components"
-import { Inter } from "next/font/google"
-import Script from "next/script"
 
 import { IsomerProviders } from "./providers"
-
-const inter = Inter({
-  // while we support other languages, we should only preload the latin subset
-  // as it is the most common subset and the most likely to be used
-  // we accept that non-latin languages will not be self hosted and preloaded
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-})
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -27,23 +16,28 @@ const jsonLd = {
   url: config.site.url || "https://www.isomer.gov.sg",
 }
 
-export const dynamic = "force-static"
+// Plain <script> wrapper that accepts the same props as next/script, dropping
+// the `strategy` prop which has no HTML equivalent. In a static Waku build all
+// scripts are inlined at render time so the loading-strategy distinction is
+// not needed; the output is identical regardless of strategy.
+const ScriptComponent = ({
+  strategy: _strategy,
+  ...props
+}: React.ScriptHTMLAttributes<HTMLScriptElement> & {
+  strategy?: string
+}) => <script {...props} />
 
-export const metadata: Metadata = {
-  title: {
-    template: "%s | " + config.site.siteName,
-    default: config.site.siteName,
-  },
-}
+export const getConfig = () => ({
+  render: "static" as const,
+})
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <html
-      lang="en"
-      data-theme={config.site.theme || "isomer-next"}
-      className={inter.variable}
-    >
+    <html lang="en" data-theme={config.site.theme || "isomer-next"}>
       <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{config.site.siteName}</title>
         <RenderApplicationHeadScripts
           site={{
             ...config.site,
@@ -57,16 +51,14 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
           site={{
             ...config.site,
             environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-            // TODO: fixup all the typing errors
             // @ts-expect-error to fix when types are proper
             siteMap: sitemap,
             assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
             isomerMsClarityId:
               process.env.NEXT_PUBLIC_ISOMER_MICROSOFT_CLARITY_ID,
           }}
-          ScriptComponent={Script}
+          ScriptComponent={ScriptComponent}
         />
-
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

@@ -17,6 +17,8 @@ minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   # If there is a CVE, exclude it here so we can update it immediately without waiting for the minimum release age to pass.
   - "@opengovsg/*"
+  # Waku is a pinned research dependency for the Waku migration PoC.
+  - waku
 
 publicHoistPattern:
   - "*eslint-plugin*"
@@ -101,7 +103,9 @@ catalog:
   globals: ^11.12.0
   "@1password/sdk": ^0.4.0
   "@datadog/browser-rum": ^5.29.1
+  "@fontsource-variable/inter": ^5.2.8
   "@fontsource/ibm-plex-mono": ^5.1.1
+  waku: 1.0.0-beta.1
   "@formkit/auto-animate": ^0.8.2
   "@govtechsg/sgds-react": ^2.7.6
   "@headlessui/react": ^2.2.10

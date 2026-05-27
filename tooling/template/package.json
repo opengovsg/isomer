@@ -3,28 +3,31 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && pnpm run build",
-    "build:template": "next build --webpack",
-    "clean": "git clean -xdf .next .turbo node_modules out",
-    "dev": "PORT=3001 next dev --webpack",
+    "build:local": "rm -rf dist && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && pnpm run build:template",
+    "build:template": "waku build",
+    "clean": "git clean -xdf out .turbo node_modules",
+    "dev": "waku dev",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
+    "generate:robots": "tsx scripts/generate-robots.ts",
+    "generate:sitemap": "tsx scripts/generate-sitemap.ts",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
-    "start": "next start",
+    "start": "waku start",
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "catalog:",
     "@opengovsg/isomer-components": "workspace:*",
     "isomorphic-dompurify": "catalog:",
     "jsdom": "catalog:",
-    "next": "catalog:",
     "postcss": "catalog:",
     "postcss-preset-env": "catalog:",
     "react": "catalog:react",
     "react-dom": "catalog:react",
     "tailwindcss": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "waku": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
@@ -32,6 +35,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
-    "@typescript/native-preview": "catalog:"
+    "@typescript/native-preview": "catalog:",
+    "tsx": "catalog:"
   }
 }

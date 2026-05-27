@@ -8,12 +8,13 @@ import siteConfig from "./data/config.json"
 /** @type {import('tailwindcss').Config} */
 const config = {
   content: [
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
     // dist + src only — avoid scanning packages/components/node_modules via a root ** glob
     "./node_modules/@opengovsg/isomer-components/dist/**/*.{js,mjs,cjs}",
     "./node_modules/@opengovsg/isomer-components/src/**/*.{js,ts,jsx,tsx}",
   ],
-  // Use createNextPreset with includeFonts: false since we load Inter via next/font/google in layout.tsx
+  // Use createNextPreset with includeFonts: false since we load Inter via
+  // @fontsource-variable/inter and set --font-inter in globals.css.
   presets: [createNextPreset({ includeFonts: false })],
   plugins: [
     isomerSiteTheme({

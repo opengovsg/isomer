@@ -6,15 +6,9 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "plugins": [{ "name": "next" }],
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
     "module": "esnext"
   },
-  "exclude": ["node_modules", ".next", "out", "dist"],
-  "include": [
-    ".",
-    ".next/types/**/*.ts",
-    ".storybook/**/*.ts",
-    ".storybook/**/*.tsx"
-  ]
+  "exclude": ["node_modules", "dist"],
+  "include": ["."]
 }

@@ -146,7 +146,7 @@ mv redirects.json ../../../template/
 REDIRECTS_JSON="$(realpath ../../../template/redirects.json)"
 cd ../../../template
 # Create not-found.json by copying _index.json if it doesn't exist
-# Refer to tooling/template/app/not-found.tsx for more context
+# Refer to tooling/template/src/pages/404.tsx for more context
 if [ ! -f "schema/not-found.json" ]; then
   echo "Creating not-found.json..."
   cp schema/_index.json schema/not-found.json
@@ -156,6 +156,8 @@ echo $(pwd)
 # Build
 echo "Building..."
 start_time=$(date +%s)
+pnpm run generate:sitemap
+pnpm run generate:robots
 pnpm run build:template
 calculate_duration $start_time
 
@@ -186,12 +188,15 @@ S3_SYNC_CONCURRENCY=$((S3_SYNC_CONCURRENCY > 100 ? 100 : S3_SYNC_CONCURRENCY)) #
 echo "S3 sync concurrency: $S3_SYNC_CONCURRENCY"
 aws configure set default.s3.max_concurrent_requests $S3_SYNC_CONCURRENCY
 
-# Set all files to have 10 minutes of cache, except for those in the _next folder
-aws s3 sync --only-show-errors . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress --cache-control "max-age=600" --exclude "_next/*"
+# Set all files to have 10 minutes of cache, except for those in the public/assets folder
+# Waku (via Vite) outputs content-hashed JS/CSS chunks to public/assets/ within the distDir.
+# The client build goes to distDir/public and Vite's default assetsDir is 'assets',
+# so hashed chunks land at out/public/assets/ (i.e. public/assets/ relative to this out/ CWD).
+aws s3 sync --only-show-errors . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest --delete --no-progress --cache-control "max-age=600" --exclude "public/assets/*"
 
-# Set all files in the _next folder to be cached indefinitely (1 year) on users' browsers
-# Next.js uses unique content hashes in filenames, allowing updated content to have different filenames and invalidate the cache on new builds.
-aws s3 sync --only-show-errors _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=31536000, public"
+# Set all files in the public/assets folder to be cached indefinitely (1 year) on users' browsers
+# Waku/Vite uses unique content hashes in filenames, allowing updated content to have different filenames and invalidate the cache on new builds.
+aws s3 sync --only-show-errors public/assets s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/public/assets --delete --no-progress --cache-control "max-age=31536000, public"
 
 # Upload redirect objects AFTER the --delete sync so they are not swept away.
 # Each redirect becomes an empty index.html with x-amz-meta-redirect-destination metadata
