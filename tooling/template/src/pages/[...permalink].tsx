@@ -16,6 +16,13 @@ import {
 
 const INDEX_PAGE_PERMALINK = "_index"
 
+// Vite statically analyzes this glob at build time, bundling every schema file.
+// This avoids dynamic import() with multi-level variable paths, which Rolldown
+// (Waku's SSG bundler) rejects with "variables only represent file names one level deep".
+const schemaModules = import.meta.glob<{ default: IsomerPageSchemaType }>(
+  "/schema/**/*.json",
+)
+
 const timeNow = new Date()
 const lastUpdated =
   timeNow.getDate().toString().padStart(2, "0") +
@@ -41,26 +48,24 @@ const buildSiteProps = () =>
 export const getSchema = async (permalink: string[]) => {
   const joinedPermalink = permalink.join("/")
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const schema = (await import(`@/schema/${joinedPermalink}.json`)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    .then((module) => module.default)
-    // NOTE: If the initial import is missing this may be an index page
-    // with `_index` appended to the original permalink.
-    .catch(async () => {
-      if (joinedPermalink === "") {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return import(`@/schema/${INDEX_PAGE_PERMALINK}.json`).then(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-          (module) => module.default,
-        )
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return import(
-        `@/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-      ).then((module) => module.default)
-    })) as IsomerPageSchemaType
+  const loadSchema = async (path: string): Promise<IsomerPageSchemaType> => {
+    const importFn = schemaModules[path]
+    if (!importFn) throw new Error(`Schema not found: ${path}`)
+    return (await importFn()).default
+  }
+
+  // If the direct path doesn't exist in the glob map, fall back to the _index
+  // page for the same path (directory index pages).
+  let schemaPath: string
+  if (schemaModules[`/schema/${joinedPermalink}.json`]) {
+    schemaPath = `/schema/${joinedPermalink}.json`
+  } else if (joinedPermalink === "") {
+    schemaPath = `/schema/${INDEX_PAGE_PERMALINK}.json`
+  } else {
+    schemaPath = `/schema/${joinedPermalink}/${INDEX_PAGE_PERMALINK}.json`
+  }
+
+  const schema = await loadSchema(schemaPath)
 
   const lastModified =
     getSitemapXml(
