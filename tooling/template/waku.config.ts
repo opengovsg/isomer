@@ -10,6 +10,9 @@ export default defineConfig({
     resolve: {
       alias: {
         "@": __dirname,
+        // react-dom@18 lacks `./server.edge` (React 19+); map to server.browser
+        // which exports renderToReadableStream used by Waku's RSC SSR build.
+        "react-dom/server.edge": "react-dom/server.browser",
       },
     },
     // Expose NEXT_PUBLIC_* vars so existing env contracts work unchanged.
