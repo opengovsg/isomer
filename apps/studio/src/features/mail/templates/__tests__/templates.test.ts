@@ -408,7 +408,7 @@ describe("email template HTML escaping", () => {
     const templateData = {
       recipientEmail: "recipient@example.com",
       siteNames: [maliciousPayload],
-      inHowManyDays: 7,
+      inHowManyDays: 7 as const,
     }
 
     // Act

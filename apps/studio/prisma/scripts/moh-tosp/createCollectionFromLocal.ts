@@ -1,7 +1,7 @@
-import { ResourceState, ResourceType } from "@prisma/client"
 import fs from "fs/promises"
 import path from "path"
 import { db, jsonb } from "~/server/modules/database"
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { FileLogger } from "../FileLogger"
 
