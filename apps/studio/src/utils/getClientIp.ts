@@ -13,6 +13,8 @@ const getFirstIp = (header: string | string[] | null | undefined) =>
 
 const getLastIp = (header: string | string[] | null | undefined) => {
   const ips = getIpList(header)
+  // Proxies append to X-Forwarded-For, so the leftmost value can be supplied
+  // by the client. Use the rightmost value only as a last-resort fallback.
   return ips[ips.length - 1]
 }
 
@@ -30,6 +32,8 @@ export default function getIP(request: Request | NextApiRequest) {
     ? request.headers.get("x-forwarded-for")
     : request.headers["x-forwarded-for"]
 
+  // Prefer values set by our edge/proxy infrastructure before consulting
+  // X-Forwarded-For, which may contain client-supplied entries.
   return (
     getFirstIp(cfConnectingIp) ??
     remoteAddress ??
