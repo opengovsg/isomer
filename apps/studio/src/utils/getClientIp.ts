@@ -1,14 +1,6 @@
 import { type NextApiRequest } from "next"
-import { env } from "~/env.mjs"
 
 const LOCALHOST_IP = "127.0.0.1"
-const DEFAULT_TRUSTED_PROXY_HOPS = 1
-
-const getTrustedProxyHopCount = (configuredHopCount?: number) => {
-  return Number.isInteger(configuredHopCount) && configuredHopCount > 0
-    ? configuredHopCount
-    : DEFAULT_TRUSTED_PROXY_HOPS
-}
 
 const getIpList = (header: string | string[] | null | undefined) =>
   (Array.isArray(header) ? header : [header])
@@ -19,28 +11,15 @@ const getIpList = (header: string | string[] | null | undefined) =>
 const getFirstIp = (header: string | string[] | null | undefined) =>
   getIpList(header)[0]
 
-const getTrustedXForwardedForIp = (
-  header: string | string[] | null | undefined,
-  trustedProxyHops?: number,
-) => {
+const getLastIp = (header: string | string[] | null | undefined) => {
   const ips = getIpList(header)
-
-  if (ips.length === 0) {
-    return undefined
-  }
-
-  return ips[
-    Math.max(ips.length - getTrustedProxyHopCount(trustedProxyHops), 0)
-  ]
+  return ips[ips.length - 1]
 }
 
 const isRequest = (request: Request | NextApiRequest): request is Request =>
   typeof Request !== "undefined" && request instanceof Request
 
-export default function getIP(
-  request: Request | NextApiRequest,
-  options: { trustedProxyHops?: number } = {},
-) {
+export default function getIP(request: Request | NextApiRequest) {
   const cfConnectingIp = isRequest(request)
     ? request.headers.get("cf-connecting-ip")
     : request.headers["cf-connecting-ip"]
@@ -54,10 +33,7 @@ export default function getIP(
   return (
     getFirstIp(cfConnectingIp) ??
     remoteAddress ??
-    getTrustedXForwardedForIp(
-      xForwardedFor,
-      options.trustedProxyHops ?? env.CLIENT_IP_TRUSTED_PROXY_HOPS,
-    ) ??
+    getLastIp(xForwardedFor) ??
     LOCALHOST_IP
   )
 }

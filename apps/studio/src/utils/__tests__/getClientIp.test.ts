@@ -48,14 +48,14 @@ describe("getIP", () => {
     expect(getIP(req)).toBe("198.51.100.20")
   })
 
-  it("uses the configured trusted proxy hop count for x-forwarded-for", () => {
+  it("uses the rightmost x-forwarded-for value for longer proxy chains", () => {
     const req = new Request("https://example.com", {
       headers: {
         "x-forwarded-for": "1.2.3.4, 198.51.100.20, 10.0.0.1",
       },
     })
 
-    expect(getIP(req, { trustedProxyHops: 2 })).toBe("198.51.100.20")
+    expect(getIP(req)).toBe("10.0.0.1")
   })
 
   it("normalizes repeated x-forwarded-for headers before selecting an IP", () => {
