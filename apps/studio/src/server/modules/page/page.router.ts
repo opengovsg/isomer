@@ -41,6 +41,7 @@ import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import {
   AuditLogEvent,
+  IsomerAdminRole,
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
@@ -49,7 +50,10 @@ import { logResourceEvent } from "../audit/audit.service"
 import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
+import {
+  bulkValidateUserPermissionsForResources,
+  validateUserIsIsomerAdmin,
+} from "../permissions/permissions.service"
 import {
   createResourceWithBlob,
   getBlobOfResource,
@@ -914,6 +918,11 @@ export const pageRouter = router({
   createIndexPage: protectedProcedure
     .input(createIndexPageSchema)
     .mutation(async ({ ctx, input: { siteId, parentId } }) => {
+      await validateUserIsIsomerAdmin({
+        userId: ctx.user.id,
+        roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
+      })
+
       await bulkValidateUserPermissionsForResources({
         siteId,
         action: "create",
