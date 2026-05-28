@@ -277,14 +277,20 @@ describe("validation", () => {
 
   describe("GTM_ID_STRING_REGEX", () => {
     it("should allow valid Google Tag Manager container IDs", () => {
+      // Arrange
       const testCases = ["GTM-ABC123", "GTM-1234567", "GTM-ABCDEFGHIJ"]
 
       testCases.forEach((testCase) => {
-        expect(new RegExp(GTM_ID_STRING_REGEX).test(testCase)).toBe(true)
+        // Act
+        const result = new RegExp(GTM_ID_STRING_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(true)
       })
     })
 
     it("should reject invalid or malicious GTM IDs", () => {
+      // Arrange
       const testCases = [
         "gtm-abc123",
         "GTM-",
@@ -294,7 +300,11 @@ describe("validation", () => {
       ]
 
       testCases.forEach((testCase) => {
-        expect(new RegExp(GTM_ID_STRING_REGEX).test(testCase)).toBe(false)
+        // Act
+        const result = new RegExp(GTM_ID_STRING_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(false)
       })
     })
   })
