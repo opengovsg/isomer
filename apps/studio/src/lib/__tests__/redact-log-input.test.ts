@@ -4,15 +4,20 @@ import { redactLogInput } from "../redact-log-input"
 
 describe("redactLogInput", () => {
   it("redacts known sensitive keys at the top level", () => {
-    expect(
-      redactLogInput({
-        email: "user@example.com",
-        token: "123456",
-        password: "hunter2",
-        apiKey: "sk-live",
-        secret: "shh",
-      }),
-    ).toEqual({
+    // Arrange
+    const input = {
+      email: "user@example.com",
+      token: "123456",
+      password: "hunter2",
+      apiKey: "sk-live",
+      secret: "shh",
+    }
+
+    // Act
+    const result = redactLogInput(input)
+
+    // Assert
+    expect(result).toEqual({
       email: "user@example.com",
       token: "[REDACTED]",
       password: "[REDACTED]",
@@ -22,22 +27,34 @@ describe("redactLogInput", () => {
   })
 
   it("redacts sensitive keys case-insensitively", () => {
-    expect(redactLogInput({ OTP: "654321", Token: "abcdef" })).toEqual({
+    // Arrange
+    const input = { OTP: "654321", Token: "abcdef" }
+
+    // Act
+    const result = redactLogInput(input)
+
+    // Assert
+    expect(result).toEqual({
       OTP: "[REDACTED]",
       Token: "[REDACTED]",
     })
   })
 
   it("redacts sensitive keys in nested objects and arrays", () => {
-    expect(
-      redactLogInput({
-        users: [
-          { email: "a@example.com", token: "one" },
-          { email: "b@example.com", token: "two" },
-        ],
-        meta: { refreshToken: "rt-123" },
-      }),
-    ).toEqual({
+    // Arrange
+    const input = {
+      users: [
+        { email: "a@example.com", token: "one" },
+        { email: "b@example.com", token: "two" },
+      ],
+      meta: { refreshToken: "rt-123" },
+    }
+
+    // Act
+    const result = redactLogInput(input)
+
+    // Assert
+    expect(result).toEqual({
       users: [
         { email: "a@example.com", token: "[REDACTED]" },
         { email: "b@example.com", token: "[REDACTED]" },
@@ -47,9 +64,20 @@ describe("redactLogInput", () => {
   })
 
   it("returns primitives unchanged", () => {
-    expect(redactLogInput("plain")).toBe("plain")
-    expect(redactLogInput(42)).toBe(42)
-    expect(redactLogInput(null)).toBeNull()
-    expect(redactLogInput(undefined)).toBeUndefined()
+    // Arrange
+    const stringInput = "plain"
+    const numberInput = 42
+
+    // Act
+    const stringResult = redactLogInput(stringInput)
+    const numberResult = redactLogInput(numberInput)
+    const nullResult = redactLogInput(null)
+    const undefinedResult = redactLogInput(undefined)
+
+    // Assert
+    expect(stringResult).toBe("plain")
+    expect(numberResult).toBe(42)
+    expect(nullResult).toBeNull()
+    expect(undefinedResult).toBeUndefined()
   })
 })
