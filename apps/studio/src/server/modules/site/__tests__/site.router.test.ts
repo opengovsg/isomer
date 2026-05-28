@@ -710,9 +710,7 @@ describe("site.router", async () => {
         },
       })
 
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST" }),
-      )
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
   })
 
