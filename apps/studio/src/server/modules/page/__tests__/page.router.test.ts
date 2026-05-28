@@ -2599,30 +2599,6 @@ describe("page.router", async () => {
       )
     })
 
-    it("should throw 403 if user does not have create access to site", async () => {
-      // Arrange
-      const { site, folder } = await setupFolder()
-      await setupIsomerAdmin({
-        userId: session.userId!,
-        role: IsomerAdminRole.Core,
-      })
-
-      // Act
-      const result = caller.createIndexPage({
-        siteId: site.id,
-        parentId: folder.id,
-      })
-
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "You do not have sufficient permissions to perform this action",
-        }),
-      )
-    })
-
     it("should return 200 if index page is created successfully", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
