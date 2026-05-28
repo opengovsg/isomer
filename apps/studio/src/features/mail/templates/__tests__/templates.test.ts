@@ -364,28 +364,38 @@ describe("email template HTML escaping", () => {
   } satisfies Resource
 
   it("escapes invitation text fields", () => {
-    const template = invitationTemplate({
+    // Arrange
+    const templateData = {
       inviterName: maliciousPayload,
       recipientEmail: "recipient@example.com",
       siteName: maliciousPayload,
       role: RoleType.Admin,
-    })
+    }
 
+    // Act
+    const template = invitationTemplate(templateData)
+
+    // Assert
     expect(template.body).toContain(escapedPayload)
     expect(template.body).not.toContain("<h1>URGENT</h1>")
     expect(template.body).not.toContain("https://evil.tld?a=1&b=2")
   })
 
   it("escapes resource titles and site names in publish alerts", () => {
-    const template = templates.publishAlertContentPublisher({
+    // Arrange
+    const templateData = {
       recipientEmail: "publisher@example.com",
       siteName: maliciousPayload,
       resource: {
         ...mockResource,
         title: maliciousPayload,
       },
-    })
+    }
 
+    // Act
+    const template = templates.publishAlertContentPublisher(templateData)
+
+    // Assert
     expect(template.body).toContain(
       `published "${escapedPayload}" on ${escapedPayload}`,
     )
@@ -394,19 +404,25 @@ describe("email template HTML escaping", () => {
   })
 
   it("escapes site names in account deactivation warnings", () => {
-    const template = accountDeactivationWarningTemplate({
+    // Arrange
+    const templateData = {
       recipientEmail: "recipient@example.com",
       siteNames: [maliciousPayload],
       inHowManyDays: 7,
-    })
+    }
 
+    // Act
+    const template = accountDeactivationWarningTemplate(templateData)
+
+    // Assert
     expect(template.body).toContain(`<li>${escapedPayload}</li>`)
     expect(template.body).not.toContain("<h1>URGENT</h1>")
     expect(template.body).not.toContain("https://evil.tld?a=1&b=2")
   })
 
   it("escapes site names and admin emails in account deactivation emails", () => {
-    const template = accountDeactivationTemplate({
+    // Arrange
+    const templateData = {
       recipientEmail: "recipient@example.com",
       sitesAndAdmins: [
         {
@@ -414,8 +430,12 @@ describe("email template HTML escaping", () => {
           adminEmails: [maliciousPayload],
         },
       ],
-    })
+    }
 
+    // Act
+    const template = accountDeactivationTemplate(templateData)
+
+    // Assert
     expect(template.body).toContain(`<p><b>${escapedPayload}</b></p>`)
     expect(template.body).toContain(`<li>${escapedPayload}</li>`)
     expect(template.body).not.toContain("<h1>URGENT</h1>")
