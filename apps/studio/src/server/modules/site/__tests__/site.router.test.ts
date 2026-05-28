@@ -694,6 +694,71 @@ describe("site.router", async () => {
       // Assert
       expect(result.config).toEqual({ ...MOCK_INTEGRATION_DATA, fake: "fake" })
     })
+
+    it("should throw 400 if downgrading search integration from searchSG to localSearch", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      // Set the site config to have searchSG integration
+      await db
+        .updateTable("Site")
+        .set({
+          config: jsonb({
+            ...MOCK_INTEGRATION_DATA,
+            search: { type: "searchSG", clientId: "mock-client-id" },
+          }),
+        })
+        .where("id", "=", site.id)
+        .execute()
+
+      // Act
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          search: { type: "localSearch", searchUrl: "/search" },
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cannot downgrade search integration from SearchSG to local search",
+        }),
+      )
+    })
+
+    it("should throw 400 if localSearch searchUrl is not a relative path", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act — searchUrl must match pattern "^/" (enforced by LocalSearchSchema);
+      // an absolute URL would enable open redirect via the form action.
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          search: {
+            type: "localSearch",
+            searchUrl: "https://attacker.com",
+          },
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "BAD_REQUEST" }),
+      )
+    })
   })
 
   describe("setTheme", () => {
