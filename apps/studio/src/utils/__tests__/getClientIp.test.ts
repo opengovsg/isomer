@@ -1,5 +1,5 @@
 import { type NextApiRequest } from "next"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import getIP from "../getClientIp"
 
@@ -15,10 +15,6 @@ const makeNextApiRequest = (
   }) as NextApiRequest
 
 describe("getIP", () => {
-  afterEach(() => {
-    delete process.env.CLIENT_IP_TRUSTED_PROXY_HOPS
-  })
-
   it("prefers cf-connecting-ip over spoofable headers and socket addresses", () => {
     const req = makeNextApiRequest(
       {
@@ -53,14 +49,13 @@ describe("getIP", () => {
   })
 
   it("uses the configured trusted proxy hop count for x-forwarded-for", () => {
-    process.env.CLIENT_IP_TRUSTED_PROXY_HOPS = "2"
     const req = new Request("https://example.com", {
       headers: {
         "x-forwarded-for": "1.2.3.4, 198.51.100.20, 10.0.0.1",
       },
     })
 
-    expect(getIP(req)).toBe("198.51.100.20")
+    expect(getIP(req, { trustedProxyHops: 2 })).toBe("198.51.100.20")
   })
 
   it("normalizes repeated x-forwarded-for headers before selecting an IP", () => {

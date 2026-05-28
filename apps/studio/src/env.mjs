@@ -59,6 +59,7 @@ const server = z
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     STUDIO_SSM_WEBHOOK_API_KEY: z.string().optional(),
     SEARCHSG_API_KEY: z.string(),
+    CLIENT_IP_TRUSTED_PROXY_HOPS: z.coerce.number().int().positive().default(1),
   })
   .merge(s3Schema)
   .merge(singpassSchema)
@@ -93,6 +94,7 @@ const processEnv = {
   SINGPASS_SIGNING_PRIVATE_KEY: process.env.SINGPASS_SIGNING_PRIVATE_KEY,
   SINGPASS_SIGNING_KEY_ALG: process.env.SINGPASS_SIGNING_KEY_ALG,
   STUDIO_SSM_WEBHOOK_API_KEY: process.env.STUDIO_SSM_WEBHOOK_API_KEY,
+  CLIENT_IP_TRUSTED_PROXY_HOPS: process.env.CLIENT_IP_TRUSTED_PROXY_HOPS,
   // Client-side env vars
   NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
