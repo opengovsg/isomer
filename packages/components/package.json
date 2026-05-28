@@ -59,6 +59,7 @@
   "dependencies": {
     "@govtechsg/sgds-react": "catalog:",
     "@headlessui/react": "catalog:",
+    "@isomer/validators": "workspace:*",
     "@react-aria/button": "catalog:react-aria",
     "@react-aria/checkbox": "catalog:react-aria",
     "@react-aria/focus": "catalog:react-aria",

@@ -1,5 +1,6 @@
 import type { GoogleTagManagerHeaderProps } from "~/interfaces"
-import { serializeForInlineScript } from "~/utils/serializeForInlineScript"
+
+import { serializeForInlineScript } from "@isomer/validators"
 
 export const GoogleTagManagerHeader = ({
   siteGtmId,

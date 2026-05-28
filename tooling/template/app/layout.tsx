@@ -5,10 +5,11 @@ import sitemap from "@/sitemap.json"
 import {
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
-  serializeForInlineScript,
 } from "@opengovsg/isomer-components"
 import { Inter } from "next/font/google"
 import Script from "next/script"
+
+import { serializeForInlineScript } from "@isomer/validators"
 
 import { IsomerProviders } from "./providers"
 

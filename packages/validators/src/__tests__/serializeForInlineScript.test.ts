@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { serializeForInlineScript } from "~/utils/serializeForInlineScript"
+import { serializeForInlineScript } from "~/serializeForInlineScript"
 
 describe("serializeForInlineScript", () => {
   it("should serialize strings as valid JavaScript string literals", () => {
