@@ -696,12 +696,14 @@ describe("site.router", async () => {
     })
 
     it("should reject an invalid siteGtmId", async () => {
+      // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
       })
 
+      // Act
       const result = caller.updateSiteIntegrations({
         siteId: site.id,
         data: {
@@ -710,6 +712,7 @@ describe("site.router", async () => {
         },
       })
 
+      // Assert
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
   })
