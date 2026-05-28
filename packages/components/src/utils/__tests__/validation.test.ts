@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   AUDIO_EMBED_URL_PATTERN,
+  GTM_ID_STRING_REGEX,
   isValidAudioEmbedUrl,
   LINK_HREF_PATTERN,
   MAPS_EMBED_URL_PATTERN,
@@ -270,6 +271,30 @@ describe("validation", () => {
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
         expect(result).toBe(false)
+      })
+    })
+  })
+
+  describe("GTM_ID_STRING_REGEX", () => {
+    it("should allow valid Google Tag Manager container IDs", () => {
+      const testCases = ["GTM-ABC123", "GTM-1234567", "GTM-ABCDEFGHIJ"]
+
+      testCases.forEach((testCase) => {
+        expect(new RegExp(GTM_ID_STRING_REGEX).test(testCase)).toBe(true)
+      })
+    })
+
+    it("should reject invalid or malicious GTM IDs", () => {
+      const testCases = [
+        "gtm-abc123",
+        "GTM-",
+        "');alert(document.cookie);//",
+        "GTM-ABC<script>",
+        "",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(new RegExp(GTM_ID_STRING_REGEX).test(testCase)).toBe(false)
       })
     })
   })

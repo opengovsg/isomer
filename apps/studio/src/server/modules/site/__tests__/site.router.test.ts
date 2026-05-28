@@ -694,6 +694,26 @@ describe("site.router", async () => {
       // Assert
       expect(result.config).toEqual({ ...MOCK_INTEGRATION_DATA, fake: "fake" })
     })
+
+    it("should reject an invalid siteGtmId", async () => {
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          siteGtmId: "');alert(document.cookie);//",
+        },
+      })
+
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "BAD_REQUEST" }),
+      )
+    })
   })
 
   describe("setTheme", () => {

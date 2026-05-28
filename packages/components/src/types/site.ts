@@ -10,6 +10,7 @@ import {
   VicaSchema,
 } from "~/interfaces"
 import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
+import { GTM_ID_STRING_REGEX } from "~/utils/validation"
 
 import type { IsomerSitemap } from "./sitemap"
 
@@ -35,6 +36,7 @@ export const SimpleIntegrationsSettingsSchema = Type.Object({
       title: "Google Tag Manager (GTM) ID",
       description:
         "You can locate your GTM ID on your Google Tag Manager account. It should start with “GTM-”.",
+      pattern: GTM_ID_STRING_REGEX,
     }),
   ),
   search: Type.Optional(

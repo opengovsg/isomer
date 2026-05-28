@@ -5,6 +5,7 @@ import sitemap from "@/sitemap.json"
 import {
   RenderApplicationHeadScripts,
   RenderApplicationScripts,
+  serializeForInlineScript,
 } from "@opengovsg/isomer-components"
 import { Inter } from "next/font/google"
 import Script from "next/script"
@@ -70,7 +71,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+            __html: serializeForInlineScript(jsonLd),
           }}
         />
       </body>

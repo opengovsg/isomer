@@ -15,6 +15,7 @@ export { isPhoneNumber, sanitizePhoneNumber } from "./isPhoneNumber"
 export { isUrl } from "./isUrl"
 export { isExternalUrl } from "./isExternalUrl"
 export { safeJsonParse } from "./safeJsonParse"
+export { serializeForInlineScript } from "./serializeForInlineScript"
 export {
   fetchDgsFileDownloadUrl,
   fetchDgsMetadata,
@@ -33,6 +34,7 @@ export {
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
   NON_EMPTY_STRING_REGEX,
+  GTM_ID_STRING_REGEX,
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
