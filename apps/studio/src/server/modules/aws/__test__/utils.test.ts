@@ -1,4 +1,3 @@
-import type { User } from "~prisma/generated/selectableTypes"
 import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -7,6 +6,7 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 
+import type { User } from "../../database"
 import { db } from "../../database"
 import { updateStoppedBuild } from "../utils"
 

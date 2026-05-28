@@ -1,7 +1,6 @@
-import type { PrismaClient } from "@prisma/client"
 import type { NextApiRequest } from "next"
 import type { SessionData } from "~/lib/types/session"
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
+import { type Prisma, type PrismaClient } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 
 import type { DB, Transaction, VerificationToken } from "../database"
@@ -48,10 +47,7 @@ export const verifyToken = async (
     return
   } catch (error) {
     // see error code here: https://www.prisma.io/docs/reference/api-reference/error-reference#p2025
-    if (
-      error instanceof PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
+    if ((error as Prisma.PrismaClientKnownRequestError).code === "P2025") {
       throw new VerificationError("Invalid login email")
     }
     throw error

@@ -1,5 +1,5 @@
+import { ResourceState } from "@prisma/client"
 import { db } from "~/server/modules/database"
-import { ResourceState } from "~prisma/generated/generatedEnums"
 
 import { FileLogger } from "../FileLogger"
 

@@ -1,4 +1,4 @@
-import type { User } from "~prisma/generated/selectableTypes"
+import type { User } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"

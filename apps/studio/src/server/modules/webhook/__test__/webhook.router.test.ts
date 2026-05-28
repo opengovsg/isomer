@@ -1,7 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook"
+import type { User } from "@prisma/client"
 import type { Mock } from "vitest"
 import type { Session } from "~/lib/types/session"
-import type { User } from "~prisma/generated/selectableTypes"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"

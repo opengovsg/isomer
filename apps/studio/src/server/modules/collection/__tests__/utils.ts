@@ -1,4 +1,6 @@
-import { db, ResourceType } from "../../database"
+import { ResourceType } from "@prisma/client"
+
+import { db } from "../../database"
 
 // Test util functions
 export const getCollectionWithPermalink = ({
