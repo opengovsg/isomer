@@ -58,7 +58,7 @@ jobs:
         uses: ./.github/actions/setup
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@latest
+        uses: chromaui/action@e3eb8ec36101d8f0253c7c3ae66e5a2b4e2197ba # v16.10.0
         # Chromatic GitHub Action options
         with:
           workingDir: packages/components
@@ -90,7 +90,7 @@ jobs:
         run: pnpm --filter isomer-studio exec prisma generate
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@latest
+        uses: chromaui/action@e3eb8ec36101d8f0253c7c3ae66e5a2b4e2197ba # v16.10.0
         # Chromatic GitHub Action options
         with:
           workingDir: apps/studio
