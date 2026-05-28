@@ -754,10 +754,9 @@ describe("site.router", async () => {
         },
       })
 
-      // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST" }),
-      )
+      // Assert — validation is enforced by LocalSearchSchema's pattern "^/" via AJV;
+      // tRPC surfaces this as a Zod custom validation failure, not a plain TRPCError.
+      await expect(result).rejects.toThrow("Invalid integration settings")
     })
   })
 
