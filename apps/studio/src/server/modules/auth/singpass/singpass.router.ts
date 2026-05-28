@@ -97,7 +97,12 @@ export const singpassRouter = router({
 
       if (!code || !codeVerifier || !nonce || !userId) {
         ctx.logger.error(
-          { code, codeVerifier, nonce, userId },
+          {
+            hasCode: !!code,
+            hasCodeVerifier: !!codeVerifier,
+            hasNonce: !!nonce,
+            hasUserId: !!userId,
+          },
           "Invalid Singpass session state",
         )
 
@@ -116,7 +121,12 @@ export const singpassRouter = router({
 
       if (!uuid) {
         ctx.logger.error(
-          { code, codeVerifier, nonce, state },
+          {
+            hasCode: !!code,
+            hasCodeVerifier: !!codeVerifier,
+            hasNonce: !!nonce,
+            hasState: !!state,
+          },
           "Failed to login to Singpass",
         )
 
