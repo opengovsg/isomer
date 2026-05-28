@@ -20,7 +20,7 @@ import { copyFile, deleteFile, getFileSize } from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
-import { db, jsonb } from "../../database"
+import { db } from "../../database"
 import { gazetteRouter } from "../gazette.router"
 
 vi.mock("~/lib/s3", () => ({
@@ -42,6 +42,22 @@ const gazetteRef = ({
   siteId: number
   uuid?: string
 }) => `/${siteId}/${uuid}/${fileName}`
+
+const foreignGazetteBlobContent = ({
+  fileName,
+  siteId,
+}: {
+  fileName: string
+  siteId: number
+}) =>
+  ({
+    page: {
+      ref: gazetteRef({ siteId, fileName }),
+      category: "Government Gazette",
+      date: "30/04/2026",
+      tagged: ["sub-1"],
+    },
+  }) as PrismaJson.BlobJsonContent
 
 describe("gazette.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -558,16 +574,9 @@ describe("gazette.router", async () => {
         .updateTable("Blob")
         .where("id", "=", blob.id)
         .set({
-          content: jsonb({
-            page: {
-              ref: gazetteRef({
-                siteId: site.id + 1,
-                fileName: "foreign-source.pdf",
-              }),
-              category: "Government Gazette",
-              date: "30/04/2026",
-              tagged: ["sub-1"],
-            },
+          content: foreignGazetteBlobContent({
+            siteId: site.id + 1,
+            fileName: "foreign-source.pdf",
           }),
         })
         .execute()
@@ -608,16 +617,9 @@ describe("gazette.router", async () => {
         .updateTable("Blob")
         .where("id", "=", blob.id)
         .set({
-          content: jsonb({
-            page: {
-              ref: gazetteRef({
-                siteId: site.id + 1,
-                fileName: "foreign-source.pdf",
-              }),
-              category: "Government Gazette",
-              date: "30/04/2026",
-              tagged: ["sub-1"],
-            },
+          content: foreignGazetteBlobContent({
+            siteId: site.id + 1,
+            fileName: "foreign-source.pdf",
           }),
         })
         .execute()

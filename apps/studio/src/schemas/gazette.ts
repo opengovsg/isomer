@@ -4,7 +4,7 @@ import { offsetPaginationSchema } from "./pagination"
 
 const GAZETTE_FILE_NAME_REGEX = /^[_\-a-zA-Z0-9]+\.pdf$/
 const GAZETTE_REF_REGEX =
-  /^\/(?<siteId>\d+)\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\/[_\-a-zA-Z0-9]+\.pdf$/
+  /^\/\d+\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\/[_\-a-zA-Z0-9]+\.pdf$/
 
 const gazetteRefSchema = z.string().min(1).regex(GAZETTE_REF_REGEX, {
   message:
@@ -68,9 +68,5 @@ export const updateGazetteServerSchema = gazetteMetadataSchema.extend({
   // existing file) is meaningful per call. If both are absent, the existing
   // ref is kept as-is.
   newRef: gazetteRefSchema.optional(),
-  desiredFileName: z
-    .string()
-    .min(1)
-    .regex(GAZETTE_FILE_NAME_REGEX)
-    .optional(),
+  desiredFileName: z.string().min(1).regex(GAZETTE_FILE_NAME_REGEX).optional(),
 })

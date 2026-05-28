@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 
-import { createGazetteServerSchema, updateGazetteServerSchema } from "../gazette"
+import {
+  createGazetteServerSchema,
+  updateGazetteServerSchema,
+} from "../gazette"
 
 const validMetadata = {
   title: "Gazette notice",
