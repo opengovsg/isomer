@@ -1,4 +1,5 @@
 import { toZonedTime } from "date-fns-tz"
+import { escape } from "lodash-es"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { formatScheduledAtDate } from "~/lib/dates"
@@ -21,16 +22,7 @@ import type {
   SuccessfulPublishTemplateData,
 } from "./types"
 
-const HTML_ESCAPE_LOOKUP: Record<string, string> = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;",
-}
-
-const escapeHtml = (value: string | undefined): string =>
-  value?.replace(/[&<>"']/g, (char) => HTML_ESCAPE_LOOKUP[char] ?? char) ?? ""
+const escapeHtml = (value: string | undefined): string => escape(value ?? "")
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}">${escapeHtml(env.NEXT_PUBLIC_APP_URL?.replace("https://", ""))}</a>`
