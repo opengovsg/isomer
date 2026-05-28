@@ -14,6 +14,7 @@ import { ZodError } from "zod"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
+import { redactLogInput } from "~/lib/redact-log-input"
 
 import type { RateLimitMetaOptions } from "./modules/rate-limit/types"
 import { type Context } from "./context"
@@ -60,7 +61,7 @@ const loggerMiddleware = t.middleware(
       path,
       req: ctx.req,
     })
-    const rawInput = await getRawInput()
+    const rawInput = redactLogInput(await getRawInput())
 
     const result = await next({
       ctx: { logger },
