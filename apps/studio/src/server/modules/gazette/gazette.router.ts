@@ -10,7 +10,11 @@ import {
 } from "~/schemas/gazette"
 import { protectedProcedure, router } from "~/server/trpc"
 
-import { copyFileWithNewName, markFileAsDeleted } from "../asset/asset.service"
+import {
+  copyFileWithNewName,
+  doAllFileKeysBelongToSite,
+  markFileAsDeleted,
+} from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
 import { createCollectionLinkJson } from "../collection/collection.service"
 import { AuditLogEvent, db, jsonb, ResourceType, sql } from "../database"
@@ -57,6 +61,35 @@ const buildGazetteBlobContent = ({
       description,
       tagged,
     },
+  }
+}
+
+const GAZETTE_FILE_SCOPE_ERROR_MESSAGE =
+  "The gazette file does not belong to the specified site. You may only use assets for the site you are authorized for."
+
+const toS3Key = (ref: string) => ref.replace(/^\//, "")
+
+const doesGazetteRefBelongToSite = ({
+  ref,
+  siteId,
+}: {
+  ref: string
+  siteId: number
+}) => doAllFileKeysBelongToSite({ fileKeys: [toS3Key(ref)], siteId })
+
+const assertGazetteRefsBelongToSite = ({
+  refs,
+  siteId,
+}: {
+  refs: string[]
+  siteId: number
+}) => {
+  const fileKeys = refs.filter(Boolean).map(toS3Key)
+  if (!doAllFileKeysBelongToSite({ fileKeys, siteId })) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: GAZETTE_FILE_SCOPE_ERROR_MESSAGE,
+    })
   }
 }
 
@@ -156,6 +189,18 @@ export const gazetteRouter = router({
               scheduledAt: result.scheduledAt ?? result.publishedAt,
             }
           }
+          if (!doesGazetteRefBelongToSite({ ref, siteId })) {
+            ctx.logger.warn(
+              { ref, siteId, resourceId: result.id },
+              "Skipped gazette file size lookup for out-of-scope ref",
+            )
+            return {
+              ...result,
+              fileSize: null,
+              scheduledAt: result.scheduledAt ?? result.publishedAt,
+            }
+          }
+
           const fileSize = await getFileSize({
             Bucket: env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
             // NOTE: s3 keys don't have a leading /
@@ -197,6 +242,7 @@ export const gazetteRouter = router({
           userId: ctx.user.id,
           resourceIds: [String(collectionId)],
         })
+        assertGazetteRefsBelongToSite({ refs: [ref], siteId })
 
         const user = await db
           .selectFrom("User")
@@ -371,6 +417,9 @@ export const gazetteRouter = router({
         const existingRef =
           (existingBlob.content as { page?: { ref?: string } } | null)?.page
             ?.ref ?? ""
+        if (newRef) {
+          assertGazetteRefsBelongToSite({ refs: [newRef], siteId })
+        }
 
         // Resolve the final ref. Preference order:
         //   1. newRef (a fresh upload) — caller has already PUT to S3
@@ -389,13 +438,17 @@ export const gazetteRouter = router({
         if (newRef) {
           newFilename = newRef.split("/").pop()
           finalRef = newRef
-          if (existingRef) oldRefToCleanUp = existingRef.replace(/^\//, "")
+          if (existingRef) {
+            assertGazetteRefsBelongToSite({ refs: [existingRef], siteId })
+            oldRefToCleanUp = toS3Key(existingRef)
+          }
         } else if (
           desiredFileName &&
           existingRef &&
           desiredFileName !== oldFilename
         ) {
           newFilename = desiredFileName
+          assertGazetteRefsBelongToSite({ refs: [existingRef], siteId })
 
           const duplicate = await findCollectionLinkWithFilename({
             siteId,
@@ -410,7 +463,7 @@ export const gazetteRouter = router({
             })
           }
 
-          const sourceKey = existingRef.replace(/^\//, "")
+          const sourceKey = toS3Key(existingRef)
           const newKey = await copyFileWithNewName({
             sourceKey,
             newFileName: desiredFileName,

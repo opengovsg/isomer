@@ -2,6 +2,15 @@ import { z } from "zod"
 
 import { offsetPaginationSchema } from "./pagination"
 
+const GAZETTE_FILE_NAME_REGEX = /^[_\-a-zA-Z0-9]+\.pdf$/
+const GAZETTE_REF_REGEX =
+  /^\/(?<siteId>\d+)\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\/[_\-a-zA-Z0-9]+\.pdf$/
+
+const gazetteRefSchema = z.string().min(1).regex(GAZETTE_REF_REGEX, {
+  message:
+    "File reference must be a PDF path in the format /<siteId>/<uuid>/<filename>.pdf",
+})
+
 export const createGazetteSchema = z.object({
   title: z
     .string()
@@ -18,7 +27,7 @@ export const createGazetteSchema = z.object({
   fileId: z
     .string()
     .min(1, { message: "File ID is required" })
-    .regex(/^[_\-a-zA-Z0-9]+\.pdf$/, {
+    .regex(GAZETTE_FILE_NAME_REGEX, {
       message:
         "File ID must end in .pdf and consist of alphanumeric characters, underscores and hyphens",
     }),
@@ -49,7 +58,7 @@ export const createGazetteServerSchema = gazetteMetadataSchema.extend({
   collectionId: z.number().min(1),
   permalink: z.string().min(1),
   // The S3 key produced by the client-side presigned upload.
-  ref: z.string().min(1),
+  ref: gazetteRefSchema,
 })
 
 export const updateGazetteServerSchema = gazetteMetadataSchema.extend({
@@ -58,10 +67,10 @@ export const updateGazetteServerSchema = gazetteMetadataSchema.extend({
   // Exactly one of `newRef` (a fresh upload) or `desiredFileName` (rename the
   // existing file) is meaningful per call. If both are absent, the existing
   // ref is kept as-is.
-  newRef: z.string().min(1).optional(),
+  newRef: gazetteRefSchema.optional(),
   desiredFileName: z
     .string()
     .min(1)
-    .regex(/^[_\-a-zA-Z0-9]+\.pdf$/)
+    .regex(GAZETTE_FILE_NAME_REGEX)
     .optional(),
 })

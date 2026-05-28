@@ -15,14 +15,33 @@ import {
   setupIsomerAdmin,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { copyFile, deleteFile, getFileSize } from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
-import { db } from "../../database"
+import { db, jsonb } from "../../database"
 import { gazetteRouter } from "../gazette.router"
 
+vi.mock("~/lib/s3", () => ({
+  copyFile: vi.fn().mockResolvedValue(undefined),
+  deleteFile: vi.fn().mockResolvedValue(undefined),
+  getFileSize: vi.fn().mockResolvedValue(1234),
+}))
+
 const createCaller = createCallerFactory(gazetteRouter)
+const GAZETTE_FILE_SCOPE_ERROR_MESSAGE =
+  "The gazette file does not belong to the specified site. You may only use assets for the site you are authorized for."
+
+const gazetteRef = ({
+  fileName,
+  siteId,
+  uuid = crypto.randomUUID(),
+}: {
+  fileName: string
+  siteId: number
+  uuid?: string
+}) => `/${siteId}/${uuid}/${fileName}`
 
 describe("gazette.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -34,6 +53,7 @@ describe("gazette.router", async () => {
 
   beforeEach(async () => {
     MockDate.set(FIXED_NOW)
+    vi.clearAllMocks()
     await resetTables(
       "AuditLog",
       "ResourcePermission",
@@ -169,7 +189,7 @@ describe("gazette.router", async () => {
         collectionId: Number(collection.id),
         title: "Notice 123",
         permalink: crypto.randomUUID(),
-        ref: "/1/abc/notice-123.pdf",
+        ref: gazetteRef({ siteId: site.id, fileName: "notice-123.pdf" }),
         category: "Government Gazette",
         date: "30/04/2026",
         description: "Notif #123",
@@ -200,7 +220,9 @@ describe("gazette.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       const page = (blob.content as { page?: { ref?: string } } | null)?.page
-      expect(page?.ref).toBe("/1/abc/notice-123.pdf")
+      expect(page?.ref).toMatch(
+        new RegExp(`^/${site.id}/[^/]+/notice-123\\.pdf$`),
+      )
 
       // Both audit entries (resource create + schedule publish) emitted.
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -227,7 +249,7 @@ describe("gazette.router", async () => {
           collectionId: Number(collection.id),
           title: "Notice 123",
           permalink: crypto.randomUUID(),
-          ref: "/1/abc/notice.pdf",
+          ref: gazetteRef({ siteId: site.id, fileName: "notice.pdf" }),
           category: "Government Gazette",
           date: "30/04/2026",
           tagged: ["sub-1"],
@@ -255,7 +277,10 @@ describe("gazette.router", async () => {
         collectionId: Number(collection.id),
         title: "First Notice",
         permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid1/duplicate-file.pdf",
+        ref: gazetteRef({
+          siteId: site.id,
+          fileName: "duplicate-file.pdf",
+        }),
         category: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
@@ -269,7 +294,10 @@ describe("gazette.router", async () => {
           collectionId: Number(collection.id),
           title: "Second Notice",
           permalink: crypto.randomUUID(),
-          ref: "/sites/1/gazettes/uuid2/duplicate-file.pdf", // Same filename
+          ref: gazetteRef({
+            siteId: site.id,
+            fileName: "duplicate-file.pdf",
+          }), // Same filename
           category: "Government Gazette",
           date: "30/04/2026",
           tagged: ["sub-1"],
@@ -282,6 +310,42 @@ describe("gazette.router", async () => {
         }),
       )
     })
+
+    it("rejects a ref that belongs to another site before creating a gazette", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      const otherSiteRef = gazetteRef({
+        siteId: site.id + 1,
+        fileName: "foreign-file.pdf",
+      })
+
+      // Act & Assert
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Foreign Notice",
+          permalink: crypto.randomUUID(),
+          ref: otherSiteRef,
+          category: "Government Gazette",
+          date: "30/04/2026",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: GAZETTE_FILE_SCOPE_ERROR_MESSAGE,
+        }),
+      )
+
+      const gazettes = await db
+        .selectFrom("Resource")
+        .where("Resource.type", "=", ResourceType.CollectionLink)
+        .selectAll()
+        .execute()
+      expect(gazettes).toHaveLength(0)
+    })
   })
 
   describe("update", () => {
@@ -293,7 +357,7 @@ describe("gazette.router", async () => {
         collectionId: Number(collection.id),
         title: "Original",
         permalink: crypto.randomUUID(),
-        ref: "/1/abc/notice.pdf",
+        ref: gazetteRef({ siteId: site.id, fileName: "notice.pdf" }),
         category: "Government Gazette",
         date: "30/04/2026",
         description: "old-desc",
@@ -306,7 +370,7 @@ describe("gazette.router", async () => {
         siteId: site.id,
         gazetteId: Number(gazetteId),
         title: "Renamed",
-        newRef: "/1/abc/replacement.pdf",
+        newRef: gazetteRef({ siteId: site.id, fileName: "replacement.pdf" }),
         category: "Other Supplements",
         date: "30/04/2026",
         description: "new-desc",
@@ -338,7 +402,9 @@ describe("gazette.router", async () => {
           }
         } | null
       )?.page
-      expect(page?.ref).toBe("/1/abc/replacement.pdf")
+      expect(page?.ref).toMatch(
+        new RegExp(`^/${site.id}/[^/]+/replacement\\.pdf$`),
+      )
       expect(page?.category).toBe("Other Supplements")
       expect(page?.description).toBe("new-desc")
       expect(page?.tagged).toEqual(["sub-2"])
@@ -392,7 +458,10 @@ describe("gazette.router", async () => {
         collectionId: Number(collection.id),
         title: "First Notice",
         permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid1/existing-file.pdf",
+        ref: gazetteRef({
+          siteId: site.id,
+          fileName: "existing-file.pdf",
+        }),
         category: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
@@ -405,7 +474,10 @@ describe("gazette.router", async () => {
         collectionId: Number(collection.id),
         title: "Second Notice",
         permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid2/different-file.pdf",
+        ref: gazetteRef({
+          siteId: site.id,
+          fileName: "different-file.pdf",
+        }),
         category: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
@@ -418,7 +490,10 @@ describe("gazette.router", async () => {
           siteId: site.id,
           gazetteId: Number(gazetteId),
           title: "Second Notice",
-          newRef: "/sites/1/gazettes/uuid3/existing-file.pdf", // Same filename as first
+          newRef: gazetteRef({
+            siteId: site.id,
+            fileName: "existing-file.pdf",
+          }), // Same filename as first
           category: "Government Gazette",
           date: "30/04/2026",
           tagged: ["sub-1"],
@@ -430,6 +505,135 @@ describe("gazette.router", async () => {
           message: "A gazette with the same file ID already exists",
         }),
       )
+    })
+
+    it("rejects a newRef that belongs to another site and does not delete the existing file", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Original",
+        permalink: crypto.randomUUID(),
+        ref: gazetteRef({ siteId: site.id, fileName: "notice.pdf" }),
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert
+      await expect(
+        caller.update({
+          siteId: site.id,
+          gazetteId: Number(gazetteId),
+          title: "Original",
+          newRef: gazetteRef({
+            siteId: site.id + 1,
+            fileName: "foreign-replacement.pdf",
+          }),
+          category: "Government Gazette",
+          date: "30/04/2026",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: GAZETTE_FILE_SCOPE_ERROR_MESSAGE,
+        }),
+      )
+      expect(deleteFile).not.toHaveBeenCalled()
+    })
+
+    it("rejects renaming a gazette whose stored ref belongs to another site", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      const { collectionLink, blob } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+        title: "Foreign stored ref",
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", blob.id)
+        .set({
+          content: jsonb({
+            page: {
+              ref: gazetteRef({
+                siteId: site.id + 1,
+                fileName: "foreign-source.pdf",
+              }),
+              category: "Government Gazette",
+              date: "30/04/2026",
+              tagged: ["sub-1"],
+            },
+          }),
+        })
+        .execute()
+
+      // Act & Assert
+      await expect(
+        caller.update({
+          siteId: site.id,
+          gazetteId: Number(collectionLink.id),
+          title: "Foreign stored ref",
+          desiredFileName: "renamed.pdf",
+          category: "Government Gazette",
+          date: "30/04/2026",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message: GAZETTE_FILE_SCOPE_ERROR_MESSAGE,
+        }),
+      )
+      expect(copyFile).not.toHaveBeenCalled()
+      expect(deleteFile).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("list", () => {
+    it("does not look up S3 metadata for a stored ref outside the requested site", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      const { blob } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+        title: "Foreign stored ref",
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", blob.id)
+        .set({
+          content: jsonb({
+            page: {
+              ref: gazetteRef({
+                siteId: site.id + 1,
+                fileName: "foreign-source.pdf",
+              }),
+              category: "Government Gazette",
+              date: "30/04/2026",
+              tagged: ["sub-1"],
+            },
+          }),
+        })
+        .execute()
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        limit: 10,
+        offset: 0,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]?.fileSize).toBeNull()
+      expect(getFileSize).not.toHaveBeenCalled()
     })
   })
 })
