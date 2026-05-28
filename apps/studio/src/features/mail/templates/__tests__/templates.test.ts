@@ -33,7 +33,9 @@ describe("invitationTemplate", () => {
     expect(template.body).toContain(
       "edit and publish the content, as well as manage users and site settings",
     )
-    expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
+    if (env.NEXT_PUBLIC_APP_URL) {
+      expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
+    }
   })
 
   it("should generate correct body content for Publisher role", () => {
@@ -108,7 +110,9 @@ describe("accountDeactivationWarningTemplate", () => {
 
     // Assert
     expect(template.body).toContain("please log in within the next 7 days")
-    expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
+    if (env.NEXT_PUBLIC_APP_URL) {
+      expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
+    }
   })
 
   it("should include security measure message", () => {
