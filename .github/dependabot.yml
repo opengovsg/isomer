@@ -115,7 +115,7 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: daily
+      interval: monthly
     open-pull-requests-limit: 5
     cooldown:
       default-days: 7 # to mitigate supply chain attacks
