@@ -139,7 +139,10 @@ export const siteRouter = router({
 
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ name: siteName, config: jsonb({ ...rest, siteName, search: searchConfig }) })
+          .set({
+            name: siteName,
+            config: jsonb({ ...rest, siteName, search: searchConfig }),
+          })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()
