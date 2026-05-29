@@ -41,6 +41,7 @@ const createCaller = createCallerFactory(siteRouter)
 
 const MOCK_SITE_NAME = "isobad"
 const MOCK_LOGO_URL = "https://isobad.com/logo.png"
+const MOCK_SEARCHSG_CLIENT_ID = "550e8400-e29b-41d4-a716-446655440000"
 const MOCK_ISOMER_THEME = {
   colors: {
     brand: {
@@ -525,7 +526,7 @@ describe("site.router", async () => {
       const mockSearch = {
         search: {
           type: "searchSG",
-          clientId: "i-love-searchsg",
+          clientId: MOCK_SEARCHSG_CLIENT_ID,
         },
       } as const
       const searchSpy = vi.spyOn(searchSgService, "updateSearchSGConfig")
@@ -571,6 +572,78 @@ describe("site.router", async () => {
         theme: "isomer-next",
         ...mockSearch,
       })
+    })
+    it("should not allow a site admin to change the searchSG clientId", async () => {
+      // Arrange
+      const existingClientId = MOCK_SEARCHSG_CLIENT_ID
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({
+          config: {
+            ...site.config,
+            search: { type: "searchSG", clientId: existingClientId },
+          },
+        })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - submit with a different clientId
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        search: { type: "searchSG", clientId: "../../other-client-id" },
+      })
+
+      // Assert - the stored clientId should be the original DB value
+      expect(result.search).toEqual({
+        type: "searchSG",
+        clientId: existingClientId,
+      })
+    })
+    it("should call updateSearchSGConfig with the DB clientId, not the user-supplied one", async () => {
+      // Arrange
+      const existingClientId = MOCK_SEARCHSG_CLIENT_ID
+      const searchSpy = vi.spyOn(searchSgService, "updateSearchSGConfig")
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({
+          config: {
+            ...site.config,
+            search: { type: "searchSG", clientId: existingClientId },
+          },
+        })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - submit with a different clientId and changed siteName to trigger searchsg update
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        search: { type: "searchSG", clientId: "../../other-client-id" },
+      })
+
+      // Assert - updateSearchSGConfig is called with the preserved DB clientId
+      expect(searchSpy).toHaveBeenCalledWith(
+        { name: MOCK_SITE_NAME, _kind: "name" },
+        existingClientId,
+        result.url,
+      )
     })
   })
 
@@ -810,7 +883,7 @@ describe("site.router", async () => {
     it("should update searchsg if the user is a site admin", async () => {
       // Arrange
       const mockSearchSg = {
-        search: { type: "searchSG", clientId: "mock-client-id" },
+        search: { type: "searchSG", clientId: MOCK_SEARCHSG_CLIENT_ID },
       } as const
       const { site } = await setupSite()
       const spy = vi.spyOn(searchSgService, "updateSearchSGConfig")
