@@ -37,7 +37,12 @@ export const useCollection = ({
     if (isEmpty(filters)) {
       return []
     }
-    return JSON.parse(filters || "[]") as AppliedFilter[]
+    try {
+      return JSON.parse(filters || "[]") as AppliedFilter[]
+    } catch {
+      // Malformed URL param (e.g. ?filters=hello) — treat as no filters rather than crashing.
+      return []
+    }
   }, [queryParams.filters])
   const setAppliedFilters = useCallback(
     (filters: AppliedFilter[]) => {
