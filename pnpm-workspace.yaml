@@ -208,14 +208,14 @@ catalogs:
     "@react-stately/checkbox": ^3.8.0
     "@react-stately/toggle": ^3.10.0
   storybook:
-    storybook: ^10.4.0
-    "@storybook/addon-a11y": ^10.4.0
-    "@storybook/addon-docs": ^10.4.0
-    "@storybook/addon-links": ^10.4.0
-    "@storybook/addon-themes": ^10.4.0
-    "@storybook/nextjs": ^10.4.0
-    "@storybook/react-vite": ^10.4.0
-    eslint-plugin-storybook: ^10.4.0
+    storybook: ^10.4.1
+    "@storybook/addon-a11y": ^10.4.1
+    "@storybook/addon-docs": ^10.4.1
+    "@storybook/addon-links": ^10.4.1
+    "@storybook/addon-themes": ^10.4.1
+    "@storybook/nextjs": ^10.4.1
+    "@storybook/react-vite": ^10.4.1
+    eslint-plugin-storybook: ^10.4.1
     storybook-addon-pseudo-states: ^10.3.6
   tanstack-query:
     "@tanstack/query-devtools": ^5.100.11
