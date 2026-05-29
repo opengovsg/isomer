@@ -18,13 +18,16 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js"
+      "import": "./dist/esm/index.js",
+      "default": "./dist/esm/index.js"
     },
     "./templates/classic": {
-      "import": "./dist/esm/templates/classic/index.js"
+      "import": "./dist/esm/templates/classic/index.js",
+      "default": "./dist/esm/templates/classic/index.js"
     },
     "./templates/next": {
-      "import": "./dist/esm/templates/next/index.js"
+      "import": "./dist/esm/templates/next/index.js",
+      "default": "./dist/esm/templates/next/index.js"
     }
   },
   "publishConfig": {
