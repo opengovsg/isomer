@@ -88,6 +88,35 @@ describe("getTransformedPageContent", () => {
     }
   })
 
+  it("generates unique IDs for identical headings in different prose blocks", () => {
+    // Arrange
+    const proseBlock: IsomerComponent = {
+      type: "prose",
+      content: [
+        {
+          type: "heading",
+          attrs: { level: 2 },
+          content: [{ type: "text", text: "Introduction" }],
+        },
+      ],
+    }
+    const content: IsomerComponent[] = [proseBlock, proseBlock]
+
+    // Act
+    const transformed = getTransformedPageContent(content)
+
+    // Assert
+    const ids = transformed.map((block) => {
+      if (block.type !== "prose" || !block.content) return undefined
+      const heading = block.content[0]
+      return heading?.type === "heading" ? heading.attrs.id : undefined
+    })
+
+    expect(ids[0]).toMatch(idPattern)
+    expect(ids[1]).toMatch(idPattern)
+    expect(ids[0]).not.toBe(ids[1])
+  })
+
   it("adds ids to supported structured blocks", () => {
     // Arrange
     const content: IsomerComponent[] = [
