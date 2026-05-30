@@ -467,6 +467,7 @@ describe("site.router", async () => {
         }),
       )
     })
+
     it.each(["", " ", "\t", "\n", " \t\n "])(
       "should reject empty or whitespace-only siteName",
       async (siteName) => {
@@ -487,9 +488,13 @@ describe("site.router", async () => {
         })
 
         // Assert
-        await expect(result).rejects.toThrowError()
+        await expect(result).rejects.toMatchObject({
+          code: "BAD_REQUEST",
+          message: expect.stringContaining("Site name is required"),
+        })
       },
     )
+
     it("should update the site config if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -1852,6 +1857,28 @@ describe("site.router", async () => {
         siteName: "foo",
       })
     })
+
+    it.each(["", " ", "\t", "\n", " \t\n "])(
+      "should reject empty or whitespace-only siteName",
+      async (siteName) => {
+        // Arrange
+        await setupIsomerAdmin({
+          userId: session.userId!,
+          role: IsomerAdminRole.Core,
+        })
+
+        // Act
+        const result = caller.create({
+          siteName,
+        })
+
+        // Assert
+        await expect(result).rejects.toMatchObject({
+          code: "BAD_REQUEST",
+          message: expect.stringContaining("Site name is required"),
+        })
+      },
+    )
   })
 
   describe("publish", () => {
