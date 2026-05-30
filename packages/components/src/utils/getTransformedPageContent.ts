@@ -19,7 +19,7 @@ export const getTransformedPageContent = (
           ) {
             // generate a unique hash to auto-generate anchor links
             const anchorId = getDigestFromText(
-              `${JSON.stringify(component)}_${componentIndex}`,
+              `${JSON.stringify(component)}_${index}_${componentIndex}`,
             )
             const newAttrs = {
               ...component.attrs,
