@@ -775,6 +775,59 @@ describe("folder.router", async () => {
         content: blob.content.content,
       })
     })
+
+    it("should create a new published version with updated title when index page has no draft", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({ title: "Old Title" })
+      const { blob, page: indexPage } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const newTitle = "New Folder Name"
+
+      // Act
+      await caller.editFolder({
+        siteId: String(site.id),
+        resourceId: folder.id,
+        title: newTitle,
+        permalink: folder.permalink,
+      })
+
+      // Assert: a new Version should have been created
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .select(["publishedVersionId", "draftBlobId"])
+        .executeTakeFirstOrThrow()
+
+      expect(updatedIndexPage.draftBlobId).toBeNull()
+      expect(updatedIndexPage.publishedVersionId).not.toEqual(
+        indexPage.publishedVersionId,
+      )
+
+      // The new published version's blob should have the updated title/summary
+      const newPublishedBlob = await db
+        .selectFrom("Version")
+        .innerJoin("Blob", "Blob.id", "Version.blobId")
+        .where("Version.id", "=", updatedIndexPage.publishedVersionId!)
+        .select("Blob.content")
+        .executeTakeFirstOrThrow()
+
+      expect(newPublishedBlob.content).toMatchObject({
+        page: {
+          title: newTitle,
+          contentPageHeader: { summary: `Pages in ${newTitle}` },
+        },
+      })
+      // original content blocks are preserved
+      expect(newPublishedBlob.content).toMatchObject({
+        content: blob.content.content,
+      })
+    })
   })
 
   describe("getIndexpage", () => {
