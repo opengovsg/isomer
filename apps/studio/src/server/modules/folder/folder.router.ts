@@ -1,6 +1,6 @@
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
-import { get, pick } from "lodash-es"
+import { get, merge, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createFolderSchema,
@@ -25,6 +25,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
+import { createVersion } from "../version/version.service"
 import { defaultFolderSelect } from "./folder.select"
 
 const updateIndexPageBlobTitle = async (
@@ -42,16 +43,8 @@ const updateIndexPageBlobTitle = async (
   const mergeTitle = (
     existing: UnwrapTagged<PrismaJson.BlobJsonContent>,
   ): UnwrapTagged<PrismaJson.BlobJsonContent> =>
-    ({
-      ...existing,
-      page: {
-        ...existing.page,
-        title,
-        contentPageHeader: {
-          ...existing.page.contentPageHeader,
-          summary: `Pages in ${title}`,
-        },
-      },
+    merge({}, existing, {
+      page: { title, contentPageHeader: { summary: `Pages in ${title}` } },
     }) as UnwrapTagged<PrismaJson.BlobJsonContent>
 
   if (indexPage.draftBlobId) {
@@ -98,17 +91,12 @@ const updateIndexPageBlobTitle = async (
       .returning("id")
       .executeTakeFirstOrThrow()
 
-    const newVersion = await tx
-      .insertInto("Version")
-      .values({
-        versionNum: versionNum + 1,
-        resourceId: indexPage.id,
-        blobId: newBlob.id,
-        publishedAt: new Date(),
-        publishedBy: userId,
-      })
-      .returning("id")
-      .executeTakeFirstOrThrow()
+    const newVersion = await createVersion(tx, {
+      versionNum: versionNum + 1,
+      resourceId: indexPage.id,
+      blobId: newBlob.id,
+      publisherId: userId,
+    })
 
     await tx
       .updateTable("Resource")
