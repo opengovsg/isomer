@@ -4,6 +4,7 @@ import { configDefaults, defineConfig } from "vitest/config"
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
+    dir: "src",
     retry: 0,
     globals: true,
     exclude: [...configDefaults.exclude, "**/tests/e2e/**", "tests/load/**"],
@@ -11,6 +12,13 @@ export default defineConfig({
     globalSetup: ["tests/global-setup.ts"],
     coverage: {
       provider: "istanbul",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "**/__tests__/**",
+        "**/*.test.{ts,tsx}",
+        "**/*.stories.{ts,tsx}",
+        "**/*.d.ts",
+      ],
     },
   },
 })
