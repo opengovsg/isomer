@@ -775,6 +775,17 @@ describe("folder.router", async () => {
       expect(updatedBlob.content).toMatchObject({
         content: blob.content.content,
       })
+      // audit log: folder ResourceUpdate + index page ResourceUpdate
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(2)
+      expect(
+        auditLogs.some(
+          (log) =>
+            log.eventType === AuditLogEvent.ResourceUpdate &&
+            (log.delta as { after: { blob?: unknown } }).after?.blob !==
+              undefined,
+        ),
+      ).toBe(true)
     })
 
     it("should create a new published version with updated title when index page has no draft", async () => {
@@ -828,6 +839,12 @@ describe("folder.router", async () => {
       expect(newPublishedBlob.content).toMatchObject({
         content: blob.content.content,
       })
+      // audit log: folder ResourceUpdate + index page Publish
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(2)
+      expect(
+        auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
+      ).toBe(true)
     })
   })
 
