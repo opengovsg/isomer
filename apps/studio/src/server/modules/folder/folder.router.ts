@@ -18,12 +18,105 @@ import {
   jsonb,
   ResourceState,
   ResourceType,
+  type Transaction,
+  type DB,
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
+
+const updateIndexPageBlobTitle = async (
+  tx: Transaction<DB>,
+  {
+    indexPage,
+    title,
+    userId,
+  }: {
+    indexPage: { id: string; draftBlobId: string | null; publishedVersionId: string | null }
+    title: string
+    userId: string
+  },
+) => {
+  const mergeTitle = (
+    existing: UnwrapTagged<PrismaJson.BlobJsonContent>,
+  ): UnwrapTagged<PrismaJson.BlobJsonContent> =>
+    ({
+      ...existing,
+      page: {
+        ...existing.page,
+        title,
+        contentPageHeader: {
+          ...existing.page.contentPageHeader,
+          summary: `Pages in ${title}`,
+        },
+      },
+    }) as UnwrapTagged<PrismaJson.BlobJsonContent>
+
+  if (indexPage.draftBlobId) {
+    // Has a draft: update the draft blob in-place, preserving
+    // any user-edited blocks alongside the updated title/summary.
+    const { content } = await tx
+      .selectFrom("Blob")
+      .where("id", "=", indexPage.draftBlobId)
+      .select("content")
+      .executeTakeFirstOrThrow()
+
+    await tx
+      .updateTable("Blob")
+      .set({
+        content: jsonb(
+          mergeTitle(content as UnwrapTagged<PrismaJson.BlobJsonContent>),
+        ),
+      })
+      .where("id", "=", indexPage.draftBlobId)
+      .execute()
+  } else if (indexPage.publishedVersionId) {
+    // No draft but previously published: create a new blob+version from the
+    // published content so the rename lands on the live site after the rebuild
+    // triggered by editFolder.
+    const { blobId: publishedBlobId, versionNum } = await tx
+      .selectFrom("Version")
+      .where("id", "=", indexPage.publishedVersionId)
+      .select(["blobId", "versionNum"])
+      .executeTakeFirstOrThrow()
+
+    const { content } = await tx
+      .selectFrom("Blob")
+      .where("id", "=", publishedBlobId)
+      .select("content")
+      .executeTakeFirstOrThrow()
+
+    const newBlob = await tx
+      .insertInto("Blob")
+      .values({
+        content: jsonb(
+          mergeTitle(content as UnwrapTagged<PrismaJson.BlobJsonContent>),
+        ),
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    const newVersion = await tx
+      .insertInto("Version")
+      .values({
+        versionNum: versionNum + 1,
+        resourceId: indexPage.id,
+        blobId: newBlob.id,
+        publishedAt: new Date(),
+        publishedBy: userId,
+      })
+      .returning("id")
+      .executeTakeFirstOrThrow()
+
+    await tx
+      .updateTable("Resource")
+      .where("id", "=", indexPage.id)
+      .set({ publishedVersionId: newVersion.id })
+      .execute()
+  }
+}
 
 export const folderRouter = router({
   create: protectedProcedure
@@ -272,87 +365,11 @@ export const folderRouter = router({
           // NOTE: also update the blob content so the rendered page title
           // and breadcrumb summary reflect the new folder name.
           if (indexPage) {
-            const mergeTitle = (
-              existing: UnwrapTagged<PrismaJson.BlobJsonContent>,
-            ): UnwrapTagged<PrismaJson.BlobJsonContent> =>
-              ({
-                ...existing,
-                page: {
-                  ...existing.page,
-                  title,
-                  contentPageHeader: {
-                    ...existing.page.contentPageHeader,
-                    summary: `Pages in ${title}`,
-                  },
-                },
-              }) as UnwrapTagged<PrismaJson.BlobJsonContent>
-
-            if (indexPage.draftBlobId) {
-              // Has a draft: update the draft blob in-place, preserving
-              // any user-edited blocks alongside the updated title/summary.
-              const { content } = await tx
-                .selectFrom("Blob")
-                .where("id", "=", indexPage.draftBlobId)
-                .select("content")
-                .executeTakeFirstOrThrow()
-
-              await tx
-                .updateTable("Blob")
-                .set({
-                  content: jsonb(
-                    mergeTitle(
-                      content as UnwrapTagged<PrismaJson.BlobJsonContent>,
-                    ),
-                  ),
-                })
-                .where("id", "=", indexPage.draftBlobId)
-                .execute()
-            } else if (indexPage.publishedVersionId) {
-              // No draft but previously published: create a new blob+version
-              // from the published content so the rename lands on the live
-              // site after the rebuild triggered by editFolder.
-              const { blobId: publishedBlobId, versionNum } = await tx
-                .selectFrom("Version")
-                .where("id", "=", indexPage.publishedVersionId)
-                .select(["blobId", "versionNum"])
-                .executeTakeFirstOrThrow()
-
-              const { content } = await tx
-                .selectFrom("Blob")
-                .where("id", "=", publishedBlobId)
-                .select("content")
-                .executeTakeFirstOrThrow()
-
-              const newBlob = await tx
-                .insertInto("Blob")
-                .values({
-                  content: jsonb(
-                    mergeTitle(
-                      content as UnwrapTagged<PrismaJson.BlobJsonContent>,
-                    ),
-                  ),
-                })
-                .returning("id")
-                .executeTakeFirstOrThrow()
-
-              const newVersion = await tx
-                .insertInto("Version")
-                .values({
-                  versionNum: versionNum + 1,
-                  resourceId: indexPage.id,
-                  blobId: newBlob.id,
-                  publishedAt: new Date(),
-                  publishedBy: user.id,
-                })
-                .returning("id")
-                .executeTakeFirstOrThrow()
-
-              await tx
-                .updateTable("Resource")
-                .where("id", "=", indexPage.id)
-                .set({ publishedVersionId: newVersion.id })
-                .execute()
-            }
+            await updateIndexPageBlobTitle(tx, {
+              indexPage,
+              title,
+              userId: user.id,
+            })
           }
 
           await logResourceEvent(tx, {
