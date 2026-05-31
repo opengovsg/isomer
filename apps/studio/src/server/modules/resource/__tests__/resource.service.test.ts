@@ -15,6 +15,7 @@ import {
 
 import type { Resource } from "../../database"
 import { db, ResourceState } from "../../database"
+import { getIndexPageSummary } from "../../page/page.service"
 import {
   getBatchAncestryWithSelfQuery,
   getFullPageById,
@@ -949,7 +950,7 @@ describe("resource.service", () => {
       expect(child?.id).toBe(folder.id)
       expect(child?.permalink).toBe(`/${folder.permalink}`)
       expect(child?.title).toBe(folder.title) // should be from the folder
-      expect(child?.summary).toBe(`Pages in ${folder.title}`) // should not be from the index page
+      expect(child?.summary).toBe(getIndexPageSummary(folder.title)) // should not be from the index page
     })
 
     it("should return folder indexpage's title when resourceId is a IndexPage (PUBLISHED)", async () => {
@@ -1036,7 +1037,7 @@ describe("resource.service", () => {
       expect(child?.id).toBe(collection.id) // should be from the collection regardless
       expect(child?.permalink).toBe(`/${collection.permalink}`)
       expect(child?.title).toBe(collection.title) // should be from the collection
-      expect(child?.summary).toBe(`Pages in ${collection.title}`) // should not be from the index page
+      expect(child?.summary).toBe(getIndexPageSummary(collection.title)) // should not be from the index page
     })
 
     it("should return collection indexpage's title when resourceId is a IndexPage (PUBLISHED)", async () => {
@@ -1199,7 +1200,7 @@ describe("resource.service", () => {
         ?.at(0)
         ?.children?.find((child) => child.id === collection.id)
       expect(collectionNode?.title).toBe(collection.title)
-      expect(collectionNode?.summary).toBe(`Pages in ${collection.title}`)
+      expect(collectionNode?.summary).toBe(getIndexPageSummary(collection.title))
       expect(collectionNode?.image?.src).toBeUndefined()
     })
 
@@ -1278,7 +1279,7 @@ describe("resource.service", () => {
         (child) => child.id === collection1.id,
       )
       expect(collection1Node?.title).toBe(collection1.title)
-      expect(collection1Node?.summary).toBe(`Pages in ${collection1.title}`)
+      expect(collection1Node?.summary).toBe(getIndexPageSummary(collection1.title))
 
       // Assert: Find Child Collection (With Index Page) in the sitemap
       const collection2Node = childFolderChildren?.find(

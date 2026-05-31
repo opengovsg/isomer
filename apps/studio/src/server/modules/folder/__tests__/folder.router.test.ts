@@ -17,6 +17,7 @@ import {
 import { createCallerFactory } from "~/server/trpc"
 
 import { AuditLogEvent, db, ResourceState, ResourceType } from "../../database"
+import { getIndexPageSummary } from "../../page/page.service"
 import { folderRouter } from "../folder.router"
 
 const createCaller = createCallerFactory(folderRouter)
@@ -767,7 +768,7 @@ describe("folder.router", async () => {
       expect(updatedBlob.content).toMatchObject({
         page: {
           title: newTitle,
-          contentPageHeader: { summary: `Pages in ${newTitle}` },
+          contentPageHeader: { summary: getIndexPageSummary(newTitle) },
         },
       })
       // existing content blocks are preserved (not overwritten by a fresh template)
@@ -820,7 +821,7 @@ describe("folder.router", async () => {
       expect(newPublishedBlob.content).toMatchObject({
         page: {
           title: newTitle,
-          contentPageHeader: { summary: `Pages in ${newTitle}` },
+          contentPageHeader: { summary: getIndexPageSummary(newTitle) },
         },
       })
       // original content blocks are preserved

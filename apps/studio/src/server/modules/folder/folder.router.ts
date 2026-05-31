@@ -22,7 +22,10 @@ import {
   type DB,
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { createFolderIndexPage } from "../page/page.service"
+import {
+  createFolderIndexPage,
+  getIndexPageSummary,
+} from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
 import { createVersion } from "../version/version.service"
@@ -44,7 +47,7 @@ const updateIndexPageBlobTitle = async (
     existing: UnwrapTagged<PrismaJson.BlobJsonContent>,
   ): UnwrapTagged<PrismaJson.BlobJsonContent> =>
     merge({}, existing, {
-      page: { title, contentPageHeader: { summary: `Pages in ${title}` } },
+      page: { title, contentPageHeader: { summary: getIndexPageSummary(title) } },
     }) as UnwrapTagged<PrismaJson.BlobJsonContent>
 
   if (indexPage.draftBlobId) {
