@@ -12,6 +12,13 @@ export default defineConfig({
     coverage: {
       provider: "istanbul",
       reportOnFailure: true,
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "**/__tests__/**",
+        "**/*.test.{ts,tsx}",
+        "**/*.stories.{ts,tsx}",
+        "**/*.d.ts",
+      ],
     },
   },
 })

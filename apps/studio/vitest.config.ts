@@ -12,6 +12,13 @@ export default defineConfig({
     globalSetup: ["tests/global-setup.ts"],
     coverage: {
       provider: "istanbul",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "**/__tests__/**",
+        "**/*.test.{ts,tsx}",
+        "**/*.stories.{ts,tsx}",
+        "**/*.d.ts",
+      ],
     },
   },
 })
