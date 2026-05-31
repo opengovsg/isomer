@@ -71,14 +71,10 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
           tx
             .selectFrom("CodeBuildJobs")
             .select("buildId")
-            .where(
-              "supersededByBuildId",
-              "=",
-              buildChanges.stoppedBuild.id,
-            )
+            .where("supersededByBuildId", "=", buildChanges.stoppedBuild.id)
             .unionAll(
               tx.selectNoFrom((eb) => [
-                eb.val(buildChanges.stoppedBuild!.id).as("buildId"),
+                eb.val(buildChanges.stoppedBuild.id).as("buildId"),
               ]),
             ),
         )
