@@ -33,7 +33,7 @@ const insertAuditLog = async ({
   ipAddress?: string | null
   createdAt?: Date
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   const values: any = {
     eventType,
     userId,
@@ -1048,7 +1048,7 @@ describe("getAuditLogQuery", () => {
       const buildQuery = () =>
         getAuditLogQuery({
           siteId,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // oxlint-disable-next-line @typescript-eslint/no-explicit-any
           type: "unknown" as any,
           monthYear: TEST_MONTH,
         })
