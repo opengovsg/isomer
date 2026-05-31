@@ -16,6 +16,41 @@ const MONTH_START = startOfMonth(TEST_DATE)
 const MONTH_END = endOfMonth(TEST_DATE)
 const MID_MONTH = new Date("2026-01-15T12:00:00.000Z")
 
+interface UsersQueryRow {
+  Email: string
+  '"Last login"': Date | null
+  Role: string
+  '"Date added"': Date
+}
+
+interface EventsQueryRow {
+  '"Date and time"': Date
+  '"Event type"': AuditLogEvent
+  '"Account creation date"': Date | null
+  '"Last login date"': Date | null
+  Description: unknown
+  Delta: unknown
+  Email: string | null
+  Metadata: unknown
+  Name: string | null
+}
+
+const getUsersRows = async (params: { siteId: number; monthYear: string }) => {
+  const result = await getAuditLogQuery({
+    ...params,
+    type: "users",
+  }).execute()
+  return result as unknown as UsersQueryRow[]
+}
+
+const getEventsRows = async (params: { siteId: number; monthYear: string }) => {
+  const result = await getAuditLogQuery({
+    ...params,
+    type: "events",
+  }).execute()
+  return result as unknown as EventsQueryRow[]
+}
+
 const insertAuditLog = async ({
   eventType,
   userId,
@@ -33,8 +68,7 @@ const insertAuditLog = async ({
   ipAddress?: string | null
   createdAt?: Date
 }) => {
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
-  const values: any = {
+  const baseValues = {
     eventType,
     userId,
     siteId,
@@ -42,14 +76,16 @@ const insertAuditLog = async ({
     metadata: jsonb(metadata),
     ipAddress,
   }
-  if (createdAt !== undefined) {
-    values.createdAt = createdAt
-  }
-  return db
-    .insertInto("AuditLog")
-    .values(values)
-    .returningAll()
-    .executeTakeFirstOrThrow()
+  const values =
+    createdAt !== undefined ? { ...baseValues, createdAt } : baseValues
+  return (
+    db
+      .insertInto("AuditLog")
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+      .values(values as any)
+      .returningAll()
+      .executeTakeFirstOrThrow()
+  )
 }
 
 // Group A: pure unit tests — no DB required
@@ -165,11 +201,7 @@ describe("getAuditLogQuery", () => {
   describe("users query", () => {
     it("returns users with non-deleted permission with expected columns", async () => {
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "users",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getUsersRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(1)
@@ -186,11 +218,7 @@ describe("getAuditLogQuery", () => {
       await setupAdminPermissions({ userId: ogpUser.id, siteId })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "users",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getUsersRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       const emails = rows.map((r) => r.Email)
@@ -208,11 +236,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "users",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getUsersRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows.map((r) => r.Email)).not.toContain("deleted@agency.gov.sg")
@@ -228,11 +252,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "users",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getUsersRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows.map((r) => r.Email)).not.toContain("other@agency.gov.sg")
@@ -247,11 +267,7 @@ describe("getAuditLogQuery", () => {
       await setupAdminPermissions({ userId: oldUser.id, siteId })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "users",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getUsersRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows.map((r) => r.Email)).toContain("old@agency.gov.sg")
@@ -273,11 +289,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe('"My Page" (Page 5) created')
@@ -297,11 +309,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe('"T" (Page 5) updated')
@@ -321,11 +329,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe('"T" (Page 5) updated')
@@ -342,11 +346,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe('"T" (Page 5) deleted')
@@ -364,11 +364,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe(
@@ -387,11 +383,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe("Publish")
@@ -408,11 +400,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe("Navbar has been updated")
@@ -429,11 +417,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe("Footer has been updated")
@@ -450,11 +434,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe("Site configuration has been updated")
@@ -472,11 +452,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe(
@@ -499,11 +475,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows[0]!.Description).toBe(
@@ -525,11 +497,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       const row = rows.find((r) => r['"Event type"'] === AuditLogEvent.Login)
@@ -550,11 +518,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       const row = rows.find((r) => r['"Event type"'] === AuditLogEvent.Logout)
@@ -577,11 +541,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(1)
@@ -599,11 +559,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(1)
@@ -621,11 +577,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(0)
@@ -649,11 +601,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(0)
@@ -673,11 +621,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(1)
@@ -698,11 +642,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(0)
@@ -729,11 +669,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       const loginRow = rows.find(
@@ -757,11 +693,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(1)
@@ -781,11 +713,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(0)
@@ -805,11 +733,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       const logoutRow = rows.find(
@@ -837,11 +761,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       const logoutRow = rows.find(
@@ -863,11 +783,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       const logoutRow = rows.find(
@@ -890,11 +806,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(1)
@@ -911,11 +823,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(1)
@@ -932,11 +840,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(0)
@@ -953,11 +857,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(0)
@@ -991,11 +891,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       expect(rows).toHaveLength(3)
@@ -1027,11 +923,7 @@ describe("getAuditLogQuery", () => {
       })
 
       // Act
-      const rows = await getAuditLogQuery({
-        siteId,
-        type: "events",
-        monthYear: TEST_MONTH,
-      }).execute()
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       const loginRow = rows.find(
@@ -1059,12 +951,7 @@ describe("getAuditLogQuery", () => {
 
     it("malformed monthYear throws a database error (Invalid Date → invalid timestamp)", async () => {
       // Act
-      const execute = () =>
-        getAuditLogQuery({
-          siteId,
-          type: "events",
-          monthYear: "garbage",
-        }).execute()
+      const execute = () => getEventsRows({ siteId, monthYear: "garbage" })
 
       // Assert
       await expect(execute()).rejects.toThrow()
