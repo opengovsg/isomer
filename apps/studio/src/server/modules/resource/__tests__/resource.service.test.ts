@@ -1200,7 +1200,9 @@ describe("resource.service", () => {
         ?.at(0)
         ?.children?.find((child) => child.id === collection.id)
       expect(collectionNode?.title).toBe(collection.title)
-      expect(collectionNode?.summary).toBe(getIndexPageSummary(collection.title))
+      expect(collectionNode?.summary).toBe(
+        getIndexPageSummary(collection.title),
+      )
       expect(collectionNode?.image?.src).toBeUndefined()
     })
 
@@ -1279,7 +1281,9 @@ describe("resource.service", () => {
         (child) => child.id === collection1.id,
       )
       expect(collection1Node?.title).toBe(collection1.title)
-      expect(collection1Node?.summary).toBe(getIndexPageSummary(collection1.title))
+      expect(collection1Node?.summary).toBe(
+        getIndexPageSummary(collection1.title),
+      )
 
       // Assert: Find Child Collection (With Index Page) in the sitemap
       const collection2Node = childFolderChildren?.find(

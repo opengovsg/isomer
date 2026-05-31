@@ -11,10 +11,7 @@ import {
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 
-import {
-  logPublishEvent,
-  logResourceEvent,
-} from "../audit/audit.service"
+import { logPublishEvent, logResourceEvent } from "../audit/audit.service"
 import {
   AuditLogEvent,
   db,
