@@ -21,10 +21,7 @@ import {
 import { PG_ERROR_CODES } from "../database/constants"
 import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import {
-  publishResource,
-  updateBlobById,
-} from "../resource/resource.service"
+import { publishResource, updateBlobById } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
