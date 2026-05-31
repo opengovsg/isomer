@@ -26,7 +26,6 @@ export const DatabaseLayout = ({
   page,
   layout,
   content,
-  LinkComponent,
 }: DatabasePageSchemaType) => {
   const breadcrumb = getBreadcrumbFromSiteMap(
     site.siteMap,
@@ -37,35 +36,25 @@ export const DatabaseLayout = ({
   const tableOfContents = getTableOfContents(site, content)
 
   return (
-    <Skeleton
-      site={site}
-      page={page}
-      layout={layout}
-      LinkComponent={LinkComponent}
-    >
+    <Skeleton site={site} page={page} layout={layout}>
       <ContentPageHeader
         {...page.contentPageHeader}
         title={page.title}
         breadcrumb={breadcrumb}
         site={site}
-        LinkComponent={LinkComponent}
         lastUpdated={page.lastModified}
       />
       <div className={compoundStyles.container()}>
         {transformedContent.length > 0 && (
           <div className={compoundStyles.content()}>
             {tableOfContents.length > 1 && (
-              <TableOfContents
-                items={tableOfContents}
-                LinkComponent={LinkComponent}
-              />
+              <TableOfContents items={tableOfContents} />
             )}
             <div>
               {renderPageContent({
                 content: transformedContent,
                 layout,
                 site,
-                LinkComponent,
                 permalink: page.permalink,
               })}
             </div>

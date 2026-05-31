@@ -10,7 +10,7 @@
  *   1. Authenticate with AWS first, e.g.:
  *        aws sso login --profile <your-profile>
  *   2. Run the admin CLI from tooling/scripts:
- *        npm run isomer-admin
+ *        pnpm run isomer-admin
  *   3. Select "Rebuild all CodeBuild projects" and answer the prompts.
  *
  * Tip: Run in dry-run mode first to list all project indexes, then rerun with

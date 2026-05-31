@@ -16,10 +16,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
 import { merge } from "lodash-es"
+import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { useCallback, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { mockDateDecorator } from "storybook-mock-date-decorator"
 import superjson from "superjson"
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
@@ -137,14 +137,18 @@ const LoginStateDecorator: Decorator<Args> = (story, { parameters }) => {
 }
 
 const conditionalMockDateDecorator: Decorator = (story, context) => {
-  // NOTE: skip mockDateDecorator if explicitly disabled;
-  // this is because the decorator calls `MockDate.reset` under the hood
-  // which might interfere with renders in React
+  // NOTE: skip mock date if explicitly disabled — resetting mockdate during
+  // render can interfere with React.
   if (context.parameters.disableMockDate) {
     return story()
   }
 
-  return mockDateDecorator(story, context) as JSX.Element
+  mockdate.reset()
+  const date = context.parameters.date as Date | string | number | undefined
+  if (date !== undefined) {
+    mockdate.set(date)
+  }
+  return story() as JSX.Element
 }
 
 const decorators: Decorator[] = [

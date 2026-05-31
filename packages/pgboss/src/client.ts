@@ -1,6 +1,7 @@
 import type { Job, ScheduleOptions } from "pg-boss"
-import type { BaseLogger } from "pino"
 import { PgBoss } from "pg-boss"
+
+import type { BaseLogger } from "@isomer/logging"
 
 import { env } from "./env"
 import { type HeartbeatOptions, sendHeartbeat } from "./utils"

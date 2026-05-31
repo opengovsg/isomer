@@ -7,7 +7,6 @@ import type {
   DatabasePagePageProps,
   FileRefPageProps,
   HomePagePageProps,
-  LinkComponentType,
   LinkRefPageProps,
   NotFoundPagePageProps,
   SearchPagePageProps,
@@ -242,7 +241,6 @@ export type IsomerSchema = SimplifyDeep<Static<typeof IsomerPageSchema>>
 // JSON schema, as the data should be provided by the template directly
 interface BasePageAdditionalProps {
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
 }
 
 export interface NotFoundPageSchemaType extends BasePageAdditionalProps {

@@ -19,14 +19,14 @@ export const getIndexPageIcon = (
 
 export const getIndexPageSubtitle = ({
   type,
-  isNewCollectionEditingExperienceEnabled = false,
+  isNewCollectionTagsManagementEnabled = false,
 }: {
   type: ResourceTypesWithIndexPage
-  isNewCollectionEditingExperienceEnabled: boolean
+  isNewCollectionTagsManagementEnabled: boolean
 }) => {
   switch (type) {
     case "collection":
-      return isNewCollectionEditingExperienceEnabled
+      return isNewCollectionTagsManagementEnabled
         ? "Manage the Collection’s layout, filters, and sorting."
         : "Manage how your Collection looks like and behaves"
     case "folder":

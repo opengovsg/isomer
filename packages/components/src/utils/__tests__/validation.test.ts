@@ -275,11 +275,12 @@ describe("validation", () => {
   })
 
   describe("AUDIO_EMBED_URL_PATTERN and isValidAudioEmbedUrl", () => {
-    it("should allow Spotify episode and show embed URLs", () => {
+    it("should allow Spotify episode, show, and playlist embed URLs", () => {
       const testCases = [
         "https://open.spotify.com/embed/episode/7makk4oTQel546B0PZlDM5",
         "https://open.spotify.com/embed/episode/3T5WkragWdHZRwFl7qCHoz?utm_source=generator",
         "https://open.spotify.com/embed/show/66PYiIthr1KqQhJ82XH4DN?utm_source=generator",
+        "https://open.spotify.com/embed/playlist/1apUfsI3NR7LqzFOlGieBT",
       ]
 
       testCases.forEach((testCase) => {
@@ -301,11 +302,10 @@ describe("validation", () => {
       })
     })
 
-    it("should not allow Spotify album, track, playlist, or artist (only episode and show supported)", () => {
+    it("should not allow Spotify album, track, or artist (only episode, show, and playlist supported)", () => {
       const testCases = [
         "https://open.spotify.com/embed/album/6i6folBtxKV28WX3msQ4FE",
         "https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT",
-        "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M",
         "https://open.spotify.com/embed/artist/0OdUWJ0sBJDrq8yp90n0ID",
       ]
 
