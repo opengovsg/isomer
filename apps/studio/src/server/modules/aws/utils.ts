@@ -42,27 +42,49 @@ export const addCodeBuildAndMarkSupersededBuild = async ({
     buildStartTime = buildChanges.latestRunningBuild.startTime
   }
 
-  // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build
-  await db
-    .insertInto("CodeBuildJobs")
-    .values(
-      resourceWithUserIds.map(({ resourceId, userId }) => ({
-        siteId,
-        userId,
-        buildId: buildIdToLink,
-        startedAt: buildStartTime,
-        resourceId,
-        isScheduled,
-      })),
-    )
-    .execute()
-  // If a new build was started, mark the stopped build (if any) as being superseded by the new build
-  if (buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id) {
-    await updateStoppedBuild({
-      startedBuildId: buildChanges.startedBuild.id,
-      stoppedBuildId: buildChanges.stoppedBuild.id,
-    })
-  }
+  await db.transaction().execute(async (tx) => {
+    // Insert a new row into CodeBuildJobs to link the resourceId, userId, siteId to the build
+    await tx
+      .insertInto("CodeBuildJobs")
+      .values(
+        resourceWithUserIds.map(({ resourceId, userId }) => ({
+          siteId,
+          userId,
+          buildId: buildIdToLink,
+          startedAt: buildStartTime,
+          resourceId,
+          isScheduled,
+        })),
+      )
+      .execute()
+    // If a new build was started, mark the stopped build (if any) as being superseded by the new build
+    if (buildChanges.isNewBuildNeeded && buildChanges.stoppedBuild?.id) {
+      await tx
+        .updateTable("CodeBuildJobs")
+        .set({
+          supersededByBuildId: buildChanges.startedBuild.id,
+          status: "STOPPED",
+        })
+        .where(
+          "buildId",
+          "in",
+          tx
+            .selectFrom("CodeBuildJobs")
+            .select("buildId")
+            .where(
+              "supersededByBuildId",
+              "=",
+              buildChanges.stoppedBuild.id,
+            )
+            .unionAll(
+              tx.selectNoFrom((eb) => [
+                eb.val(buildChanges.stoppedBuild!.id).as("buildId"),
+              ]),
+            ),
+        )
+        .execute()
+    }
+  })
 }
 
 /**
