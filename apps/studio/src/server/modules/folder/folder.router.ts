@@ -1,3 +1,4 @@
+import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
@@ -21,7 +22,7 @@ import {
 import { PG_ERROR_CODES } from "../database/constants"
 import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import { publishResource, updateBlobById } from "../resource/resource.service"
+import { publishResource } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
@@ -265,17 +266,39 @@ export const folderRouter = router({
             })
             // NOTE: we cannot throw here because
             // it's entirely possible that the index page doesn't exist
-            .returning(["id"])
+            .returning(["id", "draftBlobId"])
             .executeTakeFirst()
 
           // NOTE: also update the blob content so the rendered page title
-          // and breadcrumb summary reflect the new folder name
-          if (indexPage) {
-            await updateBlobById(tx, {
-              pageId: Number(indexPage.id),
-              content: createFolderIndexPage(title),
-              siteId: oldResource.siteId,
-            })
+          // and breadcrumb summary reflect the new folder name.
+          // We only update when a draft blob exists so we can merge into the
+          // existing content rather than overwriting user-edited blocks.
+          if (indexPage?.draftBlobId) {
+            const { content } = await tx
+              .selectFrom("Blob")
+              .where("id", "=", indexPage.draftBlobId)
+              .select("content")
+              .executeTakeFirstOrThrow()
+
+            const existing =
+              content as UnwrapTagged<PrismaJson.BlobJsonContent>
+            await tx
+              .updateTable("Blob")
+              .set({
+                content: jsonb({
+                  ...existing,
+                  page: {
+                    ...existing.page,
+                    title,
+                    contentPageHeader: {
+                      ...existing.page.contentPageHeader,
+                      summary: `Pages in ${title}`,
+                    },
+                  },
+                } as UnwrapTagged<PrismaJson.BlobJsonContent>),
+              })
+              .where("id", "=", indexPage.draftBlobId)
+              .execute()
           }
 
           await logResourceEvent(tx, {

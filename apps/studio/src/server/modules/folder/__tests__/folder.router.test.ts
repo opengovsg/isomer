@@ -737,7 +737,7 @@ describe("folder.router", async () => {
       expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
     })
 
-    it("should update the index page blob content to reflect the new folder title", async () => {
+    it("should update only title/summary in the index page blob, preserving other content", async () => {
       // Arrange
       const { site, folder } = await setupFolder({ title: "Old Title" })
       const { blob } = await setupPageResource({
@@ -763,11 +763,16 @@ describe("folder.router", async () => {
         .select("content")
         .executeTakeFirstOrThrow()
 
+      // title and summary reflect the new folder name
       expect(updatedBlob.content).toMatchObject({
         page: {
           title: newTitle,
           contentPageHeader: { summary: `Pages in ${newTitle}` },
         },
+      })
+      // existing content blocks are preserved (not overwritten by a fresh template)
+      expect(updatedBlob.content).toMatchObject({
+        content: blob.content.content,
       })
     })
   })
