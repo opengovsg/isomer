@@ -45,7 +45,11 @@ const updateIndexPageBlobTitle = async (
     user,
     siteId,
   }: {
-    indexPage: { id: string; draftBlobId: string | null; publishedVersionId: string | null }
+    indexPage: {
+      id: string
+      draftBlobId: string | null
+      publishedVersionId: string | null
+    }
     title: string
     user: User
     siteId: number
@@ -55,7 +59,10 @@ const updateIndexPageBlobTitle = async (
     existing: UnwrapTagged<PrismaJson.BlobJsonContent>,
   ): UnwrapTagged<PrismaJson.BlobJsonContent> =>
     merge({}, existing, {
-      page: { title, contentPageHeader: { summary: getIndexPageSummary(title) } },
+      page: {
+        title,
+        contentPageHeader: { summary: getIndexPageSummary(title) },
+      },
     }) as UnwrapTagged<PrismaJson.BlobJsonContent>
 
   if (indexPage.draftBlobId) {
@@ -78,7 +85,9 @@ const updateIndexPageBlobTitle = async (
       .updateTable("Blob")
       .set({
         content: jsonb(
-          mergeTitle(oldBlob.content as UnwrapTagged<PrismaJson.BlobJsonContent>),
+          mergeTitle(
+            oldBlob.content as UnwrapTagged<PrismaJson.BlobJsonContent>,
+          ),
         ),
       })
       .where("id", "=", indexPage.draftBlobId)
@@ -120,7 +129,9 @@ const updateIndexPageBlobTitle = async (
       .insertInto("Blob")
       .values({
         content: jsonb(
-          mergeTitle(oldBlob.content as UnwrapTagged<PrismaJson.BlobJsonContent>),
+          mergeTitle(
+            oldBlob.content as UnwrapTagged<PrismaJson.BlobJsonContent>,
+          ),
         ),
       })
       .returningAll()
