@@ -21,7 +21,10 @@ import {
 import { PG_ERROR_CODES } from "../database/constants"
 import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import { publishResource } from "../resource/resource.service"
+import {
+  publishResource,
+  updateBlobById,
+} from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
@@ -255,7 +258,7 @@ export const folderRouter = router({
             })
 
           // NOTE: update the index page's title so that they stay in sync
-          await tx
+          const indexPage = await tx
             .updateTable("Resource")
             .where("Resource.parentId", "=", oldResource.id)
             .where("Resource.siteId", "=", oldResource.siteId)
@@ -265,7 +268,18 @@ export const folderRouter = router({
             })
             // NOTE: we cannot throw here because
             // it's entirely possible that the index page doesn't exist
+            .returning(["id"])
             .executeTakeFirst()
+
+          // NOTE: also update the blob content so the rendered page title
+          // and breadcrumb summary reflect the new folder name
+          if (indexPage) {
+            await updateBlobById(tx, {
+              pageId: Number(indexPage.id),
+              content: createFolderIndexPage(title),
+              siteId: oldResource.siteId,
+            })
+          }
 
           await logResourceEvent(tx, {
             siteId: Number(siteId),

@@ -736,6 +736,40 @@ describe("folder.router", async () => {
       expect(auditLogs?.userId).toEqual(session.userId)
       expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
     })
+
+    it("should update the index page blob content to reflect the new folder title", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({ title: "Old Title" })
+      const { blob } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const newTitle = "New Folder Name"
+
+      // Act
+      await caller.editFolder({
+        siteId: String(site.id),
+        resourceId: folder.id,
+        title: newTitle,
+        permalink: folder.permalink,
+      })
+
+      // Assert
+      const updatedBlob = await db
+        .selectFrom("Blob")
+        .where("id", "=", blob.id)
+        .select("content")
+        .executeTakeFirstOrThrow()
+
+      expect(updatedBlob.content).toMatchObject({
+        page: {
+          title: newTitle,
+          contentPageHeader: { summary: `Pages in ${newTitle}` },
+        },
+      })
+    })
   })
 
   describe("getIndexpage", () => {
