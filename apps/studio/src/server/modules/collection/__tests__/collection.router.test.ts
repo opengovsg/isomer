@@ -1445,7 +1445,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrow()
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
     it.skip("should throw when trying to update to a deleted `ref`")
