@@ -1405,6 +1405,49 @@ describe("collection.router", async () => {
       expect(expected.id).toEqual(blob.id)
     })
 
+    it("should store a valid date in `dd/MM/yyyy` format", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const expected = await caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "1",
+        linkId: Number(page.id),
+        date: "31/01/2024",
+      })
+
+      // Assert
+      expect((expected.content.page as { date?: string }).date).toEqual(
+        "31/01/2024",
+      )
+    })
+
+    it("should reject an invalid date", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      // 29 Feb 2023 is invalid as 2023 is not a leap year.
+      const result = caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "1",
+        linkId: Number(page.id),
+        date: "29/02/2023",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    })
+
     it.skip("should throw when trying to update to a deleted `ref`")
 
     it.skip("should throw when trying to update to an invalid `ref`")
