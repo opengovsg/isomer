@@ -775,9 +775,9 @@ describe("folder.router", async () => {
       expect(updatedBlob.content).toMatchObject({
         content: blob.content.content,
       })
-      // audit log: folder ResourceUpdate + index page ResourceUpdate
+      // audit log: folder ResourceUpdate + index page ResourceUpdate + folder Publish
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
-      expect(auditLogs).toHaveLength(2)
+      expect(auditLogs).toHaveLength(3)
       expect(
         auditLogs.some(
           (log) =>
@@ -839,9 +839,9 @@ describe("folder.router", async () => {
       expect(newPublishedBlob.content).toMatchObject({
         content: blob.content.content,
       })
-      // audit log: folder ResourceUpdate + index page Publish
+      // audit log: folder ResourceUpdate + index page Publish + folder Publish
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
-      expect(auditLogs).toHaveLength(2)
+      expect(auditLogs).toHaveLength(3)
       expect(
         auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
       ).toBe(true)
