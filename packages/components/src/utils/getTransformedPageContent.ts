@@ -20,7 +20,7 @@ export const getTransformedPageContent = (
             component.attrs.id === undefined
           ) {
             // generate a unique hash to auto-generate anchor links
-            // for backwards compatibility, use the same seed format for headings, but with an added collision count suffix only if there are multiple headings with the same content
+            // for backwards compatibility, use the same seed format for headings, but with an added index suffix only if there are multiple headings with the same content
             const seed = `${JSON.stringify(component)}_${componentIndex}`
             let anchorId = getDigestFromText(seed)
             if (usedHeadingIds.has(anchorId)) {
