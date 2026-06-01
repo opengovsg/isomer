@@ -83,7 +83,6 @@ const SingleCard = ({
   displayThumbnail,
   displayCategory,
   site,
-  LinkComponent,
   shouldLazyLoad,
   numberOfCards,
   formattedDate,
@@ -115,7 +114,6 @@ const SingleCard = ({
     <Link
       href={referenceLinkHref}
       className={compoundStyles.cardContainer()}
-      LinkComponent={LinkComponent}
       isExternal={isExternalLink}
     >
       {displayThumbnail && renderImage()}
@@ -162,7 +160,6 @@ const CollectionBlockSkeleton = ({
 
 export const CollectionBlock = ({
   site,
-  LinkComponent,
   collectionReferenceLink,
   customTitle,
   customDescription,
@@ -217,7 +214,6 @@ export const CollectionBlock = ({
             displayThumbnail={displayThumbnail}
             displayCategory={displayCategory}
             site={site}
-            LinkComponent={LinkComponent}
             shouldLazyLoad={shouldLazyLoad}
             numberOfCards={numberOfCards}
             {...card}
@@ -235,7 +231,6 @@ export const CollectionBlock = ({
           size="base"
           variant="outline"
           isWithFocusVisibleHighlight
-          LinkComponent={LinkComponent}
         >
           {buttonLabel}
         </LinkButton>

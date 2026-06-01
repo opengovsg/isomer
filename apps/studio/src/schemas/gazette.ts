@@ -11,7 +11,7 @@ export const createGazetteSchema = z.object({
   subcategory: z.string().min(1, { message: "Subcategory is required" }),
   // NOTE: Not required for advertisements
   notificationNumber: z.string().optional(),
-  publishDate: z.date({ required_error: "Date of publication is required" }),
+  publishDate: z.date({ error: "Date of publication is required" }),
   publishTime: z
     .string()
     .min(1, { message: "Time of publication is required" }),

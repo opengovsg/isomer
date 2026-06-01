@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
@@ -78,5 +78,4 @@ export const DynamicDataBannerSchema = Type.Object(
 
 export type DynamicDataBannerProps = Static<typeof DynamicDataBannerSchema> & {
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
 }

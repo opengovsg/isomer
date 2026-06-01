@@ -1,7 +1,7 @@
 import type { StartedNetwork, StartedTestContainer } from "testcontainers"
-import { dirname, join } from "path"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { GenericContainer, Wait } from "testcontainers"
-import { fileURLToPath } from "url"
 import { z } from "zod"
 
 type ContainerType = "database" | "mockpass"

@@ -59,15 +59,10 @@ const footerItemLinkStyle = tv({
   },
 })
 
-const FooterItem = ({
-  LinkComponent,
-  title,
-  url,
-}: FooterItemType & Pick<FooterProps, "LinkComponent">) => {
+const FooterItem = ({ title, url }: FooterItemType) => {
   if (isExternalUrl(url)) {
     return (
       <Link
-        LinkComponent={LinkComponent}
         href={url}
         isExternal
         className={footerItemLinkStyle()}
@@ -82,7 +77,6 @@ const FooterItem = ({
     <Link
       className={footerItemLinkStyle()}
       href={url}
-      LinkComponent={LinkComponent}
       isWithFocusVisibleHighlight
     >
       {title}
@@ -92,13 +86,9 @@ const FooterItem = ({
 
 const NavSection = ({
   site,
-  LinkComponent,
   siteNavItems,
   customNavItems,
-}: Pick<
-  FooterProps,
-  "site" | "LinkComponent" | "siteNavItems" | "customNavItems"
->) => {
+}: Pick<FooterProps, "site" | "siteNavItems" | "customNavItems">) => {
   return (
     <div className="prose-body-sm flex flex-col gap-8 lg:flex-row lg:gap-10">
       <div className="flex flex-col gap-3 lg:w-64">
@@ -113,7 +103,6 @@ const NavSection = ({
                 site.assetsBaseUrl,
               ) ?? item.url
             }
-            LinkComponent={LinkComponent}
           />
         ))}
       </div>
@@ -129,7 +118,6 @@ const NavSection = ({
                 site.assetsBaseUrl,
               ) ?? item.url
             }
-            LinkComponent={LinkComponent}
           />
         ))}
       </div>
@@ -140,8 +128,7 @@ const NavSection = ({
 const SocialMediaSection = ({
   socialMediaLinks,
   site,
-  LinkComponent,
-}: Pick<FooterProps, "socialMediaLinks" | "site" | "LinkComponent">) => {
+}: Pick<FooterProps, "socialMediaLinks" | "site">) => {
   if (!socialMediaLinks || socialMediaLinks.length === 0) {
     return <></>
   }
@@ -163,7 +150,6 @@ const SocialMediaSection = ({
               isExternal
               label={`${link.type === "twitter" ? "X" : link.type} page`}
               className={footerItemLinkStyle()}
-              LinkComponent={LinkComponent}
               isWithFocusVisibleHighlight
             >
               <Icon className="h-auto w-6" />
@@ -177,13 +163,9 @@ const SocialMediaSection = ({
 
 const ContactUsSection = ({
   site,
-  LinkComponent,
   contactUsLink,
   feedbackFormLink,
-}: Pick<
-  FooterProps,
-  "site" | "LinkComponent" | "contactUsLink" | "feedbackFormLink"
->) => {
+}: Pick<FooterProps, "site" | "contactUsLink" | "feedbackFormLink">) => {
   return (
     <div className="prose-body-sm flex flex-col gap-3">
       {contactUsLink && (
@@ -196,7 +178,6 @@ const ContactUsSection = ({
               site.assetsBaseUrl,
             ) ?? contactUsLink
           }
-          LinkComponent={LinkComponent}
         />
       )}
       {feedbackFormLink && (
@@ -209,7 +190,6 @@ const ContactUsSection = ({
               site.assetsBaseUrl,
             ) ?? feedbackFormLink
           }
-          LinkComponent={LinkComponent}
         />
       )}
     </div>
@@ -218,28 +198,18 @@ const ContactUsSection = ({
 
 const ReachUsSection = ({
   site,
-  LinkComponent,
   socialMediaLinks,
   contactUsLink,
   feedbackFormLink,
 }: Pick<
   FooterProps,
-  | "site"
-  | "LinkComponent"
-  | "socialMediaLinks"
-  | "contactUsLink"
-  | "feedbackFormLink"
+  "site" | "socialMediaLinks" | "contactUsLink" | "feedbackFormLink"
 >) => {
   return (
     <div className="flex flex-col gap-6 lg:w-fit">
-      <SocialMediaSection
-        socialMediaLinks={socialMediaLinks}
-        site={site}
-        LinkComponent={LinkComponent}
-      />
+      <SocialMediaSection socialMediaLinks={socialMediaLinks} site={site} />
       <ContactUsSection
         site={site}
-        LinkComponent={LinkComponent}
         contactUsLink={contactUsLink}
         feedbackFormLink={feedbackFormLink}
       />
@@ -249,7 +219,6 @@ const ReachUsSection = ({
 
 const LegalSection = ({
   site,
-  LinkComponent,
   agencyName,
   isGovernment,
   lastUpdated,
@@ -258,7 +227,6 @@ const LegalSection = ({
 }: Pick<
   FooterProps,
   | "site"
-  | "LinkComponent"
   | "agencyName"
   | "isGovernment"
   | "lastUpdated"
@@ -276,7 +244,6 @@ const LegalSection = ({
             <FooterItem
               title="Report Vulnerability"
               url="https://go.gov.sg/report-vulnerability"
-              LinkComponent={LinkComponent}
             />
           )}
           {privacyStatementLink && (
@@ -289,7 +256,6 @@ const LegalSection = ({
                   site.assetsBaseUrl,
                 ) ?? privacyStatementLink
               }
-              LinkComponent={LinkComponent}
             />
           )}
           {termsOfUseLink && (
@@ -302,15 +268,10 @@ const LegalSection = ({
                   site.assetsBaseUrl,
                 ) ?? termsOfUseLink
               }
-              LinkComponent={LinkComponent}
             />
           )}
           {isGovernment && (
-            <FooterItem
-              title="REACH"
-              url={"https://www.reach.gov.sg"}
-              LinkComponent={LinkComponent}
-            />
+            <FooterItem title="REACH" url={"https://www.reach.gov.sg"} />
           )}
         </div>
       </div>
@@ -318,9 +279,7 @@ const LegalSection = ({
   )
 }
 
-const CreditsSection = ({
-  LinkComponent,
-}: Pick<FooterProps, "LinkComponent">) => {
+const CreditsSection = () => {
   return (
     <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
       <Link
@@ -330,7 +289,6 @@ const CreditsSection = ({
           footerItemLinkStyle(),
           "group flex flex-col items-start gap-4",
         )}
-        LinkComponent={LinkComponent}
         isWithFocusVisibleHighlight
       >
         <p>
@@ -348,7 +306,6 @@ const CreditsSection = ({
           footerItemLinkStyle(),
           "group flex flex-col items-start gap-4",
         )}
-        LinkComponent={LinkComponent}
         isWithFocusVisibleHighlight
       >
         <p>
@@ -366,7 +323,6 @@ const CreditsSection = ({
 // below lg
 const FooterMobile = ({
   site,
-  LinkComponent,
   siteName,
   agencyName,
   isGovernment,
@@ -386,14 +342,12 @@ const FooterMobile = ({
         siteNavItems={navItems}
         customNavItems={customItems}
         site={site}
-        LinkComponent={LinkComponent}
       />
       <ReachUsSection
         socialMediaLinks={socialMediaLinks}
         contactUsLink={contactUsLink}
         feedbackFormLink={feedbackFormLink}
         site={site}
-        LinkComponent={LinkComponent}
       />
       <div className="flex flex-col gap-9">
         <LegalSection
@@ -403,7 +357,6 @@ const FooterMobile = ({
           privacyStatementLink={privacyStatementLink}
           termsOfUseLink={termsOfUseLink}
           site={site}
-          LinkComponent={LinkComponent}
         />
         <CreditsSection />
       </div>
@@ -414,7 +367,6 @@ const FooterMobile = ({
 // lg and above
 const FooterDesktop = ({
   site,
-  LinkComponent,
   siteName,
   agencyName,
   isGovernment,
@@ -437,7 +389,6 @@ const FooterDesktop = ({
               siteNavItems={navItems}
               customNavItems={customItems}
               site={site}
-              LinkComponent={LinkComponent}
             />
           </div>
           <div>
@@ -446,7 +397,6 @@ const FooterDesktop = ({
               contactUsLink={contactUsLink}
               feedbackFormLink={feedbackFormLink}
               site={site}
-              LinkComponent={LinkComponent}
             />
           </div>
           <div>
@@ -457,7 +407,6 @@ const FooterDesktop = ({
               privacyStatementLink={privacyStatementLink}
               termsOfUseLink={termsOfUseLink}
               site={site}
-              LinkComponent={LinkComponent}
             />
           </div>
           <div>

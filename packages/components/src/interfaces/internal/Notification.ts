@@ -1,6 +1,6 @@
 import type { Static } from "@sinclair/typebox"
 import type { PropsWithChildren } from "react"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { TextSchema } from "../native"
@@ -27,7 +27,6 @@ export const NotificationSchema = Type.Object(
 )
 
 export type NotificationProps = Static<typeof NotificationSchema> & {
-  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }
 

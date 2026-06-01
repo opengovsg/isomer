@@ -145,7 +145,7 @@ describe("site.router", async () => {
       const result = unauthedCaller.list()
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -266,7 +266,7 @@ describe("site.router", async () => {
       const result = unauthedCaller.listAllSites()
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -279,7 +279,7 @@ describe("site.router", async () => {
       const result = caller.listAllSites()
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -314,7 +314,7 @@ describe("site.router", async () => {
       const result = unauthedCaller.getSiteName({ siteId: 1 })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -342,7 +342,7 @@ describe("site.router", async () => {
       const result = caller.getSiteName({ siteId: site.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -362,7 +362,7 @@ describe("site.router", async () => {
       const result = unauthedCaller.getConfig({ id: 1 })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -375,7 +375,7 @@ describe("site.router", async () => {
       const result = caller.getConfig({ id: site.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -416,7 +416,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -434,7 +434,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -459,7 +459,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -467,6 +467,34 @@ describe("site.router", async () => {
         }),
       )
     })
+
+    it.each(["", " ", "\t", "\n", " \t\n "])(
+      "should reject empty or whitespace-only siteName",
+      async (siteName) => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupAdminPermissions({
+          userId: session.userId,
+          siteId: site.id,
+        })
+
+        // Act
+        const result = caller.updateSiteConfig({
+          siteName,
+          logoUrl: MOCK_LOGO_URL,
+          url: "https://www.isomer.gov.sg",
+          theme: "isomer-next",
+          siteId: site.id,
+        })
+
+        // Assert
+        await expect(result).rejects.toMatchObject({
+          code: "BAD_REQUEST",
+          message: expect.stringContaining("Site name is required"),
+        })
+      },
+    )
+
     it("should update the site config if the user is a site admin", async () => {
       // Arrange
       const { site } = await setupSite()
@@ -594,7 +622,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -609,7 +637,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -631,7 +659,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -709,7 +737,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -724,7 +752,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -753,7 +781,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -776,7 +804,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "The theme for the site could not be found.",
@@ -882,7 +910,7 @@ describe("site.router", async () => {
       const result = unauthedCaller.getTheme({ id: 1 })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -895,7 +923,7 @@ describe("site.router", async () => {
       const result = caller.getTheme({ id: site.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -930,7 +958,7 @@ describe("site.router", async () => {
       const result = unauthedCaller.getFooter({ id: 1 })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -943,7 +971,7 @@ describe("site.router", async () => {
       const result = caller.getFooter({ id: site.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -986,7 +1014,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
@@ -1004,7 +1032,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1030,7 +1058,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1092,7 +1120,7 @@ describe("site.router", async () => {
       const result = unauthedCaller.getNavbar({ id: 1 })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1105,7 +1133,7 @@ describe("site.router", async () => {
       const result = caller.getNavbar({ id: site.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1148,7 +1176,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
@@ -1166,7 +1194,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1192,7 +1220,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1257,7 +1285,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1275,7 +1303,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1319,7 +1347,7 @@ describe("site.router", async () => {
       const result = unauthedCaller.getNotification({ siteId: 1 })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1332,7 +1360,7 @@ describe("site.router", async () => {
       const result = caller.getNotification({ siteId: site.id })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1412,7 +1440,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
@@ -1435,7 +1463,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1462,7 +1490,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1623,7 +1651,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       await expect(db.selectFrom("AuditLog").execute()).resolves.toHaveLength(0)
@@ -1643,7 +1671,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1787,7 +1815,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1802,7 +1830,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1829,6 +1857,28 @@ describe("site.router", async () => {
         siteName: "foo",
       })
     })
+
+    it.each(["", " ", "\t", "\n", " \t\n "])(
+      "should reject empty or whitespace-only siteName",
+      async (siteName) => {
+        // Arrange
+        await setupIsomerAdmin({
+          userId: session.userId!,
+          role: IsomerAdminRole.Core,
+        })
+
+        // Act
+        const result = caller.create({
+          siteName,
+        })
+
+        // Assert
+        await expect(result).rejects.toMatchObject({
+          code: "BAD_REQUEST",
+          message: expect.stringContaining("Site name is required"),
+        })
+      },
+    )
   })
 
   describe("publish", () => {
@@ -1843,7 +1893,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1859,7 +1909,7 @@ describe("site.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:

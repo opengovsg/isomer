@@ -51,10 +51,10 @@
     "storybook": "storybook dev -p 6006",
     "supportedBrowsers": "echo \"export default $(browserslist-useragent-regexp --allowHigherVersions)\" > src/utils/supportedBrowsers.ts",
     "test": "run-s test:*",
-    "test-ci:unit": "dotenv -e .env.test vitest run -- --coverage",
+    "test-ci:unit": "dotenv -e .env.test vitest run --coverage",
     "test:unit": "dotenv -e .env.test vitest run",
     "test:watch": "pnpm exec vitest watch",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsgo --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
     "@govtechsg/sgds-react": "catalog:",
@@ -98,6 +98,7 @@
     "@types/lunr": "catalog:",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
+    "@typescript/native-preview": "catalog:",
     "@vitejs/plugin-react": "catalog:vitest",
     "@vitest/coverage-istanbul": "catalog:vitest",
     "bootstrap-icons": "catalog:",

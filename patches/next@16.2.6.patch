@@ -1,0 +1,56 @@
+diff --git a/dist/esm/export/routes/app-page.js b/dist/esm/export/routes/app-page.js
+index d454fbc17f6a8a9484bbc62a4aacfa1fd8842bee..77714f095b2c29fec82a01aeb3ecccc51becd931 100644
+--- a/dist/esm/export/routes/app-page.js
++++ b/dist/esm/export/routes/app-page.js
+@@ -94,19 +94,10 @@ import { UNDERSCORE_GLOBAL_ERROR_ROUTE_ENTRY, UNDERSCORE_NOT_FOUND_ROUTE_ENTRY }
+                 fileWriter.append(htmlFilepath.replace(/\.html$/, RSC_SUFFIX), flightData);
+             }
+         }
+-        let segmentPaths;
+-        if (segmentData) {
+-            // Emit the per-segment prefetch data. We emit them as separate files
+-            // so that the cache handler has the option to treat each as a
+-            // separate entry.
+-            segmentPaths = [];
+-            const segmentsDir = htmlFilepath.replace(/\.html$/, RSC_SEGMENTS_DIR_SUFFIX);
+-            for (const [segmentPath, buffer] of segmentData){
+-                segmentPaths.push(segmentPath);
+-                const segmentDataFilePath = segmentsDir + segmentPath + RSC_SEGMENT_SUFFIX;
+-                fileWriter.append(segmentDataFilePath, buffer);
+-            }
+-        }
++        // Per-segment prefetch files (.segments) are not used in this static
++        // export deployment; skip generation entirely to avoid ENAMETOOLONG
++        // errors on long slugs (Next.js 16 regression).
++        const segmentPaths = undefined;
+         const headers = {
+             ...metadata.headers
+         };
+diff --git a/dist/export/routes/app-page.js b/dist/export/routes/app-page.js
+index 077bd5329166c59ba41c8fc4cc0f90f04751b024..a9e5678360859f2dd613a7b9170d77e5a66458b5 100644
+--- a/dist/export/routes/app-page.js
++++ b/dist/export/routes/app-page.js
+@@ -102,19 +102,10 @@ async function exportAppPage(req, res, page, path, pathname, query, fallbackRout
+                 fileWriter.append(htmlFilepath.replace(/\.html$/, _constants.RSC_SUFFIX), flightData);
+             }
+         }
+-        let segmentPaths;
+-        if (segmentData) {
+-            // Emit the per-segment prefetch data. We emit them as separate files
+-            // so that the cache handler has the option to treat each as a
+-            // separate entry.
+-            segmentPaths = [];
+-            const segmentsDir = htmlFilepath.replace(/\.html$/, _constants.RSC_SEGMENTS_DIR_SUFFIX);
+-            for (const [segmentPath, buffer] of segmentData){
+-                segmentPaths.push(segmentPath);
+-                const segmentDataFilePath = segmentsDir + segmentPath + _constants.RSC_SEGMENT_SUFFIX;
+-                fileWriter.append(segmentDataFilePath, buffer);
+-            }
+-        }
++        // Per-segment prefetch files (.segments) are not used in this static
++        // export deployment; skip generation entirely to avoid ENAMETOOLONG
++        // errors on long slugs (Next.js 16 regression).
++        const segmentPaths = undefined;
+         const headers = {
+             ...metadata.headers
+         };
