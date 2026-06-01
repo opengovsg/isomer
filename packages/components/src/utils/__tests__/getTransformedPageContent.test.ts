@@ -89,7 +89,7 @@ describe("getTransformedPageContent", () => {
     }
   })
 
-  it("generates unique IDs for identical headings in different prose blocks", () => {
+  it("generates unique IDs for identical headings in 2 prose blocks", () => {
     // Arrange
     const proseBlock: IsomerComponent = {
       type: "prose",
@@ -115,6 +115,71 @@ describe("getTransformedPageContent", () => {
     })
 
     expect(ids[0]).toBe(getDigestFromText(seed)) // preserve legacy seed for the first heading
+    expect(ids[1]).toBe(getDigestFromText(`${seed}_1`))
+    expect(ids[0]).not.toBe(ids[1])
+  })
+
+  it("generates unique IDs for identical headings in 3+ prose blocks", () => {
+    // Arrange
+    const proseBlock: IsomerComponent = {
+      type: "prose",
+      content: [
+        {
+          type: "heading",
+          attrs: { level: 2 },
+          content: [{ type: "text", text: "Introduction" }],
+        },
+      ],
+    }
+    const seed = `${JSON.stringify(proseBlock.content[0])}_0`
+    const content: IsomerComponent[] = [proseBlock, proseBlock, proseBlock]
+
+    // Act
+    const transformed = getTransformedPageContent(content)
+
+    // Assert
+    const ids = transformed.map((block) => {
+      if (block.type !== "prose" || !block.content) return undefined
+      const node = block.content[0]
+      return node?.type === "heading" ? node.attrs.id : undefined
+    })
+
+    expect(ids[0]).toBe(getDigestFromText(seed))
+    expect(ids[1]).toBe(getDigestFromText(`${seed}_1`))
+    expect(ids[2]).toBe(getDigestFromText(`${seed}_2`))
+    expect(new Set(ids).size).toBe(3)
+  })
+
+  it("preserves componentIndex in seed when heading is not first in prose block", () => {
+    // Arrange
+    const proseBlock: IsomerComponent = {
+      type: "prose",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Intro paragraph" }],
+        },
+        {
+          type: "heading",
+          attrs: { level: 2 },
+          content: [{ type: "text", text: "Introduction" }],
+        },
+      ],
+    }
+    const seed = `${JSON.stringify(proseBlock.content[1])}_1`
+    const content: IsomerComponent[] = [proseBlock, proseBlock]
+
+    // Act
+    const transformed = getTransformedPageContent(content)
+
+    // Assert
+    const ids = transformed.map((block) => {
+      if (block.type !== "prose" || !block.content) return undefined
+      const node = block.content[1]
+      return node?.type === "heading" ? node.attrs.id : undefined
+    })
+
+    expect(ids[0]).toBe(getDigestFromText(seed))
     expect(ids[1]).toBe(getDigestFromText(`${seed}_1`))
     expect(ids[0]).not.toBe(ids[1])
   })
