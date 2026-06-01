@@ -1,5 +1,6 @@
 import type { IsomerComponent } from "~/types"
 import { describe, expect, it } from "vitest"
+import { getDigestFromText } from "~/utils/getDigestFromText"
 import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 
 describe("getTransformedPageContent", () => {
@@ -100,6 +101,7 @@ describe("getTransformedPageContent", () => {
         },
       ],
     }
+    const seed = `${JSON.stringify(proseBlock.content[0])}_0`
     const content: IsomerComponent[] = [proseBlock, proseBlock]
 
     // Act
@@ -108,12 +110,12 @@ describe("getTransformedPageContent", () => {
     // Assert
     const ids = transformed.map((block) => {
       if (block.type !== "prose" || !block.content) return undefined
-      const heading = block.content[0]
-      return heading?.type === "heading" ? heading.attrs.id : undefined
+      const node = block.content[0]
+      return node?.type === "heading" ? node.attrs.id : undefined
     })
 
-    expect(ids[0]).toMatch(idPattern)
-    expect(ids[1]).toMatch(idPattern)
+    expect(ids[0]).toBe(getDigestFromText(seed)) // preserve legacy seed for the first heading
+    expect(ids[1]).toBe(getDigestFromText(`${seed}_1`))
     expect(ids[0]).not.toBe(ids[1])
   })
 

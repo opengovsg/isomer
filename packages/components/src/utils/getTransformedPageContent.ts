@@ -7,6 +7,8 @@ import { getDigestFromText } from "./getDigestFromText"
 export const getTransformedPageContent = (
   content: IsomerComponent[],
 ): IsomerComponent[] => {
+  const usedHeadingIds = new Set<string>()
+
   return content.map((block, index) => {
     if (block.type === "prose" && block.content) {
       return {
@@ -18,9 +20,14 @@ export const getTransformedPageContent = (
             component.attrs.id === undefined
           ) {
             // generate a unique hash to auto-generate anchor links
-            const anchorId = getDigestFromText(
-              `${JSON.stringify(component)}_${index}_${componentIndex}`,
-            )
+            // for backwards compatibility, use the same seed format for headings, but with an added collision count suffix only if there are multiple headings with the same content
+            const seed = `${JSON.stringify(component)}_${componentIndex}`
+            let anchorId = getDigestFromText(seed)
+            if (usedHeadingIds.has(anchorId)) {
+              anchorId = getDigestFromText(`${seed}_${index}`)
+            }
+            usedHeadingIds.add(anchorId)
+
             const newAttrs = {
               ...component.attrs,
               id: anchorId,
