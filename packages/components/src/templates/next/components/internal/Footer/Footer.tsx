@@ -237,7 +237,8 @@ const LegalSection = ({
     <div className="flex h-full">
       <div className="flex flex-col justify-end gap-4 lg:gap-2">
         <p className="prose-label-md-regular text-base-content-inverse-subtle">
-          &copy; {`${new Date().getFullYear()} ${isGovernment ? "Government of Singapore" : agencyName}, last updated on ${getFormattedDate(lastUpdated)}`}
+          &copy;{" "}
+          {`${new Date().getFullYear()} ${isGovernment ? "Government of Singapore" : agencyName}, last updated on ${getFormattedDate(lastUpdated)}`}
         </p>
         <div className="prose-body-sm flex flex-col gap-3 lg:flex-row lg:gap-8">
           {isGovernment && (

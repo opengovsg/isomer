@@ -9,9 +9,6 @@ export const Polyglot = ({
     : "assets.polyglot.gov.sg"
 
   return (
-    <ScriptComponent
-      type="text/javascript"
-      src={`https://${host}/widget.js`}
-    />
+    <ScriptComponent type="text/javascript" src={`https://${host}/widget.js`} />
   )
 }
