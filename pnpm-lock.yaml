@@ -366,8 +366,8 @@ catalogs:
       specifier: ^2.4.0
       version: 2.6.1
     tailwind-variants:
-      specifier: ^0.3.1
-      version: 0.3.1
+      specifier: ^3.2.2
+      version: 3.2.2
     tailwindcss:
       specifier: ^3.4.4
       version: 3.4.19
@@ -1207,7 +1207,7 @@ importers:
         version: 2.6.1
       tailwind-variants:
         specifier: 'catalog:'
-        version: 0.3.1(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
+        version: 3.2.2(tailwind-merge@2.6.1)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
       tailwindcss-react-aria-components:
         specifier: 'catalog:'
         version: 1.2.0(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
@@ -11059,17 +11059,18 @@ packages:
     resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
     engines: {node: '>=20'}
 
-  tailwind-merge@2.5.4:
-    resolution: {integrity: sha512-0q8cfZHMu9nuYP/b5Shb7Y7Sh1B7Nnl5GqNr1U+n2p6+mybvRtayrQ+0042Z5byvTA8ihjlP8Odo8/VnHbZu4Q==}
-
   tailwind-merge@2.6.1:
     resolution: {integrity: sha512-Oo6tHdpZsGpkKG88HJ8RR1rg/RdnEkQEfMoEk2x1XRI3F1AxeU+ijRXpiVUF4UbLfcxxRGw6TbUINKYdWVsQTQ==}
 
-  tailwind-variants@0.3.1:
-    resolution: {integrity: sha512-krn67M3FpPwElg4FsZrOQd0U26o7UDH/QOkK8RNaiCCrr052f6YJPBUfNKnPo/s/xRzNPtv1Mldlxsg8Tb46BQ==}
+  tailwind-variants@3.2.2:
+    resolution: {integrity: sha512-Mi4kHeMTLvKlM98XPnK+7HoBPmf4gygdFmqQPaDivc3DpYS6aIY6KiG/PgThrGvii5YZJqRsPz0aPyhoFzmZgg==}
     engines: {node: '>=16.x', pnpm: '>=7.x'}
     peerDependencies:
+      tailwind-merge: '>=3.0.0'
       tailwindcss: '*'
+    peerDependenciesMeta:
+      tailwind-merge:
+        optional: true
 
   tailwindcss-react-aria-components@1.2.0:
     resolution: {integrity: sha512-ynlQIfAdoWAz0Og0dCe/d4QVE+L8Yuo6rtK9apdhehZZMoLC1GdwtnvLZyUyx+wHwnTjRuNtFPdN0DpPsPXJJg==}
@@ -21963,14 +21964,13 @@ snapshots:
 
   tagged-tag@1.0.0: {}
 
-  tailwind-merge@2.5.4: {}
-
   tailwind-merge@2.6.1: {}
 
-  tailwind-variants@0.3.1(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)):
+  tailwind-variants@3.2.2(tailwind-merge@2.6.1)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)):
     dependencies:
-      tailwind-merge: 2.5.4
       tailwindcss: 3.4.19(tsx@4.22.3)(yaml@2.8.3)
+    optionalDependencies:
+      tailwind-merge: 2.6.1
 
   tailwindcss-react-aria-components@1.2.0(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)):
     dependencies:
