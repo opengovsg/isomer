@@ -796,6 +796,27 @@ describe("site.router", async () => {
       expect(result.config).toEqual({ ...MOCK_INTEGRATION_DATA, fake: "fake" })
     })
 
+    it("should reject an invalid siteGtmId", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          siteGtmId: "');alert(document.cookie);//",
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    })
+
     it("should throw 400 if downgrading search integration from searchSG to localSearch", async () => {
       // Arrange
       const { site } = await setupSite()
