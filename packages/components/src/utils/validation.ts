@@ -214,13 +214,20 @@ export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
 // ❌ "d_ab_c" (contains underscore after prefix)
 export const DGS_ID_STRING_REGEX = "^d_[a-zA-Z0-9]+$"
 
-// Matches Google Tag Manager container IDs that start with "GTM-" followed by one or more uppercase letters or digits.
+// Matches Google tag IDs across the formats observed in the wild:
+//   GTM-XXXXXX  — Google Tag Manager containers (official)
+//   G-XXXXXX    — Google Analytics 4 measurement IDs (officially loaded via gtag.js, not GTM,
+//                 but users paste them into the GTM field and they work in practice)
+//   GT-XXXXXX   — Google Tag IDs (observed working in manual testing; not documented by Google)
+// All three share the same GTM snippet format at runtime, so we accept them all even though
+// only GTM- is officially documented.
 // Examples:
 // ✅ "GTM-ABC123"
-// ✅ "GTM-1234567"
+// ✅ "G-ABC123"
+// ✅ "GT-ABC123"
 // ❌ "gtm-abc123" (lowercase)
 // ❌ "GTM-" (missing container ID)
 // ❌ "');alert(document.cookie);//" (XSS payload)
 // NOTE: Official documentation does not specify allowed length,
 // so we use ^GTM-[A-Z0-9]+$ (one or more chars) for future proofing.
-export const GTM_ID_STRING_REGEX = "^GTM-[A-Z0-9]+$"
+export const GTM_ID_STRING_REGEX = "^(GTM|G|GT)-[A-Z0-9]+$"

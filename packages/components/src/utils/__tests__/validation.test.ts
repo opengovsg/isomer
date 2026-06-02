@@ -276,9 +276,15 @@ describe("validation", () => {
   })
 
   describe("GTM_ID_STRING_REGEX", () => {
-    it("should allow valid Google Tag Manager container IDs", () => {
+    it("should allow valid Google tag IDs", () => {
       // Arrange
-      const testCases = ["GTM-ABC123", "GTM-1234567", "GTM-ABCDEFGHIJ"]
+      const testCases = [
+        "GTM-ABC123",
+        "GTM-1234567",
+        "GTM-ABCDEFGHIJ",
+        "G-ABC123", // GA4 measurement IDs work with GTM snippet in practice
+        "GT-ABC123", // GT- IDs observed working in manual testing
+      ]
 
       testCases.forEach((testCase) => {
         // Act
