@@ -168,10 +168,10 @@ catalogs:
     "@aws-sdk/s3-request-presigner": ^3.1051.0
     "@aws-sdk/credential-providers": ^3.1051.0
   babel:
-    "@babel/plugin-transform-class-properties": ^7.27.1
-    "@babel/plugin-transform-object-rest-spread": ^7.27.3
-    "@babel/preset-env": ^7.29.3
-    "@babel/preset-typescript": ^7.27.1
+    "@babel/plugin-transform-class-properties": ^7.29.7
+    "@babel/plugin-transform-object-rest-spread": ^7.29.7
+    "@babel/preset-env": ^7.29.7
+    "@babel/preset-typescript": ^7.29.7
   casl:
     "@casl/ability": ^6.8.1
     "@casl/react": ^5.0.0
