@@ -24,8 +24,8 @@ const createContentPageHeaderStyles = tv({
   },
   variants: {
     hasImage: {
-      true: { textContainer: "max-md:row-span-1 pt-8 lg:col-span-7 lg:py-8" },
-      false: { textContainer: "max-md:row-span-2 py-8 lg:col-span-12" },
+      true: { textContainer: "pt-8 max-md:row-span-1 lg:col-span-7 lg:py-8" },
+      false: { textContainer: "py-8 max-md:row-span-2 lg:col-span-12" },
     },
     colorScheme: {
       default: {

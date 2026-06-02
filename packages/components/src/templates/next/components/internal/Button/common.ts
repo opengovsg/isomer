@@ -43,7 +43,7 @@ export const buttonStyles = tv({
       variant: "outline",
       colorScheme: "inverse",
       className:
-        "hover:bg-base-canvas-inverse-overlay/40 border border-base-divider-inverse text-base-content-inverse hover:text-base-content-inverse",
+        "border border-base-divider-inverse text-base-content-inverse hover:bg-base-canvas-inverse-overlay/40 hover:text-base-content-inverse",
     },
     {
       variant: "outline",
