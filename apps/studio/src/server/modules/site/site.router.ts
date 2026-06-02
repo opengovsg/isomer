@@ -131,9 +131,18 @@ export const siteRouter = router({
       const { config } = site
 
       const updatedConfig = await db.transaction().execute(async (tx) => {
+        // Preserve the existing clientId from DB - only admins can update it via setSiteConfigByAdmin
+        const searchConfig =
+          rest.search?.type === "searchSG" && config.search?.type === "searchSG"
+            ? { ...rest.search, clientId: config.search.clientId }
+            : rest.search
+
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ name: siteName, config: jsonb({ ...rest, siteName }) })
+          .set({
+            name: siteName,
+            config: jsonb({ ...rest, siteName, search: searchConfig }),
+          })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()
@@ -159,6 +168,7 @@ export const siteRouter = router({
         (config.search?.type !== "searchSG" ||
           config.siteName !== updatedConfig.siteName)
       )
+        // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
         void updateSearchSGConfig(
           { name: siteName, _kind: "name" },
           updatedConfig.search.clientId,
@@ -309,6 +319,7 @@ export const siteRouter = router({
         oldTheme.colors.brand.canvas.inverse !==
           theme.colors.brand.canvas.inverse
       ) {
+        // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
         void updateSearchSGConfig(
           { colour: theme.colors.brand.canvas.inverse, _kind: "colour" },
           site.config.search.clientId,

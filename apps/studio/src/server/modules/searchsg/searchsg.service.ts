@@ -1,4 +1,5 @@
 import wretch from "wretch"
+import { z } from "zod"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 
@@ -90,11 +91,23 @@ const requestSearchSGClient = async () => {
     })
 }
 
+export const isValidSearchSGClientId = (clientId: string): boolean =>
+  z.string().uuid().safeParse(clientId).success
+
 export const updateSearchSGConfig = async (
   props: UpdateSearchSGConfigProps,
   searchsgClientId: string,
   url: string,
 ) => {
+  // Reject non-UUID clientIds to prevent path traversal attacks
+  if (!isValidSearchSGClientId(searchsgClientId)) {
+    logger.error(
+      { searchsgClientId },
+      `[ERROR] Invalid SearchSG client ID format - aborting to prevent path traversal`,
+    )
+    return
+  }
+
   // Only update SearchSG in production and staging environments since SearchSG does not have non-prod env
   // This is to avoid accidentally updating a production site in a non-prod environment
   if (!["production", "staging"].includes(env.NEXT_PUBLIC_APP_ENV)) {
