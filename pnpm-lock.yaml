@@ -188,6 +188,9 @@ catalogs:
     commander-ts:
       specifier: ^0.2.0
       version: 0.2.0
+    culori:
+      specifier: ^4.0.2
+      version: 4.0.2
     date-fns:
       specifier: ^4.1.0
       version: 4.1.0
@@ -870,7 +873,7 @@ importers:
         specifier: 'catalog:'
         version: 5.1.0(@chakra-ui/react@2.10.9(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(framer-motion@12.38.0(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       culori:
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2
       date-fns:
         specifier: 'catalog:'

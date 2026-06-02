@@ -121,7 +121,7 @@
     "ajv": "catalog:",
     "ajv-errors": "catalog:",
     "chakra-react-select": "catalog:",
-    "culori": "^4.0.2",
+    "culori": "catalog:",
     "date-fns": "catalog:",
     "date-fns-tz": "catalog:",
     "dd-trace": "catalog:",
