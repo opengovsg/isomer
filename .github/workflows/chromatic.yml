@@ -67,8 +67,6 @@ jobs:
           onlyChanged: true
           exitOnceUploaded: true
           autoAcceptChanges: main
-          # Skip running Chromatic on dependabot PRs
-          skip: dependabot/**
   studio:
     needs: [changes, optimize_ci]
     # Only run if the user is not a bot and has changes
@@ -99,5 +97,3 @@ jobs:
           onlyChanged: true
           exitOnceUploaded: true
           autoAcceptChanges: main
-          # Skip running Chromatic on dependabot PRs
-          skip: dependabot/**
