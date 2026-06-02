@@ -3,6 +3,7 @@ import { configDefaults, defineConfig } from "vitest/config"
 
 export default defineConfig({
   test: {
+    dir: "src",
     globals: true,
     exclude: [...configDefaults.exclude, "**/playwright/**", "tests/load/**"],
     alias: {
@@ -11,6 +12,13 @@ export default defineConfig({
     coverage: {
       provider: "istanbul",
       reportOnFailure: true,
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "**/__tests__/**",
+        "**/*.test.{ts,tsx}",
+        "**/*.stories.{ts,tsx}",
+        "**/*.d.ts",
+      ],
     },
   },
 })
