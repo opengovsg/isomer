@@ -91,6 +91,10 @@ export const createSearchSgClientForGithub = async ({
   await addSearchJson(repo)
 }
 
+interface SearchSgBootstrapResponse {
+  data: { sites: Array<{ siteClientId: string }> }
+}
+
 interface SearchSgConfig {
   dataDomain: string
   domain: string
@@ -124,10 +128,6 @@ const createSearchSgClient = async ({
     siteDomain: domain,
     primary,
   })
-
-  interface SearchSgBootstrapResponse {
-    data: { sites: Array<{ siteClientId: string }> }
-  }
 
   const { data } = await axios.post<SearchSgBootstrapResponse>(
     SearchSgApi.create,
