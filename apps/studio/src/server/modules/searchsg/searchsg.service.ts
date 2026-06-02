@@ -9,53 +9,10 @@ const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
 const ISOMER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
 const SearchSgApi = {
   Auth: `/v1/auth/token`,
-  App: `/v1/bootstrap/applications`,
+  site: (id: string) => `/v2/sites/${id}`,
+  appPatch: (id: string, appId: string) => `/v2/sites/${id}/apps/${appId}`,
+  project: (projectId: string) => `/v2/projects/${projectId}`,
 } as const
-
-const generateSearchSGParams = ({
-  config,
-  url,
-  ...rest
-}: UpdateSearchSGConfigProps & {
-  config: SearchSGConfig["data"]
-  url: string
-}) => {
-  return {
-    name: rest._kind === "name" ? encodeURIComponent(rest.name) : config.name,
-    tenant: {
-      adminList: ["isomer@open.gov.sg"],
-    },
-    index: {
-      dataSource: {
-        web: [
-          {
-            domain: `https://${url}`,
-            documentIndexConfig: {
-              indexWhitelist: [],
-              indexBlacklist: [],
-            },
-          },
-        ],
-        api: [],
-      },
-    },
-    application: {
-      siteDomain: url,
-      environment: "production",
-      config: {
-        search: {
-          theme: {
-            primary:
-              rest._kind === "colour"
-                ? rest.colour
-                : config.application.config.search.theme.primary,
-            fontFamily: "Inter",
-          },
-        },
-      },
-    },
-  }
-}
 
 interface UpdateSearchSgSiteNameProps {
   name: string
@@ -71,6 +28,31 @@ type UpdateSearchSGConfigProps =
   | UpdateSearchSgSiteNameProps
   | UpdateSearchSgColourProps
 
+interface SearchSGAppDetail {
+  appId: string
+  appType: string
+  config?: { theme?: { primary?: string; fontFamily?: string } }
+}
+
+interface SearchSGSiteResponse {
+  data: {
+    siteDetail: { applications: SearchSGAppDetail[] }
+    project: { projectId: string }
+  }
+}
+
+const findWebsiteSearchApp = (apps: SearchSGAppDetail[]): SearchSGAppDetail => {
+  const app = apps.find((a) => a.appType === "websiteSearch")
+  if (!app) {
+    logger.error(
+      { apps },
+      `[ERROR] No websiteSearch app found in SearchSG site applications`,
+    )
+    throw new Error("No websiteSearch app found in SearchSG site applications")
+  }
+  return app
+}
+
 const requestSearchSGClient = async () => {
   const { accessToken, tokenType } = await wretch(
     `${SEARCHSG_BASE_URL}${SearchSgApi.Auth}`,
@@ -82,12 +64,10 @@ const requestSearchSGClient = async () => {
     .post()
     .json<{ accessToken: string; tokenType: string }>()
 
-  return wretch(`${SEARCHSG_BASE_URL}${SearchSgApi.App}`)
-    .auth(`${tokenType} ${accessToken}`)
-    .headers({
-      "Content-Type": "application/json",
-      "User-Agent": ISOMER_UA,
-    })
+  return wretch(SEARCHSG_BASE_URL).auth(`${tokenType} ${accessToken}`).headers({
+    "Content-Type": "application/json",
+    "User-Agent": ISOMER_UA,
+  })
 }
 
 export const updateSearchSGConfig = async (
@@ -115,20 +95,49 @@ export const updateSearchSGConfig = async (
   // NOTE: doing fetch before post to avoid cases
   // where the search domain and data domains
   // are not direct deriviatives of `site.url`
-  const { data: config } = await client
-    .get(`/${searchsgClientId}`)
-    .json<SearchSGConfig>()
+  const { data } = await client
+    .url(SearchSgApi.site(searchsgClientId))
+    .get()
+    .json<SearchSGSiteResponse>()
 
-  const updatedConfig = generateSearchSGParams({
-    ...props,
-    config,
-    url: actualUrl.host,
-  })
+  if (props._kind === "colour") {
+    const app = findWebsiteSearchApp(data.siteDetail.applications)
+
+    const res = await client
+      .url(SearchSgApi.appPatch(searchsgClientId, app.appId))
+      .json({
+        config: { theme: { primary: props.colour, fontFamily: "Inter" } },
+      })
+      .patch()
+      .res()
+      .catch((error: unknown) => {
+        logger.error(
+          { error },
+          `[ERROR] Failed to update searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
+        )
+
+        throw error
+      })
+
+    return res
+  }
+
+  // props._kind === "name"
+  const { projectId } = data.project
+  if (!projectId) {
+    logger.error(
+      { data },
+      `[ERROR] No projectId found in SearchSG site response for ${url} with searchsg client id: ${searchsgClientId}`,
+    )
+    throw new Error(
+      `No projectId found in SearchSG site response for searchsgClientId: ${searchsgClientId}`,
+    )
+  }
 
   const res = await client
-    .json(updatedConfig)
-    .url(`/${searchsgClientId}`)
-    .put()
+    .url(SearchSgApi.project(projectId))
+    .json({ projectName: props.name, adminList: ["isomer@open.gov.sg"] })
+    .patch()
     .res()
     .catch((error: unknown) => {
       logger.error(
@@ -140,25 +149,4 @@ export const updateSearchSGConfig = async (
     })
 
   return res
-}
-
-interface SearchSGConfig {
-  data: {
-    name: string
-    index: {
-      dataSource: {
-        web: { domain: string }[]
-      }
-    }
-    application: {
-      siteDomain: string
-      config: {
-        search: {
-          theme: {
-            primary: string
-          }
-        }
-      }
-    }
-  }
 }
