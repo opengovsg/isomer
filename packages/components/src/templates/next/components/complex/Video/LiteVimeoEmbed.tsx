@@ -94,7 +94,7 @@ export const LiteVimeoEmbed = ({
         <button
           type="button"
           onClick={() => setActivated(true)}
-          className="focus:outline-hidden group absolute inset-0 flex cursor-pointer items-center justify-center focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-utility-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-0 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-utility-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           aria-label={`Play ${title || "video"}`}
         >
           <VimeoPlayButton />
