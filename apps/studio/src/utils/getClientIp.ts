@@ -13,13 +13,11 @@ const getFirstIp = (header: string | string[] | null | undefined) =>
 
 const getLastIp = (header: string | string[] | null | undefined) => {
   const ips = getIpList(header)
-  // Proxies append to X-Forwarded-For, so the leftmost value can be supplied
-  // by the client. Use the rightmost value only as a last-resort fallback.
   return ips[ips.length - 1]
 }
 
 const isRequest = (request: Request | NextApiRequest): request is Request =>
-  typeof Request !== "undefined" && request instanceof Request
+  request instanceof Request
 
 export default function getIP(request: Request | NextApiRequest) {
   const cfConnectingIp = isRequest(request)
@@ -33,11 +31,13 @@ export default function getIP(request: Request | NextApiRequest) {
     : request.headers["x-forwarded-for"]
 
   // Prefer values set by our edge/proxy infrastructure before consulting
-  // X-Forwarded-For, which may contain client-supplied entries.
+  // X-Forwarded-For, which may contain client-supplied entries. Rightmost XFF
+  // (appended by our L7 proxy/LB) is preferred over socket.remoteAddress,
+  // which in a containerised deployment is the load-balancer IP, not the client.
   return (
     getFirstIp(cfConnectingIp) ??
-    remoteAddress ??
     getLastIp(xForwardedFor) ??
+    remoteAddress ??
     LOCALHOST_IP
   )
 }
