@@ -2,7 +2,7 @@ import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/tailwind"
 
 export const buttonStyles = tv({
-  base: "box-border flex h-full w-fit cursor-pointer items-center gap-2 rounded text-center transition",
+  base: "box-border flex h-full w-fit cursor-pointer items-center gap-2 rounded-sm text-center transition",
   extend: focusRing,
   variants: {
     variant: {
@@ -31,7 +31,7 @@ export const buttonStyles = tv({
       variant: "solid",
       colorScheme: "default",
       className:
-        "bg-brand-canvas-inverse text-base-content-inverse active:bg-brand-interaction-pressed hover:bg-brand-interaction-hover hover:text-base-content-inverse",
+        "bg-brand-canvas-inverse text-base-content-inverse hover:bg-brand-interaction-hover hover:text-base-content-inverse active:bg-brand-interaction-pressed",
     },
     {
       variant: "solid",
@@ -43,7 +43,7 @@ export const buttonStyles = tv({
       variant: "outline",
       colorScheme: "inverse",
       className:
-        "border border-base-divider-inverse text-base-content-inverse hover:bg-base-canvas-inverse-overlay/40 hover:text-base-content-inverse",
+        "hover:bg-base-canvas-inverse-overlay/40 border border-base-divider-inverse text-base-content-inverse hover:text-base-content-inverse",
     },
     {
       variant: "outline",
@@ -84,7 +84,7 @@ export const buttonStyles = tv({
 })
 
 export const buttonIconStyles = tv({
-  base: "h-auto flex-shrink-0",
+  base: "h-auto shrink-0",
   variants: {
     size: {
       sm: "w-3.5 lg:w-4",

@@ -27,7 +27,7 @@ export const commonContactInformationStyles = tv({
 export const commonContactMethodStyles = tv({
   slots: {
     container: "flex w-full flex-col items-start gap-2",
-    icon: "size-8 flex-shrink-0 text-base-content-strong",
+    icon: "size-8 shrink-0 text-base-content-strong",
     textContainer: "flex w-full flex-col items-start gap-3",
     label: "prose-headline-lg-semibold text-base-content-strong",
     valuesAndCaptionContainer: "flex w-full flex-col items-start gap-1",

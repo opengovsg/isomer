@@ -17,11 +17,11 @@
   "dependencies": {
     "@isomer/validators": "workspace:*",
     "@opengovsg/isomer-components": "workspace:*",
+    "@tailwindcss/postcss": "catalog:",
     "isomorphic-dompurify": "catalog:",
     "jsdom": "catalog:",
     "next": "catalog:",
     "postcss": "catalog:",
-    "postcss-preset-env": "catalog:",
     "react": "catalog:react",
     "react-dom": "catalog:react",
     "tailwindcss": "catalog:",

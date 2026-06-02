@@ -1,4 +1,12 @@
+import type { PluginWithConfig } from "tailwindcss/plugin"
 import plugin from "tailwindcss/plugin"
+
+// Local alias to avoid referencing Tailwind's private PluginWithOptions type in the
+// generated .d.ts, which would reference a hashed internal file (types-CJYAW1ql.mjs).
+type PluginWithOptions<T> = {
+  (options?: T): PluginWithConfig
+  __isOptionsFunction: true
+}
 
 interface SiteThemeOptions {
   colors: {
@@ -17,8 +25,10 @@ interface SiteThemeOptions {
 }
 
 export const isomerSiteTheme = plugin.withOptions(
-  ({ colors }: SiteThemeOptions) =>
+  (options?: SiteThemeOptions) =>
     ({ addBase }) => {
+      if (!options) return
+      const { colors } = options
       addBase({
         // TODO: Inject dynamically based on whatever is passed in.
         ":root": {

@@ -381,7 +381,6 @@ export function createNextPreset({
         // Add Inter as a base font (only if includeFonts is true)
         if (includeFonts) {
           addBase({
-            // @ts-expect-error Tailwind types did not account for @font-face
             "@font-face": interFontFaces,
           })
         }

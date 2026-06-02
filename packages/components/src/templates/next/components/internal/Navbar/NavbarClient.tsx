@@ -26,7 +26,7 @@ const createNavbarStyles = tv({
   slots: {
     navbar: "relative flex flex-col",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
-    logo: "flex flex-shrink-0 rounded focus-visible:bg-utility-highlight",
+    logo: "flex shrink-0 rounded-sm focus-visible:bg-utility-highlight",
     navigationSection: "flex w-full flex-col items-center justify-between",
     primaryNavigationSection: "flex w-full items-center justify-end",
     utilityNavigationSection:

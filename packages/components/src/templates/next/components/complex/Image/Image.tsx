@@ -8,7 +8,7 @@ const createImageStyles = tv({
     container: "mt-0 [&:not(:first-child)]:mt-7",
     caption:
       "overflow-wrap break-word prose-label-sm-medium mt-2 max-w-[70ch] text-base-content-subtle md:mx-auto md:text-center",
-    image: "mx-auto h-auto max-w-full rounded",
+    image: "mx-auto h-auto max-w-full rounded-sm",
   },
   variants: {
     size: {

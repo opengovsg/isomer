@@ -114,7 +114,7 @@ const checkboxStyles = tv({
 
 const boxStyles = tv({
   extend: focusRing,
-  base: "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition",
+  base: "flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border-2 transition",
   variants: {
     isSelected: {
       false:

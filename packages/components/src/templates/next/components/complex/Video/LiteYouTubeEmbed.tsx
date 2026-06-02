@@ -116,7 +116,7 @@ export const LiteYouTubeEmbed = ({
         <button
           type="button"
           onClick={() => setActivated(true)}
-          className="group absolute inset-0 flex cursor-pointer items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-utility-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          className="focus:outline-hidden group absolute inset-0 flex cursor-pointer items-center justify-center focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-utility-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           aria-label={`Play ${title || "video"}`}
         >
           <YouTubePlayButton

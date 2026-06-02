@@ -16,7 +16,7 @@ export const LocalSearchInputBox = ({
         type="search"
         name="q"
         placeholder="Search this site"
-        className="block w-full border border-divider-medium px-4 py-2 focus:border-site-primary focus:outline-none focus:ring-site-primary"
+        className="focus:outline-hidden block w-full border border-divider-medium px-4 py-2 focus:border-site-primary focus:ring-site-primary"
       />
 
       <button type="submit" aria-label="Search this site">

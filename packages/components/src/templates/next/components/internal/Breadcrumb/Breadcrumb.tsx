@@ -13,12 +13,12 @@ const createBreadcrumbLinkStyles = tv({
   slots: {
     container: "flex items-center gap-1",
     link: "prose-label-md-regular line-clamp-1 underline decoration-transparent underline-offset-4 transition current:prose-label-md-medium hover:decoration-inherit current:hover:decoration-transparent",
-    icon: "h-5 w-5 flex-shrink-0",
+    icon: "h-5 w-5 shrink-0",
   },
   variants: {
     colorScheme: {
       default: {
-        link: "text-base-content active:text-interaction-link-active current:text-base-content-medium",
+        link: "text-base-content current:text-base-content-medium active:text-interaction-link-active",
         icon: "text-base-content-subtle",
       },
       inverse: {

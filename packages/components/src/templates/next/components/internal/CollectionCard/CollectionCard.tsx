@@ -65,7 +65,7 @@ export const CollectionCard = ({
             src={imageSrc || ""}
             alt={image.alt}
             width="100%"
-            className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
+            className={`absolute left-0 h-full w-full rounded-sm ${isContainNeeded ? "object-contain" : "object-cover"}`}
             assetsBaseUrl={siteAssetsBaseUrl}
           />
         </div>

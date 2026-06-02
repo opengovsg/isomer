@@ -14,7 +14,7 @@ const createImagePreviewStyles = tv({
     container:
       // Height is responsive via CSS to avoid hydration mismatch:
       // sm/md screens show 3 previews (taller), lg screens show 5 previews (shorter)
-      "relative aspect-[1/1] w-full flex-1 flex-shrink-0 overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] focus-visible:outline-utility-highlight sm:h-[7.375rem] lg:h-[5.375rem]",
+      "relative aspect-[1/1] w-full flex-1 shrink-0 overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] focus-visible:outline-utility-highlight sm:h-[7.375rem] lg:h-[5.375rem]",
   },
   variants: {
     isSelected: {
@@ -221,7 +221,7 @@ export const ImageGalleryClient = ({
                       }
                     />
                     {image.caption && (
-                      <div className="prose-label-sm-medium absolute bottom-0 left-0 right-0 bg-base-canvas-inverse-overlay/90 p-3 text-white">
+                      <div className="bg-base-canvas-inverse-overlay/90 prose-label-sm-medium absolute bottom-0 left-0 right-0 p-3 text-white">
                         <div className="line-clamp-3">{image.caption}</div>
                       </div>
                     )}
@@ -234,7 +234,7 @@ export const ImageGalleryClient = ({
 
         {/* Navigation Controls - Accessible via keyboard tab navigation */}
         <button
-          className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
+          className="bg-base-canvas-inverse-overlay/90 focus-visible:outline-hidden absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           aria-label="Previous image"
           disabled={isPending}
           onMouseEnter={() => handlePreviewButtonEngagement()}
@@ -246,7 +246,7 @@ export const ImageGalleryClient = ({
         </button>
 
         <button
-          className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
+          className="bg-base-canvas-inverse-overlay/90 focus-visible:outline-hidden absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           aria-label="Next image"
           disabled={isPending}
           onTouchStart={() => preloadNextImage()}

@@ -52,7 +52,7 @@ const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
 
 const footerItemLinkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-body-sm line-clamp-1 flex w-fit items-center gap-1 text-base-content-inverse outline-none hover:text-base-content-inverse hover:underline hover:underline-offset-4 focus-visible:-m-0.5 focus-visible:p-0.5 focus-visible:shadow-none",
+  base: "outline-hidden prose-body-sm line-clamp-1 flex w-fit items-center gap-1 text-base-content-inverse hover:text-base-content-inverse hover:underline hover:underline-offset-4 focus-visible:-m-0.5 focus-visible:p-0.5 focus-visible:shadow-none",
   variants: {
     showExternalIcon: {
       true: `after:content-['_↗']`,
@@ -70,7 +70,7 @@ const FooterItem = ({ title, url }: FooterItemType) => {
         isWithFocusVisibleHighlight
       >
         {title}
-        <BiLinkExternal className="h-auto w-3.5 flex-shrink-0 lg:w-4" />
+        <BiLinkExternal className="h-auto w-3.5 shrink-0 lg:w-4" />
       </Link>
     )
   }
