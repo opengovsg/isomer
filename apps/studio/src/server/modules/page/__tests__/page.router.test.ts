@@ -17,7 +17,6 @@ import {
   setupCollection,
   setupEditorPermissions,
   setupFolder,
-  setupIsomerAdmin,
   setupPageResource,
   setupPublisherPermissions,
   setupSite,
@@ -26,7 +25,6 @@ import {
 import { createCallerFactory } from "~/server/trpc"
 import {
   AuditLogEvent,
-  IsomerAdminRole,
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
@@ -48,7 +46,6 @@ describe("page.router", async () => {
   beforeEach(async () => {
     await resetTables(
       "AuditLog",
-      "IsomerAdmin",
       "ResourcePermission",
       "Blob",
       "Version",
@@ -2575,13 +2572,9 @@ describe("page.router", async () => {
       )
     })
 
-    it("should throw 403 if user is not an Isomer admin", async () => {
+    it("should throw 403 if user does not have create access to site", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
-      await setupAdminPermissions({
-        userId: session.userId ?? undefined,
-        siteId: site.id,
-      })
 
       // Act
       const result = caller.createIndexPage({
@@ -2602,10 +2595,6 @@ describe("page.router", async () => {
     it("should return 200 if index page is created successfully", async () => {
       // Arrange
       const { site, folder } = await setupFolder()
-      await setupIsomerAdmin({
-        userId: session.userId!,
-        role: IsomerAdminRole.Core,
-      })
       await setupAdminPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,

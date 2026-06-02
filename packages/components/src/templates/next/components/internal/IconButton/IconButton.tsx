@@ -19,7 +19,7 @@ const iconButtonStyles = tv({
   variants: {
     variant: {
       clear:
-        "bg-transparent active:bg-base-canvas-backdrop/80 hover:bg-base-canvas-backdrop/50",
+        "active:bg-base-canvas-backdrop/80 hover:bg-base-canvas-backdrop/50 bg-transparent",
     },
     isDisabled: {
       true: "cursor-not-allowed",
