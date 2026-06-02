@@ -1,5 +1,6 @@
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { CSSProperties } from "react"
+import { formatHex, parse } from "culori"
 import { flatten } from "flat"
 import { chunk } from "lodash-es"
 import twColors from "tailwindcss/colors"
@@ -14,41 +15,10 @@ const LINEAR_RGB_FACTORS = {
 }
 
 // NOTE: Tailwind v4 exports colors as OKLCH strings instead of hex.
-// Convert to hex so the hex-based contrast calculations below still work.
-const oklchToHex = (oklch: string): string => {
-  const match = oklch.match(/oklch\(\s*([\d.]+)%\s+([\d.]+)\s+([\d.]+)\s*\)/)
-  if (!match) return oklch
-  const L = parseFloat(match[1]) / 100
-  const C = parseFloat(match[2])
-  const H = (parseFloat(match[3]) * Math.PI) / 180
-  const a = C * Math.cos(H)
-  const b = C * Math.sin(H)
-  const l_ = L + 0.3963377774 * a + 0.2158037573 * b
-  const m_ = L - 0.1055613458 * a - 0.0638541728 * b
-  const s_ = L - 0.0894841775 * a - 1.291485548 * b
-  const rLin =
-    4.0767416621 * l_ ** 3 - 3.3077115913 * m_ ** 3 + 0.2309699292 * s_ ** 3
-  const gLin =
-    -1.2684380046 * l_ ** 3 + 2.6097574011 * m_ ** 3 - 0.3413193965 * s_ ** 3
-  const bLin =
-    -0.0041960863 * l_ ** 3 - 0.7034186147 * m_ ** 3 + 1.6956082066 * s_ ** 3
-  const toSrgb = (v: number) =>
-    Math.round(
-      Math.min(
-        Math.max(
-          v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055,
-          0,
-        ),
-        1,
-      ) * 255,
-    )
-  return `#${toSrgb(rLin).toString(16).padStart(2, "0")}${toSrgb(gLin).toString(16).padStart(2, "0")}${toSrgb(bLin).toString(16).padStart(2, "0")}`
-}
-
+// Normalise to hex so the hex-based contrast calculations below still work.
 const normalizeColorToHex = (color: string): string => {
   if (color.startsWith("#")) return color
-  if (color.startsWith("oklch(")) return oklchToHex(color)
-  return color
+  return formatHex(parse(color) ?? color) ?? color
 }
 
 // NOTE: This is used to check relative contrast.
