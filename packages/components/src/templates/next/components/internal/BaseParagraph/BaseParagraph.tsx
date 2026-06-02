@@ -53,7 +53,7 @@ export const BaseParagraph = ({
         ...(attrs?.dir && { dir: attrs.dir }),
       }}
       className={twMerge(
-        `[&_a]:text-link visited:[&_a]:text-link-visited hover:[&_a]:text-link-hover focus-visible:[&_a]:bg-utility-highlight focus-visible:[&_a]:text-base-content-strong focus-visible:[&_a]:shadow-focus-visible [&_a]:underline [&_a]:outline-hidden focus-visible:[&_a]:decoration-transparent focus-visible:[&_a]:transition-none after:[&_a[target*="blank"]]:content-['_↗'] [&:not(:first-child)]:mt-6 [&:not(:last-child)]:mb-6`,
+        `[&_a]:text-link visited:[&_a]:text-link-visited hover:[&_a]:text-link-hover focus-visible:[&_a]:bg-utility-highlight focus-visible:[&_a]:text-base-content-strong focus-visible:[&_a]:shadow-focus-visible [&_a]:underline [&_a]:outline-hidden focus-visible:[&_a]:decoration-transparent focus-visible:[&_a]:transition-none [&_a[target*="blank"]::after]:content-['_↗'] [&:not(:first-child)]:mt-6 [&:not(:last-child)]:mb-6`,
         className,
       )}
       content={isContentEmpty ? "<br />" : content}
