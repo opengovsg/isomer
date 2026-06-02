@@ -13,7 +13,8 @@ generator client {
 
 /// Always after the prisma-client-js generator
 /// Generates types for the JSON columns
-/// The relevant types are declared in a separate prisma/types.ts file.
+/// The PrismaJson namespace is declared in @isomer/db at
+/// packages/db/src/prisma-json-types.ts.
 generator json {
   provider = "prisma-json-types-generator"
 }
@@ -21,7 +22,7 @@ generator json {
 generator kysely {
   provider     = "prisma-kysely"
   readOnlyIds  = true
-  output       = "../../../packages/db/src/generated"
+  output       = "../src/generated"
   fileName     = "generatedTypes.ts"
   // Optionally generate runtime enums to a separate file
   enumFileName = "generatedEnums.ts"
