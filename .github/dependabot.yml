@@ -112,3 +112,10 @@ updates:
         update-types: ["version-update:semver-major"]
       # markdown-to-jsx is only used in the unmaintained classic template; skip all updates
       - dependency-name: "markdown-to-jsx"
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7 # to mitigate supply chain attacks
