@@ -208,14 +208,14 @@ catalogs:
     "@react-stately/checkbox": ^3.8.0
     "@react-stately/toggle": ^3.10.0
   storybook:
-    storybook: ^10.4.0
-    "@storybook/addon-a11y": ^10.4.0
-    "@storybook/addon-docs": ^10.4.0
-    "@storybook/addon-links": ^10.4.0
-    "@storybook/addon-themes": ^10.4.0
-    "@storybook/nextjs": ^10.4.0
-    "@storybook/react-vite": ^10.4.0
-    eslint-plugin-storybook: ^10.4.0
+    storybook: ^10.4.1
+    "@storybook/addon-a11y": ^10.4.1
+    "@storybook/addon-docs": ^10.4.1
+    "@storybook/addon-links": ^10.4.1
+    "@storybook/addon-themes": ^10.4.1
+    "@storybook/nextjs": ^10.4.1
+    "@storybook/react-vite": ^10.4.1
+    eslint-plugin-storybook: ^10.4.1
     storybook-addon-pseudo-states: ^10.3.6
   tanstack-query:
     "@tanstack/query-devtools": ^5.100.11
@@ -257,8 +257,8 @@ catalogs:
     "@trpc/react-query": ^11.17.0
     "@trpc/server": ^11.17.0
   vitest:
-    "@vitejs/plugin-react": ^4.3.1
-    "@vitest/coverage-istanbul": ^2.1.2
-    vite: ^5.4.21
-    vite-tsconfig-paths: ^5.1.4
-    vitest: ^2.1.1
+    "@vitejs/plugin-react": ^5.2.0
+    "@vitest/coverage-istanbul": ^4.1.4
+    vite: ^6.4.2
+    vite-tsconfig-paths: ^6.1.1
+    vitest: ^4.1.4

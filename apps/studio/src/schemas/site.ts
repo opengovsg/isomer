@@ -70,7 +70,7 @@ export const setSiteConfigByAdminSchema = z.object({
 })
 
 export const createSiteSchema = z.object({
-  siteName: z.string().min(1, { message: "Site name is required" }),
+  siteName: z.string().trim().min(1, { message: "Site name is required" }),
 })
 
 export const publishSiteSchema = z.object({
@@ -85,7 +85,7 @@ export const updateSiteConfigSchema = z
   .and(
     z.object({
       siteId: z.number(),
-      siteName: z.string(),
+      siteName: z.string().trim().min(1, { message: "Site name is required" }),
     }),
   )
 
