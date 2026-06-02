@@ -44,7 +44,7 @@ export default {
     },
   },
   plugins: [
-    plugin(function ({ addUtilities, theme }) {
+    plugin(function ({ addBase, theme }) {
       // Gets all the gap values (like gap-1, gap-2, etc.) defined in the Tailwind theme
       // It's based on the existing gap utility in Tailwind.
       const gapValues = theme("gap")
@@ -101,10 +101,7 @@ export default {
         return acc
       }, {})
 
-      addUtilities(gapFallbackUtilities, {
-        // Enable responsive support e.g., sm:gap-1, md:gap-2
-        variants: ["responsive"],
-      })
+      addBase(gapFallbackUtilities)
     }),
     plugin(function ({ addUtilities }) {
       const newUtilities = {

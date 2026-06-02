@@ -18,12 +18,12 @@ const MAX_CHAR_LIMIT = 7
 
 const createKeyStatisticsStyles = tv({
   slots: {
-    container: `${ComponentContent} flex flex-col`,
+    container: `${ComponentContent} flex-col flex`,
     title:
       "prose-display-sm w-full max-w-[47.5rem] break-words text-base-content-strong",
     urlButtonContainer: "mx-auto mt-2 block",
-    statistics: "flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row",
-    itemContainer: "flex grow flex-col gap-3",
+    statistics: "flex-col gap-x-8 gap-y-12 flex flex-wrap md:flex-row",
+    itemContainer: "flex-col gap-3 flex grow",
     itemValue: "prose-display-lg text-pretty text-brand-canvas-inverse",
     itemLabel: "prose-label-md-medium text-base-content-subtle",
   },
@@ -44,10 +44,10 @@ const createKeyStatisticsStyles = tv({
     },
     layout: {
       homepage: {
-        container: "gap-10 py-12 xs:py-24 lg:gap-12",
+        container: "gap-10 py-12 lg:gap-12 xs:py-24",
       },
       default: {
-        container: "mt-14 gap-12 first:mt-0",
+        container: "gap-12 mt-14 first:mt-0",
       },
     },
   },

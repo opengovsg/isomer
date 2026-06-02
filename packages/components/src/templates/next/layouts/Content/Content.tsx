@@ -15,10 +15,10 @@ import { Skeleton } from "../Skeleton"
 const createContentLayoutStyles = tv({
   slots: {
     container:
-      "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
+      "grid mx-auto max-w-screen-xl grid-cols-12 px-6 py-12 lg:gap-6 xl:gap-10 md:px-10 md:py-16",
     siderailContainer: "relative col-span-3 hidden lg:block",
     content:
-      "col-span-12 flex flex-col gap-16 break-words lg:col-span-9 lg:mr-24",
+      "flex-col gap-16 col-span-12 flex break-words lg:col-span-9 lg:mr-24",
   },
 })
 

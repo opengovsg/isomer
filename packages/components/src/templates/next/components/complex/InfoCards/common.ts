@@ -27,9 +27,9 @@ export const infoCardTitleStyle = tv({
 
 const singleInfoCardStyle = tv({
   slots: {
-    cardContainer: "group flex flex-col gap-5 outline-0",
+    cardContainer: "group flex-col gap-5 flex outline-0",
     cardImage: "h-full w-full object-center",
-    cardTextContainer: "flex flex-col break-words",
+    cardTextContainer: "flex-col flex break-words",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 shrink-0 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
@@ -85,8 +85,8 @@ const singleInfoCardStyle = tv({
 const createInfoCardsStyles = tv({
   extend: singleInfoCardStyle,
   slots: {
-    container: `${ComponentContent} flex flex-col`,
-    headingContainer: "flex flex-col",
+    container: `${ComponentContent} flex-col flex`,
+    headingContainer: "flex-col flex",
     headingTitle: "prose-display-sm break-words text-base-content-strong",
     headingSubtitle: "text-base-content",
     // auto-rows-max and grid-template-rows:max-content are needed to make the grid items have the same height,
@@ -99,7 +99,7 @@ const createInfoCardsStyles = tv({
   variants: {
     variant: {
       [INFOCARD_VARIANT.default]: {
-        grid: "gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
+        grid: "gap-10 md:gap-7 lg:gap-y-12 lg:gap-x-16",
         cardImageContainer: "aspect-[3/2]",
       },
       [INFOCARD_VARIANT.bold]: {

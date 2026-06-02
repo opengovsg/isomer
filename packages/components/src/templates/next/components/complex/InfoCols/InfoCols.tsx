@@ -15,13 +15,13 @@ const createInfoColsStyles = tv({
   slots: {
     section: "bg-white",
     outerContainer: `${ComponentContent}`,
-    innerContainer: "flex flex-col gap-12",
-    header: "flex w-full max-w-[47.5rem] flex-col items-start text-left",
+    innerContainer: "flex-col gap-12 flex",
+    header: "flex-col flex w-full max-w-[47.5rem] items-start text-left",
     headerTitle: "prose-display-sm break-words text-base-content-strong",
     headerSubtitle: "prose-headline-lg-regular text-base-content",
     infoBoxesContainer:
-      "grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3",
-    infoBox: "group flex flex-col items-start gap-3 text-left outline-0",
+      "grid gap-y-10 gap-x-16 grid-cols-1 md:gap-y-12 md:grid-cols-2 lg:grid-cols-3",
+    infoBox: "group flex-col gap-3 flex items-start text-left outline-0",
     infoBoxIcon: "h-auto w-6 text-base-content-strong",
     infoBoxTitle: [
       groupFocusVisibleHighlight(),
@@ -29,7 +29,7 @@ const createInfoColsStyles = tv({
     ],
     infoBoxDescription: "prose-body-base text-base-content",
     infoBoxButton:
-      "prose-headline-base-medium items-center gap-1 text-base-content-strong",
+      "gap-1 prose-headline-base-medium items-center text-base-content-strong",
     infoBoxButtonIcon:
       "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1",
   },

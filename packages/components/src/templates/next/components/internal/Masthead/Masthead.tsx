@@ -5,8 +5,8 @@ import { Link } from "../Link"
 
 const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
   return (
-    <summary className="group/summary outline-hidden flex w-full cursor-pointer list-none gap-1 text-start leading-5 lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden">
-      <div className="mx-auto flex w-full max-w-screen-xl gap-1 px-6 text-start md:px-10 lg:flex-row lg:items-center">
+    <summary className="group/summary outline-hidden gap-1 flex w-full cursor-pointer list-none text-start leading-5 lg:flex-row lg:items-center [&::-webkit-details-marker]:hidden">
+      <div className="gap-1 mx-auto flex w-full max-w-screen-xl px-6 text-start lg:flex-row md:px-10 lg:items-center">
         <svg
           aria-hidden
           version="1.1"
@@ -23,7 +23,7 @@ const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
           <path d="M16.093 6.845c8.005-0.24 10.863 9.357 5.693 13.676l-5.191 2.509c0 0-0.676-2.181 1.833-4.734 2.509-2.551 4.929-7.328-2.006-10.469 0 0 0.131-0.654-0.327-0.981z"></path>
           <path d="M15.678 9.004c0 0 0.393-0.371 0.524-0.676 5.954 2.486 5.017 6.697 1.461 10.23-2.181 2.246-1.505 4.668-1.505 4.668s-2.66 1.657-3.577 3.097c0 0-3.852-3.28 1.483-8.724 5.235-5.344 1.614-8.594 1.614-8.594z"></path>
         </svg>
-        <div className="prose-label-sm-regular flex flex-1 flex-wrap gap-1 py-1 text-base-content-medium lg:flex-row">
+        <div className="gap-1 prose-label-sm-regular flex flex-1 flex-wrap py-1 text-base-content-medium lg:flex-row">
           <span>
             A Singapore Government Agency Website&nbsp;
             {isStaging ? <b>[NOTE: THIS IS A STAGING WEBSITE]&nbsp;</b> : null}
@@ -45,8 +45,8 @@ const MastheadSummary = ({ isStaging }: { isStaging?: boolean }) => {
 const RestrictedContent = () => {
   return (
     <div className="mx-auto max-w-screen-xl px-6 py-2 pb-8 pt-4 text-[#474747] md:px-10 lg:pb-12 lg:pt-10">
-      <div className="grid grid-cols-[1fr] gap-6 px-px lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] lg:gap-40">
-        <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
+      <div className="grid gap-6 grid-cols-[1fr] px-px lg:gap-40 lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))]">
+        <div className="gap-2 flex text-[0.6875rem] lg:gap-4 lg:text-base">
           <div className="-mt-[0.1rem] lg:mt-[0.2rem]">
             <svg
               aria-hidden
@@ -90,7 +90,7 @@ const RestrictedContent = () => {
             </article>
           </div>
         </div>
-        <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
+        <div className="gap-2 flex text-[0.6875rem] lg:gap-4 lg:text-base">
           <div className="-mt-[0.1rem]">
             <svg
               aria-hidden

@@ -16,7 +16,7 @@ const meta: Meta<typeof LinkButton> = {
     )
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex-col gap-2 flex">
         {combinations.map((combo, index) => (
           <div key={index}>
             <LinkButton {...args} size={combo.size} href={combo.link} />

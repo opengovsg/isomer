@@ -22,7 +22,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
   const tableDescriptionId = useId()
 
   return (
-    <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
+    <div className="flex-col gap-4 flex [&:not(:first-child)]:mt-7">
       <BaseParagraph
         id={tableDescriptionId}
         content={caption}

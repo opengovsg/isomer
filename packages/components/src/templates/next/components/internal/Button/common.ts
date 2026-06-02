@@ -2,7 +2,7 @@ import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/tailwind"
 
 export const buttonStyles = tv({
-  base: "box-border flex h-full w-fit cursor-pointer items-center gap-2 rounded-sm text-center transition",
+  base: "gap-2 box-border flex h-full w-fit cursor-pointer items-center rounded-sm text-center transition",
   extend: focusRing,
   variants: {
     variant: {

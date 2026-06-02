@@ -8,7 +8,7 @@ const meta: Meta<typeof Button> = {
   title: "Next/Internal Components/Button",
   component: Button,
   render: (args) => (
-    <div className="flex flex-wrap gap-2">
+    <div className="gap-2 flex flex-wrap">
       {BUTTON_SIZES.map((size) => (
         <Button key={size} {...args} size={size} />
       ))}

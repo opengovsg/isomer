@@ -11,7 +11,7 @@ const createBreadcrumbLinkStyles = tv({
   extend: focusVisibleHighlight,
   base: "",
   slots: {
-    container: "flex items-center gap-1",
+    container: "gap-1 flex items-center",
     link: "prose-label-md-regular line-clamp-1 underline decoration-transparent underline-offset-4 transition current:prose-label-md-medium hover:decoration-inherit current:hover:decoration-transparent",
     icon: "h-5 w-5 shrink-0",
   },
@@ -47,7 +47,7 @@ function BaseBreadcrumbs({
       role="navigation"
       className={twMerge("flex flex-wrap gap-1", className)}
     >
-      <ol className="m-0 flex list-none flex-wrap items-center gap-1 p-0">
+      <ol className="gap-1 m-0 flex list-none flex-wrap items-center p-0">
         {children}
       </ol>
     </div>

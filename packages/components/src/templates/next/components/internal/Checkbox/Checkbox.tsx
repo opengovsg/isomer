@@ -103,7 +103,7 @@ export function CheckboxGroup(props: CheckboxGroupProps) {
 }
 
 const checkboxStyles = tv({
-  base: "group prose-body-base flex items-start gap-3 transition",
+  base: "group gap-3 prose-body-base flex items-start transition",
   variants: {
     isDisabled: {
       false: "text-base-content-strong",

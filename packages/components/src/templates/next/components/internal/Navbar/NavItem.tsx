@@ -24,7 +24,7 @@ type NavbarItemProps = NavbarProps["items"][number] & {
 const navbarItemStyles = tv({
   slots: {
     megamenu: "max-h-full overflow-auto bg-white shadow-md",
-    item: "group prose-label-md-medium flex flex-row items-center gap-0.5 border-b-2 border-transparent pb-5 pt-6 text-base-content-strong outline-0 transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
+    item: "group flex-row gap-0.5 prose-label-md-medium flex items-center border-b-2 border-transparent pb-5 pt-6 text-base-content-strong outline-0 transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
@@ -111,7 +111,7 @@ const Megamenu = ({
         showExternalIcon={isExternal}
         isWithFocusVisibleHighlight
         href={url}
-        className="group inline-flex w-fit items-center gap-1 hover:text-brand-interaction-hover hover:no-underline"
+        className="group gap-1 inline-flex w-fit items-center hover:text-brand-interaction-hover hover:no-underline"
         onClick={onCloseMegamenu}
       >
         {name}
@@ -130,9 +130,9 @@ const Megamenu = ({
       />
       <FocusScope contain restoreFocus>
         <div className={megamenu()}>
-          <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
-            <div className="flex w-full flex-row items-start">
-              <div className="flex flex-col gap-1">
+          <div className="flex-col gap-8 mx-auto flex w-full max-w-screen-xl px-10 pb-16 pt-12">
+            <div className="flex-row flex w-full items-start">
+              <div className="flex-col gap-1 flex">
                 <h2 className="prose-display-xs text-base-content">
                   {renderTitleContent()}
                 </h2>
@@ -153,18 +153,18 @@ const Megamenu = ({
               />
             </div>
 
-            <ul className="grid grid-cols-3 gap-x-16 gap-y-8">
+            <ul className="grid gap-y-8 gap-x-16 grid-cols-3">
               {items?.map((subItem) => {
                 const isExternal = isExternalUrl(subItem.url)
                 return (
                   <li key={subItem.name}>
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex-col gap-1.5 flex">
                       <Link
                         isExternal={isExternal}
                         showExternalIcon={isExternal}
                         isWithFocusVisibleHighlight
                         href={subItem.url}
-                        className="group prose-label-md-medium w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
+                        className="group gap-1 prose-label-md-medium w-fit items-center text-base-content hover:text-brand-interaction-hover hover:no-underline"
                         onClick={onCloseMegamenu}
                       >
                         {subItem.name}

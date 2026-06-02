@@ -32,7 +32,7 @@ export const ArticleLayout = ({
 
   return (
     <Skeleton site={site} page={page} layout={layout}>
-      <div className="mx-auto flex max-w-[47.8rem] flex-col gap-7 px-6 md:px-10">
+      <div className="flex-col gap-7 mx-auto flex max-w-[47.8rem] px-6 md:px-10">
         <ArticlePageHeader
           {...page.articlePageHeader}
           breadcrumb={breadcrumb}
@@ -42,7 +42,7 @@ export const ArticleLayout = ({
           tags={resolvedTags}
         />
 
-        <div className="mx-auto w-full gap-10 pb-20">
+        <div className="gap-10 mx-auto w-full pb-20">
           <div className="w-full overflow-x-auto break-words lg:max-w-[660px]">
             {renderPageContent({
               site,

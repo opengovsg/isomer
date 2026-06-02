@@ -16,7 +16,7 @@ const meta: Meta<typeof DownloadButton> = {
     )
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex-col gap-2 flex">
         {combinations.map((combo, index) => (
           <div key={index}>
             <DownloadButton

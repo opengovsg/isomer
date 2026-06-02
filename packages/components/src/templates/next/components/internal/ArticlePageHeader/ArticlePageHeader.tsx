@@ -20,15 +20,15 @@ export const ArticlePageHeader = ({
 
       <div className="prose-body-base mb-3 text-base-content">{category}</div>
 
-      <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-4">
+      <div className="flex-col gap-5 flex">
+        <div className="flex-col gap-4 flex">
           <h1 className="prose-display-md break-words text-base-content-strong">
             {title}
           </h1>
           {tags.length > 0 &&
             tags.flatMap(({ category, selected: labels }) => {
               return (
-                <div className="prose-label-sm flex flex-wrap items-center gap-2">
+                <div className="gap-2 prose-label-sm flex flex-wrap items-center">
                   {category}
                   {labels.map((label) => {
                     return <Tag key={label}>{label}</Tag>

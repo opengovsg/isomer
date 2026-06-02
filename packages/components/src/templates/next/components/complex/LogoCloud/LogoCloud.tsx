@@ -6,10 +6,10 @@ import { ImageClient } from "../../internal/ImageClient"
 
 const createLogoCloudStyles = tv({
   slots: {
-    container: `${ComponentContent} flex flex-col gap-9 py-16`,
+    container: `${ComponentContent} flex-col gap-9 flex py-16`,
     title:
       "prose-headline-lg-medium self-center text-center text-base-content-subtle",
-    logoContainer: "flex flex-wrap justify-center gap-x-6 gap-y-4",
+    logoContainer: "gap-y-4 gap-x-6 flex flex-wrap justify-center",
     logo: "inset-0 max-h-20 object-contain md:max-h-24",
   },
 })

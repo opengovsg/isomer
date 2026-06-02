@@ -9,7 +9,7 @@ const contentpicStyles = tv({
   slots: {
     // margin used for margin collapse
     container:
-      "mb-7 flex flex-col gap-7 sm:flex-row [&:not(:first-child)]:mt-7",
+      "flex-col gap-7 mb-7 flex sm:flex-row [&:not(:first-child)]:mt-7",
     image:
       "aspect-[5/6] h-auto rounded-sm object-cover sm:h-[240px] sm:w-[200px]",
     content:

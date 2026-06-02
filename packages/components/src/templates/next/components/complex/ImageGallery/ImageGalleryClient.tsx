@@ -261,7 +261,7 @@ export const ImageGalleryClient = ({
       {/* Preview Sequence - Using grid for fixed columns */}
       <div
         ref={containerRef}
-        className="mt-6 hidden w-full gap-3 sm:grid sm:grid-cols-3 lg:grid-cols-5"
+        className="gap-3 mt-6 hidden w-full sm:grid sm:grid-cols-3 lg:grid-cols-5"
       >
         {images.map((image, index) => {
           // We render all images, but hide the ones that are not in the preview sequence

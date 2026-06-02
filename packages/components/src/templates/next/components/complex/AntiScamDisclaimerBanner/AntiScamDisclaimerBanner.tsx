@@ -10,14 +10,14 @@ export const AntiScamDisclaimerBanner = () => {
       role="region"
       aria-label="Anti-scam notice"
     >
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+      <div className="flex-col gap-5 flex lg:flex-row lg:items-start">
         <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-utility-feedback-warning-subtle">
           <BiError
             className="h-5 w-5 text-utility-feedback-warning"
             aria-hidden
           />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex-col gap-1 flex min-w-0 flex-1">
           <p className="prose-headline-lg-medium m-0 text-base-content-strong">
             Government officials will never ask you to transfer money over a
             phone call.

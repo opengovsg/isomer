@@ -30,7 +30,7 @@ export const BlogCard = ({
     // and to do that, we add a padding on smaller viewports
     <Link
       href={referenceLinkHref}
-      className="group flex flex-1 flex-col gap-3 border-b pb-5 pt-5 md:pt-0"
+      className="group flex-col gap-3 flex flex-1 border-b pb-5 pt-5 md:pt-0"
       isExternal={isExternalLink}
     >
       {image && (
@@ -51,13 +51,13 @@ export const BlogCard = ({
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
-      <div className="flex flex-grow flex-col gap-3 text-base-content">
+      <div className="flex-col gap-3 flex flex-grow text-base-content">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
         {tags && tags.length > 0 && (
-          <div className="-mt-1 flex flex-col gap-2">
+          <div className="flex-col gap-2 -mt-1 flex">
             {tags.flatMap(({ category, selected: labels }) => {
               return (
-                <div className="flex w-full flex-wrap items-center gap-1.5">
+                <div className="gap-1.5 flex w-full flex-wrap items-center">
                   <p className="prose-label-sm">{category}</p>
                   {labels.map((label) => {
                     return <Tag>{label}</Tag>

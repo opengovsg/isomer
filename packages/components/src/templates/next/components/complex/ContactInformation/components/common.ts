@@ -5,12 +5,12 @@ import { ComponentContent } from "../../../internal/customCssClass"
 export const commonContactInformationStyles = tv({
   slots: {
     screenWideOuterContainer: "",
-    container: `${ComponentContent} flex flex-col`,
-    titleAndDescriptionContainer: "flex flex-col",
+    container: `${ComponentContent} flex-col flex`,
+    titleAndDescriptionContainer: "flex-col flex",
     title: "prose-display-sm text-base-content-strong",
     description: "text-base-content-strong [&:not(:first-child)]:mt-0",
-    contactMethodsContainer: "flex flex-col gap-10",
-    otherInformationContainer: "mt-8 flex flex-col gap-6",
+    contactMethodsContainer: "flex-col gap-10 flex",
+    otherInformationContainer: "flex-col gap-6 mt-8 flex",
     otherInformationTitle: "prose-display-xs text-base-content-strong",
     urlButtonContainer: "mx-auto",
   },
@@ -26,11 +26,11 @@ export const commonContactInformationStyles = tv({
 
 export const commonContactMethodStyles = tv({
   slots: {
-    container: "flex w-full flex-col items-start gap-2",
+    container: "flex-col gap-2 flex w-full items-start",
     icon: "size-8 shrink-0 text-base-content-strong",
-    textContainer: "flex w-full flex-col items-start gap-3",
+    textContainer: "flex-col gap-3 flex w-full items-start",
     label: "prose-headline-lg-semibold text-base-content-strong",
-    valuesAndCaptionContainer: "flex w-full flex-col items-start gap-1",
+    valuesAndCaptionContainer: "flex-col gap-1 flex w-full items-start",
     value:
       "prose-body-base text-left text-base-content tailwindv3-wrap-anywhere",
     caption: "prose-body-sm text-base-content",

@@ -17,7 +17,7 @@ import { IconButton } from "../IconButton"
 
 const expandFilterButtonStyle = tv({
   extend: focusRing,
-  base: "prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content",
+  base: "flex-row gap-4 prose-headline-base-semibold flex w-full items-center justify-between text-left text-base-content",
 })
 
 interface ExpandFilterButtonProps {
@@ -133,7 +133,7 @@ const FilterDrawerContent = ({
               onPress={() => updateFilterToggle(id)}
             />
 
-            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
+            <div className={showFilter[id] ? "flex-col flex" : "hidden"}>
               {items.map(({ id: itemId, label: itemLabel, count }) => (
                 <Checkbox
                   value={itemId}
@@ -148,7 +148,7 @@ const FilterDrawerContent = ({
         ))}
       </form>
       {/* Sticky action bottom bar */}
-      <div className="sticky bottom-0 left-0 right-0 flex flex-col gap-3 border-t border-t-divider-medium bg-white px-6 pb-12 pt-8 md:px-10">
+      <div className="flex-col gap-3 sticky bottom-0 left-0 right-0 flex border-t border-t-divider-medium bg-white px-6 pb-12 pt-8 md:px-10">
         <Button
           className="w-full justify-center"
           variant="solid"
@@ -183,7 +183,7 @@ export const FilterDrawer = (props: FilterDrawerProps): JSX.Element => {
       <div className="fixed inset-0 z-40 flex">
         <DialogPanel
           transition
-          className="relative ml-auto flex h-full w-full transform flex-col overflow-y-auto bg-white transition duration-300 ease-in-out data-[closed]:translate-y-full"
+          className="flex-col relative ml-auto flex h-full w-full transform overflow-y-auto bg-white transition duration-300 ease-in-out data-[closed]:translate-y-full"
         >
           <div className="mx-6 flex items-center justify-between border-b border-b-divider-medium pb-3 pt-12 md:mx-10">
             <h2 className="prose-title-lg-medium text-base-content-medium">

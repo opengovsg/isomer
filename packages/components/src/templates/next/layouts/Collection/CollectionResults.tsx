@@ -21,18 +21,18 @@ interface CollectionResultProps extends Pick<
 
 const collection = tv({
   slots: {
-    collectionResults: "flex w-full flex-col gap-0",
+    collectionResults: "gap-0 flex-col flex w-full",
   },
   variants: {
     variant: {
       collection: {
-        collectionResults: "flex w-full flex-col gap-0",
+        collectionResults: "gap-0 flex-col flex w-full",
       },
       blog: {
         collectionResults:
           // NOTE: we remove the gap so that the blog cards can
           // render their own border between each item
-          "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-x-10 md:gap-y-5",
+          "grid grid-cols-1 sm:gap-0 md:gap-y-5 md:gap-x-10 md:grid-cols-2",
       },
     },
   },
@@ -61,8 +61,8 @@ export const CollectionResults = ({
 
   return (
     <>
-      <div className="flex w-full flex-col justify-between gap-x-6 gap-y-2 md:flex-row">
-        <div className="flex h-full w-full items-center gap-3">
+      <div className="flex-col gap-y-2 gap-x-6 flex w-full justify-between md:flex-row">
+        <div className="gap-3 flex h-full w-full items-center">
           <p className="prose-headline-lg-regular text-base-content-medium">
             {appliedFilters.length > 0 || searchValue !== ""
               ? `${filteredCount} article${filteredCount === 1 ? "" : "s"}`
@@ -98,7 +98,7 @@ export const CollectionResults = ({
           )}
         </div>
       ) : (
-        <div className="flex flex-col gap-1 py-32 text-center text-content">
+        <div className="flex-col gap-1 flex py-32 text-center text-content">
           <p className="prose-body-base">
             We couldn’t find any articles. Try different search terms or
             filters.

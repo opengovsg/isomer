@@ -19,10 +19,10 @@ export const NotificationClient = ({
   return (
     !isDismissed && (
       <div className="bg-utility-feedback-info-faint">
-        <div className="relative mx-auto flex max-w-screen-xl flex-row gap-4 px-6 py-4 text-base-content md:px-10 md:py-4">
-          <div className="flex flex-row gap-2">
+        <div className="flex-row gap-4 relative mx-auto flex max-w-screen-xl px-6 py-4 text-base-content md:px-10 md:py-4">
+          <div className="flex-row gap-2 flex">
             <BiInfoCircle className="mt-[3px] h-4 w-4 shrink-0" />
-            <div className="flex flex-1 flex-col gap-0.5">
+            <div className="flex-col gap-0.5 flex flex-1">
               {!!title && (
                 <h2 className="prose-headline-base-medium">{title}</h2>
               )}

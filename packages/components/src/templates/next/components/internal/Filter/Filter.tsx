@@ -35,7 +35,7 @@ const FilterSectionButton = ({
     <button
       {...mergedProps}
       ref={buttonRef}
-      className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content outline-0"
+      className="group flex-row gap-4 prose-headline-base-semibold flex w-full items-center justify-between text-left text-base-content outline-0"
     >
       <label className={filterSectionLabelStyle()}>{label}</label>
       <BiChevronDown
@@ -77,7 +77,7 @@ export const Filter = ({
     <>
       {filters.length > 0 && (
         <Button
-          className="prose-headline-lg-semibold flex w-full items-center justify-between gap-1 rounded border-[1.5px] border-base-content-strong bg-white px-4 py-3.5 text-base-content-strong lg:hidden"
+          className="gap-1 prose-headline-lg-semibold flex w-full items-center justify-between rounded border-[1.5px] border-base-content-strong bg-white px-4 py-3.5 text-base-content-strong lg:hidden"
           variant="unstyled"
           onPress={() => setMobileFiltersOpen(true)}
         >
@@ -95,7 +95,7 @@ export const Filter = ({
         setAppliedFilters={setAppliedFilters}
       />
       <aside className="hidden lg:block">
-        <div className="flex flex-row items-center justify-between gap-4 border-b border-b-base-divider-medium pb-3">
+        <div className="flex-row gap-4 flex items-center justify-between border-b border-b-base-divider-medium pb-3">
           <h2 className="prose-headline-lg-semibold text-base-content-strong">
             Filters
           </h2>
@@ -121,7 +121,7 @@ export const Filter = ({
               onToggle={() => updateFilterToggle(id)}
             />
 
-            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
+            <div className={showFilter[id] ? "flex-col flex" : "hidden"}>
               {items.map(({ id: itemId, label: itemLabel, count }) => (
                 <Checkbox
                   key={itemId}

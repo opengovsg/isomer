@@ -35,21 +35,21 @@ export const HeroBlock = ({
   const heroButton = HERO_THEME_MAPPINGS.button[theme]
 
   return (
-    <section className="flex min-h-[15rem] flex-col sm:min-h-[22.5rem] lg:min-h-[31.25rem] lg:flex-row">
+    <section className="flex-col flex min-h-[15rem] lg:flex-row sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
       <div
-        className={`flex flex-row ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-8`}
+        className={`flex-row flex ${heroColour} px-6 pb-12 pt-11 md:px-10 lg:w-1/2 lg:justify-end lg:pl-10 lg:pr-8`}
       >
         <div
-          className={`flex w-full max-w-[548px] flex-col justify-center gap-9 ${heroTextColour}`}
+          className={`flex-col gap-9 flex w-full max-w-[548px] justify-center ${heroTextColour}`}
         >
-          <div className="flex flex-col gap-6">
+          <div className="flex-col gap-6 flex">
             <h1 className="wrap-break-word prose-display-xl text-balance">
               {title}
             </h1>
             {subtitle && <p className="prose-title-lg-regular">{subtitle}</p>}
           </div>
           {buttonLabel && buttonUrl && (
-            <div className="flex flex-col justify-start gap-x-5 gap-y-4 sm:flex-row">
+            <div className="flex-col gap-y-4 gap-x-5 flex justify-start sm:flex-row">
               <LinkButton
                 href={getReferenceLinkHref(
                   buttonUrl,

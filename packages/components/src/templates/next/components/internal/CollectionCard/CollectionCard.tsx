@@ -27,7 +27,7 @@ export const CollectionCard = ({
   return (
     <Link
       href={referenceLinkHref}
-      className="group flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t md:flex-row md:gap-6"
+      className="group flex-col gap-3 flex border-collapse border-b border-divider-medium py-5 md:flex-row md:gap-6 first:border-t"
       isExternal={isExternalLink}
     >
       {shouldShowDate && (
@@ -35,13 +35,13 @@ export const CollectionCard = ({
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
-      <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
+      <div className="flex-col gap-3 flex flex-grow text-base-content md:gap-2">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
         {tags && tags.length > 0 && (
           <>
             {tags.flatMap(({ category, selected: labels }) => {
               return (
-                <div className="flex w-full flex-wrap items-center gap-2">
+                <div className="gap-2 flex w-full flex-wrap items-center">
                   <p className="prose-label-sm">{category}</p>
                   {labels.map((label) => {
                     return <Tag>{label}</Tag>

@@ -9,17 +9,17 @@ const MAX_SIBLINGS_LIMIT = 10
 
 const createSiderailStyles = tv({
   slots: {
-    container: "flex flex-col items-start gap-16",
-    parentContainer: "flex flex-col items-start gap-3 self-stretch",
+    container: "flex-col gap-16 flex items-start",
+    parentContainer: "flex-col gap-3 flex items-start self-stretch",
     sectionLabel: "prose-label-sm-medium text-base-content-light",
     parentLabel:
       "group prose-headline-base-medium line-clamp-3 text-base-content transition",
-    contentContainer: "flex flex-col items-start gap-3 self-stretch",
-    siblingsContainer: "flex flex-col items-start gap-4 self-stretch",
-    siblingsList: "line-clamp-2 flex flex-col gap-3 self-stretch",
+    contentContainer: "flex-col gap-3 flex items-start self-stretch",
+    siblingsContainer: "flex-col gap-4 flex items-start self-stretch",
+    siblingsList: "flex-col gap-3 line-clamp-2 flex self-stretch",
     sibling: "grow-1 flex shrink-0 basis-0 items-center justify-between",
     label:
-      "group prose-body-base flex w-full flex-row text-base-content transition hover:text-brand-interaction",
+      "group flex-row prose-body-base flex w-full text-base-content transition hover:text-brand-interaction",
     rightArrowIcon:
       "-mr-2 h-6 w-6 shrink-0 opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100",
     seeAllContainer:

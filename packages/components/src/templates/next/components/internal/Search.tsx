@@ -17,7 +17,7 @@ const inputStyles = tv({
 })
 
 const fieldGroupStyles = tv({
-  base: "group flex items-center gap-4 overflow-hidden rounded-sm bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
+  base: "group gap-4 flex items-center overflow-hidden rounded-sm bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
   variants: {
     isFocusWithin: {
       false: "shadow-brand-interaction forced-colors:border-[ButtonBorder]",

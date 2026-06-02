@@ -5,6 +5,9 @@ import plugin from "tailwindcss/plugin"
 
 import siteConfig from "./data/config.json"
 
+// CSS.escape polyfill for Node.js (the `e` helper was removed from the TailwindCSS v4 plugin API)
+const e = (str) => str.replace(/[^a-zA-Z0-9_-]/g, (c) => `\\${c}`)
+
 /** @type {import('tailwindcss').Config} */
 const config = {
   content: [
@@ -19,7 +22,7 @@ const config = {
     isomerSiteTheme({
       colors: siteConfig.colors.brand,
     }),
-    plugin(function ({ addUtilities, theme, e }) {
+    plugin(function ({ addBase, theme }) {
       // Gets all the gap values (like gap-1, gap-2, etc.) defined in the Tailwind theme
       // It's based on the existing gap utility in Tailwind.
       const gapValues = theme("gap")
@@ -76,10 +79,7 @@ const config = {
         return acc
       }, {})
 
-      addUtilities(gapFallbackUtilities, {
-        // Enable responsive support e.g., sm:gap-1, md:gap-2
-        variants: ["responsive"],
-      })
+      addBase(gapFallbackUtilities)
     }),
     plugin(function ({ addUtilities }) {
       const newUtilities = {

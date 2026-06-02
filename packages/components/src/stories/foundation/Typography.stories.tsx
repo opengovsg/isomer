@@ -15,12 +15,12 @@ type Story = StoryObj<typeof meta>
 export const Typography: Story = {
   render: () => {
     return (
-      <div className="container flex max-w-screen-lg flex-col gap-4">
-        <section className="flex flex-col gap-2">
+      <div className="flex-col gap-4 container flex max-w-screen-lg">
+        <section className="flex-col gap-2 flex">
           <h1 className="prose-display-xl">Typography</h1>
-          <div className="flex flex-col justify-between break-words rounded-lg bg-blue-700 px-4 py-8 text-white md:flex-row md:items-center md:px-12">
+          <div className="flex-col flex justify-between break-words rounded-lg bg-blue-700 px-4 py-8 text-white md:flex-row md:items-center md:px-12">
             <p className="prose-display-sm">Inter</p>
-            <div className="prose-headline-lg-regular flex flex-col">
+            <div className="flex-col prose-headline-lg-regular flex">
               <span>ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>
               <span>abcdefghijklmnopqrstuvwxyz</span>
               <span>1234567890?!()[]&#123;&#125;&*^%$#@~&lt;&gt;</span>
@@ -29,7 +29,7 @@ export const Typography: Story = {
         </section>
         <section>
           <h2 className="prose-display-lg mb-4">Display</h2>
-          <div className="grid grid-cols-1 gap-y-4 md:grid-cols-2">
+          <div className="grid gap-y-4 grid-cols-1 md:grid-cols-2">
             <p className="prose-title-md-medium">Display XL</p>
             <p className="prose-display-xl">
               The five boxing wizards jump quickly. 1234567890
@@ -54,7 +54,7 @@ export const Typography: Story = {
         </section>
         <section>
           <h2 className="prose-display-lg mb-4">Title</h2>
-          <div className="grid grid-cols-1 gap-y-4 md:grid-cols-2">
+          <div className="grid gap-y-4 grid-cols-1 md:grid-cols-2">
             <p className="prose-title-md-medium">Title LG Medium</p>
             <p className="prose-title-lg-medium">
               The five boxing wizards jump quickly. 1234567890
@@ -75,7 +75,7 @@ export const Typography: Story = {
         </section>
         <section>
           <h2 className="prose-display-lg mb-4">Headline</h2>
-          <div className="grid grid-cols-1 gap-y-4 md:grid-cols-2">
+          <div className="grid gap-y-4 grid-cols-1 md:grid-cols-2">
             <p className="prose-title-md-medium">Headline LG Semibold</p>
             <p className="prose-headline-lg-semibold">
               The five boxing wizards jump quickly. 1234567890
@@ -100,7 +100,7 @@ export const Typography: Story = {
         </section>
         <section>
           <h2 className="prose-display-lg mb-4">Body</h2>
-          <div className="grid grid-cols-1 gap-y-4 md:grid-cols-2">
+          <div className="grid gap-y-4 grid-cols-1 md:grid-cols-2">
             <p className="prose-title-md-medium">Body Base</p>
             <p className="prose-body-base">
               The five boxing wizards jump quickly. 1234567890
@@ -113,7 +113,7 @@ export const Typography: Story = {
         </section>
         <section>
           <h2 className="prose-display-lg mb-4">Label</h2>
-          <div className="grid grid-cols-1 gap-y-4 md:grid-cols-2">
+          <div className="grid gap-y-4 grid-cols-1 md:grid-cols-2">
             <p className="prose-title-md-medium">Label MD Medium</p>
             <p className="prose-label-md-medium">
               The five boxing wizards jump quickly. 1234567890

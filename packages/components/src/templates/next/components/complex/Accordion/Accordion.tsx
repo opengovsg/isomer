@@ -8,7 +8,7 @@ import { Prose } from "../../native/Prose"
 
 const summaryStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-headline-lg-medium flex list-none flex-row items-center justify-between gap-3 text-base-content-strong hover:cursor-pointer",
+  base: "flex-row gap-3 prose-headline-lg-medium flex list-none items-center justify-between text-base-content-strong hover:cursor-pointer",
 })
 
 const createAccordionStyles = tv({
