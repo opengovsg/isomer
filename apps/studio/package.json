@@ -180,6 +180,7 @@
     "@tailwindcss/cli": "catalog:tailwind",
     "@tailwindcss/postcss": "catalog:tailwind",
     "@testing-library/react": "catalog:",
+    "@types/culori": "catalog:",
     "@types/lodash-es": "catalog:",
     "@types/node": "catalog:",
     "@types/papaparse": "catalog:",
