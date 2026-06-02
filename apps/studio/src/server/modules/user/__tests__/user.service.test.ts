@@ -109,7 +109,7 @@ describe("user.service", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError()
+      await expect(result).rejects.toThrow()
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -133,7 +133,7 @@ describe("user.service", () => {
         })
       })
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "User already has permission for this site",

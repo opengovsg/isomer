@@ -188,6 +188,20 @@ export const siteRouter = router({
           .selectAll()
           .executeTakeFirstOrThrow()
 
+        // SearchSG is a vetted external search integration; localSearch exposes
+        // a searchUrl field that could be used for open redirect. Prevent
+        // a site admin from switching back to localSearch once SearchSG is set.
+        if (
+          site.config.search?.type === "searchSG" &&
+          data.search?.type === "localSearch"
+        ) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Cannot downgrade search integration from SearchSG to local search",
+          })
+        }
+
         const updatedSite = await tx
           .updateTable("Site")
           .set({ config: jsonb(data) })

@@ -10,7 +10,7 @@ import {
   VicaSchema,
 } from "~/interfaces"
 import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
-import { GTM_ID_STRING_REGEX } from "~/utils/validation"
+import { GTM_ID_STRING_REGEX, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import type { IsomerSitemap } from "./sitemap"
 
@@ -19,6 +19,10 @@ export const AgencySettingsSchema = Type.Object({
     title: "Site name",
     description:
       "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage.",
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
   }),
   agencyName: Type.Optional(
     Type.String({

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import type { z } from "zod"
+import type { env } from "~/env.mjs"
 import { createMocks } from "node-mocks-http"
 import { resetTables } from "tests/integration/helpers/db"
 import { createTestUser } from "tests/integration/helpers/iron-session"
@@ -11,10 +12,10 @@ import type { codeBuildWebhookSchema } from "../webhook"
 
 vi.mock("~/env.mjs", async () => {
   // Import the real module first to get all default values
-  const actual = await vi.importActual("~/env.mjs")
+  const actual = await vi.importActual<{ env: typeof env }>("~/env.mjs")
   return {
     env: {
-      ...actual,
+      ...actual.env,
       // override some env variables for testing
       STUDIO_SSM_WEBHOOK_API_KEY: "test-webhook-api-key",
       GROWTHBOOK_CLIENT_KEY: "test-growthbook-client-key",
@@ -33,7 +34,7 @@ const createMockRequest = ({
   apiKey = "test-webhook-api-key",
 }: {
   arn: string
-  apiKey?: string
+  apiKey?: string | null
 }) => {
   const body: z.input<typeof codeBuildWebhookSchema> = {
     projectName: "test-project",
@@ -45,7 +46,7 @@ const createMockRequest = ({
       method: "POST",
       headers: {
         "content-type": "application/json",
-        [WEBHOOK_X_API_KEY_HEADER]: apiKey,
+        ...(apiKey === null ? {} : { [WEBHOOK_X_API_KEY_HEADER]: apiKey }),
       },
       body,
     })
@@ -106,7 +107,7 @@ describe("webhook", () => {
       })
       const { req, res } = createMockRequest({
         arn: "build/test-id",
-        apiKey: "wrong-api-key",
+        apiKey: null,
       })
 
       // Act
