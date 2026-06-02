@@ -133,6 +133,7 @@ catalog:
   openid-client: ^5.7.1
   oxfmt: ^0.48.0
   oxlint: ^1.64.0
+  oxlint-tailwindcss: ^1.1.0
   oxlint-tsgolint: ^0.22.1
   papaparse: ^5.5.3
   pg-boss: ^12.3.0

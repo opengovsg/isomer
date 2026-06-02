@@ -141,11 +141,6 @@
   }
 }
 
-/* ── Custom utilities ─────────────────────────────────────────────────────── */
-@utility tailwindv3-wrap-anywhere {
-  overflow-wrap: anywhere;
-}
-
 /* ── Typography components (isomerTypography) ─────────────────────────────── */
 @layer components {
   /* Display — large prominent titles */

@@ -1,6 +1,25 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
   "extends": ["./node_modules/@isomer/oxlint-config/base.json"],
+  "jsPlugins": ["oxlint-tailwindcss"],
+  "settings": {
+    "tailwindcss": {
+      "entryPoint": [
+        {
+          "files": "apps/studio/**",
+          "use": "apps/studio/src/styles/tailwind.css"
+        },
+        { "files": "**", "use": "src/styles/tailwind.css" }
+      ]
+    }
+  },
+  "rules": {
+    "tailwindcss/no-unknown-classes": "error",
+    "tailwindcss/no-duplicate-classes": "error",
+    "tailwindcss/no-conflicting-classes": "error",
+    "tailwindcss/no-unnecessary-whitespace": "error",
+    "tailwindcss/no-contradicting-variants": "error"
+  },
   "ignorePatterns": [".next/**", "!.storybook/**", "./next-env.d.ts"],
   "overrides": [
     {
