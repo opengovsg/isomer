@@ -7,22 +7,22 @@ import { Link } from "../Link"
 
 const linkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "w-fit text-link underline-offset-4 visited:text-link-visited hover:text-link-hover hover:underline",
+  base: "text-link visited:text-link-visited hover:text-link-hover w-fit underline-offset-4 hover:underline",
 })
 
 export const TableOfContents = ({ items }: TableOfContentsProps) => {
   return (
     <nav
       aria-label="Table of Contents"
-      className="flex-col gap-3 flex rounded-lg bg-base-canvas-alt p-6"
+      className="bg-base-canvas-alt flex flex-col gap-3 rounded-lg p-6"
     >
       <p className="prose-headline-lg-medium text-base-content-strong">
         On this page
       </p>
-      <ul className="flex-col gap-3 prose-body-base flex">
+      <ul className="prose-body-base flex flex-col gap-3">
         {items.map(({ anchorLink, content }) => (
-          <li className="flex-row gap-2 flex items-start" key={anchorLink}>
-            <BiMinus className="size-5 shrink-0 self-center fill-base-content-strong" />
+          <li className="flex flex-row items-start gap-2" key={anchorLink}>
+            <BiMinus className="fill-base-content-strong size-5 shrink-0 self-center" />
             <Link href={anchorLink} className={linkStyle()}>
               {content}
             </Link>

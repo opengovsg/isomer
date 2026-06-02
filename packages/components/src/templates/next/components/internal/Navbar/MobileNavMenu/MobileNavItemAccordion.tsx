@@ -22,10 +22,10 @@ interface ParentItemLinkProps extends Pick<
 
 const mobileItemStyles = tv({
   slots: {
-    container: "flex-col gap-3 flex border-b border-b-base-divider-subtle",
+    container: "border-b-base-divider-subtle flex flex-col gap-3 border-b",
     menuItemsContainer: "",
-    item: "group prose-headline-base-medium flex w-full items-center px-6 py-3 text-left text-base-content outline-0",
-    sublist: "flex-col gap-3.5 flex w-full",
+    item: "group prose-headline-base-medium text-base-content flex w-full items-center px-6 py-3 text-left outline-0",
+    sublist: "flex w-full flex-col gap-3.5",
     nestedItem: "prose-body-base text-base-content-medium",
     chevron:
       "text-[1.5rem] transition-transform duration-300 ease-in-out motion-reduce:transition-none",
@@ -35,7 +35,7 @@ const mobileItemStyles = tv({
       true: {
         container: "pb-6",
         chevron: "-rotate-180",
-        menuItemsContainer: "flex-col gap-6 flex",
+        menuItemsContainer: "flex flex-col gap-6",
       },
       false: {
         menuItemsContainer: "hidden",
@@ -43,11 +43,11 @@ const mobileItemStyles = tv({
     },
     itemType: {
       default: {
-        item: "gap-6 justify-between",
+        item: "justify-between gap-6",
       },
       parentItem: {
         item: "gap-1",
-        nestedItem: "gap-1 flex items-center",
+        nestedItem: "flex items-center gap-1",
       },
     },
     withVerticalPadding: {
@@ -93,12 +93,12 @@ const ParentItemLink = ({
         })}
         onClick={onCloseMenu}
       >
-        <span className="row-gap-0 flex-row gap-1 flex flex-wrap items-baseline">
+        <span className="row-gap-0 flex flex-row flex-wrap items-baseline gap-1">
           Pages in
           {allButLastWord && (
             <span className="prose-headline-base-medium">{allButLastWord}</span>
           )}
-          <span className="flex-row gap-1 prose-headline-base-medium flex items-center">
+          <span className="prose-headline-base-medium flex flex-row items-center gap-1">
             {lastWord}
             {!isExternal && (
               <BiRightArrowAlt

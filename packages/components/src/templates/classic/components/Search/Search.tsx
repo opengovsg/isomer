@@ -129,7 +129,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
             setCurrentPage(1)
           }}
           placeholder="Enter search term..."
-          className="block w-full rounded-md border-0 p-3 pr-14 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-lg sm:leading-6"
+          className="block w-full rounded-md border-0 p-3 pr-14 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-lg sm:leading-6"
         />
       </div>
       {currentResults.length > 0 && (
@@ -137,7 +137,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
           {currentResults.map((result) => (
             <li key={String(result.id)} className="px-4 py-4 sm:px-6">
               <a
-                className="text-xl text-site-secondary underline"
+                className="text-site-secondary text-xl underline"
                 href={result.url}
               >
                 {result.title}
@@ -161,7 +161,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
         <div className="-mt-px flex w-0 flex-1">
           <button
             onClick={() => setCurrentPage(1)}
-            className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            className="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
           >
             <BiChevronsLeft
               className="mr-3 h-5 w-5 text-gray-400"
@@ -174,7 +174,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
         <div className="-mt-px flex w-0 flex-1 justify-end">
           <button
             onClick={() => setCurrentPage(pageNumbers.length)}
-            className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            className="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
           >
             Last
             <BiChevronsRight

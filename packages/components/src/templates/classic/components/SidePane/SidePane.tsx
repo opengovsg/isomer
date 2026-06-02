@@ -46,7 +46,7 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
 
   return (
     <aside className="w-64">
-      <ul className="divide-y divide-solid divide-navItems">
+      <ul className="divide-navItems divide-y divide-solid">
         {parentNodeSiblings && (
           <>
             {parentNodeSiblings.siblings.map((sibling, index) => (
@@ -63,7 +63,7 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
                       className={`m-1 p-1 ${
                         sibling.permalink ===
                         sectionWithSiblings?.parentPermalink
-                          ? "font-semibold text-headings"
+                          ? "text-headings font-semibold"
                           : "text-navItems"
                       }`}
                     >
@@ -74,7 +74,7 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
                       sectionWithSiblings?.siblings &&
                       sectionWithSiblings.siblings.length > 0 && (
                         <a className="cursor-pointer">
-                          <BiChevronDown className="mx-3 mt-2.5 h-5 w-5 text-headings" />
+                          <BiChevronDown className="text-headings mx-3 mt-2.5 h-5 w-5" />
                         </a>
                       )}
                   </div>
@@ -84,9 +84,9 @@ const SidePane = ({ sitemap, currentPermalink }: SidePaneProps) => {
                       sectionWithSiblings?.siblings.map((sibling, index) => (
                         <li
                           key={index}
-                          className={`ml-4 mt-2 list-none py-2 ${
+                          className={`mt-2 ml-4 list-none py-2 ${
                             currentPermalink === sibling.permalink
-                              ? "font-semibold text-headings"
+                              ? "text-headings font-semibold"
                               : "text-navItems"
                           }`}
                         >

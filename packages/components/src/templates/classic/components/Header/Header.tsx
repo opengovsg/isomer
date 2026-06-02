@@ -59,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
 
   return (
     <nav
-      className="flex-col flex h-full bg-header p-10"
+      className="bg-header flex h-full flex-col p-10"
       aria-label="Breadcrumb"
     >
       <div className="container max-w-5xl">
@@ -72,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
               <div className="flex items-center">
                 <a
                   href={breadcrumb.href}
-                  className="text-sm font-light uppercase tracking-wider"
+                  className="text-sm font-light tracking-wider uppercase"
                   aria-current={breadcrumb.current ? "page" : undefined}
                 >
                   {breadcrumb.name}
@@ -91,7 +91,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
             </li>
           ))}
         </ol>
-        <h1 className="truncate pt-5 text-3xl font-medium leading-7 text-white md:text-5xl">
+        <h1 className="truncate pt-5 text-3xl leading-7 font-medium text-white md:text-5xl">
           {title}
         </h1>
       </div>

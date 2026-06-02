@@ -21,16 +21,16 @@ import {
 
 const createInfoCardsStyles = tv({
   slots: {
-    container: `${ComponentContent} flex-col gap-8 flex py-12 md:gap-12 first:pt-0 md:py-16`,
-    headingContainer: "flex-col gap-2.5 flex lg:max-w-3xl",
-    headingTitle: "prose-display-sm break-words text-base-content-strong",
+    container: `${ComponentContent} flex flex-col gap-8 py-12 first:pt-0 md:gap-12 md:py-16`,
+    headingContainer: "flex flex-col gap-2.5 lg:max-w-3xl",
+    headingTitle: "prose-display-sm text-base-content-strong break-words",
     headingSubtitle: "prose-headline-lg-regular text-base-content",
-    grid: "grid gap-10 grid-cols-1 items-start md:gap-7 lg:gap-y-12 lg:gap-x-16",
-    cardContainer: "group flex-col gap-5 flex outline-0",
+    grid: "grid grid-cols-1 items-start gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
+    cardContainer: "group flex flex-col gap-5 outline-0",
     cardImageContainer:
-      "aspect-[3/2] w-full overflow-hidden rounded-lg border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
+      "border-base-divider-subtle bg-base-canvas aspect-[3/2] w-full overflow-hidden rounded-lg border drop-shadow-none transition ease-in",
     cardImage: "h-full w-full object-center",
-    cardTextContainer: "flex-col gap-1.5 flex sm:gap-2",
+    cardTextContainer: "flex flex-col gap-1.5 sm:gap-2",
     cardDate: "prose-label-sm-medium text-base-content",
     cardTitle:
       "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-canvas-inverse",

@@ -13,7 +13,7 @@ export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
     <section className={`${ComponentContent} mt-7 first:mt-0`}>
       <BaseParagraph
         content={`If the form below doesn't load, <a href="${url}" target="_blank">open it in a new window</a>.`}
-        className="prose-body-base pb-2 pt-1 text-base-content opacity-90"
+        className="prose-body-base text-base-content pt-1 pb-2 opacity-90"
       />
 
       <div className="relative w-full overflow-hidden">
@@ -32,7 +32,7 @@ export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
 
       <BaseParagraph
         content={`Powered by <a href="https://form.gov.sg">Form</a>.`}
-        className="prose-body-base pb-2 pt-1 text-base-content-subtle"
+        className="prose-body-base text-base-content-subtle pt-1 pb-2"
       />
     </section>
   )

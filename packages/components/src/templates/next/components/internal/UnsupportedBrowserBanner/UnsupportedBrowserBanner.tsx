@@ -35,9 +35,9 @@ export const UnsupportedBrowserBanner = ({
 
   return (
     <div className="bg-[#FFCC15]">
-      <div className="flex-row gap-2 relative mx-auto flex max-w-screen-xl px-6 py-4 text-base-content md:px-10 md:py-4">
+      <div className="text-base-content relative mx-auto flex max-w-screen-xl flex-row gap-2 px-6 py-4 md:px-10 md:py-4">
         <BiInfoCircle className="mt-[3px] h-4 w-4 shrink-0" />
-        <div className="flex-col gap-0.5 flex flex-1">
+        <div className="flex flex-1 flex-col gap-0.5">
           <div className="base-content-default prose-headline-base-medium [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0">
             This browser is not supported.
           </div>

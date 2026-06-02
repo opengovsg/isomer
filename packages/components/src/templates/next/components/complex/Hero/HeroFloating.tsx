@@ -43,7 +43,7 @@ export const HeroFloating = ({
   return (
     <section
       // we have !px-0, sm:!px-0 and md:!px-0 to override the default px from ComponentContent
-      className={`${ComponentContent} flex-col flex w-full items-center !px-0 pb-12 pt-6 sm:!px-0 md:!px-0 md:pb-24 md:pt-16 lg:items-start lg:!px-10`}
+      className={`${ComponentContent} flex w-full flex-col items-center !px-0 pt-6 pb-12 sm:!px-0 md:!px-0 md:pt-16 md:pb-24 lg:items-start lg:!px-10`}
     >
       {/* Image with aspect ratio and max height */}
       <div className="lg:flex lg:w-full lg:justify-end">
@@ -59,10 +59,10 @@ export const HeroFloating = ({
       {/* Floating container */}
       <div className="-mt-[1.5rem] w-full max-w-[calc(100%-3rem)] md:-mt-[10rem] md:max-w-[calc(100%-5rem)] lg:-mt-[17.85rem] lg:max-w-none">
         <div
-          className={`flex-col gap-9 flex w-full px-4 py-6 md:gap-[38px] md:p-12 lg:max-w-[66.67%] ${heroColour}`}
+          className={`flex w-full flex-col gap-9 px-4 py-6 md:gap-[38px] md:p-12 lg:max-w-[66.67%] ${heroColour}`}
         >
           {/* Text container */}
-          <div className={`flex-col gap-6 flex text-start ${heroTitleColour}`}>
+          <div className={`flex flex-col gap-6 text-start ${heroTitleColour}`}>
             <h1 className={`prose-display-xl ${heroTitleColour}`}>{title}</h1>
             {subtitle && (
               <p className={`prose-title-lg-regular ${heroSubtitleColour}`}>
@@ -73,7 +73,7 @@ export const HeroFloating = ({
 
           {/* Button container */}
           {buttonLabel && buttonUrl && (
-            <div className="flex-col gap-y-4 gap-x-5 flex justify-start md:flex-row">
+            <div className="flex flex-col justify-start gap-x-5 gap-y-4 md:flex-row">
               <LinkButton
                 href={getReferenceLinkHref(
                   buttonUrl,

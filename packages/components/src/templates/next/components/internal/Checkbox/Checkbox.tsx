@@ -103,7 +103,7 @@ export function CheckboxGroup(props: CheckboxGroupProps) {
 }
 
 const checkboxStyles = tv({
-  base: "group gap-3 prose-body-base flex items-start transition",
+  base: "group prose-body-base flex items-start gap-3 transition",
   variants: {
     isDisabled: {
       false: "text-base-content-strong",
@@ -118,8 +118,8 @@ const boxStyles = tv({
   variants: {
     isSelected: {
       false:
-        "border-[--color] bg-white [--color:theme(colors.base.divider.medium)] group-data-[pressed]:[--color:theme(colors.base.divider.strong)]",
-      true: "border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] group-data-[pressed]:[--color:theme(colors.brand.interaction.pressed)] forced-colors:![--color:Highlight]",
+        "[--color:theme(colors.base.divider.medium)] group-data-[pressed]:[--color:theme(colors.base.divider.strong)] border-[--color] bg-white",
+      true: "[--color:theme(colors.brand.interaction.DEFAULT)] group-data-[pressed]:[--color:theme(colors.brand.interaction.pressed)] border-[--color] bg-[--color] forced-colors:![--color:Highlight]",
     },
     isInvalid: {
       true: "[--color:theme(colors.red.700)] group-data-[pressed]:[--color:theme(colors.red.800)] forced-colors:![--color:Mark]",

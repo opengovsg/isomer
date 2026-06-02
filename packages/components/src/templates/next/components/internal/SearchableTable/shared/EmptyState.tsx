@@ -5,10 +5,10 @@ import { COPYWRITING_MAPPING } from "./constants"
 const createEmptyStateStyles = tv({
   slots: {
     container:
-      "flex-col gap-8 flex items-center justify-center self-stretch px-10 py-20 pt-24",
+      "flex flex-col items-center justify-center gap-8 self-stretch px-10 py-20 pt-24",
     headings: "text-center",
     title: "prose-headline-lg-regular text-center",
-    subtitle: "prose-headline-lg-regular mt-3 text-base-content",
+    subtitle: "prose-headline-lg-regular text-base-content mt-3",
     button:
       "prose-headline-base-medium text-link visited:text-link-visited hover:text-link-hover",
   },

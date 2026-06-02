@@ -27,7 +27,7 @@
       "files": ["packages/components/**"],
       "options": {
         "sortTailwindcss": {
-          "config": "./packages/components/tailwind.config.ts",
+          "tailwindStylesheet": "./packages/components/src/index.css",
           "functions": ["tv"]
         }
       }
@@ -36,7 +36,7 @@
       "files": ["tooling/template/**"],
       "options": {
         "sortTailwindcss": {
-          "config": "./tooling/template/tailwind.config.js",
+          "tailwindStylesheet": "./tooling/template/styles/globals.css",
           "functions": ["tv"]
         }
       }

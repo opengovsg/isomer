@@ -29,9 +29,9 @@ interface CollectionClientProps {
 const createCollectionLayoutStyles = tv({
   slots: {
     container:
-      "grid relative mx-auto max-w-screen-xl grid-cols-12 px-6 pb-16 pt-8 md:px-10",
-    filterContainer: "relative col-span-12 pb-2 pt-8 lg:col-span-3 lg:pb-10",
-    content: "flex-col gap-8 col-span-12 flex pt-8 lg:col-span-9 lg:ml-24",
+      "relative mx-auto grid max-w-screen-xl grid-cols-12 px-6 pt-8 pb-16 md:px-10",
+    filterContainer: "relative col-span-12 pt-8 pb-2 lg:col-span-3 lg:pb-10",
+    content: "col-span-12 flex flex-col gap-8 pt-8 lg:col-span-9 lg:ml-24",
   },
   variants: {
     hasNoFilters: {
@@ -110,7 +110,7 @@ export const CollectionClient = ({
           })}
           ref={articleContainerRef}
         >
-          <div className="flex-col gap-3 flex w-full">
+          <div className="flex w-full flex-col gap-3">
             <CollectionResults
               variant={page.variant}
               appliedFilters={appliedFilters}

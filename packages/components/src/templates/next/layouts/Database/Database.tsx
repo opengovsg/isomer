@@ -13,8 +13,8 @@ import { Skeleton } from "../Skeleton"
 const createDatabaseLayoutStyles = tv({
   slots: {
     container:
-      "grid mx-auto max-w-screen-xl grid-cols-12 px-6 py-12 lg:gap-6 xl:gap-10 md:px-10 md:py-16",
-    content: "flex-col gap-16 col-span-12 flex max-w-[54rem] break-words",
+      "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-6 xl:gap-10",
+    content: "col-span-12 flex max-w-[54rem] flex-col gap-16 break-words",
     table: "col-span-12 [&:not(:first-child)]:mt-14",
   },
 })

@@ -9,7 +9,7 @@ const createMapStyles = tv({
   slots: {
     outerContainer: `${ComponentContent} mt-7 first:mt-0`,
     innerContainer: "relative w-full overflow-hidden pt-[75%]",
-    iframe: "absolute bottom-0 left-0 right-0 top-0 border-0",
+    iframe: "absolute top-0 right-0 bottom-0 left-0 border-0",
     paragraph: "prose-body-base text-base-content",
   },
   variants: {

@@ -16,11 +16,11 @@ import { Button } from "../Button"
 const createPaginationStyles = tv({
   slots: {
     nav: "flex",
-    content: "flex-row gap-1 flex flex-wrap items-center md:gap-3",
+    content: "flex flex-row flex-wrap items-center gap-1 md:gap-3",
     button:
-      "prose-caption-1 min-h-0 rounded-none px-2.5 py-1 tabular-nums current:bg-base-content-subtle current:text-white hover:bg-base-canvas-backdrop hover:current:bg-base-content-subtle",
+      "prose-caption-1 current:bg-base-content-subtle current:text-white hover:bg-base-canvas-backdrop hover:current:bg-base-content-subtle min-h-0 rounded-none px-2.5 py-1 tabular-nums",
     item: "flex cursor-pointer select-none",
-    stepper: "gap-1 flex items-center justify-center px-0 py-1",
+    stepper: "flex items-center justify-center gap-1 px-0 py-1",
     separator: "flex h-6 w-6 items-center justify-center text-gray-500",
   },
   variants: {

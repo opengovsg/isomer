@@ -17,7 +17,7 @@ const createHomepageContactInformationStyles = tv({
     container: "gap-12 py-12 md:py-16",
     titleAndDescriptionContainer: "gap-2.5",
     description: "prose-headline-lg-regular",
-    contactMethodsContainer: "grid gap-10 grid-cols-1",
+    contactMethodsContainer: "grid grid-cols-1 gap-10",
   },
   variants: {
     numberOfContactMethods: {
@@ -25,7 +25,7 @@ const createHomepageContactInformationStyles = tv({
         container: "md:flex-row md:gap-10",
         titleAndDescriptionContainer: "max-w-[24.5rem]",
         contactMethodsContainer:
-          "md:flex-col lg:grid md:flex md:flex-1 lg:grid-cols-2",
+          "md:flex md:flex-1 md:flex-col lg:grid lg:grid-cols-2",
       },
       3: {
         titleAndDescriptionContainer: "lg:max-w-3xl",

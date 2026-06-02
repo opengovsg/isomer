@@ -11,7 +11,7 @@ const InfopicContentWrapper = ({
   shouldShowMobile: boolean
 }) => (
   <div
-    className={`mx-auto px-6 py-12 md:grid md:gap-x-16 md:grid-cols-2 md:p-16 xl:max-w-7xl ${
+    className={`mx-auto px-6 py-12 md:grid md:grid-cols-2 md:gap-x-16 md:p-16 xl:max-w-7xl ${
       shouldShowMobile ? "md:hidden" : "hidden"
     }`}
   >
@@ -30,16 +30,16 @@ const TextComponent = ({
   "title" | "subtitle" | "description" | "buttonLabel" | "buttonUrl"
 >) => {
   return (
-    <div className="flex-col gap-4 flex lg:px-8">
+    <div className="flex flex-col gap-4 lg:px-8">
       {subtitle && (
-        <p className="uppercase tracking-widest text-subtitle">{subtitle}</p>
+        <p className="text-subtitle tracking-widest uppercase">{subtitle}</p>
       )}
-      <h1 className="text-5xl font-semibold text-site-secondary">{title}</h1>
-      {description && <p className="text-xl text-paragraph">{description}</p>}
+      <h1 className="text-site-secondary text-5xl font-semibold">{title}</h1>
+      {description && <p className="text-paragraph text-xl">{description}</p>}
       {buttonLabel && buttonUrl && (
         <div className="tracking-wid text-lg font-semibold uppercase">
           <a
-            className="gap-2 flex font-semibold uppercase text-site-secondary underline"
+            className="text-site-secondary flex gap-2 font-semibold uppercase underline"
             href={buttonUrl}
             target={buttonUrl.startsWith("http") ? "_blank" : undefined}
             rel={
@@ -51,7 +51,7 @@ const TextComponent = ({
             {buttonLabel}
 
             <div className="my-auto">
-              <BiRightArrowAlt className="size-5 text-site-secondary" />
+              <BiRightArrowAlt className="text-site-secondary size-5" />
             </div>
           </a>
         </div>

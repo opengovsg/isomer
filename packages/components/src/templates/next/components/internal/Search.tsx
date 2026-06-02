@@ -13,15 +13,15 @@ import { twMerge } from "~/lib/twMerge"
 import { IconButton } from "./IconButton"
 
 const inputStyles = tv({
-  base: "prose-body-base min-w-0 flex-1 bg-white text-base-content outline outline-0 placeholder:text-interaction-support-placeholder disabled:text-interaction-support-placeholder",
+  base: "prose-body-base text-base-content placeholder:text-interaction-support-placeholder disabled:text-interaction-support-placeholder min-w-0 flex-1 bg-white outline outline-0",
 })
 
 const fieldGroupStyles = tv({
-  base: "group gap-4 flex items-center overflow-hidden rounded-sm bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
+  base: "group flex items-center gap-4 overflow-hidden rounded-sm bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
   variants: {
     isFocusWithin: {
       false: "shadow-brand-interaction forced-colors:border-[ButtonBorder]",
-      true: "bg-interaction-main-subtle-hover shadow-[0_0_0_2px] shadow-utility-feedback-info",
+      true: "bg-interaction-main-subtle-hover shadow-utility-feedback-info shadow-[0_0_0_2px]",
     },
     isInvalid: {
       true: "border-red-600 forced-colors:border-[Mark]",
@@ -90,8 +90,8 @@ export function SearchField({
           aria-hidden
           className={
             isDisabled
-              ? "h-5 w-5 text-base-content-medium forced-colors:text-[GrayText]"
-              : "h-5 w-5 text-base-content-medium forced-colors:text-[ButtonText]"
+              ? "text-base-content-medium h-5 w-5 forced-colors:text-[GrayText]"
+              : "text-base-content-medium h-5 w-5 forced-colors:text-[ButtonText]"
           }
         />
         <input

@@ -24,24 +24,24 @@ interface Size {
 
 const createNavbarStyles = tv({
   slots: {
-    navbar: "flex-col relative flex",
+    navbar: "relative flex flex-col",
     navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
-    logo: "flex shrink-0 rounded-sm focus-visible:bg-utility-highlight",
-    navigationSection: "flex-col flex w-full items-center justify-between",
+    logo: "focus-visible:bg-utility-highlight flex shrink-0 rounded-sm",
+    navigationSection: "flex w-full flex-col items-center justify-between",
     primaryNavigationSection: "flex w-full items-center justify-end",
     utilityNavigationSection:
-      "gap-4 prose-label-sm-medium mt-3 hidden w-full items-center justify-end lg:flex",
-    utilityItemsList: "gap-4 flex items-center",
+      "prose-label-sm-medium mt-3 hidden w-full items-center justify-end gap-4 lg:flex",
+    utilityItemsList: "flex items-center gap-4",
     utilityItemsHeader: "prose-label-sm-medium text-base-content-strong",
     utilityItem: [
       focusVisibleHighlight(),
-      "prose-label-sm-medium inline-block py-1 text-base-content-subtle hover:underline",
+      "prose-label-sm-medium text-base-content-subtle inline-block py-1 hover:underline",
     ],
     navbarItems:
-      "gap-x-4 mx-auto flex w-full max-w-screen-xl items-center justify-between pl-6 pr-3 md:px-10",
-    navItemContainer: "gap-x-4 hidden flex-1 items-center pl-2 lg:flex",
+      "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-4 pr-3 pl-6 md:px-10",
+    navItemContainer: "hidden flex-1 items-center gap-x-4 pl-2 lg:flex",
     callToAction: "align-content mx-5 hidden h-fit lg:flex",
-    buttonsSection: "flex-row gap-1 flex",
+    buttonsSection: "flex flex-row gap-1",
     searchIcon: "flex h-[68px] items-center",
     hamburgerIcon: "flex h-[68px] items-center lg:hidden",
     searchBar: "mx-auto mb-4 w-full max-w-screen-xl px-6 lg:px-10",

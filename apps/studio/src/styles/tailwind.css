@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "../../../../packages/components/src/presets/next/preset.css";
+@import "../../../../packages/components/src/presets/next/inter-fonts.css";
 
 /* Content sources — node_modules are gitignored so must be explicit */
 @source "../../node_modules/@opengovsg/isomer-components/dist/**/*.{js,mjs,cjs}";

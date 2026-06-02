@@ -11,7 +11,7 @@ import { Navbar } from "./Navbar"
 
 const Renderer = (props: NavbarProps) => {
   return (
-    <div className="flex-col flex min-h-dvh">
+    <div className="flex min-h-dvh flex-col">
       <Masthead />
       <Navbar {...props} />
       <div className="h-[calc(100vh+300px)] bg-red-500">

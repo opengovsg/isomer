@@ -1,0 +1,17 @@
+/* Tailwind v4 CSS-native equivalent of ClassicPreset theme colors. */
+@theme {
+  --color-border-light: #d6d6d6;
+  --color-canvas-base: #ffffff;
+  --color-canvas-inverse: #000000;
+  --color-canvas-translucent-grey: #00000080;
+  --color-header: #2164da;
+  --color-headings: #6d58bb;
+  --color-nav-items: #323232;
+  --color-paragraph: #344054;
+  --color-prose: #484848;
+  --color-subtitle: #344054;
+  --color-subtle-link: #767676;
+  --color-site-primary: #6031b6;
+  --color-site-primary-hover: #4b268e;
+  --color-site-secondary: #4372d6;
+}

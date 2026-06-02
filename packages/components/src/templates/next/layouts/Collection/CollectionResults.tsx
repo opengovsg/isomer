@@ -21,18 +21,18 @@ interface CollectionResultProps extends Pick<
 
 const collection = tv({
   slots: {
-    collectionResults: "gap-0 flex-col flex w-full",
+    collectionResults: "flex w-full flex-col gap-0",
   },
   variants: {
     variant: {
       collection: {
-        collectionResults: "gap-0 flex-col flex w-full",
+        collectionResults: "flex w-full flex-col gap-0",
       },
       blog: {
         collectionResults:
           // NOTE: we remove the gap so that the blog cards can
           // render their own border between each item
-          "grid grid-cols-1 sm:gap-0 md:gap-y-5 md:gap-x-10 md:grid-cols-2",
+          "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-x-10 md:gap-y-5",
       },
     },
   },
@@ -53,7 +53,7 @@ export const CollectionResults = ({
 
   if (totalCount === 0) {
     return (
-      <p className="prose-body-base py-32 text-center text-base-content">
+      <p className="prose-body-base text-base-content py-32 text-center">
         There are no articles here.
       </p>
     )
@@ -61,8 +61,8 @@ export const CollectionResults = ({
 
   return (
     <>
-      <div className="flex-col gap-y-2 gap-x-6 flex w-full justify-between md:flex-row">
-        <div className="gap-3 flex h-full w-full items-center">
+      <div className="flex w-full flex-col justify-between gap-x-6 gap-y-2 md:flex-row">
+        <div className="flex h-full w-full items-center gap-3">
           <p className="prose-headline-lg-regular text-base-content-medium">
             {appliedFilters.length > 0 || searchValue !== ""
               ? `${filteredCount} article${filteredCount === 1 ? "" : "s"}`
@@ -98,13 +98,13 @@ export const CollectionResults = ({
           )}
         </div>
       ) : (
-        <div className="flex-col gap-1 flex py-32 text-center text-content">
+        <div className="text-content flex flex-col gap-1 py-32 text-center">
           <p className="prose-body-base">
             We couldn’t find any articles. Try different search terms or
             filters.
           </p>
           <button
-            className="prose-headline-base-medium mx-auto w-fit text-link underline-offset-4 hover:underline"
+            className="prose-headline-base-medium text-link mx-auto w-fit underline-offset-4 hover:underline"
             onClick={handleClearFilter}
           >
             Clear search and filters

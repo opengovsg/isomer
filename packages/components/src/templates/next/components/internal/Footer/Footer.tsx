@@ -52,7 +52,7 @@ const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
 
 const footerItemLinkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "outline-hidden gap-1 prose-body-sm line-clamp-1 flex w-fit items-center text-base-content-inverse hover:text-base-content-inverse hover:underline hover:underline-offset-4 focus-visible:-m-0.5 focus-visible:p-0.5 focus-visible:shadow-none",
+  base: "prose-body-sm text-base-content-inverse hover:text-base-content-inverse line-clamp-1 flex w-fit items-center gap-1 outline-hidden hover:underline hover:underline-offset-4 focus-visible:-m-0.5 focus-visible:p-0.5 focus-visible:shadow-none",
   variants: {
     showExternalIcon: {
       true: `after:content-['_↗']`,
@@ -91,8 +91,8 @@ const NavSection = ({
   customNavItems,
 }: Pick<FooterProps, "site" | "siteNavItems" | "customNavItems">) => {
   return (
-    <div className="flex-col gap-8 prose-body-sm flex lg:flex-row lg:gap-10">
-      <div className="flex-col gap-3 flex lg:w-64">
+    <div className="prose-body-sm flex flex-col gap-8 lg:flex-row lg:gap-10">
+      <div className="flex flex-col gap-3 lg:w-64">
         {siteNavItems.map((item, index) => (
           <FooterItem
             key={index}
@@ -107,7 +107,7 @@ const NavSection = ({
           />
         ))}
       </div>
-      <div className="flex-col gap-3 flex lg:w-64">
+      <div className="flex flex-col gap-3 lg:w-64">
         {customNavItems?.map((item, index) => (
           <FooterItem
             key={index}
@@ -135,9 +135,9 @@ const SocialMediaSection = ({
   }
 
   return (
-    <div className="flex-col gap-5 flex">
+    <div className="flex flex-col gap-5">
       <h3 className="prose-headline-base-medium">Reach us</h3>
-      <div className="flex-row gap-7 flex flex-wrap">
+      <div className="flex flex-row flex-wrap gap-7">
         {socialMediaLinks.map((link) => {
           const Icon = SocialMediaTypeToIconMap[link.type]
           return (
@@ -168,7 +168,7 @@ const ContactUsSection = ({
   feedbackFormLink,
 }: Pick<FooterProps, "site" | "contactUsLink" | "feedbackFormLink">) => {
   return (
-    <div className="flex-col gap-3 prose-body-sm flex">
+    <div className="prose-body-sm flex flex-col gap-3">
       {contactUsLink && (
         <FooterItem
           title="Contact"
@@ -207,7 +207,7 @@ const ReachUsSection = ({
   "site" | "socialMediaLinks" | "contactUsLink" | "feedbackFormLink"
 >) => {
   return (
-    <div className="flex-col gap-6 flex lg:w-fit">
+    <div className="flex flex-col gap-6 lg:w-fit">
       <SocialMediaSection socialMediaLinks={socialMediaLinks} site={site} />
       <ContactUsSection
         site={site}
@@ -236,13 +236,13 @@ const LegalSection = ({
 >) => {
   return (
     <div className="flex h-full">
-      <div className="flex-col gap-4 flex justify-end lg:gap-2">
+      <div className="flex flex-col justify-end gap-4 lg:gap-2">
         <p className="prose-label-md-regular text-base-content-inverse-subtle">
           <ClientCopyrightYear />{" "}
           {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
           {getFormattedDate(lastUpdated)}
         </p>
-        <div className="flex-col gap-3 prose-body-sm flex lg:flex-row lg:gap-8">
+        <div className="prose-body-sm flex flex-col gap-3 lg:flex-row lg:gap-8">
           {isGovernment && (
             <FooterItem
               title="Report Vulnerability"
@@ -284,7 +284,7 @@ const LegalSection = ({
 
 const CreditsSection = () => {
   return (
-    <div className="flex-col gap-6 prose-label-md-regular flex lg:flex-row lg:gap-8 xl:gap-20">
+    <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
       <Link
         href="https://www.isomer.gov.sg"
         isExternal
@@ -339,7 +339,7 @@ const FooterMobile = ({
   termsOfUseLink,
 }: FooterProps) => {
   return (
-    <div className="flex-col gap-8 flex px-6 py-11 md:px-10 lg:hidden lg:py-16">
+    <div className="flex flex-col gap-8 px-6 py-11 md:px-10 lg:hidden lg:py-16">
       <SiteNameSection siteName={siteName} />
       <NavSection
         siteNavItems={navItems}
@@ -352,7 +352,7 @@ const FooterMobile = ({
         feedbackFormLink={feedbackFormLink}
         site={site}
       />
-      <div className="flex-col gap-9 flex">
+      <div className="flex flex-col gap-9">
         <LegalSection
           agencyName={agencyName}
           isGovernment={isGovernment}
@@ -384,9 +384,9 @@ const FooterDesktop = ({
 }: FooterProps) => {
   return (
     <div className="hidden px-10 py-14 lg:block">
-      <div className="flex-col gap-6 mx-auto flex max-w-[72.5rem]">
+      <div className="mx-auto flex max-w-[72.5rem] flex-col gap-6">
         <SiteNameSection siteName={siteName} />
-        <div className="gap-x-10 gap-y-14 grid-cols-[1fr_min-content] grid-rows-[1fr_min-content] lg:grid">
+        <div className="grid-cols-[1fr_min-content] grid-rows-[1fr_min-content] gap-x-10 gap-y-14 lg:grid">
           <div>
             <NavSection
               siteNavItems={navItems}

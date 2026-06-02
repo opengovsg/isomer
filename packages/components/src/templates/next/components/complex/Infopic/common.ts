@@ -10,7 +10,7 @@ export const infopicStyles = tv({
     // max-width of content in desktop is HALF of max-w-screen-xl for correct alignment of content
     // since content is half of screen width in desktop.
     content:
-      "px-6 pb-16 pt-10 text-base-content [grid-area:content] md:max-w-[760px] md:px-10 md:pb-20 md:pt-16 lg:max-w-[620px] lg:content-center lg:py-24 lg:pl-10",
+      "text-base-content px-6 pt-10 pb-16 [grid-area:content] md:max-w-[760px] md:px-10 md:pt-16 md:pb-20 lg:max-w-[620px] lg:content-center lg:py-24 lg:pl-10",
     title: "prose-display-sm break-words",
     description: "prose-body-base mt-4 break-words md:mt-6",
     button: "mt-9",

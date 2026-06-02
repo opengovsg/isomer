@@ -16,13 +16,13 @@ export const HeroLargeImage = ({
   site,
 }: HeroLargeImageProps) => {
   return (
-    <section className="flex-col flex w-full">
+    <section className="flex w-full flex-col">
       {/* Text and button container */}
       <div
-        className={`flex-col gap-6 mx-auto flex w-full px-6 pb-12 pt-10 md:gap-9 lg:pb-16 lg:pt-12 ${ComponentContent}`}
+        className={`mx-auto flex w-full flex-col gap-6 px-6 pt-10 pb-12 md:gap-9 lg:pt-12 lg:pb-16 ${ComponentContent}`}
       >
         {/* Text container */}
-        <div className="flex-col gap-5 flex items-center text-base-content-strong md:gap-6 sm:items-start md:text-center lg:mx-auto lg:max-w-[66.67%]">
+        <div className="text-base-content-strong flex flex-col items-center gap-5 sm:items-start md:gap-6 md:text-center lg:mx-auto lg:max-w-[66.67%]">
           <h1 className="prose-display-xl w-full">{title}</h1>
           {subtitle && (
             <p className="prose-title-lg-regular w-full">{subtitle}</p>
@@ -30,7 +30,7 @@ export const HeroLargeImage = ({
         </div>
         {/* Button container */}
         {buttonLabel && buttonUrl && (
-          <div className="flex-col gap-y-4 gap-x-5 flex items-start justify-center md:flex-row md:items-center">
+          <div className="flex flex-col items-start justify-center gap-x-5 gap-y-4 md:flex-row md:items-center">
             <LinkButton
               href={getReferenceLinkHref(
                 buttonUrl,

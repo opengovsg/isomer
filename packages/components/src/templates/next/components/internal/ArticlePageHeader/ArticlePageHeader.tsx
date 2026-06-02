@@ -18,17 +18,17 @@ export const ArticlePageHeader = ({
         <Breadcrumb links={breadcrumb.links} />
       </div>
 
-      <div className="prose-body-base mb-3 text-base-content">{category}</div>
+      <div className="prose-body-base text-base-content mb-3">{category}</div>
 
-      <div className="flex-col gap-5 flex">
-        <div className="flex-col gap-4 flex">
-          <h1 className="prose-display-md break-words text-base-content-strong">
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
+          <h1 className="prose-display-md text-base-content-strong break-words">
             {title}
           </h1>
           {tags.length > 0 &&
             tags.flatMap(({ category, selected: labels }) => {
               return (
-                <div className="gap-2 prose-label-sm flex flex-wrap items-center">
+                <div className="prose-label-sm flex flex-wrap items-center gap-2">
                   {category}
                   {labels.map((label) => {
                     return <Tag key={label}>{label}</Tag>
@@ -45,7 +45,7 @@ export const ArticlePageHeader = ({
         )}
 
         {summary && (
-          <p className="prose-title-lg whitespace-pre-wrap text-base-content-light">
+          <p className="prose-title-lg text-base-content-light whitespace-pre-wrap">
             {summary}
           </p>
         )}

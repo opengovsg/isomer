@@ -52,9 +52,9 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
         }}
       >
         <FocusScope restoreFocus>
-          <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
+          <div className="border-t-base-divider-subtle absolute inset-0 overflow-auto border-t bg-white">
             {!!callToAction && (
-              <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
+              <div className="border-b-base-divider-subtle bg-base-canvas-alt border-y px-6 py-3">
                 <LinkButton
                   href={callToAction.url}
                   isExternal={isExternalUrl(callToAction.url)}
@@ -83,14 +83,14 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             ))}
 
             {!!utility && (
-              <div className="flex-col gap-1 flex items-start self-stretch bg-base-canvas-alt px-6 py-4">
+              <div className="bg-base-canvas-alt flex flex-col items-start gap-1 self-stretch px-6 py-4">
                 {!!utility.label && (
                   <p className="prose-label-sm-medium text-base-content-strong">
                     {utility.label}
                   </p>
                 )}
 
-                <ul className="flex-col gap-1 flex">
+                <ul className="flex flex-col gap-1">
                   {utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <Link

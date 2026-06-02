@@ -10,9 +10,9 @@ const createBlockquoteStyles = tv({
   slots: {
     outerContainer: "bg-base-canvas-alt",
     innerContainer: `${ComponentContent} flex`,
-    quoteContainer: "flex-col gap-3 flex w-full",
+    quoteContainer: "flex w-full flex-col gap-3",
     openApostrophe: "text-brand-canvas-inverse",
-    textContainer: "flex-col flex",
+    textContainer: "flex flex-col",
     blockquote: "text-base-content-strong",
     citation: "text-base-content-default not-italic",
     image: "object-cover",
@@ -21,7 +21,7 @@ const createBlockquoteStyles = tv({
     layout: {
       homepage: {
         innerContainer:
-          "gap-10 flex-col-reverse px-6 py-16 sm:flex-row-reverse sm:px-10 lg:py-24",
+          "flex-col-reverse gap-10 px-6 py-16 sm:flex-row-reverse sm:px-10 lg:py-24",
         quoteContainer: "gap-4",
         openApostrophe: "text-[64px]",
         textContainer: "gap-4",
@@ -31,7 +31,7 @@ const createBlockquoteStyles = tv({
       },
       default: {
         outerContainer:
-          "mt-6 border-l-4 border-brand-canvas-inverse first:mt-0",
+          "border-brand-canvas-inverse mt-6 border-l-4 first:mt-0",
         innerContainer: "flex-col gap-6 px-5 py-4 sm:flex-row sm:gap-10",
         quoteContainer: "sm:flex-row",
         openApostrophe: "text-[32px]",

@@ -1,7 +1,18 @@
 @import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 @import "tailwindcss";
-@config "../tailwind.config.ts";
+@import "./presets/classic.css";
+@import "./presets/next/preset.css";
+@import "./presets/next/inter-fonts.css";
+
+/* Storybook-specific site color overrides */
+@theme {
+  --color-site-primary: #f78f1e;
+  --color-site-primary-100: #fef4e8;
+  --color-site-primary-200: #ffeec2;
+  --color-site-secondary: #4e4541;
+  --color-site-secondary-100: #f4f2f1;
+}
 
 /* TODO: Inject with storybook's theme manager instead of hardcoding here */
 :root {

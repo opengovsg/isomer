@@ -4,7 +4,7 @@ export const SkipToContent = () => {
   return (
     <a
       href={`#${SKIP_TO_CONTENT_ANCHOR_ID}`}
-      className="focus:shadow-focus absolute -left-[150%] -top-[150%] -z-50 bg-base-canvas p-2 focus:left-0 focus:top-0 focus:z-50 focus:bg-utility-highlight focus:text-base-content-strong focus:decoration-transparent focus:outline-0 focus:transition-none focus:hover:decoration-transparent"
+      className="focus:shadow-focus bg-base-canvas focus:bg-utility-highlight focus:text-base-content-strong absolute -top-[150%] -left-[150%] -z-50 p-2 focus:top-0 focus:left-0 focus:z-50 focus:decoration-transparent focus:outline-0 focus:transition-none focus:hover:decoration-transparent"
     >
       Skip to main content
     </a>

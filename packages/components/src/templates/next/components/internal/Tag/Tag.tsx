@@ -9,7 +9,7 @@ export const Tag = (
   >,
 ) => {
   return (
-    <div className="w-fit items-center justify-center rounded-full bg-base-canvas-backdrop px-1.5 py-0.5 text-base-content-subtle">
+    <div className="bg-base-canvas-backdrop text-base-content-subtle w-fit items-center justify-center rounded-full px-1.5 py-0.5">
       <p className="prose-label-sm-medium line-clamp-1" {...props} />
     </div>
   )

@@ -40,7 +40,7 @@ export function PaginationControls({
   const totalPageCount = Math.ceil(totalItems / itemsPerPage)
 
   return (
-    <Pagination className="not-prose gap-2 items-center">
+    <Pagination className="not-prose items-center gap-2">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
