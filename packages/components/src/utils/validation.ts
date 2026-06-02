@@ -214,7 +214,7 @@ export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
 // ❌ "d_ab_c" (contains underscore after prefix)
 export const DGS_ID_STRING_REGEX = "^d_[a-zA-Z0-9]+$"
 
-// Matches Google Tag Manager container IDs that start with "GTM-" followed by 6 to 7 uppercase letters or digits.
+// Matches Google Tag Manager container IDs that start with "GTM-" followed by one or more uppercase letters or digits.
 // Examples:
 // ✅ "GTM-ABC123"
 // ✅ "GTM-1234567"

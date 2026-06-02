@@ -7,5 +7,6 @@
  * DOMPurify is not suitable here — it sanitizes HTML markup, not JavaScript
  * literals inside script bodies.
  */
-export const serializeForInlineScript = (value: unknown): string =>
-  JSON.stringify(value).replace(/</g, "\\u003c")
+export const serializeForInlineScript = (
+  value: string | number | boolean | object | null,
+): string => JSON.stringify(value).replace(/</g, "\\u003c")

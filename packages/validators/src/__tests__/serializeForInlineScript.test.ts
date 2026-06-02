@@ -14,7 +14,7 @@ describe("serializeForInlineScript", () => {
     expect(actual).toBe(expected)
   })
 
-  it("should escape characters that would break out of single-quoted interpolation", () => {
+  it("should wrap injection payloads as inert JS string literals via JSON encoding", () => {
     // Arrange
     const value = "');alert(document.cookie);//"
     const expected = `"');alert(document.cookie);//"`

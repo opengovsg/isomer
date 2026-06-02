@@ -15,7 +15,6 @@ export { isPhoneNumber, sanitizePhoneNumber } from "./isPhoneNumber"
 export { isUrl } from "./isUrl"
 export { isExternalUrl } from "./isExternalUrl"
 export { safeJsonParse } from "./safeJsonParse"
-export { serializeForInlineScript } from "@isomer/validators"
 export {
   fetchDgsFileDownloadUrl,
   fetchDgsMetadata,
