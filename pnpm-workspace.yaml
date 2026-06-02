@@ -87,7 +87,6 @@ catalog:
   webpack-cli: ^7.0.2
   webpack-glob-entries: ^1.0.1
   zod: ^4.4.3
-  "@types/jsdom": ^21.1.7
   "@types/lodash-es": ^4.17.12
   "@types/lunr": ^2.3.7
   "@types/node": ^25.7.0
@@ -145,7 +144,7 @@ catalog:
   sass: ^1.99.0
   superjson: ^2.2.1
   tailwind-merge: ^2.4.0
-  tailwind-variants: ^0.3.1
+  tailwind-variants: ^3.2.2
   tailwindcss-react-aria-components: ^2.0.0
   tiptap-text-direction: ^0.4.0
   transliteration: ^2.6.1
