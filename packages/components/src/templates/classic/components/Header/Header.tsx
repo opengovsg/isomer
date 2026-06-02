@@ -59,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
 
   return (
     <nav
-      className="flex-col flex h-full bg-header p-10"
+      className="flex h-full flex-col bg-header p-10"
       aria-label="Breadcrumb"
     >
       <div className="container max-w-5xl">

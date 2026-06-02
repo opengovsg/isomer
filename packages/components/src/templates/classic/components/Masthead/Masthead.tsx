@@ -14,7 +14,7 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
       aria-label="A Singapore Government Agency Website"
     >
       <div className="px-3 lg:container lg:px-6">
-        <div className="gap-1 flex">
+        <div className="flex gap-1">
           <svg
             version="1.1"
             xmlns="http://www.w3.org/2000/svg"
@@ -30,7 +30,7 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
             <path d="M16.093 6.845c8.005-0.24 10.863 9.357 5.693 13.676l-5.191 2.509c0 0-0.676-2.181 1.833-4.734 2.509-2.551 4.929-7.328-2.006-10.469 0 0 0.131-0.654-0.327-0.981z"></path>
             <path d="M15.678 9.004c0 0 0.393-0.371 0.524-0.676 5.954 2.486 5.017 6.697 1.461 10.23-2.181 2.246-1.505 4.668-1.505 4.668s-2.66 1.657-3.577 3.097c0 0-3.852-3.28 1.483-8.724 5.235-5.344 1.614-8.594 1.614-8.594z"></path>
           </svg>
-          <div className="gap-x-1 flex flex-wrap items-start pt-1.5">
+          <div className="flex flex-wrap items-start gap-x-1 pt-1.5">
             <span>
               A Singapore Government Agency Website
               {isStaging ? (
@@ -79,8 +79,8 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
           isMastheadContentVisible ? "block" : "hidden"
         }`}
       >
-        <div className="grid gap-6 grid-cols-[1fr] lg:gap-40 lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))]">
-          <div className="gap-2 flex text-[0.6875rem] lg:gap-4 lg:text-base">
+        <div className="grid grid-cols-[1fr] gap-6 lg:grid-cols-[repeat(auto-fit,_minmax(300px,1fr))] lg:gap-40">
+          <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
             <div className="-mt-[0.1rem] lg:mt-[0.2rem]">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +122,7 @@ export const Masthead = ({ isStaging }: MastheadProps) => {
               </article>
             </div>
           </div>
-          <div className="gap-2 flex text-[0.6875rem] lg:gap-4 lg:text-base">
+          <div className="flex gap-2 text-[0.6875rem] lg:gap-4 lg:text-base">
             <div className="-mt-[0.1rem]">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
