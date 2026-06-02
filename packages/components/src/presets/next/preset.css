@@ -1,0 +1,564 @@
+/*
+ * Tailwind v4 CSS-native equivalent of NextPreset.
+ * Import this file instead of @config + tailwind.config.js to get the full
+ * native v4 engine (no JS compatibility layer, faster builds).
+ */
+
+/* ── External plugins ─────────────────────────────────────────────────────── */
+@plugin "tailwindcss-react-aria-components";
+
+/* ── Theme ────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Breakpoints */
+  --breakpoint-xs: 576px;
+  --breakpoint-xl: 1240px;
+
+  /* Keyframes */
+  --animate-button-pulse: button-pulse 2s ease-in infinite;
+  --animate-slide-up-fade-in: slide-up-fade-in 0.3s ease-in-out;
+
+  /* Box shadows */
+  --shadow-sm: 0 0px 10px 0px rgba(191, 191, 191, 0.5);
+  --shadow-focus-visible: 0px -2px oklch(82.8% 0.189 84.429),
+    0 2px oklch(21% 0.034 264.665);
+
+  /* Font family */
+  --font-sans: var(--font-inter, "Inter"), ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Letter spacing */
+  --tracking-tight: -0.022em;
+
+  /* Brand colors — dynamic, overridden per-site by isomerSiteTheme */
+  --color-brand-canvas: var(--color-brand-canvas-default, #e6ecef);
+  --color-brand-canvas-alt: #bfcfd7;
+  --color-brand-canvas-backdrop: #80a0af;
+  --color-brand-canvas-inverse: #00405f;
+  --color-brand-interaction: var(--color-brand-interaction-default, #00405f);
+  --color-brand-interaction-hover: #002e44;
+  --color-brand-interaction-pressed: #00283b;
+
+  /* Base colors */
+  --color-base-canvas: #fff;
+  --color-base-canvas-alt: oklch(98.5% 0.002 247.839);
+  --color-base-canvas-backdrop: oklch(96.7% 0.003 264.542);
+  --color-base-canvas-inverse: oklch(21% 0.006 285.885);
+  --color-base-canvas-inverse-overlay: oklch(37% 0.013 285.805);
+  --color-base-content: oklch(37.3% 0.034 259.733);
+  --color-base-content-light: oklch(55.1% 0.027 264.364);
+  --color-base-content-strong: oklch(21% 0.034 264.665);
+  --color-base-content-medium: oklch(27.8% 0.033 256.848);
+  --color-base-content-subtle: oklch(44.6% 0.03 256.802);
+  --color-base-content-inverse: #fff;
+  --color-base-content-inverse-subtle: oklch(70.5% 0.015 286.067);
+  --color-base-divider-subtle: oklch(92.9% 0.013 255.508);
+  --color-base-divider-medium: oklch(87.2% 0.01 258.338);
+  --color-base-divider-strong: oklch(70.7% 0.022 261.325);
+  --color-base-divider-inverse: #fff;
+  --color-base-divider-brand: #1361f0;
+
+  /* Link colors */
+  --color-link: #1a56e5;
+  --color-link-hover: #1547be;
+  --color-link-visited: oklch(38% 0.189 293.745);
+
+  /* Utility colors */
+  --color-utility-highlight: oklch(82.8% 0.189 84.429);
+  --color-utility-feedback-info: oklch(62.3% 0.214 259.815);
+  --color-utility-feedback-info-subtle: oklch(93.2% 0.032 255.585);
+  --color-utility-feedback-info-faint: #eaf2ff;
+  --color-utility-feedback-warning: oklch(68.1% 0.162 75.834);
+  --color-utility-feedback-warning-subtle: oklch(97.3% 0.071 103.193);
+  --color-utility-feedback-alert: #b91c1c;
+
+  /* Deprecated colors — kept for backward compatibility */
+  --color-canvas: #ffffff;
+  --color-canvas-overlay: #00000066;
+  --color-canvas-dark: #2b2313;
+  --color-canvas-inverse: #2c2c2c;
+  --color-content: #333333;
+  --color-content-medium: #5d5d5d;
+  --color-content-strong: #2c2e34;
+  --color-content-inverse: #ffffff;
+  --color-content-inverse-light: #c1c1c1;
+  --color-hyperlink: #1361f0;
+  --color-hyperlink-inverse: #ffffff;
+  --color-hyperlink-hover: #0d4fca;
+  --color-hyperlink-hover-inverse: #ededed;
+  --color-hyperlink-visited: #530085;
+  --color-hyperlink-visited-inverse: #ffffff;
+  --color-focus-outline: #0d4fca;
+  --color-divider-medium: #d0d0d0;
+  --color-divider-strong: #484848;
+  --color-divider-subtle: #f2f2f2;
+  --color-utility-info: #87bdff;
+  --color-utility-info-subtle: #e0eeff;
+  --color-utility-neutral: #f3f2f1;
+  --color-utility-neutral-subtle: #fcfcfc;
+  --color-utility-neutral-neutral: #f4f2f1;
+  --color-interaction-main: #333333;
+  --color-interaction-main-hover: #191919;
+  --color-interaction-main-active: #191919;
+  --color-interaction-main-subtle-hover: #f4f9ff;
+  --color-interaction-link: #333333;
+  --color-interaction-link-hover: #333333;
+  --color-interaction-link-active: #333333;
+  --color-interaction-sub: #f3f3f3;
+  --color-interaction-support-placeholder: #838894;
+
+  /* Site colors — placeholder defaults, overridden per-site */
+  --color-site-primary: #f78f1e;
+  --color-site-primary-100: #fef4e8;
+  --color-site-primary-200: #ffeec2;
+  --color-site-secondary: #877664;
+}
+
+/* ── Keyframe animations ──────────────────────────────────────────────────── */
+@keyframes button-pulse {
+  0%,
+  100% {
+    background-color: rgba(0, 0, 0, 0.65);
+  }
+  50% {
+    background-color: rgba(0, 0, 0, 0.325);
+  }
+}
+
+@keyframes slide-up-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ── Inter @font-face declarations ───────────────────────────────────────── */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa2JL7W0Q5n-wU.woff2)
+    format("woff2");
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F,
+    U+FE2E-FE2F;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa0ZL7W0Q5n-wU.woff2)
+    format("woff2");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa2ZL7W0Q5n-wU.woff2)
+    format("woff2");
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1pL7W0Q5n-wU.woff2)
+    format("woff2");
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1,
+    U+03A3-03FF;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa2pL7W0Q5n-wU.woff2)
+    format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169,
+    U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323,
+    U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa25L7W0Q5n-wU.woff2)
+    format("woff2");
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7W0Q5nw.woff2)
+    format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122,
+    U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ── Base styles ──────────────────────────────────────────────────────────── */
+@layer base {
+  ::-webkit-details-marker {
+    display: none;
+  }
+}
+
+/* ── Custom utilities ─────────────────────────────────────────────────────── */
+@utility tailwindv3-wrap-anywhere {
+  overflow-wrap: anywhere;
+}
+
+/* ── Typography components (isomerTypography) ─────────────────────────────── */
+@layer components {
+  /* Display — large prominent titles */
+  .prose-display-xl {
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    font-size: 3rem;
+    line-height: 1.2;
+    @variant xl {
+      font-size: 4.25rem;
+      line-height: 1.1;
+    }
+  }
+  .prose-display-lg {
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    font-size: 2.25rem;
+    line-height: 1.2;
+    @variant lg {
+      font-size: 3rem;
+      line-height: 1.1;
+    }
+  }
+  .prose-display-md {
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    font-size: 1.75rem;
+    line-height: 1.2;
+    @variant lg {
+      font-size: 2.25rem;
+    }
+  }
+  .prose-display-sm {
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    @variant lg {
+      font-size: 1.938rem;
+    }
+  }
+  .prose-display-xs {
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    @variant lg {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Title — group major sections */
+  .prose-title-lg {
+    letter-spacing: 0;
+    font-size: 1.1875rem;
+    line-height: 1.3;
+    @variant lg {
+      font-size: 1.5rem;
+    }
+  }
+  .prose-title-lg-medium {
+    font-weight: 500;
+    letter-spacing: 0;
+    font-size: 1.1875rem;
+    line-height: 1.3;
+    @variant lg {
+      font-size: 1.5rem;
+    }
+  }
+  .prose-title-lg-regular {
+    font-weight: 400;
+    letter-spacing: 0;
+    font-size: 1.1875rem;
+    line-height: 1.3;
+    @variant lg {
+      font-size: 1.5rem;
+    }
+  }
+  .prose-title-md {
+    letter-spacing: 0;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    @variant lg {
+      font-size: 1.25rem;
+    }
+  }
+  .prose-title-md-semibold {
+    font-weight: 600;
+    letter-spacing: 0;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    @variant lg {
+      font-size: 1.25rem;
+    }
+  }
+  .prose-title-md-medium {
+    font-weight: 500;
+    letter-spacing: 0;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    @variant lg {
+      font-size: 1.25rem;
+    }
+  }
+
+  /* Headline — attention to specific part of section */
+  .prose-headline-lg {
+    letter-spacing: 0;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    @variant lg {
+      font-size: 1.125rem;
+    }
+  }
+  .prose-headline-lg-semibold {
+    font-weight: 600;
+    letter-spacing: 0;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    @variant lg {
+      font-size: 1.125rem;
+    }
+  }
+  .prose-headline-lg-medium {
+    font-weight: 500;
+    letter-spacing: 0;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    @variant lg {
+      font-size: 1.125rem;
+    }
+  }
+  .prose-headline-lg-regular {
+    font-weight: 400;
+    letter-spacing: 0;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    @variant lg {
+      font-size: 1.125rem;
+    }
+  }
+  .prose-headline-base {
+    letter-spacing: 0;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    @variant lg {
+      font-size: 1rem;
+    }
+  }
+  .prose-headline-base-semibold {
+    font-weight: 600;
+    letter-spacing: 0;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    @variant lg {
+      font-size: 1rem;
+    }
+  }
+  .prose-headline-base-medium {
+    font-weight: 500;
+    letter-spacing: 0;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    @variant lg {
+      font-size: 1rem;
+    }
+  }
+
+  /* Body — main text content (multiple lines) */
+  .prose-body-base {
+    font-weight: 400;
+    letter-spacing: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .prose-body-sm {
+    font-weight: 400;
+    letter-spacing: 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    @variant lg {
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Label — single-line explanatory text */
+  .prose-label-md {
+    letter-spacing: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .prose-label-md-medium {
+    font-weight: 500;
+    letter-spacing: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .prose-label-md-regular {
+    font-weight: 400;
+    letter-spacing: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .prose-label-sm {
+    letter-spacing: 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  .prose-label-sm-medium {
+    font-weight: 500;
+    letter-spacing: 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  .prose-label-sm-regular {
+    font-weight: 400;
+    letter-spacing: 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+}
+
+/* ── Deprecated typography utilities ─────────────────────────────────────── */
+@layer utilities {
+  .text-heading-01 {
+    font-size: 2.75rem;
+    line-height: 3.25rem;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    @variant lg {
+      font-size: 3.75rem;
+      line-height: 4rem;
+    }
+  }
+  .text-heading-02 {
+    font-size: 2.375rem;
+    line-height: 2.75rem;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    @variant lg {
+      font-size: 2.7rem;
+      line-height: 3.2rem;
+    }
+  }
+  .text-heading-03 {
+    font-size: 1.625rem;
+    line-height: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    @variant lg {
+      font-size: 2.25rem;
+      line-height: 3rem;
+    }
+  }
+  .text-heading-04 {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    @variant lg {
+      font-size: 1.5rem;
+      line-height: 2.25rem;
+    }
+  }
+  .text-heading-04-medium {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+    font-weight: 500;
+    letter-spacing: -0.022em;
+    @variant lg {
+      font-size: 1.5rem;
+      line-height: 2.25rem;
+    }
+  }
+  .text-heading-05 {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 600;
+    @variant lg {
+      font-size: 1.25rem;
+      line-height: 1.5rem;
+    }
+  }
+  .text-heading-06 {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .text-subheading-01 {
+    font-size: 1rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+  }
+  .text-paragraph-01 {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    @variant lg {
+      font-size: 1.25rem;
+      line-height: 2rem;
+    }
+  }
+  .text-paragraph-01-medium {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 500;
+    @variant lg {
+      font-size: 1.25rem;
+      line-height: 2rem;
+    }
+  }
+  .text-paragraph-02 {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    @variant lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+  }
+  .text-paragraph-03 {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    @variant lg {
+      font-size: 1rem;
+      line-height: 1.5rem;
+    }
+  }
+  .text-caption-01 {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  .text-caption-01-medium {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+  }
+  .text-button-link-01 {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    @variant lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+  }
+}

@@ -10,7 +10,7 @@
     "sortScripts": true
   },
   "sortTailwindcss": {
-    "config": "./apps/studio/tailwind.config.js",
+    "tailwindStylesheet": "./apps/studio/src/styles/tailwind.css",
     "functions": ["tv"]
   },
   "overrides": [
@@ -18,7 +18,7 @@
       "files": ["apps/studio/**"],
       "options": {
         "sortTailwindcss": {
-          "config": "./apps/studio/tailwind.config.js",
+          "tailwindStylesheet": "./apps/studio/src/styles/tailwind.css",
           "functions": ["tv"]
         }
       }
