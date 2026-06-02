@@ -79,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ permalink, sitemap }) => {
                 </a>
                 {idx !== breadcrumbs.length - 1 && (
                   <svg
-                    className="mx-2 h-5 w-5 flex-shrink-0 text-gray-300"
+                    className="mx-2 h-5 w-5 shrink-0 text-gray-300"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     aria-hidden="true"

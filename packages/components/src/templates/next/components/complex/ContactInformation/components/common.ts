@@ -8,7 +8,7 @@ export const commonContactInformationStyles = tv({
     container: `${ComponentContent} flex flex-col`,
     titleAndDescriptionContainer: "flex flex-col",
     title: "prose-display-sm text-base-content-strong",
-    description: "text-base-content-strong [&:not(:first-child)]:mt-0",
+    description: "text-base-content-strong not-first:mt-0",
     contactMethodsContainer: "flex flex-col gap-10",
     otherInformationContainer: "mt-8 flex flex-col gap-6",
     otherInformationTitle: "prose-display-xs text-base-content-strong",

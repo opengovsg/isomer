@@ -20,7 +20,7 @@ const createKeyStatisticsStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col`,
     title:
-      "prose-display-sm text-base-content-strong w-full max-w-[47.5rem] break-words",
+      "prose-display-sm text-base-content-strong w-full max-w-[47.5rem] wrap-break-word",
     urlButtonContainer: "mx-auto mt-2 block",
     statistics: "flex flex-col flex-wrap gap-x-8 gap-y-12 md:flex-row",
     itemContainer: "flex grow flex-col gap-3",

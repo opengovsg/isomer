@@ -1025,9 +1025,6 @@
   .flex-1 {
     flex: 1;
   }
-  .flex-shrink-0 {
-    flex-shrink: 0;
-  }
   .shrink {
     flex-shrink: 1;
   }
@@ -2052,9 +2049,6 @@
   .text-pretty {
     text-wrap: pretty;
   }
-  .break-words {
-    overflow-wrap: break-word;
-  }
   .tailwindv3-wrap-anywhere {
     overflow-wrap: anywhere;
   }
@@ -2528,6 +2522,46 @@
   }
   .ring-inset {
     --tw-ring-inset: inset;
+  }
+  .not-first\:mt-0 {
+    &:not(*:first-child) {
+      margin-top: calc(var(--spacing) * 0);
+    }
+  }
+  .not-first\:mt-6 {
+    &:not(*:first-child) {
+      margin-top: calc(var(--spacing) * 6);
+    }
+  }
+  .not-first\:mt-7 {
+    &:not(*:first-child) {
+      margin-top: calc(var(--spacing) * 7);
+    }
+  }
+  .not-first\:mt-8 {
+    &:not(*:first-child) {
+      margin-top: calc(var(--spacing) * 8);
+    }
+  }
+  .not-first\:mt-9 {
+    &:not(*:first-child) {
+      margin-top: calc(var(--spacing) * 9);
+    }
+  }
+  .not-first\:mt-14 {
+    &:not(*:first-child) {
+      margin-top: calc(var(--spacing) * 14);
+    }
+  }
+  .not-last\:mb-0 {
+    &:not(*:last-child) {
+      margin-bottom: calc(var(--spacing) * 0);
+    }
+  }
+  .not-last\:mb-6 {
+    &:not(*:last-child) {
+      margin-bottom: calc(var(--spacing) * 6);
+    }
   }
   .group-open\:rotate-180 {
     &:is(:where(.group):where([data-rac])[data-open] *) {
@@ -5269,46 +5303,6 @@
   .\[\&\:\:-webkit-search-cancel-button\]\:hidden {
     &::-webkit-search-cancel-button {
       display: none;
-    }
-  }
-  .\[\&\:not\(\:first-child\)\]\:mt-0 {
-    &:not(:first-child) {
-      margin-top: calc(var(--spacing) * 0);
-    }
-  }
-  .\[\&\:not\(\:first-child\)\]\:mt-6 {
-    &:not(:first-child) {
-      margin-top: calc(var(--spacing) * 6);
-    }
-  }
-  .\[\&\:not\(\:first-child\)\]\:mt-7 {
-    &:not(:first-child) {
-      margin-top: calc(var(--spacing) * 7);
-    }
-  }
-  .\[\&\:not\(\:first-child\)\]\:mt-8 {
-    &:not(:first-child) {
-      margin-top: calc(var(--spacing) * 8);
-    }
-  }
-  .\[\&\:not\(\:first-child\)\]\:mt-9 {
-    &:not(:first-child) {
-      margin-top: calc(var(--spacing) * 9);
-    }
-  }
-  .\[\&\:not\(\:first-child\)\]\:mt-14 {
-    &:not(:first-child) {
-      margin-top: calc(var(--spacing) * 14);
-    }
-  }
-  .\[\&\:not\(\:last-child\)\]\:mb-0 {
-    &:not(:last-child) {
-      margin-bottom: calc(var(--spacing) * 0);
-    }
-  }
-  .\[\&\:not\(\:last-child\)\]\:mb-6 {
-    &:not(:last-child) {
-      margin-bottom: calc(var(--spacing) * 6);
     }
   }
   .\[\&\>\:is\(ol\,ul\)\:first-child\]\:mt-0 {

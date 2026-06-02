@@ -29,7 +29,7 @@ const singleInfoCardStyle = tv({
   slots: {
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImage: "h-full w-full object-center",
-    cardTextContainer: "flex flex-col break-words",
+    cardTextContainer: "flex flex-col wrap-break-word",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 shrink-0 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
@@ -87,7 +87,7 @@ const createInfoCardsStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col`,
     headingContainer: "flex flex-col",
-    headingTitle: "prose-display-sm text-base-content-strong break-words",
+    headingTitle: "prose-display-sm text-base-content-strong wrap-break-word",
     headingSubtitle: "text-base-content",
     // auto-rows-max and grid-template-rows:max-content are needed to make the grid items have the same height,
     // which otherwise would be an issue on some versions of Safari

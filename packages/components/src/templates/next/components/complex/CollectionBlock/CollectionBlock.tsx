@@ -23,7 +23,7 @@ const createInfoCardsStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col gap-8 py-12 first:pt-0 md:gap-12 md:py-16`,
     headingContainer: "flex flex-col gap-2.5 lg:max-w-3xl",
-    headingTitle: "prose-display-sm text-base-content-strong break-words",
+    headingTitle: "prose-display-sm text-base-content-strong wrap-break-word",
     headingSubtitle: "prose-headline-lg-regular text-base-content",
     grid: "grid grid-cols-1 items-start gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
     cardContainer: "group flex flex-col gap-5 outline-0",

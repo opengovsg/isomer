@@ -27,7 +27,7 @@ export const DynamicDataBanner = ({
             site,
             content: errorMessage,
           })}
-          className="prose-label-sm-medium [&:not(:first-child)]:mt-0 [&:not(:last-child)]:mb-0"
+          className="prose-label-sm-medium not-first:mt-0 not-last:mb-0"
         />
       }
     />

@@ -22,7 +22,7 @@ export const ArticlePageHeader = ({
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
-          <h1 className="prose-display-md text-base-content-strong break-words">
+          <h1 className="prose-display-md text-base-content-strong wrap-break-word">
             {title}
           </h1>
           {tags.length > 0 &&

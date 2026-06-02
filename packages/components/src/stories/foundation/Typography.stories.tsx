@@ -18,7 +18,7 @@ export const Typography: Story = {
       <div className="container flex max-w-screen-lg flex-col gap-4">
         <section className="flex flex-col gap-2">
           <h1 className="prose-display-xl">Typography</h1>
-          <div className="flex flex-col justify-between rounded-lg bg-blue-700 px-4 py-8 break-words text-white md:flex-row md:items-center md:px-12">
+          <div className="flex flex-col justify-between rounded-lg bg-blue-700 px-4 py-8 wrap-break-word text-white md:flex-row md:items-center md:px-12">
             <p className="prose-display-sm">Inter</p>
             <div className="prose-headline-lg-regular flex flex-col">
               <span>ABCDEFGHIJKLMNOPQRSTUVWXYZ</span>

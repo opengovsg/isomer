@@ -5,7 +5,7 @@ import { ImageClient } from "../../internal/ImageClient"
 
 const createImageStyles = tv({
   slots: {
-    container: "mt-0 [&:not(:first-child)]:mt-7",
+    container: "mt-0 not-first:mt-7",
     caption:
       "overflow-wrap break-word prose-label-sm-medium text-base-content-subtle mt-2 max-w-[70ch] md:mx-auto md:text-center",
     image: "mx-auto h-auto max-w-full rounded-sm",
