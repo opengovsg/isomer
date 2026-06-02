@@ -51,7 +51,7 @@ export const HeroFloating = ({
           src={backgroundUrl}
           alt=""
           width="100%"
-          className="aspect-[3/2] w-full object-cover object-center lg:w-[66.67%]"
+          className="aspect-3/2 w-full object-cover object-center lg:w-[66.67%]"
           assetsBaseUrl={site.assetsBaseUrl}
           lazyLoading={false}
         />

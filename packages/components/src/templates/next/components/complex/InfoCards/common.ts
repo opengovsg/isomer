@@ -47,7 +47,7 @@ const singleInfoCardStyle = tv({
       [INFOCARD_VARIANT.bold]: {
         cardTextContainer: "align-self-bottom text-base-content-inverse",
         cardImageContainer: "h-full",
-        cardContainer: "relative aspect-square lg:aspect-[2/3]",
+        cardContainer: "relative aspect-square lg:aspect-2/3",
       },
     },
     isClickableCard: {
@@ -100,7 +100,7 @@ const createInfoCardsStyles = tv({
     variant: {
       [INFOCARD_VARIANT.default]: {
         grid: "gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
-        cardImageContainer: "aspect-[3/2]",
+        cardImageContainer: "aspect-3/2",
       },
       [INFOCARD_VARIANT.bold]: {
         grid: "gap-1",
@@ -153,7 +153,7 @@ const createInfoCardsStyles = tv({
       layout: "homepage",
       maxColumns: "2",
       class: {
-        cardImageContainer: "lg:aspect-[2/1]",
+        cardImageContainer: "lg:aspect-2/1",
       },
     },
     {

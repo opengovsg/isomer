@@ -34,7 +34,7 @@ export const BlogCard = ({
       isExternal={isExternalLink}
     >
       {image && (
-        <div className="relative mb-3 flex aspect-[2/1] h-auto min-h-40 shrink-0 items-center justify-center">
+        <div className="relative mb-3 flex aspect-2/1 h-auto min-h-40 shrink-0 items-center justify-center">
           {
             <ImageClient
               src={imageSrc || ""}

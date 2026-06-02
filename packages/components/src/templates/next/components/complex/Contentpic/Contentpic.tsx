@@ -8,10 +8,9 @@ import { Prose } from "../../native/Prose"
 const contentpicStyles = tv({
   slots: {
     // margin used for margin collapse
-    container:
-      "mb-7 flex flex-col gap-7 sm:flex-row not-first:mt-7",
+    container: "mb-7 flex flex-col gap-7 not-first:mt-7 sm:flex-row",
     image:
-      "aspect-[5/6] h-auto rounded-sm object-cover sm:h-[240px] sm:w-[200px]",
+      "aspect-5/6 h-auto rounded-sm object-cover sm:h-[240px] sm:w-[200px]",
     content:
       "text-base-content flex-1 wrap-break-word lg:justify-self-start [&>:is(ol,ul):first-child]:mt-0 [&>:is(ol,ul):first-child>li:first-child]:mt-0",
   },

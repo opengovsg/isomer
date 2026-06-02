@@ -14,7 +14,7 @@ const createImagePreviewStyles = tv({
     container:
       // Height is responsive via CSS to avoid hydration mismatch:
       // sm/md screens show 3 previews (taller), lg screens show 5 previews (shorter)
-      "focus-visible:outline-utility-highlight relative aspect-[1/1] w-full flex-1 shrink-0 overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] sm:h-[7.375rem] lg:h-[5.375rem]",
+      "focus-visible:outline-utility-highlight relative aspect-1/1 w-full flex-1 shrink-0 overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] sm:h-[7.375rem] lg:h-[5.375rem]",
   },
   variants: {
     isSelected: {

@@ -96,10 +96,10 @@ const BoxLayout = ({
 
 const createRowStyles = tv({
   slots: {
-    container: `${ComponentContent} grid grid-cols-3 gap-9 md:grid-cols-6 lg:grid-cols-12 not-first:mt-7`,
+    container: `${ComponentContent} grid grid-cols-3 gap-9 not-first:mt-7 md:grid-cols-6 lg:grid-cols-12`,
     image: "bg-white",
     imageContainer:
-      "bg-base-canvas flex aspect-[3/2] h-full w-full justify-center overflow-hidden rounded-lg border drop-shadow-none transition ease-in group-hover:drop-shadow-md max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
+      "bg-base-canvas flex aspect-3/2 h-full w-full justify-center overflow-hidden rounded-lg border drop-shadow-none transition ease-in group-hover:drop-shadow-md max-md:col-span-full max-md:row-span-1 md:col-span-2 lg:col-span-3",
     textContainer:
       "flex flex-col justify-center gap-2 wrap-break-word max-md:col-span-full max-md:row-span-1",
     contentContainer:
