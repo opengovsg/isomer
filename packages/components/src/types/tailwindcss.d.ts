@@ -43,7 +43,7 @@ declare module "tailwindcss" {
 }
 
 declare module "tailwindcss/colors" {
-  type Shades = {
+  interface Shades {
     50: string
     100: string
     200: string
@@ -112,11 +112,11 @@ declare module "tailwindcss/defaultTheme" {
 }
 
 declare module "tailwindcss/plugin" {
-  type CssInJs = {
+  interface CssInJs {
     [key: string]: string | string[] | CssInJs | CssInJs[]
   }
 
-  type PluginAPI = {
+  interface PluginAPI {
     addBase(base: CssInJs): void
     addUtilities(
       utilities:
@@ -177,7 +177,7 @@ declare module "tailwindcss/plugin" {
     reference?: boolean
   }
 
-  type PluginWithOptions<T> = {
+  interface PluginWithOptions<T> {
     (options?: T): PluginWithConfig
     __isOptionsFunction: true
   }

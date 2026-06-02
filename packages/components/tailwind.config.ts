@@ -10,6 +10,9 @@ import { NextPreset } from "./src/presets/next"
 
 /** @type {import('tailwindcss').Config} */
 
+// CSS.escape polyfill for Node.js (the `e` helper was removed from the TailwindCSS v4 plugin API)
+const e = (str: string) => str.replace(/[^a-zA-Z0-9_-]/g, (c) => `\\${c}`)
+
 export default {
   content: [
     "./index.html",
@@ -41,7 +44,7 @@ export default {
     },
   },
   plugins: [
-    plugin(function ({ addUtilities, theme, e }) {
+    plugin(function ({ addUtilities, theme }) {
       // Gets all the gap values (like gap-1, gap-2, etc.) defined in the Tailwind theme
       // It's based on the existing gap utility in Tailwind.
       const gapValues = theme("gap")
