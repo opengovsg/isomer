@@ -13,11 +13,11 @@ function Cards({ sectionTitle, sectionCaption, cards }: CardsProps) {
               "Learn how to grow your business with our expert advice."}
           </p>
         </div>
-        <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+        <div className="grid gap-x-8 gap-y-20 mx-auto mt-16 max-w-2xl grid-cols-1 lg:mx-0 lg:max-w-none lg:grid-cols-3">
           {cards.map((post) => (
             <article
               key={post.id}
-              className="flex flex-col items-start justify-between"
+              className="flex-col flex items-start justify-between"
             >
               <div className="relative w-full">
                 <img
@@ -28,7 +28,7 @@ function Cards({ sectionTitle, sectionCaption, cards }: CardsProps) {
                 <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
               </div>
               <div className="max-w-xl">
-                <div className="mt-8 flex items-center gap-x-4 text-xs">
+                <div className="gap-x-4 mt-8 flex items-center text-xs">
                   <time dateTime={post.datetime} className="text-gray-500">
                     {post.date}
                   </time>
@@ -52,7 +52,7 @@ function Cards({ sectionTitle, sectionCaption, cards }: CardsProps) {
                     {post.description}
                   </p>
                 </div>
-                <div className="relative mt-8 flex items-center gap-x-4">
+                <div className="gap-x-4 relative mt-8 flex items-center">
                   <img
                     src={post.author.imageUrl}
                     alt=""

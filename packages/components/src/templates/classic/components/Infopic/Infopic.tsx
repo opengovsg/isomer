@@ -11,7 +11,7 @@ const InfopicContentWrapper = ({
   shouldShowMobile: boolean
 }) => (
   <div
-    className={`mx-auto px-6 py-12 md:grid md:grid-cols-2 md:gap-x-16 md:p-16 xl:max-w-7xl ${
+    className={`mx-auto px-6 py-12 md:grid md:gap-x-16 md:grid-cols-2 md:p-16 xl:max-w-7xl ${
       shouldShowMobile ? "md:hidden" : "hidden"
     }`}
   >
@@ -30,7 +30,7 @@ const TextComponent = ({
   "title" | "subtitle" | "description" | "buttonLabel" | "buttonUrl"
 >) => {
   return (
-    <div className="flex flex-col gap-4 lg:px-8">
+    <div className="flex-col gap-4 flex lg:px-8">
       {subtitle && (
         <p className="uppercase tracking-widest text-subtitle">{subtitle}</p>
       )}
@@ -39,7 +39,7 @@ const TextComponent = ({
       {buttonLabel && buttonUrl && (
         <div className="tracking-wid text-lg font-semibold uppercase">
           <a
-            className="flex gap-2 font-semibold uppercase text-site-secondary underline"
+            className="gap-2 flex font-semibold uppercase text-site-secondary underline"
             href={buttonUrl}
             target={buttonUrl.startsWith("http") ? "_blank" : undefined}
             rel={
