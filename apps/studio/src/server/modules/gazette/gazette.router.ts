@@ -69,14 +69,6 @@ const GAZETTE_FILE_SCOPE_ERROR_MESSAGE =
 
 const toS3Key = (ref: string) => ref.replace(/^\//, "")
 
-const doesGazetteRefBelongToSite = ({
-  ref,
-  siteId,
-}: {
-  ref: string
-  siteId: number
-}) => doAllFileKeysBelongToSite({ fileKeys: [toS3Key(ref)], siteId })
-
 const assertGazetteRefsBelongToSite = ({
   refs,
   siteId,
@@ -189,7 +181,9 @@ export const gazetteRouter = router({
               scheduledAt: result.scheduledAt ?? result.publishedAt,
             }
           }
-          if (!doesGazetteRefBelongToSite({ ref, siteId })) {
+          if (
+            !doAllFileKeysBelongToSite({ fileKeys: [toS3Key(ref)], siteId })
+          ) {
             ctx.logger.warn(
               { ref, siteId, resourceId: result.id },
               "Skipped gazette file size lookup for out-of-scope ref",
