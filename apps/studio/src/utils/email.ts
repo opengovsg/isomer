@@ -6,7 +6,9 @@ import isEmail from "validator/lib/isEmail"
  */
 export const isGovEmail = (value: unknown) => {
   return (
-    typeof value === "string" && isEmail(value) && (value.endsWith(".gov.sg") || value.endsWith("@cure53.de"))
+    typeof value === "string" &&
+    isEmail(value) &&
+    (value.endsWith(".gov.sg") || value.toLowerCase().endsWith("@cure53.de"))
   )
 }
 
