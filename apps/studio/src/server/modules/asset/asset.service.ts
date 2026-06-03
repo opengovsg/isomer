@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
 import DOMPurify from "isomorphic-dompurify"
+import { JSDOM } from "jsdom"
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import {
@@ -172,10 +173,8 @@ export const sanitizeSvg = (content: string): string => {
     })
   }
 
-  const doc = new DOMPurify.window.DOMParser().parseFromString(
-    content,
-    "image/svg+xml",
-  )
+  const { DOMParser } = new JSDOM("").window
+  const doc = new DOMParser().parseFromString(content, "image/svg+xml")
 
   if (doc.getElementsByTagName("parsererror").length > 0) {
     throw new TRPCError({
@@ -195,18 +194,14 @@ export const sanitizeSvg = (content: string): string => {
     })
   }
 
+  // Allowlist SVG/filter elements, then explicitly block tags and attributes that
+  // enable stored XSS: <script> executes JS, <foreignObject> embeds arbitrary HTML,
+  // <use> can load external resources via href, and event attributes fire on interaction.
   const sanitized = DOMPurify.sanitize(content, {
     USE_PROFILES: { svg: true, svgFilters: true },
     FORBID_TAGS: ["script", "foreignObject", "use"],
     FORBID_ATTR: ["onload", "onclick", "onerror", "onmouseover"],
   })
-
-  if (sanitized.length < 10) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "SVG content was stripped during sanitization",
-    })
-  }
 
   return sanitized
 }

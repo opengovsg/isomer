@@ -20,23 +20,6 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { assetRouter } from "../asset.router"
 
-// isomorphic-dompurify's DOMPurify.window is undefined in the Node test
-// environment because dompurify v3 no longer exposes `.window` on the instance.
-// Provide a jsdom-backed shim so sanitizeSvg can call DOMPurify.window.DOMParser.
-vi.mock("isomorphic-dompurify", async () => {
-  const { JSDOM: JSDOMCtor } = await import("jsdom")
-  const { default: createPurify } = await import("dompurify")
-  const win = new JSDOMCtor("<!DOCTYPE html>").window
-  // oxlint-disable-next-line typescript/no-explicit-any
-  const purify = createPurify(win as any)
-  return {
-    default: {
-      window: win,
-      sanitize: purify.sanitize.bind(purify),
-    },
-  }
-})
-
 // Mock the S3 client to prevent credential loading issues in CI
 // Workaround as we do not really want to set up a full integration test here with S3
 vi.mock("~/lib/s3", () => ({
@@ -219,6 +202,29 @@ describe("asset.router", async () => {
           /^inline; filename\*=UTF-8''.+/,
         ),
       })
+    })
+
+    it("should throw BAD_REQUEST when called with .svg filename", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.getPresignedPutUrl({
+        siteId: site.id,
+        resourceId: page.id,
+        fileName: "test.svg",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "BAD_REQUEST" }),
+      )
     })
   })
 
@@ -614,29 +620,6 @@ describe("asset.router", async () => {
         fileKey: expect.stringContaining(".svg"),
       })
       expect(putObjectDirect).toHaveBeenCalledTimes(1)
-    })
-
-    it("should throw BAD_REQUEST when getPresignedPutUrl is called with .svg filename", async () => {
-      // Arrange
-      const { site, page } = await setupPageResource({
-        resourceType: ResourceType.Page,
-      })
-      await setupEditorPermissions({
-        siteId: site.id,
-        userId: session.userId,
-      })
-
-      // Act
-      const result = caller.getPresignedPutUrl({
-        siteId: site.id,
-        resourceId: page.id,
-        fileName: "test.svg",
-      })
-
-      // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
-      )
     })
 
     it("should reject fileName not ending in .svg", async () => {

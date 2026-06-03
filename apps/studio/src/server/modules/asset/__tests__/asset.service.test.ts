@@ -1,22 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { describe, expect, it, vi } from "vitest"
-
-// isomorphic-dompurify's DOMPurify.window is undefined in the Node test
-// environment because dompurify v3 no longer exposes `.window` on the instance.
-// Provide a jsdom-backed shim so sanitizeSvg can call DOMPurify.window.DOMParser.
-vi.mock("isomorphic-dompurify", async () => {
-  const { JSDOM: JSDOMCtor } = await import("jsdom")
-  const { default: createPurify } = await import("dompurify")
-  const win = new JSDOMCtor("<!DOCTYPE html>").window
-  // oxlint-disable-next-line typescript/no-explicit-any
-  const purify = createPurify(win as any)
-  return {
-    default: {
-      window: win,
-      sanitize: purify.sanitize.bind(purify),
-    },
-  }
-})
+import { describe, expect, it } from "vitest"
 
 import {
   doAllFileKeysBelongToSite,
@@ -344,9 +327,7 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        expect.objectContaining({
-          code: "BAD_REQUEST",
-        } satisfies Partial<TRPCError>),
+        new TRPCError({ code: "BAD_REQUEST" }),
       )
     })
 
@@ -357,9 +338,7 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        expect.objectContaining({
-          code: "BAD_REQUEST",
-        } satisfies Partial<TRPCError>),
+        new TRPCError({ code: "BAD_REQUEST" }),
       )
     })
 
@@ -377,9 +356,7 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        expect.objectContaining({
-          code: "BAD_REQUEST",
-        } satisfies Partial<TRPCError>),
+        new TRPCError({ code: "BAD_REQUEST" }),
       )
     })
 
@@ -389,9 +366,7 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        expect.objectContaining({
-          code: "BAD_REQUEST",
-        } satisfies Partial<TRPCError>),
+        new TRPCError({ code: "BAD_REQUEST" }),
       )
     })
 
@@ -401,9 +376,7 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        expect.objectContaining({
-          code: "BAD_REQUEST",
-        } satisfies Partial<TRPCError>),
+        new TRPCError({ code: "BAD_REQUEST" }),
       )
     })
 
@@ -483,9 +456,7 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        expect.objectContaining({
-          code: "BAD_REQUEST",
-        } satisfies Partial<TRPCError>),
+        new TRPCError({ code: "BAD_REQUEST" }),
       )
     })
 
@@ -495,9 +466,7 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        expect.objectContaining({
-          code: "BAD_REQUEST",
-        } satisfies Partial<TRPCError>),
+        new TRPCError({ code: "BAD_REQUEST" }),
       )
     })
   })
