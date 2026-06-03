@@ -18,7 +18,7 @@ const createDynamicDataBannerStyles = tv({
     screenWideOuterContainer: "bg-[#E1EAE6]",
     outerContainer: `${ComponentContent} md:gap-auto flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between md:px-10 md:py-5`,
     basicInfoContainer:
-      "flex flex-col items-center gap-0.5 md:items-start md:gap-1",
+      "flex flex-col items-center max-md:gap-0.5 md:items-start md:gap-1",
     title: "prose-headline-lg-semibold text-base-content whitespace-nowrap",
     dateAndUrlContainer: "align-center flex justify-center gap-2",
     date: "prose-body-sm text-base-content-medium whitespace-nowrap",
@@ -28,7 +28,7 @@ const createDynamicDataBannerStyles = tv({
     errorMessageContainer: `${ComponentContent} flex flex-row gap-2 px-6 py-3 md:items-center md:gap-1`,
     errorIcon: "h-full min-h-4 min-w-4",
     individualDataContainer:
-      "flex w-fit flex-col items-center justify-center gap-0.5 md:flex-row md:gap-1.5 lg:flex-col lg:items-end",
+      "flex w-fit flex-col items-center justify-center max-md:gap-0.5 md:flex-row md:gap-1.5 lg:flex-col lg:items-end",
     individualDataLabel: "prose-headline-base-medium text-base-content",
     individualDataValue:
       "prose-headline-lg-semibold text-brand-interaction-hover md:max-lg:w-[70px] md:max-lg:text-right",

@@ -284,7 +284,7 @@ const LegalSection = ({
 
 const CreditsSection = () => {
   return (
-    <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
+    <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:max-xl:gap-8 xl:gap-20">
       <Link
         href="https://www.isomer.gov.sg"
         isExternal
