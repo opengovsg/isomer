@@ -305,11 +305,9 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert — DOMPurify normalises self-closing tags to explicit close tags
-      // but must not drop or alter any attributes on safe elements
-      expect(result).toContain('width="10"')
-      expect(result).toContain('height="10"')
-      expect(result).not.toContain("<script")
-      expect(result).not.toContain("onload")
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
     })
 
     it("should strip <script> tag from SVG without touching other content", () => {
