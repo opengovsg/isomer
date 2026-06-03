@@ -118,8 +118,8 @@ const boxStyles = tv({
   variants: {
     isSelected: {
       false:
-        "border-[--color] bg-white [--color:var(--color-base-divider-medium)] group-data-[pressed]:[--color:var(--color-base-divider-strong)]",
-      true: "border-[--color] bg-[--color] [--color:var(--color-brand-interaction)] group-data-[pressed]:[--color:var(--color-brand-interaction-pressed)] forced-colors:![--color:Highlight]",
+        "border-[var(--color)] bg-white [--color:var(--color-base-divider-medium)] group-data-[pressed]:[--color:var(--color-base-divider-strong)]",
+      true: "border-[var(--color)] bg-[var(--color)] [--color:var(--color-brand-interaction)] group-data-[pressed]:[--color:var(--color-brand-interaction-pressed)] forced-colors:![--color:Highlight]",
     },
     isInvalid: {
       true: "[--color:var(--color-red-700)] group-data-[pressed]:[--color:var(--color-red-800)] forced-colors:![--color:Mark]",
