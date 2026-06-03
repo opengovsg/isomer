@@ -6,6 +6,8 @@ import { randomUUID } from "crypto"
 import filenamify from "filenamify"
 import DOMPurify from "isomorphic-dompurify"
 import { JSDOM } from "jsdom"
+
+const { DOMParser } = new JSDOM("").window
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import {
@@ -173,7 +175,6 @@ export const sanitizeSvg = (content: string): string => {
     })
   }
 
-  const { DOMParser } = new JSDOM("").window
   const doc = new DOMParser().parseFromString(content, "image/svg+xml")
 
   if (doc.getElementsByTagName("parsererror").length > 0) {
