@@ -1,10 +1,29 @@
-import { describe, expect, it } from "vitest"
+import { TRPCError } from "@trpc/server"
+import { describe, expect, it, vi } from "vitest"
+
+// isomorphic-dompurify's DOMPurify.window is undefined in the Node test
+// environment because dompurify v3 no longer exposes `.window` on the instance.
+// Provide a jsdom-backed shim so sanitizeSvg can call DOMPurify.window.DOMParser.
+vi.mock("isomorphic-dompurify", async () => {
+  const { JSDOM: JSDOMCtor } = await import("jsdom")
+  const { default: createPurify } = await import("dompurify")
+  const win = new JSDOMCtor("<!DOCTYPE html>").window
+  // oxlint-disable-next-line typescript/no-explicit-any
+  const purify = createPurify(win as any)
+  return {
+    default: {
+      window: win,
+      sanitize: purify.sanitize.bind(purify),
+    },
+  }
+})
 
 import {
   doAllFileKeysBelongToSite,
   getContentDispositionForKey,
   getContentTypeFromKey,
   getFileKey,
+  sanitizeSvg,
 } from "../asset.service"
 
 describe("asset.service", () => {
@@ -273,6 +292,198 @@ describe("asset.service", () => {
           fileKeys: ["2/uuid/file.png"],
         }),
       ).toBe(true)
+    })
+  })
+
+  describe("sanitizeSvg", () => {
+    it("should return sanitized content for a valid SVG", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).toBeTruthy()
+      expect(result.length).toBeGreaterThan(0)
+    })
+
+    it("should strip <script> tag from SVG without throwing", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).not.toContain("<script")
+    })
+
+    it("should strip onload attribute from SVG without throwing", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"><rect/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).not.toContain("onload")
+    })
+
+    it("should throw BAD_REQUEST when root element is not svg (HTML document)", () => {
+      // Arrange
+      const input = "<!DOCTYPE html><html><body></body></html>"
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        expect.objectContaining({
+          code: "BAD_REQUEST",
+        } satisfies Partial<TRPCError>),
+      )
+    })
+
+    it("should throw BAD_REQUEST for XML entity declaration", () => {
+      // Arrange
+      const input =
+        '<!ENTITY xxe "test"><svg xmlns="http://www.w3.org/2000/svg"/>'
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        expect.objectContaining({
+          code: "BAD_REQUEST",
+        } satisfies Partial<TRPCError>),
+      )
+    })
+
+    it("should throw BAD_REQUEST for billion-laughs XML entity bomb", () => {
+      // Arrange
+      // Billion-laughs: exponential entity expansion that exhausts server memory
+      // at parse time. Must be caught by the <!ENTITY regex BEFORE DOMParser runs —
+      // DOMPurify operates on the already-parsed DOM and cannot prevent this.
+      const input = `<!DOCTYPE svg [
+        <!ENTITY lol "lol">
+        <!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+        <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+      ]>
+      <svg xmlns="http://www.w3.org/2000/svg">&lol3;</svg>`
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        expect.objectContaining({
+          code: "BAD_REQUEST",
+        } satisfies Partial<TRPCError>),
+      )
+    })
+
+    it("should throw BAD_REQUEST for non-XML binary/random string", () => {
+      // Arrange
+      const input = "not an svg at all, just random text"
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        expect.objectContaining({
+          code: "BAD_REQUEST",
+        } satisfies Partial<TRPCError>),
+      )
+    })
+
+    it("should throw BAD_REQUEST for empty string", () => {
+      // Arrange
+      const input = ""
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        expect.objectContaining({
+          code: "BAD_REQUEST",
+        } satisfies Partial<TRPCError>),
+      )
+    })
+
+    it("should strip foreignObject tag from SVG", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><foreignObject><div>evil</div></foreignObject></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).not.toContain("foreignObject")
+    })
+
+    it("should strip use tag from SVG", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><use href="http://evil.com/evil.svg#xss"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).not.toContain("<use")
+    })
+
+    it("should strip onclick attribute from SVG", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect onclick="alert(1)"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).not.toContain("onclick")
+    })
+
+    it("should strip onerror attribute from SVG", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><image onerror="alert(1)"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).not.toContain("onerror")
+    })
+
+    it("should strip onmouseover attribute from SVG", () => {
+      // Arrange
+      const input =
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect onmouseover="alert(1)"/></svg>'
+
+      // Act
+      const result = sanitizeSvg(input)
+
+      // Assert
+      expect(result).not.toContain("onmouseover")
+    })
+
+    it("should throw BAD_REQUEST for valid XML that is not SVG", () => {
+      // Arrange
+      const input = '<root xmlns="http://example.com"><child/></root>'
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        expect.objectContaining({
+          code: "BAD_REQUEST",
+        } satisfies Partial<TRPCError>),
+      )
+    })
+
+    it("should throw BAD_REQUEST for malformed XML", () => {
+      // Arrange
+      const input = '<svg xmlns="http://www.w3.org/2000/svg"><unclosed>'
+
+      // Act & Assert
+      expect(() => sanitizeSvg(input)).toThrow(
+        expect.objectContaining({
+          code: "BAD_REQUEST",
+        } satisfies Partial<TRPCError>),
+      )
     })
   })
 })

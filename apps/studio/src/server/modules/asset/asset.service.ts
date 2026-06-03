@@ -4,12 +4,14 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
+import DOMPurify from "isomorphic-dompurify"
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import {
   deleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
+  putObjectDirect,
 } from "~/lib/s3"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
@@ -156,5 +158,73 @@ export const getPresignedGetUrl = async ({
   return generateSignedGetUrl({
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
     Key: key,
+  })
+}
+
+export const sanitizeSvg = (content: string): string => {
+  // Must run BEFORE parsing. Entity expansion (e.g. billion-laughs) happens
+  // inside DOMParser.parseFromString — DOMPurify only sees the resulting DOM
+  // and cannot intercept it. No sanitization library operates at this layer.
+  if (/<!ENTITY/i.test(content)) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "SVG contains disallowed XML entities",
+    })
+  }
+
+  const doc = new DOMPurify.window.DOMParser().parseFromString(
+    content,
+    "image/svg+xml",
+  )
+
+  if (doc.getElementsByTagName("parsererror").length > 0) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "SVG failed to parse as valid XML",
+    })
+  }
+
+  const root = doc.documentElement
+  if (
+    root.localName !== "svg" ||
+    root.namespaceURI !== "http://www.w3.org/2000/svg"
+  ) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Root element is not a valid SVG element",
+    })
+  }
+
+  const sanitized = DOMPurify.sanitize(content, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    FORBID_TAGS: ["script", "foreignObject", "use"],
+    FORBID_ATTR: ["onload", "onclick", "onerror", "onmouseover"],
+  })
+
+  if (sanitized.length < 10) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "SVG content was stripped during sanitization",
+    })
+  }
+
+  return sanitized
+}
+
+export const putFileDirect = async ({
+  key,
+  body,
+}: {
+  key: string
+  body: string
+}): Promise<void> => {
+  const contentType = getContentTypeFromKey(key)
+  const contentDisposition = getContentDispositionForKey(key)
+  await putObjectDirect({
+    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+    Key: key,
+    Body: body,
+    ContentType: contentType,
+    ContentDisposition: contentDisposition,
   })
 }

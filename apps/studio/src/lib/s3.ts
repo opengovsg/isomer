@@ -258,3 +258,24 @@ export const getBlob = async (bucketName: string, key: string) => {
     throw err
   }
 }
+
+export const putObjectDirect = async ({
+  Bucket,
+  Key,
+  Body,
+  ContentType,
+  ContentDisposition,
+}: Pick<
+  PutObjectCommandInput,
+  "Bucket" | "Key" | "Body" | "ContentType" | "ContentDisposition"
+>): Promise<void> => {
+  await storage.send(
+    new PutObjectCommand({
+      Bucket,
+      Key,
+      Body,
+      ContentType,
+      ContentDisposition,
+    }),
+  )
+}
