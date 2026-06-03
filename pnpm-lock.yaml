@@ -901,6 +901,9 @@ importers:
       jotai:
         specifier: 'catalog:'
         version: 2.20.0(@babel/core@7.29.0)(@babel/template@7.29.7)(@types/react@18.3.28)(react@18.3.1)
+      jsdom:
+        specifier: 'catalog:'
+        version: 29.1.1(@noble/hashes@2.2.0)
       kysely:
         specifier: 'catalog:'
         version: 0.28.17
