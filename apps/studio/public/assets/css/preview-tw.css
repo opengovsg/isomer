@@ -447,6 +447,9 @@
   .left-4 {
     left: calc(var(--spacing) * 4);
   }
+  .isolate {
+    isolation: isolate;
+  }
   .-z-50 {
     z-index: calc(50 * -1);
   }
