@@ -327,7 +327,10 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Root element is not a valid SVG element",
+        }),
       )
     })
 
@@ -338,7 +341,10 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SVG contains disallowed XML entities",
+        }),
       )
     })
 
@@ -356,7 +362,10 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SVG contains disallowed XML entities",
+        }),
       )
     })
 
@@ -366,7 +375,10 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SVG failed to parse as valid XML",
+        }),
       )
     })
 
@@ -376,7 +388,10 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SVG failed to parse as valid XML",
+        }),
       )
     })
 
@@ -456,7 +471,10 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Root element is not a valid SVG element",
+        }),
       )
     })
 
@@ -466,7 +484,10 @@ describe("asset.service", () => {
 
       // Act & Assert
       expect(() => sanitizeSvg(input)).toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SVG failed to parse as valid XML",
+        }),
       )
     })
   })

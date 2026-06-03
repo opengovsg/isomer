@@ -223,7 +223,7 @@ describe("asset.router", async () => {
 
       // Assert
       await expect(result).rejects.toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        expect.objectContaining({ code: "BAD_REQUEST" }),
       )
     })
   })
@@ -508,7 +508,7 @@ describe("asset.router", async () => {
 
     it("should throw 404 if site does not exist", async () => {
       // Arrange
-      const { site } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
       })
 
@@ -517,6 +517,7 @@ describe("asset.router", async () => {
         siteId: site.id + 1,
         fileName: "test.svg",
         content: VALID_SVG,
+        resourceId: page.id,
       })
 
       // Assert
@@ -553,7 +554,7 @@ describe("asset.router", async () => {
 
     it("should return BAD_REQUEST for invalid SVG content", async () => {
       // Arrange
-      const { site } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
       })
       await setupEditorPermissions({
@@ -566,17 +567,18 @@ describe("asset.router", async () => {
         siteId: site.id,
         fileName: "test.svg",
         content: "not valid svg",
+        resourceId: page.id,
       })
 
       // Assert
       await expect(result).rejects.toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        expect.objectContaining({ code: "BAD_REQUEST" }),
       )
     })
 
     it("should return BAD_REQUEST for SVG with entity bomb", async () => {
       // Arrange
-      const { site } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
       })
       await setupEditorPermissions({
@@ -590,17 +592,18 @@ describe("asset.router", async () => {
         siteId: site.id,
         fileName: "test.svg",
         content: entityBomb,
+        resourceId: page.id,
       })
 
       // Assert
       await expect(result).rejects.toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        expect.objectContaining({ code: "BAD_REQUEST" }),
       )
     })
 
     it("should return fileKey on successful SVG upload", async () => {
       // Arrange
-      const { site } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
       })
       await setupEditorPermissions({
@@ -613,6 +616,7 @@ describe("asset.router", async () => {
         siteId: site.id,
         fileName: "test.svg",
         content: VALID_SVG,
+        resourceId: page.id,
       })
 
       // Assert
@@ -624,7 +628,7 @@ describe("asset.router", async () => {
 
     it("should reject fileName not ending in .svg", async () => {
       // Arrange
-      const { site } = await setupPageResource({
+      const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
       })
       await setupEditorPermissions({
@@ -637,11 +641,12 @@ describe("asset.router", async () => {
         siteId: site.id,
         fileName: "test.png",
         content: VALID_SVG,
+        resourceId: page.id,
       })
 
       // Assert
       await expect(result).rejects.toThrow(
-        new TRPCError({ code: "BAD_REQUEST" }),
+        expect.objectContaining({ code: "BAD_REQUEST" }),
       )
     })
   })
