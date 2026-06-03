@@ -1,0 +1,21 @@
+name = "isomer-agent-runner"
+main = "src/index.ts"
+compatibility_date = "2026-05-01"
+compatibility_flags = ["nodejs_compat_v2"]
+
+# Secrets configured via `wrangler secret put`, not committed.
+# Required secrets (none populated in this PR — handlers no-op when missing):
+#   LINEAR_WEBHOOK_SECRET      — HMAC shared secret with Linear
+#   ANTHROPIC_WEBHOOK_SECRET   — HMAC shared secret with Anthropic Managed Agents
+#   ANTHROPIC_API_KEY          — for outbound calls to platform.claude.com
+#   LINEAR_API_TOKEN           — Linear service-account token for ticket/comment reads
+#
+# Non-secret config goes under [vars]:
+
+[vars]
+LINEAR_AGENT_TRIGGER = "false" # master kill-switch; nothing fires until "true"
+MAX_PAYLOAD_AGE_SECONDS = "300" # reject webhooks older than 5 min (replay window)
+
+[observability]
+enabled = true
+head_sampling_rate = 1

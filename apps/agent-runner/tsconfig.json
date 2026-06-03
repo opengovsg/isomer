@@ -1,0 +1,10 @@
+{
+  "extends": "@isomer/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["@cloudflare/workers-types"],
+    "outDir": ".cache/tsc"
+  },
+  "include": ["src/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", ".wrangler", ".cache"]
+}
