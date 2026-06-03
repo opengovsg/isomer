@@ -94,11 +94,7 @@ const ContentSecurityPolicy = `
         ? `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
         : "https://*.by.gov.sg"
     }
-    ${
-      !!env.S3_GAZETTE_DOMAIN_NAME
-        ? `https://${env.S3_GAZETTE_DOMAIN_NAME}`
-        : ""
-    }
+    https://${env.S3_GAZETTE_DOMAIN_NAME}
     https://via.intercom.io
     https://api.intercom.io
     https://api.au.intercom.io

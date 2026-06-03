@@ -142,6 +142,10 @@ export const setAssetAsPublished = async ({
       Bucket,
       Key,
       Retention: {
+        // COMPLIANCE in prod hard-locks the object until RetainUntilDate —
+        // even the root account cannot delete or overwrite it. Non-prod uses
+        // GOVERNANCE so dev/staging buckets don't accumulate test gazettes
+        // that are unremovable for the full retention window.
         Mode:
           env.NEXT_PUBLIC_APP_ENV === "production"
             ? "COMPLIANCE"

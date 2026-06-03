@@ -562,9 +562,10 @@ export const gazetteRouter = router({
 
       // Atomic transaction: delete PushDocumentJob, log audit, delete Resource + Blob
       const deletedResource = await db.transaction().execute(async (tx) => {
-        // 1. Delete the PushDocumentJob. Defence-in-depth: scope via Resource
-        // subquery on siteId (PushDocumentJob has no direct siteId column).
-        await tx
+        // 1. Delete the PushDocumentJob and capture the row. Defence-in-depth:
+        // scope via Resource subquery on siteId (PushDocumentJob has no direct
+        // siteId column).
+        const deletedJobs = await tx
           .deleteFrom("PushDocumentJob")
           .where("resourceId", "=", String(gazetteId))
           .where("resourceId", "in", (eb) =>
@@ -573,28 +574,27 @@ export const gazetteRouter = router({
               .select("Resource.id")
               .where("Resource.siteId", "=", siteId),
           )
+          .returningAll()
           .execute()
 
-        // 2. Log the cancellation audit event. The `after` carries a
-        // resource snapshot with scheduledAt/scheduledBy cleared so the delta
-        // is the inverse of SchedulePublish — `before === after` would be
-        // meaningless given the subsequent ResourceDelete event.
-        await logResourceEvent(tx, {
-          siteId,
-          eventType: AuditLogEvent.CancelSchedulePublish,
-          by: user,
-          delta: {
-            before: { resource: existingResource, blob: existingBlob },
-            after: {
-              resource: {
-                ...existingResource,
-                scheduledAt: null,
-                scheduledBy: null,
-              },
-              blob: existingBlob,
-            },
-          },
-        })
+        // 2. Log the cancellation audit event against the deleted job row.
+        // The resource itself is deleted moments later, so logging a synthetic
+        // resource snapshot would be untruthful — the truthful subject of
+        // "cancel scheduled publish" is the job that was cancelled.
+        const [deletedJob] = deletedJobs
+        if (deletedJob) {
+          const {
+            createdAt: _createdAt,
+            updatedAt: _updatedAt,
+            ...job
+          } = deletedJob
+          await logResourceEvent(tx, {
+            siteId,
+            eventType: AuditLogEvent.CancelSchedulePublish,
+            by: user,
+            delta: { before: job, after: null },
+          })
+        }
 
         // 3. Log the resource deletion audit event
         await logResourceEvent(tx, {
