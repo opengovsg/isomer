@@ -4626,10 +4626,10 @@
       }
     }
   }
-  .md\:max-lg\:grid-cols-\[auto\,auto\,auto\] {
+  .md\:max-lg\:grid-cols-\[auto_auto_auto\] {
     @media (width >= 48rem) {
       @media (width < 64rem) {
-        grid-template-columns: auto, auto, auto;
+        grid-template-columns: auto auto auto;
       }
     }
   }
