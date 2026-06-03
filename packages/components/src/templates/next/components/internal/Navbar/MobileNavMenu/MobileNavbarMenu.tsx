@@ -54,7 +54,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
         <FocusScope restoreFocus>
           <div className="border-t-base-divider-subtle absolute inset-0 overflow-auto border-t bg-white">
             {!!callToAction && (
-              <div className="border-b-base-divider-subtle bg-base-canvas-alt border-y px-6 py-3">
+              <div className="border-b-base-divider-subtle border-t-base-divider-subtle bg-base-canvas-alt border-y px-6 py-3">
                 <LinkButton
                   href={callToAction.url}
                   isExternal={isExternalUrl(callToAction.url)}
