@@ -624,7 +624,8 @@ export const gazetteRouter = router({
       const ref = (existingBlob.content as { page?: { ref?: string } } | null)
         ?.page?.ref
 
-      // Atomic transaction: delete PushDocumentJob, log audit, delete Resource + Blob
+      // Atomic transaction: delete PushDocumentJob + Resource + Blob, then log audits.
+      // Logs go last so each entry describes a deletion that has actually happened.
       const deletedResource = await db.transaction().execute(async (tx) => {
         // 1. Delete the PushDocumentJob and capture the row. Defence-in-depth:
         // scope via Resource subquery on siteId (PushDocumentJob has no direct
@@ -641,10 +642,25 @@ export const gazetteRouter = router({
           .returningAll()
           .execute()
 
-        // 2. Log the cancellation audit event against the deleted job row.
-        // The resource itself is deleted moments later, so logging a synthetic
-        // resource snapshot would be untruthful — the truthful subject of
-        // "cancel scheduled publish" is the job that was cancelled.
+        // 2. Delete the Blob first (foreign key constraint)
+        if (existingResource.draftBlobId) {
+          await tx
+            .deleteFrom("Blob")
+            .where("id", "=", existingResource.draftBlobId)
+            .execute()
+        }
+
+        // 3. Delete the Resource — scoped to siteId defence-in-depth.
+        const deletedResources = await tx
+          .deleteFrom("Resource")
+          .where("id", "=", String(gazetteId))
+          .where("siteId", "=", siteId)
+          .returningAll()
+          .execute()
+
+        // 4. Log the cancellation audit event against the deleted job row.
+        // The truthful subject of "cancel scheduled publish" is the job that
+        // was cancelled.
         const [deletedJob] = deletedJobs
         if (deletedJob) {
           const {
@@ -660,7 +676,7 @@ export const gazetteRouter = router({
           })
         }
 
-        // 3. Log the resource deletion audit event
+        // 5. Log the resource deletion audit event
         await logResourceEvent(tx, {
           siteId,
           eventType: AuditLogEvent.ResourceDelete,
@@ -671,21 +687,7 @@ export const gazetteRouter = router({
           },
         })
 
-        // 4. Delete the Blob first (foreign key constraint)
-        if (existingResource.draftBlobId) {
-          await tx
-            .deleteFrom("Blob")
-            .where("id", "=", existingResource.draftBlobId)
-            .execute()
-        }
-
-        // 5. Delete the Resource — scoped to siteId defence-in-depth.
-        return await tx
-          .deleteFrom("Resource")
-          .where("id", "=", String(gazetteId))
-          .where("siteId", "=", siteId)
-          .returningAll()
-          .execute()
+        return deletedResources
       })
 
       // After DB transaction commits, update S3 tags (best-effort)
@@ -845,8 +847,16 @@ export const gazetteRouter = router({
       await removeGazetteFromSearchIndex(ref, gazette.id)
       await deleteGazetteAsset(ref)
 
-      // Delete the resource in a transaction
+      // Delete the resource in a transaction, then audit-log the deletion.
+      // Log goes after the delete so the entry describes a deletion that has
+      // actually happened.
       await db.transaction().execute(async (tx) => {
+        await tx
+          .deleteFrom("Resource")
+          .where("siteId", "=", siteId)
+          .where("id", "=", String(gazetteId))
+          .execute()
+
         await logResourceEvent(tx, {
           siteId,
           eventType: AuditLogEvent.ResourceDelete,
@@ -856,12 +866,6 @@ export const gazetteRouter = router({
             after: null,
           },
         })
-
-        await tx
-          .deleteFrom("Resource")
-          .where("siteId", "=", siteId)
-          .where("id", "=", String(gazetteId))
-          .execute()
       })
       // NOTE: Send email out to IMDA so that they get visibility on what gazettes are deleted.
       // The gazette feature operates on a single site, so the input siteId is the
