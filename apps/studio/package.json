@@ -138,6 +138,7 @@
     "next": "catalog:",
     "openid-client": "catalog:",
     "papaparse": "catalog:",
+    "pdfreader": "^3.0.8",
     "pg": "catalog:",
     "prisma": "catalog:prisma",
     "prisma-json-types-generator": "catalog:prisma",

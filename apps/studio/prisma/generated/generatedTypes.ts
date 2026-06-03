@@ -83,6 +83,14 @@ export interface Navbar {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
+export interface PushDocumentJob {
+  id: GeneratedAlways<string>
+  resourceId: string
+  scheduledAt: Timestamp
+  scheduledBy: string
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
 export interface RateLimiterFlexible {
   key: string
   points: number
@@ -179,6 +187,7 @@ export interface DB {
   Footer: Footer
   IsomerAdmin: IsomerAdmin
   Navbar: Navbar
+  PushDocumentJob: PushDocumentJob
   RateLimiterFlexible: RateLimiterFlexible
   Redirect: Redirect
   Resource: Resource
