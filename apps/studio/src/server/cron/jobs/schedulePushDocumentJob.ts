@@ -5,10 +5,10 @@ import { createBaseLogger } from "~/lib/logger"
 import { getBlob, setAssetAsPublished } from "~/lib/s3"
 import { db } from "~/server/modules/database"
 import {
+  generateDocumentId,
   parseFullTextFromPDF,
   pushDocumentsForIngestion,
 } from "~/server/modules/gazette/gazette.service"
-import { generateDocumentId } from "~/server/modules/searchsg/searchsg.service"
 
 import { registerPgbossJob } from "@isomer/pgboss"
 

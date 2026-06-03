@@ -1,12 +1,12 @@
 import { TRPCError } from "@trpc/server"
 import { differenceInMinutes, isBefore, subYears } from "date-fns"
 import filenamify from "filenamify"
+import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazette"
 import { env } from "~/env.mjs"
 import {
   sendGazetteDeletionEmail,
   sendScheduledPageEmail,
 } from "~/features/mail/service"
-import { EGAZETTE_INFO_FEATURE_KEY } from "~/lib/growthbook"
 import { getFileSize, markScheduledAssetAsCancelled } from "~/lib/s3"
 import {
   cancelScheduledPublishSchema,
@@ -49,8 +49,6 @@ interface GazetteBlobInputs {
   description?: string
   tagged: string[]
 }
-
-const ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES = 15
 
 // Blob.content adheres to the PrismaJson.BlobJsonContent contract shared with
 // the components package. We deliberately do NOT add gazette-only fields like
@@ -804,6 +802,7 @@ export const gazetteRouter = router({
       const gazette = await db
         .selectFrom("Resource")
         .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
+        .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", String(gazetteId))
         .select([...defaultResourceSelect, "Version.publishedAt"])
         .executeTakeFirstOrThrow(
@@ -860,31 +859,29 @@ export const gazetteRouter = router({
 
         await tx
           .deleteFrom("Resource")
+          .where("siteId", "=", siteId)
           .where("id", "=", String(gazetteId))
           .execute()
       })
-      // NOTE: Send email out to IMDA so that they get visibility on what gazettes are deleted
-      const gb = ctx.gb
-      const { siteId: gazetteSiteId } = gb.getFeatureValue(
-        EGAZETTE_INFO_FEATURE_KEY,
-        {
-          siteId: "",
-          gazettesCollectionId: "",
-        },
-      )
+      // NOTE: Send email out to IMDA so that they get visibility on what gazettes are deleted.
+      // The gazette feature operates on a single site, so the input siteId is the
+      // site whose admins should be notified — no separate growthbook lookup needed.
       const admins = await db
         .selectFrom("Site")
-        .where("Site.id", "=", Number(gazetteSiteId))
+        .where("Site.id", "=", siteId)
         .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
+        .where("ResourcePermission.deletedAt", "is", null)
         .innerJoin("User", "ResourcePermission.userId", "User.id")
+        .where("User.deletedAt", "is", null)
         .where("ResourcePermission.role", "=", "Admin")
         .select("User.email")
         .execute()
 
+      const filename = ref.split("/").pop() ?? ref
       await Promise.all(
         admins.map(async ({ email }) => {
           await sendGazetteDeletionEmail({
-            fileId: ref,
+            fileId: filename,
             gazetteTitle: gazette.title,
             recipientEmail: email,
           })

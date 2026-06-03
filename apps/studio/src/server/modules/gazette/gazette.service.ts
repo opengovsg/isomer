@@ -25,8 +25,10 @@ import {
   EGAZETTE_DOCUMENT_INDEX,
   ISOMER_UA,
   SEARCHSG_BASE_URL,
-  generateDocumentId,
 } from "../searchsg/searchsg.service"
+
+export const generateDocumentId = (url: string, resourceId: string): string =>
+  `${url}-${resourceId}`
 
 const { S3_GAZETTE_BUCKET_NAME } = env
 const pdfReader = new PdfReader({})
@@ -247,16 +249,14 @@ export const removeGazetteFromSearchIndex = async (
 }
 
 /**
- * Mark a gazette asset as deleted in S3.
+ * Mark a gazette asset as deleted in S3. Throws on failure — silent failure
+ * here would leave the PDF publicly reachable after the gazette is "deleted"
+ * from SearchSG and the DB, defeating the purpose of the grace-period delete.
  */
 export const deleteGazetteAsset = async (ref: string): Promise<void> => {
-  try {
-    await markFileAsDeleted({
-      key: ref.slice(1), // Remove leading slash
-    })
-  } catch (err) {
-    logger.warn({ err, key: ref }, "Failed to mark deleted gazette file in S3")
-  }
+  await markFileAsDeleted({
+    key: ref.slice(1), // Remove leading slash
+  })
 }
 
 const getSearchSGAuthToken = async () => {

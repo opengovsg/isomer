@@ -156,10 +156,6 @@ export const updateSearchSGConfig = async (
   return res
 }
 
-export const generateDocumentId = (url: string, resourceId: string) => {
-  return `${url}-${resourceId}`
-}
-
 interface SearchSGConfig {
   data: {
     name: string

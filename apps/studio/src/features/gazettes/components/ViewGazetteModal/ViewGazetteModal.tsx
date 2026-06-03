@@ -22,6 +22,7 @@ import {
 import { differenceInMinutes, format } from "date-fns"
 import { useState } from "react"
 import { BiInfoCircle, BiTrash } from "react-icons/bi"
+import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazette"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
 
@@ -59,7 +60,8 @@ export const ViewGazetteModal = ({
   const { subcategoryMap } = useGazetteSubcategoriesContext()
 
   const canDelete = data.publishedAt
-    ? differenceInMinutes(new Date(), data.publishedAt) <= 15
+    ? differenceInMinutes(new Date(), data.publishedAt) <=
+      ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
     : false
 
   const subcategoryLabel = subcategoryMap[data.subcategory] ?? data.subcategory
