@@ -60,7 +60,7 @@ const server = z
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     STUDIO_SSM_WEBHOOK_API_KEY: z.string().optional(),
     S3_GAZETTE_BUCKET_NAME: z.string(),
-    S3_GAZETTE_DOMAIN_NAME: z.string().optional(),
+    S3_GAZETTE_DOMAIN_NAME: z.string(),
     EGAZETTE_DOCUMENT_INDEX: z.string().optional(),
     SEARCHSG_API_KEY: z.string(),
   })

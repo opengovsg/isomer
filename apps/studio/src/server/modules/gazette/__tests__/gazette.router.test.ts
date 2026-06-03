@@ -517,19 +517,24 @@ describe("gazette.router", async () => {
       expect(eventTypes).toContain(AuditLogEvent.CancelSchedulePublish)
       expect(eventTypes).toContain(AuditLogEvent.ResourceDelete)
 
-      // The CancelSchedulePublish delta carries a meaningful diff —
-      // scheduledAt/scheduledBy are cleared on `after`.
+      // The CancelSchedulePublish delta records the deleted PushDocumentJob
+      // as `before` (truthful: that's the row that was cancelled), with
+      // `after: null` since the job is gone.
       const cancelLog = newAuditLogs.find(
         (l) => l.eventType === AuditLogEvent.CancelSchedulePublish,
       )
       const delta = cancelLog?.delta as {
-        before: { resource: { scheduledAt: unknown; scheduledBy: unknown } }
-        after: { resource: { scheduledAt: unknown; scheduledBy: unknown } }
+        before: {
+          resourceId: string
+          scheduledAt: unknown
+          scheduledBy: string
+        }
+        after: null
       }
-      expect(delta.before.resource.scheduledAt).not.toBeNull()
-      expect(delta.before.resource.scheduledBy).toBe(user.id)
-      expect(delta.after.resource.scheduledAt).toBeNull()
-      expect(delta.after.resource.scheduledBy).toBeNull()
+      expect(delta.before.resourceId).toBe(String(gazetteId))
+      expect(delta.before.scheduledAt).not.toBeNull()
+      expect(delta.before.scheduledBy).toBe(user.id)
+      expect(delta.after).toBeNull()
 
       // S3 was instructed to tag the asset as cancelled.
       expect(markCancelled).toHaveBeenCalledTimes(1)
