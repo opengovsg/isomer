@@ -296,7 +296,7 @@ describe("asset.service", () => {
   })
 
   describe("sanitizeSvg", () => {
-    it("should return sanitized content for a valid SVG", () => {
+    it("should return sanitized content for a valid SVG without altering safe elements or attributes", () => {
       // Arrange
       const input =
         '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>'
@@ -304,21 +304,26 @@ describe("asset.service", () => {
       // Act
       const result = sanitizeSvg(input)
 
-      // Assert
-      expect(result).toBeTruthy()
-      expect(result.length).toBeGreaterThan(0)
+      // Assert — DOMPurify normalises self-closing tags to explicit close tags
+      // but must not drop or alter any attributes on safe elements
+      expect(result).toContain('width="10"')
+      expect(result).toContain('height="10"')
+      expect(result).not.toContain("<script")
+      expect(result).not.toContain("onload")
     })
 
-    it("should strip <script> tag from SVG without throwing", () => {
+    it("should strip <script> tag from SVG without touching other content", () => {
       // Arrange
       const input =
-        '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/><script>alert(1)</script></svg>'
 
       // Act
       const result = sanitizeSvg(input)
 
       // Assert
       expect(result).not.toContain("<script")
+      expect(result).toContain('width="10"')
+      expect(result).toContain('height="10"')
     })
 
     it("should strip onload attribute from SVG without throwing", () => {
