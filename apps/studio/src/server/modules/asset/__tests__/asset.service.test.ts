@@ -319,9 +319,9 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).not.toContain("<script")
-      expect(result).toContain('width="10"')
-      expect(result).toContain('height="10"')
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
     })
 
     it("should strip onload attribute from SVG without touching other content", () => {
@@ -333,9 +333,9 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).not.toContain("onload")
-      expect(result).toContain('width="10"')
-      expect(result).toContain('height="10"')
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
     })
 
     it("should throw BAD_REQUEST when root element is not svg (HTML document)", () => {
@@ -416,9 +416,9 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).not.toContain("foreignObject")
-      expect(result).toContain('width="10"')
-      expect(result).toContain('height="10"')
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
     })
 
     it("should strip use tag from SVG without touching other content", () => {
@@ -430,9 +430,9 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).not.toContain("<use")
-      expect(result).toContain('width="10"')
-      expect(result).toContain('height="10"')
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
     })
 
     it("should strip onclick attribute from SVG without touching other content", () => {
@@ -444,9 +444,9 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).not.toContain("onclick")
-      expect(result).toContain('width="10"')
-      expect(result).toContain('height="10"')
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
     })
 
     it("should strip onerror attribute from SVG without touching other content", () => {
@@ -458,9 +458,9 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).not.toContain("onerror")
-      expect(result).toContain('width="10"')
-      expect(result).toContain('height="10"')
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect><image></image></svg>',
+      )
     })
 
     it("should strip onmouseover attribute from SVG without touching other content", () => {
@@ -472,9 +472,9 @@ describe("asset.service", () => {
       const result = sanitizeSvg(input)
 
       // Assert
-      expect(result).not.toContain("onmouseover")
-      expect(result).toContain('width="10"')
-      expect(result).toContain('height="10"')
+      expect(result).toEqual(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"></rect></svg>',
+      )
     })
 
     it("should throw BAD_REQUEST for valid XML that is not SVG", () => {
