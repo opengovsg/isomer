@@ -51,6 +51,11 @@ describe("gazette.router", async () => {
 
   afterEach(() => {
     MockDate.reset()
+    // Restore vi.spyOn-installed spies so call history doesn't bleed across
+    // tests — vitest reuses an existing spy when spyOn is called on an
+    // already-spied method, which would otherwise let test 1's calls show up
+    // in test 2's mock.calls[0].
+    vi.restoreAllMocks()
   })
 
   /**
