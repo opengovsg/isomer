@@ -30,7 +30,7 @@ export const BlogCard = ({
     // and to do that, we add a padding on smaller viewports
     <Link
       href={referenceLinkHref}
-      className="group border-b-base-divider-medium flex flex-1 flex-col gap-3 border-b pt-5 pb-5 md:pt-0"
+      className="group border-b-base-divider-subtle flex flex-1 flex-col gap-3 border-b pt-5 pb-5 md:pt-0"
       isExternal={isExternalLink}
     >
       {image && (
