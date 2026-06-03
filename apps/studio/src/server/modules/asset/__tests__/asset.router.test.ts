@@ -502,7 +502,7 @@ describe("asset.router", async () => {
 
     it("should throw 404 if site does not exist", async () => {
       // Arrange
-      const { site, page } = await setupPageResource({
+      const { site } = await setupPageResource({
         resourceType: ResourceType.Page,
       })
 
