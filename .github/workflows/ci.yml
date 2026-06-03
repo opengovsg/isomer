@@ -6,6 +6,7 @@ on:
       - main
       - staging
       - production
+      - vapt
   pull_request:
     types: [opened, synchronize]
 
