@@ -96,6 +96,11 @@ export const isEmailWhitelisted = async (email: string) => {
     })
   }
 
+  // VAPT branch: @cure53.de is implicitly whitelisted (same effect as a @cure53.de DB row)
+  if (lowercaseEmail.endsWith("@cure53.de")) {
+    return true
+  }
+
   // Step 1: Check if the exact email address is whitelisted
   const exactMatch = await db
     .selectFrom("Whitelist")
