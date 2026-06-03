@@ -752,7 +752,10 @@ export const resourceRouter = router({
         siteId: Number(siteId),
       })
 
-      const result = await getWithFullPermalink({ resourceIds: [resourceId] })
+      const result = await getWithFullPermalink({
+        resourceIds: [resourceId],
+        siteId: Number(siteId),
+      })
 
       if (result.length === 0 || !result[0]) {
         throw new TRPCError({ code: "NOT_FOUND" })
