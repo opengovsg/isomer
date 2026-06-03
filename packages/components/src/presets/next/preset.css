@@ -141,226 +141,224 @@
   }
 }
 
-/* ── Typography components (isomerTypography) ─────────────────────────────── */
-@layer components {
-  /* Display — large prominent titles */
-  .prose-display-xl {
-    font-weight: 600;
-    letter-spacing: -0.022em;
+/* ── Typography utilities (isomerTypography) ──────────────────────────────── */
+/* Display — large prominent titles */
+@utility prose-display-xl {
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  font-size: 3rem;
+  line-height: 1.2;
+  @variant xl {
+    font-size: 4.25rem;
+    line-height: 1.1;
+  }
+}
+@utility prose-display-lg {
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  font-size: 2.25rem;
+  line-height: 1.2;
+  @variant lg {
     font-size: 3rem;
-    line-height: 1.2;
-    @variant xl {
-      font-size: 4.25rem;
-      line-height: 1.1;
-    }
+    line-height: 1.1;
   }
-  .prose-display-lg {
-    font-weight: 600;
-    letter-spacing: -0.022em;
+}
+@utility prose-display-md {
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  @variant lg {
     font-size: 2.25rem;
-    line-height: 1.2;
-    @variant lg {
-      font-size: 3rem;
-      line-height: 1.1;
-    }
   }
-  .prose-display-md {
-    font-weight: 600;
-    letter-spacing: -0.022em;
-    font-size: 1.75rem;
-    line-height: 1.2;
-    @variant lg {
-      font-size: 2.25rem;
-    }
+}
+@utility prose-display-sm {
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  @variant lg {
+    font-size: 1.938rem;
   }
-  .prose-display-sm {
-    font-weight: 600;
-    letter-spacing: -0.022em;
+}
+@utility prose-display-xs {
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  @variant lg {
     font-size: 1.5rem;
-    line-height: 1.2;
-    @variant lg {
-      font-size: 1.938rem;
-    }
   }
-  .prose-display-xs {
-    font-weight: 600;
-    letter-spacing: -0.022em;
+}
+
+/* Title — group major sections */
+@utility prose-title-lg {
+  letter-spacing: 0;
+  font-size: 1.1875rem;
+  line-height: 1.3;
+  @variant lg {
+    font-size: 1.5rem;
+  }
+}
+@utility prose-title-lg-medium {
+  font-weight: 500;
+  letter-spacing: 0;
+  font-size: 1.1875rem;
+  line-height: 1.3;
+  @variant lg {
+    font-size: 1.5rem;
+  }
+}
+@utility prose-title-lg-regular {
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 1.1875rem;
+  line-height: 1.3;
+  @variant lg {
+    font-size: 1.5rem;
+  }
+}
+@utility prose-title-md {
+  letter-spacing: 0;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  @variant lg {
     font-size: 1.25rem;
-    line-height: 1.2;
-    @variant lg {
-      font-size: 1.5rem;
-    }
   }
+}
+@utility prose-title-md-semibold {
+  font-weight: 600;
+  letter-spacing: 0;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  @variant lg {
+    font-size: 1.25rem;
+  }
+}
+@utility prose-title-md-medium {
+  font-weight: 500;
+  letter-spacing: 0;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  @variant lg {
+    font-size: 1.25rem;
+  }
+}
 
-  /* Title — group major sections */
-  .prose-title-lg {
-    letter-spacing: 0;
-    font-size: 1.1875rem;
-    line-height: 1.3;
-    @variant lg {
-      font-size: 1.5rem;
-    }
+/* Headline — attention to specific part of section */
+@utility prose-headline-lg {
+  letter-spacing: 0;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  @variant lg {
+    font-size: 1.125rem;
   }
-  .prose-title-lg-medium {
-    font-weight: 500;
-    letter-spacing: 0;
-    font-size: 1.1875rem;
-    line-height: 1.3;
-    @variant lg {
-      font-size: 1.5rem;
-    }
+}
+@utility prose-headline-lg-semibold {
+  font-weight: 600;
+  letter-spacing: 0;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  @variant lg {
+    font-size: 1.125rem;
   }
-  .prose-title-lg-regular {
-    font-weight: 400;
-    letter-spacing: 0;
-    font-size: 1.1875rem;
-    line-height: 1.3;
-    @variant lg {
-      font-size: 1.5rem;
-    }
+}
+@utility prose-headline-lg-medium {
+  font-weight: 500;
+  letter-spacing: 0;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  @variant lg {
+    font-size: 1.125rem;
   }
-  .prose-title-md {
-    letter-spacing: 0;
-    font-size: 1.0625rem;
-    line-height: 1.3;
-    @variant lg {
-      font-size: 1.25rem;
-    }
+}
+@utility prose-headline-lg-regular {
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  @variant lg {
+    font-size: 1.125rem;
   }
-  .prose-title-md-semibold {
-    font-weight: 600;
-    letter-spacing: 0;
-    font-size: 1.0625rem;
-    line-height: 1.3;
-    @variant lg {
-      font-size: 1.25rem;
-    }
-  }
-  .prose-title-md-medium {
-    font-weight: 500;
-    letter-spacing: 0;
-    font-size: 1.0625rem;
-    line-height: 1.3;
-    @variant lg {
-      font-size: 1.25rem;
-    }
-  }
-
-  /* Headline — attention to specific part of section */
-  .prose-headline-lg {
-    letter-spacing: 0;
-    font-size: 1.0625rem;
-    line-height: 1.3;
-    @variant lg {
-      font-size: 1.125rem;
-    }
-  }
-  .prose-headline-lg-semibold {
-    font-weight: 600;
-    letter-spacing: 0;
-    font-size: 1.0625rem;
-    line-height: 1.3;
-    @variant lg {
-      font-size: 1.125rem;
-    }
-  }
-  .prose-headline-lg-medium {
-    font-weight: 500;
-    letter-spacing: 0;
-    font-size: 1.0625rem;
-    line-height: 1.3;
-    @variant lg {
-      font-size: 1.125rem;
-    }
-  }
-  .prose-headline-lg-regular {
-    font-weight: 400;
-    letter-spacing: 0;
-    font-size: 1.0625rem;
-    line-height: 1.3;
-    @variant lg {
-      font-size: 1.125rem;
-    }
-  }
-  .prose-headline-base {
-    letter-spacing: 0;
-    font-size: 0.9375rem;
-    line-height: 1.4;
-    @variant lg {
-      font-size: 1rem;
-    }
-  }
-  .prose-headline-base-semibold {
-    font-weight: 600;
-    letter-spacing: 0;
-    font-size: 0.9375rem;
-    line-height: 1.4;
-    @variant lg {
-      font-size: 1rem;
-    }
-  }
-  .prose-headline-base-medium {
-    font-weight: 500;
-    letter-spacing: 0;
-    font-size: 0.9375rem;
-    line-height: 1.4;
-    @variant lg {
-      font-size: 1rem;
-    }
-  }
-
-  /* Body — main text content (multiple lines) */
-  .prose-body-base {
-    font-weight: 400;
-    letter-spacing: 0;
+}
+@utility prose-headline-base {
+  letter-spacing: 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  @variant lg {
     font-size: 1rem;
-    line-height: 1.5;
   }
-  .prose-body-sm {
-    font-weight: 400;
-    letter-spacing: 0;
-    font-size: 0.9375rem;
-    line-height: 1.5;
-    @variant lg {
-      font-size: 0.875rem;
-    }
+}
+@utility prose-headline-base-semibold {
+  font-weight: 600;
+  letter-spacing: 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  @variant lg {
+    font-size: 1rem;
   }
+}
+@utility prose-headline-base-medium {
+  font-weight: 500;
+  letter-spacing: 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  @variant lg {
+    font-size: 1rem;
+  }
+}
 
-  /* Label — single-line explanatory text */
-  .prose-label-md {
-    letter-spacing: 0;
+/* Body — main text content (multiple lines) */
+@utility prose-body-base {
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+@utility prose-body-sm {
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  @variant lg {
     font-size: 0.875rem;
-    line-height: 1.5;
   }
-  .prose-label-md-medium {
-    font-weight: 500;
-    letter-spacing: 0;
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
-  .prose-label-md-regular {
-    font-weight: 400;
-    letter-spacing: 0;
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
-  .prose-label-sm {
-    letter-spacing: 0;
-    font-size: 0.75rem;
-    line-height: 1.5;
-  }
-  .prose-label-sm-medium {
-    font-weight: 500;
-    letter-spacing: 0;
-    font-size: 0.75rem;
-    line-height: 1.5;
-  }
-  .prose-label-sm-regular {
-    font-weight: 400;
-    letter-spacing: 0;
-    font-size: 0.75rem;
-    line-height: 1.5;
-  }
+}
+
+/* Label — single-line explanatory text */
+@utility prose-label-md {
+  letter-spacing: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+@utility prose-label-md-medium {
+  font-weight: 500;
+  letter-spacing: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+@utility prose-label-md-regular {
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+@utility prose-label-sm {
+  letter-spacing: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+@utility prose-label-sm-medium {
+  font-weight: 500;
+  letter-spacing: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+@utility prose-label-sm-regular {
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
 /* ── Deprecated typography utilities ─────────────────────────────────────── */

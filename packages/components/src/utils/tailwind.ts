@@ -9,10 +9,9 @@ export const groupFocusVisibleHighlight = tv({
 })
 
 export const focusRing = tv({
-  base: "outline-link outline-offset-2 outline-solid",
+  base: "outline-link outline-0 outline-offset-2 outline-solid",
   variants: {
     isFocusVisible: {
-      false: "outline-0",
       true: "outline-2",
     },
   },

@@ -178,7 +178,7 @@ export const ImageGalleryClient = ({
       aria-label="Image gallery"
     >
       {/* Main Slideshow */}
-      <div className="relative h-[17rem] w-full overflow-hidden border bg-white sm:h-[28.5rem]">
+      <div className="border-base-divider-medium relative h-[17rem] w-full overflow-hidden border bg-white sm:h-[28.5rem]">
         <div className="relative h-full w-full">
           {images.map((image, index) => {
             const isCurrentImage = index === currentIndex
