@@ -162,85 +162,73 @@ export const prepareSite = async (
   return result.rows[0].id as number;
 };
 
-async function seedDatabase(client: Client, siteId: number, siteName: string) {
-  async function processDirectory(
-    dirPath: string,
-    parentId: number | null,
-    isParentCollection?: boolean,
-  ) {
-    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-    const folders = entries.filter((entry) => entry.isDirectory());
-    const folderNames = folders.map((folder) => folder.name);
-    const independentPages = entries.filter(
-      (entry) =>
-        !entry.isDirectory() &&
-        entry.name.endsWith(".json") &&
-        !folderNames.includes(entry.name.slice(0, -5)),
+export async function processDirectory(
+  client: Client,
+  siteId: number,
+  dirPath: string,
+  parentId: number | null,
+  isParentCollection?: boolean,
+  topLevelSkip?: Set<string>,
+): Promise<void> {
+  const allEntries = fs.readdirSync(dirPath, { withFileTypes: true });
+  const entries = topLevelSkip
+    ? allEntries.filter((e) => !topLevelSkip.has(e.name))
+    : allEntries;
+  const folders = entries.filter((entry) => entry.isDirectory());
+  const folderNames = folders.map((folder) => folder.name);
+  const independentPages = entries.filter(
+    (entry) =>
+      !entry.isDirectory() &&
+      entry.name.endsWith(".json") &&
+      !folderNames.includes(entry.name.slice(0, -5)),
+  );
+
+  for (const folder of folders) {
+    console.log(`Processing folder: ${folder.name}`);
+    const fullPath = path.join(dirPath, folder.name);
+
+    // Find for the corresponding index page if it exists
+    const isIndexPagePresent = entries.some(
+      (entry) => !entry.isDirectory() && entry.name === `${folder.name}.json`,
     );
 
-    for (const folder of folders) {
-      console.log(`Processing folder: ${folder.name}`);
-      const fullPath = path.join(dirPath, folder.name);
+    if (isIndexPagePresent) {
+      console.log(`Found index page for folder ${folder.name}`);
+      const indexPagePath = path.join(dirPath, `${folder.name}.json`);
+      const content = JSON.parse(fs.readFileSync(indexPagePath, "utf-8"));
+      const title = content.page?.title || getProperTitle(folder.name);
+      const permalink = "_index"; // Special permalink for index pages
 
-      // Find for the corresponding index page if it exists
-      const isIndexPagePresent = entries.some(
-        (entry) => !entry.isDirectory() && entry.name === `${folder.name}.json`,
-      );
+      const isCollection = content.layout === "collection";
 
-      if (isIndexPagePresent) {
-        console.log(`Found index page for folder ${folder.name}`);
-        const indexPagePath = path.join(dirPath, `${folder.name}.json`);
-        const content = JSON.parse(fs.readFileSync(indexPagePath, "utf-8"));
-        const title = content.page?.title || getProperTitle(folder.name);
-        const permalink = "_index"; // Special permalink for index pages
+      if (isCollection) {
+        // Create the collection resource
+        const folderResourceId = await createResource(client, {
+          title,
+          permalink: folder.name.toLowerCase(), // Use folder name as permalink
+          parentId,
+          type: "Collection",
+          siteId,
+        });
 
-        const isCollection = content.layout === "collection";
+        const blobId = await createBlob(client, content);
+        const resourceId = await createResource(client, {
+          title,
+          permalink,
+          parentId: folderResourceId,
+          type: "IndexPage",
+          siteId,
+        });
+        await createVersion(client, resourceId, blobId);
 
-        if (isCollection) {
-          // Create the collection resource
-          const folderResourceId = await createResource(client, {
-            title,
-            permalink: folder.name.toLowerCase(), // Use folder name as permalink
-            parentId,
-            type: "Collection",
-            siteId,
-          });
-
-          const blobId = await createBlob(client, content);
-          const resourceId = await createResource(client, {
-            title,
-            permalink,
-            parentId: folderResourceId,
-            type: "IndexPage",
-            siteId,
-          });
-          await createVersion(client, resourceId, blobId);
-
-          await processDirectory(fullPath, folderResourceId, true);
-        } else {
-          // Create the folder resource
-          const folderResourceId = await createResource(client, {
-            title,
-            permalink: folder.name.toLowerCase(), // Use folder name as permalink
-            parentId,
-            type: "Folder",
-            siteId,
-          });
-
-          const blobId = await createBlob(client, content);
-          const resourceId = await createResource(client, {
-            title,
-            permalink,
-            parentId: folderResourceId,
-            type: "IndexPage",
-            siteId,
-          });
-          await createVersion(client, resourceId, blobId);
-
-          await processDirectory(fullPath, folderResourceId);
-        }
+        await processDirectory(
+          client,
+          siteId,
+          fullPath,
+          folderResourceId,
+          true,
+        );
       } else {
-        const title = getProperTitle(folder.name);
         // Create the folder resource
         const folderResourceId = await createResource(client, {
           title,
@@ -250,62 +238,86 @@ async function seedDatabase(client: Client, siteId: number, siteName: string) {
           siteId,
         });
 
-        const blobId = await createBlob(client, getIndexPageContent(title));
+        const blobId = await createBlob(client, content);
         const resourceId = await createResource(client, {
           title,
-          permalink: "_index", // Special permalink for index pages
+          permalink,
           parentId: folderResourceId,
           type: "IndexPage",
           siteId,
         });
         await createVersion(client, resourceId, blobId);
 
-        await processDirectory(fullPath, folderResourceId);
+        await processDirectory(client, siteId, fullPath, folderResourceId);
       }
-    }
+    } else {
+      const title = getProperTitle(folder.name);
+      // Create the folder resource
+      const folderResourceId = await createResource(client, {
+        title,
+        permalink: folder.name.toLowerCase(), // Use folder name as permalink
+        parentId,
+        type: "Folder",
+        siteId,
+      });
 
-    for (const page of independentPages) {
-      console.log(`Processing page: ${page.name}`);
-      const isRootPage = page.name === "index.json" && parentId === null;
-
-      const fullPath = path.join(dirPath, page.name);
-      const content = JSON.parse(fs.readFileSync(fullPath, "utf-8"));
-      const title = isRootPage
-        ? "Home"
-        : content.page?.title || path.basename(page.name, ".json");
-      const permalink = isRootPage
-        ? "" // FIXME: This should be "_index" but Studio is not fully ready for this yet
-        : path.basename(page.name, ".json").toLowerCase(); // Only use the file name without extension
-      const isCollectionLink =
-        content.layout === "link" || content.layout === "file";
-      const isPageOrder = page.name === "_meta.json";
-
-      if (content.layout === "file") {
-        content.layout = "link";
-      }
-
-      const blobId = await createBlob(client, content);
+      const blobId = await createBlob(client, getIndexPageContent(title));
       const resourceId = await createResource(client, {
         title,
-        permalink,
-        parentId,
-        type: isRootPage
-          ? "RootPage"
-          : isParentCollection
-            ? isCollectionLink
-              ? "CollectionLink"
-              : "CollectionPage"
-            : isPageOrder
-              ? "FolderMeta"
-              : "Page",
+        permalink: "_index", // Special permalink for index pages
+        parentId: folderResourceId,
+        type: "IndexPage",
         siteId,
       });
       await createVersion(client, resourceId, blobId);
+
+      await processDirectory(client, siteId, fullPath, folderResourceId);
     }
   }
 
+  for (const page of independentPages) {
+    console.log(`Processing page: ${page.name}`);
+    const isRootPage = page.name === "index.json" && parentId === null;
+
+    const fullPath = path.join(dirPath, page.name);
+    const content = JSON.parse(fs.readFileSync(fullPath, "utf-8"));
+    const title = isRootPage
+      ? "Home"
+      : content.page?.title || path.basename(page.name, ".json");
+    const permalink = isRootPage
+      ? "" // FIXME: This should be "_index" but Studio is not fully ready for this yet
+      : path.basename(page.name, ".json").toLowerCase(); // Only use the file name without extension
+    const isCollectionLink =
+      content.layout === "link" || content.layout === "file";
+    const isPageOrder = page.name === "_meta.json";
+
+    if (content.layout === "file") {
+      content.layout = "link";
+    }
+
+    const blobId = await createBlob(client, content);
+    const resourceId = await createResource(client, {
+      title,
+      permalink,
+      parentId,
+      type: isRootPage
+        ? "RootPage"
+        : isParentCollection
+          ? isCollectionLink
+            ? "CollectionLink"
+            : "CollectionPage"
+          : isPageOrder
+            ? "FolderMeta"
+            : "Page",
+      siteId,
+    });
+    await createVersion(client, resourceId, blobId);
+  }
+}
+
+async function seedDatabase(client: Client, siteId: number, siteName: string) {
   const schemaDir = path.join(__dirname, "..", "repos", siteName, "schema");
-  await processDirectory(schemaDir, null);
+  await processDirectory(client, siteId, schemaDir, null);
 
   await importSiteConfig(client, siteId, siteName);
   await importNavbar(client, siteId, siteName);
