@@ -86,6 +86,8 @@ jobs:
       # Storybook bundles @prisma/client; Prisma's browser shim requires a generated client (not created by pnpm install).
       - name: Generate Prisma client
         run: pnpm --filter isomer-studio exec prisma generate
+      - name: Build preview-tw CSS
+        run: pnpm --filter isomer-studio run build:preview-tw
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@0b8c883861c1663076150cf1f4592b19d1ff6a54 # v17.0.1
