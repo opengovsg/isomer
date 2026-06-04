@@ -1,20 +1,20 @@
 import { TRPCError } from "@trpc/server"
 import { isBefore, subYears } from "date-fns"
+import filenamify from "filenamify"
 import { env } from "~/env.mjs"
 import { sendScheduledPageEmail } from "~/features/mail/service"
-import { getFileSize } from "~/lib/s3"
+import { getFileSize, markScheduledAssetAsCancelled } from "~/lib/s3"
 import {
+  cancelScheduledPublishSchema,
   createGazetteServerSchema,
   gazetteListSchema,
+  getPresignedGetUrlSchema,
+  getPresignedPutUrlSchema,
   updateGazetteServerSchema,
 } from "~/schemas/gazette"
 import { protectedProcedure, router } from "~/server/trpc"
 
-import {
-  copyFileWithNewName,
-  doAllFileKeysBelongToSite,
-  markFileAsDeleted,
-} from "../asset/asset.service"
+import { validateUserPermissionsForAsset } from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
 import { createCollectionLinkJson } from "../collection/collection.service"
 import { AuditLogEvent, db, jsonb, ResourceType, sql } from "../database"
@@ -27,8 +27,12 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import {
-  assertGazetteAccess,
   findCollectionLinkWithFilename,
+  assertGazetteAccess,
+  copyFileWithNewName,
+  getPresignedGetUrl,
+  getPresignedPutUrl,
+  markFileAsDeleted,
 } from "./gazette.service"
 
 interface GazetteBlobInputs {
@@ -61,27 +65,6 @@ const buildGazetteBlobContent = ({
       description,
       tagged,
     },
-  }
-}
-
-const GAZETTE_FILE_SCOPE_ERROR_MESSAGE =
-  "The gazette file does not belong to the specified site. You may only use assets for the site you are authorized for."
-
-const toS3Key = (ref: string) => ref.replace(/^\//, "")
-
-const assertGazetteRefsBelongToSite = ({
-  refs,
-  siteId,
-}: {
-  refs: string[]
-  siteId: number
-}) => {
-  const fileKeys = refs.filter(Boolean).map(toS3Key)
-  if (!doAllFileKeysBelongToSite({ fileKeys, siteId })) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: GAZETTE_FILE_SCOPE_ERROR_MESSAGE,
-    })
   }
 }
 
@@ -181,22 +164,8 @@ export const gazetteRouter = router({
               scheduledAt: result.scheduledAt ?? result.publishedAt,
             }
           }
-          if (
-            !doAllFileKeysBelongToSite({ fileKeys: [toS3Key(ref)], siteId })
-          ) {
-            ctx.logger.warn(
-              { ref, siteId, resourceId: result.id },
-              "Skipped gazette file size lookup for out-of-scope ref",
-            )
-            return {
-              ...result,
-              fileSize: null,
-              scheduledAt: result.scheduledAt ?? result.publishedAt,
-            }
-          }
-
           const fileSize = await getFileSize({
-            Bucket: env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+            Bucket: env.S3_GAZETTE_BUCKET_NAME,
             // NOTE: s3 keys don't have a leading /
             // so we trim the first key since our `ref`
             // begins with one internally
@@ -236,8 +205,6 @@ export const gazetteRouter = router({
           userId: ctx.user.id,
           resourceIds: [String(collectionId)],
         })
-        assertGazetteRefsBelongToSite({ refs: [ref], siteId })
-
         const user = await db
           .selectFrom("User")
           .where("id", "=", ctx.user.id)
@@ -254,7 +221,6 @@ export const gazetteRouter = router({
 
         const created = await db.transaction().execute(async (tx) => {
           // Check for duplicate file ID (filename portion of ref) in the same collection
-          // ref format: /sites/{siteId}/gazettes/{uuid}/filename.pdf
           const filename = ref.split("/").pop()
           if (filename) {
             const duplicate = await findCollectionLinkWithFilename({
@@ -317,6 +283,16 @@ export const gazetteRouter = router({
               }
               throw err
             })
+
+          // NOTE: Schedule the document to be ingested into searchsg later
+          await tx
+            .insertInto("PushDocumentJob")
+            .values({
+              resourceId: resource.id,
+              scheduledAt,
+              scheduledBy: user.id,
+            })
+            .executeTakeFirstOrThrow()
 
           await logResourceEvent(tx, {
             siteId,
@@ -411,10 +387,6 @@ export const gazetteRouter = router({
         const existingRef =
           (existingBlob.content as { page?: { ref?: string } } | null)?.page
             ?.ref ?? ""
-        if (newRef) {
-          assertGazetteRefsBelongToSite({ refs: [newRef], siteId })
-        }
-
         // Resolve the final ref. Preference order:
         //   1. newRef (a fresh upload) — caller has already PUT to S3
         //   2. desiredFileName + existing ref → S3 copy
@@ -433,8 +405,7 @@ export const gazetteRouter = router({
           newFilename = newRef.split("/").pop()
           finalRef = newRef
           if (existingRef) {
-            assertGazetteRefsBelongToSite({ refs: [existingRef], siteId })
-            oldRefToCleanUp = toS3Key(existingRef)
+            oldRefToCleanUp = existingRef.replace(/^\//, "")
           }
         } else if (
           desiredFileName &&
@@ -442,7 +413,6 @@ export const gazetteRouter = router({
           desiredFileName !== oldFilename
         ) {
           newFilename = desiredFileName
-          assertGazetteRefsBelongToSite({ refs: [existingRef], siteId })
 
           const duplicate = await findCollectionLinkWithFilename({
             siteId,
@@ -457,7 +427,7 @@ export const gazetteRouter = router({
             })
           }
 
-          const sourceKey = toS3Key(existingRef)
+          const sourceKey = existingRef.replace(/^\//, "")
           const newKey = await copyFileWithNewName({
             sourceKey,
             newFileName: desiredFileName,
@@ -537,6 +507,31 @@ export const gazetteRouter = router({
             })
 
             if (scheduledAtChanged) {
+              // NOTE: Need to update the associated PushDocumentJob.
+              // Defence-in-depth: scope to a PushDocumentJob whose Resource
+              // belongs to this siteId (PushDocumentJob has no direct siteId
+              // column, so we constrain via the Resource subquery).
+              await tx
+                .updateTable("PushDocumentJob")
+                .set({
+                  scheduledAt,
+                  scheduledBy: user.id,
+                })
+                .where("resourceId", "=", String(gazetteId))
+                .where("resourceId", "in", (eb) =>
+                  eb
+                    .selectFrom("Resource")
+                    .select("Resource.id")
+                    .where("Resource.siteId", "=", siteId),
+                )
+                .executeTakeFirstOrThrow(
+                  () =>
+                    new TRPCError({
+                      code: "INTERNAL_SERVER_ERROR",
+                      message: "Failed to update push document job",
+                    }),
+                )
+
               await logResourceEvent(tx, {
                 siteId,
                 eventType: AuditLogEvent.SchedulePublish,
@@ -576,4 +571,203 @@ export const gazetteRouter = router({
         return { gazetteId: updatedResource.id }
       },
     ),
+
+  cancelScheduledPublish: protectedProcedure
+    .input(cancelScheduledPublishSchema)
+    .mutation(async ({ ctx, input: { siteId, gazetteId } }) => {
+      await assertGazetteAccess(ctx.user.id)
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "delete",
+        userId: ctx.user.id,
+        resourceIds: [String(gazetteId)],
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
+
+      // Pre-fetch the resource and blob for audit delta
+      const existingResource = await db
+        .selectFrom("Resource")
+        .where("Resource.id", "=", String(gazetteId))
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", ResourceType.CollectionLink)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({ code: "NOT_FOUND", message: "Gazette not found" }),
+        )
+
+      if (!existingResource.scheduledAt) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot cancel a gazette that is not scheduled",
+        })
+      }
+
+      const existingBlob = await getBlobOfResource({
+        db,
+        resourceId: existingResource.id,
+      })
+      const ref = (existingBlob.content as { page?: { ref?: string } } | null)
+        ?.page?.ref
+
+      // Atomic transaction: delete PushDocumentJob, log audit, delete Resource + Blob
+      const deletedResource = await db.transaction().execute(async (tx) => {
+        // 1. Delete the PushDocumentJob and capture the row. Defence-in-depth:
+        // scope via Resource subquery on siteId (PushDocumentJob has no direct
+        // siteId column).
+        const deletedJobs = await tx
+          .deleteFrom("PushDocumentJob")
+          .where("resourceId", "=", String(gazetteId))
+          .where("resourceId", "in", (eb) =>
+            eb
+              .selectFrom("Resource")
+              .select("Resource.id")
+              .where("Resource.siteId", "=", siteId),
+          )
+          .returningAll()
+          .execute()
+
+        // 2. Log the cancellation audit event against the deleted job row.
+        // The resource itself is deleted moments later, so logging a synthetic
+        // resource snapshot would be untruthful — the truthful subject of
+        // "cancel scheduled publish" is the job that was cancelled.
+        const [deletedJob] = deletedJobs
+        if (deletedJob) {
+          const {
+            createdAt: _createdAt,
+            updatedAt: _updatedAt,
+            ...job
+          } = deletedJob
+          await logResourceEvent(tx, {
+            siteId,
+            eventType: AuditLogEvent.CancelSchedulePublish,
+            by: user,
+            delta: { before: job, after: null },
+          })
+        }
+
+        // 3. Log the resource deletion audit event
+        await logResourceEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.ResourceDelete,
+          by: user,
+          delta: {
+            before: { resource: existingResource, blob: existingBlob },
+            after: null,
+          },
+        })
+
+        // 4. Delete the Blob first (foreign key constraint)
+        if (existingResource.draftBlobId) {
+          await tx
+            .deleteFrom("Blob")
+            .where("id", "=", existingResource.draftBlobId)
+            .execute()
+        }
+
+        // 5. Delete the Resource — scoped to siteId defence-in-depth.
+        return await tx
+          .deleteFrom("Resource")
+          .where("id", "=", String(gazetteId))
+          .where("siteId", "=", siteId)
+          .returningAll()
+          .execute()
+      })
+
+      // After DB transaction commits, update S3 tags (best-effort)
+      // No need to guarantee this because we already set a `scheduledAt` tag
+      // which prevents the gazette from being seen by MOP anyway
+      if (ref) {
+        try {
+          await markScheduledAssetAsCancelled({
+            Key: ref.slice(1), // Remove leading slash
+            Bucket: env.S3_GAZETTE_BUCKET_NAME,
+          })
+        } catch (err) {
+          ctx.logger.warn(
+            { err, key: ref },
+            "Failed to mark cancelled gazette file in S3",
+          )
+        }
+      }
+
+      return { resource: deletedResource }
+    }),
+
+  getPresignedPutUrl: protectedProcedure
+    .input(getPresignedPutUrlSchema)
+    .mutation(
+      async ({
+        ctx,
+        input: {
+          year,
+          category,
+          subcategory,
+          tags,
+          siteId,
+          fileName,
+          resourceId,
+        },
+      }) => {
+        await assertGazetteAccess(ctx.user.id)
+        await validateUserPermissionsForAsset({
+          siteId,
+          resourceId,
+          action: "create",
+          userId: ctx.user.id,
+        })
+
+        const sanitizedFileName = filenamify(fileName, { replacement: "-" })
+        const fileKey = `${year}/${category}/${subcategory}/${sanitizedFileName}`
+
+        const { presignedPutUrl, contentType, contentDisposition } =
+          await getPresignedPutUrl({
+            key: fileKey,
+            tags,
+          })
+
+        ctx.logger.info(
+          {
+            userId: ctx.session?.userId,
+            siteId,
+            fileName,
+            fileKey,
+          },
+          `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
+        )
+
+        return {
+          fileKey,
+          presignedPutUrl,
+          contentType,
+          contentDisposition,
+        }
+      },
+    ),
+
+  getPresignedGetUrl: protectedProcedure
+    .input(getPresignedGetUrlSchema)
+    .mutation(async ({ ctx, input: { siteId, fileKey } }) => {
+      await assertGazetteAccess(ctx.user.id)
+
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const presignedGetUrl = await getPresignedGetUrl({ key: fileKey })
+
+      ctx.logger.info(
+        { userId: ctx.session?.userId, siteId, fileKey },
+        `Generated presigned GET URL for gazette ${fileKey}`,
+      )
+
+      return { presignedGetUrl }
+    }),
 })

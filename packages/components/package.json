@@ -23,10 +23,6 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
-    "./templates/classic": {
-      "import": "./dist/esm/templates/classic/index.js",
-      "require": "./dist/cjs/templates/classic/index.js"
-    },
     "./templates/next": {
       "import": "./dist/esm/templates/next/index.js",
       "require": "./dist/cjs/templates/next/index.js"
@@ -51,14 +47,14 @@
     "storybook": "storybook dev -p 6006",
     "supportedBrowsers": "echo \"export default $(browserslist-useragent-regexp --allowHigherVersions)\" > src/utils/supportedBrowsers.ts",
     "test": "run-s test:*",
-    "test-ci:unit": "dotenv -e .env.test vitest run -- --coverage",
+    "test-ci:unit": "dotenv -e .env.test vitest run --coverage",
     "test:unit": "dotenv -e .env.test vitest run",
     "test:watch": "pnpm exec vitest watch",
     "typecheck": "tsgo --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@govtechsg/sgds-react": "catalog:",
     "@headlessui/react": "catalog:",
+    "@isomer/validators": "workspace:*",
     "@react-aria/button": "catalog:react-aria",
     "@react-aria/checkbox": "catalog:react-aria",
     "@react-aria/focus": "catalog:react-aria",
@@ -72,10 +68,8 @@
     "interweave": "catalog:",
     "interweave-ssr": "catalog:",
     "isomorphic-dompurify": "catalog:",
-    "js-base64": "catalog:",
     "js-md5": "catalog:",
     "lodash-es": "catalog:",
-    "markdown-to-jsx": "catalog:",
     "minisearch": "catalog:",
     "react-icons": "catalog:",
     "tailwind-merge": "catalog:",

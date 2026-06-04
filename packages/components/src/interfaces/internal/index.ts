@@ -63,6 +63,11 @@ export {
   type AskgovWidgetProps,
   type AskgovProps,
 } from "./Askgov"
+export {
+  ZendeskSchema,
+  type ZendeskWidgetProps,
+  type ZendeskProps,
+} from "./Zendesk"
 export type { ImageClientProps } from "./Image"
 export {
   SearchableTableSchema,
