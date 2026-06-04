@@ -1,8 +1,9 @@
-import type { ButtonProps } from "@opengovsg/design-system-react"
+import type { ComponentProps } from "react"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
+import { cn } from "@opengovsg/oui-theme"
 import { getIcon } from "~/utils/resources"
 
 interface ResourceItemProps {
@@ -14,16 +15,19 @@ interface ResourceItemProps {
   isLoading?: boolean
 }
 
-const ResourceItemContainer = (props: ButtonProps) => {
+const ResourceItemContainer = ({
+  className,
+  ...props
+}: Omit<ComponentProps<typeof Button>, "className"> & {
+  className?: string
+}) => {
   return (
     <Button
       variant="clear"
-      w="full"
-      justifyContent="flex-start"
-      color={"base.content.default"}
-      height="fit-content"
-      alignItems="flex-start"
-      gap="0.25rem"
+      className={cn(
+        "text-base-content-default h-fit w-full items-start justify-start gap-1",
+        className,
+      )}
       {...props}
     />
   )
@@ -50,17 +54,12 @@ export const ResourceItem = ({
   return (
     <ResourceItemContainer
       data-selected={dataAttr(isHighlighted)}
-      _selected={{
-        color: "interaction.main.default",
-        bg: "interaction.muted.main.active",
-        _hover: {
-          color: "interaction.main.default",
-          bg: "interaction.muted.main.active",
-        },
-      }}
-      {...(hasAdditionalLeftPadding && { pl: "2.25rem" })}
-      onClick={handleOnClick}
-      leftIcon={<Icon as={getIcon(item.type)} />}
+      className={cn(
+        "data-[selected]:bg-interaction-muted-main-active data-[selected]:text-interaction-main-default data-[selected]:hover:bg-interaction-muted-main-active data-[selected]:hover:text-interaction-main-default",
+        hasAdditionalLeftPadding && "pl-9",
+      )}
+      onPress={handleOnClick}
+      startContent={<Icon as={getIcon(item.type)} />}
       isDisabled={isDisabled}
     >
       <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">

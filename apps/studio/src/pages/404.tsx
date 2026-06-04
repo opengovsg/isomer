@@ -1,7 +1,7 @@
 import { Flex, Stack, Text } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
 import Image from "next/image"
 import { useRouter } from "next/router"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 import { RestrictedMiniFooter } from "~/components/RestrictedMiniFooter"
 
 // https://nextjs.org/docs/advanced-features/custom-error-page
@@ -38,9 +38,7 @@ const Custom404 = () => {
           <Text textStyle="h5" as="h1">
             This page could not be found
           </Text>
-          <Button variant="link" onClick={() => router.back()}>
-            Go back
-          </Button>
+          <LinkButton onPress={() => router.back()}>Go back</LinkButton>
         </Stack>
         <RestrictedMiniFooter
         // This component can only be used if this is an application created by OGP.

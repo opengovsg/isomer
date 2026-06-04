@@ -23,6 +23,9 @@
       "dependsOn": ["@opengovsg/isomer-components#build"],
       "outputs": ["public/assets/css/preview-tw.css"]
     },
+    "build:oui-css": {
+      "outputs": ["public/assets/css/oui.css"]
+    },
     "format": {
       "dependsOn": ["generate"]
     },
@@ -33,17 +36,17 @@
       "dependsOn": ["generate"]
     },
     "dev": {
-      "dependsOn": ["services:setup", "build:preview-tw"],
+      "dependsOn": ["services:setup", "build:preview-tw", "build:oui-css"],
       "cache": false,
       "persistent": true
     },
     "storybook": {
-      "dependsOn": ["build:preview-tw"],
+      "dependsOn": ["build:preview-tw", "build:oui-css"],
       "cache": false,
       "persistent": true
     },
     "build-storybook": {
-      "dependsOn": ["build:preview-tw"]
+      "dependsOn": ["build:preview-tw", "build:oui-css"]
     },
     "dev:e2e": {
       "dependsOn": ["services:setup"],
@@ -56,7 +59,8 @@
         "@opengovsg/isomer-components#build",
         "generate",
         "build:theme",
-        "build:preview-tw"
+        "build:preview-tw",
+        "build:oui-css"
       ],
       "outputs": [".next/**", "!.next/cache/**"]
     }

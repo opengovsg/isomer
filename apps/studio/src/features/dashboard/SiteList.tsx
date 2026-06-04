@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Card,
   Flex,
   Image,
@@ -11,6 +10,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import NextLink from "next/link"
 import { NoResultIcon } from "~/components/Svg/NoResultIcon"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
@@ -63,7 +63,7 @@ const Site = ({
               transition="opacity 0.2s"
               _groupHover={{ opacity: 1 }}
             >
-              <Button backgroundColor="interaction.main.default">
+              <Button>
                 <Text textStyle="subhead-1">Start editing site</Text>
               </Button>
             </Box>

@@ -10,13 +10,13 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react"
 import {
-  Button,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
   ModalCloseButton,
   Textarea,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useEffect } from "react"
 import { z } from "zod"
 import { useZodForm } from "~/lib/form"
@@ -101,21 +101,23 @@ export const TableSettingsModal = ({
 
         <ModalFooter>
           <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            <Button variant="clear" color="neutral" onPress={onClose}>
               Go back to editing
             </Button>
             <Button
               variant="solid"
               type="submit"
               isDisabled={!isValid}
-              onClick={handleSubmit(({ caption }) => {
-                onClose()
-                editor
-                  .chain()
-                  .focus()
-                  .updateAttributes("table", { caption })
-                  .run()
-              })}
+              onPress={() =>
+                void handleSubmit(({ caption }) => {
+                  onClose()
+                  editor
+                    .chain()
+                    .focus()
+                    .updateAttributes("table", { caption })
+                    .run()
+                })()
+              }
             >
               Save changes
             </Button>

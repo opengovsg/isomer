@@ -14,11 +14,11 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import {
-  Button,
   Checkbox,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { differenceInMinutes, format } from "date-fns"
 import { useState } from "react"
 import { BiInfoCircle, BiTrash } from "react-icons/bi"
@@ -146,9 +146,9 @@ export const ViewGazetteModal = ({
 
                     <Button
                       variant="outline"
-                      colorScheme="critical"
-                      leftIcon={<BiTrash />}
-                      onClick={() => setView("delete")}
+                      color="critical"
+                      startContent={<BiTrash />}
+                      onPress={() => setView("delete")}
                     >
                       Delete this Gazette permanently
                     </Button>
@@ -219,18 +219,18 @@ export const ViewGazetteModal = ({
             </ModalBody>
             <ModalFooter>
               <Button
-                mr={3}
-                onClick={handleClose}
+                className="mr-3"
+                onPress={handleClose}
                 variant="clear"
-                colorScheme="neutral"
+                color="neutral"
               >
                 No, don't delete
               </Button>
               <Button
-                colorScheme="critical"
+                color="critical"
                 isDisabled={!isConfirmed}
-                onClick={onDelete}
-                isLoading={isDeleting}
+                onPress={onDelete}
+                isPending={isDeleting}
               >
                 Delete Gazette permanently
               </Button>

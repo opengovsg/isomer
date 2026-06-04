@@ -1,5 +1,4 @@
 import {
-  Button,
   Modal,
   ModalBody,
   ModalContent,
@@ -9,6 +8,7 @@ import {
   useBreakpointValue,
 } from "@chakra-ui/react"
 import { ModalCloseButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useCallback } from "react"
 import { BiRefresh } from "react-icons/bi"
 
@@ -39,10 +39,10 @@ export const VersionModal = ({ isOpen, onClose }: VersionModalProps) => {
         <ModalFooter>
           <Button
             variant="clear"
-            w="full"
-            colorScheme="neutral"
-            onClick={onRefresh}
-            leftIcon={<BiRefresh />}
+            color="neutral"
+            className="w-full"
+            onPress={onRefresh}
+            startContent={<BiRefresh />}
           >
             Refresh
           </Button>

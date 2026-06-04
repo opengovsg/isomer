@@ -8,7 +8,8 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react"
-import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
+import { ModalCloseButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 
 interface DeleteBlockModalProps {
   itemName: string
@@ -39,10 +40,10 @@ export const DeleteBlockModal = ({
 
         <ModalFooter>
           <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            <Button variant="clear" color="neutral" onPress={onClose}>
               Go back to editing
             </Button>
-            <Button variant="solid" colorScheme="critical" onClick={onDelete}>
+            <Button variant="solid" color="critical" onPress={onDelete}>
               Yes, delete
             </Button>
           </HStack>

@@ -1,9 +1,11 @@
 import type { ProseProps } from "@opengovsg/isomer-components"
 import type { JSONContent } from "@tiptap/react"
 import { Box, HStack, useDisclosure, VStack } from "@chakra-ui/react"
-import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { isEqual } from "lodash-es"
 import { BiTrash } from "react-icons/bi"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -155,14 +157,14 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
             <IconButton
               icon={<BiTrash fontSize="1.25rem" />}
               variant="outline"
-              colorScheme="critical"
+              color="critical"
               aria-label="Delete block"
-              onClick={onDeleteBlockModalOpen}
+              onPress={onDeleteBlockModalOpen}
             />
             <Box w="100%">
               <Button
-                w="100%"
-                onClick={() => {
+                className="w-full"
+                onPress={() => {
                   setSavedPageState(previewPageState)
                   mutate(
                     {
@@ -178,7 +180,7 @@ function TipTapProseComponent({ content }: TipTapComponentProps) {
                     },
                   )
                 }}
-                isLoading={isPending}
+                isPending={isPending}
               >
                 Save changes
               </Button>

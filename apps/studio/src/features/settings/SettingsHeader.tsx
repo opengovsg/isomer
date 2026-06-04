@@ -1,6 +1,6 @@
 import type { IconType } from "react-icons"
 import { Center, Flex, Icon, Text } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { isEmpty } from "lodash-es"
 
 import { useBuilderErrors } from "../editing-experience/components/form-builder/ErrorProvider"
@@ -44,8 +44,8 @@ export const SettingsHeader = ({
       <Can do="create" on={{ parentId: null }}>
         <Button
           type="submit"
-          isLoading={isLoading}
-          onClick={onClick}
+          isPending={isLoading}
+          onPress={onClick}
           isDisabled={isDisabledProp || isDisabled}
           size="xs"
         >

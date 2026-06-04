@@ -1,9 +1,9 @@
-import { Button, Flex, Grid, GridItem, Text } from "@chakra-ui/react"
+import { Flex, Grid, GridItem, Text } from "@chakra-ui/react"
 import { RestrictedGovtMasthead } from "@opengovsg/design-system-react"
-import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
+import { ButtonLink } from "~/components/oui-bridge/ButtonLink"
 import { IsomerLogo } from "~/components/Svg"
 import { useLoginState } from "~/features/auth"
 import { SIGN_IN_SINGPASS } from "~/lib/routes"
@@ -102,9 +102,9 @@ export const SingpassCallback = (): JSX.Element => {
               </Text>
             </Flex>
 
-            <Button as={NextLink} href={redirectUrl} w="full">
+            <ButtonLink href={redirectUrl} className="w-full">
               Continue to Isomer Studio
-            </Button>
+            </ButtonLink>
           </Flex>
         </GridItem>
       </Grid>

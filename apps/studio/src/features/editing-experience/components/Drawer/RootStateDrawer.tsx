@@ -3,15 +3,7 @@ import type {
   IsomerComponent,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
-import {
-  Box,
-  Button,
-  Flex,
-  Icon,
-  Text,
-  useDisclosure,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, Flex, Icon, Text, useDisclosure, VStack } from "@chakra-ui/react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
 import {
@@ -19,6 +11,7 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
   schema,
 } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { useCallback, useState } from "react"
 import {
   BiCog,
@@ -29,6 +22,7 @@ import {
   BiSlider,
 } from "react-icons/bi"
 import { Disable } from "~/components/Disable"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -425,14 +419,12 @@ export default function RootStateDrawer() {
                   </Text>
                 </VStack>
 
-                <Button
-                  textStyle="body-2"
-                  variant="link"
-                  fontSize="0.875rem"
-                  onClick={() => handleConversionToIndexPage()}
+                <LinkButton
+                  className="text-sm"
+                  onPress={() => handleConversionToIndexPage()}
                 >
                   Preview what this looks like
-                </Button>
+                </LinkButton>
               </VStack>
             </Infobox>
           )}
@@ -500,14 +492,10 @@ export default function RootStateDrawer() {
                 </VStack>
 
                 {pageLayout === "index" && (
-                  <Button
+                  <LinkButton
                     // NOTE: Top offset is only `1rem` but the `gap` on parent component is `1.5rem`
-                    marginTop="-0.5rem"
-                    variant="link"
-                    gap="0.25rem"
-                    cursor="pointer"
-                    alignSelf="flex-start"
-                    onClick={() =>
+                    className="-mt-2 gap-1 self-start"
+                    onPress={() =>
                       setDrawerState({ state: "siderailOrderingEditor" })
                     }
                   >
@@ -522,7 +510,7 @@ export default function RootStateDrawer() {
                     >
                       Reorder siderail for this folder
                     </Text>
-                  </Button>
+                  </LinkButton>
                 )}
 
                 {/* Custom Blocks Section */}
@@ -547,10 +535,10 @@ export default function RootStateDrawer() {
                       {canAddBlocks && (
                         <Button
                           size="xs"
-                          flexShrink={0}
-                          leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+                          className="shrink-0"
+                          startContent={<BiPlusCircle fontSize="1.25rem" />}
                           variant="clear"
-                          onClick={() => setDrawerState({ state: "addBlock" })}
+                          onPress={() => setDrawerState({ state: "addBlock" })}
                         >
                           Add block
                         </Button>
@@ -597,11 +585,11 @@ export default function RootStateDrawer() {
 
                                     <Button
                                       variant="outline"
-                                      w="100%"
-                                      onClick={() =>
+                                      className="w-full"
+                                      onPress={() =>
                                         setDrawerState({ state: "addBlock" })
                                       }
-                                      leftIcon={
+                                      startContent={
                                         <Icon as={BiPlus} fontSize="1.25rem" />
                                       }
                                     >
@@ -688,17 +676,17 @@ export default function RootStateDrawer() {
 
             <VStack gap="1rem" w="full">
               <Button
-                w="100%"
-                isLoading={isSavingPage}
-                onClick={onConfirmConvertIndexPageModalOpen}
+                className="w-full"
+                isPending={isSavingPage}
+                onPress={onConfirmConvertIndexPageModalOpen}
               >
                 Accept this change
               </Button>
 
               <Button
-                w="100%"
+                className="w-full"
                 variant="outline"
-                onClick={handleCancelConversionToIndexPage}
+                onPress={handleCancelConversionToIndexPage}
               >
                 Keep old version
               </Button>

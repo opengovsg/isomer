@@ -1,5 +1,5 @@
 import { Box, Stack, Text, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 import { IsomerLogo } from "~/components/Svg"
 
 import { VerificationInput } from "../EmailLogin/VerificationInput"
@@ -19,14 +19,9 @@ export const VerificationLoginStep = (): JSX.Element => {
           We’ve sent an OTP to {vfnStepData?.email}.
         </Text>
 
-        <Button
-          variant="link"
-          colorScheme="blue"
-          textDecoration="underline"
-          onClick={backToInitial}
-        >
+        <LinkButton className="underline" onPress={backToInitial}>
           <Text textStyle="body-2">Use a different email</Text>
-        </Button>
+        </LinkButton>
       </VStack>
 
       <VerificationInput />

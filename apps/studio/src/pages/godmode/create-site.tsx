@@ -3,7 +3,6 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
-  Button,
   Flex,
   FormControl,
   Input,
@@ -17,6 +16,7 @@ import {
   FormLabel,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -128,9 +128,9 @@ const GodModeCreateSitePage: NextPageWithLayout = () => {
         </FormControl>
         <Button
           variant="solid"
-          width="full"
-          onClick={onSubmit}
-          isLoading={createSiteMutation.isPending}
+          className="w-full"
+          onPress={() => void onSubmit()}
+          isPending={createSiteMutation.isPending}
           isDisabled={Object.keys(errors).length > 0}
         >
           Create Site

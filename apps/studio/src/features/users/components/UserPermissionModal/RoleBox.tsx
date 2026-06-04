@@ -1,7 +1,7 @@
 import type { RoleType } from "~prisma/generated/generatedEnums"
 import { Icon, Text, VStack } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 
 import { ROLES_ICONS, ROLES_LABELS } from "./constants"
 import {
@@ -27,42 +27,11 @@ export const RoleBox = ({
   return (
     <Button
       variant="unstyled"
-      border="1.5px solid"
-      p={5}
-      borderColor={isSelected ? "blue.500" : "gray.200"}
-      bg={isSelected ? "blue.50" : "white"}
-      borderRadius="md"
-      textAlign="center"
-      fontWeight={isSelected ? "bold" : "normal"}
-      flex="1"
-      height="auto"
       isDisabled={isDisabled}
-      onClick={onClick}
+      onPress={onClick}
       data-selected={dataAttr(isSelected)}
-      _selected={{
-        bg: "interaction.muted.main.active",
-        borderColor: "base.divider.brand",
-        _hover: {
-          bg: "interaction.muted.main.active",
-          borderColor: "base.divider.brand",
-        },
-      }}
-      _disabled={{
-        color: "interaction.support.disabled-content",
-        bg: "interaction.support.disabled",
-        borderColor: "interaction.support.disabled",
-        opacity: 0.6,
-        cursor: "not-allowed",
-        _hover: {
-          bg: "interaction.support.disabled",
-          borderColor: "interaction.support.disabled",
-        },
-      }}
-      _hover={{
-        bg: "interaction.muted.main.hover",
-        borderColor: "base.divider.medium",
-      }}
       aria-label={`${value} role`}
+      className="data-[selected]:bg-interaction-muted-main-active hover:bg-interaction-muted-main-hover data-[selected]:hover:bg-interaction-muted-main-active disabled:border-interaction-support-disabled disabled:bg-interaction-support-disabled disabled:text-interaction-support-disabled-content flex h-auto flex-1 flex-col rounded-md border-[1.5px] border-solid border-gray-200 bg-white p-5 text-center font-normal data-[selected]:border-base-divider-brand data-[selected]:font-bold hover:border-base-divider-medium data-[selected]:hover:border-base-divider-brand disabled:cursor-not-allowed disabled:opacity-60"
     >
       <VStack gap={2} alignItems="flex-start">
         <Icon

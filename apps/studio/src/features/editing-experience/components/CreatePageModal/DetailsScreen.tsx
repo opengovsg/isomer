@@ -10,12 +10,12 @@ import {
   Wrap,
 } from "@chakra-ui/react"
 import {
-  Button,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
   Infobox,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
@@ -90,17 +90,20 @@ export const CreatePageDetailsScreen = () => {
             align="center"
             gap="0.75rem"
           >
-            <Button variant="clear" onClick={onClose} isDisabled={isLoading}>
+            <Button variant="clear" onPress={onClose} isDisabled={isLoading}>
               Cancel
             </Button>
             <Button
               variant="outline"
-              onClick={handleBackToLayoutScreen}
+              onPress={handleBackToLayoutScreen}
               isDisabled={isLoading}
             >
               Choose different layout
             </Button>
-            <Button onClick={handleCreatePage} isLoading={isLoading}>
+            <Button
+              onPress={() => void handleCreatePage()}
+              isPending={isLoading}
+            >
               Start editing
             </Button>
           </Wrap>
