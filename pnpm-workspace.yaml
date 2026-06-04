@@ -118,6 +118,7 @@ catalog:
   flat: ^6.0.1
   inter-ui: ^4.1.1
   interweave: ^13.1.0
+  interweave-ssr: ^2.0.0
   iron-session: ^8.0.4
   jose: ^6.0.11
   jotai: ^2.20.0
