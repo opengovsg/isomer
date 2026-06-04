@@ -116,7 +116,7 @@ export const Datatable = <T extends object>({
                   key={row.id}
                   borderBottomWidth="1px"
                   _hover={{ bgColor: "interaction.muted.main.hover" }}
-                  cursor={"pointer"}
+                  cursor={onRowClick ? "pointer" : undefined}
                   onClick={() => onRowClick?.(row)}
                 >
                   {row.getVisibleCells().map((cell) => {

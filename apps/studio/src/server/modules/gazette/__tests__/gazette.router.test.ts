@@ -971,5 +971,49 @@ describe("gazette.router", async () => {
         .executeTakeFirst()
       expect(resource).toBeUndefined()
     })
+
+    // Exercises the FK constraint path: PushDocumentJob.resource has
+    // `onDelete: Restrict`, so deleting the Resource fails if a job row
+    // still exists. The cron runs every minute, so in production this is
+    // the common case during the grace window — not the exception.
+    it("deletes a gazette that still has an unprocessed PushDocumentJob", async () => {
+      const { site, collection, user } = await seedToppanWithCollection()
+      const publishedAt = subMinutes(FIXED_NOW, 5)
+
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt,
+        userId: user.id,
+      })
+
+      await db
+        .insertInto("PushDocumentJob")
+        .values({
+          resourceId: String(gazetteId),
+          scheduledAt: FIXED_NOW,
+          scheduledBy: user.id,
+        })
+        .execute()
+
+      await caller.delete({
+        siteId: site.id,
+        gazetteId,
+      })
+
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirst()
+      expect(resource).toBeUndefined()
+
+      const pushJobs = await db
+        .selectFrom("PushDocumentJob")
+        .where("resourceId", "=", String(gazetteId))
+        .selectAll()
+        .execute()
+      expect(pushJobs).toHaveLength(0)
+    })
   })
 })

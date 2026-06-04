@@ -31,7 +31,6 @@ export const generateDocumentId = (url: string, resourceId: string): string =>
   `${url}-${resourceId}`
 
 const { S3_GAZETTE_BUCKET_NAME } = env
-const pdfReader = new PdfReader({})
 const logger = createBaseLogger({ path: "gazette.service" })
 /**
  * Throws FORBIDDEN unless the user is from Toppan or a Core IsomerAdmin.
@@ -189,7 +188,12 @@ export const copyFileWithNewName = async ({
 }
 
 // Taken as is from egazette codebase.
+// Instantiates a fresh PdfReader per call — the cron handler parses PDFs
+// concurrently via Promise.all and pdfreader is built on pdf2json whose
+// underlying state is not safe to share across overlapping parseBuffer
+// invocations.
 export const parseFullTextFromPDF = async (pdfBuffer: Uint8Array) => {
+  const pdfReader = new PdfReader({})
   const data: string[] = await new Promise((resolve, reject) => {
     const parsedData: string[] = []
     pdfReader.parseBuffer(Buffer.from(pdfBuffer), (err, item) => {
@@ -252,11 +256,23 @@ export const removeGazetteFromSearchIndex = async (
  * Mark a gazette asset as deleted in S3. Throws on failure — silent failure
  * here would leave the PDF publicly reachable after the gazette is "deleted"
  * from SearchSG and the DB, defeating the purpose of the grace-period delete.
+ *
+ * On failure we also log the public URL so ops has a recovery target — by
+ * this point SearchSG removal has already succeeded, so the gazette is
+ * deindexed but still reachable at this URL until the soft-delete completes.
  */
 export const deleteGazetteAsset = async (ref: string): Promise<void> => {
-  await markFileAsDeleted({
-    key: ref.slice(1), // Remove leading slash
-  })
+  const key = ref.slice(1) // Remove leading slash
+  try {
+    await markFileAsDeleted({ key })
+  } catch (err) {
+    const publicUrl = `https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`
+    logger.error(
+      { err, key, publicUrl },
+      "Failed to soft-delete gazette in S3; the file may still be publicly reachable at publicUrl until manually cleaned up",
+    )
+    throw err
+  }
 }
 
 const getSearchSGAuthToken = async () => {

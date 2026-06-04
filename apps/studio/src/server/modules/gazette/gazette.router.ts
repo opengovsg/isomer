@@ -851,6 +851,25 @@ export const gazetteRouter = router({
       // Log goes after the delete so the entry describes a deletion that has
       // actually happened.
       await db.transaction().execute(async (tx) => {
+        // Delete the PushDocumentJob first. The FK is `onDelete: Restrict`
+        // (see PushDocumentJob in schema.prisma), so the Resource delete
+        // below would throw whenever a job row still exists. In practice
+        // the cron runs every minute so for up to ~60s after publish there
+        // is one — and the grace period is 15 minutes, so the very first
+        // deletion attempt would otherwise 500.
+        // Defence-in-depth: scope via Resource subquery on siteId
+        // (PushDocumentJob has no direct siteId column).
+        await tx
+          .deleteFrom("PushDocumentJob")
+          .where("resourceId", "=", String(gazetteId))
+          .where("resourceId", "in", (eb) =>
+            eb
+              .selectFrom("Resource")
+              .select("Resource.id")
+              .where("Resource.siteId", "=", siteId),
+          )
+          .execute()
+
         await tx
           .deleteFrom("Resource")
           .where("siteId", "=", siteId)
