@@ -104,7 +104,7 @@ export const CollectionResults = ({
             filters.
           </p>
           <button
-            className="prose-headline-base-medium text-link mx-auto w-fit underline-offset-4 hover:underline"
+            className="prose-headline-base-medium text-link mx-auto w-fit cursor-pointer underline-offset-4 hover:underline"
             onClick={handleClearFilter}
           >
             Clear search and filters

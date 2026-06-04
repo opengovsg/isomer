@@ -17,7 +17,7 @@ import { IconButton } from "../IconButton"
 
 const expandFilterButtonStyle = tv({
   extend: focusRing,
-  base: "prose-headline-base-semibold text-base-content flex w-full flex-row items-center justify-between gap-4 text-left",
+  base: "prose-headline-base-semibold text-base-content flex w-full cursor-pointer flex-row items-center justify-between gap-4 text-left",
 })
 
 interface ExpandFilterButtonProps {

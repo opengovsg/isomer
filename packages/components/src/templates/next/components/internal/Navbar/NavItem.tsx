@@ -24,7 +24,7 @@ type NavbarItemProps = NavbarProps["items"][number] & {
 const navbarItemStyles = tv({
   slots: {
     megamenu: "max-h-full overflow-auto bg-white shadow-md",
-    item: "group prose-label-md-medium text-base-content-strong hover:text-brand-interaction-hover flex flex-row items-center gap-0.5 border-b-2 border-transparent pt-6 pb-5 outline-0 transition-colors motion-reduce:transition-none",
+    item: "group prose-label-md-medium text-base-content-strong hover:text-brand-interaction-hover flex cursor-pointer flex-row items-center gap-0.5 border-b-2 border-transparent pt-6 pb-5 outline-0 transition-colors motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },

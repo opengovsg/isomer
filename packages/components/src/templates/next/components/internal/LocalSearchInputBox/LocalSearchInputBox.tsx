@@ -19,7 +19,11 @@ export const LocalSearchInputBox = ({
         className="border-divider-medium focus:border-site-primary focus:ring-site-primary block w-full border px-4 py-2 focus:outline-0"
       />
 
-      <button type="submit" aria-label="Search this site">
+      <button
+        type="submit"
+        aria-label="Search this site"
+        className="cursor-pointer"
+      >
         <BiSearch className="mt-0.5 text-3xl" />
       </button>
     </form>

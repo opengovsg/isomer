@@ -35,7 +35,7 @@ const FilterSectionButton = ({
     <button
       {...mergedProps}
       ref={buttonRef}
-      className="group prose-headline-base-semibold text-base-content flex w-full flex-row items-center justify-between gap-4 text-left outline-0"
+      className="group prose-headline-base-semibold text-base-content flex w-full cursor-pointer flex-row items-center justify-between gap-4 text-left outline-0"
     >
       <label className={filterSectionLabelStyle()}>{label}</label>
       <BiChevronDown

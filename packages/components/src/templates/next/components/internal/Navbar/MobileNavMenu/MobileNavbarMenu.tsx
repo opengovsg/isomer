@@ -116,7 +116,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
               ref={buttonRef}
               className={focusVisibleHighlight({
                 className:
-                  "prose-headline-base-medium absolute -left-[100000px] flex h-[1px] w-[1px] items-center justify-between gap-6 overflow-hidden px-6 py-3 text-left text-base-content focus:static focus:h-auto focus:w-full",
+                  "prose-headline-base-medium absolute -left-[100000px] flex h-[1px] w-[1px] cursor-pointer items-center justify-between gap-6 overflow-hidden px-6 py-3 text-left text-base-content focus:static focus:h-auto focus:w-full",
               })}
             >
               Exit navigation menu

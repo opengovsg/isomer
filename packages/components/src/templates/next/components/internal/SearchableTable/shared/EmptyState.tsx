@@ -10,7 +10,7 @@ const createEmptyStateStyles = tv({
     title: "prose-headline-lg-regular text-center",
     subtitle: "prose-headline-lg-regular text-base-content mt-3",
     button:
-      "prose-headline-base-medium text-link visited:text-link-visited hover:text-link-hover",
+      "prose-headline-base-medium text-link visited:text-link-visited hover:text-link-hover cursor-pointer",
   },
   variants: {
     bold: {

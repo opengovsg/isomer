@@ -24,7 +24,7 @@ const mobileItemStyles = tv({
   slots: {
     container: "border-b-base-divider-subtle flex flex-col gap-3 border-b",
     menuItemsContainer: "",
-    item: "group prose-headline-base-medium text-base-content flex w-full items-center px-6 py-3 text-left outline-0",
+    item: "group prose-headline-base-medium text-base-content flex w-full cursor-pointer items-center px-6 py-3 text-left outline-0",
     sublist: "flex w-full flex-col gap-3.5",
     nestedItem: "prose-body-base text-base-content-medium",
     chevron:
