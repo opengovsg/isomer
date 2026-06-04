@@ -36,3 +36,17 @@ WITH RECURSIVE "resourcePath" (id, title, permalink, parentId, type, "fullPermal
 
 SELECT * FROM "resourcePath";
 `;
+
+export const GET_RESOURCE_DESCENDANTS_INCLUSIVE = `
+WITH RECURSIVE "descendants" (id) AS (
+    SELECT id FROM public."Resource" WHERE id = $1
+
+    UNION ALL
+
+    SELECT r.id
+    FROM public."Resource" r
+    INNER JOIN "descendants" d ON r."parentId" = d.id
+)
+
+SELECT id FROM "descendants";
+`;
