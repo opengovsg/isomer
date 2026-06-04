@@ -1,5 +1,4 @@
 import {
-  Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -11,6 +10,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { Infobox, useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useState } from "react"
 import { ResourceSelector } from "~/components/ResourceSelector/ResourceSelector"
@@ -133,9 +133,9 @@ const MoveResourceContent = withSuspense(
         <ModalFooter>
           <Button
             variant="clear"
-            mr={3}
-            onClick={onClose}
-            color="base.content.default"
+            color="neutral"
+            className="mr-3"
+            onPress={onClose}
           >
             Cancel
           </Button>
@@ -149,8 +149,8 @@ const MoveResourceContent = withSuspense(
               }) ||
               ability.cannot("move", { parentId: movedItem?.parentId ?? null })
             }
-            isLoading={isPending}
-            onClick={() =>
+            isPending={isPending}
+            onPress={() =>
               movedItem?.id &&
               mutate({
                 siteId,

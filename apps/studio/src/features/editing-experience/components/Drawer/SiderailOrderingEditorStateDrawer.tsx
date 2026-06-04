@@ -2,10 +2,12 @@ import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import { Box, Flex, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import { Button, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { isEqual } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { BiInfoCircle } from "react-icons/bi"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 import { UsageTooltip } from "~/components/PageEditor/UsageTooltip"
 import Suspense from "~/components/Suspense"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -298,7 +300,7 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
               label="What's a siderail?"
               usageText="A siderail appears on every child page in this folder. It helps visitors navigate to similar pages. Only published pages appear here."
             >
-              <Button variant="link" gap="0.25rem">
+              <LinkButton className="gap-1">
                 <Icon
                   as={BiInfoCircle}
                   color="interaction.main.default"
@@ -307,7 +309,7 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
                 <Text textStyle="caption-1" color="interaction.links.default">
                   What's a siderail?
                 </Text>
-              </Button>
+              </LinkButton>
             </UsageTooltip>
           </Flex>
 
@@ -328,10 +330,10 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
 
       <Box bgColor="base.canvas.default" boxShadow="md" py="1.5rem" px="2rem">
         <Button
-          w="100%"
-          isLoading={isPending}
+          className="w-full"
+          isPending={isPending}
           isDisabled={!hasChanges}
-          onClick={handleSaveChanges}
+          onPress={handleSaveChanges}
         >
           Save changes
         </Button>

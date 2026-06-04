@@ -2,7 +2,8 @@ import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { RequireAllOrNone } from "type-fest"
 import { chakra, Flex, Icon, Stack, Text, VStack } from "@chakra-ui/react"
 import { useFeatureValue } from "@growthbook/growthbook-react"
-import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
+import { TouchableTooltip } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useMemo } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
@@ -235,7 +236,7 @@ function ComponentSelector() {
         <Button
           size="xs"
           variant="clear"
-          onClick={() => {
+          onPress={() => {
             setDrawerState({ state: "root" })
           }}
         >

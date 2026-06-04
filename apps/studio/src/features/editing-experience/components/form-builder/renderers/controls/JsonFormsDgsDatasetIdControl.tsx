@@ -17,7 +17,6 @@ import {
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
-  Button,
   FormErrorMessage,
   FormLabel,
   Input,
@@ -27,6 +26,7 @@ import {
   DGS_DATASET_ID_FORMAT,
   useDgsMetadata,
 } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { useDebounce } from "@uidotdev/usehooks"
 import { useEffect, useState } from "react"
 import { BiLink } from "react-icons/bi"
@@ -185,18 +185,13 @@ const DgsDatasetIdModal = ({
 
           <ModalFooter>
             <HStack spacing="0.75rem">
-              <Button
-                variant="clear"
-                color="base.content.default"
-                onClick={onClose}
-              >
+              <Button variant="clear" color="neutral" onPress={onClose}>
                 Cancel
               </Button>
               <Button
                 type="submit"
-                onClick={onSubmit}
                 isDisabled={!isValid || isLoading || !isValidDataset}
-                isLoading={isLoading}
+                isPending={isLoading}
               >
                 Save Dataset ID
               </Button>
@@ -273,7 +268,7 @@ function JsonFormsDgsDatasetIdControl({
               </Box>
             </VStack>
 
-            <Button variant="clear" onClick={onDgsModalOpen}>
+            <Button variant="clear" onPress={onDgsModalOpen}>
               Edit
             </Button>
           </HStack>

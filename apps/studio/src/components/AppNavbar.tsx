@@ -1,8 +1,7 @@
 import { Flex, HStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
 import Image from "next/image"
-import NextLink from "next/link"
 import { BiLinkExternal } from "react-icons/bi"
+import { ButtonLink } from "~/components/oui-bridge/ButtonLink"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
@@ -46,25 +45,24 @@ export function AppNavbar(): JSX.Element {
             priority
           />
           {isUserIsomerAdmin && (
-            <Button variant="clear" size="xs" as={NextLink} href="/godmode">
+            <ButtonLink variant="clear" size="xs" href="/godmode">
               👁️ God Mode 👁️
-            </Button>
+            </ButtonLink>
           )}
         </Flex>
         <HStack
           textStyle="subhead-1"
           spacing={{ base: "0.75rem", md: "1.5rem" }}
         >
-          <Button
+          <ButtonLink
             variant="clear"
             size="xs"
-            rightIcon={<BiLinkExternal fontSize="1.25rem" />}
-            as={NextLink}
             target="_blank"
             href="https://go.gov.sg/isomer-issue"
           >
             Report an issue
-          </Button>
+            <BiLinkExternal className="text-xl" />
+          </ButtonLink>
           <AvatarMenu />
         </HStack>
       </Flex>

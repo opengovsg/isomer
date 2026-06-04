@@ -1,6 +1,5 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
-  Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -11,6 +10,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
 
@@ -61,17 +61,16 @@ export const CancelScheduleModal = ({
         </ModalBody>
         <ModalFooter>
           <Button
-            mr={3}
-            onClick={onClose}
+            className="mr-3 text-base-content-strong"
+            onPress={onClose}
             variant="clear"
-            color="base.content.strong"
           >
             No, leave it
           </Button>
           <Button
-            onClick={() => mutate({ pageId, siteId })}
-            isLoading={isPending}
-            colorScheme="critical"
+            onPress={() => mutate({ pageId, siteId })}
+            isPending={isPending}
+            color="critical"
           >
             Yes, cancel the schedule
           </Button>

@@ -1,16 +1,16 @@
 import {
   Box,
-  Button,
   Heading,
   HStack,
   Icon,
-  IconButton,
   Spacer,
   Textarea,
   useClipboard,
   useDisclosure,
 } from "@chakra-ui/react"
+import { Button } from "@opengovsg/oui"
 import { BiDollar, BiX } from "react-icons/bi"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 
 import { DiscardChangesModal } from "./DiscardChangesModal"
 
@@ -74,16 +74,16 @@ export const RawJsonEditor = ({
               </Heading>
             </HStack>
             <Spacer />
-            <Button onClick={onCopy} variant="clear">
+            <Button onPress={onCopy} variant="clear">
               {!hasCopied ? "Copy to clipboard" : "Copied!"}
             </Button>
             <IconButton
               icon={<Icon as={BiX} />}
               variant="clear"
-              colorScheme="sub"
+              color="sub"
               size="sm"
-              p="0.625rem"
-              onClick={() => {
+              className="p-2.5"
+              onPress={() => {
                 if (isModified) {
                   onDiscardChangesModalOpen()
                 } else {
@@ -107,10 +107,10 @@ export const RawJsonEditor = ({
 
         <Box bgColor="base.canvas.default" boxShadow="md" py="1.5rem" px="2rem">
           <Button
-            w="100%"
-            isLoading={isLoading}
+            className="w-full"
+            isPending={isLoading}
             isDisabled={!isPendingChangesValid}
-            onClick={handleSaveChanges}
+            onPress={handleSaveChanges}
           >
             Save changes
           </Button>

@@ -14,11 +14,12 @@ import {
   useTheme,
   VStack,
 } from "@chakra-ui/react"
-import { Button, Tab, Tabs } from "@opengovsg/design-system-react"
+import { Tab, Tabs } from "@opengovsg/design-system-react"
 import {
   NavbarAddonsSchema,
   NavbarItemsSchema,
 } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { isEmpty, isEqual } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { BiDirections } from "react-icons/bi"
@@ -204,8 +205,8 @@ const PublishButton = ({
       >
         <Button
           size="xs"
-          onClick={onClick}
-          isLoading={isSaving}
+          onPress={onClick}
+          isPending={isSaving}
           isDisabled={!isDirty || !isSchemaValid}
         >
           Publish

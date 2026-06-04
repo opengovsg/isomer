@@ -10,11 +10,8 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import {
-  Button,
-  ModalCloseButton,
-  useToast,
-} from "@opengovsg/design-system-react"
+import { ModalCloseButton, useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { format, parse } from "date-fns"
 import { useState } from "react"
 import { BiBlock } from "react-icons/bi"
@@ -241,12 +238,12 @@ const ModifyGazetteModalContent = ({
             <HStack spacing="0.75rem">
               <Button
                 variant="clear"
-                color="base.content.strong"
-                onClick={() => setIsConfirmingCancel(false)}
+                color="neutral"
+                onPress={() => setIsConfirmingCancel(false)}
               >
                 No
               </Button>
-              <Button colorScheme="critical" onClick={onCancelPublish}>
+              <Button color="critical" onPress={onCancelPublish}>
                 Yes
               </Button>
             </HStack>
@@ -254,9 +251,9 @@ const ModifyGazetteModalContent = ({
         ) : (
           <Button
             variant="outline"
-            colorScheme="critical"
-            leftIcon={<BiBlock />}
-            onClick={() => setIsConfirmingCancel(true)}
+            color="critical"
+            startContent={<BiBlock />}
+            onPress={() => setIsConfirmingCancel(true)}
           >
             Cancel publish
           </Button>
@@ -264,9 +261,9 @@ const ModifyGazetteModalContent = ({
         {!isConfirmingCancel && (
           <Button
             isDisabled={!isValid || isSubmitting || !hasFile}
-            isLoading={isSubmitting}
+            isPending={isSubmitting}
             type="submit"
-            onClick={onSubmit}
+            onPress={() => void onSubmit()}
           >
             Save changes
           </Button>

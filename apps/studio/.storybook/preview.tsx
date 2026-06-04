@@ -1,6 +1,8 @@
 import "@fontsource/ibm-plex-mono"
 import type { EnvContextReturn } from "~/components/AppProviders"
 import "inter-ui/inter.css"
+// OUI's Tailwind v4 stylesheet is loaded via `.storybook/preview-head.html` (served
+// statically from /assets/css/oui.css), NOT imported — see _app.tsx note.
 import type { AppRouter } from "~/server/modules/_app"
 import { Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
@@ -19,6 +21,7 @@ import { merge } from "lodash-es"
 import mockdate from "mockdate"
 import { initialize, mswLoader } from "msw-storybook-addon"
 import { useCallback, useState } from "react"
+import { RouterProvider } from "react-aria-components"
 import { ErrorBoundary } from "react-error-boundary"
 import superjson from "superjson"
 import { AppBanner } from "~/components/AppBanner"
@@ -151,6 +154,12 @@ const conditionalMockDateDecorator: Decorator = (story, context) => {
   return story() as JSX.Element
 }
 
+// Mirrors _app.tsx: OUI's Link needs react-aria's RouterProvider. No Next router in
+// Storybook, so navigation is a no-op here.
+const RouterDecorator: Decorator = (story) => (
+  <RouterProvider navigate={() => undefined}>{story()}</RouterProvider>
+)
+
 const decorators: Decorator[] = [
   WithLayoutDecorator,
   SetupDecorator,
@@ -161,6 +170,7 @@ const decorators: Decorator[] = [
     },
     Provider: ThemeProvider,
   }) as Decorator, // FIXME: Remove this cast when types are fixed
+  RouterDecorator,
   LoginStateDecorator,
   conditionalMockDateDecorator,
 ]

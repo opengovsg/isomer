@@ -16,12 +16,12 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import {
-  Button,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useAtomValue, useSetAtom } from "jotai"
 import { Suspense } from "react"
 import { Controller } from "react-hook-form"
@@ -238,10 +238,10 @@ const SuspendableModalContent = ({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3} onClick={onClose} variant="clear">
+          <Button className="mr-3" onPress={onClose} variant="clear">
             Close
           </Button>
-          <Button isLoading={isPending} isDisabled={!isValid} type="submit">
+          <Button isPending={isPending} isDisabled={!isValid} type="submit">
             Save changes
           </Button>
         </ModalFooter>

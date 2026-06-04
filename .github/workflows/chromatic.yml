@@ -88,6 +88,11 @@ jobs:
         run: pnpm --filter @isomer/db generate
       - name: Build preview-tw CSS
         run: pnpm --filter isomer-studio run build:preview-tw
+      # OUI's Tailwind v4 stylesheet for studio's own UI. The Chromatic action builds
+      # Storybook by running the package script directly (not via turbo), so the turbo
+      # `build:oui-css` dependency doesn't apply here — generate it explicitly, like preview-tw.
+      - name: Build OUI CSS
+        run: pnpm --filter isomer-studio run build:oui-css
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@05812acac141ce7d317a3f787be88122bca27cf4 # v17.3.0

@@ -1,0 +1,18 @@
+# Known-flaky stories excluded from the visual-diff gate.
+#
+# One glob per line (`#` starts a comment). Story ids are matched (e.g.
+# `pages-site-management-folder-page--folder-resource-menu`). Append `::<viewport>`
+# to scope a pattern to a single viewport; without it, all viewports are skipped.
+#
+# These floating-ui popover/menu overlays render with 1–2px position
+# non-determinism on the mobile viewport (sub-pixel layout of the portaled
+# overlay), unrelated to the Chakra → OUI migration. Confirmed via no-op diff.
+*resource-menu::mobile
+*expanded-menu::mobile
+*expanded-profile-dropdown::mobile
+
+# NOTE: stories that never reach a stable frame (e.g. the content-page editor's LIVE
+# site-preview iframe) are NOT ignored here — the gate captures a best-effort shot and
+# flags them under "Unstable stories" in the summary so they get fixed (deterministic
+# mocks / frozen preview). Only add a story here once you've confirmed it's intrinsically
+# non-deterministic and out of scope, like the sub-pixel popover cases above.

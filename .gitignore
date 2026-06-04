@@ -64,3 +64,11 @@ packages/db/prisma/generated/
 
 # Generated Tailwind CSS for the editor preview iframe (built by `build:preview-tw`)
 apps/studio/public/assets/css/preview-tw.css
+
+# Generated OUI (Tailwind v4) stylesheet for studio UI (built by `build:oui-css`)
+apps/studio/public/assets/css/oui.css
+
+# Chakra → OUI migration: visual-diff baselines + per-run output (see tooling/visual-diff).
+# Both are local-only — capture the baselines on your machine before running the gate.
+tooling/visual-diff/baselines/
+.context/

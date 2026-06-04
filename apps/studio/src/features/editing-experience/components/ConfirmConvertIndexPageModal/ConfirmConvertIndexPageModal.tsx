@@ -8,7 +8,8 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react"
-import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
+import { ModalCloseButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 
 interface ConfirmConvertIndexPageModalProps {
   isOpen: boolean
@@ -37,10 +38,10 @@ export const ConfirmConvertIndexPageModal = ({
 
         <ModalFooter>
           <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            <Button variant="clear" color="neutral" onPress={onClose}>
               No, cancel
             </Button>
-            <Button variant="solid" onClick={onProceed}>
+            <Button variant="solid" onPress={onProceed}>
               Accept changes
             </Button>
           </HStack>

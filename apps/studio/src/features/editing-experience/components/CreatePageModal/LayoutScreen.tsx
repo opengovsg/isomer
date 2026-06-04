@@ -6,7 +6,7 @@ import {
   Text,
   Wrap,
 } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { Controller } from "react-hook-form"
 
 import { useCreatePageWizard } from "./CreatePageWizardContext"
@@ -40,10 +40,10 @@ export const CreatePageLayoutScreen = () => {
             align="center"
             gap="0.75rem"
           >
-            <Button variant="clear" onClick={onClose}>
+            <Button variant="clear" onPress={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleNextToDetailScreen}>
+            <Button onPress={handleNextToDetailScreen}>
               Next: Page title and URL
             </Button>
           </Wrap>

@@ -3,7 +3,6 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
-  Button,
   Flex,
   Table,
   Tbody,
@@ -14,6 +13,7 @@ import {
   Tr,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -115,9 +115,8 @@ const GodModePublishingPage: NextPageWithLayout = () => {
                   {site.codeBuildId && (
                     <Button
                       size="xs"
-                      colorScheme="blue"
-                      onClick={() => publishOneSite({ siteId: site.id })}
-                      isLoading={isLoading}
+                      onPress={() => publishOneSite({ siteId: site.id })}
+                      isPending={isLoading}
                     >
                       Publish
                     </Button>

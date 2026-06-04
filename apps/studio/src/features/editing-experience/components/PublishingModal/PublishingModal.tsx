@@ -1,6 +1,5 @@
 import type { UseDisclosureReturn } from "@chakra-ui/react"
 import {
-  Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -10,6 +9,7 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react"
+import { Button } from "@opengovsg/oui"
 
 interface PublishingModalProps extends UseDisclosureReturn {
   pageId: number
@@ -41,18 +41,18 @@ export const PublishingModal = ({
         </ModalBody>
         <ModalFooter>
           <Button
-            mr={3}
-            onClick={onClose}
+            className="mr-3"
+            onPress={onClose}
             variant="clear"
-            color="base.content.strong"
+            color="neutral"
           >
             No, don't publish
           </Button>
           <Button
-            onClick={() => {
+            onPress={() => {
               onPublishNow(pageId, siteId)
             }}
-            isLoading={isPublishingNow}
+            isPending={isPublishingNow}
           >
             Publish now
           </Button>

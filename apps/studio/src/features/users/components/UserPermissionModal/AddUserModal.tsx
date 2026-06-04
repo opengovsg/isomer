@@ -1,5 +1,4 @@
 import {
-  Button,
   FormControl,
   HStack,
   Input,
@@ -15,10 +14,12 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import {
+  Button as DsButton,
   FormErrorMessage,
   FormLabel,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useDebounce } from "@uidotdev/usehooks"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useEffect, useMemo } from "react"
@@ -250,15 +251,11 @@ export const AddUserModal = () => {
           </VStack>
         </ModalBody>
         <ModalFooter gap="1rem">
-          <Button
-            variant="clear"
-            color="base.content.default"
-            onClick={handleOnClose}
-          >
+          <Button variant="clear" color="neutral" onPress={handleOnClose}>
             Cancel
           </Button>
           <SingpassConditionalTooltip>
-            <Button
+            <DsButton
               variant="solid"
               onClick={onSendInvite}
               isLoading={isPending}
@@ -272,7 +269,7 @@ export const AddUserModal = () => {
               }
             >
               Send invite
-            </Button>
+            </DsButton>
           </SingpassConditionalTooltip>
         </ModalFooter>
       </ModalContent>

@@ -1,8 +1,9 @@
 import type { Static } from "@sinclair/typebox"
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { Box, Flex, Text, VStack } from "@chakra-ui/react"
-import { Button, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
 import { LAYOUT_PAGE_MAP } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { isEmpty, isEqual } from "lodash-es"
 import { useMemo, useState } from "react"
 import { z } from "zod"
@@ -81,11 +82,10 @@ const InnerDrawer = ({
         pos="relative"
       >
         <Button
-          w="full"
-          alignSelf="flex-start"
-          onClick={handleSaveChanges}
+          className="w-full self-start"
+          onPress={handleSaveChanges}
           isDisabled={!isEmpty(errors) || !previewPageState.ref}
-          isLoading={isLoading}
+          isPending={isLoading}
         >
           Save
         </Button>
