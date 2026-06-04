@@ -1156,6 +1156,10 @@ video {
   top: 100%;
 }
 
+.isolate {
+  isolation: isolate;
+}
+
 .-z-50 {
   z-index: -50;
 }
@@ -6448,6 +6452,17 @@ video {
 
 .\[\&\:not\(\:last-child\)\]\:mb-6:not(:last-child) {
   margin-bottom: 1.5rem;
+}
+
+.\[\&\>\:is\(ol\2c
+  ul\)\:first-child\>li\:first-child\]\:mt-0
+  > :is(ol, ul):first-child
+  > li:first-child {
+  margin-top: 0px;
+}
+
+.\[\&\>\:is\(ol\2c ul\)\:first-child\]\:mt-0 > :is(ol, ul):first-child {
+  margin-top: 0px;
 }
 
 .\[\&_\.component-content\]\:mx-auto .component-content {
