@@ -3,3 +3,8 @@ export type { DB } from "./generated/generatedTypes"
 export * from "./generated/generatedEnums"
 export * from "./generated/selectableTypes"
 export { sql } from "kysely"
+
+export { createDb } from "./createDb"
+export type { CreateDbConfig } from "./createDb"
+export { Kysely } from "./kysely"
+export type { SafeKysely, Transaction } from "./kysely"

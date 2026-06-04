@@ -16,12 +16,14 @@
     "typecheck": "tsgo"
   },
   "dependencies": {
-    "kysely": "catalog:"
+    "kysely": "catalog:",
+    "pg": "catalog:"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
+    "@types/pg": "catalog:",
     "@typescript/native-preview": "catalog:",
     "typescript": "catalog:"
   }
