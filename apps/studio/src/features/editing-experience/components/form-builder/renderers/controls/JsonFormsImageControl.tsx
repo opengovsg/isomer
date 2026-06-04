@@ -56,7 +56,7 @@ function JsonFormsImageControl({
           siteId={siteId}
           resourceId={(pageId ?? linkId) ? String(pageId ?? linkId) : undefined}
           setHref={(src) => handleChange(path, src)}
-          shouldFetchResource={false}
+          shouldFetchResource={true}
         />
       )}
       {!!errors && (
