@@ -1,6 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { User } from "@prisma/client"
 import type { Mock } from "vitest"
+import type { env } from "~/env.mjs"
 import type { Session } from "~/lib/types/session"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
@@ -21,10 +22,20 @@ import {
   sendSuccessfulPublishEmail,
 } from "~/features/mail/service"
 import { buildIdFromArn } from "~/schemas/webhook"
-import { createCallerFactory } from "~/server/trpc"
+import { WEBHOOK_X_API_KEY_HEADER, createCallerFactory } from "~/server/trpc"
 
 import { db } from "../../database"
 import { webhookRouter } from "../webhook.router"
+
+vi.mock("~/env.mjs", async () => {
+  const actual = await vi.importActual<{ env: typeof env }>("~/env.mjs")
+  return {
+    env: {
+      ...actual.env,
+      STUDIO_SSM_WEBHOOK_API_KEY: "test-webhook-api-key",
+    },
+  }
+})
 
 // Mock the publishSite function to avoid sending emails
 vi.mock("~/features/mail/service", () => ({
@@ -35,8 +46,17 @@ vi.mock("~/features/mail/service", () => ({
 const getCallerWithMockGrowthbook = (
   session: Session,
   mockReturnValue = true,
+  apiKey: string | null = "test-webhook-api-key",
 ): ReturnType<typeof createCaller> => {
-  const mockRequest = createMockRequest(session)
+  const mockRequest = createMockRequest(session, {
+    headers:
+      apiKey === null
+        ? undefined
+        : {
+            [WEBHOOK_X_API_KEY_HEADER]: apiKey,
+          },
+    method: "GET",
+  })
   const mockGrowthBook: Partial<GrowthBook> = {
     isOn: vi.fn().mockReturnValue(mockReturnValue),
     destroy: vi.fn(),
@@ -107,6 +127,25 @@ describe("webhook.router", async () => {
           emailSent: true,
         }),
       )
+    })
+    it("rejects authenticated callers that do not provide the webhook API key", async () => {
+      // Arrange
+      await setupCodeBuildJob({
+        userId: user.id,
+        arn: "build/test-id",
+        startedAt: FIXED_NOW,
+      })
+      const caller = getCallerWithMockGrowthbook(session, true, null)
+
+      // Act + Assert
+      await expect(
+        caller.updateCodebuildWebhook({
+          projectName: "test-project",
+          arn: "build/test-id",
+          status: "SUCCEEDED",
+        }),
+      ).rejects.toThrow("Invalid Webhook API key provided")
+      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
     })
     it("it should update the codebuildjobs table when multiple resources specify the same buildId", async () => {
       // Arrange

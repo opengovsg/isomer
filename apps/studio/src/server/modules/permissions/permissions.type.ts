@@ -1,4 +1,4 @@
-import type { PureAbility } from "@casl/ability"
+import type { Ability } from "@casl/ability"
 
 import type { Resource as RawResource, Site } from "../database"
 
@@ -11,17 +11,17 @@ type Subjects = "Resource" | Resource
 
 export const ALL_ACTIONS = [...CRUD_ACTIONS, "move", "publish"] as const
 type ResourcePermissionTuple = [AllowedResourceActions, Subjects]
-export type ResourceAbility = PureAbility<ResourcePermissionTuple>
+export type ResourceAbility = Ability<ResourcePermissionTuple>
 
 type SitePermissionTuple = [CrudResourceActions, "Site"]
-export type SiteAbility = PureAbility<SitePermissionTuple>
+export type SiteAbility = Ability<SitePermissionTuple>
 
 // Only 2 actions are allowed for UserManagement
 // because Admins can update, delete and create users
 const _USER_MANAGEMENT_ACTIONS = ["read", "manage"] as const
 export type UserManagementActions = (typeof _USER_MANAGEMENT_ACTIONS)[number]
 type UserManagementTuple = [UserManagementActions, "UserManagement"]
-export type UserManagementAbility = PureAbility<UserManagementTuple>
+export type UserManagementAbility = Ability<UserManagementTuple>
 
 export interface PermissionsProps {
   userId: string
