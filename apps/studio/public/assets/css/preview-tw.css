@@ -1600,9 +1600,6 @@
   .bg-gray-100 {
     background-color: var(--color-gray-100);
   }
-  .bg-indigo-50 {
-    background-color: var(--color-indigo-50);
-  }
   .bg-interaction-main-subtle-hover {
     background-color: var(--color-interaction-main-subtle-hover);
   }
@@ -2322,9 +2319,6 @@
   }
   .text-indigo-600 {
     color: var(--color-indigo-600);
-  }
-  .text-indigo-700 {
-    color: var(--color-indigo-700);
   }
   .text-interaction-support-placeholder {
     color: var(--color-interaction-support-placeholder);
