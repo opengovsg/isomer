@@ -61,3 +61,7 @@ storybook-static/
 
 # Generated Tailwind CSS for the editor preview iframe (built by `build:preview-tw`)
 apps/studio/public/assets/css/preview-tw.css
+
+# Chakra → OUI migration: visual-diff baselines + per-run output (see tooling/visual-diff)
+tooling/visual-diff/baselines/
+.context/
