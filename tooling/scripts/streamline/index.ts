@@ -5,6 +5,7 @@ import { verifyDnsRecords } from "./apps/verify-dns";
 import { siteLaunchFirstWindow } from "./apps/launch-first";
 import { siteLaunchSecondWindow } from "./apps/launch-second";
 import { migrateClassicToNext } from "./apps/classic-migration";
+import { graftFolderIntoSite } from "./apps/graft-folder";
 
 const main = async () => {
   const script = await select<StreamlineScriptType>({
@@ -38,6 +39,12 @@ const main = async () => {
         description: "Perform the actual site relaunch",
         value: "site-launch-2nd-window",
       },
+      {
+        name: "Script 6: Graft folder into existing Studio site",
+        description:
+          "Insert a folder of Studio-format JSON under an existing Folder/Collection.",
+        value: "graft-folder-into-site",
+      },
     ],
   });
 
@@ -56,6 +63,9 @@ const main = async () => {
       break;
     case "site-launch-2nd-window":
       await siteLaunchSecondWindow();
+      break;
+    case "graft-folder-into-site":
+      await graftFolderIntoSite();
       break;
     default:
       const _: never = script;
