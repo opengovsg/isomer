@@ -1,15 +1,10 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as dotenv from "dotenv";
 import { Client } from "pg";
 import { confirm, select } from "@inquirer/prompts";
 
 import { GET_RESOURCE_DESCENDANTS_INCLUSIVE } from "./constants";
 import { processDirectory } from "./index";
-
-dotenv.config({
-  path: path.join(__dirname, "..", "..", ".env"),
-});
 
 export interface GraftFolderRequest {
   siteId: number;
@@ -191,14 +186,16 @@ export const graftFolder = async ({
     );
 
     console.log("Graft complete.");
-  } catch (err) {
-    console.error(err);
-    throw err;
   } finally {
     await client.end();
   }
 };
 
+// Known unhandled FKs into Resource.id: ResourcePermission, CodeBuildJobs,
+// PushDocumentJob (Restrict), and Resource.draftBlobId Blobs. The Resource
+// DELETE will fail or leak rows when those exist for descendants. See
+// docs/superpowers/specs/2026-06-04-graft-folder-design.md for the rationale
+// and the recovery procedure.
 async function deleteResourceSubtree(client: Client, rootId: number) {
   const descendantsResult = await client.query<{ id: number }>(
     GET_RESOURCE_DESCENDANTS_INCLUSIVE,

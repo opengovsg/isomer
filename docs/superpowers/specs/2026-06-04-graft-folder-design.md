@@ -125,3 +125,24 @@ No automated tests are added; the existing studiofier has none and this is a one
 - No support for grafting at the root (`parentId = null`). If needed later, lift the parent-validation step's restriction and document the `RootPage` caveat.
 - No reference rewriting. If a future caller needs to graft Studio JSON that contains classic-style asset paths or permalink links, layer that on top with a separate pass; do not bake it into `graftFolder`.
 - No bulk/CSV input. One graft per invocation.
+
+## Known limitations of the Replace path
+
+`deleteResourceSubtree` deletes Versions, Version-referenced Blobs, and Resources for the colliding subtree. It does **not** clean up several sibling rows that reference `Resource.id` in the Studio schema. Operators must be aware before running Replace on a live site:
+
+| FK | Behavior on delete | Effect on Replace |
+|---|---|---|
+| `ResourcePermission.resourceId` (optional, no `onDelete`) | NoAction — blocks delete | Replace may throw a FK violation if any descendant has per-resource permissions. |
+| `CodeBuildJobs.resourceId` (optional, no `onDelete`) | NoAction — blocks delete | Replace may throw a FK violation if any descendant has a publish/build history row. |
+| `PushDocumentJob.resourceId` (required, explicit `onDelete: Restrict`) | Restrict — blocks delete | Replace may throw a FK violation if any descendant is a PDF scheduled for SearchSG ingestion. |
+| `Resource.draftBlobId` → `Blob.id` | Blob is not cascaded; not collected by the script | Draft Blobs of replaced Resources leak as orphans. |
+
+`Resource.parentId` already has `onDelete: Cascade`, so child Resources cascade via the parent chain — the FKs above still apply per descendant.
+
+The team's reference destructive script (`apps/studio/prisma/scripts/moh-tosp/deleteCollectionById.ts`) accepts the first three gaps and only handles `draftBlobId` and Versions/Blobs. The graft tool follows the same convention. There is **no transaction wrapper**, so a mid-operation FK violation leaves the subtree in a partially-deleted state. Recovery: inspect the partial state, manually clean up the offending sibling rows, then re-run Replace.
+
+If grafting onto sites where any of these FKs are likely populated, extend `deleteResourceSubtree` with explicit cleanup of the sibling rows and a transaction wrapper before running.
+
+## `CollectionMeta` is not produced by `processDirectory`
+
+The Studio schema declares a `CollectionMeta` Resource type for ordering metadata inside Collections, but `processDirectory` (inherited from the classic migration) only emits `FolderMeta` for `_meta.json` and only when the parent is a Folder. A `_meta.json` placed under a Collection parent will be inserted as a `CollectionPage` with permalink `_meta`. This is a pre-existing studiofier limitation, not introduced by graft. Avoid placing `_meta.json` directly under a Collection graft target until `processDirectory` learns the `CollectionMeta` type.
