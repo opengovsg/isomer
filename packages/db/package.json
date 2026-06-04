@@ -15,6 +15,9 @@
     "lint:fix": "oxlint --type-aware --fix .",
     "typecheck": "tsgo"
   },
+  "dependencies": {
+    "kysely": "catalog:"
+  },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
