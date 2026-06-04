@@ -131,7 +131,16 @@ export $(grep DATABASE_URL .env.development.local | xargs) && pnpm run setup
 
 ### Start server
 
+Run from the **repo root** so Turbo generates the preview CSS before starting the dev server:
+
 ```bash
+pnpm dev
+```
+
+If you must run from `apps/studio` directly, generate the preview CSS first:
+
+```bash
+pnpm build:preview-tw
 pnpm run dev
 ```
 
