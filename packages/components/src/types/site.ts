@@ -93,13 +93,10 @@ export const SiteConfigSchema = Type.Intersect([
       description: "The base URL of the site.",
       format: "hidden",
     }),
-    theme: Type.Union(
-      [Type.Literal("isomer-classic"), Type.Literal("isomer-next")],
-      {
-        default: "isomer-next",
-        format: "hidden",
-      },
-    ),
+    theme: Type.Literal("isomer-next", {
+      default: "isomer-next",
+      format: "hidden",
+    }),
     isGovernment: Type.Optional(
       Type.Boolean({
         title: "Is this a Government site?",
