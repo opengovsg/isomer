@@ -37,6 +37,14 @@
       "cache": false,
       "persistent": true
     },
+    "storybook": {
+      "dependsOn": ["build:preview-tw"],
+      "cache": false,
+      "persistent": true
+    },
+    "build-storybook": {
+      "dependsOn": ["build:preview-tw"]
+    },
     "dev:e2e": {
       "dependsOn": ["services:setup"],
       "cache": false,
