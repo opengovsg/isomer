@@ -23,10 +23,6 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
-    "./templates/classic": {
-      "import": "./dist/esm/templates/classic/index.js",
-      "require": "./dist/cjs/templates/classic/index.js"
-    },
     "./templates/next": {
       "import": "./dist/esm/templates/next/index.js",
       "require": "./dist/cjs/templates/next/index.js"
@@ -57,7 +53,6 @@
     "typecheck": "tsgo --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@govtechsg/sgds-react": "catalog:",
     "@headlessui/react": "catalog:",
     "@isomer/validators": "workspace:*",
     "@react-aria/button": "catalog:react-aria",
@@ -71,12 +66,9 @@
     "@sinclair/typebox": "catalog:",
     "date-fns": "catalog:",
     "interweave": "catalog:",
-    "interweave-ssr": "catalog:",
     "isomorphic-dompurify": "catalog:",
-    "js-base64": "catalog:",
     "js-md5": "catalog:",
     "lodash-es": "catalog:",
-    "markdown-to-jsx": "catalog:",
     "minisearch": "catalog:",
     "react-icons": "catalog:",
     "tailwind-merge": "catalog:",
