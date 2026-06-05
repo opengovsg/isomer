@@ -1,5 +1,5 @@
 {
   "regions": ["sin1"],
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "cd ../../packages/components && pnpm run build && cd - && DATABASE_URL=$DATABASE_URL_UNPOOLED pnpm run migrate && DATABASE_URL=$DATABASE_URL_UNPOOLED pnpm run migrate:custom && SKIP_ENV_VALIDATION=true pnpm run db:seed && pnpm run build:preview-tw && pnpm run build"
+  "buildCommand": "pnpm run vercel-build"
 }
