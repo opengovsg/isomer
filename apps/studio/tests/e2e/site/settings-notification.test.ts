@@ -44,8 +44,8 @@ test("admin can save a notification title", async ({ page }) => {
   await expect(titleField).toBeVisible({ timeout: 5000 })
   await titleField.fill("e2e test notification")
 
-  await site.saveButton().click()
-  await site.expectSuccessToast()
+  await site.publishButton().click()
+  await site.expectChangesPublishedToast()
 
   // Stretch: reload and confirm persistence.
   await page.reload()
