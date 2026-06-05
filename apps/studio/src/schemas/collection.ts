@@ -10,9 +10,11 @@ import { offsetPaginationSchema } from "./pagination"
 export type CollectionLinkProps = Static<typeof LinkRefPageSchema>
 
 // NOTE: zod's internal date schema uses `YYYY-MM-DD` but our format is
-// dd/mm/yyyy. Hence, we will run a 2 way conversion from
+// dd/MM/yyyy. Hence, we will run a 2 way conversion from
 // our format -> zod then zod -> our format
 // If the date is nullish, then we will return as undefined
+const SLASH_DATE_FORMAT = "dd/MM/yyyy"
+
 const slashDateSchema = z
   .string()
   .nullish()
@@ -21,15 +23,15 @@ const slashDateSchema = z
       return undefined
     }
 
-    return parse(d, "dd/mm/yyyy", new Date())
+    return parse(d, SLASH_DATE_FORMAT, new Date())
   })
-  .pipe(z.date().nullish())
+  .pipe(z.date().optional())
   .transform((d) => {
     if (!d) {
       return undefined
     }
 
-    return format(d, "dd/mm/yyyy")
+    return format(d, SLASH_DATE_FORMAT)
   })
 
 export const editLinkSchema = z.object({

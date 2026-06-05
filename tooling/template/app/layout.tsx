@@ -9,6 +9,10 @@ import {
 import { Inter } from "next/font/google"
 import Script from "next/script"
 
+import { serializeForInlineScript } from "@isomer/validators"
+
+import { IsomerProviders } from "./providers"
+
 const inter = Inter({
   // while we support other languages, we should only preload the latin subset
   // as it is the most common subset and the most likely to be used
@@ -50,7 +54,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         />
       </head>
       <body className="antialiased">
-        {children}
+        <IsomerProviders>{children}</IsomerProviders>
         <RenderApplicationScripts
           site={{
             ...config.site,
@@ -68,7 +72,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+            __html: serializeForInlineScript(jsonLd),
           }}
         />
       </body>

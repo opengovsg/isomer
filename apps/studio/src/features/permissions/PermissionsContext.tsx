@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react"
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import type { RoleType } from "~prisma/generated/generatedEnums"
-import { AbilityBuilder, createMongoAbility, PureAbility } from "@casl/ability"
+import { Ability, AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { createContextualCan } from "@casl/react"
 import { createContext, useContext } from "react"
 import { buildPermissionsForResource } from "~/server/modules/permissions/permissions.util"
@@ -20,10 +20,10 @@ const getPermissions = (roles: { role: RoleType }[]) => {
   return builder.build({ detectSubjectType: () => "Resource" })
 }
 
-const PermissionsContext = createContext<ResourceAbility | PureAbility>(
+const PermissionsContext = createContext<ResourceAbility | Ability>(
   // NOTE: Pass a dummy ability that does not allow the user to do anything
   // so that the createContextualCan function does not throw a type error
-  new PureAbility(),
+  new Ability(),
 )
 
 export const PermissionsProvider = ({
@@ -45,7 +45,7 @@ export const PermissionsProvider = ({
   )
 }
 
-export const usePermissions = (): ResourceAbility | PureAbility => {
+export const usePermissions = (): ResourceAbility | Ability => {
   const ability = useContext(PermissionsContext)
   return ability
 }

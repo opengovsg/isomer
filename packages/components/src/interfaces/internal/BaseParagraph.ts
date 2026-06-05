@@ -1,5 +1,4 @@
 import type { Static } from "@sinclair/typebox"
-import type { LinkComponentType } from "~/types"
 
 import type { ParagraphSchema } from "../native"
 
@@ -11,5 +10,4 @@ export type BaseParagraphProps = Omit<
   allowedTags?: string[]
   id?: string
   className?: string
-  LinkComponent?: LinkComponentType
 }

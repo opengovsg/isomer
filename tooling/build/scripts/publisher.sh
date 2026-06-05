@@ -141,6 +141,9 @@ mv schema/ ../../../template/
 mv data/ ../../../template/
 cp sitemap.json ../../../template/public/
 mv sitemap.json ../../../template/
+mv redirects.json ../../../template/
+# Capture absolute path now; the upload step runs from a different CWD later.
+REDIRECTS_JSON="$(realpath ../../../template/redirects.json)"
 cd ../../../template
 # Create not-found.json by copying _index.json if it doesn't exist
 # Refer to tooling/template/app/not-found.tsx for more context
@@ -189,6 +192,19 @@ aws s3 sync --only-show-errors . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUIL
 # Set all files in the _next folder to be cached indefinitely (1 year) on users' browsers
 # Next.js uses unique content hashes in filenames, allowing updated content to have different filenames and invalidate the cache on new builds.
 aws s3 sync --only-show-errors _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=31536000, public"
+
+# Upload redirect objects AFTER the --delete sync so they are not swept away.
+# Each redirect becomes an empty index.html with x-amz-meta-redirect-destination metadata
+# that the CloudFront Function reads to issue the HTTP redirect response.
+echo "Uploading redirect files to S3..."
+(
+  cd ../../build/scripts/publishing
+  REDIRECTS_JSON="$REDIRECTS_JSON" \
+    S3_BUCKET_NAME="$S3_BUCKET_NAME" \
+    SITE_NAME="$SITE_NAME" \
+    CODEBUILD_BUILD_NUMBER="$CODEBUILD_BUILD_NUMBER" \
+    npm run upload-redirects
+) || echo "Warning: some redirects failed to upload, continuing..."
 
 calculate_duration $start_time
 

@@ -8,15 +8,9 @@ export const HomepageLayout = ({
   page,
   layout,
   content,
-  LinkComponent,
 }: HomePageSchemaType) => {
   return (
-    <Skeleton
-      site={site}
-      page={page}
-      layout={layout}
-      LinkComponent={LinkComponent}
-    >
+    <Skeleton site={site} page={page} layout={layout}>
       <div
         // ComponentContent = "component-content" (customCssClass.ts) is imported by all Homepage components,
         // but cannot be used here as tailwind does not support dynamic class names
@@ -26,7 +20,6 @@ export const HomepageLayout = ({
           content,
           layout,
           site,
-          LinkComponent,
           permalink: page.permalink,
         })}
       </div>

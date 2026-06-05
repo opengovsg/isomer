@@ -10,10 +10,18 @@ const ALLOWED_EXTENSIONS = [
 
 export const getPresignedPutUrlSchema = z.object({
   siteId: z.number().min(1),
+  tags: z
+    .array(
+      z.object({
+        key: z.string(),
+        value: z.string(),
+      }),
+    )
+    .optional(),
   resourceId: z.string().optional(),
   fileName: z
     .string({
-      required_error: "Missing file name",
+      error: "Missing file name",
     })
     .refine(
       (s) => {
@@ -51,7 +59,7 @@ export const deleteAssetsSchema = z.object({
   resourceId: z.string(),
   fileKeys: z.array(
     z.string({
-      required_error: "Missing file keys",
+      error: "Missing file keys",
     }),
   ),
 })
@@ -59,6 +67,6 @@ export const deleteAssetsSchema = z.object({
 export const getPresignedGetUrlSchema = z.object({
   siteId: z.number().min(1),
   fileKey: z.string({
-    required_error: "Missing file key",
+    error: "Missing file key",
   }),
 })

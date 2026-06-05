@@ -1,5 +1,4 @@
 import type { Static } from "@sinclair/typebox"
-import type { LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { ARRAY_RADIO_FORMAT } from "../format"
@@ -72,11 +71,7 @@ export const SearchableTableSchema = Type.Intersect(
   },
 )
 
-type BaseSearchableTableClientProps = Static<
-  typeof BaseSearchableTableSchema
-> & {
-  LinkComponent?: LinkComponentType
-}
+type BaseSearchableTableClientProps = Static<typeof BaseSearchableTableSchema>
 
 // note: ideally we should not pass entire "site" object to the client component
 // as it can be quite large and increase page size
@@ -98,8 +93,4 @@ export type NativeSearchableTableProps = BaseSearchableTableClientProps &
 export type DGSSearchableTableProps = BaseSearchableTableClientProps &
   Static<typeof DGSSearchableTableSchema>
 
-export type SearchableTableProps = Pick<
-  BaseSearchableTableClientProps,
-  "LinkComponent"
-> &
-  Static<typeof SearchableTableSchema>
+export type SearchableTableProps = Static<typeof SearchableTableSchema>

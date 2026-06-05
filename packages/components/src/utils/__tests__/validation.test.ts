@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   AUDIO_EMBED_URL_PATTERN,
+  GTM_ID_STRING_REGEX,
   isValidAudioEmbedUrl,
   LINK_HREF_PATTERN,
   MAPS_EMBED_URL_PATTERN,
@@ -274,12 +275,53 @@ describe("validation", () => {
     })
   })
 
+  describe("GTM_ID_STRING_REGEX", () => {
+    it("should allow valid Google tag IDs", () => {
+      // Arrange
+      const testCases = [
+        "GTM-ABC123",
+        "GTM-1234567",
+        "GTM-ABCDEFGHIJ",
+        "G-ABC123", // GA4 measurement IDs work with GTM snippet in practice
+        "GT-ABC123", // GT- IDs observed working in manual testing
+      ]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(GTM_ID_STRING_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(true)
+      })
+    })
+
+    it("should reject invalid or malicious GTM IDs", () => {
+      // Arrange
+      const testCases = [
+        "gtm-abc123",
+        "GTM-",
+        "');alert(document.cookie);//",
+        "GTM-ABC<script>",
+        "",
+      ]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(GTM_ID_STRING_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(false)
+      })
+    })
+  })
+
   describe("AUDIO_EMBED_URL_PATTERN and isValidAudioEmbedUrl", () => {
-    it("should allow Spotify episode and show embed URLs", () => {
+    it("should allow Spotify episode, show, and playlist embed URLs", () => {
       const testCases = [
         "https://open.spotify.com/embed/episode/7makk4oTQel546B0PZlDM5",
         "https://open.spotify.com/embed/episode/3T5WkragWdHZRwFl7qCHoz?utm_source=generator",
         "https://open.spotify.com/embed/show/66PYiIthr1KqQhJ82XH4DN?utm_source=generator",
+        "https://open.spotify.com/embed/playlist/1apUfsI3NR7LqzFOlGieBT",
       ]
 
       testCases.forEach((testCase) => {
@@ -301,11 +343,10 @@ describe("validation", () => {
       })
     })
 
-    it("should not allow Spotify album, track, playlist, or artist (only episode and show supported)", () => {
+    it("should not allow Spotify album, track, or artist (only episode, show, and playlist supported)", () => {
       const testCases = [
         "https://open.spotify.com/embed/album/6i6folBtxKV28WX3msQ4FE",
         "https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT",
-        "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M",
         "https://open.spotify.com/embed/artist/0OdUWJ0sBJDrq8yp90n0ID",
       ]
 

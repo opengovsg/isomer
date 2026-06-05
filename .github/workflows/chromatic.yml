@@ -30,9 +30,9 @@ jobs:
       ui: ${{ steps.filter.outputs.ui }}
       studio: ${{ steps.filter.outputs.studio }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       # For pull requests it's not necessary to checkout the code
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
         id: filter
         with:
           filters: |
@@ -51,14 +51,14 @@ jobs:
     environment: staging
     # Job steps
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0 # Required for v4
       - name: Setup
         uses: ./.github/actions/setup
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@latest
+        uses: chromaui/action@0b8c883861c1663076150cf1f4592b19d1ff6a54 # v17.0.1
         # Chromatic GitHub Action options
         with:
           workingDir: packages/components
@@ -67,8 +67,6 @@ jobs:
           onlyChanged: true
           exitOnceUploaded: true
           autoAcceptChanges: main
-          # Skip running Chromatic on dependabot PRs
-          skip: dependabot/**
   studio:
     needs: [changes, optimize_ci]
     # Only run if the user is not a bot and has changes
@@ -78,7 +76,7 @@ jobs:
     environment: staging
     # Job steps
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0 # Required for v4
       - name: Setup
@@ -88,9 +86,11 @@ jobs:
       # Storybook bundles @prisma/client; Prisma's browser shim requires a generated client (not created by pnpm install).
       - name: Generate Prisma client
         run: pnpm --filter isomer-studio exec prisma generate
+      - name: Build preview-tw CSS
+        run: pnpm --filter isomer-studio run build:preview-tw
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@latest
+        uses: chromaui/action@0b8c883861c1663076150cf1f4592b19d1ff6a54 # v17.0.1
         # Chromatic GitHub Action options
         with:
           workingDir: apps/studio
@@ -99,5 +99,3 @@ jobs:
           onlyChanged: true
           exitOnceUploaded: true
           autoAcceptChanges: main
-          # Skip running Chromatic on dependabot PRs
-          skip: dependabot/**

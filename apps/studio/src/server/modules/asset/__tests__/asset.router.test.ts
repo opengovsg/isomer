@@ -48,8 +48,7 @@ describe("asset.router", async () => {
   beforeEach(async () => {
     await resetTables("Site", "ResourcePermission", "Resource")
     await setUpWhitelist({ email: TEST_VALID_EMAIL })
-    // Reset any mocks after each test
-    vi.restoreAllMocks()
+    vi.clearAllMocks()
     vi.mocked(generateSignedPutUrl).mockResolvedValue(
       "https://example.com/signed-url",
     )
@@ -69,7 +68,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -88,7 +87,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "The requested resource does not exist",
@@ -113,7 +112,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -218,7 +217,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -237,7 +236,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "The requested resource does not exist",
@@ -262,7 +261,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -314,7 +313,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -366,7 +365,7 @@ describe("asset.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -449,7 +448,7 @@ describe("asset.router", async () => {
       })
 
       // Assert: request rejected, no delete performed
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:

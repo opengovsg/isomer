@@ -1,23 +1,93 @@
-# Isomer Studio
+# apps/studio
 
-Isomer Studio uses Starter Kit as the base template.
+Next.js 16 CMS application for building and managing Isomer government websites.
 
-[Starter Kit](https://start.open.gov.sg/) is a technical kit to quickly build new products from
-[Open Government Products](https://open.gov.sg), Singapore.
+## Architecture
 
-## Features
+Full-stack Next.js app using tRPC for type-safe client-server communication, Prisma + Kysely for database access, and Chakra UI + Tailwind for styling.
 
-- 🧙‍♂️ E2E typesafety with [tRPC](https://trpc.io)
-- ⚡ Full-stack React with Next.js
-- 🌈 Database with Prisma
-- 🪳 [Neon](https://neon.tech/) or Postgres integration
-- 🌇 Image upload with [R2](https://developers.cloudflare.com/r2/)
-- ⚙️ VSCode extensions
-- 🎨 Oxlint (type-aware) + Oxfmt
-- 💚 CI setup using GitHub Actions:
-  - ✅ E2E testing with [Playwright](https://playwright.dev/)
-  - ✅ Linting
-- 🔐 Env var validation
+```
+src/
+  pages/          - Next.js pages and API routes
+  server/         - tRPC routers, services, middleware (backend)
+  features/       - Feature modules (auth, dashboard, editing, etc.)
+  components/     - Shared React components
+  hooks/          - Custom React hooks
+  schemas/        - Zod validation schemas
+  lib/            - Utility libraries
+  contexts/       - React Context providers
+  theme/          - Chakra UI theme overrides
+  env.mjs         - Environment variable validation (Zod, checked at startup)
+```
+
+## tRPC Router Structure
+
+Routers live in `src/server/modules/`. Each module follows the pattern `*.router.ts` (route definitions) + `*.service.ts` (business logic) + `*.select.ts` (DB selection helpers).
+
+Top-level routes in `src/server/modules/_app.ts`:
+
+- `healthcheck`, `me`, `auth`, `asset`, `page`, `folder`, `collection`, `gazette`, `site`, `resource`, `user`, `whitelist`, `webhook`
+
+Three procedure types defined in `src/server/trpc.ts`:
+
+- `publicProcedure` — no auth required
+- `protectedProcedure` — requires valid session + existing user
+- `webhookProcedure` — API key auth (for CodeBuild webhooks)
+
+tRPC context (`src/server/context.ts`) includes: `session`, Prisma client, Kysely `db`, GrowthBook feature flags.
+
+## Database
+
+**Schema**: `prisma/schema.prisma` (PostgreSQL via Neon)
+
+Core models:
+| Model | Purpose |
+|-------|---------|
+| `Resource` | All site content — pages, folders, collections. Hierarchical via `parentId`. |
+| `Blob` | JSON content storage (draft blobs) |
+| `Version` | Published snapshots of a resource (immutable) |
+| `Site` | Website config and theme (stored as JSON) |
+| `User` | Accounts — soft-deleted via `deletedAt` |
+| `ResourcePermission` | CASL-based RBAC: Admin / Editor / Publisher roles |
+| `IsomerAdmin` | Platform-level admins with expiry |
+| `AuditLog` | Append-only audit trail with before/after deltas |
+| `CodeBuildJobs` | Build/deploy job tracking |
+
+**Draft-publish model**: A `Resource` has a draft `Blob` for in-progress edits. Publishing creates a new `Version` pointing to a frozen `Blob`.
+
+**Two DB clients in use:**
+
+- `prisma` — general CRUD, relationships
+- `kysely` — complex/raw queries requiring type-safe SQL
+
+Prisma client is generated with the `prisma-json-types-generator` to get typed JSON fields.
+
+## Authentication
+
+Two sign-in methods:
+
+1. **Email OTP** — Postman sends a one-time code; `VerificationToken` tracks attempts/expiry
+2. **Singpass** — OpenID Connect via `openid-client`
+
+Sessions use `iron-session` (1-hour TTL, stored in encrypted cookie).
+
+## Permissions
+
+Authorization uses CASL (`@casl/ability`). Logic lives in `src/server/modules/permissions/` and `src/features/permissions/`. Roles are site-scoped (Admin / Editor / Publisher) stored in `ResourcePermission`. Platform-level access is via `IsomerAdmin`.
+
+## Content Validation
+
+Page/component JSON is validated against `@opengovsg/isomer-components` schemas using AJV (not Zod) for performance. Schema is imported from the components package and compiled at startup.
+
+## Key Features
+
+- **Editing**: Tiptap rich-text editor + JSON Forms for structured content
+- **File uploads**: Signed S3/Cloudflare R2 URLs via `asset` router
+- **Scheduled publishing**: Cron jobs poll `Resource.scheduledAt`
+- **Feature flags**: GrowthBook SDK, keyed per-request in tRPC context
+- **Drag & drop**: Pragmatic DnD + Hello Pangea DnD for reordering
+- **Full-text search**: GIN trigram index on `Resource.title`
+- **Optimistic locking**: Checksum-based concurrent update detection
 
 ## Prerequisites
 
@@ -29,24 +99,9 @@ Isomer needs a few environment variables to be set for it to function. These inc
 | `POSTMAN_API_KEY` | An API key to send email via Postman                                                                                         | asdfn_v1_6DBRljleevjsd9DHPThsKDVDSenssCwW9zfA8W2ddf/T                       |
 | `SESSION_SECRET`  | A sequence of random characters used to protect session identifiers, generated by running `pnpm dlx uuid` from your terminal | 66a21b98-fb17-4259-ac4f-e94d303ac894                                        |
 
-## Working on Isomer
+Client-side vars use `NEXT_PUBLIC_` prefix and must be declared in `src/env.mjs`.
 
-You may work on the codebase with:
-
-- A [GitHub Codespace](#using-github-codespaces) provided by us, or;
-- With your [local machine](#using-your-local-developer-environment).
-
-### Using GitHub Codespaces
-
-Follow the official GitHub [guide](https://docs.github.com/en/codespaces/developing-in-codespaces/creating-a-codespace-for-a-repository)
-for developing with a codespace.
-
-### Using your local developer environment
-
-In summary:
-
-- Clone the repository to your local machine
-- Follow instructions for [running the app locally](#running-the-app-locally)
+Copy `.env.example` → `.env` and fill from 1Password ("Isomer Next").
 
 ## Running the app locally
 
@@ -65,11 +120,7 @@ cp .env.example .env.development.local
 Optionally set `POSTMAN_API_KEY` to send login OTP emails via [Postman](https://postman.gov.sg).
 If not set, OTP emails will be logged to the console instead.
 
-#### Retrieving client-side environment variables in code
-
-⚠️ When adding client-only environment variables in NextJS, you must prefix the variable with `NEXT_PUBLIC_` to ensure that the variable is exposed to the browser. For example, if you want to add a variable called `MY_ENV_VAR`, you should add it to your `.env` file as `NEXT_PUBLIC_MY_ENV_VAR`.
-
-You will also need to update [src/env.mjs](src/env.mjs#L17) to explicitly reference the variable so NextJS will correctly bundle the environment variable into the client-side bundle.
+When adding client-only environment variables in Next.js, prefix with `NEXT_PUBLIC_` and explicitly reference the variable in [src/env.mjs](src/env.mjs) so Next.js bundles it into the client.
 
 ### Start database
 
@@ -80,17 +131,43 @@ export $(grep DATABASE_URL .env.development.local | xargs) && pnpm run setup
 
 ### Start server
 
+Run from the **repo root** so Turbo generates the preview CSS before starting the dev server:
+
 ```bash
+pnpm dev
+```
+
+If you must run from `apps/studio` directly, generate the preview CSS first:
+
+```bash
+pnpm build:preview-tw
 pnpm run dev
 ```
 
-## Developer Operations
+## Testing
 
-> TODO: CI/CD test with GitHub Actions
+**Unit tests** (Vitest):
 
-> TODO: Github branch protection rules
+```bash
+pnpm test:unit
+pnpm test:watch
+pnpm test:unit -- src/path/to/file.test.ts   # single file
+```
 
-# Useful notes
+- Mocks: `tests/mocks/db.ts` (Prisma mock), `tests/mocks/mockpass.ts`
+- MSW handlers for tRPC in `tests/msw/`
+
+**E2E tests** (Playwright):
+
+```bash
+pnpm setup:test                                           # start Docker services first
+pnpm test:e2e
+pnpm exec playwright test tests/e2e/specific.spec.ts      # single test
+```
+
+- Requires `pnpm setup:test` (containerized PostgreSQL + MockPass)
+- Videos recorded; timeout 35s per test
+- Base URL via `PLAYWRIGHT_TEST_BASE_URL`
 
 ## Commands
 
@@ -99,8 +176,6 @@ pnpm run build      # runs `prisma generate` + `prisma migrate` + `next build`
 pnpm run db:reset   # resets local db
 pnpm run dev        # starts next.js
 pnpm run setup      # starts postgres db + runs migrations + seed
-pnpm run test-dev   # runs e2e tests on dev
-pnpm run test-start # runs e2e tests on `next start` - build required before
 pnpm run test:unit  # runs normal Vitest unit tests
 pnpm run test:e2e   # runs e2e tests
 ```
@@ -130,164 +205,3 @@ User-management behavior:
 
 - Any existing role can `read` user permissions list
 - Only `Admin` can `manage` user permissions
-
-### Resource move workflow and constraints
-
-Codepath:
-
-- `src/server/modules/resource/resource.router.ts` (`resource.move`)
-
-The move flow validates both authorization and data invariants before updating parent IDs.
-
-Guardrails enforced server-side:
-
-- Destination must be root/folder/collection (and in the same site)
-- Cannot move to the same folder
-- Cannot move a resource into itself
-- Collection items (`CollectionPage`/`CollectionLink`) can only move into collections
-- Non-collection items cannot move into collections
-- Folders/collections/root pages cannot be moved into their own descendants
-
-After a successful move, Studio republishes via `publishResource(...)`.
-
-Common API errors to expect:
-
-- `"Please ensure that you are trying to move your resource into a valid destination"`
-- `"Collection items can only be moved to another collection"`
-- `"Folder items can only be moved to another folder"`
-- `"Cannot move a folder into one of its descendants"`
-
-### Recursive resource query limits
-
-Codepaths:
-
-- `src/schemas/resource.ts`
-- `src/components/ResourceSelector/useResourceQuery.tsx`
-
-To prevent expensive recursive lookups, batch resource queries are capped:
-
-- `MAX_BATCH_RESOURCE_IDS = 25`
-- Applied to `resource.getBatchAncestryWithSelf` and `resource.searchWithResourceIds`
-- Resource selector pagination also uses this limit
-
-If you change this value, update both schema validation and UI assumptions together.
-
-### Asset upload and delete workflow
-
-Codepaths:
-
-- `src/schemas/asset.ts`
-- `src/server/modules/asset/asset.router.ts`
-- `src/server/modules/asset/asset.service.ts`
-- `src/lib/s3.ts`
-- `src/hooks/useUploadAssetMutation.ts`
-
-Upload flow (`asset.getPresignedPutUrl` -> browser `PUT`):
-
-1. Validate asset permissions (site-level if no `resourceId`, otherwise scoped to resource/site)
-2. Validate `fileName`:
-   - Must start with `[a-zA-Z0-9-_]`
-   - Must include an allowlisted extension from upload constants
-3. Generate key format: `<siteId>/<uuid>/<sanitizedFileName>`
-4. Derive trusted `Content-Type`/`Content-Disposition` server-side from key
-5. Return signed URL where `content-type` and `content-disposition` are signed headers
-6. Client must upload using returned headers exactly
-
-Delete flow (`asset.deleteAssets`):
-
-- Validates delete permission first
-- Rejects any key not prefixed with `<siteId>/`
-- Performs soft-delete by setting S3 tag `deletedAt=<timestamp>`
-
-### OTP email sign-in troubleshooting
-
-Codepaths:
-
-- `src/server/modules/auth/email/email.router.ts`
-- `src/lib/mail.ts`
-
-Flow summary:
-
-1. `emailSession.login` requires user to be allowlisted and not deleted
-2. OTP token is generated, hashed, and stored as verification token
-3. `sendMail(...)` is called
-4. `emailSession.verifyOtp` verifies token, upserts user, and creates session state
-
-Operational notes:
-
-- `sendMail` has an allowlist safety check before sending
-- If `POSTMAN_API_KEY` is unset, email payload is logged to console instead of being sent
-- OTP issuance and delivery failures are logged with structured context
-
-Quick failure guide:
-
-| Symptom                               | Likely cause                                 | Where to check                                  |
-| ------------------------------------- | -------------------------------------------- | ----------------------------------------------- |
-| `UNAUTHORIZED: Email address...`      | Email not in allowlist or user is deleted    | `email.router.ts` login checks                  |
-| `INTERNAL_SERVER_ERROR: Failed to...` | Postman API/network failure while sending    | `lib/mail.ts` logs                              |
-| `Please request for another OTP`      | Missing/expired verification token           | verification token table and OTP fingerprinting |
-| OTP not received locally              | `POSTMAN_API_KEY` missing (console fallback) | local server console output                     |
-
-## Files of note
-
-<table>
-  <thead>
-    <tr>
-      <th>Path</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><a href="./prisma/schema.prisma"><code>./prisma/schema.prisma</code></a></td>
-      <td>Prisma schema</td>
-    </tr>
-    <tr>
-      <td><a href="./src/pages/api/trpc/[trpc].ts"><code>./src/pages/api/trpc/[trpc].ts</code></a></td>
-      <td>tRPC response handler</td>
-    </tr>
-    <tr>
-      <td><a href="./src/server/routers"><code>./src/server/routers</code></a></td>
-      <td>Your app's different tRPC-routers</td>
-    </tr>
-  </tbody>
-</table>
-
----
-
-## DB migrations
-
-The following steps are needed before you can run migrations on a remote database in a private subnet of an AWS VPC.
-
-First, ensure that you are connected to [AWS VPN](https://www.notion.so/opengov/Instructions-to-use-OGP-s-AWS-VPN-e67226703cac459999b84c02200a3940) as only the VPN is whitelisted to use the EC2 instance<sup>1</sup>.
-
-Next, you will require the correct environment variables and credentials.
-
-- Go into the 1PW Isomer vault and search for the `studio .ssh/.env.<staging | prod>` file.
-- Create a folder named .ssh in the root directory and place the `.env` files there.
-- Search for the credentials from the entry `AWS Isomer Next <env> Bastion SSH Key`- download the file `studio-vapt-bastion.pem`
-- Put these credentials into the .ssh folder also.
-
-Next, run the following command: `pnpm run jump:vapt`. This sets up the port-forwarding service.
-Finally, run the following command in a separate terminal: `pnpm run migrate` to run the migration.
-
-What happens under the hood is described below:
-You need to set up a local port-forwarding service that forwards traffic from a specific local port, e.g. 5433, to the database via the bastion host (remember: the bastion host resides in the public subnet of the VPC and thus can be contactable from your computer).
-
-- Open a terminal window and run the following command: `ssh -L 5433:<DB_HOST>:5432 <SSH_USER>@<SSH_HOST> -i <PATH_TO_SSH_HOST_PEM_FILE>`
-- The `DB_HOST`, `SSH_USER` and `SSH_HOST` values can be found in the `ssm` keys on aws
-- The `PEM_FILE` (the actual file) can be found in the `Isomer` 1Password vault as well, under the entry `AWS Isomer Next <env> Bastion SSH Key`. Download the file and save it to your computer. and update the file value for `PATH_TO_SSH_HOST_PEM_FILE`.
-
-Finally, we want to run the migration script.
-
-- Modify the `DATABASE_URL` in the `.env` file so that Prisma connects to the local port-forwarding service at port 5433: `postgres://<DB_USER>:<DB_PASS>@127.0.0.1:5433/<DB_NAME>`
-- Open another terminal window.
-- Run `source .env`
-- Run `pnpm exec prisma migrate deploy`
-
-## Deploying to a physical server or virtual private server (VPS)
-
-As Isomer Studio is based on Starter Kit, you may follow the relevant
-[instructions](https://start.open.gov.sg/docs/guides/on-prem)
-in the Starter Kit guide to deploy the application to a physical server
-or virtual private server (VPS).

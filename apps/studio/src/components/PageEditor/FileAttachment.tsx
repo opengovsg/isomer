@@ -23,6 +23,7 @@ interface FileAttachmentProps {
   maxSizeInBytes: number
   acceptedFileTypes: Record<string, string>
   shouldFetchResource?: boolean
+  onUploadedFile?: (file: File) => void
   enableRiskyFileWarning?: boolean
 }
 
@@ -35,6 +36,7 @@ export const FileAttachment = ({
   maxSizeInBytes,
   acceptedFileTypes,
   shouldFetchResource = true,
+  onUploadedFile,
   enableRiskyFileWarning = false,
 }: FileAttachmentProps) => {
   const [rejections, setRejections] = useState<FileRejections>([])
@@ -58,6 +60,7 @@ export const FileAttachment = ({
       { file },
       {
         onSuccess: ({ path }) => {
+          onUploadedFile?.(file)
           if (shouldFetchResource) {
             void handleAssetUpload(path).then((src) => setHref(src))
           } else setHref(path)
@@ -104,7 +107,7 @@ export const FileAttachment = ({
               if (parseResult.success) return null
               // NOTE: safe assertion here because we're in error path and there's at least 1 error
               return (
-                parseResult.error.errors[0]?.message ||
+                parseResult.error.issues[0]?.message ||
                 "Please ensure that your file begins with alphanumeric characters!"
               )
             }}
