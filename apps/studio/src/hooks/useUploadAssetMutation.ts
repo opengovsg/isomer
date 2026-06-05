@@ -7,8 +7,6 @@ import { trpc } from "~/utils/trpc"
 
 import { handleAssetUpload } from "./handleAssetUpload"
 
-const BLOB_UPLOAD_URL = "/api/blob/upload"
-
 type UploadAssetMutationParams = Pick<
   z.infer<typeof getPresignedPutUrlSchema>,
   "siteId" | "resourceId"
@@ -52,7 +50,7 @@ export const useUploadAssetMutation = ({
         if (env.NEXT_PUBLIC_APP_ENV === "preview") {
           const blob = await upload(fileKey, file, {
             access: "public",
-            handleUploadUrl: BLOB_UPLOAD_URL,
+            handleUploadUrl: "/api/blob/upload",
             contentType,
           })
           return { path: blob.url }
