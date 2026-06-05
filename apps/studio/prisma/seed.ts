@@ -28,7 +28,7 @@ const createPage = async ({
   permalink: string
   title: string
   siteId: number
-  parentId?: bigint | null
+  parentId?: string | null
   userId: string
 }) => {
   const { id: blobId } = await db
@@ -93,7 +93,7 @@ const createFolder = async ({
   permalink: string
   title: string
   siteId: number
-  parentId?: bigint | null
+  parentId?: string | null
 }) => {
   const { id: folderId } = await db
     .insertInto("Resource")
@@ -144,7 +144,7 @@ async function main() {
           id: createId(),
           email: `${username}@open.gov.sg`,
           name: username,
-          phone: "12345678",
+          phone: "88888888",
         })
         .onConflict((oc) =>
           oc
@@ -239,19 +239,19 @@ async function main() {
             name: username,
             email: `${username}+editor@open.gov.sg`,
             role: RoleType.Editor,
-            phone: "12345678",
+            phone: "88888888",
           },
           {
             name: username,
             email: `${username}+publisher@open.gov.sg`,
             role: RoleType.Publisher,
-            phone: "12345678",
+            phone: "88888888",
           },
           {
             name: username,
             email: `${username}+admin@open.gov.sg`,
             role: RoleType.Admin,
-            phone: "12345678",
+            phone: "88888888",
           },
         ],
       }),

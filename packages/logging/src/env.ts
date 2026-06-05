@@ -12,7 +12,7 @@ import { z } from "zod"
 // refactor is intentionally deferred to keep the diff minimal.
 const schema = z.object({
   NEXT_PUBLIC_APP_ENV: z
-    .enum(["development", "staging", "production", "test", "vapt", "uat"])
+    .enum(["development", "staging", "production", "test", "vapt", "uat", "preview"])
     .default("development"),
   NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
 })
