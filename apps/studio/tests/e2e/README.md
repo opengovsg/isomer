@@ -21,3 +21,13 @@ OTP + Mockpass adds ~4s per login. Without storage state, a 10-test suite spends
 ## Why we still keep integration tests
 
 E2E covers user-visible behavior. Integration tests cover server-side correctness: audit log shape, GTM ID validation, role-boundary 401/403/404 codes, SearchSG side effects. We need both layers. Translating every integration scenario to e2e would triple CI time without adding meaningful signal.
+
+## Known footguns
+
+- **Global `beforeEach` in `utils.ts`** wipes every user's `name`/`phone`/`singpassUuid`. Tests that need a non-empty profile (to skip the welcome modal) must re-populate it in their own `beforeEach`. See `site/settings-agency.test.ts` for the pattern.
+- **`storage-state/` is gitignored but persists across local runs**. If you switch your local DB target away from the test DB, delete the cookie jars before running again: `rm apps/studio/tests/e2e/storage-state/*.json` (the `.gitignore` is preserved).
+
+## Open follow-ups
+
+- **Admin dashboard bypass in `settings-agency.test.ts`.** The admin test navigates directly to `/sites/1/settings/agency` instead of clicking through the dashboard site list. Reason: the admin storage state was hitting an empty/unmatched site list at the time of writing. The editor test in `site/list.test.ts` does click through successfully, so this is admin-specific. Worth investigating whether admin sees a different dashboard render or whether it's a session/timing race.
+- **`.chakra-switch` selector in `settings-notification.test.ts`.** Couples the test to Chakra UI's class naming. Right fix is upstream: add an `aria-label` to the Switch in the FormBuilder render path for optional object groups, then update the locator to `getByRole("switch", { name: ... })`.

@@ -40,8 +40,8 @@ test("admin can update site name on the agency settings page", async ({
   await expect(nameField).toBeVisible()
   await nameField.fill("Isomer (renamed)")
 
-  await site.saveButton().click()
-  await site.expectSuccessToast()
+  await site.publishButton().click()
+  await site.expectChangesPublishedToast()
 
   // Hard-assert persistence: reload and verify the value sticks.
   await page.reload()
