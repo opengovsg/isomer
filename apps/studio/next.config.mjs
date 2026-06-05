@@ -67,7 +67,7 @@ const ContentSecurityPolicy = `
     https://embed-cdn.spotifycdn.com
     https://open.spotify.com
     https://js-cdn.music.apple.com
-    ${process.env.VERCEL_ENV === "preview" ? "https://vercel.live" : ""}
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://vercel.live" : ""}
     ;
   style-src
     'self'
