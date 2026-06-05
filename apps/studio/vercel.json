@@ -1,5 +1,5 @@
 {
   "regions": ["sin1"],
-  "installCommand": "cd ../.. && pnpm install --frozen-lockfile && pnpm build",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
   "buildCommand": "pnpm run migrate && pnpm run migrate:custom && pnpm run build"
 }
