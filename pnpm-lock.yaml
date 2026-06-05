@@ -318,8 +318,8 @@ catalogs:
       specifier: ^11.2.1
       version: 11.3.0
     rate-limiter-flexible:
-      specifier: ^5.0.3
-      version: 5.0.5
+      specifier: ^11.1.0
+      version: 11.1.0
     react-error-boundary:
       specifier: ^5.0.0
       version: 5.0.0
@@ -930,7 +930,7 @@ importers:
         version: 1.8.0
       rate-limiter-flexible:
         specifier: 'catalog:'
-        version: 5.0.5
+        version: 11.1.0
       react:
         specifier: catalog:react
         version: 18.3.1
@@ -10384,8 +10384,8 @@ packages:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
 
-  rate-limiter-flexible@5.0.5:
-    resolution: {integrity: sha512-+/dSQfo+3FYwYygUs/V2BBdwGa9nFtakDwKt4l0bnvNB53TNT++QSFewwHX9qXrZJuMe9j+TUaU21lm5ARgqdQ==}
+  rate-limiter-flexible@11.1.0:
+    resolution: {integrity: sha512-lyyC0SqKz+dE5JoHZ4JMqdrM3LSZKBxzuAFAyKCYAnmHnPz/Rb6iDquxoL4CMipDXoR0G+QRhOzYWL3JKihbNw==}
 
   rc@1.2.8:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
@@ -21223,7 +21223,7 @@ snapshots:
 
   range-parser@1.2.1: {}
 
-  rate-limiter-flexible@5.0.5: {}
+  rate-limiter-flexible@11.1.0: {}
 
   rc@1.2.8:
     dependencies:
