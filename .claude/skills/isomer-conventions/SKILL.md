@@ -1,0 +1,58 @@
+---
+name: isomer-conventions
+description: Repository-specific code smells and blessed conventions for the Isomer Next monorepo. Use when writing or reviewing code in this repo (tRPC routers, Kysely/Prisma access, zod schemas, React components, tests) to catch deviations from team conventions, and when the user wants to record a new code smell or best practice ("remember this convention", "add a code smell", "we always/never do X here").
+---
+
+# Isomer conventions
+
+A growable catalog of repo-specific code smells (patterns to avoid) and best
+practices (the blessed way). Each entry lives in its own file under
+`conventions/`; the [Catalog](#catalog) below indexes them. The catalog starts
+empty and grows as the team discovers conventions during review.
+
+## Applying conventions
+
+When writing or reviewing code in this repo:
+
+1. Skim the [Catalog](#catalog) and load any entry whose hook looks relevant to
+   the diff/file at hand. Don't load all of them — only what's relevant.
+2. For each relevant entry, check the code against it.
+3. Flag violations as `path:line` — name the convention, show the blessed
+   pattern, and (for smells) why it matters. Cite the entry file.
+4. When writing new code, follow the matching best-practice entries by default.
+
+If the catalog is empty or nothing matches, fall back to general good judgment —
+do not invent repo conventions that aren't recorded here.
+
+## Adding a new entry
+
+Triggered when the user says things like "remember this", "add a code smell",
+"we always/never do X here", or describes a convention while reviewing code.
+
+1. **Check for an existing entry first.** If one covers the same ground, update
+   it instead of creating a duplicate.
+2. Create `conventions/<kebab-slug>.md` following
+   [conventions/TEMPLATE.md](conventions/TEMPLATE.md). Keep it short — a smell,
+   why, a Bad/Good pair, and how to detect it. Ground examples in real
+   `path:line` from the repo when possible.
+3. Add a one-line pointer to the [Catalog](#catalog) below, grouped under its
+   category (create the category heading if it's new).
+4. Confirm what you saved in one line.
+
+Keep SKILL.md lean: detail lives in the entry files, never inline here.
+
+## Catalog
+
+### React
+
+- [Prefer a new component over overloading props](conventions/react-new-component-over-prop-overload.md) — smell: flag soup / single-caller props bending one component into two jobs
+- [Build forms with useZodForm, not per-field useState](conventions/react-forms-usezodform-over-usestate.md) — best practice: forms use the zod-wired useForm wrapper, schema reused from ~/schemas
+
+### Audit logging
+- [Audit deltas must log real DB rows, not hand-built objects](conventions/audit-log-real-db-rows.md) — best practice: log before/after as rows re-read from the DB inside the same tx, so deltas are accurate
+
+### Readability
+- [Document every regex, and keep the comment correct](conventions/document-regex-with-verified-comments.md) — best practice: comment what + why a regex matches, and verify the comment is accurate
+
+<!-- Each line: [Title](conventions/slug.md) — short hook (smell/best practice).
+     Group under a category heading; create the heading if it's new. -->
