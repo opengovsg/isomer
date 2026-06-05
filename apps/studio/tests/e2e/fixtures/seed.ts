@@ -1,0 +1,69 @@
+import { createId } from "@paralleldrive/cuid2"
+import { db } from "~/server/modules/database"
+import { RoleType } from "~prisma/generated/generatedEnums"
+
+import { TEST_EMAILS } from "./auth"
+
+const SEED_SITE_ID = 1
+
+export const getSeedSiteId = () => SEED_SITE_ID
+
+/**
+ * Idempotent: inserts user if missing, then ensures a ResourcePermission
+ * with `role` on the seed site exists (re-activating if soft-deleted).
+ *
+ * The unique constraint on ResourcePermission is
+ * (userId, siteId, resourceId, deletedAt) NULLS NOT DISTINCT.
+ * We conflict on that constraint so that a second run with deletedAt=NULL
+ * is a no-op (we just update the role to the desired value).
+ */
+const ensureUserWithRole = async (
+  email: string,
+  role: (typeof RoleType)[keyof typeof RoleType] | null,
+) => {
+  const user = await db
+    .insertInto("User")
+    .values({
+      id: createId(),
+      email,
+      name: "test-e2e",
+      phone: "82345678",
+    })
+    .onConflict((oc) =>
+      oc
+        .columns(["email", "deletedAt"])
+        .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+    )
+    .returning(["id"])
+    .executeTakeFirstOrThrow()
+
+  if (role === null) return user
+
+  await db
+    .insertInto("ResourcePermission")
+    .values({
+      userId: user.id,
+      siteId: SEED_SITE_ID,
+      role,
+      resourceId: null,
+    })
+    .onConflict((oc) =>
+      // Unique constraint: (userId, siteId, resourceId, deletedAt) NULLS NOT DISTINCT
+      // When inserting with deletedAt=NULL, a conflict means an active row already
+      // exists. We update the role to ensure it matches what we expect.
+      oc
+        .columns(["userId", "siteId", "resourceId", "deletedAt"])
+        .doUpdateSet({ role }),
+    )
+    .execute()
+
+  return user
+}
+
+export const seedRolesForE2E = async () => {
+  await ensureUserWithRole(TEST_EMAILS.admin, RoleType.Admin)
+  await ensureUserWithRole(TEST_EMAILS.nomember, null)
+  // editor + publisher are seeded by prisma/seed.ts; ensure they're still active
+  await ensureUserWithRole(TEST_EMAILS.editor, RoleType.Editor)
+  await ensureUserWithRole(TEST_EMAILS.publisher, RoleType.Publisher)
+}
