@@ -4,7 +4,10 @@ import { TRPCError } from "@trpc/server"
 import { pick, set } from "lodash-es"
 import { env } from "~/env.mjs"
 import { sendLoginAlertEmail } from "~/features/mail/service"
-import { getIsSingpassEnabled } from "~/lib/growthbook"
+import {
+  getIsSingpassDisabledInNonPreview,
+  getIsSingpassEnabled,
+} from "~/lib/growthbook"
 import { sendMail } from "~/lib/mail"
 import {
   emailSignInSchema,
@@ -170,7 +173,9 @@ export const emailSessionRouter = router({
           return pick(user, defaultUserSelect)
         })
 
-        await sendLoginAlertEmail({ recipientEmail: email })
+        if (getIsSingpassDisabledInNonPreview({ gb: ctx.gb })) {
+          await sendLoginAlertEmail({ recipientEmail: email })
+        }
 
         return user
       }
