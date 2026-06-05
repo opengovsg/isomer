@@ -1,20 +1,18 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { MenuButton, MenuList, Portal, Text } from "@chakra-ui/react"
+import { Text } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { useCallback, useMemo, useState } from "react"
-import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
-import { MenuItem } from "~/components/Menu"
+import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
-import DraggableTagButton from "./DraggableTagButton"
+import { TagDraggableButton } from "./DraggableTagButton"
 import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
+import { TagRowActionsMenu } from "./TagRowActionsMenu"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
@@ -65,48 +63,29 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               ? "No option"
               : `${count} ${count > 1 ? "options" : "option"}`
           return (
-            <DraggableTagButton
+            <TagDraggableButton
               {...rowProps}
               isError={rowProps.isError || isDuplicate}
               listItemIcon={BiPurchaseTag}
-              listItemContentProps={{ py: "0.5rem" }}
               listItemSubtitle={
                 <Text textStyle="caption-2" color="base.content.medium">
                   {subtitle}
                 </Text>
               }
               listItemTrailing={
-                <Menu isLazy>
-                  <MenuButton
-                    as={IconButton}
-                    icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
-                    {...ROW_ACTIONS_MENU_BUTTON_PROPS}
-                    isDisabled={isRemoveItemDisabled}
-                    aria-label={`Filter ${rowProps.index + 1} actions`}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <Portal>
-                    <MenuList>
-                      <MenuItem
-                        colorScheme="critical"
-                        icon={<BiTrash fontSize="1rem" />}
-                        isDisabled={isRemoveItemDisabled}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDeleteTarget({
-                            index: rowProps.index,
-                            label:
-                              page?.tagCategories?.[
-                                rowProps.index
-                              ]?.label?.trim() ?? "",
-                          })
-                        }}
-                      >
-                        Delete filter
-                      </MenuItem>
-                    </MenuList>
-                  </Portal>
-                </Menu>
+                <TagRowActionsMenu
+                  noun="filter"
+                  index={rowProps.index}
+                  isDisabled={isRemoveItemDisabled}
+                  onDelete={() =>
+                    setDeleteTarget({
+                      index: rowProps.index,
+                      label:
+                        page?.tagCategories?.[rowProps.index]?.label?.trim() ??
+                        "",
+                    })
+                  }
+                />
               }
               listItemErrorCaption={
                 isDuplicate
