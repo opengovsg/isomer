@@ -2,8 +2,4 @@
   "regions": ["sin1"],
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
   "buildCommand": "cd ../../packages/components && pnpm run build && cd - && pnpm run migrate && pnpm run migrate:custom && pnpm run build:preview-tw && pnpm run build",
-  "env": {
-    "NEXT_PUBLIC_APP_NAME": "Isomer Studio (Preview)",
-    "NEXT_PUBLIC_S3_REGION": "ap-southeast-1"
-  }
 }
