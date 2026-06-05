@@ -45,7 +45,7 @@ git checkout $ISOMER_BUILD_REPO_BRANCH
 calculate_duration $start_time
 
 corepack enable
-corepack install -g pnpm@11.1.2
+corepack install -g pnpm@11.5.1
 
 # Install dependencies
 echo "Installing dependencies..."
