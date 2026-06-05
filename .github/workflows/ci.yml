@@ -45,7 +45,7 @@ jobs:
         run: pnpm run lint && pnpm run lint:ws
 
       - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@d292784f8f3eacda47060b259a580467b0ba410c
+        uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5
         with:
           dockerfile: "./apps/studio/Dockerfile"
           failure-threshold: "error"
