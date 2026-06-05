@@ -54,5 +54,8 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 ### Readability
 - [Document every regex, and keep the comment correct](conventions/document-regex-with-verified-comments.md) — best practice: comment what + why a regex matches, and verify the comment is accurate
 
+### Testing
+- [Structure tests as Arrange / Act / Assert](conventions/tests-arrange-act-assert.md) — best practice: mark AAA phases (collapse adjacent markers when trivial), one Act per test
+
 <!-- Each line: [Title](conventions/slug.md) — short hook (smell/best practice).
      Group under a category heading; create the heading if it's new. -->
