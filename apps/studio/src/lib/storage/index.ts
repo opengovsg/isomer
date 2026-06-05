@@ -62,24 +62,25 @@ class S3AssetStorage implements AssetStorage {
 }
 
 class VercelBlobAssetStorage implements AssetStorage {
-  async getUploadConfig({
+  getUploadConfig({
     contentType,
     contentDisposition,
   }: GetUploadConfigParams): Promise<UploadConfig> {
-    return {
+    return Promise.resolve({
       provider: "vercel-blob",
       handleUploadUrl: "/api/blob/upload",
       contentType,
       contentDisposition,
-    }
+    })
   }
 
-  async getReadUrl(key: string): Promise<string> {
-    return key.startsWith("https://") ? key : ""
+  getReadUrl(key: string): Promise<string> {
+    return Promise.resolve(key.startsWith("https://") ? key : "")
   }
 
-  async deleteFile(_key: string): Promise<void> {
+  deleteFile(_key: string): Promise<void> {
     // No-op: Vercel Blob is preview-only, deletion isn't tracked
+    return Promise.resolve()
   }
 }
 
@@ -87,4 +88,4 @@ export const assetStorage: AssetStorage =
   env.NEXT_PUBLIC_APP_ENV === "preview"
     ? new VercelBlobAssetStorage()
     : // env validation in env.mjs ensures this is set in non-preview environments
-      new S3AssetStorage(env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME!)
+      new S3AssetStorage(env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME ?? "")
