@@ -47,3 +47,30 @@ test("admin can update site name on the agency settings page", async ({
   await page.reload()
   await expect(page.getByLabel("Site name")).toHaveValue("Isomer (renamed)")
 })
+
+test.describe("publisher", () => {
+  test.use({ storageState: storageStateFor("publisher") })
+
+  test.beforeEach(async () => {
+    // Same welcome-modal workaround as the admin test block.
+    await db
+      .updateTable("User")
+      .set({ name: "test-e2e", phone: "82345678" })
+      .where("email", "=", TEST_EMAILS.publisher)
+      .execute()
+  })
+
+  test("publisher does not see the Publish button on agency settings", async ({
+    page,
+  }) => {
+    await page.goto(`/sites/${getSeedSiteId()}/settings/agency`)
+    await page.waitForURL(/\/settings\/agency$/)
+
+    // Form input is visible (settings page rendered)…
+    await expect(page.getByLabel("Site name")).toBeVisible()
+    // …but the Publish button (gated by `<Can do="create">`) is not.
+    await expect(
+      page.getByRole("button", { name: "Publish" }),
+    ).not.toBeVisible()
+  })
+})
