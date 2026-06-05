@@ -31,8 +31,8 @@ async function main() {
         .values({
           id: createId(),
           email: `${username}@open.gov.sg`,
-          name: "",
-          phone: "",
+          name: username,
+          phone: "12345678",
         })
         .onConflict((oc) =>
           oc
@@ -47,7 +47,7 @@ async function main() {
   // Create "Sample Site" (gets ID 1 on a fresh DB)
   const { siteId } = await createSite({
     siteName: "Sample Site",
-    userId: isomerAdminUsers[0]!.id,
+    userId: isomerAdminUsers[0]?.id ?? "",
   })
 
   // Whitelist @open.gov.sg domain
@@ -83,12 +83,24 @@ async function main() {
       addUsersToSite({
         siteId,
         users: [
-          { email: `${username}+editor@open.gov.sg`, role: RoleType.Editor },
           {
+            name: username,
+            email: `${username}+editor@open.gov.sg`,
+            role: RoleType.Editor,
+            phone: "12345678",
+          },
+          {
+            name: username,
             email: `${username}+publisher@open.gov.sg`,
             role: RoleType.Publisher,
+            phone: "12345678",
           },
-          { email: `${username}+admin@open.gov.sg`, role: RoleType.Admin },
+          {
+            name: username,
+            email: `${username}+admin@open.gov.sg`,
+            role: RoleType.Admin,
+            phone: "12345678",
+          },
         ],
       }),
     ),
