@@ -23,6 +23,17 @@ const TEAM = [
 ]
 
 async function main() {
+  const alreadySeeded = await db
+    .selectFrom("Site")
+    .where("name", "=", "Sample Site")
+    .select("id")
+    .executeTakeFirst()
+
+  if (alreadySeeded) {
+    console.log("Already seeded, skipping...")
+    return
+  }
+
   // Create XXX@open.gov.sg users (will be assigned IsomerAdmin)
   const isomerAdminUsers = await Promise.all(
     TEAM.map((username) =>
