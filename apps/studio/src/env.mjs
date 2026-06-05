@@ -2,8 +2,8 @@ import { z } from "zod"
 
 const s3Schema = z.object({
   NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
-  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
-  NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z.string(),
+  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string().optional(),
+  NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z.string().optional(),
 })
 
 const cronHeartbeatSchema = z.object({
@@ -69,6 +69,24 @@ const server = z
   .merge(s3Schema)
   .merge(singpassSchema)
   .merge(client)
+  .superRefine((data, ctx) => {
+    if (data.NEXT_PUBLIC_APP_ENV !== "preview") {
+      if (!data.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Required for non-preview environments",
+          path: ["NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME"],
+        })
+      }
+      if (!data.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Required for non-preview environments",
+          path: ["NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME"],
+        })
+      }
+    }
+  })
 
 /**
  * You can't destruct `process.env` as a regular object in the Next.js edge runtimes (e.g.
@@ -104,7 +122,9 @@ const processEnv = {
   STUDIO_SSM_WEBHOOK_API_KEY: process.env.STUDIO_SSM_WEBHOOK_API_KEY,
   BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
   // Client-side env vars
-  NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
+  NEXT_PUBLIC_APP_ENV:
+    process.env.NEXT_PUBLIC_APP_ENV ??
+    (process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ? "preview" : undefined),
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   NEXT_PUBLIC_APP_VERSION:
     process.env.NEXT_PUBLIC_APP_VERSION ??
