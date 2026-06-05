@@ -67,6 +67,7 @@ const ContentSecurityPolicy = `
     https://embed-cdn.spotifycdn.com
     https://open.spotify.com
     https://js-cdn.music.apple.com
+    ${process.env.VERCEL_ENV === "preview" ? "https://vercel.live" : ""}
     ;
   style-src
     'self'
@@ -156,7 +157,8 @@ const config = {
   // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   productionBrowserSourceMaps: true,
-  /** We already do typechecking as a separate task in CI */
+  /** We already do linting and typechecking as separate tasks in CI */
+  eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [
     "@isomer/logging",
