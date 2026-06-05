@@ -1,5 +1,5 @@
 {
   "regions": ["sin1"],
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "cd ../../packages/components && pnpm run build && cd - && pnpm run migrate && pnpm run migrate:custom && pnpm run build:preview-tw && pnpm run build",
+  "buildCommand": "cd ../../packages/components && pnpm run build && cd - && pnpm run migrate && pnpm run migrate:custom && pnpm run build:preview-tw && pnpm run build"
 }
