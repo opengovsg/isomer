@@ -9,6 +9,8 @@ import {
 import { Inter } from "next/font/google"
 import Script from "next/script"
 
+import { serializeForInlineScript } from "@isomer/validators"
+
 import { IsomerProviders } from "./providers"
 
 const inter = Inter({
@@ -70,7 +72,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+            __html: serializeForInlineScript(jsonLd),
           }}
         />
       </body>

@@ -1,7 +1,13 @@
 "use client"
 
 import type { NavbarClientProps } from "~/interfaces"
-import { useCallback, useLayoutEffect, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
 import { tv } from "~/lib/tv"
@@ -113,6 +119,20 @@ export const NavbarClient = ({
     ref: siteHeaderRef,
     onResize: refreshMenuOffset,
   })
+
+  // When the hamburger menu is open, also watch the full <header> for height
+  // changes caused by siblings like masthead/notification toggling, since those
+  // don't resize the navbar container but do shift its position.
+  useEffect(() => {
+    if (!isHamburgerOpen) return
+
+    const header = siteHeaderRef.current?.closest("header")
+    if (!header) return
+
+    const observer = new ResizeObserver(() => refreshMenuOffset())
+    observer.observe(header)
+    return () => observer.disconnect()
+  }, [isHamburgerOpen, refreshMenuOffset])
 
   const onCloseMenu = useCallback(() => {
     setIsHamburgerOpen(false)

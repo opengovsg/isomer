@@ -96,8 +96,15 @@ export const singpassRouter = router({
         ctx.session.singpass.sessionState
 
       if (!code || !codeVerifier || !nonce || !userId) {
+        // Do not log `code`, `codeVerifier`, or `nonce` — they are OAuth/OIDC secrets
+        // (PKCE verifier + auth code complete the token exchange; nonce binds the ID token).
         ctx.logger.error(
-          { code, codeVerifier, nonce, userId },
+          {
+            hasCode: !!code,
+            hasCodeVerifier: !!codeVerifier,
+            hasNonce: !!nonce,
+            userId,
+          },
           "Invalid Singpass session state",
         )
 
@@ -115,8 +122,14 @@ export const singpassRouter = router({
       })
 
       if (!uuid) {
+        // Do not log `code`, `codeVerifier`, or `nonce` — see comment above.
         ctx.logger.error(
-          { code, codeVerifier, nonce, state },
+          {
+            hasCode: !!code,
+            hasCodeVerifier: !!codeVerifier,
+            hasNonce: !!nonce,
+            state,
+          },
           "Failed to login to Singpass",
         )
 
