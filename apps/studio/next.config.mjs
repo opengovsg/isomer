@@ -131,6 +131,7 @@ const ContentSecurityPolicy = `
     https://*.xp.apple.com
     ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://*.public.blob.vercel-storage.com" : ""}
     ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://blob.vercel-storage.com" : ""}
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://vercel.com" : ""}
     ;
   worker-src
     'self'
