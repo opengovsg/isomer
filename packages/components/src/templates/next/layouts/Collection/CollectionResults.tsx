@@ -19,27 +19,24 @@ interface CollectionResultProps extends Pick<
   siteAssetsBaseUrl?: string
 }
 
-const collection = tv(
-  {
-    slots: {
-      collectionResults: "flex w-full flex-col gap-0",
-    },
-    variants: {
-      variant: {
-        collection: {
-          collectionResults: "flex w-full flex-col gap-0",
-        },
-        blog: {
-          collectionResults:
-            // NOTE: we remove the gap so that the blog cards can
-            // render their own border between each item
-            "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-x-10 md:gap-y-5",
-        },
+const collection = tv({
+  slots: {
+    collectionResults: "flex w-full flex-col gap-0",
+  },
+  variants: {
+    variant: {
+      collection: {
+        collectionResults: "flex w-full flex-col gap-0",
+      },
+      blog: {
+        collectionResults:
+          // NOTE: we remove the gap so that the blog cards can
+          // render their own border between each item
+          "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-x-10 md:gap-y-5",
       },
     },
   },
-  { responsiveVariants: ["md", "sm", "lg"] },
-)
+})
 
 export const CollectionResults = ({
   paginatedItems,
