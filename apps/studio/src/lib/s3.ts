@@ -74,6 +74,7 @@ export const deleteFile = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  if (env.NEXT_PUBLIC_APP_ENV === "preview") return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -112,6 +113,7 @@ export const setAssetAsPublished = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  if (env.NEXT_PUBLIC_APP_ENV === "preview") return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -204,6 +206,7 @@ export const markScheduledAssetAsCancelled = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  if (env.NEXT_PUBLIC_APP_ENV === "preview") return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,

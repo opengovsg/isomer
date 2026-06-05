@@ -1,9 +1,13 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { useMutation } from "@tanstack/react-query"
+import { upload } from "@vercel/blob/client"
+import { env } from "~/env.mjs"
 import { trpc } from "~/utils/trpc"
 
 import { handleAssetUpload } from "./handleAssetUpload"
+
+const BLOB_UPLOAD_URL = "/api/blob/upload"
 
 type UploadAssetMutationParams = Pick<
   z.infer<typeof getPresignedPutUrlSchema>,
@@ -30,7 +34,7 @@ export const useUploadAssetMutation = ({
   return useMutation<UploadAssetMutationOutput, void, UploadAssetMutationInput>(
     {
       mutationFn: async ({ file, fileName, scheduledAt }) => {
-        const { fileKey, presignedPutUrl, contentType, contentDisposition } =
+        const { fileKey, contentType, contentDisposition, presignedPutUrl } =
           await getPresignedPutUrl({
             siteId,
             resourceId,
@@ -44,16 +48,23 @@ export const useUploadAssetMutation = ({
                 ]
               : undefined,
           })
+
+        if (env.NEXT_PUBLIC_APP_ENV === "preview") {
+          const blob = await upload(fileKey, file, {
+            access: "public",
+            handleUploadUrl: BLOB_UPLOAD_URL,
+            contentType,
+          })
+          return { path: blob.url }
+        }
+
         await handleAssetUpload({
           file,
           presignedPutUrl,
           contentType,
           contentDisposition,
         })
-
-        return {
-          path: `/${fileKey}`,
-        }
+        return { path: `/${fileKey}` }
       },
       retry: false,
     },

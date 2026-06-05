@@ -130,6 +130,11 @@ export const getPresignedPutUrl = async ({
 }> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
+
+  if (env.NEXT_PUBLIC_APP_ENV === "preview") {
+    return { presignedPutUrl: "", contentType, contentDisposition }
+  }
+
   const stringifiedTags = tags && generateTagsQueryString(tags)
   const presignedPutUrl = await generateSignedPutUrl({
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
@@ -153,6 +158,9 @@ export const getPresignedGetUrl = async ({
 }: {
   key: string
 }): Promise<string> => {
+  if (env.NEXT_PUBLIC_APP_ENV === "preview") {
+    return key.startsWith("https://") ? key : ""
+  }
   return generateSignedGetUrl({
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
     Key: key,

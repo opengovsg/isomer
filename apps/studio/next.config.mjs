@@ -127,6 +127,7 @@ const ContentSecurityPolicy = `
     https://*.wg.spotify.com
     https://*.podcasts.apple.com
     https://*.xp.apple.com
+    https://*.public.blob.vercel-storage.com
     ;
   worker-src
     'self'
@@ -165,8 +166,14 @@ const config = {
   ],
   images: {
     remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
-      ? [{ protocol: "https", hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME }]
-      : [],
+      ? [
+          {
+            protocol: "https",
+            hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+          },
+          { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+        ]
+      : [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
   },
   async headers() {
     return [

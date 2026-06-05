@@ -1,4 +1,5 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
+import { env } from "~/env.mjs"
 
 export const ENABLE_CODEBUILD_JOBS = "enable-codebuild-jobs"
 export const ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY =
@@ -24,6 +25,7 @@ interface GetIsSingpassEnabledProps {
 export const getIsSingpassEnabled = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
+  if (env.NEXT_PUBLIC_APP_ENV === "preview") return false
   return gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,

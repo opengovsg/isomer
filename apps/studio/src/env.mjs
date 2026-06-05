@@ -25,6 +25,7 @@ const client = z
       "vapt",
       "test",
       "uat",
+      "preview",
     ]),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_NAME: z.string().default("Isomer Studio"),
@@ -63,6 +64,7 @@ const server = z
     S3_GAZETTE_DOMAIN_NAME: z.string(),
     EGAZETTE_DOCUMENT_INDEX: z.string().optional(),
     SEARCHSG_API_KEY: z.string(),
+    BLOB_READ_WRITE_TOKEN: z.string().optional(),
   })
   .merge(s3Schema)
   .merge(singpassSchema)
@@ -100,6 +102,7 @@ const processEnv = {
   SINGPASS_SIGNING_PRIVATE_KEY: process.env.SINGPASS_SIGNING_PRIVATE_KEY,
   SINGPASS_SIGNING_KEY_ALG: process.env.SINGPASS_SIGNING_KEY_ALG,
   STUDIO_SSM_WEBHOOK_API_KEY: process.env.STUDIO_SSM_WEBHOOK_API_KEY,
+  BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
   // Client-side env vars
   NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
