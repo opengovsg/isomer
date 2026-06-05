@@ -5,7 +5,6 @@
   "build": {
     "env": {
       "NEXT_PUBLIC_APP_NAME": "Isomer Studio (Preview)",
-      "NEXT_PUBLIC_S3_REGION": "ap-southeast-1"
     }
   }
 }
