@@ -129,7 +129,7 @@ const ContentSecurityPolicy = `
     https://*.wg.spotify.com
     https://*.podcasts.apple.com
     https://*.xp.apple.com
-    https://*.public.blob.vercel-storage.com
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://*.public.blob.vercel-storage.com" : ""}
     ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://blob.vercel-storage.com" : ""}
     ;
   worker-src
