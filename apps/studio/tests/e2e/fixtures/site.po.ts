@@ -34,12 +34,12 @@ export class SitePO {
   }
 
   saveButton() {
-    return this.page.getByRole("button", { name: "Save" })
+    return this.page.getByRole("button", { name: "Publish" })
   }
 
   async expectSuccessToast() {
     await this.page
-      .getByText(/saved|updated/i)
+      .getByText("Changes published")
       .first()
       .waitFor({ state: "visible" })
   }
