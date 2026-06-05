@@ -55,6 +55,7 @@ const ContentSecurityPolicy = `
     https://open.spotify.com
     https://embed-standalone.spotify.com
     https://embed.podcasts.apple.com
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://vercel.live" : ""}
     ;
   object-src 'none';
   script-src
