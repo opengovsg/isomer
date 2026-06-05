@@ -7,12 +7,6 @@ import {
   offsetPaginationSchema,
 } from "./pagination"
 
-const resourceSchema = z
-  .string()
-  .min(1)
-  .regex(/[0-9]+/)
-  .refine((s) => !s.startsWith("0"))
-
 // NOTE: We want to accept string
 // but validate that the string conforms to bigint.
 // Oddly enough, kysely doesn't allow `bigint` to query
@@ -23,7 +17,9 @@ const bigIntSchema = z
   .string()
   .min(1)
   .regex(/^[0-9]+$/)
-  .refine((v) => v.at(0) !== "0")
+  .refine((v) => !v.startsWith("0"))
+
+const resourceSchema = bigIntSchema
 
 export const getMetadataSchema = z.object({
   siteId: z.number(),
