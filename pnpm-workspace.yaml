@@ -99,7 +99,7 @@ catalog:
   "@types/validator": ^13.15.2
   globals: ^11.12.0
   "@1password/sdk": ^0.4.0
-  "@datadog/browser-rum": ^5.29.1
+  "@datadog/browser-rum": ^7.2.0
   "@fontsource/ibm-plex-mono": ^5.1.1
   "@formkit/auto-animate": ^0.8.2
   "@headlessui/react": ^2.2.10
