@@ -188,4 +188,14 @@ const DraggableTagButton = forwardRef<DraggableTagButtonProps, "div">(
   },
 )
 
+export const TagDraggableButton = forwardRef<DraggableTagButtonProps, "div">(
+  ({ listItemContentProps, ...props }, ref) => (
+    <DraggableTagButton
+      {...props}
+      ref={ref}
+      listItemContentProps={{ py: "0.5rem", ...listItemContentProps }}
+    />
+  ),
+)
+
 export default DraggableTagButton
