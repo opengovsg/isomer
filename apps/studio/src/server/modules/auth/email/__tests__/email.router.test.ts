@@ -106,6 +106,10 @@ describe("auth.email", () => {
     describe("when singpass is not enabled", () => {
       beforeEach(() => {
         vi.spyOn(growthbookLib, "getIsSingpassEnabled").mockReturnValue(false)
+        vi.spyOn(
+          growthbookLib,
+          "getIsSingpassDisabledInNonPreview",
+        ).mockReturnValue(true)
         caller = createCaller(createMockRequest(session))
       })
 

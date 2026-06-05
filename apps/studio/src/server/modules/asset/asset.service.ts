@@ -4,19 +4,12 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
-import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
-import {
-  deleteFile,
-  generateSignedGetUrl,
-  generateSignedPutUrl,
-} from "~/lib/s3"
+import { assetStorage } from "~/lib/storage"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-
-const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
 const EXTENSION_TO_MIME: Record<string, string> = {
@@ -123,34 +116,19 @@ export const getPresignedPutUrl = async ({
 }: {
   key: string
   tags?: { key: string; value: string }[]
-}): Promise<{
-  presignedPutUrl: string
-  contentType: string
-  contentDisposition: string
-}> => {
+}) => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
-
-  if (env.NEXT_PUBLIC_APP_ENV === "preview") {
-    return { presignedPutUrl: "", contentType, contentDisposition }
-  }
-
-  const stringifiedTags = tags && generateTagsQueryString(tags)
-  const presignedPutUrl = await generateSignedPutUrl({
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-    Key: key,
-    ContentType: contentType,
-    ContentDisposition: contentDisposition,
-    Tagging: tags && stringifiedTags,
+  return assetStorage.getUploadConfig({
+    key,
+    contentType,
+    contentDisposition,
+    tags,
   })
-  return { presignedPutUrl, contentType, contentDisposition }
 }
 
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
-  await deleteFile({
-    Key: key,
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-  })
+  await assetStorage.deleteFile(key)
 }
 
 export const getPresignedGetUrl = async ({
@@ -158,11 +136,5 @@ export const getPresignedGetUrl = async ({
 }: {
   key: string
 }): Promise<string> => {
-  if (env.NEXT_PUBLIC_APP_ENV === "preview") {
-    return key.startsWith("https://") ? key : ""
-  }
-  return generateSignedGetUrl({
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-    Key: key,
-  })
+  return assetStorage.getReadUrl(key)
 }
