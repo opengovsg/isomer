@@ -57,5 +57,9 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 ### Testing
 - [Structure tests as Arrange / Act / Assert](conventions/tests-arrange-act-assert.md) — best practice: mark AAA phases (collapse adjacent markers when trivial), one Act per test
 
+### Dependencies
+
+- [Reference catalog packages via "catalog:" not direct version strings](conventions/pnpm-catalog-references.md) — smell: direct version strings in package.json for packages defined in pnpm-workspace.yaml catalog
+
 <!-- Each line: [Title](conventions/slug.md) — short hook (smell/best practice).
      Group under a category heading; create the heading if it's new. -->
