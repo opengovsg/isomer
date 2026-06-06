@@ -63,3 +63,9 @@ export interface EmailTemplate {
   subject: string
   body: string
 }
+
+export type EmailTemplateFunction<T extends BaseEmailTemplateData> = (
+  data: T,
+) => EmailTemplate
+
+export type EmailTemplateMap = Record<string, EmailTemplateFunction<never>>
