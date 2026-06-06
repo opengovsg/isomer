@@ -1,4 +1,4 @@
-name: 🤖 Claude Dependabot Auto-Fix
+name: 🤖 Claude Review (Dependabot)
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ permissions:
   pull-requests: write # needed to write the review comment
 
 jobs:
-  claude-fix:
+  review:
     if: github.actor == 'dependabot[bot]' # Only run for Dependabot PRs
     runs-on: ubuntu-latest
 
