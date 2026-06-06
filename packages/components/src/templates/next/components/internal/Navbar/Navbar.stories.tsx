@@ -7,13 +7,37 @@ import { getViewportByMode, withChromaticModes } from "@isomer/storybook-config"
 
 import { Button } from "../Button"
 import { Masthead } from "../Masthead"
+import { Notification } from "../Notification"
 import { Navbar } from "./Navbar"
 
 const Renderer = (props: NavbarProps) => {
   return (
     <div className="flex min-h-dvh flex-col">
-      <Masthead />
-      <Navbar {...props} />
+      <header>
+        <Masthead />
+        <Navbar {...props} />
+      </header>
+      <div className="h-[calc(100vh+300px)] bg-red-500">
+        This mimics content that may overflow in a real preview
+        <div>
+          <Button>Focusable button</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const RendererWithNotification = (props: NavbarProps) => {
+  return (
+    <div className="flex min-h-dvh flex-col">
+      <header>
+        <Masthead />
+        <Notification
+          title="This is an important site notification"
+          site={generateSiteConfig()}
+        />
+        <Navbar {...props} />
+      </header>
       <div className="h-[calc(100vh+300px)] bg-red-500">
         This mimics content that may overflow in a real preview
         <div>
@@ -445,6 +469,68 @@ export const CTAAndUtilityLinksMobile: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(
       canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+  },
+}
+
+// Regression tests for https://github.com/opengovsg/isomer/issues/2120:
+// the mobile menu's `top` should update when masthead/notification height changes
+// while the menu is open.
+
+const mobileRegressionBase: Story = {
+  args: generateNavbarArgs(),
+  globals: {
+    viewport: getViewportByMode("mobile"),
+  },
+  parameters: {
+    chromatic: withChromaticModes(["mobile"]),
+  },
+}
+
+const mobileRegressionWithNotificationBase: Story = {
+  ...mobileRegressionBase,
+  render: (args) => <RendererWithNotification {...args} />,
+  beforeEach: () => {
+    sessionStorage.removeItem("notification-dismissed")
+  },
+}
+
+export const MobileNavbarAfterMastheadCollapsed: Story = {
+  ...mobileRegressionBase,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByText(/how to identify/i))
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+    await userEvent.click(canvas.getByText(/how to identify/i))
+  },
+}
+
+export const MobileNavbarAfterNotificationDismissed: Story = {
+  ...mobileRegressionWithNotificationBase,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+    await userEvent.click(
+      canvas.getByRole("button", { name: /dismiss notification/i }),
+    )
+  },
+}
+
+export const MobileNavbarAfterMastheadAndNotificationClosed: Story = {
+  ...mobileRegressionWithNotificationBase,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByText(/how to identify/i))
+    await userEvent.click(
+      canvas.getByRole("button", { name: /open navigation menu/i }),
+    )
+    await userEvent.click(canvas.getByText(/how to identify/i))
+    await userEvent.click(
+      canvas.getByRole("button", { name: /dismiss notification/i }),
     )
   },
 }

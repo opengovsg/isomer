@@ -9,6 +9,7 @@
  */
 
 import { initTRPC, TRPCError } from "@trpc/server"
+import { timingSafeEqual } from "node:crypto"
 import superjson from "superjson"
 import { ZodError } from "zod"
 import { APP_VERSION_HEADER_KEY } from "~/constants/version"
@@ -179,6 +180,17 @@ const authMiddleware = t.middleware(async ({ next, ctx }) => {
 
 export const WEBHOOK_X_API_KEY_HEADER = "x-api-key"
 
+const isValidWebhookApiKey = (
+  apiKey: string | string[] | undefined,
+  expectedApiKey: string,
+): boolean => {
+  return (
+    typeof apiKey === "string" &&
+    apiKey.length === expectedApiKey.length &&
+    timingSafeEqual(Buffer.from(apiKey), Buffer.from(expectedApiKey))
+  )
+}
+
 const webhookMiddleware = t.middleware(async ({ next, ctx }) => {
   const apiKey = ctx.req.headers[WEBHOOK_X_API_KEY_HEADER]
   // Ensure that the API key is set in the env
@@ -189,7 +201,7 @@ const webhookMiddleware = t.middleware(async ({ next, ctx }) => {
     })
   }
   // Ensure that the API key is valid and matches
-  if (!apiKey || apiKey !== env.STUDIO_SSM_WEBHOOK_API_KEY) {
+  if (!isValidWebhookApiKey(apiKey, env.STUDIO_SSM_WEBHOOK_API_KEY)) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Invalid Webhook API key provided",
