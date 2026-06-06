@@ -1,33 +1,51 @@
 ---
 name: review-dependency-upgrade
-description: Use this skill when the user asks to review, evaluate, or assess a dependency upgrade — e.g. "review this upgrade", "is bumping X from a.b.c to x.y.z safe?", "what breaks if I upgrade <pkg>?", "check this package bump". Covers pnpm/npm packages and github-actions. Researches breaking changes for every intermediate version and reports which ones actually impact the user's codebase.
-version: 0.1.0
+description: Use this skill when the user asks to review, evaluate, or assess a dependency upgrade — e.g. "review this upgrade", "is bumping X from a.b.c to x.y.z safe?", "what breaks if I upgrade <pkg>?", "check this package bump". Covers pnpm/npm packages and github-actions. Researches breaking changes for every intermediate version and reports which ones actually impact the user's codebase. Also runs unattended on Dependabot PRs via GitHub Actions — no human in the loop.
+version: 0.2.0
 ---
 
 # Review Dependency Upgrade
 
 Assess whether upgrading a dependency will break the user's codebase. Walk every intermediate version, list breaking changes, and cross-check each against actual usage.
 
-## Inputs to confirm
+## Automation context
 
-Before researching, make sure you know:
+This skill is invoked **unattended** by `.github/workflows/claude_dependabot_autofix.yml` on Dependabot PR open. There is no human to answer questions, approve steps, or pick options. **Run to completion every time** — infer missing inputs, make reasonable defaults, post the report, and exit.
+
+**Hard rules for automation:**
+
+- **Never ask the user for clarification, confirmation, or approval.** Not in chat, not as a PR comment question.
+- **Never pause or offer choices** ("which PR?", "focus on one major?", "shall I continue?"). Decide and proceed.
+- **Never modify the repo** — review and comment only (see Guidelines).
+- **Always post the report** as a PR comment when running in CI (see step 5).
+
+## Inputs to resolve
+
+Before researching, determine:
 
 1. **Name** — npm package (e.g. `next`) or github-actions action (e.g. `actions/checkout`)
 2. **From version** — the version currently in use
 3. **To version** — the target version
 
-If any of these are missing, infer from the repo:
+Infer from the repo and PR context — in this order:
 
-- **npm:** `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`
-- **github-actions:** `uses:` lines in `.github/workflows/` and `.github/actions/` (SHA + version comment, e.g. `# v6.0.2`)
+1. **PR diff** — `gh pr diff` or `git diff main...HEAD` for `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, and `.github/workflows/` / `.github/actions/` changes.
+2. **Dependabot PR metadata** — `gh pr view --json title,body` (titles like `Bump <pkg> from <from> to <to>`).
+3. **Lockfile / manifest** — `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`.
+4. **github-actions** — `uses:` lines in `.github/workflows/` and `.github/actions/` (SHA + version comment, e.g. `# v6.0.2`).
 
-If still unclear, ask the user.
+**When inference is ambiguous, pick the best match and continue.** Note assumptions in the report header under `**Assumptions:**` (one line). Examples:
+
+- Multiple packages in one PR → review each in separate table sections in one comment.
+- Version range spans many majors → cover all majors; do not truncate or ask to narrow scope.
+- Changelog unavailable → report that explicitly; verdict is `NEEDS REVIEW`.
+- Cannot identify any package → post a short PR comment stating what was checked and that no upgrade could be inferred; do not ask follow-up questions.
 
 ## Procedure
 
 ### 1. Enumerate intermediate versions
 
-List every major and minor version between `from` and `to` (inclusive of `to`, exclusive of `from`). Patch versions can be collapsed unless the user asks otherwise — breaking changes in semver-respecting libraries land on majors (and occasionally minors for pre-1.0 packages).
+List every major and minor version between `from` and `to` (inclusive of `to`, exclusive of `from`). Patch versions can be collapsed — breaking changes in semver-respecting libraries land on majors (and occasionally minors for pre-1.0 packages).
 
 For pre-1.0 packages (`0.x.y`), treat every minor bump as potentially breaking.
 
@@ -76,9 +94,12 @@ Mark each breaking change as:
 Output a single concise report. The body of the report must be a markdown table — one row per breaking change — so it renders cleanly both in the terminal and on GitHub.
 
 ```
+## 🤖 Dependency upgrade review
+
 ## <pkg>: <from> → <to>
 
 **Verdict:** <BREAKS / SAFE / NEEDS REVIEW>
+**Assumptions:** <one line, or — if none>
 
 | Version | Breaking change | Impact | Where in codebase | Migration hint |
 | --- | --- | --- | --- | --- |
@@ -95,17 +116,18 @@ Rules for the table:
 - Wrap file paths in backticks so GitHub renders them as code.
 - Keep each cell to one line. If a migration is complex, link to the upstream migration guide rather than inlining steps.
 
-Keep it tight. The user wants to know: _does this upgrade break my code, and if so, where?_ Don't pad with general advice or upgrade-process boilerplate.
+Keep it tight. The report should answer: _does this upgrade break my code, and if so, where?_ Don't pad with general advice or upgrade-process boilerplate.
 
-### 5. Post to GitHub PR (if applicable)
+### 5. Post to GitHub PR
 
-After producing the report, post it as a PR comment when a PR is associated with this review. Also show the report in chat.
+After producing the report, **always** post it as a PR comment. Also echo the report in the action output.
 
-**Detect PR context** (in this order):
+**Resolve the PR** (no user prompts):
 
-1. If the user named a PR explicitly (URL or `#123`), use that.
-2. Otherwise, run `gh pr view --json number,url,headRefName,title,state` to see if the current branch has an open PR. If `gh` isn't installed or the user isn't authenticated, skip silently.
-3. If still ambiguous and you found multiple candidates, ask the user which PR.
+1. `gh pr view --json number,url,headRefName,title,state` on the current branch.
+2. If that fails, read `$GITHUB_EVENT_PATH` for `pull_request.number` when present.
+3. If multiple open PRs share the branch, use the PR whose `headRefName` matches the current branch.
+4. If no PR is found, output the report to the action log only — do not fail the job.
 
 **Post the comment** with:
 
@@ -115,17 +137,33 @@ gh pr comment <number> --body-file <tmpfile>
 
 Write the report body to a temp file first (e.g. via `Write` to `/tmp/dep-review-<pkg>.md`) rather than passing the entire body as a `--body` argument — this avoids shell-escaping issues with the markdown table.
 
-After posting, return the comment URL from `gh`'s output to the user.
+If `gh` is unavailable or unauthenticated, output the report to the action log and exit without failing.
 
-**Skip posting when:**
+**Skip posting only when:**
 
-- No PR is detected and the user didn't name one — deliver the report in chat only.
-- The PR is closed or merged — deliver the report in chat and note the PR state.
+- The PR is closed or merged — output the report to the action log and note the PR state in the log.
 
 ## Guidelines
 
 - **Don't run the upgrade.** This skill reviews; it does not modify `package.json`, `pnpm-lock.yaml`, workflow files, or install packages.
 - **Don't trust your training data for version specifics.** Always fetch the changelog — library versions move faster than the knowledge cutoff.
-- **Transitive dependencies are out of scope** unless the user names one. Focus on the direct dep.
-- **If the version range spans many majors** (e.g. React 16 → 19), warn the user the report will be long and offer to focus on one major at a time.
-- **If you can't find a changelog**, say so explicitly rather than guessing. An empty breaking-changes list because you couldn't find data is very different from one because there are none.
+- **Transitive dependencies are out of scope** unless identifiable from the PR diff as the direct change. Focus on the bumped direct dep.
+- **If you can't find a changelog**, say so explicitly rather than guessing. An empty breaking-changes list because you couldn't find data is very different from one because there are none — use verdict `NEEDS REVIEW`.
+
+## Failure modes
+
+Handle these without asking a human:
+
+| Situation | Action |
+| --- | --- |
+| No package/version inferable from diff or PR metadata | Post a short PR comment: could not infer upgrade target; list files inspected. Verdict N/A. |
+| Changelog unavailable | Report with `NEEDS REVIEW`; list sources attempted. |
+| `gh` or network failure | Log the full report; exit without failing the workflow. |
+| Very large version span | Cover all intermediate majors/minors; report may be long — that is acceptable. |
+
+## Anti-patterns the agent must refuse
+
+- Asking the user which PR, package, or version to review.
+- Offering to narrow scope or "focus on one major at a time" instead of completing the review.
+- Modifying `package.json`, lockfiles, workflow files, or source to "fix" the upgrade.
+- Guessing breaking changes without fetching upstream release notes.
