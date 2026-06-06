@@ -10,14 +10,18 @@ Assess whether upgrading a dependency will break the user's codebase. Walk every
 
 ## Automation context
 
-This skill is invoked **unattended** by `.github/workflows/claude_dependabot_autofix.yml` on Dependabot PR open. There is no human to answer questions, approve steps, or pick options. **Run to completion every time** — infer missing inputs, make reasonable defaults, post the report, and exit.
+Detect **unattended mode** when `GITHUB_ACTIONS=true` or `CI=true`. Do not key this on a specific workflow file, job name, or bot actor.
 
-**Hard rules for automation:**
+When in unattended mode, there is no human to answer questions, approve steps, or pick options. **Run to completion every time** — infer missing inputs, make reasonable defaults, post the report, and exit.
+
+When **not** in unattended mode (e.g. interactive chat), you may ask the user for missing inputs.
+
+**Hard rules for unattended mode:**
 
 - **Never ask the user for clarification, confirmation, or approval.** Not in chat, not as a PR comment question.
 - **Never pause or offer choices** ("which PR?", "focus on one major?", "shall I continue?"). Decide and proceed.
 - **Never modify the repo** — review and comment only (see Guidelines).
-- **Always post the report** as a PR comment when running in CI (see step 5).
+- **Always post the report** as a PR comment in unattended mode (see step 5).
 
 ## Inputs to resolve
 
@@ -120,9 +124,9 @@ Keep it tight. The report should answer: _does this upgrade break my code, and i
 
 ### 5. Post to GitHub PR
 
-After producing the report, **always** post it as a PR comment. Also echo the report in the action output.
+In **unattended mode**, always post the report as a PR comment and echo it in the action output. In interactive mode, post when a PR is associated with the review (see below); otherwise deliver the report in chat only.
 
-**Resolve the PR** (no user prompts):
+**Resolve the PR** (no user prompts in unattended mode):
 
 1. `gh pr view --json number,url,headRefName,title,state` on the current branch.
 2. If that fails, read `$GITHUB_EVENT_PATH` for `pull_request.number` when present.
@@ -163,7 +167,7 @@ Handle these without asking a human:
 
 ## Anti-patterns the agent must refuse
 
-- Asking the user which PR, package, or version to review.
+- Asking the user which PR, package, or version to review **in unattended mode**.
 - Offering to narrow scope or "focus on one major at a time" instead of completing the review.
 - Modifying `package.json`, lockfiles, workflow files, or source to "fix" the upgrade.
 - Guessing breaking changes without fetching upstream release notes.
