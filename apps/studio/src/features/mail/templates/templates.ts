@@ -9,9 +9,9 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
-  BaseEmailTemplateData,
   CancelSchedulePageTemplateData,
   EmailTemplate,
+  EmailTemplateFunction,
   FailedPublishTemplateData,
   GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
@@ -273,10 +273,6 @@ export const accountDeactivationTemplate = (
     body: emailBody,
   }
 }
-
-type EmailTemplateFunction<
-  T extends BaseEmailTemplateData = BaseEmailTemplateData,
-> = (data: T) => EmailTemplate
 
 const _templates = {
   invitation:

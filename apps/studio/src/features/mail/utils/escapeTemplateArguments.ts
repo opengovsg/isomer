@@ -1,25 +1,33 @@
-import { isPlainObject } from "lodash-es"
+import { isPlainObject, mapValues } from "lodash-es"
 
-import type { EmailTemplate } from "../templates/types"
+import type { EmailTemplate, EmailTemplateMap } from "../templates/types"
 import { escapeHtml } from "./escapeHtml"
 
-// Wraps each template so `data` is escaped before render (not subject/body—that would break intentional HTML).
-export const escapeTemplateArguments = <
-  const T extends Record<string, (data: never) => EmailTemplate>,
->(
-  templates: T,
-): T =>
-  Object.fromEntries(
-    Object.entries(templates).map(([name, template]) => [
-      name,
-      (data: never) =>
-        (template as (data: never) => EmailTemplate)(
-          escapeTemplateArgument(data),
-        ),
-    ]),
-  ) as unknown as T
+type EscapedTemplateArguments<T extends EmailTemplateMap> = {
+  [K in keyof T]: (data: Parameters<T[K]>[0]) => EmailTemplate
+}
 
-// Escapes strings in `data` recursively; leaves dates, primitives, and non-plain objects unchanged.
+// Escapes template `data` before rendering the template to prevent XSS attacks.
+// This is useful for templates that accept user input, such as resource titles, site names, etc.
+// Preferred over escaping the subject/body as that would break intentional HTML.
+export const escapeTemplateArguments = <T extends EmailTemplateMap>(
+  templates: T,
+): EscapedTemplateArguments<T> => {
+  const result = {} as EscapedTemplateArguments<T>
+
+  for (const key of Object.keys(templates) as (keyof T & string)[]) {
+    const template = templates[key]
+    if (template) {
+      result[key] = (data: Parameters<T[keyof T]>[0]) =>
+        template(escapeTemplateArgument(data))
+    }
+  }
+
+  return result
+}
+
+// Escapes a template argument to prevent XSS attacks.
+// Handles strings, arrays, dates, and plain objects recursively.
 const escapeTemplateArgument = <T>(value: T): T => {
   if (typeof value === "string") {
     return escapeHtml(value) as T
@@ -34,11 +42,7 @@ const escapeTemplateArgument = <T>(value: T): T => {
   }
 
   if (isPlainObject(value)) {
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>).map(
-        ([key, nestedValue]) => [key, escapeTemplateArgument(nestedValue)],
-      ),
-    ) as T
+    return mapValues(value as object, escapeTemplateArgument) as T
   }
 
   return value
