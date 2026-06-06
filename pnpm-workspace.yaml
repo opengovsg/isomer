@@ -54,7 +54,7 @@ catalog:
   dotenv-cli: ^11.0.0
   jsdom: ^29.1.1
   happy-dom: ^20.9.0
-  isomorphic-dompurify: ^3.12.0
+  isomorphic-dompurify: ^3.15.0
   mockdate: ^3.0.5
   msw: ^2.14.6
   msw-storybook-addon: ^2.0.7
@@ -72,7 +72,7 @@ catalog:
   pg: ^8.21.0
   pino: ^10.3.1
   pino-pretty: ^13.0.0
-  postcss: ^8.5.14
+  postcss: ^8.5.15
   postcss-preset-env: ^11.2.1
   react-icons: ^5.2.0
   rimraf: ^5.0.10
@@ -136,7 +136,7 @@ catalog:
   papaparse: ^5.5.3
   pg-boss: ^12.3.0
   postcss-load-config: ^6.0.1
-  rate-limiter-flexible: ^5.0.3
+  rate-limiter-flexible: ^11.1.0
   react-error-boundary: ^5.0.0
   react-frame-component: ^5.2.7
   react-hook-form: ^7.75.0
@@ -196,14 +196,14 @@ catalogs:
     "@types/react": ^18.3.26
     "@types/react-dom": ^18.3.7
   "react-aria":
-    "@react-aria/button": ^3.15.0
-    "@react-aria/checkbox": ^3.17.0
-    "@react-aria/focus": ^3.22.0
-    "@react-aria/interactions": ^3.28.0
-    "@react-aria/textfield": ^3.19.0
-    "@react-aria/utils": ^3.34.0
-    "@react-stately/checkbox": ^3.8.0
-    "@react-stately/toggle": ^3.10.0
+    "@react-aria/button": ^3.15.1
+    "@react-aria/checkbox": ^3.17.1
+    "@react-aria/focus": ^3.22.1
+    "@react-aria/interactions": ^3.28.1
+    "@react-aria/textfield": ^3.19.1
+    "@react-aria/utils": ^3.34.1
+    "@react-stately/checkbox": ^3.8.1
+    "@react-stately/toggle": ^3.10.1
   storybook:
     storybook: ^10.4.1
     "@storybook/addon-a11y": ^10.4.1
