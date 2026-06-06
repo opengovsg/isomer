@@ -78,8 +78,8 @@ catalogs:
       specifier: ^0.4.0
       version: 0.4.0
     '@datadog/browser-rum':
-      specifier: ^5.29.1
-      version: 5.35.1
+      specifier: ^7.2.0
+      version: 7.2.0
     '@fontsource/ibm-plex-mono':
       specifier: ^5.1.1
       version: 5.2.7
@@ -693,7 +693,7 @@ importers:
         version: 2.2.2(react@18.3.1)
       '@datadog/browser-rum':
         specifier: 'catalog:'
-        version: 5.35.1
+        version: 7.2.0
       '@fontsource/ibm-plex-mono':
         specifier: 'catalog:'
         version: 5.2.7
@@ -3074,16 +3074,16 @@ packages:
     peerDependencies:
       postcss: ^8.4
 
-  '@datadog/browser-core@5.35.1':
-    resolution: {integrity: sha512-zjmw3WkF5syMq5+2jneSgSILxO3DTS+hKw270tzk/yQUfJIGInyGrkHUYYGLmZaVuVp+6F7iO3tUAwIqQYGBFw==}
+  '@datadog/browser-core@7.2.0':
+    resolution: {integrity: sha512-/KOJiLyLP149qZTMs8W8P8MBKxmbrYYramChTDAplhbIXR+nBE+g97RRbluIBDec4GngnA1j13JWDEXBmT0AJw==}
 
-  '@datadog/browser-rum-core@5.35.1':
-    resolution: {integrity: sha512-+WMHeL83BvFTE618SBx7VKT3gwJ/c1DuNehvv+ZbbMqRgrl2hBng5cLfhcEW/U6bLOyr08ZfaZ1m2r/xs2n4aA==}
+  '@datadog/browser-rum-core@7.2.0':
+    resolution: {integrity: sha512-xYgKmBzgpPdXNWxGKBGgJc/EUq6387USzM3Tq22kSD843QTzgzG2jYWkBZZ1FAel1T/0hF2FMJ8Mxo5BwxpoJQ==}
 
-  '@datadog/browser-rum@5.35.1':
-    resolution: {integrity: sha512-/I3mQpnAuGZ1DU3wevgirKfT1DXuWY1eg4gOHjmONN91KThVoiuHg9HiAowfFFtQArsbcP5HqdA4lLJvH6w17A==}
+  '@datadog/browser-rum@7.2.0':
+    resolution: {integrity: sha512-cPNTtSyrKSDcwtsWOq7C7662dseUoYmSqK3bJh2rJ0IPW/nVDTZrxt1a6cuGHLFjcE6KFCQJLrnC2YDdw8uJGw==}
     peerDependencies:
-      '@datadog/browser-logs': 5.35.1
+      '@datadog/browser-logs': 7.2.0
     peerDependenciesMeta:
       '@datadog/browser-logs':
         optional: true
@@ -13752,16 +13752,16 @@ snapshots:
     dependencies:
       postcss: 8.5.15
 
-  '@datadog/browser-core@5.35.1': {}
+  '@datadog/browser-core@7.2.0': {}
 
-  '@datadog/browser-rum-core@5.35.1':
+  '@datadog/browser-rum-core@7.2.0':
     dependencies:
-      '@datadog/browser-core': 5.35.1
+      '@datadog/browser-core': 7.2.0
 
-  '@datadog/browser-rum@5.35.1':
+  '@datadog/browser-rum@7.2.0':
     dependencies:
-      '@datadog/browser-core': 5.35.1
-      '@datadog/browser-rum-core': 5.35.1
+      '@datadog/browser-core': 7.2.0
+      '@datadog/browser-rum-core': 7.2.0
 
   '@datadog/flagging-core@0.3.3':
     dependencies:
