@@ -118,8 +118,17 @@ export const updateSearchSGConfig = async (
     return
   }
 
+  let actualUrl: URL
+  try {
+    actualUrl = new URL(url)
+  } catch (error) {
+    logger.error(
+      { error, url, ...props },
+      `[ERROR] Invalid URL format for SearchSG config update`,
+    )
+    return
+  }
   const client = await requestSearchSGClient()
-  const actualUrl = new URL(url)
   logger.info(
     { ...props, searchsgClientId, url: actualUrl.host },
     `[INFO] Updating searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
