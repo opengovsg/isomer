@@ -56,6 +56,8 @@ const server = z
     CI: z.coerce.boolean().default(false),
     NODE_ENV: z.enum(["development", "test", "production"]),
     OTP_EXPIRY: z.coerce.number().positive().optional().default(600),
+    // WARNING: Setting this bypasses OTP security. For preview environments only — never set in staging or production.
+    DANGEROUSLY_SET_STATIC_OTP: z.string().length(6).optional(),
     POSTMAN_API_KEY: z.string().optional(),
     SESSION_SECRET: z.string().min(32),
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
@@ -121,6 +123,7 @@ const processEnv = {
   SINGPASS_SIGNING_KEY_ALG: process.env.SINGPASS_SIGNING_KEY_ALG,
   STUDIO_SSM_WEBHOOK_API_KEY: process.env.STUDIO_SSM_WEBHOOK_API_KEY,
   BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
+  DANGEROUSLY_SET_STATIC_OTP: process.env.DANGEROUSLY_SET_STATIC_OTP,
   // Client-side env vars
   NEXT_PUBLIC_APP_ENV:
     process.env.NEXT_PUBLIC_APP_ENV ??
