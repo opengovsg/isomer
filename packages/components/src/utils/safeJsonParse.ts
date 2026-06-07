@@ -9,7 +9,11 @@ export const safeJsonParse = <T>(value: unknown): T | undefined => {
   // If value is a string, try to parse
   if (typeof value === "string") {
     try {
-      return JSON.parse(value) as T
+      const parsed: unknown = JSON.parse(value)
+      if (parsed !== null && typeof parsed === "object") {
+        return parsed as T
+      }
+      return undefined
     } catch {
       console.warn("Failed to parse JSON:", value)
       return undefined
