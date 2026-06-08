@@ -49,9 +49,7 @@ jobs:
             --allowedTools "Glob"
             --allowedTools "Grep"
             --allowedTools "Write(/tmp/**)"
-            --allowedTools "Bash(gh pr view:*)"
-            --allowedTools "Bash(gh pr diff:*)"
-            --allowedTools "Bash(gh pr comment:*)"
+            --allowedTools "Bash(gh pr:*)"
             --allowedTools "Bash(git diff:*)"
           settings: |
             {
@@ -63,9 +61,7 @@ jobs:
                   "Glob",
                   "Grep",
                   "Write(/tmp/**)",
-                  "Bash(gh pr view:*)",
-                  "Bash(gh pr diff:*)",
-                  "Bash(gh pr comment:*)",
+                  "Bash(gh pr:*)",
                   "Bash(git diff:*)"
                 ]
               }
