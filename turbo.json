@@ -22,7 +22,9 @@
     "S3_GAZETTE_DOMAIN_NAME"
   ],
   "tasks": {
-    "build": {},
+    "build": {
+      "dependsOn": ["generate"]
+    },
     "build:template": {},
     "clean": {},
     "db:connect": {
@@ -76,12 +78,14 @@
     },
     "lint": {
       "dependsOn": [
+        "generate",
         "^build"
       ],
       "outputs": []
     },
     "typecheck": {
       "dependsOn": [
+        "generate",
         "^build"
       ],
       "outputs": [

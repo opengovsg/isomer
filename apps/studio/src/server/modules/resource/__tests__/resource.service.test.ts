@@ -1,4 +1,3 @@
-import { ResourceType } from "@prisma/client"
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -12,6 +11,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { ResourceType } from "~prisma/generated/prisma/client"
 
 import type { Resource } from "../../database"
 import { db, ResourceState } from "../../database"

@@ -35,7 +35,7 @@ updates:
       prisma:
         applies-to: version-updates
         patterns:
-          - "@prisma/client"
+          - "@prisma/*"
           - "prisma"
       react:
         applies-to: version-updates
@@ -98,13 +98,6 @@ updates:
       - dependency-name: "@types/react"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@types/react-dom"
-        update-types: ["version-update:semver-major"]
-      # Ignore major version updates for Prisma 6 due to installation issues
-      ### Could not resolve @prisma/client despite the installation that we just tried.
-      ### Please try to install it by hand with `pnpm add @prisma/client` and rerun `pnpm exec prisma generate` 🙏.
-      - dependency-name: "prisma"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@prisma/client"
         update-types: ["version-update:semver-major"]
       # @chakra-ui/react and @chakra-ui/cli v3 require a full Chakra UI v3 migration.
       # @chakra-ui/react v2 is pinned to the OGP design system version.
