@@ -11,6 +11,6 @@
     "noFallthroughCasesInSwitch": true,
     "lib": ["es2021"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "prisma/**/*.ts", "prisma/**/*.cts"],
   "exclude": ["node_modules"]
 }
