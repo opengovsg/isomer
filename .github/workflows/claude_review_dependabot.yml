@@ -17,9 +17,10 @@ jobs:
     # Only run for Dependabot PRs; label trigger allows manual re-runs
     # 'opened' events have no label, so pass them through unconditionally
     # for 'labeled' events, only proceed for this specific label
-    if: >
-      startsWith(github.event.pull_request.head.ref, 'dependabot/') && (
-        github.event.action == 'opened' || 
+    if: >-
+      startsWith(github.event.pull_request.head.ref, 'dependabot/') &&
+      (
+        github.event.action == 'opened' ||
         github.event.label.name == 'review-dependency-upgrade'
       )
     runs-on: ubuntu-latest
@@ -30,20 +31,42 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Headless CI cannot answer permission prompts — pre-allow everything the
+      # review-dependency-upgrade skill needs (web research, /tmp report, gh).
       - name: Run Claude Code Action (review)
         uses: anthropics/claude-code-action@64de744025ca9e24df2b88204b4f1e968f39f009 # v1.0.139
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          show_full_output: true
-          allowed_bots: "dependabot[bot]"
+          allowed_bots: dependabot[bot]
+          prompt: /review-dependency-upgrade
           claude_args: |
             --model claude-sonnet-4-6
-          prompt: |
-            /review-dependency-upgrade
+            --allowedTools "WebFetch"
+            --allowedTools "WebSearch"
+            --allowedTools "Write(/tmp/**)"
+            --allowedTools "Bash(gh pr view:*)"
+            --allowedTools "Bash(gh pr diff:*)"
+            --allowedTools "Bash(gh pr comment:*)"
+          settings: |
+            {
+              "permissions": {
+                "allow": [
+                  "WebFetch",
+                  "WebSearch",
+                  "Write(/tmp/**)",
+                  "Bash(gh pr view:*)",
+                  "Bash(gh pr diff:*)",
+                  "Bash(gh pr comment:*)"
+                ]
+              }
+            }
 
       # Always remove the label after review (success or failure) so it can be re-added to re-trigger
       - name: Remove 'review-dependency-upgrade' label
-        if: always() && github.event.action == 'labeled' && github.event.label.name == 'review-dependency-upgrade'
+        if: >-
+          always() &&
+          github.event.action == 'labeled' &&
+          github.event.label.name == 'review-dependency-upgrade'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
