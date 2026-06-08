@@ -6,6 +6,7 @@ on:
 
 permissions:
   pull-requests: write # needed to write the review comment
+  id-token: write # needed to fetch OIDC token for Claude Code Action
 
 jobs:
   review:
