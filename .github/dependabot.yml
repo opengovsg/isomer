@@ -115,8 +115,6 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "chakra-react-select"
         update-types: ["version-update:semver-major"]
-      # markdown-to-jsx is only used in the unmaintained classic template; skip all updates
-      - dependency-name: "markdown-to-jsx"
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
