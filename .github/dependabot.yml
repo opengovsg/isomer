@@ -35,7 +35,7 @@ updates:
       prisma:
         applies-to: version-updates
         patterns:
-          - "@prisma/client"
+          - "@prisma/*"
           - "prisma"
       react:
         applies-to: version-updates
