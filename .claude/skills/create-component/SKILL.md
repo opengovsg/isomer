@@ -1,199 +1,191 @@
 ---
 name: create-component
-description: Creates a new UI component in the Isomer Next monorepo — schema, implementation, stories, Studio block registration, and Studio story.
+description: Creates a new UI component in the Isomer Next monorepo — schema, implementation, stories, and Studio registration.
 ---
 
-# Create Isomer Component Skill
+# Create Component
 
-You are creating a new component in the Isomer Next monorepo. Follow these steps in order, completing each fully before moving on.
-
-## Inputs to gather before starting
-
-Ask the user for (or infer from context):
-- **Component name** — PascalCase (e.g. `CalloutBox`)
-- **Component type** — `complex` (has its own schema/block in Studio) or `native` (used inside prose/content)
-- **Allowed layouts** — which page layouts can include this block (e.g. `homepage`, `content`, `article`). Refer to `apps/studio/src/components/PageEditor/constants.ts` for the existing layout arrays (`CONTENT_ALLOWED_BLOCKS`, `ARTICLE_ALLOWED_BLOCKS`, etc.)
-- **Props** — field names, types, optionality, descriptions, labels, character limits, formats
-- **Any new design tokens needed?**
+Before writing any code, read:
+- `style-guide.md` — typography, colour, spacing decisions
+- `schema-patterns.md` — TypeBox patterns, format hints, variant decision rule
+- `implementation-patterns.md` — tv() slots, ComponentContent, Prose nesting, multi-variant switcher
+- `story-patterns.md` — what stories to write and how
 
 ---
 
-## Step 1 — Define the TypeBox schema
+## Step 0 — Clarify before starting
 
-Create the interface file at:
-```
-packages/components/src/interfaces/{complex|native}/{ComponentName}/{ComponentName}.ts
+**New component or variant of an existing one?**
+See the decision rule in `schema-patterns.md`. If it's a variant, stop here and extend the existing schema and implementation instead.
+
+**Which layouts does it appear on?**
+Homepage, content pages, or both. Determines: whether `ComponentContent` is needed, whether a `layout` prop is needed, and which `ALLOWED_BLOCKS` sections to update.
+
+**Does it have image fields?**
+Use `generateImageSrcSchema` / `ImageSrcSchema` and `AltTextSchema` — never a plain `Type.String({ format: "image" })`. See Step 1.
+
+---
+
+## Step 1 — Schema
+
+**Create** `packages/components/src/interfaces/complex/{ComponentName}.ts`
+
+Follow the correct pattern from `schema-patterns.md` (simple, layout-aware, or discriminated variants).
+
+**Image fields** — use the helpers from `./Image`, never a raw format string:
+
+```ts
+import { generateImageSrcSchema, ImageSrcSchema, AltTextSchema } from "./Image"
+
+// Custom title:
+imageSrc: generateImageSrcSchema({ title: "Background image" })
+
+// Standard image, no customisation:
+imageSrc: ImageSrcSchema
+
+// Alt text — always paired with an image field, never optional:
+imageAlt: AltTextSchema
 ```
 
-Rules:
-- Use `Type.Object(fields, options)` with `$id`, `title`, `description` at the top level
-- The `type` field must be `Type.Literal("componentname", { default: "componentname" })`
-- Every string field needs at least `title`. Add `description` for non-obvious fields
-- Use `maxLength` for any free-text field that has a character cap
-- Use `format: "textarea"` for multi-line strings, `format: "link"` for URLs, `format: "hidden"` for internal fields not shown in Studio UI
-- Use `format: "image"` for image upload fields
-- Optional fields use `Type.Optional(...)`
-- Arrays use `Type.Array(..., { title, minItems?, maxItems? })`
-- Group related fields using the `groups` option: `groups: [{ label: "...", fields: [...] }]`
-- Export both the schema and the `type XProps = Static<typeof XSchema> & { site: IsomerSiteProps; layout?: IsomerPageLayoutType }`
-
-Create the barrel export at:
-```
-packages/components/src/interfaces/{complex|native}/{ComponentName}/index.ts
-```
-
-Add the export to:
-```
-packages/components/src/interfaces/{complex|native}/index.ts
+**Export both** the schema and the props type:
+```ts
+export { MyComponentSchema, type MyComponentProps }
 ```
 
 ---
 
 ## Step 2 — Register the schema
 
-Open `packages/components/src/schemas/components.ts` and add the component to the appropriate map:
-- `IsomerComplexComponentsMap` for complex components
-- `IsomerNativeComponentsMap` for native components
+**`packages/components/src/interfaces/complex/index.ts`**
+```ts
+export { MyComponentSchema, type MyComponentProps } from "./MyComponent"
+```
 
-If the component has layout-specific schema variants (like `infobar` which has homepage vs default variants), handle the layout-switching logic in `getComponentSchema`.
+**`packages/components/src/schemas/components.ts`** — add to `IsomerComplexComponentsMap`:
+```ts
+mycomponent: MyComponentSchema,
+```
+
+If the schema differs per layout, add a branch in `generateComponentSchema` following the Infobar pattern.
 
 ---
 
 ## Step 3 — Implement the component
 
-Create the component at:
+**Create:**
 ```
-packages/components/src/templates/next/components/{complex|native}/{ComponentName}/{ComponentName}.tsx
-```
-
-Rules:
-- Accept props typed as `XProps`
-- Use Tailwind CSS classes for styling; follow patterns from nearby components
-- If the component has variants, create separate `{ComponentName}{Variant}.tsx` files and a main switcher
-- Export from an `index.ts` in the folder
-
-Add the component export to the relevant barrel:
-```
-packages/components/src/templates/next/components/{complex|native}/index.ts
+packages/components/src/templates/next/components/complex/{ComponentName}/{ComponentName}.tsx
+packages/components/src/templates/next/components/complex/{ComponentName}/index.ts
 ```
 
-And the top-level package export in `packages/components/src/index.ts` if it's a new top-level export.
+Follow `implementation-patterns.md`. Key decisions:
+- Homepage component → add `ComponentContent` and correct section padding tier (see `style-guide.md`)
+- Layout-aware → branch on `layout === "homepage"` or render separate sub-components per layout
+- Multiple visual variants → switcher `{ComponentName}.tsx` + one file per variant
+
+`index.ts` is always:
+```ts
+export { MyComponent } from "./MyComponent"
+```
 
 ---
 
-## Step 4 — Write component Storybook stories
+## Step 4 — Component stories
 
-Create:
-```
-packages/components/src/templates/next/components/{complex|native}/{ComponentName}/{ComponentName}.stories.tsx
-```
+**Create** `{ComponentName}.stories.tsx` in the same folder.
 
-Rules:
-- Use `Meta<typeof ComponentName>` and `StoryObj<typeof ComponentName>`
-- Set `title: "Next/Components/{ComponentName}"`
-- Add `parameters.chromatic: withChromaticModes(["mobile", "tablet", "desktop"])`
-- Add `parameters.themes: { themeOverride: "Isomer Next" }`
-- Write a story per variant and at least one story per meaningful content length variation (short text, long text, minimal fields, all fields populated)
-- Use `generateSiteConfig()` from test helpers for the `site` prop
+Follow `story-patterns.md`. Minimum coverage:
+- `Default` — realistic content
+- `LongContent` — every string field near `maxLength`
+- One story per schema variant
+- One story per layout context (if layout-aware)
+- `play()` story for any interactive state (expand, hover, focus)
 
 ---
 
-## Step 5 — Write logic utilities and tests (if applicable)
+## Step 5 — Layout story
 
-If the component involves non-trivial logic (data transformation, filtering, calculations):
-- Create utility functions in the component folder or in `packages/components/src/utils/`
-- Co-locate tests as `{utilName}.test.ts`
-- Run `pnpm test:unit` from `apps/studio` to confirm passing
+Add the component to the `content` array of each relevant layout story. Follow placement rules in `story-patterns.md`.
 
----
-
-## Step 6 — Define new tokens (if applicable)
-
-If new design tokens are needed, add them to `packages/components/src/types/theme.ts` following the naming convention:
-- `colors.brand.{role}.{variant}` — e.g. `colors.brand.canvas.default`
-- Use `format: "hidden"` for tokens not configurable via Studio UI
-- Use `format: "color-picker"` for user-configurable colour tokens with a `title` and `description`
-- Add new tokens to `SiteThemeSchema` inside `Type.Object`
+- Homepage → `packages/components/src/templates/next/layouts/Homepage/Homepage.stories.tsx`
+- Content page → `packages/components/src/templates/next/layouts/Content/Content.stories.tsx`
 
 ---
 
-## Step 7 — Add the component to relevant layout stories
+## Step 6 — Studio registration
 
-For each layout this block belongs to, add it to the layout's stories file at:
-```
-packages/components/src/templates/next/layouts/{LayoutName}/{LayoutName}.stories.tsx
-```
+Four edits, all in `apps/studio/src/`.
 
-Add the block to the `content` array in the relevant stories so the component is visible in the layout preview. Match the existing pattern (object with `type: "componentname"` and all required props).
+### 6a. Default block — `components/PageEditor/constants.ts`
 
----
+Add to `DEFAULT_BLOCKS`. Every required field must have a realistic placeholder:
 
-## Step 8 — Register the block in Studio
-
-### 8a. Add allowed layouts
-
-Open `apps/studio/src/components/PageEditor/constants.ts`.
-
-Add the component type string to each relevant allowed-blocks array:
-- `CONTENT_ALLOWED_BLOCKS` — for content pages
-- `ARTICLE_ALLOWED_BLOCKS` — for article pages
-- `DATABASE_ALLOWED_BLOCKS` — for database pages
-- Use `getHomepageAllowedBlocks(...)` return value for homepage (may need to modify that function)
-- `INDEX_ALLOWED_BLOCKS` — for index pages
-
-### 8b. Add block metadata
-
-In the same `constants.ts` file, add an entry to `BLOCK_TO_META`:
-```typescript
-componentname: {
-  label: "Short human label",                    // shown in the block picker
-  description: "One sentence describing what this block does and when to use it.",
+```ts
+mycomponent: {
+  type: "mycomponent",
+  title: "This is the main title",
+  subtitle: "This is an optional subtitle",
+  items: [
+    { title: "First item", description: "Description for the first item" },
+    { title: "Second item", description: "Description for the second item" },
+  ],
 },
 ```
-Optionally add `usageText` (extended tooltip text) and `imageSrc` (preview image path).
 
-### 8c. Add block icon
+If the component has a `variant` discriminator, set the default variant explicitly.
 
-Open `apps/studio/src/features/editing-experience/constants.ts` and add the icon mapping to `TYPE_TO_ICON`:
-```typescript
-componentname: <SomeIcon />,
-```
-Choose a Chakra UI or Phosphor icon that best represents the block's purpose.
+### 6b. Block metadata — `components/PageEditor/constants.ts`
 
----
+Add to `BLOCK_TO_META` (same file):
 
-## Step 9 — Write the Studio Storybook story
-
-Create or extend a story file under:
-```
-apps/studio/src/stories/Page/EditPage/Edit{LayoutName}Page.stories.tsx
+```ts
+mycomponent: {
+  label: "My Component",
+  description: "One sentence on what this block is for and when to use it.",
+  // imageSrc: omit — added later as a manual step after screenshot
+},
 ```
 
-Rules:
-- Use `@storybook/nextjs`
-- Set up MSW handlers for any tRPC calls the editor makes
-- Write a `play` function that opens the component editor:
-  ```typescript
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /component label/i })
-    await userEvent.click(button)
-  }
-  ```
-- Name it `Edit{ComponentName}` 
-- Include `parameters.msw.handlers`, `parameters.nextjs.router`, and `parameters.getLayout` following existing stories
+`label` = how a content editor refers to it. `description` = use case, not visual appearance.
+
+### 6c. Allowed blocks — `components/PageEditor/constants.ts`
+
+Add to the correct section using this rule:
+
+| Section | Use when |
+|---------|----------|
+| `"Basic content blocks"` in `CONTENT_ALLOWED_BLOCKS` | Flows within the reading column of a content page |
+| `"Add a new section"` in `CONTENT_ALLOWED_BLOCKS` | Full-width block that breaks the page into a distinct section |
+| `"Embed external content"` in `CONTENT_ALLOWED_BLOCKS` | Third-party embed or external service |
+| `getHomepageAllowedBlocks` `"Add a new section"` | Homepage-only block |
+
+If it appears on both Homepage and content pages, add to both.
+
+### 6d. Icon — `features/editing-experience/constants.ts`
+
+Add to `TYPE_TO_ICON`:
+
+```ts
+mycomponent: BiSomeIcon,
+```
+
+Always use `react-icons/bi`, **outline form** (not filled). Pick an icon that communicates the concept. If no standard icon represents the component's distinctive layout, create a custom SVG in `features/editing-experience/components/icons/{ComponentName}.tsx` — see existing icons for the pattern (schematic miniature of the layout, using `IconBaseProps`).
 
 ---
 
 ## Checklist
 
-Before calling the task done, verify:
-- [ ] Schema exports correctly from `packages/components/src/interfaces/index.ts`
-- [ ] Schema registered in `packages/components/src/schemas/components.ts`
-- [ ] Component renders without errors in Storybook (`pnpm storybook`)
-- [ ] All required story variants written
-- [ ] Block appears in the correct layout's "Add block" panel in Studio
-- [ ] Block metadata (label, description) is set in `BLOCK_TO_META`
-- [ ] Studio Storybook story opens the editing drawer for the block
+- [ ] Schema created and exported from `interfaces/complex/index.ts`
+- [ ] Schema registered in `schemas/components.ts`
+- [ ] Image fields use `generateImageSrcSchema` / `ImageSrcSchema` + `AltTextSchema`
+- [ ] Component `.tsx` and `index.ts` created
+- [ ] Interactive elements extend `focusVisibleHighlight`
+- [ ] Homepage component uses `ComponentContent`
+- [ ] Stories written: Default, LongContent, per-variant, per-layout, interactive
+- [ ] Component added to relevant layout story
+- [ ] `DEFAULT_BLOCKS` entry added with realistic placeholder values
+- [ ] `BLOCK_TO_META` entry added (no `imageSrc`)
+- [ ] Added to correct `ALLOWED_BLOCKS` section(s)
+- [ ] `TYPE_TO_ICON` entry added with outline `react-icons/bi` icon
 - [ ] `pnpm typecheck` passes
 - [ ] `pnpm lint` passes
