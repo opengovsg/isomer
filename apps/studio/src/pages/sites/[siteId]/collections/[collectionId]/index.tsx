@@ -13,10 +13,12 @@ import {
 } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
+import { GazetteCollectionBanner } from "~/features/dashboard/components/GazetteCollectionBanner"
 import { IndexpageRow } from "~/features/dashboard/components/IndexpageRow/IndexpageRow"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { CreateCollectionPageModal } from "~/features/editing-experience/components/CreateCollectionPageModal"
 import { MoveResourceModal } from "~/features/editing-experience/components/MoveResourceModal"
+import { useEgazetteInfo } from "~/hooks/useEgazetteInfo"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
@@ -37,6 +39,11 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
   } = useDisclosure()
   const { siteId, collectionId } = useQueryParse(collectionPageSchema)
   const setFolderSettingsModalState = useSetAtom(folderSettingsModalAtom)
+  const egazetteInfo = useEgazetteInfo()
+  const isEgazetteCollection =
+    egazetteInfo.isConfigured &&
+    egazetteInfo.siteId === String(siteId) &&
+    egazetteInfo.gazettesCollectionId === String(collectionId)
 
   const [resource] = trpc.resource.getParentOf.useSuspenseQuery({
     siteId: Number(siteId),
@@ -76,7 +83,11 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
           </>
         }
       >
-        <CollectionBanner />
+        {isEgazetteCollection ? (
+          <GazetteCollectionBanner />
+        ) : (
+          <CollectionBanner />
+        )}
         <IndexpageRow
           type="collection"
           siteId={siteId}
