@@ -185,9 +185,6 @@ catalogs:
     commander:
       specifier: ^15.0.0
       version: 15.0.0
-    commander-ts:
-      specifier: ^0.2.0
-      version: 0.2.0
     date-fns:
       specifier: ^4.1.0
       version: 4.1.0
@@ -1570,9 +1567,6 @@ importers:
       axios:
         specifier: 'catalog:'
         version: 1.16.1(debug@4.4.3)
-      commander-ts:
-        specifier: 'catalog:'
-        version: 0.2.0(reflect-metadata@0.1.14)
       lodash-es:
         specifier: 'catalog:'
         version: 4.18.1
@@ -1776,9 +1770,6 @@ importers:
       axios:
         specifier: 'catalog:'
         version: 1.16.1(debug@4.4.3)
-      commander-ts:
-        specifier: 'catalog:'
-        version: 0.2.0(reflect-metadata@0.1.14)
       dotenv-cli:
         specifier: 'catalog:'
         version: 11.0.0
@@ -7265,11 +7256,6 @@ packages:
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
 
-  commander-ts@0.2.0:
-    resolution: {integrity: sha512-9XaUF3/3nmVtkDmAkijjhgEcwrMwKewaAJtN+GyTJBG3CJ5DfGB/JsXCVZcBW6SZB+QqiJxbK3e2/62tweMO8g==}
-    peerDependencies:
-      reflect-metadata: ^0.1.13
-
   commander@11.1.0:
     resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
     engines: {node: '>=16'}
@@ -7288,10 +7274,6 @@ packages:
   commander@4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
     engines: {node: '>= 6'}
-
-  commander@7.2.0:
-    resolution: {integrity: sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==}
-    engines: {node: '>= 10'}
 
   commander@8.3.0:
     resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
@@ -10655,9 +10637,6 @@ packages:
 
   redux@5.0.1:
     resolution: {integrity: sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w==}
-
-  reflect-metadata@0.1.14:
-    resolution: {integrity: sha512-ZhYeb6nRaXCfhnndflDK8qI6ZQ/YcWZCISRAWICW9XYqMUwjZM9Z0DveWX/ABN01oxSHwVxKQmxeYZSsm0jh5A==}
 
   regenerate-unicode-properties@10.2.2:
     resolution: {integrity: sha512-m03P+zhBeQd1RGnYxrGyDAPpWX/epKirLrp8e3qevZdVkKtnCrjjWczIbYc8+xd6vcTStVlqfycTx1KR4LOr0g==}
@@ -17502,11 +17481,6 @@ snapshots:
 
   comma-separated-tokens@2.0.3: {}
 
-  commander-ts@0.2.0(reflect-metadata@0.1.14):
-    dependencies:
-      commander: 7.2.0
-      reflect-metadata: 0.1.14
-
   commander@11.1.0: {}
 
   commander@14.0.3: {}
@@ -17516,8 +17490,6 @@ snapshots:
   commander@2.20.3: {}
 
   commander@4.1.1: {}
-
-  commander@7.2.0: {}
 
   commander@8.3.0: {}
 
@@ -21439,8 +21411,6 @@ snapshots:
       strip-indent: 3.0.0
 
   redux@5.0.1: {}
-
-  reflect-metadata@0.1.14: {}
 
   regenerate-unicode-properties@10.2.2:
     dependencies:

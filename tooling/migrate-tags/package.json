@@ -13,7 +13,6 @@
     "@octokit/rest": "catalog:",
     "@opengovsg/isomer-components": "workspace:*",
     "axios": "catalog:",
-    "commander-ts": "catalog:",
     "lodash-es": "catalog:",
     "tsx": "catalog:"
   },
