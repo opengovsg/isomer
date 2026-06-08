@@ -21,7 +21,7 @@ generator json {
 generator kysely {
   provider     = "prisma-kysely"
   readOnlyIds  = true
-  output       = "./generated"
+  output       = "../../../packages/db/src/generated"
   fileName     = "generatedTypes.ts"
   // Optionally generate runtime enums to a separate file
   enumFileName = "generatedEnums.ts"

@@ -5,9 +5,10 @@ import { createBaseLogger } from "~/lib/logger"
 
 const logger = createBaseLogger({ path: "searchsg.service" })
 
-const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
-
-const ISOMER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
+export const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
+export const EGAZETTE_DOCUMENT_INDEX = env.EGAZETTE_DOCUMENT_INDEX
+export const ISOMER_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
 const SearchSgApi = {
   Auth: `/v1/auth/token`,
   App: `/v1/bootstrap/applications`,
@@ -118,8 +119,17 @@ export const updateSearchSGConfig = async (
     return
   }
 
+  let actualUrl: URL
+  try {
+    actualUrl = new URL(url)
+  } catch (error) {
+    logger.error(
+      { error, url, ...props },
+      `[ERROR] Invalid URL format for SearchSG config update`,
+    )
+    return
+  }
   const client = await requestSearchSGClient()
-  const actualUrl = new URL(url)
   logger.info(
     { ...props, searchsgClientId, url: actualUrl.host },
     `[INFO] Updating searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
