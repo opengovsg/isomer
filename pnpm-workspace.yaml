@@ -203,7 +203,7 @@ catalogs:
   prisma:
     "@prisma/client": 5.22.0
     prisma: 5.22.0
-    prisma-json-types-generator: 3.2.3
+    prisma-json-types-generator: 5.1.0
     prisma-kysely: ^1.8.0
   react:
     react: ^18.3.1
