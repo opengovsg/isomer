@@ -168,8 +168,8 @@ catalogs:
       specifier: ^1.13.1
       version: 1.13.1
     browserslist-useragent-regexp:
-      specifier: ^4.1.3
-      version: 4.1.3
+      specifier: ^4.1.4
+      version: 4.1.4
     chakra-react-select:
       specifier: ^5.1.1
       version: 5.1.1
@@ -1257,7 +1257,7 @@ importers:
         version: 1.13.1
       browserslist-useragent-regexp:
         specifier: 'catalog:'
-        version: 4.1.3(browserslist@4.28.2)
+        version: 4.1.4(browserslist@4.28.2)
       chromatic:
         specifier: 'catalog:'
         version: 16.10.0
@@ -6964,8 +6964,8 @@ packages:
   browserify-zlib@0.2.0:
     resolution: {integrity: sha512-Z942RysHXmJrhqk88FmKBVq/v5tqmSkDz7p54G/MGyjMnCFFnC79XWNbg+Vta8W6Wb2qtSZTSxIGkJrRpCFEiA==}
 
-  browserslist-useragent-regexp@4.1.3:
-    resolution: {integrity: sha512-+KteEIVlrE2eJOmtteWhcs3wYKjbFd9fVPzPlj4VGggKMyf9orf+zjmlNt91ekInZ2zqox5ArEZD/tKXDj0v9Q==}
+  browserslist-useragent-regexp@4.1.4:
+    resolution: {integrity: sha512-DgA+gTG1GCU0HGk/KUgYVpGhKZSt2vpirIGeKHla/zd9ALtM+nA8WAUGXhwp63D8gnA7g5fP7FGjNZOQO3fk7w==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     peerDependencies:
@@ -17163,7 +17163,7 @@ snapshots:
     dependencies:
       pako: 1.0.11
 
-  browserslist-useragent-regexp@4.1.3(browserslist@4.28.2):
+  browserslist-useragent-regexp@4.1.4(browserslist@4.28.2):
     dependencies:
       argue-cli: 2.1.0
       browserslist: 4.28.2
