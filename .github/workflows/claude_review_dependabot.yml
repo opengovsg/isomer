@@ -38,7 +38,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ github.token }}
-          track_progress: true
+          track_progress: ${{ github.event.action == 'opened' }} # track_progress only supports opened/synchronize/ready_for_review/reopened
           allowed_bots: dependabot[bot]
           prompt: /review-dependency-upgrade
           claude_args: |
