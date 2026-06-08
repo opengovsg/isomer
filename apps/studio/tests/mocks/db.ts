@@ -1,6 +1,5 @@
 import type { DB } from "~/server/modules/database"
 import { PrismaPg } from "@prisma/adapter-pg"
-import { PrismaClient } from "@prisma/client"
 import { Kysely, PostgresDialect } from "kysely"
 import { randomUUID } from "node:crypto"
 import { readdirSync, readFileSync, statSync } from "node:fs"
@@ -8,6 +7,7 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Client, Pool } from "pg"
 import { parse } from "superjson"
+import { PrismaClient } from "~prisma/generated/prisma/client"
 
 import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 
