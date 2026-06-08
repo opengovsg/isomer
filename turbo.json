@@ -78,12 +78,14 @@
     },
     "lint": {
       "dependsOn": [
+        "generate",
         "^build"
       ],
       "outputs": []
     },
     "typecheck": {
       "dependsOn": [
+        "generate",
         "^build"
       ],
       "outputs": [
