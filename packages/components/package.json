@@ -85,6 +85,7 @@
     "@storybook/addon-links": "catalog:storybook",
     "@storybook/addon-themes": "catalog:storybook",
     "@storybook/react-vite": "catalog:storybook",
+    "@testing-library/react": "catalog:",
     "@types/lodash-es": "catalog:",
     "@types/lunr": "catalog:",
     "@types/react": "catalog:react",
