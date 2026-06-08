@@ -158,7 +158,7 @@ catalog:
   rehype-external-links: ^3.0.0
   sass: ^1.99.0
   superjson: ^2.2.1
-  tailwind-merge: ^2.4.0
+  tailwind-merge: ^3.6.0
   tailwind-variants: ^3.2.2
   tailwindcss-react-aria-components: ^1.1.4
   tiptap-text-direction: ^0.4.0
