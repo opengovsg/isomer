@@ -19,8 +19,6 @@ const bigIntSchema = z
   .regex(/^[0-9]+$/)
   .refine((v) => !v.startsWith("0"))
 
-const resourceSchema = bigIntSchema
-
 export const getMetadataSchema = z.object({
   siteId: z.number(),
   resourceId: bigIntSchema,
@@ -60,12 +58,12 @@ export const countResourceSchema = z.object({
 
 export const deleteResourceSchema = z.object({
   siteId: z.number(),
-  resourceId: resourceSchema,
+  resourceId: bigIntSchema,
 })
 
 export const getParentSchema = z.object({
   siteId: z.number().min(0),
-  resourceId: resourceSchema,
+  resourceId: bigIntSchema,
 })
 
 export const listResourceSchema = z
