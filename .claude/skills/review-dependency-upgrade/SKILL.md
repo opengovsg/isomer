@@ -135,9 +135,9 @@ In **unattended mode**, always post the report as a PR comment and echo it in th
 
 **Use only CI-allowed tools for posting:**
 
-- Write the report body with the `Write` tool to `/tmp/dep-review-<pkg>.md` — do not use `Bash` to create the file.
+- Write the report body with the `Write` tool to `.dep-review-<pkg>.md` in the repo root — do not use `Bash` to create the file.
 - Resolve PR metadata with `gh pr view` or `Read` on `$GITHUB_EVENT_PATH` — do not `cat` env files via `Bash`.
-- Post with `gh pr comment <number> --body-file /tmp/dep-review-<pkg>.md` and confirm exit code 0.
+- Post with `gh pr comment <number> --body-file .dep-review-<pkg>.md` and confirm exit code 0.
 
 **Resolve the PR** (no user prompts in unattended mode):
 
@@ -152,9 +152,9 @@ In **unattended mode**, always post the report as a PR comment and echo it in th
 gh pr comment <number> --body-file <tmpfile>
 ```
 
-Write the report body to a temp file first (e.g. via `Write` to `/tmp/dep-review-<pkg>.md`) rather than passing the entire body as a `--body` argument — this avoids shell-escaping issues with the markdown table.
+Write the report body to a temp file first (e.g. via `Write` to `.dep-review-<pkg>.md`) rather than passing the entire body as a `--body` argument — this avoids shell-escaping issues with the markdown table.
 
-If `gh pr comment` fails (non-zero exit, permission denied, or auth error), retry once with a fresh `/tmp/` file. If it still fails, output the full report to the action log with a prominent `## POST FAILED` header including the `gh` stderr — do not treat the run as complete.
+If `gh pr comment` fails (non-zero exit, permission denied, or auth error), retry once with a fresh temp file. If it still fails, output the full report to the action log with a prominent `## POST FAILED` header including the `gh` stderr — do not treat the run as complete.
 
 **Skip posting only when:**
 
