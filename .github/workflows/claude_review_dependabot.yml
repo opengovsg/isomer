@@ -32,31 +32,41 @@ jobs:
           fetch-depth: 0
 
       # Headless CI cannot answer permission prompts — pre-allow everything the
-      # review-dependency-upgrade skill needs (web research, /tmp report, gh).
+      # review-dependency-upgrade skill needs (web research, codebase search, gh).
       - name: Run Claude Code Action (review)
         uses: anthropics/claude-code-action@64de744025ca9e24df2b88204b4f1e968f39f009 # v1.0.139
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ github.token }}
+          track_progress: true
           allowed_bots: dependabot[bot]
           prompt: /review-dependency-upgrade
           claude_args: |
             --model claude-sonnet-4-6
             --allowedTools "WebFetch"
             --allowedTools "WebSearch"
+            --allowedTools "Read"
+            --allowedTools "Glob"
+            --allowedTools "Grep"
             --allowedTools "Write(/tmp/**)"
             --allowedTools "Bash(gh pr view:*)"
             --allowedTools "Bash(gh pr diff:*)"
             --allowedTools "Bash(gh pr comment:*)"
+            --allowedTools "Bash(git diff:*)"
           settings: |
             {
               "permissions": {
                 "allow": [
                   "WebFetch",
                   "WebSearch",
+                  "Read",
+                  "Glob",
+                  "Grep",
                   "Write(/tmp/**)",
                   "Bash(gh pr view:*)",
                   "Bash(gh pr diff:*)",
-                  "Bash(gh pr comment:*)"
+                  "Bash(gh pr comment:*)",
+                  "Bash(git diff:*)"
                 ]
               }
             }
