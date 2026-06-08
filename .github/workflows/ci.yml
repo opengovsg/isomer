@@ -149,12 +149,6 @@ jobs:
         run: pnpm exec turbo db:seed
       - name: Run Playwright tests
         run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
-        env:
-          # Required to allow Datadog to trace Playwright tests.
-          # `--require=` long form (not `-r`) is needed because Node 22 rejects
-          # `-r` in NODE_OPTIONS when child processes (e.g. next dev's worker)
-          # re-parse the env value.
-          NODE_OPTIONS: --require=${{ env.DD_TRACE_PACKAGE }}
 
       - name: Stop test containers
         run: pnpm run teardown
