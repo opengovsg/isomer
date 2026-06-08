@@ -84,7 +84,6 @@
     "@opengovsg/starter-kitty-validators": "catalog:",
     "@paralleldrive/cuid2": "catalog:",
     "@prisma/adapter-pg": "catalog:prisma",
-    "@prisma/client": "catalog:prisma",
     "@sinclair/typebox": "catalog:",
     "@tanstack/query-devtools": "catalog:tanstack-query",
     "@tanstack/react-query": "catalog:tanstack-query",
