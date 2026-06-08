@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react"
 import { useQueryParams } from "~/hooks/useQueryParams"
 
 import type { AppliedFilter } from "../../types/Filter"
+import { appliedFiltersSchema } from "../../types/Filter"
 import {
   getFilteredItems,
   getPaginatedItems,
@@ -38,7 +39,8 @@ export const useCollection = ({
       return []
     }
     try {
-      return JSON.parse(filters || "[]") as AppliedFilter[]
+      const parsed = appliedFiltersSchema.safeParse(JSON.parse(filters || "[]"))
+      return parsed.success ? parsed.data : []
     } catch {
       // Malformed URL param (e.g. ?filters=hello) — treat as no filters rather than crashing.
       return []
