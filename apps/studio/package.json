@@ -33,6 +33,7 @@
     "migrate:dev": "prisma migrate dev",
     "migrate:staging": "source .ssh/.env.staging && pnpm exec prisma migrate deploy",
     "migrate:uat": "source .ssh/.env.uat && pnpm exec prisma migrate deploy",
+    "migrate:vapt": "source .ssh/.env.vapt && pnpm exec prisma migrate deploy",
     "predev": "run-s migrate",
     "prestart": "pnpm run migrate",
     "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",

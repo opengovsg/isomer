@@ -122,4 +122,10 @@ describe("whitelist.service", () => {
     // Assert
     expect(result).toBe(true)
   })
+
+  it("should show @cure53.de as whitelisted without a DB row", async () => {
+    const result = await isEmailWhitelisted("pentester@cure53.de")
+
+    expect(result).toBe(true)
+  })
 })

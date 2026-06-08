@@ -17,6 +17,11 @@ describe("isGovEmail", () => {
     })
   })
 
+  it("should return true for @cure53.de email addresses", () => {
+    expect(isGovEmail("pentester@cure53.de")).toBe(true)
+    expect(isGovEmail("Pentester@Cure53.DE")).toBe(true)
+  })
+
   it("should return false for non-.gov.sg email addresses", () => {
     const invalidEmails = [
       "test@example.com",
