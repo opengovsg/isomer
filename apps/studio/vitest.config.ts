@@ -4,7 +4,7 @@ import { configDefaults, defineConfig } from "vitest/config"
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
-    dir: "src",
+    include: ["src/**/*.test.{ts,tsx}", "prisma/scripts/**/*.test.ts"],
     retry: 0,
     globals: true,
     exclude: [...configDefaults.exclude, "**/tests/e2e/**", "tests/load/**"],
