@@ -1,5 +1,6 @@
-import { HStack, Text } from "@chakra-ui/react"
+import { Icon, Text } from "@chakra-ui/react"
 import { Link } from "@opengovsg/design-system-react"
+import { BiLinkExternal } from "react-icons/bi"
 import { trpc } from "~/utils/trpc"
 
 interface FileIdCellProps {
@@ -34,23 +35,27 @@ export const FileIdCell = ({
 
   if (fileKey) {
     return (
-      <HStack spacing="0.25rem" align="center">
-        <Link
-          href="#"
-          onClick={handleClick}
-          isExternal
-          textStyle="body-2"
-          color="interaction.links.default"
-          textDecoration="underline"
-          p="0"
-          aria-disabled={isPending}
-          opacity={isPending ? 0.5 : 1}
-          pointerEvents={isPending ? "none" : "auto"}
-          wordBreak="break-all"
-        >
-          {fileId}
-        </Link>
-      </HStack>
+      <Link
+        href="#"
+        onClick={handleClick}
+        textStyle="body-2"
+        color="interaction.links.default"
+        textDecoration="underline"
+        p="0"
+        aria-disabled={isPending}
+        opacity={isPending ? 0.5 : 1}
+        pointerEvents={isPending ? "none" : "auto"}
+        wordBreak="break-all"
+      >
+        {fileId}
+        <Icon
+          as={BiLinkExternal}
+          display="inline-block"
+          verticalAlign="text-bottom"
+          ml="0.25rem"
+          aria-hidden
+        />
+      </Link>
     )
   }
 
