@@ -85,7 +85,7 @@ jobs:
         run: pnpm --filter @opengovsg/isomer-components run build
       # Storybook bundles @prisma/client; Prisma's browser shim requires a generated client (not created by pnpm install).
       - name: Generate Prisma client
-        run: pnpm --filter isomer-studio exec prisma generate
+        run: pnpm --filter @isomer/db generate
       - name: Build preview-tw CSS
         run: pnpm --filter isomer-studio run build:preview-tw
       # 👇 Adds Chromatic as a step in the workflow

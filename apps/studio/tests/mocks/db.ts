@@ -14,6 +14,10 @@ const prismaMigrationDir = join(
   fileURLToPath(dirname(import.meta.url)),
   "..",
   "..",
+  "..",
+  "..",
+  "packages",
+  "db",
   "prisma",
   "migrations",
 )

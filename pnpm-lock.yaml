@@ -235,7 +235,7 @@ catalogs:
       version: 8.0.4
     isomorphic-dompurify:
       specifier: ^3.15.0
-      version: 3.15.0
+      version: 3.16.0
     jose:
       specifier: ^6.0.11
       version: 6.2.2
@@ -319,7 +319,7 @@ catalogs:
       version: 11.3.0
     rate-limiter-flexible:
       specifier: ^11.1.0
-      version: 11.1.0
+      version: 11.1.1
     react-error-boundary:
       specifier: ^5.0.0
       version: 5.0.0
@@ -886,7 +886,7 @@ importers:
         version: 8.0.4
       isomorphic-dompurify:
         specifier: 'catalog:'
-        version: 3.15.0(@noble/hashes@2.2.0)
+        version: 3.16.0(@noble/hashes@2.2.0)
       jose:
         specifier: 'catalog:'
         version: 6.2.2
@@ -917,18 +917,9 @@ importers:
       pg:
         specifier: 'catalog:'
         version: 8.21.0
-      prisma:
-        specifier: catalog:prisma
-        version: 5.22.0
-      prisma-json-types-generator:
-        specifier: catalog:prisma
-        version: 3.2.3(prisma@5.22.0)(typescript@6.0.3)
-      prisma-kysely:
-        specifier: catalog:prisma
-        version: 1.8.0
       rate-limiter-flexible:
         specifier: 'catalog:'
-        version: 11.1.0
+        version: 11.1.1
       react:
         specifier: catalog:react
         version: 18.3.1
@@ -1178,7 +1169,7 @@ importers:
         version: 2.0.0
       isomorphic-dompurify:
         specifier: 'catalog:'
-        version: 3.15.0(@noble/hashes@2.2.0)
+        version: 3.16.0(@noble/hashes@2.2.0)
       js-md5:
         specifier: 'catalog:'
         version: 0.8.3
@@ -1321,6 +1312,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@prisma/client':
+        specifier: catalog:prisma
+        version: 5.22.0(prisma@5.22.0)
       kysely:
         specifier: 'catalog:'
         version: 0.28.17
@@ -1343,6 +1337,21 @@ importers:
       '@typescript/native-preview':
         specifier: 'catalog:'
         version: 7.0.0-dev.20260513.1
+      dotenv-cli:
+        specifier: 'catalog:'
+        version: 11.0.0
+      prisma:
+        specifier: catalog:prisma
+        version: 5.22.0
+      prisma-json-types-generator:
+        specifier: catalog:prisma
+        version: 3.2.3(prisma@5.22.0)(typescript@6.0.3)
+      prisma-kysely:
+        specifier: catalog:prisma
+        version: 1.8.0
+      tsx:
+        specifier: 'catalog:'
+        version: 4.22.3
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1809,7 +1818,7 @@ importers:
         version: link:../../packages/components
       isomorphic-dompurify:
         specifier: 'catalog:'
-        version: 3.15.0(@noble/hashes@2.2.0)
+        version: 3.16.0(@noble/hashes@2.2.0)
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@2.2.0)
@@ -8669,8 +8678,8 @@ packages:
     resolution: {integrity: sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg==}
     engines: {node: '>=0.10.0'}
 
-  isomorphic-dompurify@3.15.0:
-    resolution: {integrity: sha512-9ZtkbQ8+SgNf6LuDAdu9bq23dVXMIGNM8ZYnyl2MufyZiSD5dqAUJcyjtYZz7B80HuPpEn/f0NCS6zKvavHtfA==}
+  isomorphic-dompurify@3.16.0:
+    resolution: {integrity: sha512-KzTJsMuVPqPwBOD0F6jKXoV/+v8CSx0rxVp+/67KV6Xbw++0zD/avT3bZsgwR0M5QRMiOE+QqQtoZLEJYy1C4Q==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0}
 
   istanbul-lib-coverage@3.2.2:
@@ -10330,8 +10339,8 @@ packages:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
 
-  rate-limiter-flexible@11.1.0:
-    resolution: {integrity: sha512-lyyC0SqKz+dE5JoHZ4JMqdrM3LSZKBxzuAFAyKCYAnmHnPz/Rb6iDquxoL4CMipDXoR0G+QRhOzYWL3JKihbNw==}
+  rate-limiter-flexible@11.1.1:
+    resolution: {integrity: sha512-ZT/GnTlqjX+vEnI39tubPX8bQY7xIvp0e0q+DgxiA2RTfwj7t/jy6GTgdkJNb22qPCqjXJLoPLxff7RolmGc8Q==}
 
   rc@1.2.8:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
@@ -11667,7 +11676,6 @@ packages:
 
   uuid@9.0.0:
     resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}
-    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   validate-npm-package-license@3.0.4:
@@ -19152,7 +19160,7 @@ snapshots:
 
   isobject@3.0.1: {}
 
-  isomorphic-dompurify@3.15.0(@noble/hashes@2.2.0):
+  isomorphic-dompurify@3.16.0(@noble/hashes@2.2.0):
     dependencies:
       dompurify: 3.4.8
       jsdom: 29.1.1(@noble/hashes@2.2.0)
@@ -21116,7 +21124,7 @@ snapshots:
 
   range-parser@1.2.1: {}
 
-  rate-limiter-flexible@11.1.0: {}
+  rate-limiter-flexible@11.1.1: {}
 
   rc@1.2.8:
     dependencies:
