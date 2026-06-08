@@ -216,6 +216,11 @@ jobs:
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
+    # pull-requests: write is needed to upsert a comment with the artifact URL
+    # after the test run; contents: read is the existing checkout default.
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Setup
@@ -256,8 +261,37 @@ jobs:
 
       - name: Upload test results
         if: ${{ !cancelled() }}
+        id: upload-test-results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: test results
+          # Unique per run so that re-runs from the same PR don't collide.
+          name: e2e-test-results-${{ github.run_id }}
           path: apps/studio/tests/e2e/test-results
           retention-days: 7
+          if-no-files-found: warn
+
+      # On PR runs, post (or replace) a comment with a clickable link to the
+      # artifact zip so reviewers can play the per-test video.webm files
+      # without having to navigate to the workflow run UI.
+      - name: Find existing video-link comment
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        id: find-video-comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- e2e-video-link -->"
+
+      - name: Upsert PR comment with e2e video artifact link
+        if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.upload-test-results.outputs.artifact-url != '' }}
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4
+        with:
+          comment-id: ${{ steps.find-video-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- e2e-video-link -->
+            🎥 **E2E test videos** — [Download artifact](${{ steps.upload-test-results.outputs.artifact-url }})
+
+            Each test has its own directory under the zip; play `video.webm` to watch the run.
+            Workflow: [run #${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) — artifact expires in 7 days.
