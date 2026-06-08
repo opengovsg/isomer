@@ -62,7 +62,7 @@ const loggerMiddleware = t.middleware(
       path,
       req: ctx.req,
     })
-    const redactedInput = redactLogInput(await getRawInput())
+    const rawInput = redactLogInput(await getRawInput())
 
     const result = await next({
       ctx: { logger },
@@ -72,7 +72,7 @@ const loggerMiddleware = t.middleware(
 
     if (result.ok) {
       logger.info(
-        { durationInMs, redactedInput, userId: ctx.session?.userId },
+        { durationInMs, rawInput, userId: ctx.session?.userId },
         `[${type}]: ${path} - ${durationInMs}ms - OK`,
       )
     } else {
@@ -80,7 +80,7 @@ const loggerMiddleware = t.middleware(
         {
           durationInMs,
           err: result.error,
-          redactedInput,
+          rawInput,
           userId: ctx.session?.userId,
         },
         `[${type}]: ${path} - ${durationInMs}ms - ${result.error.code} ${result.error.message} - ERROR`,
