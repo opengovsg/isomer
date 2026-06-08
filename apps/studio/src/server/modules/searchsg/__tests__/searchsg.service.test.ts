@@ -74,4 +74,19 @@ describe("updateSearchSGConfig", () => {
       expect(mockWretch).toHaveBeenCalled()
     })
   })
+
+  describe("URL validation", () => {
+    it.each(["www.example.com", "example.com", "not a url", ""])(
+      "should resolve without rejecting and skip SearchSG config fetch for invalid URL %j",
+      async (invalidUrl) => {
+        // Act
+        await updateSearchSGConfig(PROPS, VALID_UUID, invalidUrl).catch(
+          () => {},
+        )
+
+        // Assert
+        expect(mockWretch).not.toHaveBeenCalled()
+      },
+    )
+  })
 })
