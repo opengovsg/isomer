@@ -34,7 +34,6 @@ jobs:
         uses: anthropics/claude-code-action@64de744025ca9e24df2b88204b4f1e968f39f009 # v1.0.139
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          show_full_output: true
           allowed_bots: "dependabot[bot]"
           claude_args: |
             --model claude-sonnet-4-6
