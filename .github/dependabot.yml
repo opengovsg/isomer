@@ -55,6 +55,8 @@ updates:
         patterns:
           - "@storybook/*"
           - "storybook"
+          - "storybook-addon-pseudo-states"
+          - "eslint-plugin-storybook"
       tiptap:
         applies-to: version-updates
         patterns:
