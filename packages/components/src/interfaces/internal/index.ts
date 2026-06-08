@@ -14,7 +14,12 @@ export {
   ContentPageHeaderSchema,
   type ContentPageHeaderProps,
 } from "./ContentPageHeader"
-export { FooterSchema, type FooterSchemaType, type FooterProps } from "./Footer"
+export {
+  FooterSchema,
+  type FooterSchemaType,
+  type FooterProps,
+  type SubscriptionCta,
+} from "./Footer"
 export { HardBreakSchema, type HardBreakProps } from "./HardBreak"
 export type { HeaderProps } from "./Header"
 export type { LinkProps } from "./Link"

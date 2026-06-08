@@ -3,6 +3,7 @@ import type { FooterProps } from "~/interfaces"
 import type {
   FooterItem as FooterItemType,
   SocialMediaType,
+  SubscriptionCta,
 } from "~/interfaces/internal/Footer"
 import { BiLinkExternal } from "react-icons/bi"
 import {
@@ -30,6 +31,7 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 
 import { Link } from "../Link"
+import { LinkButton } from "../LinkButton"
 import { ClientCopyrightYear } from "./ClientCopyrightYear"
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
@@ -218,6 +220,45 @@ const ReachUsSection = ({
   )
 }
 
+const SubscriptionCtaSection = ({
+  subscriptionCta,
+  site,
+}: {
+  subscriptionCta: SubscriptionCta
+  site: FooterProps["site"]
+}) => {
+  const buttonUrl =
+    getReferenceLinkHref(
+      subscriptionCta.buttonUrl,
+      site.siteMapArray,
+      site.assetsBaseUrl,
+    ) ?? subscriptionCta.buttonUrl
+
+  return (
+    <div className="flex flex-col gap-4 border-t border-base-divider-inverse pt-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8 lg:border-b lg:border-t-0 lg:pb-8 lg:pt-0">
+      <div className="flex flex-col gap-1">
+        <h3 className="prose-headline-base-medium text-base-content-inverse">
+          {subscriptionCta.title}
+        </h3>
+        {subscriptionCta.description && (
+          <p className="prose-body-sm text-base-content-inverse-subtle">
+            {subscriptionCta.description}
+          </p>
+        )}
+      </div>
+      <LinkButton
+        href={buttonUrl}
+        variant="outline"
+        colorScheme="inverse"
+        size="sm"
+        className="w-fit flex-shrink-0"
+      >
+        {subscriptionCta.buttonLabel}
+      </LinkButton>
+    </div>
+  )
+}
+
 const LegalSection = ({
   site,
   agencyName,
@@ -337,6 +378,7 @@ const FooterMobile = ({
   feedbackFormLink,
   privacyStatementLink,
   termsOfUseLink,
+  subscriptionCta,
 }: FooterProps) => {
   return (
     <div className="flex flex-col gap-8 px-6 py-11 md:px-10 lg:hidden lg:py-16">
@@ -352,6 +394,9 @@ const FooterMobile = ({
         feedbackFormLink={feedbackFormLink}
         site={site}
       />
+      {subscriptionCta && (
+        <SubscriptionCtaSection subscriptionCta={subscriptionCta} site={site} />
+      )}
       <div className="flex flex-col gap-9">
         <LegalSection
           agencyName={agencyName}
@@ -381,11 +426,18 @@ const FooterDesktop = ({
   feedbackFormLink,
   privacyStatementLink,
   termsOfUseLink,
+  subscriptionCta,
 }: FooterProps) => {
   return (
     <div className="hidden px-10 py-14 lg:block">
       <div className="mx-auto flex max-w-[72.5rem] flex-col gap-6">
         <SiteNameSection siteName={siteName} />
+        {subscriptionCta && (
+          <SubscriptionCtaSection
+            subscriptionCta={subscriptionCta}
+            site={site}
+          />
+        )}
         <div className="grid-cols-[1fr_min-content] grid-rows-[1fr_min-content] gap-x-10 gap-y-14 lg:grid">
           <div>
             <NavSection
