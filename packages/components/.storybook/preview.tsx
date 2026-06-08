@@ -131,7 +131,6 @@ const MockDateDecorator: Decorator = (Story) => {
 export const decorators: Decorator[] = [
   withThemeByDataAttribute({
     themes: {
-      "Isomer Classic": "isomer-classic",
       "Isomer Next": "isomer-next",
     },
     defaultTheme: "Isomer Next",

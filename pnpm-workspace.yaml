@@ -29,11 +29,27 @@ publicHoistPattern:
   - rimraf
   - tsc-alias
 
-onlyBuiltDependencies:
-  - "@prisma/adapter-pg"
-  - "@prisma/client"
-  - esbuild
-  - prisma
+allowBuilds:
+  "@prisma/client": true
+  "@prisma/engines": true
+  esbuild: true
+  prisma: true
+  # pnpm 11 made strictDepBuilds true by default — any transitive dep with an
+  # install script that isn't explicitly allowed/ignored fails the install with
+  # ERR_PNPM_IGNORED_BUILDS. The entries below preserve the pre-pnpm-11 behavior
+  # of skipping these scripts (none are needed for our build).
+  "@datadog/native-appsec": false
+  "@datadog/native-iast-taint-tracking": false
+  "@datadog/native-metrics": false
+  "@datadog/pprof": false
+  "@parcel/watcher": false
+  core-js-pure: false
+  cpu-features: false
+  dd-trace: false
+  msw: false
+  protobufjs: false
+  sharp: false
+  ssh2: false
 
 patchedDependencies:
   next@16.2.6: patches/next@16.2.6.patch
@@ -53,7 +69,8 @@ catalog:
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
   jsdom: ^29.1.1
-  isomorphic-dompurify: ^3.12.0
+  happy-dom: ^20.9.0
+  isomorphic-dompurify: ^3.15.0
   mockdate: ^3.0.5
   msw: ^2.14.6
   msw-storybook-addon: ^2.0.7
@@ -67,28 +84,28 @@ catalog:
   "@paralleldrive/cuid2": ^3.3.0
   "@sinclair/typebox": ^0.33.12
   "@tanstack/react-table": ^8.21.2
-  pg: ^8.16.2
+  "@testing-library/react": ^16.3.2
+  pg: ^8.21.0
   pino: ^10.3.1
   pino-pretty: ^13.0.0
-  postcss: ^8.5.14
+  postcss: ^8.5.15
   postcss-preset-env: ^11.2.1
   react-icons: ^5.2.0
   rimraf: ^5.0.10
   sherif: ^1.11.1
   start-server-and-test: ^3.0.2
   tailwindcss: ^3.4.4
-  testcontainers: ^11.14.0
+  testcontainers: ^12.0.1
   tsc-alias: ^1.8.16
   "@typescript/native-preview": 7.0.0-dev.20260513.1
   type-fest: ^4.23.0
-  tsx: ^4.20.4
+  tsx: ^4.22.3
   turbo: ^2.9.14
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
   webpack-cli: ^7.0.2
   webpack-glob-entries: ^1.0.1
   zod: ^4.4.3
-  "@types/jsdom": ^21.1.7
   "@types/lodash-es": ^4.17.12
   "@types/lunr": ^2.3.7
   "@types/node": ^25.7.0
@@ -98,10 +115,9 @@ catalog:
   "@types/validator": ^13.15.2
   globals: ^11.12.0
   "@1password/sdk": ^0.4.0
-  "@datadog/browser-rum": ^5.29.1
+  "@datadog/browser-rum": ^7.2.0
   "@fontsource/ibm-plex-mono": ^5.1.1
   "@formkit/auto-animate": ^0.8.2
-  "@govtechsg/sgds-react": ^2.7.6
   "@headlessui/react": ^2.2.10
   "@hello-pangea/dnd": ^18.0.1
   "@hookform/resolvers": ^5.2.2
@@ -109,7 +125,7 @@ catalog:
   "@playwright/test": ^1.60.0
   "@uidotdev/usehooks": ^2.4.1
   ajv-errors: ^3.0.0
-  chakra-react-select: ^5.0.5
+  chakra-react-select: ^5.1.1
   commander: ^12.1.0
   date-fns-tz: ^3.1.3
   dd-trace: ^5.102.0
@@ -122,11 +138,9 @@ catalog:
   iron-session: ^8.0.4
   jose: ^6.0.11
   jotai: ^2.20.0
-  js-base64: ^3.7.7
   js-md5: ^0.8.3
   kysely: ^0.28.17
   lodash-es: ^4.18.1
-  markdown-to-jsx: ^7.7.8
   minisearch: ^7.1.2
   nanoid: ^5.1.11
   next: 16.2.6
@@ -137,7 +151,7 @@ catalog:
   papaparse: ^5.5.3
   pg-boss: ^12.3.0
   postcss-load-config: ^6.0.1
-  rate-limiter-flexible: ^5.0.3
+  rate-limiter-flexible: ^11.1.0
   react-error-boundary: ^5.0.0
   react-frame-component: ^5.2.7
   react-hook-form: ^7.75.0
@@ -146,7 +160,7 @@ catalog:
   sass: ^1.99.0
   superjson: ^2.2.1
   tailwind-merge: ^2.4.0
-  tailwind-variants: ^0.3.1
+  tailwind-variants: ^3.2.2
   tailwindcss-react-aria-components: ^1.1.4
   tiptap-text-direction: ^0.4.0
   transliteration: ^2.6.1
@@ -158,20 +172,20 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^1.7.7
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.1.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1046.0
-    "@aws-sdk/client-amplify": ^3.1046.0
-    "@aws-sdk/client-cloudfront": ^3.1046.0
-    "@aws-sdk/client-codebuild": ^3.1046.0
-    "@aws-sdk/client-s3": ^3.1046.0
-    "@aws-sdk/s3-request-presigner": ^3.1046.0
-    "@aws-sdk/credential-providers": ^3.1046.0
+    "@aws-sdk/client-acm": ^3.1055.0
+    "@aws-sdk/client-amplify": ^3.1055.0
+    "@aws-sdk/client-cloudfront": ^3.1055.0
+    "@aws-sdk/client-codebuild": ^3.1055.0
+    "@aws-sdk/client-s3": ^3.1055.0
+    "@aws-sdk/s3-request-presigner": ^3.1055.0
+    "@aws-sdk/credential-providers": ^3.1055.0
   babel:
-    "@babel/plugin-transform-class-properties": ^7.27.1
-    "@babel/plugin-transform-object-rest-spread": ^7.27.3
-    "@babel/preset-env": ^7.29.3
-    "@babel/preset-typescript": ^7.27.1
+    "@babel/plugin-transform-class-properties": ^7.29.7
+    "@babel/plugin-transform-object-rest-spread": ^7.29.7
+    "@babel/preset-env": ^7.29.7
+    "@babel/preset-typescript": ^7.29.7
   casl:
-    "@casl/ability": ^6.8.1
+    "@casl/ability": ^7.0.0
     "@casl/react": ^5.0.0
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
@@ -198,28 +212,28 @@ catalogs:
     "@types/react": ^18.3.26
     "@types/react-dom": ^18.3.7
   "react-aria":
-    "@react-aria/button": ^3.15.0
-    "@react-aria/checkbox": ^3.17.0
-    "@react-aria/focus": ^3.22.0
-    "@react-aria/interactions": ^3.28.0
-    "@react-aria/textfield": ^3.18.2
-    "@react-aria/utils": ^3.34.0
-    "@react-stately/checkbox": ^3.8.0
-    "@react-stately/toggle": ^3.10.0
+    "@react-aria/button": ^3.15.1
+    "@react-aria/checkbox": ^3.17.1
+    "@react-aria/focus": ^3.22.1
+    "@react-aria/interactions": ^3.28.1
+    "@react-aria/textfield": ^3.19.1
+    "@react-aria/utils": ^3.34.1
+    "@react-stately/checkbox": ^3.8.1
+    "@react-stately/toggle": ^3.10.1
   storybook:
-    storybook: ^10.4.0
-    "@storybook/addon-a11y": ^10.4.0
-    "@storybook/addon-docs": ^10.4.0
-    "@storybook/addon-links": ^10.4.0
-    "@storybook/addon-themes": ^10.4.0
-    "@storybook/nextjs": ^10.4.0
-    "@storybook/react-vite": ^10.4.0
-    eslint-plugin-storybook: ^10.4.0
+    storybook: ^10.4.1
+    "@storybook/addon-a11y": ^10.4.1
+    "@storybook/addon-docs": ^10.4.1
+    "@storybook/addon-links": ^10.4.1
+    "@storybook/addon-themes": ^10.4.1
+    "@storybook/nextjs": ^10.4.1
+    "@storybook/react-vite": ^10.4.1
+    eslint-plugin-storybook: ^10.4.1
     storybook-addon-pseudo-states: ^10.3.6
   tanstack-query:
-    "@tanstack/query-devtools": ^5.100.10
-    "@tanstack/react-query": ^5.100.10
-    "@tanstack/react-query-devtools": ^5.100.10
+    "@tanstack/query-devtools": ^5.100.11
+    "@tanstack/react-query": ^5.100.11
+    "@tanstack/react-query-devtools": ^5.100.11
   tiptap:
     "@tiptap/core": ^2.22.3
     "@tiptap/extension-bold": ^2.22.3
@@ -256,8 +270,8 @@ catalogs:
     "@trpc/react-query": ^11.17.0
     "@trpc/server": ^11.17.0
   vitest:
-    "@vitejs/plugin-react": ^4.3.1
-    "@vitest/coverage-istanbul": ^2.1.2
-    vite: ^5.4.21
-    vite-tsconfig-paths: ^5.1.4
-    vitest: ^2.1.1
+    "@vitejs/plugin-react": ^6.0.2
+    "@vitest/coverage-istanbul": ^4.1.7
+    vite: ^8.0.14
+    vite-tsconfig-paths: ^6.1.1
+    vitest: ^4.1.7

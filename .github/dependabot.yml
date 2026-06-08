@@ -81,6 +81,11 @@ updates:
         patterns:
           - "@jsonforms/core"
           - "@jsonforms/react"
+      react-aria:
+        applies-to: version-updates
+        patterns:
+          - "@react-aria/*"
+          - "@react-stately/*"
     ignore:
       # Currently dependabot doesn't support ignoring by group so we have to ignore each dependency individually
       # Ignore major version updates for react — we cannot upgrade to React 19 yet because some dependencies
@@ -105,3 +110,10 @@ updates:
         update-types: ["version-update:semver-major"]
       # markdown-to-jsx is only used in the unmaintained classic template; skip all updates
       - dependency-name: "markdown-to-jsx"
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7 # to mitigate supply chain attacks

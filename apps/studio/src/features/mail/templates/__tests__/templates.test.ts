@@ -1,11 +1,13 @@
+import type { Resource } from "~/server/modules/database"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
-import { RoleType } from "~prisma/generated/generatedEnums"
+import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
 
 import {
   accountDeactivationTemplate,
   accountDeactivationWarningTemplate,
   invitationTemplate,
+  templates,
 } from "../templates"
 
 describe("invitationTemplate", () => {
@@ -31,7 +33,9 @@ describe("invitationTemplate", () => {
     expect(template.body).toContain(
       "edit and publish the content, as well as manage users and site settings",
     )
-    expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
+    if (env.NEXT_PUBLIC_APP_URL) {
+      expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
+    }
   })
 
   it("should generate correct body content for Publisher role", () => {
@@ -106,7 +110,9 @@ describe("accountDeactivationWarningTemplate", () => {
 
     // Assert
     expect(template.body).toContain("please log in within the next 7 days")
-    expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
+    if (env.NEXT_PUBLIC_APP_URL) {
+      expect(template.body).toContain(env.NEXT_PUBLIC_APP_URL)
+    }
   })
 
   it("should include security measure message", () => {
@@ -334,5 +340,105 @@ describe("accountDeactivationTemplate", () => {
         <p>There are no administrators for this site. To be added back, please send an email to <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> with your line manager in CC for approval.</p>
       `
     expect(template.body).toContain(expectedSiteInstructionForSiteWithoutAdmins)
+  })
+})
+
+describe("email template HTML escaping", () => {
+  const maliciousPayload = `</p><h1>URGENT</h1><a href='https://evil.tld?a=1&b=2'>Click "verify"</a><p>`
+  const escapedPayload = `&lt;/p&gt;&lt;h1&gt;URGENT&lt;/h1&gt;&lt;a href=&#39;https://evil.tld?a=1&amp;b=2&#39;&gt;Click &quot;verify&quot;&lt;/a&gt;&lt;p&gt;`
+
+  const mockResource = {
+    id: "resource-id",
+    title: "Test Page",
+    permalink: "test-page",
+    siteId: 1,
+    parentId: null,
+    publishedVersionId: null,
+    draftBlobId: null,
+    state: null,
+    type: ResourceType.Page,
+    scheduledAt: null,
+    scheduledBy: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  } satisfies Resource
+
+  it("escapes invitation text fields", () => {
+    // Arrange
+    const templateData = {
+      inviterName: maliciousPayload,
+      recipientEmail: "recipient@example.com",
+      siteName: maliciousPayload,
+      role: RoleType.Admin,
+    }
+
+    // Act
+    const template = invitationTemplate(templateData)
+
+    // Assert
+    expect(template.body).toContain(escapedPayload)
+    expect(template.body).not.toContain("<h1>URGENT</h1>")
+    expect(template.body).not.toContain("https://evil.tld?a=1&b=2")
+  })
+
+  it("escapes resource titles and site names in publish alerts", () => {
+    // Arrange
+    const templateData = {
+      recipientEmail: "publisher@example.com",
+      siteName: maliciousPayload,
+      resource: {
+        ...mockResource,
+        title: maliciousPayload,
+      },
+    }
+
+    // Act
+    const template = templates.publishAlertContentPublisher(templateData)
+
+    // Assert
+    expect(template.body).toContain(
+      `published "${escapedPayload}" on ${escapedPayload}`,
+    )
+    expect(template.body).not.toContain("<h1>URGENT</h1>")
+    expect(template.body).not.toContain("https://evil.tld?a=1&b=2")
+  })
+
+  it("escapes site names in account deactivation warnings", () => {
+    // Arrange
+    const templateData = {
+      recipientEmail: "recipient@example.com",
+      siteNames: [maliciousPayload],
+      inHowManyDays: 7 as const,
+    }
+
+    // Act
+    const template = accountDeactivationWarningTemplate(templateData)
+
+    // Assert
+    expect(template.body).toContain(`<li>${escapedPayload}</li>`)
+    expect(template.body).not.toContain("<h1>URGENT</h1>")
+    expect(template.body).not.toContain("https://evil.tld?a=1&b=2")
+  })
+
+  it("escapes site names and admin emails in account deactivation emails", () => {
+    // Arrange
+    const templateData = {
+      recipientEmail: "recipient@example.com",
+      sitesAndAdmins: [
+        {
+          siteName: maliciousPayload,
+          adminEmails: [maliciousPayload],
+        },
+      ],
+    }
+
+    // Act
+    const template = accountDeactivationTemplate(templateData)
+
+    // Assert
+    expect(template.body).toContain(`<p><b>${escapedPayload}</b></p>`)
+    expect(template.body).toContain(`<li>${escapedPayload}</li>`)
+    expect(template.body).not.toContain("<h1>URGENT</h1>")
+    expect(template.body).not.toContain("https://evil.tld?a=1&b=2")
   })
 })
