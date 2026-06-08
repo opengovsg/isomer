@@ -77,7 +77,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -97,7 +97,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -145,7 +145,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -171,7 +171,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -192,7 +192,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -217,9 +217,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND" }),
-      )
+      await expect(result).rejects.toThrow(new TRPCError({ code: "NOT_FOUND" }))
     })
 
     it("should return empty items array if `cursor` is invalid", async () => {
@@ -478,7 +476,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -504,7 +502,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -525,7 +523,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -550,9 +548,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND" }),
-      )
+      await expect(result).rejects.toThrow(new TRPCError({ code: "NOT_FOUND" }))
     })
 
     it("should not return RootPage as its own children", async () => {
@@ -1008,7 +1004,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1041,7 +1037,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1061,7 +1057,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -1088,9 +1084,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND" }),
-      )
+      await expect(result).rejects.toThrow(new TRPCError({ code: "NOT_FOUND" }))
     })
 
     it("should throw 403 if user does not have read access to site", async () => {
@@ -1104,7 +1098,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1208,6 +1202,10 @@ describe("resource.router", async () => {
   })
 
   describe("move", () => {
+    beforeEach(() => {
+      vi.spyOn(auditService, "logResourceEvent").mockClear()
+    })
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -1223,7 +1221,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
@@ -1247,7 +1245,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "BAD_REQUEST" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
@@ -1272,7 +1270,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1306,7 +1304,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -1340,7 +1338,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "You cannot move a resource to the same folder",
@@ -1377,7 +1375,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1443,7 +1441,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message: "You cannot move a resource to a different site",
@@ -1613,7 +1611,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Cannot move a folder into one of its descendants",
@@ -1656,7 +1654,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Cannot move a folder into one of its descendants",
@@ -1701,7 +1699,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Cannot move a folder into one of its descendants",
@@ -1761,7 +1759,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Cannot move a folder into one of its descendants",
@@ -1787,7 +1785,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1807,7 +1805,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -1823,7 +1821,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Resource not found",
@@ -1994,7 +1992,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2041,7 +2039,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2054,7 +2052,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2117,7 +2115,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -2271,7 +2269,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2284,6 +2282,10 @@ describe("resource.router", async () => {
   })
 
   describe("delete", () => {
+    beforeEach(() => {
+      vi.spyOn(auditService, "logResourceEvent").mockClear()
+    })
+
     it("should throw 401 if not logged in", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2297,12 +2299,12 @@ describe("resource.router", async () => {
       })
 
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
 
-    it("should return 400 if resource to delete does not exist", async () => {
+    it("should return NOT_FOUND if resource to delete does not exist", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -2318,10 +2320,10 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "BAD_REQUEST", message: "Resource not found" }),
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
+      expect(auditSpy).not.toHaveBeenCalled()
     })
 
     it("should delete a page resource successfully", async () => {
@@ -2459,7 +2461,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "BAD_REQUEST" }),
       )
     })
@@ -2485,7 +2487,7 @@ describe("resource.router", async () => {
 
       // Assert
       expect(auditSpy).not.toHaveBeenCalled()
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "The search page cannot be deleted",
@@ -2511,7 +2513,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2534,7 +2536,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2554,7 +2556,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -2657,7 +2659,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2682,7 +2684,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2695,7 +2697,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -2773,7 +2775,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -2806,7 +2808,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -2826,7 +2828,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
       )
     })
@@ -2984,7 +2986,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -3017,7 +3019,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -3077,7 +3079,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -3150,7 +3152,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -3166,7 +3168,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -4154,7 +4156,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -4198,7 +4200,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -4282,7 +4284,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -4302,9 +4304,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({ code: "NOT_FOUND" }),
-      )
+      await expect(result).rejects.toThrow(new TRPCError({ code: "NOT_FOUND" }))
     })
 
     it("should return the index page if user has read access to the site", async () => {
@@ -4349,7 +4349,7 @@ describe("resource.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:

@@ -41,9 +41,7 @@ export const createDefaultPage = ({
       const databaseDefaultPage = {
         layout: ISOMER_USABLE_PAGE_LAYOUTS.Database,
         page: {
-          title: "New database layout",
-          description:
-            "This is a layout where you can link your dataset from Data.gov.sg. Users can search through the table.",
+          contentPageHeader: { summary: "This is the page summary" },
           database: {
             dataSource: {
               type: "dgs", // we only support DGS creation on studio for now

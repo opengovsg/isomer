@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "types": ["node", "vitest/globals"],
+    "noEmit": true,
     "declaration": true,
     "rootDir": "src",
     "moduleResolution": "bundler",
@@ -16,5 +17,5 @@
     "lib": ["es2021"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules"]
 }

@@ -5,7 +5,6 @@ import { BiData } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
-import { AdminCreateIndexPageButton } from "~/features/dashboard/components/AdminCreateIndexPageButton"
 import { CollectionBanner } from "~/features/dashboard/components/CollectionBanner"
 import { CollectionTable } from "~/features/dashboard/components/CollectionTable"
 import {
@@ -60,10 +59,6 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
         title={metadata.title}
         buttons={
           <>
-            <AdminCreateIndexPageButton
-              siteId={siteId}
-              parentId={collectionId}
-            />
             <Button
               variant="outline"
               size="md"
