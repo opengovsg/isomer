@@ -1,18 +1,29 @@
-name: 🤖 Claude Review (Dependabot)
+name: 🤖 Claude Review
 
 on:
   pull_request:
-    types: [opened] # Only run for new Dependabot PRs
+    types:
+      - opened # Only run for new Dependabot PRs
+      - labeled # Allow manual triggering by adding the 'review-dependency-upgrade' label
 
 permissions:
+  contents: read
   pull-requests: write # needed to write the review comment
+  issues: write # needed to remove the 'review-dependency-upgrade' label after review
   id-token: write # needed to fetch OIDC token for Claude Code Action
 
 jobs:
-  review:
-    if: github.actor == 'dependabot[bot]' # Only run for Dependabot PRs
+  dependabot-review:
+    # Only run for Dependabot PRs; label trigger allows manual re-runs
+    # 'opened' events have no label, so pass them through unconditionally
+    # for 'labeled' events, only proceed for this specific label
+    if: >
+      startsWith(github.event.pull_request.head.ref, 'dependabot/') && (
+        github.event.action == 'opened' || 
+        github.event.label.name == 'review-dependency-upgrade'
+      )
     runs-on: ubuntu-latest
-
+    timeout-minutes: 30
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -23,10 +34,22 @@ jobs:
         uses: anthropics/claude-code-action@64de744025ca9e24df2b88204b4f1e968f39f009 # v1.0.139
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          allowed_bots: 'dependabot[bot]'
-
+          show_full_output: true
+          allowed_bots: "dependabot[bot]"
           claude_args: |
             --model claude-sonnet-4-6
-
           prompt: |
             /review-dependency-upgrade
+
+      # Always remove the label after review (success or failure) so it can be re-added to re-trigger
+      - name: Remove 'review-dependency-upgrade' label
+        if: always() && github.event.action == 'labeled' && github.event.label.name == 'review-dependency-upgrade'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              name: 'review-dependency-upgrade',
+            })
