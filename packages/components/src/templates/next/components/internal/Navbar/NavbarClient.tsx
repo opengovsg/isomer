@@ -64,7 +64,7 @@ const createNavbarStyles = tv({
     isPinned: {
       true: {
         navbarContainer: "py-1 lg:py-0",
-        callToAction: "flex",
+        callToAction: "my-2 flex",
         searchIcon: "hidden lg:flex",
         primaryNavigationSection: "gap-3",
       },
@@ -225,7 +225,7 @@ export const NavbarClient = ({
                   isWithFocusVisibleHighlight
                 >
                   {isPinned ? (
-                    <span className="max-w-[10rem] truncate">
+                    <span className="max-w-[10rem] truncate max-xs:line-clamp-2 max-xs:whitespace-normal">
                       {callToAction.label}
                     </span>
                   ) : (
