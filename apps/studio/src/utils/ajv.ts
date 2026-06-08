@@ -3,7 +3,7 @@ import addErrors from "ajv-errors"
 
 export const ajv = new Ajv({
   useDefaults: true,
-  allErrors: false,
+  allErrors: true,
   strict: false,
   logger: false,
   discriminator: true,
