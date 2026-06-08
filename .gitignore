@@ -60,7 +60,6 @@ storybook-static/
 .worktrees/*
 
 # Prisma generated client (regenerated at build time)
-apps/studio/prisma/generated/
 packages/db/prisma/generated/
 
 # Generated Tailwind CSS for the editor preview iframe (built by `build:preview-tw`)
