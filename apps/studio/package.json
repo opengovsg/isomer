@@ -169,6 +169,7 @@
     "@babel/preset-env": "catalog:babel",
     "@babel/preset-typescript": "catalog:babel",
     "@chakra-ui/cli": "catalog:chakra",
+    "@inquirer/prompts": "catalog:",
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/storybook-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
