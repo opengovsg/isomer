@@ -363,8 +363,8 @@ catalogs:
       specifier: ^3.4.4
       version: 3.4.19
     tailwindcss-react-aria-components:
-      specifier: ^1.1.4
-      version: 1.2.0
+      specifier: ^2.1.1
+      version: 2.1.1
     testcontainers:
       specifier: ^12.0.1
       version: 12.0.1
@@ -1190,7 +1190,7 @@ importers:
         version: 3.2.2(tailwind-merge@2.6.1)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
       tailwindcss-react-aria-components:
         specifier: 'catalog:'
-        version: 1.2.0(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
+        version: 2.1.1(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
       type-fest:
         specifier: 'catalog:'
         version: 4.41.0
@@ -11219,10 +11219,10 @@ packages:
       tailwind-merge:
         optional: true
 
-  tailwindcss-react-aria-components@1.2.0:
-    resolution: {integrity: sha512-ynlQIfAdoWAz0Og0dCe/d4QVE+L8Yuo6rtK9apdhehZZMoLC1GdwtnvLZyUyx+wHwnTjRuNtFPdN0DpPsPXJJg==}
+  tailwindcss-react-aria-components@2.1.1:
+    resolution: {integrity: sha512-MjJzUShRN52Wj29e1/DQgrocOXsP62cySztEaPbDsdDjYpPfEo2DlLAPOP8GH9YwwqZ+SC7Bpi31QJUOCcROkA==}
     peerDependencies:
-      tailwindcss: '*'
+      tailwindcss: ^4.0.0
 
   tailwindcss@3.4.19:
     resolution: {integrity: sha512-3ofp+LL8E+pK/JuPLPggVAIaEuhvIz4qNcf3nA1Xn2o/7fb7s/TYpHhwGDv1ZU3PkBluUVaF8PyCHcm48cKLWQ==}
@@ -11679,6 +11679,7 @@ packages:
 
   uuid@9.0.0:
     resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   validate-npm-package-license@3.0.4:
@@ -22144,7 +22145,7 @@ snapshots:
     optionalDependencies:
       tailwind-merge: 2.6.1
 
-  tailwindcss-react-aria-components@1.2.0(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)):
+  tailwindcss-react-aria-components@2.1.1(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)):
     dependencies:
       tailwindcss: 3.4.19(tsx@4.22.3)(yaml@2.8.3)
 
