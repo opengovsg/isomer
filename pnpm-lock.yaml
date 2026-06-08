@@ -498,8 +498,8 @@ catalogs:
       specifier: ^10.4.1
       version: 10.4.1
     storybook-addon-pseudo-states:
-      specifier: ^10.3.6
-      version: 10.3.6
+      specifier: ^10.4.1
+      version: 10.4.2
   tanstack-query:
     '@tanstack/query-devtools':
       specifier: ^5.100.11
@@ -1296,7 +1296,7 @@ importers:
         version: 10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       storybook-addon-pseudo-states:
         specifier: catalog:storybook
-        version: 10.3.6(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 10.4.2(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.19(tsx@4.22.3)(yaml@2.8.3)
@@ -11062,10 +11062,10 @@ packages:
     resolution: {integrity: sha512-xhV7w8S+bUwlPTb4bAOUQhv8/cSS5offJuX8GQGq32ONF0ZtDWKfkdomM3HMRA+LhX6um/FZ0COqlwsjD53LeQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  storybook-addon-pseudo-states@10.3.6:
-    resolution: {integrity: sha512-0ue+X3FmteLuZLWdqrdJbfKv8u4WlUPz34KuUQfSAuBWkW0xeAcMwOWCbnTU7GQHtNHivGBtOqSoTch4AxkZJg==}
+  storybook-addon-pseudo-states@10.4.2:
+    resolution: {integrity: sha512-RrraSqpQ0c17NWNsDeCASV9Z+UXHKhb071vguUNZS9/dagF/HnrAbWTcHpHNBpS9SYRAFnlzIhWiSEEKEmcOKg==}
     peerDependencies:
-      storybook: ^10.3.6
+      storybook: ^10.4.2
 
   storybook@10.4.1:
     resolution: {integrity: sha512-V1Zd2e+gBFufqAQVZ1JR8KLqALsEZ3JYSBnWwQbKa6zCfWWanR6AFMyuOkLt2gZOgGp3h2Riuz88pGNVTQSG0A==}
@@ -21893,7 +21893,7 @@ snapshots:
     dependencies:
       bl: 5.1.0
 
-  storybook-addon-pseudo-states@10.3.6(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  storybook-addon-pseudo-states@10.4.2(storybook@10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
       storybook: 10.4.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
