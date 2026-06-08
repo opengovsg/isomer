@@ -1,0 +1,30 @@
+name: 🤖 Claude Review (Dependabot)
+
+on:
+  pull_request:
+    types: [opened] # Only run for new Dependabot PRs
+
+permissions:
+  pull-requests: write # needed to write the review comment
+
+jobs:
+  review:
+    if: github.actor == 'dependabot[bot]' # Only run for Dependabot PRs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Action (review)
+        uses: anthropics/claude-code-action@64de744025ca9e24df2b88204b4f1e968f39f009 # v1.0.139
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+          claude_args: |
+            --model claude-sonnet-4-6
+
+          prompt: |
+            /review-dependency-upgrade

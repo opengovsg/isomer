@@ -16,6 +16,7 @@ import { trpc } from "~/utils/trpc"
 
 import type { GazetteTableData } from "./types"
 import { ModifyGazetteModal } from "../ModifyGazetteModal/ModifyGazetteModal"
+import { ViewGazetteModal } from "../ViewGazetteModal"
 import { CategoryCell } from "./CategoryCell"
 import { FileIdCell } from "./FileIdCell"
 import { StatusCell } from "./StatusCell"
@@ -89,6 +90,11 @@ export const GazetteTable = ({
 }): JSX.Element => {
   const columns = useMemo(() => getColumns(siteId), [siteId])
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const {
+    isOpen: isViewOpen,
+    onOpen: onViewOpen,
+    onClose: onViewClose,
+  } = useDisclosure()
   const [selectedGazette, setSelectedGazette] =
     useState<GazetteTableData | null>(null)
   const { data: totalCount = 0, isLoading: isCountLoading } =
@@ -138,6 +144,7 @@ export const GazetteTable = ({
           fileKey: page?.ref ?? null,
           fileSize: resource.fileSize ?? null,
           publishTime: resource.scheduledAt ?? new Date(),
+          publishedAt: resource.publishedAt ?? null,
         } satisfies GazetteTableData
       }) ?? [],
     getCoreRowModel: getCoreRowModel(),
@@ -175,10 +182,13 @@ export const GazetteTable = ({
           tableLayout: "fixed",
         }}
         totalRowCount={totalCount}
-        isRowClickable={(row) => row.original.status !== "published"}
         onRowClick={(row) => {
           setSelectedGazette(row.original)
-          onOpen()
+          if (row.original.status === "published") {
+            onViewOpen()
+          } else {
+            onOpen()
+          }
         }}
       />
 
@@ -199,6 +209,23 @@ export const GazetteTable = ({
             fileId: selectedGazette.fileId,
             fileKey: selectedGazette.fileKey ?? undefined,
             fileSize: selectedGazette.fileSize ?? undefined,
+          }}
+        />
+      )}
+
+      {selectedGazette && selectedGazette.status === "published" && (
+        <ViewGazetteModal
+          isOpen={isViewOpen}
+          onClose={onViewClose}
+          siteId={siteId}
+          gazetteId={selectedGazette.id}
+          data={{
+            title: selectedGazette.title,
+            category: selectedGazette.category,
+            subcategory: selectedGazette.subcategory,
+            notificationNumber: selectedGazette.notificationNo ?? undefined,
+            fileId: selectedGazette.fileId,
+            publishedAt: selectedGazette.publishedAt,
           }}
         />
       )}
