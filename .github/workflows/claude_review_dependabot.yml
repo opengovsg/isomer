@@ -6,6 +6,13 @@ on:
       - opened # Only run for new Dependabot PRs
       - ready_for_review # Allow manual re-runs by marking the PR as ready for review
 
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review"
+        required: true
+        type: number
+
 permissions:
   contents: read
   pull-requests: write # needed to write the review comment
@@ -13,7 +20,7 @@ permissions:
 
 jobs:
   review:
-    if: github.actor == 'dependabot[bot]' # Only run for Dependabot PRs
+    if: startsWith(github.event.pull_request.head.ref, 'dependabot/') # Only run for Dependabot PRs
     runs-on: ubuntu-latest
 
     steps:
