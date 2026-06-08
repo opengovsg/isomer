@@ -96,7 +96,7 @@ export const LiteYouTubeEmbed = ({
             }
           }}
           className={twMerge(
-            "absolute inset-0 h-full w-full bg-black object-cover",
+            "absolute inset-0 h-full w-full bg-base-canvas-inverse object-cover",
             activated && "pointer-events-none opacity-0",
           )}
         />

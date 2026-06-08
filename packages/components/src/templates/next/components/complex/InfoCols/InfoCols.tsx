@@ -13,7 +13,7 @@ import { Link } from "../../internal/Link"
 
 const createInfoColsStyles = tv({
   slots: {
-    section: "bg-white",
+    section: "bg-base-canvas",
     outerContainer: `${ComponentContent}`,
     innerContainer: "flex flex-col gap-12",
     header: "flex w-full max-w-[47.5rem] flex-col items-start text-left",

@@ -18,7 +18,7 @@ const createBreadcrumbLinkStyles = tv({
   variants: {
     colorScheme: {
       default: {
-        link: "text-base-content active:text-interaction-link-active current:text-base-content-medium",
+        link: "text-base-content active:text-interaction-link-active current:text-base-content-strong",
         icon: "text-base-content-subtle",
       },
       inverse: {

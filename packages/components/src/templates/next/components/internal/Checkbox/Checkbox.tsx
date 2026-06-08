@@ -93,7 +93,10 @@ export function CheckboxGroup(props: CheckboxGroupProps) {
         )}
         {children}
         {errorMessage && (
-          <div {...errorMessageProps} className="prose-body-base text-red-700">
+          <div
+            {...errorMessageProps}
+            className="prose-body-base text-utility-feedback-alert"
+          >
             {errorMessage}
           </div>
         )}
@@ -118,20 +121,20 @@ const boxStyles = tv({
   variants: {
     isSelected: {
       false:
-        "border-[--color] bg-white [--color:theme(colors.base.divider.medium)] group-data-[pressed]:[--color:theme(colors.base.divider.strong)]",
+        "border-[--color] bg-base-canvas [--color:theme(colors.base.divider.medium)] group-data-[pressed]:[--color:theme(colors.base.divider.strong)]",
       true: "border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] group-data-[pressed]:[--color:theme(colors.brand.interaction.pressed)] forced-colors:![--color:Highlight]",
     },
     isInvalid: {
-      true: "[--color:theme(colors.red.700)] group-data-[pressed]:[--color:theme(colors.red.800)] forced-colors:![--color:Mark]",
+      true: "[--color:theme(colors.utility.feedback.alert.DEFAULT)] group-data-[pressed]:[--color:theme(colors.utility.feedback.alert.border)] forced-colors:![--color:Mark]",
     },
     isDisabled: {
-      true: "[--color:theme(colors.gray.200)] forced-colors:![--color:GrayText]",
+      true: "[--color:theme(colors.base.divider.subtle)] forced-colors:![--color:GrayText]",
     },
   },
 })
 
 const iconStyles =
-  "w-4 h-4 text-white group-disabled:text-gray-400 forced-colors:text-[HighlightText]"
+  "w-4 h-4 text-base-content-inverse group-disabled:text-base-content-subtle forced-colors:text-[HighlightText]"
 
 interface CheckboxProps extends AriaCheckboxProps {
   children?: ReactNode

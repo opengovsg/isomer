@@ -118,7 +118,7 @@ const Search: React.FC<SearchProps> = ({ index }) => {
   }
 
   return (
-    <div className="container my-10 max-w-5xl overflow-hidden bg-white shadow sm:rounded-md">
+    <div className="container my-10 max-w-5xl overflow-hidden bg-base-canvas shadow sm:rounded-md">
       <div className="relative mt-2 flex items-center">
         <input
           type="text"

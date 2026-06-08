@@ -13,21 +13,21 @@ import { twMerge } from "~/lib/twMerge"
 import { IconButton } from "./IconButton"
 
 const inputStyles = tv({
-  base: "prose-body-base min-w-0 flex-1 bg-white text-base-content outline outline-0 placeholder:text-interaction-support-placeholder disabled:text-interaction-support-placeholder",
+  base: "prose-body-base min-w-0 flex-1 bg-base-canvas text-base-content outline outline-0 placeholder:text-interaction-support-placeholder disabled:text-interaction-support-placeholder",
 })
 
 const fieldGroupStyles = tv({
-  base: "group flex items-center gap-4 overflow-hidden rounded bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
+  base: "group flex items-center gap-4 overflow-hidden rounded bg-base-canvas py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
   variants: {
     isFocusWithin: {
       false: "shadow-brand-interaction forced-colors:border-[ButtonBorder]",
-      true: "bg-interaction-main-subtle-hover shadow-[0_0_0_2px] shadow-utility-feedback-info",
+      true: "bg-base-canvas-alt shadow-[0_0_0_2px] shadow-utility-feedback-info",
     },
     isInvalid: {
-      true: "border-red-600 forced-colors:border-[Mark]",
+      true: "border-utility-feedback-alert-border forced-colors:border-[Mark]",
     },
     isDisabled: {
-      true: "border-gray-200 forced-colors:border-[GrayText]",
+      true: "border-base-divider-subtle forced-colors:border-[GrayText]",
     },
   },
 })

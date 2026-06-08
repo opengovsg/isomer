@@ -35,7 +35,7 @@ export const IsomerNav = ({
 }: IsomerNavProps) => {
   return (
     <>
-      <Disclosure as="nav" className="bg-white shadow">
+      <Disclosure as="nav" className="bg-base-canvas shadow">
         {({ open }) => (
           <>
             <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -82,7 +82,7 @@ export const IsomerNav = ({
                               leaveFrom="transform opacity-100 scale-100"
                               leaveTo="transform opacity-0 scale-95"
                             >
-                              <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                              <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-base-canvas py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                 {link.links?.map((sublink) => {
                                   return (
                                     <Menu.Item key={sublink.name}>
@@ -121,7 +121,7 @@ export const IsomerNav = ({
                     <LinkComponent href={search.searchUrl}>
                       <button
                         type="button"
-                        className="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="relative rounded-full bg-base-canvas p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                       >
                         <span className="absolute -inset-1.5" />
                         <span className="sr-only">Search</span>

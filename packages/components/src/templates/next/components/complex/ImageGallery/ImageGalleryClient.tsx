@@ -178,7 +178,7 @@ export const ImageGalleryClient = ({
       aria-label="Image gallery"
     >
       {/* Main Slideshow */}
-      <div className="relative h-[17rem] w-full overflow-hidden border bg-white sm:h-[28.5rem]">
+      <div className="relative h-[17rem] w-full overflow-hidden border bg-base-canvas sm:h-[28.5rem]">
         <div className="relative h-full w-full">
           {images.map((image, index) => {
             const isCurrentImage = index === currentIndex
@@ -234,7 +234,7 @@ export const ImageGalleryClient = ({
 
         {/* Navigation Controls - Accessible via keyboard tab navigation */}
         <button
-          className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
+          className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-base-divider-inverse bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           aria-label="Previous image"
           disabled={isPending}
           onMouseEnter={() => handlePreviewButtonEngagement()}
@@ -246,7 +246,7 @@ export const ImageGalleryClient = ({
         </button>
 
         <button
-          className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
+          className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-base-divider-inverse bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
           aria-label="Next image"
           disabled={isPending}
           onTouchStart={() => preloadNextImage()}

@@ -26,7 +26,6 @@ export const colors = {
     },
     content: {
       DEFAULT: twColors.gray["700"],
-      light: twColors.gray["500"],
       strong: twColors.gray["900"],
       medium: twColors.gray["800"],
       subtle: twColors.gray["600"],
@@ -37,11 +36,8 @@ export const colors = {
     },
     divider: {
       subtle: twColors.slate["200"],
-      medium: twColors.gray["300"],
-      strong: twColors.gray["400"],
+      medium: "#d0d0d0",
       inverse: twColors.white,
-      // TODO: Change to site brand primary dynamic theme
-      brand: "#1361F0",
     },
   },
   link: {
@@ -63,5 +59,6 @@ export const colors = {
       },
       alert: "#B91C1C",
     },
+    skeleton: "#0000001a",
   },
 }

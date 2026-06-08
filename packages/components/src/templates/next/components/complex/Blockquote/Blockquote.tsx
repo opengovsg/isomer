@@ -14,7 +14,7 @@ const createBlockquoteStyles = tv({
     openApostrophe: "text-brand-canvas-inverse",
     textContainer: "flex flex-col",
     blockquote: "text-base-content-strong",
-    citation: "text-base-content-default not-italic",
+    citation: "not-italic text-base-content",
     image: "object-cover",
   },
   variants: {

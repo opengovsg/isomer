@@ -33,7 +33,7 @@ const createDynamicDataBannerStyles = tv({
     individualDataValue:
       "prose-headline-lg-semibold text-brand-interaction-hover md:max-lg:w-[70px] md:max-lg:text-right",
     individualDataValueLoading:
-      "md:h-4.5 h-4 w-11 animate-pulse rounded-sm bg-[#0000001a]",
+      "md:h-4.5 bg-base-utility-skeleton h-4 w-11 animate-pulse rounded-sm",
     urlShowOnMobileOnly: "block text-center md:hidden",
     urlHideOnMobile: "hidden md:block",
   },

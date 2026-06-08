@@ -37,6 +37,7 @@ export type ComponentsWithProse =
   | "accordion"
   | "callout"
   | "contentpic"
+  | "steps"
   | "simple-prose"
 
 const generateProseSchema = ({
@@ -89,6 +90,10 @@ export const CalloutProseSchema = generateProseSchema({
 })
 export const ContentpicProseSchema = generateProseSchema({
   format: "contentpic",
+  isRequired: true,
+})
+export const StepsProseSchema = generateProseSchema({
+  format: "steps",
   isRequired: true,
 })
 

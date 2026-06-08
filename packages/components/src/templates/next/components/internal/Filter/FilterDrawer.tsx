@@ -49,7 +49,7 @@ const ExpandFilterButton = ({
       <span>{label}</span>
       <BiChevronDown
         aria-hidden
-        className={`mr-3 h-6 w-6 flex-shrink-0 text-base-content-strong transition-all duration-300 ease-in-out ${
+        className={`mr-3 h-6 w-6 flex-shrink-0 text-base-content transition-all duration-300 ease-in-out ${
           isExpanded ? "rotate-180" : "rotate-0"
         }`}
       />
@@ -117,7 +117,7 @@ const FilterDrawerContent = ({
       <form className="flex-1 px-6 md:px-10">
         {filters.map(({ id, label, items }) => (
           <CheckboxGroup
-            className="border-b border-b-divider-medium py-4 last:border-0"
+            className="border-b border-b-base-divider-medium py-4 last:border-0"
             key={id}
             value={holdingFiltersById[id] ?? []}
             onChange={(values) => {
@@ -148,7 +148,7 @@ const FilterDrawerContent = ({
         ))}
       </form>
       {/* Sticky action bottom bar */}
-      <div className="sticky bottom-0 left-0 right-0 flex flex-col gap-3 border-t border-t-divider-medium bg-white px-6 pb-12 pt-8 md:px-10">
+      <div className="sticky bottom-0 left-0 right-0 flex flex-col gap-3 border-t border-t-base-divider-medium bg-base-canvas px-6 pb-12 pt-8 md:px-10">
         <Button
           className="w-full justify-center"
           variant="solid"
@@ -177,18 +177,16 @@ export const FilterDrawer = (props: FilterDrawerProps): JSX.Element => {
     <Dialog open={isOpen} onClose={onOpen} className="relative z-40 lg:hidden">
       <DialogBackdrop
         transition
-        className="fixed inset-0 bg-black bg-opacity-25 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
+        className="fixed inset-0 bg-base-canvas-inverse bg-base-canvas-inverse/25 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
       />
 
       <div className="fixed inset-0 z-40 flex">
         <DialogPanel
           transition
-          className="relative ml-auto flex h-full w-full transform flex-col overflow-y-auto bg-white transition duration-300 ease-in-out data-[closed]:translate-y-full"
+          className="relative ml-auto flex h-full w-full transform flex-col overflow-y-auto bg-base-canvas transition duration-300 ease-in-out data-[closed]:translate-y-full"
         >
-          <div className="mx-6 flex items-center justify-between border-b border-b-divider-medium pb-3 pt-12 md:mx-10">
-            <h2 className="prose-title-lg-medium text-base-content-medium">
-              Filters
-            </h2>
+          <div className="mx-6 flex items-center justify-between border-b border-b-base-divider-medium pb-3 pt-12 md:mx-10">
+            <h2 className="prose-title-lg-medium text-base-content">Filters</h2>
             <IconButton
               icon={BiX}
               onPress={() => onOpen(false)}

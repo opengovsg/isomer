@@ -66,14 +66,14 @@ export const LiteVimeoEmbed = ({
           width="100%"
           lazyLoading={shouldLazyLoad}
           className={twMerge(
-            "absolute inset-0 h-full w-full bg-black object-cover",
+            "absolute inset-0 h-full w-full bg-base-canvas-inverse object-cover",
             activated && "pointer-events-none opacity-0",
           )}
         />
       ) : (
         <div
           className={twMerge(
-            "absolute inset-0 h-full w-full bg-black",
+            "absolute inset-0 h-full w-full bg-base-canvas-inverse",
             activated && "pointer-events-none opacity-0",
           )}
           aria-hidden

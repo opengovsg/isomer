@@ -15,6 +15,7 @@ import {
   DynamicDataBannerSchema,
   AntiScamDisclaimerBannerSchema,
   FormSGSchema,
+  StepsSchema,
   HeadingSchema,
   HeroSchema,
   IframeSchema,
@@ -61,6 +62,7 @@ export const IsomerComplexComponentsMap = {
   imagegallery: ImageGallerySchema,
   contactinformation: ContactInformationSchema,
   dynamiccomponentlist: DynamicComponentListSchema,
+  steps: StepsSchema,
 }
 
 export const IsomerNativeComponentsMap = {

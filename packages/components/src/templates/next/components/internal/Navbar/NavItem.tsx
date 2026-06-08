@@ -23,7 +23,7 @@ type NavbarItemProps = NavbarProps["items"][number] & {
 
 const navbarItemStyles = tv({
   slots: {
-    megamenu: "max-h-full overflow-auto bg-white shadow-md",
+    megamenu: "max-h-full overflow-auto bg-base-canvas shadow-md",
     item: "group prose-label-md-medium flex flex-row items-center gap-0.5 border-b-2 border-transparent pb-5 pt-6 text-base-content-strong outline-0 transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
@@ -125,7 +125,7 @@ const Megamenu = ({
   return (
     <div className="absolute left-0 right-0 top-full z-50">
       <div
-        className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen bg-canvas-overlay/40"
+        className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen bg-base-canvas-inverse-overlay/50"
         onClick={onCloseMegamenu}
       />
       <FocusScope contain restoreFocus>

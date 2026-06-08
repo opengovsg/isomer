@@ -36,7 +36,7 @@ const createInfoCardsStyles = tv({
       "prose-headline-lg-semibold text-base-content-strong group-hover:text-brand-canvas-inverse",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 transition ease-in group-hover:translate-x-1",
-    cardCategory: "prose-label-sm-regular text-base-content-light",
+    cardCategory: "prose-label-sm-regular text-base-content-subtle",
     urlButtonContainer: "mx-auto block",
   },
   variants: {

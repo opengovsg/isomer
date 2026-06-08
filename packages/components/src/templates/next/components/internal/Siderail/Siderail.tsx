@@ -11,7 +11,7 @@ const createSiderailStyles = tv({
   slots: {
     container: "flex flex-col items-start gap-16",
     parentContainer: "flex flex-col items-start gap-3 self-stretch",
-    sectionLabel: "prose-label-sm-medium text-base-content-light",
+    sectionLabel: "prose-label-sm-medium text-base-content-subtle",
     parentLabel:
       "group prose-headline-base-medium line-clamp-3 text-base-content transition",
     contentContainer: "flex flex-col items-start gap-3 self-stretch",

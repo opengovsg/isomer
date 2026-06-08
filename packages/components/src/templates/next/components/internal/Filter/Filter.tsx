@@ -77,7 +77,7 @@ export const Filter = ({
     <>
       {filters.length > 0 && (
         <Button
-          className="prose-headline-lg-semibold flex w-full items-center justify-between gap-1 rounded border-[1.5px] border-base-content-strong bg-white px-4 py-3.5 text-base-content-strong lg:hidden"
+          className="prose-headline-lg-semibold flex w-full items-center justify-between gap-1 rounded border-[1.5px] border-base-content-strong bg-base-canvas px-4 py-3.5 text-base-content-strong lg:hidden"
           variant="unstyled"
           onPress={() => setMobileFiltersOpen(true)}
         >
@@ -111,7 +111,7 @@ export const Filter = ({
         </div>
         {filters.map(({ id, label, items }) => (
           <CheckboxGroup
-            className="border-b border-b-divider-medium py-4"
+            className="border-b border-b-base-divider-medium py-4"
             key={id}
             value={appliedItemsById[id] ?? []}
           >
