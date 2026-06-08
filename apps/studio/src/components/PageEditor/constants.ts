@@ -301,6 +301,24 @@ export const DEFAULT_BLOCKS = {
       otherInformation: "[dgs:other_information]",
     },
   },
+  steps: {
+    type: "steps",
+    title: "How to apply",
+    steps: [
+      {
+        stepType: "step",
+        instruction: "Check your eligibility",
+      },
+      {
+        stepType: "step",
+        instruction: "Prepare your documents",
+      },
+      {
+        stepType: "step",
+        instruction: "Submit your application",
+      },
+    ],
+  },
 }
 
 export const BLOCK_TO_META: Record<
@@ -456,6 +474,13 @@ export const BLOCK_TO_META: Record<
       "Get mailing list sign-ups or quick feedback directly on the page.",
     imageSrc: "/assets/block-images/FormSG.png",
   },
+  steps: {
+    label: "Steps",
+    description:
+      "Guide readers through a multi-step process like applying for a grant or registering for a programme.",
+    usageText:
+      "Use when the reader needs to take sequential actions to complete a task.",
+  },
 } as const
 
 type AllowedBlockSections = {
@@ -472,6 +497,7 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "accordion",
       "callout",
       "blockquote",
+      "steps",
       "imagegallery",
     ],
   },
@@ -487,6 +513,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "accordion",
       "callout",
       "blockquote",
+      "steps",
       "contentpic",
       "infobar",
       "imagegallery",

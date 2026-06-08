@@ -57,6 +57,8 @@ const getEditorHookAndEditor = (
       return { EditorHook: useCalloutEditor, Editor: TiptapCalloutEditor }
     case "contentpic":
       return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
+    case "steps":
+      return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
     case "prose":
       return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
     default:

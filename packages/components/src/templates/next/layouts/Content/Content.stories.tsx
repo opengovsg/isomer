@@ -377,6 +377,44 @@ export const Default: Story = {
         },
       },
       {
+        type: "steps",
+        title: "How to apply for the grant",
+        description:
+          "Follow these steps to complete your application. Ensure all documents are ready before you begin.",
+        steps: [
+          {
+            stepType: "step",
+            instruction: "Check your eligibility",
+            description: {
+              type: "prose",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "You must be a Singapore citizen or permanent resident aged 21 and above with a valid NRIC.",
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+          {
+            stepType: "step",
+            instruction: "Prepare your documents",
+          },
+          {
+            stepType: "or",
+            instruction: "Or apply via MyInfo",
+          },
+          {
+            stepType: "step",
+            instruction: "Submit your application online",
+          },
+        ],
+      },
+      {
         type: "prose",
         content: [
           {

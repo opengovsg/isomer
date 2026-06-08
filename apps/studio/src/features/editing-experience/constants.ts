@@ -8,6 +8,7 @@ import {
   BiHash,
   BiImage,
   BiImages,
+  BiListOl,
   BiListUl,
   BiLogoSpotify,
   BiMap,
@@ -57,4 +58,5 @@ export const TYPE_TO_ICON: Record<
   contactinformation: BiPhoneCall,
   dynamiccomponentlist: BiListUl,
   childrenpages: BiListUl,
+  steps: BiListOl,
 }

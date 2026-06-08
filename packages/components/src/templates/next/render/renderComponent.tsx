@@ -27,6 +27,7 @@ import { Infopic } from "../components/complex/Infopic"
 import { KeyStatistics } from "../components/complex/KeyStatistics"
 import { LogoCloud } from "../components/complex/LogoCloud"
 import { Map } from "../components/complex/Map"
+import { Steps } from "../components/complex/Steps"
 import { Video } from "../components/complex/Video"
 import { Prose } from "../components/native/Prose"
 
@@ -105,6 +106,8 @@ export const renderComponent = ({
       return <ContactInformation key={elementKey} {...component} {...rest} />
     case "dynamiccomponentlist":
       return <DynamicComponentList key={elementKey} {...component} {...rest} />
+    case "steps":
+      return <Steps key={elementKey} {...component} {...rest} />
     default:
       const _: never = component
       return <></>

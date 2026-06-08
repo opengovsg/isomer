@@ -39,6 +39,8 @@ export const doesComponentHaveImage = ({
       return component.displayThumbnail
     case "blockquote":
       return component.imageSrc !== undefined
+    case "steps":
+      return component.steps.some((step) => step.imageSrc !== undefined)
     default:
       const _: never = component
       return false

@@ -59,3 +59,4 @@ export {
   type DynamicComponentListProps,
 } from "./DynamicComponentList"
 export { AntiScamDisclaimerBannerSchema } from "./AntiScamDisclaimerBanner"
+export { StepsSchema, type StepsProps, STEP_TYPE } from "./Steps"

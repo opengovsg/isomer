@@ -124,6 +124,8 @@ export function renderComponentPreviewText({
       return component.title || "Contact Information"
     case "dynamiccomponentlist":
       return "Dynamic Component List"
+    case "steps":
+      return component.title || "Steps"
     default:
       const _: never = component
       return (component as { type: string }).type || ""
