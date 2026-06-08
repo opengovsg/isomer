@@ -18,7 +18,6 @@
     "noUncheckedIndexedAccess": true,
     "paths": {
       "~/*": ["./src/*"],
-      "~prisma/*": ["./prisma/*"],
       "~prisma/generated/prisma/*": [
         "../../packages/db/prisma/generated/prisma/*"
       ],
