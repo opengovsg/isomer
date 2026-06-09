@@ -3,26 +3,17 @@ name: 🤖 Code Review
 on:
   pull_request:
     types:
-      - opened # Only run for new Dependabot PRs
-      - labeled # Allow manual triggering by adding the 'review-dependency-upgrade' label
+      - opened
 
 permissions:
   contents: read
   pull-requests: read
-  issues: write # needed to remove the 'review-dependency-upgrade' label after review
+  issues: read
   id-token: write # needed for claude-code-action's GitHub App token (used to post comments)
 
 jobs:
   dependabot:
-    # Only run for Dependabot PRs; label trigger allows manual re-runs
-    # 'opened' events have no label, so pass them through unconditionally
-    # for 'labeled' events, only proceed for this specific label
-    if: >-
-      startsWith(github.event.pull_request.head.ref, 'dependabot/') &&
-      (
-        github.event.action == 'opened' ||
-        github.event.label.name == 'review-dependency-upgrade'
-      )
+    if: startsWith(github.event.pull_request.head.ref, 'dependabot/')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -58,20 +49,3 @@ jobs:
             Multiple packages in one PR → one section per package, one combined comment.
             Never modify tracked files.
 
-      # Always remove the label after review (success or failure) so it can be re-added to re-trigger.
-      # Uses the claude-code-action App token because GITHUB_TOKEN is restricted on Dependabot PRs.
-      - name: Remove 'review-dependency-upgrade' label
-        if: >-
-          always() &&
-          github.event.action == 'labeled' &&
-          github.event.label.name == 'review-dependency-upgrade'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
-          github-token: ${{ steps.claude.outputs.github_token }}
-          script: |
-            await github.rest.issues.removeLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              name: 'review-dependency-upgrade',
-            })
