@@ -18,8 +18,8 @@ import { BiPlusCircle } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ComplexEditorNestedDrawer } from "../../components/ComplexEditorNestedDrawer"
-import DraggableTagButton from "../../components/DraggableTagButton"
 import { useBuilderErrors } from "../../ErrorProvider"
+import DraggableDrawerButton from "../../components/DraggableDrawerButton"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
@@ -183,7 +183,7 @@ function JsonFormsArrayControl({
                     index={index}
                   >
                     {({ draggableProps, dragHandleProps, innerRef }) => (
-                      <DraggableTagButton
+                      <DraggableDrawerButton
                         draggableProps={draggableProps}
                         dragHandleProps={dragHandleProps}
                         isError={hasError}
