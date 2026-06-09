@@ -22,8 +22,6 @@ export { LocalSearchSchema, type LocalSearchProps } from "./LocalSearchInputBox"
 export {
   EgazetteAlgoliaSearchSchema,
   type EgazetteAlgoliaSearchProps,
-  type EgazetteAlgoliaCategory,
-  type EgazetteAlgoliaSubCategory,
 } from "./EgazetteAlgoliaSearchInputBox"
 export type { MastheadProps } from "./Masthead"
 export {
