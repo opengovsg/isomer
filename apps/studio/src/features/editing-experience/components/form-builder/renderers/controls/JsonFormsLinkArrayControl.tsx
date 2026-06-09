@@ -47,9 +47,9 @@ import {
 } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
+import DraggableLinkButton from "../../components/DraggableLinkButton"
 import { FORM_BUILDER_PARENT_ID } from "../../constants"
 import { useBuilderErrors } from "../../ErrorProvider"
-import DraggableLinkButton from "../../components/DraggableLinkButton"
 
 export const jsonFormsLinkArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkArrayControl,
