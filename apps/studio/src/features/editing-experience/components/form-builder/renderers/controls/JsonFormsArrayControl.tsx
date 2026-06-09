@@ -117,11 +117,7 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
                                 schema={schema}
                                 uischema={childUiSchema}
                                 enabled={enabled}
-                                handleSelect={() => () => undefined}
                                 removeItem={handleRemoveItem}
-                                selected={false}
-                                childLabelProp={undefined}
-                                translations={{}}
                               />
                               {hasError && <DraggableTagButton.ErrorCaption />}
                             </DraggableTagButton.Content>

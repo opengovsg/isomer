@@ -48,9 +48,10 @@ import { EmptyCategory } from "../../components/EmptyCategory"
 import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
+import { useDeleteTarget } from "../../hooks/useDeleteTarget"
+import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
 import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
-import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 interface CategoryOptionsExpandedEditorProps extends ArrayLayoutProps {
   duplicateOptionIndices: Set<number>
@@ -79,11 +80,6 @@ function CategoryOptionsExpandedEditor({
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
 
-  const [deleteTarget, setDeleteTarget] = useState<null | {
-    index: number
-    label: string
-  }>(null)
-
   const arrayResult = useArray({
     data,
     path,
@@ -105,21 +101,24 @@ function CategoryOptionsExpandedEditor({
     onDragEnd,
   } = arrayResult
 
-  const openDeleteModal = (index: number) => {
-    const item = get(core?.data, composePaths(path, `${index}`)) as
-      | { label?: string; id?: string }
-      | undefined
-    setDeleteTarget({
-      index,
-      label: item?.label?.trim() ?? "",
-    })
-  }
-
-  const handleConfirmDelete = () => {
-    if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
-    removeItems(path, [deleteTarget.index])()
-    setDeleteTarget(null)
-  }
+  const {
+    target: deleteTarget,
+    openDeleteModal,
+    closeDeleteModal,
+    handleConfirmDelete,
+  } = useDeleteTarget({
+    path,
+    removeItems,
+    isRemoveItemDisabled,
+    resolveTarget: (index) => {
+      const item = get(core?.data, composePaths(path, `${index}`)) as
+        | { label?: string; id?: string }
+        | undefined
+      return {
+        label: item?.label?.trim() ?? "",
+      }
+    },
+  })
 
   return (
     <NestedDrawerProvider {...props} {...arrayResult}>
@@ -206,11 +205,7 @@ function CategoryOptionsExpandedEditor({
                                     schema={schema}
                                     uischema={childUiSchema}
                                     enabled={enabled}
-                                    handleSelect={() => () => undefined}
                                     removeItem={handleRemoveItem}
-                                    selected={false}
-                                    childLabelProp={undefined}
-                                    translations={{}}
                                   />
                                   {hasError && (
                                     <DraggableTagButton.ErrorCaption>
@@ -276,7 +271,7 @@ function CategoryOptionsExpandedEditor({
               will need to create and re-assign this option to all items.
             </Text>
           }
-          onClose={() => setDeleteTarget(null)}
+          onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
         />
       )}
@@ -290,10 +285,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const [expandedOpen, setExpandedOpen] = useState(false)
 
-  const duplicateOptionIndices = useMemo(() => {
-    const items = get(core?.data, path) as { label?: string }[] | undefined
-    return indicesWithDuplicateLabels(items)
-  }, [core?.data, path])
+  const duplicateOptionIndices = useDuplicateLabels(path)
 
   const cannotLeaveExpandedCategoryOptions = useMemo(() => {
     const items = get(core?.data, path) as { label?: string }[] | undefined

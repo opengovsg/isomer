@@ -2,7 +2,10 @@ import type {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
 } from "@hello-pangea/dnd"
-import type { StatePropsOfMasterItem } from "@jsonforms/core"
+import type {
+  OwnPropsOfMasterListItem,
+  StatePropsOfMasterItem,
+} from "@jsonforms/core"
 import type { ReactNode } from "react"
 import type { IconType } from "react-icons"
 import {
@@ -146,12 +149,27 @@ const Content = ({ children }: { children: ReactNode }) => (
   </Stack>
 )
 
-const Label = withJsonFormsMasterListItemProps(
+const LabelRaw = withJsonFormsMasterListItemProps(
   ({ childLabel, index }: StatePropsOfMasterItem) => (
     <Text textStyle="subhead-2" textAlign="start">
       {childLabel || `Item ${index + 1}`}
     </Text>
   ),
+)
+
+type LabelProps = Pick<
+  OwnPropsOfMasterListItem,
+  "index" | "path" | "schema" | "uischema" | "enabled" | "removeItem"
+>
+
+const Label = (props: LabelProps) => (
+  <LabelRaw
+    {...props}
+    handleSelect={() => () => undefined}
+    selected={false}
+    childLabelProp={undefined}
+    translations={{}}
+  />
 )
 
 const Subtitle = ({ children }: { children: ReactNode }) => (

@@ -9,8 +9,6 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { get } from "lodash-es"
-import { useMemo, useState } from "react"
 import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
@@ -22,8 +20,9 @@ import { EmptyArray } from "../../components/EmptyArray"
 import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
+import { useDeleteTarget } from "../../hooks/useDeleteTarget"
+import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
 import { TagRowActionsMenu } from "./TagRowActionsMenu"
-import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
@@ -45,16 +44,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
   const page = core?.data as CollectionPagePageProps | undefined
-  const items = get(core?.data, path) as { label?: string }[] | undefined
-  const duplicateFilterIndices = useMemo(
-    () => indicesWithDuplicateLabels(items),
-    [items],
-  )
-
-  const [deleteTarget, setDeleteTarget] = useState<null | {
-    index: number
-    label: string
-  }>(null)
+  const duplicateFilterIndices = useDuplicateLabels(path)
 
   const arrayResult = useArray({
     data,
@@ -76,6 +66,20 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     handleRemoveItem,
     onDragEnd,
   } = arrayResult
+
+  const {
+    target: deleteTarget,
+    openDeleteModal,
+    closeDeleteModal,
+    handleConfirmDelete,
+  } = useDeleteTarget({
+    path,
+    removeItems,
+    isRemoveItemDisabled,
+    resolveTarget: (index) => ({
+      label: page?.tagCategories?.[index]?.label?.trim() ?? "",
+    }),
+  })
 
   return (
     <NestedDrawerProvider {...props} {...arrayResult}>
@@ -160,11 +164,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                                   schema={schema}
                                   uischema={childUiSchema}
                                   enabled={enabled}
-                                  handleSelect={() => () => undefined}
                                   removeItem={handleRemoveItem}
-                                  selected={false}
-                                  childLabelProp={undefined}
-                                  translations={{}}
                                 />
                                 <DraggableTagButton.Subtitle>
                                   {subtitle}
@@ -183,15 +183,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                                 noun="filter"
                                 index={index}
                                 isDisabled={isRemoveItemDisabled}
-                                onDelete={() =>
-                                  setDeleteTarget({
-                                    index,
-                                    label:
-                                      page?.tagCategories?.[
-                                        index
-                                      ]?.label?.trim() ?? "",
-                                  })
-                                }
+                                onDelete={() => openDeleteModal(index)}
                               />
                             </DraggableTagButton.Trailing>
                           </DraggableTagButton.Root>
@@ -219,12 +211,8 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               manually.
             </Text>
           }
-          onClose={() => setDeleteTarget(null)}
-          onConfirm={() => {
-            if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
-            removeItems(path, [deleteTarget.index])()
-            setDeleteTarget(null)
-          }}
+          onClose={closeDeleteModal}
+          onConfirm={handleConfirmDelete}
         />
       )}
     </NestedDrawerProvider>
