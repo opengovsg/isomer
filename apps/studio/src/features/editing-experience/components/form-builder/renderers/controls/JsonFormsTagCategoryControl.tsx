@@ -1,6 +1,6 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { Box, Flex, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
@@ -23,6 +23,7 @@ import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { TagRowActionsMenu } from "./TagRowActionsMenu"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
+import { EmptyArray } from "../../components/EmptyArray";
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
@@ -119,25 +120,9 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                   spacing={0}
                   ref={innerRef}
                 >
-                  {data === 0 && (
-                    <Flex
-                      alignItems="center"
-                      flexDir="column"
-                      px="1.5rem"
-                      py="3.75rem"
-                      mt="0.25rem"
-                      justifyContent="center"
-                      w="100%"
-                    >
-                      <Text
-                        textStyle="subhead-1"
-                        textColor="base.content.default"
-                        textAlign="center"
-                      >
-                        Items you add will appear here
-                      </Text>
-                    </Flex>
-                  )}
+                  {data === 0 &&
+                    <EmptyArray />
+                  }
 
                   {[...Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)

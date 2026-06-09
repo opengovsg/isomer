@@ -17,6 +17,7 @@ import DraggableDrawerButton from "../../components/DraggableDrawerButton"
 import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
+import { EmptyArray } from "../../components/EmptyArray";
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
@@ -84,25 +85,7 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
                 ref={innerRef}
                 mt="-0.25rem"
               >
-                {data === 0 && (
-                  <Flex
-                    alignItems="center"
-                    flexDir="column"
-                    px="1.5rem"
-                    p="3.75rem"
-                    mt="0.25rem"
-                    justifyContent="center"
-                    w="100%"
-                  >
-                    <Text
-                      textStyle="subhead-1"
-                      textColor="base.content.default"
-                      textAlign="center"
-                    >
-                      Items you add will appear here
-                    </Text>
-                  </Flex>
-                )}
+                {data === 0 && <EmptyArray />}
 
                 {[...Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, `${index}`)
