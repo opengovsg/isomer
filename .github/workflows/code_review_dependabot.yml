@@ -1,4 +1,4 @@
-name: 🤖 Claude Review
+name: 🤖 Code Review
 
 on:
   pull_request:
@@ -6,14 +6,15 @@ on:
       - opened # Only run for new Dependabot PRs
       - labeled # Allow manual triggering by adding the 'review-dependency-upgrade' label
 
+# https://opencode.ai/docs/github/#pull-request-example
 permissions:
+  id-token: write
   contents: read
-  pull-requests: write # needed to write the review comment
+  pull-requests: read
   issues: write # needed to remove the 'review-dependency-upgrade' label after review
-  id-token: write # needed to fetch OIDC token for Claude Code Action
 
 jobs:
-  dependabot-review:
+  dependabot:
     # Only run for Dependabot PRs; label trigger allows manual re-runs
     # 'opened' events have no label, so pass them through unconditionally
     # for 'labeled' events, only proceed for this specific label
@@ -30,42 +31,20 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      # Headless CI cannot answer permission prompts — pre-allow everything the
-      # review-dependency-upgrade skill needs (web research, codebase search, gh).
-      - name: Run Claude Code Action (review)
-        uses: anthropics/claude-code-action@64de744025ca9e24df2b88204b4f1e968f39f009 # v1.0.139
+      # We use opencode instead of anthropic's github action because
+      # claude's version is heavily reported to be unreliable
+      # in terms of posting the report as a PR comment.
+      - name: Run OpenCode
+        uses: anomalyco/opencode/github@76c631d198f9ff620e15468e45f3457d50481b57 # v1.16.2
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ github.token }}
-          track_progress: ${{ github.event.action == 'opened' }} # track_progress only supports opened/synchronize/ready_for_review/reopened
-          allowed_bots: dependabot[bot]
+          model: anthropic/claude-sonnet-4-6
+          use_github_token: true
           prompt: /review-dependency-upgrade
-          claude_args: |
-            --model claude-sonnet-4-6
-            --allowedTools "WebFetch"
-            --allowedTools "WebSearch"
-            --allowedTools "Read"
-            --allowedTools "Glob"
-            --allowedTools "Grep"
-            --allowedTools "Write(/tmp/**)"
-            --allowedTools "Bash(gh pr:*)"
-            --allowedTools "Bash(git diff:*)"
-          settings: |
-            {
-              "permissions": {
-                "allow": [
-                  "WebFetch",
-                  "WebSearch",
-                  "Read",
-                  "Glob",
-                  "Grep",
-                  "Write(/tmp/**)",
-                  "Bash(gh pr:*)",
-                  "Bash(git diff:*)"
-                ]
-              }
-            }
 
       # Always remove the label after review (success or failure) so it can be re-added to re-trigger
       - name: Remove 'review-dependency-upgrade' label
