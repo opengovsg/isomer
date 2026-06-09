@@ -1,4 +1,4 @@
-import { Text, Flex } from "@chakra-ui/react";
+import { Text, Flex } from "@chakra-ui/react"
 
 export const EmptyArray = () => {
   return (

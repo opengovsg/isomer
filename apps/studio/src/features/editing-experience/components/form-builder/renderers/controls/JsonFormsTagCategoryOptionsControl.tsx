@@ -18,12 +18,12 @@ import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
+import { EmptyCategory } from "../../components/EmptyCategory"
 import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { TagRowActionsMenu } from "./TagRowActionsMenu"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
-import { EmptyCategory } from "../../components/EmptyCategory";
 
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   props: ArrayLayoutProps,
@@ -130,7 +130,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                   spacing={0}
                   ref={innerRef}
                 >
-                  {data === 0 && <EmptyCategory title='Add an option to save this filter' />}
+                  {data === 0 && (
+                    <EmptyCategory title="Add an option to save this filter" />
+                  )}
 
                   {[...Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)

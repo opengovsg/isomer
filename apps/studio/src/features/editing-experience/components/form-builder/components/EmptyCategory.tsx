@@ -1,4 +1,4 @@
-import { Text, Flex, VStack } from "@chakra-ui/react";
+import { Text, Flex, VStack } from "@chakra-ui/react"
 
 export const EmptyCategory = ({ title }: { title: string }) => {
   return (
@@ -24,11 +24,9 @@ export const EmptyCategory = ({ title }: { title: string }) => {
           textColor="base.content.default"
           textAlign="center"
         >
-          Users will choose from this list when creating new
-          items.
+          Users will choose from this list when creating new items.
         </Text>
       </VStack>
     </Flex>
   )
-
 }

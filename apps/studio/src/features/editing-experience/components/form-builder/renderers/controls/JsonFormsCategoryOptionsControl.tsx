@@ -44,13 +44,13 @@ import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
+import { EmptyCategory } from "../../components/EmptyCategory"
 import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
-import { EmptyCategory } from "../../components/EmptyCategory";
 
 interface CategoryOptionsExpandedEditorProps extends ArrayLayoutProps {
   duplicateOptionIndices: Set<number>
@@ -121,7 +121,6 @@ function CategoryOptionsExpandedEditor({
     setDeleteTarget(null)
   }
 
-
   return (
     <NestedDrawerProvider {...props} {...arrayResult}>
       <VStack align="stretch" spacing={0} w="full">
@@ -172,7 +171,9 @@ function CategoryOptionsExpandedEditor({
                     spacing={0}
                     ref={innerRef}
                   >
-                    {data === 0 && <EmptyCategory title='Add an option for this category' />}
+                    {data === 0 && (
+                      <EmptyCategory title="Add an option for this category" />
+                    )}
 
                     {[...Array(data).keys()].map((index) => {
                       const childPath = composePaths(path, `${index}`)
