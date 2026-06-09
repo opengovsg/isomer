@@ -119,7 +119,7 @@ catalog:
   "@formkit/auto-animate": ^0.8.2
   "@headlessui/react": ^2.2.10
   "@hello-pangea/dnd": ^18.0.1
-  "@hookform/resolvers": ^5.2.2
+  "@hookform/resolvers": ^5.4.0
   "@intercom/messenger-js-sdk": ^0.0.19
   "@playwright/test": ^1.60.0
   "@uidotdev/usehooks": ^2.4.1
