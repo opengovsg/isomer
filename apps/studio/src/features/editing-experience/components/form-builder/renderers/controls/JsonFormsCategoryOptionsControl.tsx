@@ -1,6 +1,7 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import {
   Box,
+  chakra,
   Flex,
   HStack,
   Icon,
@@ -71,6 +72,13 @@ function CategoryOptionsExpandedEditor({
     })
   }
 
+  const isBlankLabelAt = (index: number) => {
+    const item = get(core?.data, composePaths(path, `${index}`)) as
+      | { label?: string }
+      | undefined
+    return !item?.label?.trim()
+  }
+
   const handleConfirmDelete = () => {
     if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
     removeItems(path, [deleteTarget.index])()
@@ -129,11 +137,15 @@ function CategoryOptionsExpandedEditor({
               <DuplicateLabelError noun="option" />
             )
           }
-          getListItemHasError={(index) => duplicateOptionIndices.has(index)}
+          getListItemHasError={(index) =>
+            duplicateOptionIndices.has(index) || isBlankLabelAt(index)
+          }
           renderListItemErrorCaption={(index) =>
             duplicateOptionIndices.has(index)
               ? "An option with this name already exists."
-              : undefined
+              : isBlankLabelAt(index)
+                ? "Option name cannot be empty."
+                : undefined
           }
           emptyState={
             <VStack spacing="0.25rem" align="center">
@@ -251,6 +263,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
         {duplicateOptionIndices.size > 0 && (
           <DuplicateLabelError noun="option" />
         )}
+        {/* Offsets the bottom margin the JsonForms control wrapper injects above this row. */}
         <Box w="full" mt="-1.25rem">
           <Box my="0.25rem" w="full">
             <HStack
@@ -311,8 +324,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                     aria-hidden
                   />
                 </Flex>
-                <Box
-                  as="button"
+                <chakra.button
                   type="button"
                   flex={1}
                   minW={0}
@@ -385,7 +397,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                       )}
                     </Stack>
                   </HStack>
-                </Box>
+                </chakra.button>
                 <Flex
                   alignItems="center"
                   flexShrink={0}
