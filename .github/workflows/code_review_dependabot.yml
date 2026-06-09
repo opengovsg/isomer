@@ -33,6 +33,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Claude Code
+        id: claude
         uses: anthropics/claude-code-action@593d7a5c4e0073569f74772c2b7b64c30ec14707 # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -57,7 +58,8 @@ jobs:
             Multiple packages in one PR → one section per package, one combined comment.
             Never modify tracked files.
 
-      # Always remove the label after review (success or failure) so it can be re-added to re-trigger
+      # Always remove the label after review (success or failure) so it can be re-added to re-trigger.
+      # Uses the claude-code-action App token because GITHUB_TOKEN is restricted on Dependabot PRs.
       - name: Remove 'review-dependency-upgrade' label
         if: >-
           always() &&
@@ -65,6 +67,7 @@ jobs:
           github.event.label.name == 'review-dependency-upgrade'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
+          github-token: ${{ steps.claude.outputs.github_token }}
           script: |
             await github.rest.issues.removeLabel({
               owner: context.repo.owner,
