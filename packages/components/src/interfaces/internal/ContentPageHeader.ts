@@ -1,6 +1,6 @@
 import type { Static } from "@sinclair/typebox"
 import type { imageSchemaObject } from "~/schemas/internal"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
@@ -48,6 +48,5 @@ export type ContentPageHeaderProps = Static<typeof ContentPageHeaderSchema> &
     lastUpdated: string
     breadcrumb: BreadcrumbProps
     site: IsomerSiteProps
-    LinkComponent?: LinkComponentType
     colorScheme?: "default" | "inverse"
   }

@@ -1,0 +1,63 @@
+name: 🤖 Code Review
+
+on:
+  pull_request:
+    types:
+      - opened # Only run for new Dependabot PRs
+      - labeled # Allow manual triggering by adding the 'review-dependency-upgrade' label
+
+# https://opencode.ai/docs/github/#pull-request-example
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: read
+  issues: write # needed to remove the 'review-dependency-upgrade' label after review
+
+jobs:
+  dependabot:
+    # Only run for Dependabot PRs; label trigger allows manual re-runs
+    # 'opened' events have no label, so pass them through unconditionally
+    # for 'labeled' events, only proceed for this specific label
+    if: >-
+      startsWith(github.event.pull_request.head.ref, 'dependabot/') &&
+      (
+        github.event.action == 'opened' ||
+        github.event.label.name == 'review-dependency-upgrade'
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # We use opencode instead of anthropic's github action because
+      # claude's version is heavily reported to be unreliable
+      # in terms of posting the report as a PR comment.
+      - name: Run OpenCode
+        uses: anomalyco/opencode/github@76c631d198f9ff620e15468e45f3457d50481b57 # v1.16.2
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: anthropic/claude-sonnet-4-6
+          use_github_token: true
+          prompt: /review-dependency-upgrade
+
+      # Always remove the label after review (success or failure) so it can be re-added to re-trigger
+      - name: Remove 'review-dependency-upgrade' label
+        if: >-
+          always() &&
+          github.event.action == 'labeled' &&
+          github.event.label.name == 'review-dependency-upgrade'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              name: 'review-dependency-upgrade',
+            })

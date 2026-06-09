@@ -1,16 +1,25 @@
 import { TRPCError } from "@trpc/server"
-import { isBefore, subYears } from "date-fns"
+import { differenceInMinutes, isBefore, subYears } from "date-fns"
+import filenamify from "filenamify"
+import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazette"
 import { env } from "~/env.mjs"
-import { sendScheduledPageEmail } from "~/features/mail/service"
-import { getFileSize } from "~/lib/s3"
 import {
+  sendGazetteDeletionEmail,
+  sendScheduledPageEmail,
+} from "~/features/mail/service"
+import { getFileSize, markScheduledAssetAsCancelled } from "~/lib/s3"
+import {
+  cancelScheduledPublishSchema,
   createGazetteServerSchema,
+  deleteGazetteSchema,
   gazetteListSchema,
+  getPresignedGetUrlSchema,
+  getPresignedPutUrlSchema,
   updateGazetteServerSchema,
 } from "~/schemas/gazette"
 import { protectedProcedure, router } from "~/server/trpc"
 
-import { copyFileWithNewName, markFileAsDeleted } from "../asset/asset.service"
+import { validateUserPermissionsForAsset } from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
 import { createCollectionLinkJson } from "../collection/collection.service"
 import { AuditLogEvent, db, jsonb, ResourceType, sql } from "../database"
@@ -22,7 +31,16 @@ import {
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
-import { assertGazetteAccess } from "./gazette.service"
+import {
+  findCollectionLinkWithFilename,
+  assertGazetteAccess,
+  copyFileWithNewName,
+  deleteGazetteAsset,
+  getPresignedGetUrl,
+  getPresignedPutUrl,
+  markFileAsDeleted,
+  removeGazetteFromSearchIndex,
+} from "./gazette.service"
 
 interface GazetteBlobInputs {
   ref: string
@@ -154,7 +172,7 @@ export const gazetteRouter = router({
             }
           }
           const fileSize = await getFileSize({
-            Bucket: env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+            Bucket: env.S3_GAZETTE_BUCKET_NAME,
             // NOTE: s3 keys don't have a leading /
             // so we trim the first key since our `ref`
             // begins with one internally
@@ -164,6 +182,7 @@ export const gazetteRouter = router({
             ...result,
             fileSize,
             scheduledAt: result.scheduledAt ?? result.publishedAt,
+            publishedAt: result.publishedAt,
           }
         }),
       )
@@ -210,6 +229,23 @@ export const gazetteRouter = router({
         })
 
         const created = await db.transaction().execute(async (tx) => {
+          // Check for duplicate file ID (filename portion of ref) in the same collection
+          // ref format: /sites/{siteId}/gazettes/{uuid}/filename.pdf
+          const filename = ref.split("/").pop()
+          if (filename) {
+            const duplicate = await findCollectionLinkWithFilename({
+              trx: tx,
+              siteId,
+              parentId: String(collectionId),
+              filename,
+            })
+            if (duplicate) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "A gazette with the same file ID already exists",
+              })
+            }
+          }
           const parentCollection = await tx
             .selectFrom("Resource")
             .where("Resource.id", "=", String(collectionId))
@@ -257,6 +293,16 @@ export const gazetteRouter = router({
               }
               throw err
             })
+
+          // NOTE: Schedule the document to be ingested into searchsg later
+          await tx
+            .insertInto("PushDocumentJob")
+            .values({
+              resourceId: resource.id,
+              scheduledAt,
+              scheduledBy: user.id,
+            })
+            .executeTakeFirstOrThrow()
 
           await logResourceEvent(tx, {
             siteId,
@@ -354,27 +400,49 @@ export const gazetteRouter = router({
 
         // Resolve the final ref. Preference order:
         //   1. newRef (a fresh upload) — caller has already PUT to S3
-        //   2. desiredFileName + existing ref → S3 copy now, soft-delete old
-        //      AFTER the DB commit so a tx rollback never strands the
-        //      resource pointing at a tombstoned key
+        //   2. desiredFileName + existing ref → S3 copy
         //   3. unchanged
-        // Any S3 failure here aborts before the DB transaction starts.
+        // For the rename case we pre-check for a duplicate file ID BEFORE the
+        // S3 copy so a conflict never orphans a freshly copied object; the
+        // authoritative atomic check still runs inside the transaction below.
+        // Soft-delete of the old key happens AFTER DB commit so a tx rollback
+        // never strands the resource pointing at a tombstoned key.
+        const oldFilename = existingRef.split("/").pop()
+
+        let newFilename: string | undefined
         let finalRef = existingRef
         let oldRefToCleanUp: string | null = null
         if (newRef) {
+          newFilename = newRef.split("/").pop()
           finalRef = newRef
           if (existingRef) oldRefToCleanUp = existingRef.replace(/^\//, "")
-        } else if (desiredFileName && existingRef) {
-          const currentFileName = existingRef.split("/").pop()
-          if (currentFileName !== desiredFileName) {
-            const sourceKey = existingRef.replace(/^\//, "")
-            const newKey = await copyFileWithNewName({
-              sourceKey,
-              newFileName: desiredFileName,
+        } else if (
+          desiredFileName &&
+          existingRef &&
+          desiredFileName !== oldFilename
+        ) {
+          newFilename = desiredFileName
+
+          const duplicate = await findCollectionLinkWithFilename({
+            siteId,
+            parentId: existingResource.parentId,
+            filename: newFilename,
+            excludeId: String(gazetteId),
+          })
+          if (duplicate) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "A gazette with the same file ID already exists",
             })
-            finalRef = `/${newKey}`
-            oldRefToCleanUp = sourceKey
           }
+
+          const sourceKey = existingRef.replace(/^\//, "")
+          const newKey = await copyFileWithNewName({
+            sourceKey,
+            newFileName: desiredFileName,
+          })
+          finalRef = `/${newKey}`
+          oldRefToCleanUp = sourceKey
         }
 
         const newBlobContent = buildGazetteBlobContent({
@@ -388,6 +456,23 @@ export const gazetteRouter = router({
         const { resource: updatedResource, scheduledAtChanged } = await db
           .transaction()
           .execute(async (tx) => {
+            // Authoritative duplicate check inside the tx for atomicity.
+            if (newFilename && newFilename !== oldFilename) {
+              const duplicate = await findCollectionLinkWithFilename({
+                trx: tx,
+                siteId,
+                parentId: existingResource.parentId,
+                filename: newFilename,
+                excludeId: String(gazetteId),
+              })
+              if (duplicate) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message: "A gazette with the same file ID already exists",
+                })
+              }
+            }
+
             const updatedBlob = await updateBlobById(tx, {
               content: newBlobContent,
               pageId: gazetteId,
@@ -431,6 +516,31 @@ export const gazetteRouter = router({
             })
 
             if (scheduledAtChanged) {
+              // NOTE: Need to update the associated PushDocumentJob.
+              // Defence-in-depth: scope to a PushDocumentJob whose Resource
+              // belongs to this siteId (PushDocumentJob has no direct siteId
+              // column, so we constrain via the Resource subquery).
+              await tx
+                .updateTable("PushDocumentJob")
+                .set({
+                  scheduledAt,
+                  scheduledBy: user.id,
+                })
+                .where("resourceId", "=", String(gazetteId))
+                .where("resourceId", "in", (eb) =>
+                  eb
+                    .selectFrom("Resource")
+                    .select("Resource.id")
+                    .where("Resource.siteId", "=", siteId),
+                )
+                .executeTakeFirstOrThrow(
+                  () =>
+                    new TRPCError({
+                      code: "INTERNAL_SERVER_ERROR",
+                      message: "Failed to update push document job",
+                    }),
+                )
+
               await logResourceEvent(tx, {
                 siteId,
                 eventType: AuditLogEvent.SchedulePublish,
@@ -443,8 +553,7 @@ export const gazetteRouter = router({
           })
 
         // After the DB has committed the new ref, soft-delete the file the
-        // gazette no longer points at. Best-effort: if S3 fails the lifecycle
-        // policy will reap orphans.
+        // gazette no longer points at.
         if (oldRefToCleanUp) {
           try {
             await markFileAsDeleted({ key: oldRefToCleanUp })
@@ -471,4 +580,335 @@ export const gazetteRouter = router({
         return { gazetteId: updatedResource.id }
       },
     ),
+
+  cancelScheduledPublish: protectedProcedure
+    .input(cancelScheduledPublishSchema)
+    .mutation(async ({ ctx, input: { siteId, gazetteId } }) => {
+      await assertGazetteAccess(ctx.user.id)
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "delete",
+        userId: ctx.user.id,
+        resourceIds: [String(gazetteId)],
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
+
+      // Pre-fetch the resource and blob for audit delta
+      const existingResource = await db
+        .selectFrom("Resource")
+        .where("Resource.id", "=", String(gazetteId))
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.type", "=", ResourceType.CollectionLink)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({ code: "NOT_FOUND", message: "Gazette not found" }),
+        )
+
+      if (!existingResource.scheduledAt) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot cancel a gazette that is not scheduled",
+        })
+      }
+
+      const existingBlob = await getBlobOfResource({
+        db,
+        resourceId: existingResource.id,
+      })
+      const ref = (existingBlob.content as { page?: { ref?: string } } | null)
+        ?.page?.ref
+
+      // Atomic transaction: delete PushDocumentJob + Resource + Blob, then log audits.
+      // Logs go last so each entry describes a deletion that has actually happened.
+      const deletedResource = await db.transaction().execute(async (tx) => {
+        // 1. Delete the PushDocumentJob and capture the row. Defence-in-depth:
+        // scope via Resource subquery on siteId (PushDocumentJob has no direct
+        // siteId column).
+        const deletedJobs = await tx
+          .deleteFrom("PushDocumentJob")
+          .where("resourceId", "=", String(gazetteId))
+          .where("resourceId", "in", (eb) =>
+            eb
+              .selectFrom("Resource")
+              .select("Resource.id")
+              .where("Resource.siteId", "=", siteId),
+          )
+          .returningAll()
+          .execute()
+
+        // 2. Delete the Blob first (foreign key constraint)
+        if (existingResource.draftBlobId) {
+          await tx
+            .deleteFrom("Blob")
+            .where("id", "=", existingResource.draftBlobId)
+            .execute()
+        }
+
+        // 3. Delete the Resource — scoped to siteId defence-in-depth.
+        const deletedResources = await tx
+          .deleteFrom("Resource")
+          .where("id", "=", String(gazetteId))
+          .where("siteId", "=", siteId)
+          .returningAll()
+          .execute()
+
+        // 4. Log the cancellation audit event against the deleted job row.
+        // The truthful subject of "cancel scheduled publish" is the job that
+        // was cancelled.
+        const [deletedJob] = deletedJobs
+        if (deletedJob) {
+          const {
+            createdAt: _createdAt,
+            updatedAt: _updatedAt,
+            ...job
+          } = deletedJob
+          await logResourceEvent(tx, {
+            siteId,
+            eventType: AuditLogEvent.CancelSchedulePublish,
+            by: user,
+            delta: { before: job, after: null },
+          })
+        }
+
+        // 5. Log the resource deletion audit event
+        await logResourceEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.ResourceDelete,
+          by: user,
+          delta: {
+            before: { resource: existingResource, blob: existingBlob },
+            after: null,
+          },
+        })
+
+        return deletedResources
+      })
+
+      // After DB transaction commits, update S3 tags (best-effort)
+      // No need to guarantee this because we already set a `scheduledAt` tag
+      // which prevents the gazette from being seen by MOP anyway
+      if (ref) {
+        try {
+          await markScheduledAssetAsCancelled({
+            Key: ref.slice(1), // Remove leading slash
+            Bucket: env.S3_GAZETTE_BUCKET_NAME,
+          })
+        } catch (err) {
+          ctx.logger.warn(
+            { err, key: ref },
+            "Failed to mark cancelled gazette file in S3",
+          )
+        }
+      }
+
+      return { resource: deletedResource }
+    }),
+  getPresignedPutUrl: protectedProcedure
+    .input(getPresignedPutUrlSchema)
+    .mutation(
+      async ({
+        ctx,
+        input: {
+          year,
+          category,
+          subcategory,
+          tags,
+          siteId,
+          fileName,
+          resourceId,
+        },
+      }) => {
+        await assertGazetteAccess(ctx.user.id)
+        await validateUserPermissionsForAsset({
+          siteId,
+          resourceId,
+          action: "create",
+          userId: ctx.user.id,
+        })
+
+        const sanitizedFileName = filenamify(fileName, { replacement: "-" })
+        const fileKey = `${year}/${category}/${subcategory}/${sanitizedFileName}`
+
+        const { presignedPutUrl, contentType, contentDisposition } =
+          await getPresignedPutUrl({
+            key: fileKey,
+            tags,
+          })
+
+        ctx.logger.info(
+          {
+            userId: ctx.session?.userId,
+            siteId,
+            fileName,
+            fileKey,
+          },
+          `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
+        )
+
+        return {
+          fileKey,
+          presignedPutUrl,
+          contentType,
+          contentDisposition,
+        }
+      },
+    ),
+
+  getPresignedGetUrl: protectedProcedure
+    .input(getPresignedGetUrlSchema)
+    .mutation(async ({ ctx, input: { siteId, fileKey } }) => {
+      await assertGazetteAccess(ctx.user.id)
+
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const presignedGetUrl = await getPresignedGetUrl({ key: fileKey })
+
+      ctx.logger.info(
+        { userId: ctx.session?.userId, siteId, fileKey },
+        `Generated presigned GET URL for gazette ${fileKey}`,
+      )
+
+      return { presignedGetUrl }
+    }),
+  delete: protectedProcedure
+    .input(deleteGazetteSchema)
+    .mutation(async ({ ctx, input: { siteId, gazetteId } }) => {
+      // First, make sure that the users are from Toppan and can actually delete gazettes
+      await assertGazetteAccess(ctx.user.id)
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "delete",
+        userId: ctx.user.id,
+        resourceIds: [String(gazetteId)],
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
+
+      // Next, fetch the gazettes that they are trying to delete and
+      // make sure that the time is within the allowed timeframe.
+      // This has to be on the version already cos otherwise they should be able to cancel the publish
+      const gazette = await db
+        .selectFrom("Resource")
+        .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", String(gazetteId))
+        .select([...defaultResourceSelect, "Version.publishedAt"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              message:
+                "The gazette you are trying to delete could not be found",
+              code: "NOT_FOUND",
+            }),
+        )
+      const { publishedAt } = gazette
+      const isWithinGracePeriod =
+        publishedAt &&
+        differenceInMinutes(new Date(), publishedAt) <=
+          ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
+
+      if (!isWithinGracePeriod) {
+        throw new TRPCError({
+          message: `Gazettes are unable to be deleted after the given grace period of ${ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES} minutes`,
+          code: "FORBIDDEN",
+        })
+      }
+
+      // Fetch the blob to get the S3 ref
+      const blob = await getBlobOfResource({ db, resourceId: gazette.id })
+      const ref = (blob.content as { page?: { ref?: string } } | null)?.page
+        ?.ref
+
+      if (!ref) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Gazette does not have a valid S3 reference",
+        })
+      }
+
+      // Always try to delete the asset and search record first
+      // before proceeding to remove the database resource.
+      // This is because the public uses those to access the gazette
+      // but the database resource is purely for internal view.
+      await removeGazetteFromSearchIndex(ref, gazette.id)
+      await deleteGazetteAsset(ref)
+
+      // Delete the resource in a transaction, then audit-log the deletion.
+      // Log goes after the delete so the entry describes a deletion that has
+      // actually happened.
+      await db.transaction().execute(async (tx) => {
+        // Delete the PushDocumentJob first. The FK is `onDelete: Restrict`
+        // (see PushDocumentJob in schema.prisma), so the Resource delete
+        // below would throw whenever a job row still exists. In practice
+        // the cron runs every minute so for up to ~60s after publish there
+        // is one — and the grace period is 15 minutes, so the very first
+        // deletion attempt would otherwise 500.
+        // Defence-in-depth: scope via Resource subquery on siteId
+        // (PushDocumentJob has no direct siteId column).
+        await tx
+          .deleteFrom("PushDocumentJob")
+          .where("resourceId", "=", String(gazetteId))
+          .where("resourceId", "in", (eb) =>
+            eb
+              .selectFrom("Resource")
+              .select("Resource.id")
+              .where("Resource.siteId", "=", siteId),
+          )
+          .execute()
+
+        await tx
+          .deleteFrom("Resource")
+          .where("siteId", "=", siteId)
+          .where("id", "=", String(gazetteId))
+          .execute()
+
+        await logResourceEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.ResourceDelete,
+          by: user,
+          delta: {
+            before: { resource: gazette, blob },
+            after: null,
+          },
+        })
+      })
+      // NOTE: Send email out to IMDA so that they get visibility on what gazettes are deleted.
+      // The gazette feature operates on a single site, so the input siteId is the
+      // site whose admins should be notified — no separate growthbook lookup needed.
+      const admins = await db
+        .selectFrom("Site")
+        .where("Site.id", "=", siteId)
+        .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
+        .where("ResourcePermission.deletedAt", "is", null)
+        .innerJoin("User", "ResourcePermission.userId", "User.id")
+        .where("User.deletedAt", "is", null)
+        .where("ResourcePermission.role", "=", "Admin")
+        .select("User.email")
+        .execute()
+
+      const filename = ref.split("/").pop() ?? ref
+      await Promise.all(
+        admins.map(async ({ email }) => {
+          await sendGazetteDeletionEmail({
+            fileId: filename,
+            gazetteTitle: gazette.title,
+            recipientEmail: email,
+          })
+        }),
+      )
+    }),
 })

@@ -1,5 +1,4 @@
 import type { Static } from "@sinclair/typebox"
-import type { LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { MAPS_EMBED_URL_PATTERN } from "~/utils/validation"
 
@@ -25,6 +24,5 @@ export const MapSchema = Type.Object(
 )
 
 export type MapProps = Static<typeof MapSchema> & {
-  LinkComponent?: LinkComponentType
   shouldLazyLoad?: boolean
 }

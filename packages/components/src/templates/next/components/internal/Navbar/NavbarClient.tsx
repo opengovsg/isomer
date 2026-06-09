@@ -1,7 +1,13 @@
 "use client"
 
 import type { NavbarClientProps } from "~/interfaces"
-import { useCallback, useLayoutEffect, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react"
 import { BiMenu, BiSearch, BiX } from "react-icons/bi"
 import { useResizeObserver } from "usehooks-ts"
 import { tv } from "~/lib/tv"
@@ -67,7 +73,6 @@ export const NavbarClient = ({
   imageClientProps,
   callToAction,
   utility,
-  LinkComponent,
 }: NavbarClientProps) => {
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
@@ -102,6 +107,20 @@ export const NavbarClient = ({
     onResize: refreshMenuOffset,
   })
 
+  // When the hamburger menu is open, also watch the full <header> for height
+  // changes caused by siblings like masthead/notification toggling, since those
+  // don't resize the navbar container but do shift its position.
+  useEffect(() => {
+    if (!isHamburgerOpen) return
+
+    const header = siteHeaderRef.current?.closest("header")
+    if (!header) return
+
+    const observer = new ResizeObserver(() => refreshMenuOffset())
+    observer.observe(header)
+    return () => observer.disconnect()
+  }, [isHamburgerOpen, refreshMenuOffset])
+
   const onCloseMenu = useCallback(() => {
     setIsHamburgerOpen(false)
     setOpenNavItemIdx(-1)
@@ -126,11 +145,7 @@ export const NavbarClient = ({
       <div className={navbarStyles.navbarContainer()} ref={siteHeaderRef}>
         <div className={navbarStyles.navbarItems()}>
           {/* Logo */}
-          <Link
-            LinkComponent={LinkComponent}
-            className={navbarStyles.logo()}
-            href="/"
-          >
+          <Link className={navbarStyles.logo()} href="/">
             <ImageClient {...imageClientProps} />
           </Link>
 
@@ -146,7 +161,6 @@ export const NavbarClient = ({
                   {utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <Link
-                        LinkComponent={LinkComponent}
                         className={navbarStyles.utilityItem()}
                         href={item.url}
                         isExternal={isExternalUrl(item.url)}
@@ -179,8 +193,6 @@ export const NavbarClient = ({
                       )
                     }}
                     isOpen={openNavItemIdx === index && !isHamburgerOpen}
-                    // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    LinkComponent={LinkComponent}
                   />
                 ))}
               </ul>
@@ -193,7 +205,6 @@ export const NavbarClient = ({
                   size="sm"
                   className={navbarStyles.callToAction()}
                   isWithFocusVisibleHighlight
-                  LinkComponent={LinkComponent}
                 >
                   {callToAction.label}
                 </LinkButton>
@@ -272,8 +283,6 @@ export const NavbarClient = ({
           setOpenNavItemIdx={setOpenNavItemIdx}
           callToAction={callToAction}
           utility={utility}
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          LinkComponent={LinkComponent}
           onCloseMenu={onCloseMenu}
         />
       )}

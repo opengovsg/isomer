@@ -20,7 +20,7 @@ export const MAX_PAGE_URL_LENGTH = 500
 
 const pageTitleSchema = z
   .string({
-    required_error: "Enter a title for this page",
+    error: "Enter a title for this page",
   })
   .min(1, { message: "Enter a title for this page" })
   .max(MAX_TITLE_LENGTH, {

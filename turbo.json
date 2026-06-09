@@ -1,7 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalDependencies": ["**/.env", "tsconfig.json"],
+  "globalDependencies": [
+    "**/.env",
+    "tsconfig.json"
+  ],
   "globalEnv": [
     "NODE_ENV",
     "DATABASE_URL",
@@ -14,10 +17,14 @@
     "SINGPASS_ISSUER_ENDPOINT",
     "SINGPASS_ENCRYPTION_PRIVATE_KEY",
     "SINGPASS_SIGNING_PRIVATE_KEY",
-    "SEARCHSG_API_KEY"
+    "SEARCHSG_API_KEY",
+    "S3_GAZETTE_BUCKET_NAME",
+    "S3_GAZETTE_DOMAIN_NAME"
   ],
   "tasks": {
-    "build": {},
+    "build": {
+      "dependsOn": ["generate"]
+    },
     "build:template": {},
     "clean": {},
     "db:connect": {
@@ -33,37 +40,57 @@
       "cache": false
     },
     "dev": {
-      "dependsOn": ["services:setup"],
+      "dependsOn": [
+        "services:setup"
+      ],
       "cache": false,
       "persistent": true
     },
     "services:setup": {
       "cache": false
     },
-    "setup:test": { "cache": false },
+    "setup:test": {
+      "cache": false
+    },
     "storybook": {
       "cache": false
     },
     "build-storybook": {
-      "inputs": ["!storybook-static/**"],
-      "outputs": ["storybook-static/**"]
+      "inputs": [
+        "!storybook-static/**"
+      ],
+      "outputs": [
+        "storybook-static/**"
+      ]
     },
     "generate": {},
     "format": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": []
     },
     "format:fix": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": []
     },
     "lint": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "generate",
+        "^build"
+      ],
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["^build"],
-      "outputs": ["node_modules/.cache/tsbuildinfo.json"]
+      "dependsOn": [
+        "generate",
+        "^build"
+      ],
+      "outputs": [
+        "node_modules/.cache/tsbuildinfo.json"
+      ]
     },
     "teardown": {},
     "test-start": {}
