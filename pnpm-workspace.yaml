@@ -56,6 +56,7 @@ patchedDependencies:
 
 catalog:
   ajv: ^8.20.0
+  algoliasearch: ^5.53.0
   autoprefixer: ^10.4.21
   axios: ^1.16.1
   bootstrap-icons: ^1.13.1
@@ -91,6 +92,7 @@ catalog:
   postcss: ^8.5.15
   postcss-preset-env: ^11.2.1
   react-icons: ^5.2.0
+  react-instantsearch: ^7.35.0
   rimraf: ^5.0.10
   sherif: ^1.11.1
   start-server-and-test: ^3.0.2
