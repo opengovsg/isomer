@@ -1,4 +1,3 @@
-import type { DropResult } from "@hello-pangea/dnd"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import {
   Box,
@@ -16,7 +15,6 @@ import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
   createDefaultValue,
-  findUISchema,
   rankWith,
   schemaMatches,
 } from "@jsonforms/core"
@@ -28,12 +26,11 @@ import {
   Menu,
 } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
-import { useCallback, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import {
   BiDotsHorizontalRounded,
   BiGridVertical,
   BiInfoCircle,
-  BiPlusCircle,
   BiPurchaseTag,
   BiTrash,
 } from "react-icons/bi"
@@ -43,11 +40,13 @@ import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
-import { ComplexEditorNestedDrawer } from "../../components/ComplexEditorNestedDrawer"
+import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
+import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
 import { useBuilderErrors } from "../../ErrorProvider"
+import { useArray } from "../../hooks/useArray"
 import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
@@ -63,7 +62,6 @@ function CategoryOptionsExpandedEditor({
   const {
     data,
     path,
-    visible,
     enabled,
     label,
     addItem,
@@ -73,8 +71,6 @@ function CategoryOptionsExpandedEditor({
     arraySchema,
     schema,
     rootSchema,
-    renderers,
-    cells,
     uischemas,
     uischema,
     description,
@@ -82,14 +78,31 @@ function CategoryOptionsExpandedEditor({
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
 
-  const isRemoveItemDisabled =
-    arraySchema.minItems !== undefined && data <= arraySchema.minItems
-
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
     label: string
   }>(null)
-  const [selectedIndex, setSelectedIndex] = useState<number>()
+
+  const arrayResult = useArray({
+    data,
+    path,
+    arraySchema,
+    schema,
+    rootSchema,
+    uischemas,
+    uischema,
+    removeItems,
+    moveUp,
+    moveDown,
+  })
+  const {
+    setSelectedIndex,
+    isAddItemDisabled,
+    isRemoveItemDisabled,
+    childUiSchema,
+    handleRemoveItem,
+    onDragEnd,
+  } = arrayResult
 
   const openDeleteModal = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
@@ -107,244 +120,163 @@ function CategoryOptionsExpandedEditor({
     setDeleteTarget(null)
   }
 
-  const handleRemoveItem = useCallback(
-    (path: string, index: number) => () => {
-      if (selectedIndex === undefined || !removeItems || isRemoveItemDisabled) {
-        return
-      }
-
-      removeItems(path, [index])()
-
-      if (selectedIndex === index) {
-        setSelectedIndex(undefined)
-      } else if (selectedIndex > index) {
-        setSelectedIndex(selectedIndex - 1)
-      }
-    },
-    [isRemoveItemDisabled, removeItems, selectedIndex],
-  )
-  const handleMoveItem = useCallback(
-    (path: string, originalIndex: number, newIndex: number) => {
-      if (originalIndex === newIndex || !moveDown || !moveUp) {
-        return
-      }
-
-      if (originalIndex < newIndex) {
-        for (let i = originalIndex; i < newIndex; i++) {
-          moveDown(path, i)()
-        }
-      } else {
-        for (let i = originalIndex; i > newIndex; i--) {
-          moveUp(path, i)()
-        }
-      }
-    },
-    [moveUp, moveDown],
-  )
-
-  const childUiSchema = useMemo(
-    () =>
-      findUISchema(
-        uischemas ?? [],
-        schema,
-        uischema.scope,
-        path,
-        undefined,
-        uischema,
-        rootSchema,
-      ),
-    [uischemas, schema, uischema, path, rootSchema],
-  )
-  const onDragEnd = useCallback(
-    (result: DropResult) => {
-      if (!result.destination) {
-        return
-      }
-      handleMoveItem(path, result.source.index, result.destination.index)
-    },
-    [path, handleMoveItem],
-  )
-
-  const arrayBody =
-    selectedIndex !== undefined ? (
-      <ComplexEditorNestedDrawer
-        renderers={renderers}
-        cells={cells}
-        visible={visible}
-        schema={schema}
-        uischema={childUiSchema}
-        path={composePaths(path, `${selectedIndex}`)}
-        label={label}
-        setSelectedIndex={setSelectedIndex}
-        isRemoveItemDisabled={isRemoveItemDisabled}
-        handleRemoveItem={handleRemoveItem(path, selectedIndex)}
-        selectedIndex={selectedIndex}
-        maxIndex={data - 1}
-      />
-    ) : (
-      <VStack spacing={0} align="start">
-        <VStack align="start" spacing="0.25rem" w="full">
-          <HStack w="full" justifyContent="space-between" align="center">
-            <Text textStyle="subhead-1" flex={1}>
-              {label}
-            </Text>
-            <Button
-              onClick={addItem(path, createDefaultValue(schema, rootSchema))}
-              variant="clear"
-              size="xs"
-              leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-              isDisabled={
-                arraySchema.maxItems !== undefined &&
-                data >= arraySchema.maxItems
-              }
-              flexShrink={0}
-            >
-              Add option
-            </Button>
-          </HStack>
-          {description && (
-            <Text textStyle="body-2" textColor="base.content.default">
-              {description}
-            </Text>
-          )}
-          {duplicateOptionIndices.size > 0 && (
-            <DuplicateLabelError noun="option" />
-          )}
-        </VStack>
-        <Box w="full" mt="0.75rem">
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="blocks">
-              {({ droppableProps, innerRef, placeholder }) => (
-                <VStack
-                  {...droppableProps}
-                  align="baseline"
-                  w="100%"
-                  h="100%"
-                  spacing={0}
-                  ref={innerRef}
-                >
-                  {data === 0 && (
-                    <Flex
-                      alignItems="center"
-                      flexDir="column"
-                      px="1.5rem"
-                      py="3.75rem"
-                      mt="0.25rem"
-                      justifyContent="center"
-                      w="100%"
-                    >
-                      <VStack spacing="0.25rem" align="center">
-                        <Text
-                          textStyle="subhead-2"
-                          textColor="base.content.default"
-                          textAlign="center"
-                        >
-                          Add an option for this category
-                        </Text>
-                        <Text
-                          textStyle="caption-2"
-                          textColor="base.content.default"
-                          textAlign="center"
-                        >
-                          Users will choose from this list when creating new
-                          items.
-                        </Text>
-                      </VStack>
-                    </Flex>
-                  )}
-
-                  {[...Array(data).keys()].map((index) => {
-                    const childPath = composePaths(path, `${index}`)
-                    const isDuplicate = duplicateOptionIndices.has(index)
-                    const hasError = hasErrorAt(childPath) || isDuplicate
-
-                    return (
-                      <Draggable
-                        key={childPath}
-                        draggableId={childPath}
-                        disableInteractiveElementBlocking
-                        index={index}
-                      >
-                        {({ draggableProps, dragHandleProps, innerRef }) => (
-                          <DraggableTagButton.Root
-                            draggableProps={draggableProps}
-                            isError={hasError}
-                            ref={innerRef}
-                          >
-                            <DraggableTagButton.Handle
-                              dragHandleProps={dragHandleProps}
-                            />
-                            <DraggableTagButton.Body
-                              onClick={() => setSelectedIndex(index)}
-                            >
-                              <DraggableTagButton.Content>
-                                <DraggableTagButton.Label
-                                  index={index}
-                                  path={path}
-                                  schema={schema}
-                                  uischema={childUiSchema}
-                                  enabled={enabled}
-                                  handleSelect={() => () => undefined}
-                                  removeItem={handleRemoveItem}
-                                  selected={false}
-                                  childLabelProp={undefined}
-                                  translations={{}}
-                                />
-                                {hasError && (
-                                  <DraggableTagButton.ErrorCaption>
-                                    {isDuplicate
-                                      ? "An option with this name already exists."
-                                      : undefined}
-                                  </DraggableTagButton.ErrorCaption>
-                                )}
-                              </DraggableTagButton.Content>
-                            </DraggableTagButton.Body>
-                            <DraggableTagButton.Trailing>
-                              <Menu isLazy>
-                                <MenuButton
-                                  as={IconButton}
-                                  icon={
-                                    <BiDotsHorizontalRounded fontSize="1.5rem" />
-                                  }
-                                  {...ROW_ACTIONS_MENU_BUTTON_PROPS}
-                                  isDisabled={isRemoveItemDisabled}
-                                  aria-label={`Option ${index + 1} actions`}
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                                <Portal>
-                                  <MenuList>
-                                    <MenuItem
-                                      colorScheme="critical"
-                                      icon={<BiTrash fontSize="1rem" />}
-                                      isDisabled={isRemoveItemDisabled}
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        openDeleteModal(index)
-                                      }}
-                                    >
-                                      Delete option
-                                    </MenuItem>
-                                  </MenuList>
-                                </Portal>
-                              </Menu>
-                            </DraggableTagButton.Trailing>
-                          </DraggableTagButton.Root>
-                        )}
-                      </Draggable>
-                    )
-                  })}
-
-                  {placeholder}
-                </VStack>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </Box>
+  const arrayBody = (
+    <VStack spacing={0} align="start">
+      <VStack align="start" spacing="0.25rem" w="full">
+        <HStack w="full" justifyContent="space-between" align="center">
+          <Text textStyle="subhead-1" flex={1}>
+            {label}
+          </Text>
+          <AddItemButton
+            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+            isDisabled={isAddItemDisabled}
+          >
+            Add option
+          </AddItemButton>
+        </HStack>
+        {description && (
+          <Text textStyle="body-2" textColor="base.content.default">
+            {description}
+          </Text>
+        )}
+        {duplicateOptionIndices.size > 0 && (
+          <DuplicateLabelError noun="option" />
+        )}
       </VStack>
-    )
+      <Box w="full" mt="0.75rem">
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="blocks">
+            {({ droppableProps, innerRef, placeholder }) => (
+              <VStack
+                {...droppableProps}
+                align="baseline"
+                w="100%"
+                h="100%"
+                spacing={0}
+                ref={innerRef}
+              >
+                {data === 0 && (
+                  <Flex
+                    alignItems="center"
+                    flexDir="column"
+                    px="1.5rem"
+                    py="3.75rem"
+                    mt="0.25rem"
+                    justifyContent="center"
+                    w="100%"
+                  >
+                    <VStack spacing="0.25rem" align="center">
+                      <Text
+                        textStyle="subhead-2"
+                        textColor="base.content.default"
+                        textAlign="center"
+                      >
+                        Add an option for this category
+                      </Text>
+                      <Text
+                        textStyle="caption-2"
+                        textColor="base.content.default"
+                        textAlign="center"
+                      >
+                        Users will choose from this list when creating new
+                        items.
+                      </Text>
+                    </VStack>
+                  </Flex>
+                )}
+
+                {[...Array(data).keys()].map((index) => {
+                  const childPath = composePaths(path, `${index}`)
+                  const isDuplicate = duplicateOptionIndices.has(index)
+                  const hasError = hasErrorAt(childPath) || isDuplicate
+
+                  return (
+                    <Draggable
+                      key={childPath}
+                      draggableId={childPath}
+                      disableInteractiveElementBlocking
+                      index={index}
+                    >
+                      {({ draggableProps, dragHandleProps, innerRef }) => (
+                        <DraggableTagButton.Root
+                          draggableProps={draggableProps}
+                          isError={hasError}
+                          ref={innerRef}
+                        >
+                          <DraggableTagButton.Handle
+                            dragHandleProps={dragHandleProps}
+                          />
+                          <DraggableTagButton.Body
+                            onClick={() => setSelectedIndex(index)}
+                          >
+                            <DraggableTagButton.Content>
+                              <DraggableTagButton.Label
+                                index={index}
+                                path={path}
+                                schema={schema}
+                                uischema={childUiSchema}
+                                enabled={enabled}
+                                handleSelect={() => () => undefined}
+                                removeItem={handleRemoveItem}
+                                selected={false}
+                                childLabelProp={undefined}
+                                translations={{}}
+                              />
+                              {hasError && (
+                                <DraggableTagButton.ErrorCaption>
+                                  {isDuplicate
+                                    ? "An option with this name already exists."
+                                    : undefined}
+                                </DraggableTagButton.ErrorCaption>
+                              )}
+                            </DraggableTagButton.Content>
+                          </DraggableTagButton.Body>
+                          <DraggableTagButton.Trailing>
+                            <Menu isLazy>
+                              <MenuButton
+                                as={IconButton}
+                                icon={
+                                  <BiDotsHorizontalRounded fontSize="1.5rem" />
+                                }
+                                {...ROW_ACTIONS_MENU_BUTTON_PROPS}
+                                isDisabled={isRemoveItemDisabled}
+                                aria-label={`Option ${index + 1} actions`}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <Portal>
+                                <MenuList>
+                                  <MenuItem
+                                    colorScheme="critical"
+                                    icon={<BiTrash fontSize="1rem" />}
+                                    isDisabled={isRemoveItemDisabled}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      openDeleteModal(index)
+                                    }}
+                                  >
+                                    Delete option
+                                  </MenuItem>
+                                </MenuList>
+                              </Portal>
+                            </Menu>
+                          </DraggableTagButton.Trailing>
+                        </DraggableTagButton.Root>
+                      )}
+                    </Draggable>
+                  )
+                })}
+
+                {placeholder}
+              </VStack>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </Box>
+    </VStack>
+  )
 
   return (
-    <>
+    <NestedDrawerProvider {...props} {...arrayResult}>
       <VStack align="stretch" spacing={0} w="full">
         <Infobox
           width="100%"
@@ -377,7 +309,7 @@ function CategoryOptionsExpandedEditor({
           onConfirm={handleConfirmDelete}
         />
       )}
-    </>
+    </NestedDrawerProvider>
   )
 }
 

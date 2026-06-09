@@ -1,4 +1,3 @@
-import type { DropResult } from "@hello-pangea/dnd"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import { Box, Flex, HStack, Text, VStack } from "@chakra-ui/react"
@@ -6,22 +5,22 @@ import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
   createDefaultValue,
-  findUISchema,
   rankWith,
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { Button } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
-import { useCallback, useMemo, useState } from "react"
-import { BiPlusCircle, BiPurchaseTag } from "react-icons/bi"
+import { useMemo, useState } from "react"
+import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { ComplexEditorNestedDrawer } from "../../components/ComplexEditorNestedDrawer"
+import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
+import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
 import { useBuilderErrors } from "../../ErrorProvider"
+import { useArray } from "../../hooks/useArray"
 import { TagRowActionsMenu } from "./TagRowActionsMenu"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
@@ -29,20 +28,17 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
     data,
     path,
-    visible,
     enabled,
     label,
     addItem,
     removeItems,
-    moveUp,
-    moveDown,
     arraySchema,
     schema,
     rootSchema,
-    renderers,
-    cells,
     uischemas,
     uischema,
+    moveUp,
+    moveDown,
     description,
   } = props
   const { hasErrorAt } = useBuilderErrors()
@@ -58,90 +54,30 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     index: number
     label: string
   }>(null)
-  const [selectedIndex, setSelectedIndex] = useState<number>()
 
-  const isRemoveItemDisabled =
-    arraySchema.minItems !== undefined && data <= arraySchema.minItems
-
-  const handleRemoveItem = useCallback(
-    (path: string, index: number) => () => {
-      if (selectedIndex === undefined || !removeItems || isRemoveItemDisabled) {
-        return
-      }
-
-      removeItems(path, [index])()
-
-      if (selectedIndex === index) {
-        setSelectedIndex(undefined)
-      } else if (selectedIndex > index) {
-        setSelectedIndex(selectedIndex - 1)
-      }
-    },
-    [isRemoveItemDisabled, removeItems, selectedIndex],
-  )
-  const handleMoveItem = useCallback(
-    (path: string, originalIndex: number, newIndex: number) => {
-      if (originalIndex === newIndex || !moveDown || !moveUp) {
-        return
-      }
-
-      if (originalIndex < newIndex) {
-        for (let i = originalIndex; i < newIndex; i++) {
-          moveDown(path, i)()
-        }
-      } else {
-        for (let i = originalIndex; i > newIndex; i--) {
-          moveUp(path, i)()
-        }
-      }
-    },
-    [moveUp, moveDown],
-  )
-
-  const childUiSchema = useMemo(
-    () =>
-      findUISchema(
-        uischemas ?? [],
-        schema,
-        uischema.scope,
-        path,
-        undefined,
-        uischema,
-        rootSchema,
-      ),
-    [uischemas, schema, uischema, path, rootSchema],
-  )
-  const onDragEnd = useCallback(
-    (result: DropResult) => {
-      if (!result.destination) {
-        return
-      }
-      handleMoveItem(path, result.source.index, result.destination.index)
-    },
-    [path, handleMoveItem],
-  )
-
-  if (selectedIndex !== undefined) {
-    return (
-      <ComplexEditorNestedDrawer
-        renderers={renderers}
-        cells={cells}
-        visible={visible}
-        schema={schema}
-        uischema={childUiSchema}
-        path={composePaths(path, `${selectedIndex}`)}
-        label={label}
-        setSelectedIndex={setSelectedIndex}
-        isRemoveItemDisabled={isRemoveItemDisabled}
-        handleRemoveItem={handleRemoveItem(path, selectedIndex)}
-        selectedIndex={selectedIndex}
-        maxIndex={data - 1}
-      />
-    )
-  }
+  const arrayResult = useArray({
+    data,
+    path,
+    arraySchema,
+    schema,
+    rootSchema,
+    uischemas,
+    uischema,
+    removeItems,
+    moveUp,
+    moveDown,
+  })
+  const {
+    setSelectedIndex,
+    isAddItemDisabled,
+    isRemoveItemDisabled,
+    childUiSchema,
+    handleRemoveItem,
+    onDragEnd,
+  } = arrayResult
 
   return (
-    <>
+    <NestedDrawerProvider {...props} {...arrayResult}>
       {duplicateFilterIndices.size > 0 && <DuplicateLabelError noun="filter" />}
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
@@ -149,7 +85,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
             <Text textStyle="subhead-1" flex={1}>
               {label}
             </Text>
-            <Button
+            <AddItemButton
               onClick={addItem(path, {
                 ...(createDefaultValue(schema, rootSchema) as Record<
                   string,
@@ -160,17 +96,10 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                 // that omit this key.
                 isRequired: true,
               })}
-              variant="clear"
-              size="xs"
-              leftIcon={<BiPlusCircle fontSize="1.25rem" />}
-              isDisabled={
-                arraySchema.maxItems !== undefined &&
-                data >= arraySchema.maxItems
-              }
-              flexShrink={0}
+              isDisabled={isAddItemDisabled}
             >
               Add a filter
-            </Button>
+            </AddItemButton>
           </HStack>
           {description && (
             <Text textStyle="body-2" textColor="base.content.default">
@@ -315,7 +244,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
           }}
         />
       )}
-    </>
+    </NestedDrawerProvider>
   )
 }
 
