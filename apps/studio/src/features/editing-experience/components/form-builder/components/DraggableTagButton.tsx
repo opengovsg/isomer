@@ -1,4 +1,3 @@
-import type { BoxProps } from "@chakra-ui/react"
 import type { StatePropsOfMasterItem } from "@jsonforms/core"
 import type { ReactNode } from "react"
 import type { IconType } from "react-icons"
@@ -18,8 +17,6 @@ import type { DraggableArrayItemRenderProps } from "./types"
 
 interface DraggableTagButtonProps extends DraggableArrayItemRenderProps {
   listItemIcon?: IconType
-  /** Merged into padding on the drag handle and label button (e.g. tighter `py`). */
-  listItemContentProps?: BoxProps
   /** Rendered after the label area, typically flush right (e.g. row actions menu). */
   listItemTrailing?: ReactNode
   /** Caption under the row title (stacked with 0.25rem gap). */
@@ -45,7 +42,6 @@ const DraggableTagButton = forwardRef<DraggableTagButtonProps, "div">(
       index,
       isError,
       listItemIcon,
-      listItemContentProps,
       listItemTrailing,
       listItemSubtitle,
       listItemErrorCaption,
@@ -53,15 +49,6 @@ const DraggableTagButton = forwardRef<DraggableTagButtonProps, "div">(
     },
     ref,
   ) => {
-    const mergedDragHandleProps: BoxProps = {
-      py: isError ? "0.75rem" : "1.25rem",
-      ...listItemContentProps,
-    }
-    const mergedLabelButtonProps: BoxProps = {
-      py: isError ? "0.75rem" : "1rem",
-      ...listItemContentProps,
-    }
-
     return (
       <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
         <HStack
@@ -108,7 +95,7 @@ const DraggableTagButton = forwardRef<DraggableTagButtonProps, "div">(
               flexShrink={0}
               align="center"
               layerStyle="focusRing"
-              {...mergedDragHandleProps}
+              py="0.5rem"
               pl="0.5rem"
               pr="0.25rem"
               {...dragHandleProps}
@@ -124,7 +111,7 @@ const DraggableTagButton = forwardRef<DraggableTagButtonProps, "div">(
               display="flex"
               alignItems="center"
               cursor="pointer"
-              {...mergedLabelButtonProps}
+              py="0.5rem"
               pl="0.25rem"
               pr="1rem"
               onClick={() => setSelectedIndex(index)}
@@ -186,16 +173,6 @@ const DraggableTagButton = forwardRef<DraggableTagButtonProps, "div">(
       </Box>
     )
   },
-)
-
-export const TagDraggableButton = forwardRef<DraggableTagButtonProps, "div">(
-  ({ listItemContentProps, ...props }, ref) => (
-    <DraggableTagButton
-      {...props}
-      ref={ref}
-      listItemContentProps={{ py: "0.5rem", ...listItemContentProps }}
-    />
-  ),
 )
 
 export default DraggableTagButton
