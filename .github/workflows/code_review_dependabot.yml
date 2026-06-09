@@ -32,6 +32,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # We use opencode instead of anthropic's github action because
+      # claude's version is heavily reported to be unreliable
+      # in terms of posting the report as a PR comment.
       - name: Run OpenCode
         uses: anomalyco/opencode/github@76c631d198f9ff620e15468e45f3457d50481b57 # v1.16.2
         env:
