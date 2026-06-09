@@ -26,13 +26,13 @@ jobs:
       actions: read # Required for Claude to read CI results on PRs
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 1
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@593d7a5c4e0073569f74772c2b7b64c30ec14707 # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 
@@ -40,11 +40,17 @@ jobs:
           additional_permissions: |
             actions: read
 
-          # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
-          # prompt: 'Update the pull request description to include a summary of changes.'
-
-          # Optional: Add claude_args to customize behavior and configuration
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-          # claude_args: '--allowed-tools Bash(gh pr *)'
+          allowed_tools: |
+            Bash(gh pr list:*)
+            Bash(gh pr view:*)
+            Bash(gh pr diff:*)
+            Bash(docker start:*)
+            Bash(pnpm run test:*)
+            Bash(pnpm run test:unit:*)
+            Bash(pnpm run typecheck:*)
+            Bash(pnpm run build:*)
+            Bash(pnpx tsc:*)
+            Bash(git stash:*)
+            WebFetch(domain:github.com)
+            WebFetch(domain:docs.datadoghq.com)
 
