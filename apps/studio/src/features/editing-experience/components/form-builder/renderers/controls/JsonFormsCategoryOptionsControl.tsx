@@ -45,7 +45,7 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { ComplexEditorNestedDrawer } from "../../components/ComplexEditorNestedDrawer"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
-import DraggableTagButton from "../../components/DraggableTagButton"
+import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
@@ -266,23 +266,40 @@ function CategoryOptionsExpandedEditor({
                         index={index}
                       >
                         {({ draggableProps, dragHandleProps, innerRef }) => (
-                          <DraggableTagButton
+                          <DraggableTagButton.Root
                             draggableProps={draggableProps}
-                            dragHandleProps={dragHandleProps}
                             isError={hasError}
                             ref={innerRef}
-                            index={index}
-                            path={path}
-                            schema={schema}
-                            enabled={enabled}
-                            handleSelect={() => () => undefined}
-                            removeItem={handleRemoveItem}
-                            selected={false}
-                            uischema={childUiSchema}
-                            childLabelProp={undefined}
-                            translations={{}}
-                            setSelectedIndex={setSelectedIndex}
-                            listItemTrailing={
+                          >
+                            <DraggableTagButton.Handle
+                              dragHandleProps={dragHandleProps}
+                            />
+                            <DraggableTagButton.Body
+                              onClick={() => setSelectedIndex(index)}
+                            >
+                              <DraggableTagButton.Content>
+                                <DraggableTagButton.Label
+                                  index={index}
+                                  path={path}
+                                  schema={schema}
+                                  uischema={childUiSchema}
+                                  enabled={enabled}
+                                  handleSelect={() => () => undefined}
+                                  removeItem={handleRemoveItem}
+                                  selected={false}
+                                  childLabelProp={undefined}
+                                  translations={{}}
+                                />
+                                {hasError && (
+                                  <DraggableTagButton.ErrorCaption>
+                                    {isDuplicate
+                                      ? "An option with this name already exists."
+                                      : undefined}
+                                  </DraggableTagButton.ErrorCaption>
+                                )}
+                              </DraggableTagButton.Content>
+                            </DraggableTagButton.Body>
+                            <DraggableTagButton.Trailing>
                               <Menu isLazy>
                                 <MenuButton
                                   as={IconButton}
@@ -310,13 +327,8 @@ function CategoryOptionsExpandedEditor({
                                   </MenuList>
                                 </Portal>
                               </Menu>
-                            }
-                            listItemErrorCaption={
-                              isDuplicate
-                                ? "An option with this name already exists."
-                                : undefined
-                            }
-                          />
+                            </DraggableTagButton.Trailing>
+                          </DraggableTagButton.Root>
                         )}
                       </Draggable>
                     )

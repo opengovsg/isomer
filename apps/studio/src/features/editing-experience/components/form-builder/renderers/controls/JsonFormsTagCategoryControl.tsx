@@ -19,7 +19,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ComplexEditorNestedDrawer } from "../../components/ComplexEditorNestedDrawer"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
-import DraggableTagButton from "../../components/DraggableTagButton"
+import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { TagRowActionsMenu } from "./TagRowActionsMenu"
@@ -229,32 +229,44 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                         index={index}
                       >
                         {({ draggableProps, dragHandleProps, innerRef }) => (
-                          <DraggableTagButton
+                          <DraggableTagButton.Root
                             draggableProps={draggableProps}
-                            dragHandleProps={dragHandleProps}
                             isError={hasError}
                             ref={innerRef}
-                            index={index}
-                            path={path}
-                            schema={schema}
-                            enabled={enabled}
-                            handleSelect={() => () => undefined}
-                            removeItem={handleRemoveItem}
-                            selected={false}
-                            uischema={childUiSchema}
-                            childLabelProp={undefined}
-                            translations={{}}
-                            setSelectedIndex={setSelectedIndex}
-                            listItemIcon={BiPurchaseTag}
-                            listItemSubtitle={
-                              <Text
-                                textStyle="caption-2"
-                                color="base.content.medium"
-                              >
-                                {subtitle}
-                              </Text>
-                            }
-                            listItemTrailing={
+                          >
+                            <DraggableTagButton.Handle
+                              dragHandleProps={dragHandleProps}
+                            />
+                            <DraggableTagButton.Body
+                              onClick={() => setSelectedIndex(index)}
+                            >
+                              <DraggableTagButton.Icon icon={BiPurchaseTag} />
+                              <DraggableTagButton.Content>
+                                <DraggableTagButton.Label
+                                  index={index}
+                                  path={path}
+                                  schema={schema}
+                                  uischema={childUiSchema}
+                                  enabled={enabled}
+                                  handleSelect={() => () => undefined}
+                                  removeItem={handleRemoveItem}
+                                  selected={false}
+                                  childLabelProp={undefined}
+                                  translations={{}}
+                                />
+                                <DraggableTagButton.Subtitle>
+                                  {subtitle}
+                                </DraggableTagButton.Subtitle>
+                                {hasError && (
+                                  <DraggableTagButton.ErrorCaption>
+                                    {isDuplicate
+                                      ? "A filter with this name already exists."
+                                      : undefined}
+                                  </DraggableTagButton.ErrorCaption>
+                                )}
+                              </DraggableTagButton.Content>
+                            </DraggableTagButton.Body>
+                            <DraggableTagButton.Trailing>
                               <TagRowActionsMenu
                                 noun="filter"
                                 index={index}
@@ -269,13 +281,8 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                                   })
                                 }
                               />
-                            }
-                            listItemErrorCaption={
-                              isDuplicate
-                                ? "A filter with this name already exists."
-                                : undefined
-                            }
-                          />
+                            </DraggableTagButton.Trailing>
+                          </DraggableTagButton.Root>
                         )}
                       </Draggable>
                     )
