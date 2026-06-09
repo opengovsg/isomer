@@ -31,8 +31,8 @@ import type { LinkTypesWithHrefFormat } from "../../LinkEditor/constants"
 import type { DraggableArrayItemRenderProps } from "./types"
 import { LINK_TYPES } from "../../LinkEditor/constants"
 import { getLinkHrefType } from "../../LinkEditor/utils"
-import { LinkErrorBoundary } from "./LinkErrorBoundary"
 import { parseHref } from "../renderers/controls/utils/parseHref"
+import { LinkErrorBoundary } from "./LinkErrorBoundary"
 
 interface SuspendableLabelProps {
   siteId: number
