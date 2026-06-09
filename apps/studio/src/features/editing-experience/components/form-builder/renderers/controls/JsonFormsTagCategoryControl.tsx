@@ -120,9 +120,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                   spacing={0}
                   ref={innerRef}
                 >
-                  {data === 0 &&
-                    <EmptyArray />
-                  }
+                  {data === 0 && <EmptyArray />}
 
                   {[...Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)

@@ -1,5 +1,5 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import { Box, Flex, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
@@ -23,6 +23,7 @@ import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { TagRowActionsMenu } from "./TagRowActionsMenu"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
+import { EmptyCategory } from "../../components/EmptyCategory";
 
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   props: ArrayLayoutProps,
@@ -129,35 +130,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                   spacing={0}
                   ref={innerRef}
                 >
-                  {data === 0 && (
-                    <Flex
-                      alignItems="center"
-                      flexDir="column"
-                      px="1.5rem"
-                      py="3.75rem"
-                      mt="0.25rem"
-                      justifyContent="center"
-                      w="100%"
-                    >
-                      <VStack spacing="0.25rem" align="center">
-                        <Text
-                          textStyle="subhead-2"
-                          textColor="base.content.default"
-                          textAlign="center"
-                        >
-                          Add an option to save this filter
-                        </Text>
-                        <Text
-                          textStyle="caption-2"
-                          textColor="base.content.default"
-                          textAlign="center"
-                        >
-                          Users will choose from this list when creating new
-                          items.
-                        </Text>
-                      </VStack>
-                    </Flex>
-                  )}
+                  {data === 0 && <EmptyCategory title='Add an option to save this filter' />}
 
                   {[...Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)

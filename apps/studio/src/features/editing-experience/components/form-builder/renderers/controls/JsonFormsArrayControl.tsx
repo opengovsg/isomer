@@ -1,5 +1,5 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import { Flex, Stack, Text, VStack } from "@chakra-ui/react"
+import { Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,

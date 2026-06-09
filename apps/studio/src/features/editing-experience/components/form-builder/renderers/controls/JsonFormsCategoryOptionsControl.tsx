@@ -50,6 +50,7 @@ import { useArray } from "../../hooks/useArray"
 import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
+import { EmptyCategory } from "../../components/EmptyCategory";
 
 interface CategoryOptionsExpandedEditorProps extends ArrayLayoutProps {
   duplicateOptionIndices: Set<number>
@@ -155,35 +156,7 @@ function CategoryOptionsExpandedEditor({
                 spacing={0}
                 ref={innerRef}
               >
-                {data === 0 && (
-                  <Flex
-                    alignItems="center"
-                    flexDir="column"
-                    px="1.5rem"
-                    py="3.75rem"
-                    mt="0.25rem"
-                    justifyContent="center"
-                    w="100%"
-                  >
-                    <VStack spacing="0.25rem" align="center">
-                      <Text
-                        textStyle="subhead-2"
-                        textColor="base.content.default"
-                        textAlign="center"
-                      >
-                        Add an option for this category
-                      </Text>
-                      <Text
-                        textStyle="caption-2"
-                        textColor="base.content.default"
-                        textAlign="center"
-                      >
-                        Users will choose from this list when creating new
-                        items.
-                      </Text>
-                    </VStack>
-                  </Flex>
-                )}
+                {data === 0 && <EmptyCategory title='Add an option for this category' />}
 
                 {[...Array(data).keys()].map((index) => {
                   const childPath = composePaths(path, `${index}`)
