@@ -49,7 +49,7 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { FORM_BUILDER_PARENT_ID } from "../../constants"
 import { useBuilderErrors } from "../../ErrorProvider"
-import DraggableLinkButton from "./DraggableLinkButton"
+import DraggableLinkButton from "../../components/DraggableLinkButton"
 
 export const jsonFormsLinkArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.LinkArrayControl,

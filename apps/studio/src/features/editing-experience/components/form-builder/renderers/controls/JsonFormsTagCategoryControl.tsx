@@ -11,9 +11,9 @@ import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
-import { DeleteConfirmModal } from "./DeleteConfirmModal"
-import DraggableTagButton from "./DraggableTagButton"
-import { DuplicateLabelError } from "./DuplicateLabelError"
+import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
+import DraggableTagButton from "../../components/DraggableTagButton"
+import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 

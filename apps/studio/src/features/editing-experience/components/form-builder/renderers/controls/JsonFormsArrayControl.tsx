@@ -35,10 +35,10 @@ import {
 } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import type { DraggableArrayItemRenderProps } from "./types"
+import type { DraggableArrayItemRenderProps } from "../../components/types"
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { useBuilderErrors } from "../../ErrorProvider"
-import DraggableTagButton from "./DraggableTagButton"
+import DraggableTagButton from "../../components/DraggableTagButton"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
