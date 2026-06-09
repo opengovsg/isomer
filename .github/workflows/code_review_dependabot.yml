@@ -6,12 +6,11 @@ on:
       - opened # Only run for new Dependabot PRs
       - labeled # Allow manual triggering by adding the 'review-dependency-upgrade' label
 
-# https://opencode.ai/docs/github/#pull-request-example
 permissions:
-  id-token: write
   contents: read
   pull-requests: read
   issues: write # needed to remove the 'review-dependency-upgrade' label after review
+  id-token: write # needed for claude-code-action's GitHub App token (used to post comments)
 
 jobs:
   dependabot:
@@ -33,18 +32,41 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # We use opencode instead of anthropic's github action because
-      # claude's version is heavily reported to be unreliable
-      # in terms of posting the report as a PR comment.
-      - name: Run OpenCode
-        uses: anomalyco/opencode/github@76c631d198f9ff620e15468e45f3457d50481b57 # v1.16.2
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@593d7a5c4e0073569f74772c2b7b64c30ec14707 # v1
         with:
-          model: anthropic/claude-sonnet-4-6
-          use_github_token: true
-          prompt: /review-dependency-upgrade
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: --model claude-sonnet-4-6
+          allowed_bots: dependabot[bot]
+          allowed_tools: |
+            Bash(gh pr view:*)
+            Bash(gh pr diff:*)
+            Bash(grep:*)
+            Bash(find:*)
+            Bash(cat:*)
+            Bash(git diff:*)
+            WebFetch(domain:github.com)
+            WebFetch(domain:raw.githubusercontent.com)
+            WebFetch(domain:npmjs.com)
+            WebFetch(domain:registry.npmjs.org)
+          prompt: |
+            Review this Dependabot dependency upgrade. Research the official changelog for all
+            intermediate versions — never rely on training data for version specifics. For each
+            breaking change, check whether the codebase uses the affected API. Output the report
+            (the action will post it as a PR comment):
+
+            ## 🤖 Dependency upgrade review
+            ### <pkg>: <from> → <to>
+            **Verdict:** BREAKS | SAFE | NEEDS REVIEW
+
+            | Version | Breaking change | Impact | Location | Migration |
+            |---------|----------------|--------|----------|-----------|
+
+            Impact: Affects (usage found), Safe (no usage), Uncertain (ambiguous). Sort Affects first.
+            No breaking changes → SAFE, single row noting none found.
+            Changelog unavailable → NEEDS REVIEW, list sources checked.
+            Multiple packages in one PR → one section per package, one combined comment.
+            Never modify tracked files.
 
       # Always remove the label after review (success or failure) so it can be re-added to re-trigger
       - name: Remove 'review-dependency-upgrade' label
