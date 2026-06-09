@@ -2,9 +2,7 @@ import type {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
 } from "@hello-pangea/dnd"
-import type {
-  StatePropsOfMasterItem,
-} from "@jsonforms/core"
+import type { StatePropsOfMasterItem } from "@jsonforms/core"
 import type { ReactNode } from "react"
 import type { IconType } from "react-icons"
 import {
