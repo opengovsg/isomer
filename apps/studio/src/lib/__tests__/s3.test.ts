@@ -11,7 +11,11 @@ vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@aws-sdk/client-s3")>()
   return {
     ...actual,
-    S3Client: vi.fn(() => ({ send: sendMock })),
+    // Use a regular function (not an arrow) so it can be invoked with `new`,
+    // since s3.ts constructs the client via `new S3Client(...)`.
+    S3Client: vi.fn(function () {
+      return { send: sendMock }
+    }),
   }
 })
 
