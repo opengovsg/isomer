@@ -92,7 +92,9 @@ export const assetRouter = router({
     // Bounds abuse frequency on this S3-hitting mutation. Combined with the
     // per-request cap in deleteAssetsSchema, this limits the total number of
     // paid S3 tagging calls a single caller can drive within the window.
-    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
+    // 20/min is practically generous (well above normal editor usage) and
+    // arbitrary — adjust if legitimate usage is blocked or abuse persists.
+    .meta({ rateLimitOptions: { max: 20, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { siteId, resourceId, fileKeys } }) => {
       await validateUserPermissionsForAsset({
         siteId,
