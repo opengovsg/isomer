@@ -39,18 +39,3 @@ jobs:
           # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
             actions: read
-
-          allowed_tools: |
-            Bash(gh pr list:*)
-            Bash(gh pr view:*)
-            Bash(gh pr diff:*)
-            Bash(docker start:*)
-            Bash(pnpm run test:*)
-            Bash(pnpm run test:unit:*)
-            Bash(pnpm run typecheck:*)
-            Bash(pnpm run build:*)
-            Bash(pnpx tsc:*)
-            Bash(git stash:*)
-            WebFetch(domain:github.com)
-            WebFetch(domain:docs.datadoghq.com)
-

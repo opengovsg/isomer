@@ -2,14 +2,14 @@ name: 🤖 Code Review
 
 on:
   pull_request:
-    types:
-      - opened
+    types: [opened, synchronize]
 
 permissions:
   contents: read
   pull-requests: read
   issues: read
-  id-token: write # needed for claude-code-action's GitHub App token (used to post comments)
+  id-token: write
+  actions: read # Required for Claude to read CI results on PRs
 
 jobs:
   dependabot:
@@ -30,22 +30,9 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: --model claude-sonnet-4-6
           allowed_bots: dependabot[bot]
-          prompt: |
-            Review this Dependabot dependency upgrade. Research the official changelog for all
-            intermediate versions — never rely on training data for version specifics. For each
-            breaking change, check whether the codebase uses the affected API. Output the report
-            (the action will post it as a PR comment):
 
-            ## 🤖 Dependency upgrade review
-            ### <pkg>: <from> → <to>
-            **Verdict:** BREAKS | SAFE | NEEDS REVIEW
+          # This is an optional setting that allows Claude to read CI results on PRs
+          additional_permissions: |
+            actions: read
 
-            | Version | Breaking change | Impact | Location | Migration |
-            |---------|----------------|--------|----------|-----------|
-
-            Impact: Affects (usage found), Safe (no usage), Uncertain (ambiguous). Sort Affects first.
-            No breaking changes → SAFE, single row noting none found.
-            Changelog unavailable → NEEDS REVIEW, list sources checked.
-            Multiple packages in one PR → one section per package, one combined comment.
-            Never modify tracked files.
-
+          prompt: "/review-dependency-upgrade"
