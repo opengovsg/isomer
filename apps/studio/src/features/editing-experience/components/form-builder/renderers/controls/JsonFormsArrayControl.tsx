@@ -13,11 +13,11 @@ import { withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { AddItemButton } from "../../components/AddItemButton"
-import DraggableDrawerButton from "../../components/DraggableDrawerButton"
+import { DraggableTagButton } from "../../components/DraggableTagButton"
+import { EmptyArray } from "../../components/EmptyArray"
 import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
-import { EmptyArray } from "../../components/EmptyArray";
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
@@ -99,24 +99,34 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
                       index={index}
                     >
                       {({ draggableProps, dragHandleProps, innerRef }) => (
-                        <DraggableDrawerButton
+                        <DraggableTagButton.Root
                           draggableProps={draggableProps}
-                          dragHandleProps={dragHandleProps}
                           isError={hasError}
                           ref={innerRef}
-                          index={index}
-                          path={path}
-                          schema={schema}
-                          enabled={enabled}
-                          handleSelect={() => () => undefined}
-                          removeItem={handleRemoveItem}
-                          selected={false}
-                          key={index}
-                          uischema={childUiSchema}
-                          childLabelProp={undefined}
-                          translations={{}}
-                          setSelectedIndex={setSelectedIndex}
-                        />
+                        >
+                          <DraggableTagButton.Handle
+                            dragHandleProps={dragHandleProps}
+                          />
+                          <DraggableTagButton.Body
+                            onClick={() => setSelectedIndex(index)}
+                          >
+                            <DraggableTagButton.Content>
+                              <DraggableTagButton.Label
+                                index={index}
+                                path={path}
+                                schema={schema}
+                                uischema={childUiSchema}
+                                enabled={enabled}
+                                handleSelect={() => () => undefined}
+                                removeItem={handleRemoveItem}
+                                selected={false}
+                                childLabelProp={undefined}
+                                translations={{}}
+                              />
+                              {hasError && <DraggableTagButton.ErrorCaption />}
+                            </DraggableTagButton.Content>
+                          </DraggableTagButton.Body>
+                        </DraggableTagButton.Root>
                       )}
                     </Draggable>
                   )
