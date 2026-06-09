@@ -23,7 +23,8 @@ import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { MAX_PAGE_URL_LENGTH, MAX_TITLE_LENGTH } from "~/schemas/page"
 import { AppGrid } from "~/templates/AppGrid"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import { generateResourceUrl } from "../utils"
 import { useCreateCollectionPageWizard } from "./CreateCollectionPageWizardContext"

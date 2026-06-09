@@ -8,7 +8,8 @@ import { userHandlers } from "tests/msw/handlers/user"
 import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+
+import { ResourceState } from "@isomer/db"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),

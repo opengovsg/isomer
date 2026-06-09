@@ -17,7 +17,8 @@ import { updatePageMetaSchema } from "~/schemas/page"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 const SUCCESS_TOAST_ID = "save-page-settings-success"
 

@@ -20,11 +20,8 @@ import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
-import {
-  AuditLogEvent,
-  IsomerAdminRole,
-  ResourceType,
-} from "~prisma/generated/generatedEnums"
+
+import { AuditLogEvent, IsomerAdminRole, ResourceType } from "@isomer/db"
 
 import { db } from "../../database"
 import { gazetteRouter } from "../gazette.router"

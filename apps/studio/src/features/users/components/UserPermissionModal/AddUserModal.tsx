@@ -28,7 +28,8 @@ import { useZodForm } from "~/lib/form"
 import { createUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
-import { RoleType } from "~prisma/generated/generatedEnums"
+
+import { RoleType } from "@isomer/db"
 
 import { addUserModalAtom, DEFAULT_ADD_USER_MODAL_STATE } from "../../atoms"
 import { SingpassConditionalTooltip } from "../SingpassConditionalTooltip"

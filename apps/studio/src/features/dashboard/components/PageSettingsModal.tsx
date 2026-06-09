@@ -38,7 +38,8 @@ import {
   MAX_TITLE_LENGTH,
 } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import { generateResourceUrl } from "../../editing-experience/components/utils"
 

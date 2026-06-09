@@ -5,7 +5,8 @@ import { env } from "~/env.mjs"
 import { formatScheduledAtDate } from "~/lib/dates"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
 import { getStudioResourceUrl } from "~/utils/resources"
-import { RoleType } from "~prisma/generated/generatedEnums"
+
+import { RoleType } from "@isomer/db"
 
 import type {
   AccountDeactivationEmailTemplateData,

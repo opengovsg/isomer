@@ -1,5 +1,6 @@
 import { Flex } from "@chakra-ui/react"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import { DirectorySidebarContent } from "./DirectorySidebarContent"
 

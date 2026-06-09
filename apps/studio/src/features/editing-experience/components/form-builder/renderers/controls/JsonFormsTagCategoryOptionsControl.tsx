@@ -6,7 +6,7 @@ import { get } from "lodash-es"
 import { useMemo, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole } from "@isomer/db"
 
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
 import { TagDraggableButton } from "./DraggableTagButton"

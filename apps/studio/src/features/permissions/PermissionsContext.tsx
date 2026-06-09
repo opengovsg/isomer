@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react"
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
-import type { RoleType } from "~prisma/generated/generatedEnums"
+import type { RoleType } from "@isomer/db"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { AbilityProvider, Can, useAbility } from "@casl/react"
 import { buildPermissionsForResource } from "~/server/modules/permissions/permissions.util"

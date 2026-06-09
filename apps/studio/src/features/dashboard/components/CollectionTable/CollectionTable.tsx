@@ -13,7 +13,8 @@ import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import type { CollectionTableData, CollectionTableSortOptions } from "./types"
 import { TitleCell } from "../ResourceTable/TitleCell"

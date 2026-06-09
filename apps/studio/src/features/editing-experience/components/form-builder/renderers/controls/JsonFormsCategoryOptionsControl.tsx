@@ -28,7 +28,7 @@ import {
 } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole } from "@isomer/db"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { AddItemButton } from "../../components/AddItemButton"

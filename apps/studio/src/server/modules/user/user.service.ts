@@ -1,10 +1,11 @@
 import type { AdminType } from "~/schemas/user"
-import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import isEmail from "validator/lib/isEmail"
 import { isGovEmail } from "~/utils/email"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+
+import type { ResourcePermission, User } from "@isomer/db"
+import { AuditLogEvent } from "@isomer/db"
 
 import type { DB, Transaction } from "../database"
 import { logPermissionEvent, logUserEvent } from "../audit/audit.service"

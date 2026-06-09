@@ -3,7 +3,8 @@ import { schema } from "@opengovsg/isomer-components"
 import { z } from "zod"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceState, ResourceType } from "@isomer/db"
 
 import { generateBasePermalinkSchema } from "./common"
 

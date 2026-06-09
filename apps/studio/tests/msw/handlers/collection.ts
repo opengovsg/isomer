@@ -1,4 +1,4 @@
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import { ResourceState, ResourceType } from "@isomer/db"
 
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"

@@ -1,4 +1,3 @@
-import type { User } from "~prisma/generated/selectableTypes"
 import { addMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
@@ -6,8 +5,10 @@ import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
 import * as s3Lib from "~/lib/s3"
 import * as gazetteService from "~/server/modules/gazette/gazette.service"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
+
+import type { User } from "@isomer/db"
+import { ResourceType } from "@isomer/db"
 
 import { schedulePushDocumentJobHandler } from "../schedulePushDocumentJob"
 

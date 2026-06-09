@@ -12,7 +12,8 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"

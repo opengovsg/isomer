@@ -2,7 +2,8 @@ import type { DelayMode } from "msw"
 import type { getPageById } from "~/server/modules/resource/resource.service"
 import type { RouterOutput } from "~/utils/trpc"
 import { delay } from "msw"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import { trpcMsw } from "../mockTrpc"
 

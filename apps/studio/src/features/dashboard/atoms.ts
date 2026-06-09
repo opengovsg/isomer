@@ -1,5 +1,6 @@
 import { atom } from "jotai"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import type {
   DeleteResourceModalState,

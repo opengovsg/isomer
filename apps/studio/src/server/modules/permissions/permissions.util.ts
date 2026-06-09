@@ -1,6 +1,7 @@
 import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
-import { RoleType } from "~prisma/generated/generatedEnums"
+
+import { RoleType } from "@isomer/db"
 
 import type { ResourceAbility } from "./permissions.type"
 import { ALL_ACTIONS, CRUD_ACTIONS } from "./permissions.type"

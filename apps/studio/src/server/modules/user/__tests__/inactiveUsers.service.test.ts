@@ -14,7 +14,8 @@ import {
 } from "~/features/mail/service"
 import { db } from "~/server/modules/database"
 import { RoleType } from "~/server/modules/database/types"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
 

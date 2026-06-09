@@ -1,5 +1,6 @@
 import { z } from "zod"
-import { BuildStatusType } from "~prisma/generated/generatedEnums"
+
+import { BuildStatusType } from "@isomer/db"
 
 /**
  * Extract the build ID from the ARN string. When eventbridge sends the ARN,

@@ -13,7 +13,8 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import { pageSchema } from "../../schema"
 import { BaseBlock, BaseBlockDragHandle } from "../Block/BaseBlock"

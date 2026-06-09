@@ -28,7 +28,8 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { setSiteConfigByAdminSchema } from "~/schemas/site"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole, ResourceType } from "@isomer/db"
 
 const siteAdminSchema = z.object({
   siteId: z.coerce.number(),

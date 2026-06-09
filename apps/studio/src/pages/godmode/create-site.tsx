@@ -26,7 +26,8 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { createSiteSchema } from "~/schemas/site"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 const GodModeCreateSitePage: NextPageWithLayout = () => {
   const toast = useToast()

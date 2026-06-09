@@ -1,7 +1,8 @@
-import type { RoleType } from "~prisma/generated/generatedEnums"
 import { Icon, Text, VStack } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
 import { Button } from "@opengovsg/design-system-react"
+
+import type { RoleType } from "@isomer/db"
 
 import { ROLES_ICONS, ROLES_LABELS } from "./constants"
 import {

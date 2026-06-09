@@ -1,5 +1,6 @@
-import type { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { trpc } from "~/utils/trpc"
+
+import type { IsomerAdminRole } from "@isomer/db"
 
 interface UseIsUserIsomerAdminProps {
   roles: IsomerAdminRole[]
