@@ -28,7 +28,9 @@ describe("deleteFile", () => {
   it("performs a PutObjectTagging with a deletedAt tag for a non-deleted file", async () => {
     // Arrange: file has an unrelated tag but no deletedAt
     sendMock.mockResolvedValueOnce({
-      TagSet: [{ Key: "GuardDutyMalwareScanStatus", Value: "NO_THREATS_FOUND" }],
+      TagSet: [
+        { Key: "GuardDutyMalwareScanStatus", Value: "NO_THREATS_FOUND" },
+      ],
     })
 
     // Act
