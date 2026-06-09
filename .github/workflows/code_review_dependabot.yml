@@ -38,17 +38,6 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: --model claude-sonnet-4-6
           allowed_bots: dependabot[bot]
-          allowed_tools: |
-            Bash(gh pr view:*)
-            Bash(gh pr diff:*)
-            Bash(grep:*)
-            Bash(find:*)
-            Bash(cat:*)
-            Bash(git diff:*)
-            WebFetch(domain:github.com)
-            WebFetch(domain:raw.githubusercontent.com)
-            WebFetch(domain:npmjs.com)
-            WebFetch(domain:registry.npmjs.org)
           prompt: |
             Review this Dependabot dependency upgrade. Research the official changelog for all
             intermediate versions — never rely on training data for version specifics. For each
