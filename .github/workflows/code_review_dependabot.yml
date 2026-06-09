@@ -6,10 +6,11 @@ on:
       - opened # Only run for new Dependabot PRs
       - labeled # Allow manual triggering by adding the 'review-dependency-upgrade' label
 
+# https://opencode.ai/docs/github/#pull-request-example
 permissions:
   id-token: write
   contents: read
-  pull-requests: write # needed to post the review comment
+  pull-requests: read
   issues: write # needed to remove the 'review-dependency-upgrade' label after review
 
 jobs:
