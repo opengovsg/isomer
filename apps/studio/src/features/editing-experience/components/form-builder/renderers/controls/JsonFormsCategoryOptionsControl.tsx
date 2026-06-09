@@ -121,132 +121,6 @@ function CategoryOptionsExpandedEditor({
     setDeleteTarget(null)
   }
 
-  const arrayBody = (
-    <VStack spacing={0} align="start">
-      <VStack align="start" spacing="0.25rem" w="full">
-        <HStack w="full" justifyContent="space-between" align="center">
-          <Text textStyle="subhead-1" flex={1}>
-            {label}
-          </Text>
-          <AddItemButton
-            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
-            isDisabled={isAddItemDisabled}
-          >
-            Add option
-          </AddItemButton>
-        </HStack>
-        {description && (
-          <Text textStyle="body-2" textColor="base.content.default">
-            {description}
-          </Text>
-        )}
-        {duplicateOptionIndices.size > 0 && (
-          <DuplicateLabelError noun="option" />
-        )}
-      </VStack>
-      <Box w="full" mt="0.75rem">
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="blocks">
-            {({ droppableProps, innerRef, placeholder }) => (
-              <VStack
-                {...droppableProps}
-                align="baseline"
-                w="100%"
-                h="100%"
-                spacing={0}
-                ref={innerRef}
-              >
-                {data === 0 && <EmptyCategory title='Add an option for this category' />}
-
-                {[...Array(data).keys()].map((index) => {
-                  const childPath = composePaths(path, `${index}`)
-                  const isDuplicate = duplicateOptionIndices.has(index)
-                  const hasError = hasErrorAt(childPath) || isDuplicate
-
-                  return (
-                    <Draggable
-                      key={childPath}
-                      draggableId={childPath}
-                      disableInteractiveElementBlocking
-                      index={index}
-                    >
-                      {({ draggableProps, dragHandleProps, innerRef }) => (
-                        <DraggableTagButton.Root
-                          draggableProps={draggableProps}
-                          isError={hasError}
-                          ref={innerRef}
-                        >
-                          <DraggableTagButton.Handle
-                            dragHandleProps={dragHandleProps}
-                          />
-                          <DraggableTagButton.Body
-                            onClick={() => setSelectedIndex(index)}
-                          >
-                            <DraggableTagButton.Content>
-                              <DraggableTagButton.Label
-                                index={index}
-                                path={path}
-                                schema={schema}
-                                uischema={childUiSchema}
-                                enabled={enabled}
-                                handleSelect={() => () => undefined}
-                                removeItem={handleRemoveItem}
-                                selected={false}
-                                childLabelProp={undefined}
-                                translations={{}}
-                              />
-                              {hasError && (
-                                <DraggableTagButton.ErrorCaption>
-                                  {isDuplicate
-                                    ? "An option with this name already exists."
-                                    : undefined}
-                                </DraggableTagButton.ErrorCaption>
-                              )}
-                            </DraggableTagButton.Content>
-                          </DraggableTagButton.Body>
-                          <DraggableTagButton.Trailing>
-                            <Menu isLazy>
-                              <MenuButton
-                                as={IconButton}
-                                icon={
-                                  <BiDotsHorizontalRounded fontSize="1.5rem" />
-                                }
-                                {...ROW_ACTIONS_MENU_BUTTON_PROPS}
-                                isDisabled={isRemoveItemDisabled}
-                                aria-label={`Option ${index + 1} actions`}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <Portal>
-                                <MenuList>
-                                  <MenuItem
-                                    colorScheme="critical"
-                                    icon={<BiTrash fontSize="1rem" />}
-                                    isDisabled={isRemoveItemDisabled}
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      openDeleteModal(index)
-                                    }}
-                                  >
-                                    Delete option
-                                  </MenuItem>
-                                </MenuList>
-                              </Portal>
-                            </Menu>
-                          </DraggableTagButton.Trailing>
-                        </DraggableTagButton.Root>
-                      )}
-                    </Draggable>
-                  )
-                })}
-
-                {placeholder}
-              </VStack>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </Box>
-    </VStack>
-  )
 
   return (
     <NestedDrawerProvider {...props} {...arrayResult}>
@@ -264,7 +138,130 @@ function CategoryOptionsExpandedEditor({
             optional.
           </Text>
         </Infobox>
-        {arrayBody}
+        <VStack spacing={0} align="start">
+          <VStack align="start" spacing="0.25rem" w="full">
+            <HStack w="full" justifyContent="space-between" align="center">
+              <Text textStyle="subhead-1" flex={1}>
+                {label}
+              </Text>
+              <AddItemButton
+                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+                isDisabled={isAddItemDisabled}
+              >
+                Add option
+              </AddItemButton>
+            </HStack>
+            {description && (
+              <Text textStyle="body-2" textColor="base.content.default">
+                {description}
+              </Text>
+            )}
+            {duplicateOptionIndices.size > 0 && (
+              <DuplicateLabelError noun="option" />
+            )}
+          </VStack>
+          <Box w="full" mt="0.75rem">
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="blocks">
+                {({ droppableProps, innerRef, placeholder }) => (
+                  <VStack
+                    {...droppableProps}
+                    align="baseline"
+                    w="100%"
+                    h="100%"
+                    spacing={0}
+                    ref={innerRef}
+                  >
+                    {data === 0 && <EmptyCategory title='Add an option for this category' />}
+
+                    {[...Array(data).keys()].map((index) => {
+                      const childPath = composePaths(path, `${index}`)
+                      const isDuplicate = duplicateOptionIndices.has(index)
+                      const hasError = hasErrorAt(childPath) || isDuplicate
+
+                      return (
+                        <Draggable
+                          key={childPath}
+                          draggableId={childPath}
+                          disableInteractiveElementBlocking
+                          index={index}
+                        >
+                          {({ draggableProps, dragHandleProps, innerRef }) => (
+                            <DraggableTagButton.Root
+                              draggableProps={draggableProps}
+                              isError={hasError}
+                              ref={innerRef}
+                            >
+                              <DraggableTagButton.Handle
+                                dragHandleProps={dragHandleProps}
+                              />
+                              <DraggableTagButton.Body
+                                onClick={() => setSelectedIndex(index)}
+                              >
+                                <DraggableTagButton.Content>
+                                  <DraggableTagButton.Label
+                                    index={index}
+                                    path={path}
+                                    schema={schema}
+                                    uischema={childUiSchema}
+                                    enabled={enabled}
+                                    handleSelect={() => () => undefined}
+                                    removeItem={handleRemoveItem}
+                                    selected={false}
+                                    childLabelProp={undefined}
+                                    translations={{}}
+                                  />
+                                  {hasError && (
+                                    <DraggableTagButton.ErrorCaption>
+                                      {isDuplicate
+                                        ? "An option with this name already exists."
+                                        : undefined}
+                                    </DraggableTagButton.ErrorCaption>
+                                  )}
+                                </DraggableTagButton.Content>
+                              </DraggableTagButton.Body>
+                              <DraggableTagButton.Trailing>
+                                <Menu isLazy>
+                                  <MenuButton
+                                    as={IconButton}
+                                    icon={
+                                      <BiDotsHorizontalRounded fontSize="1.5rem" />
+                                    }
+                                    {...ROW_ACTIONS_MENU_BUTTON_PROPS}
+                                    isDisabled={isRemoveItemDisabled}
+                                    aria-label={`Option ${index + 1} actions`}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  <Portal>
+                                    <MenuList>
+                                      <MenuItem
+                                        colorScheme="critical"
+                                        icon={<BiTrash fontSize="1rem" />}
+                                        isDisabled={isRemoveItemDisabled}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          openDeleteModal(index)
+                                        }}
+                                      >
+                                        Delete option
+                                      </MenuItem>
+                                    </MenuList>
+                                  </Portal>
+                                </Menu>
+                              </DraggableTagButton.Trailing>
+                            </DraggableTagButton.Root>
+                          )}
+                        </Draggable>
+                      )
+                    })}
+
+                    {placeholder}
+                  </VStack>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </Box>
+        </VStack>
       </VStack>
       {deleteTarget && (
         <DeleteConfirmModal
