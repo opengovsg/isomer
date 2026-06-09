@@ -19,7 +19,8 @@ import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteMinimalLayout } from "~/templates/layouts/SiteMinimalLayout"
-import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole, ResourceType } from "@isomer/db"
 
 export const gazettePageSchema = z.object({
   siteId: z.coerce.number(),

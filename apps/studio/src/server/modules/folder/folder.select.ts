@@ -1,5 +1,6 @@
 import type { SelectExpression } from "kysely"
-import type { DB } from "~prisma/generated/generatedTypes"
+
+import type { DB } from "@isomer/db"
 
 export const defaultFolderSelect = [
   "id",

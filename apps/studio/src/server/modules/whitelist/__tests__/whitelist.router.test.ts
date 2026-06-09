@@ -15,7 +15,8 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { createCallerFactory } from "~/server/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 import type { User } from "../../database"
 import { db } from "../../database"

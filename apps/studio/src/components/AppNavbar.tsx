@@ -5,7 +5,8 @@ import NextLink from "next/link"
 import { BiLinkExternal } from "react-icons/bi"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 import { AvatarMenu } from "./AvatarMenu"
 

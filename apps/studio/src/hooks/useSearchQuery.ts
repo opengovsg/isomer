@@ -1,8 +1,9 @@
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
-import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { useDebounce } from "@uidotdev/usehooks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { trpc } from "~/utils/trpc"
+
+import type { ResourceType } from "@isomer/db"
 
 interface UseSearchQueryProps {
   siteId: string

@@ -23,11 +23,8 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { createCallerFactory } from "~/server/trpc"
-import {
-  AuditLogEvent,
-  ResourceState,
-  ResourceType,
-} from "~prisma/generated/generatedEnums"
+
+import { AuditLogEvent, ResourceState, ResourceType } from "@isomer/db"
 
 import type { User } from "../../database"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"

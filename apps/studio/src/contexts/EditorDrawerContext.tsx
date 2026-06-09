@@ -1,10 +1,11 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react"
 import type { ModifiedAsset } from "~/types/assets"
-import type { ResourceType } from "~prisma/generated/generatedEnums"
 import { createContext, useCallback, useContext, useState } from "react"
 import { flushSync } from "react-dom"
 import { type DrawerState } from "~/types/editorDrawer"
+
+import type { ResourceType } from "@isomer/db"
 
 interface DrawerContextType extends Pick<
   EditorDrawerProviderProps,

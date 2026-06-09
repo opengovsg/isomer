@@ -1,7 +1,8 @@
 import type { SelectExpression } from "kysely"
 import { TRPCError } from "@trpc/server"
-import { ResourceState } from "~prisma/generated/generatedEnums"
-import { type DB } from "~prisma/generated/generatedTypes"
+
+import { ResourceState } from "@isomer/db"
+import { type DB } from "@isomer/db"
 
 import type { SafeKysely, Transaction } from "../database"
 import { db } from "../database"

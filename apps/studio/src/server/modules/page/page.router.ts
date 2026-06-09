@@ -39,11 +39,8 @@ import { scheduledPublishServerSchema } from "~/schemas/schedule"
 import { protectedProcedure, router } from "~/server/trpc"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import {
-  AuditLogEvent,
-  ResourceState,
-  ResourceType,
-} from "~prisma/generated/generatedEnums"
+
+import { AuditLogEvent, ResourceState, ResourceType } from "@isomer/db"
 
 import { logResourceEvent } from "../audit/audit.service"
 import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"

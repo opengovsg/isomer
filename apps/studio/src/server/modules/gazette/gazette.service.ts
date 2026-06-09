@@ -11,8 +11,9 @@ import {
   generateSignedGetUrl,
   generateSignedPutUrl,
 } from "~/lib/s3"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
-import { type DB } from "~prisma/generated/generatedTypes"
+
+import { IsomerAdminRole } from "@isomer/db"
+import { type DB } from "@isomer/db"
 
 import {
   generateTagsQueryString,

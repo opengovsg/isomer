@@ -18,11 +18,8 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
-import {
-  AuditLogEvent,
-  IsomerAdminRole,
-  ResourceType,
-} from "~prisma/generated/generatedEnums"
+
+import { AuditLogEvent, IsomerAdminRole, ResourceType } from "@isomer/db"
 
 import { db } from "../../database"
 import { gazetteRouter } from "../gazette.router"

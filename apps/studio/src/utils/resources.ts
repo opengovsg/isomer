@@ -10,7 +10,8 @@ import {
   BiSort,
 } from "react-icons/bi"
 import { env } from "~/env.mjs"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 export const isAllowedToHaveChildren = (
   resourceType: ResourceType,

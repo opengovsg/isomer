@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 const siteSchema = z.object({
   folderId: z.string().optional(),

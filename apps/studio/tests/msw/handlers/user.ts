@@ -1,4 +1,4 @@
-import { RoleType } from "~prisma/generated/generatedEnums"
+import { RoleType } from "@isomer/db"
 
 import { trpcMsw } from "../mockTrpc"
 

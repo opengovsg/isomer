@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server"
 import { publicProcedure, router } from "~/server/trpc"
 import getIP from "~/utils/getClientIp"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+
+import { AuditLogEvent } from "@isomer/db"
 
 import { logAuthEvent } from "../audit/audit.service"
 import { db } from "../database"

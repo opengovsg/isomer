@@ -12,7 +12,8 @@ import {
 import { Badge } from "@opengovsg/design-system-react"
 import { forwardRef, useMemo } from "react"
 import { getIcon } from "~/utils/resources"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import type { CollectionItemType } from "./constants"
 import { COLLECTION_ITEM_TYPES } from "./constants"

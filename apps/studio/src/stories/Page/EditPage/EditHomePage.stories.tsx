@@ -9,7 +9,8 @@ import {
   createAntiScamBannerEnabledGbParameters,
   createBannerGbParameters,
 } from "~/stories/utils/growthbook"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+
+import { ResourceState } from "@isomer/db"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),

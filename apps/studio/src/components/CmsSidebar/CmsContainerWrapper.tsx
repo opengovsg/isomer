@@ -7,7 +7,8 @@ import { BiCog, BiFolder, BiGroup, BiHelpCircle, BiStar } from "react-icons/bi"
 import { CmsContainer, CmsSidebar } from "~/components/CmsSidebar"
 import { SearchableHeader } from "~/components/SearchableHeader"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 import { OpenSidebarIcon } from "../Svg/OpenSidebarIcon"
 

@@ -9,7 +9,8 @@ import {
 } from "tests/integration/helpers/seed"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import { db } from "~/server/modules/database"
-import { RoleType } from "~prisma/generated/generatedEnums"
+
+import { RoleType } from "@isomer/db"
 
 import { createUserWithPermission, isUserDeleted } from "../user.service"
 

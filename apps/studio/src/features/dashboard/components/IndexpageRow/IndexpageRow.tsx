@@ -12,7 +12,8 @@ import { useEffect } from "react"
 import { BiChevronRight, BiSolidCircle } from "react-icons/bi"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { trpc } from "~/utils/trpc"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+
+import { ResourceState } from "@isomer/db"
 
 import type { IndexpageRowProps } from "./types"
 import { getIndexPageIcon, getIndexPageSubtitle } from "./utils"

@@ -1,6 +1,7 @@
 import { createEmailSchema } from "@opengovsg/starter-kitty-validators/email"
 import { z } from "zod"
-import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole, RoleType } from "@isomer/db"
 
 import { offsetPaginationSchema } from "./pagination"
 
