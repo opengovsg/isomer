@@ -37,9 +37,9 @@ RUN apk add --no-cache libc6-compat
 
 # Set working directory
 WORKDIR /app
-# pnpm global bin is under PNPM_HOME (not on PATH by default); npm's -g used /usr/local/bin.
+# pnpm global bin is under PNPM_HOME/bin (not on PATH by default); npm's -g used /usr/local/bin.
 ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+ENV PATH="$PNPM_HOME/bin:$PATH"
 RUN corepack enable && corepack install -g pnpm@11.5.1
 # fixed version to prevent supply chain attacks (to ensure it's same version as pnpm-workspace.yaml)
 RUN pnpm add -g turbo@2.9.6
