@@ -66,7 +66,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                 {search.type === "searchSG" && (
                   <NavbarSearchSGInputBox
                     clientId={search.clientId}
-                    isOpen={true}
+                    isOpen
                   />
                 )}
               </div>
