@@ -6,6 +6,8 @@ import { createRedirectSchema } from "~/schemas/redirect"
 // drift from what `redirect.list` actually responds with
 export type RedirectRow = RouterOutput["redirect"]["list"][number]
 
+export type { RedirectSortField } from "~/schemas/redirect"
+
 // The add form collects everything except siteId, which comes from the route.
 // Reusing the server schema keeps client and server validation identical.
 export const addRedirectSchema = createRedirectSchema.omit({ siteId: true })

@@ -18,7 +18,15 @@ const DEFAULT_REDIRECT_ITEMS = [
 
 export const redirectHandlers = {
   list: {
-    default: () => trpcMsw.redirect.list.query(() => DEFAULT_REDIRECT_ITEMS),
+    default: () =>
+      trpcMsw.redirect.list.query(({ input: { limit = 25, offset = 0 } }) =>
+        DEFAULT_REDIRECT_ITEMS.slice(offset, offset + limit),
+      ),
     empty: () => trpcMsw.redirect.list.query(() => []),
+  },
+  count: {
+    default: () =>
+      trpcMsw.redirect.count.query(() => DEFAULT_REDIRECT_ITEMS.length),
+    empty: () => trpcMsw.redirect.count.query(() => 0),
   },
 }
