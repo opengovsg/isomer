@@ -58,7 +58,6 @@ const TagCategorySchema = Type.Composite([
     options: Type.Array(
       Type.Object({
         label: Type.String({
-          maxLength: 70,
           title: "Option name",
           pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
           errorMessage: {
