@@ -8,6 +8,7 @@
   },
   "files": [
     "dist/esm",
+    "src/presets",
     "!**/*.spec.*",
     "!**/*.stories.*",
     "!**/*.json",
@@ -24,7 +25,9 @@
     "./templates/next": {
       "import": "./dist/esm/templates/next/index.js",
       "default": "./dist/esm/templates/next/index.js"
-    }
+    },
+    "./presets/next/preset.css": "./src/presets/next/preset.css",
+    "./presets/next/inter-fonts.css": "./src/presets/next/inter-fonts.css"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/isomerpages"

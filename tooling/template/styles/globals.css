@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "../../../packages/components/src/presets/next/preset.css";
+@import "@opengovsg/isomer-components/presets/next/preset.css";
 
 @source "../app/**/*.{js,ts,jsx,tsx,mdx}";
 @source "../node_modules/@opengovsg/isomer-components/dist/**/*.{js,mjs,cjs}";
