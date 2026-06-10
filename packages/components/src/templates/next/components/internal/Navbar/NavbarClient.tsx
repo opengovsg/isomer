@@ -46,7 +46,7 @@ const createNavbarStyles = tv({
     navbarItems:
       "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-4 pl-6 pr-3 md:px-10",
     navItemContainer: "hidden flex-1 items-center gap-x-4 pl-2 lg:flex",
-    callToAction: "align-content mx-5 hidden h-fit lg:flex",
+    callToAction: "align-content h-fit",
     buttonsSection: "flex flex-row gap-1",
     searchIcon: "flex h-[68px] items-center",
     hamburgerIcon: "flex h-[68px] items-center lg:hidden",
@@ -59,6 +59,17 @@ const createNavbarStyles = tv({
       },
       false: {
         searchBar: "hidden",
+      },
+    },
+    isPinned: {
+      true: {
+        navbarContainer: "py-1 lg:py-0",
+        callToAction: "my-2 flex",
+        searchIcon: "hidden lg:flex",
+        primaryNavigationSection: "gap-3",
+      },
+      false: {
+        callToAction: "mx-5 hidden lg:flex",
       },
     },
   },
@@ -74,6 +85,8 @@ export const NavbarClient = ({
   callToAction,
   utility,
 }: NavbarClientProps) => {
+  const isPinned = !!callToAction?.isPinnedOnMobile
+
   const [openNavItemIdx, setOpenNavItemIdx] = useState(-1)
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -142,7 +155,10 @@ export const NavbarClient = ({
   return (
     <div className={navbarStyles.navbar()}>
       {/* Site header */}
-      <div className={navbarStyles.navbarContainer()} ref={siteHeaderRef}>
+      <div
+        className={navbarStyles.navbarContainer({ isPinned })}
+        ref={siteHeaderRef}
+      >
         <div className={navbarStyles.navbarItems()}>
           {/* Logo */}
           <Link className={navbarStyles.logo()} href="/">
@@ -174,7 +190,9 @@ export const NavbarClient = ({
               </div>
             )}
 
-            <div className={navbarStyles.primaryNavigationSection()}>
+            <div
+              className={navbarStyles.primaryNavigationSection({ isPinned })}
+            >
               {/* Navigation items (for desktop) */}
               <ul
                 className={navbarStyles.navItemContainer()}
@@ -203,17 +221,23 @@ export const NavbarClient = ({
                   href={callToAction.url}
                   isExternal={isExternalUrl(callToAction.url)}
                   size="sm"
-                  className={navbarStyles.callToAction()}
+                  className={navbarStyles.callToAction({ isPinned })}
                   isWithFocusVisibleHighlight
                 >
-                  {callToAction.label}
+                  {isPinned ? (
+                    <span className="max-w-[10rem] truncate max-xs:line-clamp-2 max-xs:whitespace-normal">
+                      {callToAction.label}
+                    </span>
+                  ) : (
+                    callToAction.label
+                  )}
                 </LinkButton>
               )}
 
               <div className={navbarStyles.buttonsSection()}>
                 {/* Search icon */}
                 {search && !isHamburgerOpen && layout !== "search" && (
-                  <div className={navbarStyles.searchIcon()}>
+                  <div className={navbarStyles.searchIcon({ isPinned })}>
                     {isSearchOpen ? (
                       <IconButton
                         onPress={() => {
@@ -284,6 +308,8 @@ export const NavbarClient = ({
           callToAction={callToAction}
           utility={utility}
           onCloseMenu={onCloseMenu}
+          isPinned={isPinned}
+          search={isPinned && layout !== "search" ? search : undefined}
         />
       )}
     </div>

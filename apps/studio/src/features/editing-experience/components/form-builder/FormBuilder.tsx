@@ -61,6 +61,8 @@ import {
   jsonFormsObjectControlTester,
   JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,
+  JsonFormsBoxedGroupControl,
+  jsonFormsBoxedGroupControlTester,
   JsonFormsPrefillLinkControl,
   jsonFormsPrefillLinkControlTester,
   JsonFormsProseControl,
@@ -203,6 +205,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsPrefillLinkControlTester,
     renderer: JsonFormsPrefillLinkControl,
+  },
+  {
+    tester: jsonFormsBoxedGroupControlTester,
+    renderer: JsonFormsBoxedGroupControl,
   },
 ]
 

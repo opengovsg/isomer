@@ -145,3 +145,8 @@ export {
   default as JsonFormsPrefillLinkControl,
   jsonFormsPrefillLinkControlTester,
 } from "./JsonFormsPrefillLinkControl"
+
+export {
+  default as JsonFormsBoxedGroupControl,
+  jsonFormsBoxedGroupControlTester,
+} from "./JsonFormsBoxedGroupControl"
