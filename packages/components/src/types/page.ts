@@ -103,7 +103,13 @@ const CategoriesSchema = Type.Object({
   categoryOptions: Type.Optional(
     Type.Array(
       Type.Object({
-        label: Type.String({ title: "Option name" }),
+        label: Type.String({
+          title: "Option name",
+          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or have leading/trailing spaces",
+          },
+        }),
         id: generateUuidSchema({
           title: "Category id",
           description:

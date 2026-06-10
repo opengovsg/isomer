@@ -1,5 +1,14 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import { Box, Flex, HStack, Icon, Stack, Text, VStack } from "@chakra-ui/react"
+import {
+  Box,
+  chakra,
+  Flex,
+  HStack,
+  Icon,
+  Stack,
+  Text,
+  VStack,
+} from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
@@ -102,6 +111,13 @@ function CategoryOptionsExpandedEditor({
     },
   })
 
+  const isBlankLabelAt = (index: number) => {
+    const item = get(core?.data, composePaths(path, `${index}`)) as
+      | { label?: string }
+      | undefined
+    return !item?.label?.trim()
+  }
+
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
       <VStack align="stretch" spacing={0} w="full">
@@ -159,7 +175,9 @@ function CategoryOptionsExpandedEditor({
                     {[...Array(data).keys()].map((index) => {
                       const childPath = composePaths(path, `${index}`)
                       const isDuplicate = duplicateOptionIndices.has(index)
-                      const hasError = hasErrorAt(childPath) || isDuplicate
+                      const isBlank = isBlankLabelAt(index)
+                      const hasError =
+                        hasErrorAt(childPath) || isDuplicate || isBlank
 
                       return (
                         <Draggable
@@ -193,7 +211,9 @@ function CategoryOptionsExpandedEditor({
                                     <DraggableTagButton.ErrorCaption>
                                       {isDuplicate
                                         ? "An option with this name already exists."
-                                        : undefined}
+                                        : isBlank
+                                          ? "Option name cannot be empty."
+                                          : undefined}
                                     </DraggableTagButton.ErrorCaption>
                                   )}
                                 </DraggableTagButton.Content>
@@ -313,6 +333,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
         {duplicateOptionIndices.size > 0 && (
           <DuplicateLabelError noun="option" />
         )}
+        {/* Offsets the bottom margin the JsonForms control wrapper injects above this row. */}
         <Box w="full" mt="-1.25rem">
           <Box my="0.25rem" w="full">
             <HStack
@@ -373,8 +394,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                     aria-hidden
                   />
                 </Flex>
-                <Box
-                  as="button"
+                <chakra.button
                   type="button"
                   flex={1}
                   minW={0}
@@ -447,7 +467,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                       )}
                     </Stack>
                   </HStack>
-                </Box>
+                </chakra.button>
                 <Flex
                   alignItems="center"
                   flexShrink={0}

@@ -4,9 +4,9 @@ import { useFeatureValue } from "@growthbook/growthbook-react"
 import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
+import { useRouter } from "next/router"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import { CATEGORY_ID_DROPDOWN_FEATURE_KEY } from "~/lib/growthbook"
 
 export const jsonFormsCategoryIdControlTester: RankedTester = rankWith(
@@ -52,7 +52,11 @@ export function JsonFormsCategoryIdControl({
   label,
   ...props
 }: ControlProps) {
-  const { siteId } = useQueryParse(collectionItemSchema)
+  const { query } = useRouter()
+  // Safe-parse rather than throw: this control may match a `category-id` field
+  // outside the collection-item route (e.g. Storybook without a router), where
+  // `siteId` is absent. In that case we simply don't render the dropdown.
+  const parsedQuery = collectionItemSchema.safeParse(query)
 
   // we enable this after we migrated category to categoryId
   // currently feature flagged it for testing on staging
@@ -61,7 +65,9 @@ export function JsonFormsCategoryIdControl({
     { enabledSites: [] },
   )
 
-  return enabledSites.includes(siteId.toString()) ? (
+  if (!parsedQuery.success) return null
+
+  return enabledSites.includes(parsedQuery.data.siteId.toString()) ? (
     <FormControl isRequired={required} gap="0.5rem">
       <FormLabel description={description}>{label}</FormLabel>
       <JsonFormsCategoryIdSelect {...props} label={label} />
