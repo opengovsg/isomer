@@ -14,11 +14,11 @@ import {
   FormErrorMessage,
   FormLabel,
 } from "@opengovsg/design-system-react"
-import { useState } from "react"
 import { BiPlus, BiRightArrowAlt } from "react-icons/bi"
+import { useZodForm } from "~/lib/form"
 
 import { useCreateRedirect } from "../api"
-import { addRedirectSchema } from "../types"
+import { addRedirectSchema, type AddRedirectInput } from "../types"
 
 interface AddRedirectCardProps {
   siteId: number
@@ -27,41 +27,25 @@ interface AddRedirectCardProps {
 export const AddRedirectCard = ({
   siteId,
 }: AddRedirectCardProps): JSX.Element => {
-  const [source, setSource] = useState("")
-  const [destination, setDestination] = useState("")
-  const [sourceError, setSourceError] = useState("")
-  const [destinationError, setDestinationError] = useState("")
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useZodForm<typeof addRedirectSchema>({
+    schema: addRedirectSchema,
+    defaultValues: { source: "", destination: "" },
+  })
   const { mutate: createRedirect, isPending } = useCreateRedirect()
 
-  const validate = () => {
-    const result = addRedirectSchema.safeParse({ source, destination })
-    if (result.success) {
-      setSourceError("")
-      setDestinationError("")
-      return true
-    }
-    const fieldErrors = result.error.flatten().fieldErrors
-    setSourceError(fieldErrors.source?.[0] ?? "")
-    setDestinationError(fieldErrors.destination?.[0] ?? "")
-    return false
-  }
+  const [source, destination] = watch(["source", "destination"])
+  const isAddDisabled = !source?.trim() || !destination?.trim()
 
-  const isAddDisabled = !source.trim() || !destination.trim()
-
-  const handleAdd = () => {
-    if (isAddDisabled) return
-    if (!validate()) return
+  const onSubmit = ({ source, destination }: AddRedirectInput) => {
     const normalisedSource = `/${source.replace(/^\/+/, "")}`
     createRedirect({ siteId, source: normalisedSource, destination })
-    setSource("")
-    setDestination("")
-    setSourceError("")
-    setDestinationError("")
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    handleAdd()
+    reset()
   }
 
   return (
@@ -82,20 +66,15 @@ export const AddRedirectCard = ({
         as="form"
         spacing="0.75rem"
         align="flex-start"
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
       >
-        <FormControl flex={1} isInvalid={!!sourceError} isRequired>
+        <FormControl flex={1} isInvalid={!!errors.source} isRequired>
           <FormLabel>When someone visits</FormLabel>
           <InputGroup>
             <InputLeftAddon>/</InputLeftAddon>
-            <Input
-              placeholder="redirect-from"
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              onBlur={validate}
-            />
+            <Input placeholder="redirect-from" {...register("source")} />
           </InputGroup>
-          <FormErrorMessage>{sourceError}</FormErrorMessage>
+          <FormErrorMessage>{errors.source?.message}</FormErrorMessage>
         </FormControl>
 
         <Box flexShrink={0}>
@@ -111,15 +90,10 @@ export const AddRedirectCard = ({
           </Center>
         </Box>
 
-        <FormControl flex={1} isInvalid={!!destinationError} isRequired>
+        <FormControl flex={1} isInvalid={!!errors.destination} isRequired>
           <FormLabel>Redirect them to</FormLabel>
-          <Input
-            placeholder="/redirect-to"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            onBlur={validate}
-          />
-          <FormErrorMessage>{destinationError}</FormErrorMessage>
+          <Input placeholder="/redirect-to" {...register("destination")} />
+          <FormErrorMessage>{errors.destination?.message}</FormErrorMessage>
         </FormControl>
 
         <Box flexShrink={0}>
