@@ -1,4 +1,4 @@
-import type { User } from "@prisma/client"
+import type { User } from "~prisma/generated/prisma/client"
 import { TRPCError } from "@trpc/server"
 import { pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
@@ -38,7 +38,7 @@ describe("me.router", async () => {
       const result = unauthedCaller.get()
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })

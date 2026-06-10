@@ -1,9 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type {
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import type { OmitFromUnion } from "~/types/helpers"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
@@ -73,7 +69,7 @@ export const NavbarAddonsSchema = Type.Object({
       {
         label: Type.String({
           title: "Button text",
-          maxLength: 50,
+          maxLength: 25,
         }),
         url: Type.String({
           title: "Button destination",
@@ -81,11 +77,20 @@ export const NavbarAddonsSchema = Type.Object({
           format: "link",
           pattern: LINK_HREF_PATTERN,
         }),
+        isPinnedOnMobile: Type.Optional(
+          Type.Boolean({
+            title: "Pin Call-to-Action on mobile",
+            description:
+              "Button will appear next to your site logo. Search will move into the menu.",
+            default: false,
+          }),
+        ),
       },
       {
         title: "Primary Call-to-Action",
         description:
           "You can highlight a key Call-to-Action using a prominent button.",
+        format: "boxedGroup",
       },
     ),
   ),
@@ -120,6 +125,7 @@ export const NavbarAddonsSchema = Type.Object({
         title: "Utility links",
         description:
           "Make frequent actions (like login) easily accessible using utility links.",
+        format: "boxedGroup",
       },
     ),
   ),
@@ -139,7 +145,6 @@ export type NavbarSchemaType = Static<typeof NavbarSchema>
 type BaseNavbarProps = NavbarSchemaType & {
   layout: IsomerPageLayoutType
   search?: LocalSearchProps | NavbarSearchSGInputBoxProps
-  LinkComponent?: LinkComponentType
 }
 
 export type NavbarProps = BaseNavbarProps & {

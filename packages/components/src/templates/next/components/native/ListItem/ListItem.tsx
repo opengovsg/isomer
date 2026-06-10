@@ -4,31 +4,18 @@ import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
 
-export const ListItem = ({
-  content,
-  level,
-  LinkComponent,
-  site,
-}: ListItemProps) => {
+export const ListItem = ({ content, level, site }: ListItemProps) => {
   return (
     <li className="my-[15px] pl-2 sm:my-5 [&_>_p]:inline">
       {content.map((item, index) => {
         if (item.type === "paragraph") {
-          return (
-            <Paragraph
-              key={index}
-              {...item}
-              LinkComponent={LinkComponent}
-              site={site}
-            />
-          )
+          return <Paragraph key={index} {...item} site={site} />
         } else if (item.type === "orderedList") {
           return (
             <OrderedList
               key={index}
               {...item}
               level={!!level ? level + 1 : 1}
-              LinkComponent={LinkComponent}
               site={site}
             />
           )
@@ -38,7 +25,6 @@ export const ListItem = ({
               key={index}
               {...item}
               level={!!level ? level + 1 : 1}
-              LinkComponent={LinkComponent}
               site={site}
             />
           )

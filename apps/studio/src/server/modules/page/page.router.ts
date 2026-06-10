@@ -762,7 +762,10 @@ export const pageRouter = router({
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)
     .mutation(
-      async ({ ctx, input: { pageId, siteId, title, ...settings } }) => {
+      async ({
+        ctx,
+        input: { pageId, siteId, title, type: _pageType, ...settings },
+      }) => {
         await bulkValidateUserPermissionsForResources({
           siteId,
           action: "update",
@@ -804,6 +807,15 @@ export const pageRouter = router({
               code: "NOT_FOUND",
               message:
                 "Unable to load content for the requested page, please contact Isomer Support",
+            })
+          }
+
+          // The search page (permalink /search, no parent) is a default page
+          // whose settings cannot be edited.
+          if (resource.permalink === "search" && resource.parentId === null) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "The search page settings cannot be edited",
             })
           }
 

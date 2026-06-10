@@ -17,30 +17,26 @@ interface CollectionResultProps extends Pick<
   shouldShowDate?: boolean
   variant?: CollectionPageSchemaType["page"]["variant"]
   siteAssetsBaseUrl?: string
-  LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }
 
-const collection = tv(
-  {
-    slots: {
-      collectionResults: "flex w-full flex-col gap-0",
-    },
-    variants: {
-      variant: {
-        collection: {
-          collectionResults: "flex w-full flex-col gap-0",
-        },
-        blog: {
-          collectionResults:
-            // NOTE: we remove the gap so that the blog cards can
-            // render their own border between each item
-            "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-x-10 md:gap-y-5",
-        },
+const collection = tv({
+  slots: {
+    collectionResults: "flex w-full flex-col gap-0",
+  },
+  variants: {
+    variant: {
+      collection: {
+        collectionResults: "flex w-full flex-col gap-0",
+      },
+      blog: {
+        collectionResults:
+          // NOTE: we remove the gap so that the blog cards can
+          // render their own border between each item
+          "grid grid-cols-1 sm:gap-0 md:grid-cols-2 md:gap-x-10 md:gap-y-5",
       },
     },
   },
-  { responsiveVariants: ["md", "sm", "lg"] },
-)
+})
 
 export const CollectionResults = ({
   paginatedItems,
@@ -51,7 +47,6 @@ export const CollectionResults = ({
   totalCount,
   shouldShowDate = true,
   siteAssetsBaseUrl,
-  LinkComponent,
   variant = "collection",
 }: CollectionResultProps) => {
   const { collectionResults } = collection({ variant })
@@ -91,7 +86,6 @@ export const CollectionResults = ({
                 {...item}
                 shouldShowDate={shouldShowDate}
                 siteAssetsBaseUrl={siteAssetsBaseUrl}
-                LinkComponent={LinkComponent}
               />
             ) : (
               <BlogCard
@@ -99,7 +93,6 @@ export const CollectionResults = ({
                 {...item}
                 shouldShowDate={shouldShowDate}
                 siteAssetsBaseUrl={siteAssetsBaseUrl}
-                LinkComponent={LinkComponent}
               />
             ),
           )}

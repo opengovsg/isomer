@@ -1,4 +1,4 @@
-import type { CodeBuildJobs } from "@prisma/client"
+import type { CodeBuildJobs } from "~prisma/generated/prisma/client"
 import type { UnwrapTagged } from "type-fest"
 import { nanoid } from "nanoid"
 import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
@@ -93,13 +93,14 @@ export const setupSite = async (siteId?: number, fetch?: boolean) => {
       .insertInto("Site")
       .values({
         name,
-        // @ts-expect-error not using the specific config for tests, no need to populate
-        config: {
+        config: jsonb({
           theme: "isomer-next",
           logoUrl: "",
           siteName: name,
           isGovernment: true,
-        },
+          url: "",
+        }),
+        // @ts-expect-error id is GeneratedAlways but we override it for tests
         id: siteId,
         codeBuildId: null,
         theme: null,

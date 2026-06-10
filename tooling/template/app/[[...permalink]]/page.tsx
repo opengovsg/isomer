@@ -10,7 +10,6 @@ import {
   RenderEngine,
   shouldBlockIndexing,
 } from "@opengovsg/isomer-components"
-import Link from "next/link"
 
 export const dynamic = "force-static"
 
@@ -140,7 +139,6 @@ const Page = async (props: DynamicPageProps) => {
           process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
         ),
       }}
-      LinkComponent={Link}
     />
   )
 }

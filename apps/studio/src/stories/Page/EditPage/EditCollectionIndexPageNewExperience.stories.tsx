@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { expect, userEvent, within } from "storybook/test"
-import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -30,7 +29,6 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
   pageHandlers.getFullPermalink.collection(),
-  collectionHandlers.countTagOptionsUsage.default(),
 ]
 
 const meta: Meta<typeof EditPage> = {
@@ -97,25 +95,6 @@ async function playFillFilterNameAndAddThreeOptions(
   await canvas.findByRole("button", { name: /Item 1/i })
   await canvas.findByRole("button", { name: /Item 2/i })
   await canvas.findByRole("button", { name: /Item 3/i })
-}
-
-/**
- * Opens the first option row so the hidden UUID control runs, sets a label, then
- * returns to the options list. Required before "Delete option" (usage modal needs `tagOptionId`).
- */
-async function playOpenFirstOptionFillNameAndReturnToOptionsList(
-  canvasElement: HTMLElement,
-) {
-  const canvas = within(canvasElement)
-  await userEvent.click(await canvas.findByRole("button", { name: /Item 1/i }))
-  await canvas.findByText(/Edit Options/i)
-  const optionNameInput = await canvas.findByPlaceholderText(/Option name/i)
-  await userEvent.clear(optionNameInput)
-  await userEvent.type(optionNameInput, "Option A")
-  await userEvent.click(
-    await canvas.findByRole("button", { name: /Return to Options/i }),
-  )
-  await canvas.findByText(/Edit Filters/i)
 }
 
 async function clickOptionActionsMenu(
@@ -189,30 +168,12 @@ export const FiltersAddThreeOptions: Story = {
   },
 }
 
-export const FiltersOptionNameCharacterCount: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
-  play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenFirstFilterEditor(canvasElement)
-    await playFillFilterNameAndAddThreeOptions(canvasElement)
-    const canvas = within(canvasElement)
-    await userEvent.click(
-      await canvas.findByRole("button", { name: /Item 1/i }),
-    )
-    const optionNameInput = await canvas.findByPlaceholderText(/Option name/i)
-    await userEvent.clear(optionNameInput)
-    await userEvent.type(optionNameInput, "hello")
-    await canvas.findByText(/65 characters left/i)
-  },
-}
-
 export const FiltersOpenOptionRowMenu: Story = {
   parameters: newCollectionFiltersIsomerAdminParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
     await playFillFilterNameAndAddThreeOptions(canvasElement)
-    await playOpenFirstOptionFillNameAndReturnToOptionsList(canvasElement)
     await clickOptionActionsMenu(canvasElement, 1)
     const portals = withinPortals(canvasElement)
     await expect(await portals.findByText(/^Delete option$/i)).toBeVisible()
@@ -225,14 +186,12 @@ export const FiltersDeleteOptionModalDisabledCta: Story = {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
     await playFillFilterNameAndAddThreeOptions(canvasElement)
-    await playOpenFirstOptionFillNameAndReturnToOptionsList(canvasElement)
     await clickOptionActionsMenu(canvasElement, 1)
     const portals = withinPortals(canvasElement)
     await userEvent.click(await portals.findByText(/^Delete option$/i), {
       pointerEventsCheck: 0,
     })
-    await portals.findByText(/Delete option "Option A"\?/i)
-    await portals.findByText(/being used in 3 item\(s\)/i)
+    await portals.findByText(/Delete option\?/i)
     await expect(
       await portals.findByRole("button", { name: /^Delete option$/i }),
     ).toBeDisabled()
@@ -240,7 +199,7 @@ export const FiltersDeleteOptionModalDisabledCta: Story = {
 }
 
 export const FiltersDeleteOptionModalEnabledCta: Story = {
-  parameters: FiltersDeleteOptionModalDisabledCta.parameters,
+  parameters: newCollectionFiltersIsomerAdminParameters,
   play: async (context) => {
     await FiltersDeleteOptionModalDisabledCta.play?.(context)
     const portals = withinPortals(context.canvasElement)
@@ -249,9 +208,8 @@ export const FiltersDeleteOptionModalEnabledCta: Story = {
         name: /Yes, delete this option permanently/i,
       }),
     )
-    const optionDialog = portals.getByRole("dialog")
     await expect(
-      within(optionDialog).getByRole("button", { name: /^Delete option$/i }),
+      await portals.findByRole("button", { name: /^Delete option$/i }),
     ).not.toBeDisabled()
   },
 }
@@ -309,7 +267,6 @@ export const FiltersDeleteFilterModalDisabledCta: Story = {
       await portals.findByRole("menuitem", { name: /Delete filter/i }),
     )
     await portals.findByText(/Delete filter "Test filter"\?/i)
-    await portals.findByText(/being used on 3 item\(s\)/i)
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).toBeDisabled()
@@ -317,7 +274,7 @@ export const FiltersDeleteFilterModalDisabledCta: Story = {
 }
 
 export const FiltersDeleteFilterModalEnabledCta: Story = {
-  parameters: FiltersDeleteFilterModalDisabledCta.parameters,
+  parameters: newCollectionFiltersIsomerAdminParameters,
   play: async (context) => {
     await FiltersDeleteFilterModalDisabledCta.play?.(context)
     const portals = withinPortals(context.canvasElement)
@@ -326,9 +283,8 @@ export const FiltersDeleteFilterModalEnabledCta: Story = {
         name: /Yes, delete this filter permanently/i,
       }),
     )
-    const filterDialog = portals.getByRole("dialog")
     await expect(
-      within(filterDialog).getByRole("button", { name: /^Delete filter$/i }),
+      await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).not.toBeDisabled()
   },
 }

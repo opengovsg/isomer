@@ -13,6 +13,7 @@ import {
   GET_CONFIG,
   GET_FOOTER,
   GET_NAVBAR,
+  GET_REDIRECTS,
 } from "./queries"
 import {
   getCollectionIndexPageContents,
@@ -79,6 +80,9 @@ async function main() {
 
     // Fetch and write navbar, footer, and config JSONs
     await fetchAndWriteSiteData(client)
+
+    // Fetch and write redirects
+    await fetchAndWriteRedirects(client)
 
     // Fetch all resources and their full permalinks
     const resources = await getAllResourcesWithFullPermalinks(client)
@@ -535,6 +539,23 @@ async function fetchAndWriteSiteData(client: Client) {
     }
   } catch (err) {
     console.error("Error fetching site data:", err)
+  }
+}
+
+async function fetchAndWriteRedirects(client: Client) {
+  try {
+    const result = await client.query(GET_REDIRECTS, [SITE_ID])
+    const redirects = result.rows as { source: string; destination: string }[]
+    const filePath = path.join(__dirname, "redirects.json")
+    fs.writeFileSync(filePath, JSON.stringify(redirects), "utf-8")
+    logDebug(`Successfully wrote redirects: ${filePath}`)
+  } catch (err) {
+    console.error("Error fetching redirects:", err)
+    fs.writeFileSync(
+      path.join(__dirname, "redirects.json"),
+      JSON.stringify([]),
+      "utf-8",
+    )
   }
 }
 

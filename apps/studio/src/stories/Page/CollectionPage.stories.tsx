@@ -9,7 +9,10 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import CollectionPage from "~/pages/sites/[siteId]/collections/[collectionId]"
 
-import { createBannerGbParameters } from "../utils/growthbook"
+import {
+  createBannerGbParameters,
+  createEgazetteInfoGbParameters,
+} from "../utils/growthbook"
 
 const meta: Meta<typeof CollectionPage> = {
   title: "Pages/Collection Management/Collection Page",
@@ -80,6 +83,17 @@ export const WithBanner: Story = {
         variant: "info",
         message:
           "This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long. This is a test banner that is very long.",
+      }),
+    ],
+  },
+}
+
+export const GazetteCollection: Story = {
+  parameters: {
+    growthbook: [
+      createEgazetteInfoGbParameters({
+        siteId: "1",
+        gazettesCollectionId: "1",
       }),
     ],
   },
