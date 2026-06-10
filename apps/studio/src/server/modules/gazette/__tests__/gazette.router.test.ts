@@ -16,7 +16,7 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { DD_DELETION_EMAIL } from "~/constants/gazette"
+import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
@@ -1040,7 +1040,7 @@ describe("gazette.router", async () => {
       expect(mailService.sendGazetteDeletionEmail).toHaveBeenCalledTimes(1)
       const call = vi.mocked(mailService.sendGazetteDeletionEmail).mock
         .calls[0]?.[0]
-      expect(call?.recipientEmail).toBe(DD_DELETION_EMAIL)
+      expect(call?.recipientEmail).toBe(env.DD_DELETION_EMAIL)
       // The admins query has no ORDER BY, so compare cc as a sorted set
       expect([...(call?.cc ?? [])].sort()).toEqual(
         ["admin2@agency.gov.sg", "user@toppannext.com"].sort(),
@@ -1070,7 +1070,7 @@ describe("gazette.router", async () => {
       expect(mailService.sendGazetteDeletionEmail).toHaveBeenCalledTimes(1)
       const call = vi.mocked(mailService.sendGazetteDeletionEmail).mock
         .calls[0]?.[0]
-      expect(call?.recipientEmail).toBe(DD_DELETION_EMAIL)
+      expect(call?.recipientEmail).toBe(env.DD_DELETION_EMAIL)
       expect(call?.cc).toEqual(["user@toppannext.com"])
     })
   })
