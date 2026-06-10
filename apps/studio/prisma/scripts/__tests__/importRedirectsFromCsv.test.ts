@@ -96,6 +96,44 @@ describe("importRedirectsFromCsv", () => {
     expect(summary.unmatchedDomains.get("www.unknown.gov.sg")).toBe(2)
   })
 
+  it("parses quoted fields containing commas per standard CSV quoting", async () => {
+    // Arrange
+    const siteId = await setupSiteWithUrl("www.alpha.gov.sg")
+    const csvPath = writeCsv([
+      'www.alpha.gov.sg,/old-page,"https://example.gov.sg/a,b"',
+    ])
+
+    // Act
+    await importRedirectsFromCsv({ csvPath, dryRun: false })
+
+    // Assert
+    const redirects = await getRedirects(siteId)
+    expect(redirects).toEqual([
+      {
+        source: "/old-page",
+        destination: "https://example.gov.sg/a,b",
+        deletedAt: null,
+      },
+    ])
+  })
+
+  it("tolerates a UTF-8 BOM and whitespace around fields", async () => {
+    // Arrange
+    const siteId = await setupSiteWithUrl("www.alpha.gov.sg")
+    const csvPath = writeCsv(["www.alpha.gov.sg, /old-page , /new-page "], {
+      header: "\uFEFFdomainName,source,target",
+    })
+
+    // Act
+    await importRedirectsFromCsv({ csvPath, dryRun: false })
+
+    // Assert
+    const redirects = await getRedirects(siteId)
+    expect(redirects).toEqual([
+      { source: "/old-page", destination: "/new-page", deletedAt: null },
+    ])
+  })
+
   it("matches domains ignoring case, scheme and trailing path", async () => {
     // Arrange
     const siteId = await setupSiteWithUrl("https://WWW.Alpha.gov.sg/")

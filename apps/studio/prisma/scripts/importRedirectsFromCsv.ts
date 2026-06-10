@@ -1,5 +1,6 @@
 import fs from "node:fs"
 import { fileURLToPath } from "node:url"
+import Papa from "papaparse"
 import { z } from "zod"
 import { db } from "~/server/modules/database"
 
@@ -77,14 +78,22 @@ export const importRedirectsFromCsv = async ({
   csvPath,
   dryRun,
 }: ImportRedirectsFromCsvProps) => {
-  const [header = "", ...dataLines] = fs
-    .readFileSync(csvPath, "utf8")
-    .split("\n")
-    .map((line) => line.replace(/\r$/, ""))
-    .filter((line) => line.length > 0)
+  // Papa handles standard CSV quoting (fields containing commas) and CRLF
+  // line endings; the BOM is stripped up front so spreadsheet-exported files
+  // don't fail the header check below.
+  const { data: rows, errors: parseErrors } = Papa.parse<string[]>(
+    fs.readFileSync(csvPath, "utf8").replace(/^\uFEFF/, ""),
+    { skipEmptyLines: true },
+  )
+  for (const error of parseErrors) {
+    console.warn(`CSV parse warning at row ${error.row}: ${error.message}`)
+  }
 
-  if (header !== "domainName,source,target") {
-    throw new Error(`Unexpected CSV header: ${header}`)
+  const [header = [], ...dataRows] = rows
+  if (
+    header.map((field) => field.trim()).join(",") !== "domainName,source,target"
+  ) {
+    throw new Error(`Unexpected CSV header: ${header.join(",")}`)
   }
 
   const sites = await db.selectFrom("Site").select(["id", "config"]).execute()
@@ -102,19 +111,21 @@ export const importRedirectsFromCsv = async ({
   let wildcardRowCount = 0
   let queryParamRowCount = 0
 
-  dataLines.forEach((line, index) => {
+  dataRows.forEach((row, index) => {
     // CSV header line is 1, so the first data line is 2
     const lineNumber = index + 2
-    const parts = line.split(",")
-    if (parts.length !== 3) {
+    const line = row.join(",")
+    if (row.length !== 3) {
       invalidRows.push({
         lineNumber,
         line,
-        reason: `Expected 3 comma-separated fields, got ${parts.length}`,
+        reason: `Expected 3 comma-separated fields, got ${row.length}`,
       })
       return
     }
-    const [domainName = "", source = "", target = ""] = parts
+    const [domainName = "", source = "", target = ""] = row.map((field) =>
+      field.trim(),
+    )
 
     // Wildcard rules and query-parameter matching are infra publishing
     // features with no equivalent in the Redirect table's exact-match
@@ -237,6 +248,11 @@ if (isMain) {
   const csvPath = ""
   const dryRun = true
 
-  await importRedirectsFromCsv({ csvPath, dryRun })
-  await db.destroy()
+  try {
+    await importRedirectsFromCsv({ csvPath, dryRun })
+  } finally {
+    // Always release the connection pool, even when the import throws, so
+    // the process does not hang on an open DB connection
+    await db.destroy()
+  }
 }
