@@ -1,12 +1,17 @@
 import { TRPCError } from "@trpc/server"
-import { isBefore, subYears } from "date-fns"
+import { differenceInMinutes, isBefore, subYears } from "date-fns"
 import filenamify from "filenamify"
+import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazette"
 import { env } from "~/env.mjs"
-import { sendScheduledPageEmail } from "~/features/mail/service"
+import {
+  sendGazetteDeletionEmail,
+  sendScheduledPageEmail,
+} from "~/features/mail/service"
 import { getFileSize, markScheduledAssetAsCancelled } from "~/lib/s3"
 import {
   cancelScheduledPublishSchema,
   createGazetteServerSchema,
+  deleteGazetteSchema,
   gazetteListSchema,
   getPresignedGetUrlSchema,
   getPresignedPutUrlSchema,
@@ -30,9 +35,11 @@ import {
   findCollectionLinkWithFilename,
   assertGazetteAccess,
   copyFileWithNewName,
+  deleteGazetteAsset,
   getPresignedGetUrl,
   getPresignedPutUrl,
   markFileAsDeleted,
+  removeGazetteFromSearchIndex,
 } from "./gazette.service"
 
 interface GazetteBlobInputs {
@@ -175,6 +182,7 @@ export const gazetteRouter = router({
             ...result,
             fileSize,
             scheduledAt: result.scheduledAt ?? result.publishedAt,
+            publishedAt: result.publishedAt,
           }
         }),
       )
@@ -616,7 +624,8 @@ export const gazetteRouter = router({
       const ref = (existingBlob.content as { page?: { ref?: string } } | null)
         ?.page?.ref
 
-      // Atomic transaction: delete PushDocumentJob, log audit, delete Resource + Blob
+      // Atomic transaction: delete PushDocumentJob + Resource + Blob, then log audits.
+      // Logs go last so each entry describes a deletion that has actually happened.
       const deletedResource = await db.transaction().execute(async (tx) => {
         // 1. Delete the PushDocumentJob and capture the row. Defence-in-depth:
         // scope via Resource subquery on siteId (PushDocumentJob has no direct
@@ -633,10 +642,25 @@ export const gazetteRouter = router({
           .returningAll()
           .execute()
 
-        // 2. Log the cancellation audit event against the deleted job row.
-        // The resource itself is deleted moments later, so logging a synthetic
-        // resource snapshot would be untruthful — the truthful subject of
-        // "cancel scheduled publish" is the job that was cancelled.
+        // 2. Delete the Blob first (foreign key constraint)
+        if (existingResource.draftBlobId) {
+          await tx
+            .deleteFrom("Blob")
+            .where("id", "=", existingResource.draftBlobId)
+            .execute()
+        }
+
+        // 3. Delete the Resource — scoped to siteId defence-in-depth.
+        const deletedResources = await tx
+          .deleteFrom("Resource")
+          .where("id", "=", String(gazetteId))
+          .where("siteId", "=", siteId)
+          .returningAll()
+          .execute()
+
+        // 4. Log the cancellation audit event against the deleted job row.
+        // The truthful subject of "cancel scheduled publish" is the job that
+        // was cancelled.
         const [deletedJob] = deletedJobs
         if (deletedJob) {
           const {
@@ -652,7 +676,7 @@ export const gazetteRouter = router({
           })
         }
 
-        // 3. Log the resource deletion audit event
+        // 5. Log the resource deletion audit event
         await logResourceEvent(tx, {
           siteId,
           eventType: AuditLogEvent.ResourceDelete,
@@ -663,21 +687,7 @@ export const gazetteRouter = router({
           },
         })
 
-        // 4. Delete the Blob first (foreign key constraint)
-        if (existingResource.draftBlobId) {
-          await tx
-            .deleteFrom("Blob")
-            .where("id", "=", existingResource.draftBlobId)
-            .execute()
-        }
-
-        // 5. Delete the Resource — scoped to siteId defence-in-depth.
-        return await tx
-          .deleteFrom("Resource")
-          .where("id", "=", String(gazetteId))
-          .where("siteId", "=", siteId)
-          .returningAll()
-          .execute()
+        return deletedResources
       })
 
       // After DB transaction commits, update S3 tags (best-effort)
@@ -699,7 +709,6 @@ export const gazetteRouter = router({
 
       return { resource: deletedResource }
     }),
-
   getPresignedPutUrl: protectedProcedure
     .input(getPresignedPutUrlSchema)
     .mutation(
@@ -770,5 +779,136 @@ export const gazetteRouter = router({
       )
 
       return { presignedGetUrl }
+    }),
+  delete: protectedProcedure
+    .input(deleteGazetteSchema)
+    .mutation(async ({ ctx, input: { siteId, gazetteId } }) => {
+      // First, make sure that the users are from Toppan and can actually delete gazettes
+      await assertGazetteAccess(ctx.user.id)
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "delete",
+        userId: ctx.user.id,
+        resourceIds: [String(gazetteId)],
+      })
+
+      const user = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
+
+      // Next, fetch the gazettes that they are trying to delete and
+      // make sure that the time is within the allowed timeframe.
+      // This has to be on the version already cos otherwise they should be able to cancel the publish
+      const gazette = await db
+        .selectFrom("Resource")
+        .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", String(gazetteId))
+        .select([...defaultResourceSelect, "Version.publishedAt"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              message:
+                "The gazette you are trying to delete could not be found",
+              code: "NOT_FOUND",
+            }),
+        )
+      const { publishedAt } = gazette
+      const isWithinGracePeriod =
+        publishedAt &&
+        differenceInMinutes(new Date(), publishedAt) <=
+          ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
+
+      if (!isWithinGracePeriod) {
+        throw new TRPCError({
+          message: `Gazettes are unable to be deleted after the given grace period of ${ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES} minutes`,
+          code: "FORBIDDEN",
+        })
+      }
+
+      // Fetch the blob to get the S3 ref
+      const blob = await getBlobOfResource({ db, resourceId: gazette.id })
+      const ref = (blob.content as { page?: { ref?: string } } | null)?.page
+        ?.ref
+
+      if (!ref) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Gazette does not have a valid S3 reference",
+        })
+      }
+
+      // Always try to delete the asset and search record first
+      // before proceeding to remove the database resource.
+      // This is because the public uses those to access the gazette
+      // but the database resource is purely for internal view.
+      await removeGazetteFromSearchIndex(ref, gazette.id)
+      await deleteGazetteAsset(ref)
+
+      // Delete the resource in a transaction, then audit-log the deletion.
+      // Log goes after the delete so the entry describes a deletion that has
+      // actually happened.
+      await db.transaction().execute(async (tx) => {
+        // Delete the PushDocumentJob first. The FK is `onDelete: Restrict`
+        // (see PushDocumentJob in schema.prisma), so the Resource delete
+        // below would throw whenever a job row still exists. In practice
+        // the cron runs every minute so for up to ~60s after publish there
+        // is one — and the grace period is 15 minutes, so the very first
+        // deletion attempt would otherwise 500.
+        // Defence-in-depth: scope via Resource subquery on siteId
+        // (PushDocumentJob has no direct siteId column).
+        await tx
+          .deleteFrom("PushDocumentJob")
+          .where("resourceId", "=", String(gazetteId))
+          .where("resourceId", "in", (eb) =>
+            eb
+              .selectFrom("Resource")
+              .select("Resource.id")
+              .where("Resource.siteId", "=", siteId),
+          )
+          .execute()
+
+        await tx
+          .deleteFrom("Resource")
+          .where("siteId", "=", siteId)
+          .where("id", "=", String(gazetteId))
+          .execute()
+
+        await logResourceEvent(tx, {
+          siteId,
+          eventType: AuditLogEvent.ResourceDelete,
+          by: user,
+          delta: {
+            before: { resource: gazette, blob },
+            after: null,
+          },
+        })
+      })
+      // NOTE: Send email out to IMDA so that they get visibility on what gazettes are deleted.
+      // The gazette feature operates on a single site, so the input siteId is the
+      // site whose admins should be notified — no separate growthbook lookup needed.
+      const admins = await db
+        .selectFrom("Site")
+        .where("Site.id", "=", siteId)
+        .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
+        .where("ResourcePermission.deletedAt", "is", null)
+        .innerJoin("User", "ResourcePermission.userId", "User.id")
+        .where("User.deletedAt", "is", null)
+        .where("ResourcePermission.role", "=", "Admin")
+        .select("User.email")
+        .execute()
+
+      const filename = ref.split("/").pop() ?? ref
+      await Promise.all(
+        admins.map(async ({ email }) => {
+          await sendGazetteDeletionEmail({
+            fileId: filename,
+            gazetteTitle: gazette.title,
+            recipientEmail: email,
+          })
+        }),
+      )
     }),
 })

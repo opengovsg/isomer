@@ -4,6 +4,7 @@ import filenamify from "filenamify"
 import { PdfReader } from "pdfreader"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { env } from "~/env.mjs"
+import { createBaseLogger } from "~/lib/logger"
 import {
   copyFile,
   deleteFile,
@@ -20,9 +21,17 @@ import {
 } from "../asset/asset.service"
 import { db, ResourceType, sql } from "../database"
 import { isActiveIsomerAdmin } from "../permissions/permissions.service"
+import {
+  EGAZETTE_DOCUMENT_INDEX,
+  ISOMER_UA,
+  SEARCHSG_BASE_URL,
+} from "../searchsg/searchsg.service"
+
+export const generateDocumentId = (url: string, resourceId: string): string =>
+  `${url}-${resourceId}`
 
 const { S3_GAZETTE_BUCKET_NAME } = env
-const pdfReader = new PdfReader({})
+const logger = createBaseLogger({ path: "gazette.service" })
 /**
  * Throws FORBIDDEN unless the user is from Toppan or a Core IsomerAdmin.
  *
@@ -179,7 +188,12 @@ export const copyFileWithNewName = async ({
 }
 
 // Taken as is from egazette codebase.
+// Instantiates a fresh PdfReader per call — the cron handler parses PDFs
+// concurrently via Promise.all and pdfreader is built on pdf2json whose
+// underlying state is not safe to share across overlapping parseBuffer
+// invocations.
 export const parseFullTextFromPDF = async (pdfBuffer: Uint8Array) => {
+  const pdfReader = new PdfReader({})
   const data: string[] = await new Promise((resolve, reject) => {
     const parsedData: string[] = []
     pdfReader.parseBuffer(Buffer.from(pdfBuffer), (err, item) => {
@@ -201,4 +215,130 @@ export const markFileAsDeleted = async ({ key }: { key: string }) => {
     Key: key,
     Bucket: S3_GAZETTE_BUCKET_NAME,
   })
+}
+
+/**
+ * Remove a gazette document from the SearchSG index.
+ */
+export const removeGazetteFromSearchIndex = async (
+  ref: string,
+  resourceId: string,
+): Promise<void> => {
+  const documentId = generateDocumentId(ref, resourceId)
+  const { accessToken, tokenType } = await getSearchSGAuthToken()
+  const response = await fetch(
+    `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `${tokenType} ${accessToken}`,
+        "Content-Type": "application/json",
+        "User-Agent": ISOMER_UA,
+      },
+      body: JSON.stringify({ documentsToDelete: [documentId] }),
+    },
+  )
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    logger.warn(
+      { status: response.status, documentId, error: errorText },
+      "Failed to remove gazette from search index",
+    )
+    throw new TRPCError({
+      message: "Failed to remove gazette from search index",
+      code: "PRECONDITION_FAILED",
+    })
+  }
+}
+
+/**
+ * Mark a gazette asset as deleted in S3. Throws on failure — silent failure
+ * here would leave the PDF publicly reachable after the gazette is "deleted"
+ * from SearchSG and the DB, defeating the purpose of the grace-period delete.
+ *
+ * On failure we also log the public URL so ops has a recovery target — by
+ * this point SearchSG removal has already succeeded, so the gazette is
+ * deindexed but still reachable at this URL until the soft-delete completes.
+ */
+export const deleteGazetteAsset = async (ref: string): Promise<void> => {
+  const key = ref.slice(1) // Remove leading slash
+  try {
+    await markFileAsDeleted({ key })
+  } catch (err) {
+    const publicUrl = `https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`
+    logger.error(
+      { err, key, publicUrl },
+      "Failed to soft-delete gazette in S3; the file may still be publicly reachable at publicUrl until manually cleaned up",
+    )
+    throw err
+  }
+}
+
+const getSearchSGAuthToken = async () => {
+  const response = await fetch(`${SEARCHSG_BASE_URL}/v1/auth/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${env.SEARCHSG_API_KEY}`,
+      "User-Agent": ISOMER_UA,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to get SearchSG auth token: ${response.statusText}`)
+  }
+
+  const { accessToken, tokenType } = (await response.json()) as {
+    accessToken: string
+    tokenType: string
+  }
+
+  return { accessToken, tokenType }
+}
+
+export interface PushDocument {
+  documentId: string
+  title: string
+  url: string
+  contentType: string
+  content: string
+  date: string
+  categories: string[]
+}
+
+export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
+  if (documents.length === 0) {
+    return
+  }
+
+  const { accessToken, tokenType } = await getSearchSGAuthToken()
+
+  const response = await fetch(
+    `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `${tokenType} ${accessToken}`,
+        "Content-Type": "application/json",
+        "User-Agent": ISOMER_UA,
+      },
+      body: JSON.stringify({ documentsToAdd: documents }),
+    },
+  )
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    logger.error(
+      { status: response.status, error: errorText, documents },
+      "Failed to push documents for ingestion",
+    )
+    throw new Error(
+      `Failed to push documents for ingestion: ${response.statusText} ${errorText}`,
+    )
+  }
+
+  logger.info(
+    { count: documents.length },
+    "Successfully pushed documents for ingestion",
+  )
 }

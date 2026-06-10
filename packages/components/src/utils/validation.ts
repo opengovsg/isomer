@@ -91,7 +91,7 @@ export const isValidMapEmbedUrl = (url: string) => {
 // that is supported inside the JSON schema. Components rely on the URL object
 // validation for better security.
 export const MAPS_EMBED_URL_REGEXES = {
-  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed?.*$",
+  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed(?:\\?.*)?$",
   onemap:
     "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$",
   ogpmaps: `^https://maps\\.gov\\.sg/.*$`,
@@ -144,7 +144,7 @@ export const isValidVideoUrl = (url: string) => {
 // that is supported inside the JSON schema. Components rely on the URL object
 // validation for better security.
 export const VIDEO_EMBED_URL_REGEXES = {
-  fbvideo: "^https://www\\.facebook\\.com/plugins/video.php?.*$",
+  fbvideo: "^https://www\\.facebook\\.com/plugins/video\\.php(?:\\?.*)?$",
   vimeo: "^https://player\\.vimeo\\.com/video/.*$",
   youtube:
     "^https://www\\.(youtube|youtube-nocookie)\\.com/(embed/|watch\\?v=).*$",
