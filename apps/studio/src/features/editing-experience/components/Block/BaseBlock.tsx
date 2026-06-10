@@ -29,7 +29,7 @@ export type BaseBlockProps = {
 
 export const BaseBlock = ({
   icon,
-  iconProps,
+  iconProps: _iconProps,
   dragHandle,
   label,
   description,

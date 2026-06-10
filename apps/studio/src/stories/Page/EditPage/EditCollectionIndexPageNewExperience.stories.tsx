@@ -291,9 +291,7 @@ export const FiltersDeleteFilterModalEnabledCta: Story = {
 
 export const CollectionDisplaySaveToast: Story = {
   parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
-    ],
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
       handlers: [pageHandlers.getCategories.default(), ...COMMON_HANDLERS],
     },
@@ -321,9 +319,7 @@ export const CollectionDisplaySaveToast: Story = {
 
 export const ManageFiltersSaveToast: Story = {
   parameters: {
-    growthbook: [
-      [IS_NEW_COLLECTION_EDITING_EXPERIENCE_ENABLED_FEATURE_KEY, true],
-    ],
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
       handlers: [
         userHandlers.isIsomerAdmin.admin(),
