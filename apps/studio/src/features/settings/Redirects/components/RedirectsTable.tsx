@@ -272,6 +272,9 @@ export const RedirectsTable = ({
     onSortingChange: handleSortingChange,
     manualPagination: true,
     manualSorting: true,
+    // Only the first sort entry is sent to the API, so multi-sort (Shift+
+    // click) would show headers as sorted without actually applying them
+    enableMultiSort: false,
     autoResetPageIndex: false,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

@@ -42,7 +42,14 @@ const SEED_ROWS: RedirectRow[] = [
   })),
 ]
 
-const redirectsAtom = atom<RedirectRow[]>(SEED_ROWS)
+// Mock state is keyed by siteId so adds/deletes on one site don't leak into
+// another during manual testing. Every site starts from the same seed rows.
+const redirectsAtom = atom<Record<number, RedirectRow[]>>({})
+
+const getSiteRows = (
+  allRows: Record<number, RedirectRow[]>,
+  siteId: number,
+): RedirectRow[] => allRows[siteId] ?? SEED_ROWS
 
 export interface ListRedirectsParams {
   limit: number
@@ -67,19 +74,19 @@ const compareRows =
 // misleading), and must exclude soft-deleted redirects — only live rows are
 // ever shown.
 export function useListRedirects(
-  _siteId: number,
+  siteId: number,
   { limit, offset, sortBy, sortDirection }: ListRedirectsParams,
 ): {
   data: RedirectRow[]
   isLoading: boolean
 } {
-  const rows = useAtomValue(redirectsAtom)
+  const allRows = useAtomValue(redirectsAtom)
   const data = useMemo(
     () =>
-      [...rows]
+      [...getSiteRows(allRows, siteId)]
         .sort(compareRows(sortBy, sortDirection))
         .slice(offset, offset + limit),
-    [rows, limit, offset, sortBy, sortDirection],
+    [allRows, siteId, limit, offset, sortBy, sortDirection],
   )
   return { data, isLoading: false }
 }
@@ -87,12 +94,12 @@ export function useListRedirects(
 // TODO: Replace with trpc.redirect.count.useQuery when backend is ready. The
 // endpoint counts live (non-soft-deleted) redirects for the site, used to
 // derive the page count.
-export function useCountRedirects(_siteId: number): {
+export function useCountRedirects(siteId: number): {
   data: number
   isLoading: boolean
 } {
-  const rows = useAtomValue(redirectsAtom)
-  return { data: rows.length, isLoading: false }
+  const allRows = useAtomValue(redirectsAtom)
+  return { data: getSiteRows(allRows, siteId).length, isLoading: false }
 }
 
 // TODO: Replace with trpc.redirect.create.useMutation when backend is ready.
@@ -110,9 +117,10 @@ export function useCreateRedirect(): {
   ) => void
   isPending: boolean
 } {
-  const [rows, setRows] = useAtom(redirectsAtom)
+  const [allRows, setAllRows] = useAtom(redirectsAtom)
   const mutate = (
     {
+      siteId,
       source,
       destination,
     }: {
@@ -125,7 +133,7 @@ export function useCreateRedirect(): {
       onError?: (error: { message: string }) => void
     },
   ) => {
-    if (rows.some((row) => row.source === source)) {
+    if (getSiteRows(allRows, siteId).some((row) => row.source === source)) {
       callbacks?.onError?.({
         message: `A redirect already exists for ${source}`,
       })
@@ -137,7 +145,10 @@ export function useCreateRedirect(): {
       destination,
       publishedAt: new Date(),
     }
-    setRows((prev) => [newRow, ...prev])
+    setAllRows((prev) => ({
+      ...prev,
+      [siteId]: [newRow, ...getSiteRows(prev, siteId)],
+    }))
     callbacks?.onSuccess?.()
   }
   return { mutate, isPending: false }
@@ -153,12 +164,15 @@ export function useDeleteRedirect(): {
   ) => void
   isPending: boolean
 } {
-  const [, setRows] = useAtom(redirectsAtom)
+  const [, setAllRows] = useAtom(redirectsAtom)
   const mutate = (
-    { id }: { siteId: number; id: string },
+    { siteId, id }: { siteId: number; id: string },
     callbacks?: { onSuccess?: () => void },
   ) => {
-    setRows((prev) => prev.filter((row) => row.id !== id))
+    setAllRows((prev) => ({
+      ...prev,
+      [siteId]: getSiteRows(prev, siteId).filter((row) => row.id !== id),
+    }))
     callbacks?.onSuccess?.()
   }
   return { mutate, isPending: false }

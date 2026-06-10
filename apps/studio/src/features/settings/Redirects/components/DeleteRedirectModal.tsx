@@ -41,7 +41,7 @@ export const DeleteRedirectModal = ({
             </Text>
             <HStack
               spacing="1.5rem"
-              align="top"
+              align="flex-start"
               bgColor="base.canvas.alt"
               borderRadius="0.25rem"
               p="0.75rem"
