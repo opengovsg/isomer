@@ -179,11 +179,21 @@ export const getPageById = (
 }
 
 export const updatePageById = (
-  page: Partial<Omit<Page, "id" | "siteId" | "parentId">> & {
+  page: {
     id: number
     siteId: number
+    state?: ResourceState
     parentId?: number
-  },
+  } & Partial<
+    Pick<
+      Page,
+      | "title"
+      | "scheduledAt"
+      | "scheduledBy"
+      | "publishedVersionId"
+      | "draftBlobId"
+    >
+  >,
   dbInstance?: SafeKysely,
 ) => {
   const dbObj = dbInstance ?? db
