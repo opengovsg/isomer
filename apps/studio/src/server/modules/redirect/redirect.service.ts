@@ -95,16 +95,29 @@ export const createRedirect = async ({
       .insertInto("Redirect")
       .values({ siteId, source, destination })
       .onConflict((oc) =>
-        oc.columns(["siteId", "source"]).doUpdateSet({
-          destination,
-          deletedAt: null,
-          // A revived redirect is republished now, so its createdAt (shown
-          // to users as the publish time) is refreshed
-          createdAt: new Date(),
-        }),
+        oc
+          .columns(["siteId", "source"])
+          .doUpdateSet({
+            destination,
+            deletedAt: null,
+            // A revived redirect is republished now, so its createdAt (shown
+            // to users as the publish time) is refreshed
+            createdAt: new Date(),
+          })
+          // Only soft-deleted rows may be revived: a concurrent create for
+          // the same source can commit after the pre-check above, and must
+          // surface as a conflict instead of silently overwriting the live
+          // redirect
+          .where("Redirect.deletedAt", "is not", null),
       )
       .returningAll()
-      .executeTakeFirstOrThrow()
+      .executeTakeFirst()
+    if (!created) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: `A redirect already exists for ${source}`,
+      })
+    }
 
     // NOTE: the delta holds real DB rows — `existing` as fetched before the
     // write (the soft-deleted row when reviving) and the row returned by the
