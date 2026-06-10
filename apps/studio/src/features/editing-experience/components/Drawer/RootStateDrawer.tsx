@@ -133,7 +133,7 @@ const FixedBlock = () => {
         <BaseBlock
           onClick={() => {
             setCurrActiveIdx(0)
-            setDrawerState({ state: "collectionEditor" })
+            setDrawerState({ state: "collectionEditor", type: "display" })
           }}
           label="Collection display"
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
@@ -143,7 +143,10 @@ const FixedBlock = () => {
         />
         {isUserIsomerAdmin && (
           <BaseBlock
-            onClick={() => console.log("to implement")}
+            onClick={() => {
+              setCurrActiveIdx(0)
+              setDrawerState({ state: "collectionEditor", type: "filter" })
+            }}
             label="Filters"
             description="Define and manage filters for this Collection."
             containerProps={containerProps}
@@ -160,7 +163,7 @@ const FixedBlock = () => {
       <BaseBlock
         onClick={() => {
           setCurrActiveIdx(0)
-          setDrawerState({ state: "collectionEditor" })
+          setDrawerState({ state: "collectionEditor", type: "display" })
         }}
         label="Collection settings"
         description="Summary, style, categories and sorting"
@@ -268,6 +271,9 @@ export default function RootStateDrawer() {
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
+        if (type === ResourceType.CollectionPage) {
+          void utils.collection.countTagOptionsUsage.invalidate()
+        }
         toast({
           status: "success",
           title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,

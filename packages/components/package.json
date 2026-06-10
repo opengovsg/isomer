@@ -7,7 +7,6 @@
     "name": "Isomer Team"
   },
   "files": [
-    "dist/cjs",
     "dist/esm",
     "!**/*.spec.*",
     "!**/*.stories.*",
@@ -16,16 +15,15 @@
   ],
   "type": "module",
   "sideEffects": false,
-  "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
+      "default": "./dist/esm/index.js"
     },
     "./templates/next": {
       "import": "./dist/esm/templates/next/index.js",
-      "require": "./dist/cjs/templates/next/index.js"
+      "default": "./dist/esm/templates/next/index.js"
     }
   },
   "publishConfig": {
@@ -34,7 +32,6 @@
   "scripts": {
     "build": "run-p build:* && pnpm pack",
     "build-storybook": "storybook build",
-    "build:main": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json",
     "chromatic": "pnpm exec chromatic --project-token=$CHROMATIC_PROJECT_TOKEN",
     "clean": "git clean -xdf .turbo node_modules dist",
@@ -89,6 +86,7 @@
     "@storybook/addon-themes": "catalog:storybook",
     "@storybook/react-vite": "catalog:storybook",
     "@tailwindcss/postcss": "catalog:tailwind",
+    "@testing-library/react": "catalog:",
     "@types/lodash-es": "catalog:",
     "@types/lunr": "catalog:",
     "@types/react": "catalog:react",

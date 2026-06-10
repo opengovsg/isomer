@@ -2,6 +2,7 @@
 export const JSON_FORMS_RANKING = {
   ArrayControl: 4,
   TagCategoryControl: 5,
+  TagCategoryOptionsControl: 5,
   TaggedControl: 4,
   BooleanControl: 2,
   ConstControl: 2,
@@ -16,6 +17,8 @@ export const JSON_FORMS_RANKING = {
   UuidControl: 2,
   WidgetControl: 3,
   ObjectControl: 2,
+  // NOTE: needs to have higher priority than ObjectControl
+  BoxedGroupControl: 3,
   // NOTE: Needs to have higher priority than anyof
   // as we need to conditionally render this depending
   // on the parent variant

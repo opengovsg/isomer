@@ -91,7 +91,7 @@ export const isValidMapEmbedUrl = (url: string) => {
 // that is supported inside the JSON schema. Components rely on the URL object
 // validation for better security.
 export const MAPS_EMBED_URL_REGEXES = {
-  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed?.*$",
+  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed(?:\\?.*)?$",
   onemap:
     "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$",
   ogpmaps: `^https://maps\\.gov\\.sg/.*$`,
@@ -144,7 +144,7 @@ export const isValidVideoUrl = (url: string) => {
 // that is supported inside the JSON schema. Components rely on the URL object
 // validation for better security.
 export const VIDEO_EMBED_URL_REGEXES = {
-  fbvideo: "^https://www\\.facebook\\.com/plugins/video.php?.*$",
+  fbvideo: "^https://www\\.facebook\\.com/plugins/video\\.php(?:\\?.*)?$",
   vimeo: "^https://player\\.vimeo\\.com/video/.*$",
   youtube:
     "^https://www\\.(youtube|youtube-nocookie)\\.com/(embed/|watch\\?v=).*$",
@@ -204,6 +204,17 @@ export const isApplePodcastUrl = (url: string) => {
 // ❌ "" (empty string)
 // ❌ " " (only whitespace)
 export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
+
+// Stricter variant: rejects leading/trailing whitespace in addition to empty/whitespace-only.
+// ✅ "hello"
+// ✅ "a"
+// ✅ "ab cd" (internal whitespace allowed)
+// ❌ "" (empty string)
+// ❌ " " (only whitespace)
+// ❌ " hello" (leading whitespace)
+// ❌ "hello " (trailing whitespace)
+// ❌ " a " (surrounded by spaces)
+export const TRIMMED_NON_EMPTY_STRING_REGEX = "^\\S(.*\\S)?$"
 
 // ✅ "d_a" (minimum 3 characters, starts with "d_")
 // ✅ "d_abc" (more than 3 characters, starts with "d_")

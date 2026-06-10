@@ -105,6 +105,10 @@ export {
   jsonFormsTagCategoriesControlTester,
 } from "./JsonFormsTagCategoryControl"
 export {
+  default as JsonFormsTagCategoryOptionsControl,
+  jsonFormsTagCategoryOptionsControlTester,
+} from "./JsonFormsTagCategoryOptionsControl"
+export {
   default as JsonFormsNavbarControl,
   jsonFormsNavbarControlTester,
 } from "./JsonFormsNavbarControl"
@@ -145,3 +149,8 @@ export {
   default as JsonFormsPrefillLinkControl,
   jsonFormsPrefillLinkControlTester,
 } from "./JsonFormsPrefillLinkControl"
+
+export {
+  default as JsonFormsBoxedGroupControl,
+  jsonFormsBoxedGroupControlTester,
+} from "./JsonFormsBoxedGroupControl"

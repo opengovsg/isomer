@@ -30,7 +30,7 @@ jobs:
       ui: ${{ steps.filter.outputs.ui }}
       studio: ${{ steps.filter.outputs.studio }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       # For pull requests it's not necessary to checkout the code
       - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
         id: filter
@@ -51,14 +51,14 @@ jobs:
     environment: staging
     # Job steps
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0 # Required for v4
       - name: Setup
         uses: ./.github/actions/setup
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@0b8c883861c1663076150cf1f4592b19d1ff6a54 # v17.0.1
+        uses: chromaui/action@05812acac141ce7d317a3f787be88122bca27cf4 # v17.3.0
         # Chromatic GitHub Action options
         with:
           workingDir: packages/components
@@ -76,7 +76,7 @@ jobs:
     environment: staging
     # Job steps
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0 # Required for v4
       - name: Setup
@@ -85,12 +85,12 @@ jobs:
         run: pnpm --filter @opengovsg/isomer-components run build
       # Storybook bundles @prisma/client; Prisma's browser shim requires a generated client (not created by pnpm install).
       - name: Generate Prisma client
-        run: pnpm --filter isomer-studio exec prisma generate
+        run: pnpm --filter @isomer/db generate
       - name: Build preview-tw CSS
         run: pnpm --filter isomer-studio run build:preview-tw
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@0b8c883861c1663076150cf1f4592b19d1ff6a54 # v17.0.1
+        uses: chromaui/action@05812acac141ce7d317a3f787be88122bca27cf4 # v17.3.0
         # Chromatic GitHub Action options
         with:
           workingDir: apps/studio

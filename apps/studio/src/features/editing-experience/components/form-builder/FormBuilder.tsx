@@ -61,6 +61,8 @@ import {
   jsonFormsObjectControlTester,
   JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,
+  JsonFormsBoxedGroupControl,
+  jsonFormsBoxedGroupControlTester,
   JsonFormsPrefillLinkControl,
   jsonFormsPrefillLinkControlTester,
   JsonFormsProseControl,
@@ -73,6 +75,8 @@ import {
   jsonFormsSocialMediaControlTester,
   JsonFormsTagCategoriesControl,
   jsonFormsTagCategoriesControlTester,
+  JsonFormsTagCategoryOptionsControl,
+  jsonFormsTagCategoryOptionsControlTester,
   JsonFormsTaggedControl,
   jsonFormsTaggedControlTester,
   JsonFormsTextAreaControl,
@@ -107,6 +111,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,
+  },
+  {
+    tester: jsonFormsTagCategoryOptionsControlTester,
+    renderer: JsonFormsTagCategoryOptionsControl,
   },
   { renderer: JsonFormsUuidControl, tester: jsonFormsUuidControlTester },
   { renderer: JsonFormsTaggedControl, tester: jsonFormsTaggedControlTester },
@@ -203,6 +211,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsPrefillLinkControlTester,
     renderer: JsonFormsPrefillLinkControl,
+  },
+  {
+    tester: jsonFormsBoxedGroupControlTester,
+    renderer: JsonFormsBoxedGroupControl,
   },
 ]
 
