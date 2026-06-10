@@ -1,4 +1,4 @@
-import { Stack, Text } from "@chakra-ui/react"
+import { Stack } from "@chakra-ui/react"
 
 import { AddRedirectCard } from "./components/AddRedirectCard"
 import { RedirectsHeader } from "./components/RedirectsHeader"
@@ -17,16 +17,7 @@ export const RedirectsSettings = ({
     <Stack spacing="1.25rem">
       <AddRedirectCard siteId={siteId} />
 
-      <Stack spacing="1.25rem">
-        <Stack spacing="0.5rem">
-          <Text textStyle="h6">Redirects</Text>
-          <Text textStyle="body-2" color="base.content.medium">
-            Changes to this table are published to your site immediately.
-          </Text>
-        </Stack>
-
-        <RedirectsTable siteId={siteId} />
-      </Stack>
+      <RedirectsTable siteId={siteId} />
     </Stack>
   </Stack>
 )

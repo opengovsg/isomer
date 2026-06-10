@@ -80,7 +80,7 @@ export const AddRedirectCard = ({
         Add new redirects
       </Text>
       <Text textStyle="body-2" color="base.content.medium" mb="1.25rem">
-        New redirects are published to your site as soon as you add them.
+        Redirects go live as soon as you add them.
       </Text>
 
       <HStack
@@ -91,8 +91,13 @@ export const AddRedirectCard = ({
       >
         <FormControl flex={1} isInvalid={!!errors.source} isRequired>
           <FormLabel>When someone visits</FormLabel>
-          <InputGroup>
-            <InputLeftAddon>/</InputLeftAddon>
+          <InputGroup size="xs">
+            <InputLeftAddon
+              borderColor="base.divider.strong"
+              bgColor="interaction.support.disabled"
+            >
+              /
+            </InputLeftAddon>
             <Input placeholder="redirect-from" {...register("source")} />
           </InputGroup>
           <FormErrorMessage>{errors.source?.message}</FormErrorMessage>
@@ -106,14 +111,18 @@ export const AddRedirectCard = ({
             <Icon
               as={BiRightArrowAlt}
               boxSize="1.5rem"
-              color="base.content.medium"
+              color="standard.black"
             />
           </Center>
         </Box>
 
         <FormControl flex={1} isInvalid={!!errors.destination} isRequired>
           <FormLabel>Redirect them to</FormLabel>
-          <Input placeholder="/redirect-to" {...register("destination")} />
+          <Input
+            placeholder="/redirect-to"
+            size="xs"
+            {...register("destination")}
+          />
           <FormErrorMessage>{errors.destination?.message}</FormErrorMessage>
         </FormControl>
 
@@ -126,6 +135,7 @@ export const AddRedirectCard = ({
             isDisabled={isAddDisabled}
             isLoading={isPending}
             leftIcon={<Icon as={BiPlus} />}
+            size="xs"
           >
             Add
           </Button>

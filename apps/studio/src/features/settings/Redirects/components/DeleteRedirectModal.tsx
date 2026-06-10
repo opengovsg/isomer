@@ -6,6 +6,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Stack,
   Text,
 } from "@chakra-ui/react"
 import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
@@ -29,23 +30,54 @@ export const DeleteRedirectModal = ({
     <Modal isOpen={redirect !== null} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader mr="3.5rem">
-          Are you sure you want to delete this redirect?
-        </ModalHeader>
+        <ModalHeader mr="3.5rem">Delete redirect?</ModalHeader>
 
         <ModalCloseButton size="lg" />
 
         <ModalBody>
-          <Text textStyle="body-1">
-            Visitors to {redirect?.source} will no longer be redirected. This
-            change will be published to your site immediately.
-          </Text>
+          <Stack spacing="1.5rem">
+            <Text textStyle="body-1">
+              Are you sure you want to delete this redirect?
+            </Text>
+            <HStack
+              spacing="1.5rem"
+              align="top"
+              bgColor="base.canvas.alt"
+              borderRadius="0.25rem"
+              p="0.75rem"
+            >
+              <Stack spacing="0.25rem" flex={1} minW={0}>
+                <Text textStyle="subhead-2" color="base.content.strong">
+                  When someone visits
+                </Text>
+                <Text
+                  textStyle="body-2"
+                  color="base.content.default"
+                  wordBreak="break-all"
+                >
+                  {redirect?.source}
+                </Text>
+              </Stack>
+              <Stack spacing="0.25rem" flex={1} minW={0}>
+                <Text textStyle="subhead-2" color="base.content.strong">
+                  Redirect them to
+                </Text>
+                <Text
+                  textStyle="body-2"
+                  color="base.content.default"
+                  wordBreak="break-all"
+                >
+                  {redirect?.destination}
+                </Text>
+              </Stack>
+            </HStack>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
           <HStack spacing="1rem">
             <Button variant="clear" colorScheme="neutral" onClick={onClose}>
-              Cancel
+              No, keep redirect
             </Button>
             <Button
               variant="solid"
@@ -53,7 +85,7 @@ export const DeleteRedirectModal = ({
               isLoading={isPending}
               onClick={() => redirect && onDelete(redirect)}
             >
-              Yes, delete
+              Delete redirect
             </Button>
           </HStack>
         </ModalFooter>

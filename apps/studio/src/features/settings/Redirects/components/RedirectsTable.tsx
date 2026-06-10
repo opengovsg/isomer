@@ -15,7 +15,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { formatDistanceToNow } from "date-fns"
 import { useMemo, useState } from "react"
 import {
   BiDownArrowAlt,
@@ -33,6 +32,7 @@ import {
 
 import type { RedirectRow } from "../types"
 import { useDeleteRedirect, useListRedirects } from "../api"
+import { formatAddedAt } from "../utils"
 import { DeleteRedirectModal } from "./DeleteRedirectModal"
 
 const columnsHelper = createColumnHelper<RedirectRow>()
@@ -159,14 +159,14 @@ const getColumns = (onDeleteClick: (row: RedirectRow) => void) => [
     enableSorting: true,
     header: ({ column }) => (
       <SortableHeader
-        label="Published"
+        label="Added"
         isSorted={column.getIsSorted()}
         onClick={column.getToggleSortingHandler()}
       />
     ),
     cell: ({ getValue }) => (
       <Text textStyle="body-2" color="base.content.medium">
-        {formatDistanceToNow(getValue(), { addSuffix: true })}
+        {formatAddedAt(getValue())}
       </Text>
     ),
   }),
@@ -202,7 +202,10 @@ export const RedirectsTable = ({
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { data: redirects, isLoading } = useListRedirects(siteId)
   const { mutate: deleteRedirect, isPending } = useDeleteRedirect()
-  const [sorting, setSorting] = useState<SortingState>([])
+  // Newest redirects first, matching the design's default sort on "Added"
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "publishedAt", desc: true },
+  ])
   const [redirectToDelete, setRedirectToDelete] = useState<RedirectRow | null>(
     null,
   )
