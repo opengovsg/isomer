@@ -1,9 +1,12 @@
 import { env } from "~/env.mjs"
+import { createBaseLogger } from "~/lib/logger"
 import {
   deleteFile as s3DeleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
 } from "~/lib/s3"
+
+const logger = createBaseLogger({ path: "lib/storage" })
 
 export type UploadConfig =
   | {
@@ -66,6 +69,9 @@ class VercelBlobAssetStorage implements AssetStorage {
     contentType,
     contentDisposition,
   }: GetUploadConfigParams): Promise<UploadConfig> {
+    // `tags` (e.g. the S3 `scheduledAt` tag) is intentionally dropped: Vercel
+    // Blob has no tagging, and scheduled-publishing tag operations are no-op'd
+    // in preview, so no scheduling metadata is expected to survive here.
     return Promise.resolve({
       provider: "vercel-blob",
       handleUploadUrl: "/api/blob/upload",
@@ -75,7 +81,17 @@ class VercelBlobAssetStorage implements AssetStorage {
   }
 
   getReadUrl(key: string): Promise<string> {
-    return Promise.resolve(key.startsWith("https://") ? key : "")
+    if (key.startsWith("https://")) {
+      return Promise.resolve(key)
+    }
+    // Vercel Blob keys are stored as full blob URLs. A non-URL key (e.g. a
+    // legacy/seeded asset path) can't be resolved here and renders as an empty
+    // `src`; log it so the broken image is debuggable rather than mysterious.
+    logger.warn({
+      message: "Unable to resolve Vercel Blob read URL for non-URL key",
+      key,
+    })
+    return Promise.resolve("")
   }
 
   deleteFile(_key: string): Promise<void> {

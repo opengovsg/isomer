@@ -169,15 +169,26 @@ const config = {
     "@opengovsg/starter-kitty-validators",
   ],
   images: {
-    remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
-      ? [
-          {
-            protocol: "https",
-            hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
-          },
-          { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
-        ]
-      : [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
+    remotePatterns: [
+      ...(env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+        ? [
+            {
+              protocol: "https",
+              hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+            },
+          ]
+        : []),
+      // Vercel Blob is preview-only, so only trust the blob domain there —
+      // mirrors the preview-gated blob CSP entries above.
+      ...(env.NEXT_PUBLIC_APP_ENV === "preview"
+        ? [
+            {
+              protocol: "https",
+              hostname: "*.public.blob.vercel-storage.com",
+            },
+          ]
+        : []),
+    ],
   },
   async headers() {
     return [

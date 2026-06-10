@@ -87,6 +87,16 @@ const server = z
           path: ["NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME"],
         })
       }
+      // Static OTP bypasses OTP security entirely, so structurally forbid it
+      // outside preview — a boot-time failure, not an operational assumption.
+      if (data.DANGEROUSLY_SET_STATIC_OTP) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "DANGEROUSLY_SET_STATIC_OTP may only be set in preview environments",
+          path: ["DANGEROUSLY_SET_STATIC_OTP"],
+        })
+      }
     }
   })
 
