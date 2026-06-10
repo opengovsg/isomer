@@ -112,7 +112,6 @@ export const BaseBlock = ({
       align={variant === "vertical" ? "flex-start" : "center"}
       textAlign="start"
       onClick={onClick}
-      opacity={1}
       {...actualDraggableProps}
       {...containerProps}
     >
@@ -145,26 +144,15 @@ export const BaseBlock = ({
           {icon && (
             <Flex
               p="0.25rem"
-              bg={isHidden ? "gray.200" : "interaction.main-subtle.default"}
+              bg="interaction.main-subtle.default"
               borderRadius="4px"
               mr="0.25rem"
             >
-              <Icon
-                as={icon}
-                fontSize="0.75rem"
-                color={
-                  isHidden ? "base.content.medium" : "base.content.default"
-                }
-              />
+              <Icon as={icon} fontSize="0.75rem" color="base.content.default" />
             </Flex>
           )}
           <Stack align="start" gap="0.25rem" overflow="auto">
-            <Text
-              textStyle="subhead-2"
-              noOfLines={1}
-              wordBreak="break-word"
-              color={isHidden ? "base.content.medium" : undefined}
-            >
+            <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
               {label}
             </Text>
             <Description />
