@@ -58,7 +58,7 @@ jobs:
         uses: ./.github/actions/setup
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@8ad69a40dea06755a3c6db290f300a39e011433b # v17.1.0
+        uses: chromaui/action@05812acac141ce7d317a3f787be88122bca27cf4 # v17.3.0
         # Chromatic GitHub Action options
         with:
           workingDir: packages/components
@@ -85,12 +85,12 @@ jobs:
         run: pnpm --filter @opengovsg/isomer-components run build
       # Storybook bundles @prisma/client; Prisma's browser shim requires a generated client (not created by pnpm install).
       - name: Generate Prisma client
-        run: pnpm --filter isomer-studio exec prisma generate
+        run: pnpm --filter @isomer/db generate
       - name: Build preview-tw CSS
         run: pnpm --filter isomer-studio run build:preview-tw
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@8ad69a40dea06755a3c6db290f300a39e011433b # v17.1.0
+        uses: chromaui/action@05812acac141ce7d317a3f787be88122bca27cf4 # v17.3.0
         # Chromatic GitHub Action options
         with:
           workingDir: apps/studio

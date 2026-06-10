@@ -127,7 +127,7 @@ jobs:
     steps:
       - name: Notify start of deployment
         if: ${{ inputs.environment == 'production' }}
-        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -144,7 +144,7 @@ jobs:
           driver-opts: network=host
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@99214aa6889fcddfa57764031d71add364327e59 # v6.1.3
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ inputs.cicd-role }}
           role-session-name: github-action-application-deploy
@@ -243,7 +243,7 @@ jobs:
 
       - name: Notify if vulnerability threshold is exceeded (for production deployments only)
         if: ${{ steps.inspector.outputs.vulnerability_threshold_exceeded && inputs.environment == 'production' }}
-        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -288,7 +288,7 @@ jobs:
         uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@99214aa6889fcddfa57764031d71add364327e59 # v6.1.3
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ inputs.cicd-role }}
           role-session-name: github-action-application-deploy
@@ -348,7 +348,7 @@ jobs:
 
       - name: Notify end of deployment (success)
         if: ${{ inputs.environment == 'production' && success() }}
-        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -358,7 +358,7 @@ jobs:
 
       - name: Notify end of deployment (failure)
         if: ${{ inputs.environment == 'production' && failure() }}
-        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}

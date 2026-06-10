@@ -3,6 +3,7 @@ import { GrowthBook } from "@growthbook/growthbook"
 import {
   BANNER_FEATURE_KEY,
   CATEGORY_DROPDOWN_FEATURE_KEY,
+  EGAZETTE_INFO_FEATURE_KEY,
   IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
   IS_REDIRECTIONS_ENABLED_FEATURE_KEY,
   IS_SINGPASS_ENABLED_FEATURE_KEY,
@@ -45,4 +46,14 @@ export const createRedirectionsEnabledGbParameters = (isEnabled: boolean) => {
 
 export const createAntiScamBannerEnabledGbParameters = (isEnabled: boolean) => {
   return [IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY, isEnabled]
+}
+
+export const createEgazetteInfoGbParameters = ({
+  siteId,
+  gazettesCollectionId,
+}: {
+  siteId: string
+  gazettesCollectionId: string
+}) => {
+  return [EGAZETTE_INFO_FEATURE_KEY, { siteId, gazettesCollectionId }]
 }

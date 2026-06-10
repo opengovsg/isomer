@@ -39,7 +39,12 @@ const baseFolderSchema = z.object({
 
 export const baseEditFolderSchema = baseFolderSchema.extend({
   permalink: permalinkSchema,
-  title: z.string().min(1, { message: "Enter a title for this folder" }),
+  title: z
+    .string()
+    .min(1, { message: "Enter a title for this folder" })
+    .max(MAX_FOLDER_TITLE_LENGTH, {
+      message: `Folder title should be shorter than ${MAX_FOLDER_TITLE_LENGTH} characters.`,
+    }),
 })
 
 export const editFolderSchema = baseEditFolderSchema.superRefine(

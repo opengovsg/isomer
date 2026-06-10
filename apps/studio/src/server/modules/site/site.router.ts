@@ -173,6 +173,8 @@ export const siteRouter = router({
           { name: siteName, _kind: "name" },
           updatedConfig.search.clientId,
           updatedConfig.url,
+        ).catch((error) =>
+          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed"),
         )
 
       return updatedConfig
@@ -324,6 +326,8 @@ export const siteRouter = router({
           { colour: theme.colors.brand.canvas.inverse, _kind: "colour" },
           site.config.search.clientId,
           site.config.url,
+        ).catch((error) =>
+          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed"),
         )
       }
 

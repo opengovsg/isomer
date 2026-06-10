@@ -59,6 +59,11 @@ export interface AccountDeactivationEmailTemplateData extends BaseEmailTemplateD
   }[]
 }
 
+export interface GazetteDeletionEmailTemplateData extends BaseEmailTemplateData {
+  fileId: string
+  gazetteTitle: string
+}
+
 export interface EmailTemplate {
   subject: string
   body: string
