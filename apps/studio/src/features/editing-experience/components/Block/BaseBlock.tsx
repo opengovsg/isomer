@@ -1,4 +1,4 @@
-import type { ButtonProps, StackProps, IconProps } from "@chakra-ui/react"
+import type { ButtonProps, StackProps } from "@chakra-ui/react"
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
@@ -19,17 +19,14 @@ export type BaseBlockProps = {
 } & (
   | {
       icon: IconType
-      iconProps?: IconProps
     }
   | {
       icon?: undefined
-      iconProps?: never
     }
 )
 
 export const BaseBlock = ({
   icon,
-  iconProps: _iconProps,
   dragHandle,
   label,
   description,

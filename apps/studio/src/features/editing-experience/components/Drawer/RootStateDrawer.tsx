@@ -1,4 +1,4 @@
-import type { StackProps, IconProps } from "@chakra-ui/react"
+import type { StackProps } from "@chakra-ui/react"
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   IsomerComponent,
@@ -125,9 +125,6 @@ const FixedBlock = () => {
       gap: "0.75rem",
       align: "flex-start",
     }
-    const iconProps: IconProps = {
-      boxSize: "1.25rem",
-    }
     return (
       <>
         <BaseBlock
@@ -139,7 +136,6 @@ const FixedBlock = () => {
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
           containerProps={containerProps}
           icon={BiCog}
-          iconProps={iconProps}
         />
         {isUserIsomerAdmin && (
           <BaseBlock
@@ -151,7 +147,6 @@ const FixedBlock = () => {
             description="Define and manage filters for this Collection."
             containerProps={containerProps}
             icon={BiSlider}
-            iconProps={iconProps}
           />
         )}
       </>
