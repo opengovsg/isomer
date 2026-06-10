@@ -61,10 +61,10 @@ const GazettesPage: NextPageWithLayout = () => {
             Gazettes are not enabled for this account
           </Text>
           <Text textStyle="body-2" color="base.content.medium">
-            Please contact
+            Please contact{" "}
             <Link variant="inline" href={ISOMER_SUPPORT_LINK}>
               support
-            </Link>
+            </Link>{" "}
             if you believe this is incorrect.
           </Text>
         </VStack>
