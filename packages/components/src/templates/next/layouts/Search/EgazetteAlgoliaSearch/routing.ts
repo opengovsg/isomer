@@ -6,13 +6,18 @@ interface IndexUiState {
 
 interface EgazetteRouteState {
   q?: string
-  category?: string[]
-  subCategory?: string[]
+  category?: string | string[]
+  subCategory?: string | string[]
   minYear?: string
   maxYear?: string
   minMonth?: string
   maxMonth?: string
 }
+
+// The history router serializes a single-element array as a bare `category=X`
+// param, which parses back as a string — coerce so single-value deep links work.
+const toArray = (value: string | string[] | undefined) =>
+  value === undefined || Array.isArray(value) ? value : [value]
 
 const splitRange = (range: string | undefined) => {
   if (!range) return [undefined, undefined] as const
@@ -44,9 +49,10 @@ export const createEgazetteRouting = (indexName: string) => ({
     },
     routeToState(routeState: EgazetteRouteState): Record<string, IndexUiState> {
       const refinementList: Record<string, string[]> = {}
-      if (routeState.category) refinementList.category = routeState.category
-      if (routeState.subCategory)
-        refinementList.subCategory = routeState.subCategory
+      const category = toArray(routeState.category)
+      if (category) refinementList.category = category
+      const subCategory = toArray(routeState.subCategory)
+      if (subCategory) refinementList.subCategory = subCategory
 
       const range: Record<string, string> = {}
       const yearRange = joinRange(routeState.minYear, routeState.maxYear)

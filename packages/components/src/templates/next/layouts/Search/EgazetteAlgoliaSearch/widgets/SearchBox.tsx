@@ -1,14 +1,20 @@
+import type { UseSearchBoxProps } from "react-instantsearch"
 import { useEffect, useRef, useState } from "react"
 import { BiSearch } from "react-icons/bi"
 import { useSearchBox } from "react-instantsearch"
 
 const DEBOUNCE_MS = 250
 
+// Disable the connector's default debounce — we manage it locally so the input stays in sync.
+// Must be a stable reference: useSearchBox re-registers the widget when its props change
+// identity, which loops into "Too many re-renders" on any refinement change.
+const queryHook: NonNullable<UseSearchBoxProps["queryHook"]> = (
+  newQuery,
+  search,
+) => search(newQuery)
+
 export const SearchBox = () => {
-  const { query, refine } = useSearchBox({
-    // Disable the connector's default debounce — we manage it locally so the input stays in sync.
-    queryHook: (newQuery, search) => search(newQuery),
-  })
+  const { query, refine } = useSearchBox({ queryHook })
   const [value, setValue] = useState(query)
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 

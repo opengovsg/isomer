@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Decorator, Meta, StoryObj } from "@storybook/react-vite"
+import { useEffect } from "react"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import {
   SEARCHSG_TEST_CLIENT_ID,
   withSearchSgSetup,
@@ -135,20 +137,102 @@ const EGAZETTE_STAGING_CONFIG = {
   ],
 }
 
+const EGAZETTE_ARGS: Story["args"] = {
+  layout: "search",
+  site: generateSiteConfig({
+    siteName: "Singapore Government e-Gazette",
+    search: EGAZETTE_STAGING_CONFIG,
+  }),
+  meta: {
+    description: "Search the Singapore Government e-Gazette",
+  },
+  page: {
+    title: "Search the e-Gazette",
+    permalink: "/search",
+    lastModified: "2026-01-15T00:00:00.000Z",
+  },
+}
+
 export const EgazetteAlgolia: Story = {
-  args: {
-    layout: "search",
-    site: generateSiteConfig({
-      siteName: "Singapore Government e-Gazette",
-      search: EGAZETTE_STAGING_CONFIG,
-    }),
-    meta: {
-      description: "Search the Singapore Government e-Gazette",
-    },
-    page: {
-      title: "Search the e-Gazette",
-      permalink: "/search",
-      lastModified: "2026-01-15T00:00:00.000Z",
-    },
+  args: EGAZETTE_ARGS,
+}
+
+// The stories below hit the live staging Algolia index, so hit counts and
+// results vary between runs — skip Chromatic snapshots to avoid flakiness.
+const liveAlgoliaParameters = {
+  chromatic: { disableSnapshot: true },
+}
+
+export const EgazetteAlgoliaWithCategorySelected: Story = {
+  args: EGAZETTE_ARGS,
+  parameters: liveAlgoliaParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByRole("checkbox", { name: /^Government Gazette/ }),
+    )
+    // Sub-category section appears only once a category is selected, in the
+    // order declared by the taxonomy, with zero-count rows dimmed + disabled.
+    await expect(
+      await canvas.findByRole("checkbox", { name: /^Advertisements/ }),
+    ).toBeInTheDocument()
+  },
+}
+
+export const EgazetteAlgoliaWithYearRange: Story = {
+  args: EGAZETTE_ARGS,
+  parameters: liveAlgoliaParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // Range inputs stay disabled until the first Algolia response arrives.
+    const yearFromInput = canvas.getAllByLabelText("From")[0]
+    if (!yearFromInput) throw new Error("Year range input not found")
+    await waitFor(() => expect(yearFromInput).toBeEnabled(), { timeout: 10000 })
+    await userEvent.type(yearFromInput, "2024")
+    const goButton = canvas.getAllByRole("button", { name: "Go" })[0]
+    if (!goButton) throw new Error("Year range submit button not found")
+    await userEvent.click(goButton)
+  },
+}
+
+// Seeds the URL with egazette deep-link params before <InstantSearch> mounts,
+// then restores the original URL on unmount so other stories are unaffected.
+const withDeepLinkParams = (search: string): Decorator => {
+  return (StoryComponent) => {
+    const original = `${window.location.pathname}${window.location.search}`
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${search}`,
+    )
+    // oxlint-disable-next-line rules-of-hooks -- decorators render as components
+    useEffect(() => {
+      return () => window.history.replaceState(null, "", original)
+    }, [original])
+    return <StoryComponent />
+  }
+}
+
+export const EgazetteAlgoliaWithDeepLink: Story = {
+  args: EGAZETTE_ARGS,
+  parameters: liveAlgoliaParameters,
+  decorators: [
+    withDeepLinkParams("?q=tender&category=Government%20Gazette&minYear=2024"),
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // URL params hydrate the initial UI state on mount.
+    await expect(canvas.getByRole("searchbox")).toHaveValue("tender")
+    // isRefined on the checkbox only reflects once the first Algolia response lands
+    await waitFor(
+      () =>
+        expect(
+          canvas.getByRole("checkbox", { name: /^Government Gazette/ }),
+        ).toBeChecked(),
+      { timeout: 10000 },
+    )
+    await expect(
+      await canvas.findByRole("checkbox", { name: /^Advertisements/ }),
+    ).toBeInTheDocument()
   },
 }
