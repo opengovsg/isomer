@@ -1,45 +1,98 @@
 import { atom, useAtom, useAtomValue } from "jotai"
+import { useMemo } from "react"
 
-import type { RedirectRow } from "./types"
+import type { RedirectRow, RedirectSortField } from "./types"
+
+export const REDIRECTS_PAGE_SIZE = 25
+
+const HOUR_MS = 60 * 60 * 1000
+const now = Date.now()
 
 const SEED_ROWS: RedirectRow[] = [
   {
     id: "1",
     source: "/test-url-9/very-long-url-that-truncates-hello",
     destination: "https://www.google.com",
-    publishedAt: new Date(),
+    publishedAt: new Date(now),
   },
   {
     id: "2",
     source: "/resources/media-room/*",
     destination: "/newsroom",
-    publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    publishedAt: new Date(now - 48 * HOUR_MS),
   },
   {
     id: "3",
     source: "/resources/media-room/events/",
     destination: "/newsroom/announcements",
-    publishedAt: new Date(),
+    publishedAt: new Date(now - 1 * HOUR_MS),
   },
   {
     id: "4",
     source: "/resources/media-room/2023/",
     destination: "/newsroom/updates",
-    publishedAt: new Date(),
+    publishedAt: new Date(now - 2 * HOUR_MS),
   },
+  // Bulk rows so the mock data spans multiple pages
+  ...Array.from({ length: 56 }, (_, index) => ({
+    id: String(index + 5),
+    source: `/archive/news-${index + 1}`,
+    destination: `/newsroom/archive/${index + 1}`,
+    publishedAt: new Date(now - (index + 3) * 12 * HOUR_MS),
+  })),
 ]
 
 const redirectsAtom = atom<RedirectRow[]>(SEED_ROWS)
 
+export interface ListRedirectsParams {
+  limit: number
+  offset: number
+  sortBy: RedirectSortField
+  sortDirection: "asc" | "desc"
+}
+
+const compareRows =
+  (sortBy: RedirectSortField, sortDirection: "asc" | "desc") =>
+  (a: RedirectRow, b: RedirectRow): number => {
+    const order = sortDirection === "asc" ? 1 : -1
+    if (sortBy === "publishedAt") {
+      return order * (a.publishedAt.getTime() - b.publishedAt.getTime())
+    }
+    return order * a[sortBy].localeCompare(b[sortBy])
+  }
+
 // TODO: Replace with trpc.redirect.list.useQuery when backend is ready
-// (server/modules/redirect/redirect.router.ts). The endpoint must exclude
-// soft-deleted redirects — only live rows are ever shown.
-export function useListRedirects(_siteId: number): {
+// (server/modules/redirect/redirect.router.ts). The endpoint paginates with
+// limit/offset, sorts server-side (sorting within a single page would be
+// misleading), and must exclude soft-deleted redirects — only live rows are
+// ever shown.
+export function useListRedirects(
+  _siteId: number,
+  { limit, offset, sortBy, sortDirection }: ListRedirectsParams,
+): {
   data: RedirectRow[]
   isLoading: boolean
 } {
-  const data = useAtomValue(redirectsAtom)
+  const rows = useAtomValue(redirectsAtom)
+  const data = useMemo(
+    () =>
+      [...rows]
+        .sort(compareRows(sortBy, sortDirection))
+        .slice(offset, offset + limit),
+    [rows, limit, offset, sortBy, sortDirection],
+  )
   return { data, isLoading: false }
+}
+
+// TODO: Replace with trpc.redirect.count.useQuery when backend is ready. The
+// endpoint counts live (non-soft-deleted) redirects for the site, used to
+// derive the page count.
+export function useCountRedirects(_siteId: number): {
+  data: number
+  isLoading: boolean
+} {
+  const rows = useAtomValue(redirectsAtom)
+  return { data: rows.length, isLoading: false }
 }
 
 // TODO: Replace with trpc.redirect.create.useMutation when backend is ready.

@@ -1,4 +1,4 @@
-import type { SortingState } from "@tanstack/react-table"
+import type { OnChangeFn, SortingState } from "@tanstack/react-table"
 import {
   Box,
   HStack,
@@ -12,10 +12,10 @@ import { useToast } from "@opengovsg/design-system-react"
 import {
   createColumnHelper,
   getCoreRowModel,
-  getSortedRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   BiDownArrowAlt,
   BiSortAlt2,
@@ -29,9 +29,15 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { useTablePagination } from "~/hooks/useTablePagination"
 
-import type { RedirectRow } from "../types"
-import { useDeleteRedirect, useListRedirects } from "../api"
+import type { RedirectRow, RedirectSortField } from "../types"
+import {
+  REDIRECTS_PAGE_SIZE,
+  useCountRedirects,
+  useDeleteRedirect,
+  useListRedirects,
+} from "../api"
 import { formatAddedAt } from "../utils"
 import { DeleteRedirectModal } from "./DeleteRedirectModal"
 
@@ -200,7 +206,6 @@ export const RedirectsTable = ({
   siteId,
 }: RedirectsTableProps): JSX.Element => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const { data: redirects, isLoading } = useListRedirects(siteId)
   const { mutate: deleteRedirect, isPending } = useDeleteRedirect()
   // Newest redirects first, matching the design's default sort on "Added"
   const [sorting, setSorting] = useState<SortingState>([
@@ -211,6 +216,43 @@ export const RedirectsTable = ({
   )
 
   const columns = useMemo(() => getColumns(setRedirectToDelete), [])
+
+  const { data: totalRowCount, isLoading: isCountLoading } =
+    useCountRedirects(siteId)
+
+  const { limit, onPaginationChange, skip, pagination, pageCount } =
+    useTablePagination({
+      pageIndex: 0,
+      pageSize: REDIRECTS_PAGE_SIZE,
+      totalCount: totalRowCount,
+    })
+
+  // Rows are paginated server-side, so sorting must happen server-side too —
+  // sorting only the visible page would be misleading
+  const { data: redirects, isLoading } = useListRedirects(siteId, {
+    limit,
+    offset: skip,
+    sortBy: (sorting[0]?.id ?? "publishedAt") as RedirectSortField,
+    sortDirection: (sorting[0]?.desc ?? true) ? "desc" : "asc",
+  })
+
+  // Changing the sort order reshuffles rows across pages, so jump back to
+  // the first page to avoid showing a stale slice
+  const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
+    setSorting(updater)
+    onPaginationChange((prev) => ({ ...prev, pageIndex: 0 }))
+  }
+
+  // Deleting the last row of the last page leaves the page index past the
+  // end — step back to the new last page
+  useEffect(() => {
+    if (pagination.pageIndex > 0 && pagination.pageIndex >= pageCount) {
+      onPaginationChange((prev) => ({
+        ...prev,
+        pageIndex: Math.max(0, pageCount - 1),
+      }))
+    }
+  }, [pagination.pageIndex, pageCount, onPaginationChange])
 
   const handleDelete = (redirect: RedirectRow) =>
     deleteRedirect(
@@ -226,16 +268,23 @@ export const RedirectsTable = ({
   const tableInstance = useReactTable<RedirectRow>({
     columns,
     data: redirects,
-    state: { sorting },
-    onSortingChange: setSorting,
+    state: { sorting, pagination },
+    onSortingChange: handleSortingChange,
+    manualPagination: true,
+    manualSorting: true,
+    autoResetPageIndex: false,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onPaginationChange,
+    pageCount,
   })
 
   return (
     <Stack spacing="0.5rem">
       <Datatable
-        isFetching={isLoading}
+        pagination
+        totalRowCount={totalRowCount}
+        isFetching={isLoading || isCountLoading}
         emptyPlaceholder={
           <EmptyTablePlaceholder
             groupLabel="redirects"

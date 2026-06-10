@@ -9,6 +9,8 @@ export interface RedirectRow {
   publishedAt: Date
 }
 
+export type RedirectSortField = "source" | "destination" | "publishedAt"
+
 const hasInvalidChars = (val: string) =>
   Array.from(val).some((c) => c.charCodeAt(0) < 32 || c === "\\")
 
