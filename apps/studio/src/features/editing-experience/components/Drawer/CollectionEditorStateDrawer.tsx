@@ -204,7 +204,10 @@ const SaveButton = ({
       w="100%"
       isLoading={isLoading}
       isDisabled={!isEmpty(errors)}
-      onClick={onClick}
+      onClick={() => {
+        if (!isEmpty(errors)) return
+        onClick()
+      }}
     >
       Save changes
     </Button>
