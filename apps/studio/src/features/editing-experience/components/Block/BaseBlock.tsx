@@ -105,14 +105,14 @@ export const BaseBlock = ({
         bg: "utility.feedback.critical-subtle",
         borderColor: "utility.feedback.critical",
       }}
-      bg={isHidden ? "gray.100" : "white"}
+      bg="white"
       py={variant === "vertical" ? "1.25rem" : "0.75rem"}
       px={variant === "vertical" ? "1.25rem" : "0.75rem"}
       flexDirection="row"
       align={variant === "vertical" ? "flex-start" : "center"}
       textAlign="start"
       onClick={onClick}
-      opacity={isHidden ? 0.7 : 1}
+      opacity={1}
       {...actualDraggableProps}
       {...containerProps}
     >
