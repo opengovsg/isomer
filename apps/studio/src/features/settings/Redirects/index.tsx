@@ -12,7 +12,7 @@ export const RedirectsSettings = ({
   siteId,
 }: RedirectsSettingsProps): JSX.Element => (
   <Stack spacing="1.5rem" px="2rem" py="1.5rem" w="full">
-    <RedirectsHeader siteId={siteId} />
+    <RedirectsHeader />
 
     <Stack spacing="1.25rem">
       <AddRedirectCard siteId={siteId} />
@@ -21,7 +21,7 @@ export const RedirectsSettings = ({
         <Stack spacing="0.5rem">
           <Text textStyle="h6">Redirects</Text>
           <Text textStyle="body-2" color="base.content.medium">
-            Any changes made to this table will take effect when you publish.
+            Changes to this table are published to your site immediately.
           </Text>
         </Stack>
 

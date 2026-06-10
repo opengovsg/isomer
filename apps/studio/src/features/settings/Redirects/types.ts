@@ -1,14 +1,12 @@
 import { z } from "zod"
 
-export type RedirectStatus = "draft" | "active" | "deleted"
-
+// Redirects are published as soon as they are added, and deleted rows are
+// never shown, so every visible row is a live redirect
 export interface RedirectRow {
   id: string
   source: string
   destination: string
-  publishedAt: Date | null
-  status: RedirectStatus
-  hasUnpublishedChanges: boolean
+  publishedAt: Date
 }
 
 const hasInvalidChars = (val: string) =>

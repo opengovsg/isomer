@@ -4,17 +4,11 @@ import {
   HStack,
   Icon,
   IconButton,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverContent,
-  PopoverFooter,
-  PopoverTrigger,
   Stack,
   Text,
   Tooltip,
 } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -32,10 +26,14 @@ import {
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
+import {
+  BRIEF_TOAST_SETTINGS,
+  SETTINGS_TOAST_MESSAGES,
+} from "~/constants/toast"
 
 import type { RedirectRow } from "../types"
 import { useDeleteRedirect, useListRedirects } from "../api"
-import { RedirectStatusBadge } from "./RedirectStatusBadge"
+import { DeleteRedirectModal } from "./DeleteRedirectModal"
 
 const columnsHelper = createColumnHelper<RedirectRow>()
 
@@ -77,7 +75,7 @@ function SortableHeader({
   )
 }
 
-const getColumns = (onDelete: (id: string) => void) => [
+const getColumns = (onDeleteClick: (row: RedirectRow) => void) => [
   columnsHelper.accessor("source", {
     minSize: 250,
     enableSorting: true,
@@ -159,7 +157,6 @@ const getColumns = (onDelete: (id: string) => void) => [
   columnsHelper.accessor("publishedAt", {
     size: 160,
     enableSorting: true,
-    sortUndefined: "last",
     header: ({ column }) => (
       <SortableHeader
         label="Published"
@@ -167,26 +164,11 @@ const getColumns = (onDelete: (id: string) => void) => [
         onClick={column.getToggleSortingHandler()}
       />
     ),
-    cell: ({ getValue }) => {
-      const val = getValue()
-      return (
-        <Text textStyle="body-2" color="base.content.medium">
-          {val
-            ? formatDistanceToNow(val, { addSuffix: true })
-            : "not published yet"}
-        </Text>
-      )
-    },
-  }),
-  columnsHelper.accessor("status", {
-    size: 120,
-    enableSorting: false,
-    header: () => (
-      <TableHeader textStyle="subhead-2" color="base.content.medium">
-        Status
-      </TableHeader>
+    cell: ({ getValue }) => (
+      <Text textStyle="body-2" color="base.content.medium">
+        {formatDistanceToNow(getValue(), { addSuffix: true })}
+      </Text>
     ),
-    cell: ({ getValue }) => <RedirectStatusBadge status={getValue()} />,
   }),
   columnsHelper.display({
     id: "delete",
@@ -197,61 +179,18 @@ const getColumns = (onDelete: (id: string) => void) => [
         Delete
       </TableHeader>
     ),
-    cell: ({ row }) => {
-      if (row.original.status === "deleted") return null
-      return <DeleteCell id={row.original.id} onDelete={onDelete} />
-    },
+    cell: ({ row }) => (
+      <IconButton
+        aria-label={`Delete redirect for ${row.original.source}`}
+        icon={<BiTrash />}
+        variant="clear"
+        colorScheme="critical"
+        size="sm"
+        onClick={() => onDeleteClick(row.original)}
+      />
+    ),
   }),
 ]
-
-function DeleteCell({
-  id,
-  onDelete,
-}: {
-  id: string
-  onDelete: (id: string) => void
-}): JSX.Element {
-  return (
-    <Popover isLazy placement="left">
-      {({ onClose }) => (
-        <>
-          <PopoverTrigger>
-            <IconButton
-              aria-label="Delete redirect"
-              icon={<BiTrash />}
-              variant="clear"
-              colorScheme="critical"
-              size="sm"
-            />
-          </PopoverTrigger>
-          <PopoverContent>
-            <PopoverArrow />
-            <PopoverBody>
-              <Text textStyle="body-2">Delete this redirect?</Text>
-            </PopoverBody>
-            <PopoverFooter>
-              <HStack justifyContent="flex-end" spacing="0.5rem">
-                <Button variant="clear" size="xs" onClick={onClose}>
-                  Cancel
-                </Button>
-                <Button
-                  colorScheme="critical"
-                  size="xs"
-                  onClick={() => {
-                    onDelete(id)
-                    onClose()
-                  }}
-                >
-                  Delete
-                </Button>
-              </HStack>
-            </PopoverFooter>
-          </PopoverContent>
-        </>
-      )}
-    </Popover>
-  )
-}
 
 interface RedirectsTableProps {
   siteId: number
@@ -260,13 +199,26 @@ interface RedirectsTableProps {
 export const RedirectsTable = ({
   siteId,
 }: RedirectsTableProps): JSX.Element => {
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { data: redirects, isLoading } = useListRedirects(siteId)
-  const { mutate: deleteRedirect } = useDeleteRedirect()
+  const { mutate: deleteRedirect, isPending } = useDeleteRedirect()
   const [sorting, setSorting] = useState<SortingState>([])
+  const [redirectToDelete, setRedirectToDelete] = useState<RedirectRow | null>(
+    null,
+  )
 
-  const handleDelete = (id: string) => deleteRedirect({ siteId, id })
+  const columns = useMemo(() => getColumns(setRedirectToDelete), [])
 
-  const columns = useMemo(() => getColumns(handleDelete), [handleDelete])
+  const handleDelete = (redirect: RedirectRow) =>
+    deleteRedirect(
+      { siteId, id: redirect.id },
+      {
+        onSuccess: () => {
+          setRedirectToDelete(null)
+          toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
+        },
+      },
+    )
 
   const tableInstance = useReactTable<RedirectRow>({
     columns,
@@ -290,6 +242,12 @@ export const RedirectsTable = ({
         }
         instance={tableInstance}
         sx={{ tableLayout: "fixed" }}
+      />
+      <DeleteRedirectModal
+        redirect={redirectToDelete}
+        isPending={isPending}
+        onClose={() => setRedirectToDelete(null)}
+        onDelete={handleDelete}
       />
     </Stack>
   )

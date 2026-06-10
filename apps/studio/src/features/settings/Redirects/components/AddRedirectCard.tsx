@@ -13,8 +13,13 @@ import {
   Button,
   FormErrorMessage,
   FormLabel,
+  useToast,
 } from "@opengovsg/design-system-react"
 import { BiPlus, BiRightArrowAlt } from "react-icons/bi"
+import {
+  BRIEF_TOAST_SETTINGS,
+  SETTINGS_TOAST_MESSAGES,
+} from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 
 import { useCreateRedirect } from "../api"
@@ -37,6 +42,7 @@ export const AddRedirectCard = ({
     schema: addRedirectSchema,
     defaultValues: { source: "", destination: "" },
   })
+  const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { mutate: createRedirect, isPending } = useCreateRedirect()
 
   const [source, destination] = watch(["source", "destination"])
@@ -44,8 +50,23 @@ export const AddRedirectCard = ({
 
   const onSubmit = ({ source, destination }: AddRedirectInput) => {
     const normalisedSource = `/${source.replace(/^\/+/, "")}`
-    createRedirect({ siteId, source: normalisedSource, destination })
-    reset()
+    createRedirect(
+      { siteId, source: normalisedSource, destination },
+      {
+        onSuccess: () => {
+          reset()
+          toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
+        },
+        // The inputs are left untouched on conflict so the user can adjust
+        // the source instead of retyping everything
+        onError: () =>
+          toast({
+            title: "A redirect already exists for this path",
+            description: `Delete the redirect for ${normalisedSource} first if you want to change where it points to.`,
+            status: "error",
+          }),
+      },
+    )
   }
 
   return (
@@ -59,7 +80,7 @@ export const AddRedirectCard = ({
         Add new redirects
       </Text>
       <Text textStyle="body-2" color="base.content.medium" mb="1.25rem">
-        New redirects need to be published to go live.
+        New redirects are published to your site as soon as you add them.
       </Text>
 
       <HStack
