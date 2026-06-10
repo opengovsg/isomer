@@ -39,7 +39,7 @@ describe("auth.email", () => {
       const result = caller.login({ email: "" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         "Please sign in with a valid email address.",
       )
     })
@@ -49,7 +49,7 @@ describe("auth.email", () => {
       const result = caller.login({ email: "not-an-email" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         "Please sign in with a valid email address.",
       )
     })
@@ -88,7 +88,7 @@ describe("auth.email", () => {
       const result = caller.login({ email: TEST_VALID_EMAIL })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "UNAUTHORIZED",
           message: "Email address is not whitelisted",
@@ -165,7 +165,7 @@ describe("auth.email", () => {
             email: TEST_VALID_EMAIL,
             token: INVALID_OTP,
           }),
-        ).rejects.toThrowError()
+        ).rejects.toThrow()
 
         const result = caller.verifyOtp({
           email: TEST_VALID_EMAIL,
@@ -329,7 +329,7 @@ describe("auth.email", () => {
             email: TEST_VALID_EMAIL,
             token: INVALID_OTP,
           }),
-        ).rejects.toThrowError()
+        ).rejects.toThrow()
 
         const result = caller.verifyOtp({
           email: TEST_VALID_EMAIL,
@@ -444,7 +444,7 @@ describe("auth.email", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Please request for another OTP",
@@ -473,12 +473,10 @@ describe("auth.email", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Token is invalid or has expired",
-        }),
-      )
+      await expect(result).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+        message: "Token is invalid or has expired",
+      })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
@@ -501,12 +499,10 @@ describe("auth.email", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Token is invalid or has expired",
-        }),
-      )
+      await expect(result).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+        message: "Token is invalid or has expired",
+      })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
@@ -530,12 +526,10 @@ describe("auth.email", () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Too many attempts",
-        }),
-      )
+      await expect(result).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+        message: "Too many attempts",
+      })
       await expect(
         db.selectFrom("AuditLog").selectAll().execute(),
       ).resolves.toHaveLength(0)
