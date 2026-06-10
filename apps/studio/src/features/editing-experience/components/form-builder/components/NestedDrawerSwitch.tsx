@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { composePaths, type ArrayLayoutProps } from "@jsonforms/core"
 
 import type { UseArrayReturn } from "../hooks/useArray"
@@ -5,7 +6,7 @@ import { ComplexEditorNestedDrawer } from "./ComplexEditorNestedDrawer"
 
 type NestedDrawerSwitchProps = ArrayLayoutProps &
   UseArrayReturn & {
-    children: React.ReactNode
+    children: ReactNode
   }
 /**
  * Renders the nested item drawer when a row is selected, the list otherwise.
@@ -25,26 +26,24 @@ export const NestedDrawerSwitch = ({
   handleRemoveSelectedItem,
   data,
 }: NestedDrawerSwitchProps) => {
+  if (selectedIndex === undefined) {
+    return children
+  }
+
   return (
-    <>
-      {selectedIndex !== undefined ? (
-        <ComplexEditorNestedDrawer
-          renderers={renderers}
-          cells={cells}
-          visible={visible}
-          schema={schema}
-          uischema={childUiSchema}
-          path={composePaths(path, `${selectedIndex}`)}
-          label={label}
-          setSelectedIndex={setSelectedIndex}
-          isRemoveItemDisabled={isRemoveItemDisabled}
-          handleRemoveItem={handleRemoveSelectedItem(path, selectedIndex)}
-          selectedIndex={selectedIndex}
-          maxIndex={data - 1}
-        />
-      ) : (
-        children
-      )}
-    </>
+    <ComplexEditorNestedDrawer
+      renderers={renderers}
+      cells={cells}
+      visible={visible}
+      schema={schema}
+      uischema={childUiSchema}
+      path={composePaths(path, `${selectedIndex}`)}
+      label={label}
+      setSelectedIndex={setSelectedIndex}
+      isRemoveItemDisabled={isRemoveItemDisabled}
+      handleRemoveItem={handleRemoveSelectedItem(path, selectedIndex)}
+      selectedIndex={selectedIndex}
+      maxIndex={data - 1}
+    />
   )
 }
