@@ -153,6 +153,20 @@ const FixedBlock = () => {
     )
   }
 
+  if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
+    return (
+      <BaseBlock
+        onClick={() => {
+          setCurrActiveIdx(0)
+          setDrawerState({ state: "collectionEditor", type: "display" })
+        }}
+        label="Collection settings"
+        description="Summary, style, categories and sorting"
+        icon={BiPin}
+      />
+    )
+  }
+
   if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Database) {
     return (
       <VStack gap="1rem" w="100%" align="start">
