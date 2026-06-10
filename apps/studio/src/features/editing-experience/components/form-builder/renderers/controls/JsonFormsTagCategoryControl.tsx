@@ -17,12 +17,12 @@ import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyArray } from "../../components/EmptyArray"
-import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
+import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
+import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
-import { TagRowActionsMenu } from "./TagRowActionsMenu"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
@@ -63,7 +63,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     isAddItemDisabled,
     isRemoveItemDisabled,
     childUiSchema,
-    handleRemoveItem,
+    handleRemoveSelectedItem,
     onDragEnd,
   } = arrayResult
 
@@ -82,7 +82,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   })
 
   return (
-    <NestedDrawerProvider {...props} {...arrayResult}>
+    <NestedDrawerSwitch {...props} {...arrayResult}>
       {duplicateFilterIndices.size > 0 && <DuplicateLabelError noun="filter" />}
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
@@ -164,7 +164,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                                   schema={schema}
                                   uischema={childUiSchema}
                                   enabled={enabled}
-                                  removeItem={handleRemoveItem}
+                                  removeItem={handleRemoveSelectedItem}
                                 />
                                 <DraggableTagButton.Subtitle>
                                   {subtitle}
@@ -215,7 +215,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
           onConfirm={handleConfirmDelete}
         />
       )}
-    </NestedDrawerProvider>
+    </NestedDrawerSwitch>
   )
 }
 

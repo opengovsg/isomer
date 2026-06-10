@@ -1,16 +1,5 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  MenuButton,
-  MenuList,
-  Portal,
-  Stack,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, Flex, HStack, Icon, Stack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
   composePaths,
@@ -19,12 +8,7 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import {
-  Button,
-  IconButton,
-  Infobox,
-  Menu,
-} from "@opengovsg/design-system-react"
+import { Button, Infobox } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { useMemo, useState } from "react"
 import {
@@ -32,9 +16,7 @@ import {
   BiGridVertical,
   BiInfoCircle,
   BiPurchaseTag,
-  BiTrash,
 } from "react-icons/bi"
-import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
@@ -45,12 +27,12 @@ import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyCategory } from "../../components/EmptyCategory"
-import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
+import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
+import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
-import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
 
 interface CategoryOptionsExpandedEditorProps extends ArrayLayoutProps {
@@ -97,7 +79,7 @@ function CategoryOptionsExpandedEditor({
     isAddItemDisabled,
     isRemoveItemDisabled,
     childUiSchema,
-    handleRemoveItem,
+    handleRemoveSelectedItem,
     onDragEnd,
   } = arrayResult
 
@@ -121,7 +103,7 @@ function CategoryOptionsExpandedEditor({
   })
 
   return (
-    <NestedDrawerProvider {...props} {...arrayResult}>
+    <NestedDrawerSwitch {...props} {...arrayResult}>
       <VStack align="stretch" spacing={0} w="full">
         <Infobox
           width="100%"
@@ -205,7 +187,7 @@ function CategoryOptionsExpandedEditor({
                                     schema={schema}
                                     uischema={childUiSchema}
                                     enabled={enabled}
-                                    removeItem={handleRemoveItem}
+                                    removeItem={handleRemoveSelectedItem}
                                   />
                                   {hasError && (
                                     <DraggableTagButton.ErrorCaption>
@@ -217,33 +199,12 @@ function CategoryOptionsExpandedEditor({
                                 </DraggableTagButton.Content>
                               </DraggableTagButton.Body>
                               <DraggableTagButton.Trailing>
-                                <Menu isLazy>
-                                  <MenuButton
-                                    as={IconButton}
-                                    icon={
-                                      <BiDotsHorizontalRounded fontSize="1.5rem" />
-                                    }
-                                    {...ROW_ACTIONS_MENU_BUTTON_PROPS}
-                                    isDisabled={isRemoveItemDisabled}
-                                    aria-label={`Option ${index + 1} actions`}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                  <Portal>
-                                    <MenuList>
-                                      <MenuItem
-                                        colorScheme="critical"
-                                        icon={<BiTrash fontSize="1rem" />}
-                                        isDisabled={isRemoveItemDisabled}
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          openDeleteModal(index)
-                                        }}
-                                      >
-                                        Delete option
-                                      </MenuItem>
-                                    </MenuList>
-                                  </Portal>
-                                </Menu>
+                                <TagRowActionsMenu
+                                  noun="option"
+                                  index={index}
+                                  isDisabled={isRemoveItemDisabled}
+                                  onDelete={() => openDeleteModal(index)}
+                                />
                               </DraggableTagButton.Trailing>
                             </DraggableTagButton.Root>
                           )}
@@ -275,7 +236,7 @@ function CategoryOptionsExpandedEditor({
           onConfirm={handleConfirmDelete}
         />
       )}
-    </NestedDrawerProvider>
+    </NestedDrawerSwitch>
   )
 }
 

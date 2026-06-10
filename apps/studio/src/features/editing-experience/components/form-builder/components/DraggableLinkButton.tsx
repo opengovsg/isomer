@@ -30,8 +30,7 @@ import { trpc } from "~/utils/trpc"
 import type { LinkTypesWithHrefFormat } from "../../LinkEditor/constants"
 import type { DraggableArrayItemRenderProps } from "./types"
 import { LINK_TYPES } from "../../LinkEditor/constants"
-import { getLinkHrefType } from "../../LinkEditor/utils"
-import { parseHref } from "../renderers/controls/utils/parseHref"
+import { getLinkHrefType, parseHref } from "../../LinkEditor/utils"
 import { LinkErrorBoundary } from "./LinkErrorBoundary"
 
 interface SuspendableLabelProps {

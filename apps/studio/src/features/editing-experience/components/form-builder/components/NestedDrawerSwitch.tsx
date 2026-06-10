@@ -3,11 +3,14 @@ import { composePaths, type ArrayLayoutProps } from "@jsonforms/core"
 import type { UseArrayReturn } from "../hooks/useArray"
 import { ComplexEditorNestedDrawer } from "./ComplexEditorNestedDrawer"
 
-type NestedDrawerProviderProps = ArrayLayoutProps &
+type NestedDrawerSwitchProps = ArrayLayoutProps &
   UseArrayReturn & {
     children: React.ReactNode
   }
-export const NestedDrawerProvider = ({
+/**
+ * Renders the nested item drawer when a row is selected, the list otherwise.
+ */
+export const NestedDrawerSwitch = ({
   children,
   selectedIndex,
   cells,
@@ -19,9 +22,9 @@ export const NestedDrawerProvider = ({
   label,
   setSelectedIndex,
   isRemoveItemDisabled,
-  handleRemoveItem,
+  handleRemoveSelectedItem,
   data,
-}: NestedDrawerProviderProps) => {
+}: NestedDrawerSwitchProps) => {
   return (
     <>
       {selectedIndex !== undefined ? (
@@ -35,7 +38,7 @@ export const NestedDrawerProvider = ({
           label={label}
           setSelectedIndex={setSelectedIndex}
           isRemoveItemDisabled={isRemoveItemDisabled}
-          handleRemoveItem={handleRemoveItem(path, selectedIndex)}
+          handleRemoveItem={handleRemoveSelectedItem(path, selectedIndex)}
           selectedIndex={selectedIndex}
           maxIndex={data - 1}
         />

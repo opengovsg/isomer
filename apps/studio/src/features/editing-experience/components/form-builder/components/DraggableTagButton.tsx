@@ -1,3 +1,4 @@
+import type { BoxProps } from "@chakra-ui/react"
 import type {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
@@ -77,15 +78,16 @@ const Root = forwardRef<RootProps, "div">(
 
 interface HandleProps {
   dragHandleProps: DraggableProvidedDragHandleProps | null
+  py?: BoxProps["py"]
 }
 
-const Handle = ({ dragHandleProps }: HandleProps) => (
+const Handle = ({ dragHandleProps, py = "0.5rem" }: HandleProps) => (
   <Flex
     cursor="grab"
     flexShrink={0}
     align="center"
     layerStyle="focusRing"
-    py="0.5rem"
+    py={py}
     pl="0.5rem"
     pr="0.25rem"
     {...dragHandleProps}
@@ -97,9 +99,10 @@ const Handle = ({ dragHandleProps }: HandleProps) => (
 interface BodyProps {
   onClick: () => void
   children: ReactNode
+  py?: BoxProps["py"]
 }
 
-const Body = ({ onClick, children }: BodyProps) => (
+const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => (
   <Box
     layerStyle="focusRing"
     as="button"
@@ -109,7 +112,7 @@ const Body = ({ onClick, children }: BodyProps) => (
     display="flex"
     alignItems="center"
     cursor="pointer"
-    py="0.5rem"
+    py={py}
     pl="0.25rem"
     pr="1rem"
     onClick={onClick}

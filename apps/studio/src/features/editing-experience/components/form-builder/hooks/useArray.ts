@@ -23,7 +23,12 @@ export interface UseArrayReturn {
   isAddItemDisabled: boolean
   isRemoveItemDisabled: boolean
   childUiSchema: UISchemaElement
-  handleRemoveItem: (path: string, index: number) => () => void
+  /**
+   * Remove flow for the nested drawer: no-ops unless a row is selected, and
+   * adjusts `selectedIndex` after removal. Row-level deletes outside the
+   * drawer should call `removeItems` directly (see `useDeleteTarget`).
+   */
+  handleRemoveSelectedItem: (path: string, index: number) => () => void
   onDragEnd: (result: DropResult) => void
 }
 
@@ -46,7 +51,7 @@ export function useArray({
   const isAddItemDisabled =
     arraySchema.maxItems !== undefined && data >= arraySchema.maxItems
 
-  const handleRemoveItem = useCallback(
+  const handleRemoveSelectedItem = useCallback(
     (path: string, index: number) => () => {
       if (selectedIndex === undefined || !removeItems || isRemoveItemDisabled) {
         return
@@ -112,7 +117,7 @@ export function useArray({
     isAddItemDisabled,
     isRemoveItemDisabled,
     childUiSchema,
-    handleRemoveItem,
+    handleRemoveSelectedItem,
     onDragEnd,
   }
 }

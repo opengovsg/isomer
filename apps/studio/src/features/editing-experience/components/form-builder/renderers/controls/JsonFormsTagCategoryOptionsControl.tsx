@@ -18,12 +18,12 @@ import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyCategory } from "../../components/EmptyCategory"
-import { NestedDrawerProvider } from "../../components/NestedDrawerProvider"
+import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
+import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
-import { TagRowActionsMenu } from "./TagRowActionsMenu"
 
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   props: ArrayLayoutProps,
@@ -65,7 +65,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     isAddItemDisabled,
     isRemoveItemDisabled,
     childUiSchema,
-    handleRemoveItem,
+    handleRemoveSelectedItem,
     onDragEnd,
   } = arrayResult
 
@@ -90,7 +90,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   })
 
   return (
-    <NestedDrawerProvider {...props} {...arrayResult}>
+    <NestedDrawerSwitch {...props} {...arrayResult}>
       {duplicateOptionIndices.size > 0 && <DuplicateLabelError noun="option" />}
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
@@ -158,7 +158,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                                   schema={schema}
                                   uischema={childUiSchema}
                                   enabled={enabled}
-                                  removeItem={handleRemoveItem}
+                                  removeItem={handleRemoveSelectedItem}
                                 />
                                 {hasError && (
                                   <DraggableTagButton.ErrorCaption>
@@ -206,7 +206,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           onConfirm={handleConfirmDelete}
         />
       )}
-    </NestedDrawerProvider>
+    </NestedDrawerSwitch>
   )
 }
 
