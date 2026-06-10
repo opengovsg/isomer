@@ -225,7 +225,7 @@ export const NavbarClient = ({
                   isWithFocusVisibleHighlight
                 >
                   {isPinned ? (
-                    <span className="max-w-[10rem] truncate max-xs:line-clamp-2 max-xs:whitespace-normal">
+                    <span className="max-xs:line-clamp-2 max-xs:whitespace-normal max-w-[10rem] truncate">
                       {callToAction.label}
                     </span>
                   ) : (
