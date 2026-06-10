@@ -9,6 +9,7 @@ import { useRouter } from "next/router"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { CATEGORY_ID_DROPDOWN_FEATURE_KEY } from "~/lib/growthbook"
+import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 
 export const jsonFormsCategoryIdControlTester: RankedTester = rankWith(

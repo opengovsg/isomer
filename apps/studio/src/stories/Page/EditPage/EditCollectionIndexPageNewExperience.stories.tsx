@@ -130,10 +130,10 @@ async function playOpenAndCloseThreeFilterOptions(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
   for (let i = 1; i <= 3; i += 1) {
     await userEvent.click(
-      await canvas.findByRole("button", { name: new RegExp(`Item ${i}`, "i") }),
+      await canvas.findByRole(“button”, { name: new RegExp(`Item ${i}`, “i”) }),
     )
     await userEvent.click(
-      await canvas.findByRole("button", { name: /Return to Options/i }),
+      await canvas.findByRole(“button”, { name: /Return to Options/i }),
     )
   }
 }

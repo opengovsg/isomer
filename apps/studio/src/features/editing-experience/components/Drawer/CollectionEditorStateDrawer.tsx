@@ -72,10 +72,18 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   })
 
   const schemaFields = useMemo(() => {
-    if (isUserIsomerAdmin && drawerStateType !== "display") {
-      return { include: ["tagCategories", "tags", "categoryOptions"] }
+    if (isUserIsomerAdmin) {
+      return drawerStateType === "display"
+        ? {
+            exclude: ["tagCategories", "tags", "categoryOptions"],
+          }
+        : {
+            include: ["tagCategories", "tags", "categoryOptions"],
+          }
     }
-    return { exclude: ["tagCategories", "tags", "categoryOptions"] }
+    return {
+      exclude: ["tagCategories", "tags", "categoryOptions"],
+    }
   }, [drawerStateType, isUserIsomerAdmin])
 
   const metadataSchema = getScopedSchema({
