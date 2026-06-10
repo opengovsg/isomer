@@ -7,7 +7,7 @@ import { TRPCError } from "@trpc/server"
 
 import type { Logger } from "@isomer/logging"
 
-import { logPublishEvent } from "../audit/audit.service"
+import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db } from "../database"
 
@@ -56,7 +56,7 @@ export const createRedirect = async ({
     // (siteId, source) unique constraint and is revived by the upsert below.
     const existing = await tx
       .selectFrom("Redirect")
-      .select(["id", "deletedAt"])
+      .selectAll()
       .where("siteId", "=", siteId)
       .where("source", "=", source)
       .executeTakeFirst()
@@ -82,8 +82,18 @@ export const createRedirect = async ({
       .returningAll()
       .executeTakeFirstOrThrow()
 
-    // NOTE: the delta is the real row returned by the insert above, so the
-    // audit entry reflects what was committed
+    // NOTE: the delta holds real DB rows — `existing` as fetched before the
+    // write (the soft-deleted row when reviving) and the row returned by the
+    // insert — so the audit entry reflects exactly what was committed
+    await logRedirectEvent(tx, {
+      siteId,
+      by: byUser,
+      eventType: AuditLogEvent.RedirectCreate,
+      delta: { before: existing ?? null, after: created },
+    })
+
+    // Redirects go live immediately: every mutation triggers a site publish,
+    // which is audited separately like other site publishes
     await logPublishEvent(tx, {
       siteId,
       by: byUser,
@@ -91,8 +101,6 @@ export const createRedirect = async ({
       eventType: AuditLogEvent.Publish,
       metadata: { redirects: { created: [created] } },
     })
-
-    // Redirects go live immediately: every mutation triggers a site publish
     await publishSite(logger, { siteId })
 
     return created
@@ -111,21 +119,39 @@ export const deleteRedirect = async ({
   const byUser = await getByUser(byUserId)
 
   await db.transaction().execute(async (tx) => {
-    const deleted = await tx
-      .updateTable("Redirect")
-      .set({ deletedAt: new Date() })
+    const before = await tx
+      .selectFrom("Redirect")
+      .selectAll()
       .where("siteId", "=", siteId)
       .where("id", "=", id)
       .where("deletedAt", "is", null)
-      .returningAll()
       .executeTakeFirst()
-    if (!deleted) {
+    if (!before) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Redirect not found",
       })
     }
 
+    const deleted = await tx
+      .updateTable("Redirect")
+      .set({ deletedAt: new Date() })
+      .where("id", "=", before.id)
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    // NOTE: the delta holds real DB rows — the live row fetched before the
+    // write and the soft-deleted row returned by the update
+    await logRedirectEvent(tx, {
+      siteId,
+      by: byUser,
+      eventType: AuditLogEvent.RedirectDelete,
+      delta: { before, after: deleted },
+    })
+
+    // Redirects are removed from the live site immediately: every mutation
+    // triggers a site publish, which is audited separately like other site
+    // publishes
     await logPublishEvent(tx, {
       siteId,
       by: byUser,
@@ -133,9 +159,6 @@ export const deleteRedirect = async ({
       eventType: AuditLogEvent.Publish,
       metadata: { redirects: { deleted: [deleted] } },
     })
-
-    // Redirects are removed from the live site immediately: every mutation
-    // triggers a site publish
     await publishSite(logger, { siteId })
   })
 }
