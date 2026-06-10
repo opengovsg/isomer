@@ -1,115 +1,204 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { MenuButton, MenuList, Portal, Text } from "@chakra-ui/react"
-import { rankWith, schemaMatches } from "@jsonforms/core"
+import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import {
+  composePaths,
+  createDefaultValue,
+  rankWith,
+  schemaMatches,
+} from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { IconButton, Menu } from "@opengovsg/design-system-react"
-import { get } from "lodash-es"
-import { useMemo, useState } from "react"
-import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
-import { MenuItem } from "~/components/Menu"
+import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
-import { DeleteConfirmModal } from "./DeleteConfirmModal"
-import DraggableTagButton from "./DraggableTagButton"
-import { DuplicateLabelError } from "./DuplicateLabelError"
-import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
-import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
+import { AddItemButton } from "../../components/AddItemButton"
+import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
+import { DraggableTagButton } from "../../components/DraggableTagButton"
+import { DuplicateLabelError } from "../../components/DuplicateLabelError"
+import { EmptyArray } from "../../components/EmptyArray"
+import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
+import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
+import { useBuilderErrors } from "../../ErrorProvider"
+import { useArray } from "../../hooks/useArray"
+import { useDeleteTarget } from "../../hooks/useDeleteTarget"
+import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
-  const { path, removeItems, data, arraySchema } = props
+  const {
+    data,
+    path,
+    enabled,
+    label,
+    addItem,
+    removeItems,
+    arraySchema,
+    schema,
+    rootSchema,
+    uischemas,
+    uischema,
+    moveUp,
+    moveDown,
+    description,
+  } = props
+  const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
   const page = core?.data as CollectionPagePageProps | undefined
+  const duplicateFilterIndices = useDuplicateLabels(path)
 
-  const items = get(core?.data, path) as { label?: string }[] | undefined
-  const duplicateFilterIndices = useMemo(
-    () => indicesWithDuplicateLabels(items),
-    [items],
-  )
+  const arrayResult = useArray({
+    data,
+    path,
+    arraySchema,
+    schema,
+    rootSchema,
+    uischemas,
+    uischema,
+    removeItems,
+    moveUp,
+    moveDown,
+  })
+  const {
+    setSelectedIndex,
+    isAddItemDisabled,
+    isRemoveItemDisabled,
+    childUiSchema,
+    handleRemoveSelectedItem,
+    onDragEnd,
+  } = arrayResult
 
-  const [deleteTarget, setDeleteTarget] = useState<null | {
-    index: number
-    label: string
-  }>(null)
-
-  const isRemoveItemDisabled =
-    arraySchema.minItems !== undefined && data <= arraySchema.minItems
+  const {
+    target: deleteTarget,
+    openDeleteModal,
+    closeDeleteModal,
+    handleConfirmDelete,
+  } = useDeleteTarget({
+    path,
+    removeItems,
+    isRemoveItemDisabled,
+    resolveTarget: (index) => ({
+      label: page?.tagCategories?.[index]?.label?.trim() ?? "",
+    }),
+  })
 
   return (
-    <>
+    <NestedDrawerSwitch {...props} {...arrayResult}>
       {duplicateFilterIndices.size > 0 && <DuplicateLabelError noun="filter" />}
-      <JsonFormsArrayControlView
-        {...props}
-        addItemLabel="Add a filter"
-        mapNewArrayItem={(item) => ({
-          ...(item as Record<string, unknown>),
-          // we set this to true by default for new filters
-          // we don't set this on JSON Schema because Studio AJV runs with useDefaults, which would apply the
-          // same default to legacy rows that omit this key.
-          isRequired: true,
-        })}
-        renderListItem={(rowProps) => {
-          const isDuplicate = duplicateFilterIndices.has(rowProps.index)
-          const count =
-            page?.tagCategories?.[rowProps.index]?.options?.length ?? 0
-          const subtitle =
-            count === 0
-              ? "No option"
-              : `${count} ${count > 1 ? "options" : "option"}`
-          return (
-            <DraggableTagButton
-              {...rowProps}
-              isError={rowProps.isError || isDuplicate}
-              listItemIcon={BiPurchaseTag}
-              listItemContentProps={{ py: "0.5rem" }}
-              listItemSubtitle={
-                <Text textStyle="caption-2" color="base.content.medium">
-                  {subtitle}
-                </Text>
-              }
-              listItemTrailing={
-                <Menu isLazy>
-                  <MenuButton
-                    as={IconButton}
-                    icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
-                    {...ROW_ACTIONS_MENU_BUTTON_PROPS}
-                    isDisabled={isRemoveItemDisabled}
-                    aria-label={`Filter ${rowProps.index + 1} actions`}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <Portal>
-                    <MenuList>
-                      <MenuItem
-                        colorScheme="critical"
-                        icon={<BiTrash fontSize="1rem" />}
-                        isDisabled={isRemoveItemDisabled}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDeleteTarget({
-                            index: rowProps.index,
-                            label:
-                              page?.tagCategories?.[
-                                rowProps.index
-                              ]?.label?.trim() ?? "",
-                          })
-                        }}
+      <VStack spacing={0} align="start">
+        <VStack align="start" spacing="0.25rem" w="full">
+          <HStack w="full" justifyContent="space-between" align="center">
+            <Text textStyle="subhead-1" flex={1}>
+              {label}
+            </Text>
+            <AddItemButton
+              onClick={addItem(path, {
+                ...(createDefaultValue(schema, rootSchema) as Record<
+                  string,
+                  unknown
+                >),
+                // Set on new filters but not in JSON Schema: Studio AJV runs with
+                // useDefaults, which would also apply the default to legacy rows
+                // that omit this key.
+                isRequired: true,
+              })}
+              isDisabled={isAddItemDisabled}
+            >
+              Add a filter
+            </AddItemButton>
+          </HStack>
+          {description && (
+            <Text textStyle="body-2" textColor="base.content.default">
+              {description}
+            </Text>
+          )}
+        </VStack>
+        <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="blocks">
+              {({ droppableProps, innerRef, placeholder }) => (
+                <VStack
+                  {...droppableProps}
+                  align="baseline"
+                  w="100%"
+                  h="100%"
+                  spacing={0}
+                  ref={innerRef}
+                >
+                  {data === 0 && <EmptyArray />}
+
+                  {[...Array(data).keys()].map((index) => {
+                    const childPath = composePaths(path, `${index}`)
+                    const isDuplicate = duplicateFilterIndices.has(index)
+                    const hasError = hasErrorAt(childPath) || isDuplicate
+                    const count =
+                      page?.tagCategories?.[index]?.options?.length ?? 0
+                    const subtitle =
+                      count === 0
+                        ? "No option"
+                        : `${count} ${count > 1 ? "options" : "option"}`
+
+                    return (
+                      <Draggable
+                        key={childPath}
+                        draggableId={childPath}
+                        disableInteractiveElementBlocking
+                        index={index}
                       >
-                        Delete filter
-                      </MenuItem>
-                    </MenuList>
-                  </Portal>
-                </Menu>
-              }
-              listItemErrorCaption={
-                isDuplicate
-                  ? "A filter with this name already exists."
-                  : undefined
-              }
-            />
-          )
-        }}
-      />
+                        {({ draggableProps, dragHandleProps, innerRef }) => (
+                          <DraggableTagButton.Root
+                            draggableProps={draggableProps}
+                            isError={hasError}
+                            ref={innerRef}
+                          >
+                            <DraggableTagButton.Handle
+                              dragHandleProps={dragHandleProps}
+                            />
+                            <DraggableTagButton.Body
+                              onClick={() => setSelectedIndex(index)}
+                            >
+                              <DraggableTagButton.Icon icon={BiPurchaseTag} />
+                              <DraggableTagButton.Content>
+                                <DraggableTagButton.Label
+                                  index={index}
+                                  path={path}
+                                  schema={schema}
+                                  uischema={childUiSchema}
+                                  enabled={enabled}
+                                  removeItem={handleRemoveSelectedItem}
+                                />
+                                <DraggableTagButton.Subtitle>
+                                  {subtitle}
+                                </DraggableTagButton.Subtitle>
+                                {hasError && (
+                                  <DraggableTagButton.ErrorCaption>
+                                    {isDuplicate
+                                      ? "A filter with this name already exists."
+                                      : undefined}
+                                  </DraggableTagButton.ErrorCaption>
+                                )}
+                              </DraggableTagButton.Content>
+                            </DraggableTagButton.Body>
+                            <DraggableTagButton.Trailing>
+                              <TagRowActionsMenu
+                                noun="filter"
+                                index={index}
+                                isDisabled={isRemoveItemDisabled}
+                                onDelete={() => openDeleteModal(index)}
+                              />
+                            </DraggableTagButton.Trailing>
+                          </DraggableTagButton.Root>
+                        )}
+                      </Draggable>
+                    )
+                  })}
+
+                  {placeholder}
+                </VStack>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </Box>
+      </VStack>
       {deleteTarget && (
         <DeleteConfirmModal
           isOpen
@@ -122,15 +211,11 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               manually.
             </Text>
           }
-          onClose={() => setDeleteTarget(null)}
-          onConfirm={() => {
-            if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
-            removeItems(path, [deleteTarget.index])()
-            setDeleteTarget(null)
-          }}
+          onClose={closeDeleteModal}
+          onConfirm={handleConfirmDelete}
         />
       )}
-    </>
+    </NestedDrawerSwitch>
   )
 }
 
