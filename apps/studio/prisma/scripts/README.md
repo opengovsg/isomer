@@ -24,3 +24,12 @@
 
 1. This script updates all users of a site to have a specific `RoleType`
 2. Edit the `siteId` and `role` at the end of the script
+
+## Import redirects from CSV
+
+1. This script imports rows from a `domainName,source,target` CSV (e.g. `redirects.production.csv` in isomer-next-infra) into the `Redirect` table
+2. Domains are matched against `Site.config.url`; rows for unmatched domains are skipped and reported
+3. Rows with wildcards (`*`) or query parameters (`?`) in the source or target are ignored — these are infra publishing features with no equivalent in the `Redirect` table
+4. Rows are validated with `createRedirectSchema` (same as the Studio publish flow); invalid rows are skipped and reported
+5. Edit the `csvPath` at the end of the script. It runs as a dry run by default — review the reported summary, then set `dryRun` to `false` to write
+6. The import is idempotent: re-running updates destinations in place via the `(siteId, source)` unique constraint
