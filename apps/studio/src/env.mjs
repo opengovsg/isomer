@@ -62,6 +62,7 @@ const server = z
     S3_GAZETTE_BUCKET_NAME: z.string(),
     S3_GAZETTE_DOMAIN_NAME: z.string(),
     EGAZETTE_DOCUMENT_INDEX: z.string().optional(),
+    DD_DELETION_EMAIL: z.email(),
     SEARCHSG_API_KEY: z.string(),
   })
   .merge(s3Schema)
@@ -78,6 +79,7 @@ const server = z
 const processEnv = {
   // Server-side env vars
   DATABASE_URL: process.env.DATABASE_URL,
+  DD_DELETION_EMAIL: process.env.DD_DELETION_EMAIL,
   CI: process.env.CI,
   NODE_ENV: process.env.NODE_ENV,
   OTP_EXPIRY: process.env.OTP_EXPIRY,
