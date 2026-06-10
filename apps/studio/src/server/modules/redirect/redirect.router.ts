@@ -1,4 +1,5 @@
 import {
+  countRedirectsSchema,
   createRedirectSchema,
   deleteRedirectSchema,
   listRedirectsSchema,
@@ -7,6 +8,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
+  countRedirects,
   createRedirect,
   deleteRedirect,
   listRedirects,
@@ -23,6 +25,18 @@ export const redirectRouter = router({
       })
 
       return listRedirects(input)
+    }),
+
+  count: protectedProcedure
+    .input(countRedirectsSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        siteId: input.siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      return countRedirects(input)
     }),
 
   // NOTE: create and delete publish the site immediately — there is no

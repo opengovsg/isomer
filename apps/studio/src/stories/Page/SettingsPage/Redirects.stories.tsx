@@ -46,7 +46,11 @@ export const Default: Story = {
   parameters: {
     growthbook: [createRedirectionsEnabledGbParameters(true)],
     msw: {
-      handlers: [redirectHandlers.list.default(), ...COMMON_HANDLERS],
+      handlers: [
+        redirectHandlers.list.default(),
+        redirectHandlers.count.default(),
+        ...COMMON_HANDLERS,
+      ],
     },
   },
 }
@@ -55,7 +59,11 @@ export const Empty: Story = {
   parameters: {
     growthbook: [createRedirectionsEnabledGbParameters(true)],
     msw: {
-      handlers: [redirectHandlers.list.empty(), ...COMMON_HANDLERS],
+      handlers: [
+        redirectHandlers.list.empty(),
+        redirectHandlers.count.empty(),
+        ...COMMON_HANDLERS,
+      ],
     },
   },
 }

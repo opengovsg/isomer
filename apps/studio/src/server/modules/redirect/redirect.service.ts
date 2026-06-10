@@ -1,4 +1,5 @@
 import type {
+  CountRedirectsInput,
   CreateRedirectInput,
   DeleteRedirectInput,
   ListRedirectsInput,
@@ -24,17 +25,40 @@ const getByUser = async (byUserId: string) =>
         }),
     )
 
-export const listRedirects = async ({ siteId }: ListRedirectsInput) => {
+export const listRedirects = async ({
+  siteId,
+  sortBy,
+  sortDirection,
+  limit,
+  offset,
+}: ListRedirectsInput) => {
   // Soft-deleted redirects are never shown to users. Rows only exist once
   // they are live (creates publish immediately), so createdAt is the time
   // the redirect was published.
-  return db
+  return (
+    db
+      .selectFrom("Redirect")
+      .select(["id", "source", "destination", "createdAt as publishedAt"])
+      .where("siteId", "=", siteId)
+      .where("deletedAt", "is", null)
+      .orderBy(sortBy === "publishedAt" ? "createdAt" : sortBy, sortDirection)
+      // Tie-break on id so rows with equal sort values don't shuffle between
+      // pages across requests
+      .orderBy("id", sortDirection)
+      .limit(limit)
+      .offset(offset)
+      .execute()
+  )
+}
+
+export const countRedirects = async ({ siteId }: CountRedirectsInput) => {
+  const { count } = await db
     .selectFrom("Redirect")
-    .select(["id", "source", "destination", "createdAt as publishedAt"])
+    .select((eb) => eb.fn.countAll().as("count"))
     .where("siteId", "=", siteId)
     .where("deletedAt", "is", null)
-    .orderBy("createdAt", "desc")
-    .execute()
+    .executeTakeFirstOrThrow()
+  return Number(count)
 }
 
 export const createRedirect = async ({

@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { offsetPaginationSchema } from "./pagination"
+
 export const MAX_REDIRECT_PATH_LENGTH = 2000
 
 // Matches ASCII control characters (0x00-0x1f, 0x7f) and backslashes.
@@ -54,7 +56,21 @@ export const deleteRedirectSchema = z.object({
 })
 export type DeleteRedirectInput = z.infer<typeof deleteRedirectSchema>
 
+// Rows are paginated server-side, so sorting happens server-side too —
+// sorting only the visible page would be misleading. "publishedAt" sorts on
+// createdAt, which is the publish time since creates publish immediately.
+const redirectSortFieldSchema = z.enum(["source", "destination", "publishedAt"])
+export type RedirectSortField = z.infer<typeof redirectSortFieldSchema>
+
 export const listRedirectsSchema = z.object({
   siteId: z.number().min(1),
+  sortBy: redirectSortFieldSchema.default("publishedAt"),
+  sortDirection: z.enum(["asc", "desc"]).default("desc"),
+  ...offsetPaginationSchema.shape,
 })
 export type ListRedirectsInput = z.infer<typeof listRedirectsSchema>
+
+export const countRedirectsSchema = z.object({
+  siteId: z.number().min(1),
+})
+export type CountRedirectsInput = z.infer<typeof countRedirectsSchema>

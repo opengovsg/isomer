@@ -138,6 +138,179 @@ describe("redirect.router", async () => {
       // Assert
       expect(result).toHaveLength(0)
     })
+
+    it("should return the newest redirects first by default", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values([
+          {
+            siteId,
+            source: "/oldest",
+            destination: "/a",
+            createdAt: new Date("2026-01-01"),
+          },
+          {
+            siteId,
+            source: "/newest",
+            destination: "/b",
+            createdAt: new Date("2026-03-01"),
+          },
+          {
+            siteId,
+            source: "/middle",
+            destination: "/c",
+            createdAt: new Date("2026-02-01"),
+          },
+        ])
+        .execute()
+
+      // Act
+      const result = await caller.list({ siteId })
+
+      // Assert
+      expect(result.map((row) => row.source)).toEqual([
+        "/newest",
+        "/middle",
+        "/oldest",
+      ])
+    })
+
+    it("should paginate with limit and offset without overlapping pages", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values(
+          Array.from({ length: 5 }, (_, index) => ({
+            siteId,
+            source: `/page-${index}`,
+            destination: `/dest-${index}`,
+            createdAt: new Date(2026, 0, index + 1),
+          })),
+        )
+        .execute()
+
+      // Act
+      const firstPage = await caller.list({ siteId, limit: 2, offset: 0 })
+      const secondPage = await caller.list({ siteId, limit: 2, offset: 2 })
+      const lastPage = await caller.list({ siteId, limit: 2, offset: 4 })
+
+      // Assert
+      expect(firstPage).toHaveLength(2)
+      expect(secondPage).toHaveLength(2)
+      expect(lastPage).toHaveLength(1)
+      const seen = [...firstPage, ...secondPage, ...lastPage].map(
+        (row) => row.source,
+      )
+      expect(new Set(seen).size).toBe(5)
+    })
+
+    it("should sort by the requested field and direction", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values([
+          // createdAt deliberately disagrees with the alphabetical order so
+          // the sort provably happens on the requested field
+          {
+            siteId,
+            source: "/banana",
+            destination: "/1",
+            createdAt: new Date("2026-03-01"),
+          },
+          {
+            siteId,
+            source: "/apple",
+            destination: "/2",
+            createdAt: new Date("2026-01-01"),
+          },
+          {
+            siteId,
+            source: "/cherry",
+            destination: "/3",
+            createdAt: new Date("2026-02-01"),
+          },
+        ])
+        .execute()
+
+      // Act
+      const ascending = await caller.list({
+        siteId,
+        sortBy: "source",
+        sortDirection: "asc",
+      })
+      const descending = await caller.list({
+        siteId,
+        sortBy: "source",
+        sortDirection: "desc",
+      })
+
+      // Assert
+      expect(ascending.map((row) => row.source)).toEqual([
+        "/apple",
+        "/banana",
+        "/cherry",
+      ])
+      expect(descending.map((row) => row.source)).toEqual([
+        "/cherry",
+        "/banana",
+        "/apple",
+      ])
+    })
+  })
+
+  describe("count", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange / Act
+      const result = unauthedCaller.count({ siteId })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site: otherSite } = await setupSite()
+
+      // Act
+      const result = caller.count({ siteId: otherSite.id })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should count only live redirects for the site", async () => {
+      // Arrange
+      const { site: otherSite } = await setupSite()
+      await db
+        .insertInto("Redirect")
+        .values([
+          { siteId, source: "/one", destination: "/a" },
+          { siteId, source: "/two", destination: "/b" },
+          {
+            siteId,
+            source: "/deleted",
+            destination: "/c",
+            deletedAt: new Date(),
+          },
+          { siteId: otherSite.id, source: "/other", destination: "/d" },
+        ])
+        .execute()
+
+      // Act
+      const result = await caller.count({ siteId })
+
+      // Assert
+      expect(result).toBe(2)
+    })
   })
 
   describe("create", () => {
