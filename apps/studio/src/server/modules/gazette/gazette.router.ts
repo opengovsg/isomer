@@ -897,18 +897,35 @@ export const gazetteRouter = router({
         .innerJoin("User", "ResourcePermission.userId", "User.id")
         .where("User.deletedAt", "is", null)
         .where("ResourcePermission.role", "=", "Admin")
+        // Exclude Isomer admins (internal team) — this notification is meant
+        // for the agency's own site admins only.
+        .where(({ not, exists, selectFrom }) =>
+          not(
+            exists(
+              selectFrom("IsomerAdmin")
+                .select("IsomerAdmin.id")
+                .whereRef("IsomerAdmin.userId", "=", "User.id"),
+            ),
+          ),
+        )
         .select("User.email")
         .execute()
 
       const filename = ref.split("/").pop() ?? ref
-      await Promise.all(
-        admins.map(async ({ email }) => {
-          await sendGazetteDeletionEmail({
-            fileId: filename,
-            gazetteTitle: gazette.title,
-            recipientEmail: email,
-          })
-        }),
-      )
+      // Send a single email to all admins (first as recipient, rest as cc)
+      // instead of one email per admin. Dedupe is required: a user can hold
+      // multiple Admin permission rows, and Postman rejects duplicate cc
+      // entries.
+      const [recipientEmail, ...cc] = [
+        ...new Set(admins.map(({ email }) => email)),
+      ]
+      if (recipientEmail) {
+        await sendGazetteDeletionEmail({
+          fileId: filename,
+          gazetteTitle: gazette.title,
+          recipientEmail,
+          cc,
+        })
+      }
     }),
 })
