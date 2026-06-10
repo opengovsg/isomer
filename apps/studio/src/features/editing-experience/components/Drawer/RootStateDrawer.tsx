@@ -1,4 +1,3 @@
-import type { StackProps } from "@chakra-ui/react"
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   IsomerComponent,
@@ -118,34 +117,27 @@ const FixedBlock = () => {
     isNewCollectionTagsManagementEnabled
   ) {
     // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
-    const containerProps: StackProps = {
-      px: "1.25rem",
-      py: "1.25rem",
-      flexDirection: "column",
-      gap: "0.75rem",
-      align: "flex-start",
-    }
     return (
       <>
         <BaseBlock
+          variant="vertical"
           onClick={() => {
             setCurrActiveIdx(0)
             setDrawerState({ state: "collectionEditor", type: "display" })
           }}
           label="Collection display"
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
-          containerProps={containerProps}
           icon={BiCog}
         />
         {isUserIsomerAdmin && (
           <BaseBlock
+            variant="vertical"
             onClick={() => {
               setCurrActiveIdx(0)
               setDrawerState({ state: "collectionEditor", type: "filter" })
             }}
             label="Filters"
             description="Define and manage filters for this Collection."
-            containerProps={containerProps}
             icon={BiSlider}
           />
         )}
