@@ -16,6 +16,8 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { DD_DELETION_EMAIL } from "~/constants/gazette"
+import * as mailService from "~/features/mail/service"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -764,6 +766,9 @@ describe("gazette.router", async () => {
       vi.spyOn(gazetteService, "deleteGazetteAsset").mockResolvedValue(
         undefined,
       )
+      vi.spyOn(mailService, "sendGazetteDeletionEmail").mockResolvedValue(
+        undefined,
+      )
     })
 
     it("deletes a gazette within the 15-minute grace period", async () => {
@@ -1014,6 +1019,59 @@ describe("gazette.router", async () => {
         .selectAll()
         .execute()
       expect(pushJobs).toHaveLength(0)
+    })
+
+    it("sends a single deletion email to Datadog with all site admins cc'd", async () => {
+      // Arrange
+      const { site, collection, user } = await seedToppanWithCollection()
+      const otherAdmin = await setupUser({ email: "admin2@agency.gov.sg" })
+      await setupAdminPermissions({ userId: otherAdmin.id, siteId: site.id })
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt: subMinutes(FIXED_NOW, 5),
+        userId: user.id,
+      })
+
+      // Act
+      await caller.delete({ siteId: site.id, gazetteId })
+
+      // Assert
+      expect(mailService.sendGazetteDeletionEmail).toHaveBeenCalledTimes(1)
+      const call = vi.mocked(mailService.sendGazetteDeletionEmail).mock
+        .calls[0]?.[0]
+      expect(call?.recipientEmail).toBe(DD_DELETION_EMAIL)
+      // The admins query has no ORDER BY, so compare cc as a sorted set
+      expect([...(call?.cc ?? [])].sort()).toEqual(
+        ["admin2@agency.gov.sg", "user@toppannext.com"].sort(),
+      )
+    })
+
+    it("excludes Isomer admins from the deletion email", async () => {
+      // Arrange
+      const { site, collection, user } = await seedToppanWithCollection()
+      const isomerAdminUser = await setupUser({ email: "core@open.gov.sg" })
+      await setupAdminPermissions({
+        userId: isomerAdminUser.id,
+        siteId: site.id,
+      })
+      await setupIsomerAdmin({ userId: isomerAdminUser.id })
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt: subMinutes(FIXED_NOW, 5),
+        userId: user.id,
+      })
+
+      // Act
+      await caller.delete({ siteId: site.id, gazetteId })
+
+      // Assert
+      expect(mailService.sendGazetteDeletionEmail).toHaveBeenCalledTimes(1)
+      const call = vi.mocked(mailService.sendGazetteDeletionEmail).mock
+        .calls[0]?.[0]
+      expect(call?.recipientEmail).toBe(DD_DELETION_EMAIL)
+      expect(call?.cc).toEqual(["user@toppannext.com"])
     })
   })
 })
