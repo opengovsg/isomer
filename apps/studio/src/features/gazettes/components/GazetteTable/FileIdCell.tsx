@@ -45,14 +45,18 @@ export const FileIdCell = ({
         aria-disabled={isPending}
         opacity={isPending ? 0.5 : 1}
         pointerEvents={isPending ? "none" : "auto"}
-        wordBreak="break-all"
+        display="inline-flex"
+        alignItems="baseline"
+        gap="0.25rem"
       >
-        {fileId}
+        <Text as="span" wordBreak="break-all">
+          {fileId}
+        </Text>
         <Icon
           as={BiLinkExternal}
-          display="inline-block"
-          verticalAlign="text-bottom"
-          ml="0.25rem"
+          flexShrink={0}
+          position="relative"
+          top="0.125rem"
           aria-hidden
         />
       </Link>
