@@ -260,7 +260,7 @@ describe("redirect.router", async () => {
       })
     })
 
-    it("should write an audit log entry with the created row", async () => {
+    it("should write a RedirectCreate audit log entry with the created row", async () => {
       // Arrange / Act
       await caller.create({ siteId, source: "/hello", destination: "/world" })
 
@@ -269,13 +269,48 @@ describe("redirect.router", async () => {
         .selectFrom("AuditLog")
         .selectAll()
         .where("siteId", "=", siteId)
-        .where("eventType", "=", "Publish")
+        .where("eventType", "=", "RedirectCreate")
         .executeTakeFirstOrThrow()
       expect(auditEntry.userId).toBe(session.userId)
-      expect(auditEntry.metadata).toMatchObject({
-        redirects: {
-          created: [{ source: "/hello", destination: "/world" }],
-        },
+      expect(auditEntry.delta).toMatchObject({
+        before: null,
+        after: { source: "/hello", destination: "/world" },
+      })
+      // The site publish triggered by the create is audited separately
+      const publishEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", siteId)
+        .where("eventType", "=", "Publish")
+        .executeTakeFirstOrThrow()
+      expect(publishEntry.userId).toBe(session.userId)
+    })
+
+    it("should log the soft-deleted row as the delta before when reviving", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/revived",
+          destination: "/old",
+          deletedAt: new Date(),
+        })
+        .execute()
+
+      // Act
+      await caller.create({ siteId, source: "/revived", destination: "/new" })
+
+      // Assert
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", siteId)
+        .where("eventType", "=", "RedirectCreate")
+        .executeTakeFirstOrThrow()
+      expect(auditEntry.delta).toMatchObject({
+        before: { source: "/revived", destination: "/old" },
+        after: { source: "/revived", destination: "/new" },
       })
     })
   })
@@ -390,7 +425,7 @@ describe("redirect.router", async () => {
       expect(row.deletedAt).toBeNull()
     })
 
-    it("should write an audit log entry with the deleted row", async () => {
+    it("should write a RedirectDelete audit log entry with the live and soft-deleted rows", async () => {
       // Arrange
       const inserted = await db
         .insertInto("Redirect")
@@ -406,14 +441,24 @@ describe("redirect.router", async () => {
         .selectFrom("AuditLog")
         .selectAll()
         .where("siteId", "=", siteId)
-        .where("eventType", "=", "Publish")
+        .where("eventType", "=", "RedirectDelete")
         .executeTakeFirstOrThrow()
       expect(auditEntry.userId).toBe(session.userId)
-      expect(auditEntry.metadata).toMatchObject({
-        redirects: {
-          deleted: [{ source: "/bye", destination: "/x" }],
-        },
-      })
+      const delta = auditEntry.delta as {
+        before: { source: string; deletedAt: string | null }
+        after: { source: string; deletedAt: string | null }
+      }
+      expect(delta.before).toMatchObject({ source: "/bye", deletedAt: null })
+      expect(delta.after.source).toBe("/bye")
+      expect(delta.after.deletedAt).not.toBeNull()
+      // The site publish triggered by the delete is audited separately
+      const publishEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", siteId)
+        .where("eventType", "=", "Publish")
+        .executeTakeFirstOrThrow()
+      expect(publishEntry.userId).toBe(session.userId)
     })
   })
 })

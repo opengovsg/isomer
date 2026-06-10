@@ -153,6 +153,8 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
   NavbarUpdate: sql<string>`'Navbar has been updated'`,
   FooterUpdate: sql<string>`'Footer has been updated'`,
   SiteConfigUpdate: sql<string>`'Site configuration has been updated'`,
+  RedirectCreate: sql<string>`CONCAT('Redirect from "', al.delta -> 'after' ->> 'source', '" to "', al.delta -> 'after' ->> 'destination', '" created')`,
+  RedirectDelete: sql<string>`CONCAT('Redirect from "', al.delta -> 'before' ->> 'source', '" to "', al.delta -> 'before' ->> 'destination', '" deleted')`,
   PermissionCreate: sql<string>`CONCAT('Permission (', al.delta -> 'after' ->> 'role', ') granted to ', pu.email)`,
   PermissionDelete: sql<string>`CONCAT('Permission (', al.delta -> 'before' ->> 'role', ') revoked from ', pu.email)`,
   Login: sql<string>`CONCAT('Login attempt by ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 1), ' from IP address ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 2))`,
