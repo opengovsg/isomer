@@ -49,22 +49,31 @@ export const AddRedirectCard = ({
   const isAddDisabled = !source?.trim() || !destination?.trim()
 
   const onSubmit = ({ source, destination }: AddRedirectInput) => {
-    const normalisedSource = `/${source.replace(/^\/+/, "")}`
+    // source arrives normalised (leading slash, no trailing slash) by the
+    // shared schema's transform
     createRedirect(
-      { siteId, source: normalisedSource, destination },
+      { siteId, source, destination },
       {
         onSuccess: () => {
           reset()
           toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
         },
-        // The inputs are left untouched on conflict so the user can adjust
+        // The inputs are left untouched on error so the user can adjust
         // the source instead of retyping everything
-        onError: () =>
-          toast({
-            title: "A redirect already exists for this path",
-            description: `Delete the redirect for ${normalisedSource} first if you want to change where it points to.`,
-            status: "error",
-          }),
+        onError: (error) =>
+          toast(
+            error.data?.code === "CONFLICT"
+              ? {
+                  title: "A redirect already exists for this path",
+                  description: `Delete the redirect for ${source} first if you want to change where it points to.`,
+                  status: "error",
+                }
+              : {
+                  title: "Failed to add redirect",
+                  description: "Something went wrong. Please try again.",
+                  status: "error",
+                },
+          ),
       },
     )
   }
