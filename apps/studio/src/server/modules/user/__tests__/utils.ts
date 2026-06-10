@@ -2,8 +2,9 @@ import {
   setupAdminPermissions,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 const ISOMER_ADMIN_TEST_EMAILS = [
   "admin1@open.gov.sg",

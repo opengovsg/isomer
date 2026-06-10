@@ -1,8 +1,9 @@
-import type { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { TRPCError } from "@trpc/server"
 import { get, partition } from "lodash-es"
-import { AuditLogEvent, RoleType } from "~prisma/generated/generatedEnums"
+
+import type { IsomerAdminRole } from "@isomer/db"
+import { AuditLogEvent, RoleType } from "@isomer/db"
 
 import type {
   BulkPermissionsProps,

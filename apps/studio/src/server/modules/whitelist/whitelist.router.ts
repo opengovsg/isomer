@@ -3,7 +3,8 @@ import {
   isEmailWhitelistedOutputSchema,
   whitelistEmailsInputSchema,
 } from "~/schemas/whitelist"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 import { protectedProcedure, router } from "../../trpc"
 import {

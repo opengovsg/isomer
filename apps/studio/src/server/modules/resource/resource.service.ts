@@ -14,10 +14,10 @@ import {
   isCollectionItem,
   overwriteCollectionChildrenForCollectionBlock,
 } from "~/utils/sitemap"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
-import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { Logger } from "@isomer/logging"
+import { AuditLogEvent } from "@isomer/db"
+import { type DB } from "@isomer/db"
 
 import type {
   Footer,

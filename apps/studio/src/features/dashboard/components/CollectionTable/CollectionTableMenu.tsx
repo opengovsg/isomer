@@ -9,7 +9,8 @@ import {
 } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import type { CollectionTableData } from "./types"
 import { deleteResourceModalAtom, pageSettingsModalAtom } from "../../atoms"

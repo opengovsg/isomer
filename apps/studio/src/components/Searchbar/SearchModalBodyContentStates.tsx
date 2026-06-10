@@ -4,7 +4,8 @@ import type { SearchResultResource } from "~/server/modules/resource/resource.ty
 import { ModalBody as ChakraModalBody, Text, VStack } from "@chakra-ui/react"
 import { useResourceLocalViewHistory } from "~/hooks/useResourceLocalViewHistory"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import type { SearchResultProps } from "./SearchResult"
 import { NoSearchResultSvgr } from "../Svg/NoSearchResultSvgr"

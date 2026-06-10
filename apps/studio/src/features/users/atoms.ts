@@ -1,5 +1,6 @@
 import { atom } from "jotai"
-import { RoleType } from "~prisma/generated/generatedEnums"
+
+import { RoleType } from "@isomer/db"
 
 import type {
   AddUserModalState,

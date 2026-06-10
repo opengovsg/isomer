@@ -1,4 +1,4 @@
-import type { User } from "~prisma/generated/generatedTypes"
+import type { User } from "@isomer/db"
 
 export type isUserOnboardedProps = Pick<User, "name" | "phone">
 

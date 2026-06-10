@@ -1,4 +1,4 @@
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { ResourceType } from "@isomer/db"
 
 export const COLLECTION_ITEM_TYPES = [
   ResourceType.CollectionPage,

@@ -23,7 +23,8 @@ import { useZodForm } from "~/lib/form"
 import { updateUserInputSchema } from "~/schemas/user"
 import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
-import { RoleType } from "~prisma/generated/generatedEnums"
+
+import { RoleType } from "@isomer/db"
 
 import {
   DEFAULT_UPDATE_USER_MODAL_STATE,

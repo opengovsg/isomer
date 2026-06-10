@@ -1,4 +1,4 @@
-import type { RoleType } from "~prisma/generated/generatedEnums"
+import type { RoleType } from "@isomer/db"
 
 export interface UpdateUserModalState {
   siteId: number

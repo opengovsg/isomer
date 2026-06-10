@@ -6,7 +6,8 @@ import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+
+import { ResourceState } from "@isomer/db"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),

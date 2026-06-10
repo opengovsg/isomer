@@ -1,11 +1,12 @@
 import type { PropsWithChildren } from "react"
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
-import type { RoleType } from "~prisma/generated/generatedEnums"
 import { Ability, AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { createContextualCan } from "@casl/react"
 import { createContext, useContext } from "react"
 import { buildPermissionsForResource } from "~/server/modules/permissions/permissions.util"
 import { trpc } from "~/utils/trpc"
+
+import type { RoleType } from "@isomer/db"
 
 interface PermissionsProviderProps {
   siteId: number

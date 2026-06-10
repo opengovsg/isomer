@@ -1,4 +1,4 @@
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { ResourceType } from "@isomer/db"
 
 // only show user-viewable resources (excluding root page, folder meta etc.)
 export const USER_VIEWABLE_RESOURCE_TYPES: ResourceType[] = [

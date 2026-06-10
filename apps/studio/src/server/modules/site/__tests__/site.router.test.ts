@@ -19,7 +19,8 @@ import {
 } from "tests/integration/helpers/seed"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 import type { User } from "../../database"
 import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
