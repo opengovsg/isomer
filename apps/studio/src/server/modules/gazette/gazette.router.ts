@@ -1,7 +1,10 @@
 import { TRPCError } from "@trpc/server"
 import { differenceInMinutes, isBefore, subYears } from "date-fns"
 import filenamify from "filenamify"
-import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazette"
+import {
+  ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES,
+  DD_DELETION_EMAIL,
+} from "~/constants/gazette"
 import { env } from "~/env.mjs"
 import {
   sendGazetteDeletionEmail,
@@ -912,20 +915,17 @@ export const gazetteRouter = router({
         .execute()
 
       const filename = ref.split("/").pop() ?? ref
-      // Send a single email to all admins (first as recipient, rest as cc)
-      // instead of one email per admin. Dedupe is required: a user can hold
+      // Send a single email: the Datadog events address is the primary
+      // recipient (so deletions always alert ops, even with zero admins) and
+      // every site admin is cc'd. Dedupe is required: a user can hold
       // multiple Admin permission rows, and Postman rejects duplicate cc
       // entries.
-      const [recipientEmail, ...cc] = [
-        ...new Set(admins.map(({ email }) => email)),
-      ]
-      if (recipientEmail) {
-        await sendGazetteDeletionEmail({
-          fileId: filename,
-          gazetteTitle: gazette.title,
-          recipientEmail,
-          cc,
-        })
-      }
+      const cc = [...new Set(admins.map(({ email }) => email))]
+      await sendGazetteDeletionEmail({
+        fileId: filename,
+        gazetteTitle: gazette.title,
+        recipientEmail: DD_DELETION_EMAIL,
+        cc,
+      })
     }),
 })
