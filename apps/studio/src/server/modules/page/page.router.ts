@@ -830,7 +830,10 @@ export const pageRouter = router({
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)
     .mutation(
-      async ({ ctx, input: { pageId, siteId, title, ...settings } }) => {
+      async ({
+        ctx,
+        input: { pageId, siteId, title, type: _pageType, ...settings },
+      }) => {
         await bulkValidateUserPermissionsForResources({
           siteId,
           action: "update",

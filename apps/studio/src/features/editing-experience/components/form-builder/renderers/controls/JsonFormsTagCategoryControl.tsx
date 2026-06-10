@@ -1,24 +1,22 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { MenuButton, MenuList, Portal, Text } from "@chakra-ui/react"
+import { Text } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
-import { useMemo, useState } from "react"
-import { BiDotsHorizontalRounded, BiPurchaseTag, BiTrash } from "react-icons/bi"
-import { MenuItem } from "~/components/Menu"
+import { useCallback, useMemo, useState } from "react"
+import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
-import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
-import DraggableTagButton from "./DraggableTagButton"
+import { TagDraggableButton } from "./DraggableTagButton"
 import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
+import { TagRowActionsMenu } from "./TagRowActionsMenu"
 import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
-  const { path, removeItems, data, arraySchema } = props
+  const { path, removeItems, addItem, data, arraySchema } = props
   const { core } = useJsonForms()
   const page = core?.data as CollectionPagePageProps | undefined
 
@@ -27,6 +25,8 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     () => indicesWithDuplicateLabels(items),
     [items],
   )
+
+  const hasDuplicateFilterNameError = duplicateFilterIndices.size > 0
 
   const [deleteTarget, setDeleteTarget] = useState<null | {
     index: number
@@ -42,19 +42,24 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     setDeleteTarget(null)
   }
 
+  // New filters default isRequired to true. Can't set this via JSON Schema default
+  // because Studio AJV runs with useDefaults, which would apply it to legacy rows too.
+  const addItemWithDefaults = useCallback(
+    (itemPath: string, value: unknown) =>
+      addItem(itemPath, {
+        ...(value as Record<string, unknown>),
+        isRequired: true,
+      }),
+    [addItem],
+  )
+
   return (
     <>
-      {duplicateFilterIndices.size > 0 && <DuplicateLabelError noun="filter" />}
+      {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
       <JsonFormsArrayControlView
         {...props}
+        addItem={addItemWithDefaults}
         addItemLabel="Add a filter"
-        mapNewArrayItem={(item) => ({
-          ...(item as Record<string, unknown>),
-          // we set this to true by default for new filters
-          // we don't set this on JSON Schema because Studio AJV runs with useDefaults, which would apply the
-          // same default to legacy rows that omit this key.
-          isRequired: true,
-        })}
         renderListItem={(rowProps) => {
           const isDuplicate = duplicateFilterIndices.has(rowProps.index)
           const count =
@@ -64,48 +69,29 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               ? "No option"
               : `${count} ${count > 1 ? "options" : "option"}`
           return (
-            <DraggableTagButton
+            <TagDraggableButton
               {...rowProps}
               isError={rowProps.isError || isDuplicate}
               listItemIcon={BiPurchaseTag}
-              listItemContentProps={{ py: "0.5rem" }}
               listItemSubtitle={
                 <Text textStyle="caption-2" color="base.content.medium">
                   {subtitle}
                 </Text>
               }
               listItemTrailing={
-                <Menu isLazy>
-                  <MenuButton
-                    as={IconButton}
-                    icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
-                    {...ROW_ACTIONS_MENU_BUTTON_PROPS}
-                    isDisabled={isRemoveItemDisabled}
-                    aria-label={`Filter ${rowProps.index + 1} actions`}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <Portal>
-                    <MenuList>
-                      <MenuItem
-                        colorScheme="critical"
-                        icon={<BiTrash fontSize="1rem" />}
-                        isDisabled={isRemoveItemDisabled}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDeleteTarget({
-                            index: rowProps.index,
-                            label:
-                              page?.tagCategories?.[
-                                rowProps.index
-                              ]?.label?.trim() ?? "",
-                          })
-                        }}
-                      >
-                        Delete filter
-                      </MenuItem>
-                    </MenuList>
-                  </Portal>
-                </Menu>
+                <TagRowActionsMenu
+                  noun="filter"
+                  index={rowProps.index}
+                  isDisabled={isRemoveItemDisabled}
+                  onDelete={() =>
+                    setDeleteTarget({
+                      index: rowProps.index,
+                      label:
+                        page?.tagCategories?.[rowProps.index]?.label?.trim() ??
+                        "",
+                    })
+                  }
+                />
               }
               listItemErrorCaption={
                 isDuplicate

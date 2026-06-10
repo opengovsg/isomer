@@ -5,9 +5,9 @@ import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
 import Suspense from "~/components/Suspense"
+import { useRouter } from "next/router"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import { CATEGORY_ID_DROPDOWN_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
 
@@ -56,7 +56,11 @@ export function JsonFormsCategoryIdControl({
   label,
   ...props
 }: ControlProps) {
-  const { siteId, pageId, linkId } = useQueryParse(collectionItemSchema)
+  const { query } = useRouter()
+  // Safe-parse rather than throw: this control may match a `category-id` field
+  // outside the collection-item route (e.g. Storybook without a router), where
+  // `siteId` is absent. In that case we simply don't render the dropdown.
+  const parsedQuery = collectionItemSchema.safeParse(query)
 
   // Feature-flagged per site until the category-to-categoryId migration is complete for all sites.
   const { enabledSites } = useFeatureValue<{ enabledSites: string[] }>(
@@ -64,13 +68,13 @@ export function JsonFormsCategoryIdControl({
     { enabledSites: [] },
   )
 
-  // This control only renders inside a collection item, so one of `pageId`
-  // or `linkId` is always present. Bail out instead of issuing a query with
-  // an invalid id, which would throw inside Suspense and crash the form.
-  const resourceId = pageId ?? linkId
+  if (!parsedQuery.success) return null
+
+  // One of pageId or linkId is always present in the collection-item route.
+  const resourceId = parsedQuery.data.pageId ?? parsedQuery.data.linkId
   if (resourceId === undefined) return null
 
-  return enabledSites.includes(siteId.toString()) ? (
+  return enabledSites.includes(parsedQuery.data.siteId.toString()) ? (
     <FormControl isRequired={required} gap="0.5rem">
       <FormLabel description={description}>{label}</FormLabel>
       <Suspense fallback={<Skeleton />}>

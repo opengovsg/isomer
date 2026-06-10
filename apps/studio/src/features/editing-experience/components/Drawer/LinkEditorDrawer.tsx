@@ -178,6 +178,7 @@ export const LinkEditorDrawer = ({
       onSuccess: () => {
         void utils.collection.readCollectionLink.invalidate()
         void utils.collection.getCategoryOptionUsageCount.invalidate()
+        void utils.collection.countTagOptionsUsage.invalidate()
         void utils.page.readPage.invalidate()
         toast({
           title: "Link updated!",

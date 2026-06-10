@@ -17,7 +17,10 @@ import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
-import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
+import {
+  COLLECTION_DISPLAY_SAVED_MESSAGE,
+  FILTER_SAVED_MESSAGE,
+} from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
@@ -44,22 +47,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
-  const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
-    onSuccess: async () => {
-      await Promise.all([
-        utils.page.readPageAndBlob.invalidate({ pageId, siteId }),
-        utils.page.readPage.invalidate({ pageId, siteId }),
-        utils.page.getCategories.invalidate(),
-        utils.page.getCategoryOptions.invalidate(),
-        utils.collection.getCategoryOptionUsageCount.invalidate(),
-      ])
-      toast({
-        status: "success",
-        title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    },
-  })
 
   const drawerStateType = useMemo(() => {
     if (drawerState.state !== "collectionEditor") {
@@ -67,6 +54,22 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     }
     return drawerState.type
   }, [drawerState])
+
+  const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
+    onSuccess: async () => {
+      await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
+      await utils.page.readPage.invalidate({ pageId, siteId })
+      await utils.page.getCategories.invalidate({ pageId, siteId })
+      toast({
+        status: "success",
+        title:
+          drawerStateType === "filter"
+            ? FILTER_SAVED_MESSAGE
+            : COLLECTION_DISPLAY_SAVED_MESSAGE,
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+  })
 
   const schemaFields = useMemo(() => {
     if (isUserIsomerAdmin && drawerStateType !== "display") {
@@ -200,7 +203,10 @@ const SaveButton = ({
       w="100%"
       isLoading={isLoading}
       isDisabled={!isEmpty(errors)}
-      onClick={onClick}
+      onClick={() => {
+        if (!isEmpty(errors)) return
+        onClick()
+      }}
     >
       Save changes
     </Button>

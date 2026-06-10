@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
@@ -102,7 +102,7 @@ async function playFillFilterNameAndAddThreeOptions(
 /** From "Manage filters": open nested "Edit Category" (default category options). */
 async function playOpenCategoryOptionsEditor(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
-  const openBtn = await canvas.findByRole("button", {
+  const openBtn = await canvas.findByRole(“button”, {
     name: /Category \(Default\)/i,
   })
   await userEvent.click(openBtn)
@@ -112,13 +112,13 @@ async function playOpenCategoryOptionsEditor(canvasElement: HTMLElement) {
 /** Inside "Edit Category": add three option rows (labels may be empty). */
 async function playAddThreeCategoryOptions(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
-  const addOption = await canvas.findByRole("button", { name: /^Add option$/i })
+  const addOption = await canvas.findByRole(“button”, { name: /^Add option$/i })
   await userEvent.click(addOption)
   await userEvent.click(addOption)
   await userEvent.click(addOption)
-  await canvas.findByRole("button", { name: /Item 1/i })
-  await canvas.findByRole("button", { name: /Item 2/i })
-  await canvas.findByRole("button", { name: /Item 3/i })
+  await canvas.findByRole(“button”, { name: /Item 1/i })
+  await canvas.findByRole(“button”, { name: /Item 2/i })
+  await canvas.findByRole(“button”, { name: /Item 3/i })
 }
 
 /**
@@ -143,13 +143,13 @@ async function playFillThreeCategoryOptionNames(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
   for (let i = 1; i <= 3; i += 1) {
     await userEvent.click(
-      await canvas.findByRole("button", { name: new RegExp(`Item ${i}`, "i") }),
+      await canvas.findByRole(“button”, { name: new RegExp(`Item ${i}`, “i”) }),
     )
     const nameInput = await canvas.findByPlaceholderText(/Option name/i)
     await userEvent.clear(nameInput)
     await userEvent.type(nameInput, `Option ${i}`)
     await userEvent.click(
-      await canvas.findByRole("button", { name: /Return to Options/i }),
+      await canvas.findByRole(“button”, { name: /Return to Options/i }),
     )
   }
 }
@@ -446,5 +446,63 @@ export const CategoryOptionsSaveShowsOptionCount: Story = {
     )
     await canvas.findByText(/Manage filters/i)
     await canvas.findByText(/3 options/i)
+  },
+}
+
+export const CollectionDisplaySaveToast: Story = {
+  parameters: {
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
+    msw: {
+      handlers: [pageHandlers.getCategories.default(), ...COMMON_HANDLERS],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Collection display/i }),
+    )
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Save changes/i }),
+    )
+    await waitFor(
+      () => {
+        void expect(
+          withinPortals(canvasElement).getByText(
+            /Collection display saved\. Remember to publish the changes so that other users can see your updates\./,
+          ),
+        ).toBeVisible()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+export const ManageFiltersSaveToast: Story = {
+  parameters: {
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
+    msw: {
+      handlers: [
+        userHandlers.isIsomerAdmin.admin(),
+        pageHandlers.getCategories.default(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    await playOpenManageFilters(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Save changes/i }),
+    )
+    await waitFor(
+      () => {
+        void expect(
+          withinPortals(canvasElement).getByText(
+            /Filter saved\. Remember to publish the changes so that other users can use the new filter options\./,
+          ),
+        ).toBeVisible()
+      },
+      { timeout: 5000 },
+    )
   },
 }

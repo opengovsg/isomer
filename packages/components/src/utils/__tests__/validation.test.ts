@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   AUDIO_EMBED_URL_PATTERN,
+  GTM_ID_STRING_REGEX,
   isValidAudioEmbedUrl,
   LINK_HREF_PATTERN,
   MAPS_EMBED_URL_PATTERN,
@@ -178,6 +179,7 @@ describe("validation", () => {
       const testCases = [
         "https://www.example.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.473373876674!2d103.8486973142665!3d1.3035969990313745!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da19b8b4c6e1e1%3A0x2f1f6b8f0a1b2a7d!2sMinistry%20of%20Communications%20and%20Information!5e0!3m2!1sen!2ssg!4v1632291134655!5m2!1en!2sg",
         "https://www.google.com/maps?pb=!1m18!1m12!1m3!1d3961.473373876674!2d103.8486973142665!3d1.3035969990313745!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da19b8b4c6e1e1%3A0x2f1f6b8f0a1b2a7d!2sMinistry%20of%20Communications%20and%20Information!5e0!3m2!1en!2sg!4v1632291134655!5m2!1en!2sg",
+        "https://www.google.com/maps/embeXYZ",
         "https://www.google.com/maps/eee/embed?mid=1Mgnp3R1e7rYXGY2Vn1efD-AWXlfZa8o&ehbc=2E312F",
         "https://www.google.fakesite.com/maps/embed?pb=!1m18!1m12!1m3!1d3961.473373876674!2d103.8486973142665!3d1.3035969990313745!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31da19b8b4c6e1e1%3A0x2f1f6b8f0a1b2a7d!2sMinistry%20of%20Communications%20and%20Information!5e0!3m2!1sen!2ssg!4v1632291134655!5m2!1en!2sg",
         "https://www.onemap.gov.sg/minimap/amm.html?mapStyle=Default&zoomLevel=15&marker=postalcode:189554!colour:darkblue&marker=postalcode:068877!colour:red&marker=postalcode:179097!colour:red&popupWidth=200",
@@ -265,10 +267,52 @@ describe("validation", () => {
         "https://www.another-site.com/watch?v=abcdefg",
         "https://youtu.be/dQw4w9WgXcQ",
         "https://www.youtube.fakesite.com/watch?v=dQw4w9WgXcQ&feature=youtu.be",
+        "https://www.facebook.com/plugins/video.ph?href=https%3A%2F%2Fwww.facebook.com%2FCLCsg%2Fvideos%2F443087086248211%2F",
+        "https://www.facebook.com/plugins/videoXphp?href=https%3A%2F%2Fwww.facebook.com%2FCLCsg%2Fvideos%2F443087086248211%2F",
       ]
 
       testCases.forEach((testCase) => {
         const result = new RegExp(VIDEO_EMBED_URL_PATTERN).test(testCase)
+        expect(result).toBe(false)
+      })
+    })
+  })
+
+  describe("GTM_ID_STRING_REGEX", () => {
+    it("should allow valid Google tag IDs", () => {
+      // Arrange
+      const testCases = [
+        "GTM-ABC123",
+        "GTM-1234567",
+        "GTM-ABCDEFGHIJ",
+        "G-ABC123", // GA4 measurement IDs work with GTM snippet in practice
+        "GT-ABC123", // GT- IDs observed working in manual testing
+      ]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(GTM_ID_STRING_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(true)
+      })
+    })
+
+    it("should reject invalid or malicious GTM IDs", () => {
+      // Arrange
+      const testCases = [
+        "gtm-abc123",
+        "GTM-",
+        "');alert(document.cookie);//",
+        "GTM-ABC<script>",
+        "",
+      ]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(GTM_ID_STRING_REGEX).test(testCase)
+
+        // Assert
         expect(result).toBe(false)
       })
     })

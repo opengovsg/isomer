@@ -1,25 +1,24 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import {
   Box,
+  chakra,
   Flex,
   HStack,
   Icon,
-  MenuButton,
-  MenuList,
-  Portal,
   Skeleton,
   Stack,
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
-import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
-  Button,
-  IconButton,
-  Infobox,
-  Menu,
-} from "@opengovsg/design-system-react"
+  composePaths,
+  createDefaultValue,
+  rankWith,
+  schemaMatches,
+} from "@jsonforms/core"
+import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
+import { Button, Infobox } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { Suspense, useMemo, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
@@ -28,9 +27,7 @@ import {
   BiGridVertical,
   BiInfoCircle,
   BiPurchaseTag,
-  BiTrash,
 } from "react-icons/bi"
-import { MenuItem } from "~/components/Menu"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
@@ -39,13 +36,18 @@ import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
+import { AddItemButton } from "../../components/AddItemButton"
+import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
+import { DraggableTagButton } from "../../components/DraggableTagButton"
+import { DuplicateLabelError } from "../../components/DuplicateLabelError"
+import { EmptyCategory } from "../../components/EmptyCategory"
+import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
+import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
-import { ROW_ACTIONS_MENU_BUTTON_PROPS } from "./constants"
-import { DeleteConfirmModal } from "./DeleteConfirmModal"
-import { DuplicateLabelError } from "./DuplicateLabelError"
-import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
+import { useArray } from "../../hooks/useArray"
+import { useDeleteTarget } from "../../hooks/useDeleteTarget"
+import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
-import { indicesWithDuplicateLabels } from "./utils/indicesWithDuplicateLabels"
 
 /** Matches category option rows from JsonForms (`categoryOptions` array on collection index). */
 type CategoryOptionItem = Partial<{
@@ -80,50 +82,76 @@ function CategoryOptionsExpandedEditor({
   duplicateOptionIndices,
   ...props
 }: CategoryOptionsExpandedEditorProps) {
-  const { path, removeItems, data, arraySchema } = props
+  const {
+    data,
+    path,
+    enabled,
+    label,
+    addItem,
+    removeItems,
+    moveUp,
+    moveDown,
+    arraySchema,
+    schema,
+    rootSchema,
+    uischemas,
+    uischema,
+    description,
+  } = props
+  const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
   const { pageId, siteId } = useQueryParse(pageSchema)
 
-  const isRemoveItemDisabled =
-    arraySchema.minItems !== undefined && data <= arraySchema.minItems
+  const arrayResult = useArray({
+    data,
+    path,
+    arraySchema,
+    schema,
+    rootSchema,
+    uischemas,
+    uischema,
+    removeItems,
+    moveUp,
+    moveDown,
+  })
+  const {
+    setSelectedIndex,
+    isAddItemDisabled,
+    isRemoveItemDisabled,
+    childUiSchema,
+    handleRemoveSelectedItem,
+    onDragEnd,
+  } = arrayResult
 
-  const [deleteTarget, setDeleteTarget] = useState<null | {
-    index: number
-    label: string
-    categoryId: string
-  }>(null)
+  const {
+    target: deleteTarget,
+    openDeleteModal,
+    closeDeleteModal,
+    handleConfirmDelete,
+  } = useDeleteTarget({
+    path,
+    removeItems,
+    isRemoveItemDisabled,
+    resolveTarget: (index) => {
+      const item = get(core?.data, composePaths(path, `${index}`)) as
+        | CategoryOptionItem
+        | undefined
+      return {
+        label: item?.label?.trim() ?? "",
+        categoryId: item?.id?.trim() ?? "",
+      }
+    },
+  })
 
-  const handleDeleteOptionMenuItemClick = (index: number) => {
+  const isBlankLabelAt = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
-      | CategoryOptionItem
+      | { label?: string }
       | undefined
-
-    const categoryId = item?.id?.trim()
-
-    // No id means the option is new and never saved — nothing references it in the DB,
-    // so we remove the row immediately instead of opening the usage warning modal.
-    if (!categoryId) {
-      if (!removeItems || isRemoveItemDisabled) return
-      removeItems(path, [index])()
-      return
-    }
-
-    // Persisted option: show the modal so we can warn about existing item usage before delete.
-    setDeleteTarget({
-      index,
-      label: item?.label?.trim() ?? "",
-      categoryId,
-    })
-  }
-
-  const handleConfirmDelete = () => {
-    if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
-    removeItems(path, [deleteTarget.index])()
-    setDeleteTarget(null)
+    return !item?.label?.trim()
   }
 
   return (
-    <>
+    <NestedDrawerSwitch {...props} {...arrayResult}>
       <VStack align="stretch" spacing={0} w="full">
         <Infobox
           width="100%"
@@ -138,67 +166,111 @@ function CategoryOptionsExpandedEditor({
             optional.
           </Text>
         </Infobox>
-        <JsonFormsArrayControlView
-          {...props}
-          addItemLabel="Add option"
-          listItemContentProps={{ py: "0.5rem" }}
-          renderListItemTrailing={(index) => (
-            <Menu isLazy>
-              <MenuButton
-                as={IconButton}
-                icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
-                {...ROW_ACTIONS_MENU_BUTTON_PROPS}
-                isDisabled={isRemoveItemDisabled}
-                aria-label={`Option ${index + 1} actions`}
-                onClick={(e) => e.stopPropagation()}
-              />
-              <Portal>
-                <MenuList>
-                  <MenuItem
-                    colorScheme="critical"
-                    icon={<BiTrash fontSize="1rem" />}
-                    isDisabled={isRemoveItemDisabled}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDeleteOptionMenuItemClick(index)
-                    }}
-                  >
-                    Delete option
-                  </MenuItem>
-                </MenuList>
-              </Portal>
-            </Menu>
-          )}
-          belowDescription={
-            duplicateOptionIndices.size > 0 && (
+        <VStack spacing={0} align="start">
+          <VStack align="start" spacing="0.25rem" w="full">
+            <HStack w="full" justifyContent="space-between" align="center">
+              <Text textStyle="subhead-1" flex={1}>
+                {label}
+              </Text>
+              <AddItemButton
+                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+                isDisabled={isAddItemDisabled}
+              >
+                Add option
+              </AddItemButton>
+            </HStack>
+            {description && (
+              <Text textStyle="body-2" textColor="base.content.default">
+                {description}
+              </Text>
+            )}
+            {duplicateOptionIndices.size > 0 && (
               <DuplicateLabelError noun="option" />
-            )
-          }
-          getListItemHasError={(index) => duplicateOptionIndices.has(index)}
-          renderListItemErrorCaption={(index) =>
-            duplicateOptionIndices.has(index)
-              ? "An option with this name already exists."
-              : undefined
-          }
-          emptyState={
-            <VStack spacing="0.25rem" align="center">
-              <Text
-                textStyle="subhead-2"
-                textColor="base.content.default"
-                textAlign="center"
-              >
-                Add an option for this category
-              </Text>
-              <Text
-                textStyle="caption-2"
-                textColor="base.content.default"
-                textAlign="center"
-              >
-                Users will choose from this list when creating new items.
-              </Text>
-            </VStack>
-          }
-        />
+            )}
+          </VStack>
+          <Box w="full" mt="0.75rem">
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="blocks">
+                {({ droppableProps, innerRef, placeholder }) => (
+                  <VStack
+                    {...droppableProps}
+                    align="baseline"
+                    w="100%"
+                    h="100%"
+                    spacing={0}
+                    ref={innerRef}
+                  >
+                    {data === 0 && (
+                      <EmptyCategory title="Add an option for this category" />
+                    )}
+
+                    {[...Array(data).keys()].map((index) => {
+                      const childPath = composePaths(path, `${index}`)
+                      const isDuplicate = duplicateOptionIndices.has(index)
+                      const isBlank = isBlankLabelAt(index)
+                      const hasError =
+                        hasErrorAt(childPath) || isDuplicate || isBlank
+
+                      return (
+                        <Draggable
+                          key={childPath}
+                          draggableId={childPath}
+                          disableInteractiveElementBlocking
+                          index={index}
+                        >
+                          {({ draggableProps, dragHandleProps, innerRef }) => (
+                            <DraggableTagButton.Root
+                              draggableProps={draggableProps}
+                              isError={hasError}
+                              ref={innerRef}
+                            >
+                              <DraggableTagButton.Handle
+                                dragHandleProps={dragHandleProps}
+                              />
+                              <DraggableTagButton.Body
+                                onClick={() => setSelectedIndex(index)}
+                              >
+                                <DraggableTagButton.Content>
+                                  <DraggableTagButton.Label
+                                    index={index}
+                                    path={path}
+                                    schema={schema}
+                                    uischema={childUiSchema}
+                                    enabled={enabled}
+                                    removeItem={handleRemoveSelectedItem}
+                                  />
+                                  {hasError && (
+                                    <DraggableTagButton.ErrorCaption>
+                                      {isDuplicate
+                                        ? "An option with this name already exists."
+                                        : isBlank
+                                          ? "Option name cannot be empty."
+                                          : undefined}
+                                    </DraggableTagButton.ErrorCaption>
+                                  )}
+                                </DraggableTagButton.Content>
+                              </DraggableTagButton.Body>
+                              <DraggableTagButton.Trailing>
+                                <TagRowActionsMenu
+                                  noun="option"
+                                  index={index}
+                                  isDisabled={isRemoveItemDisabled}
+                                  onDelete={() => openDeleteModal(index)}
+                                />
+                              </DraggableTagButton.Trailing>
+                            </DraggableTagButton.Root>
+                          )}
+                        </Draggable>
+                      )
+                    })}
+
+                    {placeholder}
+                  </VStack>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </Box>
+        </VStack>
       </VStack>
       {deleteTarget && (
         <DeleteConfirmModal
@@ -231,11 +303,11 @@ function CategoryOptionsExpandedEditor({
               this option to all items.
             </Text>
           }
-          onClose={() => setDeleteTarget(null)}
+          onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
         />
       )}
-    </>
+    </NestedDrawerSwitch>
   )
 }
 
@@ -250,10 +322,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
     [core?.data, path],
   )
 
-  const duplicateOptionIndices = useMemo(
-    () => indicesWithDuplicateLabels(items),
-    [items],
-  )
+  const duplicateOptionIndices = useDuplicateLabels(path)
 
   const cannotLeaveExpandedCategoryOptions = useMemo(
     () =>
@@ -319,6 +388,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
         {duplicateOptionIndices.size > 0 && (
           <DuplicateLabelError noun="option" />
         )}
+        {/* Offsets the bottom margin the JsonForms control wrapper injects above this row. */}
         <Box w="full" mt="-1.25rem">
           <Box my="0.25rem" w="full">
             <HStack
@@ -379,8 +449,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                     aria-hidden
                   />
                 </Flex>
-                <Box
-                  as="button"
+                <chakra.button
                   type="button"
                   flex={1}
                   minW={0}
@@ -453,7 +522,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                       )}
                     </Stack>
                   </HStack>
-                </Box>
+                </chakra.button>
                 <Flex
                   alignItems="center"
                   flexShrink={0}
