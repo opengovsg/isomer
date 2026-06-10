@@ -173,7 +173,7 @@ const config = {
       ...(env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
         ? [
             {
-              protocol: "https",
+              protocol: /** @type {"https"} */ ("https"),
               hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
             },
           ]
@@ -183,7 +183,7 @@ const config = {
       ...(env.NEXT_PUBLIC_APP_ENV === "preview"
         ? [
             {
-              protocol: "https",
+              protocol: /** @type {"https"} */ ("https"),
               hostname: "*.public.blob.vercel-storage.com",
             },
           ]
