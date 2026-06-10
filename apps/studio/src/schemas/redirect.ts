@@ -52,7 +52,10 @@ export type CreateRedirectInput = z.infer<typeof createRedirectSchema>
 
 export const deleteRedirectSchema = z.object({
   siteId: z.number().min(1),
-  id: z.string().min(1),
+  // Redirect.id is a bigint in the DB, surfaced as a string by kysely — so
+  // reject non-numeric ids here instead of letting them blow up as a DB
+  // cast error (same shape as the bigint id schema in resource.ts)
+  id: z.string().regex(/^[1-9][0-9]*$/, { message: "Invalid redirect ID" }),
 })
 export type DeleteRedirectInput = z.infer<typeof deleteRedirectSchema>
 

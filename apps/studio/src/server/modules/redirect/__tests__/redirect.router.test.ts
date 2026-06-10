@@ -548,6 +548,16 @@ describe("redirect.router", async () => {
       )
     })
 
+    it("should throw 400 if the redirect id is not numeric", async () => {
+      // Arrange / Act
+      // Redirect.id is a bigint, so a non-numeric id must be rejected by
+      // validation instead of becoming a DB cast error (500)
+      const result = caller.delete({ siteId, id: "not-a-number" })
+
+      // Assert
+      await expect(result).rejects.toThrowError("Invalid redirect ID")
+    })
+
     it("should throw 404 if the redirect is already deleted", async () => {
       // Arrange
       const inserted = await db
