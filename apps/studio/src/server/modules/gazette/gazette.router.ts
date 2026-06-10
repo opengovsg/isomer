@@ -1,10 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { differenceInMinutes, isBefore, subYears } from "date-fns"
 import filenamify from "filenamify"
-import {
-  ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES,
-  DD_DELETION_EMAIL,
-} from "~/constants/gazette"
+import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazette"
 import { env } from "~/env.mjs"
 import {
   sendGazetteDeletionEmail,
@@ -924,7 +921,9 @@ export const gazetteRouter = router({
       await sendGazetteDeletionEmail({
         fileId: filename,
         gazetteTitle: gazette.title,
-        recipientEmail: DD_DELETION_EMAIL,
+        // Provisioned via SSM and treated as a secret so that it cannot be
+        // scraped and spammed.
+        recipientEmail: env.DD_DELETION_EMAIL,
         cc,
       })
     }),

@@ -1,3 +1,4 @@
+import { partition } from "lodash-es"
 import wretch from "wretch"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
@@ -22,13 +23,15 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
   // Same safeguard for cc recipients, but drop the non-whitelisted ones
   // instead of failing the whole send — mirrors Postman's own behaviour of
   // ignoring blacklisted cc addresses while still delivering to the rest.
-  const ccResults = await Promise.all(
-    (params.cc ?? []).map(async (email) => ({
-      email,
-      isWhitelisted: await isEmailWhitelisted(email),
-    })),
+  const [whitelistedCc, droppedCc] = partition(
+    await Promise.all(
+      (params.cc ?? []).map(async (email) => ({
+        email,
+        isWhitelisted: await isEmailWhitelisted(email),
+      })),
+    ),
+    (r) => r.isWhitelisted,
   )
-  const droppedCc = ccResults.filter((r) => !r.isWhitelisted)
   if (droppedCc.length > 0) {
     logger.warn({
       error: "Dropping non-whitelisted cc recipients",
@@ -36,7 +39,7 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
       subject: params.subject,
     })
   }
-  const cc = ccResults.filter((r) => r.isWhitelisted).map((r) => r.email)
+  const cc = whitelistedCc.map((r) => r.email)
   const payload = {
     recipient: params.recipient,
     subject: params.subject,
