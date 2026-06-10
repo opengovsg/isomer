@@ -95,7 +95,7 @@ const TagCategoriesSchema = Type.Object({
  * item props in favour of `categoryId` (and related fields) aligned with these options.
  * Studio AJV still applies `default: []` when the key is missing.
  *
- * Display vs “Manage filters” in Studio is not encoded here: `getScopedSchema` in
+ * Display vs "Manage filters" in Studio is not encoded here: `getScopedSchema` in
  * CollectionEditorStateDrawer includes this field only in the Filters drawer (with tag filters),
  * not under Collection display.
  */
@@ -104,21 +104,21 @@ const CategoriesSchema = Type.Object({
     Type.Array(
       Type.Object({
         label: Type.String({
-          title: “Option name”,
+          title: "Option name",
           pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
           errorMessage: {
-            pattern: “cannot be empty or have leading/trailing spaces”,
+            pattern: "cannot be empty or have leading/trailing spaces",
           },
         }),
         id: generateUuidSchema({
-          title: “Category id”,
+          title: "Category id",
           description:
-            “This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category”,
+            "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
         }),
       }),
       {
-        title: “Options”,
-        format: “category-options”,
+        title: "Options",
+        format: "category-options",
         default: [],
       },
     ),
