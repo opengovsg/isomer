@@ -29,6 +29,10 @@ interface CollectionPagePageProps {
   defaultSortDirection?: string
   sortOrder?: string
   tagCategories?: TagCategory[]
+  // `showThumbnail` is read opportunistically from page content and written
+  // into the sitemap entry by buildPageSitemapEntry; declared here so the
+  // (previously untypechecked) projection in sitemap.ts typechecks.
+  showThumbnail?: boolean
 }
 
 export type SitemapEntry = Pick<

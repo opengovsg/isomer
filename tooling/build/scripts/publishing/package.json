@@ -7,16 +7,31 @@
   "author": "",
   "main": "index.ts",
   "scripts": {
+    "db:sleep": "sleep 3",
+    "services:setup": "docker compose -f \"docker-compose.yml\" up -d --wait",
+    "setup:test": "run-s --print-label services:setup db:sleep",
     "start": "tsx index.ts ",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "run-s test:*",
+    "test:unit": "dotenv -e .env.test pnpm exec vitest run",
+    "test:watch": "dotenv -e .env.test pnpm exec vitest watch",
+    "typecheck": "tsgo --noEmit",
     "upload-redirects": "tsx uploadRedirects.ts"
   },
   "dependencies": {
+    "@isomer/db": "workspace:*",
     "dotenv": "catalog:",
+    "kysely": "catalog:",
     "pg": "catalog:",
     "tsx": "catalog:"
   },
   "devDependencies": {
-    "@types/pg": "catalog:"
+    "@opengovsg/isomer-components": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "dotenv-cli": "catalog:",
+    "npm-run-all2": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:vitest"
   }
 }
