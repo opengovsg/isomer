@@ -33,7 +33,7 @@ export const RoleBox = ({
       aria-label={`${value} role`}
       className="data-[selected]:bg-interaction-muted-main-active hover:bg-interaction-muted-main-hover data-[selected]:hover:bg-interaction-muted-main-active disabled:border-interaction-support-disabled disabled:bg-interaction-support-disabled disabled:text-interaction-support-disabled-content flex h-auto flex-1 flex-col rounded-md border-[1.5px] border-solid border-gray-200 bg-white p-5 text-center font-normal data-[selected]:border-base-divider-brand data-[selected]:font-bold hover:border-base-divider-medium data-[selected]:hover:border-base-divider-brand disabled:cursor-not-allowed disabled:opacity-60"
     >
-      <VStack gap={2} alignItems="flex-start">
+      <VStack gap={2} alignItems="flex-start" width="full">
         <Icon
           boxSize={5}
           as={ROLES_ICONS[value]}
