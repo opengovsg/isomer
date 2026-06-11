@@ -52,7 +52,7 @@ export const DEFAULT_BLOCKS = {
   formsg: {
     type: "formsg",
     url: "https://form.gov.sg/686e73c1a1f7bf391ee2b3af",
-    title: "A feedback collection form",
+    title: "Fill in a sample feedback form for Isomer.",
   },
   hero: undefined,
   iframe: {
@@ -69,8 +69,8 @@ export const DEFAULT_BLOCKS = {
   },
   infobar: {
     type: "infobar",
-    title: "This is the main title.",
-    description: "This is an optional description.",
+    title: "Enter a strong message or call-to-action.",
+    description: "Elaborate on the title.",
   },
   infocards: {
     type: "infocards",
@@ -140,7 +140,7 @@ export const DEFAULT_BLOCKS = {
           type: "paragraph",
           content: [
             {
-              text: "Enter content to accompany the image.",
+              text: "Enter content to place beside the image.",
               type: "text",
             },
           ],
@@ -155,8 +155,8 @@ export const DEFAULT_BLOCKS = {
     title: "Enter a title.",
     statistics: [
       {
-        label: "Feature striking KPIs",
-        value: "200%",
+        label: "Enter a label for each item.",
+        value: "Example",
       },
       {
         label: "Show growth numbers",
@@ -167,8 +167,8 @@ export const DEFAULT_BLOCKS = {
         value: "12,890",
       },
       {
-        value: "Integrity",
         label: "Highlight core values",
+        value: "Integrity",
       },
     ],
   },
@@ -180,12 +180,12 @@ export const DEFAULT_BLOCKS = {
   audio: {
     type: "audio",
     title:
-      "A podcast with title: As scammers adapt and evolve, how can technology keep up?",
+      "Play podcast: As scammers adapt and evolve, how can technology keep up?",
     url: "https://open.spotify.com/embed/episode/1xaBZfZ3tffBZdgBdy1Kh6",
   },
   video: {
     type: "video",
-    title: "Kit Chan sings 'Home' at NDP 2025",
+    title: "Play video: Kit Chan sings 'Home' at NDP 2025",
     url: "https://www.youtube.com/embed/GzQiJ091g7Q?si=GePcnmUmvmGk77fz",
   },
   // TODO: Replace with actual working API endpoint
@@ -247,7 +247,7 @@ export const DEFAULT_BLOCKS = {
         alt: "Enter a descriptive alt text.",
       },
     ],
-    title: "In collaboration with",
+    title: "Our partners",
   },
   collectionblock: {
     type: "collectionblock",
