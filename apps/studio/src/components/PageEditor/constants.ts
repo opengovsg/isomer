@@ -28,8 +28,7 @@ export const DEFAULT_BLOCKS = {
   },
   blockquote: {
     type: "blockquote",
-    quote:
-      "Enter your quote here.",
+    quote: "Enter your quote here.",
     source: "Describe who said the quote.",
     imageAlt: "Enter a descriptive alt text.",
   },
@@ -180,7 +179,8 @@ export const DEFAULT_BLOCKS = {
   },
   audio: {
     type: "audio",
-    title: "A podcast with title: As scammers adapt and evolve, how can technology keep up?",
+    title:
+      "A podcast with title: As scammers adapt and evolve, how can technology keep up?",
     url: "https://open.spotify.com/embed/episode/1xaBZfZ3tffBZdgBdy1Kh6",
   },
   video: {
