@@ -12,11 +12,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import {
-  Button as DsButton,
-  FormLabel,
-  useToast,
-} from "@opengovsg/design-system-react"
+import { FormLabel, useToast } from "@opengovsg/design-system-react"
 import { Button } from "@opengovsg/oui"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useEffect, useMemo } from "react"
@@ -156,14 +152,14 @@ export const EditUserModal = () => {
             Cancel
           </Button>
           <SingpassConditionalTooltip>
-            <DsButton
+            <Button
               variant="solid"
               onClick={onUpdateUser}
-              isLoading={isPending}
+              isPending={isPending}
               isDisabled={!isSingpassEnabled}
             >
               Save changes
-            </DsButton>
+            </Button>
           </SingpassConditionalTooltip>
         </ModalFooter>
       </ModalContent>
