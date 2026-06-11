@@ -225,3 +225,4 @@ font/padding). Component-migration diffs are therefore small-but-nonzero; review
 | `LinkBox`/`LinkOverlay` | Recompose clickable-card pattern around OUI `Link` |
 | `Table*` | Use OUI `Table`; fall back to semantic `<table>` + Tailwind if it doesn't fit (note here) |
 | `useDisclosure` | Decide: react-aria state vs local shim (record which, once chosen) |
+| `DirectorySidebar/RowEntry` (`Button as={NextLink}` "clear") | **Deferred to polish pass.** Heavy-override usage — kept on Chakra in the first pass. Rebuild as a purpose-built `tv` component (replicate `leftIcon` `iconSpacing`+`gap` as explicit margin+gap; pin the `1em` icon to an explicit size) and verify against the frozen baseline. |

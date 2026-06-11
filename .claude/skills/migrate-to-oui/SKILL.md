@@ -89,6 +89,16 @@ as its own PR first, then stop and report. Do not migrate a unit onto a missing 
    **bridge component** (`reference/bridge-components.md`) over react-aria primitives + OUI's
    exported `*Styles` rather than blocking — e.g. `LinkButton` for `variant="link"`. Flag true
    upstream gaps in the playbook's register. Do not invent props.
+   - **First pass = straightforward migrations only.** A usage is *straightforward* when it's a
+     clean drop-in: the OUI component (or a thin bridge) takes the same role with a handful of
+     props + a little `className`, and it passes the visual gate without pixel-chasing. If a
+     usage is **not** straightforward — it overrides *most* of the design-system component's
+     styles (so you'd be fighting OUI's defaults rather than using them), needs bespoke layout
+     arithmetic to pixel-match, or otherwise can't clear the visual gate without a purpose-built
+     component — **skip it on the first pass.** Leave that file on Chakra (alias the DS import if
+     the rest of the unit migrated), and **record it in the deferred/polish register** (the
+     playbook's gaps section + the PR body). Do not block the unit PR chasing sub-pixel drift.
+     The polish pass (see end of file) rebuilds those with `tv`.
 
 4. **Branch on the stack:**
    ```sh
@@ -159,9 +169,38 @@ theme in `apps/studio/src/theme/`, the `build:theme` script, and the Chakra Stor
 decorator; delete `tooling/visual-diff/baselines/` and optionally the visual-diff tool. Run
 the full quality + visual gates one last time, then `gt submit`.
 
+## Polish pass (after the straightforward passes)
+
+The first passes deliberately skip heavy-override usages (see step 3) and leave them on Chakra.
+The polish pass migrates those one at a time — each its own small PR, same visual gate.
+
+**Technique — purpose-built component with `tv`.** When a usage overrides *most* of the
+design-system component's styles, do **not** reach for the OUI component or its exported
+`*Styles` (`buttonStyles`, etc.) and override with `className`. Overrides don't cancel the
+slots underneath — leftovers silently apply and cause drift you'll chase forever. Concrete
+example seen in this repo: `buttonStyles` defaults to `color: "main"`, so a `variant="clear"`
+button still pulls in `border border-utility-ui-clear` (a 1px box shift) **and** the `size`
+slot's `prose-*` font/line-height (which resizes any `1em` icon). Instead:
+
+1. Read the **previous** styles — the original Chakra props *and* the DS theme variant it used
+   (e.g. what `variant="clear"` resolves to). Note any Chakra-specific spacing mechanics; they
+   don't map 1:1 (e.g. a `Button`'s `leftIcon` carries `iconSpacing` as a trailing margin that
+   stacks on top of the container `gap` — replicate the **sum** as explicit margin + gap).
+2. Author the new classes from scratch with **`tv` from `@opengovsg/oui-theme`** — exactly how
+   OUI's own native components are built (`base` + `variants` + `defaultVariants` slots).
+3. Render the underlying react-aria primitive directly (`Link`, `Button`, …) with that `tv` as
+   its `className`. Pin sizes that floated with inherited font (`1em` icons → explicit size) so
+   they no longer depend on the wrapper's typography.
+4. Co-locate the `tv` with its single consumer; lift to `oui-bridge/` only when a second caller
+   needs it. `@source "../"` in `src/styles/oui.css` already scans `apps/studio/src`, so
+   locally-authored `tv` class strings get compiled.
+5. Verify against the frozen baseline with the visual gate; tune until the rows/glyphs align.
+
 ## Guardrails
 
 - One unit, one PR, per invocation. Never batch unrelated units.
+- First pass migrates straightforward usages only; skip + record non-straightforward ones for
+  the polish pass (step 3). Never chase sub-pixel drift to force a heavy-override usage through.
 - Never delete or weaken the visual gate to make a PR pass.
 - Both providers stay mounted until the final cleanup — do not remove `ThemeProvider` early.
 - Keep the OUI Tailwind v4 stylesheet separate from the existing v3 `build:preview-tw`
