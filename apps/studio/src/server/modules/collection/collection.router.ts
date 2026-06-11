@@ -339,13 +339,17 @@ export const collectionRouter = router({
         )
 
       const { parentId } = indexPage
-      const collection = parentId
-        ? await getSiteResourceById({
-            siteId,
-            resourceId: parentId,
-            type: ResourceType.Collection,
-          })
-        : null
+      if (!parentId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page has no parent collection",
+        })
+      }
+      const collection = await getSiteResourceById({
+        siteId,
+        resourceId: parentId,
+        type: ResourceType.Collection,
+      })
       if (!collection) {
         throw new TRPCError({
           code: "NOT_FOUND",
