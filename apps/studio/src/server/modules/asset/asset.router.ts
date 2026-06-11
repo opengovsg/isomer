@@ -87,14 +87,14 @@ export const assetRouter = router({
       return { presignedGetUrl }
     }),
 
+  // No rate limit: all agency editors reach Studio through a single shared
+  // egress IP (remote browser isolation), and the limiter keys on IP, so any
+  // limit here would be shared across every editor. Abuse risk is already low
+  // since permissions are validated before any S3 call and the per-request
+  // cap in deleteAssetsSchema bounds fan-out. Revisit if the rate-limit
+  // fingerprint gains a per-device/per-user component.
   deleteAssets: protectedProcedure
     .input(deleteAssetsSchema)
-    // Bounds abuse frequency on this S3-hitting mutation. Combined with the
-    // per-request cap in deleteAssetsSchema, this limits the total number of
-    // paid S3 tagging calls a single caller can drive within the window.
-    // 20/min is practically generous (well above normal editor usage) and
-    // arbitrary — adjust if legitimate usage is blocked or abuse persists.
-    .meta({ rateLimitOptions: { max: 20, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { siteId, resourceId, fileKeys } }) => {
       await validateUserPermissionsForAsset({
         siteId,
