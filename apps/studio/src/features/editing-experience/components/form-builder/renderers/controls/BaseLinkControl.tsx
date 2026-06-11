@@ -115,13 +115,10 @@ export function BaseLinkControl({
               <>
                 <Text textStyle="body-2">{description}</Text>
                 <LinkButton
-                  className="py-2"
+                  className="prose-subhead-2 shrink-0 py-2"
                   onPress={onOpen}
-                  aria-labelledby="button-label"
                 >
-                  <Text id="button-label" textStyle="subhead-2">
-                    Link something...
-                  </Text>
+                  Link something...
                 </LinkButton>
               </>
             )}
