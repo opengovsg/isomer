@@ -7,9 +7,8 @@ import {
   Icon,
   Text,
 } from "@chakra-ui/react"
-import { Spinner } from "@opengovsg/design-system-react"
-import { cn } from "@opengovsg/oui-theme"
-import { ButtonLink } from "~/components/oui-bridge/ButtonLink"
+import { Button, Spinner } from "@opengovsg/design-system-react"
+import NextLink from "next/link"
 
 interface RowEntryProps {
   icon: IconType
@@ -37,22 +36,31 @@ export const RowEntry = ({
 
   return (
     <Box pos="relative">
-      <ButtonLink
+      <Button
+        as={NextLink}
         data-peer
         data-group
+        gap="0.25rem"
+        w="full"
         variant="clear"
-        // react-aria's Link strips `aria-selected`, so drive the active background off
-        // `isActive` directly; `aria-current` carries the accessible "current page" state.
-        aria-current={isActive ? "page" : undefined}
+        minH="auto"
+        h="auto"
+        px="0.5rem"
+        py="0.375rem"
+        justifyContent="flex-start"
+        aria-selected={isActive}
         href={href}
+        leftIcon={<Box w={`${buttonSpacingLeft}rem`} />}
+        iconSpacing="0.25rem"
         title={label}
-        className={cn(
-          "h-auto min-h-[auto] w-full items-center justify-start gap-1 px-2 py-1.5 focus:z-[1]",
-          isActive &&
-            "bg-interaction-muted-main-active hover:bg-interaction-muted-main-active",
-        )}
+        _selected={{
+          bg: "interaction.muted.main.active",
+          _hover: { bg: "interaction.muted.main.active" },
+        }}
+        _focus={{
+          zIndex: 1,
+        }}
       >
-        <Box w={`${buttonSpacingLeft}rem`} />
         <Icon
           color={isActive ? "interaction.main.default" : "base.content.default"}
           as={icon}
@@ -76,7 +84,7 @@ export const RowEntry = ({
           </Text>
           {subLabel && <Text textStyle="caption-3">{subLabel}</Text>}
         </Flex>
-      </ButtonLink>
+      </Button>
       {isExpandable && (
         <AccordionButton
           pos="absolute"
