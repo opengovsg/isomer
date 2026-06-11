@@ -212,9 +212,6 @@ catalogs:
     flat:
       specifier: ^6.0.1
       version: 6.0.1
-    globals:
-      specifier: ^17.6.0
-      version: 17.6.0
     happy-dom:
       specifier: ^20.9.0
       version: 20.9.0
@@ -1461,10 +1458,6 @@ importers:
         version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.0)(@vitest/coverage-istanbul@4.1.8)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.14.6(@types/node@25.9.0)(typescript@6.0.3))(vite@8.0.16(@types/node@25.9.0)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.22.3)(yaml@2.8.3))
 
   tooling/build:
-    dependencies:
-      globals:
-        specifier: 'catalog:'
-        version: 17.6.0
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -8289,10 +8282,6 @@ packages:
 
   globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
-    engines: {node: '>=18'}
-
-  globals@17.6.0:
-    resolution: {integrity: sha512-sepffkT8stwnIYbsMBpoCHJuJM5l98FUF2AnE07hfvE0m/qp3R586hw4jF4uadbhvg1ooIdzuu7CsfD2jzCaNA==}
     engines: {node: '>=18'}
 
   globby@11.1.0:
@@ -18595,8 +18584,6 @@ snapshots:
       ini: 2.0.0
 
   globals@14.0.0: {}
-
-  globals@17.6.0: {}
 
   globby@11.1.0:
     dependencies:
