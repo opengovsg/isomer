@@ -3,9 +3,19 @@
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Language and Environment */
-    "target": "es2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    /* Modules */
-    "module": "commonjs" /* Specify what module code is generated. */,
+    "target": "es2022" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "lib": ["es2022"],
+    /* Modules
+     * NOTE: this is typecheck-only config. The script is executed via
+     * `tsx index.ts` (CodeBuild + the `start` script), and tsx transpiles each
+     * file with esbuild's own module detection, so it does not consult `module`
+     * here. ESNext + Bundler resolution is required to typecheck the ESM-only
+     * test harness (which uses `import.meta.url`) and the `@isomer/db` package. */
+    "module": "esnext" /* Specify what module code is generated. */,
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "types": ["node", "vitest/globals"],
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
 
     /* Type Checking */
@@ -19,8 +29,13 @@
       // to @isomer/db (packages/db/src/generated). This works because we
       // clone our repo as a whole.
       "~generated/*": ["../../../../packages/db/src/generated/*"],
-      // Respect the package's default export and use only index
-      "~schema": ["../../../../packages/components/src/index.ts"]
+      // Resolve `~schema` to the components package's BUILT declaration file
+      // rather than its TS source. The script's only `~schema` reference is a
+      // type-only import (erased at runtime by tsx/esbuild), so this is purely
+      // a typecheck concern: pointing at the published `.d.ts` lets `tsgo`
+      // resolve the type under `skipLibCheck` without descending into (and
+      // type-erroring on) the JSX-bearing components source tree.
+      "~schema": ["../../../../packages/components/dist/esm/index.d.ts"]
     }
   }
 }
