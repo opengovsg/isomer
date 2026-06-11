@@ -102,7 +102,7 @@ async function playFillFilterNameAndAddThreeOptions(
 /** From "Manage filters": open nested "Edit Category" (default category options). */
 async function playOpenCategoryOptionsEditor(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
-  const openBtn = await canvas.findByRole(“button”, {
+  const openBtn = await canvas.findByRole("button", {
     name: /Category \(Default\)/i,
   })
   await userEvent.click(openBtn)
@@ -112,13 +112,13 @@ async function playOpenCategoryOptionsEditor(canvasElement: HTMLElement) {
 /** Inside "Edit Category": add three option rows (labels may be empty). */
 async function playAddThreeCategoryOptions(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
-  const addOption = await canvas.findByRole(“button”, { name: /^Add option$/i })
+  const addOption = await canvas.findByRole("button", { name: /^Add option$/i })
   await userEvent.click(addOption)
   await userEvent.click(addOption)
   await userEvent.click(addOption)
-  await canvas.findByRole(“button”, { name: /Item 1/i })
-  await canvas.findByRole(“button”, { name: /Item 2/i })
-  await canvas.findByRole(“button”, { name: /Item 3/i })
+  await canvas.findByRole("button", { name: /Item 1/i })
+  await canvas.findByRole("button", { name: /Item 2/i })
+  await canvas.findByRole("button", { name: /Item 3/i })
 }
 
 /**
@@ -130,10 +130,10 @@ async function playOpenAndCloseThreeFilterOptions(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
   for (let i = 1; i <= 3; i += 1) {
     await userEvent.click(
-      await canvas.findByRole(“button”, { name: new RegExp(`Item ${i}`, “i”) }),
+      await canvas.findByRole("button", { name: new RegExp(`Item ${i}`, "i") }),
     )
     await userEvent.click(
-      await canvas.findByRole(“button”, { name: /Return to Options/i }),
+      await canvas.findByRole("button", { name: /Return to Options/i }),
     )
   }
 }
@@ -143,13 +143,13 @@ async function playFillThreeCategoryOptionNames(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
   for (let i = 1; i <= 3; i += 1) {
     await userEvent.click(
-      await canvas.findByRole(“button”, { name: new RegExp(`Item ${i}`, “i”) }),
+      await canvas.findByRole("button", { name: new RegExp(`Item ${i}`, "i") }),
     )
     const nameInput = await canvas.findByPlaceholderText(/Option name/i)
     await userEvent.clear(nameInput)
     await userEvent.type(nameInput, `Option ${i}`)
     await userEvent.click(
-      await canvas.findByRole(“button”, { name: /Return to Options/i }),
+      await canvas.findByRole("button", { name: /Return to Options/i }),
     )
   }
 }
