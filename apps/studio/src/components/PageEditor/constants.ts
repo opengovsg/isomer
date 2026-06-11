@@ -29,9 +29,9 @@ export const DEFAULT_BLOCKS = {
   blockquote: {
     type: "blockquote",
     quote:
-      "Enforcing the gold standards of building government informational websites at Isomer (OGP)",
-    source: "Huaying Zhu",
-    imageAlt: "Portrait of Huaying Zhu",
+      "Enter your quote here.",
+    source: "Describe who said the quote.",
+    imageAlt: "Enter a descriptive alt text.",
   },
   callout: {
     type: "callout",
@@ -60,77 +60,77 @@ export const DEFAULT_BLOCKS = {
     type: "iframe",
     title: "YouTube embed",
     content:
-      '<iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>',
+      '<iframe width="560" height="315" src="https://www.youtube.com/embed/GzQiJ091g7Q?si=GePcnmUmvmGk77fz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>',
   },
   image: {
     type: "image",
     src: "/placeholder_no_image.png",
-    alt: "Add your alt text here",
+    alt: "Enter a descriptive alt text.",
     size: "default",
   },
   infobar: {
     type: "infobar",
-    title: "This is the main title",
-    description: "This is an optional description",
+    title: "This is the main title.",
+    description: "This is an optional description.",
   },
   infocards: {
     type: "infocards",
-    title: "This is a title of the Infocards component",
-    subtitle: "This is an optional subtitle for the Infocards component",
+    title: "Enter a title.",
+    subtitle: "Elaborate on the title.",
     variant: "cardsWithImages",
     maxColumns: "3",
     cards: [
       {
-        title: "This is the first card",
+        title: "Enter a title for your first card.",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "This is the alt text",
+        imageAlt: "Enter a descriptive alt text.",
         imageFit: "cover",
       },
       {
-        title: "This is the second card",
+        title: "Enter a title for your second card.",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "This is the alt text",
+        imageAlt: "Enter a descriptive alt text.",
         imageFit: "cover",
       },
       {
-        title: "This is the third card",
+        title: "Enter a title for your third card.",
         url: "https://www.google.com",
         imageUrl: "/placeholder_no_image.png",
-        imageAlt: "This is the alt text",
+        imageAlt: "Enter a descriptive alt text.",
         imageFit: "cover",
       },
     ],
   },
   infocols: {
     type: "infocols",
-    title: "This is the main title of the InfoCols component",
-    subtitle: "This is an optional subtitle for the InfoCols component.",
+    title: "Enter a title.",
+    subtitle: "Elaborate on the title.",
     infoBoxes: [
       {
-        title: "This is the title of the first column",
-        description: "You can also add additional description here",
+        title: "Enter a title for your first column.",
+        description: "Elaborate on the title.",
         icon: "office-building",
       },
       {
-        title: "This is the title of the second column",
-        description: "You can also add additional description here",
+        title: "Enter a title for your second column.",
+        description: "Elaborate on the title.",
         icon: "stars",
       },
       {
-        title: "This is the title of the third column",
-        description: "You can also add additional description here",
+        title: "Enter a title for your third column.",
+        description: "Elaborate on the title.",
         icon: "globe",
       },
     ],
   },
   infopic: {
     type: "infopic",
-    title: "This is an infopic",
-    description: "This is the description for the infopic component",
+    title: "Enter a title.",
+    description: "Elaborate on the title.",
     imageSrc: "/placeholder_no_image.png",
-    imageAlt: "This is the alt text for the image",
+    imageAlt: "Enter a descriptive alt text.",
   },
   contentpic: {
     type: "contentpic",
@@ -141,7 +141,7 @@ export const DEFAULT_BLOCKS = {
           type: "paragraph",
           content: [
             {
-              text: "Enter the content accompanying the image here",
+              text: "Enter content to accompany the image.",
               type: "text",
             },
           ],
@@ -149,44 +149,44 @@ export const DEFAULT_BLOCKS = {
       ],
     },
     imageSrc: "/placeholder_no_image.png",
-    imageAlt: "This is the alt text for the image",
+    imageAlt: "Describe what the image is about.",
   },
   keystatistics: {
     type: "keystatistics",
-    title: "Irrationality in numbers",
+    title: "Enter a title.",
     statistics: [
       {
-        label: "Average all nighters pulled in a typical calendar month",
-        value: "3",
+        label: "Feature striking KPIs",
+        value: "200%",
       },
       {
-        label: "Growth in tasks assigned Q4 2024 (YoY)",
+        label: "Show growth numbers",
         value: "+12.2%",
       },
       {
-        label: "Creative blocks met per single evening",
-        value: "89",
+        label: "Use commas for big numbers",
+        value: "12,890",
       },
       {
-        value: "4.0",
-        label: "Number of lies in this stat block",
+        value: "Integrity",
+        label: "Highlight core values",
       },
     ],
   },
   map: {
     type: "map",
-    title: "Singapore region",
+    title: "Map of the Singapore region",
     url: "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d127639.0647119137!2d103.79481771806647!3d1.343949056391766!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2ssg!4v1731681854346!5m2!1sen!2ssg",
   },
   audio: {
     type: "audio",
-    title: "As scammers adapt and evolve, how can technology keep up?",
+    title: "A podcast with title: As scammers adapt and evolve, how can technology keep up?",
     url: "https://open.spotify.com/embed/episode/1xaBZfZ3tffBZdgBdy1Kh6",
   },
   video: {
     type: "video",
-    title: "Rick Astley - Never Gonna Give You Up",
-    url: "https://www.youtube.com/embed/dQw4w9WgXcQ?si=ggGGn4uvFWAIelWD",
+    title: "Kit Chan sings 'Home' at NDP 2025",
+    url: "https://www.youtube.com/embed/GzQiJ091g7Q?si=GePcnmUmvmGk77fz",
   },
   // TODO: Replace with actual working API endpoint
   dynamicdatabanner: {
@@ -236,15 +236,15 @@ export const DEFAULT_BLOCKS = {
     images: [
       {
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
       {
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
       {
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
     ],
     title: "In collaboration with",
@@ -260,19 +260,19 @@ export const DEFAULT_BLOCKS = {
     type: "imagegallery",
     images: [
       {
-        caption: "This is the first image",
+        caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
       {
-        caption: "This is the second image",
+        caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
       {
-        caption: "This is the third image",
+        caption: "Enter a caption to describe the image or attribute it.",
         src: "/placeholder_no_image.png",
-        alt: "This is the alt text",
+        alt: "Enter a descriptive alt text.",
       },
     ],
   },
