@@ -1,5 +1,4 @@
 import type {
-  CollectionPageCategoryOption,
   CollectionPagePageProps,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
@@ -66,19 +65,13 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  createDefaultPage,
+  createFolderIndexPage,
+  getCategoryOptionsForPage,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
-
-function isCollectionPageCategoryOption(
-  value: unknown,
-): value is CollectionPageCategoryOption {
-  if (!value || typeof value !== "object") {
-    return false
-  }
-  const rec = value as Record<string, unknown>
-  return typeof rec.id === "string" && typeof rec.label === "string"
-}
 
 // TODO: Need to do validation like checking for existence of the page
 // and whether the user has write-access to said page: replace protectorProcedure in this with the new procedure
@@ -215,52 +208,7 @@ export const pageRouter = router({
         userId: ctx.user.id,
       })
 
-      const page = await db
-        .selectFrom("Resource as r")
-        .innerJoin("Resource as parent", "parent.id", "r.parentId")
-        .where("r.siteId", "=", siteId)
-        .where("r.id", "=", String(pageId))
-        .select(["r.parentId", "parent.type as parentType"])
-        .executeTakeFirst()
-
-      if (!page?.parentId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
-        })
-      }
-
-      if (page.parentType !== ResourceType.Collection) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Page is not a child of a Collection",
-        })
-      }
-
-      // Intentionally reads only from the published index blob: child pages/links
-      // may only choose from category options that have been published on the
-      // collection index. Newly-added or edited options are not selectable until
-      // the index is published.
-      const row = await db
-        .selectFrom("Resource as r")
-        .innerJoin("Version as v", "r.publishedVersionId", "v.id")
-        .innerJoin("Blob as vb", "v.blobId", "vb.id")
-        .where("r.siteId", "=", siteId)
-        .where("r.parentId", "=", page.parentId)
-        .where("r.type", "=", ResourceType.IndexPage)
-        .select(
-          sql<
-            CollectionPageCategoryOption[] | null
-          >`vb.content->'page'->'categoryOptions'`.as("categoryOptions"),
-        )
-        .executeTakeFirst()
-
-      const raw = row?.categoryOptions
-      return {
-        categoryOptions: Array.isArray(raw)
-          ? raw.filter(isCollectionPageCategoryOption)
-          : [],
-      }
+      return getCategoryOptionsForPage({ pageId, siteId })
     }),
 
   readPage: protectedProcedure
