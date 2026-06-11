@@ -262,7 +262,7 @@ export const getBlob = async (bucketName: string, key: string) => {
 export const putObjectDirect = async (
   props: Pick<
     PutObjectCommandInput,
-    "Bucket" | "Key" | "Body" | "ContentType" | "ContentDisposition"
+    "Bucket" | "Key" | "Body" | "ContentType" | "ContentDisposition" | "Tagging"
   >,
 ): Promise<void> => {
   await storage.send(new PutObjectCommand(props))

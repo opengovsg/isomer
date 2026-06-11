@@ -40,6 +40,14 @@ export const useUploadAssetMutation = ({
             resourceId,
             fileName: effectiveName,
             content,
+            tags: scheduledAt
+              ? [
+                  {
+                    key: "scheduledAt",
+                    value: scheduledAt.getTime().toString(),
+                  },
+                ]
+              : undefined,
           })
           return { path: `/${fileKey}` }
         }

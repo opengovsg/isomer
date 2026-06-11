@@ -72,6 +72,10 @@ export const uploadSvgSchema = z.object({
       message: "Only .svg files are allowed",
     })
     .max(255),
+  // z.string().max() counts UTF-16 code units (JS string length), not bytes.
+  // Multi-byte characters can exceed the intended byte budget, but the difference
+  // is bounded: worst case is 3× (4-byte UTF-8 chars are 2 code units). Acceptable
+  // as a rough upper bound; use Buffer.byteLength for an exact byte check if needed.
   content: z.string().max(MAX_SVG_FILE_SIZE_BYTES, {
     message: `SVG file size must not exceed ${MAX_SVG_FILE_SIZE_BYTES / 1_000_000} MB`,
   }),

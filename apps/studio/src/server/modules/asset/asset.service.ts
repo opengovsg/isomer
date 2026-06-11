@@ -195,9 +195,10 @@ export const sanitizeSvg = (content: string): string => {
     })
   }
 
-  // Allowlist SVG/filter elements, then explicitly block tags and attributes that
-  // enable stored XSS: <script> executes JS, <foreignObject> embeds arbitrary HTML,
-  // <use> can load external resources via href, and event attributes fire on interaction.
+  // DOMPurify's svg+svgFilters profile is the actual security boundary — it strips
+  // all on* event handlers and dangerous elements by default. The explicit lists
+  // below are defense-in-depth for the highest-risk items; do not treat them as
+  // exhaustive. Adding an entry here does not replace the profile's coverage.
   const sanitized = DOMPurify.sanitize(content, {
     USE_PROFILES: { svg: true, svgFilters: true },
     FORBID_TAGS: ["script", "foreignObject", "use"],
@@ -210,17 +211,21 @@ export const sanitizeSvg = (content: string): string => {
 export const putFileDirect = async ({
   key,
   body,
+  tags,
 }: {
   key: string
   body: string
+  tags?: { key: string; value: string }[]
 }): Promise<void> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
+  const stringifiedTags = tags && generateTagsQueryString(tags)
   await putObjectDirect({
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
     Key: key,
     Body: body,
     ContentType: contentType,
     ContentDisposition: contentDisposition,
+    Tagging: tags ? stringifiedTags : undefined,
   })
 }
