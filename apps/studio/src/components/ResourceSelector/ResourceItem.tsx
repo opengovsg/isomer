@@ -23,9 +23,10 @@ const ResourceItemContainer = ({
 }) => {
   return (
     <Button
+      disableRipple
       variant="clear"
       className={cn(
-        "text-base-content-default h-fit w-full items-start justify-start gap-1",
+        "text-base-content-default h-fit w-full items-start justify-start gap-1 overflow-visible",
         className,
       )}
       {...props}
