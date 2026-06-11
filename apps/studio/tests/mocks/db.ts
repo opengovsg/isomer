@@ -2,26 +2,13 @@ import type { DB } from "~/server/modules/database"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Kysely, PostgresDialect } from "kysely"
 import { randomUUID } from "node:crypto"
-import { readdirSync, readFileSync, statSync } from "node:fs"
-import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
 import { Client, Pool } from "pg"
 import { parse } from "superjson"
 import { PrismaClient } from "~prisma/generated/prisma/client"
 
-import { CONTAINER_INFORMATION_SCHEMA } from "../common"
+import { applyMigrations } from "@isomer/db/testing"
 
-const prismaMigrationDir = join(
-  fileURLToPath(dirname(import.meta.url)),
-  "..",
-  "..",
-  "..",
-  "..",
-  "packages",
-  "db",
-  "prisma",
-  "migrations",
-)
+import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 
 const parsed = CONTAINER_INFORMATION_SCHEMA.parse(
   parse(process.env.testcontainers ?? ""),
@@ -57,23 +44,6 @@ const setupPgClient = async () => {
   await _pgClient.connect()
   await _pgClient.query(`CREATE DATABASE "${testSpecificDb}";`)
   await _pgClient.end()
-
-  const client = new Client({
-    connectionString,
-  })
-  return client
-}
-
-// Running migrations manually; dd-trace intercepts `exec` usage and prevents runs
-const applyMigrations = async (client: Client) => {
-  const directory = readdirSync(prismaMigrationDir).sort()
-  for (const file of directory) {
-    const name = `${prismaMigrationDir}/${file}`
-    if (statSync(name).isDirectory()) {
-      const migration = readFileSync(`${name}/migration.sql`, "utf8")
-      await client.query(migration)
-    }
-  }
 }
 
 const db = new Kysely<DB>({
@@ -96,7 +66,5 @@ vi.mock("../../src/server/prisma", () => ({
   prisma,
 }))
 
-const pgClient = await setupPgClient()
-await pgClient.connect()
-await applyMigrations(pgClient)
-await pgClient.end()
+await setupPgClient()
+await applyMigrations(connectionString)
