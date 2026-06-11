@@ -14,7 +14,6 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import {
-  Button as DsButton,
   FormErrorMessage,
   FormLabel,
   useToast,
@@ -255,10 +254,9 @@ export const AddUserModal = () => {
             Cancel
           </Button>
           <SingpassConditionalTooltip>
-            <DsButton
-              variant="solid"
+            <Button
               onClick={onSendInvite}
-              isLoading={isPending}
+              isPending={isPending}
               isDisabled={
                 Object.keys(errors).length > 0 ||
                 email === "" ||
@@ -269,7 +267,7 @@ export const AddUserModal = () => {
               }
             >
               Send invite
-            </DsButton>
+            </Button>
           </SingpassConditionalTooltip>
         </ModalFooter>
       </ModalContent>
