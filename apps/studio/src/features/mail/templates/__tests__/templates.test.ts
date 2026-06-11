@@ -373,7 +373,7 @@ describe("email template HTML escaping", () => {
     }
 
     // Act
-    const template = invitationTemplate(templateData)
+    const template = templates.invitation(templateData)
 
     // Assert
     expect(template.body).toContain(escapedPayload)
@@ -412,7 +412,7 @@ describe("email template HTML escaping", () => {
     }
 
     // Act
-    const template = accountDeactivationWarningTemplate(templateData)
+    const template = templates.accountDeactivationWarning(templateData)
 
     // Assert
     expect(template.body).toContain(`<li>${escapedPayload}</li>`)
@@ -433,7 +433,7 @@ describe("email template HTML escaping", () => {
     }
 
     // Act
-    const template = accountDeactivationTemplate(templateData)
+    const template = templates.accountDeactivation(templateData)
 
     // Assert
     expect(template.body).toContain(`<p><b>${escapedPayload}</b></p>`)
