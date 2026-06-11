@@ -17,7 +17,8 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { Button, Infobox } from "@opengovsg/design-system-react"
+import { Infobox } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { get } from "lodash-es"
 import { useMemo, useState } from "react"
 import {
@@ -141,7 +142,7 @@ function CategoryOptionsExpandedEditor({
                 {label}
               </Text>
               <AddItemButton
-                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+                onPress={addItem(path, createDefaultValue(schema, rootSchema))}
                 isDisabled={isAddItemDisabled}
               >
                 Add option
@@ -315,10 +316,10 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
           w="full"
         >
           <Button
-            w="100%"
+            className="w-full"
             isDisabled={cannotLeaveExpandedCategoryOptions}
             aria-label="Save category options"
-            onClick={handleCloseExpandedCategoryOptions}
+            onPress={handleCloseExpandedCategoryOptions}
           >
             Save changes
           </Button>
