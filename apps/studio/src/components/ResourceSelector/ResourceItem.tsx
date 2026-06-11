@@ -54,12 +54,13 @@ export const ResourceItem = ({
   return (
     <ResourceItemContainer
       data-selected={dataAttr(isHighlighted)}
+      disableRipple
       className={cn(
-        "data-[selected]:bg-interaction-muted-main-active data-[selected]:text-interaction-main-default data-[selected]:hover:bg-interaction-muted-main-active data-[selected]:hover:text-interaction-main-default",
+        "data-[selected]:bg-interaction-muted-main-active data-[selected]:text-interaction-main-default data-[selected]:hover:bg-interaction-muted-main-active data-[selected]:hover:text-interaction-main-default overflow-visible gap-3",
         hasAdditionalLeftPadding && "pl-9",
       )}
       onPress={handleOnClick}
-      startContent={<Icon as={getIcon(item.type)} />}
+      startContent={<Icon alignSelf="center" as={getIcon(item.type)} />}
       isDisabled={isDisabled}
     >
       <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
