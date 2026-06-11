@@ -338,19 +338,13 @@ export const collectionRouter = router({
             }),
         )
 
-      const parentId = indexPage.parentId
-      if (!parentId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Collection index page has no parent collection",
-        })
-      }
-
-      const collection = await getSiteResourceById({
-        siteId,
-        resourceId: parentId,
-        type: ResourceType.Collection,
-      })
+      const collection = indexPage.parentId
+        ? await getSiteResourceById({
+            siteId,
+            resourceId: indexPage.parentId,
+            type: ResourceType.Collection,
+          })
+        : null
       if (!collection) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -640,21 +634,22 @@ export const collectionRouter = router({
         .where("siteId", "=", siteId)
         .where("type", "=", ResourceType.IndexPage)
         .select(["parentId"])
-        .executeTakeFirst()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Collection index page not found",
+            }),
+        )
 
-      const parentId = indexPage?.parentId
-      if (!parentId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Collection index page not found",
-        })
-      }
-
-      const collection = await getSiteResourceById({
-        siteId,
-        resourceId: parentId,
-        type: ResourceType.Collection,
-      })
+      const { parentId } = indexPage
+      const collection = parentId
+        ? await getSiteResourceById({
+            siteId,
+            resourceId: parentId,
+            type: ResourceType.Collection,
+          })
+        : null
       if (!collection) {
         throw new TRPCError({
           code: "NOT_FOUND",
