@@ -119,8 +119,8 @@ export const RiskyFileUploadModal = ({
 
         <ModalFooter gap="0.75rem">
           <Button
-            aria-disabled={!isChecked}
             variant="solid"
+            isDisabled={showCheckboxError}
             onPress={() => {
               if (!isChecked) {
                 setShowCheckboxError(true)
