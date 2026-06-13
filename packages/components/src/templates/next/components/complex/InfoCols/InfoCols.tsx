@@ -78,6 +78,7 @@ const InfoBoxIcon = ({
 
   return (
     <Icon
+      aria-hidden
       className={compoundStyles.infoBoxIcon({
         hasLink,
       })}
@@ -107,7 +108,7 @@ const InfoBoxes = ({
               isExternal={isExternalLink}
             >
               {icon && (
-                <InfoBoxIcon icon={icon} hasLink={hasLink} aria-hidden="true" />
+                <InfoBoxIcon icon={icon} hasLink={hasLink} />
               )}
 
               <h3
