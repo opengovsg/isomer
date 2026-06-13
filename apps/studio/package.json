@@ -51,7 +51,8 @@
     "test:load:build": "webpack-cli --config tests/load/webpack.config.cjs",
     "test:unit": "dotenv -e .env.test vitest run",
     "test:watch": "dotenv -e .env.test pnpm exec vitest watch",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "tsgo --noEmit",
+    "vercel-build": "cd ../../packages/components && pnpm run build && cd - && DATABASE_URL=$DATABASE_URL_UNPOOLED pnpm run migrate && DATABASE_URL=$DATABASE_URL_UNPOOLED pnpm run migrate:custom && SKIP_ENV_VALIDATION=true pnpm run db:seed && pnpm run generate && pnpm run build:preview-tw && pnpm run build"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "catalog:atlaskitPragmaticDnd",
@@ -120,6 +121,7 @@
     "@trpc/react-query": "catalog:trpc",
     "@trpc/server": "catalog:trpc",
     "@uidotdev/usehooks": "catalog:",
+    "@vercel/blob": "catalog:",
     "ajv": "catalog:",
     "ajv-errors": "catalog:",
     "chakra-react-select": "catalog:",

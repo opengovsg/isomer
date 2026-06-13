@@ -55,6 +55,7 @@ const ContentSecurityPolicy = `
     https://open.spotify.com
     https://embed-standalone.spotify.com
     https://embed.podcasts.apple.com
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://vercel.live" : ""}
     ;
   object-src 'none';
   script-src
@@ -67,6 +68,7 @@ const ContentSecurityPolicy = `
     https://embed-cdn.spotifycdn.com
     https://open.spotify.com
     https://js-cdn.music.apple.com
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://vercel.live" : ""}
     ;
   style-src
     'self'
@@ -127,6 +129,9 @@ const ContentSecurityPolicy = `
     https://*.wg.spotify.com
     https://*.podcasts.apple.com
     https://*.xp.apple.com
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://*.public.blob.vercel-storage.com" : ""}
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://blob.vercel-storage.com" : ""}
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://vercel.com" : ""}
     ;
   worker-src
     'self'
@@ -155,7 +160,7 @@ const config = {
   // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   productionBrowserSourceMaps: true,
-  /** We already do typechecking as a separate task in CI */
+  /** We already do typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [
     "@isomer/logging",
@@ -164,9 +169,26 @@ const config = {
     "@opengovsg/starter-kitty-validators",
   ],
   images: {
-    remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
-      ? [{ protocol: "https", hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME }]
-      : [],
+    remotePatterns: [
+      ...(env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+        ? [
+            {
+              protocol: /** @type {"https"} */ ("https"),
+              hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+            },
+          ]
+        : []),
+      // Vercel Blob is preview-only, so only trust the blob domain there —
+      // mirrors the preview-gated blob CSP entries above.
+      ...(env.NEXT_PUBLIC_APP_ENV === "preview"
+        ? [
+            {
+              protocol: /** @type {"https"} */ ("https"),
+              hostname: "*.public.blob.vercel-storage.com",
+            },
+          ]
+        : []),
+    ],
   },
   async headers() {
     return [

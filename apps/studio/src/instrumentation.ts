@@ -9,20 +9,20 @@ export async function register() {
     // oxlint-disable-next-line node/no-process-env
     initTracer({ service: process.env.DD_SERVICE ?? "isomer-next" })
 
-    // Import only if runtime is nodejs. This avoids running it on the browser, build time etc.
-    const { initializeCronJobs, stopCronJobs } = await import("~/server/cron")
+    // Skip cron on Vercel preview (serverless — no persistent process)
+    // oxlint-disable-next-line node/no-process-env
+    if (process.env.NEXT_PUBLIC_APP_ENV !== "preview") {
+      // Import only if runtime is nodejs. This avoids running it on the browser, build time etc.
+      const { initializeCronJobs, stopCronJobs } = await import("~/server/cron")
+      await initializeCronJobs()
 
-    // Initialize cron jobs when server starts
-    await initializeCronJobs()
-
-    // Handle graceful shutdown
-    const gracefulShutdown = () => {
-      console.log("Received shutdown signal, stopping cron jobs...")
-      stopCronJobs()
-      process.exit(0)
+      const gracefulShutdown = () => {
+        console.log("Received shutdown signal, stopping cron jobs...")
+        stopCronJobs()
+        process.exit(0)
+      }
+      process.on("SIGTERM", gracefulShutdown)
+      process.on("SIGINT", gracefulShutdown)
     }
-    // Listen for shutdown signals
-    process.on("SIGTERM", gracefulShutdown)
-    process.on("SIGINT", gracefulShutdown)
   }
 }

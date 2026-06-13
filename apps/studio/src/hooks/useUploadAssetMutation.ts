@@ -1,9 +1,8 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { useMutation } from "@tanstack/react-query"
+import { performUpload } from "~/lib/storage/client"
 import { trpc } from "~/utils/trpc"
-
-import { handleAssetUpload } from "./handleAssetUpload"
 
 type UploadAssetMutationParams = Pick<
   z.infer<typeof getPresignedPutUrlSchema>,
@@ -30,30 +29,22 @@ export const useUploadAssetMutation = ({
   return useMutation<UploadAssetMutationOutput, void, UploadAssetMutationInput>(
     {
       mutationFn: async ({ file, fileName, scheduledAt }) => {
-        const { fileKey, presignedPutUrl, contentType, contentDisposition } =
-          await getPresignedPutUrl({
-            siteId,
-            resourceId,
-            fileName: fileName ?? file.name,
-            tags: scheduledAt
-              ? [
-                  {
-                    key: "scheduledAt",
-                    value: scheduledAt.getTime().toString(),
-                  },
-                ]
-              : undefined,
-          })
-        await handleAssetUpload({
-          file,
-          presignedPutUrl,
-          contentType,
-          contentDisposition,
+        const { fileKey, uploadConfig } = await getPresignedPutUrl({
+          siteId,
+          resourceId,
+          fileName: fileName ?? file.name,
+          tags: scheduledAt
+            ? [
+                {
+                  key: "scheduledAt",
+                  value: scheduledAt.getTime().toString(),
+                },
+              ]
+            : undefined,
         })
 
-        return {
-          path: `/${fileKey}`,
-        }
+        const path = await performUpload(file, fileKey, uploadConfig)
+        return { path }
       },
       retry: false,
     },
