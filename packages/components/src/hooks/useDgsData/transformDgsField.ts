@@ -20,7 +20,17 @@ export const transformDgsField = <T extends string | undefined | null>(
     if (!field || !isStringDgs(field)) {
       return field
     }
-    return record[extractDgsFieldKey(field)] as T
+    const value = record[extractDgsFieldKey(field)]
+    if (value === undefined || value === null) {
+      return value as T
+    }
+    if (typeof value === "string") {
+      return value as T
+    }
+    if (typeof value === "number" || typeof value === "boolean") {
+      return String(value) as T
+    }
+    return field
   } catch {
     return field
   }
