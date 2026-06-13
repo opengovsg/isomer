@@ -80,6 +80,28 @@ export const pageHandlers = {
       })
     },
   },
+  getCategoryOptions: {
+    default: () => {
+      return trpcMsw.page.getCategoryOptions.query(() => {
+        return {
+          categoryOptions: [
+            {
+              id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+              label: "Category 1",
+            },
+            {
+              id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
+              label: "Category 2",
+            },
+            {
+              id: "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
+              label: "Category 3",
+            },
+          ],
+        }
+      })
+    },
+  },
   getCollectionTags: {
     default: () => {
       return trpcMsw.collection.getCollectionTags.query(() => {

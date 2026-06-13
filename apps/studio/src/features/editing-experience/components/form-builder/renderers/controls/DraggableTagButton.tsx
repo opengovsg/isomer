@@ -55,10 +55,14 @@ const DraggableTagButton = forwardRef<DraggableTagButtonProps, "div">(
   ) => {
     const mergedDragHandleProps: BoxProps = {
       py: isError ? "0.75rem" : "1.25rem",
+      pl: "0.5rem",
+      pr: "0.25rem",
       ...listItemContentProps,
     }
     const mergedLabelButtonProps: BoxProps = {
       py: isError ? "0.75rem" : "1rem",
+      pl: "0.25rem",
+      pr: "1rem",
       ...listItemContentProps,
     }
 
@@ -109,8 +113,6 @@ const DraggableTagButton = forwardRef<DraggableTagButtonProps, "div">(
               align="center"
               layerStyle="focusRing"
               {...mergedDragHandleProps}
-              pl="0.5rem"
-              pr="0.25rem"
               {...dragHandleProps}
             >
               <Icon as={BiGridVertical} fontSize="1.5rem" color="slate.300" />
@@ -125,8 +127,6 @@ const DraggableTagButton = forwardRef<DraggableTagButtonProps, "div">(
               alignItems="center"
               cursor="pointer"
               {...mergedLabelButtonProps}
-              pl="0.25rem"
-              pr="1rem"
               onClick={() => setSelectedIndex(index)}
             >
               <HStack align="stretch" spacing="0.75rem" w="full">

@@ -41,10 +41,19 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     const item = get(core?.data, composePaths(path, `${index}`)) as
       | { label?: string; id?: string }
       | undefined
+    const tagId = item?.id?.trim()
+
+    // New item without a persisted id — remove immediately, no modal needed.
+    if (!tagId) {
+      if (!removeItems || isRemoveItemDisabled) return
+      removeItems(path, [index])()
+      return
+    }
+
     setDeleteTarget({
       index,
       label: item?.label?.trim() ?? "",
-      tagId: item?.id,
+      tagId,
     })
   }
 
@@ -105,7 +114,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
         <DeleteConfirmModal
           isOpen
           label={deleteTarget.label}
-          noun="option"
+          noun="filter option"
           warningBody={
             <Text textStyle="body-2">
               {/* TODO: replace XX with usage count from backend */}

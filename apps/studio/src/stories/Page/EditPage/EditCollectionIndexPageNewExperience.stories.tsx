@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { expect, userEvent, waitFor, within } from "storybook/test"
+import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -29,6 +30,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
   pageHandlers.getFullPermalink.collection(),
+  collectionHandlers.getCategoryOptionUsageCount.default(),
 ]
 
 const meta: Meta<typeof EditPage> = {
@@ -119,6 +121,23 @@ async function playAddThreeCategoryOptions(canvasElement: HTMLElement) {
   await canvas.findByRole("button", { name: /Item 3/i })
 }
 
+/**
+ * Open each of the three filter option rows and immediately return.
+ * Opening triggers the hidden UUID control to mount, assigning a persisted id —
+ * required before delete can show the confirmation modal instead of removing immediately.
+ */
+async function playOpenAndCloseThreeFilterOptions(canvasElement: HTMLElement) {
+  const canvas = within(canvasElement)
+  for (let i = 1; i <= 3; i += 1) {
+    await userEvent.click(
+      await canvas.findByRole("button", { name: new RegExp(`Item ${i}`, "i") }),
+    )
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Return to Options/i }),
+    )
+  }
+}
+
 /** Fill option names so "Save changes" enables (blank labels keep save disabled). */
 async function playFillThreeCategoryOptionNames(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
@@ -133,6 +152,23 @@ async function playFillThreeCategoryOptionNames(canvasElement: HTMLElement) {
       await canvas.findByRole("button", { name: /Return to Options/i }),
     )
   }
+}
+
+/**
+ * Each option only receives an `id` after its row is opened (hidden UUID control mounts). Fill
+ * names, save to leave "Edit Category", then open it again so delete can show the usage modal
+ * instead of removing the row immediately.
+ */
+async function playFillNamesSaveCategoryOptionsAndReopenEditCategory(
+  canvasElement: HTMLElement,
+) {
+  await playFillThreeCategoryOptionNames(canvasElement)
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /Save category options/i }),
+  )
+  await canvas.findByText(/Manage filters/i)
+  await playOpenCategoryOptionsEditor(canvasElement)
 }
 
 async function clickOptionActionsMenu(
@@ -224,14 +260,15 @@ export const FiltersDeleteOptionModalDisabledCta: Story = {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
     await playFillFilterNameAndAddThreeOptions(canvasElement)
+    await playOpenAndCloseThreeFilterOptions(canvasElement)
     await clickOptionActionsMenu(canvasElement, 1)
     const portals = withinPortals(canvasElement)
     await userEvent.click(await portals.findByText(/^Delete option$/i), {
       pointerEventsCheck: 0,
     })
-    await portals.findByText(/Delete option\?/i)
+    await portals.findByRole("dialog", { name: /Delete filter option/i })
     await expect(
-      await portals.findByRole("button", { name: /^Delete option$/i }),
+      await portals.findByRole("button", { name: /^Delete filter option$/i }),
     ).toBeDisabled()
   },
 }
@@ -243,11 +280,11 @@ export const FiltersDeleteOptionModalEnabledCta: Story = {
     const portals = withinPortals(context.canvasElement)
     await userEvent.click(
       portals.getByRole("checkbox", {
-        name: /Yes, delete this option permanently/i,
+        name: /Yes, delete this filter option permanently/i,
       }),
     )
     await expect(
-      await portals.findByRole("button", { name: /^Delete option$/i }),
+      await portals.findByRole("button", { name: /^Delete filter option$/i }),
     ).not.toBeDisabled()
   },
 }
@@ -362,14 +399,20 @@ export const CategoryOptionsDeleteOptionModalDisabledCta: Story = {
     await playOpenManageFilters(canvasElement)
     await playOpenCategoryOptionsEditor(canvasElement)
     await playAddThreeCategoryOptions(canvasElement)
+    await playFillNamesSaveCategoryOptionsAndReopenEditCategory(canvasElement)
     await clickOptionActionsMenu(canvasElement, 1)
     const portals = withinPortals(canvasElement)
     await userEvent.click(await portals.findByText(/^Delete option$/i), {
       pointerEventsCheck: 0,
     })
-    await portals.findByText(/Delete option\?/i)
+    const deleteCategoryOptionDialog = await portals.findByRole("dialog", {
+      name: /Delete category option/i,
+    })
+    await within(deleteCategoryOptionDialog).findByText(
+      /This option is being used in 3 items\./i,
+    )
     await expect(
-      await portals.findByRole("button", { name: /^Delete option$/i }),
+      await portals.findByRole("button", { name: /^Delete category option$/i }),
     ).toBeDisabled()
   },
 }
@@ -381,11 +424,11 @@ export const CategoryOptionsDeleteOptionModalEnabledCta: Story = {
     const portals = withinPortals(context.canvasElement)
     await userEvent.click(
       portals.getByRole("checkbox", {
-        name: /Yes, delete this option permanently/i,
+        name: /Yes, delete this category option permanently/i,
       }),
     )
     await expect(
-      await portals.findByRole("button", { name: /^Delete option$/i }),
+      await portals.findByRole("button", { name: /^Delete category option$/i }),
     ).not.toBeDisabled()
   },
 }
