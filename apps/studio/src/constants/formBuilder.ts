@@ -58,3 +58,5 @@ export const JSON_FORMS_RANKING = {
 export const PROSE_COMPONENT_NAME = "Text"
 
 export const TEXTAREA_CHARACTERS_PER_ROW = 70
+export const TEXTAREA_DEFAULT_ROWS = 3
+export const TEXTAREA_MAX_ROWS = 5

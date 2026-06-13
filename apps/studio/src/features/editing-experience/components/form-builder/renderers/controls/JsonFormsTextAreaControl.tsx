@@ -11,6 +11,8 @@ import {
 import {
   JSON_FORMS_RANKING,
   TEXTAREA_CHARACTERS_PER_ROW,
+  TEXTAREA_DEFAULT_ROWS,
+  TEXTAREA_MAX_ROWS,
 } from "~/constants/formBuilder"
 
 import { getCustomErrorMessage } from "./utils"
@@ -46,8 +48,11 @@ function JsonFormsTextAreaControl({
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
     : -1
   const numOfRows = maxLength
-    ? Math.min(5, Math.ceil(maxLength / TEXTAREA_CHARACTERS_PER_ROW))
-    : 3
+    ? Math.min(
+        TEXTAREA_MAX_ROWS,
+        Math.ceil(maxLength / TEXTAREA_CHARACTERS_PER_ROW),
+      )
+    : TEXTAREA_DEFAULT_ROWS
 
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = e.target
