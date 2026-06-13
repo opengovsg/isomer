@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { expect, userEvent, waitFor, within } from "storybook/test"
+import { dgsHandlers } from "tests/msw/handlers/dgs"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -7,6 +8,11 @@ import { sitesHandlers } from "tests/msw/handlers/sites"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 
 const COMMON_HANDLERS = [
+  // data.gov.sg APIs — mocked so the preview data table + dataset validation are
+  // deterministic (otherwise they hit the live network and flake the visual diff).
+  dgsHandlers.datastoreSearch.default(),
+  dgsHandlers.metadata.default(),
+  ...dgsHandlers.download.default(),
   meHandlers.me(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),

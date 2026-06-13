@@ -1,11 +1,13 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { ModifiedAsset } from "~/types/assets"
 import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
-import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { cloneDeep, isEmpty, isEqual } from "lodash-es"
 import { useCallback } from "react"
 import { BiTrash } from "react-icons/bi"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -332,9 +334,9 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
               <IconButton
                 icon={<BiTrash fontSize="1.25rem" />}
                 variant="outline"
-                colorScheme="critical"
+                color="critical"
                 aria-label="Delete block"
-                onClick={onDeleteBlockModalOpen}
+                onPress={onDeleteBlockModalOpen}
               />
               <Box w="100%">
                 <SaveButton
@@ -371,10 +373,10 @@ const SaveButton = ({
 
   return (
     <Button
-      w="100%"
-      isLoading={isLoading}
+      className="w-full"
+      isPending={isLoading}
       isDisabled={isNonEditableBlock || !isEmpty(errors)}
-      onClick={onClick}
+      onPress={onClick}
     >
       Save block
     </Button>

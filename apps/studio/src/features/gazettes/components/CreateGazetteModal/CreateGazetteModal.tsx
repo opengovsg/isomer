@@ -7,11 +7,8 @@ import {
   ModalHeader,
   ModalOverlay,
 } from "@chakra-ui/react"
-import {
-  Button,
-  ModalCloseButton,
-  useToast,
-} from "@opengovsg/design-system-react"
+import { ModalCloseButton, useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { format, parse } from "date-fns"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -164,9 +161,9 @@ const CreateGazetteModalContent = ({
       <ModalFooter>
         <Button
           isDisabled={!isValid || !file}
-          isLoading={isPending}
+          isPending={isPending}
           type="submit"
-          onClick={onSubmit}
+          onPress={() => void onSubmit()}
         >
           Add Gazette
         </Button>

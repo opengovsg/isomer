@@ -37,7 +37,7 @@ import {
   useJsonForms,
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useCallback, useEffect, useState } from "react"
 import {
   BiDirections,
@@ -45,6 +45,7 @@ import {
   BiPlusCircle,
   BiTrash,
 } from "react-icons/bi"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import DraggableLinkButton from "../../components/DraggableLinkButton"
@@ -125,14 +126,10 @@ const EditLinkItem = ({
         alignItems="start"
         w="full"
       >
-        <Button
-          variant="link"
-          leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
-          onClick={onBack}
-          textStyle="subhead-2"
-        >
+        <LinkButton onPress={onBack}>
+          <BiLeftArrowAlt className="text-xl" />
           Back to footer
-        </Button>
+        </LinkButton>
 
         <HStack gap="0.75rem" w="full" alignItems="center">
           <Box
@@ -171,10 +168,10 @@ const EditLinkItem = ({
         <HStack w="full" justifyContent="center" mt="-1.125rem" mb="1.5rem">
           <Button
             variant="clear"
-            colorScheme="critical"
+            color="critical"
             size="xs"
-            leftIcon={<Icon as={BiTrash} />}
-            onClick={handleRemoveItem}
+            startContent={<Icon as={BiTrash} />}
+            onPress={handleRemoveItem}
           >
             Delete this link
           </Button>
@@ -230,10 +227,10 @@ const DeleteLinkModal = ({
 
         <ModalFooter>
           <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            <Button variant="clear" color="neutral" onPress={onClose}>
               No, don’t delete
             </Button>
-            <Button variant="solid" colorScheme="critical" onClick={onDelete}>
+            <Button variant="solid" color="critical" onPress={onDelete}>
               Delete link
             </Button>
           </HStack>
@@ -404,8 +401,8 @@ function JsonFormsArrayLinkControl({
               <Button
                 variant="clear"
                 size="xs"
-                leftIcon={<Icon as={BiPlusCircle} />}
-                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+                startContent={<Icon as={BiPlusCircle} />}
+                onPress={addItem(path, createDefaultValue(schema, rootSchema))}
                 isDisabled={
                   arraySchema.maxItems ? data >= arraySchema.maxItems : false
                 }

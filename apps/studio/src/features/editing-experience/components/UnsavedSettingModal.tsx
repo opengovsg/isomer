@@ -7,7 +7,7 @@ import {
   ModalHeader,
   ModalOverlay,
 } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useRouter } from "next/router"
 
 interface UnsavedSettingModalProps {
@@ -33,19 +33,18 @@ export const UnsavedSettingModal = ({
         <ModalBody>All edits will be lost.</ModalBody>
         <ModalFooter>
           <Button
-            textColor="base.content.strong"
-            colorScheme="neutral"
+            color="neutral"
             variant="clear"
             size="sm"
-            onClick={onClose}
-            mr="0.25rem"
+            onPress={onClose}
+            className="mr-1"
           >
             Go back to editing
           </Button>
           <Button
-            colorScheme="critical"
+            color="critical"
             size="sm"
-            onClick={() => {
+            onPress={() => {
               void router.push(nextURL)
             }}
           >

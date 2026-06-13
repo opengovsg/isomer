@@ -1,5 +1,4 @@
 import {
-  Button,
   FormControl,
   HStack,
   Input,
@@ -19,6 +18,7 @@ import {
   FormLabel,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useDebounce } from "@uidotdev/usehooks"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useEffect, useMemo } from "react"
@@ -250,18 +250,13 @@ export const AddUserModal = () => {
           </VStack>
         </ModalBody>
         <ModalFooter gap="1rem">
-          <Button
-            variant="clear"
-            color="base.content.default"
-            onClick={handleOnClose}
-          >
+          <Button variant="clear" color="neutral" onPress={handleOnClose}>
             Cancel
           </Button>
           <SingpassConditionalTooltip>
             <Button
-              variant="solid"
               onClick={onSendInvite}
-              isLoading={isPending}
+              isPending={isPending}
               isDisabled={
                 Object.keys(errors).length > 0 ||
                 email === "" ||

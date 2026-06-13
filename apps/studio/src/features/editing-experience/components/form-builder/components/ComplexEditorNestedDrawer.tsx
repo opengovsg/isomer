@@ -6,8 +6,9 @@ import type {
 } from "@jsonforms/core"
 import { Box, Stack, VStack } from "@chakra-ui/react"
 import { JsonFormsDispatch } from "@jsonforms/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { BiLeftArrowAlt, BiRightArrowAlt, BiTrash } from "react-icons/bi"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 
 import { DrawerHeader } from "../../Drawer/DrawerHeader"
 
@@ -78,27 +79,27 @@ export function ComplexEditorNestedDrawer({
         <IconButton
           icon={<BiTrash fontSize="1.25rem" />}
           variant="outline"
-          colorScheme="critical"
-          onClick={handleRemoveItem}
+          color="critical"
+          onPress={handleRemoveItem}
           isDisabled={isRemoveItemDisabled}
           aria-label="Remove item"
         />
         <Stack flexDirection="row" flex={1}>
           <Button
-            leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
-            flex={1}
+            startContent={<BiLeftArrowAlt fontSize="1.25rem" />}
+            className="flex-1"
             variant="outline"
             isDisabled={selectedIndex === 0}
-            onClick={() => setSelectedIndex(Math.max(selectedIndex - 1, 0))}
+            onPress={() => setSelectedIndex(Math.max(selectedIndex - 1, 0))}
           >
             Previous
           </Button>
           <Button
-            rightIcon={<BiRightArrowAlt fontSize="1.25rem" />}
-            flex={1}
+            endContent={<BiRightArrowAlt fontSize="1.25rem" />}
+            className="flex-1"
             variant="outline"
             isDisabled={selectedIndex === maxIndex}
-            onClick={() =>
+            onPress={() =>
               setSelectedIndex(Math.min(selectedIndex + 1, maxIndex))
             }
           >

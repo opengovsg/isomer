@@ -12,7 +12,8 @@ import {
 } from "@chakra-ui/react"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { Button, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -47,10 +48,10 @@ const ReplaceContentModal = ({
         </ModalBody>
         <ModalFooter>
           <HStack spacing={2}>
-            <Button variant="clear" onClick={onClose}>
+            <Button variant="clear" onPress={onClose}>
               No, keep my content
             </Button>
-            <Button onClick={onProceed}>Yes, replace</Button>
+            <Button onPress={onProceed}>Yes, replace</Button>
           </HStack>
         </ModalFooter>
       </ModalContent>

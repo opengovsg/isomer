@@ -8,7 +8,8 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react"
-import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
+import { ModalCloseButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 
 interface DeleteGroupModalProps {
   label: string
@@ -49,10 +50,10 @@ export const DeleteGroupModal = ({
 
         <ModalFooter>
           <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            <Button variant="clear" color="neutral" onPress={onClose}>
               No, don’t delete
             </Button>
-            <Button variant="solid" colorScheme="critical" onClick={onDelete}>
+            <Button variant="solid" color="critical" onPress={onDelete}>
               Delete {linkSingularPlural}
             </Button>
           </HStack>

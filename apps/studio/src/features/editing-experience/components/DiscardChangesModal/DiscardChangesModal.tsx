@@ -8,7 +8,8 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react"
-import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
+import { ModalCloseButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 
 interface DiscardChangesModalProps {
   isOpen: boolean
@@ -37,10 +38,10 @@ export const DiscardChangesModal = ({
 
         <ModalFooter>
           <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            <Button variant="clear" color="neutral" onPress={onClose}>
               Go back to editing
             </Button>
-            <Button variant="solid" colorScheme="critical" onClick={onDiscard}>
+            <Button variant="solid" color="critical" onPress={onDiscard}>
               Yes, discard changes
             </Button>
           </HStack>

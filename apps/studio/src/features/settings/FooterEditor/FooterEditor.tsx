@@ -9,8 +9,8 @@ import {
   Tooltip,
   VStack,
 } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
 import { FooterSchema } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { isEmpty, isEqual } from "lodash-es"
 import { useCallback, useState } from "react"
 import { BiDirections } from "react-icons/bi"
@@ -145,8 +145,8 @@ const PublishButton = ({
       >
         <Button
           size="xs"
-          onClick={onClick}
-          isLoading={isSaving}
+          onPress={onClick}
+          isPending={isSaving}
           isDisabled={!isDirty || !isSchemaValid}
         >
           Publish

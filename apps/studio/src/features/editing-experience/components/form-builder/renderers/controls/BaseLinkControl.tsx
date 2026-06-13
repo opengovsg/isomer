@@ -4,19 +4,16 @@ import {
   Box,
   Flex,
   FormControl,
-  IconButton,
   Skeleton,
   Text,
   useDisclosure,
 } from "@chakra-ui/react"
-import {
-  Button,
-  FormErrorMessage,
-  FormLabel,
-} from "@opengovsg/design-system-react"
+import { FormErrorMessage, FormLabel } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { Suspense } from "react"
 import { BiTrash } from "react-icons/bi"
+import { IconButton } from "~/components/oui-bridge/IconButton"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 import { LinkEditorModal } from "~/components/PageEditor/LinkEditorModal"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
@@ -108,25 +105,21 @@ export function BaseLinkControl({
                 <IconButton
                   size="xs"
                   variant="clear"
-                  colorScheme="critical"
+                  color="critical"
                   aria-label="Remove file"
                   icon={<BiTrash />}
-                  onClick={() => handleChange(path, undefined)}
+                  onPress={() => handleChange(path, undefined)}
                 />
               </>
             ) : (
               <>
                 <Text textStyle="body-2">{description}</Text>
-                <Button
-                  onClick={onOpen}
-                  variant="link"
-                  aria-labelledby="button-label"
-                  py="0.5rem"
+                <LinkButton
+                  className="prose-subhead-2 shrink-0 py-2"
+                  onPress={onOpen}
                 >
-                  <Text id="button-label" textStyle="subhead-2">
-                    Link something...
-                  </Text>
-                </Button>
+                  Link something...
+                </LinkButton>
               </>
             )}
           </Flex>

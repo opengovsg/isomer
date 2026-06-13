@@ -9,11 +9,11 @@ import {
   Text,
 } from "@chakra-ui/react"
 import {
-  Button,
   Checkbox,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useAtom } from "jotai"
 import { upperFirst } from "lodash-es"
 import { useState } from "react"
@@ -148,15 +148,15 @@ const DeleteResourceModalContent = ({
 
       <ModalFooter>
         <HStack spacing="1rem">
-          <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+          <Button variant="clear" color="neutral" onPress={onClose}>
             No, keep {label}
           </Button>
           <Button
             isDisabled={!isChecked}
             variant="solid"
-            colorScheme="critical"
-            onClick={onDelete}
-            isLoading={isPending}
+            color="critical"
+            onPress={onDelete}
+            isPending={isPending}
           >
             Delete {label}
           </Button>

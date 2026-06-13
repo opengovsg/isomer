@@ -14,13 +14,13 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import {
-  Button,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
@@ -207,10 +207,10 @@ const CreateFolderModalContent = ({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3} onClick={onClose} variant="clear">
+          <Button className="mr-3" onPress={onClose} variant="clear">
             Close
           </Button>
-          <Button isLoading={isPending} isDisabled={!isValid} type="submit">
+          <Button isPending={isPending} isDisabled={!isValid} type="submit">
             Create Folder
           </Button>
         </ModalFooter>

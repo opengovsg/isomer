@@ -1,8 +1,9 @@
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { ModifiedAsset } from "~/types/assets"
 import { Box, Flex, useDisclosure } from "@chakra-ui/react"
-import { Button, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { cloneDeep, isEmpty, isEqual } from "lodash-es"
 import { useCallback } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -238,10 +239,10 @@ const SaveButton = ({
 
   return (
     <Button
-      w="100%"
-      isLoading={isLoading}
+      className="w-full"
+      isPending={isLoading}
       isDisabled={!isEmpty(errors)}
-      onClick={onClick}
+      onPress={onClick}
     >
       Save changes
     </Button>

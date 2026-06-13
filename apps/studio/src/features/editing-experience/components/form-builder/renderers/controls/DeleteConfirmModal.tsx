@@ -11,11 +11,11 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import {
-  Button,
   Checkbox,
   Infobox,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useState } from "react"
 
 interface DeleteConfirmModalProps {
@@ -68,14 +68,14 @@ export function DeleteConfirmModal({
 
         <ModalFooter>
           <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            <Button variant="clear" color="neutral" onPress={onClose}>
               No, keep {noun}
             </Button>
             <Button
               isDisabled={!isChecked}
               variant="solid"
-              colorScheme="critical"
-              onClick={onConfirm}
+              color="critical"
+              onPress={onConfirm}
             >
               Delete {noun}
             </Button>

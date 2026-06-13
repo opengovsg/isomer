@@ -1,6 +1,7 @@
 import type { TextProps } from "@chakra-ui/react"
-import { Flex, IconButton, Text } from "@chakra-ui/react"
+import { Flex, Text } from "@chakra-ui/react"
 import { BiChevronLeft } from "react-icons/bi"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 
 interface DrawerHeaderProps extends TextProps {
   label: string
@@ -28,13 +29,13 @@ export const DrawerHeader = ({
       bg="white"
     >
       <IconButton
-        colorScheme="sub"
+        color="sub"
         icon={<BiChevronLeft fontSize="1.25rem" />}
         variant="clear"
         size="sm"
         aria-label={backAriaLabel ?? "Return to previous step"}
         isDisabled={isDisabled}
-        onClick={onBackClick}
+        onPress={onBackClick}
       />
       <Text textStyle="h6" {...textProps}>
         {label}

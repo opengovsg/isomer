@@ -11,13 +11,13 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react"
 import {
-  Button,
   FormErrorMessage,
   FormLabel,
   Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { isEmpty } from "lodash-es"
 import { z } from "zod"
 import {
@@ -171,7 +171,6 @@ const LinkEditorModalContent = ({
         <ModalFooter>
           <Button
             variant="solid"
-            onClick={onSubmit}
             // NOTE: Using `isEmpty` here because we trigger `setError`
             // using `isValid` doesn't trigger the error
             isDisabled={!isEmpty(errors)}

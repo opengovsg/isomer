@@ -19,7 +19,6 @@ import {
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
-  Button,
   FormErrorMessage,
   FormLabel,
   Infobox,
@@ -31,6 +30,7 @@ import {
   MAPS_EMBED_URL_REGEXES,
   VIDEO_EMBED_URL_REGEXES,
 } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -150,14 +150,10 @@ function EmbedCodeModal({
 
           <ModalFooter>
             <HStack spacing="0.75rem">
-              <Button
-                variant="clear"
-                color="base.content.default"
-                onClick={onClose}
-              >
+              <Button variant="clear" color="neutral" onPress={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" onClick={onSubmit} isDisabled={!isValid}>
+              <Button type="submit" isDisabled={!isValid}>
                 Save code
               </Button>
             </HStack>
@@ -232,7 +228,7 @@ function JsonFormsEmbedControl({
               </Box>
             </VStack>
 
-            <Button variant="clear" onClick={onEmbedModalOpen}>
+            <Button variant="clear" onPress={onEmbedModalOpen}>
               Edit
             </Button>
           </HStack>

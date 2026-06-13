@@ -1,8 +1,8 @@
 import type { ResourceItemContent } from "~/schemas/resource"
 import type { SearchResultResource } from "~/server/modules/resource/resource.types"
 import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
 import { Suspense, useMemo } from "react"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -171,16 +171,13 @@ const SuspensableResourceSelector = ({
         {renderedHeader}
         {renderedContent}
         {hasNextPage && (
-          <Button
-            variant="link"
-            py="0.5rem"
-            pl={hasAdditionalLeftPadding ? "2.25rem" : "1rem"}
-            size="xs"
-            isLoading={isFetchingNextPage}
-            onClick={() => fetchNextPage()}
+          <LinkButton
+            className={hasAdditionalLeftPadding ? "py-2 pl-9" : "py-2 pl-4"}
+            isPending={isFetchingNextPage}
+            onPress={() => fetchNextPage()}
           >
             Load more
-          </Button>
+          </LinkButton>
         )}
       </Box>
       <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">

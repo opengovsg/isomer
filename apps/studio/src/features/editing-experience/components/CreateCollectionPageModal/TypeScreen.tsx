@@ -8,7 +8,7 @@ import {
   UnorderedList,
   Wrap,
 } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { Controller } from "react-hook-form"
 import { AppGrid } from "~/templates/AppGrid"
 
@@ -42,10 +42,10 @@ export const CreateCollectionPageTypeScreen = () => {
             align="center"
             gap="0.75rem"
           >
-            <Button variant="clear" onClick={onClose}>
+            <Button variant="clear" onPress={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleNextToDetailScreen}>
+            <Button onPress={handleNextToDetailScreen}>
               Next: Page details
             </Button>
           </Wrap>

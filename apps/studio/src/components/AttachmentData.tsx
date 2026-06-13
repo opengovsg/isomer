@@ -1,5 +1,6 @@
-import { Flex, IconButton, Text } from "@chakra-ui/react"
+import { Flex, Text } from "@chakra-ui/react"
 import { BiTrash } from "react-icons/bi"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 
 interface AttachmentDataProps {
   data: string
@@ -19,10 +20,10 @@ export const AttachmentData = ({ data, onClick }: AttachmentDataProps) => {
       <IconButton
         size="xs"
         variant="clear"
-        colorScheme="critical"
+        color="critical"
         aria-label="Remove file"
         icon={<BiTrash />}
-        onClick={onClick}
+        onPress={onClick}
       />
     </Flex>
   )

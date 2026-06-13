@@ -1,7 +1,7 @@
 import type { ResourceItemContent } from "~/schemas/resource"
 import { Text, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
 
+import { LinkButton } from "../oui-bridge/LinkButton"
 import { ResourceItem, ResourceItemSkeleton } from "./ResourceItem"
 import { lastResourceItemInAncestryStack } from "./utils"
 
@@ -89,9 +89,9 @@ const ZeroResult = ({
         </Text>
         <Text textStyle="caption-2">Try searching for something else.</Text>
       </VStack>
-      <Button variant="link" size="xs" onClick={handleClickClearSearch}>
+      <LinkButton onPress={handleClickClearSearch}>
         <Text textStyle="caption-2">Clear search</Text>
-      </Button>
+      </LinkButton>
     </VStack>
   )
 }

@@ -1,5 +1,6 @@
-import { HStack, IconButton, Text, VStack } from "@chakra-ui/react"
+import { HStack, Text, VStack } from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
+import { buttonStyles } from "@opengovsg/oui-theme"
 import Link from "next/link"
 import { BiChevronRight, BiHomeAlt, BiSolidCircle } from "react-icons/bi"
 import { trpc } from "~/utils/trpc"
@@ -56,15 +57,19 @@ export const RootpageRow = ({ siteId }: RootpageRowProps) => {
       >
         Edit page
       </Text>
-      <IconButton
-        as="div"
+      {/* Decorative chevron: non-interactive (lives inside the row's anchor), so it
+          carries the icon-button look via buttonStyles rather than a real Button. */}
+      <div
         aria-hidden
-        variant="clear"
-        pointerEvents="none"
-        colorScheme="neutral"
-        icon={<BiChevronRight />}
-        aria-label="edit homepage"
-      />
+        className={buttonStyles({
+          variant: "clear",
+          color: "neutral",
+          isIconOnly: true,
+          className: "pointer-events-none",
+        })}
+      >
+        <BiChevronRight />
+      </div>
     </HStack>
   )
 }

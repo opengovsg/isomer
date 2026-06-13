@@ -14,7 +14,6 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import {
-  Button,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
@@ -22,6 +21,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useAtom } from "jotai"
 import { Suspense, useMemo } from "react"
 import { Controller } from "react-hook-form"
@@ -230,10 +230,10 @@ const PageSettingsModalContent = ({
       </ModalBody>
 
       <ModalFooter>
-        <Button mr={3} variant="clear" onClick={onClose}>
+        <Button className="mr-3" variant="clear" onPress={onClose}>
           Close
         </Button>
-        <Button onClick={onSubmit} isLoading={isPending}>
+        <Button onPress={() => void onSubmit()} isPending={isPending}>
           Publish immediately
         </Button>
       </ModalFooter>

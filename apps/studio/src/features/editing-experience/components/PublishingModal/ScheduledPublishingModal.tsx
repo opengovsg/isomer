@@ -12,11 +12,8 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import {
-  Button,
-  ModalCloseButton,
-  useToast,
-} from "@opengovsg/design-system-react"
+import { ModalCloseButton, useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { format } from "date-fns"
 import { useEffect, useState } from "react"
 import { FormProvider, useFormContext } from "react-hook-form"
@@ -110,14 +107,14 @@ export const ScheduledPublishingModal = ({
           </ModalBody>
           <ModalFooter>
             <Button
-              mr={3}
-              onClick={onClose}
+              className="mr-3"
+              onPress={onClose}
               variant="clear"
-              color="base.content.strong"
+              color="neutral"
             >
               Cancel
             </Button>
-            <Button type="submit" isLoading={isScheduling}>
+            <Button type="submit" isPending={isScheduling}>
               Schedule publish
             </Button>
           </ModalFooter>
