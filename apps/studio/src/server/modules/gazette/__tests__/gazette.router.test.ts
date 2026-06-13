@@ -30,7 +30,30 @@ import { db } from "../../database"
 import { gazetteRouter } from "../gazette.router"
 import * as gazetteService from "../gazette.service"
 
+vi.mock("~/lib/s3", () => ({
+  copyFile: vi.fn().mockResolvedValue(undefined),
+  deleteFile: vi.fn().mockResolvedValue(undefined),
+  getFileSize: vi.fn().mockResolvedValue(1234),
+  markScheduledAssetAsCancelled: vi.fn().mockResolvedValue(undefined),
+  generateSignedPutUrl: vi.fn().mockResolvedValue({
+    presignedPutUrl: "https://s3.example.com/put",
+    contentType: "application/pdf",
+    contentDisposition: "attachment",
+  }),
+  generateSignedGetUrl: vi.fn().mockResolvedValue("https://s3.example.com/get"),
+}))
+
 const createCaller = createCallerFactory(gazetteRouter)
+
+const gazetteRef = ({
+  fileName,
+  siteId,
+  uuid = crypto.randomUUID(),
+}: {
+  fileName: string
+  siteId: number
+  uuid?: string
+}) => `/${siteId}/${uuid}/${fileName}`
 
 describe("gazette.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -42,6 +65,7 @@ describe("gazette.router", async () => {
 
   beforeEach(async () => {
     MockDate.set(FIXED_NOW)
+    vi.clearAllMocks()
     await resetTables(
       "PushDocumentJob",
       "AuditLog",
@@ -183,7 +207,7 @@ describe("gazette.router", async () => {
         collectionId: Number(collection.id),
         title: "Notice 123",
         permalink: crypto.randomUUID(),
-        ref: "/1/abc/notice-123.pdf",
+        ref: gazetteRef({ siteId: site.id, fileName: "notice-123.pdf" }),
         category: "Government Gazette",
         date: "30/04/2026",
         description: "Notif #123",
@@ -214,7 +238,9 @@ describe("gazette.router", async () => {
         .selectAll()
         .executeTakeFirstOrThrow()
       const page = (blob.content as { page?: { ref?: string } } | null)?.page
-      expect(page?.ref).toBe("/1/abc/notice-123.pdf")
+      expect(page?.ref).toMatch(
+        new RegExp(`^/${site.id}/[^/]+/notice-123\\.pdf$`),
+      )
 
       // Both audit entries (resource create + schedule publish) emitted.
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
@@ -241,7 +267,7 @@ describe("gazette.router", async () => {
           collectionId: Number(collection.id),
           title: "Notice 123",
           permalink: crypto.randomUUID(),
-          ref: "/1/abc/notice.pdf",
+          ref: gazetteRef({ siteId: site.id, fileName: "notice.pdf" }),
           category: "Government Gazette",
           date: "30/04/2026",
           tagged: ["sub-1"],
@@ -269,7 +295,10 @@ describe("gazette.router", async () => {
         collectionId: Number(collection.id),
         title: "First Notice",
         permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid1/duplicate-file.pdf",
+        ref: gazetteRef({
+          siteId: site.id,
+          fileName: "duplicate-file.pdf",
+        }),
         category: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
@@ -283,7 +312,10 @@ describe("gazette.router", async () => {
           collectionId: Number(collection.id),
           title: "Second Notice",
           permalink: crypto.randomUUID(),
-          ref: "/sites/1/gazettes/uuid2/duplicate-file.pdf", // Same filename
+          ref: gazetteRef({
+            siteId: site.id,
+            fileName: "duplicate-file.pdf",
+          }), // Same filename
           category: "Government Gazette",
           date: "30/04/2026",
           tagged: ["sub-1"],
@@ -307,7 +339,7 @@ describe("gazette.router", async () => {
         collectionId: Number(collection.id),
         title: "Original",
         permalink: crypto.randomUUID(),
-        ref: "/1/abc/notice.pdf",
+        ref: gazetteRef({ siteId: site.id, fileName: "notice.pdf" }),
         category: "Government Gazette",
         date: "30/04/2026",
         description: "old-desc",
@@ -320,7 +352,7 @@ describe("gazette.router", async () => {
         siteId: site.id,
         gazetteId: Number(gazetteId),
         title: "Renamed",
-        newRef: "/1/abc/replacement.pdf",
+        newRef: gazetteRef({ siteId: site.id, fileName: "replacement.pdf" }),
         category: "Other Supplements",
         date: "30/04/2026",
         description: "new-desc",
@@ -352,7 +384,9 @@ describe("gazette.router", async () => {
           }
         } | null
       )?.page
-      expect(page?.ref).toBe("/1/abc/replacement.pdf")
+      expect(page?.ref).toMatch(
+        new RegExp(`^/${site.id}/[^/]+/replacement\\.pdf$`),
+      )
       expect(page?.category).toBe("Other Supplements")
       expect(page?.description).toBe("new-desc")
       expect(page?.tagged).toEqual(["sub-2"])
@@ -406,7 +440,10 @@ describe("gazette.router", async () => {
         collectionId: Number(collection.id),
         title: "First Notice",
         permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid1/existing-file.pdf",
+        ref: gazetteRef({
+          siteId: site.id,
+          fileName: "existing-file.pdf",
+        }),
         category: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
@@ -419,7 +456,10 @@ describe("gazette.router", async () => {
         collectionId: Number(collection.id),
         title: "Second Notice",
         permalink: crypto.randomUUID(),
-        ref: "/sites/1/gazettes/uuid2/different-file.pdf",
+        ref: gazetteRef({
+          siteId: site.id,
+          fileName: "different-file.pdf",
+        }),
         category: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
@@ -432,7 +472,10 @@ describe("gazette.router", async () => {
           siteId: site.id,
           gazetteId: Number(gazetteId),
           title: "Second Notice",
-          newRef: "/sites/1/gazettes/uuid3/existing-file.pdf", // Same filename as first
+          newRef: gazetteRef({
+            siteId: site.id,
+            fileName: "existing-file.pdf",
+          }), // Same filename as first
           category: "Government Gazette",
           date: "30/04/2026",
           tagged: ["sub-1"],

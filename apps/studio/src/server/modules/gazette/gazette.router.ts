@@ -213,7 +213,6 @@ export const gazetteRouter = router({
           userId: ctx.user.id,
           resourceIds: [String(collectionId)],
         })
-
         const user = await db
           .selectFrom("User")
           .where("id", "=", ctx.user.id)
@@ -230,7 +229,6 @@ export const gazetteRouter = router({
 
         const created = await db.transaction().execute(async (tx) => {
           // Check for duplicate file ID (filename portion of ref) in the same collection
-          // ref format: /sites/{siteId}/gazettes/{uuid}/filename.pdf
           const filename = ref.split("/").pop()
           if (filename) {
             const duplicate = await findCollectionLinkWithFilename({
@@ -397,7 +395,6 @@ export const gazetteRouter = router({
         const existingRef =
           (existingBlob.content as { page?: { ref?: string } } | null)?.page
             ?.ref ?? ""
-
         // Resolve the final ref. Preference order:
         //   1. newRef (a fresh upload) — caller has already PUT to S3
         //   2. desiredFileName + existing ref → S3 copy
@@ -415,7 +412,9 @@ export const gazetteRouter = router({
         if (newRef) {
           newFilename = newRef.split("/").pop()
           finalRef = newRef
-          if (existingRef) oldRefToCleanUp = existingRef.replace(/^\//, "")
+          if (existingRef) {
+            oldRefToCleanUp = existingRef.replace(/^\//, "")
+          }
         } else if (
           desiredFileName &&
           existingRef &&
