@@ -45,10 +45,9 @@ function JsonFormsTextAreaControl({
   const remainingCharacterCount = maxLength
     ? getRemainingCharacterCount(maxLength, data ? String(data) : undefined)
     : -1
-  const numOfRows = Math.min(
-    5,
-    Math.ceil((maxLength || 0) / TEXTAREA_CHARACTERS_PER_ROW),
-  )
+  const numOfRows = maxLength
+    ? Math.min(5, Math.ceil(maxLength / TEXTAREA_CHARACTERS_PER_ROW))
+    : 3
 
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = e.target
