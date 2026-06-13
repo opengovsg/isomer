@@ -1,6 +1,10 @@
-import type { getLayoutPageSchema } from "@opengovsg/isomer-components"
+import type {
+  CollectionPagePageProps,
+  getLayoutPageSchema,
+} from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
+import { trackEvent } from "@intercom/messenger-js-sdk"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getScopedSchema,
@@ -10,6 +14,7 @@ import { isEmpty, isEqual } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { env } from "~/env.mjs"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
@@ -95,6 +100,11 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     ajv.compile<Static<ReturnType<typeof getLayoutPageSchema>>>(metadataSchema)
 
   const handleSaveChanges = useCallback(() => {
+    const hadNoTagsBefore = !(savedPageState.page as CollectionPagePageProps)
+      .tagCategories?.length
+    const hasTagsNow = !!(previewPageState.page as CollectionPagePageProps)
+      .tagCategories?.length
+
     setSavedPageState(previewPageState)
     mutate(
       {
@@ -103,13 +113,23 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
         content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => setDrawerState({ state: "root" }),
+        onSuccess: () => {
+          if (
+            env.NEXT_PUBLIC_INTERCOM_APP_ID &&
+            hadNoTagsBefore &&
+            hasTagsNow
+          ) {
+            trackEvent("first_tag_added")
+          }
+          setDrawerState({ state: "root" })
+        },
       },
     )
   }, [
     mutate,
     pageId,
     previewPageState,
+    savedPageState,
     setDrawerState,
     setSavedPageState,
     siteId,
