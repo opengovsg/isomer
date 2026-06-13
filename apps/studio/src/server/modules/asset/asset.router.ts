@@ -87,6 +87,12 @@ export const assetRouter = router({
       return { presignedGetUrl }
     }),
 
+  // No rate limit: all agency editors reach Studio through a single shared
+  // egress IP (remote browser isolation), and the limiter keys on IP, so any
+  // limit here would be shared across every editor. Abuse risk is already low
+  // since permissions are validated before any S3 call and the per-request
+  // cap in deleteAssetsSchema bounds fan-out. Revisit if the rate-limit
+  // fingerprint gains a per-device/per-user component.
   deleteAssets: protectedProcedure
     .input(deleteAssetsSchema)
     .mutation(async ({ ctx, input: { siteId, resourceId, fileKeys } }) => {

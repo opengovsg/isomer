@@ -54,14 +54,24 @@ export const getPresignedPutUrlSchema = z.object({
     ),
 })
 
+// Upper bound on how many assets a single deleteAssets call may target.
+// Each key fans out to paid S3 tagging calls, so an uncapped array lets one
+// authenticated caller drive an unbounded number of S3 operations. Legitimate
+// saves only delete a handful of keys, so 100 sits far above real usage.
+export const MAX_DELETE_FILE_KEYS = 100
+
 export const deleteAssetsSchema = z.object({
   siteId: z.number().min(1),
   resourceId: z.string(),
-  fileKeys: z.array(
-    z.string({
-      error: "Missing file keys",
+  fileKeys: z
+    .array(
+      z.string({
+        error: "Missing file keys",
+      }),
+    )
+    .max(MAX_DELETE_FILE_KEYS, {
+      message: `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
     }),
-  ),
 })
 
 export const getPresignedGetUrlSchema = z.object({

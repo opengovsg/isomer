@@ -15,6 +15,7 @@ import {
 } from "tests/integration/helpers/seed"
 import { vi } from "vitest"
 import { deleteFile, generateSignedPutUrl } from "~/lib/s3"
+import { MAX_DELETE_FILE_KEYS } from "~/schemas/asset"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -455,6 +456,37 @@ describe("asset.router", async () => {
             "One or more file keys do not belong to the specified site. You may only delete assets for the site you are authorized for.",
         }),
       )
+      expect(deleteFile).not.toHaveBeenCalled()
+    })
+
+    it("should reject and not call deleteFile when fileKeys exceeds the cap", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupAdminPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+      const tooManyFileKeys = Array.from(
+        { length: MAX_DELETE_FILE_KEYS + 1 },
+        (_, i) => `${site.id}/uuid-${i}/file-${i}.png`,
+      )
+
+      // Act
+      const result = caller.deleteAssets({
+        siteId: site.id,
+        resourceId: page.id,
+        fileKeys: tooManyFileKeys,
+      })
+
+      // Assert: input validation rejects before any S3 call. The Zod-derived
+      // TRPCError carries the issue JSON as its message, so match on that
+      // rather than on the literal "BAD_REQUEST" string.
+      await expect(result).rejects.toThrow(
+        `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
+      )
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
       expect(deleteFile).not.toHaveBeenCalled()
     })
   })
