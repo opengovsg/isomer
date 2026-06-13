@@ -14,12 +14,12 @@ import { mergeRefs } from "~/utils/rac"
 import { focusRing } from "~/utils/tailwind"
 
 const iconButtonStyles = tv({
-  base: "box-border flex w-fit cursor-pointer items-center justify-center rounded text-center transition",
+  base: "box-border flex w-fit cursor-pointer items-center justify-center rounded-sm text-center transition",
   extend: focusRing,
   variants: {
     variant: {
       clear:
-        "bg-transparent active:bg-base-canvas-backdrop/80 hover:bg-base-canvas-backdrop/50",
+        "active:bg-base-canvas-backdrop/80 hover:bg-base-canvas-backdrop/50 bg-transparent",
     },
     isDisabled: {
       true: "cursor-not-allowed",

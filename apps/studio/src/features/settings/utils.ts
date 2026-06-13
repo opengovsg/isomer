@@ -1,5 +1,6 @@
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import type { CSSProperties } from "react"
+import { formatHex, parse } from "culori"
 import { flatten } from "flat"
 import { chunk } from "lodash-es"
 import twColors from "tailwindcss/colors"
@@ -13,6 +14,13 @@ const LINEAR_RGB_FACTORS = {
   blue: 0.0722,
 }
 
+// NOTE: Tailwind v4 exports colors as OKLCH strings instead of hex.
+// Normalise to hex so the hex-based contrast calculations below still work.
+const normalizeColorToHex = (color: string): string => {
+  if (color.startsWith("#")) return color
+  return formatHex(parse(color) ?? color) ?? color
+}
+
 // NOTE: This is used to check relative contrast.
 // Refer to https://www.notion.so/opengov/Internal-use-only-Updating-colours-on-your-Isomer-Next-site-15277dbba78880d798bce51ae626d6ae
 // The dark colour there is twColors.gray["700"].
@@ -20,7 +28,7 @@ const LINEAR_RGB_FACTORS = {
 // /isomer/packages/components/src/presets/next/colors.ts
 export const TEXT_COLOURS = {
   light: "#FFFFFF",
-  dark: twColors.gray["700"],
+  dark: normalizeColorToHex(twColors.gray["700"]),
 } as const
 
 export const BACKGROUND_COLOURS = {

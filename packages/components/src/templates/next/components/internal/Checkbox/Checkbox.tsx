@@ -114,18 +114,18 @@ const checkboxStyles = tv({
 
 const boxStyles = tv({
   extend: focusRing,
-  base: "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition",
+  base: "flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border-2 transition",
   variants: {
     isSelected: {
       false:
-        "border-[--color] bg-white [--color:theme(colors.base.divider.medium)] group-data-[pressed]:[--color:theme(colors.base.divider.strong)]",
-      true: "border-[--color] bg-[--color] [--color:theme(colors.brand.interaction.DEFAULT)] group-data-[pressed]:[--color:theme(colors.brand.interaction.pressed)] forced-colors:![--color:Highlight]",
+        "border-[var(--color)] bg-white [--color:var(--color-base-divider-medium)] group-data-[pressed]:[--color:var(--color-base-divider-strong)]",
+      true: "border-[var(--color)] bg-[var(--color)] [--color:var(--color-brand-interaction)] group-data-[pressed]:[--color:var(--color-brand-interaction-pressed)] forced-colors:![--color:Highlight]",
     },
     isInvalid: {
-      true: "[--color:theme(colors.red.700)] group-data-[pressed]:[--color:theme(colors.red.800)] forced-colors:![--color:Mark]",
+      true: "[--color:var(--color-red-700)] group-data-[pressed]:[--color:var(--color-red-800)] forced-colors:![--color:Mark]",
     },
     isDisabled: {
-      true: "[--color:theme(colors.gray.200)] forced-colors:![--color:GrayText]",
+      true: "[--color:var(--color-gray-200)] forced-colors:![--color:GrayText]",
     },
   },
 })

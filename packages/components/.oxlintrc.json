@@ -1,6 +1,7 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
   "extends": ["./node_modules/@isomer/oxlint-config/base.json"],
+  "rules": {},
   "ignorePatterns": ["dist", "**/*.config.*", "!.storybook"],
   "overrides": [
     {

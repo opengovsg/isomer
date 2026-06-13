@@ -8,6 +8,7 @@
   },
   "files": [
     "dist/esm",
+    "src/presets",
     "!**/*.spec.*",
     "!**/*.stories.*",
     "!**/*.json",
@@ -24,7 +25,9 @@
     "./templates/next": {
       "import": "./dist/esm/templates/next/index.js",
       "default": "./dist/esm/templates/next/index.js"
-    }
+    },
+    "./presets/next/preset.css": "./src/presets/next/preset.css",
+    "./presets/next/inter-fonts.css": "./src/presets/next/inter-fonts.css"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/isomerpages"
@@ -85,6 +88,7 @@
     "@storybook/addon-links": "catalog:storybook",
     "@storybook/addon-themes": "catalog:storybook",
     "@storybook/react-vite": "catalog:storybook",
+    "@tailwindcss/postcss": "catalog:tailwind",
     "@testing-library/react": "catalog:",
     "@types/lodash-es": "catalog:",
     "@types/lunr": "catalog:",
@@ -102,13 +106,12 @@
     "msw-storybook-addon": "catalog:",
     "npm-run-all2": "catalog:",
     "postcss": "catalog:",
-    "postcss-preset-env": "catalog:",
     "react": "catalog:react",
     "react-dom": "catalog:react",
     "rimraf": "catalog:",
     "storybook": "catalog:storybook",
     "storybook-addon-pseudo-states": "catalog:storybook",
-    "tailwindcss": "catalog:",
+    "tailwindcss": "catalog:tailwind",
     "tsc-alias": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:vitest",

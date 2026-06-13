@@ -8,7 +8,7 @@ export const commonContactInformationStyles = tv({
     container: `${ComponentContent} flex flex-col`,
     titleAndDescriptionContainer: "flex flex-col",
     title: "prose-display-sm text-base-content-strong",
-    description: "text-base-content-strong [&:not(:first-child)]:mt-0",
+    description: "text-base-content-strong not-first:mt-0",
     contactMethodsContainer: "flex flex-col gap-10",
     otherInformationContainer: "mt-8 flex flex-col gap-6",
     otherInformationTitle: "prose-display-xs text-base-content-strong",
@@ -27,19 +27,18 @@ export const commonContactInformationStyles = tv({
 export const commonContactMethodStyles = tv({
   slots: {
     container: "flex w-full flex-col items-start gap-2",
-    icon: "size-8 flex-shrink-0 text-base-content-strong",
+    icon: "text-base-content-strong size-8 shrink-0",
     textContainer: "flex w-full flex-col items-start gap-3",
     label: "prose-headline-lg-semibold text-base-content-strong",
     valuesAndCaptionContainer: "flex w-full flex-col items-start gap-1",
-    value:
-      "prose-body-base text-left text-base-content tailwindv3-wrap-anywhere",
+    value: "prose-body-base text-base-content text-left wrap-anywhere",
     caption: "prose-body-sm text-base-content",
   },
   variants: {
     isLink: {
       true: {
         value:
-          "text-hyperlink underline visited:text-hyperlink-visited hover:text-hyperlink-hover",
+          "text-hyperlink visited:text-hyperlink-visited hover:text-hyperlink-hover underline",
       },
       false: {
         value: "text-base-content",

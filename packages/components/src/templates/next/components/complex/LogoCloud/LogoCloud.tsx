@@ -8,7 +8,7 @@ const createLogoCloudStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col gap-9 py-16`,
     title:
-      "prose-headline-lg-medium self-center text-center text-base-content-subtle",
+      "prose-headline-lg-medium text-base-content-subtle self-center text-center",
     logoContainer: "flex flex-wrap justify-center gap-x-6 gap-y-4",
     logo: "inset-0 max-h-20 object-contain md:max-h-24",
   },

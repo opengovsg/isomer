@@ -24,7 +24,7 @@ type NavbarItemProps = NavbarProps["items"][number] & {
 const navbarItemStyles = tv({
   slots: {
     megamenu: "max-h-full overflow-auto bg-white shadow-md",
-    item: "group prose-label-md-medium flex flex-row items-center gap-0.5 border-b-2 border-transparent pb-5 pt-6 text-base-content-strong outline-0 transition-colors hover:text-brand-interaction-hover motion-reduce:transition-none",
+    item: "group prose-label-md-medium text-base-content-strong hover:text-brand-interaction-hover flex cursor-pointer flex-row items-center gap-0.5 border-b-2 border-transparent pt-6 pb-5 outline-0 transition-colors motion-reduce:transition-none",
     chevron:
       "text-base transition-transform duration-300 ease-in-out motion-reduce:transition-none",
   },
@@ -111,7 +111,7 @@ const Megamenu = ({
         showExternalIcon={isExternal}
         isWithFocusVisibleHighlight
         href={url}
-        className="group inline-flex w-fit items-center gap-1 hover:text-brand-interaction-hover hover:no-underline"
+        className="group hover:text-brand-interaction-hover inline-flex w-fit items-center gap-1 hover:no-underline"
         onClick={onCloseMegamenu}
       >
         {name}
@@ -123,14 +123,14 @@ const Megamenu = ({
   }
 
   return (
-    <div className="absolute left-0 right-0 top-full z-50">
+    <div className="absolute top-full right-0 left-0 z-50">
       <div
-        className="absolute bottom-0 left-0 right-0 top-full z-[1] h-screen bg-canvas-overlay/40"
+        className="bg-canvas-overlay/40 absolute top-full right-0 bottom-0 left-0 z-[1] h-screen"
         onClick={onCloseMegamenu}
       />
       <FocusScope contain restoreFocus>
         <div className={megamenu()}>
-          <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pb-16 pt-12">
+          <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-10 pt-12 pb-16">
             <div className="flex w-full flex-row items-start">
               <div className="flex flex-col gap-1">
                 <h2 className="prose-display-xs text-base-content">
@@ -164,7 +164,7 @@ const Megamenu = ({
                         showExternalIcon={isExternal}
                         isWithFocusVisibleHighlight
                         href={subItem.url}
-                        className="group prose-label-md-medium w-fit items-center gap-1 text-base-content hover:text-brand-interaction-hover hover:no-underline"
+                        className="group prose-label-md-medium text-base-content hover:text-brand-interaction-hover w-fit items-center gap-1 hover:no-underline"
                         onClick={onCloseMegamenu}
                       >
                         {subItem.name}

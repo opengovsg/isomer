@@ -53,7 +53,7 @@ export const CollectionResults = ({
 
   if (totalCount === 0) {
     return (
-      <p className="prose-body-base py-32 text-center text-base-content">
+      <p className="prose-body-base text-base-content py-32 text-center">
         There are no articles here.
       </p>
     )
@@ -98,13 +98,13 @@ export const CollectionResults = ({
           )}
         </div>
       ) : (
-        <div className="flex flex-col gap-1 py-32 text-center text-content">
+        <div className="text-content flex flex-col gap-1 py-32 text-center">
           <p className="prose-body-base">
             We couldn’t find any articles. Try different search terms or
             filters.
           </p>
           <button
-            className="prose-headline-base-medium mx-auto w-fit text-link underline-offset-4 hover:underline"
+            className="prose-headline-base-medium text-link mx-auto w-fit cursor-pointer underline-offset-4 hover:underline"
             onClick={handleClearFilter}
           >
             Clear search and filters

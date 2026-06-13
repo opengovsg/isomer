@@ -21,7 +21,7 @@ const linkStyles = tv({
 
 const fvHighlightLinkStyles = tv({
   extend: focusVisibleHighlight,
-  base: "outline-none outline-0",
+  base: "outline-hidden outline-0",
   variants: {
     showExternalIcon: {
       true: `after:content-['_↗']`,

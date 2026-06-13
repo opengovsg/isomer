@@ -35,12 +35,12 @@ const FilterSectionButton = ({
     <button
       {...mergedProps}
       ref={buttonRef}
-      className="group prose-headline-base-semibold flex w-full flex-row items-center justify-between gap-4 text-left text-base-content outline-0"
+      className="group prose-headline-base-semibold text-base-content flex w-full cursor-pointer flex-row items-center justify-between gap-4 text-left outline-0"
     >
       <label className={filterSectionLabelStyle()}>{label}</label>
       <BiChevronDown
         aria-hidden
-        className={`h-6 w-6 flex-shrink-0 text-base-content-strong transition-all duration-300 ease-in-out ${
+        className={`text-base-content-strong h-6 w-6 shrink-0 transition-all duration-300 ease-in-out ${
           isOpen ? "rotate-180" : "rotate-0"
         }`}
       />
@@ -77,7 +77,7 @@ export const Filter = ({
     <>
       {filters.length > 0 && (
         <Button
-          className="prose-headline-lg-semibold flex w-full items-center justify-between gap-1 rounded border-[1.5px] border-base-content-strong bg-white px-4 py-3.5 text-base-content-strong lg:hidden"
+          className="prose-headline-lg-semibold border-base-content-strong text-base-content-strong flex w-full items-center justify-between gap-1 rounded border-[1.5px] bg-white px-4 py-3.5 lg:hidden"
           variant="unstyled"
           onPress={() => setMobileFiltersOpen(true)}
         >
@@ -95,13 +95,13 @@ export const Filter = ({
         setAppliedFilters={setAppliedFilters}
       />
       <aside className="hidden lg:block">
-        <div className="flex flex-row items-center justify-between gap-4 border-b border-b-base-divider-medium pb-3">
+        <div className="border-b-base-divider-medium flex flex-row items-center justify-between gap-4 border-b pb-3">
           <h2 className="prose-headline-lg-semibold text-base-content-strong">
             Filters
           </h2>
           {appliedFilters.length > 0 && (
             <Button
-              className="min-h-fit p-0 text-link"
+              className="text-link min-h-fit p-0"
               variant="unstyled"
               onPress={handleClearFilter}
             >
@@ -111,7 +111,7 @@ export const Filter = ({
         </div>
         {filters.map(({ id, label, items }) => (
           <CheckboxGroup
-            className="border-b border-b-divider-medium py-4"
+            className="border-b-divider-medium border-b py-4"
             key={id}
             value={appliedItemsById[id] ?? []}
           >
@@ -136,7 +136,7 @@ export const Filter = ({
           </CheckboxGroup>
         ))}
         {filters.length === 0 && (
-          <p className="prose-body-base py-4 italic text-base-content">
+          <p className="prose-body-base text-base-content py-4 italic">
             Nothing to filter by
           </p>
         )}

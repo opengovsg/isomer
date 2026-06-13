@@ -21,7 +21,7 @@ export const CollectionPageHeader = ({
         <div className="flex flex-col">
           <Breadcrumb links={breadcrumb.links} />
           <div className="mt-8 flex max-w-[54rem] flex-col gap-5 md:mt-6">
-            <h1 className="prose-display-lg break-words">{title}</h1>
+            <h1 className="prose-display-lg wrap-break-word">{title}</h1>
             <p className="prose-title-lg-regular">{subtitle}</p>
           </div>
         </div>

@@ -10,7 +10,7 @@ export const Heading = ({
     return (
       <h2
         id={id}
-        className="prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-14"
+        className="prose-display-sm text-base-content-strong not-first:mt-14"
         dir={dir ?? undefined}
       >
         {getTextAsHtml({
@@ -25,7 +25,7 @@ export const Heading = ({
     return (
       <h3
         id={id}
-        className="prose-display-xs text-base-content-strong [&:not(:first-child)]:mt-9"
+        className="prose-display-xs text-base-content-strong not-first:mt-9"
         dir={dir ?? undefined}
       >
         {getTextAsHtml({
@@ -40,7 +40,7 @@ export const Heading = ({
     return (
       <h4
         id={id}
-        className="prose-title-md-semibold text-base-content-strong [&:not(:first-child)]:mt-8"
+        className="prose-title-md-semibold text-base-content-strong not-first:mt-8"
         dir={dir ?? undefined}
       >
         {getTextAsHtml({
@@ -55,7 +55,7 @@ export const Heading = ({
     return (
       <h5
         id={id}
-        className="prose-headline-lg-semibold text-base-content-strong [&:not(:first-child)]:mt-7"
+        className="prose-headline-lg-semibold text-base-content-strong not-first:mt-7"
         dir={dir ?? undefined}
       >
         {getTextAsHtml({
@@ -69,7 +69,7 @@ export const Heading = ({
   return (
     <h6
       id={id}
-      className="prose-headline-base-semibold text-base-content-strong [&:not(:first-child)]:mt-6"
+      className="prose-headline-base-semibold text-base-content-strong not-first:mt-6"
       dir={dir ?? undefined}
     >
       {getTextAsHtml({

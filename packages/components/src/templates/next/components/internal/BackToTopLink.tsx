@@ -5,7 +5,7 @@ import { focusVisibleHighlight } from "~/utils/tailwind"
 
 const linkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-body-base sticky top-8 mb-8 mt-16 inline-flex items-center text-link underline-offset-4 first:mt-0 hover:underline",
+  base: "prose-body-base text-link sticky top-8 mt-16 mb-8 inline-flex items-center underline-offset-4 first:mt-0 hover:underline",
 })
 
 interface BackToTopLinkProps {

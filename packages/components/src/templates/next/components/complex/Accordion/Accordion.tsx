@@ -8,15 +8,15 @@ import { Prose } from "../../native/Prose"
 
 const summaryStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-headline-lg-medium flex list-none flex-row items-center justify-between gap-3 text-base-content-strong hover:cursor-pointer",
+  base: "prose-headline-lg-medium text-base-content-strong flex list-none flex-row items-center justify-between gap-3 hover:cursor-pointer",
 })
 
 const createAccordionStyles = tv({
   slots: {
     details:
-      "group mt-7 border-y border-divider-medium px-4 py-5 first:mt-0 has-[+_details]:border-b-0 [&+details]:mt-0",
-    icon: "h-6 w-6 flex-shrink-0 [&.minus]:hidden [&.minus]:group-open:block [&.plus]:block [&.plus]:group-open:hidden",
-    content: "pt-5 text-base-content-strong",
+      "group border-divider-medium mt-7 border-y px-4 py-5 first:mt-0 has-[+_details]:border-b-0 [&+details]:mt-0",
+    icon: "h-6 w-6 shrink-0 [&.minus]:hidden [&.minus]:group-open:block [&.plus]:block [&.plus]:group-open:hidden",
+    content: "text-base-content-strong pt-5",
   },
 })
 
