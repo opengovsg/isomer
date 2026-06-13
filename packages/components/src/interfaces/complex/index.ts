@@ -28,6 +28,7 @@ export {
 } from "./Infobar"
 export { InfopicSchema, type InfopicProps } from "./Infopic"
 export { KeyStatisticsSchema, type KeyStatisticsProps } from "./KeyStatistics"
+export { RelatedLinksSchema, type RelatedLinksProps } from "./RelatedLinks"
 export { MapSchema, type MapProps } from "./Map"
 export { AudioSchema, type AudioProps } from "./Audio"
 export { VideoSchema, type VideoProps } from "./Video"

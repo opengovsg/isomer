@@ -27,6 +27,7 @@ import { Infopic } from "../components/complex/Infopic"
 import { KeyStatistics } from "../components/complex/KeyStatistics"
 import { LogoCloud } from "../components/complex/LogoCloud"
 import { Map } from "../components/complex/Map"
+import { RelatedLinks } from "../components/complex/RelatedLinks"
 import { Video } from "../components/complex/Video"
 import { Prose } from "../components/native/Prose"
 
@@ -77,6 +78,8 @@ export const renderComponent = ({
       return <Infopic key={elementKey} {...component} {...rest} />
     case "keystatistics":
       return <KeyStatistics key={elementKey} {...component} {...rest} />
+    case "relatedlinks":
+      return <RelatedLinks key={elementKey} {...component} {...rest} />
     case "map":
       return <Map key={elementKey} {...component} {...rest} />
     case "childrenpages":
