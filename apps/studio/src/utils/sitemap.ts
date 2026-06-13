@@ -11,6 +11,7 @@ import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { env } from "~/env.mjs"
 import { db } from "~/server/modules/database"
+import { getIndexPageSummary } from "~/server/modules/page/page.service"
 import {
   getBlobOfResource,
   getPublishedIndexBlobByParentId,
@@ -168,7 +169,7 @@ const getSitemapTreeFromArray = (
           ? ISOMER_USABLE_PAGE_LAYOUTS.Collection // Needed for collectionblock component to fetch the correct collection
           : ISOMER_USABLE_PAGE_LAYOUTS.Content, // Note: We are not using the layout field in our previews
       title: titleOfPage || resource.title,
-      summary: summaryOfPage ?? `Pages in ${resource.title}`,
+      summary: summaryOfPage ?? getIndexPageSummary(resource.title),
       lastModified: new Date() // TODO: Update this to the updated_at field in DB
         .toISOString(),
       // NOTE: This permalink is unused in the preview
