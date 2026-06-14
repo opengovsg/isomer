@@ -168,6 +168,37 @@ const EmptyFieldsParameters = {
   },
 }
 
+const NumericColumnValuesParameters = {
+  msw: {
+    handlers: [
+      http.get(DgsUrl, () =>
+        HttpResponse.json({
+          success: true,
+          result: {
+            records: [
+              {
+                entity_name: 2023,
+                description: 45678,
+                methods: JSON.stringify([
+                  {
+                    method: "telephone",
+                    label: "Telephone",
+                    values: ["+65-63798000 (MFA)"],
+                  },
+                ]),
+                other_information: JSON.stringify({
+                  label: "Other Information",
+                  value: "Contact us for more details.",
+                }),
+              },
+            ],
+          },
+        }),
+      ),
+    ],
+  },
+}
+
 export const Default: Story = {
   parameters: DgsParameters,
   args: {
@@ -203,6 +234,27 @@ export const DefaultEmptyFields: Story = {
       ],
     },
     title: "[dgs:entity_name]", // to show that they can have different value from DGS
+    description: "[dgs:description]",
+    methods: "[dgs:methods]",
+    otherInformation: "[dgs:other_information]",
+  },
+}
+
+export const NumericColumnValues: Story = {
+  name: "Default (Numeric Field)",
+  parameters: NumericColumnValuesParameters,
+  args: {
+    dataSource: {
+      type: "dgs",
+      resourceId: "PLACEHOLDER_RESOURCE_ID",
+      filters: [
+        {
+          fieldKey: "testFieldKey",
+          fieldValue: "testFieldValue",
+        },
+      ],
+    },
+    title: "[dgs:entity_name]",
     description: "[dgs:description]",
     methods: "[dgs:methods]",
     otherInformation: "[dgs:other_information]",

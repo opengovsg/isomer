@@ -16,12 +16,17 @@ export const transformDgsField = <T extends string | undefined | null>(
   field: T,
   record: Record<string, unknown>,
 ): T => {
-  try {
-    if (!field || !isStringDgs(field)) {
-      return field
-    }
-    return record[extractDgsFieldKey(field)] as T
-  } catch {
+  if (!field || !isStringDgs(field)) {
     return field
   }
+
+  const value = record[extractDgsFieldKey(field)]
+  if (value === undefined || value === null || typeof value === "string") {
+    return value as T
+  }
+  if (typeof value === "object") {
+    return JSON.stringify(value) as T
+  }
+
+  return String(value) as T
 }
