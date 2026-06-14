@@ -107,9 +107,7 @@ const InfoBoxes = ({
               className={compoundStyles.infoBox()}
               isExternal={isExternalLink}
             >
-              {icon && (
-                <InfoBoxIcon icon={icon} hasLink={hasLink} />
-              )}
+              {icon && <InfoBoxIcon icon={icon} hasLink={hasLink} />}
 
               <h3
                 className={compoundStyles.infoBoxTitle({
