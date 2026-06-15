@@ -1,5 +1,5 @@
 import { HStack, Text } from "@chakra-ui/react"
-import { Menu } from "@opengovsg/design-system-react"
+import { Button, Menu, MenuItem, MenuTrigger } from "@opengovsg/oui"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
@@ -8,6 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
+import { BiChevronDown } from "react-icons/bi"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
@@ -131,41 +132,37 @@ export const CollectionTable = ({
           <Text textStyle="caption-1" color="base.content.default">
             Sort by:
           </Text>
-          <Menu size="sm" variant="clear">
-            {({ isOpen }) => (
-              <>
-                <Menu.Button
-                  variant="clear"
-                  size="sm"
-                  p="0"
-                  minH="auto"
-                  colorScheme="sub"
-                  fontSize="0.75rem"
-                  isOpen={isOpen}
-                >
-                  {COLLECTION_TABLE_SORT_OPTIONS[sortOption]}
-                </Menu.Button>
-                <Menu.List pt="0.75rem" pb="0.5rem">
-                  {Object.entries(COLLECTION_TABLE_SORT_OPTIONS).map(
-                    ([option, label]) => (
-                      <Menu.Item
-                        key={option}
-                        onClick={() => {
-                          setSortOption(option as CollectionTableSortOptions)
-                          onPaginationChange((old) => ({
-                            ...old,
-                            pageIndex: 0,
-                          }))
-                        }}
-                      >
-                        {label}
-                      </Menu.Item>
-                    ),
-                  )}
-                </Menu.List>
-              </>
-            )}
-          </Menu>
+          <MenuTrigger>
+            <Button
+              variant="clear"
+              color="sub"
+              size="sm"
+              className="prose-caption-1 min-h-0 min-w-0 p-0"
+              endContent={
+                <BiChevronDown className="transition-transform group-aria-expanded:rotate-180" />
+              }
+            >
+              {COLLECTION_TABLE_SORT_OPTIONS[sortOption]}
+            </Button>
+            <Menu size="sm">
+              {Object.entries(COLLECTION_TABLE_SORT_OPTIONS).map(
+                ([option, label]) => (
+                  <MenuItem
+                    key={option}
+                    onAction={() => {
+                      setSortOption(option as CollectionTableSortOptions)
+                      onPaginationChange((old) => ({
+                        ...old,
+                        pageIndex: 0,
+                      }))
+                    }}
+                  >
+                    {label}
+                  </MenuItem>
+                ),
+              )}
+            </Menu>
+          </MenuTrigger>
         </HStack>
       </HStack>
 

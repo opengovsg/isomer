@@ -1,5 +1,4 @@
-import { MenuButton, MenuList, Portal } from "@chakra-ui/react"
-import { IconButton, Menu } from "@opengovsg/design-system-react"
+import { Menu, MenuItem, MenuTrigger } from "@opengovsg/oui"
 import { useSetAtom } from "jotai"
 import {
   BiCog,
@@ -7,7 +6,8 @@ import {
   BiFolderOpen,
   BiTrash,
 } from "react-icons/bi"
-import { MenuItem } from "~/components/Menu"
+import { CRITICAL_MENU_ITEM_CLASSNAMES } from "~/components/Menu"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -43,54 +43,50 @@ export const CollectionTableMenu = ({
   }
 
   return (
-    <Menu isLazy size="sm">
-      <MenuButton
+    <MenuTrigger>
+      <IconButton
         aria-label={`Options for ${title}`}
-        as={IconButton}
-        colorScheme="neutral"
+        color="neutral"
         icon={<BiDotsHorizontalRounded />}
         variant="clear"
       />
-      <Portal>
-        <MenuList>
-          {(resourceType === ResourceType.CollectionPage ||
-            resourceType === ResourceType.CollectionLink) && (
-            <MenuItem
-              icon={<BiCog fontSize="1rem" />}
-              onClick={() =>
-                setPageSettingsModalState({
-                  pageId: resourceId,
-                  type: resourceType,
-                })
-              }
-            >
-              Edit settings
-            </MenuItem>
-          )}
+      <Menu size="sm">
+        {(resourceType === ResourceType.CollectionPage ||
+          resourceType === ResourceType.CollectionLink) && (
           <MenuItem
-            as="button"
-            icon={<BiFolderOpen fontSize="1rem" />}
-            onClick={handleMoveResourceClick}
+            startContent={<BiCog className="size-4" />}
+            onAction={() =>
+              setPageSettingsModalState({
+                pageId: resourceId,
+                type: resourceType,
+              })
+            }
           >
-            Move to...
+            Edit settings
           </MenuItem>
-          {resourceType !== ResourceType.IndexPage && (
-            <MenuItem
-              onClick={() => {
-                setValue({
-                  title,
-                  resourceId,
-                  resourceType,
-                })
-              }}
-              colorScheme="critical"
-              icon={<BiTrash fontSize="1rem" />}
-            >
-              Delete
-            </MenuItem>
-          )}
-        </MenuList>
-      </Portal>
-    </Menu>
+        )}
+        <MenuItem
+          startContent={<BiFolderOpen className="size-4" />}
+          onAction={handleMoveResourceClick}
+        >
+          Move to...
+        </MenuItem>
+        {resourceType !== ResourceType.IndexPage && (
+          <MenuItem
+            onAction={() => {
+              setValue({
+                title,
+                resourceId,
+                resourceType,
+              })
+            }}
+            classNames={CRITICAL_MENU_ITEM_CLASSNAMES}
+            startContent={<BiTrash className="size-4" />}
+          >
+            Delete
+          </MenuItem>
+        )}
+      </Menu>
+    </MenuTrigger>
   )
 }

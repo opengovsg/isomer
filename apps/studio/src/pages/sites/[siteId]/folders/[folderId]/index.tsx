@@ -1,10 +1,7 @@
-import { Portal, useDisclosure } from "@chakra-ui/react"
-// DsButton is kept only for the `Menu.Button as={DsButton}` trigger below; it migrates
-// with the Menu unit. Standalone buttons use the OUI Button.
-import { Button as DsButton, Menu } from "@opengovsg/design-system-react"
-import { Button } from "@opengovsg/oui"
+import { useDisclosure } from "@chakra-ui/react"
+import { Button, Menu, MenuItem, MenuTrigger } from "@opengovsg/oui"
 import { useSetAtom } from "jotai"
-import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
+import { BiChevronDown, BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { folderSettingsModalAtom } from "~/features/dashboard/atoms"
@@ -84,42 +81,37 @@ const FolderPage: NextPageWithLayout = () => {
             >
               Folder settings
             </Button>
-            <Menu isLazy size="sm">
-              {({ isOpen }) => (
-                <>
-                  <Menu.Button
-                    isOpen={isOpen}
-                    as={DsButton}
-                    size="md"
-                    justifySelf="flex-end"
-                  >
-                    Create new...
-                  </Menu.Button>
-                  <Portal>
-                    <Menu.List>
-                      <Menu.Item
-                        onClick={onFolderCreateModalOpen}
-                        icon={<BiFolder fontSize="1rem" />}
-                      >
-                        Folder
-                      </Menu.Item>
-                      <Menu.Item
-                        onClick={onPageCreateModalOpen}
-                        icon={<BiFileBlank fontSize="1rem" />}
-                      >
-                        Page
-                      </Menu.Item>
-                      <Menu.Item
-                        onClick={onCollectionCreateModalOpen}
-                        icon={<BiData fontSize="1rem" />}
-                      >
-                        Collection
-                      </Menu.Item>
-                    </Menu.List>
-                  </Portal>
-                </>
-              )}
-            </Menu>
+            <MenuTrigger>
+              <Button
+                size="md"
+                className="justify-self-end"
+                endContent={
+                  <BiChevronDown className="transition-transform group-aria-expanded:rotate-180" />
+                }
+              >
+                Create new...
+              </Button>
+              <Menu size="sm">
+                <MenuItem
+                  onAction={onFolderCreateModalOpen}
+                  startContent={<BiFolder className="size-4" />}
+                >
+                  Folder
+                </MenuItem>
+                <MenuItem
+                  onAction={onPageCreateModalOpen}
+                  startContent={<BiFileBlank className="size-4" />}
+                >
+                  Page
+                </MenuItem>
+                <MenuItem
+                  onAction={onCollectionCreateModalOpen}
+                  startContent={<BiData className="size-4" />}
+                >
+                  Collection
+                </MenuItem>
+              </Menu>
+            </MenuTrigger>
           </>
         }
       >

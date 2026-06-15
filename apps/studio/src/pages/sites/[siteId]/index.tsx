@@ -1,6 +1,12 @@
-import { Portal, useDisclosure } from "@chakra-ui/react"
-import { Button, Menu } from "@opengovsg/design-system-react"
-import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
+import { useDisclosure } from "@chakra-ui/react"
+import { Button, Menu, MenuItem, MenuTrigger } from "@opengovsg/oui"
+import {
+  BiChevronDown,
+  BiData,
+  BiFileBlank,
+  BiFolder,
+  BiHomeAlt,
+} from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
@@ -35,42 +41,37 @@ const HomepageMenuButton = ({
 }: HomepageMenuButtonProps) => {
   return (
     <Can do="create" on={{ parentId: null }}>
-      <Menu isLazy size="sm">
-        {({ isOpen }) => (
-          <>
-            <Menu.Button
-              isOpen={isOpen}
-              as={Button}
-              size="md"
-              justifySelf="flex-end"
-            >
-              Create new...
-            </Menu.Button>
-            <Portal>
-              <Menu.List>
-                <Menu.Item
-                  onClick={onFolderCreateModalOpen}
-                  icon={<BiFolder fontSize="1rem" />}
-                >
-                  Folder
-                </Menu.Item>
-                <Menu.Item
-                  onClick={onPageCreateModalOpen}
-                  icon={<BiFileBlank fontSize="1rem" />}
-                >
-                  Page
-                </Menu.Item>
-                <Menu.Item
-                  onClick={onCollectionCreateModalOpen}
-                  icon={<BiData fontSize="1rem" />}
-                >
-                  Collection
-                </Menu.Item>
-              </Menu.List>
-            </Portal>
-          </>
-        )}
-      </Menu>
+      <MenuTrigger>
+        <Button
+          size="md"
+          className="justify-self-end"
+          endContent={
+            <BiChevronDown className="transition-transform group-aria-expanded:rotate-180" />
+          }
+        >
+          Create new...
+        </Button>
+        <Menu size="sm">
+          <MenuItem
+            onAction={onFolderCreateModalOpen}
+            startContent={<BiFolder className="size-4" />}
+          >
+            Folder
+          </MenuItem>
+          <MenuItem
+            onAction={onPageCreateModalOpen}
+            startContent={<BiFileBlank className="size-4" />}
+          >
+            Page
+          </MenuItem>
+          <MenuItem
+            onAction={onCollectionCreateModalOpen}
+            startContent={<BiData className="size-4" />}
+          >
+            Collection
+          </MenuItem>
+        </Menu>
+      </MenuTrigger>
     </Can>
   )
 }
