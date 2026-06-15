@@ -83,6 +83,7 @@ export function BaseLinkControl({
             px="1rem"
             py="0.75rem"
             flexDir="row"
+            gap="0.5rem"
             background="brand.primary.100"
             justifyContent="space-between"
             alignItems="center"
