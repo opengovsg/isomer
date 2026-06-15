@@ -113,10 +113,17 @@ export interface ResourceItemContent {
   parentId: string | null
 }
 
+// Prevent DoS via unbounded query length; value is arbitrary
+export const MAX_SEARCH_QUERY_LENGTH = 256
+
 export const searchSchema = z
   .object({
     siteId: z.string(),
-    query: z.string().trim().optional(),
+    query: z
+      .string()
+      .trim()
+      .max(MAX_SEARCH_QUERY_LENGTH, "Search query is too long")
+      .optional(),
     resourceTypes: z
       .array(z.nativeEnum(ResourceType))
       .optional()

@@ -1009,9 +1009,11 @@ export const getSearchResults = async ({
   totalCount: number | null
   resources: SearchResultResource[]
 }> => {
+  // Prevent DoS via excessive ILIKE conditions; value is arbitrary
+  const MAX_SEARCH_TERMS = 10
   const searchTerms: string[] = Array.from(
     new Set(query.trim().toLowerCase().split(/\s+/)),
-  )
+  ).slice(0, MAX_SEARCH_TERMS)
 
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
