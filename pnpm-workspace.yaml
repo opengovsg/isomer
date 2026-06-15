@@ -63,7 +63,7 @@ catalog:
   cheerio: ^1.0.0
   chromatic: ^16.8.0
   clean-webpack-plugin: ^4.0.0
-  dayjs: ^1.11.13
+  dayjs: ^1.11.21
   date-fns: ^4.4.0
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
