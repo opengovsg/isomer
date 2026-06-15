@@ -1718,7 +1718,7 @@ describe("collection.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({
           code: "NOT_FOUND",
-          message: "Collection index page not found",
+          message: "Collection not found",
         }),
       )
     })

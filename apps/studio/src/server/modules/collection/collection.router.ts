@@ -536,7 +536,9 @@ export const collectionRouter = router({
         resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
       })
 
-      return getCollectionTagsForResource({ resourceId, collectionId, siteId })
+      return collectionId
+        ? getCollectionTagsForResource({ collectionId, siteId })
+        : getCollectionTagsForResource({ resourceId: resourceId!, siteId })
     }),
 
   /**
@@ -552,41 +554,32 @@ export const collectionRouter = router({
         userId: ctx.user.id,
       })
 
-      const indexPage = await db
-        .selectFrom("Resource")
-        .where("id", "=", String(pageId))
-        .where("siteId", "=", siteId)
-        .where("type", "=", ResourceType.IndexPage)
-        .select(["parentId"])
+      const { id: collectionId } = await db
+        .selectFrom("Resource as r")
+        .innerJoin("Resource as c", (join) =>
+          join
+            .onRef("c.id", "=", "r.parentId")
+            .on("c.type", "=", ResourceType.Collection)
+            .on("c.siteId", "=", siteId),
+        )
+        .where("r.id", "=", String(pageId))
+        .where("r.siteId", "=", siteId)
+        .where("r.type", "=", ResourceType.IndexPage)
+        .select("c.id")
         .executeTakeFirstOrThrow(
           () =>
             new TRPCError({
               code: "NOT_FOUND",
-              message: "Collection index page not found",
+              message: "Collection not found",
             }),
         )
-
-      const { parentId } = indexPage
-      const collection = parentId
-        ? await getSiteResourceById({
-            siteId,
-            resourceId: parentId,
-            type: ResourceType.Collection,
-          })
-        : null
-      if (!collection) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Collection not found",
-        })
-      }
 
       const row = await db
         .selectFrom("Resource as r")
         .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
         .leftJoin("Version as v", "r.publishedVersionId", "v.id")
         .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
-        .where("r.parentId", "=", parentId)
+        .where("r.parentId", "=", collectionId)
         .where("r.siteId", "=", siteId)
         .where("r.type", "in", [
           ResourceType.CollectionPage,

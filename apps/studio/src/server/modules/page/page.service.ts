@@ -7,6 +7,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { format } from "date-fns"
+import { z } from "zod"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { db, sql } from "../database"
@@ -86,6 +87,8 @@ export const createFolderIndexPage = (title: string) => {
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
 
+const uuidSchema = z.uuid()
+
 function isCollectionPageCategoryOption(
   value: unknown,
 ): value is CollectionPageCategoryOption {
@@ -93,7 +96,7 @@ function isCollectionPageCategoryOption(
     return false
   }
   const rec = value as Record<string, unknown>
-  return typeof rec.id === "string" && typeof rec.label === "string"
+  return uuidSchema.safeParse(rec.id).success && typeof rec.label === "string"
 }
 
 export const getCategoryOptionsForPage = async ({

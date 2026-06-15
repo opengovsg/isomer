@@ -2,12 +2,11 @@ import type {
   CollectionPagePageProps,
   CollectionPageSchemaType,
 } from "@opengovsg/isomer-components"
-import type { UnwrapTagged } from "type-fest"
+import type { MergeExclusive, UnwrapTagged } from "type-fest"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
-import { TRPCError } from "@trpc/server"
 import { format } from "date-fns"
 
-import { db, ResourceType } from "../database"
+import { db, ResourceType, sql } from "../database"
 
 export const createCollectionPageJson = ({}: {
   type: typeof ResourceType.CollectionPage // Act as soft typeguard
@@ -61,23 +60,22 @@ export const getCollectionTagsForResource = async ({
   resourceId,
   collectionId,
   siteId,
-}: {
-  resourceId?: number
-  collectionId?: number
-  siteId: number
-}): Promise<NonNullable<CollectionPageSchemaType["page"]["tagCategories"]>> => {
-  // The schema enforces that exactly one of collectionId / resourceId is set.
-  // For collectionId: the IndexPage sits directly under this collection.
-  // For resourceId: the IndexPage sits under the resource's parent collection.
-  const indexPage = await db
-    .selectFrom("Resource")
-    .where("type", "=", ResourceType.IndexPage)
-    .where("siteId", "=", siteId)
+}: { siteId: number } & MergeExclusive<
+  { resourceId: number },
+  { collectionId: number }
+>): Promise<NonNullable<CollectionPageSchemaType["page"]["tagCategories"]>> => {
+  const row = await db
+    .selectFrom("Resource as r")
+    .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
+    .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+    .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+    .where("r.type", "=", ResourceType.IndexPage)
+    .where("r.siteId", "=", siteId)
     .$if(collectionId !== undefined, (qb) =>
-      qb.where("parentId", "=", String(collectionId)),
+      qb.where("r.parentId", "=", String(collectionId)),
     )
     .$if(resourceId !== undefined, (qb) =>
-      qb.where("parentId", "=", (eb) =>
+      qb.where("r.parentId", "=", (eb) =>
         eb
           .selectFrom("Resource")
           .where("id", "=", String(resourceId))
@@ -85,55 +83,23 @@ export const getCollectionTagsForResource = async ({
           .select("parentId"),
       ),
     )
-    .select("id")
+    .select([
+      sql<CollectionPageSchemaType | null>`"draftBlob"."content"`.as(
+        "draftContent",
+      ),
+      sql<CollectionPageSchemaType | null>`"publishedBlob"."content"`.as(
+        "publishedContent",
+      ),
+    ])
     .executeTakeFirst()
 
-  if (!indexPage) {
+  if (!row) {
     return []
   }
 
-  const { draftBlobId, publishedVersionId } = await db
-    .selectFrom("Resource")
-    .where("id", "=", String(indexPage.id))
-    .select(["draftBlobId", "publishedVersionId"])
-    .executeTakeFirstOrThrow(
-      () =>
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "The specified resource could not be found",
-        }),
-    )
-
-  if (publishedVersionId) {
-    const { content } = await db
-      .selectFrom("Blob")
-      .where("id", "=", (qb) =>
-        qb
-          .selectFrom("Version")
-          .where("id", "=", publishedVersionId)
-          .select("blobId"),
-      )
-      .selectAll()
-      // NOTE: Guaranteed to exist since this is a foreign key
-      .executeTakeFirstOrThrow()
-
-    return (
-      (content as unknown as CollectionPageSchemaType).page.tagCategories ?? []
-    )
-  }
-
-  if (draftBlobId) {
-    const { content } = await db
-      .selectFrom("Blob")
-      .where("id", "=", draftBlobId)
-      .selectAll()
-      // NOTE: Guaranteed to exist since this is a foreign key
-      .executeTakeFirstOrThrow()
-
-    return (
-      (content as unknown as CollectionPageSchemaType).page.tagCategories ?? []
-    )
-  }
-
-  return []
+  return (
+    row.publishedContent?.page.tagCategories ??
+    row.draftContent?.page.tagCategories ??
+    []
+  )
 }
