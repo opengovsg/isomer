@@ -122,10 +122,12 @@ const SingpassSignInPage: NextPageWithLayout = () => {
                     : "You’ll need your Singpass app or credentials"}
                 </Text>
 
-                <LinkButton onPress={openUnableToUseSingpassModal}>
-                  <Text textStyle="body-2" color="base.content.medium">
-                    Can’t use Singpass to authenticate?
-                  </Text>
+                <LinkButton
+                  onPress={openUnableToUseSingpassModal}
+                  color="neutral"
+                  className="prose-body-2"
+                >
+                  Can’t use Singpass to authenticate?
                 </LinkButton>
               </Flex>
 
