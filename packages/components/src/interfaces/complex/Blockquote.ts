@@ -1,38 +1,88 @@
 import type { Static } from "@sinclair/typebox"
+import type { Simplify } from "type-fest"
 import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
+import { ARRAY_RADIO_FORMAT } from "../format"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
-export const BlockquoteSchema = Type.Object(
-  {
-    type: Type.Literal("blockquote", { default: "blockquote" }),
-    quote: Type.String({
-      title: "Quote",
-      format: "textarea",
+export const BLOCKQUOTE_STYLE = {
+  imageless: "imageless",
+  image: "image",
+} as const
+
+const BlockquoteBaseSchema = Type.Object({
+  type: Type.Literal("blockquote", { default: "blockquote" }),
+  quote: Type.String({
+    title: "Quote",
+    format: "textarea",
+  }),
+  source: Type.String({
+    title: "Source",
+    description: "Speaker, their designation, or when they said it",
+  }),
+})
+
+const BlockquoteWithoutImageSchema = Type.Composite(
+  [
+    Type.Object({
+      style: Type.Literal(BLOCKQUOTE_STYLE.imageless, {
+        default: BLOCKQUOTE_STYLE.imageless,
+      }),
     }),
-    source: Type.String({
-      title: "Source",
-      description: "Speaker, their designation, or when they said it",
-    }),
-    // NOTE: We are making the image optional but the alt text required as a hack,
-    // because the schema does not support having dependent properties. If no
-    // image is provided, the alt text will be ignored
-    imageSrc: Type.Optional(ImageSrcSchema),
-    // Setting as optional because the image is optional.
-    // If no image is provided and this is required, the schema will throw an error,
-    // making it impossible to create a blockquote without an image on Studio
-    imageAlt: Type.Optional(AltTextSchema),
-  },
+    BlockquoteBaseSchema,
+  ],
   {
-    title: "Blockquote",
-    description:
-      "The Blockquote component is used to display a quote with an image.",
+    title: "Without image",
   },
 )
 
-export type BlockquoteProps = Static<typeof BlockquoteSchema> & {
+const BlockquoteWithImageSchema = Type.Composite(
+  [
+    Type.Object({
+      style: Type.Literal(BLOCKQUOTE_STYLE.image, {
+        default: BLOCKQUOTE_STYLE.image,
+      }),
+      // Both the image and its alt text are required for this style, so that
+      // an image is never published without a descriptive alt text.
+      imageSrc: ImageSrcSchema,
+      imageAlt: AltTextSchema,
+    }),
+    BlockquoteBaseSchema,
+  ],
+  {
+    title: "With image",
+  },
+)
+
+export const BlockquoteSchema = Type.Intersect(
+  [
+    Type.Union([BlockquoteWithoutImageSchema, BlockquoteWithImageSchema], {
+      title: "Style",
+      format: ARRAY_RADIO_FORMAT,
+    }),
+  ],
+  {
+    title: "Blockquote",
+    description:
+      "The Blockquote component is used to display a quote with an optional image.",
+  },
+)
+
+interface BlockquoteCommonProps {
   layout: IsomerPageLayoutType
   shouldLazyLoad?: boolean
   site: IsomerSiteProps
 }
+
+export type BlockquoteWithoutImageProps = Simplify<
+  Static<typeof BlockquoteWithoutImageSchema> & BlockquoteCommonProps
+>
+
+export type BlockquoteWithImageProps = Simplify<
+  Static<typeof BlockquoteWithImageSchema> & BlockquoteCommonProps
+>
+
+export type BlockquoteProps =
+  | BlockquoteWithoutImageProps
+  | BlockquoteWithImageProps

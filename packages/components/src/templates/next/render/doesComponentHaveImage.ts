@@ -38,7 +38,7 @@ export const doesComponentHaveImage = ({
     case "collectionblock":
       return component.displayThumbnail
     case "blockquote":
-      return component.imageSrc !== undefined
+      return "imageSrc" in component
     default:
       const _: never = component
       return false

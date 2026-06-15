@@ -339,6 +339,7 @@ export const Default: Story = {
       },
       {
         type: "blockquote",
+        style: "image",
         quote:
           "When I was a rookie, I had trouble overcoming the low rope at first. But when it came to my turn, my buddies knew being there would help spur me to prevail.",
         source:

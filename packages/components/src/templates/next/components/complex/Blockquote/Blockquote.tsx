@@ -1,5 +1,6 @@
 import type { BlockquoteProps } from "~/interfaces"
 import { BiSolidQuoteAltLeft } from "react-icons/bi"
+import { BLOCKQUOTE_STYLE } from "~/interfaces"
 import { tv } from "~/lib/tv"
 import { getTailwindVariantLayout } from "~/utils/getTailwindVariantLayout"
 
@@ -47,15 +48,17 @@ const createBlockquoteStyles = tv({
   },
 })
 
-export const Blockquote = ({
-  quote,
-  source,
-  imageSrc,
-  imageAlt,
-  layout,
-  shouldLazyLoad,
-  site,
-}: BlockquoteProps) => {
+export const Blockquote = (props: BlockquoteProps) => {
+  const { quote, source, layout, shouldLazyLoad, site } = props
+
+  // The image fields only exist on the "with image" style. Legacy blockquotes
+  // predate the `style` control and may carry an image without a `style`, so we
+  // also fall back to reading the image off the props directly.
+  const imageSrc = "imageSrc" in props ? props.imageSrc : undefined
+  const imageAlt = "imageAlt" in props ? props.imageAlt : undefined
+  const showImage =
+    props.style !== BLOCKQUOTE_STYLE.imageless && !!imageSrc && !!imageAlt
+
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const variants = {
     layout: simplifiedLayout,
@@ -79,7 +82,7 @@ export const Blockquote = ({
           </div>
         </div>
 
-        {imageSrc && imageAlt && (
+        {showImage && imageSrc && imageAlt && (
           <ImageClient
             src={imageSrc}
             alt={imageAlt}

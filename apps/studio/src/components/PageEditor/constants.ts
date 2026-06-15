@@ -28,9 +28,9 @@ export const DEFAULT_BLOCKS = {
   },
   blockquote: {
     type: "blockquote",
+    style: "imageless",
     quote: "Enter your quote here.",
     source: "Describe who said the quote.",
-    imageAlt: "Enter a descriptive alt text.",
   },
   callout: {
     type: "callout",

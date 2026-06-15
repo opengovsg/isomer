@@ -22,6 +22,7 @@ type Story = StoryObj<typeof Blockquote>
 
 export const WithoutImage: Story = {
   args: {
+    style: "imageless",
     quote:
       "When I was a rookie, I had trouble overcoming the low rope at first. But when it came to my turn, my buddies knew being there would help spur me to prevail.",
     source:
@@ -31,6 +32,7 @@ export const WithoutImage: Story = {
 
 export const WithImage: Story = {
   args: {
+    style: "image",
     quote:
       "When I was a rookie, I had trouble overcoming the low rope at first. But when it came to my turn, my buddies knew being there would help spur me to prevail.",
     source:
@@ -42,6 +44,7 @@ export const WithImage: Story = {
 
 export const ManyWordsWithImage: Story = {
   args: {
+    style: "image",
     quote:
       "When I was a rookie, I had trouble overcoming the low rope at first. But when it came to my turn, my buddies knew being there would help spur me to prevail. When I had trouble overcoming the low rope at first. But when it came to my turn, my buddies knew us being there would help spur me to prevail.",
     source:
@@ -53,6 +56,7 @@ export const ManyWordsWithImage: Story = {
 
 export const MinimalWordsWithImage: Story = {
   args: {
+    style: "image",
     quote: "Hi",
     source: "Me",
     imageSrc: "https://placehold.co/600x600",
@@ -62,6 +66,7 @@ export const MinimalWordsWithImage: Story = {
 
 export const HomepageWithoutImage: Story = {
   args: {
+    style: "imageless",
     quote:
       "When I was a rookie, I had trouble overcoming the low rope at first. But when it came to my turn, my buddies knew being there would help spur me to prevail.",
     source:
@@ -72,6 +77,7 @@ export const HomepageWithoutImage: Story = {
 
 export const HomepageWithImage: Story = {
   args: {
+    style: "image",
     quote:
       "When I was a rookie, I had trouble overcoming the low rope at first. But when it came to my turn, my buddies knew being there would help spur me to prevail.",
     source:
@@ -84,6 +90,7 @@ export const HomepageWithImage: Story = {
 
 export const HomepageMinimalWordsWithImage: Story = {
   args: {
+    style: "image",
     quote: "Hi",
     source: "Me",
     imageSrc: "https://placehold.co/600x600",

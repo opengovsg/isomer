@@ -451,6 +451,7 @@ const generateArgs = ({
       },
       {
         type: "blockquote",
+        style: "image",
         quote:
           "I managed to experience new things: saw a dead fish in a plastic bag for the first time, which was an eye-opener because I never thought I would actually get to see something like this ever.",
         source: "Hannah Teo, Greenies ambassador",
@@ -527,6 +528,7 @@ const generateArgs = ({
       },
       {
         type: "blockquote",
+        style: "image",
         quote:
           "I managed to experience new things: saw a dead fish in a plastic bag for the first time, which was an eye-opener because I never thought I would actually get to see something like this ever.",
         source: "Hannah Teo, Greenies ambassador",
