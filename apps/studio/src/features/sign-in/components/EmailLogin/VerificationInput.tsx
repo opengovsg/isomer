@@ -158,7 +158,6 @@ export const VerificationInput = (): JSX.Element | null => {
         </FormControl>
         <Stack direction="column" spacing="0.75rem">
           <Button
-            size="sm"
             type="submit"
             // Want to keep loading state until redirection is complete.
             isPending={

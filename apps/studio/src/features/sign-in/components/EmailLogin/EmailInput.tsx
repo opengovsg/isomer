@@ -102,7 +102,6 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
           </FormErrorMessage>
         </FormControl>
         <Button
-          size="sm"
           type="submit"
           isPending={loginMutation.isPending}
           isDisabled={!isValid}
