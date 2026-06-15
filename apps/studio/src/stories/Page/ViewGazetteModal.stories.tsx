@@ -2,6 +2,12 @@ import type { Meta, StoryObj } from "@storybook/nextjs"
 import { Box } from "@chakra-ui/react"
 import { ViewGazetteModal } from "~/features/gazettes"
 
+// Use a recent date (within 15 minutes) so the delete button is visible
+const recentPublishedAt = new Date()
+
+// Use an old date to test the view without delete button
+const oldPublishedAt = new Date("2026-01-01T09:00:00")
+
 const meta: Meta<typeof ViewGazetteModal> = {
   title: "Pages/eGazette/View Gazette Modal",
   component: ViewGazetteModal,
@@ -19,6 +25,7 @@ const meta: Meta<typeof ViewGazetteModal> = {
   args: {
     isOpen: true,
     onClose: () => console.log("close"),
+    siteId: 1,
     gazetteId: "gazette-123",
     data: {
       title: "Limited Liability Partnerships Act 2005 - Section 64",
@@ -26,7 +33,7 @@ const meta: Meta<typeof ViewGazetteModal> = {
       subcategory: "Notices under other Acts",
       notificationNumber: "2145",
       fileId: "26gg5734.pdf",
-      publishedAt: "17/04/2026, 05:55PM",
+      publishedAt: recentPublishedAt,
     },
   },
 }
@@ -36,7 +43,21 @@ export default meta
 type Story = StoryObj<typeof ViewGazetteModal>
 
 export const Default: Story = {
-  name: "With All Fields",
+  name: "With Delete Button (Recent)",
+}
+
+export const WithoutDeleteButton: Story = {
+  name: "Without Delete Button (Old)",
+  args: {
+    data: {
+      title: "Another Published Gazette",
+      category: "Government Gazette",
+      subcategory: "Advertisements",
+      notificationNumber: "2145",
+      fileId: "abc123.pdf",
+      publishedAt: oldPublishedAt,
+    },
+  },
 }
 
 export const WithoutNotificationNumber: Story = {
@@ -47,7 +68,7 @@ export const WithoutNotificationNumber: Story = {
       category: "Government Gazette",
       subcategory: "Advertisements",
       fileId: "abc123.pdf",
-      publishedAt: "01/01/2026, 09:00AM",
+      publishedAt: recentPublishedAt,
     },
   },
 }

@@ -4,6 +4,7 @@ import type { RoleType } from "~prisma/generated/generatedEnums"
 
 export interface BaseEmailTemplateData {
   recipientEmail: string
+  cc?: string[]
 }
 
 export interface InvitationEmailTemplateData extends BaseEmailTemplateData {
@@ -57,6 +58,11 @@ export interface AccountDeactivationEmailTemplateData extends BaseEmailTemplateD
     siteName: string
     adminEmails: string[]
   }[]
+}
+
+export interface GazetteDeletionEmailTemplateData extends BaseEmailTemplateData {
+  fileId: string
+  gazetteTitle: string
 }
 
 export interface EmailTemplate {
