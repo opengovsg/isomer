@@ -149,10 +149,18 @@ export const FullscreenPreview: Story = {
     // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
     const screen = within(canvasElement.parentElement!)
 
-    const button = await canvas.findByRole("button", { name: /default mode/i })
+    // Preview toolbar mounts with the heavy home-page preview pane, which can
+    // take >1000ms (the default findBy timeout) to appear in CI.
+    const button = await canvas.findByRole(
+      "button",
+      { name: /default mode/i },
+      { timeout: 5000 },
+    )
     await userEvent.click(button)
 
-    const text = await screen.findByText(/full screen/i)
+    const text = await screen.findByText(/full screen/i, undefined, {
+      timeout: 5000,
+    })
     await userEvent.click(text)
   },
 }
