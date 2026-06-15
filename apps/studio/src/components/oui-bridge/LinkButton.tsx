@@ -28,10 +28,7 @@ export const LinkButton = ({
         linkStyles({
           color,
           radius,
-          className: cn(
-            "flex-row flex gap-2 items-center underline w-fit",
-            className,
-          ),
+          className: cn("flex-row flex gap-2 items-center w-fit", className),
           ...renderProps,
           isFocusVisible: isFocusVisible ?? renderProps.isFocusVisible,
         }),

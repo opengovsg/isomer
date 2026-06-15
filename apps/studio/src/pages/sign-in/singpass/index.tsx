@@ -125,7 +125,7 @@ const SingpassSignInPage: NextPageWithLayout = () => {
                 <LinkButton
                   onPress={openUnableToUseSingpassModal}
                   color="neutral"
-                  className="prose-body-2"
+                  className="prose-body-2 underline"
                 >
                   Can’t use Singpass to authenticate?
                 </LinkButton>
