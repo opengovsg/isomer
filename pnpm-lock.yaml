@@ -7,8 +7,8 @@ settings:
 catalogs:
   atlaskitPragmaticDnd:
     '@atlaskit/pragmatic-drag-and-drop':
-      specifier: ^1.7.7
-      version: 1.7.9
+      specifier: ^1.8.1
+      version: 1.8.1
     '@atlaskit/pragmatic-drag-and-drop-hitbox':
       specifier: ^1.2.0
       version: 1.2.0
@@ -652,7 +652,7 @@ importers:
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop':
         specifier: catalog:atlaskitPragmaticDnd
-        version: 1.7.9
+        version: 1.8.1
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
         specifier: catalog:atlaskitPragmaticDnd
         version: 1.2.0
@@ -1890,9 +1890,6 @@ packages:
 
   '@atlaskit/pragmatic-drag-and-drop-hitbox@1.2.0':
     resolution: {integrity: sha512-eWJvvuHZOC4Yk+Li7QpS+JM2F/I50/3PhMvEcyvcHbXI0FP0kCDD1MiF8Hv7uSOxpk5JNqKoOmK8e1ncOzTgqA==}
-
-  '@atlaskit/pragmatic-drag-and-drop@1.7.9':
-    resolution: {integrity: sha512-m/bcw5flyjfcF/rdX4JeomtIBrWuDNOwcQieiywHv7zkfIRmUC34Q9ZLeNGVoz73UiGsRqxysMuw4tC7lSJ89g==}
 
   '@atlaskit/pragmatic-drag-and-drop@1.8.1':
     resolution: {integrity: sha512-uXWNPpL8n4OmTVbduH7nq8pk8htqGo/prR5cYEE8sVCPJGAUMWn6lzvWTfI+4VCeQvHiDRODVz4YzH06OVAxhw==}
@@ -12003,12 +12000,6 @@ snapshots:
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop': 1.8.1
       '@babel/runtime': 7.29.7
-
-  '@atlaskit/pragmatic-drag-and-drop@1.7.9':
-    dependencies:
-      '@babel/runtime': 7.29.7
-      bind-event-listener: 3.0.0
-      raf-schd: 4.0.3
 
   '@atlaskit/pragmatic-drag-and-drop@1.8.1':
     dependencies:
