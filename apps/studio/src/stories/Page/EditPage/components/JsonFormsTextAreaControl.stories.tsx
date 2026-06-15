@@ -11,35 +11,31 @@ const meta: Meta<typeof FormBuilder> = {
 export default meta
 type Story = StoryObj<typeof FormBuilder>
 
-const schema = Type.Object({
-  description: Type.Optional(
-    Type.String({
-      title: "Meta description",
-      description:
-        "This is a description that appears on search engine results.",
-      format: "textarea",
-    }),
-  ),
-})
-
-const maxLengthSchema = Type.Object({
-  quote: Type.String({
-    title: "Quote",
-    maxLength: 280,
-    format: "textarea",
-  }),
-})
-
 export const Default: Story = {
   args: {
-    schema,
+    schema: Type.Object({
+      description: Type.Optional(
+        Type.String({
+          title: "Meta description",
+          description:
+            "This is a description that appears on search engine results.",
+          format: "textarea",
+        }),
+      ),
+    }),
     data: {},
   },
 }
 
 export const MaxLength: Story = {
   args: {
-    schema: maxLengthSchema,
+    schema: Type.Object({
+      quote: Type.String({
+        title: "Quote",
+        maxLength: 280,
+        format: "textarea",
+      }),
+    }),
     data: { quote: "A short quote." },
   },
 }
