@@ -36,6 +36,12 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
 
+  const handleConfirmDelete = () => {
+    if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
+    removeItems(path, [deleteTarget.index])()
+    setDeleteTarget(null)
+  }
+
   // New filters default isRequired to true. Can't set this via JSON Schema default
   // because Studio AJV runs with useDefaults, which would apply it to legacy rows too.
   const addItemWithDefaults = useCallback(
@@ -129,11 +135,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
             </Text>
           }
           onClose={() => setDeleteTarget(null)}
-          onConfirm={() => {
-            if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
-            removeItems(path, [deleteTarget.index])()
-            setDeleteTarget(null)
-          }}
+          onConfirm={handleConfirmDelete}
         />
       )}
     </>

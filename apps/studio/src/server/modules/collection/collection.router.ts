@@ -1,4 +1,3 @@
-import type { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
@@ -7,6 +6,7 @@ import {
   countTagOptionsUsageSchema,
   createCollectionSchema,
   editLinkSchema,
+  getCategoryOptionUsageCountSchema,
   getCollectionsSchema,
   getCollectionTagsSchema,
   readCollectionSchema,
@@ -40,6 +40,7 @@ import {
   createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,
+  getCollectionTagsForResource,
 } from "./collection.service"
 
 export const collectionRouter = router({
@@ -337,14 +338,13 @@ export const collectionRouter = router({
             }),
         )
 
-      const parentId = indexPage.parentId
+      const { parentId } = indexPage
       if (!parentId) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Collection index page has no parent collection",
         })
       }
-
       const collection = await getSiteResourceById({
         siteId,
         resourceId: parentId,
@@ -536,88 +536,80 @@ export const collectionRouter = router({
         resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
       })
 
-      // The schema enforces that exactly one of collectionId / resourceId is set.
-      // For collectionId: the IndexPage sits directly under this collection.
-      // For resourceId: the IndexPage sits under the resource's parent collection.
+      return getCollectionTagsForResource({ resourceId, collectionId, siteId })
+    }),
+
+  /**
+   * Counts collection pages/links whose draft **or** published blob has `page.categoryId` equal to the
+   * given id. `pageId` is the collection index page resource id (Studio URL `pageId`).
+   */
+  getCategoryOptionUsageCount: protectedProcedure
+    .input(getCategoryOptionUsageCountSchema)
+    .query(async ({ ctx, input: { siteId, pageId, categoryId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
       const indexPage = await db
         .selectFrom("Resource")
-        .where("type", "=", ResourceType.IndexPage)
+        .where("id", "=", String(pageId))
         .where("siteId", "=", siteId)
-        .$if(collectionId !== undefined, (qb) =>
-          qb.where("parentId", "=", String(collectionId)),
-        )
-        .$if(resourceId !== undefined, (qb) =>
-          qb.where("parentId", "=", (eb) =>
-            eb
-              .selectFrom("Resource")
-              .where("id", "=", String(resourceId))
-              .where("siteId", "=", siteId)
-              .select("parentId"),
-          ),
-        )
-        .select("id")
-        .executeTakeFirst()
-
-      if (!indexPage) {
-        return []
-      }
-
-      const { draftBlobId, publishedVersionId } = await db
-        .selectFrom("Resource")
-        .where("id", "=", String(indexPage.id))
-        .select(["draftBlobId", "publishedVersionId"])
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["parentId"])
         .executeTakeFirstOrThrow(
           () =>
             new TRPCError({
               code: "NOT_FOUND",
-              message: "The specified resource could not be found",
+              message: "Collection index page not found",
             }),
         )
 
-      if (publishedVersionId) {
-        const { content } = await db
-          .selectFrom("Blob")
-          .where("id", "=", (qb) =>
-            qb
-              .selectFrom("Version")
-              .where("id", "=", publishedVersionId)
-              .select("blobId"),
-          )
-          .selectAll()
-          // NOTE: Guaranteed to exist since this is a foreign key
-          .executeTakeFirstOrThrow()
-
-        return (
-          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
-          []
-        )
+      const { parentId } = indexPage
+      const collection = parentId
+        ? await getSiteResourceById({
+            siteId,
+            resourceId: parentId,
+            type: ResourceType.Collection,
+          })
+        : null
+      if (!collection) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        })
       }
 
-      if (draftBlobId) {
-        const { content } = await db
-          .selectFrom("Blob")
-          .where("id", "=", draftBlobId)
-          .selectAll()
-          // NOTE: Guaranteed to exist since this is a foreign key
-          .executeTakeFirstOrThrow()
-
-        return (
-          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
-          []
+      const row = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+        .where("r.parentId", "=", parentId)
+        .where("r.siteId", "=", siteId)
+        .where("r.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
+        .where((eb) =>
+          eb.or([
+            eb(
+              sql`nullif(trim("draftBlob"."content"->'page'->>'categoryId'), '')`,
+              "=",
+              categoryId,
+            ),
+            eb(
+              sql`nullif(trim("publishedBlob"."content"->'page'->>'categoryId'), '')`,
+              "=",
+              categoryId,
+            ),
+          ]),
         )
-      }
+        .select(sql<number>`cast(count(*) as int)`.as("count"))
+        .executeTakeFirstOrThrow()
 
-      return []
-
-      // FIXME: we cannot do this yet because we still use `Type.Composite`
-      // over `Type.Intersect`, which causes typing errors above.
-      // Once we swap over to using `Type.Intersect`, we can uncomment this
-      // and the typing will work properly
-      // if (content.layout === "collection") {
-      //   return content.page.tagCategories
-      // }
-      //
-      // return []
+      return { count: row.count }
     }),
 
   getCollections: protectedProcedure

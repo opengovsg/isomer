@@ -5,6 +5,7 @@ import {
   Flex,
   HStack,
   Icon,
+  Skeleton,
   Stack,
   Text,
   VStack,
@@ -19,7 +20,8 @@ import {
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { Button, Infobox } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
-import { useMemo, useState } from "react"
+import { Suspense, useMemo, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import {
   BiDotsHorizontalRounded,
   BiGridVertical,
@@ -27,7 +29,10 @@ import {
   BiPurchaseTag,
 } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
@@ -43,6 +48,31 @@ import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
+
+/** Matches category option rows from JsonForms (`categoryOptions` array on collection index). */
+type CategoryOptionItem = Partial<{
+  id: string
+  label: string
+}>
+
+function CategoryOptionUsageCount({
+  siteId,
+  pageId,
+  categoryId,
+}: {
+  siteId: number
+  pageId: number
+  categoryId: string
+}) {
+  const [{ count }] =
+    trpc.collection.getCategoryOptionUsageCount.useSuspenseQuery({
+      siteId,
+      pageId,
+      categoryId,
+    })
+
+  return <>{count}</>
+}
 
 interface CategoryOptionsExpandedEditorProps extends ArrayLayoutProps {
   duplicateOptionIndices: Set<number>
@@ -70,6 +100,7 @@ function CategoryOptionsExpandedEditor({
   } = props
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
+  const { pageId, siteId } = useQueryParse(pageSchema)
 
   const arrayResult = useArray({
     data,
@@ -103,13 +134,30 @@ function CategoryOptionsExpandedEditor({
     isRemoveItemDisabled,
     resolveTarget: (index) => {
       const item = get(core?.data, composePaths(path, `${index}`)) as
-        | { label?: string; id?: string }
+        | CategoryOptionItem
         | undefined
       return {
         label: item?.label?.trim() ?? "",
+        categoryId: item?.id?.trim() ?? "",
       }
     },
   })
+
+  const handleDeleteOption = (index: number) => {
+    const item = get(core?.data, composePaths(path, `${index}`)) as
+      | CategoryOptionItem
+      | undefined
+    const categoryId = item?.id?.trim()
+
+    // New item without a persisted id — remove immediately, no modal needed.
+    if (!categoryId) {
+      if (!removeItems || isRemoveItemDisabled) return
+      removeItems(path, [index])()
+      return
+    }
+
+    openDeleteModal(index)
+  }
 
   const isBlankLabelAt = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
@@ -223,7 +271,7 @@ function CategoryOptionsExpandedEditor({
                                   noun="option"
                                   index={index}
                                   isDisabled={isRemoveItemDisabled}
-                                  onDelete={() => openDeleteModal(index)}
+                                  onDelete={() => handleDeleteOption(index)}
                                 />
                               </DraggableTagButton.Trailing>
                             </DraggableTagButton.Root>
@@ -244,12 +292,31 @@ function CategoryOptionsExpandedEditor({
         <DeleteConfirmModal
           isOpen
           label={deleteTarget.label}
-          noun="option"
+          noun="category option"
           warningBody={
             <Text textStyle="body-2">
-              {/* TODO: replace XX with usage count from backend */}
-              This option is being used in XX items. To undo this change, you
-              will need to create and re-assign this option to all items.
+              This option is being used in{" "}
+              <ErrorBoundary fallbackRender={() => <>—</>}>
+                <Suspense
+                  fallback={
+                    <Skeleton
+                      as="span"
+                      display="inline-block"
+                      verticalAlign="middle"
+                      height="1em"
+                      width="2ch"
+                    />
+                  }
+                >
+                  <CategoryOptionUsageCount
+                    siteId={siteId}
+                    pageId={pageId}
+                    categoryId={deleteTarget.categoryId}
+                  />
+                </Suspense>
+              </ErrorBoundary>{" "}
+              items. To undo this change, you will need to create and re-assign
+              this option to all items.
             </Text>
           }
           onClose={closeDeleteModal}
@@ -266,16 +333,20 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const [expandedOpen, setExpandedOpen] = useState(false)
 
+  const items = useMemo(
+    () => get(core?.data, path) as { label?: string }[] | undefined,
+    [core?.data, path],
+  )
+
   const duplicateOptionIndices = useDuplicateLabels(path)
 
-  const cannotLeaveExpandedCategoryOptions = useMemo(() => {
-    const items = get(core?.data, path) as { label?: string }[] | undefined
-    return (
+  const cannotLeaveExpandedCategoryOptions = useMemo(
+    () =>
       hasBlankOptionLabel(items) ||
       duplicateOptionIndices.size > 0 ||
-      hasErrorAt(path)
-    )
-  }, [core?.data, path, duplicateOptionIndices, hasErrorAt])
+      hasErrorAt(path),
+    [items, path, duplicateOptionIndices, hasErrorAt],
+  )
 
   const handleCloseExpandedCategoryOptions = () => {
     if (cannotLeaveExpandedCategoryOptions) return
