@@ -27,6 +27,7 @@ const client = z
       "uat",
       "preview",
     ]),
+    NEXT_PUBLIC_STORAGE_PROVIDER: z.enum(["vercel-blob", "s3"]),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_NAME: z.string().default("Isomer Studio"),
     NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
@@ -72,7 +73,7 @@ const server = z
   .merge(singpassSchema)
   .merge(client)
   .superRefine((data, ctx) => {
-    if (data.NEXT_PUBLIC_APP_ENV !== "preview") {
+    if (data.NEXT_PUBLIC_STORAGE_PROVIDER === "s3") {
       if (!data.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -87,8 +88,19 @@ const server = z
           path: ["NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME"],
         })
       }
-      // Static OTP bypasses OTP security entirely, so structurally forbid it
-      // outside preview — a boot-time failure, not an operational assumption.
+    }
+    if (data.NEXT_PUBLIC_STORAGE_PROVIDER === "vercel-blob") {
+      if (!data.BLOB_READ_WRITE_TOKEN) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Required when storage provider is vercel-blob",
+          path: ["BLOB_READ_WRITE_TOKEN"],
+        })
+      }
+    }
+    // Static OTP bypasses OTP security entirely, so structurally forbid it
+    // outside preview — a boot-time failure, not an operational assumption.
+    if (data.NEXT_PUBLIC_APP_ENV !== "preview") {
       if (data.DANGEROUSLY_SET_STATIC_OTP) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -138,6 +150,7 @@ const processEnv = {
   NEXT_PUBLIC_APP_ENV:
     process.env.NEXT_PUBLIC_APP_ENV ??
     (process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ? "preview" : undefined),
+  NEXT_PUBLIC_STORAGE_PROVIDER: process.env.NEXT_PUBLIC_STORAGE_PROVIDER,
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   NEXT_PUBLIC_APP_VERSION:
     process.env.NEXT_PUBLIC_APP_VERSION ??
