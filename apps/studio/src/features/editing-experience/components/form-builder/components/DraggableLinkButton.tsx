@@ -1,20 +1,16 @@
 import {
   Box,
-  Flex,
   forwardRef,
   HStack,
   Icon,
-  MenuButton,
-  MenuItem,
-  MenuList,
   Skeleton,
   Text,
   VStack,
 } from "@chakra-ui/react"
 import { computeChildLabel } from "@jsonforms/core"
 import { useJsonForms } from "@jsonforms/react"
-import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
+import { Menu, MenuItem, MenuTrigger } from "@opengovsg/oui"
 import {
   BiDotsHorizontalRounded,
   BiGridVertical,
@@ -22,6 +18,8 @@ import {
   BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
+import { CRITICAL_MENU_ITEM_CLASSNAMES } from "~/components/Menu"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 import Suspense from "~/components/Suspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
@@ -210,40 +208,30 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                 </HStack>
               </HStack>
 
-              <Menu>
-                <MenuButton
-                  as={IconButton}
+              <MenuTrigger>
+                <IconButton
                   aria-label="See more options"
                   variant="clear"
-                  colorScheme="sub"
-                  minH="1.75rem"
-                  minW="1.75rem"
-                  h="1.75rem"
-                  icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
+                  color="sub"
+                  className="size-7 min-h-7 min-w-7"
+                  icon={<BiDotsHorizontalRounded className="size-6" />}
                 />
-                <MenuList>
-                  <MenuItem onClick={() => setSelectedIndex(index)}>
-                    <Flex
-                      alignItems="center"
-                      gap="0.5rem"
-                      color="base.content.strong"
-                    >
-                      <Icon as={BiPencil} />
-                      <Text textStyle="body-2">Edit link</Text>
-                    </Flex>
+                <Menu size="sm">
+                  <MenuItem
+                    onAction={() => setSelectedIndex(index)}
+                    startContent={<BiPencil className="size-4" />}
+                  >
+                    Edit link
                   </MenuItem>
-                  <MenuItem onClick={onDeleteItem}>
-                    <Flex
-                      alignItems="center"
-                      gap="0.5rem"
-                      color="interaction.critical.default"
-                    >
-                      <Icon as={BiTrash} />
-                      <Text textStyle="body-2">Delete link</Text>
-                    </Flex>
+                  <MenuItem
+                    onAction={onDeleteItem}
+                    classNames={CRITICAL_MENU_ITEM_CLASSNAMES}
+                    startContent={<BiTrash className="size-4" />}
+                  >
+                    Delete link
                   </MenuItem>
-                </MenuList>
-              </Menu>
+                </Menu>
+              </MenuTrigger>
             </HStack>
           </Box>
         </Box>
