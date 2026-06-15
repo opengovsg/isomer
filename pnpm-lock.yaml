@@ -177,8 +177,8 @@ catalogs:
       specifier: ^1.0.0
       version: 1.2.0
     chromatic:
-      specifier: ^16.8.0
-      version: 16.10.0
+      specifier: ^17.3.0
+      version: 17.4.1
     clean-webpack-plugin:
       specifier: ^4.0.0
       version: 4.0.0
@@ -1257,7 +1257,7 @@ importers:
         version: 4.1.4(browserslist@4.28.2)
       chromatic:
         specifier: 'catalog:'
-        version: 16.10.0
+        version: 17.4.1
       eslint-plugin-storybook:
         specifier: catalog:storybook
         version: 10.4.2(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)
@@ -1507,7 +1507,7 @@ importers:
         version: link:../../../../packages/db
       '@types/node':
         specifier: 'catalog:'
-        version: 25.9.0
+        version: 25.9.3
       '@types/pg':
         specifier: 'catalog:'
         version: 8.20.0
@@ -1516,7 +1516,7 @@ importers:
         version: 12.0.1
       vitest:
         specifier: catalog:vitest
-        version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.0)(@vitest/coverage-istanbul@4.1.8)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.14.6(@types/node@25.9.0)(typescript@6.0.3))(vite@8.0.16(@types/node@25.9.0)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.22.3)(yaml@2.8.3))
+        version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-istanbul@4.1.8)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.99.0)(terser@5.46.1)(tsx@4.22.3)(yaml@2.8.3))
 
   tooling/export-import:
     dependencies:
@@ -7137,8 +7137,9 @@ packages:
   chownr@1.1.4:
     resolution: {integrity: sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==}
 
-  chromatic@16.10.0:
-    resolution: {integrity: sha512-nFsztmnu7rFiGafUJgXvLUNpqmRylz92eNvzBoJNTKKQj4EQUyxznwnfpf1dTs7hXtWD8JwcH92jADydaHA1sw==}
+  chromatic@17.4.1:
+    resolution: {integrity: sha512-qL1f0IhOBi0Z6kpQZGR62fJzzCOdjFJLHrJw3QL9YNktj2Kl3+adlU+6psqNGfZUycKF7+pizCSbhsUQNIS/uQ==}
+    engines: {node: '>=22.0.0'}
     hasBin: true
     peerDependencies:
       '@chromatic-com/cypress': ^0.*.* || ^1.0.0
@@ -11383,6 +11384,7 @@ packages:
   tsconfck@3.1.6:
     resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
     engines: {node: ^18 || >=20}
+    deprecated: unmaintained
     hasBin: true
     peerDependencies:
       typescript: ^5.0.0
@@ -16202,13 +16204,13 @@ snapshots:
 
   '@types/docker-modem@3.0.6':
     dependencies:
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
       '@types/ssh2': 1.15.5
 
   '@types/dockerode@4.0.1':
     dependencies:
       '@types/docker-modem': 3.0.6
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
       '@types/ssh2': 1.15.5
 
   '@types/doctrine@0.0.9': {}
@@ -16235,7 +16237,7 @@ snapshots:
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 6.0.0
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
 
   '@types/hast@3.0.4':
     dependencies:
@@ -16273,7 +16275,7 @@ snapshots:
 
   '@types/node-fetch@2.6.13':
     dependencies:
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
       form-data: 4.0.5
 
   '@types/node@18.19.130':
@@ -16318,7 +16320,7 @@ snapshots:
   '@types/request@2.48.13':
     dependencies:
       '@types/caseless': 0.12.5
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
       '@types/tough-cookie': 4.0.5
       form-data: 2.5.5
 
@@ -16328,15 +16330,15 @@ snapshots:
 
   '@types/set-cookie-parser@2.4.10':
     dependencies:
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
 
   '@types/ssh2-streams@0.1.13':
     dependencies:
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
 
   '@types/ssh2@0.5.52':
     dependencies:
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
       '@types/ssh2-streams': 0.1.13
 
   '@types/ssh2@1.15.5':
@@ -16362,7 +16364,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
 
   '@typescript-eslint/project-service@8.57.2(typescript@6.0.3)':
     dependencies:
@@ -17296,9 +17298,9 @@ snapshots:
 
   chownr@1.1.4: {}
 
-  chromatic@16.10.0:
+  chromatic@17.4.1:
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.2
 
   chrome-trace-event@1.0.4: {}
 
@@ -19074,7 +19076,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -20893,7 +20895,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.1
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
       long: 5.3.2
 
   proxy-from-env@2.1.0: {}

@@ -61,7 +61,7 @@ catalog:
   bootstrap-icons: ^1.13.1
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.0.0
-  chromatic: ^16.8.0
+  chromatic: ^17.3.0
   clean-webpack-plugin: ^4.0.0
   dayjs: ^1.11.13
   date-fns: ^4.4.0
