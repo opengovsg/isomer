@@ -69,12 +69,13 @@ class S3AssetStorage implements AssetStorage {
     await s3DeleteFile({ Key: key, Bucket: this.bucket })
   }
 
-  async createUploadHandler(
+  createUploadHandler(
     _req: NextApiRequest,
     res: NextApiResponse,
     _allowedContentTypes: string[],
   ): Promise<void> {
     res.status(405).json({ error: "Not applicable for S3 provider" })
+    return Promise.resolve()
   }
 }
 
