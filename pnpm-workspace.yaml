@@ -61,9 +61,9 @@ catalog:
   bootstrap-icons: ^1.13.1
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.0.0
-  chromatic: ^16.8.0
+  chromatic: ^17.3.0
   clean-webpack-plugin: ^4.0.0
-  dayjs: ^1.11.13
+  dayjs: ^1.11.21
   date-fns: ^4.4.0
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
@@ -184,7 +184,7 @@ catalogs:
     "@babel/preset-typescript": ^7.29.7
   casl:
     "@casl/ability": ^7.0.0
-    "@casl/react": ^5.0.0
+    "@casl/react": ^7.0.0
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
     "@chakra-ui/cli": ^2.5.8
