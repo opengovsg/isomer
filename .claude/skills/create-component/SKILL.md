@@ -13,7 +13,53 @@ Before writing any code, read:
 
 ---
 
-## Step 0 — Clarify before starting
+## Step 0A — Needs analysis
+
+Before doing anything else, reason about the true underlying need behind the request — not just the literal words used.
+
+**Check for existing components first.**
+Read the live component inventory from the repo rather than relying on memory:
+
+```bash
+ls packages/components/src/interfaces/complex/
+```
+
+Also skim `packages/components/src/schemas/components.ts` to see what's registered. If any existing component already satisfies the need (even partially), stop here and tell the user which component to use and why. Do not proceed.
+
+**If no existing component fits, derive the component spec:**
+
+- **Name** — PascalCase, singular noun or noun phrase.
+- **Short descriptor** — one sentence: what it is and when an editor would reach for it.
+- **Props** — list every prop with its type, whether required or optional, and a short description of what it controls.
+- **Layouts** — which layouts it may appear on (homepage, content pages, or both).
+- **Edit context** — is it edited on a page (inline, via the PageEditor) or in Site Settings?
+
+Present the full spec to the user and wait for explicit confirmation before moving on to Step 0B.
+
+---
+
+## Step 0B — Design options review
+
+Generate **3 distinct design options** for the component. Options must differ in layout approach or information hierarchy — not just surface styling (colour, size, font weight). Superficial variants do not count.
+
+For each option provide:
+
+1. **Label** — a short name (e.g. "Side-by-side", "Card grid", "Stacked banner").
+2. **Layout description** — plain English, 2–4 sentences. Describe how content is arranged spatially and how visual weight is distributed.
+3. **Structural sketch** — a minimal JSX/TSX snippet showing only the DOM/component structure. Use existing design tokens and Tailwind classes from the project; do not invent new ones. Omit all logic and data-fetching.
+4. **Trade-off** — one sentence on what this option is best at and what it sacrifices.
+
+Present all three options and wait. The user may:
+
+- **Accept one** → proceed to Step 0C.
+- **Reject all** → generate 3 new distinct options (repeat this step).
+- **Request a polish on one option** → revise that option only and present it again for confirmation, then proceed.
+
+Do not write any production code until the user explicitly confirms a final option.
+
+---
+
+## Step 0C — Clarify before starting
 
 **New component or variant of an existing one?**
 See the decision rule in `schema-patterns.md`. If it's a variant, stop here and extend the existing schema and implementation instead.
@@ -170,6 +216,18 @@ mycomponent: BiSomeIcon,
 ```
 
 Always use `react-icons/bi`, **outline form** (not filled). Pick an icon that communicates the concept. If no standard icon represents the component's distinctive layout, create a custom SVG in `features/editing-experience/components/icons/{ComponentName}.tsx` — see existing icons for the pattern (schematic miniature of the layout, using `IconBaseProps`).
+
+---
+
+## Step 7 — Accessibility audit
+
+After Steps 1–6 are complete (schema, implementation, stories, and Studio registration all done), invoke the accessibility auditor skill:
+
+```
+Skill("accessibility-auditor-skill")
+```
+
+The skill file lives at `.claude/skills/accessibility-auditor-skill/SKILL.md`. Follow its phase sequence exactly. Surface all findings to the user before making any changes. Do not apply any fix without explicit user approval for that specific fix.
 
 ---
 
