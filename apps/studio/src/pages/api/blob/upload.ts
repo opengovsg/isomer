@@ -1,17 +1,27 @@
-import type { HandleUploadBody } from "@vercel/blob/client"
 import type { NextApiRequest, NextApiResponse } from "next"
 import type { SessionData } from "~/lib/types/session"
-import { handleUpload } from "@vercel/blob/client"
+import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { getIronSession } from "iron-session"
 import { env } from "~/env.mjs"
+import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { assetStorage } from "~/lib/storage"
 import { generateSessionOptions } from "~/server/modules/auth/session"
+
+const ALLOWED_CONTENT_TYPES = [
+  ...new Set([
+    ...Object.values(IMAGE_ACCEPTED_MIME_TYPE_MAPPING),
+    ...Object.values(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
+  ]),
+]
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (env.NEXT_PUBLIC_APP_ENV !== "preview") {
-    return res.status(403).json({ error: "Only available in preview" })
+  if (env.NEXT_PUBLIC_STORAGE_PROVIDER !== "vercel-blob") {
+    return res
+      .status(403)
+      .json({ error: "Only available for Vercel Blob provider" })
   }
 
   if (req.method !== "POST") {
@@ -27,27 +37,5 @@ export default async function handler(
     return res.status(401).json({ error: "Unauthorized" })
   }
 
-  try {
-    const jsonResponse = await handleUpload({
-      body: req.body as HandleUploadBody,
-      request: req,
-      onBeforeGenerateToken: () =>
-        Promise.resolve({
-          allowedContentTypes: [
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "image/webp",
-            "image/svg+xml",
-            "application/pdf",
-          ],
-          maximumSizeInBytes: 50 * 1024 * 1024,
-          allowOverwrite: true,
-        }),
-      onUploadCompleted: () => Promise.resolve(),
-    })
-    return res.status(200).json(jsonResponse)
-  } catch (error) {
-    return res.status(400).json({ error: String(error) })
-  }
+  await assetStorage.createUploadHandler(req, res, ALLOWED_CONTENT_TYPES)
 }
