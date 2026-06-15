@@ -1,11 +1,12 @@
 import type { getLayoutPageSchema } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
-import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
+import { Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getScopedSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { isEmpty, isEqual } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
@@ -208,10 +209,10 @@ const SaveButton = ({
 
   return (
     <Button
-      w="100%"
-      isLoading={isLoading}
+      className="w-full"
+      isPending={isLoading}
       isDisabled={!isEmpty(errors)}
-      onClick={() => {
+      onPress={() => {
         if (!isEmpty(errors)) return
         onClick()
       }}

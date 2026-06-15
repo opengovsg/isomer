@@ -8,17 +8,15 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react"
-import {
-  Button,
-  Infobox,
-  RestrictedGovtMasthead,
-} from "@opengovsg/design-system-react"
+import { Infobox, RestrictedGovtMasthead } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { BiChevronLeft } from "react-icons/bi"
 import { PublicPageWrapper } from "~/components/AuthWrappers"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 import { IsomerLogo } from "~/components/Svg"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { SingpassLoginButton } from "~/features/sign-in/components"
@@ -124,28 +122,23 @@ const SingpassSignInPage: NextPageWithLayout = () => {
                     : "You’ll need your Singpass app or credentials"}
                 </Text>
 
-                <Button
-                  variant="link"
-                  colorScheme="neutral"
-                  textDecoration="underline"
-                  onClick={openUnableToUseSingpassModal}
-                  justifyContent="start"
-                  textAlign="left"
+                <LinkButton
+                  onPress={openUnableToUseSingpassModal}
+                  color="neutral"
+                  className="prose-body-2 underline"
                 >
-                  <Text textStyle="body-2" color="base.content.medium">
-                    Can’t use Singpass to authenticate?
-                  </Text>
-                </Button>
+                  Can’t use Singpass to authenticate?
+                </LinkButton>
               </Flex>
 
               <Flex w="100%" flexDir="column" gap="0.75rem">
                 <SingpassLoginButton />
 
                 <Button
-                  w="full"
+                  className="w-full"
                   variant="clear"
-                  onClick={handleBackToLogin}
-                  leftIcon={<BiChevronLeft />}
+                  onPress={handleBackToLogin}
+                  startContent={<BiChevronLeft />}
                 >
                   {isNewUser ? "Back to login" : "Not you?"}
                 </Button>

@@ -5,12 +5,12 @@ import {
   Stack,
 } from "@chakra-ui/react"
 import {
-  Button,
   FormErrorMessage,
   FormLabel,
   Infobox,
   Input,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useRouter } from "next/router"
 import { useState } from "react"
 import { Controller } from "react-hook-form"
@@ -158,11 +158,9 @@ export const VerificationInput = (): JSX.Element | null => {
         </FormControl>
         <Stack direction="column" spacing="0.75rem">
           <Button
-            size="sm"
-            height="2.75rem"
             type="submit"
             // Want to keep loading state until redirection is complete.
-            isLoading={
+            isPending={
               verifyOtpMutation.isPending || verifyOtpMutation.isSuccess
             }
             isDisabled={!isValid}
@@ -176,15 +174,10 @@ export const VerificationInput = (): JSX.Element | null => {
             </Infobox>
           )}
           <ResendOtpButton
-            alignSelf="end"
             timer={timer}
-            onClick={handleResendOtp}
+            onPress={handleResendOtp}
             isDisabled={timer > 0 || verifyOtpMutation.isPending}
-            isLoading={resendOtpMutation.isPending}
-            spinnerFontSize="1rem"
-            _loading={{
-              justifyContent: "flex-end",
-            }}
+            isPending={resendOtpMutation.isPending}
           />
         </Stack>
       </Stack>

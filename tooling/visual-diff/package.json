@@ -1,0 +1,19 @@
+{
+  "name": "@isomer/visual-diff",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Per-PR visual regression gate for the apps/studio Chakra → OUI migration. Diffs the current Storybook against frozen pre-migration PNG baselines.",
+  "scripts": {
+    "baseline": "node run.mjs --capture-baseline",
+    "diff": "node run.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "pixelmatch": "^6.0.0",
+    "playwright": "^1.49.0",
+    "pngjs": "^7.0.0"
+  }
+}

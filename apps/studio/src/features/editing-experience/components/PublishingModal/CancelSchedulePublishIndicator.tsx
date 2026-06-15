@@ -1,5 +1,6 @@
-import { Button, HStack, Icon, Text, useDisclosure } from "@chakra-ui/react"
+import { HStack, Icon, Text, useDisclosure } from "@chakra-ui/react"
 import { TouchableTooltip } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { BiTimeFive } from "react-icons/bi"
 import { formatScheduledAtDate } from "~/lib/dates"
 
@@ -35,10 +36,7 @@ export const CancelSchedulePublishIndicator = ({
             </Text>
           </HStack>
         </TouchableTooltip>
-        <Button
-          colorScheme="critical"
-          onClick={cancelScheduleDisclosure.onOpen}
-        >
+        <Button color="critical" onPress={cancelScheduleDisclosure.onOpen}>
           Cancel schedule
         </Button>
       </HStack>

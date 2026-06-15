@@ -3,11 +3,11 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
-  Button,
   Flex,
   Text,
 } from "@chakra-ui/react"
 import { Textarea, useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
@@ -117,13 +117,13 @@ const GodModeWhitelistPage: NextPageWithLayout = () => {
           }}
         />
         <Button
-          onClick={() => {
+          onPress={() => {
             whitelistMutation.mutate({
               adminEmails,
               vendorEmails,
             })
           }}
-          isLoading={whitelistMutation.isPending}
+          isPending={whitelistMutation.isPending}
         >
           Submit
         </Button>

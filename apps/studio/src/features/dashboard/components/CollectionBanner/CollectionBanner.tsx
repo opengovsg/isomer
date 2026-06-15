@@ -1,7 +1,8 @@
 import { Icon, Stack, Text } from "@chakra-ui/react"
-import { IconButton, Link } from "@opengovsg/design-system-react"
+import { Link } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
 import { BiRightArrowAlt, BiX } from "react-icons/bi"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
 
 import { BannerSvgr } from "./BannerSvgr"
@@ -28,12 +29,10 @@ export const CollectionBanner = (): JSX.Element | null => {
         size="xs"
         aria-label="Dismiss banner"
         variant="clear"
-        colorScheme="sub"
+        color="sub"
         icon={<BiX />}
-        pos="absolute"
-        right="0.75rem"
-        top="0.5rem"
-        onClick={() => setIsBannerDismissed(true)}
+        className="absolute right-3 top-2"
+        onPress={() => setIsBannerDismissed(true)}
       />
       <Stack p="1.5rem" justify="space-between">
         <Stack gap="0.75rem" flexDir="column">

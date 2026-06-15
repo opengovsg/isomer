@@ -14,9 +14,10 @@ import {
 } from "@chakra-ui/react"
 import { computeChildLabel } from "@jsonforms/core"
 import { JsonFormsDispatch, useJsonForms } from "@jsonforms/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { get } from "lodash-es"
 import { BiDirections, BiLeftArrowAlt, BiTrash } from "react-icons/bi"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 
 import type { NavbarItems } from "./types"
 import { DeleteGroupModal } from "./DeleteGroupModal"
@@ -94,14 +95,10 @@ export const EditNavbarItem = ({
           alignItems="start"
           w="full"
         >
-          <Button
-            variant="link"
-            leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
-            onClick={onBack}
-            textStyle="subhead-2"
-          >
+          <LinkButton onPress={onBack}>
+            <BiLeftArrowAlt className="text-xl" />
             Back to navigation bar
-          </Button>
+          </LinkButton>
 
           <HStack gap="0.75rem" w="full" alignItems="center">
             <Box
@@ -140,10 +137,10 @@ export const EditNavbarItem = ({
           <HStack w="full" justifyContent="center" mt="-1.125rem" mb="1.5rem">
             <Button
               variant="clear"
-              colorScheme="critical"
+              color="critical"
               size="xs"
-              leftIcon={<Icon as={BiTrash} />}
-              onClick={onDeleteGroupModalOpen}
+              startContent={<Icon as={BiTrash} />}
+              onPress={onDeleteGroupModalOpen}
             >
               Delete this link
             </Button>

@@ -8,7 +8,7 @@ import type {
 } from "@jsonforms/core"
 import {
   Box,
-  Button,
+  Button as ChakraButton,
   Divider,
   Flex,
   HStack,
@@ -37,6 +37,7 @@ import {
   useJsonForms,
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
+import { Button } from "@opengovsg/oui"
 import { useCallback, useEffect, useState } from "react"
 import {
   BiLeftArrowAlt,
@@ -126,14 +127,14 @@ const EditSocialMediaLinkItem = ({
         alignItems="start"
         w="full"
       >
-        <Button
+        <ChakraButton
           variant="link"
           leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
           onClick={onBack}
           textStyle="subhead-2"
         >
           Back to footer
-        </Button>
+        </ChakraButton>
 
         <HStack gap="0.75rem" w="full" alignItems="center">
           <Box
@@ -172,10 +173,10 @@ const EditSocialMediaLinkItem = ({
         <HStack w="full" justifyContent="center" mt="-1.125rem" mb="1.5rem">
           <Button
             variant="clear"
-            colorScheme="critical"
+            color="critical"
             size="xs"
-            leftIcon={<Icon as={BiTrash} />}
-            onClick={handleRemoveItem}
+            startContent={<Icon as={BiTrash} />}
+            onPress={handleRemoveItem}
           >
             Delete this link
           </Button>
@@ -231,10 +232,10 @@ const DeleteSocialMediaLinkModal = ({
 
         <ModalFooter>
           <HStack spacing="1rem">
-            <Button variant="clear" colorScheme="neutral" onClick={onClose}>
+            <Button variant="clear" color="neutral" onPress={onClose}>
               No, don’t delete
             </Button>
-            <Button variant="solid" colorScheme="critical" onClick={onDelete}>
+            <Button variant="solid" color="critical" onPress={onDelete}>
               Delete link
             </Button>
           </HStack>
@@ -370,7 +371,7 @@ const JsonFormsSocialMediaControl = ({
               }
               hasArrow
             >
-              <Button
+              <ChakraButton
                 variant="clear"
                 size="xs"
                 leftIcon={<Icon as={BiPlusCircle} />}
@@ -380,7 +381,7 @@ const JsonFormsSocialMediaControl = ({
                 }
               >
                 Add a link
-              </Button>
+              </ChakraButton>
             </Tooltip>
           </HStack>
         </VStack>

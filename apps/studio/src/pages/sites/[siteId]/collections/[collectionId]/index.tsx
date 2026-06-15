@@ -1,5 +1,5 @@
 import { useDisclosure } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useSetAtom } from "jotai"
 import { BiData } from "react-icons/bi"
 import { z } from "zod"
@@ -69,7 +69,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             <Button
               variant="outline"
               size="md"
-              onClick={() =>
+              onPress={() =>
                 setFolderSettingsModalState({
                   folderId: String(collectionId),
                 })
@@ -77,7 +77,7 @@ const CollectionResourceListPage: NextPageWithLayout = () => {
             >
               Collection settings
             </Button>
-            <Button onClick={onPageCreateModalOpen} size="md">
+            <Button onPress={onPageCreateModalOpen} size="md">
               Add new item
             </Button>
           </>

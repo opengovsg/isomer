@@ -1,5 +1,5 @@
-import { Box, Flex, Text } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Box } from "@chakra-ui/react"
+import { Button } from "@opengovsg/oui"
 import { useRouter } from "next/router"
 import { SingpassFullLogo } from "~/components/Svg/SingpassFullLogo"
 import { SIGN_IN } from "~/lib/routes"
@@ -27,26 +27,18 @@ export const SingpassLoginButton = (): JSX.Element | null => {
 
   return (
     <Button
-      height="2.75rem"
-      width="full"
       size="sm"
-      variant="outline"
-      colorScheme="clear"
-      bgColor="#F4333D"
-      _disabled={{ bgColor: "#F4333D" }}
-      _hover={{ bgColor: "#B0262D" }}
-      textColor="white"
-      isLoading={singpassLoginMutation.isPending}
-      onClick={handleSingpassLogin}
+      variant="clear"
+      className="h-11 w-full gap-0 whitespace-pre-wrap bg-[#F4333D] text-white hover:bg-[#B0262D] disabled:bg-[#F4333D]"
+      isPending={singpassLoginMutation.isPending}
+      onPress={handleSingpassLogin}
       aria-label="Authenticate with Singpass"
     >
-      <Flex align="center" flexDirection="row" flexWrap="wrap" aria-hidden>
-        <Text fontWeight="700">Authenticate with </Text>
-        {/* Negative margin so the svg sits on the same line as the text */}
-        <Box mb="-3px">
-          <SingpassFullLogo height="1rem" />
-        </Box>
-      </Flex>
+      Authenticate with{" "}
+      {/* Negative margin so the svg sits on the same line as the text */}
+      <Box mb="-3px">
+        <SingpassFullLogo height="1rem" />
+      </Box>
     </Button>
   )
 }

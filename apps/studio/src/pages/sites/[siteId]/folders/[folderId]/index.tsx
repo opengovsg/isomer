@@ -1,5 +1,8 @@
 import { Portal, useDisclosure } from "@chakra-ui/react"
-import { Button, Menu } from "@opengovsg/design-system-react"
+// DsButton is kept only for the `Menu.Button as={DsButton}` trigger below; it migrates
+// with the Menu unit. Standalone buttons use the OUI Button.
+import { Button as DsButton, Menu } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useSetAtom } from "jotai"
 import { BiData, BiFileBlank, BiFolder } from "react-icons/bi"
 import { z } from "zod"
@@ -73,7 +76,7 @@ const FolderPage: NextPageWithLayout = () => {
             <Button
               variant="outline"
               size="md"
-              onClick={() =>
+              onPress={() =>
                 setFolderSettingsModalState({
                   folderId,
                 })
@@ -86,7 +89,7 @@ const FolderPage: NextPageWithLayout = () => {
                 <>
                   <Menu.Button
                     isOpen={isOpen}
-                    as={Button}
+                    as={DsButton}
                     size="md"
                     justifySelf="flex-end"
                   >

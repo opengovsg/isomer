@@ -6,7 +6,8 @@ import {
   Portal,
   Text,
 } from "@chakra-ui/react"
-import { Button, Menu } from "@opengovsg/design-system-react"
+import { Menu } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useMemo } from "react"
 import { BiShow, BiX } from "react-icons/bi"
 
@@ -83,11 +84,11 @@ export const IframeToolbar = ({
       </Flex>
       {viewport === "fullscreen" ? (
         <Button
-          onClick={() => setViewport("responsive")}
+          onPress={() => setViewport("responsive")}
           variant="outline"
-          colorScheme="neutral"
+          color="neutral"
           size="xs"
-          leftIcon={<BiX fontSize="1.25rem" />}
+          startContent={<BiX fontSize="1.25rem" />}
         >
           Back to editing
         </Button>

@@ -12,11 +12,8 @@ import {
   Text,
   UnorderedList,
 } from "@chakra-ui/react"
-import {
-  Button,
-  Checkbox,
-  ModalCloseButton,
-} from "@opengovsg/design-system-react"
+import { Checkbox, ModalCloseButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useState } from "react"
 import { BiSolidErrorCircle } from "react-icons/bi"
 import { getFileExtension } from "~/utils/getFileExtension"
@@ -122,9 +119,9 @@ export const RiskyFileUploadModal = ({
 
         <ModalFooter gap="0.75rem">
           <Button
-            aria-disabled={!isChecked}
             variant="solid"
-            onClick={() => {
+            isDisabled={showCheckboxError}
+            onPress={() => {
               if (!isChecked) {
                 setShowCheckboxError(true)
                 return

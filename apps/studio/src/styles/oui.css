@@ -1,0 +1,122 @@
+/*
+ * OUI (Tailwind v4) stylesheet for studio's own UI during the Chakra → OUI migration.
+ *
+ * Compiled SEPARATELY by the Tailwind v4 CLI (`build:oui-css`) to a static file
+ * (public/assets/css/oui.css) and loaded via <link> in `_document.tsx` /
+ * `.storybook/preview-head.html` — never through studio's Tailwind v3 PostCSS
+ * pipeline (the two versions conflict as PostCSS plugins).
+ *
+ * PREFLIGHT IS DELIBERATELY OMITTED. `@opengovsg/oui-theme/tailwind.css` does a full
+ * `@import "tailwindcss"`, which includes Tailwind's preflight reset — that resets
+ * typography/box-model on base elements and visibly shifts the existing Chakra UI
+ * (confirmed via the visual-diff gate: text glyphs re-rendered across stories). So
+ * instead of importing oui-theme's entry wholesale, we mirror it here but import only
+ * the `theme` + `utilities` layers (skipping `preflight.css`). Keep in sync with
+ * @opengovsg/oui-theme/src/tailwind.css when upgrading the package.
+ */
+/* `tailwindcss-v4` is a pnpm alias for tailwindcss@4 (studio's direct `tailwindcss`
+ * is v3, used only by build:preview-tw). The alias lets us import v4's layer files
+ * directly and skip preflight.css. */
+@layer theme, base, components;
+@import "tailwindcss-v4/theme.css" layer(theme);
+/* Utilities are emitted UNLAYERED on purpose: Chakra/Emotion inject unlayered resets
+ * (e.g. `button { background: transparent }`) that would beat layered utilities, leaving
+ * OUI components unstyled. Unlayered class utilities outrank Chakra's element resets;
+ * they still don't touch Chakra components, whose class names never match. */
+@import "tailwindcss-v4/utilities.css";
+
+@import "tw-animate-css";
+@plugin "tailwindcss-react-aria-components";
+
+@import "@opengovsg/oui-theme/base.css";
+/* Isomer brand tokens, generated via `oui-token-gen generate -t Isomer`. Overrides the
+ * base palette so OUI components use Isomer's colors. */
+@import "./generated-Isomer.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility scrollbar-default {
+  scrollbar-width: auto;
+  -ms-overflow-style: auto;
+  &::-webkit-scrollbar {
+    display: auto;
+  }
+}
+
+@theme {
+  /* OUI components style text via `var(--font-sans)` (see oui-theme/variants/base.css).
+   * Per OUI's installation guide (oui.open.gov.sg/llm/getting-started/installation.md),
+   * --font-sans MUST include Inter, or OUI renders in the Tailwind default system stack
+   * while Chakra renders in Inter — a visible font drift. Studio loads Inter via
+   * `inter-ui/inter.css` (family "Inter"), so use that as the primary family; the stack
+   * matches Chakra's OGP theme (`Inter, system-ui, sans-serif`). */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-sm: 0px 0px 10px 0px rgba(191, 191, 191, 0.5);
+  --shadow-md: 0px 0px 20px 0px rgba(104, 104, 104, 0.3);
+
+  --text-xs--line-height: 1rem;
+  --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  @keyframes spinner-spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes slide-end {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-start {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+}
+
+@utility animate-slide-start {
+  animation: slide-start var(--tw-animation-duration, var(--tw-duration, 0.2s))
+    var(--tw-ease, ease-out) var(--tw-animation-delay, 0s)
+    var(--tw-animation-iteration-count, 1) var(--tw-animation-direction, normal)
+    var(--tw-animation-fill-mode, none);
+}
+@utility animate-slide-end {
+  animation: slide-end var(--tw-animation-duration, var(--tw-duration, 0.2s))
+    var(--tw-ease, ease-out) var(--tw-animation-delay, 0s)
+    var(--tw-animation-iteration-count, 1) var(--tw-animation-direction, normal)
+    var(--tw-animation-fill-mode, none);
+}
+@utility animate-spinner {
+  animation: spinner-spin var(--tw-animation-duration, var(--tw-duration, 0.8s))
+    var(--tw-ease, ease) var(--tw-animation-delay, 0s)
+    var(--tw-animation-iteration-count, infinite)
+    var(--tw-animation-direction, normal) var(--tw-animation-fill-mode, none);
+}
+
+/* Generate the utilities OUI components use. The class strings live in
+ * @opengovsg/oui-theme/dist (the tailwind-variants definitions, e.g. buttonStyles),
+ * NOT in @opengovsg/oui/dist — so scan oui-theme. Also scan studio source for any
+ * OUI/Tailwind utilities used directly in migrated code. */
+@source "../../node_modules/@opengovsg/oui-theme/dist";
+@source "../../../../node_modules/@opengovsg/oui-theme/dist";
+@source "../";

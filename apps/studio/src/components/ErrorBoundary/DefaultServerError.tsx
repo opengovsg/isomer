@@ -1,6 +1,5 @@
 import { Flex, Link, Text } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
-import NextLink from "next/link"
+import { ButtonLink } from "~/components/oui-bridge/ButtonLink"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
 
 import { LiftUnderRepair } from "../Svg"
@@ -29,9 +28,9 @@ export const DefaultServerError = () => {
           </Link>
           .
         </Text>
-        <Button mt="1.25rem" as={NextLink} href="/">
+        <ButtonLink className="mt-5" href="/">
           Back to Home
-        </Button>
+        </ButtonLink>
       </Flex>
     </Flex>
   )

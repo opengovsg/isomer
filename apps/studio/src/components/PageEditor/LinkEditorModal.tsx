@@ -11,13 +11,13 @@ import {
   ModalOverlay,
 } from "@chakra-ui/react"
 import {
-  Button,
   FormErrorMessage,
   FormLabel,
   Input,
   ModalCloseButton,
 } from "@opengovsg/design-system-react"
 import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
+import { Button } from "@opengovsg/oui"
 import { isEmpty } from "lodash-es"
 import { z } from "zod"
 import {
@@ -120,13 +120,13 @@ const LinkEditorModalContent = ({
 
   return (
     <ModalContent>
-      <form onSubmit={onSubmit}>
-        <ModalHeader mr="3.5rem">
-          {isEditingLink ? "Edit link" : "Add link"}
-        </ModalHeader>
-        <ModalCloseButton size="lg" />
+      <ModalHeader mr="3.5rem">
+        {isEditingLink ? "Edit link" : "Add link"}
+      </ModalHeader>
+      <ModalCloseButton size="lg" />
 
-        <ModalBody>
+      <ModalBody>
+        <form>
           {showLinkText && (
             <FormControl mb="1.5rem" isRequired isInvalid={!!errors.linkText}>
               <FormLabel
@@ -166,21 +166,20 @@ const LinkEditorModalContent = ({
               )}
             </LinkEditorContextProvider>
           </Box>
-        </ModalBody>
+        </form>
+      </ModalBody>
 
-        <ModalFooter>
-          <Button
-            variant="solid"
-            onClick={onSubmit}
-            // NOTE: Using `isEmpty` here because we trigger `setError`
-            // using `isValid` doesn't trigger the error
-            isDisabled={!isEmpty(errors)}
-            type="submit"
-          >
-            {isEditingLink ? "Save link" : "Add link"}
-          </Button>
-        </ModalFooter>
-      </form>
+      <ModalFooter>
+        <Button
+          variant="solid"
+          // NOTE: Using `isEmpty` here because we trigger `setError`
+          // using `isValid` doesn't trigger the error
+          isDisabled={!isEmpty(errors)}
+          onClick={onSubmit}
+        >
+          {isEditingLink ? "Save link" : "Add link"}
+        </Button>
+      </ModalFooter>
     </ModalContent>
   )
 }

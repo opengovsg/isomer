@@ -1,5 +1,4 @@
 import {
-  Button,
   FormControl,
   Input,
   Modal,
@@ -17,6 +16,7 @@ import {
   PhoneNumberInput,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useEffect } from "react"
 import { Controller } from "react-hook-form"
@@ -158,9 +158,9 @@ export const EditProfileModal = () => {
           <ModalFooter>
             <Button
               variant="solid"
-              onClick={onSubmit}
+              onPress={() => void onSubmit()}
               isDisabled={!isDirty || Object.keys(errors).length > 0}
-              isLoading={isPending}
+              isPending={isPending}
             >
               Save changes
             </Button>

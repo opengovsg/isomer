@@ -7,6 +7,9 @@ packages:
   - "tooling/build/amplify"
   - "tooling/build/1password"
   - "tooling/build/scripts/publishing"
+  # Throwaway, npm-self-contained migration tool — keep its heavy deps (Playwright)
+  # out of the root pnpm lockfile. Removed when the Chakra → OUI migration completes.
+  - "!tooling/visual-diff"
 
 linkWorkspacePackages: true
 

@@ -1,6 +1,6 @@
-import type { ButtonProps } from "@opengovsg/design-system-react"
-import { Text } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import type { ButtonProps } from "react-aria-components"
+import { cn } from "@opengovsg/oui-theme"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 
 interface ResendOtpButtonProps extends ButtonProps {
   timer: number
@@ -8,14 +8,20 @@ interface ResendOtpButtonProps extends ButtonProps {
 
 export const ResendOtpButton = ({
   timer,
+  className,
   ...buttonProps
 }: ResendOtpButtonProps): JSX.Element => {
   return (
-    <Button type="button" variant="link" size="xs" {...buttonProps}>
+    <LinkButton
+      type="button"
+      className={cn(
+        "prose-subhead-2 font-normal whitespace-pre-wrap gap-0 self-end z-1",
+        className,
+      )}
+      {...buttonProps}
+    >
       Resend OTP
-      <Text as="span" data-chromatic="ignore">
-        {timer > 0 && ` in ${timer}s`}
-      </Text>
-    </Button>
+      {timer > 0 && <span data-chromatic="ignore">{` in ${timer}s`}</span>}
+    </LinkButton>
   )
 }

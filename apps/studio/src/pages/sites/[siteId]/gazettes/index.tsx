@@ -1,5 +1,5 @@
 import { Center, Text, useDisclosure, Link, VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useRouter } from "next/router"
 import { Suspense, useEffect } from "react"
 import { BiData, BiPlus } from "react-icons/bi"
@@ -91,8 +91,8 @@ const GazettesPage: NextPageWithLayout = () => {
             buttons={
               <Button
                 size="md"
-                leftIcon={<BiPlus fontSize="1.25rem" />}
-                onClick={onOpen}
+                startContent={<BiPlus fontSize="1.25rem" />}
+                onPress={onOpen}
               >
                 Add a new Gazette
               </Button>

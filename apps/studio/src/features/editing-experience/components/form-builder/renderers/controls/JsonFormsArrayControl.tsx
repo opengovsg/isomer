@@ -23,7 +23,7 @@ import {
   JsonFormsDispatch,
   withJsonFormsArrayLayoutProps,
 } from "@jsonforms/react"
-import { Button, IconButton } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useCallback, useMemo, useState } from "react"
 import {
   BiLeftArrowAlt,
@@ -31,6 +31,7 @@ import {
   BiRightArrowAlt,
   BiTrash,
 } from "react-icons/bi"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import type { DraggableArrayItemRenderProps } from "./types"
@@ -119,27 +120,27 @@ function ComplexEditorNestedDrawer({
         <IconButton
           icon={<BiTrash fontSize="1.25rem" />}
           variant="outline"
-          colorScheme="critical"
-          onClick={handleRemoveItem}
+          color="critical"
+          onPress={handleRemoveItem}
           isDisabled={isRemoveItemDisabled}
           aria-label="Remove item"
         />
         <Stack flexDirection="row" flex={1}>
           <Button
-            leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
-            flex={1}
+            startContent={<BiLeftArrowAlt fontSize="1.25rem" />}
+            className="flex-1"
             variant="outline"
             isDisabled={selectedIndex === 0}
-            onClick={() => setSelectedIndex(Math.max(selectedIndex - 1, 0))}
+            onPress={() => setSelectedIndex(Math.max(selectedIndex - 1, 0))}
           >
             Previous
           </Button>
           <Button
-            rightIcon={<BiRightArrowAlt fontSize="1.25rem" />}
-            flex={1}
+            endContent={<BiRightArrowAlt fontSize="1.25rem" />}
+            className="flex-1"
             variant="outline"
             isDisabled={selectedIndex === maxIndex}
-            onClick={() =>
+            onPress={() =>
               setSelectedIndex(Math.min(selectedIndex + 1, maxIndex))
             }
           >
@@ -266,14 +267,14 @@ export function JsonFormsArrayControlView({
             {label}
           </Text>
           <Button
-            onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+            onPress={addItem(path, createDefaultValue(schema, rootSchema))}
             variant="clear"
             size="xs"
-            leftIcon={<BiPlusCircle fontSize="1.25rem" />}
+            startContent={<BiPlusCircle fontSize="1.25rem" />}
             isDisabled={
               arraySchema.maxItems !== undefined && data >= arraySchema.maxItems
             }
-            flexShrink={0}
+            className="shrink-0"
           >
             {addItemLabel}
           </Button>

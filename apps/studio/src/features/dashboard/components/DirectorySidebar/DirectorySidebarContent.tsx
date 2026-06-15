@@ -1,6 +1,6 @@
 import { Accordion, AccordionItem, AccordionPanel } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
 import { useEffect, useMemo, useState } from "react"
+import { LinkButton } from "~/components/oui-bridge/LinkButton"
 import { getResourceSubpath } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
@@ -116,15 +116,13 @@ export const DirectorySidebarContent = ({
                 }),
               )}
               {hasNextPage && (
-                <Button
-                  variant="link"
-                  pl="2.75rem"
-                  size="xs"
-                  isLoading={isFetchingNextPage}
-                  onClick={() => fetchNextPage()}
+                <LinkButton
+                  className="pl-11"
+                  isPending={isFetchingNextPage}
+                  onPress={() => fetchNextPage()}
                 >
                   Load more
-                </Button>
+                </LinkButton>
               )}
             </AccordionPanel>
           )}

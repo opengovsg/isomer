@@ -1,5 +1,4 @@
 import {
-  Button,
   Center,
   chakra,
   FormControl,
@@ -13,6 +12,7 @@ import {
   Textarea,
   useToast,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useRouter } from "next/router"
 import { useState } from "react"
 import { z } from "zod"
@@ -194,7 +194,7 @@ const SiteAdminPage: NextPageWithLayout = () => {
                 Changes will be reflected on your site immediately.
               </Text>
 
-              <Button type="submit" isLoading={isPending} isDisabled={!isDirty}>
+              <Button type="submit" isPending={isPending} isDisabled={!isDirty}>
                 Save settings
               </Button>
             </HStack>

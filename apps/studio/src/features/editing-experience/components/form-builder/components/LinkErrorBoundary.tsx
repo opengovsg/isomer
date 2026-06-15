@@ -1,8 +1,9 @@
 import type { PropsWithChildren } from "react"
-import { Box, IconButton, Stack, Text } from "@chakra-ui/react"
+import { Box, Stack, Text } from "@chakra-ui/react"
 import { Infobox } from "@opengovsg/design-system-react"
 import { ErrorBoundary } from "react-error-boundary"
 import { BiTrash } from "react-icons/bi"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 
 interface LinkErrorBoundaryProps {
   resetLink: () => void
@@ -30,11 +31,11 @@ export const LinkErrorBoundary = ({
             <IconButton
               size="xs"
               variant="clear"
-              alignSelf="center"
-              colorScheme="critical"
+              className="self-center"
+              color="critical"
               aria-label="Remove file"
               icon={<BiTrash />}
-              onClick={() => {
+              onPress={() => {
                 resetLink()
                 resetErrorBoundary()
               }}

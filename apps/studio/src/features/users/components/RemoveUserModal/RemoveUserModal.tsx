@@ -9,7 +9,8 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { Button, useToast } from "@opengovsg/design-system-react"
+import { useToast } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useAtomValue, useSetAtom } from "jotai"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
@@ -74,19 +75,15 @@ export const RemoveUserModal = () => {
             </VStack>
           </ModalBody>
           <ModalFooter gap="1rem">
-            <Button
-              variant="clear"
-              color="base.content.default"
-              onClick={onClose}
-            >
+            <Button variant="clear" color="neutral" onPress={onClose}>
               No, cancel
             </Button>
             <SingpassConditionalTooltip>
               <Button
-                colorScheme="critical"
+                color="critical"
                 variant="solid"
-                onClick={onRemoveUser}
-                isLoading={isPending}
+                onPress={onRemoveUser}
+                isPending={isPending}
                 isDisabled={!isSingpassEnabled}
               >
                 Remove user

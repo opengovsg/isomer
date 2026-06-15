@@ -1,12 +1,12 @@
 import type { FieldError } from "react-hook-form"
 import { FormControl, Stack, Text } from "@chakra-ui/react"
 import {
-  Button,
   FormErrorMessage,
   FormLabel,
   Input,
   Link,
 } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { ISOMER_SUPPORT_LINK } from "~/constants/misc"
@@ -102,10 +102,8 @@ export const EmailInput: React.FC<EmailInputProps> = ({ onSuccess }) => {
           </FormErrorMessage>
         </FormControl>
         <Button
-          size="sm"
-          height="2.75rem"
           type="submit"
-          isLoading={loginMutation.isPending}
+          isPending={loginMutation.isPending}
           isDisabled={!isValid}
         >
           Send One-Time Password (OTP)

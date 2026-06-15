@@ -1,12 +1,6 @@
-import {
-  HStack,
-  Icon,
-  IconButton,
-  Skeleton,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { HStack, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
+import { buttonStyles } from "@opengovsg/oui-theme"
 import Link from "next/link"
 import { useEffect } from "react"
 import { BiChevronRight, BiSolidCircle } from "react-icons/bi"
@@ -103,15 +97,19 @@ export const IndexpageRow = ({
         >
           Edit page
         </Text>
-        <IconButton
-          as="div"
+        {/* Decorative chevron: non-interactive (lives inside the row's anchor), so it
+            carries the icon-button look via buttonStyles rather than a real Button. */}
+        <div
           aria-hidden
-          variant="clear"
-          pointerEvents="none"
-          colorScheme="neutral"
-          icon={<BiChevronRight />}
-          aria-label="edit index page"
-        />
+          className={buttonStyles({
+            variant: "clear",
+            color: "neutral",
+            isIconOnly: true,
+            className: "pointer-events-none",
+          })}
+        >
+          <BiChevronRight />
+        </div>
       </HStack>
     </Skeleton>
   )

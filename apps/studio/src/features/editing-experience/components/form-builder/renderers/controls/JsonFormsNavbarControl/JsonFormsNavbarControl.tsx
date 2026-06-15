@@ -8,7 +8,7 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 import {
   Accordion,
   Box,
-  Button,
+  Button as ChakraButton,
   FormControl,
   HStack,
   Icon,
@@ -26,6 +26,7 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
+import { Button } from "@opengovsg/oui"
 import { get } from "lodash-es"
 import { useCallback, useEffect, useState } from "react"
 import { BiPlusCircle } from "react-icons/bi"
@@ -192,8 +193,8 @@ function JsonFormsNavbarControl({
 
               <Button
                 variant="outline"
-                leftIcon={<Icon as={BiPlusCircle} fontSize="1.25rem" />}
-                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+                startContent={<Icon as={BiPlusCircle} fontSize="1.25rem" />}
+                onPress={addItem(path, createDefaultValue(schema, rootSchema))}
               >
                 Add a link
               </Button>
@@ -223,7 +224,7 @@ function JsonFormsNavbarControl({
                   }
                   hasArrow
                 >
-                  <Button
+                  <ChakraButton
                     variant="clear"
                     size="xs"
                     leftIcon={<Icon as={BiPlusCircle} />}
@@ -238,7 +239,7 @@ function JsonFormsNavbarControl({
                     }
                   >
                     Add a link
-                  </Button>
+                  </ChakraButton>
                 </Tooltip>
               </HStack>
 

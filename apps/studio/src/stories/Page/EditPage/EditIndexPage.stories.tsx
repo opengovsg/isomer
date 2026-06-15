@@ -158,42 +158,56 @@ export const EditInfocardsLinkState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
+    // This deep multi-step flow (nested card editor -> modal portal -> page
+    // search) can exceed the default 1000ms findBy timeout on CI; extend it.
+    const wait = { timeout: 5000 }
+
     // Click on the infocards block
-    const infocardsBlock = await canvas.findByRole("button", {
-      name: /Info cards block/i,
-    })
+    const infocardsBlock = await canvas.findByRole(
+      "button",
+      { name: /Info cards block/i },
+      wait,
+    )
     await userEvent.click(infocardsBlock)
 
     // Click on the first card item
-    const firstCard = await canvas.findByRole("button", {
-      name: /First card/i,
-    })
+    const firstCard = await canvas.findByRole(
+      "button",
+      { name: /First card/i },
+      wait,
+    )
     await userEvent.click(firstCard)
 
-    const textboxes = await canvas.findAllByRole("textbox")
+    const textboxes = await canvas.findAllByRole("textbox", undefined, wait)
     for (const textbox of textboxes) {
       await userEvent.clear(textbox)
     }
 
-    const deleteButton = await canvas.findByRole("button", {
-      name: /Remove file/i,
-    })
+    const deleteButton = await canvas.findByRole(
+      "button",
+      { name: /Remove file/i },
+      wait,
+    )
     await userEvent.click(deleteButton)
 
     // Click on the "Link something..." button to open the modal
-    const linkButton = await canvas.findByRole("button", {
-      name: /Link something/i,
-    })
+    const linkButton = await canvas.findByRole(
+      "button",
+      { name: /Link something/i },
+      wait,
+    )
     await userEvent.click(linkButton)
 
     // Modal renders in a portal outside canvasElement, so query from document.body
     const body = within(document.body)
-    const page = await body.findByText("Page 1")
+    const page = await body.findByText("Page 1", undefined, wait)
     await userEvent.click(page)
 
-    const addLinkButton = await body.findByRole("button", {
-      name: /Add link/i,
-    })
+    const addLinkButton = await body.findByRole(
+      "button",
+      { name: /Add link/i },
+      wait,
+    )
     await userEvent.click(addLinkButton)
   },
 }

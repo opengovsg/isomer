@@ -1,5 +1,5 @@
 import { Center, Flex, Stack, Text } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/oui"
 import { useRouter } from "next/router"
 import { HeadScratch } from "~/components/Svg"
 
@@ -26,7 +26,7 @@ export const PermissionsErrorBoundary = ({
             </Text>
             <Text textStyle="body-1">{description}</Text>
           </Flex>
-          <Button onClick={router.back} size="md">
+          <Button onPress={router.back} size="md">
             {buttonText}
           </Button>
         </Stack>

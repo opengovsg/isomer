@@ -1,6 +1,9 @@
 import "@fontsource/ibm-plex-mono" // Import if using code textStyles.
 import "inter-ui/inter.css" // Strongly recommended.
 import "../styles/tiptap.scss"
+// NOTE: OUI's Tailwind v4 stylesheet is loaded via a <link> in `_document.tsx`
+// (served statically from /assets/css/oui.css), NOT imported here — importing it
+// would route it through studio's Tailwind v3 PostCSS pipeline and conflict.
 import type { AppProps, AppType } from "next/app"
 import { Skeleton, Stack } from "@chakra-ui/react"
 import { datadogRum } from "@datadog/browser-rum"
@@ -8,6 +11,8 @@ import { GrowthBook } from "@growthbook/growthbook"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { useRouter } from "next/router"
+import { RouterProvider } from "react-aria-components"
 import { ErrorBoundary } from "react-error-boundary"
 import { AppBanner } from "~/components/AppBanner"
 import { EnvProvider } from "~/components/AppProviders"
@@ -64,27 +69,32 @@ void gb.init({
 })
 
 const MyApp = ((props: AppPropsWithAuthAndLayout) => {
+  const router = useRouter()
   return (
     <EnvProvider env={env}>
       <LoginStateProvider>
         <ThemeProvider theme={theme}>
-          <GrowthBookProvider growthbook={gb}>
-            <ErrorBoundary FallbackComponent={DefaultFallback}>
-              <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
-                <Stack spacing={0} height="$100vh" flexDirection="column">
-                  <AppBanner />
-                  <VersionWrapper />
-                  <ChildWithLayout {...props} />
-                  {
-                    // oxlint-disable-next-line node/no-process-env
-                    process.env.NODE_ENV !== "production" && (
-                      <ReactQueryDevtools initialIsOpen={false} />
-                    )
-                  }
-                </Stack>
-              </Suspense>
-            </ErrorBoundary>
-          </GrowthBookProvider>
+          {/* OUI's Link uses react-aria's RouterProvider for client-side nav. Mounted
+              inside ThemeProvider so OUI and Chakra coexist during the migration. */}
+          <RouterProvider navigate={(href) => void router.push(href)}>
+            <GrowthBookProvider growthbook={gb}>
+              <ErrorBoundary FallbackComponent={DefaultFallback}>
+                <Suspense fallback={<Skeleton width="100%" height="$100vh" />}>
+                  <Stack spacing={0} height="$100vh" flexDirection="column">
+                    <AppBanner />
+                    <VersionWrapper />
+                    <ChildWithLayout {...props} />
+                    {
+                      // oxlint-disable-next-line node/no-process-env
+                      process.env.NODE_ENV !== "production" && (
+                        <ReactQueryDevtools initialIsOpen={false} />
+                      )
+                    }
+                  </Stack>
+                </Suspense>
+              </ErrorBoundary>
+            </GrowthBookProvider>
+          </RouterProvider>
         </ThemeProvider>
       </LoginStateProvider>
     </EnvProvider>
