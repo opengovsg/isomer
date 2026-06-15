@@ -5,6 +5,7 @@ import { and, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, SingleSelect } from "@opengovsg/design-system-react"
 import { useRouter } from "next/router"
+import { ErrorBoundary } from "react-error-boundary"
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
@@ -78,13 +79,15 @@ export function JsonFormsCategoryIdControl({
   return enabledSites.includes(parsedQuery.data.siteId.toString()) ? (
     <FormControl isRequired={required} gap="0.5rem">
       <FormLabel description={description}>{label}</FormLabel>
-      <Suspense fallback={<Skeleton />}>
-        <SuspendableJsonFormsCategoryIdSelect
-          {...props}
-          label={label}
-          resourceId={resourceId}
-        />
-      </Suspense>
+      <ErrorBoundary fallbackRender={() => null}>
+        <Suspense fallback={<Skeleton />}>
+          <SuspendableJsonFormsCategoryIdSelect
+            {...props}
+            label={label}
+            resourceId={resourceId}
+          />
+        </Suspense>
+      </ErrorBoundary>
     </FormControl>
   ) : null
 }

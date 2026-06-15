@@ -143,6 +143,22 @@ function CategoryOptionsExpandedEditor({
     },
   })
 
+  const handleDeleteOption = (index: number) => {
+    const item = get(core?.data, composePaths(path, `${index}`)) as
+      | CategoryOptionItem
+      | undefined
+    const categoryId = item?.id?.trim()
+
+    // New item without a persisted id — remove immediately, no modal needed.
+    if (!categoryId) {
+      if (!removeItems || isRemoveItemDisabled) return
+      removeItems(path, [index])()
+      return
+    }
+
+    openDeleteModal(index)
+  }
+
   const isBlankLabelAt = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
       | { label?: string }
@@ -255,7 +271,7 @@ function CategoryOptionsExpandedEditor({
                                   noun="option"
                                   index={index}
                                   isDisabled={isRemoveItemDisabled}
-                                  onDelete={() => openDeleteModal(index)}
+                                  onDelete={() => handleDeleteOption(index)}
                                 />
                               </DraggableTagButton.Trailing>
                             </DraggableTagButton.Root>

@@ -1909,6 +1909,40 @@ describe("collection.router", async () => {
       expect(resource.draftBlobId).toBeNull()
       expect(result).toEqual({ count: 1 })
     })
+
+    it("should count a CollectionLink item that matches page.categoryId", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      const { collectionLink, blob } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+      })
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(articleBlobWithCategoryId(CATEGORY_A)) })
+        .where("id", "=", blob.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      expect(collectionLink.type).toBe(ResourceType.CollectionLink)
+      expect(result).toEqual({ count: 1 })
+    })
   })
 
   describe("countTagOptionsUsage", () => {
