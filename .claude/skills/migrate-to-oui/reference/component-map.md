@@ -78,6 +78,25 @@ while `isPending`** (shows only a spinner/`loadingText`). So when migrating a `B
   element (`<div className={buttonStyles({ isIconOnly: true, … })}>`), never a real Button
   (especially inside an anchor — invalid HTML).
 
+**OUI Button defaults that differ from Chakra (each caused a real visual regression):**
+
+- **Ripple + `overflow-hidden`.** OUI's Button has a motion ripple and clips its content with
+  `overflow-hidden` to contain it. When a Button is repurposed as a **clickable container/row**
+  (a card, a list row, a skeleton wrapper holding arbitrary children — e.g. `ResourceItem`), the
+  clip cuts children and the ripple is unwanted. Add **`disableRipple` + `overflow-visible`**
+  (usually also `h-fit w-full items-start justify-start` to undo the centered button layout).
+- **Size variant sets a `min-w-*`.** A narrow button (short label, an "Edit") ends up wider than
+  the Chakra original. Override with **`min-w-0`**, and add **`shrink-0`** when it lives in a flex
+  row so `min-w-0` doesn't let it collapse below its content.
+- **Don't carry `size` over blindly.** OUI's *default* Button size often matches the old Chakra
+  look already; an explicit `size="sm"` carried from Chakra v2 can render the wrong size. When a
+  migrated button looks off-size, try **deleting the `size` prop** before fighting it.
+- **Children shrink in the flex row.** Inline children can shrink/wrap; pin them with **`shrink-0`**
+  (and a `prose-*` class for the intended type scale).
+- **Version-bump is a valid fix.** The team maintains OUI, so a wrong default is often fixed
+  upstream — bumping `@opengovsg/oui[-theme]` (e.g. `0.0.55`→`0.0.57`) as **its own commit** can
+  remove a whole class of `className` overrides. Flag the default upstream; bump when fixed.
+
 ---
 
 ## Track B1 — raw layout/typography → plain Tailwind

@@ -83,6 +83,11 @@ as its own PR first, then stop and report. Do not migrate a unit onto a missing 
    Button *and* a trigger Button) — migrate only the standalone one now and alias the DS import
    (`import { Button as DsButton } from "..."`) for the trigger left behind.
    (Watch for `*` patterns: `Modal`, `ModalBody`, `ModalHeader`, … all belong to the Modal unit.)
+   **But verify the coupling before deferring** — the rule is specifically about a Chakra overlay
+   that `cloneElement`s the trigger. A *conditional or custom* wrapper may not actually wrap in the
+   common path: e.g. `SingpassConditionalTooltip` returns its children **directly** when Singpass is
+   enabled and only wraps in a Chakra `Tooltip` when disabled, so the inner button migrates cleanly
+   (the tooltip path is the rare branch). Read the wrapper; don't blanket-defer on the import name.
 
 3. **Map** old → new via `reference/component-map.md`. For anything not in the map or marked
    "verify", check the OUI docs/source first. If there is genuinely no OUI equivalent, build a
@@ -146,6 +151,25 @@ as its own PR first, then stop and report. Do not migrate a unit onto a missing 
    - Intended, approved change → document it in the PR body and the playbook's gaps register;
      re-run with a justified `--threshold` or note it explicitly. Do not silently accept.
    The tool exits non-zero on any over-threshold story — treat that as a hard block.
+
+   **Baselines stay on the all-Chakra `main`.** Never re-baseline mid-stack — nothing is merged,
+   so re-capturing would bake unapproved drift into the reference and hide regressions. The gate
+   will therefore report the **cumulative** migration delta (every story changed so far), not just
+   your unit. To isolate *your* unit's drift, run the gate twice — once with your changes stashed
+   (clean stack HEAD) and once applied — and diff the over-threshold sets; the newly-introduced or
+   worsened stories are yours to review. Heavy live-preview-iframe stories also drift on
+   non-deterministic preview content (random crest/infobar) — confirm by opening the `diff.png`
+   (the form UI around the migrated control should be pixel-identical) and exclude those from your
+   verdict.
+
+   **Story determinism (also fixes Chromatic CI):**
+   - Wrap **dynamic/animated content** (countdown timers, live counts) in
+     `<span data-chromatic="ignore">…</span>` so it doesn't flap the diff.
+   - A play function that drives the **preview pane** (the toolbar lives with the heavy preview
+     iframe) can exceed Testing Library's default **1000ms `findBy` timeout** on CI and fail with
+     "Unable to find role=…". Bump it via the call's last arg — `findByRole(role, opts, { timeout:
+     5000 })`, `findByText(text, undefined, { timeout: 5000 })` — matching the override already used
+     in the other heavy `EditPage` stories. This is timing, not a changed accessible name.
 
 8. **Submit to the stack:**
    ```sh

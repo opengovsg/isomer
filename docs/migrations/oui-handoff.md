@@ -123,10 +123,12 @@ node tooling/visual-diff/run.mjs --skip-build --filter "<glob>"  # reuse last bu
   flagged **unstable** in the summary (excluded from the gate — fix those stories). Default
   concurrency is fine. The build step also recompiles `oui.css`, so a fresh build picks up new
   `className` utilities.
-- **Re-baseline at reviewed checkpoints** (not mid-unit): once a batch lands and is reviewed,
-  re-`--capture-baseline` (local; gitignored) so the gate flags only *new* drift instead of the
-  whole Chakra→OUI delta. A story may still report "no baseline" if it was added after your last
-  capture — not a failure.
+- **Baselines stay on the all-Chakra `main` — do NOT re-baseline mid-stack.** Nothing in the
+  stack is merged/approved, so re-capturing would bake unapproved drift into the reference and
+  hide regressions. The gate therefore reports the **cumulative** Chakra→OUI delta, not just your
+  unit. Isolate your unit by running the gate twice (changes stashed vs applied) and diffing the
+  over-threshold sets — the new/worsened stories are yours. A story may report "no baseline" if it
+  was added after the main capture — not a failure.
 
 ## Gotchas (learned the hard way)
 

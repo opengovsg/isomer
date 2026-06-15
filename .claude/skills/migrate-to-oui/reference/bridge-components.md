@@ -41,35 +41,65 @@ OUI `linkStyles`. Owns its flex layout so the (optional) pending spinner sits in
 the label, and keeps the label visible while pending (OUI's Button would hide it):
 
 ```tsx
+import type { LinkVariantProps } from "@opengovsg/oui-theme"
 import type { ButtonProps } from "react-aria-components"
 import { Spinner } from "@opengovsg/oui"
 import { cn, linkStyles } from "@opengovsg/oui-theme"
+import { forwardRef } from "react"
 import { Button, composeRenderProps } from "react-aria-components"
 
-export const LinkButton = ({ children, isPending, ...props }: ButtonProps) => (
-  <Button
-    {...props}
-    isPending={isPending}
-    className={composeRenderProps(props.className, (className, renderProps) =>
-      linkStyles({
-        className: cn("flex flex-row items-center gap-2", className),
-        ...renderProps,
-      }),
-    )}
-  >
-    {composeRenderProps(children, (resolved) => (
-      <>
-        {isPending ? <Spinner size="xs" /> : null}
-        {resolved}
-      </>
-    ))}
-  </Button>
+interface LinkButtonProps extends ButtonProps, LinkVariantProps {}
+
+export const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
+  ({ children, isPending, color, radius, isFocusVisible, ...props }, ref) => (
+    <Button
+      {...props}
+      ref={ref}
+      isPending={isPending}
+      className={composeRenderProps(props.className, (className, renderProps) =>
+        linkStyles({
+          color,
+          radius,
+          className: cn("flex flex-row items-center gap-2 w-fit", className),
+          ...renderProps,
+          isFocusVisible: isFocusVisible ?? renderProps.isFocusVisible,
+        }),
+      )}
+    >
+      {composeRenderProps(children, (resolved) => (
+        <>
+          {isPending ? <Spinner size="xs" /> : null}
+          {resolved}
+        </>
+      ))}
+    </Button>
+  ),
 )
 ```
 
 Migration: `<Button variant="link" onClick={fn}>` → `<LinkButton onPress={fn}>`,
 `isLoading`→`isPending`. Verified against the gate (resting **and** loading states) —
 renders as a proper link that keeps its label with a leading spinner while pending.
+
+Refinements learned in practice (don't skip these):
+
+- **`forwardRef` to the underlying primitive.** Wrap the bridge in `forwardRef` and pass `ref`
+  down. Without it the bridge can't serve as an **overlay trigger** (Tooltip/Popover/Menu need a
+  ref on the trigger child to position/wire it) and React warns on ref-passing. Applies to every
+  bridge here (`LinkButton`, `ButtonLink`, `IconButton`), not just this one.
+- **Forward `linkStyles`' variant props** (`color`, `radius`) via `LinkVariantProps` so callers
+  pick the link colour (`color="neutral"`) without reaching for arbitrary `text-*` classes.
+  Forward `isFocusVisible` too (`isFocusVisible ?? renderProps.isFocusVisible`) so the focus ring
+  is correct, and add `w-fit` so the hit area hugs the text.
+- **Underline is NOT default.** The DS `variant="link"` had no underline by default; do **not**
+  bake `underline` into the bridge base. Opt in per-usage with an `underline` class where the
+  design wants it.
+- **Style the LinkButton, don't wrap a `<Text>`.** Pass **plain text children** and set the type
+  scale on the bridge itself (`className="prose-body-2"`, `color="neutral"`), rather than nesting
+  a Chakra `<Text>` inside — the wrapper fights the link's inline layout and re-introduces Chakra.
+- For shared call sites, wrap the bridge once (e.g. a `ResendOtpButton` that fixes
+  `className="prose-subhead-2 font-normal whitespace-pre-wrap gap-0 …"`) so the styling lives in
+  one place instead of being re-derived per usage.
 
 ### `IconButton` — fills DS `IconButton` (OUI only has `Button isIconOnly`)
 
