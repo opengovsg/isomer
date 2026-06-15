@@ -2,6 +2,7 @@ import type { LinkVariantProps } from "@opengovsg/oui-theme"
 import type { ButtonProps } from "react-aria-components"
 import { Spinner } from "@opengovsg/oui"
 import { cn, linkStyles } from "@opengovsg/oui-theme"
+import { forwardRef } from "react"
 import { Button, composeRenderProps } from "react-aria-components"
 
 interface LinkButtonProps extends ButtonProps, LinkVariantProps {}
@@ -12,36 +13,47 @@ interface LinkButtonProps extends ButtonProps, LinkVariantProps {}
  * OUI's Link uses) — i.e. a link-looking control for onPress actions, not navigation.
  * Supports `isPending` (DS `isLoading`) with a leading spinner.
  */
-export const LinkButton = ({
-  children,
-  isPending,
-  color,
-  radius,
-  isFocusVisible,
-  ...props
-}: LinkButtonProps) => {
-  return (
-    <Button
-      {...props}
-      isPending={isPending}
-      className={composeRenderProps(props.className, (className, renderProps) =>
-        linkStyles({
-          color,
-          radius,
-          className: cn("flex-row flex gap-2 items-center w-fit", className),
-          ...renderProps,
-          isFocusVisible: isFocusVisible ?? renderProps.isFocusVisible,
-        }),
-      )}
-    >
-      {composeRenderProps(children, (resolved) => (
-        <>
-          {/* Keep the label visible while pending (unlike OUI's Button, which
+export const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
+  (
+    {
+      children,
+      isPending,
+      color,
+      radius,
+      isFocusVisible,
+      ...props
+    }: LinkButtonProps,
+    ref,
+  ) => {
+    return (
+      <Button
+        {...props}
+        ref={ref}
+        isPending={isPending}
+        className={composeRenderProps(
+          props.className,
+          (className, renderProps) =>
+            linkStyles({
+              color,
+              radius,
+              className: cn(
+                "flex-row flex gap-2 items-center w-fit",
+                className,
+              ),
+              ...renderProps,
+              isFocusVisible: isFocusVisible ?? renderProps.isFocusVisible,
+            }),
+        )}
+      >
+        {composeRenderProps(children, (resolved) => (
+          <>
+            {/* Keep the label visible while pending (unlike OUI's Button, which
             hides children); show a leading spinner alongside it. */}
-          {isPending ? <Spinner size="xs" /> : null}
-          {resolved}
-        </>
-      ))}
-    </Button>
-  )
-}
+            {isPending ? <Spinner size="xs" /> : null}
+            {resolved}
+          </>
+        ))}
+      </Button>
+    )
+  },
+)

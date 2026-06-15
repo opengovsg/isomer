@@ -300,15 +300,9 @@ export default function SiderailOrderingEditorStateDrawer(): JSX.Element {
               label="What's a siderail?"
               usageText="A siderail appears on every child page in this folder. It helps visitors navigate to similar pages. Only published pages appear here."
             >
-              <LinkButton className="gap-1">
-                <Icon
-                  as={BiInfoCircle}
-                  color="interaction.main.default"
-                  boxSize="1rem"
-                />
-                <Text textStyle="caption-1" color="interaction.links.default">
-                  What's a siderail?
-                </Text>
+              <LinkButton className="prose-caption-1 gap-1">
+                <BiInfoCircle className="size-4" />
+                What's a siderail?
               </LinkButton>
             </UsageTooltip>
           </Flex>
