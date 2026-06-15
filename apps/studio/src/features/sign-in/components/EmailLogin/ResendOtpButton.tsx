@@ -14,7 +14,10 @@ export const ResendOtpButton = ({
   return (
     <LinkButton
       type="button"
-      className={cn("prose-subhead-2 whitespace-pre-wrap gap-0", className)}
+      className={cn(
+        "prose-subhead-2 font-normal whitespace-pre-wrap gap-0 self-end z-1",
+        className,
+      )}
       {...buttonProps}
     >
       Resend OTP

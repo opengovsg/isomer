@@ -174,7 +174,6 @@ export const VerificationInput = (): JSX.Element | null => {
             </Infobox>
           )}
           <ResendOtpButton
-            className="self-end"
             timer={timer}
             onPress={handleResendOtp}
             isDisabled={timer > 0 || verifyOtpMutation.isPending}
