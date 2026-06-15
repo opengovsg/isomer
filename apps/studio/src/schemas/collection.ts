@@ -96,8 +96,8 @@ export const getCollectionTagsSchema = z
 
 export const getCategoryOptionUsageCountSchema = z.object({
   siteId: z.number().min(1, { message: "Site ID must be at least 1" }),
-  pageId: z.number().int().min(1, { message: "Page ID must be at least 1" }),
-  categoryId: z.string().uuid(),
+  pageId: z.number().min(1, { message: "Page ID must be at least 1" }),
+  categoryId: z.uuid(),
 })
 
 export const getCollectionsSchema = z.object({
