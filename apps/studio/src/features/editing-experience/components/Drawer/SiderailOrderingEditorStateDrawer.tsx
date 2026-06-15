@@ -1,6 +1,6 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import type { IsomerComponent } from "@opengovsg/isomer-components"
-import { Box, Flex, Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
+import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { useToast } from "@opengovsg/design-system-react"
 import { Button } from "@opengovsg/oui"
