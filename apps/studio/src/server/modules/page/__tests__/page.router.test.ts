@@ -903,11 +903,11 @@ describe("page.router", async () => {
               ...indexBlob.content.page,
               categoryOptions: [
                 {
-                  id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                  id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
                   label: "Alpha",
                 },
                 {
-                  id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+                  id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
                   label: "Beta",
                 },
               ],
@@ -934,8 +934,8 @@ describe("page.router", async () => {
 
       // Assert
       expect(result.categoryOptions).toEqual([
-        { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", label: "Alpha" },
-        { id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", label: "Beta" },
+        { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", label: "Alpha" },
+        { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", label: "Beta" },
       ])
     })
   })

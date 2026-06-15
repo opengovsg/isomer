@@ -527,27 +527,26 @@ export const collectionRouter = router({
 
   getCollectionTags: protectedProcedure
     .input(getCollectionTagsSchema)
-    .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
-      const resourceIdToValidate = resourceId ?? collectionId
+    .query(async ({ ctx, input }) => {
+      const resourceIdToValidate =
+        "collectionId" in input ? input.collectionId : input.resourceId
       await bulkValidateUserPermissionsForResources({
-        siteId,
+        siteId: input.siteId,
         action: "read",
         userId: ctx.user.id,
         resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
       })
 
-      return collectionId
-        ? getCollectionTagsForResource({ collectionId, siteId })
-        : getCollectionTagsForResource({ resourceId: resourceId!, siteId })
+      return getCollectionTagsForResource(input)
     }),
 
   /**
    * Counts collection pages/links whose draft **or** published blob has `page.categoryId` equal to the
-   * given id. `pageId` is the collection index page resource id (Studio URL `pageId`).
+   * given id.
    */
   getCategoryOptionUsageCount: protectedProcedure
     .input(getCategoryOptionUsageCountSchema)
-    .query(async ({ ctx, input: { siteId, pageId, categoryId } }) => {
+    .query(async ({ ctx, input: { siteId, indexPageId, categoryId } }) => {
       await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
@@ -562,7 +561,7 @@ export const collectionRouter = router({
             .on("c.type", "=", ResourceType.Collection)
             .on("c.siteId", "=", siteId),
         )
-        .where("r.id", "=", String(pageId))
+        .where("r.id", "=", String(indexPageId))
         .where("r.siteId", "=", siteId)
         .where("r.type", "=", ResourceType.IndexPage)
         .select("c.id")

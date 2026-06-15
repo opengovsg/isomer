@@ -1658,7 +1658,7 @@ describe("collection.router", async () => {
       // Act
       const result = unauthedCaller.getCategoryOptionUsageCount({
         siteId: 1,
-        pageId: 1,
+        indexPageId: 1,
         categoryId: CATEGORY_A,
       })
 
@@ -1680,7 +1680,7 @@ describe("collection.router", async () => {
       // Act
       const result = caller.getCategoryOptionUsageCount({
         siteId: site.id,
-        pageId: Number(indexPage.id),
+        indexPageId: Number(indexPage.id),
         categoryId: CATEGORY_A,
       })
 
@@ -1710,7 +1710,7 @@ describe("collection.router", async () => {
       // Act
       const result = caller.getCategoryOptionUsageCount({
         siteId: site.id,
-        pageId: Number(collectionPage.id),
+        indexPageId: Number(collectionPage.id),
         categoryId: CATEGORY_A,
       })
 
@@ -1739,7 +1739,7 @@ describe("collection.router", async () => {
       // Act
       const result = caller.getCategoryOptionUsageCount({
         siteId: site.id,
-        pageId: Number(folderIndexPage.id),
+        indexPageId: Number(folderIndexPage.id),
         categoryId: CATEGORY_A,
       })
 
@@ -1778,7 +1778,7 @@ describe("collection.router", async () => {
       // Act
       const result = await caller.getCategoryOptionUsageCount({
         siteId: site.id,
-        pageId: Number(indexPage.id),
+        indexPageId: Number(indexPage.id),
         categoryId: CATEGORY_A,
       })
 
@@ -1812,7 +1812,7 @@ describe("collection.router", async () => {
       // Act
       const result = await caller.getCategoryOptionUsageCount({
         siteId: site.id,
-        pageId: Number(indexPage.id),
+        indexPageId: Number(indexPage.id),
         categoryId: CATEGORY_A,
       })
 
@@ -1859,7 +1859,7 @@ describe("collection.router", async () => {
       // Act
       const result = await caller.getCategoryOptionUsageCount({
         siteId: site.id,
-        pageId: Number(indexPage.id),
+        indexPageId: Number(indexPage.id),
         categoryId: CATEGORY_A,
       })
 
@@ -1896,7 +1896,7 @@ describe("collection.router", async () => {
       // Act
       const result = await caller.getCategoryOptionUsageCount({
         siteId: site.id,
-        pageId: Number(indexPage.id),
+        indexPageId: Number(indexPage.id),
         categoryId: CATEGORY_A,
       })
 
@@ -1935,7 +1935,7 @@ describe("collection.router", async () => {
       // Act
       const result = await caller.getCategoryOptionUsageCount({
         siteId: site.id,
-        pageId: Number(indexPage.id),
+        indexPageId: Number(indexPage.id),
         categoryId: CATEGORY_A,
       })
 
@@ -2035,7 +2035,7 @@ describe("collection.router", async () => {
       )
     })
 
-    it("should throw 404 if pageId is not a collection index page", async () => {
+    it("should throw 404 if indexPageId is not a collection index page", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })

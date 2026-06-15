@@ -57,17 +57,17 @@ type CategoryOptionItem = Partial<{
 
 function CategoryOptionUsageCount({
   siteId,
-  pageId,
+  indexPageId,
   categoryId,
 }: {
   siteId: number
-  pageId: number
+  indexPageId: number
   categoryId: string
 }) {
   const [{ count }] =
     trpc.collection.getCategoryOptionUsageCount.useSuspenseQuery({
       siteId,
-      pageId,
+      indexPageId,
       categoryId,
     })
 
@@ -310,7 +310,7 @@ function CategoryOptionsExpandedEditor({
                 >
                   <CategoryOptionUsageCount
                     siteId={siteId}
-                    pageId={pageId}
+                    indexPageId={pageId}
                     categoryId={deleteTarget.categoryId}
                   />
                 </Suspense>

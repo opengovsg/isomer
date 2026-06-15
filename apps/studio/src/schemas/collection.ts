@@ -83,20 +83,17 @@ export const createCollectionSchema = z.object({
 })
 
 export const getCollectionTagsSchema = z
-  .object({
-    resourceId: z.number().min(1).optional(),
-    collectionId: z.number().min(1).optional(),
-    siteId: z.number().min(1),
-  })
-  .refine(
-    (data) =>
-      (data.resourceId !== undefined) !== (data.collectionId !== undefined),
-    { message: "Exactly one of resourceId or collectionId must be provided" },
+  .object({ siteId: z.number().min(1) })
+  .and(
+    z.union([
+      z.object({ resourceId: z.number().min(1) }),
+      z.object({ collectionId: z.number().min(1) }),
+    ]),
   )
 
 export const getCategoryOptionUsageCountSchema = z.object({
   siteId: z.number().min(1, { message: "Site ID must be at least 1" }),
-  pageId: z.number().min(1, { message: "Page ID must be at least 1" }),
+  indexPageId: z.number().min(1, { message: "Page ID must be at least 1" }),
   categoryId: z.uuid(),
 })
 
