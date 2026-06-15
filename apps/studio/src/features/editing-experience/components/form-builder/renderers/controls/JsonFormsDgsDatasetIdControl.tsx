@@ -268,7 +268,11 @@ function JsonFormsDgsDatasetIdControl({
               </Box>
             </VStack>
 
-            <Button variant="clear" onPress={onDgsModalOpen}>
+            <Button
+              variant="clear"
+              className="min-w-0 shrink-0"
+              onPress={onDgsModalOpen}
+            >
               Edit
             </Button>
           </HStack>
