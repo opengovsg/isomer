@@ -8,7 +8,9 @@
   "main": "index.ts",
   "scripts": {
     "start": "tsx index.ts ",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test-ci:unit": "vitest run",
+    "test:watch": "vitest watch",
     "upload-redirects": "tsx uploadRedirects.ts"
   },
   "dependencies": {
@@ -17,6 +19,10 @@
     "tsx": "catalog:"
   },
   "devDependencies": {
-    "@types/pg": "catalog:"
+    "@isomer/db": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "testcontainers": "catalog:",
+    "vitest": "catalog:vitest"
   }
 }

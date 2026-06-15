@@ -1,18 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
+import { userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import NavbarSettingsPage from "~/pages/sites/[siteId]/settings/navbar"
 
-const COMMON_HANDLERS = [
+const BASE_HANDLERS = [
   meHandlers.me(),
   sitesHandlers.getSiteName.default(),
   sitesHandlers.getTheme.default(),
   sitesHandlers.getLocalisedSitemap.default(),
   sitesHandlers.getConfig.default(),
   sitesHandlers.getFooter.default(),
-  sitesHandlers.getNavbar.default(),
   resourceHandlers.getRolesFor.admin(),
   resourceHandlers.search.initial(),
   pageHandlers.getRootPage.default(),
@@ -41,7 +41,42 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS],
+      handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.default()],
     },
   },
+}
+
+const goToCustomiseTab = async (canvasElement: HTMLElement) => {
+  const rootScreen = within(canvasElement.ownerDocument.body)
+  const customiseTab = await rootScreen.findByRole("tab", {
+    name: /customise/i,
+  })
+  await userEvent.click(customiseTab)
+}
+
+export const CustomiseTab: Story = {
+  parameters: {
+    msw: {
+      handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.default()],
+    },
+  },
+  play: ({ canvasElement }) => goToCustomiseTab(canvasElement),
+}
+
+export const CustomiseTabWithCTAEnabled: Story = {
+  parameters: {
+    msw: {
+      handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.withCTA()],
+    },
+  },
+  play: ({ canvasElement }) => goToCustomiseTab(canvasElement),
+}
+
+export const CustomiseTabWithUtilityLinksEnabled: Story = {
+  parameters: {
+    msw: {
+      handlers: [...BASE_HANDLERS, sitesHandlers.getNavbar.withUtilityLinks()],
+    },
+  },
+  play: ({ canvasElement }) => goToCustomiseTab(canvasElement),
 }

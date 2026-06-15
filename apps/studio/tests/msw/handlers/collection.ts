@@ -99,4 +99,8 @@ export const collectionHandlers = {
       }))
     },
   },
+  countTagOptionsUsage: {
+    default: () =>
+      trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 3 })),
+  },
 }

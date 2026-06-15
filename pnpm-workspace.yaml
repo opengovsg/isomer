@@ -61,9 +61,9 @@ catalog:
   bootstrap-icons: ^1.13.1
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.0.0
-  chromatic: ^16.8.0
+  chromatic: ^17.3.0
   clean-webpack-plugin: ^4.0.0
-  dayjs: ^1.11.13
+  dayjs: ^1.11.21
   date-fns: ^4.4.0
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
@@ -95,28 +95,27 @@ catalog:
   start-server-and-test: ^3.0.5
   tailwindcss: ^3.4.4
   testcontainers: ^12.0.1
-  tsc-alias: ^1.8.16
+  tsc-alias: ^1.8.17
   "@typescript/native-preview": 7.0.0-dev.20260513.1
   type-fest: ^5.7.0
   tsx: ^4.22.3
   turbo: ^2.9.16
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
-  webpack-cli: ^7.0.2
+  webpack-cli: ^7.0.3
   webpack-glob-entries: ^1.0.1
   zod: ^4.4.3
   "@types/lodash-es": ^4.17.12
   "@types/lunr": ^2.3.7
-  "@types/node": ^25.7.0
+  "@types/node": ^25.9.2
   "@types/papaparse": ^5.5.0
   "@types/pg": ^8.15.4
   "@types/request": ^2.48.12
   "@types/validator": ^13.15.2
-  globals: ^11.12.0
   "@1password/sdk": ^0.4.0
   "@datadog/browser-rum": ^7.2.0
   "@fontsource/ibm-plex-mono": ^5.1.1
-  "@formkit/auto-animate": ^0.8.2
+  "@formkit/auto-animate": ^0.9.0
   "@headlessui/react": ^2.2.10
   "@hello-pangea/dnd": ^18.0.1
   "@hookform/resolvers": ^5.4.0
@@ -145,8 +144,8 @@ catalog:
   nanoid: ^5.1.11
   next: 16.2.6
   openid-client: ^5.7.1
-  oxfmt: ^0.48.0
-  oxlint: ^1.64.0
+  oxfmt: ^0.53.0
+  oxlint: ^1.68.0
   oxlint-tsgolint: ^0.23.0
   papaparse: ^5.5.3
   pg-boss: ^12.3.0
@@ -154,7 +153,7 @@ catalog:
   rate-limiter-flexible: ^11.1.0
   react-error-boundary: ^5.0.0
   react-frame-component: ^5.2.7
-  react-hook-form: ^7.75.0
+  react-hook-form: ^7.77.0
   react-markdown: ^10.1.0
   rehype-external-links: ^3.0.0
   sass: ^1.99.0
@@ -169,16 +168,16 @@ catalog:
 
 catalogs:
   atlaskitPragmaticDnd:
-    "@atlaskit/pragmatic-drag-and-drop": ^1.7.7
-    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.1.0
+    "@atlaskit/pragmatic-drag-and-drop": ^1.8.1
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.2.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1055.0
-    "@aws-sdk/client-amplify": ^3.1055.0
-    "@aws-sdk/client-cloudfront": ^3.1055.0
-    "@aws-sdk/client-codebuild": ^3.1055.0
-    "@aws-sdk/client-s3": ^3.1055.0
-    "@aws-sdk/s3-request-presigner": ^3.1055.0
-    "@aws-sdk/credential-providers": ^3.1055.0
+    "@aws-sdk/client-acm": ^3.1060.0
+    "@aws-sdk/client-amplify": ^3.1060.0
+    "@aws-sdk/client-cloudfront": ^3.1060.0
+    "@aws-sdk/client-codebuild": ^3.1060.0
+    "@aws-sdk/client-s3": ^3.1060.0
+    "@aws-sdk/s3-request-presigner": ^3.1060.0
+    "@aws-sdk/credential-providers": ^3.1060.0
   babel:
     "@babel/plugin-transform-class-properties": ^7.29.7
     "@babel/plugin-transform-object-rest-spread": ^7.29.7
@@ -231,9 +230,9 @@ catalogs:
     eslint-plugin-storybook: ^10.4.2
     storybook-addon-pseudo-states: ^10.4.1
   tanstack-query:
-    "@tanstack/query-devtools": ^5.100.11
-    "@tanstack/react-query": ^5.100.11
-    "@tanstack/react-query-devtools": ^5.100.11
+    "@tanstack/query-devtools": ^5.101.0
+    "@tanstack/react-query": ^5.101.0
+    "@tanstack/react-query-devtools": ^5.101.0
   tiptap:
     "@tiptap/core": ^3.23.4
     "@tiptap/extension-bold": ^3.23.4

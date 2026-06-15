@@ -17,6 +17,7 @@ import type { Resource } from "../../database"
 import { db, ResourceState } from "../../database"
 import {
   getBatchAncestryWithSelfQuery,
+  getFooter,
   getFullPageById,
   getLocalisedSitemap,
   getNavBar,
@@ -764,7 +765,7 @@ describe("resource.service", () => {
       // Arrange
       const { site } = await setupSite()
       // Act
-      const result = await getNavBar(db, site.id)
+      const result = await getFooter(db, site.id)
       // Assert
       expect(result).toBeDefined()
       expect(result.siteId).toBe(site.id)
@@ -772,7 +773,7 @@ describe("resource.service", () => {
 
     it("should throw an error if the `siteId` is not found", async () => {
       // Act
-      const result = getNavBar(db, 99999)
+      const result = getFooter(db, 99999)
       // Assert
       await expect(result).rejects.toThrow()
     })
