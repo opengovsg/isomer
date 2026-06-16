@@ -86,7 +86,7 @@ const FolderPage: NextPageWithLayout = () => {
                 size="md"
                 className="justify-self-end"
                 endContent={
-                  <BiChevronDown className="transition-transform group-aria-expanded:rotate-180" />
+                  <BiChevronDown className="size-5 transition-transform group-aria-expanded:rotate-180" />
                 }
               >
                 Create new...

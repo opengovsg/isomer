@@ -139,7 +139,7 @@ export const CollectionTable = ({
               size="sm"
               className="prose-caption-1 min-h-0 min-w-0 p-0"
               endContent={
-                <BiChevronDown className="transition-transform group-aria-expanded:rotate-180" />
+                <BiChevronDown className="size-5 transition-transform group-aria-expanded:rotate-180" />
               }
             >
               {COLLECTION_TABLE_SORT_OPTIONS[sortOption]}
