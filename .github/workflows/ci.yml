@@ -72,6 +72,56 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
 
+  components-package-size:
+    name: Components package size
+    needs: optimize_ci
+    # Only meaningful on PRs (needs a `main` baseline to diff against).
+    if: github.event_name == 'pull_request' && needs.optimize_ci.outputs.skip == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      # Same build command the publisher runs (tooling/build/scripts/publisher.sh),
+      # which packs the tarball the publisher consumes.
+      - name: Build components (PR branch)
+        run: pnpm --filter @opengovsg/isomer-components run build
+
+      - name: Measure PR tarball
+        id: pr
+        run: |
+          tarball=$(ls packages/components/opengovsg-isomer-components-*.tgz | head -n1)
+          echo "bytes=$(wc -c < "$tarball" | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Build components (main)
+        id: base
+        run: |
+          pr_ref=$(git rev-parse HEAD)
+          git fetch --no-tags --depth=1 origin main
+          git checkout --force FETCH_HEAD
+          # main may have a different lockfile/deps than the PR branch.
+          pnpm install --frozen-lockfile
+          # Clear the PR tarball so the glob can only match main's output.
+          rm -f packages/components/opengovsg-isomer-components-*.tgz
+          pnpm --filter @opengovsg/isomer-components run build
+          tarball=$(ls packages/components/opengovsg-isomer-components-*.tgz | head -n1)
+          echo "bytes=$(wc -c < "$tarball" | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          # Restore the PR working tree so the comment script (added on this PR) is present.
+          git checkout --force "$pr_ref"
+
+      - name: Comment size delta
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BYTES: ${{ steps.pr.outputs.bytes }}
+          BASE_BYTES: ${{ steps.base.outputs.bytes }}
+        run: bash .github/scripts/comment-components-size.sh
+
   unit-integration-tests:
     name: Unit & integration tests
     needs: optimize_ci
