@@ -310,6 +310,10 @@ export interface PushDocument {
 /**
  * Shape of a gazette record pushed to the shared egazette Algolia index.
  * Must match egazette field-for-field — the index schema is set by egazette.
+ *
+ * The index signature makes SearchRecord directly assignable to
+ * `({ objectID: string } & Record<string, unknown>)[]` (the saveObjectsToSearchIndex
+ * parameter type) without an unsafe cast.
  */
 export interface SearchRecord {
   objectID: string
@@ -329,6 +333,7 @@ export interface SearchRecord {
   fileUrl: string
   /** One text chunk (up to 7 000 chars) from the parsed PDF. */
   text: string
+  [key: string]: unknown
 }
 
 export interface BuildGazetteSearchRecordsParams {

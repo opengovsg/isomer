@@ -42,6 +42,105 @@ const collectionIndexPageContentSchema = z.object({
   }),
 })
 
+/**
+ * Shared per-resource extraction pipeline used by both the SearchSG and Algolia
+ * branches. Performs all I/O (S3 fetch, S3 tag update, PDF parse) and the two
+ * schema validations:
+ *
+ *   - pushDocumentContentSchema failure  → logs + returns null  (caller skips row)
+ *   - collectionIndexPageContentSchema failure → logs + throws   (caller's try/catch skips row)
+ *
+ * `setAssetAsPublished` is called exactly once per resource, inside this helper,
+ * preserving the existing semantics regardless of which ingestion branch runs.
+ */
+const extractResourceData = async ({
+  resourceId,
+  parentId,
+  content,
+}: {
+  resourceId: string
+  parentId: string | null
+  content: unknown
+}): Promise<{
+  ref: string
+  objectGroup: string
+  fileUrl: string
+  subcategoryLabel: string | undefined
+  pdfTextContent: string
+  parsedPage: {
+    ref: string
+    category: string
+    tagged: string[]
+    description?: string
+  }
+} | null> => {
+  const parsed = pushDocumentContentSchema.safeParse(content)
+  if (!parsed.success) {
+    logger.error(
+      { content, resourceId },
+      "Invalid content structure for push document",
+    )
+    return null
+  }
+
+  const ref = parsed.data.page.ref
+  // objectGroup is the S3 key (no leading slash), matching egazette's
+  // objectKey convention.
+  const objectGroup = ref.slice(1)
+  const fileUrl = encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`)
+
+  // NOTE: select the index page published blob also
+  // as we need to derive the subcategory
+  const { content: indexPageContent } = await db
+    .selectFrom("Resource")
+    .innerJoin("Version", "Version.resourceId", "Resource.id")
+    .innerJoin("Blob", "Blob.id", "Version.blobId")
+    .where("type", "=", "IndexPage")
+    .where("parentId", "=", parentId)
+    .select(["Blob.content"])
+    .executeTakeFirstOrThrow()
+
+  const blob = await getBlob(env.S3_GAZETTE_BUCKET_NAME, ref.slice(1))
+
+  // NOTE: Remove `scheduledAt` tags from our s3 object
+  // so that the pdf is viewable to MOPs
+  await setAssetAsPublished({
+    Key: ref.slice(1),
+    Bucket: env.S3_GAZETTE_BUCKET_NAME,
+  })
+
+  // NOTE: Derive the subcategory from the tagged mapping
+  const indexParsed =
+    collectionIndexPageContentSchema.safeParse(indexPageContent)
+  if (!indexParsed.success) {
+    logger.error(
+      { indexPageContent, resourceId },
+      "Invalid index page content structure",
+    )
+    throw new Error(
+      `Failed to parse index page content for resource ${resourceId}`,
+    )
+  }
+  const { tagCategories } = indexParsed.data.page
+  // reduce the tag category options into a single array then we find
+  const options =
+    tagCategories?.map((category) => category.options).flat() ?? []
+  const subcategory = options.find(
+    (option) => option.id === parsed.data.page.tagged[0],
+  )
+
+  const pdfTextContent = await parseFullTextFromPDF(blob)
+
+  return {
+    ref,
+    objectGroup,
+    fileUrl,
+    subcategoryLabel: subcategory?.label,
+    pdfTextContent,
+    parsedPage: parsed.data.page,
+  }
+}
+
 export const schedulePushDocumentJob = async () => {
   return await registerPgbossJob(
     logger,
@@ -85,70 +184,27 @@ export const schedulePushDocumentJobHandler = async () => {
       const documentPromises = scheduledResources.map(
         async ({ scheduledAt, resourceId, title, parentId, content }) => {
           try {
-            const parsed = pushDocumentContentSchema.safeParse(content)
-            if (!parsed.success) {
-              logger.error(
-                { content, resourceId },
-                "Invalid content structure for push document",
-              )
-              return null
-            }
-
-            const url = parsed.data.page.ref
-
-            // NOTE: select the index page published blob also
-            // as we need to derive the subcategory
-            const { content: indexPageContent } = await db
-              .selectFrom("Resource")
-              .innerJoin("Version", "Version.resourceId", "Resource.id")
-              .innerJoin("Blob", "Blob.id", "Version.blobId")
-              .where("type", "=", "IndexPage")
-              .where("parentId", "=", parentId)
-              .select(["Blob.content"])
-              .executeTakeFirstOrThrow()
-
-            const blob = await getBlob(env.S3_GAZETTE_BUCKET_NAME, url.slice(1))
-
-            // NOTE: Remove `scheduledAt` tags from our s3 object
-            // so that the pdf is viewable to MOPs
-            await setAssetAsPublished({
-              Key: url.slice(1),
-              Bucket: env.S3_GAZETTE_BUCKET_NAME,
+            const extracted = await extractResourceData({
+              resourceId,
+              parentId,
+              content,
             })
+            if (extracted === null) return null
 
-            // NOTE: Derive the subcategory from the tagged mapping
-            const indexParsed =
-              collectionIndexPageContentSchema.safeParse(indexPageContent)
-            if (!indexParsed.success) {
-              logger.error(
-                { indexPageContent, resourceId },
-                "Invalid index page content structure",
-              )
-              throw new Error(
-                `Failed to parse index page content for resource ${resourceId}`,
-              )
-            }
-            const { tagCategories } = indexParsed.data.page
-            // reduce the tag category options into a single array then we find
-            const options =
-              tagCategories?.map((category) => category.options).flat() ?? []
-            const subcategory = options.find(
-              (option) => option.id === parsed.data.page.tagged[0],
-            )
-
-            const pdfTextContent = await parseFullTextFromPDF(blob)
+            const { ref, pdfTextContent, subcategoryLabel, parsedPage } =
+              extracted
 
             return {
               // SearchSG dedupes on documentId, so derive a stable id from the
               // S3 key + resourceId. Re-uploads of the same key produce the
               // same id, avoiding duplicate search hits.
-              documentId: generateDocumentId(url, String(resourceId)),
+              documentId: generateDocumentId(ref, String(resourceId)),
               content: pdfTextContent.slice(0, SEARCHSG_CONTENT_LENGTH),
               title,
-              url: encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${url}`),
+              url: encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`),
               date: scheduledAt.toISOString(),
-              categories: subcategory?.label ? [subcategory.label] : [],
-              contentType: parsed.data.page.category,
+              categories: subcategoryLabel ? [subcategoryLabel] : [],
+              contentType: parsedPage.category,
             }
           } catch (error) {
             logger.error({ error, resourceId }, "Failed to process document")
@@ -170,6 +226,7 @@ export const schedulePushDocumentJobHandler = async () => {
       )
     } else {
       // --- Algolia path (flag OFF, default) ---
+      let savedCount = 0
       for (const {
         scheduledAt,
         resourceId,
@@ -178,72 +235,28 @@ export const schedulePushDocumentJobHandler = async () => {
         content,
       } of scheduledResources) {
         try {
-          const parsed = pushDocumentContentSchema.safeParse(content)
-          if (!parsed.success) {
-            logger.error(
-              { content, resourceId },
-              "Invalid content structure for push document",
-            )
-            continue
-          }
-
-          const ref = parsed.data.page.ref
-          // objectGroup is the S3 key (no leading slash), matching egazette's
-          // objectKey convention.
-          const objectGroup = ref.slice(1)
-          const fileUrl = encodeURI(
-            `https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`,
-          )
-
-          // NOTE: select the index page published blob also
-          // as we need to derive the subcategory
-          const { content: indexPageContent } = await db
-            .selectFrom("Resource")
-            .innerJoin("Version", "Version.resourceId", "Resource.id")
-            .innerJoin("Blob", "Blob.id", "Version.blobId")
-            .where("type", "=", "IndexPage")
-            .where("parentId", "=", parentId)
-            .select(["Blob.content"])
-            .executeTakeFirstOrThrow()
-
-          const blob = await getBlob(env.S3_GAZETTE_BUCKET_NAME, ref.slice(1))
-
-          // NOTE: Remove `scheduledAt` tags from our s3 object
-          // so that the pdf is viewable to MOPs
-          await setAssetAsPublished({
-            Key: ref.slice(1),
-            Bucket: env.S3_GAZETTE_BUCKET_NAME,
+          const extracted = await extractResourceData({
+            resourceId,
+            parentId,
+            content,
           })
+          if (extracted === null) continue
 
-          // NOTE: Derive the subcategory from the tagged mapping
-          const indexParsed =
-            collectionIndexPageContentSchema.safeParse(indexPageContent)
-          if (!indexParsed.success) {
-            logger.error(
-              { indexPageContent, resourceId },
-              "Invalid index page content structure",
-            )
-            throw new Error(
-              `Failed to parse index page content for resource ${resourceId}`,
-            )
-          }
-          const { tagCategories } = indexParsed.data.page
-          // reduce the tag category options into a single array then we find
-          const options =
-            tagCategories?.map((category) => category.options).flat() ?? []
-          const subcategory = options.find(
-            (option) => option.id === parsed.data.page.tagged[0],
-          )
-
-          const pdfTextContent = await parseFullTextFromPDF(blob)
+          const {
+            objectGroup,
+            fileUrl,
+            subcategoryLabel,
+            pdfTextContent,
+            parsedPage,
+          } = extracted
 
           const records = buildGazetteSearchRecords({
             parsedText: pdfTextContent,
             objectGroup,
             title,
-            category: parsed.data.page.category,
-            subCategory: subcategory?.label ?? "",
-            notificationNum: parsed.data.page.description,
+            category: parsedPage.category,
+            subCategory: subcategoryLabel ?? "",
+            notificationNum: parsedPage.description,
             fileUrl,
             scheduledAt,
           })
@@ -256,11 +269,8 @@ export const schedulePushDocumentJobHandler = async () => {
             continue
           }
 
-          await saveObjectsToSearchIndex(
-            records as unknown as ({
-              objectID: string
-            } & Record<string, unknown>)[],
-          )
+          await saveObjectsToSearchIndex(records)
+          savedCount++
           logger.info({ resourceId, count: records.length }, "Saved to Algolia")
         } catch (error) {
           logger.error(
@@ -272,7 +282,7 @@ export const schedulePushDocumentJobHandler = async () => {
 
       await deleteProcessedJobs(scheduledAtCutoff)
       logger.info(
-        { count: scheduledResources.length },
+        { count: savedCount, attempted: scheduledResources.length },
         "Completed schedule push document job (Algolia)",
       )
     }

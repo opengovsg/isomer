@@ -162,6 +162,11 @@ describe("schedulePushDocumentJobHandler", async () => {
   let user: User
 
   beforeEach(async () => {
+    // clearAllMocks resets call counts / return-value overrides on the
+    // module-level vi.mock("~/lib/algolia") auto-mock (which restoreAllMocks
+    // would destroy, breaking vi.mocked(algoliaLib.*) calls below).
+    // restoreAllMocks then cleans up the vi.spyOn stubs re-registered each
+    // tick so they don't bleed across tests.
     vi.clearAllMocks()
     vi.restoreAllMocks()
     MockDate.set(FIXED_NOW)
@@ -299,19 +304,23 @@ describe("schedulePushDocumentJobHandler", async () => {
         })
         .execute()
 
+      // Spy on buildGazetteSearchRecords to capture its typed SearchRecord[]
+      // return value — text is string there, so no unsafe cast is needed.
+      const buildSpy = vi.spyOn(gazetteService, "buildGazetteSearchRecords")
+
       // Act
       await schedulePushDocumentJobHandler()
 
       // Assert — records were built from the full text (>1 chunk because the
       // text exceeds one 7 000-char chunk), and no 50k truncation was applied.
       expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
-      const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
-        .calls[0]!
-      expect(records.length).toBeGreaterThan(1)
+      const builtRecords: gazetteService.SearchRecord[] =
+        buildSpy.mock.results[0]!.value
+      expect(builtRecords.length).toBeGreaterThan(1)
       // The combined text length across all chunks equals the full text, not
       // the 50 000-char truncated version.
-      const combinedLength = records.reduce(
-        (acc, r) => acc + (r as unknown as { text: string }).text.length,
+      const combinedLength = builtRecords.reduce(
+        (acc, r) => acc + r.text.length,
         0,
       )
       expect(combinedLength).toBe(longText.length)
