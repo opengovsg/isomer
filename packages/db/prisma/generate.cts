@@ -2,7 +2,7 @@ import * as fs from "fs/promises"
 import * as path from "path"
 import ts from "typescript"
 
-const TYPE_FOLDER = "../../../packages/db/src/generated"
+const TYPE_FOLDER = "../src/generated"
 // THIS MUST BE PREFIXED WITH A DOT
 const TYPE_FILE = "./generatedTypes.ts"
 const GENERATED_FILE = "./selectableTypes.ts"

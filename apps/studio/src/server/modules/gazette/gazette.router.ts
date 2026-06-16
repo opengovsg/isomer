@@ -897,18 +897,34 @@ export const gazetteRouter = router({
         .innerJoin("User", "ResourcePermission.userId", "User.id")
         .where("User.deletedAt", "is", null)
         .where("ResourcePermission.role", "=", "Admin")
+        // Exclude Isomer admins (internal team) — this notification is meant
+        // for the agency's own site admins only.
+        .where(({ not, exists, selectFrom }) =>
+          not(
+            exists(
+              selectFrom("IsomerAdmin")
+                .select("IsomerAdmin.id")
+                .whereRef("IsomerAdmin.userId", "=", "User.id"),
+            ),
+          ),
+        )
         .select("User.email")
         .execute()
 
       const filename = ref.split("/").pop() ?? ref
-      await Promise.all(
-        admins.map(async ({ email }) => {
-          await sendGazetteDeletionEmail({
-            fileId: filename,
-            gazetteTitle: gazette.title,
-            recipientEmail: email,
-          })
-        }),
-      )
+      // Send a single email: the Datadog events address is the primary
+      // recipient (so deletions always alert ops, even with zero admins) and
+      // every site admin is cc'd. Dedupe is required: a user can hold
+      // multiple Admin permission rows, and Postman rejects duplicate cc
+      // entries.
+      const cc = [...new Set(admins.map(({ email }) => email))]
+      await sendGazetteDeletionEmail({
+        fileId: filename,
+        gazetteTitle: gazette.title,
+        // Provisioned via SSM and treated as a secret so that it cannot be
+        // scraped and spammed.
+        recipientEmail: env.DD_DELETION_EMAIL,
+        cc,
+      })
     }),
 })

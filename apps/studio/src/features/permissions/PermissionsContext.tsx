@@ -1,9 +1,8 @@
 import type { PropsWithChildren } from "react"
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import type { RoleType } from "~prisma/generated/generatedEnums"
-import { Ability, AbilityBuilder, createMongoAbility } from "@casl/ability"
-import { createContextualCan } from "@casl/react"
-import { createContext, useContext } from "react"
+import { AbilityBuilder, createMongoAbility } from "@casl/ability"
+import { AbilityProvider, Can, useAbility } from "@casl/react"
 import { buildPermissionsForResource } from "~/server/modules/permissions/permissions.util"
 import { trpc } from "~/utils/trpc"
 
@@ -20,12 +19,6 @@ const getPermissions = (roles: { role: RoleType }[]) => {
   return builder.build({ detectSubjectType: () => "Resource" })
 }
 
-const PermissionsContext = createContext<ResourceAbility | Ability>(
-  // NOTE: Pass a dummy ability that does not allow the user to do anything
-  // so that the createContextualCan function does not throw a type error
-  new Ability(),
-)
-
 export const PermissionsProvider = ({
   children,
   siteId,
@@ -38,16 +31,11 @@ export const PermissionsProvider = ({
 
   const ability = getPermissions(roles)
 
-  return (
-    <PermissionsContext.Provider value={ability}>
-      {children}
-    </PermissionsContext.Provider>
-  )
+  return <AbilityProvider value={ability}>{children}</AbilityProvider>
 }
 
-export const usePermissions = (): ResourceAbility | Ability => {
-  const ability = useContext(PermissionsContext)
-  return ability
+export const usePermissions = (): ResourceAbility => {
+  return useAbility<ResourceAbility>()
 }
 
-export const Can = createContextualCan(PermissionsContext.Consumer)
+export { Can }

@@ -1,8 +1,3 @@
-import type {
-  DraggableProvidedDraggableProps,
-  DraggableProvidedDragHandleProps,
-} from "@hello-pangea/dnd"
-import type { JsonSchema, UISchemaElement } from "@jsonforms/core"
 import {
   Box,
   Flex,
@@ -32,11 +27,11 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { trpc } from "~/utils/trpc"
 
-import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
-import { LINK_TYPES } from "../../../LinkEditor/constants"
-import { getLinkHrefType } from "../../../LinkEditor/utils"
-import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"
-import { parseHref } from "./utils/parseHref"
+import type { LinkTypesWithHrefFormat } from "../../LinkEditor/constants"
+import type { DraggableArrayItemRenderProps } from "./types"
+import { LINK_TYPES } from "../../LinkEditor/constants"
+import { getLinkHrefType, parseHref } from "../../LinkEditor/utils"
+import { LinkErrorBoundary } from "./LinkErrorBoundary"
 
 interface SuspendableLabelProps {
   siteId: number
@@ -58,16 +53,11 @@ const SuspendableLabel = ({ siteId, resourceId }: SuspendableLabelProps) => {
   )
 }
 
-interface DraggableLinkButtonProps {
-  draggableProps: DraggableProvidedDraggableProps
-  dragHandleProps: DraggableProvidedDragHandleProps | null
-  setSelectedIndex: (selectedIndex?: number) => void
+interface DraggableLinkButtonProps extends Omit<
+  DraggableArrayItemRenderProps,
+  "selected" | "enabled" | "handleSelect" | "removeItem" | "translations"
+> {
   onDeleteItem: () => void
-  isError: boolean
-  index: number
-  path: string
-  schema: JsonSchema
-  uischema: UISchemaElement
   resetLink: () => void
 }
 

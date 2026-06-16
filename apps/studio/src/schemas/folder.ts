@@ -4,7 +4,9 @@ import { generateBasePermalinkSchema } from "./common"
 import { offsetPaginationSchema } from "./pagination"
 
 export const MAX_FOLDER_TITLE_LENGTH = 250
-export const MAX_FOLDER_PERMALINK_LENGTH = 500
+// NOTE: 250 characters is the hard limit, and we want to be consistent with
+// page permalink length limit
+export const MAX_FOLDER_PERMALINK_LENGTH = 250
 
 const permalinkSchema = generateBasePermalinkSchema("folder")
   .min(1, { message: "Enter a URL for this folder" })

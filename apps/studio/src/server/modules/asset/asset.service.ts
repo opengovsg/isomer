@@ -4,12 +4,18 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
+import DOMPurify from "isomorphic-dompurify"
+import { JSDOM } from "jsdom"
+
+const { DOMParser } = new JSDOM("").window
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { createBaseLogger } from "~/lib/logger"
 import {
   deleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
+  putObjectDirect,
 } from "~/lib/s3"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
@@ -17,6 +23,8 @@ import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
+
+const logger = createBaseLogger({ path: "asset.service" })
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
 const EXTENSION_TO_MIME: Record<string, string> = {
@@ -156,5 +164,77 @@ export const getPresignedGetUrl = async ({
   return generateSignedGetUrl({
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
     Key: key,
+  })
+}
+
+export const sanitizeSvg = (content: string): string => {
+  // Must run BEFORE parsing. Entity expansion (e.g. billion-laughs) happens
+  // inside DOMParser.parseFromString — DOMPurify only sees the resulting DOM
+  // and cannot intercept it. No sanitization library operates at this layer.
+  if (/<!ENTITY/i.test(content)) {
+    logger.error("SVG rejected: contains disallowed XML entities")
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "SVG contains disallowed XML entities",
+    })
+  }
+
+  const doc = new DOMParser().parseFromString(content, "image/svg+xml")
+
+  if (doc.getElementsByTagName("parsererror").length > 0) {
+    logger.error("SVG rejected: failed to parse as valid XML")
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "SVG failed to parse as valid XML",
+    })
+  }
+
+  const root = doc.documentElement
+  if (
+    root.localName !== "svg" ||
+    root.namespaceURI !== "http://www.w3.org/2000/svg"
+  ) {
+    logger.error(
+      { localName: root.localName, namespaceURI: root.namespaceURI },
+      "SVG rejected: root element is not a valid SVG element",
+    )
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Root element is not a valid SVG element",
+    })
+  }
+
+  // DOMPurify's svg+svgFilters profile is the actual security boundary — it strips
+  // all on* event handlers and dangerous elements by default. The explicit lists
+  // below are defense-in-depth for the highest-risk items; do not treat them as
+  // exhaustive. Adding an entry here does not replace the profile's coverage.
+  const sanitized = DOMPurify.sanitize(content, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    FORBID_TAGS: ["script", "foreignObject", "use"],
+    FORBID_ATTR: ["onload", "onclick", "onerror", "onmouseover"],
+  })
+
+  return sanitized
+}
+
+export const putFileDirect = async ({
+  key,
+  body,
+  tags,
+}: {
+  key: string
+  body: string
+  tags?: { key: string; value: string }[]
+}): Promise<void> => {
+  const contentType = getContentTypeFromKey(key)
+  const contentDisposition = getContentDispositionForKey(key)
+  const stringifiedTags = tags && generateTagsQueryString(tags)
+  await putObjectDirect({
+    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+    Key: key,
+    Body: body,
+    ContentType: contentType,
+    ContentDisposition: contentDisposition,
+    Tagging: tags ? stringifiedTags : undefined,
   })
 }

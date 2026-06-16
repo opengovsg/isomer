@@ -7,12 +7,14 @@ import { useSignInContext } from "../SignInContext"
 import { EmailInput } from "./EmailInput"
 
 export const EmailLoginForm = () => {
-  const { setVfnStepData, proceedToVerification } = useSignInContext()
+  const { setVfnStepData, proceedToVerification, resetTimer } =
+    useSignInContext()
   const gb = useGrowthBook()
 
   const handleOnSuccessEmail = useCallback(
     ({ email, otpPrefix }: VfnStepData) => {
       setVfnStepData({ email, otpPrefix })
+      resetTimer()
 
       const newAttributes: Partial<GrowthbookAttributes> = {
         email,
@@ -21,7 +23,7 @@ export const EmailLoginForm = () => {
       void gb.updateAttributes(newAttributes)
       proceedToVerification()
     },
-    [gb, proceedToVerification, setVfnStepData],
+    [gb, proceedToVerification, resetTimer, setVfnStepData],
   )
 
   return <EmailInput onSuccess={handleOnSuccessEmail} />

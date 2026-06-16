@@ -1,7 +1,7 @@
 ---
 name: review-dependency-upgrade
 description: Use this skill when the user asks to review, evaluate, or assess a dependency upgrade — e.g. "review this upgrade", "is bumping X from a.b.c to x.y.z safe?", "what breaks if I upgrade <pkg>?", "check this package bump". Covers pnpm/npm packages and github-actions. Researches breaking changes for every intermediate version and reports which ones actually impact the user's codebase. Also runs unattended on Dependabot PRs via GitHub Actions — no human in the loop.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Review Dependency Upgrade
@@ -20,8 +20,9 @@ When **not** in unattended mode (e.g. interactive chat), you may ask the user fo
 
 - **Never ask the user for clarification, confirmation, or approval.** Not in chat, not as a PR comment question.
 - **Never pause or offer choices** ("which PR?", "focus on one major?", "shall I continue?"). Decide and proceed.
-- **Never modify the repo** — review and comment only (see Guidelines).
-- **Always post the report** as a PR comment in unattended mode (see step 5).
+- **Never modify the repo** — review and comment only (see Guidelines). Do not write files inside the repository working tree; CI runners on pull-request events may auto-commit dirty trees.
+- **Always post the report** as a PR comment in unattended mode (see step 5) — including when the verdict is `SAFE`, when the breaking-changes table is empty, and when you could not infer the upgrade target.
+- **Posting is the final mandatory step.** Your final response must be the full report — do not end with a summary or meta-commentary instead of it.
 
 ## Inputs to resolve
 
@@ -122,30 +123,53 @@ Rules for the table:
 
 Keep it tight. The report should answer: _does this upgrade break my code, and if so, where?_ Don't pad with general advice or upgrade-process boilerplate.
 
+**Zero breaking changes:** If research finds no documented breaking changes between `from` and `to`, still post the full report with verdict `SAFE` and exactly one table row:
+
+| — | No documented breaking changes between \<from\> and \<to\> | Safe | — | — |
+
+Do not skip posting because "there is nothing to say".
+
 ### 5. Post to GitHub PR
 
-In **unattended mode**, always post the report as a PR comment and echo it in the action output. In interactive mode, post when a PR is associated with the review (see below); otherwise deliver the report in chat only.
+In **unattended mode**, always deliver the report as a PR comment. In interactive mode, post when a PR is associated with the review; otherwise deliver the report in chat only.
 
-**Resolve the PR** (no user prompts in unattended mode):
+**All unattended runs:**
+
+- Output the full report (step 4 format) as your **final message** — nothing after it, no wrapper text.
+- Do not write files inside the repository working tree.
+- Do not modify tracked files.
+
+**GitHub Actions** (`GITHUB_ACTIONS=true`):
+
+- Assume the runner posts your final output as the PR comment. Do not also run `gh pr comment` unless you have clear evidence the report did not reach the PR.
+
+**Other CI** (`CI=true`, not GitHub Actions) or when `gh` posting is required:
+
+- Write the report to `/tmp/dep-review-<pkg>.md` (outside the repo).
+- Post with `gh pr comment <number> --body-file /tmp/dep-review-<pkg>.md` and confirm exit code 0.
+
+**Resolve the PR** when using `gh`:
 
 1. `gh pr view --json number,url,headRefName,title,state` on the current branch.
 2. If that fails, read `$GITHUB_EVENT_PATH` for `pull_request.number` when present.
 3. If multiple open PRs share the branch, use the PR whose `headRefName` matches the current branch.
 4. If no PR is found, output the report to the action log only — do not fail the job.
 
-**Post the comment** with:
-
-```bash
-gh pr comment <number> --body-file <tmpfile>
-```
-
-Write the report body to a temp file first (e.g. via `Write` to `/tmp/dep-review-<pkg>.md`) rather than passing the entire body as a `--body` argument — this avoids shell-escaping issues with the markdown table.
-
-If `gh` is unavailable or unauthenticated, output the report to the action log and exit without failing.
+If `gh pr comment` fails, retry once. If it still fails, output the full report to the action log with a prominent `## POST FAILED` header — do not treat the run as complete.
 
 **Skip posting only when:**
 
 - The PR is closed or merged — output the report to the action log and note the PR state in the log.
+
+### 6. Completion gate (unattended mode only)
+
+Before ending, verify one of:
+
+- ✅ **GitHub Actions:** your final response is the full report from step 4, or
+- ✅ **`gh pr comment` succeeded** (exit code 0), or
+- ✅ PR is closed/merged and you logged why posting was skipped.
+
+If none apply, you are not done — go back to step 5.
 
 ## Guidelines
 

@@ -19,10 +19,13 @@
     "SINGPASS_SIGNING_PRIVATE_KEY",
     "SEARCHSG_API_KEY",
     "S3_GAZETTE_BUCKET_NAME",
-    "S3_GAZETTE_DOMAIN_NAME"
+    "S3_GAZETTE_DOMAIN_NAME",
+    "DD_DELETION_EMAIL"
   ],
   "tasks": {
-    "build": {},
+    "build": {
+      "dependsOn": ["generate"]
+    },
     "build:template": {},
     "clean": {},
     "db:connect": {
@@ -76,12 +79,14 @@
     },
     "lint": {
       "dependsOn": [
+        "generate",
         "^build"
       ],
       "outputs": []
     },
     "typecheck": {
       "dependsOn": [
+        "generate",
         "^build"
       ],
       "outputs": [

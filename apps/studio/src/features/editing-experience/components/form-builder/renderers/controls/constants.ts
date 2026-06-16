@@ -3,6 +3,8 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 export const ONE_MB_IN_BYTES = 1000000
 
 export const MAX_IMG_FILE_SIZE_BYTES = 5 * ONE_MB_IN_BYTES
+// Lower than MAX_IMG_FILE_SIZE_BYTES: SVGs are sanitized server-side (CPU/memory cost per request)
+export const MAX_SVG_FILE_SIZE_BYTES = 1 * ONE_MB_IN_BYTES
 
 export const ACCEPTED_IMAGE_TYPES_MESSAGE = Object.keys(
   IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
@@ -23,3 +25,16 @@ export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
 export const RISKY_FILE_EXTENSIONS = new Set<
   keyof typeof FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING
 >([".doc", ".docx", ".xls", ".xlsx"])
+
+export const ROW_ACTIONS_MENU_BUTTON_PROPS = {
+  colorScheme: "neutral",
+  variant: "clear",
+  h: "2.125rem",
+  w: "2.125rem",
+  minH: "2.125rem",
+  minW: "2.125rem",
+  p: "0.25rem",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+} as const
