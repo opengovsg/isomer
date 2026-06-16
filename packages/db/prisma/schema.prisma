@@ -80,6 +80,7 @@ model Resource {
   ResourcePermission ResourcePermission[]
   CodeBuildJobs      CodeBuildJobs[]
   pushDocumentJobs   PushDocumentJob[]
+  PreviewLink        PreviewLink[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -135,13 +136,15 @@ model User {
   deletedAt   DateTime?
   lastLoginAt DateTime?
 
-  ResourcePermission ResourcePermission[]
-  IsomerAdmin        IsomerAdmin[]
-  versions           Version[]
-  AuditLog           AuditLog[]
-  CodeBuildJobs      CodeBuildJobs[]
-  ScheduledResources Resource[]
-  pushDocumentJobs   PushDocumentJob[]
+  ResourcePermission   ResourcePermission[]
+  IsomerAdmin          IsomerAdmin[]
+  versions             Version[]
+  AuditLog             AuditLog[]
+  CodeBuildJobs        CodeBuildJobs[]
+  ScheduledResources   Resource[]
+  pushDocumentJobs     PushDocumentJob[]
+  PreviewLinksCreated  PreviewLink[]        @relation("PreviewLinkCreator")
+  PreviewLinksRevoked  PreviewLink[]        @relation("PreviewLinkRevoker")
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -174,6 +177,7 @@ model Site {
   AuditLog           AuditLog[]
   CodeBuildJobs      CodeBuildJobs[]
   Redirect           Redirect[]
+  PreviewLink        PreviewLink[]
 }
 
 model Redirect {
@@ -363,4 +367,33 @@ model PushDocumentJob {
 
   @@index([scheduledAt])
   @@index([resourceId])
+}
+
+model PreviewLink {
+  id    BigInt @id @default(autoincrement())
+  token String @unique
+
+  siteId Int
+  site   Site @relation(fields: [siteId], references: [id])
+
+  resourceId BigInt
+  resource   Resource @relation(fields: [resourceId], references: [id])
+
+  createdBy String
+  creator   User   @relation("PreviewLinkCreator", fields: [createdBy], references: [id])
+
+  label String?
+
+  expiresAt DateTime
+
+  revokedAt DateTime?
+  revokedBy String?
+  revoker   User?     @relation("PreviewLinkRevoker", fields: [revokedBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([siteId])
+  @@index([resourceId])
+  @@index([createdBy])
 }
