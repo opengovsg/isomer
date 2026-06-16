@@ -38,6 +38,7 @@ import {
 import { CRITICAL_MENU_ITEM_CLASSNAMES } from "~/components/Menu"
 import { IconButton } from "~/components/oui-bridge/IconButton"
 
+import { useFormBuilderBoundary } from "../../../hooks/useFormBuilderBoundary"
 import {
   DEFAULT_NAVBAR_ITEM_DESCRIPTION,
   DEFAULT_NAVBAR_ITEM_TITLE,
@@ -75,6 +76,7 @@ export const NavbarItemBox = ({
   setIsItemBeingDraggedOver,
   isInvalid,
 }: NavbarItemBoxProps) => {
+  const menuBoundary = useFormBuilderBoundary()
   const itemRef = useRef<HTMLDivElement | null>(null)
   const itemDefaultDragHandleRef = useRef<HTMLDivElement | null>(null)
   const [isSubItemDragging, setIsSubItemDragging] = useState(false)
@@ -340,7 +342,7 @@ export const NavbarItemBox = ({
               className="size-7 min-h-7 min-w-7"
               icon={<BiDotsHorizontalRounded className="size-6" />}
             />
-            <Menu size="sm">
+            <Menu size="sm" {...menuBoundary}>
               <MenuItem
                 onAction={() => onEditItem()}
                 startContent={<BiPencil className="size-4" />}

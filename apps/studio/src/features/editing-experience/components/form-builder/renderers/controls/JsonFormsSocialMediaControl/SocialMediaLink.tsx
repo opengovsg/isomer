@@ -12,6 +12,7 @@ import {
 import { CRITICAL_MENU_ITEM_CLASSNAMES } from "~/components/Menu"
 import { IconButton } from "~/components/oui-bridge/IconButton"
 
+import { useFormBuilderBoundary } from "../../../hooks/useFormBuilderBoundary"
 import { SOCIAL_MEDIA_LINKS } from "./constants"
 
 interface SocialMediaLinkProps {
@@ -27,6 +28,7 @@ export const SocialMediaLink = ({
   onEdit,
   isInvalid,
 }: SocialMediaLinkProps) => {
+  const menuBoundary = useFormBuilderBoundary()
   const ctx = useJsonForms()
   const data = (get(ctx.core?.data, path) ?? {}) as Partial<
     NonNullable<FooterSchemaType["socialMediaLinks"]>[number]
@@ -128,7 +130,7 @@ export const SocialMediaLink = ({
             className="size-7 min-h-7 min-w-7"
             icon={<BiDotsHorizontalRounded className="size-6" />}
           />
-          <Menu size="sm">
+          <Menu size="sm" {...menuBoundary}>
             <MenuItem
               onAction={onEdit}
               startContent={<BiPencil className="size-4" />}

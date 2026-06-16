@@ -29,6 +29,7 @@ import type { LinkTypesWithHrefFormat } from "../../LinkEditor/constants"
 import type { DraggableArrayItemRenderProps } from "./types"
 import { LINK_TYPES } from "../../LinkEditor/constants"
 import { getLinkHrefType, parseHref } from "../../LinkEditor/utils"
+import { useFormBuilderBoundary } from "../hooks/useFormBuilderBoundary"
 import { LinkErrorBoundary } from "./LinkErrorBoundary"
 
 interface SuspendableLabelProps {
@@ -75,6 +76,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
     },
     ref,
   ) => {
+    const menuBoundary = useFormBuilderBoundary()
     const ctx = useJsonForms()
     const label = computeChildLabel(
       ctx.core?.data,
@@ -216,7 +218,7 @@ const DraggableLinkButton = forwardRef<DraggableLinkButtonProps, "div">(
                   className="size-7 min-h-7 min-w-7"
                   icon={<BiDotsHorizontalRounded className="size-6" />}
                 />
-                <Menu size="sm">
+                <Menu size="sm" {...menuBoundary}>
                   <MenuItem
                     onAction={() => setSelectedIndex(index)}
                     startContent={<BiPencil className="size-4" />}

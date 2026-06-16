@@ -4,6 +4,7 @@ import { BiDotsHorizontalRounded, BiTrash } from "react-icons/bi"
 import { CRITICAL_MENU_ITEM_CLASSNAMES } from "~/components/Menu"
 import { IconButton } from "~/components/oui-bridge/IconButton"
 
+import { useFormBuilderBoundary } from "../../hooks/useFormBuilderBoundary"
 import { ROW_ACTIONS_MENU_BUTTON_CLASS } from "./constants"
 
 interface TagRowActionsMenuProps {
@@ -19,6 +20,7 @@ export function TagRowActionsMenu({
   isDisabled,
   onDelete,
 }: TagRowActionsMenuProps) {
+  const menuBoundary = useFormBuilderBoundary()
   return (
     <MenuTrigger>
       <IconButton
@@ -30,7 +32,7 @@ export function TagRowActionsMenu({
         aria-label={`${upperFirst(noun)} ${index + 1} actions`}
         onClick={(e) => e.stopPropagation()}
       />
-      <Menu>
+      <Menu {...menuBoundary}>
         <MenuItem
           classNames={CRITICAL_MENU_ITEM_CLASSNAMES}
           startContent={<BiTrash className="size-4" />}
