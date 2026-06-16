@@ -4839,3 +4839,79 @@ export const AudioEmbedStory: Story = {
     ],
   },
 }
+
+export const VideoEmbedStory: Story = {
+  parameters: {
+    // Delay the Chromatic snapshot so iframes have time to load and don’t appear as white blocks.
+    chromatic: {
+      ...withChromaticModes(["mobile", "tablet", "desktop"]),
+      delay: 5000,
+    },
+  },
+  args: {
+    layout: "content",
+    site: generateSiteConfig({}),
+    page: {
+      permalink: "/content",
+      title: "Content page",
+      lastModified: "2024-05-02T14:12:57.160Z",
+      contentPageHeader: {
+        showThumbnail: false,
+        summary:
+          "Showing how different video embeds render within a content page layout, including a vertical Facebook Reel.",
+        buttonLabel: "Submit a proposal",
+        buttonUrl: "/submit-proposal",
+      },
+    },
+    content: [
+      {
+        type: "prose",
+        content: [
+          {
+            type: "heading",
+            attrs: { id: "youtube-video", level: 2 },
+            content: [{ type: "text", text: "Landscape video (YouTube)" }],
+          },
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "A regular 16:9 landscape video renders full width within the content column.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "video",
+        title: "Rick Astley - Never Gonna Give You Up",
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      },
+      {
+        type: "prose",
+        content: [
+          {
+            type: "heading",
+            attrs: { id: "facebook-reel", level: 2 },
+            content: [{ type: "text", text: "Vertical video (Facebook Reel)" }],
+          },
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Facebook Reels are vertical (9:16) videos. They render in a width-capped portrait box, centred within the content column, so they are not clipped or blown up to full-page height.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "video",
+        title: "Facebook Reel",
+        url: "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F3028033664054832%2F&show_text=false&width=267&t=0",
+      },
+    ],
+  },
+}
