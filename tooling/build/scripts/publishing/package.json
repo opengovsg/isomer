@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test-ci:unit": "vitest run",
     "test:watch": "vitest watch",
+    "typecheck": "tsgo --noEmit",
     "upload-redirects": "tsx uploadRedirects.ts"
   },
   "dependencies": {
@@ -20,8 +21,10 @@
   },
   "devDependencies": {
     "@isomer/db": "workspace:*",
+    "@opengovsg/isomer-components": "workspace:*",
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "testcontainers": "catalog:",
     "vitest": "catalog:vitest"
   }

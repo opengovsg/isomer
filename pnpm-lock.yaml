@@ -1508,12 +1508,18 @@ importers:
       '@isomer/db':
         specifier: workspace:*
         version: link:../../../../packages/db
+      '@opengovsg/isomer-components':
+        specifier: workspace:*
+        version: link:../../../../packages/components
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.3
       '@types/pg':
         specifier: 'catalog:'
         version: 8.20.0
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20260608.1
       testcontainers:
         specifier: 'catalog:'
         version: 12.0.1

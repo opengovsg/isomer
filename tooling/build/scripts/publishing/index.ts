@@ -3,10 +3,16 @@ import * as fs from "fs"
 import * as path from "path"
 import { performance } from "perf_hooks"
 import { Client } from "pg"
-import { ResourceType } from "~generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import type { PageResourceType } from "./constants"
-import type { PageOnlySitemapEntry, Resource, SitemapEntry } from "./types"
+import type {
+  PageOnlySitemapEntry,
+  Resource,
+  ResourceRow,
+  SitemapEntry,
+} from "./types"
 import { FOLDER_RESOURCE_TYPES, PAGE_RESOURCE_TYPES } from "./constants"
 import {
   GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
@@ -15,6 +21,7 @@ import {
   GET_NAVBAR,
   GET_REDIRECTS,
 } from "./queries"
+import { toResource } from "./types"
 import {
   getCollectionIndexPageContents,
   getFolderIndexPageContents,
@@ -429,11 +436,18 @@ async function processDanglingDirectories(
       ...collections.map(({ id, title, permalink }) => {
         const meta = resources.find(
           ({ type, parentId }) =>
+            // LATENT BUG, preserved deliberately (plan decision 6): `parentId`
+            // is honestly a string but is compared to `Number(id)`, so this is
+            // always false and CollectionMeta `variant` is never resolved here.
+            // The fix is its own PR with its own test-expectation change; do NOT
+            // coerce `parentId` or change `Number(id)`. The runtime expression
+            // is byte-identical to main; only the type-error is suppressed.
+            // @ts-expect-error string === number comparison is always false (see above)
             parentId === Number(id) && type === "CollectionMeta",
         )
         const content = getCollectionIndexPageContents(
           title,
-          meta?.content.variant,
+          meta?.content?.variant,
         )
         return { title, permalink, content }
       }),
@@ -453,12 +467,13 @@ async function getAllResourcesWithFullPermalinks(
   const values = [SITE_ID]
 
   try {
-    const res = await client.query(
+    const res = await client.query<ResourceRow>(
       GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
       values,
     )
     logDebug("Fetched resources with full permalinks:", res.rows)
-    return res.rows
+    // The seam: adapt honestly-typed raw rows to the script's working shape.
+    return res.rows.map(toResource)
   } catch (err) {
     console.error("Error fetching resources:", err)
     return []
@@ -468,7 +483,10 @@ async function getAllResourcesWithFullPermalinks(
 function writeContentToFile(
   fullPermalink: string | undefined,
   content: any,
-  parentId: number | null,
+  // NOTE: callers pass either a resource's honest string `parentId` or the
+  // numeric DANGLING_DIRECTORY_PAGE_ID sentinel; only the `=== null` branch is
+  // load-bearing, so the value's runtime type is otherwise irrelevant.
+  parentId: string | number | null,
 ) {
   try {
     // NOTE: do a join with ./ here so that
