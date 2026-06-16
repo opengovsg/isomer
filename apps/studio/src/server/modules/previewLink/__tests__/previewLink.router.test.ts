@@ -172,4 +172,128 @@ describe("previewLinkRouter", () => {
       await expect(result).rejects.toThrow()
     })
   })
+
+  describe("revoke", () => {
+    const mintForCurrent = async (site: { id: number }, pageId: string) => {
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      return await caller.mint({
+        siteId: site.id,
+        resourceId: Number(pageId),
+        expiryChoice: "7d",
+      })
+    }
+
+    it("lets the sharer revoke their own link", async () => {
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      const minted = await mintForCurrent(site, page.id)
+
+      const linkId = await db
+        .selectFrom("PreviewLink")
+        .where("token", "=", minted.token)
+        .select("id")
+        .executeTakeFirstOrThrow()
+
+      await caller.revoke({ linkId: String(linkId.id) })
+
+      const row = await db
+        .selectFrom("PreviewLink")
+        .where("token", "=", minted.token)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(row.revokedAt).not.toBeNull()
+      expect(row.revokedBy).toBe(session.userId)
+
+      const auditRows = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PreviewLinkRevoke")
+        .selectAll()
+        .execute()
+      expect(auditRows).toHaveLength(1)
+    })
+
+    it("is idempotent on an already-revoked link", async () => {
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      const minted = await mintForCurrent(site, page.id)
+      const linkId = (
+        await db
+          .selectFrom("PreviewLink")
+          .where("token", "=", minted.token)
+          .select("id")
+          .executeTakeFirstOrThrow()
+      ).id
+
+      await caller.revoke({ linkId: String(linkId) })
+      await caller.revoke({ linkId: String(linkId) })
+
+      const auditRows = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PreviewLinkRevoke")
+        .selectAll()
+        .execute()
+      // Idempotent — second revoke writes no second audit row.
+      expect(auditRows).toHaveLength(1)
+    })
+
+    it("returns NOT_FOUND for a non-existent link", async () => {
+      const result = caller.revoke({ linkId: "9999999" })
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Preview link not found",
+        }),
+      )
+    })
+  })
+
+  describe("listForPage", () => {
+    it("returns the current sharer's active links for the page", async () => {
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const mintedA = await caller.mint({
+        siteId: site.id,
+        resourceId: Number(page.id),
+        expiryChoice: "7d",
+        label: "For Director Tan",
+      })
+      const mintedB = await caller.mint({
+        siteId: site.id,
+        resourceId: Number(page.id),
+        expiryChoice: "24h",
+      })
+
+      const list = await caller.listForPage({
+        siteId: site.id,
+        resourceId: Number(page.id),
+      })
+
+      expect(list).toHaveLength(2)
+      const urls = list.map((row) => row.url)
+      expect(urls).toContain(mintedA.url)
+      expect(urls).toContain(mintedB.url)
+    })
+
+    it("throws 403 if the user has no permission on the site", async () => {
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+
+      const result = caller.listForPage({
+        siteId: site.id,
+        resourceId: Number(page.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+  })
 })

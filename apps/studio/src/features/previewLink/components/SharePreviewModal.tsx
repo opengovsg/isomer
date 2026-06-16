@@ -28,6 +28,8 @@ import {
 } from "~/schemas/previewLink"
 import { trpc } from "~/utils/trpc"
 
+import { ExistingPreviewLinksList } from "./ExistingPreviewLinksList"
+
 interface SharePreviewModalProps extends Pick<
   UseDisclosureReturn,
   "isOpen" | "onClose"
@@ -70,10 +72,13 @@ export const SharePreviewModal = ({
   const [mintedExpiresAt, setMintedExpiresAt] = useState<Date | null>(null)
   const toast = useToast()
 
+  const utils = trpc.useUtils()
+
   const mint = trpc.previewLink.mint.useMutation({
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       setMintedUrl(result.url)
       setMintedExpiresAt(new Date(result.expiresAt))
+      await utils.previewLink.listForPage.invalidate({ siteId, resourceId })
     },
     onError: (err) => {
       toast({
@@ -129,6 +134,10 @@ export const SharePreviewModal = ({
             </Stack>
           ) : (
             <Stack spacing="1rem">
+              <ExistingPreviewLinksList
+                siteId={siteId}
+                resourceId={resourceId}
+              />
               <FormControl>
                 <FormLabel>Expires after</FormLabel>
                 <Select

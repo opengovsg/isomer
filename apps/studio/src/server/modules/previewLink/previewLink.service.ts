@@ -1,9 +1,13 @@
+import type { PreviewLinkExpiryChoice } from "~/schemas/previewLink"
+import { TRPCError } from "@trpc/server"
 import { randomBytes } from "node:crypto"
 
-import type { PreviewLinkExpiryChoice } from "~/schemas/previewLink"
 import { logPreviewLinkEvent } from "../audit/audit.service"
-import { AuditLogEvent, db } from "../database"
-import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
+import { AuditLogEvent, db, RoleType, sql } from "../database"
+import {
+  bulkValidateUserPermissionsForResources,
+  isActiveIsomerAdmin,
+} from "../permissions/permissions.service"
 
 const MS_PER_HOUR = 60 * 60 * 1000
 const MS_PER_DAY = 24 * MS_PER_HOUR
@@ -84,4 +88,144 @@ export const mintPreviewLink = async ({
 
     return link
   })
+}
+
+// Sharer OR Site Admin OR Isomer Admin. Single function the future can flip
+// behind a site-level toggle without touching call sites.
+const isUserSiteAdmin = async (
+  userId: string,
+  siteId: number,
+): Promise<boolean> => {
+  if (await isActiveIsomerAdmin(userId)) return true
+
+  const role = await db
+    .selectFrom("ResourcePermission")
+    .where("userId", "=", userId)
+    .where("siteId", "=", siteId)
+    .where("resourceId", "is", null)
+    .where("deletedAt", "is", null)
+    .where("role", "=", RoleType.Admin)
+    .select("id")
+    .executeTakeFirst()
+
+  return Boolean(role)
+}
+
+interface RevokePreviewLinkProps {
+  userId: string
+  linkId: string
+  ip?: string
+}
+
+export const revokePreviewLink = async ({
+  userId,
+  linkId,
+  ip,
+}: RevokePreviewLinkProps) => {
+  const link = await db
+    .selectFrom("PreviewLink")
+    .where("id", "=", linkId)
+    .selectAll()
+    .executeTakeFirst()
+
+  if (!link) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Preview link not found",
+    })
+  }
+
+  if (link.createdBy !== userId) {
+    const isAdmin = await isUserSiteAdmin(userId, link.siteId)
+    if (!isAdmin) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message:
+          "You do not have sufficient permissions to perform this action",
+      })
+    }
+  }
+
+  // Idempotent: revoking an already-revoked or already-expired link is a
+  // success and writes no second audit row.
+  if (link.revokedAt !== null || link.expiresAt <= new Date()) {
+    return link
+  }
+
+  return await db.transaction().execute(async (tx) => {
+    const revoked = await tx
+      .updateTable("PreviewLink")
+      .where("id", "=", linkId)
+      .set({ revokedAt: new Date(), revokedBy: userId })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    await logPreviewLinkEvent(tx, {
+      eventType: AuditLogEvent.PreviewLinkRevoke,
+      userId,
+      siteId: link.siteId,
+      ip,
+      delta: { before: link, after: revoked },
+    })
+
+    return revoked
+  })
+}
+
+interface ListActivePagePreviewLinksProps {
+  userId: string
+  siteId: number
+  resourceId: number
+}
+
+// Returns the current sharer's own active links for a single page. View counts
+// and last-viewed timestamps are derived from AuditLog rows tagged with the
+// link id in metadata.
+export const listActivePagePreviewLinks = async ({
+  userId,
+  siteId,
+  resourceId,
+}: ListActivePagePreviewLinksProps) => {
+  // Gate by site read access. The query below also scopes to createdBy = userId,
+  // but we still want to refuse callers who aren't a member of the site so we
+  // don't expose "this site exists" via timing/empty results.
+  await bulkValidateUserPermissionsForResources({
+    action: "read",
+    siteId,
+    userId,
+  })
+
+  const links = await db
+    .selectFrom("PreviewLink")
+    .where("siteId", "=", siteId)
+    .where("resourceId", "=", String(resourceId))
+    .where("createdBy", "=", userId)
+    .where("revokedAt", "is", null)
+    .where("expiresAt", ">", new Date())
+    .selectAll()
+    .orderBy("createdAt", "desc")
+    .execute()
+
+  if (links.length === 0) return []
+
+  const counts = await Promise.all(
+    links.map(async (link) => {
+      const row = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.PreviewLinkView)
+        .where(sql<boolean>`metadata->>'linkId' = ${String(link.id)}`)
+        .select((eb) => [
+          eb.fn.count<number>("id").as("viewCount"),
+          eb.fn.max("createdAt").as("lastViewedAt"),
+        ])
+        .executeTakeFirst()
+      return {
+        link,
+        viewCount: Number(row?.viewCount ?? 0),
+        lastViewedAt: row?.lastViewedAt ?? null,
+      }
+    }),
+  )
+
+  return counts
 }
