@@ -13,13 +13,7 @@ import type {
   SitemapEntry,
 } from "./types"
 import { FOLDER_RESOURCE_TYPES, PAGE_RESOURCE_TYPES } from "./constants"
-import {
-  GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
-  GET_CONFIG,
-  GET_FOOTER,
-  GET_NAVBAR,
-  GET_REDIRECTS,
-} from "./queries"
+import { GET_ALL_RESOURCES_WITH_FULL_PERMALINKS } from "./queries"
 import { toResource } from "./types"
 import {
   getCollectionIndexPageContents,
@@ -464,13 +458,14 @@ async function processDanglingDirectories(
   )
 }
 
-// Execute a byte-identical SQL string from `queries.ts` through Kysely's `sql`
-// tag, binding `SITE_ID` to the query's `$1` placeholder(s) as a real bound
+// Execute the recursive-CTE SQL string from `queries.ts` through Kysely's `sql`
+// tag, binding `SITE_ID` to the query's `$1` placeholders as a real bound
 // parameter (never string-concatenated). The SQL text in `queries.ts` still
 // contains `$1`; we split on it and interleave the bound `SITE_ID` value so the
-// compiled query carries it as a parameter. Queries that reference `$1` more
-// than once (the recursive CTE) bind `SITE_ID` once per occurrence, which is
-// equivalent for these read-only lookups.
+// compiled query carries it as a parameter. The CTE references `$1` more than
+// once and binds `SITE_ID` once per occurrence, which is equivalent for this
+// read-only lookup. The four simple queries are now Kysely builder constructs
+// (decision 9); only the CTE remains a typed `sql` template.
 const runQuery = <Row>(db: Db, query: string) => {
   const fragments = query.split("$1")
   return sql<Row>`${sql.join(
@@ -545,44 +540,40 @@ function writeContentToFile(
   }
 }
 
-interface NavbarRow {
-  content: unknown
-}
-interface FooterRow {
-  content: unknown
-}
-interface ConfigRow {
-  name: string
-  config: Record<string, unknown>
-  theme: Record<string, unknown>
-}
-interface RedirectRow {
-  source: string
-  destination: string
-}
-
 async function fetchAndWriteSiteData(db: Db) {
   try {
     // Fetch navbar.json
-    const navbarResult = await runQuery<NavbarRow>(db, GET_NAVBAR)
-    if (navbarResult.rows.length > 0) {
-      writeJsonToFile(navbarResult.rows[0].content, "navbar.json")
+    const navbarRows = await db
+      .selectFrom("Navbar")
+      .select("content")
+      .where("siteId", "=", SITE_ID)
+      .execute()
+    if (navbarRows.length > 0) {
+      writeJsonToFile(navbarRows[0].content, "navbar.json")
     }
 
     // Fetch footer.json
-    const footerResult = await runQuery<FooterRow>(db, GET_FOOTER)
-    if (footerResult.rows.length > 0) {
-      writeJsonToFile(footerResult.rows[0].content, "footer.json")
+    const footerRows = await db
+      .selectFrom("Footer")
+      .select("content")
+      .where("siteId", "=", SITE_ID)
+      .execute()
+    if (footerRows.length > 0) {
+      writeJsonToFile(footerRows[0].content, "footer.json")
     }
 
     // Fetch config.json
-    const configResult = await runQuery<ConfigRow>(db, GET_CONFIG)
-    if (configResult.rows.length > 0) {
+    const configRows = await db
+      .selectFrom("Site")
+      .select(["name", "config", "theme"])
+      .where("id", "=", SITE_ID)
+      .execute()
+    if (configRows.length > 0) {
       const config = {
         site: {
-          ...configResult.rows[0].config,
+          ...configRows[0].config,
         },
-        ...configResult.rows[0].theme,
+        ...configRows[0].theme,
       }
 
       writeJsonToFile(config, "config.json")
@@ -594,8 +585,12 @@ async function fetchAndWriteSiteData(db: Db) {
 
 async function fetchAndWriteRedirects(db: Db) {
   try {
-    const result = await runQuery<RedirectRow>(db, GET_REDIRECTS)
-    const redirects = result.rows
+    const redirects = await db
+      .selectFrom("Redirect")
+      .select(["source", "destination"])
+      .where("siteId", "=", SITE_ID)
+      .where("deletedAt", "is", null)
+      .execute()
     const filePath = path.join(OUTPUT_DIR, "redirects.json")
     fs.writeFileSync(filePath, JSON.stringify(redirects), "utf-8")
     logDebug(`Successfully wrote redirects: ${filePath}`)
