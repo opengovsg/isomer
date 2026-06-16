@@ -3,6 +3,7 @@ import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
+import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
 import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
@@ -785,6 +786,15 @@ describe("gazette.router", async () => {
       )
     })
 
+    afterEach(() => {
+      // Restore the GrowthBook forced features to the baseline so flag state
+      // set by individual tests (e.g. the ENABLE_SEARCHSG_GAZETTE_INGESTION ON
+      // test) does not leak into subsequent tests. Restoring to mockFeatureFlags
+      // (rather than an empty Map) preserves IS_SINGPASS_ENABLED and any other
+      // baseline flags that other tests may depend on.
+      mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+    })
+
     it("deletes a gazette within the 15-minute grace period", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
       const publishedAt = subMinutes(FIXED_NOW, 10) // 10 minutes ago
@@ -1099,15 +1109,13 @@ describe("gazette.router", async () => {
       })
 
       // Enable the SearchSG flag for this test only.
+      // The afterEach in this describe block restores mockFeatureFlags baseline.
       mockGrowthBook.setForcedFeatures(
         new Map([[ENABLE_SEARCHSG_GAZETTE_INGESTION, true]]),
       )
 
       // Act
       await caller.delete({ siteId: site.id, gazetteId })
-
-      // Restore the flag so subsequent tests see the default (OFF) state.
-      mockGrowthBook.setForcedFeatures(new Map())
 
       // Assert — SearchSG path was taken, Algolia path was not.
       expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledTimes(

@@ -290,5 +290,26 @@ describe("gazette.service", () => {
         'objectGroup:"2026/Government Gazette/Public/notice-123.pdf"',
       )
     })
+
+    it("throws TRPCError with PRECONDITION_FAILED when the Algolia delete rejects", async () => {
+      // Arrange
+      vi.spyOn(
+        algoliaLib,
+        "deleteObjectsFromSearchIndexByFilter",
+      ).mockRejectedValue(new Error("Algolia SDK error"))
+
+      // Act
+      const act = removeGazetteFromAlgolia(
+        "/2026/Government Gazette/Public/notice-123.pdf",
+      )
+
+      // Assert
+      await expect(act).rejects.toThrowError(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Failed to remove gazette from search index",
+        }),
+      )
+    })
   })
 })

@@ -444,7 +444,15 @@ export const buildGazetteSearchRecords = ({
  */
 export const removeGazetteFromAlgolia = async (ref: string): Promise<void> => {
   const objectGroup = ref.slice(1)
-  await deleteObjectsFromSearchIndexByFilter(`objectGroup:"${objectGroup}"`)
+  try {
+    await deleteObjectsFromSearchIndexByFilter(`objectGroup:"${objectGroup}"`)
+  } catch (error) {
+    logger.warn({ error, objectGroup }, "Failed to remove gazette from Algolia")
+    throw new TRPCError({
+      message: "Failed to remove gazette from search index",
+      code: "PRECONDITION_FAILED",
+    })
+  }
 }
 
 export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
