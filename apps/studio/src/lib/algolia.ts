@@ -13,10 +13,10 @@ const index = algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY).initIndex(
  * Upsert records into the search index. Each record must carry an `objectID`.
  * Calling this with the same `objectID` overwrites the existing record cleanly.
  */
-export const saveObjectsToSearchIndex = (
+export const saveObjectsToSearchIndex = async (
   objects: readonly ({ objectID: string } & Record<string, unknown>)[],
 ) => {
-  return index.saveObjects(objects as { objectID: string }[])
+  await index.saveObjects(objects)
 }
 
 /**
@@ -27,6 +27,6 @@ export const saveObjectsToSearchIndex = (
  * `attributesForFaceting` in the Algolia dashboard before this is used —
  * otherwise deleteBy silently matches nothing.
  */
-export const deleteObjectsFromSearchIndexByFilter = (filters: string) => {
-  return index.deleteBy({ filters })
+export const deleteObjectsFromSearchIndexByFilter = async (filters: string) => {
+  await index.deleteBy({ filters })
 }
