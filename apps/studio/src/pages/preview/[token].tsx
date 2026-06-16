@@ -4,6 +4,7 @@ import type { NextPageWithLayout } from "~/lib/types"
 import { Box } from "@chakra-ui/react"
 import Head from "next/head"
 import { PreviewChrome } from "~/features/previewLink/components/PreviewChrome"
+import { PreviewRateLimited } from "~/features/previewLink/components/PreviewRateLimited"
 import { PreviewUnavailable } from "~/features/previewLink/components/PreviewUnavailable"
 import { RecipientPreview } from "~/features/previewLink/components/RecipientPreview"
 
@@ -14,21 +15,35 @@ type PreviewPageProps =
       expiresAt: string
     } & RecipientPreviewProps)
   | { status: "unavailable" }
+  | { status: "rate-limited" }
+
+const getTitleForStatus = (status: PreviewPageProps["status"]): string => {
+  switch (status) {
+    case "available":
+      return "Isomer Preview"
+    case "unavailable":
+      return "Preview unavailable"
+    case "rate-limited":
+      return "Slow down"
+  }
+}
 
 const PreviewPage: NextPageWithLayout<PreviewPageProps> = (props) => {
-  const pageTitle =
+  const headTitle =
     props.status === "available"
       ? `Isomer Preview: ${props.pageTitle}`
-      : "Preview unavailable"
+      : getTitleForStatus(props.status)
 
   return (
     <>
       <Head>
-        <title>{pageTitle}</title>
+        <title>{headTitle}</title>
         <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
       </Head>
       {props.status === "unavailable" ? (
         <PreviewUnavailable />
+      ) : props.status === "rate-limited" ? (
+        <PreviewRateLimited />
       ) : (
         <Box minH="100vh" bg="white">
           <PreviewChrome
@@ -74,6 +89,9 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
   const { logPreviewLinkEvent } =
     await import("~/server/modules/audit/audit.service")
   const { default: getIP } = await import("~/utils/getClientIp")
+  const { checkPreviewViewRateLimit } =
+    await import("~/server/modules/previewLink/previewLink.service")
+  const { prisma } = await import("~/server/prisma")
 
   const link = await db
     .selectFrom("PreviewLink")
@@ -87,6 +105,14 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
     return { props: { status: "unavailable" } }
   }
 
+  const ip = getIP(ctx.req as NextApiRequest)
+
+  // Rate limit BEFORE audit + fetch. The audit log is the resource we're
+  // protecting; over-limit must not write a row. Soft-block UX (friendly page),
+  // not HTTP 429.
+  const allowed = await checkPreviewViewRateLimit(prisma, ip, String(link.id))
+  if (!allowed) return { props: { status: "rate-limited" } }
+
   const resourceId = Number(link.resourceId)
   const siteId = link.siteId
 
@@ -99,7 +125,7 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
       eventType: AuditLogEvent.PreviewLinkView,
       userId: null,
       siteId,
-      ip: getIP(ctx.req as NextApiRequest),
+      ip,
       delta: { before: null, after: null },
       metadata: { linkId: String(link.id) },
     })
