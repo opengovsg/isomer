@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 import { TabLink } from "~/components/TabLink"
 import { ADMIN_NAVBAR_HEIGHT } from "~/constants/layouts"
+import { SharePreviewButton } from "~/features/previewLink"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { getResourceSubpath } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
@@ -131,7 +132,13 @@ export const PageEditNavbar = (): JSX.Element => {
         </TabLink>
       </Flex>
       {pageId && siteId && (
-        <Flex justifyContent={"end"} alignItems={"center"} flex={1}>
+        <Flex
+          justifyContent={"end"}
+          alignItems={"center"}
+          flex={1}
+          gap="0.5rem"
+        >
+          <SharePreviewButton siteId={siteId} resourceId={pageId} />
           <PublishButton pageId={pageId} siteId={siteId} />
         </Flex>
       )}
