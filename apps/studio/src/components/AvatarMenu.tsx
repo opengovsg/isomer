@@ -1,13 +1,16 @@
 import type { GrowthbookAttributes } from "~/types/growthbook"
-import { Divider, Flex, Text } from "@chakra-ui/react"
 import { useGrowthBook } from "@growthbook/growthbook-react"
 import {
+  Avatar,
+  Button,
   Menu,
-  AvatarMenu as OgpAvatarMenu,
-} from "@opengovsg/design-system-react"
+  MenuItem,
+  MenuSeparator,
+  MenuTrigger,
+} from "@opengovsg/oui"
 import { useSetAtom } from "jotai"
 import { useEffect } from "react"
-import { BiLogOut, BiPencil, BiUser } from "react-icons/bi"
+import { BiChevronDown, BiLogOut, BiPencil, BiUser } from "react-icons/bi"
 import { useMe } from "~/features/me/api"
 import { updateProfileModalOpenAtom } from "~/features/users/atoms"
 import { EditProfileModal } from "~/features/users/components"
@@ -28,43 +31,38 @@ export const AvatarMenu = () => {
 
   return (
     <>
-      <OgpAvatarMenu
-        name={me.name}
-        variant="subtle"
-        bg="base.canvas.brand-subtle"
-        menuListProps={{ maxWidth: "19rem" }}
-      >
-        <Menu.Item
-          isDisabled
-          style={{ cursor: "default", backgroundColor: "transparent" }}
+      <MenuTrigger>
+        <Button
+          variant="clear"
+          color="neutral"
+          className="min-w-0 gap-1.5 px-0"
+          endContent={
+            <BiChevronDown className="size-5 transition-transform group-aria-expanded:rotate-180" />
+          }
         >
-          <Flex alignItems="center" gap="0.75rem">
-            <BiUser size="1.25rem" color="#666c7a" />
-            <Text textStyle="subhead-1" textColor="base.content.medium">
-              {me.email}
-            </Text>
-          </Flex>
-        </Menu.Item>
-        <Divider orientation="horizontal" />
-        <Menu.Item
-          onClick={() => setIsEditProfileModalOpen(true)}
-          // This is a hotfix because OGPDS MenuItem has an issue of the next item
-          // covering the bottom border of the current item when current item is active
-          // Reference: https://github.com/opengovsg/isomer/pull/1138#issuecomment-2683836810
-          sx={{ mb: "0.125rem" }}
-        >
-          <Flex alignItems="center" gap="0.75rem">
-            <BiPencil size="1.25rem" />
-            <Text>Edit profile</Text>
-          </Flex>
-        </Menu.Item>
-        <Menu.Item onClick={() => logout()}>
-          <Flex alignItems="center" gap="0.75rem">
-            <BiLogOut size="1.25rem" />
-            <Text>Sign out</Text>
-          </Flex>
-        </Menu.Item>
-      </OgpAvatarMenu>
+          <Avatar size="md" prominence="subtle" name={me.name}>
+            <Avatar.Fallback />
+          </Avatar>
+        </Button>
+        <Menu classNames={{ popover: "max-w-[19rem]" }}>
+          <MenuItem isDisabled startContent={<BiUser className="size-5" />}>
+            {me.email}
+          </MenuItem>
+          <MenuSeparator />
+          <MenuItem
+            onAction={() => setIsEditProfileModalOpen(true)}
+            startContent={<BiPencil className="size-5" />}
+          >
+            Edit profile
+          </MenuItem>
+          <MenuItem
+            onAction={() => logout()}
+            startContent={<BiLogOut className="size-5" />}
+          >
+            Sign out
+          </MenuItem>
+        </Menu>
+      </MenuTrigger>
       <EditProfileModal />
     </>
   )
