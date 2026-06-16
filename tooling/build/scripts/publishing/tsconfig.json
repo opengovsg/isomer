@@ -15,12 +15,25 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "paths": {
-      // NOTE: generated Kysely types moved from apps/studio/prisma/generated
-      // to @isomer/db (packages/db/src/generated). This works because we
-      // clone our repo as a whole.
-      "~generated/*": ["../../../../packages/db/src/generated/*"],
-      // Respect the package's default export and use only index
-      "~schema": ["../../../../packages/components/src/index.ts"]
+      // Resolve against the package's built type declarations (turbo's
+      // `typecheck` task `dependsOn: ["^build"]`, so components is built
+      // first). Pointing at `src` would pull the whole components source tree
+      // into this typecheck, which relies on components-internal `~/*` aliases
+      // we don't (and shouldn't) define here.
+      "~schema": ["../../../../packages/components/dist/esm/index.d.ts"]
     }
-  }
+  },
+  "include": [
+    "**/*.ts",
+    // Register @isomer/db's ambient `PrismaJson` global so its generated
+    // Kysely types (consumed via the source `@isomer/db` export) typecheck.
+    "../../../../packages/db/src/prisma-json-types.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    // The e2e suite (#2425) runs under vitest (ESM) and uses `import.meta`,
+    // which conflicts with this package's CommonJS `index.ts` (`__dirname`).
+    // Production source is what this `tsgo` gate guards.
+    "tests"
+  ]
 }
