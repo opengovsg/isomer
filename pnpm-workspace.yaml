@@ -147,7 +147,7 @@ catalog:
   oxlint: ^1.68.0
   oxlint-tsgolint: ^0.23.0
   papaparse: ^5.5.3
-  pg-boss: ^12.3.0
+  pg-boss: ^12.18.2
   postcss-load-config: ^6.0.1
   rate-limiter-flexible: ^11.2.0
   react-error-boundary: ^5.0.0
