@@ -15,6 +15,10 @@ export const IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY =
   "homepage-antiscam-banner-enabled"
 export const EGAZETTE_INFO_FEATURE_KEY = "egazette-info"
 export const IS_REDIRECTIONS_ENABLED_FEATURE_KEY = "is-redirections-enabled"
+// Default-off: Algolia is the live document-index destination when this flag is off.
+// Turn on to route gazette ingestion (push + delete) to SearchSG instead.
+export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
+  "enable-searchsg-gazette-ingestion"
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 

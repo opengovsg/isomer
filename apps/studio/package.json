@@ -122,6 +122,7 @@
     "@uidotdev/usehooks": "catalog:",
     "ajv": "catalog:",
     "ajv-errors": "catalog:",
+    "algoliasearch": "catalog:",
     "chakra-react-select": "catalog:",
     "date-fns": "catalog:",
     "date-fns-tz": "catalog:",
