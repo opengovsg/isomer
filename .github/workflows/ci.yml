@@ -87,8 +87,8 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
 
-  components-package-size:
-    name: Components package size
+  components-bundle-size:
+    name: Components bundle size
     needs: [optimize_ci, changes]
     # Only meaningful on PRs (needs a `main` baseline to diff against), and only
     # when the components package itself changed (source/assets or dependencies).
@@ -103,40 +103,51 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      # Same build command the publisher runs (tooling/build/scripts/publisher.sh),
-      # which packs the tarball the publisher consumes.
-      - name: Build components (PR branch)
-        run: pnpm --filter @opengovsg/isomer-components run build
+      # Copy the scripts out of the tree so they survive the `main` checkout below
+      # (they only exist on this PR branch).
+      - name: Stage scripts
+        run: cp .github/scripts/measure-template-bundle.sh .github/scripts/comment-template-bundle-size.sh "$RUNNER_TEMP/"
 
-      - name: Measure PR tarball
-        id: pr
+      # The Template (next build --webpack) is the real consumer of the components
+      # package; its webpack-bundled, tree-shaken, gzipped output is what ships.
+      - name: Build Template (PR branch)
         run: |
-          tarball=$(ls packages/components/opengovsg-isomer-components-*.tgz | head -n1)
-          echo "bytes=$(wc -c < "$tarball" | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          rm -rf packages/components/dist tooling/template/out tooling/template/.next
+          pnpm --filter @opengovsg/isomer-components run build:module
+          pnpm --filter isomer-base-template run build:template
 
-      - name: Build components (main)
+      - name: Measure PR bundle
+        id: pr
+        run: bash "$RUNNER_TEMP/measure-template-bundle.sh" tooling/template/out >> "$GITHUB_OUTPUT"
+
+      - name: Build Template (main)
         id: base
         run: |
-          pr_ref=$(git rev-parse HEAD)
           git fetch --no-tags --depth=1 origin main
           git checkout --force FETCH_HEAD
           # main may have a different lockfile/deps than the PR branch.
           pnpm install --frozen-lockfile
-          # Clear the PR tarball so the glob can only match main's output.
-          rm -f packages/components/opengovsg-isomer-components-*.tgz
-          pnpm --filter @opengovsg/isomer-components run build
-          tarball=$(ls packages/components/opengovsg-isomer-components-*.tgz | head -n1)
-          echo "bytes=$(wc -c < "$tarball" | tr -d ' ')" >> "$GITHUB_OUTPUT"
-          # Restore the PR working tree so the comment script (added on this PR) is present.
-          git checkout --force "$pr_ref"
+          # Drop the PR build artifacts so we measure main cleanly.
+          rm -rf packages/components/dist tooling/template/out tooling/template/.next
+          pnpm --filter @opengovsg/isomer-components run build:module
+          pnpm --filter isomer-base-template run build:template
+          bash "$RUNNER_TEMP/measure-template-bundle.sh" tooling/template/out >> "$GITHUB_OUTPUT"
 
-      - name: Comment size delta
+      - name: Comment bundle size delta
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_BYTES: ${{ steps.pr.outputs.bytes }}
-          BASE_BYTES: ${{ steps.base.outputs.bytes }}
-        run: bash .github/scripts/comment-components-size.sh
+          PR_FRAMEWORK: ${{ steps.pr.outputs.framework }}
+          PR_VENDOR: ${{ steps.pr.outputs.vendor }}
+          PR_PAGE: ${{ steps.pr.outputs.page }}
+          PR_CSS: ${{ steps.pr.outputs.css }}
+          PR_TOTAL: ${{ steps.pr.outputs.total }}
+          BASE_FRAMEWORK: ${{ steps.base.outputs.framework }}
+          BASE_VENDOR: ${{ steps.base.outputs.vendor }}
+          BASE_PAGE: ${{ steps.base.outputs.page }}
+          BASE_CSS: ${{ steps.base.outputs.css }}
+          BASE_TOTAL: ${{ steps.base.outputs.total }}
+        run: bash "$RUNNER_TEMP/comment-template-bundle-size.sh"
 
   unit-integration-tests:
     name: Unit & integration tests
