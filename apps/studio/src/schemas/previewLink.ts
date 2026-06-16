@@ -24,10 +24,26 @@ export const mintPreviewLinkSchema = z.object({
 export type MintPreviewLinkInput = z.infer<typeof mintPreviewLinkSchema>
 
 export const revokePreviewLinkSchema = z.object({
-  linkId: z.string().min(1),
+  linkId: z.string().min(1, {
+    message: "Provide the preview link id to revoke",
+  }),
 })
 
 export const listPagePreviewLinksSchema = z.object({
   siteId: z.number().int().positive(),
   resourceId: z.number().int().positive(),
+})
+
+export const PREVIEW_LINK_STATUS_FILTERS = [
+  "active",
+  "expired",
+  "revoked",
+  "all",
+] as const
+export type PreviewLinkStatusFilter =
+  (typeof PREVIEW_LINK_STATUS_FILTERS)[number]
+
+export const listSitePreviewLinksSchema = z.object({
+  siteId: z.number().int().positive(),
+  status: z.enum(PREVIEW_LINK_STATUS_FILTERS).default("active"),
 })
