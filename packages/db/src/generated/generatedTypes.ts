@@ -16,7 +16,7 @@ import type {
 
 export interface AuditLog {
   id: GeneratedAlways<string>
-  userId: string
+  userId: string | null
   siteId: number | null
   eventType: AuditLogEvent
   createdAt: Generated<Timestamp>

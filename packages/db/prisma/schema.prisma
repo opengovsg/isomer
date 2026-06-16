@@ -296,12 +296,15 @@ enum AuditLogEvent {
   SiteConfigUpdate
   FooterUpdate
   NavbarUpdate
+  PreviewLinkMint
+  PreviewLinkView
+  PreviewLinkRevoke
 }
 
 model AuditLog {
   id        BigInt        @id @default(autoincrement())
-  user      User          @relation(fields: [userId], references: [id])
-  userId    String
+  user      User?         @relation(fields: [userId], references: [id])
+  userId    String?
   site      Site?         @relation(fields: [siteId], references: [id], onDelete: Restrict)
   siteId    Int?
   eventType AuditLogEvent

@@ -42,7 +42,7 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
   ctx.res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive, nosnippet")
   ctx.res.setHeader("Referrer-Policy", "no-referrer")
 
-  const { db } = await import("~/server/modules/database")
+  const { db, AuditLogEvent } = await import("~/server/modules/database")
   const {
     getFullPageById,
     getNavBar,
@@ -51,6 +51,10 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
     getResourceFullPermalink,
   } = await import("~/server/modules/resource/resource.service")
   const { getSiteConfig } = await import("~/server/modules/site/site.service")
+  const { logPreviewLinkEvent } = await import(
+    "~/server/modules/audit/audit.service"
+  )
+  const { default: getIP } = await import("~/utils/getClientIp")
 
   const link = await db
     .selectFrom("PreviewLink")
@@ -68,6 +72,18 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
 
   const page = await getFullPageById(db, { resourceId, siteId })
   if (!page) return { notFound: true }
+
+  // Audit the view before rendering. Every refresh = one row (no de-dup).
+  await db.transaction().execute(async (tx) => {
+    await logPreviewLinkEvent(tx, {
+      eventType: AuditLogEvent.PreviewLinkView,
+      userId: null,
+      siteId,
+      ip: getIP(ctx.req),
+      delta: { before: null, after: null },
+      metadata: { linkId: String(link.id) },
+    })
+  })
 
   const [navbar, footer, siteConfig, siteMap, permalink] = await Promise.all([
     getNavBar(db, siteId),

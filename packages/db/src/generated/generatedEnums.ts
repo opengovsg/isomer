@@ -45,6 +45,9 @@ export const AuditLogEvent = {
   SiteConfigUpdate: "SiteConfigUpdate",
   FooterUpdate: "FooterUpdate",
   NavbarUpdate: "NavbarUpdate",
+  PreviewLinkMint: "PreviewLinkMint",
+  PreviewLinkView: "PreviewLinkView",
+  PreviewLinkRevoke: "PreviewLinkRevoke",
 } as const
 export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent]
 export const BuildStatusType = {

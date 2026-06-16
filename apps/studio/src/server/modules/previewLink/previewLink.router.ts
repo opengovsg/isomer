@@ -1,7 +1,7 @@
 import { mintPreviewLinkSchema } from "~/schemas/previewLink"
 import { protectedProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
-
+import getIP from "~/utils/getClientIp"
 import { mintPreviewLink } from "./previewLink.service"
 
 export const previewLinkRouter = router({
@@ -14,6 +14,7 @@ export const previewLinkRouter = router({
         resourceId: input.resourceId,
         expiryChoice: input.expiryChoice,
         label: input.label,
+        ip: getIP(ctx.req),
       })
 
       return {
