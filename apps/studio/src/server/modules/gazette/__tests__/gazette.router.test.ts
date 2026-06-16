@@ -26,6 +26,12 @@ import {
   ResourceType,
 } from "~prisma/generated/generatedEnums"
 
+// algolia.ts constructs the Algolia client at module load via
+// algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
+// not set in the test environment, so the import throws "appId is missing"
+// before any test runs. Mock the whole module to prevent this.
+vi.mock("~/lib/algolia")
+
 import { db } from "../../database"
 import { gazetteRouter } from "../gazette.router"
 import * as gazetteService from "../gazette.service"
@@ -758,7 +764,13 @@ describe("gazette.router", async () => {
 
     beforeEach(() => {
       vi.restoreAllMocks()
-      // Mock external services
+      // Mock external services.
+      // The flag ENABLE_SEARCHSG_GAZETTE_INGESTION is OFF by default in tests
+      // (not in mockFeatureFlags), so the Algolia path is exercised here.
+      // SearchSG is mocked too so tests that enable the flag don't hit the network.
+      vi.spyOn(gazetteService, "removeGazetteFromAlgolia").mockResolvedValue(
+        undefined,
+      )
       vi.spyOn(
         gazetteService,
         "removeGazetteFromSearchIndex",
@@ -803,10 +815,9 @@ describe("gazette.router", async () => {
         .execute()
       expect(auditLogs).toHaveLength(1)
 
-      // External services should be called
-      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledTimes(
-        1,
-      )
+      // External services should be called.
+      // Flag is OFF (default) so the Algolia path runs.
+      expect(gazetteService.removeGazetteFromAlgolia).toHaveBeenCalledTimes(1)
       expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledTimes(1)
     })
 
@@ -868,6 +879,7 @@ describe("gazette.router", async () => {
       expect(resource).toBeDefined()
 
       // External services should not be called
+      expect(gazetteService.removeGazetteFromAlgolia).not.toHaveBeenCalled()
       expect(gazetteService.removeGazetteFromSearchIndex).not.toHaveBeenCalled()
       expect(gazetteService.deleteGazetteAsset).not.toHaveBeenCalled()
     })

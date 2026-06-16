@@ -7,6 +7,7 @@ import {
   sendGazetteDeletionEmail,
   sendScheduledPageEmail,
 } from "~/features/mail/service"
+import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import { getFileSize, markScheduledAssetAsCancelled } from "~/lib/s3"
 import {
   cancelScheduledPublishSchema,
@@ -39,6 +40,7 @@ import {
   getPresignedGetUrl,
   getPresignedPutUrl,
   markFileAsDeleted,
+  removeGazetteFromAlgolia,
   removeGazetteFromSearchIndex,
 } from "./gazette.service"
 
@@ -844,7 +846,14 @@ export const gazetteRouter = router({
       // before proceeding to remove the database resource.
       // This is because the public uses those to access the gazette
       // but the database resource is purely for internal view.
-      await removeGazetteFromSearchIndex(ref, gazette.id)
+      //
+      // The flag determines which search backend holds the gazette's records.
+      // Algolia is the default (flag OFF); SearchSG is the fallback (flag ON).
+      if (ctx.gb.isOn(ENABLE_SEARCHSG_GAZETTE_INGESTION)) {
+        await removeGazetteFromSearchIndex(ref, gazette.id)
+      } else {
+        await removeGazetteFromAlgolia(ref)
+      }
       await deleteGazetteAsset(ref)
 
       // Delete the resource in a transaction, then audit-log the deletion.

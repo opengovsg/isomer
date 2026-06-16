@@ -4,6 +4,7 @@ import filenamify from "filenamify"
 import { PdfReader } from "pdfreader"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { env } from "~/env.mjs"
+import { deleteObjectsFromSearchIndexByFilter } from "~/lib/algolia"
 import { createBaseLogger } from "~/lib/logger"
 import {
   copyFile,
@@ -304,6 +305,135 @@ export interface PushDocument {
   content: string
   date: string
   categories: string[]
+}
+
+/**
+ * Shape of a gazette record pushed to the shared egazette Algolia index.
+ * Must match egazette field-for-field — the index schema is set by egazette.
+ */
+export interface SearchRecord {
+  objectID: string
+  objectGroup: string
+  title: string
+  category: string
+  subCategory: string
+  notificationNum?: string
+  lexiNotificationNum?: string
+  /** Publish date in "DD/MM/YYYY" format (Asia/Singapore local time). */
+  publishDate: string
+  publishYear: number
+  publishMonth: number
+  publishDay: number
+  /** Epoch milliseconds of the publish timestamp. */
+  publishTimestamp: number
+  fileUrl: string
+  /** One text chunk (up to 7 000 chars) from the parsed PDF. */
+  text: string
+}
+
+export interface BuildGazetteSearchRecordsParams {
+  parsedText: string
+  objectGroup: string
+  title: string
+  category: string
+  subCategory: string
+  notificationNum?: string
+  fileUrl: string
+  scheduledAt: Date
+}
+
+/**
+ * Build Algolia search records for a gazette, one record per text chunk.
+ *
+ * Pure function — no I/O, no env reads, no feature-flag checks.
+ * The caller (cron) is responsible for the flag check.
+ */
+export const buildGazetteSearchRecords = ({
+  parsedText,
+  objectGroup,
+  title,
+  category,
+  subCategory,
+  notificationNum,
+  fileUrl,
+  scheduledAt,
+}: BuildGazetteSearchRecordsParams): SearchRecord[] => {
+  if (!parsedText) return []
+
+  // Split parsedText into chunks of up to 7 000 characters, ending on a
+  // whitespace boundary where possible. This keeps each Algolia record well
+  // below the ~10 KB record-size limit.
+  //
+  // The regex matches up to 7 000 characters followed by whitespace OR
+  // end-of-string. The `g` flag advances through the string chunk by chunk.
+  // We use a while-loop (not matchAll/split) to mirror egazette's own
+  // chunking logic exactly.
+  //
+  // WHY end on whitespace: splitting mid-word fragments search tokens across
+  // two records and hurts recall; whitespace-aligned splits are semantically
+  // cleaner and egazette uses the same boundary.
+  const CHUNK_REGEX = /.{1,7000}(?:\s|$)/g
+
+  const chunks: string[] = []
+  let match: RegExpExecArray | null
+  while ((match = CHUNK_REGEX.exec(parsedText)) !== null) {
+    chunks.push(match[0])
+  }
+
+  // Derive SG-local date fields from scheduledAt.
+  // Asia/Singapore is pinned explicitly because gazette publish dates are
+  // always expressed in Singapore time (SGT = UTC+8); using the server's
+  // local time would produce wrong year/month/day for any deployment outside
+  // the SGT zone.
+  const publishDate = scheduledAt.toLocaleDateString("en-SG", {
+    timeZone: "Asia/Singapore",
+  })
+  const [day, month, year] = publishDate.split("/").map(Number) as [
+    number,
+    number,
+    number,
+  ]
+
+  // lexiNotificationNum is notificationNum left-padded to 10 digits.
+  // 10 = egazette's MAX_NOTIFICATION_NUMBER_LENGTH; must match for consistent
+  // sort ordering in Algolia.
+  const lexiNotificationNum = notificationNum
+    ? notificationNum.padStart(10, "0")
+    : undefined
+
+  return chunks.map((chunk, idx) => ({
+    objectID: `${objectGroup}-text-${idx}`,
+    objectGroup,
+    title,
+    category,
+    subCategory,
+    notificationNum,
+    lexiNotificationNum,
+    publishDate,
+    publishYear: year,
+    publishMonth: month,
+    publishDay: day,
+    publishTimestamp: scheduledAt.getTime(),
+    fileUrl,
+    text: chunk,
+  }))
+}
+
+/**
+ * Remove all Algolia records for a gazette identified by its S3 ref.
+ *
+ * Deletes by objectGroup filter rather than individual objectIDs because the
+ * number of chunks is not known at delete time (Algolia's deleteBy handles the
+ * fan-out). resourceId is not needed for Algolia — objectGroup is the unique
+ * dedup key for all of a gazette's records.
+ *
+ * The objectGroup value is wrapped in double quotes in the filter expression
+ * because it contains forward slashes and a dot (e.g. "2026/cat/sub/file.pdf")
+ * which Algolia's filter parser would otherwise mis-tokenise.
+ */
+export const removeGazetteFromAlgolia = async (ref: string): Promise<void> => {
+  const objectGroup = ref.slice(1)
+  await deleteObjectsFromSearchIndexByFilter(`objectGroup:"${objectGroup}"`)
 }
 
 export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
