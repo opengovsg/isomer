@@ -1495,28 +1495,22 @@ importers:
 
   tooling/build/scripts/publishing:
     dependencies:
+      '@isomer/db':
+        specifier: workspace:*
+        version: link:../../../../packages/db
       dotenv:
         specifier: 'catalog:'
         version: 16.6.1
-      pg:
-        specifier: 'catalog:'
-        version: 8.21.0
       tsx:
         specifier: 'catalog:'
         version: 4.22.3
     devDependencies:
-      '@isomer/db':
-        specifier: workspace:*
-        version: link:../../../../packages/db
       '@opengovsg/isomer-components':
         specifier: workspace:*
         version: link:../../../../packages/components
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.3
-      '@types/pg':
-        specifier: 'catalog:'
-        version: 8.20.0
       '@typescript/native-preview':
         specifier: 'catalog:'
         version: 7.0.0-dev.20260608.1
