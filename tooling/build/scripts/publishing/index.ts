@@ -2,9 +2,8 @@ import * as dotenv from "dotenv"
 import * as fs from "fs"
 import * as path from "path"
 import { performance } from "perf_hooks"
-import { Client } from "pg"
 
-import { ResourceType } from "@isomer/db"
+import { createDb, ResourceType, sql } from "@isomer/db"
 
 import type { PageResourceType } from "./constants"
 import type {
@@ -29,6 +28,11 @@ import {
 import { getResourceFirstImage } from "./utils/getResourceFirstImage"
 
 dotenv.config()
+
+// The Kysely instance produced by `@isomer/db`'s `createDb`. Each query is
+// executed through it via the `sql` tag (SQL text is byte-identical to the
+// previous raw-`pg` path; see queries.ts).
+type Db = ReturnType<typeof createDb>
 
 // Env vars
 const DB_USERNAME = process.env.DB_USERNAME
@@ -74,27 +78,25 @@ function logDebug(message: string, ...optionalParams: any[]) {
 }
 
 async function main() {
-  const client = new Client({
-    user: DB_USERNAME,
-    host: DB_HOST,
-    database: DB_NAME,
-    password: decodeURIComponent(DB_PASSWORD ?? ""),
-    port: Number(DB_PORT),
+  // Connection string assembled from the existing discrete env vars (decision
+  // 8). The password is intentionally NOT `decodeURIComponent`-ed: the env
+  // value is already percent-encoded, which is exactly what a URL userinfo
+  // segment wants, and pg's URL parser decodes it.
+  const db = createDb({
+    connectionString: `postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`,
   })
 
   const start = performance.now() // Start profiling
 
   try {
-    await client.connect()
-
     // Fetch and write navbar, footer, and config JSONs
-    await fetchAndWriteSiteData(client)
+    await fetchAndWriteSiteData(db)
 
     // Fetch and write redirects
-    await fetchAndWriteRedirects(client)
+    await fetchAndWriteRedirects(db)
 
     // Fetch all resources and their full permalinks
-    const resources = await getAllResourcesWithFullPermalinks(client)
+    const resources = await getAllResourcesWithFullPermalinks(db)
 
     // Construct an array of sitemap entries
     const sitemapEntries: PageOnlySitemapEntry[] = []
@@ -211,7 +213,8 @@ async function main() {
       console.error(`Error writing sitemap to file:`, error)
     }
   } finally {
-    await client.end()
+    // One-shot script: drain the Kysely pool so the process exits.
+    await db.destroy()
     const end = performance.now() // End profiling
     console.log(`Program completed in ${(end - start) / 1000} seconds`)
   }
@@ -461,19 +464,30 @@ async function processDanglingDirectories(
   )
 }
 
-async function getAllResourcesWithFullPermalinks(
-  client: Client,
-): Promise<Resource[]> {
-  const values = [SITE_ID]
+// Execute a byte-identical SQL string from `queries.ts` through Kysely's `sql`
+// tag, binding `SITE_ID` to the query's `$1` placeholder(s) as a real bound
+// parameter (never string-concatenated). The SQL text in `queries.ts` still
+// contains `$1`; we split on it and interleave the bound `SITE_ID` value so the
+// compiled query carries it as a parameter. Queries that reference `$1` more
+// than once (the recursive CTE) bind `SITE_ID` once per occurrence, which is
+// equivalent for these read-only lookups.
+const runQuery = <Row>(db: Db, query: string) => {
+  const fragments = query.split("$1")
+  return sql<Row>`${sql.join(
+    fragments.map((fragment) => sql.raw(fragment)),
+    sql`${SITE_ID}`,
+  )}`.execute(db)
+}
 
+async function getAllResourcesWithFullPermalinks(db: Db): Promise<Resource[]> {
   try {
-    const res = await client.query<ResourceRow>(
+    const { rows } = await runQuery<ResourceRow>(
+      db,
       GET_ALL_RESOURCES_WITH_FULL_PERMALINKS,
-      values,
     )
-    logDebug("Fetched resources with full permalinks:", res.rows)
+    logDebug("Fetched resources with full permalinks:", rows)
     // The seam: adapt honestly-typed raw rows to the script's working shape.
-    return res.rows.map(toResource)
+    return rows.map(toResource)
   } catch (err) {
     console.error("Error fetching resources:", err)
     return []
@@ -531,22 +545,38 @@ function writeContentToFile(
   }
 }
 
-async function fetchAndWriteSiteData(client: Client) {
+interface NavbarRow {
+  content: unknown
+}
+interface FooterRow {
+  content: unknown
+}
+interface ConfigRow {
+  name: string
+  config: Record<string, unknown>
+  theme: Record<string, unknown>
+}
+interface RedirectRow {
+  source: string
+  destination: string
+}
+
+async function fetchAndWriteSiteData(db: Db) {
   try {
     // Fetch navbar.json
-    const navbarResult = await client.query(GET_NAVBAR, [SITE_ID])
+    const navbarResult = await runQuery<NavbarRow>(db, GET_NAVBAR)
     if (navbarResult.rows.length > 0) {
       writeJsonToFile(navbarResult.rows[0].content, "navbar.json")
     }
 
     // Fetch footer.json
-    const footerResult = await client.query(GET_FOOTER, [SITE_ID])
+    const footerResult = await runQuery<FooterRow>(db, GET_FOOTER)
     if (footerResult.rows.length > 0) {
       writeJsonToFile(footerResult.rows[0].content, "footer.json")
     }
 
     // Fetch config.json
-    const configResult = await client.query(GET_CONFIG, [SITE_ID])
+    const configResult = await runQuery<ConfigRow>(db, GET_CONFIG)
     if (configResult.rows.length > 0) {
       const config = {
         site: {
@@ -562,10 +592,10 @@ async function fetchAndWriteSiteData(client: Client) {
   }
 }
 
-async function fetchAndWriteRedirects(client: Client) {
+async function fetchAndWriteRedirects(db: Db) {
   try {
-    const result = await client.query(GET_REDIRECTS, [SITE_ID])
-    const redirects = result.rows as { source: string; destination: string }[]
+    const result = await runQuery<RedirectRow>(db, GET_REDIRECTS)
+    const redirects = result.rows
     const filePath = path.join(OUTPUT_DIR, "redirects.json")
     fs.writeFileSync(filePath, JSON.stringify(redirects), "utf-8")
     logDebug(`Successfully wrote redirects: ${filePath}`)

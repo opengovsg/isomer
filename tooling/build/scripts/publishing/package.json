@@ -15,15 +15,13 @@
     "upload-redirects": "tsx uploadRedirects.ts"
   },
   "dependencies": {
+    "@isomer/db": "workspace:*",
     "dotenv": "catalog:",
-    "pg": "catalog:",
     "tsx": "catalog:"
   },
   "devDependencies": {
-    "@isomer/db": "workspace:*",
     "@opengovsg/isomer-components": "workspace:*",
     "@types/node": "catalog:",
-    "@types/pg": "catalog:",
     "@typescript/native-preview": "catalog:",
     "testcontainers": "catalog:",
     "vitest": "catalog:vitest"
