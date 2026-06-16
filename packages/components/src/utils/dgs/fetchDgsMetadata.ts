@@ -64,15 +64,23 @@ const extractColumnMetadata = (
   data: FetchDgsMetadataResponse,
 ): FetchDgsMetadataOutput["columnMetadata"] => {
   try {
-    return Object.values(data.data.columnMetadata.metaMapping)
-      .sort((a, b) => Number(a.index) - Number(b.index))
-      .reduce<NonNullable<FetchDgsMetadataOutput["columnMetadata"]>>(
-        (acc, mapping) => {
-          acc.push([mapping.name, mapping.columnTitle])
-          return acc
-        },
-        [],
-      )
+    return (
+      Object.values(data.data.columnMetadata.metaMapping)
+        // CKAN datastore auto-generates _id (row counter) and _full_text
+        // (PostgreSQL tsvector for full-text search) on every dataset — they are
+        // never part of the source data and should not be shown as columns.
+        .filter(
+          (mapping) => mapping.name !== "_id" && mapping.name !== "_full_text",
+        )
+        .sort((a, b) => Number(a.index) - Number(b.index))
+        .reduce<NonNullable<FetchDgsMetadataOutput["columnMetadata"]>>(
+          (acc, mapping) => {
+            acc.push([mapping.name, mapping.columnTitle])
+            return acc
+          },
+          [],
+        )
+    )
   } catch {
     return undefined
   }
