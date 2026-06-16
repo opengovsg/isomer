@@ -60,6 +60,32 @@ export const getYouTubeVideoId = (url: string): string | null => {
   }
 }
 
+/**
+ * Detects whether a Facebook video embed URL points to a Reel.
+ *
+ * Reels are embedded through the same plugins/video.php endpoint as regular
+ * Facebook videos, with the reel's URL passed in the `href` query param, e.g.
+ * https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F123
+ *
+ * Reels are vertical (9:16) videos, so we need to detect them to render them
+ * in a portrait aspect ratio instead of the default 16:9 box (which clips them).
+ */
+export const isFacebookReelEmbedUrl = (url: string): boolean => {
+  try {
+    const urlObject = new URL(url)
+    if (!VALID_VIDEO_DOMAINS.fbvideo.includes(urlObject.hostname)) {
+      return false
+    }
+    const href = urlObject.searchParams.get("href")
+    if (!href) {
+      return false
+    }
+    return new URL(href).pathname.startsWith("/reel/")
+  } catch {
+    return false
+  }
+}
+
 // NOTE: We are setting a do-not-track attribute on Vimeo embeds
 // Ref: https://developer.vimeo.com/api/oembed/videos
 export const getPrivacyEnhancedVimeoEmbedUrl = (url: string): string => {
