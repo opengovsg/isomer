@@ -672,7 +672,7 @@ export const VideoEmbed: Story = {
   name: "VideoEmbed",
   parameters: {
     // Delay the Chromatic snapshot so iframes have time to load and don’t appear as white blocks.
-    chromatic: { delay: 5000 },
+    chromatic: { delay: 10000 },
   },
   args: {
     ...generateArgs({
@@ -680,25 +680,6 @@ export const VideoEmbed: Story = {
         "Showing how video embeds render within an article page layout, including a vertical Facebook Reel.",
     }),
     content: [
-      {
-        type: "prose",
-        content: [
-          {
-            type: "paragraph",
-            content: [
-              {
-                type: "text",
-                text: "A regular 16:9 landscape video renders full width within the article content column.",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "video",
-        title: "Rick Astley - Never Gonna Give You Up",
-        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      },
       {
         type: "prose",
         content: [

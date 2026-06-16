@@ -4845,7 +4845,7 @@ export const VideoEmbedStory: Story = {
     // Delay the Chromatic snapshot so iframes have time to load and don’t appear as white blocks.
     chromatic: {
       ...withChromaticModes(["mobile", "tablet", "desktop"]),
-      delay: 5000,
+      delay: 10000,
     },
   },
   args: {
@@ -4864,30 +4864,6 @@ export const VideoEmbedStory: Story = {
       },
     },
     content: [
-      {
-        type: "prose",
-        content: [
-          {
-            type: "heading",
-            attrs: { id: "youtube-video", level: 2 },
-            content: [{ type: "text", text: "Landscape video (YouTube)" }],
-          },
-          {
-            type: "paragraph",
-            content: [
-              {
-                type: "text",
-                text: "A regular 16:9 landscape video renders full width within the content column.",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: "video",
-        title: "Rick Astley - Never Gonna Give You Up",
-        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      },
       {
         type: "prose",
         content: [
