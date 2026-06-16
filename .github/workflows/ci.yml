@@ -23,6 +23,21 @@ jobs:
         uses: withgraphite/graphite-ci-action@9bc969adfd43bb790da3b64b543c78c75cef9689
         with:
           graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
+  # Detect which areas changed so dependent jobs can opt out when irrelevant.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      components: ${{ steps.filter.outputs.components }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
+        id: filter
+        with:
+          # Covers both source/asset changes and dependency changes
+          # (a new dependency edits packages/components/package.json).
+          filters: |
+            components:
+              - 'packages/components/**'
   build:
     runs-on: ubuntu-latest
     steps:
@@ -74,9 +89,10 @@ jobs:
 
   components-package-size:
     name: Components package size
-    needs: optimize_ci
-    # Only meaningful on PRs (needs a `main` baseline to diff against).
-    if: github.event_name == 'pull_request' && needs.optimize_ci.outputs.skip == 'false'
+    needs: [optimize_ci, changes]
+    # Only meaningful on PRs (needs a `main` baseline to diff against), and only
+    # when the components package itself changed (source/assets or dependencies).
+    if: github.event_name == 'pull_request' && needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.components == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
