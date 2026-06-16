@@ -252,6 +252,24 @@ describe("gazette.service", () => {
       // Assert
       expect(result[0]!.subCategory).toBe("Extraordinary")
     })
+
+    it("zero-pads single-digit day and month in publishDate", () => {
+      // Arrange — 5 January 2026 in SGT (UTC+8); UTC instant is 2026-01-04T16:00:00Z
+      const singleDigitDate = new Date("2026-01-05T00:00:00+08:00")
+
+      // Act
+      const result = buildGazetteSearchRecords({
+        ...BASE_PARAMS,
+        scheduledAt: singleDigitDate,
+      })
+      const record = result[0]!
+
+      // Assert
+      expect(record.publishDate).toBe("05/01/2026")
+      expect(record.publishDay).toBe(5)
+      expect(record.publishMonth).toBe(1)
+      expect(record.publishYear).toBe(2026)
+    })
   })
 
   describe("removeGazetteFromAlgolia", () => {

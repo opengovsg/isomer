@@ -372,6 +372,12 @@ export const buildGazetteSearchRecords = ({
   // WHY end on whitespace: splitting mid-word fragments search tokens across
   // two records and hurts recall; whitespace-aligned splits are semantically
   // cleaner and egazette uses the same boundary.
+  //
+  // NOTE: a contiguous run of non-whitespace characters longer than 7000 chars
+  // causes the regex to skip the leading portion of that run (it begins matching
+  // at the first position from which it can consume up to 7000 chars ending at
+  // the string boundary). Same behavior as egazette; gazette PDFs are
+  // whitespace-delimited prose, so this does not arise in practice.
   const CHUNK_REGEX = /.{1,7000}(?:\s|$)/g
 
   const chunks: string[] = []

@@ -3,6 +3,7 @@ import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
+import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -18,6 +19,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
+import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -1084,6 +1086,35 @@ describe("gazette.router", async () => {
         .calls[0]?.[0]
       expect(call?.recipientEmail).toBe(env.DD_DELETION_EMAIL)
       expect(call?.cc).toEqual(["user@toppannext.com"])
+    })
+
+    it("calls removeGazetteFromSearchIndex and NOT removeGazetteFromAlgolia when ENABLE_SEARCHSG_GAZETTE_INGESTION is ON", async () => {
+      // Arrange
+      const { site, collection, user } = await seedToppanWithCollection()
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt: subMinutes(FIXED_NOW, 5),
+        userId: user.id,
+      })
+
+      // Enable the SearchSG flag for this test only.
+      mockGrowthBook.setForcedFeatures(
+        new Map([[ENABLE_SEARCHSG_GAZETTE_INGESTION, true]]),
+      )
+
+      // Act
+      await caller.delete({ siteId: site.id, gazetteId })
+
+      // Restore the flag so subsequent tests see the default (OFF) state.
+      mockGrowthBook.setForcedFeatures(new Map())
+
+      // Assert — SearchSG path was taken, Algolia path was not.
+      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(gazetteService.removeGazetteFromAlgolia).not.toHaveBeenCalled()
+      expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledTimes(1)
     })
   })
 })

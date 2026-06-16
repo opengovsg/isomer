@@ -847,8 +847,8 @@ export const gazetteRouter = router({
       // This is because the public uses those to access the gazette
       // but the database resource is purely for internal view.
       //
-      // The flag determines which search backend holds the gazette's records.
-      // Algolia is the default (flag OFF); SearchSG is the fallback (flag ON).
+      // When OFF (default): gazette records live in Algolia, so delete from Algolia.
+      // When ON: records were pushed to SearchSG instead, so delete from SearchSG.
       if (ctx.gb.isOn(ENABLE_SEARCHSG_GAZETTE_INGESTION)) {
         await removeGazetteFromSearchIndex(ref, gazette.id)
       } else {
