@@ -5,7 +5,7 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import { setupUser, setUpWhitelist } from "tests/integration/helpers/seed"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
 import * as growthbookLib from "~/lib/growthbook"
@@ -34,6 +34,10 @@ describe("auth.email", () => {
   })
 
   describe("login", () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
     it("should throw 400 if email is not provided", async () => {
       // Act
       const result = caller.login({ email: "" })
@@ -74,8 +78,26 @@ describe("auth.email", () => {
       expect(result).toEqual(expectedReturn)
     })
 
-    it("should throw 401 if user is deleted", async () => {
+    it("should return email and a prefix without sending an OTP if email is not whitelisted", async () => {
       // Arrange
+      const spy = vi.spyOn(mailLib, "sendMail")
+      const email = "not-whitelisted@open.gov.sg"
+
+      // Act
+      const result = await caller.login({ email })
+
+      // Assert
+      expect(result).toEqual({
+        email,
+        otpPrefix: expect.any(String),
+      })
+      expect(spy).not.toHaveBeenCalled()
+      await expect(prisma.verificationToken.count()).resolves.toBe(0)
+    })
+
+    it("should return email and a prefix without sending an OTP if user is deleted", async () => {
+      // Arrange
+      const spy = vi.spyOn(mailLib, "sendMail")
       await setupUser({
         name: "Deleted",
         userId: "deleted123",
@@ -85,15 +107,15 @@ describe("auth.email", () => {
       })
 
       // Act
-      const result = caller.login({ email: TEST_VALID_EMAIL })
+      const result = await caller.login({ email: TEST_VALID_EMAIL })
 
       // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Email address is not whitelisted",
-        }),
-      )
+      expect(result).toEqual({
+        email: TEST_VALID_EMAIL,
+        otpPrefix: expect.any(String),
+      })
+      expect(spy).not.toHaveBeenCalled()
+      await expect(prisma.verificationToken.count()).resolves.toBe(0)
     })
   })
 

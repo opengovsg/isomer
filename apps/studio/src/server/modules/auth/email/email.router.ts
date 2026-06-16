@@ -32,17 +32,13 @@ export const emailSessionRouter = router({
       const isWhitelisted = await isEmailWhitelisted(email)
       const isDeleted = await isUserDeleted(email)
 
-      // Assert that the user is both whitelisted and not deleted
       if (!isWhitelisted || isDeleted) {
         ctx.logger.warn(
           { email, isDeleted, isWhitelisted },
           "User is not whitelisted or deleted",
         )
 
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Email address is not whitelisted",
-        })
+        return { email, otpPrefix: createVfnPrefix() }
       }
 
       // TODO: instead of storing expires, store issuedAt to calculate when the next otp can be re-issued
