@@ -150,7 +150,7 @@ catalog:
   pg-boss: ^12.18.2
   postcss-load-config: ^6.0.1
   rate-limiter-flexible: ^11.2.0
-  react-error-boundary: ^5.0.0
+  react-error-boundary: ^6.1.2
   react-frame-component: ^5.2.7
   react-hook-form: ^7.77.0
   react-markdown: ^10.1.0

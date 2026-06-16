@@ -315,8 +315,8 @@ catalogs:
       specifier: ^11.2.0
       version: 11.2.0
     react-error-boundary:
-      specifier: ^5.0.0
-      version: 5.0.0
+      specifier: ^6.1.2
+      version: 6.1.2
     react-frame-component:
       specifier: ^5.2.7
       version: 5.3.2
@@ -928,7 +928,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       react-error-boundary:
         specifier: 'catalog:'
-        version: 5.0.0(react@18.3.1)
+        version: 6.1.2(react@18.3.1)
       react-frame-component:
         specifier: 'catalog:'
         version: 5.3.2(prop-types@15.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -10445,10 +10445,10 @@ packages:
     peerDependencies:
       react: '>= 16.8'
 
-  react-error-boundary@5.0.0:
-    resolution: {integrity: sha512-tnjAxG+IkpLephNcePNA7v6F/QpWLH8He65+DmedchDwg162JZqx4NmbXj0mlAYVVEd81OW7aFhmbsScYfiAFQ==}
+  react-error-boundary@6.1.2:
+    resolution: {integrity: sha512-3DpCr5HVdZ0caUjYE/kIHBEJN0mNP3ZCgf16c48uJ5TbWjorKVp+YG8W3XqlJ7vJAVNw6wNIImyPXmFydwmyng==}
     peerDependencies:
-      react: '>=16.13.1'
+      react: ^18.0.0 || ^19.0.0
 
   react-fast-compare@3.2.2:
     resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
@@ -21136,9 +21136,8 @@ snapshots:
       prop-types: 15.8.1
       react: 18.3.1
 
-  react-error-boundary@5.0.0(react@18.3.1):
+  react-error-boundary@6.1.2(react@18.3.1):
     dependencies:
-      '@babel/runtime': 7.29.7
       react: 18.3.1
 
   react-fast-compare@3.2.2: {}
