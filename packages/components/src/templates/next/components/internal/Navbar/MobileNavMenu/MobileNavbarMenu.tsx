@@ -12,6 +12,8 @@ import { focusVisibleHighlight } from "~/utils/tailwind"
 
 import { Link } from "../../Link"
 import { LinkButton } from "../../LinkButton/LinkButton"
+import { LocalSearchInputBox } from "../../LocalSearchInputBox"
+import { NavbarSearchSGInputBox } from "../../SearchSGInputBox"
 import { MobileNavItemAccordion } from "./MobileNavItemAccordion"
 
 type MobileNavMenuProps = Omit<
@@ -22,6 +24,7 @@ type MobileNavMenuProps = Omit<
   openNavItemIdx: number
   setOpenNavItemIdx: Dispatch<SetStateAction<number>>
   onCloseMenu: () => void
+  isPinned?: boolean
 }
 
 export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
@@ -29,12 +32,13 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
     {
       top,
       items,
-      LinkComponent,
       openNavItemIdx,
       setOpenNavItemIdx,
       onCloseMenu,
       callToAction,
       utility,
+      isPinned,
+      search,
     },
     mobileMenuRef,
   ) => {
@@ -54,7 +58,17 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
       >
         <FocusScope restoreFocus>
           <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
-            {!!callToAction && (
+            {isPinned && !!search && (
+              <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
+                {search.type === "localSearch" && (
+                  <LocalSearchInputBox searchUrl={search.searchUrl} />
+                )}
+                {search.type === "searchSG" && (
+                  <NavbarSearchSGInputBox clientId={search.clientId} isOpen />
+                )}
+              </div>
+            )}
+            {!isPinned && !!callToAction && (
               <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
                 <LinkButton
                   href={callToAction.url}
@@ -62,7 +76,6 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                   className="h-fit w-full justify-center"
                   isWithFocusVisibleHighlight
                   onClick={onCloseMenu}
-                  LinkComponent={LinkComponent}
                 >
                   {callToAction.label}
                 </LinkButton>
@@ -72,8 +85,6 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             {items.map((item, index) => (
               <MobileNavItemAccordion
                 key={`${item.name}-${index}`}
-                // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                LinkComponent={LinkComponent}
                 index={index}
                 isOpen={index === openNavItemIdx}
                 onClick={() =>
@@ -98,7 +109,6 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
                   {utility.items.map((item, index) => (
                     <li key={`${item.name}-${index}`}>
                       <Link
-                        LinkComponent={LinkComponent}
                         className={focusVisibleHighlight({
                           className:
                             "prose-label-sm-medium py-1 text-base-content-subtle",

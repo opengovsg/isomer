@@ -30,7 +30,6 @@ interface ChildpageLayoutProps
       | "imageFit"
       | "showThumbnail"
       | "shouldLazyLoad"
-      | "LinkComponent"
       | "site"
       | "maxColumns"
     >,
@@ -45,7 +44,6 @@ const BoxLayout = ({
   showThumbnail,
   fallback,
   shouldLazyLoad,
-  LinkComponent,
   site,
   maxColumns = "2",
   imageFit = "cover",
@@ -77,7 +75,6 @@ const BoxLayout = ({
               layout="index"
               site={site}
               isFallback={!hasImage}
-              LinkComponent={LinkComponent}
               shouldLazyLoad={shouldLazyLoad}
             />
           )
@@ -90,7 +87,6 @@ const BoxLayout = ({
             description={showSummary ? description : undefined}
             url={url}
             site={site}
-            LinkComponent={LinkComponent}
           />
         )
       })}
@@ -153,7 +149,6 @@ const RowLayout = ({
   assetsBaseUrl,
   fallback,
   shouldLazyLoad,
-  LinkComponent,
   site,
   imageFit,
 }: ChildpageLayoutProps): JSX.Element => {
@@ -172,7 +167,6 @@ const RowLayout = ({
               site.assetsBaseUrl,
             )}
             key={`${title}-${idx}`}
-            LinkComponent={LinkComponent}
             className={styles.contentContainer({
               hasThumbnail: !!showThumbnail,
             })}
@@ -224,7 +218,6 @@ export const ChildrenPages = ({
   childrenPagesOrdering = [],
   permalink,
   site,
-  LinkComponent,
   variant,
   showSummary = true,
   showThumbnail,
@@ -252,7 +245,6 @@ export const ChildrenPages = ({
   if (variant === "boxes") {
     return (
       <BoxLayout
-        LinkComponent={LinkComponent}
         assetsBaseUrl={site.assetsBaseUrl}
         childpages={children}
         showSummary={showSummary}
@@ -272,7 +264,6 @@ export const ChildrenPages = ({
   // Hence, we will default to `row` for them
   return (
     <RowLayout
-      LinkComponent={LinkComponent}
       assetsBaseUrl={site.assetsBaseUrl}
       childpages={children}
       showSummary={showSummary}

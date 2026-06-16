@@ -8,12 +8,20 @@ export default defineConfig({
     },
   },
   test: {
+    dir: "src",
     globals: true,
     exclude: [...configDefaults.exclude],
 
     coverage: {
       provider: "istanbul",
       reportOnFailure: true,
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "**/__tests__/**",
+        "**/*.test.{ts,tsx}",
+        "**/*.stories.{ts,tsx}",
+        "**/*.d.ts",
+      ],
     },
   },
 })

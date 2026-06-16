@@ -1,6 +1,5 @@
 import type { PropsWithChildren } from "react"
 import type { BreadcrumbProps } from "~/interfaces"
-import type { LinkComponentType } from "~/types"
 
 import { Breadcrumb } from "../../components/internal/Breadcrumb"
 
@@ -8,21 +7,19 @@ interface CollectionPageHeaderProps extends PropsWithChildren {
   breadcrumb: BreadcrumbProps
   title: string
   subtitle: string
-  LinkComponent?: LinkComponentType
 }
 
 export const CollectionPageHeader = ({
   title,
   breadcrumb,
   subtitle,
-  LinkComponent,
   children,
 }: CollectionPageHeaderProps) => {
   return (
     <div className="bg-brand-canvas text-base-content-strong">
       <div className="mx-auto flex max-w-screen-xl flex-col gap-8 px-6 py-8 md:px-10">
         <div className="flex flex-col">
-          <Breadcrumb links={breadcrumb.links} LinkComponent={LinkComponent} />
+          <Breadcrumb links={breadcrumb.links} />
           <div className="mt-8 flex max-w-[54rem] flex-col gap-5 md:mt-6">
             <h1 className="prose-display-lg break-words">{title}</h1>
             <p className="prose-title-lg-regular">{subtitle}</p>

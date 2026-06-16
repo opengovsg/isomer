@@ -12,6 +12,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
 import {
@@ -37,6 +38,7 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const {
+    type,
     addedBlockIndex,
     setAddedBlockIndex,
     setDrawerState,
@@ -58,6 +60,9 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
+        if (type === ResourceType.CollectionPage) {
+          void utils.collection.countTagOptionsUsage.invalidate()
+        }
         toast({
           status: "success",
           title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,

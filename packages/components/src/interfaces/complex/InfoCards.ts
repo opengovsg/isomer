@@ -1,9 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type {
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { InfoCardsImageFitSchema } from "~/schemas/internal"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
@@ -187,7 +183,6 @@ export const InfoCardsSchema = Type.Intersect(
 export type SingleCardNoImageProps = Static<typeof SingleCardNoImageSchema> & {
   site: IsomerSiteProps
   isExternalLink?: boolean
-  LinkComponent?: LinkComponentType
 }
 export type SingleCardWithImageProps = Static<
   typeof SingleCardWithImageSchema
@@ -196,7 +191,6 @@ export type SingleCardWithImageProps = Static<
     site: IsomerSiteProps
     layout: IsomerPageLayoutType
     isExternalLink?: boolean
-    LinkComponent?: LinkComponentType
     shouldLazyLoad?: boolean
     variant?: InfoCardVariants
     isFallback?: boolean
@@ -204,7 +198,6 @@ export type SingleCardWithImageProps = Static<
 export type InfoCardsProps = Static<typeof InfoCardsSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
   sectionIdx?: number // TODO: Remove this property, only used in classic theme
   shouldLazyLoad?: boolean
 }

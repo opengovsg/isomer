@@ -26,7 +26,6 @@ export const BaseParagraph = ({
   allowedTags,
   className,
   attrs,
-  LinkComponent,
 }: BaseParagraphProps) => {
   const transform = (node: HTMLElement, children: Node[]): React.ReactNode => {
     if (node.tagName.toLocaleLowerCase() === "a") {
@@ -35,7 +34,6 @@ export const BaseParagraph = ({
 
       return (
         <Link
-          LinkComponent={LinkComponent}
           href={href}
           isExternal={isExternalLink}
           isWithFocusVisibleHighlight

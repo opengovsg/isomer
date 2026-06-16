@@ -28,7 +28,6 @@ export const HeroBlock = ({
   secondaryButtonUrl,
   backgroundUrl,
   site,
-  LinkComponent,
   theme = "default",
 }: HeroBlockProps) => {
   const heroColour = HERO_THEME_MAPPINGS.hero[theme]
@@ -60,7 +59,6 @@ export const HeroBlock = ({
                 size="lg"
                 variant="solid"
                 colorScheme={heroButton}
-                LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
               >
                 {buttonLabel}
@@ -75,7 +73,6 @@ export const HeroBlock = ({
                     site.siteMapArray,
                     site.assetsBaseUrl,
                   )}
-                  LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                 >
                   {secondaryButtonLabel}

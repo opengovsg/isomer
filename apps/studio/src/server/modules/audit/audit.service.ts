@@ -4,6 +4,7 @@ import type {
   DB,
   Footer,
   Navbar,
+  PushDocumentJob,
   Resource,
   ResourcePermission,
   Site,
@@ -42,10 +43,18 @@ interface ResourceEventDeltaMap {
     before: FullResource
     after: FullResource
   }
-  CancelSchedulePublish: {
-    before: FullResource
-    after: FullResource
-  }
+  CancelSchedulePublish:
+    | {
+        before: FullResource
+        after: FullResource
+      }
+    // egazette cancel: the resource is deleted in the same transaction, so we
+    // log the deleted PushDocumentJob row instead of a synthetic resource
+    // snapshot that never lands in the DB.
+    | {
+        before: WithoutMeta<PushDocumentJob>
+        after: null
+      }
 }
 
 interface BaseResourceEventLogProps {

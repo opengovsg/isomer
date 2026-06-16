@@ -6,10 +6,21 @@ import { ajv } from "~/utils/ajv"
 interface FormBuilderProps {
   schema: TSchema
   data: unknown
+  readonly?: boolean
 }
 
-export function FormBuilder({ schema, data }: FormBuilderProps): JSX.Element {
+export function FormBuilder({
+  schema,
+  data,
+  readonly,
+}: FormBuilderProps): JSX.Element {
   return (
-    <JsonForms schema={schema} data={data} renderers={renderers} ajv={ajv} />
+    <JsonForms
+      schema={schema}
+      data={data}
+      renderers={renderers}
+      ajv={ajv}
+      readonly={readonly}
+    />
   )
 }

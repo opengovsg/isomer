@@ -991,7 +991,7 @@ describe("inactiveUsers.service", () => {
         })
         await expect(
           bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 1 }),
-        ).resolves.not.toThrowError()
+        ).resolves.not.toThrow()
       })
 
       it("7 days", async () => {
@@ -1015,7 +1015,7 @@ describe("inactiveUsers.service", () => {
         })
         await expect(
           bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 7 }),
-        ).resolves.not.toThrowError()
+        ).resolves.not.toThrow()
       })
 
       it("14 days", async () => {
@@ -1039,7 +1039,7 @@ describe("inactiveUsers.service", () => {
         })
         await expect(
           bulkSendAccountDeactivationWarningEmails({ inHowManyDays: 14 }),
-        ).resolves.not.toThrowError()
+        ).resolves.not.toThrow()
       })
     })
 

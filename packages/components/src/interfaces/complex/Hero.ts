@@ -1,6 +1,6 @@
 import type { Static } from "@sinclair/typebox"
 import type { Simplify } from "type-fest"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { omit } from "lodash-es"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
@@ -218,7 +218,6 @@ export const HeroSchema = Type.Intersect(
 
 type CommonProps = Static<typeof HeroBaseSchema> & {
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
   theme?: "default" | "inverse"
 }
 

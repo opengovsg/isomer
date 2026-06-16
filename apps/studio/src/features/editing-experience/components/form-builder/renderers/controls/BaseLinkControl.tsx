@@ -24,10 +24,9 @@ import { trpc } from "~/utils/trpc"
 
 import type { LinkTypesWithHrefFormat } from "../../../LinkEditor/constants"
 import { LINK_TYPES } from "../../../LinkEditor/constants"
-import { getLinkHrefType } from "../../../LinkEditor/utils"
+import { getLinkHrefType, parseHref } from "../../../LinkEditor/utils"
 import { LinkErrorBoundary } from "../../components/LinkErrorBoundary"
 import { getCustomErrorMessage } from "./utils"
-import { parseHref } from "./utils/parseHref"
 
 interface SuspendableLabelProps {
   siteId: number

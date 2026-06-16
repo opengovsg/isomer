@@ -17,7 +17,6 @@ export const BlockInfopic = ({
   isTextOnRight,
   shouldLazyLoad,
   site,
-  LinkComponent,
 }: Omit<InfopicProps, "variant">) => {
   const compoundStyles = infopicStyles({
     isTextOnRight,
@@ -34,7 +33,6 @@ export const BlockInfopic = ({
         {hasLinkButton && (
           <div className={compoundStyles.button()}>
             <LinkButton
-              LinkComponent={LinkComponent}
               href={getReferenceLinkHref(
                 buttonUrl,
                 site.siteMapArray,

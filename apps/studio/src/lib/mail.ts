@@ -1,3 +1,4 @@
+import { partition } from "lodash-es"
 import wretch from "wretch"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
@@ -7,6 +8,7 @@ interface SendMailParams {
   recipient: string
   body: string
   subject: string
+  cc?: string[]
 }
 
 const logger = createBaseLogger({ path: "lib/mail" })
@@ -18,13 +20,40 @@ export const sendMail = async (params: SendMailParams): Promise<void> => {
     throw new Error("Email not whitelisted")
   }
 
+  // Same safeguard for cc recipients, but drop the non-whitelisted ones
+  // instead of failing the whole send — mirrors Postman's own behaviour of
+  // ignoring blacklisted cc addresses while still delivering to the rest.
+  const [whitelistedCc, droppedCc] = partition(
+    await Promise.all(
+      (params.cc ?? []).map(async (email) => ({
+        email,
+        isWhitelisted: await isEmailWhitelisted(email),
+      })),
+    ),
+    (r) => r.isWhitelisted,
+  )
+  if (droppedCc.length > 0) {
+    logger.warn({
+      error: "Dropping non-whitelisted cc recipients",
+      cc: droppedCc.map((r) => r.email),
+      subject: params.subject,
+    })
+  }
+  const cc = whitelistedCc.map((r) => r.email)
+  const payload = {
+    recipient: params.recipient,
+    subject: params.subject,
+    body: params.body,
+    ...(cc.length > 0 && { cc }),
+  }
+
   if (env.POSTMAN_API_KEY) {
     try {
       const response = await wretch(
         "https://api.postman.gov.sg/v1/transactional/email/send",
       )
         .auth(`Bearer ${env.POSTMAN_API_KEY}`)
-        .post(params)
+        .post(payload)
         .res()
 
       if (response.status >= 300) {

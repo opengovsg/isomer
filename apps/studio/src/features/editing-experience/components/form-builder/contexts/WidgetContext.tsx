@@ -19,7 +19,8 @@ export const WIDGET_CONFIG: Record<WidgetType, Widget> = {
   },
 }
 
-export type WidgetType = ComplexIntegrations
+// zendesk is not user-editable in studio, so only pick the editable widget types
+export type WidgetType = Extract<ComplexIntegrations, "askgov" | "vica">
 
 interface UseWidgetContextReturn {
   activeWidget: WidgetType | null

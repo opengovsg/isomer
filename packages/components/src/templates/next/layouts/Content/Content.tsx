@@ -29,7 +29,6 @@ export const ContentLayout = ({
   page,
   layout,
   content,
-  LinkComponent,
 }: ContentPageSchemaType) => {
   const isParentPageRoot = page.permalink.split("/").length === 2
 
@@ -46,41 +45,31 @@ export const ContentLayout = ({
     page.permalink.split("/").slice(1),
   )
   return (
-    <Skeleton
-      site={site}
-      page={page}
-      layout={layout}
-      LinkComponent={LinkComponent}
-    >
+    <Skeleton site={site} page={page} layout={layout}>
       <ContentPageHeader
         {...page.contentPageHeader}
         image={page.image}
         title={page.title}
         breadcrumb={breadcrumb}
         site={site}
-        LinkComponent={LinkComponent}
         lastUpdated={page.lastModified}
       />
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.content()}>
           {tableOfContents.length > 1 && (
-            <TableOfContents
-              items={tableOfContents}
-              LinkComponent={LinkComponent}
-            />
+            <TableOfContents items={tableOfContents} />
           )}
           <div>
             {renderPageContent({
               content: transformedContent,
               layout,
               site,
-              LinkComponent,
               permalink: page.permalink,
             })}
           </div>
         </div>
         <div className={compoundStyles.siderailContainer()}>
-          {sideRail && <Siderail {...sideRail} LinkComponent={LinkComponent} />}
+          {sideRail && <Siderail {...sideRail} />}
           <BackToTopLink />
         </div>
       </div>

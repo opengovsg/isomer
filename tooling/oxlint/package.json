@@ -10,7 +10,7 @@
     "./base.json": "./base.json"
   },
   "dependencies": {
-    "oxlint": "^1.56.0",
-    "oxlint-tsgolint": "^0.17.1"
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:"
   }
 }

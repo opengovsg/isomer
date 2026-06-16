@@ -8,6 +8,7 @@ import type {
   CancelSchedulePageTemplateData,
   EmailTemplate,
   FailedPublishTemplateData,
+  GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
@@ -38,11 +39,22 @@ async function sendEmailWithTemplate({
     throw new Error("Invalid email format")
   }
 
+  // Drop malformed cc addresses rather than failing the send for everyone
+  const validCc = data.cc?.filter((email) => {
+    if (isValidEmail(email)) return true
+    logger.error({
+      error: "Invalid cc email format",
+      email,
+    })
+    return false
+  })
+
   try {
     await sendMail({
       recipient: data.recipientEmail,
       subject: template.subject,
       body: template.body,
+      cc: validCc,
     })
   } catch (error) {
     logger.error({
@@ -151,5 +163,15 @@ export async function sendAccountDeactivationEmail(
     data,
     template: templates.accountDeactivation(data),
     emailType: "account deactivation",
+  })
+}
+
+export async function sendGazetteDeletionEmail(
+  data: GazetteDeletionEmailTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.gazetteDeletion(data),
+    emailType: "gazette deletion",
   })
 }

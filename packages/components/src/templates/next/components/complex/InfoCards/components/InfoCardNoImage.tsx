@@ -9,16 +9,10 @@ export const InfoCardNoImage = ({
   description,
   url,
   site,
-  LinkComponent,
 }: SingleCardNoImageProps): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer
-      url={url}
-      site={site}
-      isExternalLink={isExternalLink}
-      LinkComponent={LinkComponent}
-    >
+    <InfoCardContainer url={url} site={site} isExternalLink={isExternalLink}>
       <InfoCardText
         title={title}
         description={description}

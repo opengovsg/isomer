@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { AccordionProseSchema } from "../native/Prose"
@@ -16,6 +16,5 @@ export const AccordionSchema = Type.Object(
 )
 
 export type AccordionProps = Static<typeof AccordionSchema> & {
-  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }

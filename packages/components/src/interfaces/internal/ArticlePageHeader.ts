@@ -1,5 +1,4 @@
 import type { Static } from "@sinclair/typebox"
-import type { LinkComponentType } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import type { BreadcrumbProps } from "./Breadcrumb"
@@ -20,5 +19,4 @@ export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
   title: string
   category: CollectionCardProps["category"]
   date?: string
-  LinkComponent?: LinkComponentType
 }

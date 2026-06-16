@@ -1,5 +1,5 @@
-import { type User } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
+import { type User } from "~prisma/generated/prisma/client"
 
 import {
   MOCK_STORY_DATE,

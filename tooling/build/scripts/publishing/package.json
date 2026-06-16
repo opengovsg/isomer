@@ -8,14 +8,21 @@
   "main": "index.ts",
   "scripts": {
     "start": "tsx index.ts ",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "test-ci:unit": "vitest run",
+    "test:watch": "vitest watch",
+    "upload-redirects": "tsx uploadRedirects.ts"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
-    "pg": "^8.12.0",
-    "tsx": "^4.19.2"
+    "dotenv": "catalog:",
+    "pg": "catalog:",
+    "tsx": "catalog:"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.6"
+    "@isomer/db": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "testcontainers": "catalog:",
+    "vitest": "catalog:vitest"
   }
 }

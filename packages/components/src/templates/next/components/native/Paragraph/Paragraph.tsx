@@ -3,18 +3,12 @@ import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
 
-export const Paragraph = ({
-  attrs,
-  content,
-  site,
-  LinkComponent,
-}: ParagraphProps) => {
+export const Paragraph = ({ attrs, content, site }: ParagraphProps) => {
   return (
     <BaseParagraph
       content={getTextAsHtml({ site, content })}
       className="prose-body-base text-base-content"
       attrs={attrs}
-      LinkComponent={LinkComponent}
     />
   )
 }

@@ -1,5 +1,4 @@
 import type { PropsWithChildren } from "react"
-import type { LinkComponentType } from "~/types"
 
 interface BaseLinkProps {
   href?: string
@@ -11,7 +10,6 @@ interface BaseLinkProps {
   className?: string
   label?: string
   onClick?: () => void
-  LinkComponent?: LinkComponentType
 }
 
 export type LinkProps = PropsWithChildren<BaseLinkProps>

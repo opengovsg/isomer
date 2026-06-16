@@ -172,15 +172,13 @@ export default function HeroEditorDrawer(): JSX.Element {
 
   const handleChange = useCallback(
     (data: IsomerComponent) => {
-      const updatedBlocks = Array.from(previewPageState.content)
-      updatedBlocks[currActiveIdx] = data
-      const newPageState = {
-        ...previewPageState,
-        content: updatedBlocks,
-      }
-      setPreviewPageState(newPageState)
+      setPreviewPageState((oldPageState) => {
+        const updatedBlocks = Array.from(oldPageState.content)
+        updatedBlocks[currActiveIdx] = data
+        return { ...oldPageState, content: updatedBlocks }
+      })
     },
-    [currActiveIdx, previewPageState, setPreviewPageState],
+    [currActiveIdx, setPreviewPageState],
   )
 
   return (

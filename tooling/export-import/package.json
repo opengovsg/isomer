@@ -8,17 +8,18 @@
     "start": "dotenv tsx index.ts"
   },
   "devDependencies": {
-    "@isomer/tsconfig": "*",
-    "@types/node": "^22.15.21",
-    "@types/pg": "^8.15.4",
-    "dotenv": "^16.4.5",
-    "tsx": "^4.20.4",
-    "typescript": "^5.9.2"
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "dotenv-cli": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@inquirer/prompts": "^7.6.0",
-    "pg": "^8.16.2"
+    "@inquirer/prompts": "catalog:",
+    "dotenv": "catalog:",
+    "pg": "catalog:"
   }
 }

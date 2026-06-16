@@ -1,4 +1,3 @@
-import type { StackProps, IconProps } from "@chakra-ui/react"
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   IsomerComponent,
@@ -35,7 +34,7 @@ import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
-import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience"
+import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -91,7 +90,7 @@ const FixedBlock = () => {
     useEditorDrawerContext()
   const pageLayout = previewPageState.layout
   const isHeroFixedBlock = getIsHeroFirstBlock(pageLayout, previewPageState)
-  const isNewEditingExperienceEnabled = useNewCollectionEditingExperience()
+  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
   if (isHeroFixedBlock) {
     // Assuming only one fixedBlock can exist at a time for now
@@ -115,42 +114,48 @@ const FixedBlock = () => {
 
   if (
     pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
-    isNewEditingExperienceEnabled
+    isNewCollectionTagsManagementEnabled
   ) {
-    const containerProps: StackProps = {
-      px: "1.25rem",
-      py: "1.25rem",
-      flexDirection: "column",
-      gap: "0.75rem",
-      align: "flex-start",
-    }
-    const iconProps: IconProps = {
-      boxSize: "1.25rem",
-    }
+    // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
     return (
       <>
         <BaseBlock
+          variant="vertical"
           onClick={() => {
             setCurrActiveIdx(0)
-            setDrawerState({ state: "collectionEditor" })
+            setDrawerState({ state: "collectionEditor", type: "display" })
           }}
           label="Collection display"
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
-          containerProps={containerProps}
           icon={BiCog}
-          iconProps={iconProps}
         />
         {isUserIsomerAdmin && (
           <BaseBlock
-            onClick={() => console.log("to implement")}
+            variant="vertical"
+            onClick={() => {
+              setCurrActiveIdx(0)
+              setDrawerState({ state: "collectionEditor", type: "filter" })
+            }}
             label="Filters"
             description="Define and manage filters for this Collection."
-            containerProps={containerProps}
             icon={BiSlider}
-            iconProps={iconProps}
           />
         )}
       </>
+    )
+  }
+
+  if (pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection) {
+    return (
+      <BaseBlock
+        onClick={() => {
+          setCurrActiveIdx(0)
+          setDrawerState({ state: "collectionEditor", type: "display" })
+        }}
+        label="Collection settings"
+        description="Summary, style, categories and sorting"
+        icon={BiPin}
+      />
     )
   }
 
@@ -253,6 +258,9 @@ export default function RootStateDrawer() {
       onSuccess: async () => {
         await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
         await utils.page.readPage.invalidate({ pageId, siteId })
+        if (type === ResourceType.CollectionPage) {
+          void utils.collection.countTagOptionsUsage.invalidate()
+        }
         toast({
           status: "success",
           title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
@@ -380,7 +388,7 @@ export default function RootStateDrawer() {
   // for collection index pages
   const canAddBlocks = pageLayout !== "collection"
 
-  const isNewEditingExperienceEnabled = useNewCollectionEditingExperience()
+  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
   return (
     <Flex direction="column" h="full">
@@ -456,13 +464,20 @@ export default function RootStateDrawer() {
           )}
 
           {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
-          isNewEditingExperienceEnabled ? (
+          isNewCollectionTagsManagementEnabled ? (
+            // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
             <Disable when={disableBlocks}>
               <VStack gap="1rem" w="100%" align="start">
                 <VStack gap="0.25rem" align="start">
-                  <Text textStyle="subhead-1">Manage Collection</Text>
+                  <Text textStyle="subhead-1">
+                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
+                      ? "Manage Collection"
+                      : "Fixed blocks"}
+                  </Text>
                   <Text textStyle="caption-2" color="base.content.medium">
-                    Modify the Collection’s look and feel or manage filters.
+                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
+                      ? "Modify the Collection’s look and feel or manage filters."
+                      : "These are built into the layout, so you can’t delete them."}
                   </Text>
                 </VStack>
 

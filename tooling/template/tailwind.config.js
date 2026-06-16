@@ -9,7 +9,9 @@ import siteConfig from "./data/config.json"
 const config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@opengovsg/isomer-components/**/*.{js,ts,jsx,tsx}",
+    // dist + src only — avoid scanning packages/components/node_modules via a root ** glob
+    "./node_modules/@opengovsg/isomer-components/dist/**/*.{js,mjs,cjs}",
+    "./node_modules/@opengovsg/isomer-components/src/**/*.{js,ts,jsx,tsx}",
   ],
   // Use createNextPreset with includeFonts: false since we load Inter via next/font/google in layout.tsx
   presets: [createNextPreset({ includeFonts: false })],

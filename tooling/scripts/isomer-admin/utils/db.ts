@@ -17,12 +17,12 @@ export const withDbClient = async <T>(
   fn: (client: Client) => Promise<T>
 ): Promise<T> => {
   const hasConnected = await confirm({
-    message: "Have you ran `npm run db:connect`?",
+    message: "Have you ran `pnpm run db:connect`?",
     default: true,
   });
 
   if (!hasConnected) {
-    console.log("Please run `npm run db:connect` first, then try again.");
+    console.log("Please run `pnpm run db:connect` first, then try again.");
     process.exit(1);
   }
 

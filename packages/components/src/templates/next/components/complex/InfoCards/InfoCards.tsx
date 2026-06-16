@@ -28,7 +28,6 @@ export const InfoCards = ({
   layout,
   site,
   shouldLazyLoad,
-  LinkComponent,
 }: InfoCardsProps): JSX.Element => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
   const cardVariant =
@@ -48,7 +47,6 @@ export const InfoCards = ({
                 maxColumns={maxColumns}
                 layout={layout}
                 site={site}
-                LinkComponent={LinkComponent}
                 shouldLazyLoad={shouldLazyLoad}
               />
             ))}
@@ -58,12 +56,7 @@ export const InfoCards = ({
         return (
           <>
             {cards.map((card, idx) => (
-              <InfoCardNoImage
-                key={idx}
-                {...card}
-                site={site}
-                LinkComponent={LinkComponent}
-              />
+              <InfoCardNoImage key={idx} {...card} site={site} />
             ))}
           </>
         )
@@ -77,7 +70,6 @@ export const InfoCards = ({
                 maxColumns={maxColumns}
                 layout={layout}
                 site={site}
-                LinkComponent={LinkComponent}
                 shouldLazyLoad={shouldLazyLoad}
               />
             ))}
@@ -138,7 +130,6 @@ export const InfoCards = ({
             size="base"
             variant="outline"
             isWithFocusVisibleHighlight
-            LinkComponent={LinkComponent}
           >
             {label}
           </LinkButton>

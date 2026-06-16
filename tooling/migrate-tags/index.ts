@@ -1,9 +1,3 @@
-import { db, jsonb } from "~server/modules/database"
-import {
-  getBlobOfResource,
-  updateBlobById,
-} from "~server/modules/resource/resource.service"
-import _ from "lodash"
 import {
   generateUpdatedContent,
   getChildItemsWithTags,
@@ -12,6 +6,11 @@ import {
   LegacyTag,
   migrateTags,
 } from "utils"
+import { db, jsonb } from "~server/modules/database"
+import {
+  getBlobOfResource,
+  updateBlobById,
+} from "~server/modules/resource/resource.service"
 
 export const migrateTagsOfSite = async (siteId: number) => {
   const collectionIds = await getCollectionsOfSiteWithTags(siteId)

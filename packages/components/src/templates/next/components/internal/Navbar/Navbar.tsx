@@ -8,7 +8,7 @@ const navbarLogoStyles = tv({
   base: "object-contain object-left",
   variants: {
     variant: {
-      utility: "max-h-[68px] max-w-[180px]",
+      utility: "max-h-[48px] max-w-[128px] lg:max-h-[68px] lg:max-w-[180px]",
       default: "max-h-[48px] max-w-[128px]",
     },
   },
@@ -29,7 +29,6 @@ export const Navbar = ({
   callToAction,
   utility,
   site,
-  LinkComponent,
 }: NavbarProps) => {
   // recursive function to process each navbar item
   const processNavItem = (
@@ -47,7 +46,6 @@ export const Navbar = ({
       layout={layout}
       search={search}
       items={items.map(processNavItem)}
-      LinkComponent={LinkComponent}
       imageClientProps={{
         src: logoUrl,
         alt: logoAlt,
@@ -68,6 +66,7 @@ export const Navbar = ({
                   site.siteMapArray,
                   site.assetsBaseUrl,
                 ) ?? callToAction.url,
+              isPinnedOnMobile: callToAction.isPinnedOnMobile,
             }
           : undefined
       }

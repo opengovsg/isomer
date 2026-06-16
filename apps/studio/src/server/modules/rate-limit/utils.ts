@@ -1,4 +1,5 @@
 import { type NextApiRequest } from "next"
+import getIP from "~/utils/getClientIp"
 
 export const getRateLimitFingerprint = (req: NextApiRequest) => {
   const requestedPath =
@@ -6,19 +7,7 @@ export const getRateLimitFingerprint = (req: NextApiRequest) => {
       ? new URL(req.url, `http://${req.headers.host}`).pathname
       : ""
 
-  const forwarded =
-    req.headers["cf-connecting-ip"] ??
-    req.socket.remoteAddress ??
-    req.headers["x-forwarded-for"]
-
-  if (!forwarded) {
-    return "127.0.0.1"
-  }
-
-  const ip =
-    (typeof forwarded === "string" ? forwarded : forwarded[0])?.split(
-      /, /,
-    )[0] ?? "127.0.0.1"
+  const ip = getIP(req)
 
   return `${ip}|${requestedPath}`
 }

@@ -1,5 +1,6 @@
-import type { Logger } from "pino"
 import { pick } from "lodash-es"
+
+import type { Logger } from "@isomer/logging"
 
 import type { BuildChanges } from "./types"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"

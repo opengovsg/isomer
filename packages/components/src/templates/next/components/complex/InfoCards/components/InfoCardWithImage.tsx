@@ -15,18 +15,12 @@ export const InfoCardWithImage = ({
   maxColumns,
   layout,
   site,
-  LinkComponent,
   shouldLazyLoad = true,
   isFallback,
 }: SingleCardWithImageProps): JSX.Element => {
   const isExternalLink = isExternalUrl(url)
   return (
-    <InfoCardContainer
-      url={url}
-      site={site}
-      isExternalLink={isExternalLink}
-      LinkComponent={LinkComponent}
-    >
+    <InfoCardContainer url={url} site={site} isExternalLink={isExternalLink}>
       <InfoCardImage
         isFallback={isFallback}
         imageFit={imageFit}

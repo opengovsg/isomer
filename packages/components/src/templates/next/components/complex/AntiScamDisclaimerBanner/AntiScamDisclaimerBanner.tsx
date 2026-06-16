@@ -1,12 +1,9 @@
-import type { AntiScamDisclaimerBannerProps } from "~/interfaces"
 import { BiError } from "react-icons/bi"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
 
-export const AntiScamDisclaimerBanner = ({
-  LinkComponent,
-}: AntiScamDisclaimerBannerProps) => {
+export const AntiScamDisclaimerBanner = () => {
   return (
     <div
       className={`${ComponentContent} w-full rounded-lg bg-base-canvas px-5 py-12 md:px-6 lg:w-fit lg:max-w-full lg:py-16`}
@@ -28,7 +25,6 @@ export const AntiScamDisclaimerBanner = ({
           <p className="prose-headline-lg-regular m-0 text-base-content-medium">
             If you're unsure if something is a scam, call{" "}
             <Link
-              LinkComponent={LinkComponent}
               href="https://www.scamshield.gov.sg"
               isExternal
               showExternalIcon

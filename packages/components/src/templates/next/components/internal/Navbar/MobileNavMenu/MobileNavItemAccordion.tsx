@@ -6,17 +6,16 @@ import { focusVisibleHighlight } from "~/utils/tailwind"
 
 import { Link } from "../../Link"
 
-type NavItemAccordionProps = NavbarProps["items"][number] &
-  Pick<NavbarProps, "LinkComponent"> & {
-    isOpen: boolean
-    onClick: () => void
-    onCloseMenu: () => void
-    index: number
-  }
+type NavItemAccordionProps = NavbarProps["items"][number] & {
+  isOpen: boolean
+  onClick: () => void
+  onCloseMenu: () => void
+  index: number
+}
 
 interface ParentItemLinkProps extends Pick<
   NavItemAccordionProps,
-  "name" | "url" | "onCloseMenu" | "LinkComponent"
+  "name" | "url" | "onCloseMenu"
 > {
   isExternal: boolean
 }
@@ -70,7 +69,6 @@ const ParentItemLink = ({
   url,
   isExternal,
   onCloseMenu,
-  LinkComponent,
 }: ParentItemLinkProps) => {
   // This is a hack to ensure that the rightArrow is always at the end of the last word even on smaller screens
   const words = name.trim().split(" ")
@@ -85,7 +83,6 @@ const ParentItemLink = ({
       })}
     >
       <Link
-        LinkComponent={LinkComponent}
         isExternal={isExternal}
         showExternalIcon={isExternal}
         isWithFocusVisibleHighlight
@@ -124,14 +121,12 @@ export const MobileNavItemAccordion = ({
   onClick,
   onCloseMenu,
   index,
-  LinkComponent,
 }: NavItemAccordionProps) => {
   if (!items || items.length === 0) {
     return (
       <div className={container()}>
         <Link
           isExternal={isExternalUrl(url)}
-          LinkComponent={LinkComponent}
           className={item({
             className: focusVisibleHighlight(),
           })}
@@ -175,7 +170,6 @@ export const MobileNavItemAccordion = ({
               <li key={subItem.name}>
                 <div className={item({ withVerticalPadding: true })}>
                   <Link
-                    LinkComponent={LinkComponent}
                     href={subItem.url}
                     isExternal={isExternal}
                     className={nestedItem({
@@ -196,7 +190,6 @@ export const MobileNavItemAccordion = ({
             url={url}
             isExternal={isExternalUrl(url)}
             onCloseMenu={onCloseMenu}
-            LinkComponent={LinkComponent}
           />
         )}
       </div>

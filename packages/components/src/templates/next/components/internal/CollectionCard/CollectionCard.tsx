@@ -1,5 +1,4 @@
 import type { CollectionCardProps } from "~/interfaces"
-import type { CollectionPageSchemaType } from "~/types"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { ImageClient } from "../ImageClient"
@@ -8,7 +7,6 @@ import { Tag } from "../Tag"
 import { Title } from "./Title"
 
 export const CollectionCard = ({
-  LinkComponent,
   description,
   category,
   image,
@@ -23,13 +21,11 @@ export const CollectionCard = ({
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
-  LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
   return (
     <Link
-      LinkComponent={LinkComponent}
       href={referenceLinkHref}
       className="group flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t md:flex-row md:gap-6"
       isExternal={isExternalLink}

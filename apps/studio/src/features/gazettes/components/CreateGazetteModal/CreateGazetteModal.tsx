@@ -14,13 +14,13 @@ import {
 } from "@opengovsg/design-system-react"
 import { format, parse } from "date-fns"
 import { useState } from "react"
-import { v4 as uuidv4 } from "uuid"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
+import { useUploadGazetteMutation } from "~/hooks/useUploadGazetteMutation"
 import { useZodForm } from "~/lib/form"
 import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
 
+import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 import { GazetteFormFields } from "../GazetteModal"
 
 type CreateGazetteModalProps = Pick<
@@ -57,6 +57,7 @@ const CreateGazetteModalContent = ({
 }: Pick<CreateGazetteModalProps, "onClose" | "siteId" | "collectionId">) => {
   const [file, setFile] = useState<File | undefined>()
   const toast = useToast()
+  const { subcategoryMap } = useGazetteSubcategoriesContext()
 
   const {
     register,
@@ -81,7 +82,7 @@ const CreateGazetteModalContent = ({
   const utils = trpc.useUtils()
 
   const { mutateAsync: uploadFile, isPending: isUploading } =
-    useUploadAssetMutation({
+    useUploadGazetteMutation({
       siteId,
       resourceId: String(collectionId),
     })
@@ -104,13 +105,20 @@ const CreateGazetteModalContent = ({
     const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
 
     try {
-      const { path: ref } = await uploadFile({ file, fileName: data.fileId })
+      const { path: ref } = await uploadFile({
+        file,
+        fileName: data.fileId,
+        scheduledAt,
+        year: data.publishDate.getFullYear(),
+        category: data.category,
+        subcategory: subcategoryMap[data.subcategory] ?? data.subcategory,
+      })
 
       await createGazette({
         siteId,
         collectionId,
         title: data.title,
-        permalink: uuidv4(),
+        permalink: crypto.randomUUID(),
         ref,
         category: data.category,
         date: format(data.publishDate, "dd/MM/yyyy"),

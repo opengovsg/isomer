@@ -4,7 +4,18 @@ import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import { offsetPaginationSchema } from "./pagination"
 
-const emailSchema = createEmailSchema().pipe(z.string().trim().toLowerCase())
+const _emailValidator = createEmailSchema()
+const emailSchema = z
+  .string()
+  .superRefine((val, ctx) => {
+    const result = _emailValidator.safeParse(val)
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: issue.message })
+      })
+    }
+  })
+  .transform((val) => val.trim().toLowerCase())
 
 export const createUserInputSchema = z.object({
   siteId: z.number().min(1),

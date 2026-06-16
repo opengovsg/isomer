@@ -15,10 +15,7 @@
       "outputs": ["e2e/test-results/**"]
     },
     "generate": {
-      "dependsOn": [
-        "@opengovsg/isomer-components#build",
-        "@isomer/pgboss#build"
-      ],
+      "dependsOn": ["@opengovsg/isomer-components#build"],
       "inputs": ["prisma/schema.prisma"],
       "cache": false
     },
@@ -35,6 +32,19 @@
     "typecheck": {
       "dependsOn": ["generate"]
     },
+    "dev": {
+      "dependsOn": ["services:setup", "build:preview-tw"],
+      "cache": false,
+      "persistent": true
+    },
+    "storybook": {
+      "dependsOn": ["build:preview-tw"],
+      "cache": false,
+      "persistent": true
+    },
+    "build-storybook": {
+      "dependsOn": ["build:preview-tw"]
+    },
     "dev:e2e": {
       "dependsOn": ["services:setup"],
       "cache": false,
@@ -44,7 +54,6 @@
     "build": {
       "dependsOn": [
         "@opengovsg/isomer-components#build",
-        "@isomer/pgboss#build",
         "generate",
         "build:theme",
         "build:preview-tw"

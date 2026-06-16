@@ -18,9 +18,5 @@ export const RenderEngine = (
     },
   } satisfies IsomerPageSchemaType
 
-  if (props.site.theme === "isomer-next") {
-    return renderNextLayout(renderProps)
-  }
-
-  return null
+  return renderNextLayout(renderProps)
 }

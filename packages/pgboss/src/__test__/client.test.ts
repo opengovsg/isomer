@@ -1,12 +1,13 @@
 import type { Mock } from "vitest"
 import type { HeartbeatOptions } from "~/utils"
-import pino from "pino"
 import { sendHeartbeat } from "~/utils"
+
+import { type BaseLogger, pino } from "@isomer/logging"
 
 import type { GlobalWithPgBoss } from ".."
 import { registerPgbossJob } from ".."
 
-const logger: pino.Logger<string> = pino({ level: "silent" })
+const logger: BaseLogger = pino({ level: "silent" })
 
 describe("client", () => {
   let globalForPgboss: GlobalWithPgBoss

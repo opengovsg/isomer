@@ -19,6 +19,8 @@ import {
   jsonFormsBooleanControlTester,
   JsonFormsCategoryControl,
   jsonFormsCategoryControlTester,
+  JsonFormsCategoryIdControl,
+  jsonFormsCategoryIdControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
@@ -63,6 +65,8 @@ import {
   jsonFormsOptionalCombinatorControlTester,
   JsonFormsOneOfControl,
   jsonFormsOneOfControlTester,
+  JsonFormsBoxedGroupControl,
+  jsonFormsBoxedGroupControlTester,
   JsonFormsPrefillLinkControl,
   jsonFormsPrefillLinkControlTester,
   JsonFormsProseControl,
@@ -75,6 +79,10 @@ import {
   jsonFormsSocialMediaControlTester,
   JsonFormsTagCategoriesControl,
   jsonFormsTagCategoriesControlTester,
+  JsonFormsCategoryOptionsControl,
+  jsonFormsCategoryOptionsControlTester,
+  JsonFormsTagCategoryOptionsControl,
+  jsonFormsTagCategoryOptionsControlTester,
   JsonFormsTaggedControl,
   jsonFormsTaggedControlTester,
   JsonFormsTextAreaControl,
@@ -109,6 +117,14 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,
+  },
+  {
+    tester: jsonFormsCategoryOptionsControlTester,
+    renderer: JsonFormsCategoryOptionsControl,
+  },
+  {
+    tester: jsonFormsTagCategoryOptionsControlTester,
+    renderer: JsonFormsTagCategoryOptionsControl,
   },
   { renderer: JsonFormsUuidControl, tester: jsonFormsUuidControlTester },
   { renderer: JsonFormsTaggedControl, tester: jsonFormsTaggedControlTester },
@@ -203,12 +219,20 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     renderer: JsonFormsCategoryControl,
   },
   {
+    tester: jsonFormsCategoryIdControlTester,
+    renderer: JsonFormsCategoryIdControl,
+  },
+  {
     tester: jsonFormsCollectionDropdownControlTester,
     renderer: JsonFormsCollectionDropdownControl,
   },
   {
     tester: jsonFormsPrefillLinkControlTester,
     renderer: JsonFormsPrefillLinkControl,
+  },
+  {
+    tester: jsonFormsBoxedGroupControlTester,
+    renderer: JsonFormsBoxedGroupControl,
   },
 ]
 

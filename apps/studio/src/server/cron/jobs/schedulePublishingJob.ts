@@ -48,17 +48,21 @@ export const schedulePublishingJob = async () => {
 const schedulePublishJobHandler = async () => {
   const scheduledAtCutoff = new Date()
   const gb = await createGrowthBookContext()
-  const enableCodebuildJobs = gb.isOn(ENABLE_CODEBUILD_JOBS)
-  const enableEmailsForScheduledPublishes = gb.isOn(
-    ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
-  )
-  // Publish all scheduled resources up to the cutoff time
-  const siteResourcesMap = await publishScheduledResources(
-    enableEmailsForScheduledPublishes,
-    scheduledAtCutoff,
-  )
-  // Publish all sites that have resources published
-  await publishScheduledSites(siteResourcesMap, enableCodebuildJobs)
+  try {
+    const enableCodebuildJobs = gb.isOn(ENABLE_CODEBUILD_JOBS)
+    const enableEmailsForScheduledPublishes = gb.isOn(
+      ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
+    )
+    // Publish all scheduled resources up to the cutoff time
+    const siteResourcesMap = await publishScheduledResources(
+      enableEmailsForScheduledPublishes,
+      scheduledAtCutoff,
+    )
+    // Publish all sites that have resources published
+    await publishScheduledSites(siteResourcesMap, enableCodebuildJobs)
+  } finally {
+    gb.destroy()
+  }
 }
 
 type ResourceWithUser = Omit<Resource, "scheduledBy"> & {

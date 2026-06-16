@@ -3,7 +3,8 @@
   "compilerOptions": {
     "target": "esnext",
     "outDir": "dist/esm",
-    "module": "esnext"
+    "module": "esnext",
+    "rootDir": "src"
   },
   "exclude": ["node_modules/**"]
 }

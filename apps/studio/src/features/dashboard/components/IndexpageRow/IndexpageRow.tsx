@@ -10,7 +10,7 @@ import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import Link from "next/link"
 import { useEffect } from "react"
 import { BiChevronRight, BiSolidCircle } from "react-icons/bi"
-import { useNewCollectionEditingExperience } from "~/hooks/useNewCollectionEditingExperience"
+import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { trpc } from "~/utils/trpc"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
@@ -49,8 +49,7 @@ export const IndexpageRow = ({
     resourceId,
   ])
 
-  const isNewCollectionEditingExperienceEnabled =
-    useNewCollectionEditingExperience()
+  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
   return (
     <Skeleton w="full" isLoaded={!isPending && !!data}>
@@ -92,7 +91,7 @@ export const IndexpageRow = ({
           <Text textStyle="caption-2" textColor="base.content.medium">
             {getIndexPageSubtitle({
               type,
-              isNewCollectionEditingExperienceEnabled,
+              isNewCollectionTagsManagementEnabled,
             })}
           </Text>
         </VStack>

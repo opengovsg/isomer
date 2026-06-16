@@ -8,8 +8,10 @@ import {
   LocalSearchSchema,
   SearchSGSearchSchema,
   VicaSchema,
+  ZendeskSchema,
 } from "~/interfaces"
 import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
+import { GTM_ID_STRING_REGEX, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
 import type { IsomerSitemap } from "./sitemap"
 
@@ -18,6 +20,10 @@ export const AgencySettingsSchema = Type.Object({
     title: "Site name",
     description:
       "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage.",
+    pattern: NON_EMPTY_STRING_REGEX,
+    errorMessage: {
+      pattern: "cannot be empty or contain only spaces",
+    },
   }),
   agencyName: Type.Optional(
     Type.String({
@@ -35,6 +41,7 @@ export const SimpleIntegrationsSettingsSchema = Type.Object({
       title: "Google Tag Manager (GTM) ID",
       description:
         "You can locate your GTM ID on your Google Tag Manager account. It should start with “GTM-”.",
+      pattern: GTM_ID_STRING_REGEX,
     }),
   ),
   search: Type.Optional(
@@ -51,6 +58,7 @@ export const SimpleIntegrationsSettingsSchema = Type.Object({
 export const ComplexIntegrationsSettingsSchema = Type.Object({
   askgov: Type.Optional(AskgovSchema),
   vica: Type.Optional(VicaSchema),
+  zendesk: Type.Optional(ZendeskSchema),
 })
 
 export const IntegrationsSettingsSchema = Type.Intersect([
@@ -85,13 +93,10 @@ export const SiteConfigSchema = Type.Intersect([
       description: "The base URL of the site.",
       format: "hidden",
     }),
-    theme: Type.Union(
-      [Type.Literal("isomer-classic"), Type.Literal("isomer-next")],
-      {
-        default: "isomer-next",
-        format: "hidden",
-      },
-    ),
+    theme: Type.Literal("isomer-next", {
+      default: "isomer-next",
+      format: "hidden",
+    }),
     isGovernment: Type.Optional(
       Type.Boolean({
         title: "Is this a Government site?",

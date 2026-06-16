@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import {
   orderedListSchemaBuilder,
@@ -19,6 +19,5 @@ export const OrderedListSchema = orderedListSchemaBuilder(
 
 export type OrderedListProps = Static<typeof OrderedListSchema> & {
   level?: number
-  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
 }

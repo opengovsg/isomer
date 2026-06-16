@@ -78,6 +78,7 @@ const InfoBoxIcon = ({
 
   return (
     <Icon
+      aria-hidden
       className={compoundStyles.infoBoxIcon({
         hasLink,
       })}
@@ -88,8 +89,7 @@ const InfoBoxIcon = ({
 const InfoBoxes = ({
   infoBoxes,
   site,
-  LinkComponent,
-}: Pick<InfoColsProps, "infoBoxes" | "site" | "LinkComponent">) => {
+}: Pick<InfoColsProps, "infoBoxes" | "site">) => {
   return (
     <div className={compoundStyles.infoBoxesContainer()}>
       {infoBoxes.map(
@@ -98,7 +98,6 @@ const InfoBoxes = ({
           const isExternalLink = isExternalUrl(buttonUrl)
           return (
             <Link
-              LinkComponent={LinkComponent}
               href={getReferenceLinkHref(
                 buttonUrl,
                 site.siteMapArray,
@@ -108,9 +107,7 @@ const InfoBoxes = ({
               className={compoundStyles.infoBox()}
               isExternal={isExternalLink}
             >
-              {icon && (
-                <InfoBoxIcon icon={icon} hasLink={hasLink} aria-hidden="true" />
-              )}
+              {icon && <InfoBoxIcon icon={icon} hasLink={hasLink} />}
 
               <h3
                 className={compoundStyles.infoBoxTitle({
@@ -151,7 +148,6 @@ export const InfoCols = ({
   infoBoxes,
   layout,
   site,
-  LinkComponent,
 }: InfoColsProps) => {
   const simplifiedLayout = getTailwindVariantLayout(layout)
 
@@ -175,11 +171,7 @@ export const InfoCols = ({
             )}
           </div>
 
-          <InfoBoxes
-            infoBoxes={infoBoxes}
-            site={site}
-            LinkComponent={LinkComponent}
-          />
+          <InfoBoxes infoBoxes={infoBoxes} site={site} />
         </div>
       </div>
     </section>

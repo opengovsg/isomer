@@ -23,7 +23,6 @@ export const Notification = (props: NotificationProps) => {
           content: antiScamSiteNotification.content,
         })}
         className="prose-body-base"
-        LinkComponent={LinkComponent}
       />
     )
   } else {
@@ -34,13 +33,10 @@ export const Notification = (props: NotificationProps) => {
         <BaseParagraph
           content={getTextAsHtml({ site, content })}
           className="prose-body-base"
-          LinkComponent={LinkComponent}
         />
       ) : (
         !!content &&
-        hasContent(content.content) && (
-          <Prose {...content} site={site} LinkComponent={LinkComponent} />
-        )
+        hasContent(content.content) && <Prose {...content} site={site} />
       )
   }
 

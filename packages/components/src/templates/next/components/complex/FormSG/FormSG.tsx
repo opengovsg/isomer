@@ -4,12 +4,7 @@ import { isValidFormSGEmbedUrl } from "~/utils/validation"
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { ComponentContent } from "../../internal/customCssClass"
 
-export const FormSG = ({
-  title,
-  url,
-  LinkComponent,
-  shouldLazyLoad = true,
-}: FormSGProps) => {
+export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
   if (!isValidFormSGEmbedUrl(url)) {
     return <></>
   }
@@ -19,7 +14,6 @@ export const FormSG = ({
       <BaseParagraph
         content={`If the form below doesn't load, <a href="${url}" target="_blank">open it in a new window</a>.`}
         className="prose-body-base pb-2 pt-1 text-base-content opacity-90"
-        LinkComponent={LinkComponent}
       />
 
       <div className="relative w-full overflow-hidden">
@@ -39,7 +33,6 @@ export const FormSG = ({
       <BaseParagraph
         content={`Powered by <a href="https://form.gov.sg">Form</a>.`}
         className="prose-body-base pb-2 pt-1 text-base-content-subtle"
-        LinkComponent={LinkComponent}
       />
     </section>
   )

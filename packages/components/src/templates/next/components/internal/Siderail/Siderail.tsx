@@ -1,5 +1,4 @@
 import type { SiderailProps } from "~/interfaces"
-import type { LinkComponentType } from "~/types"
 import { tv } from "~/lib/tv"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 
@@ -47,21 +46,14 @@ const seeAllLinkStyle = tv({
   base: "text-link underline-offset-4 hover:underline",
 })
 
-const generateSiderailItems = (
-  items: Item[],
-  LinkComponent: LinkComponentType,
-): JSX.Element[] => {
+const generateSiderailItems = (items: Item[]): JSX.Element[] => {
   return items
     .filter((item) => !item.isCurrent)
     .slice(0, MAX_SIBLINGS_LIMIT)
     .map(({ url, title }, index) => (
       <li key={index} className={compoundStyles.sibling()}>
         <p className={compoundStyles.label()}>
-          <Link
-            LinkComponent={LinkComponent}
-            href={url}
-            className={siblingLinkStyle()}
-          >
+          <Link href={url} className={siblingLinkStyle()}>
             {title}
           </Link>
         </p>
@@ -73,9 +65,8 @@ export const Siderail = ({
   parentTitle,
   parentUrl,
   pages,
-  LinkComponent,
 }: SiderailProps): JSX.Element => {
-  const siderailItems = generateSiderailItems(pages, LinkComponent)
+  const siderailItems = generateSiderailItems(pages)
 
   return (
     <nav className="text-base-content" role="navigation">
@@ -83,11 +74,7 @@ export const Siderail = ({
         <div className={compoundStyles.parentContainer()}>
           <p className={compoundStyles.sectionLabel()}>Back to</p>
           <p className={compoundStyles.parentLabel()}>
-            <Link
-              href={parentUrl}
-              LinkComponent={LinkComponent}
-              className={parentLinkStyle()}
-            >
+            <Link href={parentUrl} className={parentLinkStyle()}>
               {parentTitle}
             </Link>
           </p>
@@ -106,11 +93,7 @@ export const Siderail = ({
 
             <div className={compoundStyles.seeAllContainer()}>
               <p className={compoundStyles.seeAllLink()}>
-                <Link
-                  href={parentUrl}
-                  LinkComponent={LinkComponent}
-                  className={seeAllLinkStyle()}
-                >
+                <Link href={parentUrl} className={seeAllLinkStyle()}>
                   See all pages
                 </Link>
               </p>

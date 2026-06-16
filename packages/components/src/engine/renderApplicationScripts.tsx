@@ -11,6 +11,7 @@ import {
   VicaStylesheet,
   VicaWidget,
 } from "../templates/next/components/internal/Vica"
+import { ZendeskWidget } from "../templates/next/components/internal/Zendesk"
 
 interface RenderApplicationScriptsProps {
   site: Omit<IsomerSiteProps, "lastUpdated" | "navbar" | "footerItems">
@@ -49,6 +50,7 @@ export const RenderApplicationScripts = ({
       {site.askgov && (
         <AskgovWidget environment={site.environment} {...site.askgov} />
       )}
+      {site.zendesk && <ZendeskWidget {...site.zendesk} />}
     </>
   )
 }

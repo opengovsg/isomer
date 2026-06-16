@@ -1,4 +1,4 @@
-import type { ButtonProps, StackProps, IconProps } from "@chakra-ui/react"
+import type { ButtonProps, StackProps } from "@chakra-ui/react"
 import type { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd"
 import type { IconType } from "react-icons"
 import { chakra, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
@@ -8,6 +8,7 @@ export type BaseBlockProps = {
   dragHandle?: React.ReactNode
   label: string
   description?: string
+  variant?: "horizontal" | "vertical"
   containerProps?: StackProps
   onClick?: () => void
   draggableProps?: DraggableProvidedDragHandleProps | null
@@ -18,20 +19,18 @@ export type BaseBlockProps = {
 } & (
   | {
       icon: IconType
-      iconProps?: IconProps
     }
   | {
       icon?: undefined
-      iconProps?: never
     }
 )
 
 export const BaseBlock = ({
   icon,
-  iconProps,
   dragHandle,
   label,
   description,
+  variant = "horizontal",
   draggableProps,
   containerProps,
   onClick,
@@ -104,37 +103,59 @@ export const BaseBlock = ({
         borderColor: "utility.feedback.critical",
       }}
       bg="white"
-      py="0.75rem"
-      px="0.75rem"
+      py={variant === "vertical" ? "1.25rem" : "0.75rem"}
+      px={variant === "vertical" ? "1.25rem" : "0.75rem"}
       flexDirection="row"
-      align="center"
+      align={variant === "vertical" ? "flex-start" : "center"}
       textAlign="start"
       onClick={onClick}
       {...actualDraggableProps}
       {...containerProps}
     >
       {dragHandle}
-      {icon && (
-        <Flex
-          p="0.25rem"
-          bg="interaction.main-subtle.default"
-          borderRadius="0.25rem"
-          mr="0.25rem"
-        >
-          <Icon
-            as={icon}
-            fontSize="0.75rem"
-            color="base.content.default"
-            {...iconProps}
-          />
+      {variant === "vertical" ? (
+        <Flex direction="column" align="flex-start" gap="0.75rem">
+          <Flex
+            p="0.25rem"
+            bg="interaction.main-subtle.default"
+            borderRadius="0.25rem"
+            align="center"
+            justify="center"
+          >
+            <Icon
+              as={icon}
+              boxSize="1.25rem"
+              flexShrink={0}
+              color="base.content.default"
+            />
+          </Flex>
+          <Stack align="start" gap="0.25rem" overflow="auto" w="100%" minW={0}>
+            <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
+              {label}
+            </Text>
+            <Description />
+          </Stack>
         </Flex>
+      ) : (
+        <>
+          {icon && (
+            <Flex
+              p="0.25rem"
+              bg="interaction.main-subtle.default"
+              borderRadius="4px"
+              mr="0.25rem"
+            >
+              <Icon as={icon} fontSize="0.75rem" color="base.content.default" />
+            </Flex>
+          )}
+          <Stack align="start" gap="0.25rem" overflow="auto">
+            <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
+              {label}
+            </Text>
+            <Description />
+          </Stack>
+        </>
       )}
-      <Stack align="start" gap="0.25rem" overflow="auto">
-        <Text textStyle="subhead-2" noOfLines={1} wordBreak="break-word">
-          {label}
-        </Text>
-        <Description />
-      </Stack>
     </HStack>
   )
 }

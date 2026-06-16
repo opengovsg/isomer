@@ -2,14 +2,19 @@
 
 This is a monorepo for the Isomer Next project.
 
+[![DPG Badge](https://img.shields.io/badge/Verified-DPG-3333AB?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMzEiIGhlaWdodD0iMzMiIHZpZXdCb3g9IjAgMCAzMSAzMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE0LjIwMDggMjEuMzY3OEwxMC4xNzM2IDE4LjAxMjRMMTEuNTIxOSAxNi40MDAzTDEzLjk5MjggMTguNDU5TDE5LjYyNjkgMTIuMjExMUwyMS4xOTA5IDEzLjYxNkwxNC4yMDA4IDIxLjM2NzhaTTI0LjYyNDEgOS4zNTEyN0wyNC44MDcxIDMuMDcyOTdMMTguODgxIDUuMTg2NjJMMTUuMzMxNCAtMi4zMzA4MmUtMDVMMTEuNzgyMSA1LjE4NjYyTDUuODU2MDEgMy4wNzI5N0w2LjAzOTA2IDkuMzUxMjdMMCAxMS4xMTc3TDMuODQ1MjEgMTYuMDg5NUwwIDIxLjA2MTJMNi4wMzkwNiAyMi44Mjc3TDUuODU2MDEgMjkuMTA2TDExLjc4MjEgMjYuOTkyM0wxNS4zMzE0IDMyLjE3OUwxOC44ODEgMjYuOTkyM0wyNC44MDcxIDI5LjEwNkwyNC42MjQxIDIyLjgyNzdMMzAuNjYzMSAyMS4wNjEyTDI2LjgxNzYgMTYuMDg5NUwzMC42NjMxIDExLjExNzdMMjQuNjI0MSA5LjM1MTI3WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg==)](https://digitalpublicgoods.net/r/isomer)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/opengovsg/isomer)
+
 ## Getting Started
 
-This monorepo uses Turborepo. To get started, first install the `turbo` command:
+This monorepo uses pnpm and Turborepo. From the repository root:
 
 ```bash
-npm install turbo --global
-
+corepack enable
+pnpm install
 ```
+
+The `turbo` CLI is available via `pnpm exec turbo` / `pnpm turbo` after install.
 
 ### Credentials
 
@@ -50,9 +55,9 @@ We run releases via the `publish` event. Hence, in order to cut a release, we ha
    - this can be found by searching for `AWS Isomer Next <env> Bastion SSH Key` in your 1Password vault
 2. Next, duplicate the `.env.example` in `apps/studio` to `.ssh/.env.<env>`
 3. Fill in the relevant information by searching for `Isomer Next <env> Database` inside 1password
-4. Next, run `npm run jump:<env>` from within the `apps/studio` folder
-5. Next, run `npm run migrate:<env>` from within the `apps/studio` folder
-6. (Optional) If you need to run a seed, run `npm run db:seed`
+4. Next, run `pnpm run jump:<env>` from within the `apps/studio` folder
+5. Next, run `pnpm run migrate:<env>` from within the `apps/studio` folder
+6. (Optional) If you need to run a seed, run `pnpm run db:seed`
 
 ### Extra tools
 

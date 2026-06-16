@@ -34,6 +34,7 @@ export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
     sortOrder?: CollectionPagePageProps["sortOrder"]
     defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
     defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]
+    showThumbnail?: CollectionPagePageProps["showThumbnail"]
   }
 }
 

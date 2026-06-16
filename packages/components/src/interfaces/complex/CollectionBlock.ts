@@ -1,6 +1,6 @@
 import type { Static } from "@sinclair/typebox"
 import type { ProcessedCollectionCardProps } from "~/interfaces/internal/CollectionCard"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { COLLECTION_DROPDOWN_FORMAT } from "~/interfaces/format"
 import { REF_INTERNAL_HREF_PATTERN } from "~/utils/validation"
@@ -50,18 +50,21 @@ export const CollectionBlockSchema = Type.Object(
 
 export type CollectionBlockProps = Static<typeof CollectionBlockSchema> & {
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
   shouldLazyLoad?: boolean
 }
 
 export type CollectionBlockSingleCardProps = Pick<
   ProcessedCollectionCardProps,
-  "title" | "image" | "category" | "referenceLinkHref" | "formattedDate"
+  | "title"
+  | "image"
+  | "isContainNeeded"
+  | "category"
+  | "referenceLinkHref"
+  | "formattedDate"
 > &
   Pick<CollectionBlockProps, "displayThumbnail" | "displayCategory"> &
   CollectionBlockNumberOfCards & {
     site: IsomerSiteProps
-    LinkComponent?: LinkComponentType
     shouldLazyLoad?: boolean
   }
 

@@ -77,12 +77,12 @@ const compoundStyles = createInfoCardsStyles()
 const SingleCard = ({
   title,
   image,
+  isContainNeeded,
   category,
   referenceLinkHref,
   displayThumbnail,
   displayCategory,
   site,
-  LinkComponent,
   shouldLazyLoad,
   numberOfCards,
   formattedDate,
@@ -90,20 +90,18 @@ const SingleCard = ({
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
   const renderImage = () => {
-    const hasImage = image?.src !== undefined
-
-    // Fallback to site logo if user want to display thumbnail but no image is provided
-    const imageSrc = hasImage ? image.src : site.logoUrl
-    const imageAlt = hasImage ? image.alt : `Site logo for ${site.siteName}`
+    if (!image?.src) {
+      return null
+    }
 
     return (
       <div className={compoundStyles.cardImageContainer({ numberOfCards })}>
         <ImageClient
-          src={imageSrc}
-          alt={imageAlt}
+          src={image.src}
+          alt={image.alt}
           width="100%"
           className={compoundStyles.cardImage({
-            imageFit: hasImage ? "cover" : "contain",
+            imageFit: isContainNeeded ? "contain" : "cover",
           })}
           lazyLoading={shouldLazyLoad}
           assetsBaseUrl={site.assetsBaseUrl}
@@ -116,7 +114,6 @@ const SingleCard = ({
     <Link
       href={referenceLinkHref}
       className={compoundStyles.cardContainer()}
-      LinkComponent={LinkComponent}
       isExternal={isExternalLink}
     >
       {displayThumbnail && renderImage()}
@@ -163,7 +160,6 @@ const CollectionBlockSkeleton = ({
 
 export const CollectionBlock = ({
   site,
-  LinkComponent,
   collectionReferenceLink,
   customTitle,
   customDescription,
@@ -218,7 +214,6 @@ export const CollectionBlock = ({
             displayThumbnail={displayThumbnail}
             displayCategory={displayCategory}
             site={site}
-            LinkComponent={LinkComponent}
             shouldLazyLoad={shouldLazyLoad}
             numberOfCards={numberOfCards}
             {...card}
@@ -236,7 +231,6 @@ export const CollectionBlock = ({
           size="base"
           variant="outline"
           isWithFocusVisibleHighlight
-          LinkComponent={LinkComponent}
         >
           {buttonLabel}
         </LinkButton>

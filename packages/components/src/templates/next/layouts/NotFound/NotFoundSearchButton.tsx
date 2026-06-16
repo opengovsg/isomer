@@ -1,15 +1,11 @@
 "use client"
 
-import type { NotFoundPageSchemaType } from "~/types"
 import { useEffect, useState } from "react"
 import { getWordsFromPermalink } from "~/utils/getWordsFromPermalink"
 
 import { LinkButton } from "../../components/internal/LinkButton"
 
-type NotFoundSearchButtonProps = Pick<NotFoundPageSchemaType, "LinkComponent">
-export const NotFoundSearchButton = ({
-  LinkComponent,
-}: NotFoundSearchButtonProps) => {
+export const NotFoundSearchButton = () => {
   const [permalink, setPermalink] = useState("")
 
   useEffect(() => {
@@ -28,7 +24,6 @@ export const NotFoundSearchButton = ({
     <LinkButton
       href={`/search?q=${missingPath}`}
       size="lg"
-      LinkComponent={LinkComponent}
       isWithFocusVisibleHighlight
     >
       Search for this page

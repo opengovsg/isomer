@@ -13,6 +13,7 @@ import {
   GET_CONFIG,
   GET_FOOTER,
   GET_NAVBAR,
+  GET_REDIRECTS,
 } from "./queries"
 import {
   getCollectionIndexPageContents,
@@ -29,6 +30,8 @@ const DB_HOST = process.env.DB_HOST
 const DB_PORT = process.env.DB_PORT
 const DB_NAME = process.env.DB_NAME
 const SITE_ID = Number(process.env.SITE_ID)
+// Defaults to this package's directory, which publisher.sh expects in production
+const OUTPUT_DIR = process.env.OUTPUT_DIR ?? __dirname
 
 // Unique identifier for pages of dangling directories
 // Guaranteed to not be present in the database because we start from 1
@@ -79,6 +82,9 @@ async function main() {
 
     // Fetch and write navbar, footer, and config JSONs
     await fetchAndWriteSiteData(client)
+
+    // Fetch and write redirects
+    await fetchAndWriteRedirects(client)
 
     // Fetch all resources and their full permalinks
     const resources = await getAllResourcesWithFullPermalinks(client)
@@ -147,6 +153,7 @@ async function main() {
             sortOrder: resource.content.page?.sortOrder,
             defaultSortBy: resource.content.page?.defaultSortBy,
             defaultSortDirection: resource.content.page?.defaultSortDirection,
+            showThumbnail: resource.content.page?.showThumbnail,
           },
         }
 
@@ -187,9 +194,9 @@ async function main() {
 
     try {
       // Create directories if they don't exist
-      fs.mkdirSync(__dirname, { recursive: true })
+      fs.mkdirSync(OUTPUT_DIR, { recursive: true })
 
-      const filePath = path.join(__dirname, "sitemap.json")
+      const filePath = path.join(OUTPUT_DIR, "sitemap.json")
       fs.writeFileSync(filePath, JSON.stringify(sitemap), "utf-8")
 
       logDebug(`Successfully wrote file: ${filePath}`)
@@ -482,8 +489,8 @@ function writeContentToFile(
 
     const directoryPath =
       parentId === null
-        ? path.join(__dirname, "schema")
-        : path.join(__dirname, "schema", path.dirname(sanitizedPermalink))
+        ? path.join(OUTPUT_DIR, "schema")
+        : path.join(OUTPUT_DIR, "schema", path.dirname(sanitizedPermalink))
 
     const fileName = `${path.basename(sanitizedPermalink)}.json`
     const filePath = path.join(directoryPath, fileName)
@@ -537,8 +544,25 @@ async function fetchAndWriteSiteData(client: Client) {
   }
 }
 
+async function fetchAndWriteRedirects(client: Client) {
+  try {
+    const result = await client.query(GET_REDIRECTS, [SITE_ID])
+    const redirects = result.rows as { source: string; destination: string }[]
+    const filePath = path.join(OUTPUT_DIR, "redirects.json")
+    fs.writeFileSync(filePath, JSON.stringify(redirects), "utf-8")
+    logDebug(`Successfully wrote redirects: ${filePath}`)
+  } catch (err) {
+    console.error("Error fetching redirects:", err)
+    fs.writeFileSync(
+      path.join(OUTPUT_DIR, "redirects.json"),
+      JSON.stringify([]),
+      "utf-8",
+    )
+  }
+}
+
 function writeJsonToFile(content: any, filename: string) {
-  const directoryPath = path.join(__dirname, "data")
+  const directoryPath = path.join(OUTPUT_DIR, "data")
 
   try {
     // Create directories if they don't exist

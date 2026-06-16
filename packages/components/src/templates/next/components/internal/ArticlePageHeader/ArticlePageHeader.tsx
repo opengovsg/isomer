@@ -10,13 +10,12 @@ export const ArticlePageHeader = ({
   title,
   date,
   summary,
-  LinkComponent,
   tags = [],
 }: ArticlePageHeaderProps) => {
   return (
     <div className="mx-auto w-full">
       <div className="my-16">
-        <Breadcrumb links={breadcrumb.links} LinkComponent={LinkComponent} />
+        <Breadcrumb links={breadcrumb.links} />
       </div>
 
       <div className="prose-body-base mb-3 text-base-content">{category}</div>

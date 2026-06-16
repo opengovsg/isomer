@@ -1,5 +1,3 @@
-import type { LinkComponentType } from "~/types"
-
 interface Page {
   title: string
   url: string
@@ -10,5 +8,4 @@ export interface SiderailProps {
   parentTitle: string
   parentUrl: string
   pages: Page[]
-  LinkComponent?: LinkComponentType
 }

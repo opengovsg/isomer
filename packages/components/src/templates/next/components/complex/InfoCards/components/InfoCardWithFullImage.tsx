@@ -16,7 +16,6 @@ export const InfoCardWithFullImage = ({
   maxColumns,
   layout,
   site,
-  LinkComponent,
   shouldLazyLoad = true,
   isFallback,
 }: With4Cols<SingleCardWithImageProps>): JSX.Element => {
@@ -28,7 +27,6 @@ export const InfoCardWithFullImage = ({
       url={url}
       site={site}
       isExternalLink={isExternalLink}
-      LinkComponent={LinkComponent}
     >
       <InfoCardImage
         isFallback={isFallback}

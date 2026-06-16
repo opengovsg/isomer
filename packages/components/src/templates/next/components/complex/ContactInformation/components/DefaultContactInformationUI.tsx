@@ -34,7 +34,6 @@ export const DefaultContactInformationUI = ({
   otherInformation,
   referenceLinkHref,
   label,
-  LinkComponent,
   isLoading,
   acceptHtmlTags = false,
 }: ContactInformationUIProps) => {
@@ -86,7 +85,6 @@ export const DefaultContactInformationUI = ({
                   <ContactMethod
                     key={`contact-method-${index}`}
                     {...method}
-                    LinkComponent={LinkComponent}
                     styles={contactMethodStyles}
                   />
                 )
@@ -117,7 +115,6 @@ export const DefaultContactInformationUI = ({
               href={referenceLinkHref}
               size="base"
               variant="outline"
-              LinkComponent={LinkComponent}
               isWithFocusVisibleHighlight
             >
               {label}

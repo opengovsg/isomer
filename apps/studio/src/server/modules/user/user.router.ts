@@ -53,6 +53,8 @@ export const userRouter = router({
   create: protectedProcedure
     .input(createUserInputSchema)
     .output(createUserOutputSchema)
+    // Arbitrary limit to prevent invite email abuse; tune if legitimate usage is blocked
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { siteId, users } }) => {
       await validatePermissionsForManagingUsers({
         siteId,
@@ -342,6 +344,8 @@ export const userRouter = router({
   resendInvite: protectedProcedure
     .input(resendInviteInputSchema)
     .output(resendInviteOutputSchema)
+    // Arbitrary limit to prevent invite email abuse; tune if legitimate usage is blocked
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60 * 1000 } })
     .mutation(async ({ ctx, input: { siteId, userId } }) => {
       await validatePermissionsForManagingUsers({
         siteId,

@@ -44,6 +44,40 @@ If you're submitting a pull request, some points to note:
 3. Write [semantic commit messages](https://www.conventionalcommits.org/en/v1.0.0/). See past [PRs](https://github.com/opengovsg/isomer/pulls) for examples.
 4. You may merge the Pull Request in once you have the sign-off of two other developers, or if you do not have permission to do that, you may request the second reviewer to merge it for you.
 
+## Stacked PRs with Graphite
+
+We use [Graphite](https://graphite.dev) to break large changes into a stack of small, individually-reviewable PRs. Each PR in a stack should be scoped to a single concern and revertable on its own.
+
+### Why stack
+
+- One concern per PR keeps reviews fast and reverts safe.
+- Reviewers can approve earlier PRs while later ones evolve.
+- AI-generated changes are easier to audit when split by area.
+
+### Authoring a stack
+
+```bash
+gt create -m "feat: add foo router"      # branch + commit
+# edit files for the next PR in the stack
+gt create -m "feat: wire foo router to client"
+gt log short                             # see the stack
+gt submit --stack                        # push & open PRs for the whole stack
+```
+
+Rules of thumb:
+
+- **One concern per branch.** If a branch touches two unrelated areas, split it: `gt split` or `gt absorb`.
+- **Each PR must be revertable without breaking the ones below it.** New code paths land behind feature flags / config when the rest of the stack is not yet merged.
+- **Restack after rebases.** `gt sync` pulls in `main` and restacks. Resolve conflicts bottom-up.
+- **Never force-push the trunk.** `gt submit` force-pushes feature branches in the stack; this is expected.
+
+### When *not* to stack
+
+- One-line hotfixes and dependency bumps go straight to `main` via a single PR.
+- Migrations that change schema in a non-backward-compatible way must land alone (see [Database migrations](./README.md#running-database-migrations)).
+
+If you don't have access to Graphite yet, see the invite link in [README.md](./README.md#extra-tools).
+
 ## Contributor License Agreement
 
 Code contributions to this project must be accompanied by a Contributor License Agreement. You (or your employer) retain the copyright to your contribution; this simply gives us permission to use and redistribute your contributions as part of the project.

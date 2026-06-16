@@ -13,24 +13,13 @@ const getUnorderedListType = (level?: number) => {
   }
 }
 
-export const UnorderedList = ({
-  content,
-  level,
-  LinkComponent,
-  site,
-}: UnorderedListProps) => {
+export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
   return (
     <ul
       className={`mt-6 ps-9 marker:text-base-content ${getUnorderedListType(level)}`}
     >
       {content.map((item, index) => (
-        <ListItem
-          key={index}
-          {...item}
-          level={level}
-          LinkComponent={LinkComponent}
-          site={site}
-        />
+        <ListItem key={index} {...item} level={level} site={site} />
       ))}
     </ul>
   )

@@ -8,7 +8,7 @@ export const AudioSchema = Type.Object(
     url: Type.String({
       title: "Audio to embed",
       description:
-        "Spotify episode or show, or Apple Podcast show/episode embed URL only",
+        "Spotify episode, show, or playlist, or Apple Podcast show/episode embed URL only",
       pattern: AUDIO_EMBED_URL_PATTERN,
       format: "embed",
     }),
@@ -21,7 +21,7 @@ export const AudioSchema = Type.Object(
   {
     title: "Audio",
     description:
-      "The audio component embeds Spotify podcast episodes and shows, or Apple Podcast shows and episodes.",
+      "The audio component embeds Spotify podcast episodes, shows, and playlists, or Apple Podcast shows and episodes.",
   },
 )
 

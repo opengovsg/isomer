@@ -8,7 +8,6 @@ import { Link } from "../Link"
 import { Tag } from "../Tag"
 
 export const BlogCard = ({
-  LinkComponent,
   description,
   category,
   image,
@@ -23,7 +22,6 @@ export const BlogCard = ({
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
-  LinkComponent: CollectionPageSchemaType["LinkComponent"]
 }): JSX.Element => {
   const isExternalLink = !!referenceLinkHref && isExternalUrl(referenceLinkHref)
 
@@ -31,7 +29,6 @@ export const BlogCard = ({
     // NOTE: In smaller viewports, we render a border between items for easy distinguishing
     // and to do that, we add a padding on smaller viewports
     <Link
-      LinkComponent={LinkComponent}
       href={referenceLinkHref}
       className="group flex flex-1 flex-col gap-3 border-b pb-5 pt-5 md:pt-0"
       isExternal={isExternalLink}

@@ -1,4 +1,3 @@
-import type { ElementType } from "react"
 import type { VariantProps } from "tailwind-variants"
 import type { LinkProps } from "~/interfaces/internal/Link"
 import { BiLinkExternal } from "react-icons/bi"
@@ -8,9 +7,8 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { buttonIconStyles, buttonStyles } from "../Button/common"
 import { Link } from "../Link"
 
-interface LinkButtonProps extends LinkProps, VariantProps<typeof buttonStyles> {
-  LinkComponent?: ElementType
-}
+interface LinkButtonProps
+  extends LinkProps, VariantProps<typeof buttonStyles> {}
 
 /**
  * Link that looks like a button.

@@ -1,7 +1,7 @@
 import type { NextApiRequest } from "next"
 import type { SessionData } from "~/lib/types/session"
-import { type Prisma, type PrismaClient } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
+import { type Prisma, type PrismaClient } from "~prisma/generated/prisma/client"
 
 import type { DB, Transaction, VerificationToken } from "../database"
 import { logAuthEvent } from "../audit/audit.service"

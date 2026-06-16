@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
 import { DividerSchema } from "./Divider"
@@ -93,7 +93,6 @@ export const ContentpicProseSchema = generateProseSchema({
 })
 
 export type ProseProps = Static<typeof ProseSchema> & {
-  LinkComponent?: LinkComponentType
   site: IsomerSiteProps
   shouldStripContentHtmlTags?: boolean
 }

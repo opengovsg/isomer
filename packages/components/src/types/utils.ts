@@ -1,3 +1,4 @@
+import type { ElementType } from "react"
 import type { Tagged } from "type-fest"
 
 export type ValueOf<T> = T[keyof T]
@@ -6,7 +7,7 @@ export type ValueOf<T> = T[keyof T]
 export type FormattedDate = Tagged<string, "FormattedDate">
 
 // This is the Next.js Link component that resembles the HTML anchor tag
-export type LinkComponentType = any
+export type LinkComponentType = ElementType
 
 // This is the Next.js Script component that resembles the HTML anchor tag
-export type ScriptComponentType = any
+export type ScriptComponentType = ElementType

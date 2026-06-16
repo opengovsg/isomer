@@ -18,4 +18,5 @@ export interface GazetteTableData {
   fileKey: string | null
   fileSize: number | null
   publishTime: Date
+  publishedAt: Date | null
 }

@@ -1,40 +1,46 @@
 import DOMPurify from "isomorphic-dompurify"
 
+const IFRAME_ALLOWED_ATTRIBUTES = [
+  "src",
+  "title",
+  "width",
+  "height",
+  "class",
+  "frameborder",
+  "allow",
+  "allowfullscreen",
+  "referrerpolicy",
+  "id",
+  "scrolling",
+  "loading",
+  "align",
+]
+
+const IFRAME_LAYOUT_ATTRIBUTES = {
+  height: "100%",
+  width: "100%",
+  class: "absolute top-0 left-0 bottom-0 right-0",
+} as const
+
 // Sanitize iframe embeds to remove any potentially harmful attributes
-// and to insert the iframe title for accessibility
+// and to insert the minimal accessibility
 export const getSanitizedIframeWithTitle = (content: string, title: string) => {
-  DOMPurify.addHook("beforeSanitizeElements", (curr) => {
-    const el = curr as Element
-
-    if (el.tagName !== "IFRAME") {
-      return el
-    }
-
-    // Add title attribute to iframe elements for accessibility
-    el.setAttribute("title", title)
-    el.setAttribute("height", "100%")
-    el.setAttribute("width", "100%")
-    el.setAttribute("class", "absolute top-0 left-0 bottom-0 right-0")
+  const sanitizedFragment = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ["iframe"],
+    ALLOWED_ATTR: IFRAME_ALLOWED_ATTRIBUTES,
+    RETURN_DOM_FRAGMENT: true,
   })
 
-  return DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ["iframe"],
-    ALLOWED_ATTR: [
-      "src",
-      "title",
-      "width",
-      "height",
-      "class",
+  const iframe = sanitizedFragment.querySelector<HTMLIFrameElement>("iframe")
 
-      "frameborder",
-      "allow",
-      "allowfullscreen",
-      "referrerpolicy",
-      "id",
-      "scrolling",
-      "loading",
-      "align",
-    ],
-    RETURN_DOM_FRAGMENT: true,
-  }).firstChild as HTMLIFrameElement
+  if (!iframe) {
+    return null
+  }
+
+  iframe.setAttribute("title", title)
+  iframe.setAttribute("height", IFRAME_LAYOUT_ATTRIBUTES.height)
+  iframe.setAttribute("width", IFRAME_LAYOUT_ATTRIBUTES.width)
+  iframe.setAttribute("class", IFRAME_LAYOUT_ATTRIBUTES.class)
+
+  return iframe
 }

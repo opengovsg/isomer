@@ -14,7 +14,6 @@ export const HeroLargeImage = ({
   secondaryButtonUrl,
   backgroundUrl,
   site,
-  LinkComponent,
 }: HeroLargeImageProps) => {
   return (
     <section className="flex w-full flex-col">
@@ -39,7 +38,6 @@ export const HeroLargeImage = ({
                 site.assetsBaseUrl,
               )}
               size="lg"
-              LinkComponent={LinkComponent}
               isWithFocusVisibleHighlight
             >
               {buttonLabel}
@@ -53,7 +51,6 @@ export const HeroLargeImage = ({
                   site.siteMapArray,
                   site.assetsBaseUrl,
                 )}
-                LinkComponent={LinkComponent}
                 isWithFocusVisibleHighlight
               >
                 {secondaryButtonLabel}

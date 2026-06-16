@@ -25,12 +25,7 @@ const accordionStyles = createAccordionStyles()
 interface AccordionProps
   extends BaseAccordionProps, VariantProps<typeof createAccordionStyles> {}
 
-export const Accordion = ({
-  summary,
-  details,
-  LinkComponent,
-  site,
-}: AccordionProps) => {
+export const Accordion = ({ summary, details, site }: AccordionProps) => {
   return (
     <details className={accordionStyles.details()}>
       <summary className={summaryStyle()}>
@@ -46,7 +41,7 @@ export const Accordion = ({
       </summary>
 
       <div className={accordionStyles.content()}>
-        <Prose {...details} LinkComponent={LinkComponent} site={site} />
+        <Prose {...details} site={site} />
       </div>
     </details>
   )

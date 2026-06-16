@@ -18,12 +18,7 @@ const tableCellStyles = tv({
   },
 })
 
-export const Table = ({
-  attrs: { caption },
-  content,
-  LinkComponent,
-  site,
-}: TableProps) => {
+export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
   const tableDescriptionId = useId()
 
   return (
@@ -32,7 +27,6 @@ export const Table = ({
         id={tableDescriptionId}
         content={caption}
         className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
-        LinkComponent={LinkComponent}
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
@@ -65,7 +59,6 @@ export const Table = ({
                                 <OrderedList
                                   key={index}
                                   {...cellContent}
-                                  LinkComponent={LinkComponent}
                                   site={site}
                                 />
                               )
@@ -74,7 +67,6 @@ export const Table = ({
                                 <Paragraph
                                   key={index}
                                   {...cellContent}
-                                  LinkComponent={LinkComponent}
                                   site={site}
                                 />
                               )
@@ -83,7 +75,6 @@ export const Table = ({
                                 <UnorderedList
                                   key={index}
                                   {...cellContent}
-                                  LinkComponent={LinkComponent}
                                   site={site}
                                 />
                               )

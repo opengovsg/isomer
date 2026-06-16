@@ -9,6 +9,7 @@ const s3Schema = z.object({
 const cronHeartbeatSchema = z.object({
   SCHEDULED_PUBLISHING_HEARTBEAT_URL: z.string().url().optional(),
   DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL: z.string().url().optional(),
+  SCHEDULE_PUSH_DOCUMENT_JOB_HEARTBEAT_URL: z.string().url().optional(),
 })
 
 /**
@@ -58,6 +59,10 @@ const server = z
     SESSION_SECRET: z.string().min(32),
     GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     STUDIO_SSM_WEBHOOK_API_KEY: z.string().optional(),
+    S3_GAZETTE_BUCKET_NAME: z.string(),
+    S3_GAZETTE_DOMAIN_NAME: z.string(),
+    EGAZETTE_DOCUMENT_INDEX: z.string().optional(),
+    DD_DELETION_EMAIL: z.email(),
     SEARCHSG_API_KEY: z.string(),
   })
   .merge(s3Schema)
@@ -74,12 +79,16 @@ const server = z
 const processEnv = {
   // Server-side env vars
   DATABASE_URL: process.env.DATABASE_URL,
+  DD_DELETION_EMAIL: process.env.DD_DELETION_EMAIL,
   CI: process.env.CI,
   NODE_ENV: process.env.NODE_ENV,
   OTP_EXPIRY: process.env.OTP_EXPIRY,
   POSTMAN_API_KEY: process.env.POSTMAN_API_KEY,
   SESSION_SECRET: process.env.SESSION_SECRET,
   GROWTHBOOK_CLIENT_KEY: process.env.GROWTHBOOK_CLIENT_KEY,
+  EGAZETTE_DOCUMENT_INDEX: process.env.EGAZETTE_DOCUMENT_INDEX,
+  S3_GAZETTE_BUCKET_NAME: process.env.S3_GAZETTE_BUCKET_NAME,
+  S3_GAZETTE_DOMAIN_NAME: process.env.S3_GAZETTE_DOMAIN_NAME,
   NEXT_PUBLIC_S3_REGION: process.env.NEXT_PUBLIC_S3_REGION,
   NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME:
     process.env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
@@ -108,13 +117,15 @@ const processEnv = {
     process.env.SCHEDULED_PUBLISHING_HEARTBEAT_URL,
   DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL:
     process.env.DEACTIVATE_INACTIVE_USERS_HEARTBEAT_URL,
+  SCHEDULE_PUSH_DOCUMENT_JOB_HEARTBEAT_URL:
+    process.env.SCHEDULE_PUSH_DOCUMENT_JOB_HEARTBEAT_URL,
 }
 
 // Don't touch the part below
 // --------------------------
 /** @typedef {z.input<typeof server>} MergedInput */
 /** @typedef {z.infer<typeof server>} MergedOutput */
-/** @typedef {z.SafeParseReturnType<MergedInput, MergedOutput>} MergedSafeParseReturn */
+/** @typedef {z.ZodSafeParseResult<MergedOutput>} MergedSafeParseReturn */
 
 // @ts-expect-error Types are wonky from refinement
 let env = /** @type {MergedOutput} */ (process.env)

@@ -14,7 +14,6 @@ export const HeroGradient = ({
   secondaryButtonUrl,
   backgroundUrl,
   site,
-  LinkComponent,
 }: HeroGradientProps) => {
   return (
     <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
@@ -50,7 +49,6 @@ export const HeroGradient = ({
                     site.assetsBaseUrl,
                   )}
                   size="lg"
-                  LinkComponent={LinkComponent}
                   isWithFocusVisibleHighlight
                 >
                   {buttonLabel}
@@ -65,7 +63,6 @@ export const HeroGradient = ({
                       site.siteMapArray,
                       site.assetsBaseUrl,
                     )}
-                    LinkComponent={LinkComponent}
                     isWithFocusVisibleHighlight
                   >
                     {secondaryButtonLabel}

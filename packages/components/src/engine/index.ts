@@ -3,6 +3,7 @@ export {
   renderComponentPreviewText,
   renderPrefillText,
 } from "./render"
+export { LinkComponentProvider } from "~/templates/next/context/LinkComponentContext"
 export { RenderApplicationScripts } from "./renderApplicationScripts"
 export { RenderApplicationHeadScripts } from "./renderApplicationHeadScripts"
 export {

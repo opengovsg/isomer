@@ -11,24 +11,18 @@ import { UnorderedList } from "../UnorderedList"
 
 const ProseComponent = ({
   component,
-  LinkComponent,
   site,
   shouldStripContentHtmlTags,
 }: {
   component: NonNullable<ProseProps["content"]>[number]
-} & Pick<
-  ProseProps,
-  "LinkComponent" | "site" | "shouldStripContentHtmlTags"
->): JSX.Element => {
+} & Pick<ProseProps, "site" | "shouldStripContentHtmlTags">): JSX.Element => {
   switch (component.type) {
     case "divider":
       return <Divider {...component} />
     case "heading":
       return <Heading {...component} site={site} />
     case "orderedList":
-      return (
-        <OrderedList {...component} LinkComponent={LinkComponent} site={site} />
-      )
+      return <OrderedList {...component} site={site} />
     case "paragraph":
       return (
         <BaseParagraph
@@ -39,25 +33,17 @@ const ProseComponent = ({
           })}
           className="prose-body-base text-base-content"
           attrs={component.attrs}
-          LinkComponent={LinkComponent}
         />
       )
     case "table":
-      return <Table {...component} LinkComponent={LinkComponent} site={site} />
+      return <Table {...component} site={site} />
     case "unorderedList":
-      return (
-        <UnorderedList
-          {...component}
-          LinkComponent={LinkComponent}
-          site={site}
-        />
-      )
+      return <UnorderedList {...component} site={site} />
   }
 }
 
 export const Prose = ({
   content,
-  LinkComponent,
   site,
   shouldStripContentHtmlTags = false,
 }: ProseProps) => {
@@ -71,7 +57,6 @@ export const Prose = ({
         <ProseComponent
           component={component}
           key={index}
-          LinkComponent={LinkComponent}
           site={site}
           shouldStripContentHtmlTags={shouldStripContentHtmlTags}
         />

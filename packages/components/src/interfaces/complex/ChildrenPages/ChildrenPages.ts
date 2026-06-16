@@ -1,5 +1,5 @@
 import type { Static } from "@sinclair/typebox"
-import type { IsomerSiteProps, LinkComponentType } from "~/types"
+import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { ChildrenPagesImageFitSchema } from "~/schemas/internal"
 
@@ -74,5 +74,4 @@ export interface ChildrenPagesProps extends Static<typeof ChildrenPagesSchema> {
   shouldLazyLoad?: boolean
   permalink: string
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
 }
