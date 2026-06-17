@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server"
 import {
   listPagePreviewLinksSchema,
   listSitePreviewLinksSchema,
@@ -8,6 +9,11 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { getBaseUrl } from "~/utils/getBaseUrl"
 import getIP from "~/utils/getClientIp"
 
+import { db } from "../database"
+import {
+  bulkValidateUserPermissionsForResources,
+  validateUserIsSiteAdmin,
+} from "../permissions/permissions.service"
 import {
   listActivePagePreviewLinks,
   listSitePreviewLinks,
@@ -28,6 +34,12 @@ export const previewLinkRouter = router({
     })
     .input(mintPreviewLinkSchema)
     .mutation(async ({ ctx, input }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "update",
+        siteId: input.siteId,
+        userId: ctx.user.id,
+      })
+
       const link = await mintPreviewLink({
         userId: ctx.user.id,
         siteId: input.siteId,
@@ -48,21 +60,50 @@ export const previewLinkRouter = router({
   revoke: protectedProcedure
     .input(revokePreviewLinkSchema)
     .mutation(async ({ ctx, input }) => {
-      const link = await revokePreviewLink({
+      // Authority is "sharer OR Site/Isomer Admin" — needs the link's siteId,
+      // so look the link up first, then gate, then mutate.
+      const link = await db
+        .selectFrom("PreviewLink")
+        .where("id", "=", input.linkId)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!link) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Preview link not found",
+        })
+      }
+
+      // Sharer can always revoke their own; anyone else must be Site Admin.
+      if (link.createdBy !== ctx.user.id) {
+        await validateUserIsSiteAdmin({
+          userId: ctx.user.id,
+          siteId: link.siteId,
+        })
+      }
+
+      const revoked = await revokePreviewLink({
         userId: ctx.user.id,
-        linkId: input.linkId,
+        link,
         ip: getIP(ctx.req),
       })
 
       return {
-        id: String(link.id),
-        revokedAt: link.revokedAt,
+        id: String(revoked.id),
+        revokedAt: revoked.revokedAt,
       }
     }),
 
   listForPage: protectedProcedure
     .input(listPagePreviewLinksSchema)
     .query(async ({ ctx, input }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        siteId: input.siteId,
+        userId: ctx.user.id,
+      })
+
       const rows = await listActivePagePreviewLinks({
         userId: ctx.user.id,
         siteId: input.siteId,
@@ -83,6 +124,12 @@ export const previewLinkRouter = router({
   listForSite: protectedProcedure
     .input(listSitePreviewLinksSchema)
     .query(async ({ ctx, input }) => {
+      await bulkValidateUserPermissionsForResources({
+        action: "read",
+        siteId: input.siteId,
+        userId: ctx.user.id,
+      })
+
       const result = await listSitePreviewLinks({
         userId: ctx.user.id,
         siteId: input.siteId,

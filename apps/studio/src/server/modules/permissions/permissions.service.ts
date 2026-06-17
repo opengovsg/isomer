@@ -333,3 +333,32 @@ export const validateUserIsIsomerAdmin = async ({
     })
   }
 }
+
+interface SiteAdminProps {
+  userId: string
+  siteId: number
+}
+
+// True if the user is a Site Admin (Admin role on the site, no resource scope)
+// OR an active Isomer Admin. Implemented in terms of the existing site ability
+// builder, which already encodes that rule — only Admin and Isomer Admin
+// receive "update" on the Site subject.
+export const isUserSiteAdmin = async ({
+  userId,
+  siteId,
+}: SiteAdminProps): Promise<boolean> => {
+  const sitePerms = await definePermissionsForSite({ userId, siteId })
+  return sitePerms.can("update", "Site")
+}
+
+export const validateUserIsSiteAdmin = async ({
+  userId,
+  siteId,
+}: SiteAdminProps) => {
+  if (!(await isUserSiteAdmin({ userId, siteId }))) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have sufficient permissions to perform this action",
+    })
+  }
+}
