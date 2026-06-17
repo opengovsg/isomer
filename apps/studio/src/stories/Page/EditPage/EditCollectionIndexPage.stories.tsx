@@ -140,11 +140,7 @@ export const NewCollectionIndexEditingExperienceForDisplay: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", {
-      name: /Collection display/i,
-    })
-    await userEvent.click(button)
-    await canvas.findByText(/Edit collection settings/i)
+    await canvas.findByText(/Manage Collection/i)
   },
 }
 
@@ -162,5 +158,6 @@ export const NewCollectionIndexEditingExperienceForFilters: Story = {
       name: /Filters/i,
     })
     await userEvent.click(button)
+    await canvas.findByText(/Manage filters/i)
   },
 }

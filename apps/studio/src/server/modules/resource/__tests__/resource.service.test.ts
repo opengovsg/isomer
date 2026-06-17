@@ -1,4 +1,3 @@
-import { ResourceType } from "@prisma/client"
 import { pick } from "lodash-es"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -12,16 +11,19 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { ResourceType } from "~prisma/generated/prisma/client"
 
 import type { Resource } from "../../database"
 import { db, ResourceState } from "../../database"
 import {
   getBatchAncestryWithSelfQuery,
+  getFooter,
   getFullPageById,
   getLocalisedSitemap,
   getNavBar,
   getPageById,
   getSiteResourceById,
+  getWithFullPermalink,
   updateBlobById,
   updatePageById,
 } from "../resource.service"
@@ -763,7 +765,7 @@ describe("resource.service", () => {
       // Arrange
       const { site } = await setupSite()
       // Act
-      const result = await getNavBar(db, site.id)
+      const result = await getFooter(db, site.id)
       // Assert
       expect(result).toBeDefined()
       expect(result.siteId).toBe(site.id)
@@ -771,7 +773,7 @@ describe("resource.service", () => {
 
     it("should throw an error if the `siteId` is not found", async () => {
       // Act
-      const result = getNavBar(db, 99999)
+      const result = getFooter(db, 99999)
       // Assert
       await expect(result).rejects.toThrow()
     })
@@ -1624,7 +1626,77 @@ describe("resource.service", () => {
   describe.skip("getResourcePermalinkTree", () => {})
   describe.skip("getResourceFullPermalink", () => {})
   describe.skip("publishResource", () => {})
-  describe.skip("getWithFulPermalink", () => {})
+
+  describe("getWithFullPermalink", () => {
+    it("returns an empty array when given no resourceIds", async () => {
+      const { site } = await setupSite()
+
+      const result = await getWithFullPermalink({
+        resourceIds: [],
+        siteId: site.id,
+      })
+
+      expect(result).toEqual([])
+    })
+
+    it("returns the full permalink for a nested resource in the requested site", async () => {
+      const { folder: parent, site } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      const { folder: nested } = await setupFolder({
+        siteId: site.id,
+        parentId: parent.id,
+        permalink: "nested-folder",
+        title: "Nested folder",
+      })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: nested.id,
+        resourceType: ResourceType.Page,
+      })
+
+      const result = await getWithFullPermalink({
+        resourceIds: [page.id],
+        siteId: site.id,
+      })
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({
+        id: page.id,
+        title: page.title,
+        fullPermalink: `${parent.permalink}/${nested.permalink}/${page.permalink}`,
+      })
+    })
+
+    it("does not return resources from another site (site scoping)", async () => {
+      // Two distinct sites, each with a page
+      const { site: siteA, page: pageA } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      const { site: siteB, page: pageB } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      expect(siteA.id).not.toBe(siteB.id)
+
+      // Asking for pageB but scoping by siteA must return nothing — the CTE
+      // must not traverse other sites' trees.
+      const crossSite = await getWithFullPermalink({
+        resourceIds: [pageB.id],
+        siteId: siteA.id,
+      })
+      expect(crossSite).toEqual([])
+
+      // Sanity: the same call with the correct siteId still works.
+      const sameSite = await getWithFullPermalink({
+        resourceIds: [pageA.id],
+        siteId: siteA.id,
+      })
+      expect(sameSite).toHaveLength(1)
+      expect(sameSite[0]?.id).toBe(pageA.id)
+    })
+  })
+
   describe.skip("getSearchResults", () => {})
   describe.skip("getSearchRecentlyEdited", () => {})
   describe.skip("getSearchWithResourceIds", () => {})

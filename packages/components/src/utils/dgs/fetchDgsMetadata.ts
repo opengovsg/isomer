@@ -1,3 +1,5 @@
+import { isCkanInternalColumn } from "./isCkanInternalColumn"
+
 interface FetchDgsMetadataProps {
   resourceId: string
 }
@@ -65,6 +67,7 @@ const extractColumnMetadata = (
 ): FetchDgsMetadataOutput["columnMetadata"] => {
   try {
     return Object.values(data.data.columnMetadata.metaMapping)
+      .filter((mapping) => !isCkanInternalColumn(mapping.name))
       .sort((a, b) => Number(a.index) - Number(b.index))
       .reduce<NonNullable<FetchDgsMetadataOutput["columnMetadata"]>>(
         (acc, mapping) => {

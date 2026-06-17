@@ -2240,6 +2240,33 @@ describe("page.router", async () => {
       expect(result).toMatchObject(expectedSettings)
     })
 
+    it("should not allow changing a page type to RootPage", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "RootPage",
+        title: "Attempted RootPage",
+      })
+
+      // Assert: type should remain unchanged
+      const actualResource = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .select(["Resource.type"])
+        .executeTakeFirstOrThrow()
+      expect(actualResource.type).toBe("Page")
+    })
+
     it("should throw 409 if permalink is not unique", async () => {
       // Arrange
       const reusedPermalink = "this-is-not-unique"

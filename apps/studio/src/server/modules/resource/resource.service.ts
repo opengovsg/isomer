@@ -179,11 +179,21 @@ export const getPageById = (
 }
 
 export const updatePageById = (
-  page: Partial<Omit<Page, "id" | "siteId" | "parentId">> & {
+  page: {
     id: number
     siteId: number
+    state?: ResourceState
     parentId?: number
-  },
+  } & Partial<
+    Pick<
+      Page,
+      | "title"
+      | "scheduledAt"
+      | "scheduledBy"
+      | "publishedVersionId"
+      | "draftBlobId"
+    >
+  >,
   dbInstance?: SafeKysely,
 ) => {
   const dbObj = dbInstance ?? db
@@ -901,8 +911,10 @@ export const getBatchAncestryWithSelfQuery = async ({
 
 export const getWithFullPermalink = async ({
   resourceIds,
+  siteId,
 }: {
   resourceIds: string[]
+  siteId: number
 }) => {
   if (resourceIds.length === 0) {
     return []
@@ -919,11 +931,13 @@ export const getWithFullPermalink = async ({
           "r.parentId",
           "r.permalink as fullPermalink",
         ])
+        .where("r.siteId", "=", siteId)
         .where("r.parentId", "is", null)
         .unionAll(
           eb
             .selectFrom("Resource as s")
             .innerJoin("resourcePath as rp", "s.parentId", "rp.id")
+            .where("s.siteId", "=", siteId)
             .select([
               "s.id",
               "s.title",
@@ -962,11 +976,14 @@ const getResourcesWithLastUpdatedAt = ({ siteId }: { siteId: number }) => {
 
 const getResourcesWithFullPermalink = async ({
   resources,
+  siteId,
 }: {
   resources: Omit<SearchResultResource, "fullPermalink">[]
+  siteId: number
 }): Promise<SearchResultResource[]> => {
   const result = await getWithFullPermalink({
     resourceIds: resources.map((resource) => resource.id),
+    siteId,
   })
 
   return resources.map((resource) => ({
@@ -1053,6 +1070,7 @@ export const getSearchResults = async ({
   return {
     resources: await getResourcesWithFullPermalink({
       resources: resourcesToReturn,
+      siteId: Number(siteId),
     }),
     totalCount: totalCountResult.total_count,
   }
@@ -1066,6 +1084,7 @@ export const getSearchRecentlyEdited = async ({
   limit?: number
 }): Promise<SearchResultResource[]> => {
   return await getResourcesWithFullPermalink({
+    siteId: Number(siteId),
     resources: await getResourcesWithLastUpdatedAt({ siteId: Number(siteId) })
       .where("Resource.type", "in", [
         // only show page-ish resources
@@ -1099,6 +1118,7 @@ export const getSearchWithResourceIds = async ({
     .execute()
 
   return await getResourcesWithFullPermalink({
+    siteId: Number(siteId),
     resources: resources.map((resource) => ({
       ...resource,
       lastUpdatedAt: null,

@@ -14,6 +14,7 @@ import type {
   CancelSchedulePageTemplateData,
   EmailTemplate,
   FailedPublishTemplateData,
+  GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
   PublishAlertContentPublisherEmailTemplateData,
@@ -26,6 +27,25 @@ const escapeHtml = (value: string | undefined): string => escape(value ?? "")
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}">${escapeHtml(env.NEXT_PUBLIC_APP_URL?.replace("https://", ""))}</a>`
+
+export const gazetteDeletionTemplate = (
+  data: GazetteDeletionEmailTemplateData,
+) => {
+  const { fileId, gazetteTitle } = data
+  const escapedFileId = escapeHtml(fileId)
+  const escapedGazetteTitle = escapeHtml(gazetteTitle)
+
+  // NOTE: Greeting is intentionally not personalised — this email is sent
+  // once with all site admins on it (primary recipient + cc).
+  return {
+    subject: `[Isomer Studio] The gazette with file id: ${escapedFileId} and title: ${escapedGazetteTitle} has been deleted`,
+    body: `<p>Hi everyone,</p>
+<p>The gazette ${escapedGazetteTitle} has been deleted from your site and removed from the search results</p>
+<p>If you believe this was a mistake or need assistance, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
 
 export const invitationTemplate = (
   data: InvitationEmailTemplateData,
@@ -303,4 +323,6 @@ export const templates = {
     accountDeactivationWarningTemplate satisfies EmailTemplateFunction<AccountDeactivationWarningEmailTemplateData>,
   accountDeactivation:
     accountDeactivationTemplate satisfies EmailTemplateFunction<AccountDeactivationEmailTemplateData>,
+  gazetteDeletion:
+    gazetteDeletionTemplate satisfies EmailTemplateFunction<GazetteDeletionEmailTemplateData>,
 } as const

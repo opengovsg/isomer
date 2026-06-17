@@ -13,7 +13,6 @@
     "@isomer/seed-from-repo": "workspace:*",
     "@octokit/rest": "catalog:",
     "axios": "catalog:",
-    "commander-ts": "catalog:",
     "dotenv-cli": "catalog:",
     "tsx": "catalog:",
     "zod": "catalog:"

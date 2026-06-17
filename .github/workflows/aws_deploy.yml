@@ -127,7 +127,7 @@ jobs:
     steps:
       - name: Notify start of deployment
         if: ${{ inputs.environment == 'production' }}
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -136,15 +136,15 @@ jobs:
             text: "<!subteam^${{ secrets.SLACK_NOTIFY_TEAM_ID }}> Starting deployment of *${{ inputs.app-name }}* to *${{ inputs.environment }}* environment :rocket: \n> Version: *${{ inputs.app-version }}*\n> Initiated by: ${{ github.actor }}\n> Workflow URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
         with:
           driver-opts: network=host
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ inputs.cicd-role }}
           role-session-name: github-action-application-deploy
@@ -152,15 +152,15 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@fa648b43de3d4d023bcb3f89ed6940096949c419 # v2
         with:
           mask-password: "true"
 
       - name: Checkout source code
-        uses: actions/checkout@v5
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Build installer stage for sourcemap extraction
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
         with:
           context: .
           file: "./apps/studio/Dockerfile"
@@ -185,7 +185,7 @@ jobs:
           docker rm $CONTAINER_ID
 
       - name: Build and load image to Docker
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
@@ -210,7 +210,7 @@ jobs:
             DD_GIT_COMMIT_SHA=${{ github.sha }}
 
       - name: Scan built image with Inspector
-        uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@v1
+        uses: aws-actions/vulnerability-scan-github-action-for-amazon-inspector@a8d909f662496d73f97b86ea9acd11cb7decedb7 # v1
         id: inspector
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -233,7 +233,7 @@ jobs:
       # from the GitHub actions job summary page.
       - name: Upload Scan Results
         id: upload-scan-results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           path: |
             ${{ steps.inspector.outputs.inspector_scan_results }}
@@ -243,7 +243,7 @@ jobs:
 
       - name: Notify if vulnerability threshold is exceeded (for production deployments only)
         if: ${{ steps.inspector.outputs.vulnerability_threshold_exceeded && inputs.environment == 'production' }}
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -268,7 +268,7 @@ jobs:
             exit 0
           fi
 
-          npm install -g @datadog/datadog-ci
+          npm install -g @datadog/datadog-ci@5.17.0
 
           # Upload sourcemaps (extracted earlier from installer stage)
           datadog-ci sourcemaps upload .next-static \
@@ -285,10 +285,10 @@ jobs:
 
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
+        uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ inputs.cicd-role }}
           role-session-name: github-action-application-deploy
@@ -296,12 +296,12 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@fa648b43de3d4d023bcb3f89ed6940096949c419 # v2
         with:
           mask-password: "true"
 
       - name: Checkout source code
-        uses: actions/checkout@v5
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Replace variables in task definition file
         id: replace-variables
@@ -324,7 +324,7 @@ jobs:
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        uses: aws-actions/amazon-ecs-render-task-definition@6853cfae8c3a7d978fbf68b5a55453395541dfbb # v1
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
@@ -336,7 +336,7 @@ jobs:
           image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        uses: aws-actions/amazon-ecs-deploy-task-definition@a310a830f5c14e583e35d84e4e1ec7dd177c3c9c # v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           cluster: ${{ inputs.ecs-cluster-name }}
@@ -348,7 +348,7 @@ jobs:
 
       - name: Notify end of deployment (success)
         if: ${{ inputs.environment == 'production' && success() }}
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -358,7 +358,7 @@ jobs:
 
       - name: Notify end of deployment (failure)
         if: ${{ inputs.environment == 'production' && failure() }}
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}

@@ -32,6 +32,7 @@ interface DatabaseEditorState {
 
 export interface CollectionEditorState {
   state: "collectionEditor"
+  type: "display" | "filter"
 }
 
 interface SiderailOrderingEditorState {
