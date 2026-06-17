@@ -59,7 +59,7 @@ interface DgsDatasetIdModalProps {
   initialValue?: string
 }
 
-const DgsDatasetIdModal = ({
+export const DgsDatasetIdModal = ({
   isOpen,
   onClose,
   onSave,
