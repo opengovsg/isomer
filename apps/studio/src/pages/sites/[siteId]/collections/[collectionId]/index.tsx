@@ -24,7 +24,8 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getCollectionHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 const collectionPageSchema = z.object({
   siteId: z.coerce.number(),

@@ -14,7 +14,8 @@ import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 import { pageSchema } from "../../schema"
 import {

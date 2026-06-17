@@ -3,7 +3,8 @@ import { Badge, BadgeLeftIcon } from "@opengovsg/design-system-react"
 import Link from "next/link"
 import { BiChevronRight, BiHomeAlt, BiSolidCircle } from "react-icons/bi"
 import { trpc } from "~/utils/trpc"
-import { ResourceState } from "~prisma/generated/generatedEnums"
+
+import { ResourceState } from "@isomer/db"
 
 interface RootpageRowProps {
   siteId: number

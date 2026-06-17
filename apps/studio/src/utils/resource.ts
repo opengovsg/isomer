@@ -1,4 +1,4 @@
-import { ResourceType } from "~prisma/generated/generatedEnums"
+import { ResourceType } from "@isomer/db"
 
 // Gets the Studio URL subpath for a given resource type
 export const getResourceSubpath = (resourceType: ResourceType) => {

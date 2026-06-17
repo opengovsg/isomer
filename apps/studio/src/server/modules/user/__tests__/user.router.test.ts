@@ -22,7 +22,8 @@ import {
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import { db, jsonb, RoleType } from "~/server/modules/database"
 import { createCallerFactory } from "~/server/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 import { userRouter } from "../user.router"
 import { isomerAdminsCount, setupIsomerAdmins } from "./utils"

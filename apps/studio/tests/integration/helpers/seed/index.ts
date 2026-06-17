@@ -4,13 +4,14 @@ import { nanoid } from "nanoid"
 import { INDEX_PAGE_PERMALINK } from "src/constants/sitemap"
 import { MOCK_STORY_DATE } from "tests/msw/constants"
 import { buildIdFromArn } from "~/schemas/webhook"
+import { db, jsonb } from "~server/db"
+
 import {
   IsomerAdminRole,
   ResourceState,
   ResourceType,
   RoleType,
-} from "~prisma/generated/generatedEnums"
-import { db, jsonb } from "~server/db"
+} from "@isomer/db"
 
 interface SetupPermissionsProps {
   userId?: string

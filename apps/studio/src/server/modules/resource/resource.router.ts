@@ -27,7 +27,8 @@ import {
   searchWithResourceIdsSchema,
 } from "~/schemas/resource"
 import { protectedProcedure, router } from "~/server/trpc"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+
+import { AuditLogEvent } from "@isomer/db"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
 import { logResourceEvent } from "../audit/audit.service"

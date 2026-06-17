@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react"
 import { getResourceSubpath } from "~/utils/resource"
 import { getIcon } from "~/utils/resources"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import { RowEntry } from "./RowEntry"
 import { useIsActive } from "./useIsActive"

@@ -17,7 +17,8 @@ import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 export const sitePageSchema = z.object({
   siteId: z.coerce.number(),

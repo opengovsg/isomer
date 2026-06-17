@@ -8,7 +8,8 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
 import { IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { type DrawerState } from "~/types/editorDrawer"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import type { UsageTooltipProps } from "./UsageTooltip"
 import {

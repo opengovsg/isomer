@@ -38,7 +38,8 @@ import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsMana
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole, ResourceType } from "@isomer/db"
 
 import { TYPE_TO_ICON } from "../../constants"
 import { pageSchema } from "../../schema"

@@ -12,7 +12,8 @@ import {
   setupUser,
 } from "tests/integration/helpers/seed"
 import { describe, expect, it } from "vitest"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+
+import { IsomerAdminRole } from "@isomer/db"
 
 import type { ResourceAbility } from "../permissions.type"
 import { db, ResourceType, RoleType } from "../../database"

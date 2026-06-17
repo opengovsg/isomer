@@ -7,7 +7,8 @@ import {
   singpassLoginSchema,
 } from "~/schemas/auth/singpass"
 import { publicProcedure, router } from "~/server/trpc"
-import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+
+import { AuditLogEvent } from "@isomer/db"
 
 import { logUserEvent } from "../../audit/audit.service"
 import { recordUserLogin } from "../auth.service"

@@ -36,7 +36,8 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 export const DEFAULT_SIMPLE_INTEGRATION_SETTINGS = Value.Parse(
   SimpleIntegrationsSettingsSchema,

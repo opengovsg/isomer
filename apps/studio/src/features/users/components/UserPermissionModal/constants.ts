@@ -1,6 +1,7 @@
 import type { IconType } from "react-icons/lib"
 import { BiCheckShield, BiPencil, BiRocket } from "react-icons/bi"
-import { RoleType } from "~prisma/generated/generatedEnums"
+
+import { RoleType } from "@isomer/db"
 
 // TODO: move this to a official isomer.gov.sg once we migrate that to Isomer Next
 export const ISOMER_GUIDE_URL =

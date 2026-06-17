@@ -14,7 +14,8 @@ import { CollaboratorsDescription } from "~/features/users/components/Collaborat
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { type NextPageWithLayout } from "~/lib/types"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 const siteUsersSchema = z.object({
   siteId: z.coerce.number(),

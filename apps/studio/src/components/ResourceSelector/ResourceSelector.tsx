@@ -4,7 +4,8 @@ import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { Suspense, useMemo } from "react"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import {
   LoadingResourceItemsResults,

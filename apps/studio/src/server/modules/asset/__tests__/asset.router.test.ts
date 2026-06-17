@@ -16,7 +16,8 @@ import {
 import { vi } from "vitest"
 import { deleteFile, generateSignedPutUrl, putObjectDirect } from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 import { assetRouter } from "../asset.router"
 

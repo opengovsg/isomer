@@ -23,7 +23,8 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { SiteEditorLayout } from "~/templates/layouts/SiteEditorLayout"
 import { getFolderHref } from "~/utils/resource"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 const folderPageSchema = z.object({
   siteId: z.string(),

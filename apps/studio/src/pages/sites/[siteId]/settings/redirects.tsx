@@ -8,7 +8,8 @@ import { RedirectsSettings } from "~/features/settings/Redirects"
 import { useIsRedirectionsEnabled } from "~/hooks/useIsRedirectionsEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
-import { ResourceType } from "~prisma/generated/generatedEnums"
+
+import { ResourceType } from "@isomer/db"
 
 const RedirectsSettingsPage: NextPageWithLayout = () => {
   const { siteId } = useQueryParse(siteSchema)
