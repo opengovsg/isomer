@@ -7,7 +7,7 @@ import { tv } from "~/lib/tv"
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
 import { SearchField } from "../../../internal/Search"
-import { PAGINATION_MAX_ITEMS, SEARCHBAR_PLACEHOLDER } from "./constants"
+import { PAGINATION_MAX_ITEMS } from "./constants"
 import { EmptyState, FallbackEmptyState } from "./EmptyState"
 
 const createSearchableTableStyles = tv({
@@ -152,7 +152,7 @@ export const SearchableTableClientUI = ({
 
       <SearchField
         aria-label="Search table"
-        placeholder={SEARCHBAR_PLACEHOLDER}
+        placeholder="Enter a search term"
         value={searchInput}
         onChange={(value) => {
           setSearch(value)

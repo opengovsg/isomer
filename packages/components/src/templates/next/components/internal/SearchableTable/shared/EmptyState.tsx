@@ -1,7 +1,5 @@
 import { tv } from "~/lib/tv"
 
-import { NO_RESULTS_SUBTITLE } from "./constants"
-
 const createEmptyStateStyles = tv({
   slots: {
     container:
@@ -40,7 +38,9 @@ export const EmptyState = ({ search, onClick }: EmptyStateProps) => {
           <b className={styles.title({ bold: true })}>{search}</b>”
         </p>
 
-        <p className={styles.subtitle()}>{NO_RESULTS_SUBTITLE}</p>
+        <p className={styles.subtitle()}>
+          Check if you have a spelling error or try a different search term.
+        </p>
       </div>
 
       <button className={styles.button()} onClick={onClick}>
