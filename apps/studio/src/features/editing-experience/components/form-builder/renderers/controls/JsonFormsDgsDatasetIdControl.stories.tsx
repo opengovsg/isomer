@@ -22,11 +22,11 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-const typeDatasetUrl = async (canvasElement: HTMLElement) => {
+const pasteDatasetUrl = async (canvasElement: HTMLElement) => {
   const screen = within(canvasElement.ownerDocument.body)
   const input = await screen.findByPlaceholderText("Paste dataset URL here")
-  await userEvent.clear(input)
-  await userEvent.type(input, DGS_DATASET_URL)
+  await userEvent.click(input)
+  await userEvent.paste(DGS_DATASET_URL)
 }
 
 export const OverDatasetSizeCap: Story = {
@@ -47,7 +47,7 @@ export const OverDatasetSizeCap: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    await typeDatasetUrl(canvasElement)
+    await pasteDatasetUrl(canvasElement)
 
     const rootScreen = within(canvasElement.ownerDocument.body)
     await waitFor(
@@ -84,7 +84,7 @@ export const NonCsvFormat: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    await typeDatasetUrl(canvasElement)
+    await pasteDatasetUrl(canvasElement)
 
     const rootScreen = within(canvasElement.ownerDocument.body)
     await waitFor(
@@ -117,7 +117,7 @@ export const ValidCsvUnderCap: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    await typeDatasetUrl(canvasElement)
+    await pasteDatasetUrl(canvasElement)
 
     const rootScreen = within(canvasElement.ownerDocument.body)
     await waitFor(
