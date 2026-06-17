@@ -28,6 +28,7 @@ export const useAllDgsRecords = ({
 
   useEffect(() => {
     if (!enabled) {
+      setIsLoading(false)
       return
     }
 
