@@ -115,6 +115,35 @@ export const OverDatasetSizeCap: Story = {
   },
 }
 
+export const MetadataFetchFailure: Story = {
+  args: commonArgs,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(DGS_METADATA_URL, () => {
+          return new HttpResponse(null, {
+            status: 500,
+          })
+        }),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await waitFor(
+      () =>
+        expect(
+          screen.getByText(
+            "Oops! Something went wrong while loading the table. Please try again later.",
+          ),
+        ).toBeInTheDocument(),
+      {
+        timeout: 5000,
+      },
+    )
+  },
+}
+
 export const Loading: Story = {
   args: commonArgs,
   parameters: {
