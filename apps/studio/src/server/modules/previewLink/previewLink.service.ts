@@ -7,7 +7,7 @@ import { RateLimiterPrisma, RateLimiterRes } from "rate-limiter-flexible"
 import type { PreviewLink } from "../database"
 import { logPreviewLinkEvent } from "../audit/audit.service"
 import { AuditLogEvent, db, sql } from "../database"
-import { isUserSiteAdmin } from "../permissions/permissions.service"
+import { definePermissionsForSite } from "../permissions/permissions.service"
 
 type PreviewLinkRow = Selectable<PreviewLink>
 
@@ -153,7 +153,10 @@ export const listSitePreviewLinks = async ({
   siteId,
   status,
 }: ListSitePreviewLinksProps) => {
-  const viewerIsAdmin = await isUserSiteAdmin({ userId, siteId })
+  // Scope flip uses the same site ability builder the router relies on for
+  // the revoke gate: "update on Site" is the Admin/Isomer-Admin signal.
+  const sitePerms = await definePermissionsForSite({ userId, siteId })
+  const viewerIsAdmin = sitePerms.can("update", "Site")
 
   let query = db
     .selectFrom("PreviewLink")

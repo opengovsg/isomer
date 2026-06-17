@@ -12,7 +12,7 @@ import getIP from "~/utils/getClientIp"
 import { db } from "../database"
 import {
   bulkValidateUserPermissionsForResources,
-  validateUserIsSiteAdmin,
+  validateUserPermissionsForSite,
 } from "../permissions/permissions.service"
 import {
   listActivePagePreviewLinks,
@@ -75,11 +75,14 @@ export const previewLinkRouter = router({
         })
       }
 
-      // Sharer can always revoke their own; anyone else must be Site Admin.
+      // Sharer can always revoke their own; anyone else must hold a CRUD
+      // permission on Site, which the existing ability builder grants only
+      // to Site Admin and Isomer Admin.
       if (link.createdBy !== ctx.user.id) {
-        await validateUserIsSiteAdmin({
+        await validateUserPermissionsForSite({
           userId: ctx.user.id,
           siteId: link.siteId,
+          action: "update",
         })
       }
 

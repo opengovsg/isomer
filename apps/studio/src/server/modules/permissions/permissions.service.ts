@@ -334,28 +334,23 @@ export const validateUserIsIsomerAdmin = async ({
   }
 }
 
-interface SiteAdminProps {
+interface ValidateUserPermissionsForSiteProps {
   userId: string
   siteId: number
+  action: CrudResourceActions
 }
 
-// True if the user is a Site Admin (Admin role on the site, no resource scope)
-// OR an active Isomer Admin. Implemented in terms of the existing site ability
-// builder, which already encodes that rule — only Admin and Isomer Admin
-// receive "update" on the Site subject.
-export const isUserSiteAdmin = async ({
+// Site-subject analogue of bulkValidateUserPermissionsForResources. Throws
+// FORBIDDEN if the user can't perform `action` on the Site. The existing
+// site ability builder already encodes the rules: every role gets "read";
+// Admin and Isomer Admin get the rest.
+export const validateUserPermissionsForSite = async ({
   userId,
   siteId,
-}: SiteAdminProps): Promise<boolean> => {
+  action,
+}: ValidateUserPermissionsForSiteProps) => {
   const sitePerms = await definePermissionsForSite({ userId, siteId })
-  return sitePerms.can("update", "Site")
-}
-
-export const validateUserIsSiteAdmin = async ({
-  userId,
-  siteId,
-}: SiteAdminProps) => {
-  if (!(await isUserSiteAdmin({ userId, siteId }))) {
+  if (sitePerms.cannot(action, "Site")) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "You do not have sufficient permissions to perform this action",
