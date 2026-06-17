@@ -163,12 +163,10 @@ describe("useDgsMetadata", () => {
 
   it("should ignore a late resolution after enabled flips true -> false", async () => {
     // Arrange
-    let resolveFetch!: (value: FetchDgsMetadataOutput | undefined) => void
-    const pending = new Promise<FetchDgsMetadataOutput | undefined>(
-      (resolve) => {
-        resolveFetch = resolve
-      },
-    )
+    let resolveFetch!: (value: FetchDgsMetadataOutput) => void
+    const pending = new Promise<FetchDgsMetadataOutput>((resolve) => {
+      resolveFetch = resolve
+    })
     mockedFetchDgsMetadata.mockReturnValueOnce(pending)
 
     // Act
@@ -207,12 +205,10 @@ describe("useDgsMetadata", () => {
 
   it("should ignore a late resolution after resourceId changes", async () => {
     // Arrange
-    let resolveFirstFetch!: (value: FetchDgsMetadataOutput | undefined) => void
-    const firstPending = new Promise<FetchDgsMetadataOutput | undefined>(
-      (resolve) => {
-        resolveFirstFetch = resolve
-      },
-    )
+    let resolveFirstFetch!: (value: FetchDgsMetadataOutput) => void
+    const firstPending = new Promise<FetchDgsMetadataOutput>((resolve) => {
+      resolveFirstFetch = resolve
+    })
     mockedFetchDgsMetadata
       .mockReturnValueOnce(firstPending)
       .mockResolvedValueOnce({
