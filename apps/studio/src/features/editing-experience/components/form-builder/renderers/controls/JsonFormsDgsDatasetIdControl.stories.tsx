@@ -51,19 +51,18 @@ export const OverDatasetSizeCap: Story = {
 
     const rootScreen = within(canvasElement.ownerDocument.body)
     await waitFor(
-      () =>
+      () => {
         expect(
           rootScreen.getByText(
             /This dataset is .+\. Datasets must be .+ or smaller to be linked here\./,
           ),
-        ).toBeInTheDocument(),
+        ).toBeInTheDocument()
+        expect(
+          rootScreen.getByRole("button", { name: /Save Dataset ID/i }),
+        ).toBeDisabled()
+      },
       { timeout: 5000 },
     )
-
-    const saveButton = rootScreen.getByRole("button", {
-      name: /Save Dataset ID/i,
-    })
-    await expect(saveButton).toBeDisabled()
   },
 }
 
@@ -122,14 +121,13 @@ export const ValidCsvUnderCap: Story = {
 
     const rootScreen = within(canvasElement.ownerDocument.body)
     await waitFor(
-      () =>
-        expect(rootScreen.getByText("✓ Valid CSV dataset")).toBeInTheDocument(),
+      () => {
+        expect(rootScreen.getByText("✓ Valid CSV dataset")).toBeInTheDocument()
+        expect(
+          rootScreen.getByRole("button", { name: /Save Dataset ID/i }),
+        ).toBeEnabled()
+      },
       { timeout: 5000 },
     )
-
-    const saveButton = rootScreen.getByRole("button", {
-      name: /Save Dataset ID/i,
-    })
-    await expect(saveButton).toBeEnabled()
   },
 }
