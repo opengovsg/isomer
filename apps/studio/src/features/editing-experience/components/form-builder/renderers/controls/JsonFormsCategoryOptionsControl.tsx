@@ -71,7 +71,11 @@ function CategoryOptionUsageCount({
       categoryId,
     })
 
-  return <>{count}</>
+  return (
+    <>
+      {count} {count === 1 ? "item" : "items"}
+    </>
+  )
 }
 
 interface CategoryOptionsExpandedEditorProps extends ArrayLayoutProps {
@@ -314,8 +318,8 @@ function CategoryOptionsExpandedEditor({
                     categoryId={deleteTarget.categoryId}
                   />
                 </Suspense>
-              </ErrorBoundary>{" "}
-              items. To undo this change, you will need to create and re-assign
+              </ErrorBoundary>
+              {". "}To undo this change, you will need to create and re-assign
               this option to all items.
             </Text>
           }

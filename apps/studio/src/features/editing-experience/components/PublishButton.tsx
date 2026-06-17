@@ -46,8 +46,8 @@ const SuspendablePublishButton = ({
   const isChangesPendingPublish = !!currPage.draftBlobId
 
   const { mutate, isPending } = trpc.page.publishPage.useMutation({
-    onSettled: async () => {
-      await Promise.all([
+    onSettled: () => {
+      void Promise.all([
         utils.page.readPage.refetch({ pageId, siteId }),
         utils.page.getCategories.invalidate(),
         utils.page.getCategoryOptions.invalidate(),

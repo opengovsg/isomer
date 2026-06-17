@@ -40,6 +40,7 @@ import {
   createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,
+  getCategoryOptionUsageCount,
   getCollectionTagsForResource,
 } from "./collection.service"
 
@@ -527,17 +528,20 @@ export const collectionRouter = router({
 
   getCollectionTags: protectedProcedure
     .input(getCollectionTagsSchema)
-    .query(async ({ ctx, input }) => {
-      const resourceIdToValidate =
-        "collectionId" in input ? input.collectionId : input.resourceId
+    .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
+      const resourceIdToValidate = collectionId ?? resourceId
       await bulkValidateUserPermissionsForResources({
-        siteId: input.siteId,
+        siteId,
         action: "read",
         userId: ctx.user.id,
         resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
       })
 
-      return getCollectionTagsForResource(input)
+      return getCollectionTagsForResource(
+        collectionId !== undefined
+          ? { siteId, collectionId }
+          : { siteId, resourceId: resourceId! },
+      )
     }),
 
   /**
@@ -553,55 +557,7 @@ export const collectionRouter = router({
         userId: ctx.user.id,
       })
 
-      const { id: collectionId } = await db
-        .selectFrom("Resource as r")
-        .innerJoin("Resource as c", (join) =>
-          join
-            .onRef("c.id", "=", "r.parentId")
-            .on("c.type", "=", ResourceType.Collection)
-            .on("c.siteId", "=", siteId),
-        )
-        .where("r.id", "=", String(indexPageId))
-        .where("r.siteId", "=", siteId)
-        .where("r.type", "=", ResourceType.IndexPage)
-        .select("c.id")
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "NOT_FOUND",
-              message: "Collection not found",
-            }),
-        )
-
-      const row = await db
-        .selectFrom("Resource as r")
-        .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
-        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
-        .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
-        .where("r.parentId", "=", collectionId)
-        .where("r.siteId", "=", siteId)
-        .where("r.type", "in", [
-          ResourceType.CollectionPage,
-          ResourceType.CollectionLink,
-        ])
-        .where((eb) =>
-          eb.or([
-            eb(
-              sql`nullif(trim("draftBlob"."content"->'page'->>'categoryId'), '')`,
-              "=",
-              categoryId,
-            ),
-            eb(
-              sql`nullif(trim("publishedBlob"."content"->'page'->>'categoryId'), '')`,
-              "=",
-              categoryId,
-            ),
-          ]),
-        )
-        .select(sql<number>`cast(count(*) as int)`.as("count"))
-        .executeTakeFirstOrThrow()
-
-      return { count: row.count }
+      return getCategoryOptionUsageCount({ siteId, indexPageId, categoryId })
     }),
 
   getCollections: protectedProcedure
