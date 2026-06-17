@@ -23,7 +23,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { useAtom } from "jotai"
-import { Suspense, useMemo } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
@@ -108,6 +108,31 @@ const PageSettingsModalContent = ({
       parentPermalinks: `/${parentPermalinks}/`,
     }
   }, [permalink, permalinkTree])
+
+  // The full URL the page would live at — used to warn (non-blocking) when it
+  // is already a redirect source (ISOM-2266). Debounced so we don't query on
+  // every keystroke. CollectionLinks have no URL of their own, so skip them.
+  const candidateFullPermalink = `${permalinksToRender.parentPermalinks}${permalinksToRender.permalink}`
+  const [debouncedPermalink, setDebouncedPermalink] = useState(
+    candidateFullPermalink,
+  )
+  useEffect(() => {
+    const timeout = setTimeout(
+      () => setDebouncedPermalink(candidateFullPermalink),
+      300,
+    )
+    return () => clearTimeout(timeout)
+  }, [candidateFullPermalink])
+
+  const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
+    { siteId, source: debouncedPermalink },
+    {
+      enabled:
+        type !== ResourceType.CollectionLink &&
+        debouncedPermalink.length > 0 &&
+        debouncedPermalink !== "/",
+    },
+  )
 
   const utils = trpc.useUtils()
   const toast = useToast(BRIEF_TOAST_SETTINGS)
@@ -219,6 +244,12 @@ const PageSettingsModalContent = ({
                 {MAX_PAGE_URL_LENGTH - permalink.length} characters left
               </FormHelperText>
               <FormErrorMessage>{errors.permalink?.message}</FormErrorMessage>
+              {existingRedirect && (
+                <Infobox my="0.5rem" variant="warning" size="sm">
+                  This URL already redirects to {existingRedirect.destination}.
+                  Visitors will end up there instead.
+                </Infobox>
+              )}
             </FormControl>
           )}
 
