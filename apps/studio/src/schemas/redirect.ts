@@ -4,11 +4,19 @@ import { z } from "zod"
 import { generateBigIntSchema } from "./common"
 import { offsetPaginationSchema } from "./pagination"
 
-// The source is persisted as part of an S3 object key, which AWS caps at 1024
-// bytes. Keep the limit well under that so there is headroom for non-latin
-// characters that expand on percent-encoding (a single CJK character can become
-// several bytes / up to ~9 encoded characters).
-export const MAX_REDIRECT_SOURCE_LENGTH = 100
+// A redirect is published as an S3 object whose key is
+// `${siteName}/${buildNumber}/latest/${source}/index.html` (see
+// tooling/build/scripts/publishing/uploadRedirects.ts), and AWS caps an object
+// key at 1024 bytes. Pages publish under the SAME prefix, so a redirect source
+// and a page's full permalink are keyed identically — any path a page can
+// publish at, a redirect can use as its source. The source character whitelist
+// below forbids raw non-latin characters, so a stored source is always ASCII
+// (one byte per char in the key); there is no percent-encoding expansion to
+// budget for. 900 leaves comfortable headroom under 1024 for the site name
+// (realistically <~30), the build number, the `latest/` segment and the
+// `/index.html` suffix, while exceeding the page permalink limit so a moved or
+// renamed page can always auto-create a redirect from its old URL.
+export const MAX_REDIRECT_SOURCE_LENGTH = 900
 
 // Destinations can be a full external https URL — with a query string and
 // fragment those are legitimately long — so they get a far more generous limit
