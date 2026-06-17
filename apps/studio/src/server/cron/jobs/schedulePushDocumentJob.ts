@@ -262,7 +262,7 @@ export const schedulePushDocumentJobHandler = async () => {
           })
 
           if (records.length === 0) {
-            logger.warn(
+            logger.error(
               { resourceId },
               "No search records built; skipping save",
             )
