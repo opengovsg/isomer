@@ -113,6 +113,7 @@ const SITES_WITH_AUDIT_LOGS = [
   284, // www.ptc.gov.sg
   287, // www.mot.gov.sg
   289, // www.toteboard.gov.sg
+  334, // seab.gov.sg
   336, // www.caringcommuters.gov.sg
   343, // www.motawardsceremony.gov.sg
   357, // www.ago.gov.sg
