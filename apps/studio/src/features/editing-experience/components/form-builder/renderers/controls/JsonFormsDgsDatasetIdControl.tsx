@@ -25,6 +25,8 @@ import {
 } from "@opengovsg/design-system-react"
 import {
   DGS_DATASET_ID_FORMAT,
+  DGS_MAX_DATASET_BYTES,
+  formatBytes,
   useDgsMetadata,
 } from "@opengovsg/isomer-components"
 import { useDebounce } from "@uidotdev/usehooks"
@@ -76,7 +78,9 @@ const DgsDatasetIdModal = ({
     enabled: !!datasetId,
   })
   const format = metadata?.format
-  const isValidDataset = format === "CSV"
+  const size = metadata?.size
+  const isOverSizeCap = size !== undefined && size > DGS_MAX_DATASET_BYTES
+  const isValidDataset = format === "CSV" && !isOverSizeCap
 
   const isLoading = isValidatingDataset || isDebouncing
 
@@ -109,6 +113,14 @@ const DgsDatasetIdModal = ({
       return
     }
 
+    if (isOverSizeCap && size !== undefined) {
+      setError("datasetId", {
+        type: "manual",
+        message: `This dataset is ${formatBytes(size)}. Datasets must be ${formatBytes(DGS_MAX_DATASET_BYTES)} or smaller to be linked here.`,
+      })
+      return
+    }
+
     setError("datasetId", {
       type: "manual",
       message: format
@@ -119,6 +131,8 @@ const DgsDatasetIdModal = ({
     datasetId,
     isValidDataset,
     format,
+    size,
+    isOverSizeCap,
     isValidatingDataset,
     setError,
     clearErrors,
