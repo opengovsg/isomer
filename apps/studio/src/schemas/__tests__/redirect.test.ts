@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { createRedirectSchema } from "../redirect"
+import {
+  createRedirectSchema,
+  MAX_REDIRECT_DESTINATION_LENGTH,
+  MAX_REDIRECT_SOURCE_LENGTH,
+} from "../redirect"
 
 const VALID_REDIRECT = {
   siteId: 1,
@@ -112,9 +116,124 @@ describe("createRedirectSchema", () => {
       // Assert
       expect(result.success).toBe(false)
     })
+
+    it(`should accept a source at the max length of ${MAX_REDIRECT_SOURCE_LENGTH}`, () => {
+      // Arrange / Act
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        source: "a".repeat(MAX_REDIRECT_SOURCE_LENGTH),
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+    })
+
+    it("should reject a source longer than the max length", () => {
+      // Arrange / Act
+      // Sources become part of an S3 object key, so the cap is far tighter than
+      // the destination's — a value under the destination limit is still
+      // rejected here.
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        source: "a".repeat(MAX_REDIRECT_SOURCE_LENGTH + 1),
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "Source path is too long",
+        )
+      }
+    })
+
+    it("should reject sources under the reserved /_next prefix", () => {
+      // Arrange
+      // The prefix itself and anything nested beneath it is reserved, and the
+      // check is on the normalised value so a missing leading slash is caught
+      // too.
+      const reservedSources = ["/_next", "/_next/static/chunk.js", "_next/data"]
+
+      reservedSources.forEach((source) => {
+        // Act
+        const result = createRedirectSchema.safeParse({
+          ...VALID_REDIRECT,
+          source,
+        })
+
+        // Assert
+        expect(result.success).toBe(false)
+        if (!result.success) {
+          expect(result.error.issues.map((issue) => issue.message)).toContain(
+            "This path is reserved and can't be used as a redirect source",
+          )
+        }
+      })
+    })
+
+    it("should accept a source that merely starts with the reserved prefix as a substring", () => {
+      // Arrange / Act
+      // "/_nextgen" is not under "/_next/", so it must not be blocked.
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        source: "/_nextgen",
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+    })
+
+    it("should reject a source that is a full URL with the design copy", () => {
+      // Arrange
+      const urlSources = [
+        "https://example.gov.sg/page",
+        "http://example.com",
+        "ftp://example.com/file",
+      ]
+
+      urlSources.forEach((source) => {
+        // Act
+        const result = createRedirectSchema.safeParse({
+          ...VALID_REDIRECT,
+          source,
+        })
+
+        // Assert
+        expect(result.success).toBe(false)
+        if (!result.success) {
+          expect(result.error.issues.map((issue) => issue.message)).toContain(
+            "Enter what comes behind your URL (e.g., /contact-us).",
+          )
+        }
+      })
+    })
   })
 
   describe("destination", () => {
+    it("should normalise an internal destination to a single leading slash with no trailing slash", () => {
+      // Arrange / Act
+      const result = createRedirectSchema.parse({
+        ...VALID_REDIRECT,
+        destination: "/new//path/",
+      })
+
+      // Assert
+      expect(result.destination).toBe("/new/path")
+    })
+
+    it("should leave an external https destination exactly as entered", () => {
+      // Arrange / Act
+      // Trailing slashes / query strings are meaningful off-site, so the
+      // external URL must not be rewritten by the path normaliser.
+      const result = createRedirectSchema.parse({
+        ...VALID_REDIRECT,
+        destination: "https://www.example.gov.sg/path/?ref=1",
+      })
+
+      // Assert
+      expect(result.destination).toBe("https://www.example.gov.sg/path/?ref=1")
+    })
+
     it("should accept destinations starting with '/'", () => {
       // Arrange / Act
       const result = createRedirectSchema.safeParse(VALID_REDIRECT)
@@ -147,13 +266,65 @@ describe("createRedirectSchema", () => {
       expect(result.success).toBe(true)
     })
 
-    it("should reject destinations with other prefixes", () => {
+    it("should reject destinations with other prefixes using the design copy", () => {
       // Arrange
       const invalidDestinations = [
         "http://example.com",
         "javascript:alert(1)",
         "example.com/page",
+        "link with space",
       ]
+
+      invalidDestinations.forEach((destination) => {
+        // Act
+        const result = createRedirectSchema.safeParse({
+          ...VALID_REDIRECT,
+          destination,
+        })
+
+        // Assert
+        expect(result.success).toBe(false)
+        if (!result.success) {
+          expect(result.error.issues.map((issue) => issue.message)).toContain(
+            "Add a valid URL.",
+          )
+        }
+      })
+    })
+
+    it("should accept a destination longer than the source limit", () => {
+      // Arrange / Act
+      // External URLs are legitimately long, so the destination limit is far
+      // more generous than the source's — a value over the source cap but under
+      // the destination cap is accepted.
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        destination: `/${"a".repeat(MAX_REDIRECT_SOURCE_LENGTH + 1)}`,
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+    })
+
+    it("should reject a destination longer than the max length", () => {
+      // Arrange / Act
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        destination: `/${"a".repeat(MAX_REDIRECT_DESTINATION_LENGTH)}`,
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "Destination is too long",
+        )
+      }
+    })
+
+    it("should reject internal-path destinations with control characters or backslashes", () => {
+      // Arrange
+      const invalidDestinations = ["/bad\tpath", "/bad\\path"]
 
       invalidDestinations.forEach((destination) => {
         // Act
@@ -218,6 +389,105 @@ describe("createRedirectSchema", () => {
       const result = createRedirectSchema.safeParse({
         ...VALID_REDIRECT,
         destination: "https://www.example.gov.sg/page#section",
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+    })
+
+    it("should reject https destinations containing control characters (CRLF/NUL)", () => {
+      // Arrange
+      // Control bytes are never valid in a real URL and would otherwise be
+      // stored verbatim and emitted into the published site's redirect rules
+      // (S3 metadata / the CloudFront Location header).
+      const invalidDestinations = [
+        "https://evil.gov.sg/\r\nSet-Cookie: x=1",
+        "https://evil.gov.sg/\npath",
+        "https://evil.gov.sg/\x00",
+        "https://evil.gov.sg/\ttab",
+      ]
+
+      invalidDestinations.forEach((destination) => {
+        // Act
+        const result = createRedirectSchema.safeParse({
+          ...VALID_REDIRECT,
+          destination,
+        })
+
+        // Assert
+        expect(result.success).toBe(false)
+        if (!result.success) {
+          expect(result.error.issues.map((issue) => issue.message)).toContain(
+            "Add a valid URL.",
+          )
+        }
+      })
+    })
+
+    it("should reject internal-path destinations with '..' path segments", () => {
+      // Arrange / Act
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        destination: "/foo/../bar",
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
+    })
+  })
+
+  describe("source and destination", () => {
+    it("should reject a redirect from a source to itself with the design copy", () => {
+      // Arrange / Act
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        source: "/same",
+        destination: "/same",
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues.map((issue) => issue.message)).toContain(
+          "You can't redirect a URL to itself.",
+        )
+      }
+    })
+
+    it("should reject when source and destination differ only by normalisation", () => {
+      // Arrange / Act
+      // Source normalises to "/same"; the trailing slash on the destination
+      // must not let an identical redirect through.
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        source: "same//",
+        destination: "/same/",
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
+    })
+
+    it("should accept a redirect to a different internal path", () => {
+      // Arrange / Act
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        source: "/here",
+        destination: "/there",
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+    })
+
+    it("should accept an external destination that matches the source path", () => {
+      // Arrange / Act
+      // An external URL can never equal an internal source, so the same-as
+      // check does not apply.
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        source: "/same",
+        destination: "https://example.gov.sg/same",
       })
 
       // Assert
