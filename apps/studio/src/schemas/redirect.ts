@@ -1,13 +1,23 @@
 import { z } from "zod"
 
+import { generateBigIntSchema } from "./common"
 import { offsetPaginationSchema } from "./pagination"
 
 export const MAX_REDIRECT_PATH_LENGTH = 2000
 
-// Matches ASCII control characters (0x00-0x1f, 0x7f) and backslashes.
-// These are never valid in a URL path and can corrupt the generated
-// redirect rules on the published site.
-const INVALID_PATH_CHARS_REGEX = /[\x00-\x1f\x7f\\]/
+// Cap on the page size for listing redirects. The shared offset-pagination
+// schema has no upper bound, and the list input is the trust boundary, so a
+// read-authorised user could otherwise force an unbounded result set. The UI
+// requests 25.
+export const MAX_REDIRECT_PAGE_SIZE = 100
+
+// Whitelist of characters allowed in a redirect source path: RFC 3986 `pchar`
+// (unreserved + sub-delims + ":" and "@") plus "/" as the segment separator
+// and "%" for percent-encoded octets. We whitelist rather than blacklist so
+// only known-safe characters reach the generated redirect rules — anything
+// outside this set (spaces, control chars, "?", "#", "<", ">", "\\", non-ASCII)
+// is rejected up front instead of corrupting the published rules.
+const SOURCE_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9\-._~!$&'()*+,;=:@%/]+$/
 
 // Strips slashes from both ends of a path so "/foo/", "foo" and "foo//"
 // all normalise to the same inner segments before validation.
@@ -17,8 +27,9 @@ const sourceSchema = z
   .string()
   .min(1, { message: "Source path is required" })
   .max(MAX_REDIRECT_PATH_LENGTH, { message: "Source path is too long" })
-  .refine((value) => !INVALID_PATH_CHARS_REGEX.test(value), {
-    message: "Source must not contain control characters or backslashes",
+  .refine((value) => SOURCE_ALLOWED_CHARS_REGEX.test(value), {
+    message:
+      "Source can only contain letters, numbers, and URL path characters",
   })
   .refine((value) => trimSlashes(value).length > 0, {
     message: "Source path cannot consist only of slashes",
@@ -52,10 +63,9 @@ export type CreateRedirectInput = z.infer<typeof createRedirectSchema>
 
 export const deleteRedirectSchema = z.object({
   siteId: z.number().min(1),
-  // Redirect.id is a bigint in the DB, surfaced as a string by kysely — so
-  // reject non-numeric ids here instead of letting them blow up as a DB
-  // cast error (same shape as the bigint id schema in resource.ts)
-  id: z.string().regex(/^[1-9][0-9]*$/, { message: "Invalid redirect ID" }),
+  // Redirect.id is a bigint in the DB, surfaced as a string by kysely — reject
+  // non-numeric ids here instead of letting them blow up as a DB cast error
+  id: generateBigIntSchema("redirect ID"),
 })
 export type DeleteRedirectInput = z.infer<typeof deleteRedirectSchema>
 
@@ -70,6 +80,14 @@ export const listRedirectsSchema = z.object({
   sortBy: redirectSortFieldSchema.default("publishedAt"),
   sortDirection: z.enum(["asc", "desc"]).default("desc"),
   ...offsetPaginationSchema.shape,
+  // Override the shared (uncapped) limit with a bounded one — see
+  // MAX_REDIRECT_PAGE_SIZE.
+  limit: z
+    .number()
+    .int()
+    .positive()
+    .max(MAX_REDIRECT_PAGE_SIZE, { message: "Page size is too large" })
+    .default(25),
 })
 export type ListRedirectsInput = z.infer<typeof listRedirectsSchema>
 

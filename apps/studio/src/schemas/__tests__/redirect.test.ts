@@ -62,6 +62,35 @@ describe("createRedirectSchema", () => {
       expect(result.success).toBe(false)
     })
 
+    it("should preserve single '.' characters in the source", () => {
+      // Arrange / Act
+      // The whitelist allows "." so real filenames/versions survive — only ".."
+      // path segments are rejected
+      const result = createRedirectSchema.parse({
+        ...VALID_REDIRECT,
+        source: "/files/report.v2.pdf",
+      })
+
+      // Assert
+      expect(result.source).toBe("/files/report.v2.pdf")
+    })
+
+    it("should reject sources with characters outside the whitelist", () => {
+      // Arrange
+      const invalidSources = ["/bad path", "/with<angle>", "/curly{brace}"]
+
+      invalidSources.forEach((source) => {
+        // Act
+        const result = createRedirectSchema.safeParse({
+          ...VALID_REDIRECT,
+          source,
+        })
+
+        // Assert
+        expect(result.success).toBe(false)
+      })
+    })
+
     it("should reject sources consisting only of slashes", () => {
       // Arrange / Act
       const result = createRedirectSchema.safeParse({

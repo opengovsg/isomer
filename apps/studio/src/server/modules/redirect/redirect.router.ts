@@ -39,17 +39,17 @@ export const redirectRouter = router({
       return countRedirects(input)
     }),
 
-  // NOTE: create and delete publish the site immediately — there is no
-  // separate publish step for redirects. Site-wide abilities only define CRUD
-  // actions ("publish" exists only for resources), so both gate on "update" —
-  // granted solely to site admins, matching other site-wide settings.
+  // NOTE: create and delete publish the site immediately — there is no separate
+  // publish step for redirects. These are site-wide CRUD actions ("publish"
+  // exists only for resources), granted solely to site admins, matching other
+  // site-wide settings.
   create: protectedProcedure
     .input(createRedirectSchema)
     .mutation(async ({ ctx, input }) => {
       await validateUserPermissionsForSite({
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "update",
+        action: "create",
       })
 
       return createRedirect({
@@ -65,7 +65,7 @@ export const redirectRouter = router({
       await validateUserPermissionsForSite({
         siteId: input.siteId,
         userId: ctx.user.id,
-        action: "update",
+        action: "delete",
       })
 
       await deleteRedirect({

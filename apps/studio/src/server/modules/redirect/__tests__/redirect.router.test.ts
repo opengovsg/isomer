@@ -555,7 +555,9 @@ describe("redirect.router", async () => {
       const result = caller.delete({ siteId, id: "not-a-number" })
 
       // Assert
-      await expect(result).rejects.toThrowError("Invalid redirect ID")
+      // Assert the code, not the message — a future refactor that swaps the
+      // reason shouldn't silently change a 400 into something else
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
     it("should throw 404 if the redirect is already deleted", async () => {

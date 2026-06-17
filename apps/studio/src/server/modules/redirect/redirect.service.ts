@@ -3,6 +3,7 @@ import type {
   CreateRedirectInput,
   DeleteRedirectInput,
   ListRedirectsInput,
+  RedirectSortField,
 } from "~/schemas/redirect"
 import { TRPCError } from "@trpc/server"
 
@@ -11,6 +12,19 @@ import type { Logger } from "@isomer/logging"
 import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db } from "../database"
+
+// Maps each user-facing sort field to the column it sorts on. `publishedAt` is
+// surfaced from `createdAt` (creates publish immediately). `satisfies` keeps
+// this exhaustive — adding a sort field without a column mapping is a compile
+// error rather than a silent runtime fallback.
+const SORT_FIELD_TO_COLUMN = {
+  source: "source",
+  destination: "destination",
+  publishedAt: "createdAt",
+} as const satisfies Record<
+  RedirectSortField,
+  "source" | "destination" | "createdAt"
+>
 
 const getByUser = async (byUserId: string) =>
   db
@@ -35,20 +49,26 @@ export const listRedirects = async ({
   // Soft-deleted redirects are never shown to users. Rows only exist once
   // they are live (creates publish immediately), so createdAt is the time
   // the redirect was published.
-  return (
-    db
-      .selectFrom("Redirect")
-      .select(["id", "source", "destination", "createdAt as publishedAt"])
-      .where("siteId", "=", siteId)
-      .where("deletedAt", "is", null)
-      .orderBy(sortBy === "publishedAt" ? "createdAt" : sortBy, sortDirection)
-      // Tie-break on id so rows with equal sort values don't shuffle between
-      // pages across requests
-      .orderBy("id", sortDirection)
-      .limit(limit)
-      .offset(offset)
-      .execute()
-  )
+  let query = db
+    .selectFrom("Redirect")
+    .select(["id", "source", "destination", "createdAt as publishedAt"])
+    .where("siteId", "=", siteId)
+    .where("deletedAt", "is", null)
+    .orderBy(SORT_FIELD_TO_COLUMN[sortBy], sortDirection)
+
+  // Tie-break on `source` (something users can make sense of) before falling
+  // back to `id`, unless we're already sorting by source.
+  if (sortBy !== "source") {
+    query = query.orderBy("source", sortDirection)
+  }
+
+  // Final tie-break on `id` (unique) so rows with otherwise-equal values don't
+  // shuffle between pages across requests.
+  return query
+    .orderBy("id", sortDirection)
+    .limit(limit)
+    .offset(offset)
+    .execute()
 }
 
 export const countRedirects = async ({ siteId }: CountRedirectsInput) => {
@@ -111,13 +131,15 @@ export const createRedirect = async ({
           .where("Redirect.deletedAt", "is not", null),
       )
       .returningAll()
-      .executeTakeFirst()
-    if (!created) {
-      throw new TRPCError({
-        code: "CONFLICT",
-        message: `A redirect already exists for ${source}`,
-      })
-    }
+      // A null row here means the CONFLICT hit a live redirect (the partial
+      // `where` above skipped the update), so surface it as a conflict.
+      .executeTakeFirstOrThrow(
+        () =>
+          new TRPCError({
+            code: "CONFLICT",
+            message: `A redirect already exists for ${source}`,
+          }),
+      )
 
     // NOTE: the delta holds real DB rows — `existing` as fetched before the
     // write (the soft-deleted row when reviving) and the row returned by the
@@ -162,13 +184,13 @@ export const deleteRedirect = async ({
       .where("siteId", "=", siteId)
       .where("id", "=", id)
       .where("deletedAt", "is", null)
-      .executeTakeFirst()
-    if (!before) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Redirect not found",
-      })
-    }
+      .executeTakeFirstOrThrow(
+        () =>
+          new TRPCError({
+            code: "NOT_FOUND",
+            message: "Redirect not found",
+          }),
+      )
 
     const deleted = await tx
       .updateTable("Redirect")
