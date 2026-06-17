@@ -13,8 +13,17 @@ import {
   revokePreviewLink,
 } from "./previewLink.service"
 
+const MINT_RATE_LIMIT_MAX = 20
+const MINT_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+
 export const previewLinkRouter = router({
   mint: protectedProcedure
+    .meta({
+      rateLimitOptions: {
+        max: MINT_RATE_LIMIT_MAX,
+        windowMs: MINT_RATE_LIMIT_WINDOW_MS,
+      },
+    })
     .input(mintPreviewLinkSchema)
     .mutation(async ({ ctx, input }) => {
       const link = await mintPreviewLink({
