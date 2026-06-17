@@ -1,16 +1,7 @@
 import type { FooterSchemaType } from "@opengovsg/isomer-components"
-import {
-  Box,
-  Flex,
-  HStack,
-  Icon,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Text,
-} from "@chakra-ui/react"
+import { Box, HStack, Icon, Text } from "@chakra-ui/react"
 import { useJsonForms } from "@jsonforms/react"
-import { IconButton, Menu } from "@opengovsg/design-system-react"
+import { Menu, MenuItem, MenuTrigger } from "@opengovsg/oui"
 import { get } from "lodash-es"
 import {
   BiDotsHorizontalRounded,
@@ -18,7 +9,10 @@ import {
   BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
+import { CRITICAL_MENU_ITEM_CLASSNAMES } from "~/components/Menu"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 
+import { useFormBuilderBoundary } from "../../../hooks/useFormBuilderBoundary"
 import { SOCIAL_MEDIA_LINKS } from "./constants"
 
 interface SocialMediaLinkProps {
@@ -34,6 +28,7 @@ export const SocialMediaLink = ({
   onEdit,
   isInvalid,
 }: SocialMediaLinkProps) => {
+  const menuBoundary = useFormBuilderBoundary()
   const ctx = useJsonForms()
   const data = (get(ctx.core?.data, path) ?? {}) as Partial<
     NonNullable<FooterSchemaType["socialMediaLinks"]>[number]
@@ -127,40 +122,30 @@ export const SocialMediaLink = ({
           )}
         </HStack>
 
-        <Menu>
-          <MenuButton
-            as={IconButton}
+        <MenuTrigger>
+          <IconButton
             aria-label="See more options"
             variant="clear"
-            colorScheme="sub"
-            minH="1.75rem"
-            minW="1.75rem"
-            h="1.75rem"
-            icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
+            color="sub"
+            className="size-7 min-h-7 min-w-7"
+            icon={<BiDotsHorizontalRounded className="size-6" />}
           />
-          <MenuList>
-            <MenuItem onClick={onEdit}>
-              <Flex
-                alignItems="center"
-                gap="0.5rem"
-                color="base.content.strong"
-              >
-                <Icon as={BiPencil} />
-                <Text textStyle="body-2">Edit link</Text>
-              </Flex>
+          <Menu size="sm" {...menuBoundary}>
+            <MenuItem
+              onAction={onEdit}
+              startContent={<BiPencil className="size-4" />}
+            >
+              Edit link
             </MenuItem>
-            <MenuItem onClick={onDelete}>
-              <Flex
-                alignItems="center"
-                gap="0.5rem"
-                color="interaction.critical.default"
-              >
-                <Icon as={BiTrash} />
-                <Text textStyle="body-2">Delete link</Text>
-              </Flex>
+            <MenuItem
+              onAction={onDelete}
+              classNames={CRITICAL_MENU_ITEM_CLASSNAMES}
+              startContent={<BiTrash className="size-4" />}
+            >
+              Delete link
             </MenuItem>
-          </MenuList>
-        </Menu>
+          </Menu>
+        </MenuTrigger>
       </HStack>
     </Box>
   )

@@ -19,17 +19,13 @@ import {
   AccordionIcon,
   Box,
   Divider,
-  Flex,
   HStack,
   Icon,
-  MenuButton,
-  MenuItem,
-  MenuList,
   Spacer,
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { IconButton, Menu } from "@opengovsg/design-system-react"
+import { Menu, MenuItem, MenuTrigger } from "@opengovsg/oui"
 import { useEffect, useRef, useState } from "react"
 import {
   BiChevronDown,
@@ -39,7 +35,10 @@ import {
   BiSolidErrorCircle,
   BiTrash,
 } from "react-icons/bi"
+import { CRITICAL_MENU_ITEM_CLASSNAMES } from "~/components/Menu"
+import { IconButton } from "~/components/oui-bridge/IconButton"
 
+import { useFormBuilderBoundary } from "../../../hooks/useFormBuilderBoundary"
 import {
   DEFAULT_NAVBAR_ITEM_DESCRIPTION,
   DEFAULT_NAVBAR_ITEM_TITLE,
@@ -77,6 +76,7 @@ export const NavbarItemBox = ({
   setIsItemBeingDraggedOver,
   isInvalid,
 }: NavbarItemBoxProps) => {
+  const menuBoundary = useFormBuilderBoundary()
   const itemRef = useRef<HTMLDivElement | null>(null)
   const itemDefaultDragHandleRef = useRef<HTMLDivElement | null>(null)
   const [isSubItemDragging, setIsSubItemDragging] = useState(false)
@@ -334,45 +334,34 @@ export const NavbarItemBox = ({
             </HStack>
           </HStack>
 
-          <Menu>
-            <MenuButton
-              as={IconButton}
+          <MenuTrigger>
+            <IconButton
               aria-label="See more options"
               variant="clear"
-              colorScheme="sub"
-              minH="1.75rem"
-              minW="1.75rem"
-              h="1.75rem"
-              icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
+              color="sub"
+              className="size-7 min-h-7 min-w-7"
+              icon={<BiDotsHorizontalRounded className="size-6" />}
             />
-            <MenuList>
-              <MenuItem onClick={() => onEditItem()}>
-                <Flex
-                  alignItems="center"
-                  gap="0.5rem"
-                  color="base.content.strong"
-                >
-                  <Icon as={BiPencil} />
-                  <Text textStyle="body-2">Edit link</Text>
-                </Flex>
+            <Menu size="sm" {...menuBoundary}>
+              <MenuItem
+                onAction={() => onEditItem()}
+                startContent={<BiPencil className="size-4" />}
+              >
+                Edit link
               </MenuItem>
-              <MenuItem onClick={onDeleteItem}>
-                <Flex
-                  alignItems="center"
-                  gap="0.5rem"
-                  color="interaction.critical.default"
-                >
-                  <Icon as={BiTrash} />
-                  <Text textStyle="body-2">
-                    Delete{" "}
-                    {isSubItem || !subItems || subItems.length === 0
-                      ? "link"
-                      : "group"}
-                  </Text>
-                </Flex>
+              <MenuItem
+                onAction={onDeleteItem}
+                classNames={CRITICAL_MENU_ITEM_CLASSNAMES}
+                startContent={<BiTrash className="size-4" />}
+              >
+                {`Delete ${
+                  isSubItem || !subItems || subItems.length === 0
+                    ? "link"
+                    : "group"
+                }`}
               </MenuItem>
-            </MenuList>
-          </Menu>
+            </Menu>
+          </MenuTrigger>
 
           {!!subItems && subItems.length > 0 && (
             <AccordionButton

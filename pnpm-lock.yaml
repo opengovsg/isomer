@@ -732,11 +732,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/components
       '@opengovsg/oui':
-        specifier: ^0.0.57
-        version: 0.0.57(@opengovsg/oui-theme@0.0.57(react@18.3.1)(tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(motion@12.40.0(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-aria-components@1.18.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^0.0.59
+        version: 0.0.59(@opengovsg/oui-theme@0.0.59(react@18.3.1)(tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(motion@12.40.0(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-aria-components@1.18.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@opengovsg/oui-theme':
-        specifier: ^0.0.57
-        version: 0.0.57(react@18.3.1)(tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
+        specifier: ^0.0.59
+        version: 0.0.59(react@18.3.1)(tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
       '@opengovsg/starter-kitty-validators':
         specifier: 'catalog:'
         version: 1.2.14
@@ -4352,17 +4352,17 @@ packages:
       react: ^18.2.0
       react-dom: ^18.2.0
 
-  '@opengovsg/oui-theme@0.0.57':
-    resolution: {integrity: sha512-EVkDbQ1dPx4WaPF2RP2QT0ouHiuMm5lzIwquYYUctaGfPqjrlBfTR18i15P1oD4DglcZOe3UnwKvfy0WLQ6h4A==}
+  '@opengovsg/oui-theme@0.0.59':
+    resolution: {integrity: sha512-b9blAIw5hakrtRetnd3GQCIuH9zgv6zQC6j9Sjdk3+I/RefzvLEKDn3J1Wf337liXsXT6D1wlpSVdQWosxdGZg==}
     peerDependencies:
       react: '>=18'
       tailwind-variants: '>=3'
       tailwindcss: '>=4'
 
-  '@opengovsg/oui@0.0.57':
-    resolution: {integrity: sha512-ltjwQpD6UBGv9L9sXSwXLsYsdGrf0TN9Yh4jrZnnyvO5xzZ9LsfiAfpxTWqhe07BaYH5rftEgPvHW3192doN8g==}
+  '@opengovsg/oui@0.0.59':
+    resolution: {integrity: sha512-QPOUSdidkgAvA30e4mw/xQgeRSoECrIehEkWHRZKktH0tWw5L+rCdOpER2vg+6iEAq6jyWx0DYPEyaTvn9M33g==}
     peerDependencies:
-      '@opengovsg/oui-theme': 0.0.57
+      '@opengovsg/oui-theme': 0.0.59
       motion: '>=11.12.0 || >=12.0.0-alpha.1'
       react: '>= 18'
       react-aria-components: ^1.14.0
@@ -15092,7 +15092,7 @@ snapshots:
       - prop-types
       - supports-color
 
-  '@opengovsg/oui-theme@0.0.57(react@18.3.1)(tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))':
+  '@opengovsg/oui-theme@0.0.59(react@18.3.1)(tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))':
     dependencies:
       clsx: 2.1.1
       lodash-es: 4.18.1
@@ -15103,11 +15103,11 @@ snapshots:
       tailwindcss-react-aria-components: 2.1.1(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
       tw-animate-css: 1.4.0
 
-  '@opengovsg/oui@0.0.57(@opengovsg/oui-theme@0.0.57(react@18.3.1)(tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(motion@12.40.0(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-aria-components@1.18.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@opengovsg/oui@0.0.59(@opengovsg/oui-theme@0.0.59(react@18.3.1)(tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(motion@12.40.0(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-aria-components@1.18.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@internationalized/date': 3.12.2
       '@internationalized/string': 3.2.9
-      '@opengovsg/oui-theme': 0.0.57(react@18.3.1)(tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
+      '@opengovsg/oui-theme': 0.0.59(react@18.3.1)(tailwind-variants@3.2.2(tailwind-merge@3.6.0)(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3)))(tailwindcss@3.4.19(tsx@4.22.3)(yaml@2.8.3))
       '@react-aria/calendar': 3.10.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/focus': 3.22.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@react-aria/i18n': 3.13.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -22323,7 +22323,7 @@ snapshots:
   serialize-error@13.0.1:
     dependencies:
       non-error: 0.1.0
-      type-fest: 5.5.0
+      type-fest: 5.7.0
 
   set-cookie-parser@3.1.0: {}
 

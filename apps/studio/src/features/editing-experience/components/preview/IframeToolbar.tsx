@@ -1,17 +1,43 @@
+import type { Selection } from "react-aria-components"
+import { Flex, Icon, Text } from "@chakra-ui/react"
 import {
-  Flex,
-  Icon,
-  MenuItemOption,
-  MenuOptionGroup,
-  Portal,
-  Text,
-} from "@chakra-ui/react"
-import { Menu } from "@opengovsg/design-system-react"
-import { Button } from "@opengovsg/oui"
+  Button,
+  Menu,
+  MenuItem,
+  MenuSection,
+  MenuTrigger,
+} from "@opengovsg/oui"
 import { useMemo } from "react"
-import { BiShow, BiX } from "react-icons/bi"
+import { BiChevronDown, BiShow, BiX } from "react-icons/bi"
 
 export type ViewportOptions = "mobile" | "tablet" | "responsive" | "fullscreen"
+
+const VIEWPORT_MENU_OPTIONS: {
+  id: ViewportOptions
+  title: string
+  description: string
+}[] = [
+  {
+    id: "responsive",
+    title: "Fit to screen (default)",
+    description: "Editing mode",
+  },
+  {
+    id: "fullscreen",
+    title: "Full screen",
+    description: "View this page in full-screen mode",
+  },
+  {
+    id: "tablet",
+    title: "Tablet",
+    description: "View how page would look like on a tablet screen",
+  },
+  {
+    id: "mobile",
+    title: "Mobile",
+    description: "View how page would look like on a mobile screen",
+  },
+]
 
 interface IframeToolbarProps {
   viewport: ViewportOptions
@@ -93,55 +119,48 @@ export const IframeToolbar = ({
           Back to editing
         </Button>
       ) : (
-        <Menu size="sm" placement="bottom-end">
-          <Menu.Button variant="clear" size="xs" p="0" minH="auto">
+        <MenuTrigger>
+          <Button
+            variant="clear"
+            size="xs"
+            className="h-6 min-h-0 min-w-0 p-0"
+            endContent={
+              <BiChevronDown className="size-5 transition-transform group-aria-expanded:rotate-180" />
+            }
+          >
             {toolbarTextLabels.viewport}
-          </Menu.Button>
-          <Portal>
-            <Menu.List>
-              <MenuOptionGroup
-                value={viewport}
-                type="radio"
-                onChange={(nextValue) =>
-                  setViewport(nextValue as ViewportOptions)
-                }
-              >
-                <MenuItemOption value="responsive">
-                  <Text color="base.content.strong" textStyle="body-1">
-                    Fit to screen (default)
-                  </Text>
-                  <Text color="base.content.medium" textStyle="body-2">
-                    Editing mode
-                  </Text>
-                </MenuItemOption>
-                <MenuItemOption value="fullscreen">
-                  <Text color="base.content.strong" textStyle="body-1">
-                    Full screen
-                  </Text>
-                  <Text color="base.content.medium" textStyle="body-2">
-                    View this page in full-screen mode
-                  </Text>
-                </MenuItemOption>
-                <MenuItemOption value="tablet">
-                  <Text color="base.content.strong" textStyle="body-1">
-                    Tablet
-                  </Text>
-                  <Text color="base.content.medium" textStyle="body-2">
-                    View how page would look like on a tablet screen
-                  </Text>
-                </MenuItemOption>
-                <MenuItemOption value="mobile">
-                  <Text color="base.content.strong" textStyle="body-1">
-                    Mobile
-                  </Text>
-                  <Text color="base.content.medium" textStyle="body-2">
-                    View how page would look like on a mobile screen
-                  </Text>
-                </MenuItemOption>
-              </MenuOptionGroup>
-            </Menu.List>
-          </Portal>
-        </Menu>
+          </Button>
+          <Menu size="sm">
+            <MenuSection
+              aria-label="Preview mode"
+              selectionMode="single"
+              selectedKeys={new Set([viewport])}
+              onSelectionChange={(keys) => {
+                if (keys === "all") return
+                const next = [...keys][0]
+                if (next) setViewport(next as ViewportOptions)
+              }}
+            >
+              {VIEWPORT_MENU_OPTIONS.map(({ id, title, description }) => (
+                <MenuItem
+                  key={id}
+                  id={id}
+                  textValue={title}
+                  classNames={{
+                    label: "flex flex-col items-start gap-0.5 line-clamp-none",
+                  }}
+                >
+                  <span className="prose-body-1 text-base-content-strong">
+                    {title}
+                  </span>
+                  <span className="prose-body-2 text-base-content-medium">
+                    {description}
+                  </span>
+                </MenuItem>
+              ))}
+            </MenuSection>
+          </Menu>
+        </MenuTrigger>
       )}
     </Flex>
   )
