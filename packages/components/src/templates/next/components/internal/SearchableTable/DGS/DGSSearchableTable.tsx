@@ -1,15 +1,19 @@
 "use client"
 
-import type { DGSSearchableTableProps } from "~/interfaces"
+import type { DgsApiDatasetSearchParams } from "~/hooks/useDgsData/types"
+import type {
+  DGSSearchableTableProps,
+  SearchableTableClientProps,
+} from "~/interfaces"
 import { useMemo } from "react"
+import { useAllDgsRecords } from "~/hooks/useDgsData"
 import { useDgsMetadata } from "~/hooks/useDgsMetadata"
-import { DGS_REQUEST_MAX_BYTES } from "~/utils/dgs"
+import { DGS_MAX_DATASET_BYTES } from "~/utils/dgs"
 
-import { DynamicDGSSearchableTable } from "./DynamicDGSSearchableTable"
-import { StaticDGSSearchableTable } from "./StaticDGSSearchableTable"
+import { SearchableTableClient } from "../shared"
 
 export const DGSSearchableTable = ({
-  dataSource,
+  dataSource: { resourceId, filters, sort },
   title,
   headers,
 }: DGSSearchableTableProps) => {
@@ -17,21 +21,18 @@ export const DGSSearchableTable = ({
     metadata,
     isLoading: isMetadataLoading,
     isError: isMetadataError,
-  } = useDgsMetadata({ resourceId: dataSource.resourceId })
+  } = useDgsMetadata({ resourceId })
+
+  const isOverCap =
+    metadata?.size !== undefined && metadata.size > DGS_MAX_DATASET_BYTES
 
   const resolvedTitle = useMemo(() => {
-    const hasUserProvidedTitle = !!title
-    if (hasUserProvidedTitle) {
-      return title
-    }
+    if (title) return title
     return metadata?.name
   }, [title, metadata?.name])
 
   const resolvedHeaders = useMemo(() => {
-    const hasUserProvidedHeaders = headers && headers.length > 0
-    if (hasUserProvidedHeaders) {
-      return headers
-    }
+    if (headers && headers.length > 0) return headers
     if (metadata?.columnMetadata) {
       return metadata.columnMetadata.map(([key, label]) => ({ key, label }))
     }
@@ -43,30 +44,48 @@ export const DGSSearchableTable = ({
     [resolvedHeaders],
   )
 
-  if (metadata?.size && metadata.size < DGS_REQUEST_MAX_BYTES) {
-    // Load all the data into memory, so we can display and filter on the client side
-    return (
-      <StaticDGSSearchableTable
-        dataSource={dataSource}
-        title={resolvedTitle}
-        headers={resolvedHeaders}
-        labels={labels}
-        isMetadataLoading={isMetadataLoading}
-        isMetadataError={isMetadataError}
-      />
-    )
-  } else {
-    // This is for datasets that are too large to load into memory,
-    // so we need to fetch the data on the server side, using DGS API
-    return (
-      <DynamicDGSSearchableTable
-        dataSource={dataSource}
-        title={resolvedTitle}
-        headers={labels}
-        isMetadataLoading={isMetadataLoading}
-        isMetadataError={isMetadataError}
-        maxNoOfColumns={labels.length}
-      />
-    )
-  }
+  const memoizedFilters = useMemo(
+    () =>
+      filters?.reduce<NonNullable<DgsApiDatasetSearchParams["filters"]>>(
+        (acc, filter) => {
+          acc[filter.fieldKey] = filter.fieldValue
+          return acc
+        },
+        {},
+      ),
+    [filters],
+  )
+
+  const {
+    records,
+    isLoading: isDataLoading,
+    isError: isDataError,
+  } = useAllDgsRecords({
+    resourceId,
+    datasetSize: metadata?.size ?? 0,
+    filters: memoizedFilters,
+    sort,
+    enabled: !!metadata?.size && !isOverCap,
+  })
+
+  const items: SearchableTableClientProps["items"] = useMemo(() => {
+    const keys = resolvedHeaders.map((header) => header.key)
+    return records.map((record) => {
+      const content = keys.map((field) => String(record[field] ?? ""))
+      return {
+        key: content.join(" ").toLowerCase(),
+        row: content,
+      }
+    })
+  }, [records, resolvedHeaders])
+
+  return (
+    <SearchableTableClient
+      title={resolvedTitle}
+      headers={labels}
+      items={items}
+      isLoading={isMetadataLoading || isDataLoading}
+      isError={isMetadataError || isDataError || isOverCap}
+    />
+  )
 }

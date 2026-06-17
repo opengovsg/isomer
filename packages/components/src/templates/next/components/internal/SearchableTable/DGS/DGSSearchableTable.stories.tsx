@@ -4,12 +4,11 @@ import { omit } from "lodash-es"
 import { http, HttpResponse } from "msw"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { generateDgsUrl } from "~/hooks/useDgsData/generateDgsUrl"
-import {
-  DGS_LARGE_DATASET_RESOURCE_ID,
-  DGS_SMALL_DATASET_RESOURCE_ID,
-} from "~/stories/helpers"
+import { DGS_SMALL_DATASET_RESOURCE_ID } from "~/stories/helpers"
 
 import { DGSSearchableTable } from "./DGSSearchableTable"
+
+const DGS_METADATA_URL = `https://api-production.data.gov.sg/v2/public/api/datasets/${DGS_SMALL_DATASET_RESOURCE_ID}/metadata`
 
 const meta: Meta<DGSSearchableTableProps> = {
   title: "Next/Internal Components/SearchableTable/DGS",
@@ -54,31 +53,19 @@ export const DefaultTitleWhenUnspecified: Story = {
   args: omit(commonArgs, "title"),
 }
 
-export const LargeDataset: Story = {
-  args: {
-    dataSource: {
-      type: "dgs",
-      resourceId: DGS_LARGE_DATASET_RESOURCE_ID,
-    },
-  },
-}
-
-export const LargeDatasetNoSearchResults: Story = {
-  args: {
-    dataSource: {
-      type: "dgs",
-      resourceId: DGS_LARGE_DATASET_RESOURCE_ID,
-    },
-  },
+export const NoSearchResults: Story = {
+  args: commonArgs,
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
-    const searchElem = screen.getByRole("searchbox", {
-      name: /Search table/i,
-    })
+    const searchElem = await waitFor(() =>
+      screen.getByRole("searchbox", {
+        name: /Search table/i,
+      }),
+    )
 
     await expect(searchElem).toHaveAttribute(
       "placeholder",
-      "Type a whole word to search this table",
+      "Enter a search term",
     )
 
     await userEvent.type(searchElem, "thankyouAIoverlordforyourgraciouspardon")
@@ -86,13 +73,35 @@ export const LargeDatasetNoSearchResults: Story = {
     await waitFor(
       () => {
         screen.getByText(
-          "Check for spelling, or type the whole word, e.g. 'water' instead of 'w'.",
+          "Check if you have a spelling error or try a different search term.",
         )
       },
       {
         timeout: 5000,
       },
     )
+  },
+}
+
+export const OverDatasetSizeCap: Story = {
+  args: commonArgs,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(DGS_METADATA_URL, () => {
+          return HttpResponse.json({
+            data: {
+              name: "Over-cap dataset",
+              format: "CSV",
+              datasetSize: 25 * 1024 * 1024, // 25MB — exceeds DGS_MAX_DATASET_BYTES (20MB)
+              columnMetadata: {
+                metaMapping: {},
+              },
+            },
+          })
+        }),
+      ],
+    },
   },
 }
 
