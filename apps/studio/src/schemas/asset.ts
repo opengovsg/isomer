@@ -1,12 +1,19 @@
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { z } from "zod"
-import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import {
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  MAX_SVG_FILE_SIZE_BYTES,
+} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 
 // Combine allowed extensions from existing constants
 const ALLOWED_EXTENSIONS = [
   ...Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING),
   ...Object.keys(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
 ]
+
+const fileNameStartingCharRefine = (s: string) => /^[a-zA-Z0-9\-_]/.test(s)
+const fileNameStartingCharMessage =
+  "File name must start with a letter, number, hyphen, or underscore"
 
 export const getPresignedPutUrlSchema = z.object({
   siteId: z.number().min(1),
@@ -23,16 +30,9 @@ export const getPresignedPutUrlSchema = z.object({
     .string({
       error: "Missing file name",
     })
-    .refine(
-      (s) => {
-        const allowedStartingChars = new RegExp(/^[a-zA-Z0-9-_]/)
-        return allowedStartingChars.test(s)
-      },
-      {
-        message:
-          "File name must start with a letter, number, hyphen, or underscore",
-      },
-    )
+    .refine(fileNameStartingCharRefine, {
+      message: fileNameStartingCharMessage,
+    })
     // Check if extension is in allowed list (whitelist approach)
     // To ensure we don't allow any other file types that can have security implications
     .refine(
@@ -46,12 +46,41 @@ export const getPresignedPutUrlSchema = z.object({
         const extension = fileName
           .toLowerCase()
           .substring(fileName.lastIndexOf("."))
+
+        // SVGs must go through the dedicated uploadSvg endpoint which
+        // sanitizes the content server-side before uploading to S3.
+        // The presigned PUT path never sees the file bytes, so it cannot
+        // validate or strip embedded scripts/event handlers.
+        if (extension === ".svg") return false
+
         return ALLOWED_EXTENSIONS.includes(extension)
       },
       {
         message: "File type not allowed. Please upload a supported file type.",
       },
     ),
+})
+
+export const uploadSvgSchema = z.object({
+  siteId: z.number().min(1),
+  fileName: z
+    .string()
+    .refine(fileNameStartingCharRefine, {
+      message: fileNameStartingCharMessage,
+    })
+    .refine((s) => s.toLowerCase().endsWith(".svg"), {
+      message: "Only .svg files are allowed",
+    })
+    .max(255),
+  // z.string().max() counts UTF-16 code units (JS string length), not bytes.
+  // Multi-byte characters can exceed the intended byte budget, but the difference
+  // is bounded: worst case is 3× (4-byte UTF-8 chars are 2 code units). Acceptable
+  // as a rough upper bound; use Buffer.byteLength for an exact byte check if needed.
+  content: z.string().max(MAX_SVG_FILE_SIZE_BYTES, {
+    message: `SVG file size must not exceed ${MAX_SVG_FILE_SIZE_BYTES / 1_000_000} MB`,
+  }),
+  resourceId: z.string().optional(),
+  tags: z.array(z.object({ key: z.string(), value: z.string() })).optional(),
 })
 
 // Upper bound on how many assets a single deleteAssets call may target.

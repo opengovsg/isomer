@@ -16,7 +16,9 @@ export const NEW_PAGE_LAYOUT_VALUES = [
 ] as const satisfies readonly PrismaJson.BlobJsonContent["layout"][]
 
 export const MAX_TITLE_LENGTH = 250
-export const MAX_PAGE_URL_LENGTH = 500
+// NOTE: 250 characters is the hard limit as file names have a max limit of 255
+// characters, and the file name includes ".json" suffix
+export const MAX_PAGE_URL_LENGTH = 250
 
 const pageTitleSchema = z
   .string({

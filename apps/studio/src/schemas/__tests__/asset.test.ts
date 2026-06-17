@@ -16,16 +16,26 @@ describe("getPresignedPutUrlSchema", () => {
 
   describe("fileName validation", () => {
     describe("file extension validation", () => {
-      // Test all allowed image extensions
-      Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING).forEach((extension) => {
-        it(`should accept valid image extension: ${extension}`, () => {
-          const fileName = `test-image${extension}`
-          const result = getPresignedPutUrlSchema.safeParse({
-            ...validBaseData,
-            fileName,
+      // Test all allowed image extensions except .svg (handled by uploadSvg endpoint)
+      Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING)
+        .filter((ext) => ext !== ".svg")
+        .forEach((extension) => {
+          it(`should accept valid image extension: ${extension}`, () => {
+            const fileName = `test-image${extension}`
+            const result = getPresignedPutUrlSchema.safeParse({
+              ...validBaseData,
+              fileName,
+            })
+            expect(result.success).toBe(true)
           })
-          expect(result.success).toBe(true)
         })
+
+      it("should reject .svg files (use uploadSvg endpoint instead)", () => {
+        const result = getPresignedPutUrlSchema.safeParse({
+          ...validBaseData,
+          fileName: "test-image.svg",
+        })
+        expect(result.success).toBe(false)
       })
 
       // Test all allowed file extensions

@@ -106,13 +106,11 @@ export const incrementVersion = async ({
   // Update resource with new versionId and draft to be null
   await updatePageById(
     {
-      ...page,
       id: parseInt(page.id),
+      siteId,
       publishedVersionId: newVersion.id,
       draftBlobId: null,
       state: ResourceState.Published,
-      siteId,
-      parentId: page.parentId ? parseInt(page.parentId) : undefined,
     },
     tx,
   )

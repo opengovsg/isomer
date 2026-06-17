@@ -157,7 +157,7 @@ jobs:
           mask-password: "true"
 
       - name: Checkout source code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Build installer stage for sourcemap extraction
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
@@ -224,10 +224,14 @@ jobs:
 
       # Display Inspector results in the GitHub Actions terminal
       - name: Display CycloneDX SBOM (JSON)
-        run: cat ${{ steps.inspector.outputs.artifact_sbom }}
+        env:
+          ARTIFACT_SBOM: ${{ steps.inspector.outputs.artifact_sbom }}
+        run: cat "$ARTIFACT_SBOM"
 
       - name: Display Inspector vulnerability scan results (JSON)
-        run: cat ${{ steps.inspector.outputs.inspector_scan_results }}
+        env:
+          INSPECTOR_SCAN_RESULTS: ${{ steps.inspector.outputs.inspector_scan_results }}
+        run: cat "$INSPECTOR_SCAN_RESULTS"
 
       # Upload Inspector outputs as a .zip that can be downloaded
       # from the GitHub actions job summary page.
@@ -257,11 +261,12 @@ jobs:
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           IMAGE_TAG: ${{ github.ref_name }}_${{ github.sha }}
         run: |
-          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       - name: Upload sourcemaps to Datadog
         env:
           DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
+          APP_VERSION: ${{ inputs.app-version }}
         run: |
           if [ -z "$DATADOG_API_KEY" ]; then
             echo "DATADOG_API_KEY not set, skipping sourcemap upload"
@@ -273,9 +278,9 @@ jobs:
           # Upload sourcemaps (extracted earlier from installer stage)
           datadog-ci sourcemaps upload .next-static \
             --service=isomer-next \
-            --release-version=${{ inputs.app-version }} \
+            --release-version="$APP_VERSION" \
             --minified-path-prefix=/_next/static \
-            --repository-url=https://github.com/${{ github.repository }}
+            --repository-url="https://github.com/$GITHUB_REPOSITORY"
 
   deploy:
     name: Deploy image to ECS
@@ -301,26 +306,41 @@ jobs:
           mask-password: "true"
 
       - name: Checkout source code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Replace variables in task definition file
         id: replace-variables
+        env:
+          AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          SHORT_ENV: ${{ inputs.shortEnv }}
+          DD_COMMIT_SHA: ${{ github.sha }}
+          ECS_TASK_ROLE: ${{ inputs.ecs-task-role }}
+          ECS_TASK_EXEC_ROLE: ${{ inputs.ecs-task-exec-role }}
+          ECS_TASK_DEFINITION_PATH: ${{ inputs.ecs-task-definition-path }}
         run: |
-          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<CPU>/${{ inputs.environment == 'production' && 1024 || 512 }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<MEMORY>/${{ inputs.environment == 'production' && 2048 || 1024 }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<DD_COMMIT_SHA>/${{ github.sha }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<ECS_TASK_ROLE>/${{ inputs.ecs-task-role }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<ECS_TASK_EXEC_ROLE>/${{ inputs.ecs-task-exec-role }}/g' ${{ inputs.ecs-task-definition-path }}
+          CPU=$([[ "$ENVIRONMENT" == "production" ]] && echo "1024" || echo "512")
+          MEMORY=$([[ "$ENVIRONMENT" == "production" ]] && echo "2048" || echo "1024")
+          sed -i "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" "$ECS_TASK_DEFINITION_PATH"
+          sed -i "s/<ENV>/$ENVIRONMENT/g" "$ECS_TASK_DEFINITION_PATH"
+          sed -i "s/<SHORT_ENV>/$SHORT_ENV/g" "$ECS_TASK_DEFINITION_PATH"
+          sed -i "s/<CPU>/$CPU/g" "$ECS_TASK_DEFINITION_PATH"
+          sed -i "s/<MEMORY>/$MEMORY/g" "$ECS_TASK_DEFINITION_PATH"
+          sed -i "s/<DD_COMMIT_SHA>/$DD_COMMIT_SHA/g" "$ECS_TASK_DEFINITION_PATH"
+          sed -i "s/<ECS_TASK_ROLE>/$ECS_TASK_ROLE/g" "$ECS_TASK_DEFINITION_PATH"
+          sed -i "s/<ECS_TASK_EXEC_ROLE>/$ECS_TASK_EXEC_ROLE/g" "$ECS_TASK_DEFINITION_PATH"
 
       - name: Replace variables in appspec
+        env:
+          AWS_ACCOUNT_ID: ${{ inputs.aws-account-id }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          CONTAINER_NAME: ${{ inputs.ecs-container-name }}
+          CONTAINER_PORT: ${{ inputs.ecs-container-port }}
         run: |
-          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' .aws/deploy/appspec.json
-          sed -i 's/<ENV>/${{ inputs.environment}}/g' .aws/deploy/appspec.json
-          sed -i 's/<CONTAINER_NAME>/${{ inputs.ecs-container-name }}/g' .aws/deploy/appspec.json
-          sed -i 's/<CONTAINER_PORT>/${{ inputs.ecs-container-port }}/g' .aws/deploy/appspec.json
+          sed -i "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" .aws/deploy/appspec.json
+          sed -i "s/<ENV>/$ENVIRONMENT/g" .aws/deploy/appspec.json
+          sed -i "s/<CONTAINER_NAME>/$CONTAINER_NAME/g" .aws/deploy/appspec.json
+          sed -i "s/<CONTAINER_PORT>/$CONTAINER_PORT/g" .aws/deploy/appspec.json
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def

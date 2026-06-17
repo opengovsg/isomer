@@ -3,6 +3,7 @@ import {
   deleteAssetsSchema,
   getPresignedGetUrlSchema,
   getPresignedPutUrlSchema,
+  uploadSvgSchema,
 } from "~/schemas/asset"
 import { protectedProcedure, router } from "~/server/trpc"
 
@@ -12,6 +13,8 @@ import {
   getPresignedGetUrl,
   getPresignedPutUrl,
   markFileAsDeleted,
+  putFileDirect,
+  sanitizeSvg,
   validateUserPermissionsForAsset,
 } from "./asset.service"
 
@@ -136,4 +139,41 @@ export const assetRouter = router({
         }
       })
     }),
+
+  uploadSvg: protectedProcedure
+    .input(uploadSvgSchema)
+    // Arbitrary: 10 SVG uploads per user per minute. SVG sanitization is
+    // CPU-intensive relative to presigned URL issuance, so a tighter limit
+    // applies here. Adjust freely based on observed usage patterns.
+    .meta({ rateLimitOptions: { max: 10, windowMs: 60_000 } })
+    .mutation(
+      async ({
+        ctx,
+        input: { siteId, fileName, content, resourceId, tags },
+      }) => {
+        await validateUserPermissionsForAsset({
+          siteId,
+          resourceId,
+          action: "create",
+          userId: ctx.user.id,
+        })
+
+        const fileKey = getFileKey({ siteId, fileName })
+        const sanitized = sanitizeSvg(content)
+
+        await putFileDirect({ key: fileKey, body: sanitized, tags })
+
+        ctx.logger.info(
+          {
+            userId: ctx.session?.userId,
+            siteId,
+            fileName,
+            fileKey,
+          },
+          `Uploaded sanitized SVG ${fileKey} for site ${siteId}`,
+        )
+
+        return { fileKey }
+      },
+    ),
 })

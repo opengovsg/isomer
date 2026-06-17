@@ -29,7 +29,7 @@ const getColumns = (siteId: number) => [
     header: () => <TableHeader>Notification No.</TableHeader>,
     cell: ({ getValue }) => (
       <Text textStyle="body-2" color="base.content.strong">
-        {getValue() ?? "-"}
+        {getValue() || "-"}
       </Text>
     ),
   }),

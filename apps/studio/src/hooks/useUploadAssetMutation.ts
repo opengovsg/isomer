@@ -26,15 +26,37 @@ export const useUploadAssetMutation = ({
 }: UploadAssetMutationParams) => {
   const { mutateAsync: getPresignedPutUrl } =
     trpc.asset.getPresignedPutUrl.useMutation()
+  const { mutateAsync: uploadSvg } = trpc.asset.uploadSvg.useMutation()
 
   return useMutation<UploadAssetMutationOutput, void, UploadAssetMutationInput>(
     {
       mutationFn: async ({ file, fileName, scheduledAt }) => {
+        const effectiveName = fileName ?? file.name
+
+        if (effectiveName.toLowerCase().endsWith(".svg")) {
+          const content = await file.text()
+          const { fileKey } = await uploadSvg({
+            siteId,
+            resourceId,
+            fileName: effectiveName,
+            content,
+            tags: scheduledAt
+              ? [
+                  {
+                    key: "scheduledAt",
+                    value: scheduledAt.getTime().toString(),
+                  },
+                ]
+              : undefined,
+          })
+          return { path: `/${fileKey}` }
+        }
+
         const { fileKey, presignedPutUrl, contentType, contentDisposition } =
           await getPresignedPutUrl({
             siteId,
             resourceId,
-            fileName: fileName ?? file.name,
+            fileName: effectiveName,
             tags: scheduledAt
               ? [
                   {

@@ -83,6 +83,10 @@ updates:
         patterns:
           - "@jsonforms/core"
           - "@jsonforms/react"
+      casl:
+        applies-to: version-updates
+        patterns:
+          - "@casl/*"
       react-aria:
         applies-to: version-updates
         patterns:
