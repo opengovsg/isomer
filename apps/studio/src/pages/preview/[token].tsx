@@ -1,31 +1,51 @@
-import type { GetServerSideProps } from "next"
+import type { GetServerSideProps, NextApiRequest } from "next"
 import type { RecipientPreviewProps } from "~/features/previewLink/components/RecipientPreview"
 import type { NextPageWithLayout } from "~/lib/types"
 import { Box } from "@chakra-ui/react"
 import Head from "next/head"
 import { PreviewChrome } from "~/features/previewLink/components/PreviewChrome"
+import { PreviewUnavailable } from "~/features/previewLink/components/PreviewUnavailable"
 import { RecipientPreview } from "~/features/previewLink/components/RecipientPreview"
 
-interface PreviewPageProps extends RecipientPreviewProps {
-  pageTitle: string
-  expiresAt: string
-}
+type PreviewPageProps =
+  | ({
+      status: "available"
+      pageTitle: string
+      expiresAt: string
+    } & RecipientPreviewProps)
+  | { status: "unavailable" }
 
-const PreviewPage: NextPageWithLayout<PreviewPageProps> = ({
-  pageTitle,
-  expiresAt,
-  ...renderProps
-}) => {
+const PreviewPage: NextPageWithLayout<PreviewPageProps> = (props) => {
+  const pageTitle =
+    props.status === "available"
+      ? `Isomer Preview: ${props.pageTitle}`
+      : "Preview unavailable"
+
   return (
     <>
       <Head>
-        <title>{`Isomer Preview: ${pageTitle}`}</title>
+        <title>{pageTitle}</title>
         <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
       </Head>
-      <Box minH="100vh" bg="white">
-        <PreviewChrome pageTitle={pageTitle} expiresAt={expiresAt} />
-        <RecipientPreview {...renderProps} />
-      </Box>
+      {props.status === "unavailable" ? (
+        <PreviewUnavailable />
+      ) : (
+        <Box minH="100vh" bg="white">
+          <PreviewChrome
+            pageTitle={props.pageTitle}
+            expiresAt={props.expiresAt}
+          />
+          <RecipientPreview
+            pageContent={props.pageContent}
+            permalink={props.permalink}
+            lastModified={props.lastModified}
+            siteConfig={props.siteConfig}
+            navbar={props.navbar}
+            footer={props.footer}
+            siteMap={props.siteMap}
+          />
+        </Box>
+      )}
     </>
   )
 }
@@ -51,9 +71,8 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
     getResourceFullPermalink,
   } = await import("~/server/modules/resource/resource.service")
   const { getSiteConfig } = await import("~/server/modules/site/site.service")
-  const { logPreviewLinkEvent } = await import(
-    "~/server/modules/audit/audit.service"
-  )
+  const { logPreviewLinkEvent } =
+    await import("~/server/modules/audit/audit.service")
   const { default: getIP } = await import("~/utils/getClientIp")
 
   const link = await db
@@ -64,8 +83,9 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
 
   if (!link) return { notFound: true }
 
-  // Slice 1 deliberately does not branch on link.revokedAt or link.expiresAt
-  // < now() — that behaviour ships with #2484.
+  if (link.revokedAt !== null || link.expiresAt <= new Date()) {
+    return { props: { status: "unavailable" } }
+  }
 
   const resourceId = Number(link.resourceId)
   const siteId = link.siteId
@@ -79,7 +99,7 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
       eventType: AuditLogEvent.PreviewLinkView,
       userId: null,
       siteId,
-      ip: getIP(ctx.req),
+      ip: getIP(ctx.req as NextApiRequest),
       delta: { before: null, after: null },
       metadata: { linkId: String(link.id) },
     })
@@ -97,6 +117,7 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
 
   return {
     props: {
+      status: "available",
       pageTitle: page.title,
       expiresAt: link.expiresAt.toISOString(),
       pageContent: page.content as RecipientPreviewProps["pageContent"],

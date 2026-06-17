@@ -388,10 +388,7 @@ export type LogPreviewLinkEventProps = PreviewLinkEventProps & {
 
 export const logPreviewLinkEvent: AuditLogger<
   LogPreviewLinkEventProps
-> = async (
-  tx,
-  { eventType, userId, delta, ip, siteId, metadata = {} },
-) => {
+> = async (tx, { eventType, userId, delta, ip, siteId, metadata = {} }) => {
   await tx
     .insertInto("AuditLog")
     .values({

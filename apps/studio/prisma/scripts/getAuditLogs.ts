@@ -157,6 +157,9 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
   PermissionDelete: sql<string>`CONCAT('Permission (', al.delta -> 'before' ->> 'role', ') revoked from ', pu.email)`,
   Login: sql<string>`CONCAT('Login attempt by ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 1), ' from IP address ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 2))`,
   Logout: sql<string>`CONCAT('Logout attempt by ', al.delta -> 'before' ->> 'email', ' from IP address ', al."ipAddress")`,
+  PreviewLinkMint: sql<string>`CONCAT('Preview link minted for resource ', al.delta -> 'after' ->> 'resourceId', ' (expires ', al.delta -> 'after' ->> 'expiresAt', ')')`,
+  PreviewLinkView: sql<string>`CONCAT('Preview link viewed (link id ', al.metadata ->> 'linkId', ')')`,
+  PreviewLinkRevoke: sql<string>`CONCAT('Preview link revoked for resource ', al.delta -> 'before' ->> 'resourceId')`,
 }
 
 export const getAuditLogQuery = ({
