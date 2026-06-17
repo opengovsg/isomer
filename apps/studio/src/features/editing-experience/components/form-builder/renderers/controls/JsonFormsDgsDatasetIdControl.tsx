@@ -30,7 +30,8 @@ import {
   useDgsMetadata,
 } from "@opengovsg/isomer-components"
 import { useDebounce } from "@uidotdev/usehooks"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
+import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -67,31 +68,18 @@ export const DgsDatasetIdModal = ({
 }: DgsDatasetIdModalProps) => {
   const initialValueUrl = generateDgsDatasetUrl(initialValue)
 
-  const [inputValue, setInputValue] = useState(initialValueUrl)
-  const debouncedInputValue = useDebounce(inputValue, 300)
-  const isDebouncing = inputValue !== debouncedInputValue
-
-  const datasetId = getDgsIdFromString({ string: debouncedInputValue })
-
-  const { metadata, isLoading: isValidatingDataset } = useDgsMetadata({
-    resourceId: datasetId ?? "",
-    enabled: !!datasetId,
-  })
-  const format = metadata?.format
-  const size = metadata?.size
-  const isOverSizeCap = size !== undefined && size > DGS_MAX_DATASET_BYTES
-  const isValidDataset = format === "CSV" && !isOverSizeCap
-
-  const isLoading = isValidatingDataset || isDebouncing
-
   const {
-    register,
+    control,
     handleSubmit,
+    watch,
     setError,
     clearErrors,
     formState: { errors, isValid },
   } = useZodForm({
     mode: "onChange",
+    defaultValues: {
+      datasetId: initialValueUrl,
+    },
     schema: z.object({
       datasetId: z
         .string()
@@ -103,6 +91,23 @@ export const DgsDatasetIdModal = ({
     }),
     reValidateMode: "onChange",
   })
+
+  const datasetIdValue = watch("datasetId")
+  const debouncedDatasetIdValue = useDebounce(datasetIdValue, 300)
+  const isDebouncing = datasetIdValue !== debouncedDatasetIdValue
+
+  const datasetId = getDgsIdFromString({ string: debouncedDatasetIdValue })
+
+  const { metadata, isLoading: isValidatingDataset } = useDgsMetadata({
+    resourceId: datasetId ?? "",
+    enabled: !!datasetId,
+  })
+  const format = metadata?.format
+  const size = metadata?.size
+  const isOverSizeCap = size !== undefined && size > DGS_MAX_DATASET_BYTES
+  const isValidDataset = format === "CSV" && !isOverSizeCap
+
+  const isLoading = isValidatingDataset || isDebouncing
 
   // Handle dataset validation
   useEffect(() => {
@@ -139,7 +144,7 @@ export const DgsDatasetIdModal = ({
   ])
 
   const onSubmit = handleSubmit(() => {
-    const extractedId = getDgsIdFromString({ string: debouncedInputValue })
+    const extractedId = getDgsIdFromString({ string: debouncedDatasetIdValue })
     if (extractedId) {
       onClose()
       onSave(extractedId) // Save only the ID, not the full URL
@@ -180,17 +185,18 @@ export const DgsDatasetIdModal = ({
                 Link to your CSV dataset
               </FormLabel>
 
-              <Input
-                fontFamily="monospace"
-                placeholder="Paste dataset URL here"
-                value={inputValue}
-                {...register("datasetId")}
-                onChange={(e) => {
-                  setInputValue(e.target.value)
-                  void register("datasetId").onChange(e)
-                }}
-                isDisabled={isValidatingDataset}
-                aria-label={inputValue}
+              <Controller
+                control={control}
+                name="datasetId"
+                render={({ field }) => (
+                  <Input
+                    fontFamily="monospace"
+                    placeholder="Paste dataset URL here"
+                    {...field}
+                    isDisabled={isValidatingDataset}
+                    aria-label={field.value}
+                  />
+                )}
               />
 
               <FeedbackMessage />
