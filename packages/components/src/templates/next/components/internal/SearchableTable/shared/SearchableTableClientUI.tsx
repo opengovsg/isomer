@@ -7,7 +7,7 @@ import { tv } from "~/lib/tv"
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { PaginationControls } from "../../../internal/PaginationControls"
 import { SearchField } from "../../../internal/Search"
-import { COPYWRITING_MAPPING, PAGINATION_MAX_ITEMS } from "./constants"
+import { PAGINATION_MAX_ITEMS, SEARCHBAR_PLACEHOLDER } from "./constants"
 import { EmptyState, FallbackEmptyState } from "./EmptyState"
 
 const createSearchableTableStyles = tv({
@@ -55,7 +55,6 @@ interface SearchableTableClientUIProps extends Omit<
   maxNoOfColumns: number
   paginatedItems: (string | number)[][]
   filteredItemsLength: number
-  searchMatchType: keyof typeof COPYWRITING_MAPPING
 }
 
 export const SearchableTableClientUI = ({
@@ -70,7 +69,6 @@ export const SearchableTableClientUI = ({
   maxNoOfColumns,
   paginatedItems,
   filteredItemsLength,
-  searchMatchType,
 }: SearchableTableClientUIProps) => {
   const titleId = useId()
 
@@ -94,7 +92,6 @@ export const SearchableTableClientUI = ({
             setSearch("")
             setCurrPage(1)
           }}
-          searchMatchType={searchMatchType}
         />
       )
     }
@@ -155,7 +152,7 @@ export const SearchableTableClientUI = ({
 
       <SearchField
         aria-label="Search table"
-        placeholder={COPYWRITING_MAPPING[searchMatchType].searchbarPlaceholder}
+        placeholder={SEARCHBAR_PLACEHOLDER}
         value={searchInput}
         onChange={(value) => {
           setSearch(value)

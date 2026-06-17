@@ -57,7 +57,6 @@ export const SearchableTableClient = ({
       maxNoOfColumns={maxNoOfColumns}
       paginatedItems={paginatedItems}
       filteredItemsLength={filteredItems.length}
-      searchMatchType="partialMatch"
     />
   )
 }
