@@ -1,0 +1,43 @@
+{
+  "name": "@isomer/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo node_modules",
+    "db:push": "dotenv -e ../../apps/studio/.env -- prisma db push",
+    "format": "oxfmt --check . --ignore-path ../../.gitignore",
+    "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
+    "generate": "prisma generate && tsx prisma/generate.cts && oxlint --fix src/generated && oxfmt --write src/generated",
+    "lint": "oxlint --type-aware .",
+    "lint:fix": "oxlint --type-aware --fix .",
+    "migrate": "dotenv -e ../../apps/studio/.env -- prisma migrate deploy",
+    "migrate:create": "dotenv -e ../../apps/studio/.env -- prisma migrate dev --create-only",
+    "migrate:custom": "dotenv -e ../../apps/studio/.env -- tsx prisma/custom/install.ts",
+    "migrate:dev": "dotenv -e ../../apps/studio/.env -- prisma migrate dev",
+    "migrate:reset": "dotenv -e ../../apps/studio/.env -- prisma migrate reset",
+    "typecheck": "tsgo"
+  },
+  "dependencies": {
+    "@prisma/client": "catalog:prisma",
+    "kysely": "catalog:",
+    "pg": "catalog:"
+  },
+  "devDependencies": {
+    "@isomer/oxlint-config": "workspace:*",
+    "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "dotenv-cli": "catalog:",
+    "prisma": "catalog:prisma",
+    "prisma-json-types-generator": "catalog:prisma",
+    "prisma-kysely": "catalog:prisma",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

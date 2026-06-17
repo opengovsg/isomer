@@ -113,6 +113,7 @@ const SITES_WITH_AUDIT_LOGS = [
   284, // www.ptc.gov.sg
   287, // www.mot.gov.sg
   289, // www.toteboard.gov.sg
+  334, // seab.gov.sg
   336, // www.caringcommuters.gov.sg
   343, // www.motawardsceremony.gov.sg
   357, // www.ago.gov.sg
@@ -159,7 +160,7 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
   Logout: sql<string>`CONCAT('Logout attempt by ', al.delta -> 'before' ->> 'email', ' from IP address ', al."ipAddress")`,
 }
 
-const getAuditLogQuery = ({
+export const getAuditLogQuery = ({
   siteId,
   type,
   monthYear,
@@ -213,7 +214,7 @@ const getAuditLogQuery = ({
         .with("emailsFromUsers", (eb) =>
           eb
             .selectFrom("User")
-            .select("User.email")
+            .select(["User.email", "User.id"])
             .where("User.email", "not like", "%@open.gov.sg")
             .where("User.id", "in", (fb) =>
               fb
@@ -325,7 +326,7 @@ const getAuditLogQuery = ({
             ]),
             eb.and([
               eb("al.eventType", "=", AuditLogEvent.Logout),
-              eb("al.userId", "in", (fb) =>
+              eb(sql<string>`al.delta -> 'before' ->> 'email'`, "in", (fb) =>
                 fb
                   .selectFrom("emailsFromUsers")
                   .select("emailsFromUsers.email")
@@ -348,7 +349,7 @@ const getAuditLogQuery = ({
   }
 }
 
-const getStringifiedValue = (value: unknown) => {
+export const getStringifiedValue = (value: unknown) => {
   if (value === null || value === undefined) {
     return ""
   }
@@ -417,4 +418,6 @@ const getAuditLogsForSite = async () => {
   console.log('All audit logs saved in "output" folder')
 }
 
-await getAuditLogsForSite()
+// Only run when executed directly, not when imported by tests
+const isMain = process.argv[1] === fileURLToPath(import.meta.url)
+if (isMain) await getAuditLogsForSite()

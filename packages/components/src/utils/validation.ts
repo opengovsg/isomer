@@ -91,7 +91,7 @@ export const isValidMapEmbedUrl = (url: string) => {
 // that is supported inside the JSON schema. Components rely on the URL object
 // validation for better security.
 export const MAPS_EMBED_URL_REGEXES = {
-  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed?.*$",
+  googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed(?:\\?.*)?$",
   onemap:
     "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$",
   ogpmaps: `^https://maps\\.gov\\.sg/.*$`,
@@ -144,7 +144,7 @@ export const isValidVideoUrl = (url: string) => {
 // that is supported inside the JSON schema. Components rely on the URL object
 // validation for better security.
 export const VIDEO_EMBED_URL_REGEXES = {
-  fbvideo: "^https://www\\.facebook\\.com/plugins/video.php?.*$",
+  fbvideo: "^https://www\\.facebook\\.com/plugins/video\\.php(?:\\?.*)?$",
   vimeo: "^https://player\\.vimeo\\.com/video/.*$",
   youtube:
     "^https://www\\.(youtube|youtube-nocookie)\\.com/(embed/|watch\\?v=).*$",
@@ -205,6 +205,17 @@ export const isApplePodcastUrl = (url: string) => {
 // ❌ " " (only whitespace)
 export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
 
+// Stricter variant: rejects leading/trailing whitespace in addition to empty/whitespace-only.
+// ✅ "hello"
+// ✅ "a"
+// ✅ "ab cd" (internal whitespace allowed)
+// ❌ "" (empty string)
+// ❌ " " (only whitespace)
+// ❌ " hello" (leading whitespace)
+// ❌ "hello " (trailing whitespace)
+// ❌ " a " (surrounded by spaces)
+export const TRIMMED_NON_EMPTY_STRING_REGEX = "^\\S(.*\\S)?$"
+
 // ✅ "d_a" (minimum 3 characters, starts with "d_")
 // ✅ "d_abc" (more than 3 characters, starts with "d_")
 // ❌ "d_" (only 2 characters)
@@ -213,3 +224,21 @@ export const NON_EMPTY_STRING_REGEX = "^(?=.*\\S)"
 // ❌ "d_ab c" (contains space)
 // ❌ "d_ab_c" (contains underscore after prefix)
 export const DGS_ID_STRING_REGEX = "^d_[a-zA-Z0-9]+$"
+
+// Matches Google tag IDs across the formats observed in the wild:
+//   GTM-XXXXXX  — Google Tag Manager containers (official)
+//   G-XXXXXX    — Google Analytics 4 measurement IDs (officially loaded via gtag.js, not GTM,
+//                 but users paste them into the GTM field and they work in practice)
+//   GT-XXXXXX   — Google Tag IDs (observed working in manual testing; not documented by Google)
+// All three share the same GTM snippet format at runtime, so we accept them all even though
+// only GTM- is officially documented.
+// Examples:
+// ✅ "GTM-ABC123"
+// ✅ "G-ABC123"
+// ✅ "GT-ABC123"
+// ❌ "gtm-abc123" (lowercase)
+// ❌ "GTM-" (missing container ID)
+// ❌ "');alert(document.cookie);//" (XSS payload)
+// NOTE: Official documentation does not specify allowed length,
+// so we use ^GTM-[A-Z0-9]+$ (one or more chars) for future proofing.
+export const GTM_ID_STRING_REGEX = "^(GTM|G|GT)-[A-Z0-9]+$"

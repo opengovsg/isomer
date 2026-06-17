@@ -1,7 +1,4 @@
-# needed to pin to 3.20 because Prisma uses OpenSSL but it has been shifted to another location in 3.21
-# Ref: https://github.com/prisma/prisma/issues/25817
-# Solution: https://github.com/prisma/prisma/issues/25817#issuecomment-2529926082
-FROM node:22-alpine3.20 AS base
+FROM node:24-alpine AS base
 
 ARG NEXT_PUBLIC_APP_ENV
 ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
@@ -40,12 +37,12 @@ RUN apk add --no-cache libc6-compat
 
 # Set working directory
 WORKDIR /app
-# pnpm global bin is under PNPM_HOME (not on PATH by default); npm's -g used /usr/local/bin.
+# pnpm global bin is under PNPM_HOME/bin (not on PATH by default); npm's -g used /usr/local/bin.
 ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack install -g pnpm@10.33.0
+ENV PATH="$PNPM_HOME/bin:$PATH"
+RUN corepack enable && corepack install -g pnpm@11.5.1
 # fixed version to prevent supply chain attacks (to ensure it's same version as pnpm-workspace.yaml)
-RUN pnpm add -g turbo@2.9.6
+RUN pnpm add -g turbo@2.9.16
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
@@ -58,7 +55,7 @@ RUN apk update
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-RUN corepack enable && corepack install -g pnpm@10.33.0
+RUN corepack enable && corepack install -g pnpm@11.5.1
 
 # First install the dependencies (as they change less often)
 COPY --from=builder /app/out/json/ .

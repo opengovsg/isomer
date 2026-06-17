@@ -7,7 +7,7 @@ Published React component library providing the rendering engine, UI components,
 - `RenderEngine` — renders page content from JSON blobs
 - Zod schemas for all component and page types (used for AJV validation in studio)
 - TypeScript types for all content structures
-- Two template exports: `@opengovsg/isomer-components/templates/classic` and `/templates/next`
+- One template export: `@opengovsg/isomer-components/templates/next`
 
 ## Source layout
 
@@ -15,7 +15,7 @@ Published React component library providing the rendering engine, UI components,
 src/
   engine/       - RenderEngine and metadata helpers
   schemas/      - Zod schemas for pages and components
-  templates/    - classic and next templates
+  templates/    - next template
   interfaces/   - TypeScript interfaces (complex, integration, internal, native)
   hooks/        - useBreakpoint, useDgsData, useQueryParams, etc.
   utils/        - 30+ utility files (import individually, not from barrel)

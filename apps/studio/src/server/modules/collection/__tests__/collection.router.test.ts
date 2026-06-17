@@ -1,6 +1,7 @@
 import type { MockInstance } from "vitest"
 import { TRPCError } from "@trpc/server"
 import { omit } from "lodash-es"
+import { randomUUID } from "node:crypto"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
 import {
@@ -9,9 +10,11 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
+  collectionPageBlobContent,
   setupAdminPermissions,
   setupCollection,
   setupCollectionLink,
+  setupCollectionPage,
   setupEditorPermissions,
   setupFolder,
   setupPageResource,
@@ -22,7 +25,7 @@ import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
-import { db, ResourceState, ResourceType } from "../../database"
+import { db, jsonb, ResourceState, ResourceType } from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
 import {
@@ -60,6 +63,7 @@ describe("collection.router", async () => {
     })
     await auth(user)
     auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+    auditSpy.mockClear()
   })
 
   describe("create", () => {
@@ -72,7 +76,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
@@ -96,7 +100,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -106,7 +110,7 @@ describe("collection.router", async () => {
       await assertAuditLogRows()
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site } = await setupSite()
@@ -124,9 +128,9 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -152,7 +156,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Parent folder does not exist",
@@ -181,7 +185,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -346,9 +350,9 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -370,9 +374,9 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -398,7 +402,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
@@ -433,7 +437,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "CONFLICT",
           message: "A resource with the same permalink already exists",
@@ -443,7 +447,7 @@ describe("collection.router", async () => {
       await assertAuditLogRows()
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { collection, site } = await setupCollection()
@@ -463,9 +467,9 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -492,7 +496,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Parent collection does not exist",
@@ -522,7 +526,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Parent collection does not exist",
@@ -636,9 +640,9 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -658,7 +662,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -674,7 +678,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -916,7 +920,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -932,7 +936,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -975,12 +979,12 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
 
-    it("should throw 404 if `siteId` does not exist", async () => {
+    it("should throw 403 if `siteId` does not exist (no access to that site)", async () => {
       // Arrange
       const invalidSiteId = 999
       const { site } = await setupSite()
@@ -997,9 +1001,9 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -1021,7 +1025,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Collection not found",
@@ -1040,9 +1044,9 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
-          code: "NOT_FOUND",
+          code: "FORBIDDEN",
           message:
             "You do not have sufficient permissions to perform this action",
         }),
@@ -1080,7 +1084,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
@@ -1098,7 +1102,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Unable to find the requested collection link",
@@ -1119,7 +1123,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Unable to find the requested collection link",
@@ -1141,7 +1145,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1164,7 +1168,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1207,7 +1211,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
       expect(auditSpy).not.toHaveBeenCalled()
@@ -1228,7 +1232,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Unable to find the requested collection link",
@@ -1252,7 +1256,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "NOT_FOUND",
           message: "Unable to find the requested collection link",
@@ -1277,7 +1281,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1303,7 +1307,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(expected).rejects.toThrowError(
+      await expect(expected).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1404,6 +1408,49 @@ describe("collection.router", async () => {
       expect(expected.id).toEqual(blob.id)
     })
 
+    it("should store a valid date in `dd/MM/yyyy` format", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const expected = await caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "1",
+        linkId: Number(page.id),
+        date: "31/01/2024",
+      })
+
+      // Assert
+      expect((expected.content.page as { date?: string }).date).toEqual(
+        "31/01/2024",
+      )
+    })
+
+    it("should reject an invalid date", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      // 29 Feb 2023 is invalid as 2023 is not a leap year.
+      const result = caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "1",
+        linkId: Number(page.id),
+        date: "29/02/2023",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    })
+
     it.skip("should throw when trying to update to a deleted `ref`")
 
     it.skip("should throw when trying to update to an invalid `ref`")
@@ -1417,7 +1464,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({ code: "UNAUTHORIZED" }),
       )
     })
@@ -1432,7 +1479,7 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      await expect(result).rejects.toThrowError(
+      await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
           message:
@@ -1588,6 +1635,433 @@ describe("collection.router", async () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]?.id).toBe(collectionWithChildren.id)
+    })
+  })
+
+  describe("countTagOptionsUsage", () => {
+    const TAG_OPTION_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+    const TAG_OPTION_B = "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"
+
+    async function setupCollectionWithIndexPage() {
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: collection.id,
+      })
+      return { collection, site, indexPage }
+    }
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = unauthedCaller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+
+      // Act
+      const result = caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should reject when tagOptionIds exceeds the maximum length", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: Array.from({ length: 100 + 1 }, () => randomUUID()),
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    })
+
+    it("should throw 404 if index page does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: 99999,
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page not found",
+        }),
+      )
+    })
+
+    it("should throw 404 if pageId is not a collection index page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(page.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page not found",
+        }),
+      )
+    })
+
+    it("should throw 404 when index page belongs to another site", async () => {
+      // Arrange
+      const { site: siteA, indexPage } = await setupCollectionWithIndexPage()
+      const { site: siteB } = await setupSite()
+      await setupEditorPermissions({ userId: session.userId, siteId: siteA.id })
+      await setupEditorPermissions({ userId: session.userId, siteId: siteB.id })
+
+      // Act
+      const result = caller.countTagOptionsUsage({
+        siteId: siteB.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page not found",
+        }),
+      )
+    })
+
+    it("should throw 404 when index page has no parent collection", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await db
+        .updateTable("Resource")
+        .set({ parentId: null })
+        .where("id", "=", indexPage.id)
+        .execute()
+
+      // Act
+      const result = caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page has no parent collection",
+        }),
+      )
+    })
+
+    it("should return 0 when there are no child items", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act
+      const result = await caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 0 })
+    })
+
+    it("should return 0 when no item references the tag option", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        permalink: "page-a",
+      })
+
+      // Act
+      const result = await caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 0 })
+    })
+
+    it("should return 1 when a collection page draft blob lists the tag", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupCollectionPage({
+        siteId: site.id,
+        parentId: collection.id,
+        permalink: "tagged-page",
+        tagged: [TAG_OPTION_ID],
+      })
+
+      // Act
+      const result = await caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 1 })
+    })
+
+    it("should return 1 when only the published blob lists the tag", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        permalink: "pub-only",
+      })
+
+      const draftContent = collectionPageBlobContent()
+      const publishedContent = collectionPageBlobContent([TAG_OPTION_ID])
+
+      const draftBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(draftContent) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const publishedBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(publishedContent) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: page.id,
+          blobId: publishedBlob.id,
+          publishedBy: session.userId!,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+
+      await db
+        .updateTable("Resource")
+        .set({
+          draftBlobId: draftBlob.id,
+          publishedVersionId: version.id,
+        })
+        .where("id", "=", page.id)
+        .execute()
+
+      // Act
+      const result = await caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 1 })
+    })
+
+    it("should count a resource once when both draft and published list the tag", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        permalink: "both-blobs",
+      })
+
+      const taggedBlob = collectionPageBlobContent([TAG_OPTION_ID])
+      const draftBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(taggedBlob) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const publishedBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(taggedBlob) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: page.id,
+          blobId: publishedBlob.id,
+          publishedBy: session.userId!,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+
+      await db
+        .updateTable("Resource")
+        .set({
+          draftBlobId: draftBlob.id,
+          publishedVersionId: version.id,
+        })
+        .where("id", "=", page.id)
+        .execute()
+
+      // Act
+      const result = await caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 1 })
+    })
+
+    it("should return 2 when two child items reference the tag", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      const { blob: blobA } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        permalink: "page-1",
+      })
+      const { blob: blobB } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionLink,
+        parentId: collection.id,
+        permalink: "page-2",
+      })
+
+      const taggedBlob = collectionPageBlobContent([TAG_OPTION_ID])
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(taggedBlob) })
+        .where("id", "=", blobA.id)
+        .execute()
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(taggedBlob) })
+        .where("id", "=", blobB.id)
+        .execute()
+
+      // Act
+      const result = await caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID],
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 2 })
+    })
+
+    it("should return 0 when tagOptionIds is empty", async () => {
+      const { site, indexPage } = await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      const result = await caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [],
+      })
+
+      expect(result).toEqual({ count: 0 })
+    })
+
+    it("should return 1 when a child item lists one of several queried tag options", async () => {
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupCollectionPage({
+        siteId: site.id,
+        parentId: collection.id,
+        permalink: "tagged-page",
+        tagged: [TAG_OPTION_ID],
+      })
+
+      const result = await caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID, TAG_OPTION_B],
+      })
+
+      expect(result).toEqual({ count: 1 })
+    })
+
+    it("should count a resource once when tagged lists multiple of the queried option ids", async () => {
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await setupCollectionPage({
+        siteId: site.id,
+        parentId: collection.id,
+        permalink: "multi-tag-page",
+        tagged: [TAG_OPTION_ID, TAG_OPTION_B],
+      })
+
+      const result = await caller.countTagOptionsUsage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+        tagOptionIds: [TAG_OPTION_ID, TAG_OPTION_B],
+      })
+
+      expect(result).toEqual({ count: 1 })
     })
   })
 })
