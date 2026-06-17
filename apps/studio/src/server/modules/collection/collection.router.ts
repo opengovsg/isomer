@@ -537,11 +537,16 @@ export const collectionRouter = router({
         resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
       })
 
-      return getCollectionTagsForResource(
-        collectionId !== undefined
-          ? { siteId, collectionId }
-          : { siteId, resourceId: resourceId! },
-      )
+      if (collectionId !== undefined) {
+        return getCollectionTagsForResource({ siteId, collectionId })
+      }
+      if (resourceId !== undefined) {
+        return getCollectionTagsForResource({ siteId, resourceId })
+      }
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Either collectionId or resourceId must be provided",
+      })
     }),
 
   /**
