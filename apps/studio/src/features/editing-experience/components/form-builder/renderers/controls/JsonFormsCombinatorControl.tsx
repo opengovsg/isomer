@@ -81,14 +81,17 @@ function JsonFormsCombinatorControl({
       handleChange(path, {})
     } else {
       // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const newData = createDefaultValue(newSchema, rootSchema)
+      const newData = createDefaultValue(newSchema, rootSchema) as Record<
+        string,
+        unknown
+      >
 
       if (newSchema.type === "string") {
         handleChange(path, newSchema.const || "")
       } else {
         handleChange(path, {
           ...newData,
-          ...data,
+          ...(data ?? {}),
           variant: newData.variant,
         })
       }
