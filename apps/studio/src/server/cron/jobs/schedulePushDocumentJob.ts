@@ -227,6 +227,10 @@ export const schedulePushDocumentJobHandler = async () => {
     } else {
       // --- Algolia path (flag OFF, default) ---
       let savedCount = 0
+      // NOTE: This is deliberate done using a `for .. await` loop
+      // to avoid running into rate-limits with Algolia. DO NOT
+      // change this to a `map` as it might cause the publish to fail
+      // due to the records not being ingested by Algolia
       for (const {
         scheduledAt,
         resourceId,
