@@ -114,6 +114,8 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "chakra-react-select"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "algoliasearch"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
