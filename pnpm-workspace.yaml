@@ -163,20 +163,20 @@ catalog:
   tiptap-text-direction: ^0.4.0
   transliteration: ^2.6.1
   validator: ^13.15.35
-  wretch: ^3.0.7
+  wretch: ^3.0.8
 
 catalogs:
   atlaskitPragmaticDnd:
     "@atlaskit/pragmatic-drag-and-drop": ^1.8.1
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.2.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1060.0
-    "@aws-sdk/client-amplify": ^3.1060.0
-    "@aws-sdk/client-cloudfront": ^3.1060.0
-    "@aws-sdk/client-codebuild": ^3.1060.0
-    "@aws-sdk/client-s3": ^3.1060.0
-    "@aws-sdk/s3-request-presigner": ^3.1060.0
-    "@aws-sdk/credential-providers": ^3.1060.0
+    "@aws-sdk/client-acm": ^3.1065.0
+    "@aws-sdk/client-amplify": ^3.1065.0
+    "@aws-sdk/client-cloudfront": ^3.1065.0
+    "@aws-sdk/client-codebuild": ^3.1065.0
+    "@aws-sdk/client-s3": ^3.1065.0
+    "@aws-sdk/s3-request-presigner": ^3.1065.0
+    "@aws-sdk/credential-providers": ^3.1065.0
   babel:
     "@babel/plugin-transform-class-properties": ^7.29.7
     "@babel/plugin-transform-object-rest-spread": ^7.29.7
