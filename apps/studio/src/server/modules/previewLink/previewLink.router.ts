@@ -1,5 +1,6 @@
 import {
   listPagePreviewLinksSchema,
+  listSitePreviewLinksSchema,
   mintPreviewLinkSchema,
   revokePreviewLinkSchema,
 } from "~/schemas/previewLink"
@@ -9,6 +10,7 @@ import getIP from "~/utils/getClientIp"
 
 import {
   listActivePagePreviewLinks,
+  listSitePreviewLinks,
   mintPreviewLink,
   revokePreviewLink,
 } from "./previewLink.service"
@@ -76,5 +78,34 @@ export const previewLinkRouter = router({
         viewCount,
         lastViewedAt,
       }))
+    }),
+
+  listForSite: protectedProcedure
+    .input(listSitePreviewLinksSchema)
+    .query(async ({ ctx, input }) => {
+      const result = await listSitePreviewLinks({
+        userId: ctx.user.id,
+        siteId: input.siteId,
+        status: input.status,
+      })
+
+      return {
+        viewerIsAdmin: result.viewerIsAdmin,
+        links: result.links.map((row) => ({
+          id: String(row.id),
+          url: `${getBaseUrl()}/preview/${row.token}`,
+          label: row.label,
+          pageTitle: row.pageTitle,
+          resourceId: row.resourceId ? String(row.resourceId) : null,
+          sharerName: row.sharerName,
+          sharerEmail: row.sharerEmail,
+          isOwnLink: row.createdBy === ctx.user.id,
+          createdAt: row.createdAt,
+          expiresAt: row.expiresAt,
+          revokedAt: row.revokedAt,
+          viewCount: row.viewCount,
+          lastViewedAt: row.lastViewedAt,
+        })),
+      }
     }),
 })

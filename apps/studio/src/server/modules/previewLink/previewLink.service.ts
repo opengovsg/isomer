@@ -201,6 +201,90 @@ export const checkPreviewViewRateLimit = async (
   }
 }
 
+interface ListSitePreviewLinksProps {
+  userId: string
+  siteId: number
+  status: "active" | "expired" | "revoked" | "all"
+}
+
+// Site-level overview. Editor sees own links; Site Admin or Isomer Admin sees
+// all. The same component renders both — scope is enforced here at the data
+// layer, never in the UI.
+export const listSitePreviewLinks = async ({
+  userId,
+  siteId,
+  status,
+}: ListSitePreviewLinksProps) => {
+  await bulkValidateUserPermissionsForResources({
+    action: "read",
+    siteId,
+    userId,
+  })
+
+  const viewerIsAdmin = await isUserSiteAdmin(userId, siteId)
+
+  let query = db
+    .selectFrom("PreviewLink")
+    .leftJoin("Resource", "Resource.id", "PreviewLink.resourceId")
+    .leftJoin("User", "User.id", "PreviewLink.createdBy")
+    .where("PreviewLink.siteId", "=", siteId)
+    .select([
+      "PreviewLink.id as id",
+      "PreviewLink.token as token",
+      "PreviewLink.label as label",
+      "PreviewLink.expiresAt as expiresAt",
+      "PreviewLink.revokedAt as revokedAt",
+      "PreviewLink.createdAt as createdAt",
+      "PreviewLink.createdBy as createdBy",
+      "PreviewLink.resourceId as resourceId",
+      "Resource.title as pageTitle",
+      "User.name as sharerName",
+      "User.email as sharerEmail",
+    ])
+    .orderBy("PreviewLink.createdAt", "desc")
+
+  if (!viewerIsAdmin) {
+    query = query.where("PreviewLink.createdBy", "=", userId)
+  }
+
+  const now = new Date()
+  if (status === "active") {
+    query = query
+      .where("PreviewLink.revokedAt", "is", null)
+      .where("PreviewLink.expiresAt", ">", now)
+  } else if (status === "expired") {
+    query = query
+      .where("PreviewLink.revokedAt", "is", null)
+      .where("PreviewLink.expiresAt", "<=", now)
+  } else if (status === "revoked") {
+    query = query.where("PreviewLink.revokedAt", "is not", null)
+  }
+
+  const rows = await query.execute()
+
+  const enriched = await Promise.all(
+    rows.map(async (row) => {
+      const viewStats = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.PreviewLinkView)
+        .where(sql<boolean>`metadata->>'linkId' = ${String(row.id)}`)
+        .select((eb) => [
+          eb.fn.count<number>("id").as("viewCount"),
+          eb.fn.max("createdAt").as("lastViewedAt"),
+        ])
+        .executeTakeFirst()
+
+      return {
+        ...row,
+        viewCount: Number(viewStats?.viewCount ?? 0),
+        lastViewedAt: viewStats?.lastViewedAt ?? null,
+      }
+    }),
+  )
+
+  return { viewerIsAdmin, links: enriched }
+}
+
 interface ListActivePagePreviewLinksProps {
   userId: string
   siteId: number
