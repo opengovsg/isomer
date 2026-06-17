@@ -1,15 +1,15 @@
+import type { Selectable } from "kysely"
 import type { PreviewLinkExpiryChoice } from "~/schemas/previewLink"
 import type { PrismaClient } from "~prisma/generated/prisma/client"
-import { TRPCError } from "@trpc/server"
 import { randomBytes } from "node:crypto"
 import { RateLimiterPrisma, RateLimiterRes } from "rate-limiter-flexible"
 
+import type { PreviewLink } from "../database"
 import { logPreviewLinkEvent } from "../audit/audit.service"
-import { AuditLogEvent, db, RoleType, sql } from "../database"
-import {
-  bulkValidateUserPermissionsForResources,
-  isActiveIsomerAdmin,
-} from "../permissions/permissions.service"
+import { AuditLogEvent, db, sql } from "../database"
+import { definePermissionsForSite } from "../permissions/permissions.service"
+
+type PreviewLinkRow = Selectable<PreviewLink>
 
 const MS_PER_HOUR = 60 * 60 * 1000
 const MS_PER_DAY = 24 * MS_PER_HOUR
@@ -25,26 +25,6 @@ const TOKEN_BYTES = 32 // 256-bit; base64url-encoded → 43 chars
 const generateToken = (): string =>
   randomBytes(TOKEN_BYTES).toString("base64url")
 
-interface CanSharePreviewProps {
-  userId: string
-  siteId: number
-  resourceId: number
-}
-
-// Single permission gate for minting preview links. Today this is "user can
-// update the resource"; a future site-level toggle (Q6 of the design) flips
-// here without touching call sites.
-export const canSharePreview = async ({
-  userId,
-  siteId,
-}: CanSharePreviewProps) => {
-  await bulkValidateUserPermissionsForResources({
-    action: "update",
-    siteId,
-    userId,
-  })
-}
-
 interface MintPreviewLinkProps {
   userId: string
   siteId: number
@@ -54,6 +34,8 @@ interface MintPreviewLinkProps {
   ip?: string
 }
 
+// Permission is enforced at the router boundary via canSharePreview() — this
+// function assumes the caller has already gated access.
 export const mintPreviewLink = async ({
   userId,
   siteId,
@@ -62,8 +44,6 @@ export const mintPreviewLink = async ({
   label,
   ip,
 }: MintPreviewLinkProps) => {
-  await canSharePreview({ userId, siteId, resourceId })
-
   const expiresAt = new Date(Date.now() + EXPIRY_MS[expiryChoice])
 
   return await db.transaction().execute(async (tx) => {
@@ -92,62 +72,19 @@ export const mintPreviewLink = async ({
   })
 }
 
-// Sharer OR Site Admin OR Isomer Admin. Single function the future can flip
-// behind a site-level toggle without touching call sites.
-const isUserSiteAdmin = async (
-  userId: string,
-  siteId: number,
-): Promise<boolean> => {
-  if (await isActiveIsomerAdmin(userId)) return true
-
-  const role = await db
-    .selectFrom("ResourcePermission")
-    .where("userId", "=", userId)
-    .where("siteId", "=", siteId)
-    .where("resourceId", "is", null)
-    .where("deletedAt", "is", null)
-    .where("role", "=", RoleType.Admin)
-    .select("id")
-    .executeTakeFirst()
-
-  return Boolean(role)
-}
-
 interface RevokePreviewLinkProps {
   userId: string
-  linkId: string
+  link: PreviewLinkRow
   ip?: string
 }
 
+// Permission is enforced at the router boundary (sharer OR Site/Isomer Admin),
+// which loads the link in the process — pass that loaded row in here.
 export const revokePreviewLink = async ({
   userId,
-  linkId,
+  link,
   ip,
 }: RevokePreviewLinkProps) => {
-  const link = await db
-    .selectFrom("PreviewLink")
-    .where("id", "=", linkId)
-    .selectAll()
-    .executeTakeFirst()
-
-  if (!link) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Preview link not found",
-    })
-  }
-
-  if (link.createdBy !== userId) {
-    const isAdmin = await isUserSiteAdmin(userId, link.siteId)
-    if (!isAdmin) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message:
-          "You do not have sufficient permissions to perform this action",
-      })
-    }
-  }
-
   // Idempotent: revoking an already-revoked or already-expired link is a
   // success and writes no second audit row.
   if (link.revokedAt !== null || link.expiresAt <= new Date()) {
@@ -157,7 +94,7 @@ export const revokePreviewLink = async ({
   return await db.transaction().execute(async (tx) => {
     const revoked = await tx
       .updateTable("PreviewLink")
-      .where("id", "=", linkId)
+      .where("id", "=", link.id)
       .set({ revokedAt: new Date(), revokedBy: userId })
       .returningAll()
       .executeTakeFirstOrThrow()
@@ -209,19 +146,17 @@ interface ListSitePreviewLinksProps {
 
 // Site-level overview. Editor sees own links; Site Admin or Isomer Admin sees
 // all. The same component renders both — scope is enforced here at the data
-// layer, never in the UI.
+// layer, never in the UI. Site-membership permission is enforced at the
+// router boundary; this function assumes the caller has been gated.
 export const listSitePreviewLinks = async ({
   userId,
   siteId,
   status,
 }: ListSitePreviewLinksProps) => {
-  await bulkValidateUserPermissionsForResources({
-    action: "read",
-    siteId,
-    userId,
-  })
-
-  const viewerIsAdmin = await isUserSiteAdmin(userId, siteId)
+  // Scope flip uses the same site ability builder the router relies on for
+  // the revoke gate: "update on Site" is the Admin/Isomer-Admin signal.
+  const sitePerms = await definePermissionsForSite({ userId, siteId })
+  const viewerIsAdmin = sitePerms.can("update", "Site")
 
   let query = db
     .selectFrom("PreviewLink")
@@ -293,21 +228,13 @@ interface ListActivePagePreviewLinksProps {
 
 // Returns the current sharer's own active links for a single page. View counts
 // and last-viewed timestamps are derived from AuditLog rows tagged with the
-// link id in metadata.
+// link id in metadata. Site-membership permission is enforced at the router
+// boundary.
 export const listActivePagePreviewLinks = async ({
   userId,
   siteId,
   resourceId,
 }: ListActivePagePreviewLinksProps) => {
-  // Gate by site read access. The query below also scopes to createdBy = userId,
-  // but we still want to refuse callers who aren't a member of the site so we
-  // don't expose "this site exists" via timing/empty results.
-  await bulkValidateUserPermissionsForResources({
-    action: "read",
-    siteId,
-    userId,
-  })
-
   const links = await db
     .selectFrom("PreviewLink")
     .where("siteId", "=", siteId)

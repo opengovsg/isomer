@@ -6,8 +6,10 @@ import {
   createMockRequest,
 } from "tests/integration/helpers/iron-session"
 import {
+  setupAdminPermissions,
   setupEditorPermissions,
   setupPageResource,
+  setupUser,
 } from "tests/integration/helpers/seed"
 import { createCallerFactory } from "~/server/trpc"
 
@@ -246,6 +248,87 @@ describe("previewLinkRouter", () => {
         }),
       )
     })
+
+    it("lets a Site Admin revoke another sharer's link", async () => {
+      // Arrange — a separate sharer with a minted link on the site
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      const sharer = await setupUser({ email: "sharer@example.com" })
+      await setupEditorPermissions({ userId: sharer.id, siteId: site.id })
+      const link = await db
+        .insertInto("PreviewLink")
+        .values({
+          token: "admin-revoke-test-token",
+          siteId: site.id,
+          resourceId: String(page.id),
+          createdBy: sharer.id,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      // Current session user is a Site Admin on the same site
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.revoke({ linkId: String(link.id) })
+
+      // Assert — link is revoked, revokedBy is the admin (not the sharer)
+      const row = await db
+        .selectFrom("PreviewLink")
+        .where("id", "=", String(link.id))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(row.revokedAt).not.toBeNull()
+      expect(row.revokedBy).toBe(session.userId)
+
+      const auditRows = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PreviewLinkRevoke")
+        .selectAll()
+        .execute()
+      expect(auditRows).toHaveLength(1)
+      expect(auditRows[0]?.userId).toBe(session.userId)
+    })
+
+    it("throws 403 if the caller is neither the sharer nor a Site Admin", async () => {
+      // Arrange — sharer's link exists; current session has no role on site
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      const sharer = await setupUser({ email: "sharer-403@example.com" })
+      await setupEditorPermissions({ userId: sharer.id, siteId: site.id })
+      const link = await db
+        .insertInto("PreviewLink")
+        .values({
+          token: "non-sharer-revoke-test-token",
+          siteId: site.id,
+          resourceId: String(page.id),
+          createdBy: sharer.id,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      // Act
+      const result = caller.revoke({ linkId: String(link.id) })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+
+      const row = await db
+        .selectFrom("PreviewLink")
+        .where("id", "=", String(link.id))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(row.revokedAt).toBeNull()
+    })
   })
 
   describe("listForPage", () => {
@@ -294,6 +377,147 @@ describe("previewLinkRouter", () => {
             "You do not have sufficient permissions to perform this action",
         }),
       )
+    })
+  })
+
+  describe("listForSite", () => {
+    // Helper: insert a PreviewLink row directly (skips mint API + permission
+    // check) so we can set up "other sharer's link" scenarios.
+    const insertLink = async ({
+      siteId,
+      resourceId,
+      createdBy,
+      token,
+      revokedAt = null,
+      expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    }: {
+      siteId: number
+      resourceId: string
+      createdBy: string
+      token: string
+      revokedAt?: Date | null
+      expiresAt?: Date
+    }) =>
+      db
+        .insertInto("PreviewLink")
+        .values({
+          token,
+          siteId,
+          resourceId,
+          createdBy,
+          expiresAt,
+          revokedAt,
+          revokedBy: revokedAt ? createdBy : null,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+    it("editor sees only links they minted", async () => {
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const otherSharer = await setupUser({ email: "other@example.com" })
+      await setupEditorPermissions({
+        userId: otherSharer.id,
+        siteId: site.id,
+      })
+
+      await insertLink({
+        siteId: site.id,
+        resourceId: String(page.id),
+        createdBy: session.userId!,
+        token: "editor-own-link",
+      })
+      await insertLink({
+        siteId: site.id,
+        resourceId: String(page.id),
+        createdBy: otherSharer.id,
+        token: "other-sharers-link",
+      })
+
+      const result = await caller.listForSite({
+        siteId: site.id,
+        status: "active",
+      })
+
+      expect(result.viewerIsAdmin).toBe(false)
+      expect(result.links).toHaveLength(1)
+      expect(result.links[0]?.url.endsWith("/preview/editor-own-link")).toBe(
+        true,
+      )
+    })
+
+    it("Site Admin sees all links on the site regardless of sharer", async () => {
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const otherSharerA = await setupUser({ email: "a@example.com" })
+      const otherSharerB = await setupUser({ email: "b@example.com" })
+      await setupEditorPermissions({
+        userId: otherSharerA.id,
+        siteId: site.id,
+      })
+      await setupEditorPermissions({
+        userId: otherSharerB.id,
+        siteId: site.id,
+      })
+
+      await insertLink({
+        siteId: site.id,
+        resourceId: String(page.id),
+        createdBy: otherSharerA.id,
+        token: "sharer-a-link",
+      })
+      await insertLink({
+        siteId: site.id,
+        resourceId: String(page.id),
+        createdBy: otherSharerB.id,
+        token: "sharer-b-link",
+      })
+
+      const result = await caller.listForSite({
+        siteId: site.id,
+        status: "active",
+      })
+
+      expect(result.viewerIsAdmin).toBe(true)
+      expect(result.links).toHaveLength(2)
+    })
+
+    it("status filter Revoked returns only revoked links", async () => {
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      await insertLink({
+        siteId: site.id,
+        resourceId: String(page.id),
+        createdBy: session.userId!,
+        token: "active-link",
+      })
+      await insertLink({
+        siteId: site.id,
+        resourceId: String(page.id),
+        createdBy: session.userId!,
+        token: "revoked-link",
+        revokedAt: new Date(),
+      })
+
+      const result = await caller.listForSite({
+        siteId: site.id,
+        status: "revoked",
+      })
+
+      expect(result.links).toHaveLength(1)
+      expect(result.links[0]?.url.endsWith("/preview/revoked-link")).toBe(true)
     })
   })
 })
