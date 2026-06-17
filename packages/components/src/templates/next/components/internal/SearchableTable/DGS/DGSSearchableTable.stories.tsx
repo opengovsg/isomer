@@ -103,6 +103,16 @@ export const OverDatasetSizeCap: Story = {
       ],
     },
   },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Oops! Something went wrong while loading the table. Please try again later.",
+        ),
+      ).toBeInTheDocument(),
+    )
+  },
 }
 
 export const Loading: Story = {
