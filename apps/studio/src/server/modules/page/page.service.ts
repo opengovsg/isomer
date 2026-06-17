@@ -96,8 +96,12 @@ function isCollectionPageCategoryOption(
     return false
   }
   const rec = value as Record<string, unknown>
-  return uuidSchema.safeParse(rec.id).success && typeof rec.label === "string"
-}
+  return (
+    uuidSchema.safeParse(rec.id).success &&
+    typeof rec.label === "string" &&
+    rec.label.trim().length > 0 &&
+    rec.label === rec.label.trim()
+  )
 
 export const getCategoryOptionsForPage = async ({
   siteId,
