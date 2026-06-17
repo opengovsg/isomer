@@ -4,14 +4,21 @@ import type {
   DeleteRedirectInput,
   ListRedirectsInput,
   RedirectSortField,
+  ResolveRedirectReferencesInput,
 } from "~/schemas/redirect"
+import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { getReferenceLink } from "~/utils/link"
 
 import type { Logger } from "@isomer/logging"
 
 import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db } from "../database"
+import {
+  getResourceFullPermalinks,
+  getResourceIdByPermalink,
+} from "../resource/resource.service"
 
 // Sort field → column. `publishedAt` maps to `createdAt`; `satisfies` keeps the
 // map exhaustive so a new sort field without a column is a compile error.
@@ -23,6 +30,67 @@ const SORT_FIELD_TO_COLUMN = {
   RedirectSortField,
   "source" | "destination" | "createdAt"
 >
+
+// Anchored [resource:siteId:resourceId] reference. A destination already in
+// this form (or an external URL) is stored verbatim; only a bare internal path
+// is converted to a reference.
+const REFERENCE_DESTINATION_REGEX = /^\[resource:\d+:\d+\]$/
+
+// Converts a redirect destination into the value stored in the DB. An internal
+// path with no query/hash suffix is resolved to an internal-page reference so
+// the redirect follows the page if its permalink later changes. A path that
+// carries a query/hash suffix can't map to a single resource, so it is kept as
+// a literal path; references and external URLs are stored verbatim.
+const resolveDestinationForStorage = async (
+  siteId: number,
+  destination: string,
+): Promise<string> => {
+  if (
+    REFERENCE_DESTINATION_REGEX.test(destination) ||
+    !destination.startsWith("/") ||
+    destination.includes("?") ||
+    destination.includes("#")
+  ) {
+    return destination
+  }
+
+  const resourceId = await getResourceIdByPermalink(siteId, destination)
+  if (resourceId === null) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: `The page "${destination}" does not exist`,
+    })
+  }
+  return getReferenceLink({
+    siteId: String(siteId),
+    resourceId: String(resourceId),
+  })
+}
+
+// Resolves stored [resource:...] destinations back to the page's current
+// permalink for display. Batched into a single query (see
+// getResourceFullPermalinks) so a page of redirects costs one round-trip, not
+// one per row. A reference whose page no longer exists resolves to null.
+export const resolveRedirectReferences = async ({
+  siteId,
+  references,
+}: ResolveRedirectReferencesInput): Promise<
+  { reference: string; permalink: string | null }[]
+> => {
+  const parsed = references.map((reference) => ({
+    reference,
+    resourceId: getResourceIdFromReferenceLink(reference),
+  }))
+  const resourceIds = parsed
+    .filter(({ resourceId }) => resourceId !== "")
+    .map(({ resourceId }) => Number(resourceId))
+  const permalinks = await getResourceFullPermalinks(siteId, resourceIds)
+  return parsed.map(({ reference, resourceId }) => ({
+    reference,
+    permalink:
+      resourceId === "" ? null : (permalinks.get(Number(resourceId)) ?? null),
+  }))
+}
 
 const getByUser = async (byUserId: string) =>
   db
@@ -87,6 +155,14 @@ export const createRedirect = async ({
 }) => {
   const byUser = await getByUser(byUserId)
 
+  // Resolve an internal-path destination to a [resource:...] reference (a read,
+  // outside the tx) so the redirect follows the page if its permalink changes.
+  // Throws NOT_FOUND if the path matches no page.
+  const storedDestination = await resolveDestinationForStorage(
+    siteId,
+    destination,
+  )
+
   const created = await db.transaction().execute(async (tx) => {
     // Reject creating over a live redirect. A soft-deleted row for the same
     // source still holds the (siteId, source) unique constraint and is revived
@@ -106,12 +182,12 @@ export const createRedirect = async ({
 
     const created = await tx
       .insertInto("Redirect")
-      .values({ siteId, source, destination })
+      .values({ siteId, source, destination: storedDestination })
       .onConflict((oc) =>
         oc
           .columns(["siteId", "source"])
           .doUpdateSet({
-            destination,
+            destination: storedDestination,
             deletedAt: null,
             // Revived rows republish now, so refresh createdAt (the publish
             // time shown to users).

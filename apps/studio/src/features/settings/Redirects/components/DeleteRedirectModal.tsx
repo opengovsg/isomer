@@ -15,6 +15,9 @@ import type { RedirectRow } from "../types"
 
 interface DeleteRedirectModalProps {
   redirect: RedirectRow | null
+  // Display label for the destination — a reference is resolved to the page's
+  // permalink upstream so the modal never leaks the raw "[resource:...]" string
+  destinationLabel: string
   isPending: boolean
   onClose: () => void
   onDelete: (redirect: RedirectRow) => void
@@ -22,6 +25,7 @@ interface DeleteRedirectModalProps {
 
 export const DeleteRedirectModal = ({
   redirect,
+  destinationLabel,
   isPending,
   onClose,
   onDelete,
@@ -67,7 +71,7 @@ export const DeleteRedirectModal = ({
                   color="base.content.default"
                   wordBreak="break-all"
                 >
-                  {redirect?.destination}
+                  {destinationLabel}
                 </Text>
               </Stack>
             </HStack>

@@ -134,6 +134,19 @@ describe("createRedirectSchema", () => {
       expect(result.success).toBe(true)
     })
 
+    it("should accept an internal page reference as the destination", () => {
+      // Arrange / Act
+      // A destination may already be a [resource:...] reference (the form the
+      // service stores internal paths as)
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        destination: "[resource:1:2]",
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+    })
+
     it("should reject destinations with other prefixes", () => {
       // Arrange
       const invalidDestinations = [

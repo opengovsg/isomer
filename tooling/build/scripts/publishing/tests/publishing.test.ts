@@ -186,6 +186,10 @@ let siteId: number
 let aboutFolderId: string
 let danglingFolderId: string
 let newsCollectionId: string
+let rootPageId: string
+let aboutIndexPageId: string
+let ourTeamPageId: string
+let draftPageId: string
 
 const readOutput = (...segments: string[]) =>
   JSON.parse(readFileSync(join(outputDir, ...segments), "utf-8"))
@@ -218,7 +222,7 @@ beforeAll(async () => {
     .values({ siteId, content: FOOTER_CONTENT })
     .execute()
 
-  await seedPage({
+  rootPageId = await seedPage({
     siteId,
     type: ResourceType.RootPage,
     title: "Home",
@@ -247,7 +251,7 @@ beforeAll(async () => {
     title: "Who we are",
     permalink: "about",
   })
-  await seedPage({
+  aboutIndexPageId = await seedPage({
     siteId,
     type: ResourceType.IndexPage,
     title: "Who we are",
@@ -260,7 +264,7 @@ beforeAll(async () => {
       content: [],
     },
   })
-  await seedPage({
+  ourTeamPageId = await seedPage({
     siteId,
     type: ResourceType.Page,
     title: "Our team",
@@ -340,7 +344,7 @@ beforeAll(async () => {
   })
 
   // A draft-only page: must NOT be published
-  await seedPage({
+  draftPageId = await seedPage({
     siteId,
     type: ResourceType.Page,
     title: "Secret draft",
@@ -361,6 +365,31 @@ beforeAll(async () => {
     source: "/deleted",
     destination: "/gone",
     deletedAt: new Date(),
+  })
+  // Reference destinations: resolved to the page's current permalink at publish
+  await seedRedirect({
+    siteId,
+    source: "/ref-page",
+    destination: `[resource:${siteId}:${ourTeamPageId}]`,
+  })
+  // A reference to an index page resolves to its folder (the "_index" segment
+  // is stripped, matching what the editor displays)
+  await seedRedirect({
+    siteId,
+    source: "/ref-index",
+    destination: `[resource:${siteId}:${aboutIndexPageId}]`,
+  })
+  // A reference to the root page resolves to "/"
+  await seedRedirect({
+    siteId,
+    source: "/ref-root",
+    destination: `[resource:${siteId}:${rootPageId}]`,
+  })
+  // A reference to an unpublished page is dropped — it has no live URL
+  await seedRedirect({
+    siteId,
+    source: "/ref-draft",
+    destination: `[resource:${siteId}:${draftPageId}]`,
   })
 
   // A second site: nothing from it may leak into the output
@@ -660,15 +689,36 @@ describe("site data files", () => {
 describe("redirects.json", () => {
   it("writes only the live redirects of the site", () => {
     // Arrange / Act
-    const redirects = readOutput("redirects.json")
+    const redirects = readOutput("redirects.json") as {
+      source: string
+      destination: string
+    }[]
 
-    // Assert
-    expect(redirects).toHaveLength(2)
+    // Assert: literal destinations pass through; references resolve to the
+    // target's current permalink; the deleted, unpublished-reference, and
+    // other-site redirects are all excluded
     expect(redirects).toEqual(
       expect.arrayContaining([
         { source: "/old-about", destination: "/about" },
         { source: "/old-news", destination: "/news" },
+        { source: "/ref-page", destination: "/about/our-team" },
+        { source: "/ref-index", destination: "/about" },
+        { source: "/ref-root", destination: "/" },
       ]),
     )
+    expect(redirects).toHaveLength(5)
+  })
+
+  it("drops a redirect whose referenced page is unpublished", () => {
+    // Arrange / Act
+    const redirects = readOutput("redirects.json") as {
+      source: string
+      destination: string
+    }[]
+
+    // Assert
+    expect(
+      redirects.find((redirect) => redirect.source === "/ref-draft"),
+    ).toBeUndefined()
   })
 })

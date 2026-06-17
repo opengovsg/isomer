@@ -4,6 +4,7 @@ import {
   HStack,
   Icon,
   IconButton,
+  Skeleton,
   Stack,
   Text,
   Tooltip,
@@ -37,11 +38,48 @@ import {
   useCountRedirects,
   useDeleteRedirect,
   useListRedirects,
+  useResolveRedirectReferences,
 } from "../api"
-import { formatAddedAt } from "../utils"
+import {
+  formatAddedAt,
+  getDestinationLabel,
+  isReferenceDestination,
+  MISSING_PAGE_LABEL,
+} from "../utils"
 import { DeleteRedirectModal } from "./DeleteRedirectModal"
 
 const columnsHelper = createColumnHelper<RedirectRow>()
+
+// Renders a redirect destination. Reference destinations are shown as the
+// page's current permalink (resolved server-side); while that resolution is in
+// flight we show a skeleton, and a reference whose page no longer exists is
+// flagged rather than leaking the raw "[resource:...]" string.
+function DestinationCell({
+  destination,
+  permalinkByReference,
+}: {
+  destination: string
+  permalinkByReference: Map<string, string | null>
+}): JSX.Element {
+  const label = getDestinationLabel(destination, permalinkByReference)
+  if (label === null) {
+    return <Skeleton height="1.25rem" width="60%" />
+  }
+
+  const isMissing = label === MISSING_PAGE_LABEL
+  return (
+    <Tooltip label={label} openDelay={500} placement="top">
+      <Text
+        textStyle="body-2"
+        color={isMissing ? "utility.feedback.critical" : "base.content.strong"}
+        noOfLines={1}
+        wordBreak="break-all"
+      >
+        {label}
+      </Text>
+    </Tooltip>
+  )
+}
 
 function SortableHeader({
   label,
@@ -81,7 +119,10 @@ function SortableHeader({
   )
 }
 
-const getColumns = (onDeleteClick: (row: RedirectRow) => void) => [
+const getColumns = (
+  onDeleteClick: (row: RedirectRow) => void,
+  permalinkByReference: Map<string, string | null>,
+) => [
   columnsHelper.accessor("source", {
     minSize: 250,
     enableSorting: true,
@@ -148,16 +189,10 @@ const getColumns = (onDeleteClick: (row: RedirectRow) => void) => [
       />
     ),
     cell: ({ getValue }) => (
-      <Tooltip label={getValue()} openDelay={500} placement="top">
-        <Text
-          textStyle="body-2"
-          color="base.content.strong"
-          noOfLines={1}
-          wordBreak="break-all"
-        >
-          {getValue()}
-        </Text>
-      </Tooltip>
+      <DestinationCell
+        destination={getValue()}
+        permalinkByReference={permalinkByReference}
+      />
     ),
   }),
   columnsHelper.accessor("publishedAt", {
@@ -215,8 +250,6 @@ export const RedirectsTable = ({
     null,
   )
 
-  const columns = useMemo(() => getColumns(setRedirectToDelete), [])
-
   const { data: totalRowCount, isLoading: isCountLoading } =
     useCountRedirects(siteId)
 
@@ -235,6 +268,36 @@ export const RedirectsTable = ({
     sortBy: (sorting[0]?.id ?? "publishedAt") as RedirectSortField,
     sortDirection: (sorting[0]?.desc ?? true) ? "desc" : "asc",
   })
+
+  // Resolve the reference destinations on the visible page to permalinks for
+  // display, in one batched request rather than per row
+  const referenceDestinations = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          redirects
+            .map((redirect) => redirect.destination)
+            .filter(isReferenceDestination),
+        ),
+      ),
+    [redirects],
+  )
+  const { data: resolvedReferences } = useResolveRedirectReferences(
+    siteId,
+    referenceDestinations,
+  )
+  const permalinkByReference = useMemo(() => {
+    const map = new Map<string, string | null>()
+    resolvedReferences.forEach(({ reference, permalink }) =>
+      map.set(reference, permalink),
+    )
+    return map
+  }, [resolvedReferences])
+
+  const columns = useMemo(
+    () => getColumns(setRedirectToDelete, permalinkByReference),
+    [permalinkByReference],
+  )
 
   // Changing the sort order reshuffles rows across pages, so jump back to
   // the first page to avoid showing a stale slice
@@ -300,6 +363,14 @@ export const RedirectsTable = ({
       />
       <DeleteRedirectModal
         redirect={redirectToDelete}
+        destinationLabel={
+          redirectToDelete
+            ? (getDestinationLabel(
+                redirectToDelete.destination,
+                permalinkByReference,
+              ) ?? redirectToDelete.destination)
+            : ""
+        }
         isPending={isPending}
         onClose={() => setRedirectToDelete(null)}
         onDelete={handleDelete}

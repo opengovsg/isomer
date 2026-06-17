@@ -710,6 +710,159 @@ export const getResourceFullPermalink = async (
   return `/${permalinkTree.join("/")}`
 }
 
+// Batched variant of getResourceFullPermalink: resolves many resources' full
+// permalinks in a single recursive query instead of one round-trip per id.
+// Used to render redirect destinations (stored as `[resource:...]` references)
+// without an N+1 over the visible page. Each row carries the `seedId` it
+// descends from so the ancestor chains can be reassembled per resource.
+// Resources missing from the map no longer exist (e.g. the page was deleted).
+export const getResourceFullPermalinks = async (
+  siteId: number,
+  resourceIds: number[],
+): Promise<Map<number, string>> => {
+  if (resourceIds.length === 0) {
+    return new Map()
+  }
+
+  const rows = await db
+    .withRecursive("Ancestors", (eb) =>
+      eb
+        // Base case: the resources we want permalinks for, each tagged as its
+        // own ancestry seed
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "in", resourceIds.map(String))
+        .select([
+          "Resource.id as seedId",
+          "Resource.id as id",
+          "Resource.permalink as permalink",
+          "Resource.parentId as parentId",
+        ])
+        .unionAll((fb) =>
+          fb
+            // Recursive case: walk up to each seed's ancestors, carrying the
+            // seedId so chains for different seeds don't intermingle
+            .selectFrom("Resource")
+            .innerJoin("Ancestors", "Ancestors.parentId", "Resource.id")
+            .where("Resource.siteId", "=", siteId)
+            .select([
+              "Ancestors.seedId as seedId",
+              "Resource.id as id",
+              "Resource.permalink as permalink",
+              "Resource.parentId as parentId",
+            ]),
+        ),
+    )
+    .selectFrom("Ancestors")
+    .select(["Ancestors.seedId", "Ancestors.id", "Ancestors.permalink"])
+    .select("Ancestors.parentId")
+    .execute()
+
+  // Index every fetched node by seed so each seed's chain can be walked from
+  // the leaf (the seed itself) up to the root in memory
+  const nodesBySeed = new Map<
+    string,
+    Map<string, { permalink: string; parentId: string | null }>
+  >()
+  for (const row of rows) {
+    const seedId = String(row.seedId)
+    const nodes =
+      nodesBySeed.get(seedId) ??
+      new Map<string, { permalink: string; parentId: string | null }>()
+    nodes.set(String(row.id), {
+      permalink: row.permalink,
+      parentId: row.parentId === null ? null : String(row.parentId),
+    })
+    nodesBySeed.set(seedId, nodes)
+  }
+
+  const result = new Map<number, string>()
+  for (const [seedId, nodes] of nodesBySeed) {
+    const chain: string[] = []
+    let currentId: string | null = seedId
+    while (currentId !== null) {
+      const node = nodes.get(currentId)
+      if (node === undefined) {
+        break
+      }
+      chain.push(node.permalink)
+      currentId = node.parentId
+    }
+    // chain is leaf→root; reverse to root→leaf and drop the `_index` segments
+    // (an index page represents its parent folder, not a path of its own)
+    const permalink = chain
+      .reverse()
+      .filter((segment) => segment !== INDEX_PAGE_PERMALINK)
+      .join("/")
+    result.set(Number(seedId), `/${permalink}`)
+  }
+  return result
+}
+
+// Reverse of getResourceFullPermalink: resolves a full permalink path (e.g.
+// "/about/contact") back to the resource it points at, or null if no published
+// resource matches. Used when a redirect destination is entered as a path so it
+// can be stored as a `[resource:...]` reference that follows the page if its
+// permalink later changes. Runs as a single query: it fetches every resource
+// whose permalink matches one of the path segments, then walks the parent chain
+// in memory — the (siteId, parentId, permalink) unique constraint makes each
+// step unambiguous. Only published targets resolve: a draft/unpublished page
+// would otherwise become a redirect to a URL with no live page behind it.
+export const getResourceIdByPermalink = async (
+  siteId: number,
+  fullPermalink: string,
+): Promise<number | null> => {
+  const segments = fullPermalink.split("/").filter(Boolean)
+
+  // The site root ("/") is the RootPage, whose permalink is empty so it has no
+  // path segments to walk. Resolve it directly (published only, as below).
+  if (segments.length === 0) {
+    const root = await db
+      .selectFrom("Resource")
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.type", "=", ResourceType.RootPage)
+      .where("Resource.publishedVersionId", "is not", null)
+      .select("Resource.id")
+      .executeTakeFirst()
+    return root ? Number(root.id) : null
+  }
+
+  const candidates = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.permalink", "in", segments)
+    .select([
+      "Resource.id",
+      "Resource.permalink",
+      "Resource.parentId",
+      "Resource.publishedVersionId",
+    ])
+    .execute()
+
+  let parentId: string | null = null
+  let leaf: (typeof candidates)[number] | null = null
+  for (const segment of segments) {
+    const match = candidates.find(
+      (candidate) =>
+        candidate.permalink === segment &&
+        (candidate.parentId === null ? null : String(candidate.parentId)) ===
+          parentId,
+    )
+    if (!match) {
+      return null
+    }
+    leaf = match
+    parentId = String(match.id)
+  }
+
+  // Only resolve to a published target (the walk above traverses unpublished
+  // folders as path segments, but the destination page itself must be live).
+  if (leaf === null || leaf.publishedVersionId === null) {
+    return null
+  }
+  return Number(leaf.id)
+}
+
 interface PublishPageResourceArgs {
   logger: Logger<string>
   userId: string

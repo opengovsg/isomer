@@ -3,6 +3,7 @@ import {
   createRedirectSchema,
   deleteRedirectSchema,
   listRedirectsSchema,
+  resolveRedirectReferencesSchema,
 } from "~/schemas/redirect"
 import { protectedProcedure, router } from "~/server/trpc"
 
@@ -12,6 +13,7 @@ import {
   createRedirect,
   deleteRedirect,
   listRedirects,
+  resolveRedirectReferences,
 } from "./redirect.service"
 
 export const redirectRouter = router({
@@ -37,6 +39,20 @@ export const redirectRouter = router({
       })
 
       return countRedirects(input)
+    }),
+
+  // Resolves stored [resource:...] destinations to display permalinks. A read
+  // is enough — it only surfaces permalinks the caller can already see.
+  resolveReferences: protectedProcedure
+    .input(resolveRedirectReferencesSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        siteId: input.siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      return resolveRedirectReferences(input)
     }),
 
   // create/delete publish immediately (no separate publish step). Site-wide
