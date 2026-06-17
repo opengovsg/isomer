@@ -248,6 +248,18 @@ describe("utils", () => {
       })
     })
 
+    it("should return false for non-embed Facebook URLs even when the href points to a reel", () => {
+      const testCases = [
+        "https://www.facebook.com/?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F123",
+        "https://www.facebook.com/reel/123",
+        "https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F123",
+      ]
+
+      testCases.forEach((testCase) => {
+        expect(isFacebookReelEmbedUrl(testCase)).toBe(false)
+      })
+    })
+
     it("should return false when the href param is missing", () => {
       expect(
         isFacebookReelEmbedUrl(

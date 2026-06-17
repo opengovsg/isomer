@@ -73,7 +73,10 @@ export const getYouTubeVideoId = (url: string): string | null => {
 export const isFacebookReelEmbedUrl = (url: string): boolean => {
   try {
     const urlObject = new URL(url)
-    if (!VALID_VIDEO_DOMAINS.fbvideo.includes(urlObject.hostname)) {
+    if (
+      !VALID_VIDEO_DOMAINS.fbvideo.includes(urlObject.hostname) ||
+      urlObject.pathname !== "/plugins/video.php"
+    ) {
       return false
     }
     const href = urlObject.searchParams.get("href")
