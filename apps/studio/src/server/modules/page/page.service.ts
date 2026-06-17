@@ -102,6 +102,7 @@ function isCollectionPageCategoryOption(
     rec.label.trim().length > 0 &&
     rec.label === rec.label.trim()
   )
+}
 
 export const getCategoryOptionsForPage = async ({
   siteId,
