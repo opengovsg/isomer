@@ -141,23 +141,28 @@ export const getServerSideProps: GetServerSideProps<PreviewPageProps> = async (
 
   if (!permalink) return { notFound: true }
 
-  return {
-    props: {
-      status: "available",
-      pageTitle: page.title,
-      expiresAt: link.expiresAt.toISOString(),
-      pageContent: page.content as RecipientPreviewProps["pageContent"],
-      permalink,
-      lastModified:
-        page.updatedAt instanceof Date
-          ? page.updatedAt.toISOString()
-          : new Date().toISOString(),
-      siteConfig: siteConfig as Record<string, unknown>,
-      navbar: navbar.content,
-      footer: footer.content,
-      siteMap,
-    },
+  const props: PreviewPageProps = {
+    status: "available",
+    pageTitle: page.title,
+    expiresAt: link.expiresAt.toISOString(),
+    pageContent: page.content as RecipientPreviewProps["pageContent"],
+    permalink,
+    lastModified:
+      page.updatedAt instanceof Date
+        ? page.updatedAt.toISOString()
+        : new Date().toISOString(),
+    siteConfig: siteConfig as Record<string, unknown>,
+    navbar: navbar.content,
+    footer: footer.content,
+    siteMap,
   }
+
+  // Strip undefined recursively in one walk before returning. Next refuses
+  // to serialise undefined fields in getServerSideProps payloads, and the
+  // DB-sourced JSON blobs above all carry optional fields that resolve to
+  // undefined (e.g. siteMap.children[*].firstImage on pages without a
+  // thumbnail).
+  return { props: JSON.parse(JSON.stringify(props)) as PreviewPageProps }
 }
 
 export default PreviewPage

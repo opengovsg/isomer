@@ -10,7 +10,15 @@ import {
 import { merge } from "lodash-es"
 import Script from "next/script"
 import { forwardRef } from "react"
+import Frame from "react-frame-component"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
+
+// Published-site tailwind sheet, served from apps/studio/public. Loaded in
+// the iframe head so RenderEngine output gets the same styling as the
+// public site without inheriting Studio's Chakra reset. The editor's
+// PreviewIframe references the same file at the same path; keep them in
+// sync if you ever move it.
+const PREVIEW_STYLESHEET_HREF = "/assets/css/preview-tw.css"
 
 type RenderEngineProps = ComponentProps<typeof RenderEngine>
 type RenderEngineSite = RenderEngineProps["site"]
@@ -76,9 +84,19 @@ export const RecipientPreview = ({
     ScriptComponent: Script,
   } as unknown as ComponentProps<typeof RenderEngine>
 
+  // Iframe isolates Studio's Chakra reset from RenderEngine's tailwind-
+  // styled output — same trick the editor's PreviewIframe uses.
   return (
-    <LinkComponentProvider value={InertLink}>
-      <RenderEngine {...fullProps} />
-    </LinkComponentProvider>
+    <Frame
+      style={{ width: "100%", height: "100%", minHeight: "100vh", border: 0 }}
+      head={
+        // oxlint-disable-next-line @next/next/no-css-tags
+        <link rel="stylesheet" type="text/css" href={PREVIEW_STYLESHEET_HREF} />
+      }
+    >
+      <LinkComponentProvider value={InertLink}>
+        <RenderEngine {...fullProps} />
+      </LinkComponentProvider>
+    </Frame>
   )
 }
