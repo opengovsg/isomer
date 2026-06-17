@@ -4,6 +4,7 @@ import type {
   DB,
   Footer,
   Navbar,
+  PreviewLink,
   PushDocumentJob,
   Resource,
   ResourcePermission,
@@ -336,6 +337,67 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
       eventType,
       delta,
       userId: by.id,
+      ipAddress: ip,
+      siteId,
+      metadata,
+    })
+    .execute()
+}
+
+// Preview-link events are unusual in that the View event has no Studio user
+// attached (anonymous recipient); userId is null in that case.
+type PreviewLinkRow = WithoutMeta<PreviewLink>
+
+interface MintDelta {
+  before: null
+  after: PreviewLinkRow
+}
+
+interface ViewDelta {
+  before: null
+  after: null
+}
+
+interface RevokeDelta {
+  before: PreviewLinkRow
+  after: PreviewLinkRow
+}
+
+type PreviewLinkEventProps =
+  | {
+      eventType: Extract<AuditLogEvent, "PreviewLinkMint">
+      userId: string
+      delta: MintDelta
+    }
+  | {
+      eventType: Extract<AuditLogEvent, "PreviewLinkView">
+      userId: null
+      delta: ViewDelta
+    }
+  | {
+      eventType: Extract<AuditLogEvent, "PreviewLinkRevoke">
+      userId: string
+      delta: RevokeDelta
+    }
+
+export type LogPreviewLinkEventProps = PreviewLinkEventProps & {
+  ip?: string
+  siteId: Site["id"]
+  metadata?: Record<string, unknown>
+}
+
+export const logPreviewLinkEvent: AuditLogger<
+  LogPreviewLinkEventProps
+> = async (
+  tx,
+  { eventType, userId, delta, ip, siteId, metadata = {} },
+) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({
+      eventType,
+      delta,
+      userId,
       ipAddress: ip,
       siteId,
       metadata,

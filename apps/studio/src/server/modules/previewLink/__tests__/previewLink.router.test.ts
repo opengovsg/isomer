@@ -116,6 +116,16 @@ describe("previewLinkRouter", () => {
       expect(row.label).toBe("For Director Tan")
       expect(row.revokedAt).toBeNull()
       expect(row.revokedBy).toBeNull()
+
+      // Assert — audit row written inside the mint transaction
+      const auditRows = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PreviewLinkMint")
+        .selectAll()
+        .execute()
+      expect(auditRows).toHaveLength(1)
+      expect(auditRows[0]?.userId).toBe(session.userId)
+      expect(auditRows[0]?.siteId).toBe(site.id)
     })
 
     it("should compute expiresAt from the chosen duration", async () => {

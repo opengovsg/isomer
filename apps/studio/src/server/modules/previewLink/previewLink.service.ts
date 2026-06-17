@@ -1,7 +1,8 @@
-import type { PreviewLinkExpiryChoice } from "~/schemas/previewLink"
 import { randomBytes } from "node:crypto"
 
-import { db } from "../database"
+import type { PreviewLinkExpiryChoice } from "~/schemas/previewLink"
+import { logPreviewLinkEvent } from "../audit/audit.service"
+import { AuditLogEvent, db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 const MS_PER_HOUR = 60 * 60 * 1000
@@ -44,6 +45,7 @@ interface MintPreviewLinkProps {
   resourceId: number
   expiryChoice: PreviewLinkExpiryChoice
   label?: string | null
+  ip?: string
 }
 
 export const mintPreviewLink = async ({
@@ -52,21 +54,34 @@ export const mintPreviewLink = async ({
   resourceId,
   expiryChoice,
   label,
+  ip,
 }: MintPreviewLinkProps) => {
   await canSharePreview({ userId, siteId, resourceId })
 
   const expiresAt = new Date(Date.now() + EXPIRY_MS[expiryChoice])
 
-  return await db
-    .insertInto("PreviewLink")
-    .values({
-      token: generateToken(),
+  return await db.transaction().execute(async (tx) => {
+    const link = await tx
+      .insertInto("PreviewLink")
+      .values({
+        token: generateToken(),
+        siteId,
+        resourceId: String(resourceId),
+        createdBy: userId,
+        label: label ?? null,
+        expiresAt,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    await logPreviewLinkEvent(tx, {
+      eventType: AuditLogEvent.PreviewLinkMint,
+      userId,
       siteId,
-      resourceId: String(resourceId),
-      createdBy: userId,
-      label: label ?? null,
-      expiresAt,
+      ip,
+      delta: { before: null, after: link },
     })
-    .returningAll()
-    .executeTakeFirstOrThrow()
+
+    return link
+  })
 }
