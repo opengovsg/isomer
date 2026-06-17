@@ -1,7 +1,9 @@
 import {
+  countRedirectsByDestinationSchema,
   countRedirectsSchema,
   createRedirectSchema,
   deleteRedirectSchema,
+  getRedirectBySourceSchema,
   listRedirectsSchema,
   resolveRedirectReferencesSchema,
 } from "~/schemas/redirect"
@@ -10,8 +12,10 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   countRedirects,
+  countRedirectsPointingToResource,
   createRedirect,
   deleteRedirect,
+  getRedirectBySource,
   listRedirects,
   resolveRedirectReferences,
   validateRedirect,
@@ -70,6 +74,35 @@ export const redirectRouter = router({
       })
 
       return resolveRedirectReferences(input)
+    }),
+
+  // Whether a path is the source of a live redirect (and where it points), for
+  // the page-settings warning. Read-only — surfaces only the redirect's
+  // destination, which read access already covers.
+  getBySource: protectedProcedure
+    .input(getRedirectBySourceSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        siteId: input.siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      return getRedirectBySource(input)
+    }),
+
+  // Counts the live redirects that point at a resource (or any descendant), so
+  // the delete-page modal can warn they will be removed. Read-only.
+  countByDestinationResource: protectedProcedure
+    .input(countRedirectsByDestinationSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        siteId: input.siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      return countRedirectsPointingToResource(input)
     }),
 
   // create/delete publish immediately (no separate publish step). Site-wide

@@ -247,3 +247,25 @@ export const resolveRedirectReferencesSchema = z.object({
 export type ResolveRedirectReferencesInput = z.infer<
   typeof resolveRedirectReferencesSchema
 >
+
+// Looks up whether a path is the source of a live redirect, for the
+// page-settings warning. `source` is a candidate page URL (a full permalink),
+// not necessarily a clean redirect source, so it is normalised server-side
+// before the lookup.
+export const getRedirectBySourceSchema = z.object({
+  siteId: z.number().min(1),
+  source: z.string().min(1, { message: "Source path is required" }),
+})
+export type GetRedirectBySourceInput = z.infer<typeof getRedirectBySourceSchema>
+
+// Counts the live redirects whose destination resolves to a resource — or any
+// of its descendants — so the delete-page modal can warn that deleting the page
+// will remove those redirects. Descendants are resolved server-side from the
+// resource being deleted.
+export const countRedirectsByDestinationSchema = z.object({
+  siteId: z.number().min(1),
+  resourceId: generateBigIntSchema("resource ID"),
+})
+export type CountRedirectsByDestinationInput = z.infer<
+  typeof countRedirectsByDestinationSchema
+>

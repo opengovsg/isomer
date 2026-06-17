@@ -2444,6 +2444,102 @@ describe("resource.router", async () => {
       expect(result).toEqual(page)
     })
 
+    it("should soft-delete redirects pointing to the deleted page", async () => {
+      // Arrange — a live redirect whose destination references the page
+      const { page, site } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const redirect = await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old",
+          destination: `[resource:${site.id}:${page.id}]`,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      // Act
+      await caller.delete({ resourceId: page.id, siteId: site.id })
+
+      // Assert — the redirect is soft-deleted in the same transaction and audited
+      const after = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("id", "=", redirect.id)
+        .executeTakeFirstOrThrow()
+      expect(after.deletedAt).not.toBeNull()
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectDelete")
+        .executeTakeFirstOrThrow()
+      expect(auditEntry.userId).toBe(session.userId)
+    })
+
+    it("should soft-delete redirects pointing to descendant pages of a deleted folder", async () => {
+      // Arrange — a redirect to a page nested inside the folder being deleted
+      const { folder, site } = await setupFolder()
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "leaf",
+        resourceType: "Page",
+      })
+      const redirect = await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old",
+          destination: `[resource:${site.id}:${page.id}]`,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      // Act
+      await caller.delete({ resourceId: folder.id, siteId: site.id })
+
+      // Assert
+      const after = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("id", "=", redirect.id)
+        .executeTakeFirstOrThrow()
+      expect(after.deletedAt).not.toBeNull()
+    })
+
+    it("should leave redirects pointing elsewhere untouched when deleting a page", async () => {
+      // Arrange — a redirect to a different page must survive
+      const { page, site } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const { page: other } = await setupPageResource({
+        siteId: site.id,
+        permalink: "other",
+        resourceType: "Page",
+      })
+      const redirect = await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old",
+          destination: `[resource:${site.id}:${other.id}]`,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      // Act
+      await caller.delete({ resourceId: page.id, siteId: site.id })
+
+      // Assert — untouched
+      const after = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("id", "=", redirect.id)
+        .executeTakeFirstOrThrow()
+      expect(after.deletedAt).toBeNull()
+    })
+
     it("should delete a folder and all its children (recursively) successfully", async () => {
       // Arrange
       const { folder: folderToUse, site } = await setupFolder()

@@ -1638,4 +1638,258 @@ describe("redirect.router", async () => {
       expect(publishEntry.userId).toBe(session.userId)
     })
   })
+
+  describe("getBySource", () => {
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site: otherSite } = await setupSite()
+
+      // Act
+      const result = caller.getBySource({
+        siteId: otherSite.id,
+        source: "/old",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return null when no live redirect has that source", async () => {
+      // Arrange / Act
+      const result = await caller.getBySource({
+        siteId,
+        source: "/no-redirect",
+      })
+
+      // Assert
+      expect(result).toBeNull()
+    })
+
+    it("should return an external destination verbatim", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/old",
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act
+      const result = await caller.getBySource({ siteId, source: "/old" })
+
+      // Assert
+      expect(result).toEqual({ destination: "https://www.example.gov.sg" })
+    })
+
+    it("should resolve a reference destination to the page's current permalink", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target-page",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/old",
+          destination: `[resource:${siteId}:${page.id}]`,
+        })
+        .execute()
+
+      // Act
+      const result = await caller.getBySource({ siteId, source: "/old" })
+
+      // Assert
+      expect(result).toEqual({ destination: "/target-page" })
+    })
+
+    it("should match regardless of leading/trailing slashes in the queried path", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/old",
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act — the page settings field may pass an un-normalised path
+      const result = await caller.getBySource({ siteId, source: "old/" })
+
+      // Assert
+      expect(result).toEqual({ destination: "https://www.example.gov.sg" })
+    })
+
+    it("should not match a soft-deleted redirect", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/old",
+          destination: "https://www.example.gov.sg",
+          deletedAt: new Date(),
+        })
+        .execute()
+
+      // Act
+      const result = await caller.getBySource({ siteId, source: "/old" })
+
+      // Assert
+      expect(result).toBeNull()
+    })
+  })
+
+  describe("countByDestinationResource", () => {
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site: otherSite } = await setupSite()
+
+      // Act
+      const result = caller.countByDestinationResource({
+        siteId: otherSite.id,
+        resourceId: "1",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should count live redirects pointing to the resource", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values([
+          {
+            siteId,
+            source: "/a",
+            destination: `[resource:${siteId}:${page.id}]`,
+          },
+          {
+            siteId,
+            source: "/b",
+            destination: `[resource:${siteId}:${page.id}]`,
+          },
+        ])
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(page.id),
+      })
+
+      // Assert
+      expect(count).toBe(2)
+    })
+
+    it("should count redirects pointing to a descendant page of a folder", async () => {
+      // Arrange — a redirect to a page nested inside the folder being counted
+      const { folder } = await setupFolder({ siteId, permalink: "folder" })
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "leaf",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/a",
+          destination: `[resource:${siteId}:${page.id}]`,
+        })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(folder.id),
+      })
+
+      // Assert
+      expect(count).toBe(1)
+    })
+
+    it("should not count a literal-path destination (reference-only)", async () => {
+      // Arrange — a literal-path destination that happens to match the page's
+      // path is not a reference, so it is intentionally not counted
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/a", destination: "/target" })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(page.id),
+      })
+
+      // Assert
+      expect(count).toBe(0)
+    })
+
+    it("should not count soft-deleted redirects", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/a",
+          destination: `[resource:${siteId}:${page.id}]`,
+          deletedAt: new Date(),
+        })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(page.id),
+      })
+
+      // Assert
+      expect(count).toBe(0)
+    })
+  })
 })

@@ -38,6 +38,7 @@ import {
   definePermissionsForResource,
   getResourcePermission,
 } from "../permissions/permissions.service"
+import { softDeleteRedirectsPointingToResource } from "../redirect/redirect.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   defaultResourceSelect,
@@ -682,6 +683,17 @@ export const resourceRouter = router({
           },
           by: user,
           eventType: AuditLogEvent.ResourceDelete,
+        })
+
+        // ISOM-2266: soft-delete the redirects that point at this resource (or
+        // any descendant) in the same transaction — once the page is gone those
+        // redirects would resolve to nothing. Run before the delete so the
+        // subtree is still resolvable. The delete's single site publish covers
+        // the removal.
+        await softDeleteRedirectsPointingToResource(tx, {
+          siteId: Number(siteId),
+          resourceId: String(resourceId),
+          byUserId: user.id,
         })
 
         return tx

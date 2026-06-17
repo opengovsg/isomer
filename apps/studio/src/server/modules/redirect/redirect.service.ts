@@ -1,15 +1,19 @@
+import type { Transaction } from "kysely"
 import type {
   RedirectValidationIssue,
   RedirectValidationResult,
 } from "~/constants/redirect"
 import type {
+  CountRedirectsByDestinationInput,
   CountRedirectsInput,
   CreateRedirectInput,
   DeleteRedirectInput,
+  GetRedirectBySourceInput,
   ListRedirectsInput,
   RedirectSortField,
   ResolveRedirectReferencesInput,
 } from "~/schemas/redirect"
+import type { DB } from "~prisma/generated/generatedTypes"
 import {
   getResourceIdFromReferenceLink,
   REFERENCE_LINK_REGEX,
@@ -29,6 +33,7 @@ import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db } from "../database"
 import {
+  getDescendantResourceIds,
   getResourceByFullPermalink,
   getResourceFullPermalinks,
   getResourceIdByPermalink,
@@ -504,4 +509,104 @@ export const deleteRedirect = async ({
 
   // Publish after the transaction commits (see createRedirect).
   await publishSite(logger, { siteId })
+}
+
+// Powers the page-settings warning (ISOM-2266): is `source` the source of a
+// live redirect, and if so where does it currently point? `source` is a
+// candidate page URL, so it is normalised the same way stored sources are
+// before the lookup. The stored destination (possibly a `[resource:...]`
+// reference) is resolved to the page's current permalink for display.
+export const getRedirectBySource = async ({
+  siteId,
+  source,
+}: GetRedirectBySourceInput): Promise<{ destination: string } | null> => {
+  const redirect = await getLiveRedirectBySource(db, {
+    siteId,
+    source: normalizeRedirectPath(source),
+  })
+  if (!redirect) {
+    return null
+  }
+  return {
+    destination: await resolveStoredDestination(siteId, redirect.destination),
+  }
+}
+
+// All `[resource:...]` references that point at the resource or any descendant
+// — the redirects that break when that subtree is deleted. Reference-only by
+// design: a destination stored as a literal path or external URL is not counted
+// (only internal-page references follow a resource).
+const getDescendantReferences = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<string[]> => {
+  const resourceIds = await getDescendantResourceIds(trx, {
+    siteId,
+    resourceId,
+  })
+  return resourceIds.map((id) =>
+    getReferenceLink({ siteId: String(siteId), resourceId: id }),
+  )
+}
+
+// Counts the live redirects whose destination points at the resource or any
+// descendant, so the delete-page modal can warn before deletion. Shares its
+// resolution with the cascade below, so the count matches what gets removed.
+export const countRedirectsPointingToResource = async ({
+  siteId,
+  resourceId,
+}: CountRedirectsByDestinationInput): Promise<number> => {
+  const references = await getDescendantReferences(db, { siteId, resourceId })
+  const { count } = await db
+    .selectFrom("Redirect")
+    .select((eb) => eb.fn.countAll().as("count"))
+    .where("siteId", "=", siteId)
+    .where("destination", "in", references)
+    .where("deletedAt", "is", null)
+    .executeTakeFirstOrThrow()
+  return Number(count)
+}
+
+// Soft-deletes every live redirect that points at the resource or any
+// descendant, run inside the resource-delete transaction so it commits with the
+// delete (the delete's single site publish then covers the removal). Each
+// redirect gets its own RedirectDelete audit entry, mirroring deleteRedirect.
+export const softDeleteRedirectsPointingToResource = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    resourceId,
+    byUserId,
+  }: { siteId: number; resourceId: string; byUserId: string },
+) => {
+  const references = await getDescendantReferences(tx, { siteId, resourceId })
+  const toDelete = await tx
+    .selectFrom("Redirect")
+    .selectAll()
+    .where("siteId", "=", siteId)
+    .where("destination", "in", references)
+    .where("deletedAt", "is", null)
+    .execute()
+  if (toDelete.length === 0) {
+    return []
+  }
+
+  const byUser = await getByUser(byUserId)
+  const deleted = []
+  for (const before of toDelete) {
+    const after = await tx
+      .updateTable("Redirect")
+      .set({ deletedAt: new Date() })
+      .where("id", "=", before.id)
+      .returningAll()
+      .executeTakeFirstOrThrow()
+    await logRedirectEvent(tx, {
+      siteId,
+      by: byUser,
+      eventType: AuditLogEvent.RedirectDelete,
+      delta: { before, after },
+    })
+    deleted.push(after)
+  }
+  return deleted
 }
