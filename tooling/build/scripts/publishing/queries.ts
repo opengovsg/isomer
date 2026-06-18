@@ -89,13 +89,17 @@ SELECT source, destination FROM (
         CASE
             WHEN redirect.destination ~ '^\\[resource:\\d+:\\d+\\]$'
             -- "||" (not CONCAT) so an unresolved reference stays NULL and is
-            -- dropped below; CONCAT would coerce NULL to '' and emit "/"
-            THEN '/' || regexp_replace(rp."fullPermalink", '(^|/)_index$', '')
+            -- dropped below; CONCAT would coerce NULL to '' and emit "/".
+            -- Strips a trailing "_index"/"_meta" to match getConvertedPermalink.
+            THEN '/' || regexp_replace(rp."fullPermalink", '(^|/)(_index|_meta)$', '')
             ELSE redirect.destination
         END AS destination
     FROM public."Redirect" redirect
     LEFT JOIN "resourcePath" rp
         ON redirect.destination ~ '^\\[resource:\\d+:\\d+\\]$'
+        -- The reference's siteId must match this site ($1); a mismatched
+        -- reference can't resolve here and is dropped.
+        AND CAST(substring(redirect.destination from '\\[resource:(\\d+):\\d+\\]') AS bigint) = $1
         AND rp."publishedVersionId" IS NOT NULL
         AND (
             -- A page reference resolves to the page itself.

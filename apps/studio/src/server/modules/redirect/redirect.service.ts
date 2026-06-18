@@ -6,7 +6,6 @@ import type {
   RedirectSortField,
   ResolveRedirectReferencesInput,
 } from "~/schemas/redirect"
-import { getResourceIdFromReferenceLink } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { getReferenceLink } from "~/utils/link"
 
@@ -31,9 +30,10 @@ const SORT_FIELD_TO_COLUMN = {
   "source" | "destination" | "createdAt"
 >
 
-// Anchored [resource:siteId:resourceId] reference. Such a destination (or an
-// external URL) is stored verbatim; only a bare internal path becomes a reference.
-const REFERENCE_DESTINATION_REGEX = /^\[resource:\d+:\d+\]$/
+// Anchored [resource:siteId:resourceId] reference, capturing siteId/resourceId.
+// Such a destination (or an external URL) is stored verbatim; only a bare
+// internal path becomes a reference.
+const REFERENCE_DESTINATION_REGEX = /^\[resource:(\d+):(\d+)\]$/
 
 // Resolves a destination to its stored form. An internal path with no query/hash
 // becomes a [resource:...] reference (so it follows page renames); a path with a
@@ -72,18 +72,24 @@ export const resolveRedirectReferences = async ({
 }: ResolveRedirectReferencesInput): Promise<
   { reference: string; permalink: string | null }[]
 > => {
-  const parsed = references.map((reference) => ({
-    reference,
-    resourceId: getResourceIdFromReferenceLink(reference),
-  }))
+  // Resolve only references that are anchored AND belong to this site — a
+  // reference to another site can't resolve here, so it stays unresolved.
+  const parsed = references.map((reference) => {
+    const match = REFERENCE_DESTINATION_REGEX.exec(reference)
+    return {
+      reference,
+      resourceId:
+        match && Number(match[1]) === siteId ? Number(match[2]) : null,
+    }
+  })
   const resourceIds = parsed
-    .filter(({ resourceId }) => resourceId !== "")
-    .map(({ resourceId }) => Number(resourceId))
+    .map(({ resourceId }) => resourceId)
+    .filter((id): id is number => id !== null)
   const permalinks = await getResourceFullPermalinks(siteId, resourceIds)
   return parsed.map(({ reference, resourceId }) => ({
     reference,
     permalink:
-      resourceId === "" ? null : (permalinks.get(Number(resourceId)) ?? null),
+      resourceId === null ? null : (permalinks.get(resourceId) ?? null),
   }))
 }
 

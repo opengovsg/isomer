@@ -365,10 +365,12 @@ export const RedirectsTable = ({
         redirect={redirectToDelete}
         destinationLabel={
           redirectToDelete
-            ? (getDestinationLabel(
+            ? // Fall back to "" (not the raw destination) while a reference is
+              // still resolving, so the modal never shows the "[resource:...]" token.
+              (getDestinationLabel(
                 redirectToDelete.destination,
                 permalinkByReference,
-              ) ?? redirectToDelete.destination)
+              ) ?? "")
             : ""
         }
         isPending={isPending}

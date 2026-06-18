@@ -406,6 +406,13 @@ beforeAll(async () => {
     source: "/ref-draft",
     destination: `[resource:${siteId}:${draftPageId}]`,
   })
+  // A reference whose embedded siteId is not this site is dropped, even though
+  // the resourceId exists here — it must not resolve cross-site.
+  await seedRedirect({
+    siteId,
+    source: "/ref-wrong-site",
+    destination: `[resource:${siteId + 999}:${ourTeamPageId}]`,
+  })
 
   // A second site: nothing from it may leak into the output
   const otherSiteId = await seedSite({ name: "Other site" })
@@ -748,6 +755,19 @@ describe("redirects.json", () => {
     // Assert
     expect(
       redirects.find((redirect) => redirect.source === "/ref-dangling-folder"),
+    ).toBeUndefined()
+  })
+
+  it("drops a reference whose embedded siteId is not this site", () => {
+    // Arrange / Act
+    const redirects = readOutput("redirects.json") as {
+      source: string
+      destination: string
+    }[]
+
+    // Assert
+    expect(
+      redirects.find((redirect) => redirect.source === "/ref-wrong-site"),
     ).toBeUndefined()
   })
 })

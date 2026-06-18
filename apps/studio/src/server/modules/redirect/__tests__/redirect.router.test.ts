@@ -828,6 +828,26 @@ describe("redirect.router", async () => {
       // Assert
       expect(result).toEqual([{ reference, permalink: null }])
     })
+
+    it("should resolve a reference whose embedded siteId is not this site to null", async () => {
+      // Arrange — the resourceId exists on this site, but the reference claims a
+      // different site, so it must not resolve here.
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target-page",
+      })
+      const reference = `[resource:${siteId + 1}:${page.id}]`
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: [reference],
+      })
+
+      // Assert
+      expect(result).toEqual([{ reference, permalink: null }])
+    })
   })
 
   describe("delete", () => {

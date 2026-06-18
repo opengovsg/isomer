@@ -14,9 +14,14 @@ export const formatAddedAt = (date: Date): string => {
 export const MISSING_PAGE_LABEL = "Page no longer exists"
 
 // Internal-page destinations are stored as "[resource:siteId:resourceId]"
-// references; literal paths and external URLs are not.
+// references; literal paths and external URLs are not. Anchored (the shared
+// REFERENCE_LINK_REGEX is not) so a destination only counts as a reference when
+// it is exactly one — an external URL merely containing the substring doesn't.
+const REFERENCE_DESTINATION_REGEX = new RegExp(
+  `^${REFERENCE_LINK_REGEX.source}$`,
+)
 export const isReferenceDestination = (destination: string): boolean =>
-  REFERENCE_LINK_REGEX.test(destination)
+  REFERENCE_DESTINATION_REGEX.test(destination)
 
 // Turns a stored destination into a user-facing label: a reference becomes the
 // resolved permalink (or MISSING_PAGE_LABEL); non-references show verbatim.

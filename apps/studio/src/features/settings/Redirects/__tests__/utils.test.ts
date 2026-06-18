@@ -1,4 +1,4 @@
-import { formatAddedAt } from "../utils"
+import { formatAddedAt, isReferenceDestination } from "../utils"
 
 describe("formatAddedAt", () => {
   beforeEach(() => {
@@ -57,5 +57,25 @@ describe("formatAddedAt", () => {
 
     // Act / Assert
     expect(formatAddedAt(date)).toBe("8 Jun 2026")
+  })
+})
+
+describe("isReferenceDestination", () => {
+  it("returns true only for a string that is exactly a reference", () => {
+    expect(isReferenceDestination("[resource:1:2]")).toBe(true)
+  })
+
+  it("returns false for literal paths and external URLs", () => {
+    expect(isReferenceDestination("/about-us")).toBe(false)
+    expect(isReferenceDestination("https://example.gov.sg/page")).toBe(false)
+  })
+
+  it("returns false for a value that merely contains the reference substring", () => {
+    // The shared regex is unanchored; isReferenceDestination must not match a
+    // reference embedded in an external URL or a longer string.
+    expect(
+      isReferenceDestination("https://example.gov.sg/[resource:1:2]"),
+    ).toBe(false)
+    expect(isReferenceDestination("[resource:1:2]/extra")).toBe(false)
   })
 })
