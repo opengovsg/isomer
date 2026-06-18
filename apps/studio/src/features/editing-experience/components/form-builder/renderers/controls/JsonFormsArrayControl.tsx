@@ -35,8 +35,8 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import type { DraggableArrayItemRenderProps } from "./types"
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
+import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { useBuilderErrors } from "../../ErrorProvider"
-import DraggableTagButton from "./DraggableTagButton"
 
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
@@ -350,7 +350,36 @@ export function JsonFormsArrayControlView({
                         return renderListItem ? (
                           renderListItem(rowProps)
                         ) : (
-                          <DraggableTagButton {...rowProps} />
+                          <DraggableTagButton.Root
+                            draggableProps={rowProps.draggableProps}
+                            isError={rowProps.isError}
+                            ref={rowProps.ref}
+                          >
+                            <DraggableTagButton.Handle
+                              dragHandleProps={rowProps.dragHandleProps}
+                              py={rowProps.isError ? "0.75rem" : "1.25rem"}
+                            />
+                            <DraggableTagButton.Body
+                              onClick={() =>
+                                rowProps.setSelectedIndex(rowProps.index)
+                              }
+                              py={rowProps.isError ? "0.75rem" : "1rem"}
+                            >
+                              <DraggableTagButton.Content>
+                                <DraggableTagButton.Label
+                                  index={rowProps.index}
+                                  path={rowProps.path}
+                                  schema={rowProps.schema}
+                                  uischema={rowProps.uischema}
+                                  enabled={rowProps.enabled}
+                                  removeItem={rowProps.removeItem}
+                                />
+                                {rowProps.isError && (
+                                  <DraggableTagButton.ErrorCaption />
+                                )}
+                              </DraggableTagButton.Content>
+                            </DraggableTagButton.Body>
+                          </DraggableTagButton.Root>
                         )
                       }}
                     </Draggable>
