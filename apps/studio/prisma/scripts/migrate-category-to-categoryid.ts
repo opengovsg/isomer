@@ -34,6 +34,11 @@ import { ResourceType, sql } from "@isomer/db"
 // ---------------------------------------------------------------------------
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
+// Runs at import time (outside the process.argv guard), so any test that
+// imports this module will load apps/studio/.env into process.env. The unit
+// tests are unaffected because they never call main(), but be aware that
+// DATABASE_URL and other local secrets will be present in the test process
+// if a .env file exists on the machine.
 config({ path: resolve(__dirname, "../../.env") })
 
 // ---------------------------------------------------------------------------
@@ -205,7 +210,7 @@ async function main() {
 
         // 4. Resolve the draft blob content for the Collection Index
         let indexDraftContent: Record<string, unknown> | null = null
-        let existingDraftBlobId: string | null = indexResource.draftBlobId
+        const existingDraftBlobId: string | null = indexResource.draftBlobId
 
         if (existingDraftBlobId) {
           const draftBlob = await tx
@@ -240,7 +245,15 @@ async function main() {
           > | null
         }
 
-        // 5. Idempotency check — skip if categoryOptions already non-empty
+        // 5. Idempotency check — skip if categoryOptions already non-empty.
+        //    This is safe because steps 10–11 run inside a single transaction:
+        //    either both the index categoryOptions and all child categoryIds are
+        //    committed together, or nothing is. A non-empty categoryOptions
+        //    therefore guarantees the child items were also stamped.
+        //
+        //    ⚠️  Do NOT manually clear categoryOptions and re-run: the script
+        //    generates fresh UUIDs each time, which would break any categoryId
+        //    references already stored by the app from the original run.
         const existingPage = indexDraftContent?.["page"] as
           | Record<string, unknown>
           | undefined
@@ -326,8 +339,6 @@ async function main() {
             .where("id", "=", indexPageId)
             .set({ draftBlobId: newBlob.id })
             .execute()
-
-          existingDraftBlobId = newBlob.id
         }
 
         // 11. For each child item, write the matching categoryId to its draft blob
