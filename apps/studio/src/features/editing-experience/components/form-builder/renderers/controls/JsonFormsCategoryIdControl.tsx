@@ -54,7 +54,7 @@ function SuspendableJsonFormsCategoryIdSelect({
 
 export function JsonFormsCategoryIdControl({
   description,
-  required,
+  required: _required,
   label,
   ...props
 }: ControlProps) {
