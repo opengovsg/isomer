@@ -2593,7 +2593,7 @@ describe("collection.router", async () => {
 
     it("should return empty array when collection has no published version and isPublishedCategories is true", async () => {
       // Arrange
-      const { collection, site, indexPage, indexBlob } =
+      const { collection, site, indexBlob } =
         await setupCollectionWithIndexPage()
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
       // Put tags in draft only — no published version
