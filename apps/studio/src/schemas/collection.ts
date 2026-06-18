@@ -37,6 +37,7 @@ const slashDateSchema = z
 export const editLinkSchema = z.object({
   date: slashDateSchema.optional(),
   category: z.string(),
+  categoryId: z.string().optional(),
   linkId: z.number().min(1),
   siteId: z.number().min(1),
   description: z.string().optional(),
