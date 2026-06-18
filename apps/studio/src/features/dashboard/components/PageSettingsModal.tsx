@@ -251,8 +251,7 @@ const PageSettingsModalContent = ({
               {existingRedirect &&
                 existingRedirect.destinationResourceId !== Number(pageId) && (
                   <Infobox my="0.5rem" variant="warning" size="sm">
-                    This URL already redirects to {existingRedirect.destination}
-                    . Visitors will end up there instead.
+                    {`This URL already redirects to ${existingRedirect.destination}. Visitors will end up there instead.`}
                   </Infobox>
                 )}
               {showRedirectOption && (

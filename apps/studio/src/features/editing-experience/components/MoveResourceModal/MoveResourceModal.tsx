@@ -128,21 +128,26 @@ const MoveResourceContent = withSuspense(
       { enabled: !!curResourceId },
     )
 
-    // Only Page/CollectionPage have a URL worth preserving; show the option
-    // once a destination is picked.
-    const showRedirectOption =
-      curResourceId !== undefined &&
-      (type === ResourceType.Page || type === ResourceType.CollectionPage)
+    // Only Page/CollectionPage have a URL worth preserving.
+    const isRedirectableType =
+      type === ResourceType.Page || type === ResourceType.CollectionPage
     const oldFullPermalink = normalizeRedirectPath(movedFullPermalink)
     const newFullPermalink = normalizeRedirectPath(
       `${curResourceId && destination ? destination.fullPermalink : ""}/${movedSlug}`,
     )
+    // The new path is known once a destination is picked (the root needs no
+    // lookup); until then the computed permalink is provisional.
+    const isDestinationResolved =
+      curResourceId === null || (curResourceId !== undefined && !!destination)
+    // Moving a page into its current parent leaves the URL unchanged, so there's
+    // nothing to redirect — only offer the option when the URL actually changes.
+    const showRedirectOption =
+      isRedirectableType &&
+      isDestinationResolved &&
+      oldFullPermalink !== newFullPermalink
     const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
       { siteId: Number(siteId), source: newFullPermalink },
-      {
-        enabled:
-          showRedirectOption && (curResourceId === null || !!destination),
-      },
+      { enabled: showRedirectOption },
     )
 
     return (
