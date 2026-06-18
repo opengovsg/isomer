@@ -1469,9 +1469,9 @@ describe("collection.router", async () => {
       })
 
       // Assert
-      expect((result.content.page as { categoryId?: string }).categoryId).toEqual(
-        testCategoryId,
-      )
+      expect(
+        (result.content.page as { categoryId?: string }).categoryId,
+      ).toEqual(testCategoryId)
     })
 
     it("should write `categoryId` as `undefined` when not provided in the input", async () => {
