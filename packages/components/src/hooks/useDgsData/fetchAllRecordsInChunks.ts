@@ -58,7 +58,10 @@ export const fetchAllRecordsInChunks = async ({
     return { records: [], total: 0 }
   }
 
-  const numChunks = Math.max(1, Math.ceil(datasetSize / DGS_REQUEST_MAX_BYTES))
+  const baseChunks = Math.max(1, Math.ceil(datasetSize / DGS_REQUEST_MAX_BYTES))
+  // +1 buffer when multi-chunk: rows are not evenly distributed across the
+  // dataset's byte size, so the last chunk may exceed the per-chunk row estimate.
+  const numChunks = baseChunks > 1 ? baseChunks + 1 : baseChunks
   const limitPerChunk = Math.ceil(total / numChunks)
 
   const chunkResponses = await Promise.all(

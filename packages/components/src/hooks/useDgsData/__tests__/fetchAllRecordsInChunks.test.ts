@@ -59,7 +59,7 @@ describe("fetchAllRecordsInChunks", () => {
     // Act
     const result = await fetchAllRecordsInChunks({
       resourceId: "resource-1",
-      datasetSize: ONE_MB, // 1MB < 4MB → 1 chunk
+      datasetSize: ONE_MB, // 1MB ≤ 4MB → baseChunks=1, no buffer → 1 chunk
     })
 
     // Assert
@@ -86,14 +86,15 @@ describe("fetchAllRecordsInChunks", () => {
   it("should issue probe + multiple parallel data chunks for a larger dataset", async () => {
     // Arrange
     const total = 1000
-    // datasetSize = 11MB → numChunks = ceil(11/4) = 3
-    // limitPerChunk = ceil(1000/3) = 334
+    // datasetSize = 11MB → numChunks = ceil(11/4) + 1 = 4 (with buffer)
+    // limitPerChunk = ceil(1000/4) = 250
     const datasetSize = 11 * ONE_MB
-    const expectedLimit = 334
+    const expectedLimit = 250
 
     const chunk0 = [makeRecord(0), makeRecord(1)]
     const chunk1 = [makeRecord(100), makeRecord(101)]
     const chunk2 = [makeRecord(200), makeRecord(201)]
+    const chunk3 = [makeRecord(300), makeRecord(301)]
 
     mockedFetch.mockImplementation((params) => {
       // Probe call has no offset and limit=1
@@ -106,6 +107,8 @@ describe("fetchAllRecordsInChunks", () => {
         return Promise.resolve(makeResponse(chunk1, total))
       if (params.offset === 2 * expectedLimit)
         return Promise.resolve(makeResponse(chunk2, total))
+      if (params.offset === 3 * expectedLimit)
+        return Promise.resolve(makeResponse(chunk3, total))
       return Promise.reject(new Error(`unexpected offset ${params.offset}`))
     })
 
@@ -116,7 +119,7 @@ describe("fetchAllRecordsInChunks", () => {
     })
 
     // Assert
-    expect(mockedFetch).toHaveBeenCalledTimes(4) // 1 probe + 3 chunks
+    expect(mockedFetch).toHaveBeenCalledTimes(5) // 1 probe + 4 chunks
 
     // Probe was first
     expect(mockedFetch).toHaveBeenNthCalledWith(1, {
@@ -126,19 +129,24 @@ describe("fetchAllRecordsInChunks", () => {
       limit: 1,
     })
 
-    // Three parallel chunk calls with the expected offsets
+    // Four parallel chunk calls with the expected offsets
     const chunkCalls = mockedFetch.mock.calls.slice(1).map(([params]) => params)
     const offsets = chunkCalls.map((c) => c.offset).sort((a, b) => a! - b!)
-    expect(offsets).toEqual([0, expectedLimit, 2 * expectedLimit])
+    expect(offsets).toEqual([
+      0,
+      expectedLimit,
+      2 * expectedLimit,
+      3 * expectedLimit,
+    ])
     chunkCalls.forEach((c) => {
       expect(c.limit).toBe(expectedLimit)
       expect(c.resourceId).toBe("resource-1")
       expect(c.sort).toBe("_id")
     })
 
-    // Records are concatenated in chunk order (offset 0 first, then 334, then 668)
+    // Records are concatenated in chunk order (offset 0 first, then 250, 500, 750)
     expect(result.total).toBe(total)
-    expect(result.records).toEqual([...chunk0, ...chunk1, ...chunk2])
+    expect(result.records).toEqual([...chunk0, ...chunk1, ...chunk2, ...chunk3])
   })
 
   it("should default sort to '_id' when caller does not provide one", async () => {
