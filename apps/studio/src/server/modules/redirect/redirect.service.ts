@@ -15,6 +15,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import {
   normalizeRedirectPath,
+  normalizeRedirectSource,
   REDIRECT_MESSAGES,
   RedirectValidationCode,
 } from "~/schemas/redirect"
@@ -154,11 +155,9 @@ const getLiveRedirectBySource = (
     .where("deletedAt", "is", null)
     .executeTakeFirst()
 
-// Resolves a redirect's stored destination to a comparable / displayable path.
-// Internal destinations are persisted as `[resource:...]` references, so a
-// stored reference is resolved to the page's current permalink; a literal path
-// is normalised; an external https URL (or a reference whose page no longer
-// exists) is returned verbatim.
+// Resolves a stored destination to a comparable/displayable path: a reference
+// to the page's current permalink, a literal path normalised, an external URL
+// (or a reference to a missing page) verbatim.
 const resolveStoredDestination = async (
   siteId: number,
   storedDestination: string,
@@ -176,13 +175,22 @@ const resolveStoredDestination = async (
   return permalinks.get(Number(resourceId)) ?? storedDestination
 }
 
-// Looks up a live redirect whose source equals the given destination path —
-// i.e. the destination is itself a redirect source. Returns the redirect, its
-// resolved `target` (the page it ultimately points at), and whether that target
-// is `source` (a 1-level loop). The stored destination may be a `[resource:...]`
-// reference, so it is resolved to the page's current permalink before comparing
-// or displaying. Only internal paths can chain; an external https destination
-// never matches a stored source. `source` is assumed already normalised.
+// Bound on how far the chain is followed when detecting a loop. A new redirect
+// closes a loop if following the existing chain from its destination returns to
+// `source` within this many hops; the visited-set also stops on a pre-existing
+// cycle. Generous — real chains are 1-2 hops.
+const MAX_REDIRECT_CHAIN_HOPS = 10
+
+// Detects whether adding `source -> destination` would chain into, or close a
+// loop with, existing redirects. Follows the chain from the destination (each
+// redirect's resolved target may itself be a redirect source) up to
+// MAX_REDIRECT_CHAIN_HOPS, reporting `isLoop` when it returns to `source`.
+// Returns the immediate next redirect and its `target` so a non-looping chain
+// can still be surfaced as a warning. Stored destinations may be `[resource:...]`
+// references, resolved to the page's current permalink before comparing. Only
+// internal paths chain; an external https destination never matches a source.
+// `source` is assumed already normalised (lowercased), so destinations are
+// normalised the same way before they are looked up as a source.
 const getChainedRedirect = async (
   dbInstance: SafeKysely,
   {
@@ -194,7 +202,7 @@ const getChainedRedirect = async (
   if (!destination.startsWith("/")) {
     return null
   }
-  const normalizedDestination = normalizeRedirectPath(destination)
+  const normalizedDestination = normalizeRedirectSource(destination)
   const redirect = await getLiveRedirectBySource(dbInstance, {
     siteId,
     source: normalizedDestination,
@@ -202,14 +210,43 @@ const getChainedRedirect = async (
   if (!redirect) {
     return null
   }
+
+  // A hop closes a loop when its resolved (internal) target normalises to
+  // `source`; an external target can never match a source.
+  const closesLoop = (path: string) =>
+    path.startsWith("/") && normalizeRedirectSource(path) === source
+
   const target = await resolveStoredDestination(siteId, redirect.destination)
-  return { redirect, normalizedDestination, target, isLoop: target === source }
+  // Walk the chain from the immediate target onward; a loop exists if any hop
+  // resolves back to `source`. `visited` guards against an existing cycle that
+  // doesn't involve `source` (which would otherwise spin until the hop cap).
+  const visited = new Set([normalizedDestination])
+  let current = target
+  let isLoop = closesLoop(current)
+  let hops = 1
+  while (!isLoop && current.startsWith("/") && hops < MAX_REDIRECT_CHAIN_HOPS) {
+    const normalizedCurrent = normalizeRedirectSource(current)
+    if (visited.has(normalizedCurrent)) {
+      break
+    }
+    visited.add(normalizedCurrent)
+    const next = await getLiveRedirectBySource(dbInstance, {
+      siteId,
+      source: normalizedCurrent,
+    })
+    if (!next) {
+      break
+    }
+    current = await resolveStoredDestination(siteId, next.destination)
+    isLoop = closesLoop(current)
+    hops += 1
+  }
+
+  return { redirect, normalizedDestination, target, isLoop }
 }
 
-// Preflight for redirect.create: returns the blocking errors and non-blocking
-// warnings for a would-be redirect without mutating anything. The create
-// endpoint independently re-enforces every error, so this can never be the
-// only thing standing between an invalid redirect and the database.
+// Preflight for redirect.create: returns blocking errors and non-blocking
+// warnings without mutating. Advisory only — create re-enforces every error.
 export const validateRedirect = async ({
   siteId,
   source,
@@ -228,11 +265,9 @@ export const validateRedirect = async ({
     })
   }
 
-  // A redirect whose source is the live URL of a published page would shadow
-  // that page on the published site (the redirect takes precedence), leaving it
-  // unreachable. Block it. Only PUBLISHED pages block — an unpublished page at
-  // this path isn't live yet, and publishing it later is guarded on the page
-  // side (see ISOM-2266). `source` is already normalised by the schema.
+  // A redirect whose source is a published page's live URL would shadow that
+  // page, so block it. Only published pages block — an unpublished page isn't
+  // live yet, and publishing it later is guarded on the page side.
   const pageAtSource = await getResourceByFullPermalink({
     siteId,
     fullPermalink: source,
@@ -347,41 +382,27 @@ export const createRedirect = async ({
       })
     }
 
-    // Re-enforce the no-loop rule server-side (the client preflights via
-    // redirect.validate, but create must never trust that). A warning-level
-    // chain does not block — only a redirect that points straight back.
-    //
-    // NOTE: unlike the recreate check above (backed by the (siteId, source)
-    // unique constraint), this loop guard is a plain read under READ
-    // COMMITTED. Two admins concurrently creating the mirror pair — /a -> /b
-    // and /b -> /a — can each pass this check before the other commits and
-    // persist a 1-level loop. The window requires two racing admins on the
-    // same site and the impact is a recoverable loop (delete either side), so
-    // we accept it rather than serialize every create with an advisory lock.
-    // Flagged so the asymmetry with the constraint-backed recreate path reads
-    // as intentional, not an oversight.
+    // Re-enforce the no-loop rule server-side; the preflight is advisory. Unlike
+    // the recreate check (constraint-backed), this is a plain read, so two admins
+    // racing the mirror pair (/a->/b and /b->/a) could each pass and persist a
+    // loop — accepted, since the result is recoverable by deleting either side.
     const chained = await getChainedRedirect(tx, {
       siteId,
       source,
       destination,
     })
     if (chained?.isLoop) {
-      // The add-redirect form maps this UNPROCESSABLE_CONTENT code to the loop
-      // message inline on the destination field, so keep this code reserved for
-      // the loop guard — don't reuse it for other create-time failures.
+      // UNPROCESSABLE_CONTENT is reserved for the loop guard — the form maps it
+      // to the loop message on the destination field; don't reuse it elsewhere.
       throw new TRPCError({
         code: "UNPROCESSABLE_CONTENT",
         message: REDIRECT_MESSAGES.loop,
       })
     }
 
-    // Re-enforce the source-vs-published-page guard server-side: a redirect
-    // whose source is a published page's live URL would shadow that page. Like
-    // the loop guard, this is a plain read (not constraint-backed), so a page
-    // published in the same window could still slip through; the impact is a
-    // recoverable shadow (delete the redirect), so we accept it. PRECONDITION_
-    // FAILED keeps this distinct from the CONFLICT used for an already-existing
-    // redirect, so the form can show the right message on the source field.
+    // Re-enforce the source-vs-published-page guard (a published page at this
+    // URL would be shadowed). Also a plain read, so same accepted race as above.
+    // PRECONDITION_FAILED keeps it distinct from the already-exists CONFLICT.
     const pageAtSource = await getResourceByFullPermalink({
       siteId,
       fullPermalink: source,
@@ -393,10 +414,9 @@ export const createRedirect = async ({
       })
     }
 
-    // Resolve an internal-path destination to a [resource:...] reference so the
-    // redirect follows the page if its permalink later changes. Done after the
-    // guards above so a bad source / loop surfaces its own specific error rather
-    // than the destination NOT_FOUND. Throws NOT_FOUND if the path has no page.
+    // Resolve an internal-path destination to a [resource:...] reference (so it
+    // follows page renames). After the guards so a bad source / loop surfaces
+    // its own error, not NOT_FOUND. Throws NOT_FOUND if the path has no page.
     const storedDestination = await resolveDestinationForStorage(
       siteId,
       destination,

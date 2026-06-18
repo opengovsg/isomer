@@ -25,6 +25,17 @@ describe("createRedirectSchema", () => {
       expect(result.source).toBe("/old/path")
     })
 
+    it("should lowercase the source (page permalinks are lowercase-only)", () => {
+      // Arrange / Act
+      const result = createRedirectSchema.parse({
+        ...VALID_REDIRECT,
+        source: "/Contact-Us",
+      })
+
+      // Assert
+      expect(result.source).toBe("/contact-us")
+    })
+
     it("should keep an already-normalised source unchanged", () => {
       // Arrange / Act
       const result = createRedirectSchema.parse(VALID_REDIRECT)

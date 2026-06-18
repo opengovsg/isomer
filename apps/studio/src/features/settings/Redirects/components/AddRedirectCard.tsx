@@ -124,6 +124,7 @@ export const AddRedirectCard = ({
               break
             case "UNPROCESSABLE_CONTENT":
               setError("destination", { message: REDIRECT_MESSAGES.loop })
+              break
             default:
               toast({
                 title: "Failed to add redirect",

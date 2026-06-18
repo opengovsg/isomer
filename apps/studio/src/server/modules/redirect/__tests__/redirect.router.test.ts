@@ -482,6 +482,54 @@ describe("redirect.router", async () => {
       )
     })
 
+    it("should detect a multi-hop loop (A -> B -> C -> A)", async () => {
+      // Arrange — /b -> /c and /c -> /a already exist, so adding /a -> /b closes
+      // a three-redirect cycle that a single-hop check would miss.
+      await db
+        .insertInto("Redirect")
+        .values([
+          { siteId, source: "/b", destination: "/c" },
+          { siteId, source: "/c", destination: "/a" },
+        ])
+        .execute()
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/a",
+        destination: "/b",
+      })
+
+      // Assert
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({ code: "REDIRECT_LOOP" }),
+      )
+    })
+
+    it("should not flag a multi-hop chain that never returns to the source", async () => {
+      // Arrange — /b -> /c -> /d terminates at /d, so adding /a -> /b chains but
+      // does not loop; it is a warning, not an error.
+      await db
+        .insertInto("Redirect")
+        .values([
+          { siteId, source: "/b", destination: "/c" },
+          { siteId, source: "/c", destination: "/d" },
+        ])
+        .execute()
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/a",
+        destination: "/b",
+      })
+
+      // Assert
+      expect(result.errors).not.toContainEqual(
+        expect.objectContaining({ code: "REDIRECT_LOOP" }),
+      )
+    })
+
     it("should not report ALREADY_EXISTS when only a soft-deleted redirect exists for the source", async () => {
       // Arrange
       await db
@@ -858,6 +906,32 @@ describe("redirect.router", async () => {
       expect(rows).toHaveLength(0)
     })
 
+    it("should throw 422 and create nothing for a multi-hop loop", async () => {
+      // Arrange — /b -> /c -> /a, so creating /a -> /b closes a 3-redirect cycle
+      await db
+        .insertInto("Redirect")
+        .values([
+          { siteId, source: "/b", destination: "/c" },
+          { siteId, source: "/c", destination: "/a" },
+        ])
+        .execute()
+
+      // Act
+      const result = caller.create({ siteId, source: "/a", destination: "/b" })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        "This will trap visitors in a never-ending loop.",
+      )
+      const rows = await db
+        .selectFrom("Redirect")
+        .select("source")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/a")
+        .execute()
+      expect(rows).toHaveLength(0)
+    })
+
     it("should throw 412 and create nothing if the source is a published page's URL", async () => {
       // Arrange — a live page sits at /live-page
       await seedPageAtRoot({ permalink: "live-page", published: true })
@@ -884,6 +958,24 @@ describe("redirect.router", async () => {
         .where("source", "=", "/live-page")
         .execute()
       expect(rows).toHaveLength(0)
+    })
+
+    it("should block an uppercase source that lowercases onto a published page", async () => {
+      // Arrange — the page lives at /live-page; "/Live-Page" lowercases to the
+      // same URL and would shadow it, so it must be blocked too.
+      await seedPageAtRoot({ permalink: "live-page", published: true })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/Live-Page",
+        destination: "https://example.com/somewhere",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({
+        code: "PRECONDITION_FAILED",
+      })
     })
 
     it("should create the redirect when only an unpublished page exists at the source", async () => {

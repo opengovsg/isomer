@@ -127,6 +127,9 @@ export const RedirectLoopError: Story = {
         "This will trap visitors in a never-ending loop.",
       ),
     ).toBeVisible()
+    // The loop error is inline only — the generic failure toast must not also
+    // fire (regression guard for the error switch falling through to default).
+    await expect(screen.queryByText("Failed to add redirect")).toBeNull()
   },
 }
 
