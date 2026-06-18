@@ -13,10 +13,8 @@ import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db } from "../database"
 
-// Maps each user-facing sort field to the column it sorts on. `publishedAt` is
-// surfaced from `createdAt` (creates publish immediately). `satisfies` keeps
-// this exhaustive — adding a sort field without a column mapping is a compile
-// error rather than a silent runtime fallback.
+// Sort field → column. `publishedAt` maps to `createdAt`; `satisfies` keeps the
+// map exhaustive so a new sort field without a column is a compile error.
 const SORT_FIELD_TO_COLUMN = {
   source: "source",
   destination: "destination",
@@ -46,9 +44,7 @@ export const listRedirects = async ({
   limit,
   offset,
 }: ListRedirectsInput) => {
-  // Soft-deleted redirects are never shown to users. Rows only exist once
-  // they are live (creates publish immediately), so createdAt is the time
-  // the redirect was published.
+  // Live rows only; createdAt is the publish time (creates publish immediately).
   let query = db
     .selectFrom("Redirect")
     .select(["id", "source", "destination", "createdAt as publishedAt"])
@@ -56,14 +52,12 @@ export const listRedirects = async ({
     .where("deletedAt", "is", null)
     .orderBy(SORT_FIELD_TO_COLUMN[sortBy], sortDirection)
 
-  // Tie-break on `source` (something users can make sense of) before falling
-  // back to `id`, unless we're already sorting by source.
+  // Tie-break on `source`, then `id` (unique), so equal-valued rows keep a
+  // stable order across paginated requests.
   if (sortBy !== "source") {
     query = query.orderBy("source", sortDirection)
   }
 
-  // Final tie-break on `id` (unique) so rows with otherwise-equal values don't
-  // shuffle between pages across requests.
   return query
     .orderBy("id", sortDirection)
     .limit(limit)
@@ -93,11 +87,10 @@ export const createRedirect = async ({
 }) => {
   const byUser = await getByUser(byUserId)
 
-  return db.transaction().execute(async (tx) => {
-    // Creating over a live redirect is rejected — users must delete the
-    // existing redirect first. A soft-deleted row for the same source is
-    // invisible to users, so it doesn't count: it still occupies the
-    // (siteId, source) unique constraint and is revived by the upsert below.
+  const created = await db.transaction().execute(async (tx) => {
+    // Reject creating over a live redirect. A soft-deleted row for the same
+    // source still holds the (siteId, source) unique constraint and is revived
+    // by the upsert below.
     const existing = await tx
       .selectFrom("Redirect")
       .selectAll()
@@ -120,19 +113,16 @@ export const createRedirect = async ({
           .doUpdateSet({
             destination,
             deletedAt: null,
-            // A revived redirect is republished now, so its createdAt (shown
-            // to users as the publish time) is refreshed
+            // Revived rows republish now, so refresh createdAt (the publish
+            // time shown to users).
             createdAt: new Date(),
           })
-          // Only soft-deleted rows may be revived: a concurrent create for
-          // the same source can commit after the pre-check above, and must
-          // surface as a conflict instead of silently overwriting the live
-          // redirect
+          // Only soft-deleted rows may be revived; a concurrent live create
+          // must surface as a conflict, not silently overwrite.
           .where("Redirect.deletedAt", "is not", null),
       )
       .returningAll()
-      // A null row here means the CONFLICT hit a live redirect (the partial
-      // `where` above skipped the update), so surface it as a conflict.
+      // A null row means the upsert skipped a live redirect — a conflict.
       .executeTakeFirstOrThrow(
         () =>
           new TRPCError({
@@ -141,9 +131,7 @@ export const createRedirect = async ({
           }),
       )
 
-    // NOTE: the delta holds real DB rows — `existing` as fetched before the
-    // write (the soft-deleted row when reviving) and the row returned by the
-    // insert — so the audit entry reflects exactly what was committed
+    // delta holds the real before/after rows committed.
     await logRedirectEvent(tx, {
       siteId,
       by: byUser,
@@ -151,8 +139,7 @@ export const createRedirect = async ({
       delta: { before: existing ?? null, after: created },
     })
 
-    // Redirects go live immediately: every mutation triggers a site publish,
-    // which is audited separately like other site publishes
+    // Every mutation republishes the site; audited as a separate Publish event.
     await logPublishEvent(tx, {
       siteId,
       by: byUser,
@@ -160,10 +147,16 @@ export const createRedirect = async ({
       eventType: AuditLogEvent.Publish,
       metadata: { redirects: { created: [created] } },
     })
-    await publishSite(logger, { siteId })
 
     return created
   })
+
+  // Publish after the transaction commits so the external CodeBuild call is off
+  // the row locks and a failed publish can't roll back a saved redirect
+  // (mirrors publishPageResource's two-step publish).
+  await publishSite(logger, { siteId })
+
+  return created
 }
 
 export const deleteRedirect = async ({
@@ -199,8 +192,7 @@ export const deleteRedirect = async ({
       .returningAll()
       .executeTakeFirstOrThrow()
 
-    // NOTE: the delta holds real DB rows — the live row fetched before the
-    // write and the soft-deleted row returned by the update
+    // delta holds the real before/after rows committed.
     await logRedirectEvent(tx, {
       siteId,
       by: byUser,
@@ -208,9 +200,7 @@ export const deleteRedirect = async ({
       delta: { before, after: deleted },
     })
 
-    // Redirects are removed from the live site immediately: every mutation
-    // triggers a site publish, which is audited separately like other site
-    // publishes
+    // Every mutation republishes the site; audited as a separate Publish event.
     await logPublishEvent(tx, {
       siteId,
       by: byUser,
@@ -218,6 +208,8 @@ export const deleteRedirect = async ({
       eventType: AuditLogEvent.Publish,
       metadata: { redirects: { deleted: [deleted] } },
     })
-    await publishSite(logger, { siteId })
   })
+
+  // Publish after the transaction commits (see createRedirect).
+  await publishSite(logger, { siteId })
 }

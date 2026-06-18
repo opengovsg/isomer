@@ -39,10 +39,8 @@ export const redirectRouter = router({
       return countRedirects(input)
     }),
 
-  // NOTE: create and delete publish the site immediately — there is no separate
-  // publish step for redirects. These are site-wide CRUD actions ("publish"
-  // exists only for resources), granted solely to site admins, matching other
-  // site-wide settings.
+  // create/delete publish immediately (no separate publish step). Site-wide
+  // CRUD actions, granted only to site admins like other site settings.
   create: protectedProcedure
     .input(createRedirectSchema)
     .mutation(async ({ ctx, input }) => {

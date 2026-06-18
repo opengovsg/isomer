@@ -153,5 +153,27 @@ describe("createRedirectSchema", () => {
         expect(result.success).toBe(false)
       })
     })
+
+    it("should collapse a protocol-relative '//' destination to a single leading slash", () => {
+      // Arrange / Act: "//evil.com" would otherwise be an open redirect.
+      const result = createRedirectSchema.parse({
+        ...VALID_REDIRECT,
+        destination: "//evil.com",
+      })
+
+      // Assert
+      expect(result.destination).toBe("/evil.com")
+    })
+
+    it("should leave an external https destination untouched", () => {
+      // Arrange / Act
+      const result = createRedirectSchema.parse({
+        ...VALID_REDIRECT,
+        destination: "https://www.example.gov.sg/a//b",
+      })
+
+      // Assert
+      expect(result.destination).toBe("https://www.example.gov.sg/a//b")
+    })
   })
 })

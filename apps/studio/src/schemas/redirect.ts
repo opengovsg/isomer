@@ -5,18 +5,13 @@ import { offsetPaginationSchema } from "./pagination"
 
 export const MAX_REDIRECT_PATH_LENGTH = 2000
 
-// Cap on the page size for listing redirects. The shared offset-pagination
-// schema has no upper bound, and the list input is the trust boundary, so a
-// read-authorised user could otherwise force an unbounded result set. The UI
-// requests 25.
+// Caps the list page size — the shared offset-pagination schema is unbounded,
+// and this input is the trust boundary. The UI requests 25.
 export const MAX_REDIRECT_PAGE_SIZE = 100
 
-// Whitelist of characters allowed in a redirect source path: RFC 3986 `pchar`
-// (unreserved + sub-delims + ":" and "@") plus "/" as the segment separator
-// and "%" for percent-encoded octets. We whitelist rather than blacklist so
-// only known-safe characters reach the generated redirect rules — anything
-// outside this set (spaces, control chars, "?", "#", "<", ">", "\\", non-ASCII)
-// is rejected up front instead of corrupting the published rules.
+// Whitelist of characters allowed in a source path: RFC 3986 `pchar` plus "/"
+// and "%". Whitelisting keeps anything that could corrupt the published rules
+// (spaces, control chars, "?", "#", "\\", non-ASCII) out up front.
 const SOURCE_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9\-._~!$&'()*+,;=:@%/]+$/
 
 // Strips slashes from both ends of a path so "/foo/", "foo" and "foo//"
@@ -37,23 +32,27 @@ const sourceSchema = z
   .refine((value) => !trimSlashes(value).split("/").includes(".."), {
     message: "Source must not contain '..' path segments",
   })
-  // Normalise to a single leading slash with no trailing slash, collapsing
-  // runs of slashes so equivalent inputs map to the same source. This keeps
-  // the (siteId, source) unique constraint meaningful.
+  // Normalise to a single leading slash, no trailing slash, collapsed runs, so
+  // equivalent inputs map to one source (keeps the unique constraint meaningful).
   .transform((value) => `/${trimSlashes(value).replace(/\/{2,}/g, "/")}`)
 
 const destinationSchema = z
   .string()
   .min(1, { message: "Destination is required" })
   .max(MAX_REDIRECT_PATH_LENGTH, { message: "Destination is too long" })
-  // Destinations must be a path on the same site ("/...") or an external
-  // https URL — anything else (http://, javascript:, ...) is rejected.
+  // Same-site path ("/...") or external https URL; anything else (http://,
+  // javascript:, ...) is rejected.
   .refine((value) => value.startsWith("/") || value.startsWith("https://"), {
     message: "Destination must start with '/' or 'https://'",
   })
+  // Collapse a leading run of slashes on an internal path so a protocol-relative
+  // "//evil.com" can't pass as an open redirect ("//evil.com" -> "/evil.com").
+  .transform((value) =>
+    value.startsWith("/") ? `/${value.replace(/^\/+/, "")}` : value,
+  )
 
-// Shared between the AddRedirectCard form (with siteId omitted) and the
-// create endpoint so the client and server always validate identically
+// Shared by the AddRedirectCard form (siteId omitted) and the create endpoint
+// so client and server validate identically.
 export const createRedirectSchema = z.object({
   siteId: z.number().min(1),
   source: sourceSchema,
@@ -69,9 +68,8 @@ export const deleteRedirectSchema = z.object({
 })
 export type DeleteRedirectInput = z.infer<typeof deleteRedirectSchema>
 
-// Rows are paginated server-side, so sorting happens server-side too —
-// sorting only the visible page would be misleading. "publishedAt" sorts on
-// createdAt, which is the publish time since creates publish immediately.
+// Server-side sort (paginated rows). "publishedAt" sorts on createdAt — the
+// publish time, since creates publish immediately.
 const redirectSortFieldSchema = z.enum(["source", "destination", "publishedAt"])
 export type RedirectSortField = z.infer<typeof redirectSortFieldSchema>
 

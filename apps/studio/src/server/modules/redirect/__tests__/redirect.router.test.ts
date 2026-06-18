@@ -13,6 +13,7 @@ import {
 } from "tests/integration/helpers/seed"
 import { createCallerFactory } from "~/server/trpc"
 
+import * as codebuildService from "../../aws/codebuild.service"
 import { db } from "../../database"
 import { redirectRouter } from "../redirect.router"
 
@@ -43,6 +44,10 @@ describe("redirect.router", async () => {
     await setupAdminPermissions({ userId: user.id, siteId })
     caller = createCaller(createMockRequest(session))
     unauthedCaller = createCaller(createMockRequest(applySession()))
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   describe("list", () => {
@@ -459,6 +464,33 @@ describe("redirect.router", async () => {
       expect(publishEntry.userId).toBe(session.userId)
     })
 
+    it("should persist the redirect even if the site publish fails", async () => {
+      // Arrange: publish runs after the create transaction commits, so a
+      // failing publish must not roll back the saved redirect.
+      const publishSpy = vi
+        .spyOn(codebuildService, "publishSite")
+        .mockRejectedValueOnce(new Error("CodeBuild unavailable"))
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/old",
+        destination: "/new",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError("CodeBuild unavailable")
+      expect(publishSpy).toHaveBeenCalledOnce()
+      const rows = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", siteId)
+        .where("deletedAt", "is", null)
+        .execute()
+      expect(rows).toHaveLength(1)
+      expect(rows[0]).toMatchObject({ source: "/old", destination: "/new" })
+    })
+
     it("should log the soft-deleted row as the delta before when reviving", async () => {
       // Arrange
       await db
@@ -608,6 +640,31 @@ describe("redirect.router", async () => {
         .where("id", "=", inserted.id)
         .executeTakeFirstOrThrow()
       expect(row.deletedAt).toBeNull()
+    })
+
+    it("should soft-delete the redirect even if the site publish fails", async () => {
+      // Arrange: publish runs after the delete transaction commits.
+      const inserted = await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/remove-me", destination: "/dest" })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      const publishSpy = vi
+        .spyOn(codebuildService, "publishSite")
+        .mockRejectedValueOnce(new Error("CodeBuild unavailable"))
+
+      // Act
+      const result = caller.delete({ siteId, id: inserted.id })
+
+      // Assert
+      await expect(result).rejects.toThrowError("CodeBuild unavailable")
+      expect(publishSpy).toHaveBeenCalledOnce()
+      const row = await db
+        .selectFrom("Redirect")
+        .select("deletedAt")
+        .where("id", "=", inserted.id)
+        .executeTakeFirstOrThrow()
+      expect(row.deletedAt).not.toBeNull()
     })
 
     it("should write a RedirectDelete audit log entry with the live and soft-deleted rows", async () => {
