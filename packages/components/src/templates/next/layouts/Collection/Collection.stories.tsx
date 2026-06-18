@@ -347,7 +347,8 @@ const CATEGORY_ID_ITEMS: IsomerSitemap[] = [
     permalink: "/publications/policy-article",
     lastModified: "",
     layout: "article",
-    summary: "This article uses a categoryId UUID instead of a category string.",
+    summary:
+      "This article uses a categoryId UUID instead of a category string.",
     date: "2024-03-01",
     categoryId: "cat-uuid-policy",
   },

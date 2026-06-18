@@ -68,7 +68,11 @@ describe("getCategoryFilter", () => {
     const result = getCategoryFilter(items)
 
     // Assert
-    expect(result.items.map((i) => i.label)).toEqual(["Apple", "Mango", "Zebra"])
+    expect(result.items.map((i) => i.label)).toEqual([
+      "Apple",
+      "Mango",
+      "Zebra",
+    ])
   })
 
   it("orders filter items according to categoryOptions order, not alphabetically", () => {
