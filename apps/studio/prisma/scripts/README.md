@@ -31,5 +31,6 @@
 2. Domains are matched against `Site.config.url`; rows for unmatched domains are skipped and reported
 3. Rows with wildcards (`*`) or query parameters (`?`) in the source or target are ignored — these are infra publishing features with no equivalent in the `Redirect` table
 4. Rows are validated with `createRedirectSchema` (same as the Studio publish flow); invalid rows are skipped and reported
-5. Edit the `csvPath` at the end of the script. It runs as a dry run by default — review the reported summary, then set `dryRun` to `false` to write
-6. The import is idempotent: re-running updates destinations in place via the `(siteId, source)` unique constraint
+5. Internal destinations that resolve to a live page (or a folder/collection with a published index page) are converted to the `[resource:siteId:resourceId]` reference format, matching how Studio stores internal destinations so the redirect follows the page if its permalink later changes. External `https://` URLs are stored verbatim; an internal path with no matching live page is kept as a literal path and surfaced for review
+6. Edit the `csvPath` at the end of the script. It runs as a dry run by default — review the reported summary, then set `dryRun` to `false` to write
+7. The import is idempotent: re-running updates destinations in place via the `(siteId, source)` unique constraint

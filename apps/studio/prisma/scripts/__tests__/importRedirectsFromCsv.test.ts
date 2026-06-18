@@ -1,10 +1,20 @@
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
-import { db, jsonb } from "~/server/modules/database"
+import {
+  db,
+  jsonb,
+  ResourceState,
+  ResourceType,
+} from "~/server/modules/database"
 
 import { resetTables } from "../../../tests/integration/helpers/db"
-import { setupSite } from "../../../tests/integration/helpers/seed"
+import {
+  setupFolder,
+  setupPageResource,
+  setupSite,
+  setupUser,
+} from "../../../tests/integration/helpers/seed"
 import { importRedirectsFromCsv } from "../importRedirectsFromCsv"
 
 let tmpDir: string
@@ -50,7 +60,16 @@ const getRedirects = (siteId: number) =>
 
 describe("importRedirectsFromCsv", () => {
   beforeEach(async () => {
-    await resetTables("Redirect", "Navbar", "Footer", "Site")
+    await resetTables(
+      "Redirect",
+      "Blob",
+      "Version",
+      "Resource",
+      "Navbar",
+      "Footer",
+      "Site",
+      "User",
+    )
   })
 
   it("imports rows for the site whose config.url matches the CSV domain", async () => {
@@ -76,6 +95,83 @@ describe("importRedirectsFromCsv", () => {
     ])
     expect(summary.sitesMatched).toBe(1)
     expect(summary.importedCount).toBe(2)
+  })
+
+  it("converts an internal destination to a page reference when a live page exists at that path", async () => {
+    // Arrange
+    const siteId = await setupSiteWithUrl("www.alpha.gov.sg")
+    const user = await setupUser({ email: "import-page@open.gov.sg" })
+    const { page } = await setupPageResource({
+      siteId,
+      resourceType: ResourceType.Page,
+      permalink: "new-page",
+      parentId: null,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const csvPath = writeCsv(["www.alpha.gov.sg,/old-page,/new-page"])
+
+    // Act
+    const summary = await importRedirectsFromCsv({ csvPath, dryRun: false })
+
+    // Assert — the permalink is stored as a [resource:...] reference so the
+    // redirect follows the page if its permalink later changes
+    const redirects = await getRedirects(siteId)
+    expect(redirects).toEqual([
+      {
+        source: "/old-page",
+        destination: `[resource:${siteId}:${page.id}]`,
+        deletedAt: null,
+      },
+    ])
+    expect(summary.referenceCount).toBe(1)
+  })
+
+  it("converts a folder destination to the folder's reference when its index page is published", async () => {
+    // Arrange — a folder is served by its published index page; the reference
+    // must point at the folder (its index page id never appears in the build)
+    const siteId = await setupSiteWithUrl("www.alpha.gov.sg")
+    const user = await setupUser({ email: "import-folder@open.gov.sg" })
+    const { folder } = await setupFolder({ siteId, permalink: "info" })
+    await setupPageResource({
+      siteId,
+      resourceType: ResourceType.IndexPage,
+      permalink: "_index",
+      parentId: folder.id,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const csvPath = writeCsv(["www.alpha.gov.sg,/old,/info"])
+
+    // Act
+    await importRedirectsFromCsv({ csvPath, dryRun: false })
+
+    // Assert
+    const redirects = await getRedirects(siteId)
+    expect(redirects).toEqual([
+      {
+        source: "/old",
+        destination: `[resource:${siteId}:${folder.id}]`,
+        deletedAt: null,
+      },
+    ])
+  })
+
+  it("keeps an internal destination as a literal path when no live page exists at it", async () => {
+    // Arrange
+    const siteId = await setupSiteWithUrl("www.alpha.gov.sg")
+    const csvPath = writeCsv(["www.alpha.gov.sg,/old-page,/missing-page"])
+
+    // Act
+    const summary = await importRedirectsFromCsv({ csvPath, dryRun: false })
+
+    // Assert — an unresolved internal path stays literal and is surfaced for review
+    const redirects = await getRedirects(siteId)
+    expect(redirects).toEqual([
+      { source: "/old-page", destination: "/missing-page", deletedAt: null },
+    ])
+    expect(summary.referenceCount).toBe(0)
+    expect(summary.unresolvedDestinations).toHaveLength(1)
   })
 
   it("skips rows for domains with no matching site and reports them", async () => {

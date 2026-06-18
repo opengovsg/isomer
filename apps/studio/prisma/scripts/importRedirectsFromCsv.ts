@@ -2,7 +2,7 @@ import fs from "node:fs"
 import { fileURLToPath } from "node:url"
 import Papa from "papaparse"
 import { z } from "zod"
-import { db } from "~/server/modules/database"
+import { db, ResourceType } from "~/server/modules/database"
 
 // Inline copy of createRedirectSchema from ~/schemas/redirect on the
 // feat/redirects-management-backend branch, so this script can land off main
@@ -19,6 +19,11 @@ const INVALID_PATH_CHARS_REGEX = /[\x00-\x1f\x7f\\]/
 // all normalise to the same inner segments before validation.
 const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, "")
 
+// Normalises a path to a single leading slash, no trailing slash, collapsed
+// runs of slashes — so "/foo/", "foo" and "foo//" all map to "/foo".
+const normalizeRedirectPath = (value: string) =>
+  `/${trimSlashes(value).replace(/\/{2,}/g, "/")}`
+
 const sourceSchema = z
   .string()
   .min(1, { message: "Source path is required" })
@@ -32,10 +37,9 @@ const sourceSchema = z
   .refine((value) => !trimSlashes(value).split("/").includes(".."), {
     message: "Source must not contain '..' path segments",
   })
-  // Normalise to a single leading slash with no trailing slash, collapsing
-  // runs of slashes so equivalent inputs map to the same source. This keeps
-  // the (siteId, source) unique constraint meaningful.
-  .transform((value) => `/${trimSlashes(value).replace(/\/{2,}/g, "/")}`)
+  // Normalise so equivalent inputs map to the same source, keeping the
+  // (siteId, source) unique constraint meaningful.
+  .transform(normalizeRedirectPath)
 
 const destinationSchema = z
   .string()
@@ -73,6 +77,87 @@ const normaliseDomain = (value: string) =>
     .toLowerCase()
     .replace(/^https?:\/\//, "")
     .replace(/\/.*$/, "")
+
+// The form internal destinations are stored in (matches Studio / the publish
+// resolver), so the redirect follows the page if its permalink later changes.
+const toReferenceLink = (siteId: number, resourceId: number) =>
+  `[resource:${siteId}:${resourceId}]`
+
+const INDEX_PAGE_PERMALINK = "_index"
+
+// Maps every live, addressable full permalink on a site to the resource id a
+// redirect destination should reference, mirroring how Studio stores internal
+// destinations: a published page references itself; a Folder/Collection
+// references the container (its index page id never appears in the built site)
+// and is addressable only when its index page is published. The full permalink
+// of each resource is built by walking the parent chain in memory; root (empty
+// permalink) and "_index" segments contribute no path segment.
+const buildPermalinkToResourceId = async (siteId: number) => {
+  const resources = await db
+    .selectFrom("Resource")
+    .where("siteId", "=", siteId)
+    .select(["id", "permalink", "parentId", "type", "publishedVersionId"])
+    .execute()
+
+  const byId = new Map(
+    resources.map((resource) => [String(resource.id), resource]),
+  )
+
+  // Container ids that have a published index page child (so the container is
+  // live and addressable at its own URL).
+  const publishedContainerIds = new Set(
+    resources
+      .filter(
+        (resource) =>
+          resource.type === ResourceType.IndexPage &&
+          resource.publishedVersionId !== null &&
+          resource.parentId !== null,
+      )
+      .map((resource) => String(resource.parentId)),
+  )
+
+  const cache = new Map<string, string>()
+  const fullPermalinkOf = (id: string): string => {
+    const cached = cache.get(id)
+    if (cached !== undefined) return cached
+    const resource = byId.get(id)
+    if (!resource) return "/"
+    const segment =
+      resource.permalink === "" || resource.permalink === INDEX_PAGE_PERMALINK
+        ? ""
+        : resource.permalink
+    let result: string
+    if (resource.parentId === null) {
+      result = segment === "" ? "/" : `/${segment}`
+    } else {
+      const parentPath = fullPermalinkOf(String(resource.parentId))
+      result =
+        segment === ""
+          ? parentPath
+          : `${parentPath === "/" ? "" : parentPath}/${segment}`
+    }
+    cache.set(id, result)
+    return result
+  }
+
+  const permalinkToResourceId = new Map<string, number>()
+  for (const resource of resources) {
+    const id = String(resource.id)
+    const isLivePage =
+      (resource.type === ResourceType.Page ||
+        resource.type === ResourceType.CollectionPage ||
+        resource.type === ResourceType.RootPage) &&
+      resource.publishedVersionId !== null
+    const isLiveContainer =
+      (resource.type === ResourceType.Folder ||
+        resource.type === ResourceType.Collection) &&
+      publishedContainerIds.has(id)
+    if (isLivePage || isLiveContainer) {
+      permalinkToResourceId.set(fullPermalinkOf(id), Number(resource.id))
+    }
+  }
+  return permalinkToResourceId
+}
 
 export const importRedirectsFromCsv = async ({
   csvPath,
@@ -174,17 +259,52 @@ export const importRedirectsFromCsv = async ({
     siteRedirects.set(parsed.data.source, parsed.data.destination)
   })
 
-  const rowsToInsert = [...redirectsBySite.entries()].flatMap(
-    ([siteId, siteRedirects]) =>
-      [...siteRedirects.entries()].map(([source, destination]) => ({
+  // Resolve destinations to the stored form. An internal path that resolves to
+  // a live page/folder becomes a [resource:...] reference so the redirect
+  // follows the page if its permalink later changes; an external https URL is
+  // stored verbatim. An internal path with no matching live page is kept as a
+  // literal path (it still redirects, it just won't track future moves) and
+  // surfaced for review.
+  const rowsToInsert: {
+    siteId: number
+    source: string
+    destination: string
+  }[] = []
+  const unresolvedDestinations: {
+    siteId: number
+    source: string
+    destination: string
+  }[] = []
+  let referenceCount = 0
+  for (const [siteId, siteRedirects] of redirectsBySite) {
+    const permalinkToResourceId = await buildPermalinkToResourceId(siteId)
+    for (const [source, destination] of siteRedirects) {
+      if (destination.startsWith("https://")) {
+        rowsToInsert.push({ siteId, source, destination })
+        continue
+      }
+      const resourceId = permalinkToResourceId.get(
+        normalizeRedirectPath(destination),
+      )
+      if (resourceId === undefined) {
+        unresolvedDestinations.push({ siteId, source, destination })
+        rowsToInsert.push({ siteId, source, destination })
+        continue
+      }
+      referenceCount += 1
+      rowsToInsert.push({
         siteId,
         source,
-        destination,
-      })),
-  )
+        destination: toReferenceLink(siteId, resourceId),
+      })
+    }
+  }
 
   console.log(`Sites matched: ${redirectsBySite.size}`)
   console.log(`Redirects to import: ${rowsToInsert.length}`)
+  console.log(
+    `Internal destinations converted to references: ${referenceCount}`,
+  )
   console.log(`Wildcard rows ignored: ${wildcardRowCount}`)
   console.log(`Query-parameter rows ignored: ${queryParamRowCount}`)
   for (const [domain, count] of unmatchedDomains) {
@@ -200,15 +320,22 @@ export const importRedirectsFromCsv = async ({
       `Duplicate source after normalisation at line ${lineNumber} (kept first occurrence): ${line}`,
     )
   }
+  for (const { siteId, source, destination } of unresolvedDestinations) {
+    console.warn(
+      `Internal destination kept as a literal path (no live page at it): site ${siteId} ${source} -> ${destination}`,
+    )
+  }
 
   const summary = {
     sitesMatched: redirectsBySite.size,
     importedCount: rowsToInsert.length,
+    referenceCount,
     wildcardRowCount,
     queryParamRowCount,
     unmatchedDomains,
     invalidRows,
     duplicateRows,
+    unresolvedDestinations,
   }
 
   if (dryRun) {
