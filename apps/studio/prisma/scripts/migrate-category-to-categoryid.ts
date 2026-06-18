@@ -402,6 +402,8 @@ async function main() {
   await db.destroy()
 }
 
-main()
-  .catch(console.error)
-  .finally(() => process.exit())
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main()
+    .catch(console.error)
+    .finally(() => process.exit())
+}
