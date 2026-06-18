@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "playground",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "4321", "--no-clipboard", "."],
+      "port": 4321
+    }
+  ]
+}
