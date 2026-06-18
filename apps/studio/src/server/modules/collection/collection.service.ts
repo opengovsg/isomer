@@ -67,9 +67,8 @@ export const getCollectionTagsForResource = async ({
 >): Promise<NonNullable<CollectionPageSchemaType["page"]["tagCategories"]>> => {
   const row = await db
     .selectFrom("Resource as r")
-    .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
-    .leftJoin("Version as v", "r.publishedVersionId", "v.id")
-    .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+    .innerJoin("Version as v", "r.publishedVersionId", "v.id")
+    .innerJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
     .where("r.type", "=", ResourceType.IndexPage)
     .where("r.siteId", "=", siteId)
     .$if(collectionId !== undefined, (qb) =>
@@ -84,25 +83,18 @@ export const getCollectionTagsForResource = async ({
           .select("parentId"),
       ),
     )
-    .select([
-      sql<CollectionPageSchemaType | null>`"draftBlob"."content"`.as(
-        "draftContent",
-      ),
+    .select(
       sql<CollectionPageSchemaType | null>`"publishedBlob"."content"`.as(
         "publishedContent",
       ),
-    ])
+    )
     .executeTakeFirst()
 
   if (!row) {
     return []
   }
 
-  return (
-    row.publishedContent?.page.tagCategories ??
-    row.draftContent?.page.tagCategories ??
-    []
-  )
+  return row.publishedContent?.page.tagCategories ?? []
 }
 
 export const getCategoryOptionUsageCount = async ({
