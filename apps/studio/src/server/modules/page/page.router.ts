@@ -51,6 +51,7 @@ import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
+  assertPermalinkNotShadowed,
   clearReclaimedRedirect,
   createRedirectForPermalinkChange,
 } from "../redirect/redirect.service"
@@ -894,6 +895,16 @@ export const pageRouter = router({
               const oldFullPermalink = `${parentFullPermalink ?? ""}/${resource.permalink}`
               const newFullPermalink = `${parentFullPermalink ?? ""}/${updatedResource.permalink}`
 
+              // A published page must not land on a path a live redirect already
+              // points elsewhere from — it would be shadowed (mirror of the
+              // publish-block). Block before mutating anything further.
+              if (updatedResource.publishedVersionId !== null) {
+                await assertPermalinkNotShadowed(tx, {
+                  siteId,
+                  newFullPermalink,
+                  resourceId: String(pageId),
+                })
+              }
               // Drop any redirect that pointed back here (it would self-shadow).
               await clearReclaimedRedirect(tx, {
                 siteId,

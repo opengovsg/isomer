@@ -1974,6 +1974,74 @@ describe("resource.router", async () => {
           .executeTakeFirstOrThrow()
         expect(reclaimed.deletedAt).not.toBeNull()
       })
+
+      it("blocks moving a published page onto a path a live redirect points elsewhere from", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        // A live redirect already occupies the destination URL, pointing
+        // elsewhere — moving the page there would shadow it.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/dest/old-page",
+            destination: "https://example.gov.sg/elsewhere",
+          })
+          .execute()
+
+        const result = caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: folder.id,
+          shouldCreateRedirect: false,
+        })
+
+        // Assert — blocked, and the whole move is rolled back (page stays put).
+        await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+        const stillThere = await db
+          .selectFrom("Resource")
+          .select("parentId")
+          .where("id", "=", page.id)
+          .executeTakeFirstOrThrow()
+        expect(String(stillThere.parentId)).toBe(String(rootPage.id))
+      })
+
+      it("allows moving an unpublished page onto a path with a live redirect", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Draft,
+        })
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/dest/old-page",
+            destination: "https://example.gov.sg/elsewhere",
+          })
+          .execute()
+
+        // No live shadow yet (the page isn't published); the eventual publish is
+        // guarded separately, so the move is allowed.
+        await expect(
+          caller.move({
+            siteId: site.id,
+            movedResourceId: page.id,
+            destinationResourceId: folder.id,
+            shouldCreateRedirect: true,
+          }),
+        ).resolves.toMatchObject({ id: page.id })
+      })
     })
   })
 

@@ -40,7 +40,6 @@ import {
   MAX_PAGE_URL_LENGTH,
   MAX_TITLE_LENGTH,
 } from "~/schemas/page"
-import { getReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -131,10 +130,6 @@ const PageSettingsModalContent = ({
   )
 
   const originalPermalink = permalinkTree[permalinkTree.length - 1] ?? ""
-  const selfReference = getReferenceLink({
-    siteId: String(siteId),
-    resourceId: String(pageId),
-  })
   // Offer the redirect only when a Page/CollectionPage URL actually changes.
   const showRedirectOption =
     (type === ResourceType.Page || type === ResourceType.CollectionPage) &&
@@ -254,7 +249,7 @@ const PageSettingsModalContent = ({
               {/* Suppressed when the redirect points back at this page —
                   saving auto-clears it, so it won't actually shadow. */}
               {existingRedirect &&
-                existingRedirect.destination !== selfReference && (
+                existingRedirect.destinationResourceId !== Number(pageId) && (
                   <Infobox my="0.5rem" variant="warning" size="sm">
                     This URL already redirects to {existingRedirect.destination}
                     . Visitors will end up there instead.

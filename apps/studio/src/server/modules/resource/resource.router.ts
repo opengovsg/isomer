@@ -39,6 +39,7 @@ import {
   getResourcePermission,
 } from "../permissions/permissions.service"
 import {
+  assertPermalinkNotShadowed,
   clearReclaimedRedirect,
   createRedirectForPermalinkChange,
   softDeleteRedirectsPointingToResource,
@@ -553,6 +554,16 @@ export const resourceRouter = router({
               toMove.type === ResourceType.Page ||
               toMove.type === ResourceType.CollectionPage
             ) {
+              // A published page must not land on a path a live redirect already
+              // points elsewhere from — it would be shadowed (mirror of the
+              // publish-block). Block before mutating anything further.
+              if (toMove.publishedVersionId !== null) {
+                await assertPermalinkNotShadowed(tx, {
+                  siteId,
+                  newFullPermalink,
+                  resourceId: movedResourceId,
+                })
+              }
               // Drop any redirect that pointed back here (it would self-shadow).
               await clearReclaimedRedirect(tx, {
                 siteId,

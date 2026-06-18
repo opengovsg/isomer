@@ -22,7 +22,6 @@ import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { normalizeRedirectPath } from "~/schemas/redirect"
-import { getReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -138,10 +137,6 @@ const MoveResourceContent = withSuspense(
     const newFullPermalink = normalizeRedirectPath(
       `${curResourceId && destination ? destination.fullPermalink : ""}/${movedSlug}`,
     )
-    const selfReference = getReferenceLink({
-      siteId: String(siteId),
-      resourceId,
-    })
     const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
       { siteId: Number(siteId), source: newFullPermalink },
       {
@@ -172,7 +167,8 @@ const MoveResourceContent = withSuspense(
                 {/* Suppressed when the redirect points back at this page —
                     the move auto-clears it, so it won't actually shadow. */}
                 {existingRedirect &&
-                  existingRedirect.destination !== selfReference && (
+                  existingRedirect.destinationResourceId !==
+                    Number(resourceId) && (
                     <Infobox variant="warning" size="sm" w="full">
                       This URL already redirects to{" "}
                       {existingRedirect.destination}. Visitors will end up there

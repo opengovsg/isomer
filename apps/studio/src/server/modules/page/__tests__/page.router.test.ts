@@ -2473,6 +2473,74 @@ describe("page.router", async () => {
 
         expect(await liveRedirects(site.id)).toHaveLength(0)
       })
+
+      it("blocks renaming a published page onto a path a live redirect points elsewhere from", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A live redirect already occupies the new URL, pointing elsewhere —
+        // renaming the page onto it would shadow the page.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-page",
+            destination: "https://example.gov.sg/elsewhere",
+          })
+          .execute()
+
+        const result = caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: false,
+        })
+
+        // Assert — blocked, and the whole edit is rolled back (permalink unchanged).
+        await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+        const unchanged = await db
+          .selectFrom("Resource")
+          .select("permalink")
+          .where("id", "=", String(page.id))
+          .executeTakeFirstOrThrow()
+        expect(unchanged.permalink).toBe("old-page")
+      })
+
+      it("reclaims a redirect pointing back at the page when the URL is renamed onto it", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A redirect at the URL the page is about to occupy, pointing back at it
+        // — this is the reclaim case, not a shadow, so the rename is allowed.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-page",
+            destination: `[resource:${site.id}:${page.id}]`,
+          })
+          .execute()
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        // The self-pointing redirect at /new-page is reclaimed (soft-deleted)...
+        const reclaimed = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/new-page")
+          .executeTakeFirstOrThrow()
+        expect(reclaimed.deletedAt).not.toBeNull()
+        // ...and the old URL gets its own redirect.
+        const live = await liveRedirects(site.id)
+        expect(live).toHaveLength(1)
+        expect(live[0]!.source).toBe("/old-page")
+      })
     })
 
     it("should throw 401 if not logged in update", async () => {
