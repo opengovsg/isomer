@@ -119,6 +119,7 @@ const SITES_WITH_AUDIT_LOGS = [
   357, // www.ago.gov.sg
   397, // www.rp.edu.sg
   484, // www.hpb.gov.sg
+  492, // www.oneservice.gov.sg
 ]
 
 // Month and year to get audit logs for, in the format of YYYY-MM,
