@@ -164,6 +164,41 @@ export const Loading: Story = {
   },
 }
 
+export const LoadingWithProgress: Story = {
+  args: commonArgs,
+  parameters: {
+    msw: {
+      handlers: [
+        http.get(DGS_METADATA_URL, () => {
+          return HttpResponse.json({
+            data: {
+              name: "Sample DGS Table",
+              format: "CSV",
+              datasetSize: 10 * 1024 * 1024, // 10MB → 4 chunks
+              columnMetadata: { metaMapping: {} },
+            },
+          })
+        }),
+        http.get(
+          "https://data.gov.sg/api/action/datastore_search",
+          ({ request }) => {
+            const url = new URL(request.url)
+            // Let the probe through so probedTotal is known
+            if (url.searchParams.get("limit") === "1") {
+              return HttpResponse.json({
+                success: true,
+                result: { records: [{ _id: 1 }], total: 5000 },
+              })
+            }
+            // Hang all chunk fetches so the progress text stays visible
+            return new Promise(() => {})
+          },
+        ),
+      ],
+    },
+  },
+}
+
 export const Error: Story = {
   args: commonArgs,
   parameters: {
