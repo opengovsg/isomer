@@ -1206,20 +1206,27 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe("/target-page?ref=footer")
     })
 
-    it("should throw 404 if the internal-path destination does not exist", async () => {
-      // Arrange / Act
-      const result = caller.create({
+    it("stores a literal path when the internal destination has no live page", async () => {
+      // Arrange / Act — no page lives at /no-such-page. The preflight warns, but
+      // create keeps the literal path so an admin can pre-create the redirect.
+      await caller.create({
         siteId,
         source: "/from",
         destination: "/no-such-page",
       })
 
       // Assert
-      await expect(result).rejects.toMatchObject({ code: "NOT_FOUND" })
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe("/no-such-page")
     })
 
-    it("should throw 404 if the destination page exists but is unpublished", async () => {
-      // Arrange — a draft page has no live URL, so it isn't a valid target
+    it("stores a literal path when the destination page exists but is unpublished", async () => {
+      // Arrange — a draft page has no live URL yet
       await setupPageResource({
         siteId,
         resourceType: ResourceType.Page,
@@ -1228,14 +1235,20 @@ describe("redirect.router", async () => {
       })
 
       // Act
-      const result = caller.create({
+      await caller.create({
         siteId,
         source: "/from",
         destination: "/draft-page",
       })
 
-      // Assert
-      await expect(result).rejects.toMatchObject({ code: "NOT_FOUND" })
+      // Assert — kept literal (not converted to a reference, not rejected)
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe("/draft-page")
     })
 
     it("should resolve the site root '/' to the RootPage reference", async () => {
@@ -1288,8 +1301,8 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe(`[resource:${siteId}:${folder.id}]`)
     })
 
-    it("should throw 404 for a folder destination whose index page is unpublished", async () => {
-      // Arrange — a folder with no live index page has no live URL behind it
+    it("stores a literal path for a folder destination whose index page is unpublished", async () => {
+      // Arrange — a folder with no live index page has no live URL behind it yet
       const { folder } = await setupFolder({ siteId, permalink: "about" })
       await setupPageResource({
         siteId,
@@ -1300,14 +1313,20 @@ describe("redirect.router", async () => {
       })
 
       // Act
-      const result = caller.create({
+      await caller.create({
         siteId,
         source: "/from",
         destination: "/about",
       })
 
-      // Assert
-      await expect(result).rejects.toMatchObject({ code: "NOT_FOUND" })
+      // Assert — kept literal until the folder is published
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe("/about")
     })
   })
 

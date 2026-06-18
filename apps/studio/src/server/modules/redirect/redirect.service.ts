@@ -72,7 +72,10 @@ const parseDestination = (destination: string): ParsedDestination => {
 // Resolves a destination to its stored form. A bare internal path becomes a
 // [resource:...] reference (so it follows page renames); a query-suffixed path
 // stays literal (a query can't map to a single resource); references and
-// external URLs are stored verbatim.
+// external URLs are stored verbatim. An internal path with no live page yet is
+// also kept literal rather than rejected — the preflight surfaces this as a
+// non-blocking warning, so an admin can pre-create a redirect to a page they're
+// about to publish.
 const resolveDestinationForStorage = async (
   siteId: number,
   destination: string,
@@ -87,11 +90,9 @@ const resolveDestinationForStorage = async (
         return parsed.value
       }
       const resourceId = await getResourceIdByPermalink(siteId, parsed.value)
+      // No live page yet — keep the literal path; the preflight warns about it.
       if (resourceId === null) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `The page "${destination}" does not exist`,
-        })
+        return parsed.value
       }
       return getReferenceLink({
         siteId: String(siteId),
@@ -415,8 +416,8 @@ export const createRedirect = async ({
     }
 
     // Resolve an internal-path destination to a [resource:...] reference (so it
-    // follows page renames). After the guards so a bad source / loop surfaces
-    // its own error, not NOT_FOUND. Throws NOT_FOUND if the path has no page.
+    // follows page renames); a path with no live page yet is kept literal (the
+    // preflight already warned). Never blocks the create.
     const storedDestination = await resolveDestinationForStorage(
       siteId,
       destination,

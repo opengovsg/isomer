@@ -115,13 +115,6 @@ export const AddRedirectCard = ({
                 message: REDIRECT_MESSAGES.sourceIsExistingPage,
               })
               break
-            // An internal-path destination is resolved to a page reference on
-            // create, which 404s when no published page lives at that path.
-            case "NOT_FOUND":
-              setError("destination", {
-                message: REDIRECT_MESSAGES.destinationNotLive,
-              })
-              break
             case "UNPROCESSABLE_CONTENT":
               setError("destination", { message: REDIRECT_MESSAGES.loop })
               break
