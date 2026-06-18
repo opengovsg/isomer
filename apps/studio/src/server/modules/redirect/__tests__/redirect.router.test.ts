@@ -1891,5 +1891,18 @@ describe("redirect.router", async () => {
       // Assert
       expect(count).toBe(0)
     })
+
+    it("should return 0 for a resource that does not exist (empty references)", async () => {
+      // Arrange — no resource resolves, so the descendant reference list is
+      // empty; the count must short-circuit rather than emit an empty `in ()`.
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: "999999",
+      })
+
+      // Assert
+      expect(count).toBe(0)
+    })
   })
 })

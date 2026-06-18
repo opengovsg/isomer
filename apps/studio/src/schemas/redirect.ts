@@ -254,7 +254,10 @@ export type ResolveRedirectReferencesInput = z.infer<
 // before the lookup.
 export const getRedirectBySourceSchema = z.object({
   siteId: z.number().min(1),
-  source: z.string().min(1, { message: "Source path is required" }),
+  source: z
+    .string()
+    .min(1, { message: "Source path is required" })
+    .max(MAX_REDIRECT_SOURCE_LENGTH, { message: "Source path is too long" }),
 })
 export type GetRedirectBySourceInput = z.infer<typeof getRedirectBySourceSchema>
 

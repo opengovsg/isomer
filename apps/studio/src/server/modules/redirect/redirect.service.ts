@@ -1,4 +1,3 @@
-import type { Transaction } from "kysely"
 import type {
   RedirectValidationIssue,
   RedirectValidationResult,
@@ -28,7 +27,7 @@ import { getReferenceLink } from "~/utils/link"
 
 import type { Logger } from "@isomer/logging"
 
-import type { SafeKysely } from "../database"
+import type { SafeKysely, Transaction } from "../database"
 import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db } from "../database"
@@ -555,6 +554,10 @@ export const countRedirectsPointingToResource = async ({
   resourceId,
 }: CountRedirectsByDestinationInput): Promise<number> => {
   const references = await getDescendantReferences(db, { siteId, resourceId })
+  // An empty `in` list is invalid SQL, so guard like getWithFullPermalink.
+  if (references.length === 0) {
+    return 0
+  }
   const { count } = await db
     .selectFrom("Redirect")
     .select((eb) => eb.fn.countAll().as("count"))
@@ -578,6 +581,10 @@ export const softDeleteRedirectsPointingToResource = async (
   }: { siteId: number; resourceId: string; byUserId: string },
 ) => {
   const references = await getDescendantReferences(tx, { siteId, resourceId })
+  // An empty `in` list is invalid SQL, so guard like getWithFullPermalink.
+  if (references.length === 0) {
+    return []
+  }
   const toDelete = await tx
     .selectFrom("Redirect")
     .selectAll()
@@ -590,7 +597,7 @@ export const softDeleteRedirectsPointingToResource = async (
   }
 
   const byUser = await getByUser(byUserId)
-  const deleted = []
+  const deleted: typeof toDelete = []
   for (const before of toDelete) {
     const after = await tx
       .updateTable("Redirect")
