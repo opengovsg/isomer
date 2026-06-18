@@ -34,14 +34,6 @@ import { fileURLToPath } from "url"
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
 config({ path: resolve(__dirname, "../.env") })
 
-const DATABASE_URL = process.env["DATABASE_URL"]
-if (!DATABASE_URL) {
-  console.error(
-    "DATABASE_URL is not set. Copy apps/studio/.env.example to apps/studio/.env and fill in the values.",
-  )
-  process.exit(1)
-}
-
 // ---------------------------------------------------------------------------
 // DB helpers
 // ---------------------------------------------------------------------------
@@ -52,11 +44,102 @@ function jsonb<T>(value: T) {
 }
 
 // ---------------------------------------------------------------------------
+// Pure data-transformation helpers (exported for unit testing)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true when the Collection Index draft blob already has a non-empty
+ * `categoryOptions` array — used for the idempotency check.
+ */
+export function hasCategoryOptions(
+  indexDraftContent: Record<string, unknown> | null,
+): boolean {
+  const page = indexDraftContent?.["page"] as Record<string, unknown> | undefined
+  const opts = page?.["categoryOptions"]
+  return Array.isArray(opts) && opts.length > 0
+}
+
+type ChildItemBlob = {
+  resourceId: string
+  draftContent: Record<string, unknown> | null
+  publishedContent: Record<string, unknown> | null
+}
+
+/**
+ * Scans child item blobs and returns a Map from trimmed category label →
+ * list of resource IDs that carry that label.
+ *
+ * Rules:
+ *   - Prefers draftContent over publishedContent.
+ *   - Skips items with no content, no `page`, or a non-string `category`.
+ *   - Trims whitespace; skips empty strings after trimming.
+ *   - Deduplication is case-sensitive (e.g. "Health" and "health" are distinct).
+ */
+export function buildLabelMap(
+  childItems: ChildItemBlob[],
+): Map<string, string[]> {
+  const labelToResourceIds = new Map<string, string[]>()
+
+  for (const child of childItems) {
+    const content = (child.draftContent ?? child.publishedContent) as Record<string, unknown> | null
+    if (!content) continue
+
+    const page = content["page"] as Record<string, unknown> | undefined
+    if (!page) continue
+
+    const rawCategory = page["category"]
+    if (typeof rawCategory !== "string") continue
+
+    const trimmed = rawCategory.trim()
+    if (trimmed.length === 0) continue
+
+    const existing = labelToResourceIds.get(trimmed)
+    if (existing) {
+      existing.push(child.resourceId)
+    } else {
+      labelToResourceIds.set(trimmed, [child.resourceId])
+    }
+  }
+
+  return labelToResourceIds
+}
+
+/**
+ * Given a label → resource-IDs map, assigns a fresh UUID to each distinct
+ * label and returns:
+ *   - `categoryOptions`: the array to write onto the Collection Index blob.
+ *   - `labelToId`: lookup used to stamp `categoryId` on each child item.
+ */
+export function buildCategoryOptions(labelMap: Map<string, string[]>): {
+  categoryOptions: { id: string; label: string }[]
+  labelToId: Map<string, string>
+} {
+  const categoryOptions: { id: string; label: string }[] = []
+  const labelToId = new Map<string, string>()
+
+  for (const label of labelMap.keys()) {
+    const id = crypto.randomUUID()
+    categoryOptions.push({ id, label })
+    labelToId.set(label, id)
+  }
+
+  return { categoryOptions, labelToId }
+}
+
+// ---------------------------------------------------------------------------
 // Main migration
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const db = createDb({ connectionString: DATABASE_URL! })
+  const DATABASE_URL = process.env["DATABASE_URL"]
+  if (!DATABASE_URL) {
+    console.error(
+      "DATABASE_URL is not set. Copy apps/studio/.env.example to apps/studio/.env and fill in the values.",
+    )
+    process.exit(1)
+  }
+
+  const db = createDb({ connectionString: DATABASE_URL })
 
   console.log("Starting category → categoryId migration…")
 
@@ -145,11 +228,8 @@ async function main() {
 
         // 5. Idempotency check — skip if categoryOptions already non-empty
         const existingPage = indexDraftContent?.["page"] as Record<string, unknown> | undefined
-        const existingCategoryOptions = existingPage?.["categoryOptions"]
-        if (
-          Array.isArray(existingCategoryOptions) &&
-          existingCategoryOptions.length > 0
-        ) {
+        if (hasCategoryOptions(indexDraftContent)) {
+          const existingCategoryOptions = existingPage?.["categoryOptions"] as unknown[]
           console.log(
             `  [SKIP] Collection "${collectionTitle}" (id=${collectionId}): categoryOptions already populated (${existingCategoryOptions.length} options).`,
           )
@@ -180,28 +260,7 @@ async function main() {
 
         // 7. Collect distinct category strings from child items
         // Prefer draft blob content; fall back to published blob content
-        const labelToResourceIds = new Map<string, string[]>()
-
-        for (const child of childItems) {
-          const content = (child.draftContent ?? child.publishedContent) as Record<string, unknown> | null
-          if (!content) continue
-
-          const page = content["page"] as Record<string, unknown> | undefined
-          if (!page) continue
-
-          const rawCategory = page["category"]
-          if (typeof rawCategory !== "string") continue
-
-          const trimmed = rawCategory.trim()
-          if (trimmed.length === 0) continue
-
-          const existing = labelToResourceIds.get(trimmed)
-          if (existing) {
-            existing.push(child.resourceId)
-          } else {
-            labelToResourceIds.set(trimmed, [child.resourceId])
-          }
-        }
+        const labelToResourceIds = buildLabelMap(childItems)
 
         // 8. Skip if no distinct labels found
         if (labelToResourceIds.size === 0) {
@@ -213,14 +272,7 @@ async function main() {
         }
 
         // 9. Generate UUID for each distinct label → build categoryOptions
-        const categoryOptions: { id: string; label: string }[] = []
-        const labelToId = new Map<string, string>()
-
-        for (const label of labelToResourceIds.keys()) {
-          const id = crypto.randomUUID()
-          categoryOptions.push({ id, label })
-          labelToId.set(label, id)
-        }
+        const { categoryOptions, labelToId } = buildCategoryOptions(labelToResourceIds)
 
         // 10. Write categoryOptions to the Collection Index draft blob
         const newIndexContent: Record<string, unknown> = {
