@@ -51,6 +51,10 @@ import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
+  clearReclaimedRedirect,
+  createRedirectForPermalinkChange,
+} from "../redirect/redirect.service"
+import {
   createResourceWithBlob,
   getBlobOfResource,
   getFooter,
@@ -780,7 +784,14 @@ export const pageRouter = router({
     .mutation(
       async ({
         ctx,
-        input: { pageId, siteId, title, type: _pageType, ...settings },
+        input: {
+          pageId,
+          siteId,
+          title,
+          type,
+          shouldCreateRedirect,
+          ...settings
+        },
       }) => {
         await bulkValidateUserPermissionsForResources({
           siteId,
@@ -866,6 +877,43 @@ export const pageRouter = router({
               delta: { before: resource, after: updatedResource },
               eventType: AuditLogEvent.ResourceUpdate,
             })
+
+            // Keep redirects consistent when a Page/CollectionPage URL changes
+            // (a title-only edit leaves the permalink untouched).
+            if (
+              (type === ResourceType.Page ||
+                type === ResourceType.CollectionPage) &&
+              updatedResource.permalink !== resource.permalink
+            ) {
+              const parentFullPermalink = resource.parentId
+                ? await getResourceFullPermalink(
+                    siteId,
+                    Number(resource.parentId),
+                  )
+                : null
+              const oldFullPermalink = `${parentFullPermalink ?? ""}/${resource.permalink}`
+              const newFullPermalink = `${parentFullPermalink ?? ""}/${updatedResource.permalink}`
+
+              // Drop any redirect that pointed back here (it would self-shadow).
+              await clearReclaimedRedirect(tx, {
+                siteId,
+                newFullPermalink,
+                resourceId: String(pageId),
+                byUserId: ctx.user.id,
+              })
+              // Preserve the old URL when asked, for a published page.
+              if (
+                shouldCreateRedirect &&
+                updatedResource.publishedVersionId !== null
+              ) {
+                await createRedirectForPermalinkChange(tx, {
+                  siteId,
+                  oldFullPermalink,
+                  resourceId: String(pageId),
+                  byUserId: ctx.user.id,
+                })
+              }
+            }
 
             // We do an implicit publish so that we can make the changes to the
             // page settings immediately visible on the end site

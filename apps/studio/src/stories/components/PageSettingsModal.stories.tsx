@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs"
 import { Box } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
 import { useEffect } from "react"
+import { userEvent, within } from "storybook/test"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { redirectHandlers } from "tests/msw/handlers/redirect"
 import { pageSettingsModalAtom } from "~/features/dashboard/atoms"
@@ -61,5 +62,27 @@ export const UrlIsRedirectSource: Story = {
     msw: {
       handlers: [...BASE_HANDLERS, redirectHandlers.getBySource.existing()],
     },
+  },
+}
+
+// The existing redirect points back at this page, so the warning is suppressed
+// (saving auto-clears it).
+export const UrlRedirectsToThisPage: Story = {
+  parameters: {
+    msw: {
+      handlers: [...BASE_HANDLERS, redirectHandlers.getBySource.toResource()],
+    },
+  },
+}
+
+// Changing the URL reveals the "Redirect page automatically" option.
+export const RedirectOptionShown: Story = {
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const urlInput = await body.findByPlaceholderText(
+      "URL will be autopopulated if left untouched",
+    )
+    await userEvent.clear(urlInput)
+    await userEvent.type(urlInput, "renamed-page")
   },
 }

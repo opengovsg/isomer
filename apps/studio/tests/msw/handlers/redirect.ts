@@ -67,6 +67,10 @@ export const redirectHandlers = {
       trpcMsw.redirect.getBySource.query(() => ({
         destination: "/somewhere-else",
       })),
+    // The URL redirects back to this page; the modal suppresses the shadow
+    // warning because saving auto-clears it.
+    toResource: (reference = "[resource:1:1]") =>
+      trpcMsw.redirect.getBySource.query(() => ({ destination: reference })),
   },
   countByDestinationResource: {
     // No redirects point here — no delete-modal warning shown.

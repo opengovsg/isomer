@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Modal,
   ModalBody,
@@ -8,9 +9,10 @@ import {
   ModalHeader,
   ModalOverlay,
   Skeleton,
+  Text,
   VStack,
 } from "@chakra-ui/react"
-import { Infobox, useToast } from "@opengovsg/design-system-react"
+import { Checkbox, Infobox, useToast } from "@opengovsg/design-system-react"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { useState } from "react"
 import { ResourceSelector } from "~/components/ResourceSelector/ResourceSelector"
@@ -19,7 +21,10 @@ import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
+import { normalizeRedirectPath } from "~/schemas/redirect"
+import { getReferenceLink } from "~/utils/link"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { moveResourceAtom } from "../../atoms"
 
@@ -48,10 +53,11 @@ const MoveResourceContent = withSuspense(
     >(undefined)
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
-    const [{ title }] = trpc.resource.getMetadataById.useSuspenseQuery({
-      siteId: Number(siteId),
-      resourceId,
-    })
+    const [{ title, type, permalink: movedSlug }] =
+      trpc.resource.getMetadataById.useSuspenseQuery({
+        siteId: Number(siteId),
+        resourceId,
+      })
     const ability = usePermissions()
     const utils = trpc.useUtils()
     const toast = useToast({ status: "success" })
@@ -112,6 +118,38 @@ const MoveResourceContent = withSuspense(
 
     const movedItem = useAtomValue(moveResourceAtom)
 
+    const [shouldCreateRedirect, setShouldCreateRedirect] = useState(true)
+    const [{ fullPermalink: movedFullPermalink }] =
+      trpc.resource.getWithFullPermalink.useSuspenseQuery({
+        siteId: Number(siteId),
+        resourceId,
+      })
+    const { data: destination } = trpc.resource.getWithFullPermalink.useQuery(
+      { siteId: Number(siteId), resourceId: curResourceId ?? "" },
+      { enabled: !!curResourceId },
+    )
+
+    // Only Page/CollectionPage have a URL worth preserving; show the option
+    // once a destination is picked.
+    const showRedirectOption =
+      curResourceId !== undefined &&
+      (type === ResourceType.Page || type === ResourceType.CollectionPage)
+    const oldFullPermalink = normalizeRedirectPath(movedFullPermalink)
+    const newFullPermalink = normalizeRedirectPath(
+      `${curResourceId && destination ? destination.fullPermalink : ""}/${movedSlug}`,
+    )
+    const selfReference = getReferenceLink({
+      siteId: String(siteId),
+      resourceId,
+    })
+    const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
+      { siteId: Number(siteId), source: newFullPermalink },
+      {
+        enabled:
+          showRedirectOption && (curResourceId === null || !!destination),
+      },
+    )
+
     return (
       <ModalContent>
         <ModalHeader mr="3.5rem">Move "{title}" to...</ModalHeader>
@@ -129,6 +167,43 @@ const MoveResourceContent = withSuspense(
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
+            {showRedirectOption && (
+              <VStack alignItems="flex-start" spacing="0.5rem" w="full">
+                {/* Suppressed when the redirect points back at this page —
+                    the move auto-clears it, so it won't actually shadow. */}
+                {existingRedirect &&
+                  existingRedirect.destination !== selfReference && (
+                    <Infobox variant="warning" size="sm" w="full">
+                      This URL already redirects to{" "}
+                      {existingRedirect.destination}. Visitors will end up there
+                      instead.
+                    </Infobox>
+                  )}
+                <Box
+                  w="full"
+                  bg="utility.feedback.info-subtle"
+                  borderRadius="0.5rem"
+                  p="1rem"
+                >
+                  <Checkbox
+                    alignItems="flex-start"
+                    size="1.25rem"
+                    isChecked={shouldCreateRedirect}
+                    onChange={(e) => setShouldCreateRedirect(e.target.checked)}
+                  >
+                    <VStack align="flex-start" spacing="0.25rem">
+                      <Text textStyle="subhead-2">
+                        Redirect page automatically
+                      </Text>
+                      <Text textStyle="body-2" color="base.content.medium">
+                        Check this box to redirect visitors from{" "}
+                        {oldFullPermalink} to {newFullPermalink}.
+                      </Text>
+                    </VStack>
+                  </Checkbox>
+                </Box>
+              </VStack>
+            )}
           </VStack>
         </ModalBody>
         <ModalFooter>
@@ -157,6 +232,7 @@ const MoveResourceContent = withSuspense(
                 siteId,
                 movedResourceId: movedItem.id,
                 destinationResourceId: curResourceId ?? null,
+                shouldCreateRedirect,
               })
             }
           >

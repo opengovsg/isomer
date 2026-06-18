@@ -2404,6 +2404,77 @@ describe("page.router", async () => {
   })
 
   describe("updateSettings", () => {
+    describe("redirect on settings change", () => {
+      const liveRedirects = (siteId: number) =>
+        db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", siteId)
+          .where("deletedAt", "is", null)
+          .execute()
+
+      const setupPublishedPage = async (permalink: string) => {
+        const { site, page } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          permalink,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        return { site, page }
+      }
+
+      it("creates a redirect from the old URL when the permalink changes", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        const redirects = await liveRedirects(site.id)
+        expect(redirects).toHaveLength(1)
+        expect(redirects[0]!.source).toBe("/old-page")
+        expect(redirects[0]!.destination).toBe(
+          `[resource:${site.id}:${page.id}]`,
+        )
+      })
+
+      it("does not create a redirect for a title-only change", async () => {
+        const { site, page } = await setupPublishedPage("stay")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Renamed title only",
+          permalink: "stay",
+          shouldCreateRedirect: true,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("does not create a redirect when shouldCreateRedirect is false", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: false,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+    })
+
     it("should throw 401 if not logged in update", async () => {
       // Arrange
       const unauthedSession = applySession()

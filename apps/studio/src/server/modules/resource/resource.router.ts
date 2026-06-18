@@ -38,11 +38,16 @@ import {
   definePermissionsForResource,
   getResourcePermission,
 } from "../permissions/permissions.service"
-import { softDeleteRedirectsPointingToResource } from "../redirect/redirect.service"
+import {
+  clearReclaimedRedirect,
+  createRedirectForPermalinkChange,
+  softDeleteRedirectsPointingToResource,
+} from "../redirect/redirect.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
+  getResourceFullPermalink,
   getSearchRecentlyEdited,
   getSearchResults,
   getSearchWithResourceIds,
@@ -322,7 +327,12 @@ export const resourceRouter = router({
     .mutation(
       async ({
         ctx,
-        input: { siteId, movedResourceId, destinationResourceId },
+        input: {
+          siteId,
+          movedResourceId,
+          destinationResourceId,
+          shouldCreateRedirect,
+        },
       }) => {
         const isValid = await validateUserPermissionsForMove({
           from: movedResourceId,
@@ -481,6 +491,20 @@ export const resourceRouter = router({
               }
             }
 
+            // Old URL = current location (pre-UPDATE); new URL from the
+            // unchanged destination + slug, so neither read is stale.
+            const oldFullPermalink = await getResourceFullPermalink(
+              siteId,
+              Number(movedResourceId),
+            )
+            const destinationFullPermalink = destinationResourceId
+              ? await getResourceFullPermalink(
+                  siteId,
+                  Number(destinationResourceId),
+                )
+              : null
+            const newFullPermalink = `${destinationFullPermalink ?? ""}/${toMove.permalink}`
+
             await tx
               .updateTable("Resource")
               .where("siteId", "=", Number(siteId))
@@ -522,6 +546,35 @@ export const resourceRouter = router({
               delta: { before: toMove, after: moved },
               by: user,
             })
+
+            // Keep redirects consistent with the new URL — Page/CollectionPage
+            // only (folders/collection links have no URL of their own).
+            if (
+              toMove.type === ResourceType.Page ||
+              toMove.type === ResourceType.CollectionPage
+            ) {
+              // Drop any redirect that pointed back here (it would self-shadow).
+              await clearReclaimedRedirect(tx, {
+                siteId,
+                newFullPermalink,
+                resourceId: movedResourceId,
+                byUserId: user.id,
+              })
+              // Preserve the old URL when asked, if published and URL changed.
+              if (
+                shouldCreateRedirect &&
+                toMove.publishedVersionId !== null &&
+                oldFullPermalink !== null &&
+                oldFullPermalink !== newFullPermalink
+              ) {
+                await createRedirectForPermalinkChange(tx, {
+                  siteId,
+                  oldFullPermalink,
+                  resourceId: movedResourceId,
+                  byUserId: user.id,
+                })
+              }
+            }
 
             return moved
           })

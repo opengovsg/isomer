@@ -455,6 +455,125 @@ export const createRedirect = async ({
   return created
 }
 
+// Redirects driven by a permalink change (move / rename). Both run inside the
+// caller's transaction and publish nothing — the caller's publish covers them.
+
+// Creates the "old URL -> this page" redirect when a page's permalink changes.
+// Source/destination are server-derived (the page's own permalink + a reference
+// to itself), so there's no untrusted input: we skip the existing-page, loop
+// and destination guards createRedirect runs for typed-in redirects. They hold
+// by construction — the move vacated the old path, and the (siteId, parentId,
+// permalink) constraint + publish-block keep a page off it. Only (siteId,
+// source) uniqueness is enforced, by the upsert below.
+export const createRedirectForPermalinkChange = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    oldFullPermalink,
+    resourceId,
+    byUserId,
+  }: {
+    siteId: number
+    oldFullPermalink: string
+    resourceId: string
+    byUserId: string
+  },
+) => {
+  const source = normalizeRedirectPath(oldFullPermalink)
+  const destination = getReferenceLink({
+    siteId: String(siteId),
+    resourceId: String(resourceId),
+  })
+  const byUser = await getByUser(byUserId)
+
+  const existing = await tx
+    .selectFrom("Redirect")
+    .selectAll()
+    .where("siteId", "=", siteId)
+    .where("source", "=", source)
+    .executeTakeFirst()
+
+  const created = await tx
+    .insertInto("Redirect")
+    .values({ siteId, source, destination })
+    .onConflict((oc) =>
+      oc
+        .columns(["siteId", "source"])
+        .doUpdateSet({ destination, deletedAt: null, createdAt: new Date() })
+        // Only revive a soft-deleted row; a live one must surface as a conflict.
+        .where("Redirect.deletedAt", "is not", null),
+    )
+    .returningAll()
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "CONFLICT",
+          message: `A redirect already exists for ${source}`,
+        }),
+    )
+
+  await logRedirectEvent(tx, {
+    siteId,
+    by: byUser,
+    eventType: AuditLogEvent.RedirectCreate,
+    delta: { before: existing ?? null, after: created },
+  })
+
+  return created
+}
+
+// When a permalink change lands a page on a path whose redirect points back at
+// that same page (a self-shadow/loop), soft-delete it — the page reclaims its
+// URL. Scoped to redirects referencing THIS page; one pointing elsewhere is a
+// real conflict left to the user.
+export const clearReclaimedRedirect = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    newFullPermalink,
+    resourceId,
+    byUserId,
+  }: {
+    siteId: number
+    newFullPermalink: string
+    resourceId: string
+    byUserId: string
+  },
+) => {
+  const source = normalizeRedirectPath(newFullPermalink)
+  const reference = getReferenceLink({
+    siteId: String(siteId),
+    resourceId: String(resourceId),
+  })
+
+  const reclaimed = await tx
+    .selectFrom("Redirect")
+    .selectAll()
+    .where("siteId", "=", siteId)
+    .where("source", "=", source)
+    .where("destination", "=", reference)
+    .where("deletedAt", "is", null)
+    .executeTakeFirst()
+  if (!reclaimed) {
+    return null
+  }
+
+  const byUser = await getByUser(byUserId)
+  const after = await tx
+    .updateTable("Redirect")
+    .set({ deletedAt: new Date() })
+    .where("id", "=", reclaimed.id)
+    .returningAll()
+    .executeTakeFirstOrThrow()
+  await logRedirectEvent(tx, {
+    siteId,
+    by: byUser,
+    eventType: AuditLogEvent.RedirectDelete,
+    delta: { before: reclaimed, after },
+  })
+  return after
+}
+
 export const deleteRedirect = async ({
   siteId,
   id,

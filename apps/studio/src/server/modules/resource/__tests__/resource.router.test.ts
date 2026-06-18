@@ -25,6 +25,7 @@ import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
@@ -1848,6 +1849,132 @@ describe("resource.router", async () => {
     it.skip("should throw 403 if user does not have write access to destination resource", async () => {})
 
     it.skip("should throw 403 if user does not have write access to origin resource", async () => {})
+
+    describe("redirect on move", () => {
+      const setup = async () => {
+        const { page: rootPage, site } = await setupPageResource({
+          resourceType: ResourceType.RootPage,
+          parentId: null,
+        })
+        const { folder } = await setupFolder({
+          siteId: site.id,
+          permalink: "dest",
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        return { site, rootPage, folder }
+      }
+
+      const liveRedirects = (siteId: number) =>
+        db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", siteId)
+          .where("deletedAt", "is", null)
+          .execute()
+
+      it("creates a redirect from the old URL for a published page", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+
+        await caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: folder.id,
+          shouldCreateRedirect: true,
+        })
+
+        const redirects = await liveRedirects(site.id)
+        expect(redirects).toHaveLength(1)
+        expect(redirects[0]!.source).toBe("/old-page")
+        expect(redirects[0]!.destination).toBe(
+          `[resource:${site.id}:${page.id}]`,
+        )
+      })
+
+      it("does not create a redirect when shouldCreateRedirect is false", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+
+        await caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: folder.id,
+          shouldCreateRedirect: false,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("does not create a redirect for an unpublished page", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Draft,
+        })
+
+        await caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: folder.id,
+          shouldCreateRedirect: true,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("soft-deletes a redirect pointing back at the page when it reclaims that URL", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        // A redirect at the path the page is about to occupy, pointing at it.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/dest/old-page",
+            destination: `[resource:${site.id}:${page.id}]`,
+          })
+          .execute()
+
+        await caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: folder.id,
+          shouldCreateRedirect: false,
+        })
+
+        const reclaimed = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/dest/old-page")
+          .executeTakeFirstOrThrow()
+        expect(reclaimed.deletedAt).not.toBeNull()
+      })
+    })
   })
 
   describe("countWithoutRoot", () => {
