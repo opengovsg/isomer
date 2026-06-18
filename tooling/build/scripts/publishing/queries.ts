@@ -61,29 +61,24 @@ export const GET_CONFIG = `
 SELECT name, config, theme FROM public."Site" WHERE "id" = $1;
 `
 
-// Internal-page destinations are stored as "[resource:siteId:resourceId]"
-// references so a redirect follows the page when its permalink changes. We
-// resolve each reference to the page's current full permalink at publish time
-// by walking the resource tree (same shape as
-// GET_ALL_RESOURCES_WITH_FULL_PERMALINKS). Non-reference destinations (literal
-// paths and external https URLs) pass through untouched.
-//
-// A reference resolves to NULL — and the redirect is dropped — when its target
-// no longer exists OR is no longer published ("publishedVersionId" IS NULL): a
-// redirect to a deleted or unpublished page is broken, so we don't publish it.
-//
-// The trailing "_index" segment is stripped to match getConvertedPermalink in
-// index.ts (an index page represents its folder, so it has no URL of its own);
-// this keeps the published target identical to what the editor displays.
+// Internal destinations are stored as "[resource:siteId:resourceId]" references
+// so a redirect follows the page when its permalink changes. At publish time we
+// resolve each reference to the target's current full permalink by walking the
+// resource tree. A Folder/Collection reference resolves via its published
+// IndexPage child (the container has no version of its own); the trailing
+// "_index" is stripped to match getConvertedPermalink in index.ts. Non-reference
+// destinations (literal paths, external https URLs) pass through untouched. A
+// reference resolves to NULL — and the redirect is dropped — when nothing live
+// matches (deleted/unpublished target), since that redirect would be broken.
 export const GET_REDIRECTS = `
-WITH RECURSIVE "resourcePath" (id, "publishedVersionId", "parentId", "fullPermalink") AS (
-    SELECT r.id, r."publishedVersionId", r."parentId", r.permalink AS "fullPermalink"
+WITH RECURSIVE "resourcePath" (id, "publishedVersionId", "parentId", "fullPermalink", "type") AS (
+    SELECT r.id, r."publishedVersionId", r."parentId", r.permalink AS "fullPermalink", r.type AS "type"
     FROM public."Resource" r
     WHERE r."siteId" = $1 AND r."parentId" IS NULL
 
     UNION ALL
 
-    SELECT r.id, r."publishedVersionId", r."parentId", CONCAT(path."fullPermalink", '/', r.permalink)
+    SELECT r.id, r."publishedVersionId", r."parentId", CONCAT(path."fullPermalink", '/', r.permalink), r.type AS "type"
     FROM public."Resource" r
     INNER JOIN "resourcePath" path ON r."parentId" = path.id
     WHERE r."siteId" = $1
@@ -101,8 +96,17 @@ SELECT source, destination FROM (
     FROM public."Redirect" redirect
     LEFT JOIN "resourcePath" rp
         ON redirect.destination ~ '^\\[resource:\\d+:\\d+\\]$'
-        AND rp.id = CAST(substring(redirect.destination from '\\[resource:\\d+:(\\d+)\\]') AS bigint)
         AND rp."publishedVersionId" IS NOT NULL
+        AND (
+            -- A page reference resolves to the page itself.
+            rp.id = CAST(substring(redirect.destination from '\\[resource:\\d+:(\\d+)\\]') AS bigint)
+            -- A Folder/Collection reference resolves via its published IndexPage
+            -- child; "_index" is stripped above to give the container's URL.
+            OR (
+                rp."type" = 'IndexPage'
+                AND rp."parentId" = CAST(substring(redirect.destination from '\\[resource:\\d+:(\\d+)\\]') AS bigint)
+            )
+        )
     WHERE redirect."siteId" = $1 AND redirect."deletedAt" IS NULL
 ) resolved
 WHERE resolved.destination IS NOT NULL;

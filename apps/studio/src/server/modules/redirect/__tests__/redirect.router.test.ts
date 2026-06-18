@@ -488,7 +488,7 @@ describe("redirect.router", async () => {
       const result = caller.create({
         siteId,
         source: "/old",
-        destination: "/new",
+        destination: "https://example.com/new",
       })
 
       // Assert
@@ -501,7 +501,10 @@ describe("redirect.router", async () => {
         .where("deletedAt", "is", null)
         .execute()
       expect(rows).toHaveLength(1)
-      expect(rows[0]).toMatchObject({ source: "/old", destination: "/new" })
+      expect(rows[0]).toMatchObject({
+        source: "/old",
+        destination: "https://example.com/new",
+      })
     })
 
     it("should log the soft-deleted row as the delta before when reviving", async () => {
@@ -676,6 +679,55 @@ describe("redirect.router", async () => {
         .where("source", "=", "/from")
         .executeTakeFirstOrThrow()
       expect(row.destination).toBe(`[resource:${siteId}:${rootPage.id}]`)
+    })
+
+    it("should store a folder destination as the folder reference, not its index page", async () => {
+      // Arrange — a folder is served by its published IndexPage child, but the
+      // published site keys the URL on the folder's id, so the redirect must
+      // reference the folder itself.
+      const { folder } = await setupFolder({ siteId, permalink: "about" })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        permalink: "_index",
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      await caller.create({ siteId, source: "/from", destination: "/about" })
+
+      // Assert
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe(`[resource:${siteId}:${folder.id}]`)
+    })
+
+    it("should throw 404 for a folder destination whose index page is unpublished", async () => {
+      // Arrange — a folder with no live index page has no live URL behind it
+      const { folder } = await setupFolder({ siteId, permalink: "about" })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        permalink: "_index",
+        parentId: folder.id,
+        state: ResourceState.Draft,
+      })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/from",
+        destination: "/about",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "NOT_FOUND" })
     })
   })
 

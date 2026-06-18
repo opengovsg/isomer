@@ -31,16 +31,13 @@ const SORT_FIELD_TO_COLUMN = {
   "source" | "destination" | "createdAt"
 >
 
-// Anchored [resource:siteId:resourceId] reference. A destination already in
-// this form (or an external URL) is stored verbatim; only a bare internal path
-// is converted to a reference.
+// Anchored [resource:siteId:resourceId] reference. Such a destination (or an
+// external URL) is stored verbatim; only a bare internal path becomes a reference.
 const REFERENCE_DESTINATION_REGEX = /^\[resource:\d+:\d+\]$/
 
-// Converts a redirect destination into the value stored in the DB. An internal
-// path with no query/hash suffix is resolved to an internal-page reference so
-// the redirect follows the page if its permalink later changes. A path that
-// carries a query/hash suffix can't map to a single resource, so it is kept as
-// a literal path; references and external URLs are stored verbatim.
+// Resolves a destination to its stored form. An internal path with no query/hash
+// becomes a [resource:...] reference (so it follows page renames); a path with a
+// query/hash stays literal; references and external URLs are stored verbatim.
 const resolveDestinationForStorage = async (
   siteId: number,
   destination: string,
@@ -67,10 +64,8 @@ const resolveDestinationForStorage = async (
   })
 }
 
-// Resolves stored [resource:...] destinations back to the page's current
-// permalink for display. Batched into a single query (see
-// getResourceFullPermalinks) so a page of redirects costs one round-trip, not
-// one per row. A reference whose page no longer exists resolves to null.
+// Resolves stored [resource:...] destinations back to current permalinks for
+// display, batched into one query. A reference to a missing page resolves to null.
 export const resolveRedirectReferences = async ({
   siteId,
   references,

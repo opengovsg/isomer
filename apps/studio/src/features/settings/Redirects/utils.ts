@@ -19,10 +19,8 @@ export const isReferenceDestination = (destination: string): boolean =>
   REFERENCE_LINK_REGEX.test(destination)
 
 // Turns a stored destination into a user-facing label: a reference becomes the
-// page's current permalink (resolved server-side), or MISSING_PAGE_LABEL;
-// non-references are shown verbatim. Returns null while a reference is still
-// resolving so the caller can show a loading state instead of the raw
-// "[resource:...]" string.
+// resolved permalink (or MISSING_PAGE_LABEL); non-references show verbatim.
+// Returns null while a reference is still resolving (caller shows a loader).
 export const getDestinationLabel = (
   destination: string,
   permalinkByReference: Map<string, string | null>,

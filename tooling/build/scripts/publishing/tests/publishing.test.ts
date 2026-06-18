@@ -379,6 +379,21 @@ beforeAll(async () => {
     source: "/ref-index",
     destination: `[resource:${siteId}:${aboutIndexPageId}]`,
   })
+  // A reference to the folder itself resolves via its published index page to
+  // the folder's URL — this is the form internal folder/collection destinations
+  // are stored as (the build keys the URL on the folder id, not the index page)
+  await seedRedirect({
+    siteId,
+    source: "/ref-folder",
+    destination: `[resource:${siteId}:${aboutFolderId}]`,
+  })
+  // A reference to a folder with no published index page is dropped — there is
+  // no live page behind it
+  await seedRedirect({
+    siteId,
+    source: "/ref-dangling-folder",
+    destination: `[resource:${siteId}:${danglingFolderId}]`,
+  })
   // A reference to the root page resolves to "/"
   await seedRedirect({
     siteId,
@@ -703,10 +718,11 @@ describe("redirects.json", () => {
         { source: "/old-news", destination: "/news" },
         { source: "/ref-page", destination: "/about/our-team" },
         { source: "/ref-index", destination: "/about" },
+        { source: "/ref-folder", destination: "/about" },
         { source: "/ref-root", destination: "/" },
       ]),
     )
-    expect(redirects).toHaveLength(5)
+    expect(redirects).toHaveLength(6)
   })
 
   it("drops a redirect whose referenced page is unpublished", () => {
@@ -719,6 +735,19 @@ describe("redirects.json", () => {
     // Assert
     expect(
       redirects.find((redirect) => redirect.source === "/ref-draft"),
+    ).toBeUndefined()
+  })
+
+  it("drops a folder reference with no published index page", () => {
+    // Arrange / Act
+    const redirects = readOutput("redirects.json") as {
+      source: string
+      destination: string
+    }[]
+
+    // Assert
+    expect(
+      redirects.find((redirect) => redirect.source === "/ref-dangling-folder"),
     ).toBeUndefined()
   })
 })
