@@ -88,7 +88,7 @@ export const getCollectionTagsSchema = z
     resourceId: z.number().min(1).optional(),
     collectionId: z.number().min(1).optional(),
     siteId: z.number().min(1),
-    isPublishedCategories: z.boolean().optional(),
+    isPublishedCategories: z.boolean().default(false),
   })
   .refine(
     (data) =>

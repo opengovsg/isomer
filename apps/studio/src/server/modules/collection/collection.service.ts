@@ -66,35 +66,6 @@ export const getCollectionTagsForResource = async ({
   { resourceId: number },
   { collectionId: number }
 >): Promise<NonNullable<CollectionPageSchemaType["page"]["tagCategories"]>> => {
-  if (isPublishedOnly) {
-    const row = await db
-      .selectFrom("Resource as r")
-      .innerJoin("Version as v", "r.publishedVersionId", "v.id")
-      .innerJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
-      .where("r.type", "=", ResourceType.IndexPage)
-      .where("r.siteId", "=", siteId)
-      .$if(collectionId !== undefined, (qb) =>
-        qb.where("r.parentId", "=", String(collectionId)),
-      )
-      .$if(resourceId !== undefined, (qb) =>
-        qb.where("r.parentId", "=", (eb) =>
-          eb
-            .selectFrom("Resource")
-            .where("id", "=", String(resourceId))
-            .where("siteId", "=", siteId)
-            .select("parentId"),
-        ),
-      )
-      .select(
-        sql<CollectionPageSchemaType | null>`"publishedBlob"."content"`.as(
-          "publishedContent",
-        ),
-      )
-      .executeTakeFirst()
-
-    return row?.publishedContent?.page.tagCategories ?? []
-  }
-
   const row = await db
     .selectFrom("Resource as r")
     .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
@@ -115,11 +86,11 @@ export const getCollectionTagsForResource = async ({
       ),
     )
     .select([
-      sql<CollectionPageSchemaType | null>`"draftBlob"."content"`.as(
-        "draftContent",
-      ),
       sql<CollectionPageSchemaType | null>`"publishedBlob"."content"`.as(
         "publishedContent",
+      ),
+      sql<CollectionPageSchemaType | null>`"draftBlob"."content"`.as(
+        "draftContent",
       ),
     ])
     .executeTakeFirst()
@@ -130,8 +101,7 @@ export const getCollectionTagsForResource = async ({
 
   return (
     row.publishedContent?.page.tagCategories ??
-    row.draftContent?.page.tagCategories ??
-    []
+    (isPublishedOnly ? [] : (row.draftContent?.page.tagCategories ?? []))
   )
 }
 
