@@ -99,10 +99,11 @@ export const getCollectionTagsForResource = async ({
     return []
   }
 
-  return (
-    row.publishedContent?.page.tagCategories ??
-    (isPublishedOnly ? [] : (row.draftContent?.page.tagCategories ?? []))
-  )
+  return isPublishedOnly
+    ? (row.publishedContent?.page.tagCategories ?? [])
+    : (row.publishedContent?.page.tagCategories ??
+        row.draftContent?.page.tagCategories ??
+        [])
 }
 
 export const getCategoryOptionUsageCount = async ({
