@@ -15,32 +15,36 @@
  * already contains a non-empty `categoryOptions` array.
  *
  * Run from the repo root:
- *   pnpm tsx apps/studio/scripts/migrate-category-to-categoryid.ts
+ *   pnpm tsx apps/studio/prisma/scripts/migrate-category-to-categoryid.ts
  *
  * Requires DATABASE_URL in the environment (or a .env file at
  * apps/studio/.env loaded by tsx via --env-file or dotenv).
  */
 
-import { createDb } from "@isomer/db"
-import { ResourceType, sql } from "@isomer/db"
+import type { RawBuilder } from "kysely"
 import { config } from "dotenv"
 import { resolve } from "path"
 import { fileURLToPath } from "url"
+
+import { createDb } from "@isomer/db"
+import { ResourceType, sql } from "@isomer/db"
 
 // ---------------------------------------------------------------------------
 // Bootstrap environment
 // ---------------------------------------------------------------------------
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
-config({ path: resolve(__dirname, "../.env") })
+config({ path: resolve(__dirname, "../../.env") })
 
 // ---------------------------------------------------------------------------
 // DB helpers
 // ---------------------------------------------------------------------------
 
 // Cast a plain value to JSONB — same helper pattern as database/utils.ts
-function jsonb<T>(value: T) {
-  return sql`CAST(${JSON.stringify(value)} AS JSONB)`
+function jsonb(
+  value: Record<string, unknown>,
+): RawBuilder<PrismaJson.BlobJsonContent> {
+  return sql`CAST(${JSON.stringify(value)} AS JSONB)` as RawBuilder<PrismaJson.BlobJsonContent>
 }
 
 // ---------------------------------------------------------------------------
@@ -54,12 +58,14 @@ function jsonb<T>(value: T) {
 export function hasCategoryOptions(
   indexDraftContent: Record<string, unknown> | null,
 ): boolean {
-  const page = indexDraftContent?.["page"] as Record<string, unknown> | undefined
+  const page = indexDraftContent?.["page"] as
+    | Record<string, unknown>
+    | undefined
   const opts = page?.["categoryOptions"]
   return Array.isArray(opts) && opts.length > 0
 }
 
-type ChildItemBlob = {
+interface ChildItemBlob {
   resourceId: string
   draftContent: Record<string, unknown> | null
   publishedContent: Record<string, unknown> | null
@@ -81,7 +87,7 @@ export function buildLabelMap(
   const labelToResourceIds = new Map<string, string[]>()
 
   for (const child of childItems) {
-    const content = (child.draftContent ?? child.publishedContent) as Record<string, unknown> | null
+    const content = child.draftContent ?? child.publishedContent
     if (!content) continue
 
     const page = content["page"] as Record<string, unknown> | undefined
@@ -131,6 +137,7 @@ export function buildCategoryOptions(labelMap: Map<string, string[]>): {
 // ---------------------------------------------------------------------------
 
 async function main() {
+  // oxlint-disable-next-line node/no-process-env
   const DATABASE_URL = process.env["DATABASE_URL"]
   if (!DATABASE_URL) {
     console.error(
@@ -144,10 +151,7 @@ async function main() {
   console.log("Starting category → categoryId migration…")
 
   // 1. Find all sites
-  const sites = await db
-    .selectFrom("Site")
-    .select("id")
-    .execute()
+  const sites = await db.selectFrom("Site").select("id").execute()
 
   console.log(`Found ${sites.length} site(s).`)
 
@@ -170,7 +174,11 @@ async function main() {
       )
       .where("col.siteId", "=", siteId)
       .where("col.type", "=", ResourceType.Collection)
-      .select(["col.id as collectionId", "col.title as collectionTitle", "idx.id as indexPageId"])
+      .select([
+        "col.id as collectionId",
+        "col.title as collectionTitle",
+        "idx.id as indexPageId",
+      ])
       .execute()
 
     for (const collection of collections) {
@@ -206,7 +214,10 @@ async function main() {
             .select("content")
             .executeTakeFirst()
           // Kysely returns the JSON column parsed — cast as any for introspection
-          indexDraftContent = (draftBlob?.content ?? null) as Record<string, unknown> | null
+          indexDraftContent = (draftBlob?.content ?? null) as Record<
+            string,
+            unknown
+          > | null
         }
 
         // If no draft, read from published blob
@@ -223,13 +234,20 @@ async function main() {
             )
             .select("content")
             .executeTakeFirst()
-          indexDraftContent = (publishedBlob?.content ?? null) as Record<string, unknown> | null
+          indexDraftContent = (publishedBlob?.content ?? null) as Record<
+            string,
+            unknown
+          > | null
         }
 
         // 5. Idempotency check — skip if categoryOptions already non-empty
-        const existingPage = indexDraftContent?.["page"] as Record<string, unknown> | undefined
+        const existingPage = indexDraftContent?.["page"] as
+          | Record<string, unknown>
+          | undefined
         if (hasCategoryOptions(indexDraftContent)) {
-          const existingCategoryOptions = existingPage?.["categoryOptions"] as unknown[]
+          const existingCategoryOptions = existingPage?.[
+            "categoryOptions"
+          ] as unknown[]
           console.log(
             `  [SKIP] Collection "${collectionTitle}" (id=${collectionId}): categoryOptions already populated (${existingCategoryOptions.length} options).`,
           )
@@ -253,8 +271,12 @@ async function main() {
             "r.id as resourceId",
             "r.draftBlobId",
             "r.publishedVersionId",
-            sql<Record<string, unknown> | null>`"draftBlob"."content"`.as("draftContent"),
-            sql<Record<string, unknown> | null>`"publishedBlob"."content"`.as("publishedContent"),
+            sql<Record<string, unknown> | null>`"draftBlob"."content"`.as(
+              "draftContent",
+            ),
+            sql<Record<string, unknown> | null>`"publishedBlob"."content"`.as(
+              "publishedContent",
+            ),
           ])
           .execute()
 
@@ -272,7 +294,8 @@ async function main() {
         }
 
         // 9. Generate UUID for each distinct label → build categoryOptions
-        const { categoryOptions, labelToId } = buildCategoryOptions(labelToResourceIds)
+        const { categoryOptions, labelToId } =
+          buildCategoryOptions(labelToResourceIds)
 
         // 10. Write categoryOptions to the Collection Index draft blob
         const newIndexContent: Record<string, unknown> = {
@@ -311,7 +334,7 @@ async function main() {
         let itemsUpdatedCount = 0
 
         for (const child of childItems) {
-          const content = (child.draftContent ?? child.publishedContent) as Record<string, unknown> | null
+          const content = child.draftContent ?? child.publishedContent
           if (!content) continue
 
           const page = content["page"] as Record<string, unknown> | undefined
@@ -379,4 +402,6 @@ async function main() {
   await db.destroy()
 }
 
-main().catch(console.error).finally(() => process.exit())
+main()
+  .catch(console.error)
+  .finally(() => process.exit())

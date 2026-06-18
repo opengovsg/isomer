@@ -453,7 +453,6 @@ export const collectionRouter = router({
         input: {
           date,
           category,
-          categoryId,
           linkId,
           siteId,
           description,
@@ -506,7 +505,15 @@ export const collectionRouter = router({
           const blob = await updateBlobById(tx, {
             content: {
               ...content,
-              page: { description, ref, date, category, categoryId, image, tags, tagged },
+              page: {
+                description,
+                ref,
+                date,
+                category,
+                image,
+                tags,
+                tagged,
+              },
             },
             pageId: linkId,
             siteId,

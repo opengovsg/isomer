@@ -19,8 +19,7 @@ function makeChild(
   draftContent: Record<string, unknown> | null
   publishedContent: Record<string, unknown> | null
 } {
-  const content =
-    category !== undefined ? { page: { category } } : { page: {} }
+  const content = category !== undefined ? { page: { category } } : { page: {} }
 
   if (opts.useDraft === false) {
     return { resourceId, draftContent: null, publishedContent: content }
@@ -58,9 +57,9 @@ describe("hasCategoryOptions", () => {
   })
 
   it("returns false when categoryOptions is not an array (e.g. a string)", () => {
-    expect(
-      hasCategoryOptions({ page: { categoryOptions: "Health" } }),
-    ).toBe(false)
+    expect(hasCategoryOptions({ page: { categoryOptions: "Health" } })).toBe(
+      false,
+    )
   })
 })
 
