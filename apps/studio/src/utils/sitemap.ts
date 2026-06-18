@@ -26,6 +26,8 @@ type ResourceDto = Omit<
   summary?: string
   thumbnail?: string
   category?: string
+  categoryId?: string | null
+  tagged?: string | null
   date?: string
   content?: string
 }
@@ -114,6 +116,10 @@ const getSitemapTreeFromArray = (
         lastModified: resource.updatedAt.toISOString(),
         permalink,
         category: resource.category ?? "Others",
+        categoryId: resource.categoryId ?? undefined,
+        tagged: resource.tagged
+          ? (JSON.parse(resource.tagged) as string[])
+          : undefined,
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",
@@ -136,6 +142,10 @@ const getSitemapTreeFromArray = (
         lastModified: resource.updatedAt.toISOString(),
         permalink,
         category: resource.category ?? "Others",
+        categoryId: resource.categoryId ?? undefined,
+        tagged: resource.tagged
+          ? (JSON.parse(resource.tagged) as string[])
+          : undefined,
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",

@@ -409,6 +409,20 @@ export const getLocalisedSitemap = async (
       ELSE ''
     END
 `.as("content")
+  const categoryIdSql = sql<string | null>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'categoryId')
+      ELSE NULL
+    END
+`.as("categoryId")
+  const taggedSql = sql<string | null>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'tagged')
+      ELSE NULL
+    END
+`.as("tagged")
 
   // Get the actual resource first
   const resource = await getById(db, { resourceId, siteId })
@@ -431,6 +445,8 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
+          categoryIdSql,
+          taggedSql,
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -449,6 +465,8 @@ export const getLocalisedSitemap = async (
               eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
               eb.cast<string>(eb.val(""), "text").as("content"),
+              eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
+              eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -476,6 +494,8 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
+          categoryIdSql,
+          taggedSql,
           ...defaultResourceSelect,
         ]),
     )
@@ -492,12 +512,14 @@ export const getLocalisedSitemap = async (
         .where("Resource.state", "=", ResourceState.Published)
         .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [
+        .select(({ eb }) => [
           headerSql,
           thumbnailSql,
           categorySql,
           dateSql,
           contentSql,
+          eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
+          eb.cast<string | null>(eb.val(null), "text").as("tagged"),
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -517,12 +539,14 @@ export const getLocalisedSitemap = async (
             .where("Resource.state", "=", ResourceState.Published)
             .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
             .leftJoin("Blob as published", "Version.blobId", "published.id")
-            .select(() => [
+            .select(({ eb }) => [
               headerSql,
               thumbnailSql,
               categorySql,
               dateSql,
               contentSql,
+              eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
+              eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -535,6 +559,8 @@ export const getLocalisedSitemap = async (
       "category",
       "date",
       "content",
+      "categoryId",
+      "tagged",
       ...defaultResourceSelect,
     ])
     .union((eb) =>
@@ -546,6 +572,8 @@ export const getLocalisedSitemap = async (
           "category",
           "date",
           "content",
+          "categoryId",
+          "tagged",
           ...defaultResourceSelect,
         ]),
     )
@@ -558,6 +586,8 @@ export const getLocalisedSitemap = async (
           "category",
           "date",
           "content",
+          "categoryId",
+          "tagged",
           ...defaultResourceSelect,
         ]),
     )
