@@ -83,6 +83,19 @@ export interface Navbar {
   createdAt: Generated<Timestamp>
   updatedAt: Generated<Timestamp>
 }
+export interface PreviewLink {
+  id: GeneratedAlways<string>
+  token: string
+  siteId: number
+  resourceId: string
+  createdBy: string
+  label: string | null
+  expiresAt: Timestamp
+  revokedAt: Timestamp | null
+  revokedBy: string | null
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
+}
 export interface PushDocumentJob {
   id: GeneratedAlways<string>
   resourceId: string
@@ -187,6 +200,7 @@ export interface DB {
   Footer: Footer
   IsomerAdmin: IsomerAdmin
   Navbar: Navbar
+  PreviewLink: PreviewLink
   PushDocumentJob: PushDocumentJob
   RateLimiterFlexible: RateLimiterFlexible
   Redirect: Redirect
