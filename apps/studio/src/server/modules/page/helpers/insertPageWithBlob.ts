@@ -3,7 +3,7 @@ import type {
   ResourceType,
 } from "~prisma/generated/generatedEnums"
 import { TRPCError } from "@trpc/server"
-import { get } from "lodash"
+import { get } from "lodash-es"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { DB, SafeKysely, Transaction, User } from "../../database"
