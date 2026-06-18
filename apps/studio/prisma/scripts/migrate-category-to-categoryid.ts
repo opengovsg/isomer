@@ -15,7 +15,12 @@
  * already contains a non-empty `categoryOptions` array.
  *
  * Run from the repo root:
+ *   # all sites
  *   pnpm tsx apps/studio/prisma/scripts/migrate-category-to-categoryid.ts
+ *   # single site
+ *   pnpm tsx apps/studio/prisma/scripts/migrate-category-to-categoryid.ts --site-id <id>
+ *   # dry run (reads only — logs what would change, writes nothing)
+ *   pnpm tsx apps/studio/prisma/scripts/migrate-category-to-categoryid.ts [--site-id <id>] --dry-run
  *
  * Requires DATABASE_URL in the environment (or a .env file at
  * apps/studio/.env loaded by tsx via --env-file or dotenv).
@@ -25,6 +30,7 @@ import type { RawBuilder } from "kysely"
 import { config } from "dotenv"
 import { resolve } from "path"
 import { fileURLToPath } from "url"
+import { parseArgs } from "util"
 
 import { createDb } from "@isomer/db"
 import { ResourceType, sql } from "@isomer/db"
@@ -151,14 +157,53 @@ async function main() {
     process.exit(1)
   }
 
+  const { values: flags } = parseArgs({
+    args: process.argv.slice(2),
+    options: {
+      "site-id": { type: "string" },
+      "dry-run": { type: "boolean", default: false },
+    },
+  })
+
+  const dryRun = flags["dry-run"] ?? false
+
+  const targetSiteId = flags["site-id"]
+  if (targetSiteId !== undefined && !/^\d+$/.test(targetSiteId)) {
+    console.error(
+      `--site-id must be a positive integer, got: "${targetSiteId}"`,
+    )
+    process.exit(1)
+  }
+
   const db = createDb({ connectionString: DATABASE_URL })
 
-  console.log("Starting category → categoryId migration…")
+  console.log(
+    dryRun
+      ? "Starting category → categoryId migration… (DRY RUN — no writes)"
+      : "Starting category → categoryId migration…",
+  )
 
-  // 1. Find all sites
-  const sites = await db.selectFrom("Site").select("id").execute()
+  // 1. Find target sites (all, or a single site when --site-id is given)
+  let sitesQuery = db.selectFrom("Site").select("id")
+  if (targetSiteId !== undefined) {
+    sitesQuery = sitesQuery.where("id", "=", Number(targetSiteId))
+  }
+  const sites = await sitesQuery.execute()
 
-  console.log(`Found ${sites.length} site(s).`)
+  if (sites.length === 0) {
+    console.error(
+      targetSiteId !== undefined
+        ? `No site found with id=${targetSiteId}.`
+        : "No sites found in the database.",
+    )
+    process.exit(1)
+  }
+
+  console.log(
+    targetSiteId !== undefined
+      ? `Running for site id=${targetSiteId}.`
+      : `Found ${sites.length} site(s). Running for all.`,
+  )
 
   let totalCollectionsProcessed = 0
   let totalCollectionsSkipped = 0
@@ -319,26 +364,26 @@ async function main() {
           },
         }
 
-        if (existingDraftBlobId) {
-          // Update existing draft blob
-          await tx
-            .updateTable("Blob")
-            .set({ content: jsonb(newIndexContent) })
-            .where("id", "=", existingDraftBlobId)
-            .execute()
-        } else {
-          // Create a new draft blob and point the Resource at it
-          const newBlob = await tx
-            .insertInto("Blob")
-            .values({ content: jsonb(newIndexContent) })
-            .returning("id")
-            .executeTakeFirstOrThrow()
+        if (!dryRun) {
+          if (existingDraftBlobId) {
+            await tx
+              .updateTable("Blob")
+              .set({ content: jsonb(newIndexContent) })
+              .where("id", "=", existingDraftBlobId)
+              .execute()
+          } else {
+            const newBlob = await tx
+              .insertInto("Blob")
+              .values({ content: jsonb(newIndexContent) })
+              .returning("id")
+              .executeTakeFirstOrThrow()
 
-          await tx
-            .updateTable("Resource")
-            .where("id", "=", indexPageId)
-            .set({ draftBlobId: newBlob.id })
-            .execute()
+            await tx
+              .updateTable("Resource")
+              .where("id", "=", indexPageId)
+              .set({ draftBlobId: newBlob.id })
+              .execute()
+          }
         }
 
         // 11. For each child item, write the matching categoryId to its draft blob
@@ -367,33 +412,35 @@ async function main() {
             },
           }
 
-          if (child.draftBlobId) {
-            // Update existing draft blob
-            await tx
-              .updateTable("Blob")
-              .set({ content: jsonb(newChildContent) })
-              .where("id", "=", child.draftBlobId)
-              .execute()
-          } else {
-            // Create a new draft blob and point the Resource at it
-            const newBlob = await tx
-              .insertInto("Blob")
-              .values({ content: jsonb(newChildContent) })
-              .returning("id")
-              .executeTakeFirstOrThrow()
+          if (!dryRun) {
+            if (child.draftBlobId) {
+              await tx
+                .updateTable("Blob")
+                .set({ content: jsonb(newChildContent) })
+                .where("id", "=", child.draftBlobId)
+                .execute()
+            } else {
+              const newBlob = await tx
+                .insertInto("Blob")
+                .values({ content: jsonb(newChildContent) })
+                .returning("id")
+                .executeTakeFirstOrThrow()
 
-            await tx
-              .updateTable("Resource")
-              .where("id", "=", child.resourceId)
-              .set({ draftBlobId: newBlob.id })
-              .execute()
+              await tx
+                .updateTable("Resource")
+                .where("id", "=", child.resourceId)
+                .set({ draftBlobId: newBlob.id })
+                .execute()
+            }
           }
 
           itemsUpdatedCount++
         }
 
         console.log(
-          `  [OK] Collection "${collectionTitle}" (id=${collectionId}): created ${categoryOptions.length} option(s), updated ${itemsUpdatedCount} item(s).`,
+          dryRun
+            ? `  [DRY RUN] Collection "${collectionTitle}" (id=${collectionId}): would create ${categoryOptions.length} option(s), stamp ${itemsUpdatedCount} item(s). Labels: ${categoryOptions.map((o) => o.label).join(", ")}`
+            : `  [OK] Collection "${collectionTitle}" (id=${collectionId}): created ${categoryOptions.length} option(s), updated ${itemsUpdatedCount} item(s).`,
         )
 
         totalCollectionsProcessed++
@@ -403,12 +450,24 @@ async function main() {
     }
   }
 
-  console.log("\n--- Migration summary ---")
-  console.log(`Collections migrated : ${totalCollectionsProcessed}`)
-  console.log(`Collections skipped  : ${totalCollectionsSkipped}`)
-  console.log(`Category options created: ${totalOptionsCreated}`)
-  console.log(`Child items updated  : ${totalItemsUpdated}`)
-  console.log("Migration complete.")
+  console.log(
+    dryRun
+      ? "\n--- Dry-run summary (no writes) ---"
+      : "\n--- Migration summary ---",
+  )
+  console.log(
+    `Collections ${dryRun ? "would migrate" : "migrated"} : ${totalCollectionsProcessed}`,
+  )
+  console.log(`Collections skipped               : ${totalCollectionsSkipped}`)
+  console.log(
+    `Category options ${dryRun ? "would create" : "created"}   : ${totalOptionsCreated}`,
+  )
+  console.log(
+    `Child items ${dryRun ? "would update" : "updated"}        : ${totalItemsUpdated}`,
+  )
+  console.log(
+    dryRun ? "Dry run complete — no data was changed." : "Migration complete.",
+  )
 
   await db.destroy()
 }
