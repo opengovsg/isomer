@@ -61,10 +61,40 @@ export const getCollectionTagsForResource = async ({
   resourceId,
   collectionId,
   siteId,
-}: { siteId: number } & MergeExclusive<
+  isPublishedOnly = false,
+}: { siteId: number; isPublishedOnly?: boolean } & MergeExclusive<
   { resourceId: number },
   { collectionId: number }
 >): Promise<NonNullable<CollectionPageSchemaType["page"]["tagCategories"]>> => {
+  if (isPublishedOnly) {
+    const row = await db
+      .selectFrom("Resource as r")
+      .innerJoin("Version as v", "r.publishedVersionId", "v.id")
+      .innerJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+      .where("r.type", "=", ResourceType.IndexPage)
+      .where("r.siteId", "=", siteId)
+      .$if(collectionId !== undefined, (qb) =>
+        qb.where("r.parentId", "=", String(collectionId)),
+      )
+      .$if(resourceId !== undefined, (qb) =>
+        qb.where("r.parentId", "=", (eb) =>
+          eb
+            .selectFrom("Resource")
+            .where("id", "=", String(resourceId))
+            .where("siteId", "=", siteId)
+            .select("parentId"),
+        ),
+      )
+      .select(
+        sql<CollectionPageSchemaType | null>`"publishedBlob"."content"`.as(
+          "publishedContent",
+        ),
+      )
+      .executeTakeFirst()
+
+    return row?.publishedContent?.page.tagCategories ?? []
+  }
+
   const row = await db
     .selectFrom("Resource as r")
     .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
@@ -103,46 +133,6 @@ export const getCollectionTagsForResource = async ({
     row.draftContent?.page.tagCategories ??
     []
   )
-}
-
-export const getPublishedCollectionTagsForResource = async ({
-  resourceId,
-  collectionId,
-  siteId,
-}: { siteId: number } & MergeExclusive<
-  { resourceId: number },
-  { collectionId: number }
->): Promise<NonNullable<CollectionPageSchemaType["page"]["tagCategories"]>> => {
-  const row = await db
-    .selectFrom("Resource as r")
-    .innerJoin("Version as v", "r.publishedVersionId", "v.id")
-    .innerJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
-    .where("r.type", "=", ResourceType.IndexPage)
-    .where("r.siteId", "=", siteId)
-    .$if(collectionId !== undefined, (qb) =>
-      qb.where("r.parentId", "=", String(collectionId)),
-    )
-    .$if(resourceId !== undefined, (qb) =>
-      qb.where("r.parentId", "=", (eb) =>
-        eb
-          .selectFrom("Resource")
-          .where("id", "=", String(resourceId))
-          .where("siteId", "=", siteId)
-          .select("parentId"),
-      ),
-    )
-    .select(
-      sql<CollectionPageSchemaType | null>`"publishedBlob"."content"`.as(
-        "publishedContent",
-      ),
-    )
-    .executeTakeFirst()
-
-  if (!row) {
-    return []
-  }
-
-  return row.publishedContent?.page.tagCategories ?? []
 }
 
 export const getCategoryOptionUsageCount = async ({

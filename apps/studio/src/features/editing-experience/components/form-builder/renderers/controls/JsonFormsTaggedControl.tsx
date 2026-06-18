@@ -52,9 +52,10 @@ const SuspendableJsonFormsTaggedControl = ({
   // NOTE: Since this is only rendered inside a collection page or collection link,
   // we should always have the `resourceId` specifier
   const resourceId = linkId ?? pageId ?? 1
-  const [tags] = trpc.collection.getPublishedCollectionTags.useSuspenseQuery({
+  const [tags] = trpc.collection.getCollectionTags.useSuspenseQuery({
     resourceId,
     siteId,
+    isPublishedCategories: true,
   })
 
   // NOTE: Because we render according to the schema,
