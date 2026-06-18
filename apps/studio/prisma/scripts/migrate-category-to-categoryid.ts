@@ -32,8 +32,9 @@ import { resolve } from "path"
 import { fileURLToPath } from "url"
 import { parseArgs } from "util"
 
+import type { DB, Transaction } from "@isomer/db"
 import { createDb } from "@isomer/db"
-import { ResourceType, sql } from "@isomer/db"
+import { ResourceState, ResourceType, sql } from "@isomer/db"
 
 // ---------------------------------------------------------------------------
 // Bootstrap environment
@@ -51,11 +52,28 @@ config({ path: resolve(__dirname, "../../.env") })
 // DB helpers
 // ---------------------------------------------------------------------------
 
+// Fill this in before running. Must be the ID of an existing User row.
+const PUBLISHER_USER_ID = ""
+
 // Cast a plain value to JSONB — same helper pattern as database/utils.ts
 function jsonb(
   value: Record<string, unknown>,
 ): RawBuilder<PrismaJson.BlobJsonContent> {
   return sql`CAST(${JSON.stringify(value)} AS JSONB)` as RawBuilder<PrismaJson.BlobJsonContent>
+}
+
+// Returns versionNum + 1 for the given published version, or 1 if none exists.
+async function getNextVersionNum(
+  tx: Transaction<DB>,
+  publishedVersionId: string | null,
+): Promise<number> {
+  if (!publishedVersionId) return 1
+  const existing = await tx
+    .selectFrom("Version")
+    .where("id", "=", publishedVersionId)
+    .select("versionNum")
+    .executeTakeFirst()
+  return (existing?.versionNum ?? 0) + 1
 }
 
 // ---------------------------------------------------------------------------
@@ -148,6 +166,13 @@ export function buildCategoryOptions(labelMap: Map<string, string[]>): {
 // ---------------------------------------------------------------------------
 
 async function main() {
+  if (!PUBLISHER_USER_ID) {
+    console.error(
+      "PUBLISHER_USER_ID is not set. Set the constant at the top of the script to an existing User id.",
+    )
+    process.exit(1)
+  }
+
   // oxlint-disable-next-line node/no-process-env
   const DATABASE_URL = process.env["DATABASE_URL"]
   if (!DATABASE_URL) {
@@ -378,10 +403,29 @@ async function main() {
               .returning("id")
               .executeTakeFirstOrThrow()
 
+            const newVersionNum = await getNextVersionNum(
+              tx,
+              indexResource.publishedVersionId,
+            )
+            const newVersion = await tx
+              .insertInto("Version")
+              .values({
+                versionNum: newVersionNum,
+                resourceId: indexPageId,
+                blobId: newBlob.id,
+                publishedAt: new Date(),
+                publishedBy: PUBLISHER_USER_ID,
+              })
+              .returning("id")
+              .executeTakeFirstOrThrow()
+
             await tx
               .updateTable("Resource")
               .where("id", "=", indexPageId)
-              .set({ draftBlobId: newBlob.id })
+              .set({
+                publishedVersionId: newVersion.id,
+                state: ResourceState.Published,
+              })
               .execute()
           }
         }
@@ -426,10 +470,29 @@ async function main() {
                 .returning("id")
                 .executeTakeFirstOrThrow()
 
+              const newVersionNum = await getNextVersionNum(
+                tx,
+                child.publishedVersionId,
+              )
+              const newVersion = await tx
+                .insertInto("Version")
+                .values({
+                  versionNum: newVersionNum,
+                  resourceId: child.resourceId,
+                  blobId: newBlob.id,
+                  publishedAt: new Date(),
+                  publishedBy: PUBLISHER_USER_ID,
+                })
+                .returning("id")
+                .executeTakeFirstOrThrow()
+
               await tx
                 .updateTable("Resource")
                 .where("id", "=", child.resourceId)
-                .set({ draftBlobId: newBlob.id })
+                .set({
+                  publishedVersionId: newVersion.id,
+                  state: ResourceState.Published,
+                })
                 .execute()
             }
           }
