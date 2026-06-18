@@ -1451,6 +1451,50 @@ describe("collection.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
+    it("should preserve `categoryId` in the blob after saving", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const testCategoryId = "aaaaaaaa-bbbb-4ccc-a222-aaaaaaaaaaaa"
+
+      // Act
+      const result = await caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "https://example.com",
+        linkId: Number(page.id),
+        categoryId: testCategoryId,
+      })
+
+      // Assert
+      expect(
+        (result.content.page as { categoryId?: string }).categoryId,
+      ).toEqual(testCategoryId)
+    })
+
+    it("should write `categoryId` as `undefined` when not provided in the input", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act — no categoryId passed
+      const result = await caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "https://example.com",
+        linkId: Number(page.id),
+      })
+
+      // Assert
+      expect(
+        (result.content.page as { categoryId?: string }).categoryId,
+      ).toBeUndefined()
+    })
+
     it.skip("should throw when trying to update to a deleted `ref`")
 
     it.skip("should throw when trying to update to an invalid `ref`")
