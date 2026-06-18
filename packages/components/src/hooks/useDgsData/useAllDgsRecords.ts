@@ -25,6 +25,7 @@ export const useAllDgsRecords = ({
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [records, setRecords] = useState<DgsRecord[]>([])
+  const [probedTotal, setProbedTotal] = useState<number | null>(null)
 
   useEffect(() => {
     if (!enabled) {
@@ -37,12 +38,16 @@ export const useAllDgsRecords = ({
     const run = async () => {
       setIsLoading(true)
       setIsError(false)
+      setProbedTotal(null)
       try {
         const result = await fetchAllRecordsInChunks({
           resourceId,
           datasetSize,
           filters,
           sort,
+          onTotalKnown: (total) => {
+            if (!cancelled) setProbedTotal(total)
+          },
         })
         if (cancelled) return
         setRecords(result.records)
@@ -60,5 +65,5 @@ export const useAllDgsRecords = ({
     }
   }, [enabled, resourceId, datasetSize, filters, sort])
 
-  return { records, isLoading, isError }
+  return { records, isLoading, isError, probedTotal }
 }

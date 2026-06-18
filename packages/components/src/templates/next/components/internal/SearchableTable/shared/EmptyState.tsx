@@ -53,15 +53,17 @@ export const EmptyState = ({ search, onClick }: EmptyStateProps) => {
 interface FallbackEmptyStateProps {
   isLoading: boolean
   isError: boolean
+  loadingText?: string
 }
 
 export const FallbackEmptyState = ({
   isLoading,
   isError,
+  loadingText,
 }: FallbackEmptyStateProps) => {
   let text: string
   if (isLoading) {
-    text = "Loading..."
+    text = loadingText ?? "Loading..."
   } else if (isError) {
     text =
       "Oops! Something went wrong while loading the table. Please try again later."

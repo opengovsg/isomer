@@ -62,6 +62,7 @@ export const SearchableTableClientUI = ({
   headers,
   isLoading = false,
   isError = false,
+  loadingText,
   search: { input: searchInput, deferred: deferredSearch, setSearch },
   page: { currPage, setCurrPage },
   isInitiallyEmpty,
@@ -81,7 +82,13 @@ export const SearchableTableClientUI = ({
 
   const Content = () => {
     if (isInitiallyEmpty || isLoading || isError) {
-      return <FallbackEmptyState isLoading={isLoading} isError={isError} />
+      return (
+        <FallbackEmptyState
+          isLoading={isLoading}
+          isError={isError}
+          loadingText={loadingText}
+        />
+      )
     }
 
     if (isFilteredEmpty) {

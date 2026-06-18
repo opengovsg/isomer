@@ -34,6 +34,7 @@ interface FetchAllRecordsInChunksParams {
   datasetSize: number
   filters?: Record<string, string>
   sort?: string
+  onTotalKnown?: (total: number) => void
 }
 
 export const fetchAllRecordsInChunks = async ({
@@ -41,6 +42,7 @@ export const fetchAllRecordsInChunks = async ({
   datasetSize,
   filters,
   sort,
+  onTotalKnown,
 }: FetchAllRecordsInChunksParams): Promise<{
   records: DgsApiDatasetSearchResponseSuccess["result"]["records"]
   total: number
@@ -57,6 +59,8 @@ export const fetchAllRecordsInChunks = async ({
   if (total === 0) {
     return { records: [], total: 0 }
   }
+
+  onTotalKnown?.(total)
 
   const baseChunks = Math.max(1, Math.ceil(datasetSize / DGS_REQUEST_MAX_BYTES))
   // +1 buffer when multi-chunk: rows are not evenly distributed across the

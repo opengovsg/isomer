@@ -7,6 +7,7 @@ import type {
 } from "~/interfaces"
 import { useMemo } from "react"
 import { useAllDgsRecords } from "~/hooks/useDgsData"
+import { useSimulatedLoadingProgress } from "~/hooks/useDgsData/useSimulatedLoadingProgress"
 import { useDgsMetadata } from "~/hooks/useDgsMetadata"
 import { DGS_MAX_DATASET_BYTES } from "~/utils/dgs"
 
@@ -60,6 +61,7 @@ export const DGSSearchableTable = ({
     records,
     isLoading: isDataLoading,
     isError: isDataError,
+    probedTotal,
   } = useAllDgsRecords({
     resourceId,
     datasetSize: metadata?.size ?? 0,
@@ -67,6 +69,16 @@ export const DGSSearchableTable = ({
     sort,
     enabled: !!metadata?.size && !isOverCap,
   })
+
+  const simulatedRows = useSimulatedLoadingProgress({
+    isLoading: isDataLoading,
+    total: probedTotal,
+  })
+
+  const loadingText =
+    simulatedRows !== null && probedTotal !== null
+      ? `Loading dataset (${simulatedRows.toLocaleString()} of ${probedTotal.toLocaleString()} rows)...`
+      : undefined
 
   const items: SearchableTableClientProps["items"] = useMemo(() => {
     const keys = resolvedHeaders.map((header) => header.key)
@@ -86,6 +98,7 @@ export const DGSSearchableTable = ({
       items={items}
       isLoading={isMetadataLoading || isDataLoading}
       isError={isMetadataError || isDataError || isOverCap}
+      loadingText={loadingText}
     />
   )
 }

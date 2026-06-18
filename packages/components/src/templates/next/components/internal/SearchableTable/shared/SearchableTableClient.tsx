@@ -14,6 +14,7 @@ export const SearchableTableClient = ({
   items,
   isLoading = false,
   isError = false,
+  loadingText,
 }: SearchableTableClientProps) => {
   const [_search, setSearch] = useState("")
   const search = useDeferredValue(_search)
@@ -50,6 +51,7 @@ export const SearchableTableClient = ({
       headers={headers}
       isLoading={isLoading}
       isError={isError}
+      loadingText={loadingText}
       search={{ input: _search, deferred: search, setSearch }}
       page={{ currPage, setCurrPage }}
       isInitiallyEmpty={isInitiallyEmpty}

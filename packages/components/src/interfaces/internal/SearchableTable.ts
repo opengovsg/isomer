@@ -85,6 +85,7 @@ export type SearchableTableClientProps = BaseSearchableTableClientProps &
   } & {
     isLoading?: boolean
     isError?: boolean
+    loadingText?: string
   }
 
 export type NativeSearchableTableProps = BaseSearchableTableClientProps &

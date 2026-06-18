@@ -81,12 +81,14 @@ describe("useAllDgsRecords", () => {
 
     // Assert — settled state
     expect(mockedFetchAll).toHaveBeenCalledTimes(1)
-    expect(mockedFetchAll).toHaveBeenCalledWith({
-      resourceId: "resource-1",
-      datasetSize: 1024,
-      filters: undefined,
-      sort: undefined,
-    })
+    expect(mockedFetchAll).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resourceId: "resource-1",
+        datasetSize: 1024,
+        filters: undefined,
+        sort: undefined,
+      }),
+    )
     expect(result.current.isError).toBe(false)
     expect(result.current.records).toEqual(records)
   })
