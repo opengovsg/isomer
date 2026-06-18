@@ -1,6 +1,6 @@
 import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
-import type { CollectionPagePageProps } from "~/types"
+import type { CollectionPageCategoryOption, CollectionPagePageProps } from "~/types"
 
 import type { IsomerPageLayoutType } from "./schema"
 
@@ -31,6 +31,7 @@ export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
   // TODO: Reconsider how this is done as currently every item in the sitemap has the same props
   collectionPagePageProps?: {
     tagCategories?: CollectionPagePageProps["tagCategories"]
+    categoryOptions?: CollectionPageCategoryOption[]
     sortOrder?: CollectionPagePageProps["sortOrder"]
     defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
     defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]
