@@ -8,6 +8,7 @@ import {
   InputGroup,
   InputLeftAddon,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react"
 import {
   Button,
@@ -16,7 +17,6 @@ import {
   Link,
   useToast,
 } from "@opengovsg/design-system-react"
-import { useState } from "react"
 import { BiLinkAlt, BiPlus, BiRightArrowAlt } from "react-icons/bi"
 import {
   BRIEF_TOAST_SETTINGS,
@@ -48,7 +48,11 @@ export const AddRedirectCard = ({
   })
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { mutate: createRedirect, isPending } = useCreateRedirect()
-  const [isPageModalOpen, setIsPageModalOpen] = useState(false)
+  const {
+    isOpen: isPageModalOpen,
+    onOpen: onPageModalOpen,
+    onClose: onPageModalClose,
+  } = useDisclosure()
 
   const [source, destination] = watch(["source", "destination"])
   const isAddDisabled = !source?.trim() || !destination?.trim()
@@ -159,7 +163,7 @@ export const AddRedirectCard = ({
             variant="standalone"
             p="0"
             mt="0.25rem"
-            onClick={() => setIsPageModalOpen(true)}
+            onClick={onPageModalOpen}
           >
             <Icon as={BiLinkAlt} mr="0.25rem" />
             Link to a page
@@ -185,7 +189,7 @@ export const AddRedirectCard = ({
       <SelectDestinationPageModal
         isOpen={isPageModalOpen}
         siteId={siteId}
-        onClose={() => setIsPageModalOpen(false)}
+        onClose={onPageModalClose}
         onSelect={(permalink) =>
           setValue("destination", permalink, {
             shouldValidate: true,
