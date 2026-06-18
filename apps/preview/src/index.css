@@ -1,4 +1,16 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Typography preset overrides via CSS vars set by postMessage */
+body {
+  font-family: var(--font-body, 'Inter', system-ui, sans-serif) !important;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading, var(--font-body, 'Inter', system-ui, sans-serif)) !important;
+}
+
+/* Max-width override — only affects desktop (no-op when viewport < max-width) */
+.max-w-screen-xl {
+  max-width: var(--max-width, 1280px) !important;
+}

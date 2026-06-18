@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Isomer Playground</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather+Sans:wght@400;600&family=Merriweather:ital,wght@0,400;1,400&family=Lora:wght@400;600&family=Source+Sans+3:wght@400;600&family=DM+Sans:wght@400;600&family=Space+Grotesk:wght@400;600&family=Lexend:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body { height: 100%; margin: 0; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; }
@@ -21,7 +21,15 @@
     #preview-iframe { display: block; border: none; zoom: 0.75; }
 
     /* Controls panel */
-    #controls-panel { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; background: white; border-left: 1px solid #e5e7eb; overflow-y: auto; }
+    #controls-panel { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; background: white; border-left: 1px solid #e5e7eb; overflow: hidden; }
+
+    /* Panel tabs */
+    .panel-tabs { display: flex; border-bottom: 1px solid #e5e7eb; flex-shrink: 0; }
+    .panel-tab { flex: 1; padding: 10px 12px; font-size: 13px; font-weight: 500; color: #6b7280; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.1s; }
+    .panel-tab:hover { color: #111827; }
+    .panel-tab.active { color: #111827; border-bottom-color: #111827; }
+    .panel-content { flex: 1; overflow-y: auto; padding: 16px; }
+    .panel-content.hidden { display: none; }
 
     /* Page type tabs */
     .page-tab { font-size: 13px; padding: 5px 12px; border-radius: 6px; font-weight: 500; color: #6b7280; background: transparent; border: none; cursor: pointer; transition: all 0.1s; }
@@ -34,24 +42,14 @@
     .size-tab:hover { color: #374151; }
     .size-tab.active { background: white; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-    /* Accordion section */
-    .section-header { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: none; border: none; cursor: pointer; text-align: left; border-top: 1px solid #e5e7eb; }
-    .section-header:first-child { border-top: none; }
-    .section-header:hover { background: #f9fafb; }
-    .section-title { font-size: 13px; font-weight: 600; color: #111827; }
-    .section-chevron { width: 14px; height: 14px; color: #9ca3af; transition: transform 0.15s; flex-shrink: 0; }
-    .section-chevron.open { transform: rotate(180deg); }
-    .section-body { padding: 4px 16px 16px; }
-    .section-body.hidden { display: none; }
+    /* Section label */
+    .section-label { font-size: 10px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; margin-top: 20px; }
+    .section-label:first-child { margin-top: 0; }
 
-    /* Controls */
-    .control-group { margin-bottom: 16px; }
-    .control-group:last-child { margin-bottom: 0; }
-    .control-label-group { font-size: 10px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-    .control-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    /* Control rows */
+    .control-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .control-row:last-child { margin-bottom: 0; }
     .control-name { font-size: 13px; color: #374151; }
-    .color-swatch-wrap { position: relative; }
     .color-swatch-wrap input[type="color"] { width: 32px; height: 32px; padding: 2px; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; background: none; }
     select.control-select { font-size: 12px; border: 1px solid #d1d5db; border-radius: 6px; padding: 5px 8px; background: white; color: #374151; cursor: pointer; outline: none; }
     select.control-select:focus { border-color: #6b7280; }
@@ -59,7 +57,29 @@
     /* Dim label */
     #dim-label { font-size: 11px; color: #9ca3af; margin-left: 8px; }
 
-    /* Block option placeholder cards */
+    /* Typography preset cards */
+    .typo-card {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.12s;
+      background: white;
+    }
+    .typo-card:hover { border-color: #9ca3af; background: #fafafa; }
+    .typo-card.active { border-color: #111827; background: #f9fafb; }
+    .typo-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .typo-card-name { font-size: 13px; font-weight: 600; color: #111827; }
+    .typo-card-check { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #d1d5db; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .typo-card.active .typo-card-check { background: #111827; border-color: #111827; }
+    .typo-check-dot { width: 6px; height: 6px; border-radius: 50%; background: white; display: none; }
+    .typo-card.active .typo-check-dot { display: block; }
+    .typo-preview-heading { font-size: 14px; font-weight: 600; color: #111827; line-height: 1.3; }
+    .typo-preview-body { font-size: 11px; color: #6b7280; line-height: 1.4; margin-top: 2px; }
+    .typo-card-tag { font-size: 10px; color: #9ca3af; margin-top: 6px; }
+
+    /* Block option cards */
     .block-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
     .block-card-title { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; }
     .block-card-desc { font-size: 11px; color: #9ca3af; }
@@ -70,7 +90,17 @@
 <div id="app">
   <!-- Top bar -->
   <div style="flex-shrink:0; background:white; border-bottom:1px solid #e5e7eb; padding:10px 16px; display:flex; align-items:center; justify-content:space-between;">
-    <span style="font-size:14px; font-weight:600; color:#111827;">Isomer Playground</span>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span style="font-size:14px; font-weight:600; color:#111827;">Isomer Playground</span>
+      <div style="width:1px; height:16px; background:#e5e7eb;"></div>
+      <select id="site-selector" onchange="setSite(this.value)" style="font-size:12px; font-weight:500; border:1px solid #e5e7eb; border-radius:6px; padding:4px 28px 4px 8px; background:white; color:#374151; cursor:pointer; outline:none; appearance:none; background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 16 16%22 fill=%22none%22><path d=%22M4 6l4 4 4-4%22 stroke=%22%239ca3af%22 stroke-width=%221.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>'); background-repeat:no-repeat; background-position:right 6px center;">
+        <option value="corporate">🏛️ Corporate ministry</option>
+        <option value="campaign">📢 Campaign website</option>
+        <option value="formal">⚖️ Formal website</option>
+        <option value="modern">🖤 Modern website</option>
+        <option value="school">🎓 School website</option>
+      </select>
+    </div>
     <span style="font-size:11px; color:#9ca3af;">Customisation preview — internal</span>
   </div>
 
@@ -102,73 +132,97 @@
 
     <!-- Right: Controls panel -->
     <div id="controls-panel">
-      <div style="padding:12px 16px 10px; border-bottom:1px solid #e5e7eb;">
-        <div style="font-size:13px; font-weight:600; color:#111827;">Customisation</div>
+      <!-- Panel tabs -->
+      <div class="panel-tabs">
+        <button class="panel-tab active" onclick="switchPanel('theming')">Site Theming</button>
+        <button class="panel-tab" onclick="switchPanel('blocks')">New Blocks</button>
       </div>
 
-      <!-- Section: Site Theming -->
-      <button class="section-header" onclick="toggleSection('theming')">
-        <span class="section-title">Site Theming</span>
-        <svg id="theming-chevron" class="section-chevron open" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <div id="theming-body" class="section-body">
-        <!-- Colours -->
-        <div class="control-group">
-          <div class="control-label-group">Colours</div>
-          <div class="control-row">
-            <span class="control-name">Primary (interaction)</span>
-            <div class="color-swatch-wrap">
-              <input type="color" value="#00405f" title="Primary interaction colour"
-                oninput="updateVar('--color-brand-interaction-default', this.value); updateVar('--color-brand-canvas-inverse', shadeColor(this.value, -5))">
-            </div>
+      <!-- Site Theming panel -->
+      <div id="panel-theming" class="panel-content">
+
+        <div class="section-label">Colours</div>
+        <div class="control-row">
+          <span class="control-name">Primary (interaction)</span>
+          <div class="color-swatch-wrap">
+            <input type="color" value="#00405f" title="Primary interaction colour"
+              oninput="updateVar('--color-brand-interaction-default', this.value); updateVar('--color-brand-canvas-inverse', shadeColor(this.value, -5))">
           </div>
-          <div class="control-row">
-            <span class="control-name">Canvas (background)</span>
-            <div class="color-swatch-wrap">
-              <input type="color" value="#e6ecef" title="Brand canvas colour"
-                oninput="updateVar('--color-brand-canvas-default', this.value); updateVar('--color-brand-canvas-alt', shadeColor(this.value, -15))">
-            </div>
+        </div>
+        <div class="control-row">
+          <span class="control-name">Canvas (background)</span>
+          <div class="color-swatch-wrap">
+            <input type="color" value="#e6ecef" title="Brand canvas colour"
+              oninput="updateVar('--color-brand-canvas-default', this.value); updateVar('--color-brand-canvas-alt', shadeColor(this.value, -15))">
           </div>
         </div>
 
-        <!-- Typography -->
-        <div class="control-group">
-          <div class="control-label-group">Typography</div>
-          <div class="control-row">
-            <span class="control-name">Font family</span>
-            <select class="control-select" onchange="updateFont(this.value)">
-              <option value="'Inter', system-ui, sans-serif">Inter (default)</option>
-              <option value="'Source Serif 4', Georgia, serif">Source Serif 4</option>
-              <option value="'DM Sans', system-ui, sans-serif">DM Sans</option>
-              <option value="system-ui, sans-serif">System UI</option>
-            </select>
+        <div class="section-label">Typography</div>
+
+        <div class="typo-card active" data-preset="clarity" onclick="setTypography('clarity')">
+          <div class="typo-card-header">
+            <span class="typo-card-name">Clarity <span style="font-weight:400;color:#9ca3af;font-size:11px;">Default</span></span>
+            <div class="typo-card-check"><div class="typo-check-dot"></div></div>
           </div>
+          <div class="typo-preview-heading" style="font-family:'Inter',sans-serif;">Clear &amp; neutral</div>
+          <div class="typo-preview-body" style="font-family:'Inter',sans-serif;">The quick brown fox jumps over the lazy dog.</div>
+          <div class="typo-card-tag">Inter · Inter</div>
         </div>
 
-        <!-- Layout -->
-        <div class="control-group">
-          <div class="control-label-group">Layout</div>
-          <div class="control-row">
-            <span class="control-name">Max content width</span>
-            <select class="control-select" onchange="updateMaxWidth(this.value)">
-              <option value="1024px">Narrow (1024px)</option>
-              <option value="1280px" selected>Default (1280px)</option>
-              <option value="1440px">Wide (1440px)</option>
-            </select>
+        <div class="typo-card" data-preset="oped" onclick="setTypography('oped')">
+          <div class="typo-card-header">
+            <span class="typo-card-name">Op-ed</span>
+            <div class="typo-card-check"><div class="typo-check-dot"></div></div>
           </div>
+          <div class="typo-preview-heading" style="font-family:'Merriweather Sans',sans-serif;">Editorial &amp; authoritative</div>
+          <div class="typo-preview-body" style="font-family:'Merriweather',serif;">The quick brown fox jumps over the lazy dog.</div>
+          <div class="typo-card-tag">Merriweather Sans · Merriweather</div>
         </div>
+
+        <div class="typo-card" data-preset="civic" onclick="setTypography('civic')">
+          <div class="typo-card-header">
+            <span class="typo-card-name">Civic</span>
+            <div class="typo-card-check"><div class="typo-check-dot"></div></div>
+          </div>
+          <div class="typo-preview-heading" style="font-family:'Lora',serif;">Trustworthy &amp; readable</div>
+          <div class="typo-preview-body" style="font-family:'Source Sans 3',sans-serif;">The quick brown fox jumps over the lazy dog.</div>
+          <div class="typo-card-tag">Lora · Source Sans 3</div>
+        </div>
+
+        <div class="typo-card" data-preset="edgy" onclick="setTypography('edgy')">
+          <div class="typo-card-header">
+            <span class="typo-card-name">Edgy</span>
+            <div class="typo-card-check"><div class="typo-check-dot"></div></div>
+          </div>
+          <div class="typo-preview-heading" style="font-family:'DM Sans',sans-serif;">Modern &amp; bold</div>
+          <div class="typo-preview-body" style="font-family:'Space Grotesk',sans-serif;">The quick brown fox jumps over the lazy dog.</div>
+          <div class="typo-card-tag">DM Sans · Space Grotesk</div>
+        </div>
+
+        <div class="typo-card" data-preset="approachable" onclick="setTypography('approachable')">
+          <div class="typo-card-header">
+            <span class="typo-card-name">Approachable</span>
+            <div class="typo-card-check"><div class="typo-check-dot"></div></div>
+          </div>
+          <div class="typo-preview-heading" style="font-family:'Lexend',sans-serif;">Friendly &amp; accessible</div>
+          <div class="typo-preview-body" style="font-family:'Lexend',sans-serif;">The quick brown fox jumps over the lazy dog.</div>
+          <div class="typo-card-tag">Lexend · Lexend</div>
+        </div>
+
+        <div class="section-label">Layout</div>
+        <div class="control-row">
+          <span class="control-name">Max content width</span>
+          <select class="control-select" onchange="updateMaxWidth(this.value)">
+            <option value="1024px">Narrow (1024px)</option>
+            <option value="1280px" selected>Default (1280px)</option>
+            <option value="1440px">Wide (1440px)</option>
+          </select>
+        </div>
+
       </div>
 
-      <!-- Section: New Block Options -->
-      <button class="section-header" onclick="toggleSection('blocks')">
-        <span class="section-title">New Block Options</span>
-        <svg id="blocks-chevron" class="section-chevron open" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <div id="blocks-body" class="section-body">
+      <!-- New Blocks panel -->
+      <div id="panel-blocks" class="panel-content hidden">
         <div class="block-card">
           <div class="block-card-title">Cards block</div>
           <div class="block-card-desc">Scrollable horizontal card row with image, title, body and CTA link.</div>
@@ -202,19 +256,37 @@
   const iframeWrapper = document.getElementById('iframe-wrapper')
 
   const ZOOM = 0.75
-  const SIZES = { desktop: 1280, tablet: 768, mobile: 390 }
-  const DIM_LABELS = { desktop: '1280px', tablet: '768px', mobile: '390px' }
+  const SIZES = { desktop: 1600, tablet: 768, mobile: 390 }
+  const DIM_LABELS = { desktop: '1600px', tablet: '768px', mobile: '390px' }
 
   let currentPage = 'home'
   let currentSize = 'desktop'
 
-  // Theme state — mirrors CSS variable defaults in isomerSiteTheme
+  // Theme state
   const theme = {
     '--color-brand-canvas-default': '#e6ecef',
     '--color-brand-canvas-alt': '#bfcfd7',
     '--color-brand-canvas-inverse': '#00405f',
     '--color-brand-interaction-default': '#00405f',
     '--color-brand-interaction-hover': '#002e44',
+  }
+
+  // Site presets — theme colours per site
+  const SITE_PRESETS = {
+    corporate:  { primary: '#00405f', canvas: '#e6ecef' },
+    campaign:   { primary: '#c0391b', canvas: '#fff7f5' },
+    formal:     { primary: '#14532d', canvas: '#f0fdf4' },
+    modern:     { primary: '#09090b', canvas: '#fafafa' },
+    school:     { primary: '#6d28d9', canvas: '#faf5ff' },
+  }
+
+  // Typography presets
+  const TYPO_PRESETS = {
+    clarity:      { heading: "'Inter', system-ui, sans-serif",           body: "'Inter', system-ui, sans-serif" },
+    oped:         { heading: "'Merriweather Sans', sans-serif",          body: "'Merriweather', Georgia, serif" },
+    civic:        { heading: "'Lora', Georgia, serif",                   body: "'Source Sans 3', system-ui, sans-serif" },
+    edgy:         { heading: "'DM Sans', system-ui, sans-serif",         body: "'Space Grotesk', system-ui, sans-serif" },
+    approachable: { heading: "'Lexend', system-ui, sans-serif",          body: "'Lexend', system-ui, sans-serif" },
   }
 
   function postToIframe(msg) {
@@ -225,14 +297,19 @@
     postToIframe({ type: 'theme', vars: theme })
   }
 
-  // Re-send theme after iframe navigation (src change or reload)
   iframe.addEventListener('load', () => {
-    // Small delay so React has time to mount
-    setTimeout(applyThemeToIframe, 200)
+    // Re-send theme + active typography after iframe navigation / reload
+    setTimeout(() => {
+      applyThemeToIframe()
+      const activeCard = document.querySelector('.typo-card.active')
+      if (activeCard) {
+        const p = TYPO_PRESETS[activeCard.dataset.preset]
+        if (p) postToIframe({ type: 'fonts', heading: p.heading, body: p.body })
+      }
+    }, 200)
   })
 
   function loadPage(page) {
-    // Switch page via postMessage — no reload needed
     postToIframe({ type: 'page', page })
   }
 
@@ -266,13 +343,49 @@
     applyThemeToIframe()
   }
 
-  function updateFont(fontFamily) {
-    postToIframe({ type: 'font', value: fontFamily })
+  function updateMaxWidth(maxWidth) {
+    postToIframe({ type: 'theme', vars: { '--max-width': maxWidth } })
   }
 
-  function updateMaxWidth(maxWidth) {
-    // Max width is a layout concern — pass as a CSS var override
-    postToIframe({ type: 'theme', vars: { '--max-width': maxWidth } })
+  function setTypography(preset) {
+    document.querySelectorAll('.typo-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.preset === preset)
+    })
+    const p = TYPO_PRESETS[preset]
+    if (p) postToIframe({ type: 'fonts', heading: p.heading, body: p.body })
+  }
+
+  function switchPanel(panel) {
+    document.querySelectorAll('.panel-tab').forEach((tab, i) => {
+      tab.classList.toggle('active', (i === 0 && panel === 'theming') || (i === 1 && panel === 'blocks'))
+    })
+    document.getElementById('panel-theming').classList.toggle('hidden', panel !== 'theming')
+    document.getElementById('panel-blocks').classList.toggle('hidden', panel !== 'blocks')
+  }
+
+  function setSite(preset) {
+    const s = SITE_PRESETS[preset]
+    if (!s) return
+
+    // Update theme state
+    theme['--color-brand-interaction-default'] = s.primary
+    theme['--color-brand-canvas-inverse'] = shadeColor(s.primary, -5)
+    theme['--color-brand-interaction-hover'] = shadeColor(s.primary, -20)
+    theme['--color-brand-canvas-default'] = s.canvas
+    theme['--color-brand-canvas-alt'] = shadeColor(s.canvas, -15)
+
+    // Sync colour pickers
+    document.querySelectorAll('input[type="color"]').forEach(input => {
+      if (input.title && input.title.includes('interaction')) input.value = s.primary
+      if (input.title && input.title.includes('canvas')) input.value = s.canvas
+    })
+
+    // Send to iframe
+    applyThemeToIframe()
+    postToIframe({ type: 'sitePreset', preset })
+
+    // Switch to homepage to show the hero change
+    setPage('home')
   }
 
   function shadeColor(hex, pct) {
@@ -285,14 +398,7 @@
     return '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('')
   }
 
-  function toggleSection(id) {
-    const body = document.getElementById(id + '-body')
-    const chevron = document.getElementById(id + '-chevron')
-    const isHidden = body.classList.toggle('hidden')
-    chevron.classList.toggle('open', !isHidden)
-  }
-
-  // Init — point iframe at the preview app
+  // Init
   iframe.src = PREVIEW_URL + '?page=home'
   applySize('desktop')
 </script>

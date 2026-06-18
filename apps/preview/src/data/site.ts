@@ -30,7 +30,7 @@ export function makeSite(
     theme: "isomer-next",
     isGovernment: true,
     url: "https://www.isomer.gov.sg",
-    logoUrl: "/isomer-logo.svg",
+    logoUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='32' viewBox='0 0 120 32'%3E%3Crect width='120' height='32' rx='4' fill='%23d1d5db'/%3E%3C/svg%3E",
     navbar: {
       items: [
         { name: "Home", url: "/" },
