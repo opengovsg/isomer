@@ -16,7 +16,7 @@ const meta: Meta<typeof FormBuilder> = {
       handlers: [
         pageHandlers.getCategories.default(),
         pageHandlers.getCategoryOptions.default(),
-        pageHandlers.getCollectionTags.default(),
+        pageHandlers.getPublishedCollectionTags.default(),
       ],
     },
     nextjs: {
@@ -61,7 +61,7 @@ export const WithRequiredCategory: Story = {
       handlers: [
         pageHandlers.getCategories.default(),
         pageHandlers.getCategoryOptions.default(),
-        pageHandlers.getCollectionTags.withRequired(),
+        pageHandlers.getPublishedCollectionTags.withRequired(),
       ],
     },
   },

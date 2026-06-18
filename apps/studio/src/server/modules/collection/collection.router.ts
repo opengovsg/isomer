@@ -42,6 +42,7 @@ import {
   createCollectionPageJson,
   getCategoryOptionUsageCount,
   getCollectionTagsForResource,
+  getPublishedCollectionTagsForResource,
 } from "./collection.service"
 
 export const collectionRouter = router({
@@ -552,6 +553,29 @@ export const collectionRouter = router({
       }
       if (resourceId !== undefined) {
         return getCollectionTagsForResource({ siteId, resourceId })
+      }
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Either collectionId or resourceId must be provided",
+      })
+    }),
+
+  getPublishedCollectionTags: protectedProcedure
+    .input(getCollectionTagsSchema)
+    .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
+      const resourceIdToValidate = collectionId ?? resourceId
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+        resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
+      })
+
+      if (collectionId !== undefined) {
+        return getPublishedCollectionTagsForResource({ siteId, collectionId })
+      }
+      if (resourceId !== undefined) {
+        return getPublishedCollectionTagsForResource({ siteId, resourceId })
       }
       throw new TRPCError({
         code: "BAD_REQUEST",

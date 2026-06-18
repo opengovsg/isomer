@@ -232,8 +232,28 @@ export const pageHandlers = {
         return []
       })
     },
+  },
+  getPublishedCollectionTags: {
+    default: () => {
+      return trpcMsw.collection.getPublishedCollectionTags.query(() => {
+        return [
+          {
+            label: "Topic",
+            id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            isRequired: false,
+            options: [
+              {
+                label: "Technology",
+                id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+              },
+              { label: "Science", id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8" },
+            ],
+          },
+        ]
+      })
+    },
     withRequired: () => {
-      return trpcMsw.collection.getCollectionTags.query(() => {
+      return trpcMsw.collection.getPublishedCollectionTags.query(() => {
         return [
           {
             label: "Topic",

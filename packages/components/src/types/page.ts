@@ -153,7 +153,7 @@ const categorySchemaObject = Type.Object({
    * and deprecate `category`.
    *
    * @see {@link CategoriesSchema} for the parent collection's `categoryOptions` shape (`id` on each option).
-  */
+   */
   categoryId: Type.Optional(
     Type.String({
       title: "Category",
