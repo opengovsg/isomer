@@ -55,7 +55,7 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {}
 
 // The URL is already a redirect source — a non-blocking warning tells the user
-// the redirect would shadow this page (ISOM-2266).
+// the redirect would shadow this page.
 export const UrlIsRedirectSource: Story = {
   parameters: {
     msw: {

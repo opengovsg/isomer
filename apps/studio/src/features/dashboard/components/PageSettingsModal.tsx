@@ -110,8 +110,8 @@ const PageSettingsModalContent = ({
   }, [permalink, permalinkTree])
 
   // The full URL the page would live at — used to warn (non-blocking) when it
-  // is already a redirect source (ISOM-2266). Debounced so we don't query on
-  // every keystroke. CollectionLinks have no URL of their own, so skip them.
+  // is already a redirect source. Debounced so we don't query on every
+  // keystroke. CollectionLinks have no URL of their own, so skip them.
   const candidateFullPermalink = `${permalinksToRender.parentPermalinks}${permalinksToRender.permalink}`
   const [debouncedPermalink, setDebouncedPermalink] = useState(
     candidateFullPermalink,

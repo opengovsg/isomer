@@ -685,11 +685,10 @@ export const resourceRouter = router({
           eventType: AuditLogEvent.ResourceDelete,
         })
 
-        // ISOM-2266: soft-delete the redirects that point at this resource (or
-        // any descendant) in the same transaction — once the page is gone those
-        // redirects would resolve to nothing. Run before the delete so the
-        // subtree is still resolvable. The delete's single site publish covers
-        // the removal.
+        // Soft-delete redirects pointing at this resource (or any descendant)
+        // in the same transaction — once the page is gone they resolve to
+        // nothing. Run before the delete while the subtree is still resolvable;
+        // the delete's site publish covers the removal.
         await softDeleteRedirectsPointingToResource(tx, {
           siteId: Number(siteId),
           resourceId: String(resourceId),

@@ -511,18 +511,16 @@ export const deleteRedirect = async ({
   await publishSite(logger, { siteId })
 }
 
-// Powers the page-settings warning (ISOM-2266): is `source` the source of a
-// live redirect, and if so where does it currently point? `source` is a
-// candidate page URL, so it is normalised the same way stored sources are
-// before the lookup. The stored destination (possibly a `[resource:...]`
-// reference) is resolved to the page's current permalink for display.
+// Powers the page-settings warning: is `source` a live redirect's source, and
+// where does it point? `source` (a candidate page URL) is normalised like
+// stored sources before the lookup; the destination is resolved for display.
 export const getRedirectBySource = async ({
   siteId,
   source,
 }: GetRedirectBySourceInput): Promise<{ destination: string } | null> => {
   const redirect = await getLiveRedirectBySource(db, {
     siteId,
-    source: normalizeRedirectPath(source),
+    source: normalizeRedirectSource(source),
   })
   if (!redirect) {
     return null

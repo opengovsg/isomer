@@ -1007,13 +1007,11 @@ export const publishPageResource = async ({
       })
     }
 
-    // First-publish guard (ISOM-2266): taking a page live at a URL a live
-    // redirect already occupies would leave the page unreachable — the redirect
-    // shadows it. Only the first publish is gated; re-publishing an already-live
-    // page is out of scope (it is already live there). This is the mirror of the
-    // redirect-create SOURCE_IS_EXISTING_PAGE guard. The Redirect table is
-    // queried directly rather than via the redirect module to avoid a circular
-    // import (redirect.service already depends on this module).
+    // First-publish guard: taking a page live at a URL a live redirect occupies
+    // would let the redirect shadow it. Only the first publish is gated
+    // (re-publishing an already-live page is fine). Mirror of the redirect-create
+    // SOURCE_IS_EXISTING_PAGE guard. The Redirect table is queried directly to
+    // avoid a circular import (redirect.service already depends on this module).
     if (fullResource.publishedVersionId === null) {
       const fullPermalink = await getResourceFullPermalink(
         siteId,

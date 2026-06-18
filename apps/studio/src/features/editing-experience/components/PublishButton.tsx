@@ -68,9 +68,8 @@ const SuspendablePublishButton = ({
     },
     onError: (error) => {
       console.error(`Error occurred when publishing page: ${error.message}`)
-      // The publish-block (ISOM-2266) throws CONFLICT with an actionable
-      // message naming the redirect to remove — surface it verbatim rather
-      // than the generic failure copy.
+      // The publish-block throws CONFLICT with an actionable message naming the
+      // redirect to remove — surface it verbatim, not the generic failure copy.
       toast({
         status: "error",
         title:

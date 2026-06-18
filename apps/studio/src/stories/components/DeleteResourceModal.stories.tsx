@@ -53,8 +53,8 @@ type Story = StoryObj<typeof meta>
 // No redirects point at this page — only the standard delete confirmation.
 export const Default: Story = {}
 
-// Redirects point at this page — warn that they will be removed on delete
-// (ISOM-2266). Copy is placeholder pending design.
+// Redirects point at this page — warn that they will be removed on delete.
+// Copy is placeholder pending design.
 export const HasRedirectsPointingHere: Story = {
   parameters: {
     msw: {
