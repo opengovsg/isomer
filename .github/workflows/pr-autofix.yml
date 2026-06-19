@@ -57,24 +57,4 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           max_turns: "3"
-          direct_prompt: |
-            CI is failing on pull request #${{ steps.jobs.outputs.pr_number }}. Fix the failures.
-
-            Only fix failures from these jobs: lint, format, typecheck, build.
-            Do NOT attempt to fix unit test or E2E test failures — if those are the only failures,
-            post a PR comment explaining what failed and stop.
-
-            Hard constraints — violating any of these is worse than leaving CI red:
-            - Never add lint suppression comments (// oxlint-disable, // eslint-disable, // @ts-ignore)
-            - Never modify lint or TypeScript config files to silence errors
-            - Never delete or weaken a test to make typecheck pass
-            - If a fix is impossible without suppression, post a PR comment explaining why and stop
-
-            Steps:
-            1. Run pnpm lint to see errors. Fix with pnpm lint:fix, then fix remaining manually.
-            2. Run pnpm format to see errors. Fix with pnpm format:fix.
-            3. Run pnpm typecheck to see errors. Fix type errors in the affected files.
-            4. Run pnpm build to see errors. Fix them.
-            5. Re-run the failing commands to verify they pass.
-            6. If all fixed: stage changed files, commit with message "chore: autofix CI [bot]", and push.
-            7. If anything cannot be fixed cleanly: post a comment on PR #${{ steps.jobs.outputs.pr_number }} explaining the blocker and stop.
+          direct_prompt: /ci-autofix ${{ steps.jobs.outputs.pr_number }}

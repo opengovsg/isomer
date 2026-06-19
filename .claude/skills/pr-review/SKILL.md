@@ -1,81 +1,98 @@
 ---
 name: pr-review
-description: Grade a pull request against the project risk taxonomy, flag hot-path touches, surface missing tests/stories, and post a structured review comment. Does not approve or merge.
+description: Code-review a pull request for bugs, anti-patterns, and convention violations. Posts a structured comment with severity-tagged findings and writes /tmp/review-result.json for CI consumption. Does not compute risk tier (use /compute-risk-tier for that) and does not approve or merge.
 ---
 
 # Instructions
 
-This skill grades the current pull request. It is read-only with respect to merge state — it never approves, never requests changes, never closes. It posts one annotated comment.
-
-If the request is to "review this PR" with full sign-off authority (typical human-engineer ask), prefer the `review-pr` skill instead. This skill is for **automation**: a structured grade that humans + CI consume.
+Review the pull request for code quality issues. This skill is used both locally and from CI — the `/tmp/review-result.json` output is always written so CI can gate on it.
 
 ## Inputs
 
-- The current branch's diff against `main`.
-- `docs/risk-taxonomy.md` — file-glob → risk tier mapping. **Read this at run time, not from memory.**
-- `docs/ai-workflow.md` — canonical Linear/Figma fields and PR conventions.
+- `docs/risk-taxonomy.md` — severity levels, hot paths, and escalation rules. **Read at run time.**
 - All `CLAUDE.md` files under directories touched by the diff.
+- The PR diff — fetched via `gh pr diff`.
+- Optional argument: a PR number. If provided, use it. Otherwise detect via `gh pr view --json number -q .number`.
 
 ## Procedure
 
-1. **Resolve the diff.** Use `git diff --name-only main...HEAD` to list changed files. If on `main`, abort.
-2. **Load the taxonomy.** Read `docs/risk-taxonomy.md`. Build the glob → tier table from the file as-is — do not hardcode.
-3. **Tier each file.** Match top-down; first match wins for that file. The PR tier is the max across all files.
-4. **Hot-path scan.** Cross-reference the "Hot paths to flag" section. Note any matches.
-5. **Convention scan.** For each touched directory with a `CLAUDE.md`, read it and look for diff content that violates a documented "Anti-pattern" or rule. Cite the file:line.
+1. **Resolve the PR number.** If an argument was passed (e.g. `/pr-review 123`), use it. Otherwise run:
+   ```
+   gh pr view --json number -q .number
+   ```
+
+2. **Get changed files and diff.**
+   ```
+   gh pr diff <number> --name-only
+   gh pr diff <number>
+   ```
+
+3. **Load context.** Read `docs/risk-taxonomy.md` (for hot paths and severity definitions) and any `CLAUDE.md` files in directories touched by the diff.
+
+4. **Review each changed file** and identify issues by severity:
+
+   | Severity | Definition |
+   |---|---|
+   | 🔴 **Must Fix** | Likely bug, data loss risk, broken contract between Studio and components schema |
+   | 🟡 **Should Fix** | Will cause a bug under a realistic edge case, or misleads the next engineer |
+   | 💬 **Consider** | Style, minor duplication, test coverage gap — soft signal only |
+   | ⚪ **Pre-existing** | Issue in code not introduced by this PR — note once, never repeat |
+
+   **Hot-path escalation** — bump findings in these paths by one severity level (Consider→Should Fix, Should Fix→Must Fix):
+   - `apps/studio/src/server/modules/page/page.service.ts`
+   - `apps/studio/src/server/modules/resource/`
+   - `apps/studio/src/features/editing-experience/`
+   - `packages/components/src/schemas/`
+
+5. **Convention scan.** For each touched directory with a `CLAUDE.md`, check for violations. Cite `file:line`.
+
 6. **Coverage scan.**
-   - Touched `apps/studio/src/server/modules/**` without a corresponding `__tests__/` change → flag missing test.
-   - Touched `packages/components/src/templates/**/components/**` without a `*.stories.tsx` change → flag missing story.
-   - New tRPC procedure without an input schema in `apps/studio/src/schemas/` → flag.
-7. **Auto-approve eligibility.** If tier is `risk:low` AND every condition in the taxonomy's "Auto-approve caveats" holds, mark eligible. Otherwise mark not eligible with the failing condition.
-8. **Post the annotation.** Format below. Use `gh pr comment` to post to the current PR.
+   - Touched `apps/studio/src/server/modules/**` without a `__tests__/` change → Consider finding.
+   - Touched `packages/components/src/templates/**/components/**` without a `*.stories.tsx` change → Consider finding.
+   - New tRPC procedure without an input schema in `apps/studio/src/schemas/` → Should Fix finding.
 
-## Output format
+7. **Post a review comment** if there are any findings:
+   ```
+   gh pr review <number> --comment --body "<structured markdown>"
+   ```
+   Group findings by file. Use severity prefixes. If there are no findings, do not post.
 
-The PR comment must be exactly this shape:
+8. **Write result** to `/tmp/review-result.json`:
+   ```json
+   {"blocking": <true if any Must Fix or Should Fix findings, else false>, "must_fix": <count>, "should_fix": <count>}
+   ```
+   If the diff is clean: `{"blocking": false, "must_fix": 0, "should_fix": 0}`
+
+## Comment format
 
 ```markdown
-## 🤖 PR review automation
+## 🤖 Code review
 
-**Risk tier:** `risk:<low|medium|high>`
-**Auto-approve eligible:** yes | no — <one-line reason>
+### `path/to/file.ts`
+- 🔴 Must Fix: <finding> (line N)
+- 🟡 Should Fix: <finding> (line N)
 
-### Hot paths touched
-- `<path>` — <why hot>
-(or: "None.")
-
-### Convention checks
-- ✅ <rule> — <file>
-- ⚠️  <rule violated> — <file:line>
-(or: "All checked rules pass.")
+### `path/to/other.ts`
+- 💬 Consider: <finding>
 
 ### Coverage
 - Server module changed without test: <list>
-- Component changed without story: <list>
 - New procedure without schema: <list>
-(omit sections that don't apply)
 
-### Suggested reviewers
-<area owner from CODEOWNERS, or @-mention based on label>
+> Authors can dismiss a Should Fix with `/dismiss: <reason>` — dismissals are logged and surfaced to the human reviewer.
 ```
 
 ## Hard rules
 
-- **Never approve, never request changes, never merge.** This skill comments only.
-- **Never bypass the taxonomy.** If the taxonomy says `risk:high`, the comment says `risk:high` — even if the diff "looks small".
-- **Read the taxonomy and CLAUDE.md files at run time.** Do not cache assumptions about file contents; the team updates them frequently.
-- **Cite file:line for every convention violation.** Vague comments are worse than no comments.
-- **Do not summarise the diff.** That's the PR description's job. This comment is grading only.
+- **Never approve, never request changes, never merge.** Comments only.
+- **Read docs/risk-taxonomy.md and CLAUDE.md files at run time.** Do not use cached assumptions.
+- **Cite file:line for every Must Fix and Should Fix.** Vague findings are worse than no findings.
+- **Do not summarise the diff** — that is the PR description's job.
+- **Pre-existing issues: note once only.** Do not repeat them on re-runs.
+- **If the diff is clean, do not post a comment** — an empty LGTM comment adds noise.
 
 ## Failure modes
 
-- Diff has 0 files → exit silently. No comment.
-- `risk-taxonomy.md` missing → post a comment saying so and skip grading.
-- Convention scan throws → post a partial comment with what was completed and flag the failure for a human.
-
-## Anti-patterns the agent must refuse
-
-- Bypassing the risk taxonomy because "this change is obviously fine".
-- Approving a PR via this skill — wrong tool, use `review-pr`.
-- Adding speculative concerns not grounded in the diff or a documented rule.
-- Long prose explanations — keep each bullet under one line.
+- Diff has 0 files → write `{"blocking": false, "must_fix": 0, "should_fix": 0}` and exit silently.
+- `docs/risk-taxonomy.md` missing → post a comment noting this and write `{"blocking": true, "must_fix": 0, "should_fix": 0}` (conservative fail-open).
+- PR number cannot be resolved → abort with a clear error.
