@@ -48,10 +48,10 @@ jobs:
           ref: ${{ steps.jobs.outputs.head_branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: anthropics/claude-code-action@beta
+      - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
         if: steps.jobs.outputs.has_fixable == 'true'
         env:
-          ANTHROPIC_MODEL: claude-sonnet-4-5
+          ANTHROPIC_MODEL: claude-sonnet-4-6
           PR_NUMBER: ${{ steps.jobs.outputs.pr_number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
