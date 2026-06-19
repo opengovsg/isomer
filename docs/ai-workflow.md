@@ -106,16 +106,6 @@ Runs when the author marks the PR ready, or when they comment `/isobot-review` (
 - Separate check run — always visible even when code review is clean
 - Writes `/tmp/security-result.json` for the auto-approve gate
 
-### Stage 3 — CI autofix (triggers: CI failure on any push)
-
-If `lint`, `format`, `build`, or `typecheck` CI jobs fail, the autofix agent:
-
-1. Commits a fix directly to the PR branch (authored by bot identity)
-2. CI re-runs automatically
-3. Caps at **3 attempts** — if still failing after 3 turns, posts a comment with the error and stops
-
-Constraints: the agent must never suppress lint rules (`// oxlint-disable`, `// eslint-disable`, ignore config changes). If the only valid fix is a suppression, it comments and stops. Unit and E2E test failures are **never autofixed** — the agent annotates only.
-
 ### Bot approval for `risk:low` PRs
 
 When both the code review and security review check runs pass clean (no Must Fix or Should Fix findings) and the PR meets all auto-approve conditions in `docs/risk-taxonomy.md`, the pipeline submits a formal GitHub APPROVE review via the bot identity. This counts toward required-approvals branch protection. A human still clicks merge.
