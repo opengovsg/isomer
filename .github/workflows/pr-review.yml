@@ -35,7 +35,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          direct_prompt: /compute-risk-tier ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
+          prompt: /compute-risk-tier ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
       - name: Read risk tier result
         id: result
@@ -71,7 +71,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          direct_prompt: /pr-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
+          prompt: /pr-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
       - name: Read code review result
         id: result
@@ -108,7 +108,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          direct_prompt: /security-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
+          prompt: /security-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
       - name: Read security review result
         id: result
