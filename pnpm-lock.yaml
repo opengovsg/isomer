@@ -132,7 +132,7 @@ catalogs:
       specifier: ^2.3.7
       version: 2.3.7
     '@types/node':
-      specifier: ^25.9.2
+      specifier: ^25.9.3
       version: 25.9.3
     '@types/papaparse':
       specifier: ^5.5.0
@@ -6137,9 +6137,6 @@ packages:
 
   '@types/node@18.19.130':
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
-
-  '@types/node@25.9.0':
-    resolution: {integrity: sha512-AOQwYUNolgy3VosiRqXrACUXTN8nJUtPl7FJXMqZVyxiiCLhQuG3jXKvCS1ALr+Y2OmZhzzLVlYPEqJaiqkaJQ==}
 
   '@types/node@25.9.3':
     resolution: {integrity: sha512-603BddQMv3pUcr4U2dhujk83N2tTDVr/34wII2B6bJy6g+8WD6yUb11jszNs0gdi4PesVWl7ABt8nYMVpnLUcg==}
@@ -16128,10 +16125,6 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@25.9.0':
-    dependencies:
-      undici-types: 7.24.6
-
   '@types/node@25.9.3':
     dependencies:
       undici-types: 7.24.6
@@ -16144,7 +16137,7 @@ snapshots:
 
   '@types/pg@8.20.0':
     dependencies:
-      '@types/node': 25.9.0
+      '@types/node': 25.9.3
       pg-protocol: 1.14.0
       pg-types: 2.2.0
 
