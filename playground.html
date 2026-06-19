@@ -79,11 +79,68 @@
     .typo-preview-body { font-size: 11px; color: #6b7280; line-height: 1.4; margin-top: 2px; }
     .typo-card-tag { font-size: 10px; color: #9ca3af; margin-top: 6px; }
 
-    /* Block option cards */
-    .block-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
-    .block-card-title { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; }
-    .block-card-desc { font-size: 11px; color: #9ca3af; }
-    .block-card-badge { display: inline-block; font-size: 10px; font-weight: 500; background: #dbeafe; color: #1d4ed8; border-radius: 4px; padding: 1px 6px; margin-top: 6px; }
+    /* Seg-control */
+    .seg-control { display: flex; background: #f3f4f6; border-radius: 7px; padding: 3px; gap: 2px; margin-bottom: 16px; }
+    .seg-btn { flex: 1; font-size: 12px; font-weight: 500; padding: 5px 8px; border-radius: 5px; border: none; background: none; color: #6b7280; cursor: pointer; transition: all 0.1s; }
+    .seg-btn:hover { color: #374151; }
+    .seg-btn.active { background: white; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    /* Hue slider */
+    .hue-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .hue-label { font-size: 13px; color: #374151; flex-shrink: 0; width: 70px; }
+    .hue-swatch { width: 24px; height: 24px; border-radius: 5px; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0; }
+    .hue-slider-wrap { flex: 1; }
+    input.hue-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 10px; border-radius: 5px; outline: none; cursor: pointer;
+      background: linear-gradient(to right,
+        hsl(0,70%,50%) 0%, hsl(30,70%,50%) 8%, hsl(60,70%,50%) 17%,
+        hsl(90,70%,50%) 25%, hsl(120,70%,50%) 33%, hsl(150,70%,50%) 42%,
+        hsl(180,70%,50%) 50%, hsl(210,70%,50%) 58%, hsl(240,70%,50%) 67%,
+        hsl(270,70%,50%) 75%, hsl(300,70%,50%) 83%, hsl(330,70%,50%) 92%, hsl(360,70%,50%) 100%);
+    }
+    input.hue-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+      background: white; border: 2px solid rgba(0,0,0,0.2); cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    input.hue-slider::-moz-range-thumb {
+      width: 18px; height: 18px; border-radius: 50%; background: white;
+      border: 2px solid rgba(0,0,0,0.2); cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .twotone-derived { display: flex; gap: 6px; margin-bottom: 14px; }
+    .derived-swatch { flex: 1; border-radius: 6px; height: 32px; border: 1px solid rgba(0,0,0,0.08); }
+    .derived-label { font-size: 10px; color: #9ca3af; margin-top: 3px; text-align: center; }
+    #twotone-section { display: none; }
+
+    /* New block cards */
+    .nb-card {
+      border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden;
+      margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+      background: white;
+    }
+    .nb-card:hover { border-color: #9ca3af; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+    .nb-card.nb-added { border-color: #111827; }
+    .nb-thumb {
+      height: 68px; background: #f9fafb; padding: 10px 14px;
+      border-bottom: 1px solid #f3f4f6; display: flex; align-items: center;
+    }
+    .nb-info { padding: 10px 12px 0; }
+    .nb-title { font-size: 12px; font-weight: 700; color: #111827; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .nb-page-tag { font-size: 10px; font-weight: 500; background: #f3f4f6; color: #6b7280; border-radius: 3px; padding: 1px 6px; }
+    .nb-desc { font-size: 11px; color: #6b7280; line-height: 1.45; }
+    .nb-add-btn {
+      margin: 8px 12px 12px; font-size: 11px; font-weight: 600;
+      color: #374151; border: 1.5px solid #e5e7eb; border-radius: 6px;
+      padding: 5px 12px; text-align: center; transition: all 0.12s; cursor: pointer;
+    }
+    .nb-card:hover .nb-add-btn { border-color: #374151; color: #111827; }
+    .nb-card.nb-added .nb-add-btn { background: #111827; color: white; border-color: #111827; }
+    .nb-card.nb-added:hover .nb-add-btn { background: #dc2626; border-color: #dc2626; color: white; }
+    .nb-card.nb-added:hover .nb-add-btn::before { content: '✕ Remove'; }
+    .nb-card.nb-added .nb-add-btn .nb-add-text { display: inline; }
+    .nb-card.nb-added:hover .nb-add-btn .nb-add-text { display: none; }
   </style>
 </head>
 <body>
@@ -142,18 +199,42 @@
       <div id="panel-theming" class="panel-content">
 
         <div class="section-label">Colours</div>
-        <div class="control-row">
-          <span class="control-name">Primary (interaction)</span>
-          <div class="color-swatch-wrap">
-            <input type="color" value="#00405f" title="Primary interaction colour"
-              oninput="updateVar('--color-brand-interaction-default', this.value); updateVar('--color-brand-canvas-inverse', shadeColor(this.value, -5))">
-          </div>
+
+        <!-- Mono / Two-tone seg-control -->
+        <div class="seg-control">
+          <button class="seg-btn active" onclick="setColourMode('mono')">Monotone</button>
+          <button class="seg-btn" onclick="setColourMode('twotone')">Two-tone</button>
         </div>
-        <div class="control-row">
-          <span class="control-name">Canvas (background)</span>
-          <div class="color-swatch-wrap">
-            <input type="color" value="#e6ecef" title="Brand canvas colour"
-              oninput="updateVar('--color-brand-canvas-default', this.value); updateVar('--color-brand-canvas-alt', shadeColor(this.value, -15))">
+
+        <!-- Primary hue -->
+        <div class="hue-row">
+          <span class="hue-label">Primary</span>
+          <div class="hue-slider-wrap">
+            <input id="primary-hue" type="range" class="hue-slider" min="0" max="360" value="200"
+              oninput="onPrimaryHue(this.value)">
+          </div>
+          <div id="primary-swatch" class="hue-swatch"></div>
+        </div>
+
+        <!-- Two-tone secondary (hidden unless two-tone active) -->
+        <div id="twotone-section">
+          <div class="hue-row">
+            <span class="hue-label">Secondary</span>
+            <div class="hue-slider-wrap">
+              <input id="secondary-hue" type="range" class="hue-slider" min="0" max="360" value="30"
+                oninput="onSecondaryHue(this.value)">
+            </div>
+            <div id="secondary-swatch" class="hue-swatch"></div>
+          </div>
+          <div class="twotone-derived">
+            <div>
+              <div id="derived-accent" class="derived-swatch"></div>
+              <div class="derived-label">Accent</div>
+            </div>
+            <div>
+              <div id="derived-bg" class="derived-swatch"></div>
+              <div class="derived-label">Background</div>
+            </div>
           </div>
         </div>
 
@@ -223,26 +304,187 @@
 
       <!-- New Blocks panel -->
       <div id="panel-blocks" class="panel-content hidden">
-        <div class="block-card">
-          <div class="block-card-title">Cards block</div>
-          <div class="block-card-desc">Scrollable horizontal card row with image, title, body and CTA link.</div>
-          <div class="block-card-badge">Coming soon</div>
+
+        <div class="section-label" style="margin-top:0">Hero</div>
+
+        <!-- Hero: Image Collage -->
+        <div class="nb-card" id="nb-hero-collage" onclick="addBlock('hero-collage','home')">
+          <div class="nb-thumb">
+            <!-- mini: text left + image mosaic right -->
+            <div style="display:flex;gap:6px;width:100%;align-items:center;">
+              <div style="flex:1.2;display:flex;flex-direction:column;gap:3px;">
+                <div style="height:5px;background:#111827;border-radius:2px;width:70%"></div>
+                <div style="height:3px;background:#d1d5db;border-radius:2px;width:90%"></div>
+                <div style="height:3px;background:#d1d5db;border-radius:2px;width:75%"></div>
+                <div style="height:12px;background:#6b7280;border-radius:3px;width:44%;margin-top:5px"></div>
+              </div>
+              <div style="flex:1;display:grid;grid-template-areas:'a b c' 'a d e';grid-template-columns:2fr 1.5fr 1.5fr;grid-template-rows:1fr 1fr;gap:2px;height:48px;">
+                <div style="grid-area:a;background:#d1d5db;border-radius:3px;"></div>
+                <div style="grid-area:b;background:#d1d5db;border-radius:3px;"></div>
+                <div style="grid-area:c;background:#d1d5db;border-radius:3px;"></div>
+                <div style="grid-area:d;background:#d1d5db;border-radius:3px;"></div>
+                <div style="grid-area:e;background:#d1d5db;border-radius:3px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Image Collage <span class="nb-page-tag">Homepage</span></div>
+            <div class="nb-desc">Text left, 5 children's activity photos in a mosaic tile. Images zoom gently on hover.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-hero-collage"><span class="nb-add-text">+ Add to homepage</span></div>
         </div>
-        <div class="block-card">
-          <div class="block-card-title">Contentpic — image position</div>
-          <div class="block-card-desc">Toggle image left / right / stacked on the content-with-picture block.</div>
-          <div class="block-card-badge">Coming soon</div>
+
+        <!-- Hero: Blob SaaS -->
+        <div class="nb-card" id="nb-hero-blob-saas" onclick="addBlock('hero-blob-saas','home')">
+          <div class="nb-thumb">
+            <!-- mini: coloured bg, blob shape, screenshot box -->
+            <div style="display:flex;gap:6px;width:100%;align-items:center;position:relative;">
+              <div style="position:absolute;inset:0;background:var(--nb-canvas-alt,#eef2f7);border-radius:4px;overflow:hidden;">
+                <div style="position:absolute;top:-12px;right:-10px;width:52px;height:52px;border-radius:50% 40% 55% 45%;background:var(--nb-primary,#1a4a6b);opacity:0.15;"></div>
+              </div>
+              <div style="position:relative;z-index:1;flex:1.2;display:flex;flex-direction:column;gap:3px;padding:2px 0;">
+                <div style="height:5px;background:#111827;border-radius:2px;width:75%"></div>
+                <div style="height:3px;background:#9ca3af;border-radius:2px;width:85%"></div>
+                <div style="height:10px;background:#6b7280;border-radius:3px;width:40%;margin-top:4px"></div>
+              </div>
+              <div style="position:relative;z-index:1;flex:1;background:white;border-radius:4px;height:44px;box-shadow:0 2px 8px rgba(0,0,0,0.12);border:1px solid rgba(0,0,0,0.06);overflow:hidden;">
+                <div style="height:8px;background:#e5e7eb;margin:6px 6px 4px;border-radius:2px;"></div>
+                <div style="height:4px;background:#f3f4f6;margin:0 6px 3px;border-radius:2px;"></div>
+                <div style="height:4px;background:#f3f4f6;margin:0 6px;border-radius:2px;width:70%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Blob + SaaS screenshot <span class="nb-page-tag">Homepage</span></div>
+            <div class="nb-desc">Light brand background with organic blob shapes. A product screenshot floats alongside the headline.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-hero-blob-saas"><span class="nb-add-text">+ Add to homepage</span></div>
         </div>
-        <div class="block-card">
-          <div class="block-card-title">Hero variants</div>
-          <div class="block-card-desc">New hero layouts: centred text, image-right split, full-bleed.</div>
-          <div class="block-card-badge">Coming soon</div>
+
+        <div class="section-label">Table</div>
+
+        <!-- Table: Styled -->
+        <div class="nb-card" id="nb-table-styled" onclick="addBlock('table-styled','content')">
+          <div class="nb-thumb">
+            <div style="width:100%;border-radius:4px;overflow:hidden;border:1px solid #e5e7eb;">
+              <div style="display:flex;background:var(--nb-primary,#1a4a6b);gap:1px;padding:4px 6px;">
+                <div style="flex:2;height:4px;background:rgba(255,255,255,0.7);border-radius:1px;"></div>
+                <div style="flex:1;height:4px;background:rgba(255,255,255,0.5);border-radius:1px;margin-left:4px;"></div>
+                <div style="flex:1;height:4px;background:rgba(255,255,255,0.5);border-radius:1px;margin-left:4px;"></div>
+              </div>
+              <div style="display:flex;gap:1px;padding:3px 6px;background:white;">
+                <div style="flex:2;height:3px;background:#d1d5db;border-radius:1px;"></div>
+                <div style="flex:1;height:3px;background:#e5e7eb;border-radius:1px;margin-left:4px;"></div>
+                <div style="flex:1;height:3px;background:#e5e7eb;border-radius:1px;margin-left:4px;"></div>
+              </div>
+              <div style="display:flex;gap:1px;padding:3px 6px;background:var(--nb-canvas-alt,#f3f4f6);">
+                <div style="flex:2;height:3px;background:#d1d5db;border-radius:1px;"></div>
+                <div style="flex:1;height:3px;background:#e5e7eb;border-radius:1px;margin-left:4px;"></div>
+                <div style="flex:1;height:3px;background:#e5e7eb;border-radius:1px;margin-left:4px;"></div>
+              </div>
+              <div style="display:flex;gap:1px;padding:3px 6px;background:white;">
+                <div style="flex:2;height:3px;background:#d1d5db;border-radius:1px;"></div>
+                <div style="flex:1;height:3px;background:#e5e7eb;border-radius:1px;margin-left:4px;"></div>
+                <div style="flex:1;height:3px;background:#e5e7eb;border-radius:1px;margin-left:4px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Styled table <span class="nb-page-tag">Content page</span></div>
+            <div class="nb-desc">Primary colour on header row with white text. Alternate rows use the brand canvas background.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-table-styled"><span class="nb-add-text">+ Add to content page</span></div>
         </div>
-        <div class="block-card">
-          <div class="block-card-title">Table block</div>
-          <div class="block-card-desc">Sortable, filterable table with optional striped rows and sticky header.</div>
-          <div class="block-card-badge">Coming soon</div>
+
+        <div class="section-label">Page Layouts</div>
+
+        <!-- Article layout alt -->
+        <div class="nb-card" id="nb-article-layout-alt" onclick="setLayoutVariant('article-alt','article')">
+          <div class="nb-thumb">
+            <!-- mini: title left / summary right split, then image below -->
+            <div style="display:flex;flex-direction:column;gap:3px;width:100%;">
+              <div style="display:flex;gap:8px;align-items:flex-start;">
+                <div style="flex:1.1;display:flex;flex-direction:column;gap:2px;">
+                  <div style="height:5px;background:#111827;border-radius:2px;width:85%"></div>
+                  <div style="height:5px;background:#111827;border-radius:2px;width:70%"></div>
+                  <div style="height:5px;background:#111827;border-radius:2px;width:55%"></div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px;padding-top:1px;">
+                  <div style="height:3px;background:#d1d5db;border-radius:1px;"></div>
+                  <div style="height:3px;background:#d1d5db;border-radius:1px;width:90%;"></div>
+                  <div style="height:3px;background:#d1d5db;border-radius:1px;width:75%;"></div>
+                </div>
+              </div>
+              <div style="height:18px;background:#d1d5db;border-radius:2px;margin-top:4px;"></div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Article header split <span class="nb-page-tag">Article</span></div>
+            <div class="nb-desc">Title on left, summary on right (collapses on mobile). Full-bleed cover image below the header.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-article-layout-alt"><span class="nb-add-text">Apply to article page</span></div>
         </div>
+
+        <!-- Content layout alt -->
+        <div class="nb-card" id="nb-content-layout-alt" onclick="setLayoutVariant('content-alt','content')">
+          <div class="nb-thumb">
+            <!-- mini: full-bleed image row, then plain text below -->
+            <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
+              <div style="height:26px;background:#d1d5db;border-radius:2px;"></div>
+              <div style="display:flex;flex-direction:column;gap:2px;padding:0 2px;">
+                <div style="height:5px;background:#111827;border-radius:2px;width:80%"></div>
+                <div style="height:3px;background:#d1d5db;border-radius:1px;"></div>
+                <div style="height:3px;background:#d1d5db;border-radius:1px;width:90%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Content — no colour block <span class="nb-page-tag">Content</span></div>
+            <div class="nb-desc">Removes the brand-coloured header block. Full-bleed cover image at top, then plain text title and summary.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-content-layout-alt"><span class="nb-add-text">Apply to content page</span></div>
+        </div>
+
+        <div class="section-label">Cards</div>
+
+        <!-- Cards: Carousel -->
+        <div class="nb-card" id="nb-cards-carousel" onclick="addBlock('cards-carousel','home')">
+          <div class="nb-thumb">
+            <!-- mini: row of square cards, chevrons top right -->
+            <div style="width:100%;position:relative;">
+              <div style="display:flex;gap:4px;overflow:hidden;">
+                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;">
+                  <div style="height:38px;background:#d1d5db;"></div>
+                  <div style="padding:3px 4px;"><div style="height:3px;background:#9ca3af;border-radius:1px;margin-bottom:2px;"></div><div style="height:2px;background:#e5e7eb;border-radius:1px;width:80%;"></div></div>
+                </div>
+                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;">
+                  <div style="height:38px;background:#d1d5db;"></div>
+                  <div style="padding:3px 4px;"><div style="height:3px;background:#9ca3af;border-radius:1px;margin-bottom:2px;"></div><div style="height:2px;background:#e5e7eb;border-radius:1px;width:80%;"></div></div>
+                </div>
+                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;">
+                  <div style="height:38px;background:#d1d5db;"></div>
+                  <div style="padding:3px 4px;"><div style="height:3px;background:#9ca3af;border-radius:1px;margin-bottom:2px;"></div><div style="height:2px;background:#e5e7eb;border-radius:1px;width:80%;"></div></div>
+                </div>
+                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;opacity:0.4;">
+                  <div style="height:38px;background:#d1d5db;"></div>
+                </div>
+              </div>
+              <!-- Right fade hint -->
+              <div style="position:absolute;top:0;right:0;bottom:0;width:24px;background:linear-gradient(to left,white,transparent);pointer-events:none;"></div>
+              <!-- Chevrons -->
+              <div style="position:absolute;top:0;right:2px;display:flex;gap:3px;">
+                <div style="width:14px;height:14px;border:1px solid #d1d5db;border-radius:3px;display:flex;align-items:center;justify-content:center;background:white;font-size:8px;color:#9ca3af;">‹</div>
+                <div style="width:14px;height:14px;border:1px solid #d1d5db;border-radius:3px;display:flex;align-items:center;justify-content:center;background:white;font-size:8px;color:#9ca3af;">›</div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Carousel cards <span class="nb-page-tag">Homepage</span></div>
+            <div class="nb-desc">Horizontal scroll row with left/right chevrons. Square images, no rounded corners, border on hover. Edges fade to signal more cards.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-cards-carousel"><span class="nb-add-text">+ Add to homepage</span></div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -261,44 +503,173 @@
 
   let currentPage = 'home'
   let currentSize = 'desktop'
+  let colourMode = 'mono'    // 'mono' | 'twotone'
+  let primaryHue = 200
+  let secondaryHue = 30
 
-  // Theme state
-  const theme = {
-    '--color-brand-canvas-default': '#e6ecef',
-    '--color-brand-canvas-alt': '#bfcfd7',
-    '--color-brand-canvas-inverse': '#00405f',
-    '--color-brand-interaction-default': '#00405f',
-    '--color-brand-interaction-hover': '#002e44',
-  }
-
-  // Site presets — theme colours per site
-  const SITE_PRESETS = {
-    corporate:  { primary: '#00405f', canvas: '#e6ecef' },
-    campaign:   { primary: '#c0391b', canvas: '#fff7f5' },
-    formal:     { primary: '#14532d', canvas: '#f0fdf4' },
-    modern:     { primary: '#09090b', canvas: '#fafafa' },
-    school:     { primary: '#6d28d9', canvas: '#faf5ff' },
-  }
-
-  // Typography presets
-  const TYPO_PRESETS = {
-    clarity:      { heading: "'Inter', system-ui, sans-serif",           body: "'Inter', system-ui, sans-serif" },
-    oped:         { heading: "'Merriweather Sans', sans-serif",          body: "'Merriweather', Georgia, serif" },
-    civic:        { heading: "'Lora', Georgia, serif",                   body: "'Source Sans 3', system-ui, sans-serif" },
-    edgy:         { heading: "'DM Sans', system-ui, sans-serif",         body: "'Space Grotesk', system-ui, sans-serif" },
-    approachable: { heading: "'Lexend', system-ui, sans-serif",          body: "'Lexend', system-ui, sans-serif" },
-  }
+  // ── Core postMessage helper ───────────────────────────────────────────────
 
   function postToIframe(msg) {
     iframe.contentWindow?.postMessage(msg, PREVIEW_URL)
+  }
+
+  // ── Colour math ──────────────────────────────────────────────────────────
+
+  function hslToHex(h, s, l) {
+    s /= 100; l /= 100
+    const a = s * Math.min(l, 1 - l)
+    const f = n => {
+      const k = (n + h / 30) % 12
+      const c = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)
+      return Math.round(255 * c).toString(16).padStart(2, '0')
+    }
+    return '#' + f(0) + f(8) + f(4)
+  }
+
+  function hexToHue(hex) {
+    const r = parseInt(hex.slice(1,3),16)/255
+    const g = parseInt(hex.slice(3,5),16)/255
+    const b = parseInt(hex.slice(5,7),16)/255
+    const max = Math.max(r,g,b), min = Math.min(r,g,b), d = max - min
+    if (d === 0) return 0
+    let h
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break
+      case g: h = ((b - r) / d + 2) / 6; break
+      default: h = ((r - g) / d + 4) / 6
+    }
+    return Math.round(h * 360)
+  }
+
+  // Derive a full colour palette from a primary hue
+  function paletteFromHue(h) {
+    return {
+      interaction:   hslToHex(h, 65, 28),   // dark rich primary
+      interactionHov:hslToHex(h, 65, 20),
+      canvasInverse: hslToHex(h, 65, 22),
+      canvasDefault: hslToHex(h, 20, 94),   // very light tint
+      canvasAlt:     hslToHex(h, 25, 88),
+    }
+  }
+
+  // Derive secondary swatches from secondary hue
+  function secondaryFromHue(h) {
+    return {
+      accent: hslToHex(h, 68, 42),   // vivid accent
+      bg:     hslToHex(h, 32, 93),   // soft background wash
+      bgAlt:  hslToHex(h, 38, 87),
+    }
+  }
+
+  // ── Theme state & application ─────────────────────────────────────────────
+
+  let theme = {}
+
+  function buildAndApplyTheme() {
+    const p = paletteFromHue(primaryHue)
+    theme = {
+      '--color-brand-interaction-default': p.interaction,
+      '--color-brand-interaction-hover':   p.interactionHov,
+      '--color-brand-canvas-inverse':      p.canvasInverse,
+    }
+    if (colourMode === 'twotone') {
+      const s = secondaryFromHue(secondaryHue)
+      theme['--color-brand-canvas-default'] = s.bg
+      theme['--color-brand-canvas-alt']     = s.bgAlt
+    } else {
+      theme['--color-brand-canvas-default'] = p.canvasDefault
+      theme['--color-brand-canvas-alt']     = p.canvasAlt
+    }
+    postToIframe({ type: 'theme', vars: theme })
+    updateSwatchUI()
+    syncNbVars()
+  }
+
+  function updateSwatchUI() {
+    const p = paletteFromHue(primaryHue)
+    document.getElementById('primary-swatch').style.background = p.interaction
+
+    if (colourMode === 'twotone') {
+      const s = secondaryFromHue(secondaryHue)
+      document.getElementById('secondary-swatch').style.background = s.accent
+      document.getElementById('derived-accent').style.background = s.accent
+      document.getElementById('derived-bg').style.background = s.bg
+    }
   }
 
   function applyThemeToIframe() {
     postToIframe({ type: 'theme', vars: theme })
   }
 
+  // ── Colour mode & hue controls ────────────────────────────────────────────
+
+  function setColourMode(mode) {
+    colourMode = mode
+    document.querySelectorAll('.seg-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', (i === 0 && mode === 'mono') || (i === 1 && mode === 'twotone'))
+    })
+    document.getElementById('twotone-section').style.display = mode === 'twotone' ? 'block' : 'none'
+    buildAndApplyTheme()
+  }
+
+  function onPrimaryHue(val) {
+    primaryHue = parseInt(val)
+    buildAndApplyTheme()
+  }
+
+  function onSecondaryHue(val) {
+    secondaryHue = parseInt(val)
+    buildAndApplyTheme()
+  }
+
+  // ── Site presets ──────────────────────────────────────────────────────────
+
+  // hue values per site (primary, secondary)
+  const SITE_PRESETS = {
+    corporate:  { primaryHue: 200, secondaryHue: 45 },
+    campaign:   { primaryHue: 10,  secondaryHue: 35 },
+    formal:     { primaryHue: 145, secondaryHue: 200 },
+    modern:     { primaryHue: 220, secondaryHue: 270 },
+    school:     { primaryHue: 270, secondaryHue: 200 },
+  }
+
+  function setSite(preset) {
+    const s = SITE_PRESETS[preset]
+    if (!s) return
+
+    primaryHue = s.primaryHue
+    secondaryHue = s.secondaryHue
+
+    // Sync sliders
+    document.getElementById('primary-hue').value = primaryHue
+    document.getElementById('secondary-hue').value = secondaryHue
+
+    buildAndApplyTheme()
+    postToIframe({ type: 'sitePreset', preset })
+    setPage('home')
+  }
+
+  // ── Typography ────────────────────────────────────────────────────────────
+
+  const TYPO_PRESETS = {
+    clarity:      { heading: "'Inter', system-ui, sans-serif",          body: "'Inter', system-ui, sans-serif" },
+    oped:         { heading: "'Merriweather Sans', sans-serif",         body: "'Merriweather', Georgia, serif" },
+    civic:        { heading: "'Lora', Georgia, serif",                  body: "'Source Sans 3', system-ui, sans-serif" },
+    edgy:         { heading: "'DM Sans', system-ui, sans-serif",        body: "'Space Grotesk', system-ui, sans-serif" },
+    approachable: { heading: "'Lexend', system-ui, sans-serif",         body: "'Lexend', system-ui, sans-serif" },
+  }
+
+  function setTypography(preset) {
+    document.querySelectorAll('.typo-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.preset === preset)
+    })
+    const p = TYPO_PRESETS[preset]
+    if (p) postToIframe({ type: 'fonts', heading: p.heading, body: p.body })
+  }
+
+  // ── iframe lifecycle ──────────────────────────────────────────────────────
+
   iframe.addEventListener('load', () => {
-    // Re-send theme + active typography after iframe navigation / reload
     setTimeout(() => {
       applyThemeToIframe()
       const activeCard = document.querySelector('.typo-card.active')
@@ -309,9 +680,9 @@
     }, 200)
   })
 
-  function loadPage(page) {
-    postToIframe({ type: 'page', page })
-  }
+  // ── Page / size ───────────────────────────────────────────────────────────
+
+  function loadPage(page) { postToIframe({ type: 'page', page }) }
 
   function applySize(size) {
     const w = SIZES[size]
@@ -338,21 +709,69 @@
     applySize(size)
   }
 
-  function updateVar(cssVar, value) {
-    theme[cssVar] = value
-    applyThemeToIframe()
-  }
-
   function updateMaxWidth(maxWidth) {
     postToIframe({ type: 'theme', vars: { '--max-width': maxWidth } })
   }
 
-  function setTypography(preset) {
-    document.querySelectorAll('.typo-card').forEach(card => {
-      card.classList.toggle('active', card.dataset.preset === preset)
+  // ── New block actions ─────────────────────────────────────────────────────
+
+  const addedBlocks = new Set()
+
+  // Tracks which block IDs and variant IDs are currently active
+  const activeVariants = {}  // page → variantId
+
+  function setLayoutVariant(variantId, page) {
+    const isActive = activeVariants[page] === variantId
+    const newVariant = isActive ? null : variantId
+    activeVariants[page] = newVariant
+    postToIframe({ type: 'setLayoutVariant', variantId: newVariant, page })
+    setPage(page)
+
+    // Update all variant cards for this page
+    document.querySelectorAll('.nb-card').forEach(c => {
+      const onclick = c.getAttribute('onclick') || ''
+      if (!onclick.startsWith('setLayoutVariant')) return
+      const match = onclick.match(/setLayoutVariant\('([^']+)','([^']+)'\)/)
+      if (!match) return
+      const [, vid, pg] = match
+      if (pg !== page) return
+      const isNowActive = (newVariant === vid)
+      c.classList.toggle('nb-added', isNowActive)
+      const span = c.querySelector('.nb-add-text')
+      if (span) span.textContent = isNowActive ? '✓ Applied' : (vid.includes('article') ? 'Apply to article page' : 'Apply to content page')
     })
-    const p = TYPO_PRESETS[preset]
-    if (p) postToIframe({ type: 'fonts', heading: p.heading, body: p.body })
+  }
+
+  function addBlock(blockId, page) {
+    const isActive = addedBlocks.has(blockId)
+    if (isActive) {
+      // Remove
+      addedBlocks.delete(blockId)
+      postToIframe({ type: 'removeBlock', blockId, page })
+      const card = document.getElementById('nb-' + blockId)
+      const span = document.querySelector('#nb-btn-' + blockId + ' .nb-add-text')
+      if (card) card.classList.remove('nb-added')
+      if (span) span.textContent = page === 'home' ? '+ Add to homepage' : '+ Add to content page'
+    } else {
+      // Add
+      addedBlocks.add(blockId)
+      postToIframe({ type: 'addBlock', blockId, page })
+      setPage(page)
+      const card = document.getElementById('nb-' + blockId)
+      const span = document.querySelector('#nb-btn-' + blockId + ' .nb-add-text')
+      if (card) card.classList.add('nb-added')
+      if (span) span.textContent = '✓ Added'
+    }
+  }
+
+  // Keep thumbnail CSS vars in sync with live theme
+  function syncNbVars() {
+    const primary = hslToHex(primaryHue, 65, 28)
+    const canvasAlt = colourMode === 'twotone'
+      ? secondaryFromHue(secondaryHue).bg
+      : hslToHex(primaryHue, 25, 88)
+    document.documentElement.style.setProperty('--nb-primary', primary)
+    document.documentElement.style.setProperty('--nb-canvas-alt', canvasAlt)
   }
 
   function switchPanel(panel) {
@@ -363,44 +782,11 @@
     document.getElementById('panel-blocks').classList.toggle('hidden', panel !== 'blocks')
   }
 
-  function setSite(preset) {
-    const s = SITE_PRESETS[preset]
-    if (!s) return
+  // ── Init ──────────────────────────────────────────────────────────────────
 
-    // Update theme state
-    theme['--color-brand-interaction-default'] = s.primary
-    theme['--color-brand-canvas-inverse'] = shadeColor(s.primary, -5)
-    theme['--color-brand-interaction-hover'] = shadeColor(s.primary, -20)
-    theme['--color-brand-canvas-default'] = s.canvas
-    theme['--color-brand-canvas-alt'] = shadeColor(s.canvas, -15)
-
-    // Sync colour pickers
-    document.querySelectorAll('input[type="color"]').forEach(input => {
-      if (input.title && input.title.includes('interaction')) input.value = s.primary
-      if (input.title && input.title.includes('canvas')) input.value = s.canvas
-    })
-
-    // Send to iframe
-    applyThemeToIframe()
-    postToIframe({ type: 'sitePreset', preset })
-
-    // Switch to homepage to show the hero change
-    setPage('home')
-  }
-
-  function shadeColor(hex, pct) {
-    let r = parseInt(hex.slice(1,3), 16)
-    let g = parseInt(hex.slice(3,5), 16)
-    let b = parseInt(hex.slice(5,7), 16)
-    r = Math.max(0, Math.min(255, Math.round(r * (1 + pct/100))))
-    g = Math.max(0, Math.min(255, Math.round(g * (1 + pct/100))))
-    b = Math.max(0, Math.min(255, Math.round(b * (1 + pct/100))))
-    return '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('')
-  }
-
-  // Init
   iframe.src = PREVIEW_URL + '?page=home'
   applySize('desktop')
+  buildAndApplyTheme()   // prime swatches + initial theme (calls syncNbVars)
 </script>
 </body>
 </html>

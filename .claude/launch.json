@@ -6,6 +6,13 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-l", "4321", "--no-clipboard", "."],
       "port": 4321
+    },
+    {
+      "name": "preview",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@isomer/preview", "dev"],
+      "port": 3456,
+      "autoPort": false
     }
   ]
 }
