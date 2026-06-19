@@ -137,9 +137,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           review-message: |
-            ✅ Automated review passed.
-            - Risk tier: `risk:low`
-            - Code review: no blocking findings
-            - Security review: no blocking findings
+            🤖 All clear!
+            - 🟢 Risk: low
+            - 👀 Code review: no blockers
+            - 🔒 Security: no blockers
 
-            A human still needs to merge. This approval satisfies the required-approvals gate.
+            Still needs a human to merge — this just clears the approvals gate.
