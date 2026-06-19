@@ -10,9 +10,8 @@ on:
     types: [created]
 
 jobs:
-  # Re-computes risk tier at review time (not just on push) so the auto-approve
-  # gate uses a fresh signal. Falls back to 'high' if the skill fails to write
-  # the result file, keeping the gate conservative.
+  # Reads the risk:* label already applied by "🤖 PR: Risk Label" — no LLM call needed.
+  # Falls back to 'high' if the label is missing, keeping the auto-approve gate conservative.
   risk-tier:
     if: |
       (github.event_name == 'pull_request') ||
@@ -22,32 +21,27 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
+      pull-requests: read
     outputs:
-      tier: ${{ steps.result.outputs.tier }}
+      tier: ${{ steps.read.outputs.tier }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
-
-      # /compute-risk-tier applies file-glob rules + reversibility modifiers and
-      # writes {"tier": "low|medium|high", "reason": "..."} to /tmp/risk-result.json
-      - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
-        env:
-          ANTHROPIC_MODEL: claude-sonnet-4-6
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Read risk label from PR
+        id: read
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          max_turns: "5"
-          direct_prompt: /compute-risk-tier ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
-
-      - name: Read risk tier result
-        id: result
-        run: |
-          if [ -f /tmp/risk-result.json ]; then
-            echo "tier=$(jq -r .tier /tmp/risk-result.json)" >> "$GITHUB_OUTPUT"
-          else
-            # Fail open — treat unknown tier as high so auto-approve never silently passes
-            echo "tier=high" >> "$GITHUB_OUTPUT"
-          fi
+          script: |
+            const prNumber = context.eventName === 'issue_comment'
+              ? context.payload.issue.number
+              : context.payload.pull_request.number
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            })
+            const risk = labels.find(l => l.name.startsWith('risk:'))
+            const tier = risk ? risk.name.replace('risk:', '') : 'high'
+            core.setOutput('tier', tier)
+            core.info(`Risk tier from label: ${tier}`)
 
   # Posts severity-tagged findings (Must Fix / Should Fix / Consider) and writes
   # {"blocking": true/false} to /tmp/review-result.json for the auto-approve gate.
