@@ -166,6 +166,10 @@ export const DuplicateResourceModal = ({
                 siteId,
                 resourceId: tableScopeResourceId,
               }),
+              utils.collection.list.invalidate({
+                siteId,
+                resourceId: tableScopeResourceId,
+              }),
             ])
             toast({
               status: "success",

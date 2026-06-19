@@ -15,13 +15,24 @@ export const assertDuplicateResourcePreconditions = async ({
   pageId: number
   permalink: string
   userId: string
-}): Promise<{ parentKey: string | null }> => {
+}): Promise<{
+  parentKey: string | null
+  type:
+    | typeof ResourceType.Page
+    | typeof ResourceType.CollectionPage
+    | typeof ResourceType.CollectionLink
+}> => {
   const source = await getPageById(db, {
     resourceId: pageId,
     siteId,
   })
 
-  if (!source || source.type !== ResourceType.Page) {
+  if (
+    !source ||
+    (source.type !== ResourceType.Page &&
+      source.type !== ResourceType.CollectionPage &&
+      source.type !== ResourceType.CollectionLink)
+  ) {
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "Page not found",
@@ -66,5 +77,5 @@ export const assertDuplicateResourcePreconditions = async ({
     })
   }
 
-  return { parentKey }
+  return { parentKey, type: source.type }
 }

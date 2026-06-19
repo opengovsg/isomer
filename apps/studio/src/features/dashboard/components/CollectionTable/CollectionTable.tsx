@@ -22,7 +22,7 @@ import { COLLECTION_TABLE_SORT_OPTIONS } from "./constants"
 
 const columnsHelper = createColumnHelper<CollectionTableData>()
 
-const getColumns = ({ siteId }: CollectionTableProps) => [
+const getColumns = ({ siteId, resourceId }: CollectionTableProps) => [
   columnsHelper.accessor("title", {
     minSize: 300,
     header: () => <TableHeader>Title</TableHeader>,
@@ -46,6 +46,8 @@ const getColumns = ({ siteId }: CollectionTableProps) => [
     header: () => <TableHeader>Actions</TableHeader>,
     cell: ({ row }) => (
       <CollectionTableMenu
+        siteId={siteId}
+        tableScopeResourceId={resourceId}
         permalink={row.original.permalink}
         parentId={row.original.parentId}
         resourceType={row.original.type}
