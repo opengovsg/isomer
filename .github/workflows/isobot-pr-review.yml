@@ -10,19 +10,39 @@ on:
     types: [created]
 
 jobs:
+  # Guards all downstream jobs — only passes if the event is an authorized trigger.
+  # Downstream jobs use `needs: gate` so this condition is defined exactly once.
+  gate:
+    # Only run this job if the event matches one of these authorized triggers:
+    # 1. The event is a 'pull_request' and the PR author is an OWNER or MEMBER.
+    # 2. The event is a 'issue_comment', the comment is on a PR,
+    #    the comment starts with '/isobot-review', and the comment author is an OWNER or MEMBER.
+    if: |
+      (
+        github.event_name == 'pull_request' &&
+        contains(fromJSON('["OWNER", "MEMBER"]'), github.event.pull_request.author_association)
+      ) ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request != null &&
+        startsWith(github.event.comment.body, '/isobot-review') &&
+        contains(fromJSON('["OWNER", "MEMBER"]'), github.event.comment.author_association)
+      )
+    runs-on: ubuntu-latest
+    steps:
+      # GitHub Actions requires every job to have at least one step,
+      # so provide a minimal no-op step since this job is just a gate.
+      - run: echo "✅ Authorized"
+
   # Reads docs/risk-taxonomy.md, diffs the PR, applies file-glob rules and
   # reversibility modifiers, and outputs the tier for auto-approve gating.
   risk-tier:
-    if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request != null &&
-       startsWith(github.event.comment.body, '/isobot-review'))
+    needs: gate
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-      id-token: write
+      id-token: write # required by anthropics/claude-code-action for OIDC-based tool authentication
     outputs:
       tier: ${{ steps.result.outputs.tier }}
     steps:
@@ -49,16 +69,12 @@ jobs:
   # Posts severity-tagged findings (Must Fix / Should Fix / Consider) and writes
   # {"blocking": true/false} to /tmp/review-result.json for the auto-approve gate.
   code-review:
-    if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request != null &&
-       startsWith(github.event.comment.body, '/isobot-review'))
+    needs: gate
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-      id-token: write
+      id-token: write # required by anthropics/claude-code-action for OIDC-based tool authentication
     outputs:
       blocking: ${{ steps.result.outputs.blocking }}
     steps:
@@ -86,16 +102,12 @@ jobs:
   # and other Isomer-specific security issues. Separate from code-review so its
   # findings are always visible even when code-review is clean.
   security-review:
-    if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request != null &&
-       startsWith(github.event.comment.body, '/isobot-review'))
+    needs: gate
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-      id-token: write
+      id-token: write # required by anthropics/claude-code-action for OIDC-based tool authentication
     outputs:
       blocking: ${{ steps.result.outputs.blocking }}
     steps:
@@ -125,10 +137,6 @@ jobs:
   auto-approve:
     needs: [risk-tier, code-review, security-review]
     if: |
-      ((github.event_name == 'pull_request') ||
-       (github.event_name == 'issue_comment' &&
-        github.event.issue.pull_request != null &&
-        startsWith(github.event.comment.body, '/isobot-review'))) &&
       needs.risk-tier.outputs.tier == 'low' &&
       needs.code-review.outputs.blocking == 'false' &&
       needs.security-review.outputs.blocking == 'false'
