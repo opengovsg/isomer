@@ -8,7 +8,7 @@ on:
     types: [created]
 
 jobs:
-  # Re-compute risk tier inline so this workflow is self-contained
+  # Re-compute risk tier using LLM so reversibility modifiers are applied correctly
   risk-tier:
     if: |
       (github.event_name == 'pull_request') ||
@@ -18,48 +18,29 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
     outputs:
-      tier: ${{ steps.compute.outputs.tier }}
+      tier: ${{ steps.result.outputs.tier }}
     steps:
-      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
-        id: compute
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
+
+      - uses: anthropics/claude-code-action@beta
+        env:
+          ANTHROPIC_MODEL: claude-sonnet-4-5
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          script: |
-            const { data: files } = await github.rest.pulls.listFiles({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              per_page: 100,
-            })
-            const names = files.map(f => f.filename)
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          max_turns: "5"
+          direct_prompt: /compute-risk-tier ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
-            const HIGH = [
-              /^apps\/studio\/prisma\/migrations\//,
-              /^apps\/studio\/prisma\/schema\.prisma$/,
-              /^apps\/studio\/src\/server\/modules\/(auth|permissions|audit|rate-limit)\//,
-              /^apps\/studio\/src\/server\/(trpc|context|webhooks)\.ts$/,
-              /^apps\/studio\/src\/lib\/growthbook/,
-              /^apps\/studio\/src\/env\.mjs$/,
-              /^\.github\/workflows\//,
-              /^tooling\//,
-              /\/seed\.ts$/,
-            ]
-            const MEDIUM = [
-              /^apps\/studio\/src\/server\/modules\//,
-              /^apps\/studio\/src\/pages\/api\//,
-              /^apps\/studio\/src\/(features|schemas|hooks|lib|utils|components)\//,
-              /^packages\/components\/src\/(templates|schemas|engine)\//,
-              /^packages\/(pgboss|redis|logging|validators)\//,
-            ]
-
-            let tier = 'low'
-            for (const f of names) {
-              if (HIGH.some(p => p.test(f))) { tier = 'high'; break }
-              if (MEDIUM.some(p => p.test(f))) tier = 'medium'
-            }
-            core.setOutput('tier', tier)
-            core.info(`Risk tier: ${tier}`)
+      - name: Read result
+        id: result
+        run: |
+          if [ -f /tmp/risk-result.json ]; then
+            echo "tier=$(jq -r .tier /tmp/risk-result.json)" >> "$GITHUB_OUTPUT"
+          else
+            echo "tier=high" >> "$GITHUB_OUTPUT"
+          fi
 
   code-review:
     if: ${{ !github.event.pull_request.draft }}

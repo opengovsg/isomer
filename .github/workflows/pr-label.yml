@@ -19,75 +19,13 @@ jobs:
        contains(github.event.comment.body, '/re-review'))
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
+
+      - uses: anthropics/claude-code-action@beta
+        env:
+          ANTHROPIC_MODEL: claude-sonnet-4-5
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          script: |
-            const prNumber = context.eventName === 'issue_comment'
-              ? context.payload.issue.number
-              : context.payload.pull_request.number
-
-            const { data: files } = await github.rest.pulls.listFiles({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              per_page: 100,
-            })
-            const names = files.map(f => f.filename)
-
-            // Match top-down — first HIGH match wins; accumulate MEDIUM
-            const HIGH = [
-              /^apps\/studio\/prisma\/migrations\//,
-              /^apps\/studio\/prisma\/schema\.prisma$/,
-              /^apps\/studio\/src\/server\/modules\/(auth|permissions|audit|rate-limit)\//,
-              /^apps\/studio\/src\/server\/(trpc|context|webhooks)\.ts$/,
-              /^apps\/studio\/src\/lib\/growthbook/,
-              /^apps\/studio\/src\/env\.mjs$/,
-              /^\.github\/workflows\//,
-              /^tooling\//,
-              /\/seed\.ts$/,
-            ]
-            const MEDIUM = [
-              /^apps\/studio\/src\/server\/modules\//,
-              /^apps\/studio\/src\/pages\/api\//,
-              /^apps\/studio\/src\/(features|schemas|hooks|lib|utils|components)\//,
-              /^packages\/components\/src\/(templates|schemas|engine)\//,
-              /^packages\/(pgboss|redis|logging|validators)\//,
-            ]
-
-            let tier = 'low'
-            for (const f of names) {
-              if (HIGH.some(p => p.test(f))) { tier = 'high'; break }
-              if (MEDIUM.some(p => p.test(f))) tier = 'medium'
-            }
-
-            const COLORS = { low: '0e8a16', medium: 'e4a820', high: 'd93f0b' }
-            const label = `risk:${tier}`
-
-            // Remove stale risk labels
-            const { data: current } = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-            })
-            for (const l of current.filter(l => l.name.startsWith('risk:'))) {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                name: l.name,
-              }).catch(() => {}) // label may have been removed concurrently
-            }
-
-            // Create label if it doesn't exist yet, then apply
-            try {
-              await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label })
-            } catch {
-              await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label, color: COLORS[tier] })
-            }
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              labels: [label],
-            })
-            core.info(`Applied: ${label}`)
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          max_turns: "5"
+          direct_prompt: /compute-risk-tier ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
