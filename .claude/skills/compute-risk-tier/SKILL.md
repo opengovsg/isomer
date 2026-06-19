@@ -26,12 +26,7 @@ Compute the risk tier for a pull request and apply the correct GitHub label.
    - The reversibility modifiers
    - The feature-flag gating note
 
-3. **Get changed files.**
-   ```
-   gh pr diff <number> --name-only
-   ```
-
-4. **Get the diff.**
+3. **Get the diff** (file names are derivable from `diff --git` headers in the output).
    ```
    gh pr diff <number>
    ```

@@ -21,9 +21,8 @@ Review the pull request for code quality issues. This skill is used both locally
    gh pr view --json number -q .number
    ```
 
-2. **Get changed files and diff.**
+2. **Get the diff** (file names are derivable from `diff --git` headers in the output).
    ```
-   gh pr diff <number> --name-only
    gh pr diff <number>
    ```
 

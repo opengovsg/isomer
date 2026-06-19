@@ -40,10 +40,9 @@ jobs:
               .filter(j => j.conclusion === 'failure')
               .map(j => j.name.toLowerCase())
 
-            const hasFixable = failed.some(name => FIXABLE.some(f => name.includes(f)))
+            const hasFixable = failed.some(name => FIXABLE.includes(name))
             core.setOutput('has_fixable', String(hasFixable))
             core.setOutput('pr_number', String(context.payload.workflow_run.pull_requests[0].number))
-            core.setOutput('head_sha', context.payload.workflow_run.head_sha)
             core.setOutput('head_branch', context.payload.workflow_run.head_branch)
             core.info(`Failed jobs: ${failed.join(', ')}`)
             core.info(`Has fixable failures: ${hasFixable}`)
