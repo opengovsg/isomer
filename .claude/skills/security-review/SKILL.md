@@ -41,12 +41,12 @@ Review the pull request for security vulnerabilities. This skill runs alongside 
    - **Dependency injection** — new npm packages added that have known CVEs or are suspiciously named (typosquatting). Check the package name carefully.
    - **Prototype pollution / injection** — `Object.assign` or spread from user input, SQL/NoSQL injection via string concatenation.
 
-4. **Post findings** if any are found:
+4. **Post a comment always:**
    ```
    gh pr review <number> --comment --body "<findings>"
    ```
-   Prefix each finding with `🚨 Security:`. Group by category. Include `file:line` for every finding.
-   If there are no findings, do not post.
+   - If there are findings: prefix each with `🚨 Security:`, group by category, include `file:line` for every finding.
+   - If there are no findings: post a short pass comment — `✅ Security review: no issues found.`
 
 5. **Write result** to `/tmp/security-result.json`:
    ```json
@@ -60,10 +60,10 @@ Review the pull request for security vulnerabilities. This skill runs alongside 
 - **Cite file:line for every finding.** A vague security concern is noise, not signal.
 - **Do not flag theoretical or out-of-scope issues.** Only flag what is present in the diff. Do not speculate about what the code _could_ do if called in a specific way unless the call site is also in the diff.
 - **Do not duplicate findings from `/pr-review`.** This skill is for security only — not style, not coverage.
-- **If the diff is clean, do not post a comment.**
+- **Always post a comment** — either findings or a clean pass. Never skip the comment.
 
 ## Failure modes
 
-- Diff has 0 files → write `{"blocking": false, "findings": 0}` and exit silently.
+- Diff has 0 files → post `✅ Security review: no issues found.`, write `{"blocking": false, "findings": 0}`, and exit.
 - PR number cannot be resolved → abort with a clear error.
 - `gh pr diff` fails → abort with a clear error.

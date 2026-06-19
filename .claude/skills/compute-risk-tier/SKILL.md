@@ -31,7 +31,7 @@ Compute the risk tier for a pull request.
    gh pr diff <number>
    ```
 
-5. **Determine the tier.**
+4. **Determine the tier.**
    a. Apply file-glob matching top-down — highest tier across all changed files wins.
    b. Apply reversibility modifiers — bump one level if the diff:
       - Sends external side-effects (email, Slack notification, outbound webhook call)
@@ -39,7 +39,7 @@ Compute the risk tier for a pull request.
       - Changes a pgboss job handler function signature or job payload type
    c. Note (but do not change the tier) if all new behaviour is gated behind a GrowthBook feature flag — record this in the reason.
 
-6. **Post a comment** on the PR explaining the decision:
+5. **Post a comment** on the PR explaining the decision:
    ```
    gh pr comment <number> --body "<comment>"
    ```
@@ -51,12 +51,12 @@ Compute the risk tier for a pull request.
    ```
    If a reversibility modifier was applied, call it out explicitly. If behaviour is feature-flag gated, note it.
 
-7. **Write the result** to `/tmp/risk-result.json`:
+6. **Write the result** to `/tmp/risk-result.json`:
    ```json
    {"tier": "<low|medium|high>", "reason": "<one sentence explaining the key signal>"}
    ```
 
-8. **Print a summary** to stdout:
+7. **Print a summary** to stdout:
    ```
    Risk tier: <tier>
    Reason: <reason>

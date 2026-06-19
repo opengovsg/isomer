@@ -87,11 +87,11 @@ Every PR triggers a three-stage automated pipeline via GitHub Actions. Stages ru
 
 ### Stage 1 — Risk labeling (triggers: `opened`, `synchronize`, `ready_for_review`, `/isobot-review`)
 
-Runs on every push and when the PR is marked ready for review. Uses the `/compute-risk-tier` skill (LLM-powered) which reads `docs/risk-taxonomy.md`, diffs the PR, applies file-glob rules and reversibility modifiers, and sets the `risk:low / risk:medium / risk:high` label. Also re-runs when `/isobot-review` is commented (exact match, no prefix needed) so the label is always current at review time.
+Runs on every push and when the PR is marked ready for review. Uses the `/compute-risk-tier` skill (LLM-powered) which reads `docs/risk-taxonomy.md`, diffs the PR, applies file-glob rules and reversibility modifiers, and sets the `risk:low / risk:medium / risk:high` label. Also re-runs when `/isobot-review` is commented (starts with, no prefix needed) so the label is always current at review time.
 
 ### Stage 2 — Code review + security review (triggers: `ready_for_review`, `/isobot-review`)
 
-Runs when the author marks the PR ready, or when they comment `/isobot-review` (exact match) after pushing fixes. Does not run on `synchronize` — engineers should keep the PR in draft while iterating and mark ready only when they want a review. Three parallel jobs:
+Runs when the author marks the PR ready, or when they comment `/isobot-review` (starts with) after pushing fixes. Does not run on `synchronize` — engineers should keep the PR in draft while iterating and mark ready only when they want a review. Three parallel jobs:
 
 **Risk tier** (`/compute-risk-tier` skill): re-computes tier at review time for the auto-approve gate. Falls back to `high` if the skill fails, keeping the gate conservative.
 

@@ -125,6 +125,10 @@ jobs:
   auto-approve:
     needs: [risk-tier, code-review, security-review]
     if: |
+      ((github.event_name == 'pull_request') ||
+       (github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request != null &&
+        startsWith(github.event.comment.body, '/isobot-review'))) &&
       needs.risk-tier.outputs.tier == 'low' &&
       needs.code-review.outputs.blocking == 'false' &&
       needs.security-review.outputs.blocking == 'false'
