@@ -86,7 +86,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt: /pr-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
+          prompt: /code-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
       - name: Read code review result
         id: result
