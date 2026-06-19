@@ -55,12 +55,24 @@ Compute the risk tier for a pull request and apply the correct GitHub label.
    gh pr edit <number> --add-label "risk:<tier>"
    ```
 
-7. **Write the result** to `/tmp/risk-result.json`:
+7. **Post a comment** on the PR explaining the decision:
+   ```
+   gh pr comment <number> --body "<comment>"
+   ```
+   Format:
+   ```markdown
+   ## 🏷️ Risk tier: `risk:<tier>`
+
+   <reason>
+   ```
+   If a reversibility modifier was applied, call it out explicitly. If behaviour is feature-flag gated, note it.
+
+8. **Write the result** to `/tmp/risk-result.json`:
    ```json
    {"tier": "<low|medium|high>", "reason": "<one sentence explaining the key signal>"}
    ```
 
-8. **Print a summary** to stdout:
+9. **Print a summary** to stdout:
    ```
    Risk tier: <tier>
    Reason: <reason>
