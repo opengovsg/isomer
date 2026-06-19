@@ -95,10 +95,9 @@ Runs when the author marks the PR ready, or when they comment `/isobot-review` (
 
 **Risk tier** (`/compute-risk-tier` skill): re-computes tier at review time for the auto-approve gate. Falls back to `high` if the skill fails, keeping the gate conservative.
 
-**Code review** (`/pr-review` skill):
-- Posts severity-tagged findings (Must Fix / Should Fix / Consider / Pre-existing)
-- Authors may dismiss Should Fix with `/dismiss: <reason>` — logged and surfaced to human reviewer
-- Hot-path files escalate findings by one severity level (see `docs/risk-taxonomy.md`)
+**Code review** (`/code-review` skill):
+- Posts severity-tagged findings (Must Fix / Consider / Pre-existing)
+- Hot-path files escalate findings by one severity level (Consider→Must Fix, see `docs/risk-taxonomy.md`)
 - Writes `/tmp/review-result.json` for the auto-approve gate
 
 **Security review** (`/security-review` skill):
@@ -108,7 +107,7 @@ Runs when the author marks the PR ready, or when they comment `/isobot-review` (
 
 ### Bot approval for `risk:low` PRs
 
-When both the code review and security review check runs pass clean (no Must Fix or Should Fix findings) and the PR meets all auto-approve conditions in `docs/risk-taxonomy.md`, the pipeline submits a formal GitHub APPROVE review via the bot identity. This counts toward required-approvals branch protection. A human still clicks merge.
+When both the code review and security review check runs pass clean (no Must Fix findings) and the PR meets all auto-approve conditions in `docs/risk-taxonomy.md`, the pipeline submits a formal GitHub APPROVE review via the bot identity. This counts toward required-approvals branch protection. A human still clicks merge.
 
 For `risk:medium` and `risk:high` PRs, the pipeline comments only — human approval required.
 
@@ -118,7 +117,7 @@ The expected workflow:
 
 1. Author opens PR → risk label applied automatically
 2. Author marks ready for review → code review + security review run
-3. Author resolves Must Fix / Should Fix findings (or dismisses with reason)
+3. Author resolves Must Fix findings
 4. Author comments `/isobot-review` → pipeline re-runs → if clean, bot approves (`risk:low`) or signals ready for human (`risk:medium/high`)
 5. Author requests human reviewer
 
