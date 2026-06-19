@@ -3,18 +3,26 @@ import { IconButton, Menu } from "@opengovsg/design-system-react"
 import { useSetAtom } from "jotai"
 import {
   BiCog,
+  BiCopy,
   BiDotsHorizontalRounded,
   BiFolderOpen,
   BiTrash,
 } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 import { moveResourceAtom } from "~/features/editing-experience/atoms"
+import { Can } from "~/features/permissions"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { CollectionTableData } from "./types"
-import { deleteResourceModalAtom, pageSettingsModalAtom } from "../../atoms"
+import {
+  deleteResourceModalAtom,
+  duplicateResourceModalAtom,
+  pageSettingsModalAtom,
+} from "../../atoms"
 
 interface CollectionTableMenuProps {
+  siteId: number
+  tableScopeResourceId: number
   title: CollectionTableData["title"]
   parentId: CollectionTableData["parentId"]
   permalink: CollectionTableData["permalink"]
@@ -23,6 +31,8 @@ interface CollectionTableMenuProps {
 }
 
 export const CollectionTableMenu = ({
+  siteId,
+  tableScopeResourceId,
   title,
   resourceId,
   resourceType,
@@ -31,6 +41,7 @@ export const CollectionTableMenu = ({
 }: CollectionTableMenuProps) => {
   const setValue = useSetAtom(deleteResourceModalAtom)
   const setPageSettingsModalState = useSetAtom(pageSettingsModalAtom)
+  const setDuplicateResourceModal = useSetAtom(duplicateResourceModalAtom)
   const setMoveResource = useSetAtom(moveResourceAtom)
   const handleMoveResourceClick = () => {
     setMoveResource({
@@ -67,6 +78,28 @@ export const CollectionTableMenu = ({
             >
               Edit settings
             </MenuItem>
+          )}
+          {(resourceType === ResourceType.CollectionPage ||
+            resourceType === ResourceType.CollectionLink) && (
+            <Can do="create" on={{ parentId }}>
+              <MenuItem
+                as="button"
+                onClick={() =>
+                  setDuplicateResourceModal({
+                    siteId,
+                    pageId: resourceId,
+                    sourceTitle: title,
+                    sourcePermalink: permalink,
+                    parentId,
+                    tableScopeResourceId,
+                  })
+                }
+                icon={<BiCopy fontSize="1rem" />}
+                aria-label={`Duplicate ${title}`}
+              >
+                Duplicate
+              </MenuItem>
+            </Can>
           )}
           {isSearchPage ? (
             <MenuItem

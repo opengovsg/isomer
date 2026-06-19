@@ -16,6 +16,7 @@ import {
 import {
   setupAdminPermissions,
   setupCollection,
+  setupCollectionLink,
   setupEditorPermissions,
   setupFolder,
   setupPageResource,
@@ -1941,14 +1942,9 @@ describe("page.router", async () => {
       )
     })
 
-    it("should return 404 for non-Page resources", async () => {
+    it("should return 404 for non-duplicatable resources (e.g. Folder)", async () => {
       // Arrange
-      const { collection, site } = await setupCollection()
-      const { page } = await setupPageResource({
-        siteId: site.id,
-        parentId: collection.id,
-        resourceType: ResourceType.CollectionPage,
-      })
+      const { folder, site } = await setupFolder()
       await setupAdminPermissions({
         userId: session.userId ?? undefined,
         siteId: site.id,
@@ -1957,7 +1953,7 @@ describe("page.router", async () => {
       // Act
       const result = caller.duplicate({
         siteId: site.id,
-        pageId: Number(page.id),
+        pageId: Number(folder.id),
         title: "Copy",
         permalink: "copy",
       })
@@ -1966,6 +1962,85 @@ describe("page.router", async () => {
       await expect(result).rejects.toThrowError(
         new TRPCError({ code: "NOT_FOUND", message: "Page not found" }),
       )
+    })
+
+    it("should duplicate a CollectionPage as a CollectionPage draft under the same parent", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "news-item",
+        title: "News item",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.duplicate({
+        siteId: site.id,
+        pageId: Number(page.id),
+        title: "Copy of News item",
+        permalink: "news-item-copy",
+      })
+
+      // Assert
+      const duplicate = await db
+        .selectFrom("Resource")
+        .where("id", "=", result.pageId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      expect(duplicate).toMatchObject({
+        title: "Copy of News item",
+        permalink: "news-item-copy",
+        type: ResourceType.CollectionPage,
+        state: ResourceState.Draft,
+        publishedVersionId: null,
+        parentId: collection.id,
+      })
+    })
+
+    it("should duplicate a CollectionLink as a CollectionLink draft under the same parent", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { collectionLink } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+        permalink: "external-link",
+        title: "External link",
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.duplicate({
+        siteId: site.id,
+        pageId: Number(collectionLink.id),
+        title: "Copy of External link",
+        permalink: "external-link-copy",
+      })
+
+      // Assert
+      const duplicate = await db
+        .selectFrom("Resource")
+        .where("id", "=", result.pageId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      expect(duplicate).toMatchObject({
+        title: "Copy of External link",
+        permalink: "external-link-copy",
+        type: ResourceType.CollectionLink,
+        state: ResourceState.Draft,
+        publishedVersionId: null,
+        parentId: collection.id,
+      })
     })
 
     it("should duplicate a page as draft with a new permalink", async () => {

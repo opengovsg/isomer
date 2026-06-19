@@ -627,12 +627,13 @@ export const pageRouter = router({
   duplicate: protectedProcedure
     .input(duplicateResourceSchema)
     .mutation(async ({ ctx, input: { siteId, pageId, title, permalink } }) => {
-      const { parentKey } = await assertDuplicateResourcePreconditions({
-        siteId,
-        pageId,
-        permalink,
-        userId: ctx.user.id,
-      })
+      const { parentKey, type: sourceType } =
+        await assertDuplicateResourcePreconditions({
+          siteId,
+          pageId,
+          permalink,
+          userId: ctx.user.id,
+        })
 
       const fullPage = await getFullPageById(db, {
         resourceId: pageId,
@@ -691,7 +692,7 @@ export const pageRouter = router({
             permalink,
             siteId,
             parentId: parentKey ?? undefined,
-            type: ResourceType.Page,
+            type: sourceType,
             state: ResourceState.Draft,
             publishedVersionId: null,
             scheduledAt: null,
