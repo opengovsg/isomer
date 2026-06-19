@@ -2,6 +2,26 @@
 const UUID_FOLDER_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+// Matches the full asset path shape: {digits}/{uuid}/{nonempty-filename}
+// after any optional leading "/" has been stripped.
+const ASSET_PATH_RE =
+  /^(\d+)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(.+)$/i
+
+/**
+ * Returns true if `value` has the shape of a site asset path
+ * (`{digits}/{uuid}/{nonempty-filename}` with an optional leading "/"),
+ * regardless of which site it belongs to.
+ *
+ * Use this when you need a siteId-agnostic check (e.g. classifying a link type
+ * without knowing the current siteId). Use `parseAssetRef` when you also need
+ * to verify the siteId and get the normalised S3 key back.
+ */
+export const isAssetRef = (value: string): boolean => {
+  const trimmed = value.trim()
+  const stripped = trimmed.startsWith("/") ? trimmed.slice(1) : trimmed
+  return ASSET_PATH_RE.test(stripped)
+}
+
 /**
  * Parses a stored asset reference and returns the normalized S3 key (no leading
  * slash) if the value is a valid reference for the given siteId.

@@ -1,3 +1,5 @@
+import { isAssetRef } from "@opengovsg/isomer-components"
+
 import type { LinkTypes } from "./constants"
 import { LINK_TYPES } from "./constants"
 
@@ -11,7 +13,7 @@ export const getLinkHrefType = (href: string | undefined): LinkTypes => {
     return LINK_TYPES.Email
   }
 
-  // File links point to the assets bucket: path-only format /(\d+)/<uuid>/<filename>.
+  // File links point to the assets bucket: path-only format /{digits}/{uuid}/{filename}.
   // Never treat full URLs as internal file links (avoids external URLs with this
   // pattern being misclassified and shown as filename-only in the UI).
   let isFullUrl = false
@@ -21,11 +23,8 @@ export const getLinkHrefType = (href: string | undefined): LinkTypes => {
   } catch {
     // Relative path or invalid URL
   }
-  if (!isFullUrl) {
-    const fileLinkMatch = /^\/(\d+)\/[0-9a-fA-F-]{36}\//.exec(href)
-    if (fileLinkMatch?.length === 2) {
-      return LINK_TYPES.File
-    }
+  if (!isFullUrl && isAssetRef(href)) {
+    return LINK_TYPES.File
   }
 
   // Internal links are in the format [resource:$siteId:$pageId]

@@ -37,6 +37,7 @@ export {
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
 export {
+  isAssetRef,
   parseAssetRef,
   buildNewAssetKey,
   rewriteAssetRef,
