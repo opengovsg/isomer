@@ -17,11 +17,13 @@ Review the pull request for code quality issues. This skill is used both locally
 ## Procedure
 
 1. **Resolve the PR number.** If an argument was passed (e.g. `/pr-review 123`), use it. Otherwise run:
+
    ```
    gh pr view --json number -q .number
    ```
 
 2. **Get the diff** (file names are derivable from `diff --git` headers in the output).
+
    ```
    gh pr diff <number>
    ```
@@ -30,12 +32,12 @@ Review the pull request for code quality issues. This skill is used both locally
 
 4. **Review each changed file** and identify issues by severity:
 
-   | Severity | Definition |
-   |---|---|
-   | 🔴 **Must Fix** | Likely bug, data loss risk, broken contract between Studio and components schema |
-   | 🟡 **Should Fix** | Will cause a bug under a realistic edge case, or misleads the next engineer |
-   | 💬 **Consider** | Style, minor duplication, test coverage gap — soft signal only |
-   | ⚪ **Pre-existing** | Issue in code not introduced by this PR — note once, never repeat |
+   | Severity            | Definition                                                                       |
+   | ------------------- | -------------------------------------------------------------------------------- |
+   | 🔴 **Must Fix**     | Likely bug, data loss risk, broken contract between Studio and components schema |
+   | 🟡 **Should Fix**   | Will cause a bug under a realistic edge case, or would concretely lead an engineer to write broken code or make a wrong architectural decision |
+   | 💬 **Consider**     | Style, minor duplication, test coverage gap, or doc inaccuracy that is annoying but doesn't break anything (e.g. process doc slightly ahead of implementation) |
+   | ⚪ **Pre-existing** | Issue in code not introduced by this PR — note once, never repeat                |
 
    **Hot-path escalation** — bump findings in these paths by one severity level (Consider→Should Fix, Should Fix→Must Fix):
    - `apps/studio/src/server/modules/page/page.service.ts`
@@ -51,9 +53,11 @@ Review the pull request for code quality issues. This skill is used both locally
    - New tRPC procedure without an input schema in `apps/studio/src/schemas/` → Should Fix finding.
 
 7. **Post a review comment always:**
+
    ```
    gh pr review <number> --comment --body "<structured markdown>"
    ```
+
    Always start the comment with a summary line showing the must-fix and should-fix counts, e.g.:
    `🔴 Must Fix: 2 · 🟡 Should Fix: 1 · 💬 Considerations: 3` or `✅ No blocking issues (💬 3 considerations)`.
    Group findings by file. Use severity prefixes. Always include clearly titled sections for each category present (Must Fix, Should Fix, Considerations) — never omit a section heading just because it has few items.
@@ -72,19 +76,26 @@ Review the pull request for code quality issues. This skill is used both locally
 > 🔴 Must Fix: N · 🟡 Should Fix: N · 💬 Considerations: N
 
 ### Must Fix
+
 ### `path/to/file.ts`
+
 - 🔴 Must Fix: <finding> (line N)
 
 ### Should Fix
+
 ### `path/to/other.ts`
+
 - 🟡 Should Fix: <finding> (line N)
 
 ### Considerations
+
 ### `path/to/other.ts`
+
 - 💬 Consider: <finding>
 ```
 
 When the diff is clean, use:
+
 ```markdown
 ## 🤖 Code review
 
