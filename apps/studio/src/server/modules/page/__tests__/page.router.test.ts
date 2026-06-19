@@ -1909,7 +1909,7 @@ describe("page.router", async () => {
     it.skip("should throw 403 if user does not have write access to root", async () => {})
   })
 
-  describe("duplicatePage", () => {
+  describe("duplicate", () => {
     let copySpy: MockInstance<typeof s3Lib.copyObjectInBucket>
 
     beforeEach(() => {
@@ -1928,7 +1928,7 @@ describe("page.router", async () => {
       const unauthedCaller = createCaller(createMockRequest(unauthedSession))
 
       // Act
-      const result = unauthedCaller.duplicatePage({
+      const result = unauthedCaller.duplicate({
         siteId: 1,
         pageId: 1,
         title: "Copy of Page",
@@ -1955,7 +1955,7 @@ describe("page.router", async () => {
       })
 
       // Act
-      const result = caller.duplicatePage({
+      const result = caller.duplicate({
         siteId: site.id,
         pageId: Number(page.id),
         title: "Copy",
@@ -1981,7 +1981,7 @@ describe("page.router", async () => {
       })
 
       // Act
-      const result = await caller.duplicatePage({
+      const result = await caller.duplicate({
         siteId: site.id,
         pageId: Number(page.id),
         title: "Copy of About us",
@@ -2050,7 +2050,7 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
 
       // Act
-      await caller.duplicatePage({
+      await caller.duplicate({
         siteId: site.id,
         pageId: Number(page.id),
         title: "Copy of With asset",
@@ -2096,7 +2096,7 @@ describe("page.router", async () => {
         siteId: site.id,
       })
 
-      const result = caller.duplicatePage({
+      const result = caller.duplicate({
         siteId: site.id,
         pageId: Number(first.id),
         title: "Copy of First",

@@ -28,7 +28,7 @@ import {
   basePageSchema,
   createIndexPageSchema,
   createPageSchema,
-  duplicatePageSchema,
+  duplicateResourceSchema,
   getPrefillSchema,
   getRootPageSchema,
   listPagesSchema,
@@ -71,8 +71,8 @@ import { getSiteConfig } from "../site/site.service"
 import {
   collectAssetKeys,
   rewriteAssetKeys,
-} from "./helpers/duplicatePageContent"
-import { assertDuplicatePagePreconditions } from "./helpers/duplicatePagePreconditions"
+} from "./helpers/duplicateResourceContent"
+import { assertDuplicateResourcePreconditions } from "./helpers/duplicateResourcePreconditions"
 import {
   getUserForAuditLog,
   insertPageBlobResourceAndAudit,
@@ -624,10 +624,10 @@ export const pageRouter = router({
       },
     ),
 
-  duplicatePage: protectedProcedure
-    .input(duplicatePageSchema)
+  duplicate: protectedProcedure
+    .input(duplicateResourceSchema)
     .mutation(async ({ ctx, input: { siteId, pageId, title, permalink } }) => {
-      const { parentKey } = await assertDuplicatePagePreconditions({
+      const { parentKey } = await assertDuplicateResourcePreconditions({
         siteId,
         pageId,
         permalink,

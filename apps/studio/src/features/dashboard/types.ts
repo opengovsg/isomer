@@ -10,7 +10,7 @@ export interface FolderSettingsModalState {
   folderId: string
 }
 
-export interface DuplicatePageModalState {
+export interface DuplicateResourceModalState {
   siteId: number
   pageId: string
   sourceTitle: string

@@ -16,7 +16,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 import type { ResourceTableData } from "./types"
 import {
   deleteResourceModalAtom,
-  duplicatePageModalAtom,
+  duplicateResourceModalAtom,
   folderSettingsModalAtom,
   pageSettingsModalAtom,
 } from "../../atoms"
@@ -43,7 +43,7 @@ export const ResourceTableMenu = ({
   parentId,
 }: ResourceTableMenuProps) => {
   const setMoveResource = useSetAtom(moveResourceAtom)
-  const setDuplicatePageModal = useSetAtom(duplicatePageModalAtom)
+  const setDuplicateResourceModal = useSetAtom(duplicateResourceModalAtom)
   const handleMoveResourceClick = () =>
     setMoveResource({ id: resourceId, title, permalink, parentId, type })
   const setResourceModalState = useSetAtom(deleteResourceModalAtom)
@@ -83,7 +83,7 @@ export const ResourceTableMenu = ({
               <MenuItem
                 as="button"
                 onClick={() =>
-                  setDuplicatePageModal({
+                  setDuplicateResourceModal({
                     siteId,
                     pageId: resourceId,
                     sourceTitle: title,
@@ -93,9 +93,9 @@ export const ResourceTableMenu = ({
                   })
                 }
                 icon={<BiCopy fontSize="1rem" />}
-                aria-label={`Duplicate page ${title}`}
+                aria-label={`Duplicate ${title}`}
               >
-                Duplicate page
+                Duplicate
               </MenuItem>
             </Can>
           )}

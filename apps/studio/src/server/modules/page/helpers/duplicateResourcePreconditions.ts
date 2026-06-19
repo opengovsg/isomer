@@ -5,7 +5,7 @@ import { db } from "../../database"
 import { bulkValidateUserPermissionsForResources } from "../../permissions/permissions.service"
 import { getPageById } from "../../resource/resource.service"
 
-export const assertDuplicatePagePreconditions = async ({
+export const assertDuplicateResourcePreconditions = async ({
   siteId,
   pageId,
   permalink,

@@ -5,7 +5,7 @@ import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { DashboardLayout } from "~/features/dashboard/components/DashboardLayout"
 import { DeleteResourceModal } from "~/features/dashboard/components/DeleteResourceModal"
-import { DuplicatePageModal } from "~/features/dashboard/components/DuplicatePageModal"
+import { DuplicateResourceModal } from "~/features/dashboard/components/DuplicateResourceModal"
 import { FolderSettingsModal } from "~/features/dashboard/components/FolderSettingsModal"
 import { PageSettingsModal } from "~/features/dashboard/components/PageSettingsModal"
 import { ResourceTable } from "~/features/dashboard/components/ResourceTable"
@@ -133,7 +133,7 @@ const SitePage: NextPageWithLayout = () => {
         siteId={siteId}
       />
       <DeleteResourceModal siteId={siteId} />
-      <DuplicatePageModal siteId={siteId} />
+      <DuplicateResourceModal siteId={siteId} />
       <MoveResourceModal />
       <FolderSettingsModal />
       <PageSettingsModal />

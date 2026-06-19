@@ -28,13 +28,13 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
 import { useZodForm } from "~/lib/form"
 import {
-  duplicatePageFormSchema,
+  duplicateResourceFormSchema,
   MAX_PAGE_URL_LENGTH,
   MAX_TITLE_LENGTH,
 } from "~/schemas/page"
 import { trpc } from "~/utils/trpc"
 
-import { duplicatePageModalAtom } from "../../atoms"
+import { duplicateResourceModalAtom } from "../../atoms"
 
 /** Same toast id for progress + teardown (see page settings save toast pattern). */
 const DUPLICATE_PAGE_PROGRESS_TOAST_ID = "duplicate-page-progress"
@@ -45,14 +45,14 @@ const isTrpcConflict = (error: unknown): boolean =>
   "data" in error &&
   (error as { data?: { code?: string } }).data?.code === "CONFLICT"
 
-interface DuplicatePageModalProps {
+interface DuplicateResourceModalProps {
   siteId: number
 }
 
-export const DuplicatePageModal = ({
+export const DuplicateResourceModal = ({
   siteId,
-}: DuplicatePageModalProps): JSX.Element => {
-  const [modal, setModal] = useAtom(duplicatePageModalAtom)
+}: DuplicateResourceModalProps): JSX.Element => {
+  const [modal, setModal] = useAtom(duplicateResourceModalAtom)
   const toast = useToast()
   const utils = trpc.useUtils()
 
@@ -62,7 +62,7 @@ export const DuplicatePageModal = ({
   )
 
   const formMethods = useZodForm({
-    schema: duplicatePageFormSchema,
+    schema: duplicateResourceFormSchema,
     defaultValues: { title: "", permalink: "" },
   })
 
@@ -110,8 +110,8 @@ export const DuplicatePageModal = ({
     ? `${parentFullPermalink}/${permalinkField || ""}`
     : `/${permalinkField || ""}`
 
-  const { mutate: duplicatePage, isPending: isDuplicating } =
-    trpc.page.duplicatePage.useMutation({
+  const { mutate: duplicateResource, isPending: isDuplicating } =
+    trpc.page.duplicate.useMutation({
       onMutate: () => {
         if (toast.isActive(DUPLICATE_PAGE_PROGRESS_TOAST_ID)) {
           toast.close(DUPLICATE_PAGE_PROGRESS_TOAST_ID)
@@ -146,7 +146,7 @@ export const DuplicatePageModal = ({
     const tableScopeResourceId = modal.tableScopeResourceId
     const pageId = Number(modal.pageId)
 
-    duplicatePage(
+    duplicateResource(
       {
         siteId,
         pageId,
@@ -209,7 +209,7 @@ export const DuplicatePageModal = ({
     >
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader pr="3.5rem">Duplicate Page</ModalHeader>
+        <ModalHeader pr="3.5rem">Duplicate</ModalHeader>
         <ModalCloseButton size="lg" isDisabled={isDuplicating} />
         {modal && (
           <>
