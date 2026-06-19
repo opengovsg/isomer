@@ -20,6 +20,7 @@ jobs:
       contents: write      # needed to commit and push the fix
       pull-requests: write # needed to post a comment if the fix fails
       actions: read        # needed to inspect the CI workflow's job results
+      id-token: write      # needed by claude-code-action for OIDC auth
     steps:
       # Inspect which jobs failed. Only lint/format/typecheck/build are fixable
       # by the agent — test failures always need a human.
