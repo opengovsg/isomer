@@ -284,6 +284,12 @@ describe("createRedirectSchema", () => {
         "javascript:alert(1)",
         "example.com/page",
         "link with space",
+        // Doubled scheme parses as a URL with hostname "https" — a prefix check
+        // would let it through, the host-must-have-a-dot rule rejects it.
+        "https://https://www.isomer.gov.sg",
+        // Bare single-label hosts are never valid public redirect targets.
+        "https://localhost",
+        "https://",
       ]
 
       invalidDestinations.forEach((destination) => {

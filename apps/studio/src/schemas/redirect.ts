@@ -50,6 +50,20 @@ const REFERENCE_DESTINATION_REGEX = new RegExp(
   `^${REFERENCE_LINK_REGEX.source}$`,
 )
 
+// A prefix check ("https://") is too lax: "https://https://www.isomer.gov.sg"
+// passes it, yet parses with hostname "https". Require a parseable https URL
+// whose host looks like a public domain (has a dot) — this rejects the doubled
+// scheme and bare single-label hosts (localhost, intranet names) that are never
+// valid redirect targets for a published site.
+const isValidExternalDestination = (value: string) => {
+  try {
+    const url = new URL(value)
+    return url.protocol === "https:" && url.hostname.includes(".")
+  } catch {
+    return false
+  }
+}
+
 // Strips slashes from both ends of a path so "/foo/", "foo" and "foo//"
 // all normalise to the same inner segments before validation.
 const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, "")
@@ -117,7 +131,7 @@ const destinationSchema = z
   .refine(
     (value) =>
       value.startsWith("/") ||
-      value.startsWith("https://") ||
+      isValidExternalDestination(value) ||
       REFERENCE_DESTINATION_REGEX.test(value),
     { message: "Add a valid URL." },
   )
