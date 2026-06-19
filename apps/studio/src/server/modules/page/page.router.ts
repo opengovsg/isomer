@@ -3,6 +3,7 @@ import type {
   IsomerSchema,
 } from "@opengovsg/isomer-components"
 import {
+  buildNewAssetKey,
   COLLECTION_VARIANT_OPTIONS,
   getLayoutMetadataSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
@@ -68,9 +69,8 @@ import {
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
 import {
-  buildNewAssetFileKeyForSite,
-  collectUniqueAssetFileKeys,
-  rewriteAssetFileKeysInValue,
+  collectAssetKeys,
+  rewriteAssetKeys,
 } from "./helpers/duplicatePageContent"
 import { assertDuplicatePagePreconditions } from "./helpers/duplicatePagePreconditions"
 import {
@@ -648,10 +648,10 @@ export const pageRouter = router({
       }
 
       const newContent = cloneDeep(fullPage.content) as IsomerSchema
-      const assetKeys = collectUniqueAssetFileKeys(newContent, siteId)
+      const assetKeys = collectAssetKeys(newContent, siteId)
       const oldToNew = new Map<string, string>()
       const copyTasks = assetKeys.map((oldKey) => {
-        const newKey = buildNewAssetFileKeyForSite(siteId, oldKey)
+        const newKey = buildNewAssetKey(siteId, oldKey)
         oldToNew.set(oldKey, newKey)
         return copyObjectInBucket({
           Bucket: env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
@@ -668,7 +668,7 @@ export const pageRouter = router({
       })
       await Promise.all(copyTasks)
 
-      rewriteAssetFileKeysInValue(newContent, siteId, oldToNew)
+      rewriteAssetKeys(newContent, siteId, oldToNew)
 
       if (!schemaValidator(newContent)) {
         throw new TRPCError({
