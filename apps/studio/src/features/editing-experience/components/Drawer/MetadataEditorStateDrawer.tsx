@@ -1,4 +1,7 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type {
+  ArticlePagePageProps,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
@@ -15,6 +18,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
+import { useRequiredTagsValidation } from "../../hooks/useRequiredTagsValidation"
 import { pageSchema } from "../../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
@@ -89,6 +93,17 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   }, [metadataSchema, previewPageState.layout])
 
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)
+
+  const isTaggableLayout =
+    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Article ||
+    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Link
+
+  const { isValid: isTagsValid } = useRequiredTagsValidation({
+    resourceId: pageId,
+    siteId,
+    tagged: (previewPageState.page as ArticlePagePageProps).tagged,
+    enabled: isTaggableLayout,
+  })
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)
@@ -183,7 +198,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             py="1.5rem"
             px="2rem"
           >
-            <SaveButton isLoading={isPending} onClick={handleSaveChanges} />
+            <SaveButton
+              isLoading={isPending}
+              onClick={handleSaveChanges}
+              isTagsValid={isTaggableLayout ? isTagsValid : true}
+            />
           </Box>
         </ErrorProvider>
       </Flex>
@@ -194,9 +213,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 const SaveButton = ({
   onClick,
   isLoading,
+  isTagsValid,
 }: {
   onClick: () => void
   isLoading: boolean
+  isTagsValid: boolean
 }) => {
   const { errors } = useBuilderErrors()
 
@@ -204,7 +225,7 @@ const SaveButton = ({
     <Button
       w="100%"
       isLoading={isLoading}
-      isDisabled={!isEmpty(errors)}
+      isDisabled={!isEmpty(errors) || !isTagsValid}
       onClick={onClick}
     >
       Save changes
