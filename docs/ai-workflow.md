@@ -85,13 +85,13 @@ For an agent to read a frame reliably:
 
 Every PR triggers a three-stage automated pipeline via GitHub Actions. Stages run as separate check runs so their signals are distinct in the PR UI.
 
-### Stage 1 — Risk labeling (triggers: `opened`, `synchronize`, `ready_for_review`, `/re-review`)
+### Stage 1 — Risk labeling (triggers: `opened`, `synchronize`, `ready_for_review`, `/isobot-review`)
 
-Runs on every push and when the PR is marked ready for review. Uses the `/compute-risk-tier` skill (LLM-powered) which reads `docs/risk-taxonomy.md`, diffs the PR, applies file-glob rules and reversibility modifiers, and sets the `risk:low / risk:medium / risk:high` label. Also re-runs when `/re-review` is commented (exact match, no prefix needed) so the label is always current at review time.
+Runs on every push and when the PR is marked ready for review. Uses the `/compute-risk-tier` skill (LLM-powered) which reads `docs/risk-taxonomy.md`, diffs the PR, applies file-glob rules and reversibility modifiers, and sets the `risk:low / risk:medium / risk:high` label. Also re-runs when `/isobot-review` is commented (exact match, no prefix needed) so the label is always current at review time.
 
-### Stage 2 — Code review + security review (triggers: `ready_for_review`, `/re-review`)
+### Stage 2 — Code review + security review (triggers: `ready_for_review`, `/isobot-review`)
 
-Runs when the author marks the PR ready, or when they comment `/re-review` (exact match) after pushing fixes. Does not run on `synchronize` — engineers should keep the PR in draft while iterating and mark ready only when they want a review. Three parallel jobs:
+Runs when the author marks the PR ready, or when they comment `/isobot-review` (exact match) after pushing fixes. Does not run on `synchronize` — engineers should keep the PR in draft while iterating and mark ready only when they want a review. Three parallel jobs:
 
 **Risk tier** (`/compute-risk-tier` skill): re-computes tier at review time for the auto-approve gate. Falls back to `high` if the skill fails, keeping the gate conservative.
 
@@ -129,7 +129,7 @@ The expected workflow:
 1. Author opens PR → risk label applied automatically
 2. Author marks ready for review → code review + security review run
 3. Author resolves Must Fix / Should Fix findings (or dismisses with reason)
-4. Author comments `/re-review` → pipeline re-runs → if clean, bot approves (`risk:low`) or signals ready for human (`risk:medium/high`)
+4. Author comments `/isobot-review` → pipeline re-runs → if clean, bot approves (`risk:low`) or signals ready for human (`risk:medium/high`)
 5. Author requests human reviewer
 
 Humans _can_ review earlier, but the convention is: don't tag a reviewer until the pipeline has cleared. The `risk:*` label and check run status are the signal.
