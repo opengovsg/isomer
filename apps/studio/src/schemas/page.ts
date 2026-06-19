@@ -43,13 +43,13 @@ export const basePageSchema = z.object({
   siteId: z.number().min(1),
 })
 
-export const duplicatePageSchema = basePageSchema.extend({
+export const duplicateResourceSchema = basePageSchema.extend({
   title: pageTitleSchema,
   permalink: permalinkSchema,
 })
 
-/** Form fields for {@link duplicatePageSchema} (client duplicate-page modal). */
-export const duplicatePageFormSchema = duplicatePageSchema.omit({
+/** Form fields for {@link duplicateResourceSchema} (client duplicate-resource modal). */
+export const duplicateResourceFormSchema = duplicateResourceSchema.omit({
   siteId: true,
   pageId: true,
 })

@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest"
 import {
   collectAssetKeys,
   rewriteAssetKeys,
-} from "../helpers/duplicatePageContent"
+} from "../helpers/duplicateResourceContent"
 
-describe("duplicatePageContent", () => {
+describe("duplicateResourceContent", () => {
   describe("collectAssetKeys", () => {
     it("dedupes nested occurrences", () => {
       // Arrange

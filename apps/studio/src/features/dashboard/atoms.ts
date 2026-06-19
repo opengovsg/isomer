@@ -3,7 +3,7 @@ import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type {
   DeleteResourceModalState,
-  DuplicatePageModalState,
+  DuplicateResourceModalState,
   FolderSettingsModalState,
 } from "./types"
 
@@ -33,6 +33,6 @@ export interface PageSettingsState {
 }
 export const pageSettingsModalAtom = atom<null | PageSettingsState>(null)
 
-export const duplicatePageModalAtom = atom<DuplicatePageModalState | null>(
+export const duplicateResourceModalAtom = atom<DuplicateResourceModalState | null>(
   null,
 )
