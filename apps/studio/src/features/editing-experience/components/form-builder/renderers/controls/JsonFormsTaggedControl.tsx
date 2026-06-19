@@ -3,7 +3,11 @@ import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
 import { FormControl, Skeleton, VStack } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
-import { FormLabel, MultiSelect } from "@opengovsg/design-system-react"
+import {
+  FormErrorMessage,
+  FormLabel,
+  MultiSelect,
+} from "@opengovsg/design-system-react"
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
@@ -73,8 +77,15 @@ const SuspendableJsonFormsTaggedControl = ({
             )
             const tagOptionsIds = options.map(({ id }) => id)
 
+            const isInvalid =
+              !!tagIsRequired && currentTagCategoryOptions.length === 0
+
             return (
-              <FormControl isRequired={tagIsRequired ?? false} gap="0.5rem">
+              <FormControl
+                isRequired={tagIsRequired ?? false}
+                isInvalid={isInvalid}
+                gap="0.5rem"
+              >
                 <FormLabel description={description}>{label}</FormLabel>
                 <MultiSelect
                   size="sm"
@@ -95,6 +106,11 @@ const SuspendableJsonFormsTaggedControl = ({
                     handleChange(path, [...others, ...value])
                   }}
                 />
+                {isInvalid && (
+                  <FormErrorMessage>
+                    At least one option must be selected
+                  </FormErrorMessage>
+                )}
               </FormControl>
             )
           })}
