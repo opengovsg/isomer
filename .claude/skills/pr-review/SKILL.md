@@ -56,7 +56,7 @@ Review the pull request for code quality issues. This skill is used both locally
    ```
    Always start the comment with a summary line showing the must-fix and should-fix counts, e.g.:
    `🔴 Must Fix: 2 · 🟡 Should Fix: 1 · 💬 Considerations: 3` or `✅ No blocking issues (💬 3 considerations)`.
-   Group findings by file. Use severity prefixes. Always include clearly titled sections for each category present (Must Fix, Should Fix, Considerations, Coverage) — never omit a section heading just because it has few items.
+   Group findings by file. Use severity prefixes. Always include clearly titled sections for each category present (Must Fix, Should Fix, Considerations) — never omit a section heading just because it has few items.
 
 8. **Write result** to `/tmp/review-result.json`:
    ```json
@@ -82,12 +82,6 @@ Review the pull request for code quality issues. This skill is used both locally
 ### Considerations
 ### `path/to/other.ts`
 - 💬 Consider: <finding>
-
-### Coverage
-- Server module changed without test: <list>
-- New procedure without schema: <list>
-
-> Authors can dismiss a Should Fix with `/dismiss: <reason>` — dismissals are logged and surfaced to the human reviewer.
 ```
 
 When the diff is clean, use:
