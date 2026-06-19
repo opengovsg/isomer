@@ -39,18 +39,7 @@ Compute the risk tier for a pull request and apply the correct GitHub label.
       - Changes a pgboss job handler function signature or job payload type
    c. Note (but do not change the tier) if all new behaviour is gated behind a GrowthBook feature flag — record this in the reason.
 
-6. **Apply the GitHub label.** Run these commands, swallowing errors on remove (label may not exist yet):
-   ```
-   gh label create "risk:low"    --color "0e8a16" --force 2>/dev/null || true
-   gh label create "risk:medium" --color "e4a820" --force 2>/dev/null || true
-   gh label create "risk:high"   --color "d93f0b" --force 2>/dev/null || true
-   gh pr edit <number> --remove-label "risk:low"    2>/dev/null || true
-   gh pr edit <number> --remove-label "risk:medium" 2>/dev/null || true
-   gh pr edit <number> --remove-label "risk:high"   2>/dev/null || true
-   gh pr edit <number> --add-label "risk:<tier>"
-   ```
-
-7. **Post a comment** on the PR explaining the decision:
+6. **Post a comment** on the PR explaining the decision:
    ```
    gh pr comment <number> --body "<comment>"
    ```
@@ -62,12 +51,12 @@ Compute the risk tier for a pull request and apply the correct GitHub label.
    ```
    If a reversibility modifier was applied, call it out explicitly. If behaviour is feature-flag gated, note it.
 
-8. **Write the result** to `/tmp/risk-result.json`:
+7. **Write the result** to `/tmp/risk-result.json`:
    ```json
    {"tier": "<low|medium|high>", "reason": "<one sentence explaining the key signal>"}
    ```
 
-9. **Print a summary** to stdout:
+8. **Print a summary** to stdout:
    ```
    Risk tier: <tier>
    Reason: <reason>
@@ -85,4 +74,4 @@ Compute the risk tier for a pull request and apply the correct GitHub label.
 - PR number cannot be resolved → abort with a clear error.
 - `docs/risk-taxonomy.md` missing → abort with a clear error.
 - `gh pr diff` fails (e.g. PR not found) → abort.
-- Label application fails → print the error but still write `/tmp/risk-result.json` so CI can continue.
+- Comment posting fails → print the error but still write `/tmp/risk-result.json` so CI can continue.
