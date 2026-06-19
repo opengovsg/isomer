@@ -36,3 +36,8 @@ export {
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
+export {
+  parseAssetRef,
+  buildNewAssetKey,
+  rewriteAssetRef,
+} from "./assetRef"
