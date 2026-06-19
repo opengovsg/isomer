@@ -35,11 +35,10 @@ Review the pull request for code quality issues. This skill is used both locally
    | Severity            | Definition                                                                       |
    | ------------------- | -------------------------------------------------------------------------------- |
    | 🔴 **Must Fix**     | Likely bug, data loss risk, broken contract between Studio and components schema |
-   | 🟡 **Should Fix**   | Will cause a bug under a realistic edge case, or would concretely lead an engineer to write broken code or make a wrong architectural decision |
    | 💬 **Consider**     | Style, minor duplication, test coverage gap, or doc inaccuracy that is annoying but doesn't break anything (e.g. process doc slightly ahead of implementation) |
    | ⚪ **Pre-existing** | Issue in code not introduced by this PR — note once, never repeat                |
 
-   **Hot-path escalation** — bump findings in these paths by one severity level (Consider→Should Fix, Should Fix→Must Fix):
+   **Hot-path escalation** — bump findings in these paths by one severity level (Consider→Must Fix):
    - `apps/studio/src/server/modules/page/page.service.ts`
    - `apps/studio/src/server/modules/resource/`
    - `apps/studio/src/features/editing-experience/`
@@ -50,7 +49,7 @@ Review the pull request for code quality issues. This skill is used both locally
 6. **Coverage scan.**
    - Touched `apps/studio/src/server/modules/**` without a `__tests__/` change → Consider finding.
    - Touched `packages/components/src/templates/**/components/**` without a `*.stories.tsx` change → Consider finding.
-   - New tRPC procedure without an input schema in `apps/studio/src/schemas/` → Should Fix finding.
+   - New tRPC procedure without an input schema in `apps/studio/src/schemas/` → Must Fix finding.
 
 7. **Post a review comment always:**
 
@@ -58,35 +57,29 @@ Review the pull request for code quality issues. This skill is used both locally
    gh pr review <number> --comment --body "<structured markdown>"
    ```
 
-   Always start the comment with a summary line showing the must-fix and should-fix counts, e.g.:
-   `🔴 Must Fix: 2 · 🟡 Should Fix: 1 · 💬 Considerations: 3` or `✅ No blocking issues (💬 3 considerations)`.
-   Group findings by file. Use severity prefixes. Always include clearly titled sections for each category present (Must Fix, Should Fix, Considerations) — never omit a section heading just because it has few items.
+   Always start the comment with a summary line showing the must-fix and consideration counts, e.g.:
+   `🔴 Must Fix: 2 · 💬 Considerations: 3` or `✅ No blocking issues (💬 3 considerations)`.
+   Group findings by file. Use severity prefixes. Always include clearly titled sections for each category present (Must Fix, Considerations) — never omit a section heading just because it has few items.
    End every comment with the footer: `<sub>Posted by [🤖 IsoBot: PR Review](<repo_url>/blob/main/.github/workflows/isobot-pr-review.yml)</sub>`
 
 8. **Write result** to `/tmp/review-result.json`:
    ```json
-   {"blocking": <true if any Must Fix or Should Fix findings, else false>, "must_fix": <count>, "should_fix": <count>}
+   {"blocking": <true if any Must Fix findings, else false>, "must_fix": <count>}
    ```
-   If the diff is clean: `{"blocking": false, "must_fix": 0, "should_fix": 0}`
+   If the diff is clean: `{"blocking": false, "must_fix": 0}`
 
 ## Comment format
 
 ```markdown
 ## 🤖 Code review
 
-> 🔴 Must Fix: N · 🟡 Should Fix: N · 💬 Considerations: N
+> 🔴 Must Fix: N · 💬 Considerations: N
 
 ### Must Fix
 
 ### `path/to/file.ts`
 
 - 🔴 Must Fix: <finding> (line N)
-
-### Should Fix
-
-### `path/to/other.ts`
-
-- 🟡 Should Fix: <finding> (line N)
 
 ### Considerations
 
@@ -104,7 +97,7 @@ When the diff is clean, use:
 
 ✅ No blocking issues found.
 
-> 🔴 Must Fix: 0 · 🟡 Should Fix: 0 · 💬 Considerations: 0
+> 🔴 Must Fix: 0 · 💬 Considerations: 0
 
 <sub>Posted by [🤖 IsoBot: PR Review](<repo_url>/blob/main/.github/workflows/isobot-pr-review.yml)</sub>
 ```
