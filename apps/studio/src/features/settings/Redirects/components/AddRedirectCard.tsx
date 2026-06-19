@@ -70,7 +70,10 @@ export const AddRedirectCard = ({
                 }
               : {
                   title: "Failed to add redirect",
-                  description: "Something went wrong. Please try again.",
+                  // Surface the server's message (e.g. validation rejections).
+                  // Client-side zod validation catches malformed input before
+                  // submit, so what reaches here is a clean TRPCError message.
+                  description: error.message,
                   status: "error",
                 },
           ),
