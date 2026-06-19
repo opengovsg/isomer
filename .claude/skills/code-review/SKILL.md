@@ -34,7 +34,7 @@ Review the pull request for code quality issues. This skill is used both locally
 
    | Severity            | Definition                                                                       |
    | ------------------- | -------------------------------------------------------------------------------- |
-   | 🔴 **Must Fix**     | Anything that will cause a bug (including edge cases), data loss risk, or broken contract between Studio and components schema |
+   | 🔴 **Must Fix**     | A bug that will plausibly affect users in production, data loss risk, or broken contract between Studio and components schema |
    | 💬 **Consider**     | Style, minor duplication, test coverage gap, or doc inaccuracy that is annoying but doesn't break anything (e.g. process doc slightly ahead of implementation) |
    | ⚪ **Pre-existing** | Issue in code not introduced by this PR — note once, never repeat                |
 
