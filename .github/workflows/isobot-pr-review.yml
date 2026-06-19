@@ -1,4 +1,4 @@
-name: "🤖 PR: Review"
+name: "🤖 IsoBot: PR Review"
 
 # Runs when the author explicitly signals the PR is ready, or comments /isobot-review
 # after pushing fixes. Does NOT run on every synchronize — engineers should keep
@@ -11,8 +11,7 @@ on:
 
 jobs:
   # Reads docs/risk-taxonomy.md, diffs the PR, applies file-glob rules and
-  # reversibility modifiers, and sets the risk:low/medium/high label.
-  # Outputs the tier directly so auto-approve doesn't need a second GitHub API call.
+  # reversibility modifiers, and outputs the tier for auto-approve gating.
   risk-tier:
     if: |
       (github.event_name == 'pull_request') ||
