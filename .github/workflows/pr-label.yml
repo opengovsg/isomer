@@ -1,5 +1,7 @@
 name: "🤖 PR: Risk Label"
 
+# Runs on every push to a PR and when /re-review is commented, so the risk
+# label always reflects the current file set before review is requested.
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -12,6 +14,7 @@ permissions:
 
 jobs:
   label:
+    # Skip issue_comment events that aren't /re-review on a PR
     if: |
       (github.event_name == 'pull_request') ||
       (github.event_name == 'issue_comment' &&
@@ -19,8 +22,11 @@ jobs:
        contains(github.event.comment.body, '/re-review'))
     runs-on: ubuntu-latest
     steps:
+      # Skill needs the repo to read docs/risk-taxonomy.md
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
 
+      # /compute-risk-tier reads the taxonomy, diffs the PR, applies reversibility
+      # modifiers, sets the risk:low/medium/high label, and writes /tmp/risk-result.json
       - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
         env:
           ANTHROPIC_MODEL: claude-sonnet-4-6

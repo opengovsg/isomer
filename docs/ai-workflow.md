@@ -85,22 +85,26 @@ For an agent to read a frame reliably:
 
 Every PR triggers a three-stage automated pipeline via GitHub Actions. Stages run as separate check runs so their signals are distinct in the PR UI.
 
-### Stage 1 — Risk labeling (triggers: `opened`, `synchronize`)
+### Stage 1 — Risk labeling (triggers: `opened`, `synchronize`, `/re-review`)
 
-Runs on every push. Lightweight: reads changed file paths, applies `docs/risk-taxonomy.md` glob rules and reversibility modifiers, sets the `risk:low / risk:medium / risk:high` label. No LLM call — deterministic glob matching only.
+Runs on every push and on `/re-review` comments. Uses the `/compute-risk-tier` skill (LLM-powered) which reads `docs/risk-taxonomy.md`, diffs the PR, applies file-glob rules and reversibility modifiers, and sets the `risk:low / risk:medium / risk:high` label. Also re-runs when `/re-review` is commented so the label is always current at review time.
 
 ### Stage 2 — Code review + security review (triggers: `ready_for_review`, `/re-review`)
 
-Runs when the author marks the PR ready, or when they comment `/re-review` after pushing fixes. Does not run on `synchronize` — engineers should keep the PR in draft while iterating and mark ready only when they want a review. Two parallel check runs:
+Runs when the author marks the PR ready, or when they comment `/re-review` after pushing fixes. Does not run on `synchronize` — engineers should keep the PR in draft while iterating and mark ready only when they want a review. Three parallel jobs:
 
-**Code review agent** (`claude-code-action` with `pr-review` skill prompt):
-- Posts inline comments tagged Must Fix / Should Fix / Consider / Pre-existing
+**Risk tier** (`/compute-risk-tier` skill): re-computes tier at review time for the auto-approve gate. Falls back to `high` if the skill fails, keeping the gate conservative.
+
+**Code review** (`/pr-review` skill):
+- Posts severity-tagged findings (Must Fix / Should Fix / Consider / Pre-existing)
 - Authors may dismiss Should Fix with `/dismiss: <reason>` — logged and surfaced to human reviewer
 - Hot-path files escalate findings by one severity level (see `docs/risk-taxonomy.md`)
+- Writes `/tmp/review-result.json` for the auto-approve gate
 
-**Security review agent** (`claude-code-security-review` Action, Sonnet model):
+**Security review** (`/security-review` skill):
 - Covers: IDOR, missing auth middleware on new routes, overly broad permission grants, XSS vectors, unvalidated external input reaching Prisma, missing audit events on sensitive mutations, Mockpass integration surface, S3/CDN signed URL handling
 - Separate check run — always visible even when code review is clean
+- Writes `/tmp/security-result.json` for the auto-approve gate
 
 ### Stage 3 — CI autofix (triggers: CI failure on any push)
 
@@ -136,7 +140,7 @@ When the agent opens a PR, it must:
 
 1. Link the originating Linear ticket in the PR body (first line: `Closes ENG-123`).
 2. Tag the PR with `ai-authored` (label).
-3. Add a risk tier label (`risk:low` / `risk:medium` / `risk:high`) — applied automatically by the pipeline on push.
+3. Add a risk tier label (`risk:low` / `risk:medium` / `risk:high`) — applied automatically by `🤖 PR: Risk Label` on every push.
 4. Use a stacked branch via Graphite when the change spans more than one concern (see [CONTRIBUTING.md](../CONTRIBUTING.md#stacked-prs-with-graphite)).
 5. Include a **Root cause** section (bugs) or **Approach** section (features) in the PR body.
 

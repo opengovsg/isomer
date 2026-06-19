@@ -1,6 +1,6 @@
 # PR risk taxonomy
 
-This doc maps file-glob heuristics → risk tier. It is the source of truth for the `pr-review` skill, the auto-approve gate, and any future code-review automation.
+This doc maps file-glob heuristics → risk tier. It is the source of truth for the `/compute-risk-tier`, `/pr-review`, and `/security-review` skills, the auto-approve gate, and any future code-review automation.
 
 Tiers are conservative on purpose: if multiple globs match a single PR, the **highest** tier wins.
 

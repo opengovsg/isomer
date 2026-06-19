@@ -1,14 +1,18 @@
 name: "🤖 PR: Review"
 
+# Runs when the author explicitly signals the PR is ready, or types /re-review
+# after pushing fixes. Does NOT run on every synchronize — engineers should keep
+# the PR in draft while iterating to avoid burning review cycles on WIP commits.
 on:
   pull_request:
     types: [ready_for_review]
-  # Engineers type /re-review on any PR comment to re-run after pushing fixes
   issue_comment:
     types: [created]
 
 jobs:
-  # Re-compute risk tier using LLM so reversibility modifiers are applied correctly
+  # Re-computes risk tier at review time (not just on push) so the auto-approve
+  # gate uses a fresh signal. Falls back to 'high' if the skill fails to write
+  # the result file, keeping the gate conservative.
   risk-tier:
     if: |
       (github.event_name == 'pull_request') ||
@@ -24,6 +28,8 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
 
+      # /compute-risk-tier applies file-glob rules + reversibility modifiers and
+      # writes {"tier": "low|medium|high", "reason": "..."} to /tmp/risk-result.json
       - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
         env:
           ANTHROPIC_MODEL: claude-sonnet-4-6
@@ -33,17 +39,24 @@ jobs:
           max_turns: "5"
           direct_prompt: /compute-risk-tier ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
-      - name: Read result
+      - name: Read risk tier result
         id: result
         run: |
           if [ -f /tmp/risk-result.json ]; then
             echo "tier=$(jq -r .tier /tmp/risk-result.json)" >> "$GITHUB_OUTPUT"
           else
+            # Fail open — treat unknown tier as high so auto-approve never silently passes
             echo "tier=high" >> "$GITHUB_OUTPUT"
           fi
 
+  # Posts severity-tagged findings (Must Fix / Should Fix / Consider) and writes
+  # {"blocking": true/false} to /tmp/review-result.json for the auto-approve gate.
   code-review:
-    if: ${{ !github.event.pull_request.draft }}
+    if: |
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request != null &&
+       contains(github.event.comment.body, '/re-review'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -56,24 +69,31 @@ jobs:
       - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
         env:
           ANTHROPIC_MODEL: claude-sonnet-4-6
-          PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           max_turns: "10"
           direct_prompt: /pr-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
-      - name: Read result
+      - name: Read code review result
         id: result
         run: |
           if [ -f /tmp/review-result.json ]; then
             echo "blocking=$(jq -r .blocking /tmp/review-result.json)" >> "$GITHUB_OUTPUT"
           else
-            echo "blocking=false" >> "$GITHUB_OUTPUT"
+            # Fail open — if skill didn't write a result, don't auto-approve
+            echo "blocking=true" >> "$GITHUB_OUTPUT"
           fi
 
+  # Checks for IDOR, missing auth, XSS, unvalidated input, missing audit events,
+  # and other Isomer-specific security issues. Separate from code-review so its
+  # findings are always visible even when code-review is clean.
   security-review:
-    if: ${{ !github.event.pull_request.draft }}
+    if: |
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request != null &&
+       contains(github.event.comment.body, '/re-review'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -86,22 +106,25 @@ jobs:
       - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
         env:
           ANTHROPIC_MODEL: claude-sonnet-4-6
-          PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           max_turns: "10"
           direct_prompt: /security-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
-      - name: Read result
+      - name: Read security review result
         id: result
         run: |
           if [ -f /tmp/security-result.json ]; then
             echo "blocking=$(jq -r .blocking /tmp/security-result.json)" >> "$GITHUB_OUTPUT"
           else
-            echo "blocking=false" >> "$GITHUB_OUTPUT"
+            # Fail open — if skill didn't write a result, don't auto-approve
+            echo "blocking=true" >> "$GITHUB_OUTPUT"
           fi
 
+  # Submits a formal GitHub APPROVE review for risk:low PRs that pass both
+  # reviews. Counts toward required-approvals branch protection. A human still
+  # clicks merge — this never auto-merges.
   auto-approve:
     needs: [risk-tier, code-review, security-review]
     if: |

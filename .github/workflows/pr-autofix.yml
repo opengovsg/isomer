@@ -1,5 +1,7 @@
 name: "🤖 PR: Autofix"
 
+# Triggers after the CI workflow completes so we can inspect which jobs failed
+# before deciding whether to run the autofix agent.
 on:
   workflow_run:
     workflows: ["CI"]
@@ -7,17 +9,20 @@ on:
 
 jobs:
   check-and-fix:
-    # Only run for PR-triggered CI failures (not main/staging/production pushes)
+    # Only run for PR-triggered CI failures (not main/staging/production pushes).
+    # pull_requests[0] check guards against branch pushes that CI also runs on.
     if: |
       github.event.workflow_run.conclusion == 'failure' &&
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.pull_requests[0] != null
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
-      actions: read
+      contents: write      # needed to commit and push the fix
+      pull-requests: write # needed to post a comment if the fix fails
+      actions: read        # needed to inspect the CI workflow's job results
     steps:
+      # Inspect which jobs failed. Only lint/format/typecheck/build are fixable
+      # by the agent — test failures always need a human.
       - name: Check which jobs failed
         id: jobs
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
@@ -42,12 +47,17 @@ jobs:
             core.info(`Failed jobs: ${failed.join(', ')}`)
             core.info(`Has fixable failures: ${hasFixable}`)
 
+      # Only check out if there's something to fix — avoids a slow clone for
+      # test-only failures that the agent won't touch.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
         if: steps.jobs.outputs.has_fixable == 'true'
         with:
           ref: ${{ steps.jobs.outputs.head_branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # /ci-autofix runs pnpm lint/format/typecheck/build, fixes what it can,
+      # commits "chore: autofix CI [bot]", and pushes. Capped at 3 turns.
+      # Never suppresses lint rules or modifies config to silence errors.
       - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
         if: steps.jobs.outputs.has_fixable == 'true'
         env:
