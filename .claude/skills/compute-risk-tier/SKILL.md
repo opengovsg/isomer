@@ -1,11 +1,11 @@
 ---
 name: compute-risk-tier
-description: Compute the risk tier for a pull request using the project taxonomy (including reversibility modifiers), apply the correct risk:low/medium/high label, and write the result to /tmp/risk-result.json. Safe to call locally or from CI.
+description: Compute the risk tier for a pull request using the project taxonomy (including reversibility modifiers) and write the result to /tmp/risk-result.json. Safe to call locally or from CI.
 ---
 
 # Instructions
 
-Compute the risk tier for a pull request and apply the correct GitHub label.
+Compute the risk tier for a pull request.
 
 ## Inputs
 
