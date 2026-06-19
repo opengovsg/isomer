@@ -37,7 +37,16 @@ const ensureUserWithRole = async (
     .returning(["id"])
     .executeTakeFirstOrThrow()
 
-  if (role === null) return user
+  if (role === null) {
+    // The e2e suite relies on this user being permissionless. A prior run or
+    // manual debugging may have granted them a ResourcePermission, so remove
+    // any that exist to guarantee a clean, access-free state.
+    await db
+      .deleteFrom("ResourcePermission")
+      .where("userId", "=", user.id)
+      .execute()
+    return user
+  }
 
   await db
     .insertInto("ResourcePermission")

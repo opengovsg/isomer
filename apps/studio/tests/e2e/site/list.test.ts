@@ -3,8 +3,9 @@ import { expect, test } from "@playwright/test"
 import { storageStateFor } from "../fixtures/auth"
 
 test.describe("site list", () => {
-  test("editor sees the Isomer seed site", async ({ browser }) => {
+  test("editor sees the Isomer seed site", async ({ browser, baseURL }) => {
     const ctx = await browser.newContext({
+      baseURL,
       storageState: storageStateFor("editor"),
     })
     const page = await ctx.newPage()
@@ -17,8 +18,12 @@ test.describe("site list", () => {
     await ctx.close()
   })
 
-  test("user with no permissions sees empty state", async ({ browser }) => {
+  test("user with no permissions sees empty state", async ({
+    browser,
+    baseURL,
+  }) => {
     const ctx = await browser.newContext({
+      baseURL,
       storageState: storageStateFor("nomember"),
     })
     const page = await ctx.newPage()

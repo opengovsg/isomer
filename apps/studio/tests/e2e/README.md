@@ -24,7 +24,7 @@ E2E covers user-visible behavior. Integration tests cover server-side correctnes
 
 ## Known footguns
 
-- **Global `beforeEach` in `utils.ts`** wipes every user's `name`/`phone`/`singpassUuid`. Tests that need a non-empty profile (to skip the welcome modal) must re-populate it in their own `beforeEach`. See `site/settings-agency.test.ts` for the pattern.
+- **`singpass.test.ts`'s `beforeEach` blanks every user's `name`/`phone`/`singpassUuid`** in the shared test DB. Because tests share a database, a suite that runs after it sees blanked profiles. Tests that need a non-empty profile (to skip the welcome modal) must re-populate it in their own `beforeEach`. See `site/settings-agency.test.ts` for the pattern.
 - **`storage-state/` is gitignored but persists across local runs**. If you switch your local DB target away from the test DB, delete the cookie jars before running again: `rm apps/studio/tests/e2e/storage-state/*.json` (the `.gitignore` is preserved).
 
 ## Open follow-ups
