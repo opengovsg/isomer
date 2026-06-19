@@ -363,8 +363,8 @@ catalogs:
       specifier: ^12.0.1
       version: 12.0.1
     tiptap-text-direction:
-      specifier: ^0.4.0
-      version: 0.4.0
+      specifier: ^0.5.0
+      version: 0.5.0
     transliteration:
       specifier: ^2.6.1
       version: 2.6.1
@@ -952,7 +952,7 @@ importers:
         version: 2.2.6
       tiptap-text-direction:
         specifier: 'catalog:'
-        version: 0.4.0(@tiptap/core@3.27.0(@tiptap/pm@3.27.0))(@tiptap/pm@3.27.0)
+        version: 0.5.0(@tiptap/core@3.27.0(@tiptap/pm@3.27.0))(@tiptap/pm@3.27.0)
       transliteration:
         specifier: 'catalog:'
         version: 2.6.1
@@ -11193,8 +11193,8 @@ packages:
     resolution: {integrity: sha512-azl+t0z7pw/z958Gy9svOTuzqIk6xq+NSheJzn5MMWtWTFywIacg2wUlzKFGtt3cthx0r2SxMK0yzJOR0IES7Q==}
     engines: {node: '>=14.0.0'}
 
-  tiptap-text-direction@0.4.0:
-    resolution: {integrity: sha512-Hm3s8CSdGqmTwF6/ypJ7K95OaIg24+3easuSyzGODDkANfLz1jWdpnlxnhpnKtQB/KL3pYLQipDdzJp09gyErg==}
+  tiptap-text-direction@0.5.0:
+    resolution: {integrity: sha512-KpUyNKeQWg42RrytLKPU2IZMXGhYv4ZtRvCL8m3c1VWLq1SkqHto0LINTlGSSP2Q9jNi8a7SWf5jCn33eRD5ow==}
     peerDependencies:
       '@tiptap/core': ^2.0.0 || ^3.0.0
       '@tiptap/pm': ^2.0.0 || ^3.0.0
@@ -21932,7 +21932,7 @@ snapshots:
 
   tinyspy@4.0.4: {}
 
-  tiptap-text-direction@0.4.0(@tiptap/core@3.27.0(@tiptap/pm@3.27.0))(@tiptap/pm@3.27.0):
+  tiptap-text-direction@0.5.0(@tiptap/core@3.27.0(@tiptap/pm@3.27.0))(@tiptap/pm@3.27.0):
     dependencies:
       '@tiptap/core': 3.27.0(@tiptap/pm@3.27.0)
       '@tiptap/pm': 3.27.0
