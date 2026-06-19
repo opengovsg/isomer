@@ -115,7 +115,7 @@ jobs:
             core.setOutput('tier', tier)
             core.info(`Risk tier from label: ${tier}`)
 
-      - uses: hmarr/auto-approve-action@v4
+      - uses: hmarr/auto-approve-action@f0939ea97e9205ef24d872e76833fa908a770363 # v4.0.0
         if: steps.risk.outputs.tier == 'low'
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
