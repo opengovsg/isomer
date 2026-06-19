@@ -81,13 +81,62 @@ For an agent to read a frame reliably:
 - **Components used in the frame must exist in our design library** or be flagged as "new primitive — needs eng review" in the description.
 - **Spacing/sizing should reference tokens** when present. If a value is hardcoded, the agent will ask before using a magic number.
 
+## Automated PR pipeline
+
+Every PR triggers a three-stage automated pipeline via GitHub Actions. Stages run as separate check runs so their signals are distinct in the PR UI.
+
+### Stage 1 — Risk labeling (triggers: `opened`, `synchronize`)
+
+Runs on every push. Lightweight: reads changed file paths, applies `docs/risk-taxonomy.md` glob rules and reversibility modifiers, sets the `risk:low / risk:medium / risk:high` label. No LLM call — deterministic glob matching only.
+
+### Stage 2 — Code review + security review (triggers: `ready_for_review`, `/re-review`)
+
+Runs when the author marks the PR ready, or when they comment `/re-review` after pushing fixes. Does not run on `synchronize` — engineers should keep the PR in draft while iterating and mark ready only when they want a review. Two parallel check runs:
+
+**Code review agent** (`claude-code-action` with `pr-review` skill prompt):
+- Posts inline comments tagged Must Fix / Should Fix / Consider / Pre-existing
+- Authors may dismiss Should Fix with `/dismiss: <reason>` — logged and surfaced to human reviewer
+- Hot-path files escalate findings by one severity level (see `docs/risk-taxonomy.md`)
+
+**Security review agent** (`claude-code-security-review` Action, Sonnet model):
+- Covers: IDOR, missing auth middleware on new routes, overly broad permission grants, XSS vectors, unvalidated external input reaching Prisma, missing audit events on sensitive mutations, Mockpass integration surface, S3/CDN signed URL handling
+- Separate check run — always visible even when code review is clean
+
+### Stage 3 — CI autofix (triggers: CI failure on any push)
+
+If `lint`, `format`, `build`, or `typecheck` CI jobs fail, the autofix agent:
+
+1. Commits a fix directly to the PR branch (authored by bot identity)
+2. CI re-runs automatically
+3. Caps at **3 attempts** — if still failing after 3 turns, posts a comment with the error and stops
+
+Constraints: the agent must never suppress lint rules (`// oxlint-disable`, `// eslint-disable`, ignore config changes). If the only valid fix is a suppression, it comments and stops. Unit and E2E test failures are **never autofixed** — the agent annotates only.
+
+### Bot approval for `risk:low` PRs
+
+When both the code review and security review check runs pass clean (no Must Fix or Should Fix findings) and the PR meets all auto-approve conditions in `docs/risk-taxonomy.md`, the pipeline submits a formal GitHub APPROVE review via the bot identity. This counts toward required-approvals branch protection. A human still clicks merge.
+
+For `risk:medium` and `risk:high` PRs, the pipeline comments only — human approval required.
+
+### Convention: request human review only after pipeline clears
+
+The expected workflow:
+
+1. Author opens PR → risk label applied automatically
+2. Author marks ready for review → code review + security review run
+3. Author resolves Must Fix / Should Fix findings (or dismisses with reason)
+4. Pipeline re-runs → if clean, bot approves (`risk:low`) or signals ready for human (`risk:medium/high`)
+5. Author requests human reviewer
+
+Humans _can_ review earlier, but the convention is: don't tag a reviewer until the pipeline has cleared. The `risk:*` label and check run status are the signal.
+
 ## GitHub PR conventions
 
 When the agent opens a PR, it must:
 
 1. Link the originating Linear ticket in the PR body (first line: `Closes ENG-123`).
 2. Tag the PR with `ai-authored` (label).
-3. Add a risk tier label (`risk:low` / `risk:medium` / `risk:high`) determined by the `pr-review` skill.
+3. Add a risk tier label (`risk:low` / `risk:medium` / `risk:high`) — applied automatically by the pipeline on push.
 4. Use a stacked branch via Graphite when the change spans more than one concern (see [CONTRIBUTING.md](../CONTRIBUTING.md#stacked-prs-with-graphite)).
 5. Include a **Root cause** section (bugs) or **Approach** section (features) in the PR body.
 

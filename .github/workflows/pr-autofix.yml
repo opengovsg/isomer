@@ -1,0 +1,80 @@
+name: PR Autofix
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+jobs:
+  check-and-fix:
+    # Only run for PR-triggered CI failures (not main/staging/production pushes)
+    if: |
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.pull_requests[0] != null
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Check which jobs failed
+        id: jobs
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const { data: { jobs } } = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            })
+
+            const FIXABLE = ['lint', 'format', 'typecheck', 'build']
+            const failed = jobs
+              .filter(j => j.conclusion === 'failure')
+              .map(j => j.name.toLowerCase())
+
+            const hasFixable = failed.some(name => FIXABLE.some(f => name.includes(f)))
+            core.setOutput('has_fixable', String(hasFixable))
+            core.setOutput('pr_number', String(context.payload.workflow_run.pull_requests[0].number))
+            core.setOutput('head_sha', context.payload.workflow_run.head_sha)
+            core.setOutput('head_branch', context.payload.workflow_run.head_branch)
+            core.info(`Failed jobs: ${failed.join(', ')}`)
+            core.info(`Has fixable failures: ${hasFixable}`)
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
+        if: steps.jobs.outputs.has_fixable == 'true'
+        with:
+          ref: ${{ steps.jobs.outputs.head_branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: anthropics/claude-code-action@beta
+        if: steps.jobs.outputs.has_fixable == 'true'
+        env:
+          ANTHROPIC_MODEL: claude-sonnet-4-5
+          PR_NUMBER: ${{ steps.jobs.outputs.pr_number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          max_turns: "3"
+          direct_prompt: |
+            CI is failing on pull request #${{ steps.jobs.outputs.pr_number }}. Fix the failures.
+
+            Only fix failures from these jobs: lint, format, typecheck, build.
+            Do NOT attempt to fix unit test or E2E test failures — if those are the only failures,
+            post a PR comment explaining what failed and stop.
+
+            Hard constraints — violating any of these is worse than leaving CI red:
+            - Never add lint suppression comments (// oxlint-disable, // eslint-disable, // @ts-ignore)
+            - Never modify lint or TypeScript config files to silence errors
+            - Never delete or weaken a test to make typecheck pass
+            - If a fix is impossible without suppression, post a PR comment explaining why and stop
+
+            Steps:
+            1. Run pnpm lint to see errors. Fix with pnpm lint:fix, then fix remaining manually.
+            2. Run pnpm format to see errors. Fix with pnpm format:fix.
+            3. Run pnpm typecheck to see errors. Fix type errors in the affected files.
+            4. Run pnpm build to see errors. Fix them.
+            5. Re-run the failing commands to verify they pass.
+            6. If all fixed: stage changed files, commit with message "chore: autofix CI [bot]", and push.
+            7. If anything cannot be fixed cleanly: post a comment on PR #${{ steps.jobs.outputs.pr_number }} explaining the blocker and stop.

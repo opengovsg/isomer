@@ -1,0 +1,191 @@
+name: PR Review
+
+on:
+  pull_request:
+    types: [ready_for_review]
+  # Engineers type /re-review on any PR comment to re-run after pushing fixes
+  issue_comment:
+    types: [created]
+
+jobs:
+  # Re-compute risk tier inline so this workflow is self-contained
+  risk-tier:
+    if: |
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request != null &&
+       contains(github.event.comment.body, '/re-review'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      tier: ${{ steps.compute.outputs.tier }}
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        id: compute
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100,
+            })
+            const names = files.map(f => f.filename)
+
+            const HIGH = [
+              /^apps\/studio\/prisma\/migrations\//,
+              /^apps\/studio\/prisma\/schema\.prisma$/,
+              /^apps\/studio\/src\/server\/modules\/(auth|permissions|audit|rate-limit)\//,
+              /^apps\/studio\/src\/server\/(trpc|context|webhooks)\.ts$/,
+              /^apps\/studio\/src\/lib\/growthbook/,
+              /^apps\/studio\/src\/env\.mjs$/,
+              /^\.github\/workflows\//,
+              /^tooling\//,
+              /\/seed\.ts$/,
+            ]
+            const MEDIUM = [
+              /^apps\/studio\/src\/server\/modules\//,
+              /^apps\/studio\/src\/pages\/api\//,
+              /^apps\/studio\/src\/(features|schemas|hooks|lib|utils|components)\//,
+              /^packages\/components\/src\/(templates|schemas|engine)\//,
+              /^packages\/(pgboss|redis|logging|validators)\//,
+            ]
+
+            let tier = 'low'
+            for (const f of names) {
+              if (HIGH.some(p => p.test(f))) { tier = 'high'; break }
+              if (MEDIUM.some(p => p.test(f))) tier = 'medium'
+            }
+            core.setOutput('tier', tier)
+            core.info(`Risk tier: ${tier}`)
+
+  code-review:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      blocking: ${{ steps.result.outputs.blocking }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
+
+      - uses: anthropics/claude-code-action@beta
+        env:
+          ANTHROPIC_MODEL: claude-sonnet-4-5
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          max_turns: "10"
+          direct_prompt: |
+            Review pull request #${{ github.event.pull_request.number }} in this repository.
+
+            Steps:
+            1. Read docs/risk-taxonomy.md — it defines severity levels, hot paths, and reversibility modifiers.
+            2. Run: gh pr diff ${{ github.event.pull_request.number }}
+            3. For each changed file identify issues by severity:
+               - 🔴 Must Fix: likely bug, data loss risk, broken contract between Studio and components schema
+               - 🟡 Should Fix: will cause a bug under a realistic edge case, or misleads the next engineer
+               - 💬 Consider: style, duplication, test coverage gap (soft signal only)
+               - ⚪ Pre-existing: issue not introduced by this PR — note once, never repeat
+
+               Hot paths — escalate findings by one severity level (Consider→Should Fix, Should Fix→Must Fix):
+               - apps/studio/src/server/modules/page/page.service.ts
+               - apps/studio/src/server/modules/resource/
+               - apps/studio/src/features/editing-experience/
+               - packages/components/src/schemas/
+
+            4. If there are findings, post a single structured review comment:
+               gh pr review ${{ github.event.pull_request.number }} --comment --body "<markdown grouped by file>"
+
+               If there are no findings, do not post.
+
+            5. Write result to /tmp/review-result.json:
+               {"blocking": <true if any Must Fix or Should Fix findings, else false>, "must_fix": <count>, "should_fix": <count>}
+               If the diff is clean write: {"blocking": false, "must_fix": 0, "should_fix": 0}
+
+      - name: Read result
+        id: result
+        run: |
+          if [ -f /tmp/review-result.json ]; then
+            echo "blocking=$(jq -r .blocking /tmp/review-result.json)" >> "$GITHUB_OUTPUT"
+          else
+            echo "blocking=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  security-review:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      blocking: ${{ steps.result.outputs.blocking }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
+
+      - uses: anthropics/claude-code-action@beta
+        env:
+          ANTHROPIC_MODEL: claude-sonnet-4-5
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          max_turns: "10"
+          direct_prompt: |
+            Perform a security review of pull request #${{ github.event.pull_request.number }}.
+
+            Steps:
+            1. Run: gh pr diff ${{ github.event.pull_request.number }}
+            2. Check for the following in the changed code:
+               - IDOR: tRPC procedures that fetch resources without verifying the caller owns the siteId/resourceId
+               - Missing auth: new pages/api/ routes not going through tRPC context authentication
+               - Overly broad permissions: procedures granting editor-level access to admin-only operations
+               - XSS: user-controlled content rendered in the DOM without sanitization
+               - Unvalidated input: external data reaching Prisma queries without a Zod schema first
+               - Missing audit events: publish, delete, or permission-change actions with no audit log call
+               - Secrets: hardcoded credentials, API keys, or unsafe env fallback values
+               - Mockpass integration surface changes that weaken the auth flow
+               - S3/CDN signed URL logic that could expose private assets
+
+            3. If there are findings, post a PR review comment:
+               gh pr review ${{ github.event.pull_request.number }} --comment --body "<findings>"
+               Prefix each finding with 🚨 Security:.
+               If there are no findings, do not post.
+
+            4. Write result to /tmp/security-result.json:
+               {"blocking": <true if any findings, else false>, "findings": <count>}
+               If clean: {"blocking": false, "findings": 0}
+
+      - name: Read result
+        id: result
+        run: |
+          if [ -f /tmp/security-result.json ]; then
+            echo "blocking=$(jq -r .blocking /tmp/security-result.json)" >> "$GITHUB_OUTPUT"
+          else
+            echo "blocking=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  auto-approve:
+    needs: [risk-tier, code-review, security-review]
+    if: |
+      needs.risk-tier.outputs.tier == 'low' &&
+      needs.code-review.outputs.blocking == 'false' &&
+      needs.security-review.outputs.blocking == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          review-message: |
+            ✅ Automated review passed.
+            - Risk tier: `risk:low`
+            - Code review: no blocking findings
+            - Security review: no blocking findings
+
+            A human still needs to merge. This approval satisfies the required-approvals gate.
