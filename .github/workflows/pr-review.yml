@@ -10,39 +10,6 @@ on:
     types: [created]
 
 jobs:
-  # Reads the risk:* label already applied by "🤖 PR: Risk Label" — no LLM call needed.
-  # Falls back to 'high' if the label is missing, keeping the auto-approve gate conservative.
-  risk-tier:
-    if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request != null &&
-       contains(github.event.comment.body, '/re-review'))
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-    outputs:
-      tier: ${{ steps.read.outputs.tier }}
-    steps:
-      - name: Read risk label from PR
-        id: read
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
-        with:
-          script: |
-            const prNumber = context.eventName === 'issue_comment'
-              ? context.payload.issue.number
-              : context.payload.pull_request.number
-            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-            })
-            const risk = labels.find(l => l.name.startsWith('risk:'))
-            const tier = risk ? risk.name.replace('risk:', '') : 'high'
-            core.setOutput('tier', tier)
-            core.info(`Risk tier from label: ${tier}`)
-
   # Posts severity-tagged findings (Must Fix / Should Fix / Consider) and writes
   # {"blocking": true/false} to /tmp/review-result.json for the auto-approve gate.
   code-review:
@@ -120,16 +87,36 @@ jobs:
   # reviews. Counts toward required-approvals branch protection. A human still
   # clicks merge — this never auto-merges.
   auto-approve:
-    needs: [risk-tier, code-review, security-review]
+    needs: [code-review, security-review]
     if: |
-      needs.risk-tier.outputs.tier == 'low' &&
       needs.code-review.outputs.blocking == 'false' &&
       needs.security-review.outputs.blocking == 'false'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
     steps:
+      # Read the risk:* label set by "🤖 PR: Risk Label" — no LLM call needed.
+      # Falls back to 'high' if the label is missing, keeping the gate conservative.
+      - name: Check risk label
+        id: risk
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const prNumber = context.eventName === 'issue_comment'
+              ? context.payload.issue.number
+              : context.payload.pull_request.number
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            })
+            const risk = labels.find(l => l.name.startsWith('risk:'))
+            const tier = risk ? risk.name.replace('risk:', '') : 'high'
+            core.setOutput('tier', tier)
+            core.info(`Risk tier from label: ${tier}`)
+
       - uses: hmarr/auto-approve-action@v4
+        if: steps.risk.outputs.tier == 'low'
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           review-message: |
