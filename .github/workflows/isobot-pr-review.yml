@@ -36,7 +36,7 @@ jobs:
 
   # Reads docs/risk-taxonomy.md, diffs the PR, applies file-glob rules and
   # reversibility modifiers, and outputs the tier for auto-approve gating.
-  risk-tier:
+  compute-risk-tier:
     needs: gate
     runs-on: ubuntu-latest
     permissions:
@@ -66,7 +66,7 @@ jobs:
             echo "tier=high" >> "$GITHUB_OUTPUT"
           fi
 
-  # Posts severity-tagged findings (Must Fix / Should Fix / Consider) and writes
+  # Posts severity-tagged findings (Must Fix / Consider) and writes
   # {"blocking": true/false} to /tmp/review-result.json for the auto-approve gate.
   code-review:
     needs: gate
@@ -135,9 +135,9 @@ jobs:
   # reviews. Counts toward required-approvals branch protection. A human still
   # clicks merge — this never auto-merges.
   auto-approve:
-    needs: [risk-tier, code-review, security-review]
+    needs: [compute-risk-tier, code-review, security-review]
     if: |
-      needs.risk-tier.outputs.tier == 'low' &&
+      needs.compute-risk-tier.outputs.tier == 'low' &&
       needs.code-review.outputs.blocking == 'false' &&
       needs.security-review.outputs.blocking == 'false'
     runs-on: ubuntu-latest
