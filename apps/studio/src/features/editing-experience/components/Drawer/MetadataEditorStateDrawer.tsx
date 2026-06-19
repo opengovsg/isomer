@@ -15,6 +15,7 @@ import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
+import { useRequiredTagsValidation } from "../../hooks/useRequiredTagsValidation"
 import { pageSchema } from "../../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
@@ -89,6 +90,10 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   }, [metadataSchema, previewPageState.layout])
 
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)
+
+  const isTaggableLayout =
+    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Article ||
+    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Link
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)
@@ -183,7 +188,17 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             py="1.5rem"
             px="2rem"
           >
-            <SaveButton isLoading={isPending} onClick={handleSaveChanges} />
+            {isTaggableLayout ? (
+              <TagsAwareSaveButton
+                isLoading={isPending}
+                onClick={handleSaveChanges}
+                resourceId={pageId}
+                siteId={siteId}
+                tagged={(previewPageState.page as { tagged?: string[] }).tagged}
+              />
+            ) : (
+              <SaveButton isLoading={isPending} onClick={handleSaveChanges} />
+            )}
           </Box>
         </ErrorProvider>
       </Flex>
@@ -194,9 +209,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 const SaveButton = ({
   onClick,
   isLoading,
+  isTagsValid = true,
 }: {
   onClick: () => void
   isLoading: boolean
+  isTagsValid?: boolean
 }) => {
   const { errors } = useBuilderErrors()
 
@@ -204,10 +221,30 @@ const SaveButton = ({
     <Button
       w="100%"
       isLoading={isLoading}
-      isDisabled={!isEmpty(errors)}
+      isDisabled={!isEmpty(errors) || !isTagsValid}
       onClick={onClick}
     >
       Save changes
     </Button>
+  )
+}
+
+const TagsAwareSaveButton = ({
+  onClick,
+  isLoading,
+  resourceId,
+  siteId,
+  tagged,
+}: {
+  onClick: () => void
+  isLoading: boolean
+  resourceId: number
+  siteId: number
+  tagged: string[] | undefined
+}) => {
+  const { isValid } = useRequiredTagsValidation({ resourceId, siteId, tagged })
+
+  return (
+    <SaveButton isLoading={isLoading} onClick={onClick} isTagsValid={isValid} />
   )
 }
