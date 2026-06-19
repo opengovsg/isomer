@@ -1,4 +1,4 @@
-name: PR Autofix
+name: "🤖 PR: Autofix"
 
 on:
   workflow_run:

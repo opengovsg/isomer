@@ -1,4 +1,4 @@
-name: PR Risk Label
+name: "🤖 PR: Risk Label"
 
 on:
   pull_request:
