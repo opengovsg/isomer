@@ -47,6 +47,7 @@ Review the pull request for security vulnerabilities. This skill runs alongside 
    ```
    - If there are findings: prefix each with `🚨 Security:`, group by category, include `file:line` for every finding.
    - If there are no findings: post a short pass comment — `✅ Security review: no issues found.`
+   - End every comment with: `<sub>Posted by [🤖 IsoBot: PR Review](<repo_url>/blob/main/.github/workflows/isobot-pr-review.yml)</sub>`
 
 5. **Write result** to `/tmp/security-result.json`:
    ```json

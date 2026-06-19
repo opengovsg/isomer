@@ -61,6 +61,7 @@ Review the pull request for code quality issues. This skill is used both locally
    Always start the comment with a summary line showing the must-fix and should-fix counts, e.g.:
    `🔴 Must Fix: 2 · 🟡 Should Fix: 1 · 💬 Considerations: 3` or `✅ No blocking issues (💬 3 considerations)`.
    Group findings by file. Use severity prefixes. Always include clearly titled sections for each category present (Must Fix, Should Fix, Considerations) — never omit a section heading just because it has few items.
+   End every comment with the footer: `<sub>Posted by [🤖 IsoBot: PR Review](<repo_url>/blob/main/.github/workflows/isobot-pr-review.yml)</sub>`
 
 8. **Write result** to `/tmp/review-result.json`:
    ```json
@@ -92,6 +93,8 @@ Review the pull request for code quality issues. This skill is used both locally
 ### `path/to/other.ts`
 
 - 💬 Consider: <finding>
+
+<sub>Posted by [🤖 IsoBot: PR Review](<repo_url>/blob/main/.github/workflows/isobot-pr-review.yml)</sub>
 ```
 
 When the diff is clean, use:
@@ -102,6 +105,8 @@ When the diff is clean, use:
 ✅ No blocking issues found.
 
 > 🔴 Must Fix: 0 · 🟡 Should Fix: 0 · 💬 Considerations: 0
+
+<sub>Posted by [🤖 IsoBot: PR Review](<repo_url>/blob/main/.github/workflows/isobot-pr-review.yml)</sub>
 ```
 
 ## Hard rules

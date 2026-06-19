@@ -48,6 +48,8 @@ Compute the risk tier for a pull request.
    ## 🏷️ Risk tier: `risk:<tier>`
 
    <reason>
+
+   <sub>Posted by [🤖 IsoBot: PR Review](<repo_url>/blob/main/.github/workflows/isobot-pr-review.yml)</sub>
    ```
    If a reversibility modifier was applied, call it out explicitly. If behaviour is feature-flag gated, note it.
 
