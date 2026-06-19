@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { buildNewAssetKey, parseAssetRef, rewriteAssetRef } from "../assetRef"
+import {
+  buildNewAssetKey,
+  isAssetRef,
+  parseAssetRef,
+  rewriteAssetRef,
+} from "../assetRef"
 
 const SITE_ID = 1
 const VALID_UUID = "dc2b609a-355e-406c-af6c-003683731e7e"
@@ -128,5 +133,47 @@ describe("rewriteAssetRef", () => {
     expect(rewriteAssetRef("[resource:1:2]", map, SITE_ID)).toBe(
       "[resource:1:2]",
     )
+  })
+})
+
+describe("isAssetRef", () => {
+  it("should return true for a valid path with a leading slash", () => {
+    expect(isAssetRef(`/${VALID_KEY}`)).toBe(true)
+  })
+
+  it("should return true for a valid path without a leading slash", () => {
+    expect(isAssetRef(VALID_KEY)).toBe(true)
+  })
+
+  it("should return true for a different siteId (siteId-agnostic)", () => {
+    expect(isAssetRef(`99/${VALID_UUID}/doc.pdf`)).toBe(true)
+  })
+
+  it("should return false for an external https URL", () => {
+    expect(isAssetRef("https://example.com/file.pdf")).toBe(false)
+  })
+
+  it("should return false for a mailto: link", () => {
+    expect(isAssetRef("mailto:a@b.com")).toBe(false)
+  })
+
+  it("should return false for a page reference [resource:1:2]", () => {
+    expect(isAssetRef("[resource:1:2]")).toBe(false)
+  })
+
+  it("should return false for plain text", () => {
+    expect(isAssetRef("just plain text")).toBe(false)
+  })
+
+  it("should return false for a bad uuid", () => {
+    expect(isAssetRef(`${SITE_ID}/not-a-valid-uuid/report.pdf`)).toBe(false)
+    expect(isAssetRef(`${SITE_ID}/dc2b609a-355e-406c-af6c/report.pdf`)).toBe(
+      false,
+    )
+  })
+
+  it("should return false when the filename segment is missing", () => {
+    expect(isAssetRef(`${SITE_ID}/${VALID_UUID}`)).toBe(false)
+    expect(isAssetRef(`/${SITE_ID}/${VALID_UUID}/`)).toBe(false)
   })
 })
