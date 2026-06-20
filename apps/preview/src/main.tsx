@@ -9,6 +9,7 @@ import { useEffect, useLayoutEffect, useState } from "react"
 import ReactDOM from "react-dom/client"
 import "./index.css"
 import { articleData } from "./data/article"
+import { collectionData } from "./data/collection"
 import { contentData } from "./data/content"
 import { homeData } from "./data/home"
 import { SITE_HOME_DATA } from "./data/sites"
@@ -24,7 +25,7 @@ import {
   CUSTOM_BLOCK_IS_HERO,
 } from "./components/custom"
 
-type PageType = "home" | "article" | "content"
+type PageType = "home" | "article" | "content" | "collection"
 
 const CUSTOM_BLOCK_REGISTRY: Record<string, ComponentType> = {
   "hero-collage": HeroCollage,
@@ -80,7 +81,7 @@ function teardown(portalId: string, hiddenEl?: HTMLElement | null) {
 
 function App() {
   const initial =
-    (new URLSearchParams(window.location.search).get("page") as PageType) ||
+    (new URLSearchParams(window.location.search).get("layout") as PageType) ||
     "home"
   const [page, setPage] = useState<PageType>(initial)
   const [homePage, setHomePage] = useState<HomePageSchemaType>(homeData)
@@ -260,7 +261,7 @@ function App() {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  const pageData = { home: homePage, article: articleData, content: contentData }
+  const pageData = { home: homePage, article: articleData, content: contentData, collection: collectionData }
 
   const heroBlocks = activeCustomBlocks.filter((id) => CUSTOM_BLOCK_IS_HERO[id])
   const afterHeroBlocks = activeCustomBlocks.filter(

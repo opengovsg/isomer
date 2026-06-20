@@ -170,6 +170,7 @@
           <button class="page-tab active" data-page="home" onclick="setPage('home')">Homepage</button>
           <button class="page-tab" data-page="article" onclick="setPage('article')">Article</button>
           <button class="page-tab" data-page="content" onclick="setPage('content')">Content</button>
+          <button class="page-tab" data-page="collection" onclick="setPage('collection')">Collection</button>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           <span id="dim-label">1280px</span>
@@ -784,7 +785,7 @@
 
   // ── Init ──────────────────────────────────────────────────────────────────
 
-  iframe.src = PREVIEW_URL + '?page=home'
+  iframe.src = PREVIEW_URL + '?layout=home'
   applySize('desktop')
   buildAndApplyTheme()   // prime swatches + initial theme (calls syncNbVars)
 </script>

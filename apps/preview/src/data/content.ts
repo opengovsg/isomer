@@ -102,18 +102,20 @@ export const contentData: ContentPageSchemaType = {
   content: [
     {
       type: "callout",
-      variant: "info",
-      content: [
-        {
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: "Applications are open year-round. Approved projects must commence within 6 months of the Letter of Offer date.",
-            },
-          ],
-        },
-      ],
+      content: {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Applications are open year-round. Approved projects must commence within 6 months of the Letter of Offer date.",
+              },
+            ],
+          },
+        ],
+      },
     },
     {
       type: "prose",
@@ -188,24 +190,39 @@ export const contentData: ContentPageSchemaType = {
           ],
         },
         {
-          type: "bulletList",
+          type: "table",
+          attrs: { caption: "EDG support rates by company type" },
           content: [
             {
-              type: "listItem",
+              type: "tableRow",
               content: [
-                {
-                  type: "paragraph",
-                  content: [{ type: "text", text: "SMEs: up to 70% support" }],
-                },
+                { type: "tableHeader", content: [{ type: "paragraph", content: [{ type: "text", text: "Company type" }] }] },
+                { type: "tableHeader", content: [{ type: "paragraph", content: [{ type: "text", text: "Support rate" }] }] },
+                { type: "tableHeader", content: [{ type: "paragraph", content: [{ type: "text", text: "Qualifying costs" }] }] },
               ],
             },
             {
-              type: "listItem",
+              type: "tableRow",
               content: [
-                {
-                  type: "paragraph",
-                  content: [{ type: "text", text: "Non-SMEs: up to 50% support" }],
-                },
+                { type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Small & medium enterprises (SMEs)" }] }] },
+                { type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Up to 70%" }] }] },
+                { type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Manpower, consultancy, software, equipment" }] }] },
+              ],
+            },
+            {
+              type: "tableRow",
+              content: [
+                { type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Non-SMEs" }] }] },
+                { type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Up to 50%" }] }] },
+                { type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Manpower, consultancy, software, equipment" }] }] },
+              ],
+            },
+            {
+              type: "tableRow",
+              content: [
+                { type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Non-SMEs (sustainability projects)" }] }] },
+                { type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Up to 70%" }] }] },
+                { type: "tableCell", content: [{ type: "paragraph", content: [{ type: "text", text: "Eligible green/sustainability-related costs" }] }] },
               ],
             },
           ],
@@ -260,48 +277,110 @@ export const contentData: ContentPageSchemaType = {
     },
     {
       type: "accordion",
-      items: [
+      summary: "What costs are eligible for EDG?",
+      details: {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Eligible costs include manpower, consultancy, software, equipment, and other project-related costs. Personal protective equipment (PPE) and non-project-related operating costs are not eligible.",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "accordion",
+      summary: "Can I apply for multiple EDG projects?",
+      details: {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Yes. There is no limit to the number of EDG projects a company can apply for, as long as each project is distinct and addresses a clear business need.",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "accordion",
+      summary: "What happens after my application is approved?",
+      details: {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "You will receive a Letter of Offer. Your project must commence within 6 months of the Letter of Offer date. Upon project completion, submit a claims package for reimbursement.",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      type: "keystatistics",
+      title: "EDG by the numbers",
+      statistics: [
+        { label: "Companies supported annually", value: "2,400+" },
+        { label: "Average grant quantum", value: "60%" },
+        { label: "Projects approved since 2018", value: "18,000+" },
+        { label: "Sectors covered", value: "23" },
+      ],
+    },
+    {
+      type: "infocols",
+      title: "What EDG supports",
+      subtitle: "Fund projects across three core pillars of business transformation.",
+      infoBoxes: [
         {
-          title: "What costs are eligible for EDG?",
-          content: [
-            {
-              type: "paragraph",
-              content: [
-                {
-                  type: "text",
-                  text: "Eligible costs include manpower, consultancy, software, equipment, and other project-related costs. Personal protective equipment (PPE) and non-project-related operating costs are not eligible.",
-                },
-              ],
-            },
-          ],
+          title: "Core capabilities",
+          description: "Upgrade business processes, knowledge and skills, and management systems.",
+          icon: "office-building",
         },
         {
-          title: "Can I apply for multiple EDG projects?",
-          content: [
-            {
-              type: "paragraph",
-              content: [
-                {
-                  type: "text",
-                  text: "Yes. There is no limit to the number of EDG projects a company can apply for, as long as each project is distinct and addresses a clear business need.",
-                },
-              ],
-            },
-          ],
+          title: "Innovation & productivity",
+          description: "Adopt automation, develop new products, or improve productivity through technology.",
+          icon: "stars",
         },
         {
-          title: "What happens after my application is approved?",
-          content: [
-            {
-              type: "paragraph",
-              content: [
-                {
-                  type: "text",
-                  text: "You will receive a Letter of Offer. Your project must commence within 6 months of the Letter of Offer date. Upon project completion, submit a claims package for reimbursement.",
-                },
-              ],
-            },
-          ],
+          title: "Market access",
+          description: "Expand into new overseas markets through market studies and business development.",
+          icon: "globe",
+        },
+      ],
+    },
+    {
+      type: "infocards",
+      title: "Related grants & schemes",
+      subtitle: "Explore other support programmes for Singapore businesses.",
+      variant: "cardsWithoutImages",
+      cards: [
+        {
+          title: "Market Readiness Assistance",
+          description: "Supports SMEs expanding overseas with market promotion, business development, and market set-up activities.",
+          url: "/schemes/mra",
+        },
+        {
+          title: "Productivity Solutions Grant",
+          description: "Helps SMEs adopt pre-approved IT solutions and equipment to improve productivity.",
+          url: "/schemes/psg",
+        },
+        {
+          title: "Enterprise Leadership for Transformation",
+          description: "Supports business leaders of promising SMEs to develop business growth capabilities.",
+          url: "/schemes/elt",
         },
       ],
     },
