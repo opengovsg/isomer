@@ -34,10 +34,25 @@ jobs:
       # so provide a minimal no-op step since this job is just a gate.
       - run: echo "✅ Authorized"
 
+  # Fails fast with a clear message if the Anthropic API key is missing,
+  # rather than letting the three review jobs fail with a cryptic error.
+  check-secrets:
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify ANTHROPIC_API_KEY is set
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set. Add it under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
   # Reads docs/risk-taxonomy.md, diffs the PR, applies file-glob rules and
   # reversibility modifiers, and outputs the tier for auto-approve gating.
   compute-risk-tier:
-    needs: gate
+    needs: [gate, check-secrets]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -69,7 +84,7 @@ jobs:
   # Posts severity-tagged findings (Must Fix / Consider) and writes
   # {"blocking": true/false} to /tmp/review-result.json for the auto-approve gate.
   code-review:
-    needs: gate
+    needs: [gate, check-secrets]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -102,7 +117,7 @@ jobs:
   # and other Isomer-specific security issues. Separate from code-review so its
   # findings are always visible even when code-review is clean.
   security-review:
-    needs: gate
+    needs: [gate, check-secrets]
     runs-on: ubuntu-latest
     permissions:
       contents: read
