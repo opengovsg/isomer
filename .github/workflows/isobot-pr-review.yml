@@ -1,11 +1,11 @@
 name: "🤖 IsoBot: PR Review"
 
-# Runs when the author explicitly signals the PR is ready, or comments /isobot-review
-# after pushing fixes. Does NOT run on every synchronize — engineers should keep
-# the PR in draft while iterating to avoid burning review cycles on WIP commits.
+# Runs when a non-draft PR is opened or converted from draft to ready, or when a
+# member comments /isobot-review after pushing fixes. Does NOT run on every
+# synchronize — keep the PR in draft while iterating to avoid burning review cycles.
 on:
   pull_request:
-    types: [ready_for_review]
+    types: [ready_for_review, opened]
   issue_comment:
     types: [created]
 
@@ -14,12 +14,14 @@ jobs:
   # Downstream jobs use `needs: gate` so this condition is defined exactly once.
   gate:
     # Only run this job if the event matches one of these authorized triggers:
-    # 1. The event is a 'pull_request' and the PR author is an OWNER or MEMBER.
+    # 1. The event is a 'pull_request', the PR is not a draft, and the author is an OWNER or MEMBER.
+    #    Covers both 'opened' (PR created ready) and 'ready_for_review' (draft converted to ready).
     # 2. The event is a 'issue_comment', the comment is on a PR,
     #    the comment starts with '/isobot-review', and the comment author is an OWNER or MEMBER.
     if: |
       (
         github.event_name == 'pull_request' &&
+        !github.event.pull_request.draft &&
         contains(fromJSON('["OWNER", "MEMBER"]'), github.event.pull_request.author_association)
       ) ||
       (
