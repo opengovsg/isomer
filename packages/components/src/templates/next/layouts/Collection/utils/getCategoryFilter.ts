@@ -27,14 +27,15 @@ export const getCategoryFilter = (
   )
 
   if (categoryOptions && categoryOptions.length > 0) {
+    // Sort by the editor-defined order in categoryOptions; unknown categories fall to the end
     const categoryOptionLabels = categoryOptions.map(({ label }) => label)
     categoryFilterItems.sort((a, b) => {
       const indexA = categoryOptionLabels.indexOf(a.label)
       const indexB = categoryOptionLabels.indexOf(b.label)
 
-      if (indexA === -1 && indexB === -1) return 0
-      if (indexA === -1) return 1
-      if (indexB === -1) return -1
+      if (indexA === -1 && indexB === -1) return 0 // both unknown, preserve order
+      if (indexA === -1) return 1 // a unknown, push after b
+      if (indexB === -1) return -1 // b unknown, push after a
 
       return indexA - indexB
     })
