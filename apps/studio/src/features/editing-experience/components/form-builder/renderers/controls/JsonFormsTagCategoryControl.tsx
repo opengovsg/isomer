@@ -8,8 +8,8 @@ import { useCallback, useMemo, useState } from "react"
 import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
+import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
-import { TagDraggableButton } from "./DraggableTagButton"
 import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { TagRowActionsMenu } from "./TagRowActionsMenu"
@@ -35,6 +35,12 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
 
   const isRemoveItemDisabled =
     arraySchema.minItems !== undefined && data <= arraySchema.minItems
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
+    removeItems(path, [deleteTarget.index])()
+    setDeleteTarget(null)
+  }
 
   // New filters default isRequired to true. Can't set this via JSON Schema default
   // because Studio AJV runs with useDefaults, which would apply it to legacy rows too.
@@ -62,17 +68,42 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
             count === 0
               ? "No option"
               : `${count} ${count > 1 ? "options" : "option"}`
+          const isError = rowProps.isError || isDuplicate
           return (
-            <TagDraggableButton
-              {...rowProps}
-              isError={rowProps.isError || isDuplicate}
-              listItemIcon={BiPurchaseTag}
-              listItemSubtitle={
-                <Text textStyle="caption-2" color="base.content.medium">
-                  {subtitle}
-                </Text>
-              }
-              listItemTrailing={
+            <DraggableTagButton.Root
+              draggableProps={rowProps.draggableProps}
+              isError={isError}
+              ref={rowProps.ref}
+            >
+              <DraggableTagButton.Handle
+                dragHandleProps={rowProps.dragHandleProps}
+              />
+              <DraggableTagButton.Body
+                onClick={() => rowProps.setSelectedIndex(rowProps.index)}
+              >
+                <DraggableTagButton.Icon icon={BiPurchaseTag} />
+                <DraggableTagButton.Content>
+                  <DraggableTagButton.Label
+                    index={rowProps.index}
+                    path={rowProps.path}
+                    schema={rowProps.schema}
+                    uischema={rowProps.uischema}
+                    enabled={rowProps.enabled}
+                    removeItem={rowProps.removeItem}
+                  />
+                  <DraggableTagButton.Subtitle>
+                    {subtitle}
+                  </DraggableTagButton.Subtitle>
+                  {isError && (
+                    <DraggableTagButton.ErrorCaption>
+                      {isDuplicate
+                        ? "A filter with this name already exists."
+                        : undefined}
+                    </DraggableTagButton.ErrorCaption>
+                  )}
+                </DraggableTagButton.Content>
+              </DraggableTagButton.Body>
+              <DraggableTagButton.Trailing>
                 <TagRowActionsMenu
                   noun="filter"
                   index={rowProps.index}
@@ -86,13 +117,8 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                     })
                   }
                 />
-              }
-              listItemErrorCaption={
-                isDuplicate
-                  ? "A filter with this name already exists."
-                  : undefined
-              }
-            />
+              </DraggableTagButton.Trailing>
+            </DraggableTagButton.Root>
           )
         }}
       />
@@ -109,11 +135,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
             </Text>
           }
           onClose={() => setDeleteTarget(null)}
-          onConfirm={() => {
-            if (!deleteTarget || !removeItems || isRemoveItemDisabled) return
-            removeItems(path, [deleteTarget.index])()
-            setDeleteTarget(null)
-          }}
+          onConfirm={handleConfirmDelete}
         />
       )}
     </>
