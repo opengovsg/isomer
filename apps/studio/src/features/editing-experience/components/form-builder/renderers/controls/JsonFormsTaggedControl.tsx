@@ -78,7 +78,7 @@ const SuspendableJsonFormsTaggedControl = ({
                 <FormLabel description={description}>{label}</FormLabel>
                 <MultiSelect
                   size="sm"
-                  nothingFoundLabel="No tags found."
+                  nothingFoundLabel="No tags found. Search for something else or contact your site owner(s) to create new tags."
                   values={currentTagCategoryOptions.map(({ id }) => id)}
                   name={label}
                   items={options.map(({ id, label }) => {
