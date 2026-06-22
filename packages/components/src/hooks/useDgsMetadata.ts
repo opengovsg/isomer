@@ -15,9 +15,7 @@ export const useDgsMetadata = ({
 }: UseDgsMetadataProps) => {
   const [isLoading, setIsLoading] = useState(enabled)
   const [isError, setIsError] = useState(false)
-  const [metadata, setMetadata] = useState<FetchDgsMetadataOutput | undefined>(
-    undefined,
-  )
+  const [metadata, setMetadata] = useState<FetchDgsMetadataOutput | undefined>()
 
   useEffect(() => {
     if (!enabled) {
