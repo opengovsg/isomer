@@ -175,3 +175,5 @@ jobs:
             - 🔒 Security: no blockers
 
             Still needs a human to merge — this just clears the approvals gate.
+
+            <sub>Posted by [🤖 IsoBot: PR Review](https://github.com/opengovsg/isomer/blob/main/.github/workflows/isobot-pr-review.yml)</sub>
