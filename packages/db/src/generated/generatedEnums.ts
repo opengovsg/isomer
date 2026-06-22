@@ -45,6 +45,8 @@ export const AuditLogEvent = {
   SiteConfigUpdate: "SiteConfigUpdate",
   FooterUpdate: "FooterUpdate",
   NavbarUpdate: "NavbarUpdate",
+  RedirectCreate: "RedirectCreate",
+  RedirectDelete: "RedirectDelete",
 } as const
 export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent]
 export const BuildStatusType = {
