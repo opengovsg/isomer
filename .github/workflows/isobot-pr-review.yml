@@ -71,6 +71,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--allowedTools Write"
           prompt: /compute-risk-tier ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
       - name: Read risk tier result
@@ -103,6 +104,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--allowedTools Write"
           prompt: /code-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
       - name: Read code review result
@@ -136,6 +138,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--allowedTools Write"
           prompt: /security-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
       - name: Read security review result
