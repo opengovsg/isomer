@@ -28,6 +28,7 @@ import {
   BiPlusCircle,
   BiSlider,
 } from "react-icons/bi"
+import { RiSparkling2Line } from "react-icons/ri"
 import { Disable } from "~/components/Disable"
 import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
@@ -43,6 +44,7 @@ import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 import { TYPE_TO_ICON } from "../../constants"
 import { pageSchema } from "../../schema"
 import { getIsHeroFirstBlock } from "../../utils/getIsHeroFirstBlock"
+import { GenerateFromDocumentModal } from "../GenerateFromDocumentModal"
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
 import { BaseBlock } from "../Block/BaseBlock"
 import { DraggableBlock } from "../Block/DraggableBlock"
@@ -213,6 +215,11 @@ export default function RootStateDrawer() {
     isOpen: isConfirmConvertIndexPageModalOpen,
     onOpen: onConfirmConvertIndexPageModalOpen,
     onClose: onConfirmConvertIndexPageModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isGenerateModalOpen,
+    onOpen: onGenerateModalOpen,
+    onClose: onGenerateModalClose,
   } = useDisclosure()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const [{ scheduledAt }] = trpc.page.readPage.useSuspenseQuery({
@@ -388,6 +395,14 @@ export default function RootStateDrawer() {
   // for collection index pages
   const canAddBlocks = pageLayout !== "collection"
 
+  // Only show the AI generation entry point for layouts where it makes sense.
+  // Excluded: homepage (RootPage type), database, and collection layouts.
+  // canAddBlocks already excludes collection layout
+  const canGenerateFromDocument =
+    canAddBlocks &&
+    pageLayout !== "database" &&
+    type !== ResourceType.RootPage
+
   const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
 
   return (
@@ -396,6 +411,10 @@ export default function RootStateDrawer() {
         isOpen={isConfirmConvertIndexPageModalOpen}
         onClose={onConfirmConvertIndexPageModalClose}
         onProceed={handleSaveConversionToIndexPage}
+      />
+      <GenerateFromDocumentModal
+        isOpen={isGenerateModalOpen}
+        onClose={onGenerateModalClose}
       />
 
       <VStack gap="1.5rem" p="1.5rem" flex={1}>
@@ -607,6 +626,38 @@ export default function RootStateDrawer() {
                                     >
                                       Add a new block
                                     </Button>
+
+                                    {canGenerateFromDocument && (
+                                      <Button
+                                        variant="outline"
+                                        w="100%"
+                                        mt="0.75rem"
+                                        h="auto"
+                                        py="1.25rem"
+                                        onClick={onGenerateModalOpen}
+                                        borderStyle="dashed"
+                                        borderColor="base.divider.medium"
+                                        _hover={{
+                                          borderColor: "interaction.main.default",
+                                          bg: "interaction.main-subtle.default",
+                                        }}
+                                      >
+                                        <VStack spacing="0.375rem">
+                                          <Icon
+                                            as={RiSparkling2Line}
+                                            boxSize="1.5rem"
+                                            color="interaction.main.default"
+                                          />
+                                          <Text
+                                            textStyle="subhead-2"
+                                            color="interaction.main.default"
+                                          >
+                                            Upload a file and generate a first
+                                            version
+                                          </Text>
+                                        </VStack>
+                                      </Button>
+                                    )}
                                   </>
                                 )}
 

@@ -22,6 +22,8 @@ interface DrawerContextType extends Pick<
   setModifiedAssets: Dispatch<SetStateAction<ModifiedAsset[]>>
   addedBlockIndex: number | null
   setAddedBlockIndex: Dispatch<SetStateAction<number | null>>
+  showAiShimmer: boolean
+  setShowAiShimmer: Dispatch<SetStateAction<boolean>>
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -59,6 +61,7 @@ export function EditorDrawerProvider({
   // Holding state for images/files that have been modified in the page
   const [modifiedAssets, setModifiedAssets] = useState<ModifiedAsset[]>([])
   const [addedBlockIndex, setAddedBlockIndex] = useState<number | null>(null)
+  const [showAiShimmer, setShowAiShimmer] = useState(false)
 
   const setPreviewPageState = useCallback(
     (previewPageState: SetStateAction<IsomerSchema>) => {
@@ -90,6 +93,8 @@ export function EditorDrawerProvider({
         setModifiedAssets,
         addedBlockIndex,
         setAddedBlockIndex,
+        showAiShimmer,
+        setShowAiShimmer,
         type,
         permalink,
         siteId,
