@@ -167,6 +167,7 @@ jobs:
       - uses: hmarr/auto-approve-action@f0939ea97e9205ef24d872e76833fa908a770363 # v4.0.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
           review-message: |
             🤖 All clear!
             - 🟢 Risk: low
@@ -174,3 +175,5 @@ jobs:
             - 🔒 Security: no blockers
 
             Still needs a human to merge — this just clears the approvals gate.
+
+            <sub>Posted by [🤖 IsoBot: PR Review](https://github.com/opengovsg/isomer/blob/main/.github/workflows/isobot-pr-review.yml)</sub>
