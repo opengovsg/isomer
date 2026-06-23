@@ -16,6 +16,9 @@ import { SITE_HOME_DATA } from "./data/sites"
 import {
   HeroCollage,
   HeroBlobSaaS,
+  GrainyHero,
+  BentoGrid,
+  SingleButton,
   TableStyled,
   CardsCarousel,
   TextWithImage,
@@ -39,6 +42,10 @@ type PageType = "home" | "article" | "content" | "collection"
 const CUSTOM_BLOCK_REGISTRY: Record<string, ComponentType> = {
   "hero-collage": HeroCollage,
   "hero-blob-saas": HeroBlobSaaS,
+  "grainy-hero": GrainyHero,
+  "bento-grid": BentoGrid,
+  "single-button-article": SingleButton,
+  "single-button-content": SingleButton,
   "table-styled": TableStyled,
   "cards-carousel": CardsCarousel,
   "text-with-image": TextWithImage,

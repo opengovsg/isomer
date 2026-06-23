@@ -13,17 +13,24 @@ export { default as Footnotes } from "./Footnotes"
 export { default as LinkHubHome } from "./LinkHubHome"
 export { default as LinkHubContent } from "./LinkHubContent"
 export { default as ListsWithIndentation } from "./ListsWithIndentation"
+export { default as GrainyHero } from "./GrainyHero"
+export { default as BentoGrid } from "./BentoGrid"
+export { default as SingleButton } from "./SingleButton"
 
 /** Which page each block belongs to */
 export const CUSTOM_BLOCK_PAGE: Record<string, "home" | "content" | "article"> =
   {
     "hero-collage": "home",
     "hero-blob-saas": "home",
+    "grainy-hero": "home",
+    "bento-grid": "home",
     "table-styled": "content",
     "cards-carousel": "home",
     "text-with-image": "content",
     "callout-variants": "content",
     "footnotes": "article",
+    "single-button-article": "article",
+    "single-button-content": "content",
     "link-hub-home": "home",
     "link-hub-content": "content",
     "lists-with-indentation": "article",
@@ -33,11 +40,15 @@ export const CUSTOM_BLOCK_PAGE: Record<string, "home" | "content" | "article"> =
 export const CUSTOM_BLOCK_LABEL: Record<string, string> = {
   "hero-collage": "Hero — Image Collage",
   "hero-blob-saas": "Hero — Blob + SaaS",
+  "grainy-hero": "Grainy Hero",
+  "bento-grid": "Bento Grid",
   "table-styled": "Table — Styled",
   "cards-carousel": "Cards — Carousel",
   "text-with-image": "Text with Image",
   "callout-variants": "Callout Variants",
   "footnotes": "Footnotes",
+  "single-button-article": "Button",
+  "single-button-content": "Button",
   "link-hub-home": "Link Hub",
   "link-hub-content": "Link Hub",
   "lists-with-indentation": "Lists with Indentation",

@@ -132,10 +132,14 @@
       border: 2px solid rgba(0,0,0,0.2); cursor: pointer;
       box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
-    .twotone-derived { display: flex; gap: 6px; margin-bottom: 14px; }
-    .derived-swatch { flex: 1; border-radius: 6px; height: 32px; border: 1px solid rgba(0,0,0,0.08); }
-    .derived-label { font-size: 10px; color: #9ca3af; margin-top: 3px; text-align: center; }
-    #twotone-section { display: none; }
+    .palette-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1.5px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: border-color 0.15s; margin-bottom: 6px; }
+    .palette-row:hover { border-color: #9ca3af; }
+    .palette-row.selected { border-color: #111827; background: #f9fafb; }
+    .palette-label { font-size: 11px; font-weight: 600; color: #6b7280; width: 72px; flex-shrink: 0; }
+    .palette-swatches { display: flex; gap: 3px; flex: 1; }
+    .palette-swatch { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; }
+    .palette-check { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #d1d5db; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .palette-row.selected .palette-check { background: #111827; border-color: #111827; }
 
     /* New block cards */
     .nb-card {
@@ -234,12 +238,6 @@
 
         <div class="section-label">Colours</div>
 
-        <!-- Mono / Two-tone seg-control -->
-        <div class="seg-control">
-          <button class="seg-btn active" onclick="setColourMode('mono')">Monotone</button>
-          <button class="seg-btn" onclick="setColourMode('twotone')">Two-tone</button>
-        </div>
-
         <!-- Primary hue -->
         <div class="hue-row">
           <span class="hue-label">Primary</span>
@@ -250,26 +248,27 @@
           <div id="primary-swatch" class="hue-swatch"></div>
         </div>
 
-        <!-- Two-tone secondary (hidden unless two-tone active) -->
-        <div id="twotone-section">
-          <div class="hue-row">
-            <span class="hue-label">Secondary</span>
-            <div class="hue-slider-wrap">
-              <input id="secondary-hue" type="range" class="hue-slider" min="0" max="360" value="30"
-                oninput="onSecondaryHue(this.value)">
-            </div>
-            <div id="secondary-swatch" class="hue-swatch"></div>
-          </div>
-          <div class="twotone-derived">
-            <div>
-              <div id="derived-accent" class="derived-swatch"></div>
-              <div class="derived-label">Accent</div>
-            </div>
-            <div>
-              <div id="derived-bg" class="derived-swatch"></div>
-              <div class="derived-label">Background</div>
-            </div>
-          </div>
+        <!-- Accent palettes -->
+        <div class="section-label" style="margin-top:14px;margin-bottom:8px">Accent palette</div>
+        <div id="palette-none-row" class="palette-row selected" onclick="selectPalette(null)">
+          <span class="palette-label">None</span>
+          <span style="font-size:11px;color:#9ca3af;flex:1">Primary only</span>
+          <div class="palette-check" id="palette-check-none"><svg width="8" height="8" viewBox="0 0 8 8"><polyline points="1,4 3,6 7,2" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div id="palette-row-0" class="palette-row" onclick="selectPalette(0)">
+          <span class="palette-label">Analogous</span>
+          <div class="palette-swatches" id="palette-swatches-0"></div>
+          <div class="palette-check" id="palette-check-0"></div>
+        </div>
+        <div id="palette-row-1" class="palette-row" onclick="selectPalette(1)">
+          <span class="palette-label">Contrasting</span>
+          <div class="palette-swatches" id="palette-swatches-1"></div>
+          <div class="palette-check" id="palette-check-1"></div>
+        </div>
+        <div id="palette-row-2" class="palette-row" onclick="selectPalette(2)">
+          <span class="palette-label">Balanced</span>
+          <div class="palette-swatches" id="palette-swatches-2"></div>
+          <div class="palette-check" id="palette-check-2"></div>
         </div>
 
         <div class="section-label">Typography</div>
@@ -324,15 +323,6 @@
           <div class="typo-card-tag">Lexend · Lexend</div>
         </div>
 
-        <div class="section-label">Layout</div>
-        <div class="control-row">
-          <span class="control-name">Max content width</span>
-          <select class="control-select" onchange="updateMaxWidth(this.value)">
-            <option value="1024px">Narrow (1024px)</option>
-            <option value="1280px" selected>Default (1280px)</option>
-            <option value="1440px">Wide (1440px)</option>
-          </select>
-        </div>
 
       </div>
 
@@ -544,6 +534,75 @@
           <div class="nb-add-btn" id="nb-btn-hero-blob-saas"><span class="nb-add-text">+ Add to homepage</span></div>
         </div>
 
+        <div class="section-label">Feature</div>
+
+        <!-- Feature: Grainy -->
+        <div class="nb-card" id="nb-grainy-hero" onclick="addBlock('grainy-hero','home')">
+          <div class="nb-thumb">
+            <div style="width:100%;height:48px;border-radius:4px;overflow:hidden;position:relative;background:var(--nb-primary,#1a4a6b);">
+              <div style="position:absolute;right:0;top:0;bottom:0;width:38%;overflow:hidden;">
+                <div style="background:#fff;opacity:0.15;width:100%;height:100%;"></div>
+              </div>
+              <div style="position:absolute;left:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:3px;">
+                <div style="height:5px;background:rgba(255,255,255,0.85);border-radius:1px;width:52px;"></div>
+                <div style="height:3px;background:rgba(255,255,255,0.55);border-radius:1px;width:40px;"></div>
+                <div style="margin-top:3px;display:flex;gap:4px;">
+                  <div style="height:7px;width:18px;background:white;border-radius:2px;opacity:0.9;"></div>
+                  <div style="height:7px;width:14px;border:1px solid rgba(255,255,255,0.6);border-radius:2px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Grainy Feature <span class="nb-page-tag">Homepage</span></div>
+            <div class="nb-desc">Full-bleed primary brand colour section with grain texture. Image on the right, slightly clipped. Title, description, and CTA buttons.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-grainy-hero"><span class="nb-add-text">+ Add to homepage</span></div>
+        </div>
+
+        <div class="section-label">Grid</div>
+
+        <!-- Bento Grid -->
+        <div class="nb-card" id="nb-bento-grid" onclick="addBlock('bento-grid','home')">
+          <div class="nb-thumb">
+            <div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:3px;height:48px;">
+              <div style="border-radius:3px;overflow:hidden;background:var(--nb-canvas-alt,#eef2f7);display:flex;flex-direction:column;">
+                <div style="height:60%;background:#d1d5db;"></div>
+                <div style="padding:2px 4px;display:flex;flex-direction:column;gap:1.5px;">
+                  <div style="height:2px;background:#9ca3af;border-radius:1px;width:80%;"></div>
+                  <div style="height:1.5px;background:#d1d5db;border-radius:1px;"></div>
+                </div>
+              </div>
+              <div style="border-radius:3px;overflow:hidden;background:var(--nb-canvas-alt,#eef2f7);filter:hue-rotate(30deg);display:flex;flex-direction:column;">
+                <div style="height:60%;background:#d1d5db;"></div>
+                <div style="padding:2px 4px;display:flex;flex-direction:column;gap:1.5px;">
+                  <div style="height:2px;background:#9ca3af;border-radius:1px;width:70%;"></div>
+                  <div style="height:1.5px;background:#d1d5db;border-radius:1px;"></div>
+                </div>
+              </div>
+              <div style="border-radius:3px;overflow:hidden;background:var(--nb-canvas-alt,#eef2f7);filter:hue-rotate(60deg);display:flex;flex-direction:column;">
+                <div style="height:60%;background:#d1d5db;"></div>
+                <div style="padding:2px 4px;display:flex;flex-direction:column;gap:1.5px;">
+                  <div style="height:2px;background:#9ca3af;border-radius:1px;width:75%;"></div>
+                  <div style="height:1.5px;background:#d1d5db;border-radius:1px;"></div>
+                </div>
+              </div>
+              <div style="border-radius:3px;overflow:hidden;background:var(--nb-canvas-alt,#eef2f7);filter:hue-rotate(90deg);display:flex;flex-direction:column;">
+                <div style="height:60%;background:#d1d5db;"></div>
+                <div style="padding:2px 4px;display:flex;flex-direction:column;gap:1.5px;">
+                  <div style="height:2px;background:#9ca3af;border-radius:1px;width:65%;"></div>
+                  <div style="height:1.5px;background:#d1d5db;border-radius:1px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Bento Grid <span class="nb-page-tag">Homepage</span></div>
+            <div class="nb-desc">4 bento boxes in a 2×2 grid. Each box has an image and text, tinted with accent colours from the selected palette.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-bento-grid"><span class="nb-add-text">+ Add to homepage</span></div>
+        </div>
+
         <div class="section-label">Callout</div>
 
         <!-- Callout Variants -->
@@ -752,6 +811,42 @@
           <div class="nb-add-btn" id="nb-btn-lists-with-indentation"><span class="nb-add-text">+ Add to article page</span></div>
         </div>
 
+        <div class="section-label">Button</div>
+
+        <!-- Single Button -->
+        <div class="nb-card" id="nb-single-button" onclick="addSingleButton()">
+          <div class="nb-thumb">
+            <div style="width:100%;display:flex;gap:8px;align-items:center;justify-content:center;height:48px;">
+              <div style="background:var(--nb-primary,#1a4a6b);border-radius:4px;padding:6px 14px;display:flex;align-items:center;">
+                <div style="height:3px;background:white;border-radius:1px;width:50px;"></div>
+              </div>
+              <div style="border:1.5px solid var(--nb-primary,#1a4a6b);border-radius:4px;padding:6px 14px;display:flex;align-items:center;">
+                <div style="height:3px;background:var(--nb-primary,#1a4a6b);border-radius:1px;width:40px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Button <span class="nb-page-tag">Article + Content</span></div>
+            <div class="nb-desc">A single CTA button using the Isomer design system. Choose between solid and outline styles, and three sizes.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-single-button"><span class="nb-add-text">+ Add to article &amp; content page</span></div>
+        </div>
+
+        <!-- Button controls (shown when block is active) -->
+        <div id="btn-controls" style="display:none; background:#f9fafb; border:1.5px solid #111827; border-radius:8px; padding:12px; margin-bottom:10px;">
+          <div class="section-label" style="margin-top:0; margin-bottom:8px;">Style</div>
+          <div class="seg-control" style="margin-bottom:12px;">
+            <button class="seg-btn active" id="btn-variant-solid" onclick="setSingleButtonConfig('variant','solid')">Solid</button>
+            <button class="seg-btn" id="btn-variant-outline" onclick="setSingleButtonConfig('variant','outline')">Outline</button>
+          </div>
+          <div class="section-label" style="margin-top:0; margin-bottom:8px;">Size</div>
+          <div class="seg-control" style="margin-bottom:0;">
+            <button class="seg-btn" id="btn-size-sm" onclick="setSingleButtonConfig('size','sm')">Small</button>
+            <button class="seg-btn active" id="btn-size-base" onclick="setSingleButtonConfig('size','base')">Base</button>
+            <button class="seg-btn" id="btn-size-lg" onclick="setSingleButtonConfig('size','lg')">Large</button>
+          </div>
+        </div>
+
       </div>
 
       </div><!-- /panel-content-area -->
@@ -810,9 +905,8 @@
 
   let currentPage = 'home'
   let currentSize = 'desktop'
-  let colourMode = 'mono'    // 'mono' | 'twotone'
+  let activePalette = null   // null | 0 | 1 | 2
   let primaryHue = 200
-  let secondaryHue = 30
 
   // ── Core postMessage helper ───────────────────────────────────────────────
 
@@ -859,13 +953,17 @@
     }
   }
 
-  // Derive secondary swatches from secondary hue
-  function secondaryFromHue(h) {
-    return {
-      accent: hslToHex(h, 68, 42),   // vivid accent
-      bg:     hslToHex(h, 32, 93),   // soft background wash
-      bgAlt:  hslToHex(h, 38, 87),
-    }
+  // Generate 3 palettes of 5 hues each from the primary hue
+  function generatePalettes(h) {
+    const w = x => ((x % 360) + 360) % 360
+    return [
+      // Analogous: tightly clustered neighbours
+      [h, w(h+25), w(h+50), w(h-25), w(h-50)],
+      // Contrasting: complement + triad
+      [h, w(h+180), w(h+120), w(h+240), w(h+60)],
+      // Balanced: evenly spaced (pentagonal)
+      [h, w(h+72), w(h+144), w(h+216), w(h+288)],
+    ]
   }
 
   // ── Theme state & application ─────────────────────────────────────────────
@@ -878,66 +976,94 @@
       '--color-brand-interaction-default': p.interaction,
       '--color-brand-interaction-hover':   p.interactionHov,
       '--color-brand-canvas-inverse':      p.canvasInverse,
+      '--color-brand-canvas-default':      p.canvasDefault,
+      '--color-brand-canvas-alt':          p.canvasAlt,
     }
-    if (colourMode === 'twotone') {
-      const s = secondaryFromHue(secondaryHue)
-      theme['--color-brand-canvas-default'] = s.bg
-      theme['--color-brand-canvas-alt']     = s.bgAlt
+
+    if (activePalette !== null) {
+      const hues = generatePalettes(primaryHue)[activePalette]
+      hues.forEach((hue, i) => {
+        const t = paletteFromHue(hue)
+        const n = i + 1
+        theme[`--palette-${n}-canvas-alt`]     = t.canvasAlt
+        theme[`--palette-${n}-canvas-default`] = t.canvasDefault
+        theme[`--palette-${n}-interaction`]    = t.interaction
+        theme[`--palette-${n}-hover`]          = t.interactionHov
+        theme[`--palette-${n}-inverse`]        = t.canvasInverse
+      })
+      // Shift brand canvas to 2nd accent hue
+      const t2 = paletteFromHue(hues[1])
+      theme['--color-brand-canvas-default'] = t2.canvasDefault
+      theme['--color-brand-canvas-alt']     = t2.canvasAlt
     } else {
-      theme['--color-brand-canvas-default'] = p.canvasDefault
-      theme['--color-brand-canvas-alt']     = p.canvasAlt
+      for (let i = 1; i <= 5; i++) {
+        theme[`--palette-${i}-canvas-alt`]     = p.canvasAlt
+        theme[`--palette-${i}-canvas-default`] = p.canvasDefault
+        theme[`--palette-${i}-interaction`]    = p.interaction
+        theme[`--palette-${i}-hover`]          = p.interactionHov
+        theme[`--palette-${i}-inverse`]        = p.canvasInverse
+      }
     }
+
     postToIframe({ type: 'theme', vars: theme })
     updateSwatchUI()
     syncNbVars()
   }
 
+  function renderPaletteUI() {
+    const CHECKMARK = '<svg width="8" height="8" viewBox="0 0 8 8"><polyline points="1,4 3,6 7,2" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    const palettes = generatePalettes(primaryHue)
+    palettes.forEach((hues, pi) => {
+      const container = document.getElementById(`palette-swatches-${pi}`)
+      if (!container) return
+      container.innerHTML = ''
+      hues.forEach(hue => {
+        const swatch = document.createElement('div')
+        swatch.className = 'palette-swatch'
+        swatch.style.background = hslToHex(hue, 65, 28)
+        container.appendChild(swatch)
+      })
+    })
+    ;[null, 0, 1, 2].forEach(idx => {
+      const rowId = idx === null ? 'palette-none-row' : `palette-row-${idx}`
+      const checkId = idx === null ? 'palette-check-none' : `palette-check-${idx}`
+      const isSelected = activePalette === idx
+      document.getElementById(rowId)?.classList.toggle('selected', isSelected)
+      const check = document.getElementById(checkId)
+      if (check) check.innerHTML = isSelected ? CHECKMARK : ''
+    })
+  }
+
   function updateSwatchUI() {
     const p = paletteFromHue(primaryHue)
     document.getElementById('primary-swatch').style.background = p.interaction
+    renderPaletteUI()
+  }
 
-    if (colourMode === 'twotone') {
-      const s = secondaryFromHue(secondaryHue)
-      document.getElementById('secondary-swatch').style.background = s.accent
-      document.getElementById('derived-accent').style.background = s.accent
-      document.getElementById('derived-bg').style.background = s.bg
-    }
+  function selectPalette(idx) {
+    activePalette = idx
+    buildAndApplyTheme()
   }
 
   function applyThemeToIframe() {
     postToIframe({ type: 'theme', vars: theme })
   }
 
-  // ── Colour mode & hue controls ────────────────────────────────────────────
-
-  function setColourMode(mode) {
-    colourMode = mode
-    document.querySelectorAll('.seg-btn').forEach((btn, i) => {
-      btn.classList.toggle('active', (i === 0 && mode === 'mono') || (i === 1 && mode === 'twotone'))
-    })
-    document.getElementById('twotone-section').style.display = mode === 'twotone' ? 'block' : 'none'
-    buildAndApplyTheme()
-  }
+  // ── Hue controls ─────────────────────────────────────────────────────────
 
   function onPrimaryHue(val) {
     primaryHue = parseInt(val)
     buildAndApplyTheme()
   }
 
-  function onSecondaryHue(val) {
-    secondaryHue = parseInt(val)
-    buildAndApplyTheme()
-  }
-
   // ── Site presets ──────────────────────────────────────────────────────────
 
-  // hue values per site (primary, secondary)
   const SITE_PRESETS = {
-    corporate:  { primaryHue: 200, secondaryHue: 45 },
-    campaign:   { primaryHue: 10,  secondaryHue: 35 },
-    formal:     { primaryHue: 145, secondaryHue: 200 },
-    modern:     { primaryHue: 220, secondaryHue: 270 },
-    school:     { primaryHue: 270, secondaryHue: 200 },
+    corporate:  { primaryHue: 200 },
+    campaign:   { primaryHue: 10 },
+    formal:     { primaryHue: 145 },
+    modern:     { primaryHue: 220 },
+    school:     { primaryHue: 270 },
   }
 
   function setSite(preset) {
@@ -945,14 +1071,13 @@
     if (!s) return
 
     primaryHue = s.primaryHue
-    secondaryHue = s.secondaryHue
+    activePalette = null
 
-    // Sync sliders
     document.getElementById('primary-hue').value = primaryHue
-    document.getElementById('secondary-hue').value = secondaryHue
 
     buildAndApplyTheme()
     postToIframe({ type: 'sitePreset', preset })
+    postToIframe({ type: 'setBlockConfig', blockId: 'grainy-hero', key: 'sitePreset', value: preset })
     setPage('home')
   }
 
@@ -1120,6 +1245,44 @@
     }
   }
 
+  function addSingleButton() {
+    const card = document.getElementById('nb-single-button')
+    const span = document.querySelector('#nb-btn-single-button .nb-add-text')
+    const isActive = addedBlocks.has('single-button-article')
+    if (isActive) {
+      addedBlocks.delete('single-button-article')
+      addedBlocks.delete('single-button-content')
+      postToIframe({ type: 'removeBlock', blockId: 'single-button-article', page: 'article' })
+      postToIframe({ type: 'removeBlock', blockId: 'single-button-content', page: 'content' })
+      if (card) card.classList.remove('nb-added')
+      if (span) span.textContent = '+ Add to article & content page'
+      document.getElementById('btn-controls').style.display = 'none'
+    } else {
+      addedBlocks.add('single-button-article')
+      addedBlocks.add('single-button-content')
+      postToIframe({ type: 'addBlock', blockId: 'single-button-article', page: 'article' })
+      postToIframe({ type: 'addBlock', blockId: 'single-button-content', page: 'content' })
+      setPage('article')
+      if (card) card.classList.add('nb-added')
+      if (span) span.textContent = '✓ Added'
+      document.getElementById('btn-controls').style.display = 'block'
+    }
+  }
+
+  function setSingleButtonConfig(key, value) {
+    postToIframe({ type: 'setBlockConfig', blockId: 'single-button-article', key, value })
+    postToIframe({ type: 'setBlockConfig', blockId: 'single-button-content', key, value })
+    if (key === 'variant') {
+      document.getElementById('btn-variant-solid').classList.toggle('active', value === 'solid')
+      document.getElementById('btn-variant-outline').classList.toggle('active', value === 'outline')
+    }
+    if (key === 'size') {
+      ;['sm', 'base', 'lg'].forEach(s => {
+        document.getElementById(`btn-size-${s}`).classList.toggle('active', value === s)
+      })
+    }
+  }
+
   function setFootnotesVariant(variant) {
     postToIframe({ type: 'setBlockConfig', blockId: 'footnotes', key: 'variant', value: variant })
     document.getElementById('fn-variant-popover').classList.toggle('active', variant === 'popover')
@@ -1142,9 +1305,13 @@
   // Keep thumbnail CSS vars in sync with live theme
   function syncNbVars() {
     const primary = hslToHex(primaryHue, 65, 28)
-    const canvasAlt = colourMode === 'twotone'
-      ? secondaryFromHue(secondaryHue).bg
-      : hslToHex(primaryHue, 25, 88)
+    let canvasAlt
+    if (activePalette !== null) {
+      const hues = generatePalettes(primaryHue)[activePalette]
+      canvasAlt = hslToHex(hues[1], 25, 88)
+    } else {
+      canvasAlt = hslToHex(primaryHue, 25, 88)
+    }
     document.documentElement.style.setProperty('--nb-primary', primary)
     document.documentElement.style.setProperty('--nb-canvas-alt', canvasAlt)
   }
