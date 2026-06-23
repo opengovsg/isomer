@@ -81,13 +81,55 @@ For an agent to read a frame reliably:
 - **Components used in the frame must exist in our design library** or be flagged as "new primitive — needs eng review" in the description.
 - **Spacing/sizing should reference tokens** when present. If a value is hardcoded, the agent will ask before using a magic number.
 
+## Automated PR pipeline
+
+Every PR triggers a three-stage automated pipeline via GitHub Actions. Stages run as separate check runs so their signals are distinct in the PR UI.
+
+### Stage 1 — Risk labeling (triggers: `opened`, `synchronize`, `ready_for_review`, `/isobot-review`)
+
+Runs on every push and when the PR is marked ready for review. Uses the `/compute-risk-tier` skill (LLM-powered) which reads `docs/risk-taxonomy.md`, diffs the PR, applies file-glob rules and reversibility modifiers, and sets the `risk:low / risk:medium / risk:high` label. Also re-runs when `/isobot-review` is commented (starts with, no prefix needed) so the label is always current at review time.
+
+### Stage 2 — Code review + security review (triggers: `ready_for_review`, `/isobot-review`)
+
+Runs when the author marks the PR ready, or when they comment `/isobot-review` (starts with) after pushing fixes. Does not run on `synchronize` — engineers should keep the PR in draft while iterating and mark ready only when they want a review. Three parallel jobs:
+
+**Risk tier** (`/compute-risk-tier` skill): re-computes tier at review time for the auto-approve gate. Falls back to `high` if the skill fails, keeping the gate conservative.
+
+**Code review** (`/code-review` skill):
+- Posts severity-tagged findings (Must Fix / Consider / Pre-existing)
+- Hot-path files escalate findings by one severity level (Consider→Must Fix, see `docs/risk-taxonomy.md`)
+- Writes `/tmp/review-result.json` for the auto-approve gate
+
+**Security review** (`/security-review` skill):
+- Covers: IDOR, missing auth middleware on new routes, overly broad permission grants, XSS vectors, unvalidated external input reaching Prisma, missing audit events on sensitive mutations, Mockpass integration surface, S3/CDN signed URL handling
+- Separate check run — always visible even when code review is clean
+- Writes `/tmp/security-result.json` for the auto-approve gate
+
+### Bot approval for `risk:low` PRs
+
+When both the code review and security review check runs pass clean (no Must Fix findings) and the PR meets all auto-approve conditions in `docs/risk-taxonomy.md`, the pipeline submits a formal GitHub APPROVE review via the bot identity. This counts toward required-approvals branch protection. A human still clicks merge.
+
+For `risk:medium` and `risk:high` PRs, the pipeline comments only — human approval required.
+
+### Convention: request human review only after pipeline clears
+
+The expected workflow:
+
+1. Author opens PR → risk label applied automatically
+2. Author marks ready for review → code review + security review run
+3. Author resolves Must Fix findings
+4. Author comments `/isobot-review` → pipeline re-runs → if clean, bot approves (`risk:low`) or signals ready for human (`risk:medium/high`)
+5. Author requests human reviewer
+
+Humans _can_ review earlier, but the convention is: don't tag a reviewer until the pipeline has cleared. The `risk:*` label and check run status are the signal.
+
 ## GitHub PR conventions
 
 When the agent opens a PR, it must:
 
 1. Link the originating Linear ticket in the PR body (first line: `Closes ENG-123`).
 2. Tag the PR with `ai-authored` (label).
-3. Add a risk tier label (`risk:low` / `risk:medium` / `risk:high`) determined by the `pr-review` skill.
+3. Add a risk tier label (`risk:low` / `risk:medium` / `risk:high`) — applied automatically by `🤖 PR: Risk Label` on every push.
 4. Use a stacked branch via Graphite when the change spans more than one concern (see [CONTRIBUTING.md](../CONTRIBUTING.md#stacked-prs-with-graphite)).
 5. Include a **Root cause** section (bugs) or **Approach** section (features) in the PR body.
 

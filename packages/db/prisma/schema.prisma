@@ -292,6 +292,8 @@ enum AuditLogEvent {
   SiteConfigUpdate
   FooterUpdate
   NavbarUpdate
+  RedirectCreate
+  RedirectDelete
 }
 
 model AuditLog {
