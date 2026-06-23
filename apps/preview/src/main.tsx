@@ -54,6 +54,26 @@ const CUSTOM_BLOCK_REGISTRY: Record<string, ComponentType> = {
   "lists-with-indentation": ListsWithIndentation,
 }
 
+function smoothScrollTo(targetY: number, duration = 1100) {
+  const startY = window.scrollY
+  const distance = targetY - startY
+  const startTime = performance.now()
+
+  function easeOutBack(t: number) {
+    const c1 = 0.6 // subtle overshoot
+    const c3 = c1 + 1
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+  }
+
+  function step(now: number) {
+    const progress = Math.min((now - startTime) / duration, 1)
+    window.scrollTo(0, startY + distance * easeOutBack(progress))
+    if (progress < 1) requestAnimationFrame(step)
+  }
+
+  requestAnimationFrame(step)
+}
+
 function applyThemeVars(vars: Record<string, string>) {
   const root = document.documentElement
   for (const [k, v] of Object.entries(vars)) {
@@ -199,7 +219,9 @@ function App() {
             document.getElementById("event-layout-portal") ??
             document.getElementById("after-hero-portal") ??
             document.getElementById("hero-portal")
-          el?.scrollIntoView({ behavior: "smooth", block: "start" })
+          if (!el) return
+          const target = el.getBoundingClientRect().top + window.scrollY - 24
+          smoothScrollTo(target, 1100)
         }, 200)
       }
       if (type === "injectCSS") {
@@ -217,6 +239,7 @@ function App() {
         }
         setLayoutOverrides((prev) => ({ ...prev, [vp]: variantId }))
         setPage(vp as PageType)
+        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 200)
       }
     }
     window.addEventListener("message", onMessage)

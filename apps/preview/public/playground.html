@@ -1233,6 +1233,7 @@
     activeVariants[page] = newVariant
     postToIframe({ type: 'setLayoutVariant', variantId: newVariant, page })
     setPage(page)
+    if (newVariant) postToIframe({ type: 'scrollToBlock', blockId: newVariant })
 
     // Update all variant cards for this page
     document.querySelectorAll('.nb-card').forEach(c => {
@@ -1300,8 +1301,8 @@
       addedBlocks.add('link-hub-content')
       postToIframe({ type: 'addBlock', blockId: 'link-hub-home', page: 'home' })
       postToIframe({ type: 'addBlock', blockId: 'link-hub-content', page: 'content' })
-      // Switch to homepage so user sees the block immediately
       setPage('home')
+      postToIframe({ type: 'scrollToBlock', blockId: 'link-hub-home' })
       if (card) card.classList.add('nb-added')
       if (span) span.textContent = '✓ Added'
     }
@@ -1325,6 +1326,7 @@
       postToIframe({ type: 'addBlock', blockId: 'single-button-article', page: 'article' })
       postToIframe({ type: 'addBlock', blockId: 'single-button-content', page: 'content' })
       setPage('article')
+      postToIframe({ type: 'scrollToBlock', blockId: 'single-button-article' })
       if (card) card.classList.add('nb-added')
       if (span) span.textContent = '✓ Added'
       document.getElementById('btn-controls').style.display = 'block'
