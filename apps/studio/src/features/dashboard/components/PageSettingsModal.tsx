@@ -22,8 +22,9 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import { useDebounce } from "@uidotdev/usehooks"
 import { useAtom } from "jotai"
-import { Suspense, useEffect, useMemo, useState } from "react"
+import { Suspense, useMemo } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { z } from "zod"
@@ -113,16 +114,7 @@ const PageSettingsModalContent = ({
   // is already a redirect source. Debounced so we don't query on every
   // keystroke. CollectionLinks have no URL of their own, so skip them.
   const candidateFullPermalink = `${permalinksToRender.parentPermalinks}${permalinksToRender.permalink}`
-  const [debouncedPermalink, setDebouncedPermalink] = useState(
-    candidateFullPermalink,
-  )
-  useEffect(() => {
-    const timeout = setTimeout(
-      () => setDebouncedPermalink(candidateFullPermalink),
-      300,
-    )
-    return () => clearTimeout(timeout)
-  }, [candidateFullPermalink])
+  const debouncedPermalink = useDebounce(candidateFullPermalink, 300)
 
   const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
     { siteId, source: debouncedPermalink },
