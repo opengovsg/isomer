@@ -932,10 +932,14 @@ export const getResourceFullPermalinks = async (
 }
 
 // Reverse of getResourceFullPermalink: resolves a full permalink path back to
-// the live resource it points at (for storing a redirect destination as a
-// [resource:...] reference), or null if nothing live matches. One query fetches
-// every resource matching a path segment, then walks the parent chain in memory
-// — the (siteId, parentId, permalink) constraint makes each step unambiguous.
+// the resource it points at (for storing a redirect destination as a
+// [resource:...] reference), or null if no resource matches. Resolves
+// regardless of publish state — a reference to a not-yet-published page is
+// valid, and the published redirect rules only include it once it goes live, so
+// the redirect can be pre-created and starts working on publish. One query
+// fetches every resource matching a path segment, then walks the parent chain in
+// memory — the (siteId, parentId, permalink) constraint makes each step
+// unambiguous.
 export const getResourceIdByPermalink = async (
   siteId: number,
   fullPermalink: string,
@@ -943,13 +947,12 @@ export const getResourceIdByPermalink = async (
   const segments = fullPermalink.split("/").filter(Boolean)
 
   // The site root ("/") is the RootPage, whose permalink is empty so it has no
-  // path segments to walk. Resolve it directly (published only, as below).
+  // path segments to walk. Resolve it directly.
   if (segments.length === 0) {
     const root = await db
       .selectFrom("Resource")
       .where("Resource.siteId", "=", siteId)
       .where("Resource.type", "=", ResourceType.RootPage)
-      .where("Resource.publishedVersionId", "is not", null)
       .select("Resource.id")
       .executeTakeFirst()
     return root ? Number(root.id) : null
@@ -988,8 +991,9 @@ export const getResourceIdByPermalink = async (
 
   // A Folder/Collection is served by its IndexPage child, and the published
   // site keys the URL on the container's id (the index page's id never appears
-  // there — the build remaps it to the folder). Resolve to the container,
-  // treating it as live when its index page is published.
+  // there — the build remaps it to the folder). Resolve to the container when it
+  // has an index page; publish state doesn't matter here (the build emits the
+  // redirect only once that index page is published).
   if (
     leaf.type === ResourceType.Folder ||
     leaf.type === ResourceType.Collection
@@ -999,17 +1003,11 @@ export const getResourceIdByPermalink = async (
       .where("Resource.siteId", "=", siteId)
       .where("Resource.parentId", "=", String(leaf.id))
       .where("Resource.type", "=", ResourceType.IndexPage)
-      .where("Resource.publishedVersionId", "is not", null)
       .select("Resource.id")
       .executeTakeFirst()
     return indexPage ? Number(leaf.id) : null
   }
 
-  // Any other resource type must itself be published — the walk traverses
-  // unpublished folders as path segments, but the target page must be live.
-  if (leaf.publishedVersionId === null) {
-    return null
-  }
   return Number(leaf.id)
 }
 

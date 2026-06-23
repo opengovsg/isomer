@@ -397,20 +397,20 @@ describe("createRedirectSchema", () => {
       expect(result.success).toBe(true)
     })
 
-    it("should reject an internal path that links to an on-page anchor", () => {
-      // Arrange / Act
+    it("should allow an internal path that links to an on-page anchor", () => {
+      // Arrange / Act: anchors are permitted on internal paths too — the
+      // published redirect's Location header can carry the fragment.
       const result = createRedirectSchema.safeParse({
         ...VALID_REDIRECT,
         destination: "/page#section",
       })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBe(true)
     })
 
     it("should allow a #fragment on an external https URL", () => {
-      // Arrange / Act: fragments are legitimate on external destinations; only
-      // internal-path anchors are unsupported.
+      // Arrange / Act: fragments are legitimate on external destinations too.
       const result = createRedirectSchema.safeParse({
         ...VALID_REDIRECT,
         destination: "https://www.example.gov.sg/page#section",

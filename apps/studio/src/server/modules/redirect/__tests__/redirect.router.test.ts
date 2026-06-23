@@ -1231,9 +1231,10 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe("/no-such-page")
     })
 
-    it("stores a literal path when the destination page exists but is unpublished", async () => {
-      // Arrange — a draft page has no live URL yet
-      await setupPageResource({
+    it("stores a reference when the destination page exists but is unpublished", async () => {
+      // Arrange — a draft page exists at /draft-page; it has no live URL yet, but
+      // the redirect references it so it starts working once the page publishes
+      const { page } = await setupPageResource({
         siteId,
         resourceType: ResourceType.Page,
         permalink: "draft-page",
@@ -1247,14 +1248,14 @@ describe("redirect.router", async () => {
         destination: "/draft-page",
       })
 
-      // Assert — kept literal (not converted to a reference, not rejected)
+      // Assert — resolved to a [resource:...] reference, not kept literal
       const row = await db
         .selectFrom("Redirect")
         .select("destination")
         .where("siteId", "=", siteId)
         .where("source", "=", "/from")
         .executeTakeFirstOrThrow()
-      expect(row.destination).toBe("/draft-page")
+      expect(row.destination).toBe(`[resource:${siteId}:${page.id}]`)
     })
 
     it("should resolve the site root '/' to the RootPage reference", async () => {
@@ -1307,8 +1308,9 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe(`[resource:${siteId}:${folder.id}]`)
     })
 
-    it("stores a literal path for a folder destination whose index page is unpublished", async () => {
-      // Arrange — a folder with no live index page has no live URL behind it yet
+    it("stores the folder reference for a folder destination whose index page is unpublished", async () => {
+      // Arrange — a folder whose index page is still a draft has no live URL yet,
+      // but the redirect references the folder so it works once it's published
       const { folder } = await setupFolder({ siteId, permalink: "about" })
       await setupPageResource({
         siteId,
@@ -1325,14 +1327,14 @@ describe("redirect.router", async () => {
         destination: "/about",
       })
 
-      // Assert — kept literal until the folder is published
+      // Assert — resolved to the folder reference, not kept literal
       const row = await db
         .selectFrom("Redirect")
         .select("destination")
         .where("siteId", "=", siteId)
         .where("source", "=", "/from")
         .executeTakeFirstOrThrow()
-      expect(row.destination).toBe("/about")
+      expect(row.destination).toBe(`[resource:${siteId}:${folder.id}]`)
     })
   })
 

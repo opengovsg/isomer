@@ -155,12 +155,6 @@ const destinationSchema = z
   .refine((value) => !trimSlashes(value).split("/").includes(".."), {
     message: INVALID_DESTINATION_MESSAGE,
   })
-  // An internal path can't redirect to an on-page anchor — the published
-  // redirect emits a Location header, which can't target a fragment. External
-  // https URLs may legitimately carry a #fragment, so this is scoped to paths.
-  .refine((value) => !value.startsWith("/") || !value.includes("#"), {
-    message: "Destination can't link to an anchor on a page",
-  })
   // Normalise internal-path destinations like sources (this also collapses a
   // protocol-relative "//evil.com" to "/evil.com", closing an open redirect).
   // External https URLs and [resource:...] references are left as entered.
