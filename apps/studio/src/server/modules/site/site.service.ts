@@ -1,3 +1,4 @@
+import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import type { Notification } from "~/schemas/site"
 import { TRPCError } from "@trpc/server"
 import { ResourceState, ResourceType } from "~/server/modules/database"
@@ -37,6 +38,43 @@ export const validateUserPermissionsForSite = async ({
       message: "You do not have sufficient permissions to perform this action",
     })
   }
+}
+
+type SiteSearchConfig = IsomerSiteConfigProps["search"]
+
+const EGAZETTE_ALGOLIA_SEARCH_TYPE = "egazette-algolia"
+
+/**
+ * The `egazette-algolia` search variant carries Algolia connection details
+ * (`appId`, `searchApiKey`, `indexName`) and a category taxonomy that may only
+ * be provisioned by an Isomer admin via `setSiteConfigByAdmin`. A site admin
+ * must not be able to add, remove, or tamper with this variant through
+ * `updateSiteConfig` / `updateSiteIntegrations` (cf. the SearchSG `clientId`
+ * protections in #2242).
+ *
+ * Returns the search config that should be persisted: when the site is already
+ * on `egazette-algolia`, the DB value is preserved verbatim and the incoming
+ * value is ignored; otherwise the incoming value is returned unchanged. Throws
+ * a `BAD_REQUEST` when the caller attempts to switch the search type to or from
+ * `egazette-algolia`.
+ */
+export const resolveEgazetteAlgoliaSearchConfig = (
+  existing: SiteSearchConfig,
+  incoming: SiteSearchConfig,
+): SiteSearchConfig => {
+  const wasEgazetteAlgolia = existing?.type === EGAZETTE_ALGOLIA_SEARCH_TYPE
+  const willBeEgazetteAlgolia = incoming?.type === EGAZETTE_ALGOLIA_SEARCH_TYPE
+
+  if (wasEgazetteAlgolia !== willBeEgazetteAlgolia) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message:
+        "Cannot change the eGazette Algolia search integration. Contact Isomer Support to update it.",
+    })
+  }
+
+  // egazette-algolia is admin-managed; never trust site-admin input for it.
+  return wasEgazetteAlgolia ? existing : incoming
 }
 
 export const getSiteConfig = async (db: SafeKysely, siteId: number) => {
