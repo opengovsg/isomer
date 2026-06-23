@@ -5,7 +5,10 @@ import {
   JsonFormsCategoryControl,
   jsonFormsCategoryControlTester,
 } from "~/features/editing-experience/components/form-builder/renderers/controls/JsonFormsCategoryControl"
-import { createDropdownGbParameters } from "~/stories/utils/growthbook"
+import {
+  createCategoryIdDropdownGbParameters,
+  createDropdownGbParameters,
+} from "~/stories/utils/growthbook"
 
 import { FormBuilder } from "./formBuilder"
 
@@ -43,7 +46,24 @@ const schema = Type.Object({
   }),
 })
 
-export const Default: Story = {
+/** CATEGORY_ID_DROPDOWN_FEATURE_KEY flag is off for this site — legacy free-text field is visible. */
+export const FlagOff: Story = {
+  args: {
+    schema,
+    renderers: [
+      {
+        tester: jsonFormsCategoryControlTester,
+        renderer: JsonFormsCategoryControl,
+      },
+    ],
+  },
+}
+
+/** CATEGORY_ID_DROPDOWN_FEATURE_KEY flag is on for this site — component renders nothing. */
+export const FlagOn: Story = {
+  parameters: {
+    growthbook: [createCategoryIdDropdownGbParameters("1")],
+  },
   args: {
     schema,
     renderers: [

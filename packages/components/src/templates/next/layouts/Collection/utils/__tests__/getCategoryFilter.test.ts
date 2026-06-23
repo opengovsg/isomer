@@ -128,6 +128,31 @@ describe("getCategoryFilter", () => {
     )
   })
 
+  it("orders correctly when categoryOptions labels are lowercase", () => {
+    // Arrange — admin saved labels in lowercase; schema only enforces non-empty, not case
+    const items: ProcessedCollectionCardProps[] = [
+      { category: "news" } as ProcessedCollectionCardProps,
+      { category: "policy" } as ProcessedCollectionCardProps,
+      { category: "research" } as ProcessedCollectionCardProps,
+    ]
+
+    const categoryOptions: CollectionPageCategoryOption[] = [
+      { id: "cat-uuid-1", label: "research" },
+      { id: "cat-uuid-2", label: "policy" },
+      { id: "cat-uuid-3", label: "news" },
+    ]
+
+    // Act
+    const result = getCategoryFilter(items, categoryOptions)
+
+    // Assert — order must follow categoryOptions, not fall back to alphabetical
+    expect(result.items.map((i) => i.id)).toEqual([
+      "research",
+      "policy",
+      "news",
+    ])
+  })
+
   it("places categories not listed in categoryOptions at the end", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
@@ -150,6 +175,33 @@ describe("getCategoryFilter", () => {
       "Policy",
       "News",
       "Others",
+    ])
+  })
+
+  it("sorts multiple unknown categories alphabetically when appended after known categories", () => {
+    // Arrange
+    const items: ProcessedCollectionCardProps[] = [
+      { category: "Zebra" } as ProcessedCollectionCardProps, // unknown
+      { category: "News" } as ProcessedCollectionCardProps, // known
+      { category: "Apple" } as ProcessedCollectionCardProps, // unknown
+      { category: "Policy" } as ProcessedCollectionCardProps, // known
+    ]
+
+    const categoryOptions: CollectionPageCategoryOption[] = [
+      { id: "cat-uuid-1", label: "Policy" },
+      { id: "cat-uuid-2", label: "News" },
+      // "Zebra" and "Apple" are intentionally absent
+    ]
+
+    // Act
+    const result = getCategoryFilter(items, categoryOptions)
+
+    // Assert — known items first in editor order, unknown items alphabetically after
+    expect(result.items.map((i) => i.label)).toEqual([
+      "Policy",
+      "News",
+      "Apple",
+      "Zebra",
     ])
   })
 })
