@@ -14,7 +14,6 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { CollectionTags } from "../../hooks/useCollectionTags"
 import { useCollectionTags } from "../../hooks/useCollectionTags"
@@ -45,18 +44,13 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
-    type,
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(pageSchema)
 
-  const isCollectionItem =
-    type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
-
   const { data: collectionTags = [] } = useCollectionTags({
     resourceId: pageId,
     siteId,
-    enabled: isCollectionItem,
   })
 
   const toast = useToast()
