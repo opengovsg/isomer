@@ -272,7 +272,7 @@ const PageSettingsModalContent = ({
                     >
                       <Checkbox
                         alignItems="flex-start"
-                        size="1.25rem"
+                        size="lg"
                         isChecked={!!value}
                         onChange={(e) => onChange(e.target.checked)}
                         ref={ref}
