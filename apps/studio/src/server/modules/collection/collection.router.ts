@@ -548,10 +548,18 @@ export const collectionRouter = router({
       })
 
       if (collectionId !== undefined) {
-        return getCollectionTagsForResource({ siteId, collectionId })
+        return getCollectionTagsForResource({
+          siteId,
+          collectionId,
+          isPublishedOnly: true,
+        })
       }
       if (resourceId !== undefined) {
-        return getCollectionTagsForResource({ siteId, resourceId })
+        return getCollectionTagsForResource({
+          siteId,
+          resourceId,
+          isPublishedOnly: true,
+        })
       }
       throw new TRPCError({
         code: "BAD_REQUEST",

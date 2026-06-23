@@ -54,3 +54,24 @@ export const Default: Story = {
     ],
   },
 }
+
+export const WithRequiredCategory: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.getCategories.default(),
+        pageHandlers.getCategoryOptions.default(),
+        pageHandlers.getCollectionTags.withRequired(),
+      ],
+    },
+  },
+  args: {
+    schema,
+    renderers: [
+      {
+        tester: jsonFormsTaggedControlTester,
+        renderer: JsonFormsTaggedControl,
+      },
+    ],
+  },
+}
