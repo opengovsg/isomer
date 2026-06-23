@@ -56,20 +56,19 @@ patchedDependencies:
 
 catalog:
   ajv: ^8.20.0
-  axios: ^1.16.1
+  axios: ^1.17.0
   bootstrap-icons: ^1.13.1
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.0.0
-  chromatic: ^16.8.0
+  chromatic: ^17.3.0
   clean-webpack-plugin: ^4.0.0
   culori: ^4.0.2
-  commander-ts: ^0.2.0
-  dayjs: ^1.11.13
+  dayjs: ^1.11.21
   date-fns: ^4.4.0
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
   jsdom: ^29.1.1
-  happy-dom: ^20.9.0
+  happy-dom: ^20.10.2
   isomorphic-dompurify: ^3.15.0
   mockdate: ^3.0.5
   msw: ^2.14.6
@@ -78,9 +77,9 @@ catalog:
   node-mocks-http: ^1.16.2
   npm-run-all2: ^9.0.1
   "@octokit/rest": ^22.0.0
-  "@inquirer/prompts": ^8.4.3
+  "@inquirer/prompts": ^8.5.2
   "@opengovsg/design-system-react": ^1.31.0
-  "@opengovsg/starter-kitty-validators": ^1.2.13
+  "@opengovsg/starter-kitty-validators": ^1.3.0
   "@paralleldrive/cuid2": ^3.3.0
   "@sinclair/typebox": ^0.33.12
   "@tanstack/react-table": ^8.21.2
@@ -89,18 +88,18 @@ catalog:
   pino: ^10.3.1
   pino-pretty: ^13.0.0
   postcss: ^8.5.15
-  postcss-preset-env: ^11.2.1
+  postcss-preset-env: ^11.3.1
   react-icons: ^5.2.0
   rimraf: ^6.1.3
   sherif: ^1.11.1
-  start-server-and-test: ^3.0.5
+  start-server-and-test: ^3.0.11
   tailwindcss: ^3.4.4
   testcontainers: ^12.0.1
   tsc-alias: ^1.8.17
-  "@typescript/native-preview": 7.0.0-dev.20260513.1
+  "@typescript/native-preview": 7.0.0-dev.20260615.1
   type-fest: ^5.7.0
   tsx: ^4.22.3
-  turbo: ^2.9.16
+  turbo: ^2.9.17
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
   webpack-cli: ^7.0.3
@@ -109,16 +108,15 @@ catalog:
   "@types/culori": ^4.0.1
   "@types/lodash-es": ^4.17.12
   "@types/lunr": ^2.3.7
-  "@types/node": ^25.7.0
+  "@types/node": ^25.9.3
   "@types/papaparse": ^5.5.0
   "@types/pg": ^8.15.4
   "@types/request": ^2.48.12
   "@types/validator": ^13.15.2
-  globals: ^11.12.0
   "@1password/sdk": ^0.4.0
   "@datadog/browser-rum": ^7.2.0
   "@fontsource/ibm-plex-mono": ^5.1.1
-  "@formkit/auto-animate": ^0.8.2
+  "@formkit/auto-animate": ^0.9.0
   "@headlessui/react": ^2.2.10
   "@hello-pangea/dnd": ^18.0.1
   "@hookform/resolvers": ^5.4.0
@@ -129,7 +127,7 @@ catalog:
   chakra-react-select: ^5.1.1
   commander: ^15.0.0
   date-fns-tz: ^3.1.3
-  dd-trace: ^5.102.0
+  dd-trace: ^5.108.0
   exponential-backoff: ^3.1.2
   filenamify: ^7.0.1
   flat: ^6.0.1
@@ -138,7 +136,7 @@ catalog:
   interweave-ssr: ^2.0.0
   iron-session: ^8.0.4
   jose: ^6.2.3
-  jotai: ^2.20.0
+  jotai: ^2.20.1
   js-md5: ^0.8.3
   kysely: ^0.29.2
   lodash-es: ^4.18.1
@@ -146,40 +144,40 @@ catalog:
   nanoid: ^5.1.11
   next: 16.2.6
   openid-client: ^5.7.1
-  oxfmt: ^0.48.0
-  oxlint: ^1.64.0
+  oxfmt: ^0.54.0
+  oxlint: ^1.68.0
   oxlint-tsgolint: ^0.23.0
   papaparse: ^5.5.3
-  pg-boss: ^12.3.0
+  pg-boss: ^12.18.2
   postcss-load-config: ^6.0.1
-  rate-limiter-flexible: ^11.1.0
-  react-error-boundary: ^5.0.0
+  rate-limiter-flexible: ^11.2.0
+  react-error-boundary: ^6.1.2
   react-frame-component: ^5.2.7
-  react-hook-form: ^7.75.0
+  react-hook-form: ^7.77.0
   react-markdown: ^10.1.0
   rehype-external-links: ^3.0.0
-  sass: ^1.99.0
+  sass: ^1.100.0
   superjson: ^2.2.1
   tailwind-merge: ^2.4.0
   tailwind-variants: ^3.2.2
   tailwindcss-react-aria-components: ^2.0.0
-  tiptap-text-direction: ^0.4.0
+  tiptap-text-direction: ^0.5.0
   transliteration: ^2.6.1
   validator: ^13.15.35
-  wretch: ^3.0.7
+  wretch: ^3.0.8
 
 catalogs:
   atlaskitPragmaticDnd:
-    "@atlaskit/pragmatic-drag-and-drop": ^1.7.7
-    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.1.0
+    "@atlaskit/pragmatic-drag-and-drop": ^1.8.1
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.2.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1060.0
-    "@aws-sdk/client-amplify": ^3.1060.0
-    "@aws-sdk/client-cloudfront": ^3.1060.0
-    "@aws-sdk/client-codebuild": ^3.1060.0
-    "@aws-sdk/client-s3": ^3.1060.0
-    "@aws-sdk/s3-request-presigner": ^3.1060.0
-    "@aws-sdk/credential-providers": ^3.1060.0
+    "@aws-sdk/client-acm": ^3.1065.0
+    "@aws-sdk/client-amplify": ^3.1065.0
+    "@aws-sdk/client-cloudfront": ^3.1065.0
+    "@aws-sdk/client-codebuild": ^3.1065.0
+    "@aws-sdk/client-s3": ^3.1065.0
+    "@aws-sdk/s3-request-presigner": ^3.1065.0
+    "@aws-sdk/credential-providers": ^3.1065.0
   babel:
     "@babel/plugin-transform-class-properties": ^7.29.7
     "@babel/plugin-transform-object-rest-spread": ^7.29.7
@@ -187,11 +185,11 @@ catalogs:
     "@babel/preset-typescript": ^7.29.7
   casl:
     "@casl/ability": ^7.0.0
-    "@casl/react": ^5.0.0
+    "@casl/react": ^7.0.0
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
     "@chakra-ui/cli": ^2.5.8
-    "@chakra-ui/react": ^2.10.5
+    "@chakra-ui/react": ^2.10.10
     "@chakra-ui/styled-system": ^2.9.2
     "@chakra-ui/theme-tools": ^2.2.6
     "@chakra-ui/utils": ^2.2.2
@@ -222,15 +220,15 @@ catalogs:
     "@react-stately/checkbox": ^3.8.1
     "@react-stately/toggle": ^3.10.1
   storybook:
-    storybook: ^10.4.2
-    "@storybook/addon-a11y": ^10.4.2
-    "@storybook/addon-docs": ^10.4.2
-    "@storybook/addon-links": ^10.4.2
-    "@storybook/addon-themes": ^10.4.2
-    "@storybook/nextjs": ^10.4.2
-    "@storybook/react-vite": ^10.4.2
-    eslint-plugin-storybook: ^10.4.2
-    storybook-addon-pseudo-states: ^10.4.1
+    storybook: ^10.4.3
+    "@storybook/addon-a11y": ^10.4.3
+    "@storybook/addon-docs": ^10.4.3
+    "@storybook/addon-links": ^10.4.3
+    "@storybook/addon-themes": ^10.4.3
+    "@storybook/nextjs": ^10.4.3
+    "@storybook/react-vite": ^10.4.3
+    eslint-plugin-storybook: ^10.4.3
+    storybook-addon-pseudo-states: ^10.4.3
   tanstack-query:
     "@tanstack/query-devtools": ^5.101.0
     "@tanstack/react-query": ^5.101.0
@@ -240,35 +238,35 @@ catalogs:
     "@tailwindcss/postcss": ^4.3.0
     tailwindcss: ^4.3.0
   tiptap:
-    "@tiptap/core": ^3.23.4
-    "@tiptap/extension-bold": ^3.23.4
-    "@tiptap/extension-bullet-list": ^3.23.4
-    "@tiptap/extension-character-count": ^3.23.4
-    "@tiptap/extension-document": ^3.23.4
-    "@tiptap/extension-dropcursor": ^3.23.4
-    "@tiptap/extension-gapcursor": ^3.23.4
-    "@tiptap/extension-hard-break": ^3.23.4
-    "@tiptap/extension-heading": ^3.23.4
-    "@tiptap/extension-history": ^3.23.4
-    "@tiptap/extension-horizontal-rule": ^3.23.4
-    "@tiptap/extension-image": ^3.23.4
-    "@tiptap/extension-italic": ^3.23.4
-    "@tiptap/extension-link": ^3.23.4
-    "@tiptap/extension-list-item": ^3.23.4
-    "@tiptap/extension-ordered-list": ^3.23.4
-    "@tiptap/extension-paragraph": ^3.23.4
-    "@tiptap/extension-strike": ^3.23.4
-    "@tiptap/extension-subscript": ^3.23.4
-    "@tiptap/extension-superscript": ^3.23.4
-    "@tiptap/extension-table": ^3.23.4
-    "@tiptap/extension-table-cell": ^3.23.4
-    "@tiptap/extension-table-header": ^3.23.4
-    "@tiptap/extension-table-row": ^3.23.4
-    "@tiptap/extension-text": ^3.23.4
-    "@tiptap/extension-underline": ^3.23.4
-    "@tiptap/html": ^3.23.4
-    "@tiptap/pm": ^3.23.4
-    "@tiptap/react": ^3.23.4
+    "@tiptap/core": ^3.26.1
+    "@tiptap/extension-bold": ^3.26.1
+    "@tiptap/extension-bullet-list": ^3.26.1
+    "@tiptap/extension-character-count": ^3.26.1
+    "@tiptap/extension-document": ^3.26.1
+    "@tiptap/extension-dropcursor": ^3.26.1
+    "@tiptap/extension-gapcursor": ^3.26.1
+    "@tiptap/extension-hard-break": ^3.26.1
+    "@tiptap/extension-heading": ^3.26.1
+    "@tiptap/extension-history": ^3.26.1
+    "@tiptap/extension-horizontal-rule": ^3.26.1
+    "@tiptap/extension-image": ^3.26.1
+    "@tiptap/extension-italic": ^3.26.1
+    "@tiptap/extension-link": ^3.26.1
+    "@tiptap/extension-list-item": ^3.26.1
+    "@tiptap/extension-ordered-list": ^3.26.1
+    "@tiptap/extension-paragraph": ^3.26.1
+    "@tiptap/extension-strike": ^3.26.1
+    "@tiptap/extension-subscript": ^3.26.1
+    "@tiptap/extension-superscript": ^3.26.1
+    "@tiptap/extension-table": ^3.26.1
+    "@tiptap/extension-table-cell": ^3.26.1
+    "@tiptap/extension-table-header": ^3.26.1
+    "@tiptap/extension-table-row": ^3.26.1
+    "@tiptap/extension-text": ^3.26.1
+    "@tiptap/extension-underline": ^3.26.1
+    "@tiptap/html": ^3.26.1
+    "@tiptap/pm": ^3.26.1
+    "@tiptap/react": ^3.26.1
   trpc:
     "@trpc/client": ^11.17.0
     "@trpc/next": ^11.17.0
@@ -276,7 +274,7 @@ catalogs:
     "@trpc/server": ^11.17.0
   vitest:
     "@vitejs/plugin-react": ^6.0.2
-    "@vitest/coverage-istanbul": ^4.1.7
+    "@vitest/coverage-istanbul": ^4.1.9
     vite: ^8.0.16
     vite-tsconfig-paths: ^6.1.1
-    vitest: ^4.1.7
+    vitest: ^4.1.9

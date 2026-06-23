@@ -1767,6 +1767,84 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should move a collection into a folder", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { collection, site } = await setupCollection({
+        permalink: "my-collection",
+      })
+      const { folder: destinationFolder } = await setupFolder({
+        siteId: site.id,
+        permalink: "destination-folder",
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.move({
+        siteId: site.id,
+        movedResourceId: collection.id,
+        destinationResourceId: destinationFolder.id,
+      })
+
+      // Assert
+      const expected = {
+        ...pick(collection, ["id", "type", "permalink", "title"]),
+        parentId: destinationFolder.id,
+      }
+      expect(result).toMatchObject(expected)
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", collection.id)
+        .select(["parentId"])
+        .executeTakeFirstOrThrow()
+      expect(actual.parentId).toEqual(destinationFolder.id)
+      const auditEntry = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "ResourceUpdate")
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(auditSpy).toHaveBeenCalled()
+      expect(auditEntry.delta.after!).toMatchObject(
+        omit(result, ["createdAt", "updatedAt"]),
+      )
+      expect(auditEntry.userId).toBe(session.userId)
+    })
+
+    it("should return 400 if moving a collection into another collection", async () => {
+      // Arrange
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      const { collection: collectionToMove, site } = await setupCollection({
+        permalink: "collection-to-move",
+      })
+      const { collection: destinationCollection } = await setupCollection({
+        siteId: site.id,
+        permalink: "destination-collection",
+      })
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: collectionToMove.id,
+        destinationResourceId: destinationCollection.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Folder items can only be moved to another folder",
+        }),
+      )
+    })
+
     it.skip("should throw 403 if user does not have write access to destination resource", async () => {})
 
     it.skip("should throw 403 if user does not have write access to origin resource", async () => {})

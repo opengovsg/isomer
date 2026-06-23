@@ -135,6 +135,7 @@
     "isomorphic-dompurify": "catalog:",
     "jose": "catalog:",
     "jotai": "catalog:",
+    "jsdom": "catalog:",
     "kysely": "catalog:",
     "lodash-es": "catalog:",
     "nanoid": "catalog:",

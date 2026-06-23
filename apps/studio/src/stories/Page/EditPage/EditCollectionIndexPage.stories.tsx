@@ -140,11 +140,7 @@ export const NewCollectionIndexEditingExperienceForDisplay: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", {
-      name: /Collection display/i,
-    })
-    await userEvent.click(button)
-    await canvas.findByText(/Collection display/i)
+    await canvas.findByText(/Manage Collection/i)
   },
 }
 

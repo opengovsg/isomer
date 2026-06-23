@@ -119,7 +119,8 @@ const MoveResourceContent = withSuspense(
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.25rem">
             <Infobox size="sm" w="full">
-              Moving a page or folder changes its URL, effective immediately
+              Moving a page, folder, or collection changes its URL, effective
+              immediately
             </Infobox>
             <ResourceSelector
               interactionType="move"

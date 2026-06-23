@@ -3,6 +3,7 @@ export const JSON_FORMS_RANKING = {
   ArrayControl: 4,
   TagCategoryControl: 5,
   TagCategoryOptionsControl: 5,
+  CategoryOptionsControl: 5,
   TaggedControl: 4,
   BooleanControl: 2,
   ConstControl: 2,
@@ -41,6 +42,7 @@ export const JSON_FORMS_RANKING = {
   AnyOfControl: 3,
   OneOfControl: 3,
   CategoryControl: 3,
+  CategoryIdControl: 3,
   CollectionDropdownControl: 3,
   ProseControl: 3,
   LinkControl: 3,
@@ -56,3 +58,5 @@ export const JSON_FORMS_RANKING = {
 export const PROSE_COMPONENT_NAME = "Text"
 
 export const TEXTAREA_CHARACTERS_PER_ROW = 70
+export const TEXTAREA_DEFAULT_ROWS = 3
+export const TEXTAREA_MAX_ROWS = 5

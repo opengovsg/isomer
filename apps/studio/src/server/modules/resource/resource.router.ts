@@ -488,6 +488,7 @@ export const resourceRouter = router({
                 ResourceType.Page,
                 ResourceType.CollectionPage,
                 ResourceType.Folder,
+                ResourceType.Collection,
                 ResourceType.CollectionLink,
               ])
               .set({

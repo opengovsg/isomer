@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { pageHandlers } from "tests/msw/handlers/page"
+import { redirectHandlers } from "tests/msw/handlers/redirect"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import RedirectsSettingsPage from "~/pages/sites/[siteId]/settings/redirects"
 import { ADMIN_HANDLERS } from "~/stories/handlers"
@@ -44,5 +45,25 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   parameters: {
     growthbook: [createRedirectionsEnabledGbParameters(true)],
+    msw: {
+      handlers: [
+        redirectHandlers.list.default(),
+        redirectHandlers.count.default(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+}
+
+export const Empty: Story = {
+  parameters: {
+    growthbook: [createRedirectionsEnabledGbParameters(true)],
+    msw: {
+      handlers: [
+        redirectHandlers.list.empty(),
+        redirectHandlers.count.empty(),
+        ...COMMON_HANDLERS,
+      ],
+    },
   },
 }

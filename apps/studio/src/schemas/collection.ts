@@ -94,6 +94,12 @@ export const getCollectionTagsSchema = z
     { message: "Exactly one of resourceId or collectionId must be provided" },
   )
 
+export const getCategoryOptionUsageCountSchema = z.object({
+  siteId: z.number().min(1, { message: "Site ID must be at least 1" }),
+  indexPageId: z.number().min(1, { message: "Page ID must be at least 1" }),
+  categoryId: z.uuid(),
+})
+
 export const getCollectionsSchema = z.object({
   siteId: z.number().min(1),
   hasChildren: z.boolean().optional().default(false),

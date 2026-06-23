@@ -1,4 +1,3 @@
-import type { StackProps, IconProps } from "@chakra-ui/react"
 import type { DropResult } from "@hello-pangea/dnd"
 import type {
   IsomerComponent,
@@ -118,40 +117,28 @@ const FixedBlock = () => {
     isNewCollectionTagsManagementEnabled
   ) {
     // New collection editing UI introduced in https://github.com/opengovsg/isomer/pull/2002
-    const containerProps: StackProps = {
-      px: "1.25rem",
-      py: "1.25rem",
-      flexDirection: "column",
-      gap: "0.75rem",
-      align: "flex-start",
-    }
-    const iconProps: IconProps = {
-      boxSize: "1.25rem",
-    }
     return (
       <>
         <BaseBlock
+          variant="vertical"
           onClick={() => {
             setCurrActiveIdx(0)
             setDrawerState({ state: "collectionEditor", type: "display" })
           }}
           label="Collection display"
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
-          containerProps={containerProps}
           icon={BiCog}
-          iconProps={iconProps}
         />
         {isUserIsomerAdmin && (
           <BaseBlock
+            variant="vertical"
             onClick={() => {
               setCurrActiveIdx(0)
               setDrawerState({ state: "collectionEditor", type: "filter" })
             }}
             label="Filters"
             description="Define and manage filters for this Collection."
-            containerProps={containerProps}
             icon={BiSlider}
-            iconProps={iconProps}
           />
         )}
       </>
@@ -482,9 +469,15 @@ export default function RootStateDrawer() {
             <Disable when={disableBlocks}>
               <VStack gap="1rem" w="100%" align="start">
                 <VStack gap="0.25rem" align="start">
-                  <Text textStyle="subhead-1">Manage Collection</Text>
+                  <Text textStyle="subhead-1">
+                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
+                      ? "Manage Collection"
+                      : "Fixed blocks"}
+                  </Text>
                   <Text textStyle="caption-2" color="base.content.medium">
-                    Modify the Collection’s look and feel or manage filters.
+                    {pageLayout === ISOMER_USABLE_PAGE_LAYOUTS.Collection
+                      ? "Modify the Collection’s look and feel or manage filters."
+                      : "These are built into the layout, so you can’t delete them."}
                   </Text>
                 </VStack>
 

@@ -8,8 +8,8 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
-import { TagDraggableButton } from "./DraggableTagButton"
 import { DuplicateLabelError } from "./DuplicateLabelError"
 import { JsonFormsArrayControlView } from "./JsonFormsArrayControl"
 import { TagRowActionsMenu } from "./TagRowActionsMenu"
@@ -41,10 +41,19 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     const item = get(core?.data, composePaths(path, `${index}`)) as
       | { label?: string; id?: string }
       | undefined
+    const tagId = item?.id?.trim()
+
+    // New item without a persisted id — remove immediately, no modal needed.
+    if (!tagId) {
+      if (!removeItems || isRemoveItemDisabled) return
+      removeItems(path, [index])()
+      return
+    }
+
     setDeleteTarget({
       index,
       label: item?.label?.trim() ?? "",
-      tagId: item?.id,
+      tagId,
     })
   }
 
@@ -62,24 +71,46 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
         addItemLabel="Add option"
         renderListItem={(rowProps) => {
           const isDuplicate = duplicateOptionIndices.has(rowProps.index)
+          const isError = rowProps.isError || isDuplicate
           return (
-            <TagDraggableButton
-              {...rowProps}
-              isError={rowProps.isError || isDuplicate}
-              listItemTrailing={
+            <DraggableTagButton.Root
+              draggableProps={rowProps.draggableProps}
+              isError={isError}
+              ref={rowProps.ref}
+            >
+              <DraggableTagButton.Handle
+                dragHandleProps={rowProps.dragHandleProps}
+              />
+              <DraggableTagButton.Body
+                onClick={() => rowProps.setSelectedIndex(rowProps.index)}
+              >
+                <DraggableTagButton.Content>
+                  <DraggableTagButton.Label
+                    index={rowProps.index}
+                    path={rowProps.path}
+                    schema={rowProps.schema}
+                    uischema={rowProps.uischema}
+                    enabled={rowProps.enabled}
+                    removeItem={rowProps.removeItem}
+                  />
+                  {isError && (
+                    <DraggableTagButton.ErrorCaption>
+                      {isDuplicate
+                        ? "An option with this name already exists."
+                        : undefined}
+                    </DraggableTagButton.ErrorCaption>
+                  )}
+                </DraggableTagButton.Content>
+              </DraggableTagButton.Body>
+              <DraggableTagButton.Trailing>
                 <TagRowActionsMenu
                   noun="option"
                   index={rowProps.index}
                   isDisabled={isRemoveItemDisabled}
                   onDelete={() => openDeleteModal(rowProps.index)}
                 />
-              }
-              listItemErrorCaption={
-                isDuplicate
-                  ? "An option with this name already exists."
-                  : undefined
-              }
-            />
+              </DraggableTagButton.Trailing>
+            </DraggableTagButton.Root>
           )
         }}
         emptyState={
@@ -105,7 +136,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
         <DeleteConfirmModal
           isOpen
           label={deleteTarget.label}
-          noun="option"
+          noun="filter option"
           warningBody={
             <Text textStyle="body-2">
               {/* TODO: replace XX with usage count from backend */}
