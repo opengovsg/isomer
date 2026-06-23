@@ -16,24 +16,24 @@
     /* Preview panel */
     #preview-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     #preview-controls { flex-shrink: 0; background: white; border-bottom: 1px solid #e5e7eb; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    #preview-viewport { flex: 1; overflow: auto; background: #e5e7eb; padding: 24px; display: flex; justify-content: center; align-items: flex-start; scrollbar-width: none; }
-    #preview-viewport:hover { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
-    #preview-viewport::-webkit-scrollbar { width: 0; height: 0; }
-    #preview-viewport:hover::-webkit-scrollbar { width: 4px; height: 4px; }
+    #preview-viewport { flex: 1; overflow: auto; background: #e5e7eb; padding: 24px; display: flex; justify-content: center; align-items: flex-start; scrollbar-width: thin; scrollbar-color: transparent transparent; }
+    #preview-viewport:hover { scrollbar-color: #d1d5db transparent; }
+    #preview-viewport::-webkit-scrollbar { width: 4px; height: 4px; }
     #preview-viewport::-webkit-scrollbar-track { background: transparent; }
-    #preview-viewport::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+    #preview-viewport::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; transition: background 0.15s; }
+    #preview-viewport:hover::-webkit-scrollbar-thumb { background: #d1d5db; }
     #iframe-wrapper { background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.08); border-radius: 6px; overflow: hidden; flex-shrink: 0; }
     #preview-iframe { display: block; border: none; zoom: 0.75; }
 
     /* Controls panel */
     #controls-panel { display: flex; flex-direction: row; flex-shrink: 0; overflow: hidden; }
     #panel-content-area { width: 300px; display: flex; flex-direction: column; background: white; border-left: 1px solid #e5e7eb; overflow: hidden; }
-    .panel-content { flex: 1; overflow-y: auto; padding: 16px; scrollbar-width: none; }
-    .panel-content:hover { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
-    .panel-content::-webkit-scrollbar { width: 0; }
-    .panel-content:hover::-webkit-scrollbar { width: 4px; }
+    .panel-content { flex: 1; overflow-y: auto; padding: 16px; scrollbar-width: thin; scrollbar-color: transparent transparent; }
+    .panel-content:hover { scrollbar-color: #d1d5db transparent; }
+    .panel-content::-webkit-scrollbar { width: 4px; }
     .panel-content::-webkit-scrollbar-track { background: transparent; }
-    .panel-content::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+    .panel-content::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; transition: background 0.15s; }
+    .panel-content:hover::-webkit-scrollbar-thumb { background: #d1d5db; }
     .panel-content.hidden { display: none; }
 
     /* Vertical icon rail */
@@ -355,6 +355,49 @@
 
         <div class="section-label">Page Layouts</div>
 
+        <!-- Event layout -->
+        <div class="nb-card" id="nb-event-layout" onclick="setLayoutVariant('event-layout','article')">
+          <div class="nb-thumb">
+            <div style="display:flex;flex-direction:column;gap:3px;width:100%;">
+              <!-- Full-bleed hero image -->
+              <div style="height:22px;background:#d1d5db;border-radius:2px;margin-bottom:1px;"></div>
+              <!-- Info + CTA row -->
+              <div style="display:flex;gap:4px;align-items:flex-start;">
+                <div style="flex:1.7;display:flex;flex-direction:column;gap:2px;">
+                  <div style="height:2px;background:#9ca3af;border-radius:1px;width:40%"></div>
+                  <div style="height:4px;background:#111827;border-radius:1px;width:90%"></div>
+                  <div style="height:4px;background:#111827;border-radius:1px;width:75%"></div>
+                  <div style="height:2px;background:#d1d5db;border-radius:1px;width:60%;margin-top:1px;"></div>
+                  <div style="display:flex;gap:2px;align-items:center;margin-top:1px;">
+                    <div style="width:5px;height:5px;border-radius:50%;background:#6b7280;"></div>
+                    <div style="height:2px;background:#374151;border-radius:1px;flex:1;"></div>
+                  </div>
+                  <div style="display:flex;gap:2px;align-items:center;">
+                    <div style="width:5px;height:5px;border-radius:50%;background:#6b7280;"></div>
+                    <div style="height:2px;background:#374151;border-radius:1px;flex:1;width:70%;"></div>
+                  </div>
+                </div>
+                <div style="flex:1;background:#e6ecef;border-radius:3px;padding:4px 5px;display:flex;flex-direction:column;gap:2px;">
+                  <div style="height:2px;background:#374151;border-radius:1px;width:85%;"></div>
+                  <div style="height:8px;background:#00405f;border-radius:2px;width:100%;margin-top:2px;"></div>
+                </div>
+              </div>
+              <!-- Tabs -->
+              <div style="display:flex;gap:4px;border-bottom:1.5px solid #d1d5db;padding-bottom:2px;margin-top:1px;">
+                <div style="height:2px;background:#00405f;border-radius:1px;width:22%;border-bottom:1.5px solid #00405f;padding-bottom:2px;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:22%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:15%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:22%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Events page <span class="nb-page-tag">Article</span></div>
+            <div class="nb-desc">Full-bleed header image, event details with location and date, registration CTA, tabs, and rich body content with photos, map, and host card.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-event-layout"><span class="nb-add-text">Apply to article page</span></div>
+        </div>
+
         <!-- Article layout alt -->
         <div class="nb-card" id="nb-article-layout-alt" onclick="setLayoutVariant('article-alt','article')">
           <div class="nb-thumb">
@@ -379,34 +422,6 @@
             <div class="nb-desc">Title on left, summary on right (collapses on mobile). Full-bleed cover image below the header.</div>
           </div>
           <div class="nb-add-btn" id="nb-btn-article-layout-alt"><span class="nb-add-text">Apply to article page</span></div>
-        </div>
-
-        <!-- Events page layout (placeholder) -->
-        <div class="nb-card" style="opacity:0.5;pointer-events:none;">
-          <div class="nb-thumb">
-            <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
-              <div style="height:10px;background:#111827;border-radius:2px;width:60%"></div>
-              <div style="display:flex;gap:4px;margin-top:2px;">
-                <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
-                  <div style="height:20px;background:#e5e7eb;border-radius:2px;"></div>
-                  <div style="height:3px;background:#d1d5db;border-radius:1px;width:80%;"></div>
-                </div>
-                <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
-                  <div style="height:20px;background:#e5e7eb;border-radius:2px;"></div>
-                  <div style="height:3px;background:#d1d5db;border-radius:1px;width:70%;"></div>
-                </div>
-                <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
-                  <div style="height:20px;background:#e5e7eb;border-radius:2px;"></div>
-                  <div style="height:3px;background:#d1d5db;border-radius:1px;width:90%;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="nb-info">
-            <div class="nb-title">Events page <span class="nb-page-tag">Coming soon</span></div>
-            <div class="nb-desc">A dedicated layout for event listings with date, time, and location fields.</div>
-          </div>
-          <div class="nb-add-btn"><span class="nb-add-text">Coming soon</span></div>
         </div>
 
         <!-- Content layout alt -->
@@ -697,6 +712,15 @@
             <div class="nb-desc">Inline superscript footnotes on underlined words. Click a word to reveal a dismissible popover with the footnote detail.</div>
           </div>
           <div class="nb-add-btn" id="nb-btn-footnotes"><span class="nb-add-text">+ Add to article page</span></div>
+        </div>
+
+        <!-- Footnotes controls (shown when block is active) -->
+        <div id="footnotes-controls" style="display:none; background:#f9fafb; border:1.5px solid #111827; border-radius:8px; padding:12px; margin-bottom:10px;">
+          <div class="section-label" style="margin-top:0; margin-bottom:8px;">Interaction style</div>
+          <div class="seg-control" style="margin-bottom:0;">
+            <button class="seg-btn active" id="fn-variant-popover" onclick="setFootnotesVariant('popover')">Popover</button>
+            <button class="seg-btn" id="fn-variant-sheet" onclick="setFootnotesVariant('sheet')">Sheet</button>
+          </div>
         </div>
 
         <div class="section-label">Lists</div>
@@ -1035,7 +1059,7 @@
       const isNowActive = (newVariant === vid)
       c.classList.toggle('nb-added', isNowActive)
       const span = c.querySelector('.nb-add-text')
-      if (span) span.textContent = isNowActive ? '✓ Applied' : (vid.includes('article') ? 'Apply to article page' : 'Apply to content page')
+      if (span) span.textContent = isNowActive ? '✓ Applied' : (pg === 'article' ? 'Apply to article page' : 'Apply to content page')
     })
   }
 
@@ -1065,6 +1089,10 @@
       const ctrl = document.getElementById('twi-controls')
       if (ctrl) ctrl.style.display = addedBlocks.has(blockId) ? 'block' : 'none'
     }
+    if (blockId === 'footnotes') {
+      const ctrl = document.getElementById('footnotes-controls')
+      if (ctrl) ctrl.style.display = addedBlocks.has(blockId) ? 'block' : 'none'
+    }
   }
 
   function addLinkHub() {
@@ -1090,6 +1118,12 @@
       if (card) card.classList.add('nb-added')
       if (span) span.textContent = '✓ Added'
     }
+  }
+
+  function setFootnotesVariant(variant) {
+    postToIframe({ type: 'setBlockConfig', blockId: 'footnotes', key: 'variant', value: variant })
+    document.getElementById('fn-variant-popover').classList.toggle('active', variant === 'popover')
+    document.getElementById('fn-variant-sheet').classList.toggle('active', variant === 'sheet')
   }
 
   function setTwiConfig(key, value) {

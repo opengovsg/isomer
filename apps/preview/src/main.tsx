@@ -26,6 +26,7 @@ import {
   ListsWithIndentation,
   ArticleLayoutAlt,
   ContentLayoutAlt,
+  EventLayout,
   CUSTOM_BLOCK_PAGE,
   CUSTOM_BLOCK_LABEL,
   CUSTOM_BLOCK_IS_HERO,
@@ -119,6 +120,8 @@ function App() {
     useState<HTMLElement | null>(null)
   const [articleBodyPortal, setArticleBodyPortal] =
     useState<HTMLElement | null>(null)
+  const [eventLayoutPortal, setEventLayoutPortal] =
+    useState<HTMLElement | null>(null)
 
   // ── Message handler ──────────────────────────────────────────────────────
 
@@ -204,6 +207,13 @@ function App() {
   )
   const activeLayoutOverride = layoutOverrides[page] ?? null
 
+  // Pick up the formatting slot rendered inside EventLayout after it commits
+  useEffect(() => {
+    if (activeLayoutOverride !== "event-layout" || page !== "article") return
+    const slot = document.getElementById("event-article-body-slot")
+    if (slot) setArticleBodyPortal(slot)
+  }, [activeLayoutOverride, page, eventLayoutPortal])
+
   useLayoutEffect(() => {
     // Reset React portal state so stale portals don't re-render
     // (actual DOM portal nodes are removed inside attempt() before querying)
@@ -213,6 +223,7 @@ function App() {
     setContentHeaderPortal(null)
     setContentBodyPortal(null)
     setArticleBodyPortal(null)
+    setEventLayoutPortal(null)
 
     const attempt = () => {
       // ── Homepage ──────────────────────────────────────────────────────
@@ -249,9 +260,21 @@ function App() {
         // Remove portals before querying
         document.getElementById("article-header-portal")?.remove()
         document.getElementById("article-body-portal")?.remove()
+        document.getElementById("event-layout-portal")?.remove()
 
         const mainEl = document.querySelector("main") as HTMLElement
         if (!mainEl) return false
+
+        // Restore main visibility (may have been hidden by event-layout)
+        mainEl.style.display = ""
+
+        // Event layout replaces the entire main content area
+        if (activeLayoutOverride === "event-layout") {
+          mainEl.style.display = "none"
+          const portal = getOrCreatePortalBefore(mainEl, "event-layout-portal")
+          setEventLayoutPortal(portal)
+          return true
+        }
         const narrowCol = mainEl.querySelector(":scope > div") as HTMLElement | null
         if (!narrowCol) return false
         const headerDiv = narrowCol.querySelector(
@@ -260,6 +283,11 @@ function App() {
         if (!headerDiv) return false
 
         headerDiv.style.display = ""
+
+        // Hide/show the inline article image when article-alt is active
+        // (article-alt supplies its own full-bleed cover image)
+        const inlineImg = narrowCol.querySelector("figure, img") as HTMLElement | null
+        if (inlineImg) inlineImg.style.display = activeLayoutOverride === "article-alt" ? "none" : ""
 
         if (activeLayoutOverride === "article-alt") {
           headerDiv.style.display = "none"
@@ -372,6 +400,11 @@ function App() {
             ? createPortal(<Block key={id} />, afterHeroPortal)
             : null
         })}
+
+      {/* Event layout portal — replaces entire article main */}
+      {eventLayoutPortal &&
+        activeLayoutOverride === "event-layout" &&
+        createPortal(<EventLayout />, eventLayoutPortal)}
 
       {/* Article layout override portal */}
       {articleHeaderPortal &&
