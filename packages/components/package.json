@@ -27,6 +27,7 @@
       "default": "./dist/esm/templates/next/index.js"
     },
     "./presets/next/preset.css": "./src/presets/next/preset.css",
+    "./presets/next/sources.css": "./src/presets/next/sources.css",
     "./presets/next/inter-fonts.css": "./src/presets/next/inter-fonts.css"
   },
   "publishConfig": {

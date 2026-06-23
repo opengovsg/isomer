@@ -1,10 +1,7 @@
 @import "tailwindcss";
 @import "@opengovsg/isomer-components/presets/next/preset.css";
+@import "@opengovsg/isomer-components/presets/next/sources.css";
 @import "@opengovsg/isomer-components/presets/next/inter-fonts.css";
-
-/* Content sources — node_modules are gitignored so must be explicit */
-@source "../../node_modules/@opengovsg/isomer-components/dist/**/*.{js,mjs,cjs}";
-@source "../../node_modules/@opengovsg/isomer-components/src/**/*.{js,ts,jsx,tsx}";
 
 /* Studio-specific theme overrides */
 @theme {
