@@ -27,23 +27,39 @@ export const getCategoryFilter = (
   )
 
   if (categoryOptions && categoryOptions.length > 0) {
-    // Sort by the editor-defined order in categoryOptions; unknown categories fall to the end
-    const categoryOptionLabels = categoryOptions.map(({ label }) => label)
-    categoryFilterItems.sort((a, b) => {
-      const indexA = categoryOptionLabels.indexOf(a.label)
-      const indexB = categoryOptionLabels.indexOf(b.label)
+    // Split into two groups: items whose id matches a categoryOption (known) and those that don't
+    // (unknown). Known items are ordered by the editor-defined categoryOptions order; unknown items
+    // are appended alphabetically. Matching is done on the lowercased id (= lowercased label) so
+    // it is case-insensitive and stable even if the display label is later re-cased.
+    const categoryOptionLabels = categoryOptions.map(({ label }) =>
+      label.toLowerCase(),
+    )
 
-      if (indexA === -1 && indexB === -1) return 0 // both unknown, preserve order
-      if (indexA === -1) return 1 // a unknown, push after b
-      if (indexB === -1) return -1 // b unknown, push after a
+    const known = categoryFilterItems.filter(
+      (item) => categoryOptionLabels.indexOf(item.id) !== -1,
+    )
+    const unknown = categoryFilterItems.filter(
+      (item) => categoryOptionLabels.indexOf(item.id) === -1,
+    )
 
-      return indexA - indexB
-    })
-  } else {
-    categoryFilterItems.sort((a, b) =>
+    known.sort(
+      (a, b) =>
+        categoryOptionLabels.indexOf(a.id) - categoryOptionLabels.indexOf(b.id),
+    )
+    unknown.sort((a, b) =>
       a.label.localeCompare(b.label, undefined, { numeric: true }),
     )
+
+    return {
+      id: FILTER_ID_CATEGORY,
+      label: "Category",
+      items: [...known, ...unknown],
+    }
   }
+
+  categoryFilterItems.sort((a, b) =>
+    a.label.localeCompare(b.label, undefined, { numeric: true }),
+  )
 
   return {
     id: FILTER_ID_CATEGORY,
