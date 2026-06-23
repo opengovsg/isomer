@@ -1,6 +1,6 @@
 import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
 
-import type { CollectionTags } from "./useCollectionTags"
+import type { CollectionTags } from "../hooks/useCollectionTags"
 
 export function validateRequiredTags(
   tags: CollectionTags,
