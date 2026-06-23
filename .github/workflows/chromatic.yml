@@ -58,7 +58,7 @@ jobs:
         uses: ./.github/actions/setup
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@05812acac141ce7d317a3f787be88122bca27cf4 # v17.3.0
+        uses: chromaui/action@1db61b73b7919508ee8e62336f04bd0aed6da756 # v17.4.1
         # Chromatic GitHub Action options
         with:
           workingDir: packages/components
@@ -90,7 +90,7 @@ jobs:
         run: pnpm --filter isomer-studio run build:preview-tw
       # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@05812acac141ce7d317a3f787be88122bca27cf4 # v17.3.0
+        uses: chromaui/action@1db61b73b7919508ee8e62336f04bd0aed6da756 # v17.4.1
         # Chromatic GitHub Action options
         with:
           workingDir: apps/studio
