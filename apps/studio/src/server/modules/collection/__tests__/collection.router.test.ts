@@ -2415,4 +2415,156 @@ describe("collection.router", async () => {
       expect(result).toEqual({ count: 1 })
     })
   })
+
+  describe("getCollectionTags", () => {
+    const TAG_CATEGORY_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+    const TAG_OPTION_ID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+
+    const indexPageBlobWithTags = () => ({
+      layout: "collection" as const,
+      page: {
+        title: "Test Collection",
+        subtitle: "Test subtitle",
+        tagCategories: [
+          {
+            id: TAG_CATEGORY_ID,
+            label: "Topic",
+            isRequired: false,
+            options: [{ id: TAG_OPTION_ID, label: "Technology" }],
+          },
+        ],
+      },
+      content: [],
+      version: "0.1.0",
+    })
+
+    async function setupCollectionWithIndexPage() {
+      const { collection, site } = await setupCollection()
+      const { page: indexPage, blob: indexBlob } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: collection.id,
+      })
+      return { collection, site, indexPage, indexBlob }
+    }
+
+    async function publishIndexPageWithTags(indexPageId: string) {
+      const publishedBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(indexPageBlobWithTags()) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: indexPageId,
+          blobId: publishedBlob.id,
+          publishedBy: session.userId!,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      await db
+        .updateTable("Resource")
+        .set({ publishedVersionId: version.id })
+        .where("id", "=", indexPageId)
+        .execute()
+    }
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = unauthedCaller.getCollectionTags({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = caller.getCollectionTags({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return tag categories from the published blob by default", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await publishIndexPageWithTags(indexPage.id)
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = await caller.getCollectionTags({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({ id: TAG_CATEGORY_ID, label: "Topic" })
+    })
+
+    it("should return empty array when collection has no published version", async () => {
+      // Arrange
+      const { collection, site, indexBlob } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      // Put tags in draft only — no published version
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(indexPageBlobWithTags()) })
+        .where("id", "=", indexBlob.id)
+        .execute()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = await caller.getCollectionTags({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert: always published-only, no draft fallback
+      expect(result).toHaveLength(0)
+    })
+  })
 })
