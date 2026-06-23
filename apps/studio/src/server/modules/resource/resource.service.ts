@@ -710,6 +710,172 @@ export const getResourceFullPermalink = async (
   return `/${permalinkTree.join("/")}`
 }
 
+// Batched variant of getResourceFullPermalink: resolves many resources' full
+// permalinks in a single recursive query instead of one round-trip per id.
+// Used to render redirect destinations (stored as `[resource:...]` references)
+// without an N+1 over the visible page. A resourceId absent from the returned
+// map no longer exists (e.g. the page was deleted).
+export const getResourceFullPermalinks = async (
+  siteId: number,
+  resourceIds: number[],
+): Promise<Map<number, string>> => {
+  if (resourceIds.length === 0) {
+    return new Map()
+  }
+
+  // One recursive walk collects every node on the requested ids' ancestor
+  // chains. A node's permalink and parentId are intrinsic to its id (not to
+  // which chain reached it), so a single id-keyed map lets each requested id
+  // walk from itself up to the root.
+  const rows = await db
+    .withRecursive("PermalinkChain", (eb) =>
+      eb
+        // Base case: the resources we want permalinks for
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "in", resourceIds.map(String))
+        .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
+        .unionAll((fb) =>
+          fb
+            // Recursive case: walk up to each node's parent
+            .selectFrom("Resource")
+            .innerJoin(
+              "PermalinkChain",
+              "PermalinkChain.parentId",
+              "Resource.id",
+            )
+            .where("Resource.siteId", "=", siteId)
+            .select(["Resource.id", "Resource.permalink", "Resource.parentId"]),
+        ),
+    )
+    .selectFrom("PermalinkChain")
+    .select([
+      "PermalinkChain.id",
+      "PermalinkChain.permalink",
+      "PermalinkChain.parentId",
+    ])
+    .execute()
+
+  const nodeById = new Map<
+    string,
+    { permalink: string; parentId: string | null }
+  >()
+  for (const row of rows) {
+    nodeById.set(String(row.id), {
+      permalink: row.permalink,
+      parentId: row.parentId === null ? null : String(row.parentId),
+    })
+  }
+
+  const result = new Map<number, string>()
+  for (const resourceId of resourceIds) {
+    const segments: string[] = []
+    let currentId: string | null = String(resourceId)
+    while (currentId !== null) {
+      const node = nodeById.get(currentId)
+      if (node === undefined) {
+        break
+      }
+      segments.push(node.permalink)
+      currentId = node.parentId
+    }
+    // A missing id (deleted resource) yields no segments — omit it.
+    if (segments.length === 0) {
+      continue
+    }
+    // segments are leaf→root; reverse to root→leaf and drop the `_index`
+    // segments (an index page represents its parent folder, not a path).
+    const permalink = segments
+      .reverse()
+      .filter((segment) => segment !== INDEX_PAGE_PERMALINK)
+      .join("/")
+    result.set(resourceId, `/${permalink}`)
+  }
+  return result
+}
+
+// Reverse of getResourceFullPermalink: resolves a full permalink path back to
+// the live resource it points at (for storing a redirect destination as a
+// [resource:...] reference), or null if nothing live matches. One query fetches
+// every resource matching a path segment, then walks the parent chain in memory
+// — the (siteId, parentId, permalink) constraint makes each step unambiguous.
+export const getResourceIdByPermalink = async (
+  siteId: number,
+  fullPermalink: string,
+): Promise<number | null> => {
+  const segments = fullPermalink.split("/").filter(Boolean)
+
+  // The site root ("/") is the RootPage, whose permalink is empty so it has no
+  // path segments to walk. Resolve it directly (published only, as below).
+  if (segments.length === 0) {
+    const root = await db
+      .selectFrom("Resource")
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.type", "=", ResourceType.RootPage)
+      .where("Resource.publishedVersionId", "is not", null)
+      .select("Resource.id")
+      .executeTakeFirst()
+    return root ? Number(root.id) : null
+  }
+
+  const candidates = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.permalink", "in", segments)
+    .select([
+      "Resource.id",
+      "Resource.permalink",
+      "Resource.parentId",
+      "Resource.publishedVersionId",
+      "Resource.type",
+    ])
+    .execute()
+
+  let parentId: string | null = null
+  let leaf: (typeof candidates)[number] | null = null
+  for (const segment of segments) {
+    const match = candidates.find(
+      (candidate) =>
+        candidate.permalink === segment && candidate.parentId === parentId,
+    )
+    if (!match) {
+      return null
+    }
+    leaf = match
+    parentId = String(match.id)
+  }
+
+  if (leaf === null) {
+    return null
+  }
+
+  // A Folder/Collection is served by its IndexPage child, and the published
+  // site keys the URL on the container's id (the index page's id never appears
+  // there — the build remaps it to the folder). Resolve to the container,
+  // treating it as live when its index page is published.
+  if (
+    leaf.type === ResourceType.Folder ||
+    leaf.type === ResourceType.Collection
+  ) {
+    const indexPage = await db
+      .selectFrom("Resource")
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.parentId", "=", String(leaf.id))
+      .where("Resource.type", "=", ResourceType.IndexPage)
+      .where("Resource.publishedVersionId", "is not", null)
+      .select("Resource.id")
+      .executeTakeFirst()
+    return indexPage ? Number(leaf.id) : null
+  }
+
+  // Any other resource type must itself be published — the walk traverses
+  // unpublished folders as path segments, but the target page must be live.
+  if (leaf.publishedVersionId === null) {
+    return null
+  }
+  return Number(leaf.id)
+}
+
 interface PublishPageResourceArgs {
   logger: Logger<string>
   userId: string

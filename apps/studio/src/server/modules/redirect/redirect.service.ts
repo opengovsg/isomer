@@ -4,14 +4,21 @@ import type {
   DeleteRedirectInput,
   ListRedirectsInput,
   RedirectSortField,
+  ResolveRedirectReferencesInput,
 } from "~/schemas/redirect"
+import { REFERENCE_LINK_REGEX } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { getReferenceLink } from "~/utils/link"
 
 import type { Logger } from "@isomer/logging"
 
 import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db } from "../database"
+import {
+  getResourceFullPermalinks,
+  getResourceIdByPermalink,
+} from "../resource/resource.service"
 
 // Sort field → column. `publishedAt` maps to `createdAt`; `satisfies` keeps the
 // map exhaustive so a new sort field without a column is a compile error.
@@ -23,6 +30,92 @@ const SORT_FIELD_TO_COLUMN = {
   RedirectSortField,
   "source" | "destination" | "createdAt"
 >
+
+// Anchored form of the shared [resource:siteId:resourceId] reference, capturing
+// siteId/resourceId (the shared regex is unanchored). A value only counts as a
+// reference when it is exactly one.
+const REFERENCE_DESTINATION_REGEX = new RegExp(
+  `^${REFERENCE_LINK_REGEX.source}$`,
+)
+
+// A destination is exactly one of three shapes. The `type` discriminant keeps
+// the branches in resolveDestinationForStorage explicit instead of a chain of
+// string checks.
+type ParsedDestination =
+  | { type: "reference"; value: string }
+  | { type: "external"; value: string }
+  | { type: "internalPath"; value: string }
+
+const parseDestination = (destination: string): ParsedDestination => {
+  if (REFERENCE_DESTINATION_REGEX.test(destination)) {
+    return { type: "reference", value: destination }
+  }
+  if (destination.startsWith("/")) {
+    return { type: "internalPath", value: destination }
+  }
+  return { type: "external", value: destination }
+}
+
+// Resolves a destination to its stored form. A bare internal path becomes a
+// [resource:...] reference (so it follows page renames); a query-suffixed path
+// stays literal (a query can't map to a single resource); references and
+// external URLs are stored verbatim.
+const resolveDestinationForStorage = async (
+  siteId: number,
+  destination: string,
+): Promise<string> => {
+  const parsed = parseDestination(destination)
+  switch (parsed.type) {
+    case "reference":
+    case "external":
+      return parsed.value
+    case "internalPath": {
+      if (parsed.value.includes("?")) {
+        return parsed.value
+      }
+      const resourceId = await getResourceIdByPermalink(siteId, parsed.value)
+      if (resourceId === null) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `The page "${destination}" does not exist`,
+        })
+      }
+      return getReferenceLink({
+        siteId: String(siteId),
+        resourceId: String(resourceId),
+      })
+    }
+  }
+}
+
+// Resolves stored [resource:...] destinations back to current permalinks for
+// display, batched into one query. A reference to a missing page resolves to null.
+export const resolveRedirectReferences = async ({
+  siteId,
+  references,
+}: ResolveRedirectReferencesInput): Promise<
+  { reference: string; permalink: string | null }[]
+> => {
+  // Resolve only references that are anchored AND belong to this site — a
+  // reference to another site can't resolve here, so it stays unresolved.
+  const parsed = references.map((reference) => {
+    const match = REFERENCE_DESTINATION_REGEX.exec(reference)
+    return {
+      reference,
+      resourceId:
+        match && Number(match[1]) === siteId ? Number(match[2]) : null,
+    }
+  })
+  const resourceIds = parsed
+    .map(({ resourceId }) => resourceId)
+    .filter((id): id is number => id !== null)
+  const permalinks = await getResourceFullPermalinks(siteId, resourceIds)
+  return parsed.map(({ reference, resourceId }) => ({
+    reference,
+    permalink:
+      resourceId === null ? null : (permalinks.get(resourceId) ?? null),
+  }))
+}
 
 const getByUser = async (byUserId: string) =>
   db
@@ -87,6 +180,14 @@ export const createRedirect = async ({
 }) => {
   const byUser = await getByUser(byUserId)
 
+  // Resolve an internal-path destination to a [resource:...] reference (a read,
+  // outside the tx) so the redirect follows the page if its permalink changes.
+  // Throws NOT_FOUND if the path matches no page.
+  const storedDestination = await resolveDestinationForStorage(
+    siteId,
+    destination,
+  )
+
   const created = await db.transaction().execute(async (tx) => {
     // Reject creating over a live redirect. A soft-deleted row for the same
     // source still holds the (siteId, source) unique constraint and is revived
@@ -106,12 +207,12 @@ export const createRedirect = async ({
 
     const created = await tx
       .insertInto("Redirect")
-      .values({ siteId, source, destination })
+      .values({ siteId, source, destination: storedDestination })
       .onConflict((oc) =>
         oc
           .columns(["siteId", "source"])
           .doUpdateSet({
-            destination,
+            destination: storedDestination,
             deletedAt: null,
             // Revived rows republish now, so refresh createdAt (the publish
             // time shown to users).

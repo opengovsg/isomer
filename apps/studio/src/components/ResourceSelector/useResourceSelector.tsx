@@ -16,7 +16,9 @@ interface UseResourceSelectorProps {
   existingResource: ResourceItemContent | undefined
   setResourceStack: (resourceStack: ResourceItemContent[]) => void
   removeFromStack: (numberOfResources: number) => ResourceItemContent[]
-  onChange: (resourceId: string | null) => void
+  // fullPermalink is the selected resource's path (no leading slash), built from
+  // the just-updated stack so it never lags a render behind resourceId.
+  onChange: (resourceId: string | null, fullPermalink: string) => void
 }
 
 export const useResourceSelector = ({
@@ -94,7 +96,10 @@ export const useResourceSelector = ({
     }
 
     const lastChild = lastResourceItemInAncestryStack(updatedStack)
-    onChange(lastChild?.id ?? null)
+    onChange(
+      lastChild?.id ?? null,
+      updatedStack.map((resource) => resource.permalink).join("/"),
+    )
   }, [
     isResourceHighlighted,
     onChange,
@@ -125,7 +130,12 @@ export const useResourceSelector = ({
       }
 
       setResourceStack(resourceItemWithAncestryStack)
-      onChange(lastChild.id)
+      onChange(
+        lastChild.id,
+        resourceItemWithAncestryStack
+          .map((resource) => resource.permalink)
+          .join("/"),
+      )
       setIsResourceHighlighted(true)
     },
     [

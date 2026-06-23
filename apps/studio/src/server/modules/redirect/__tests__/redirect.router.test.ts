@@ -8,10 +8,13 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupFolder,
+  setupPageResource,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
 import { createCallerFactory } from "~/server/trpc"
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import * as codebuildService from "../../aws/codebuild.service"
 import { db } from "../../database"
@@ -356,14 +359,20 @@ describe("redirect.router", async () => {
 
     it("should create a redirect that is immediately live", async () => {
       // Arrange / Act
-      await caller.create({ siteId, source: "/old", destination: "/new" })
+      // An external destination is stored verbatim (only internal paths are
+      // resolved to a page reference)
+      await caller.create({
+        siteId,
+        source: "/old",
+        destination: "https://example.com/new",
+      })
 
       // Assert
       const result = await caller.list({ siteId })
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({
         source: "/old",
-        destination: "/new",
+        destination: "https://example.com/new",
       })
     })
 
@@ -372,7 +381,7 @@ describe("redirect.router", async () => {
       await caller.create({
         siteId,
         source: "old//path/",
-        destination: "/new",
+        destination: "https://example.com/new",
       })
 
       // Assert
@@ -391,7 +400,7 @@ describe("redirect.router", async () => {
       const result = caller.create({
         siteId,
         source: "/page",
-        destination: "/new-dest",
+        destination: "https://example.com/new-dest",
       })
 
       // Assert
@@ -426,7 +435,7 @@ describe("redirect.router", async () => {
       await caller.create({
         siteId,
         source: "/revived",
-        destination: "/new",
+        destination: "https://example.com/new",
       })
 
       // Assert
@@ -434,13 +443,17 @@ describe("redirect.router", async () => {
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({
         source: "/revived",
-        destination: "/new",
+        destination: "https://example.com/new",
       })
     })
 
     it("should write a RedirectCreate audit log entry with the created row", async () => {
       // Arrange / Act
-      await caller.create({ siteId, source: "/hello", destination: "/world" })
+      await caller.create({
+        siteId,
+        source: "/hello",
+        destination: "https://example.com/world",
+      })
 
       // Assert
       const auditEntry = await db
@@ -452,7 +465,7 @@ describe("redirect.router", async () => {
       expect(auditEntry.userId).toBe(session.userId)
       expect(auditEntry.delta).toMatchObject({
         before: null,
-        after: { source: "/hello", destination: "/world" },
+        after: { source: "/hello", destination: "https://example.com/world" },
       })
       // The site publish triggered by the create is audited separately
       const publishEntry = await db
@@ -475,7 +488,7 @@ describe("redirect.router", async () => {
       const result = caller.create({
         siteId,
         source: "/old",
-        destination: "/new",
+        destination: "https://example.com/new",
       })
 
       // Assert
@@ -488,7 +501,10 @@ describe("redirect.router", async () => {
         .where("deletedAt", "is", null)
         .execute()
       expect(rows).toHaveLength(1)
-      expect(rows[0]).toMatchObject({ source: "/old", destination: "/new" })
+      expect(rows[0]).toMatchObject({
+        source: "/old",
+        destination: "https://example.com/new",
+      })
     })
 
     it("should log the soft-deleted row as the delta before when reviving", async () => {
@@ -504,7 +520,11 @@ describe("redirect.router", async () => {
         .execute()
 
       // Act
-      await caller.create({ siteId, source: "/revived", destination: "/new" })
+      await caller.create({
+        siteId,
+        source: "/revived",
+        destination: "https://example.com/new",
+      })
 
       // Assert
       const auditEntry = await db
@@ -515,8 +535,318 @@ describe("redirect.router", async () => {
         .executeTakeFirstOrThrow()
       expect(auditEntry.delta).toMatchObject({
         before: { source: "/revived", destination: "/old" },
-        after: { source: "/revived", destination: "/new" },
+        after: { source: "/revived", destination: "https://example.com/new" },
       })
+    })
+  })
+
+  describe("create — destination resolution", () => {
+    it("should store an internal-path destination as a page reference", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target-page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      await caller.create({
+        siteId,
+        source: "/from",
+        destination: "/target-page",
+      })
+
+      // Assert — the path is resolved to a [resource:...] reference so the
+      // redirect follows the page if its permalink later changes
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe(`[resource:${siteId}:${page.id}]`)
+    })
+
+    it("should resolve a nested internal path to the child page reference", async () => {
+      // Arrange
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "parent-folder",
+      })
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      await caller.create({
+        siteId,
+        source: "/from",
+        destination: "/parent-folder/child-page",
+      })
+
+      // Assert — the reverse walk matches each segment against its parent
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe(`[resource:${siteId}:${page.id}]`)
+    })
+
+    it("should keep an internal path with a query suffix as a literal path", async () => {
+      // Arrange
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target-page",
+      })
+
+      // Act — a path with a query string can't map to a single resource
+      await caller.create({
+        siteId,
+        source: "/from",
+        destination: "/target-page?ref=footer",
+      })
+
+      // Assert
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe("/target-page?ref=footer")
+    })
+
+    it("should throw 404 if the internal-path destination does not exist", async () => {
+      // Arrange / Act
+      const result = caller.create({
+        siteId,
+        source: "/from",
+        destination: "/no-such-page",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "NOT_FOUND" })
+    })
+
+    it("should throw 404 if the destination page exists but is unpublished", async () => {
+      // Arrange — a draft page has no live URL, so it isn't a valid target
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "draft-page",
+        state: ResourceState.Draft,
+      })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/from",
+        destination: "/draft-page",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "NOT_FOUND" })
+    })
+
+    it("should resolve the site root '/' to the RootPage reference", async () => {
+      // Arrange — the published homepage (RootPage has an empty permalink)
+      const { page: rootPage } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        permalink: "",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      await caller.create({ siteId, source: "/from", destination: "/" })
+
+      // Assert
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe(`[resource:${siteId}:${rootPage.id}]`)
+    })
+
+    it("should store a folder destination as the folder reference, not its index page", async () => {
+      // Arrange — a folder is served by its published IndexPage child, but the
+      // published site keys the URL on the folder's id, so the redirect must
+      // reference the folder itself.
+      const { folder } = await setupFolder({ siteId, permalink: "about" })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        permalink: "_index",
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      await caller.create({ siteId, source: "/from", destination: "/about" })
+
+      // Assert
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe(`[resource:${siteId}:${folder.id}]`)
+    })
+
+    it("should throw 404 for a folder destination whose index page is unpublished", async () => {
+      // Arrange — a folder with no live index page has no live URL behind it
+      const { folder } = await setupFolder({ siteId, permalink: "about" })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        permalink: "_index",
+        parentId: folder.id,
+        state: ResourceState.Draft,
+      })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/from",
+        destination: "/about",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "NOT_FOUND" })
+    })
+  })
+
+  describe("resolveReferences", () => {
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site: otherSite } = await setupSite()
+
+      // Act
+      const result = caller.resolveReferences({
+        siteId: otherSite.id,
+        references: [],
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "FORBIDDEN" })
+    })
+
+    it("should resolve a reference to the page's current permalink", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target-page",
+      })
+      const reference = `[resource:${siteId}:${page.id}]`
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: [reference],
+      })
+
+      // Assert
+      expect(result).toEqual([{ reference, permalink: "/target-page" }])
+    })
+
+    it("should resolve a nested reference to its full permalink", async () => {
+      // Arrange
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "parent-folder",
+      })
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "child-page",
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      const reference = `[resource:${siteId}:${page.id}]`
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: [reference],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference, permalink: "/parent-folder/child-page" },
+      ])
+    })
+
+    it("should resolve an index page reference to its folder's permalink", async () => {
+      // Arrange — an _index page represents its folder, so its segment is
+      // dropped from the resolved permalink
+      const { folder } = await setupFolder({ siteId, permalink: "info" })
+      const { page: indexPage } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        permalink: "_index",
+        parentId: folder.id,
+      })
+      const reference = `[resource:${siteId}:${indexPage.id}]`
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: [reference],
+      })
+
+      // Assert
+      expect(result).toEqual([{ reference, permalink: "/info" }])
+    })
+
+    it("should resolve a deleted page's reference to null", async () => {
+      // Arrange — a reference to a resource that doesn't exist
+      const reference = `[resource:${siteId}:999999]`
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: [reference],
+      })
+
+      // Assert
+      expect(result).toEqual([{ reference, permalink: null }])
+    })
+
+    it("should resolve a reference whose embedded siteId is not this site to null", async () => {
+      // Arrange — the resourceId exists on this site, but the reference claims a
+      // different site, so it must not resolve here.
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target-page",
+      })
+      const reference = `[resource:${siteId + 1}:${page.id}]`
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: [reference],
+      })
+
+      // Assert
+      expect(result).toEqual([{ reference, permalink: null }])
     })
   })
 

@@ -8,14 +8,16 @@ import {
   InputGroup,
   InputLeftAddon,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react"
 import {
   Button,
   FormErrorMessage,
   FormLabel,
+  Link,
   useToast,
 } from "@opengovsg/design-system-react"
-import { BiPlus, BiRightArrowAlt } from "react-icons/bi"
+import { BiLinkAlt, BiPlus, BiRightArrowAlt } from "react-icons/bi"
 import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
@@ -24,6 +26,7 @@ import { useZodForm } from "~/lib/form"
 
 import { useCreateRedirect } from "../api"
 import { addRedirectSchema, type AddRedirectInput } from "../types"
+import { SelectDestinationPageModal } from "./SelectDestinationPageModal"
 
 interface AddRedirectCardProps {
   siteId: number
@@ -37,6 +40,7 @@ export const AddRedirectCard = ({
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useZodForm<typeof addRedirectSchema>({
     schema: addRedirectSchema,
@@ -44,13 +48,19 @@ export const AddRedirectCard = ({
   })
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { mutate: createRedirect, isPending } = useCreateRedirect()
+  const {
+    isOpen: isPageModalOpen,
+    onOpen: onPageModalOpen,
+    onClose: onPageModalClose,
+  } = useDisclosure()
 
   const [source, destination] = watch(["source", "destination"])
   const isAddDisabled = !source?.trim() || !destination?.trim()
 
   const onSubmit = ({ source, destination }: AddRedirectInput) => {
     // source arrives normalised (leading slash, no trailing slash) by the
-    // shared schema's transform
+    // shared schema's transform. An internal-path destination is converted to a
+    // page reference server-side, which 404s if the page doesn't exist.
     createRedirect(
       { siteId, source, destination },
       {
@@ -60,23 +70,34 @@ export const AddRedirectCard = ({
         },
         // The inputs are left untouched on error so the user can adjust
         // the source instead of retyping everything
-        onError: (error) =>
-          toast(
-            error.data?.code === "CONFLICT"
-              ? {
-                  title: "A redirect already exists for this path",
-                  description: `Delete the redirect for ${source} first if you want to change where it points to.`,
-                  status: "error",
-                }
-              : {
-                  title: "Failed to add redirect",
-                  // Surface the server's message (e.g. validation rejections).
-                  // Client-side zod validation catches malformed input before
-                  // submit, so what reaches here is a clean TRPCError message.
-                  description: error.message,
-                  status: "error",
-                },
-          ),
+        onError: (error) => {
+          switch (error.data?.code) {
+            case "CONFLICT":
+              toast({
+                title: "A redirect already exists for this path",
+                description: `Delete the redirect for ${source} first if you want to change where it points to.`,
+                status: "error",
+              })
+              break
+            case "NOT_FOUND":
+              toast({
+                title: "That page doesn't exist",
+                description:
+                  "Check the destination, or pick a page with “Link to a page”.",
+                status: "error",
+              })
+              break
+            default:
+              toast({
+                title: "Failed to add redirect",
+                // Surface the server's message (e.g. validation rejections).
+                // Client-side zod validation catches malformed input before
+                // submit, so what reaches here is a clean TRPCError message.
+                description: error.message,
+                status: "error",
+              })
+          }
+        },
       },
     )
   }
@@ -136,6 +157,17 @@ export const AddRedirectCard = ({
             {...register("destination")}
           />
           <FormErrorMessage>{errors.destination?.message}</FormErrorMessage>
+          <Link
+            as="button"
+            type="button"
+            variant="standalone"
+            p="0"
+            mt="0.25rem"
+            onClick={onPageModalOpen}
+          >
+            <Icon as={BiLinkAlt} mr="0.25rem" />
+            Link to a page
+          </Link>
         </FormControl>
 
         <Box flexShrink={0}>
@@ -153,6 +185,18 @@ export const AddRedirectCard = ({
           </Button>
         </Box>
       </HStack>
+
+      <SelectDestinationPageModal
+        isOpen={isPageModalOpen}
+        siteId={siteId}
+        onClose={onPageModalClose}
+        onSelect={(permalink) =>
+          setValue("destination", permalink, {
+            shouldValidate: true,
+            shouldDirty: true,
+          })
+        }
+      />
     </Box>
   )
 }
