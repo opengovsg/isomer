@@ -6,67 +6,26 @@ const ROWS = [
   ["Greenprint Dashboard", "NEA", "Completed", "$1.8M", "FY2023–2024"],
   ["HealthHub Enhancement", "MOH", "In Review", "$3.5M", "FY2025–2026"],
   ["SGQR Expansion", "MAS", "Active", "$2.1M", "FY2024–2025"],
-  [
-    "Smart Nation Sensor Platform",
-    "GovTech",
-    "Planning",
-    "$8.4M",
-    "FY2025–2027",
-  ],
-  [
-    "Digital Utilities Marketplace",
-    "EMA",
-    "Completed",
-    "$5.6M",
-    "FY2022–2024",
-  ],
+  ["Smart Nation Sensor Platform", "GovTech", "Planning", "$8.4M", "FY2025–2027"],
+  ["Digital Utilities Marketplace", "EMA", "Completed", "$5.6M", "FY2022–2024"],
 ]
-
-const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  Active: { bg: "#dcfce7", color: "#15803d" },
-  Completed: { bg: "#dbeafe", color: "#1d4ed8" },
-  "In Review": { bg: "#fef3c7", color: "#b45309" },
-  Planning: { bg: "#f3e8ff", color: "#7e22ce" },
-}
 
 export default function TableStyled() {
   return (
-    <section style={{ maxWidth: 1280, margin: "0 auto", padding: "72px 48px" }}>
-      <h2
-        style={{
-          fontSize: 32,
-          fontWeight: 800,
-          color: "#111827",
-          marginBottom: 10,
-        }}
-      >
+    <section className="my-6">
+      <h2 className="prose-display-sm text-base-content-strong mb-2">
         Government Digital Initiatives
       </h2>
-      <p
-        style={{
-          fontSize: 16,
-          color: "#6b7280",
-          marginBottom: 32,
-          lineHeight: 1.6,
-        }}
-      >
+      <p className="prose-body-base text-base-content mb-8">
         An overview of active and completed digital transformation programmes
         across agencies.
       </p>
 
-      <div
-        style={{
-          overflowX: "auto",
-          borderRadius: 12,
-          border: "1px solid #e5e7eb",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-        }}
-      >
+      <div style={{ overflowX: "auto", border: "1px solid #e5e7eb" }}>
         <table
           style={{
             width: "100%",
             borderCollapse: "collapse",
-            fontSize: 14,
             minWidth: 640,
           }}
         >
@@ -75,13 +34,12 @@ export default function TableStyled() {
               {HEADERS.map((h) => (
                 <th
                   key={h}
+                  className="prose-label-sm"
                   style={{
                     background: "var(--color-brand-interaction-default)",
                     color: "white",
                     padding: "14px 18px",
                     textAlign: "left",
-                    fontWeight: 600,
-                    fontSize: 13,
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -104,33 +62,18 @@ export default function TableStyled() {
                 {row.map((cell, j) => (
                   <td
                     key={j}
+                    className={j === 0 ? "prose-body-sm" : "prose-body-sm"}
                     style={{
                       padding: "13px 18px",
                       borderBottom: "1px solid #f0f0f0",
-                      color: j === 0 ? "#111827" : "#4b5563",
+                      color:
+                        j === 0
+                          ? "var(--color-base-content-strong)"
+                          : "var(--color-base-content)",
                       fontWeight: j === 0 ? 600 : 400,
                     }}
                   >
-                    {j === 2 ? (
-                      <span
-                        style={{
-                          padding: "3px 10px",
-                          borderRadius: 999,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          ...(STATUS_STYLE[cell] ?? {
-                            bg: "#f3f4f6",
-                            color: "#374151",
-                          }),
-                          background: STATUS_STYLE[cell]?.bg ?? "#f3f4f6",
-                          color: STATUS_STYLE[cell]?.color ?? "#374151",
-                        }}
-                      >
-                        {cell}
-                      </span>
-                    ) : (
-                      cell
-                    )}
+                    {cell}
                   </td>
                 ))}
               </tr>

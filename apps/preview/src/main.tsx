@@ -18,12 +18,17 @@ import {
   HeroBlobSaaS,
   TableStyled,
   CardsCarousel,
+  TextWithImage,
+  CalloutVariants,
+  Footnotes,
   ArticleLayoutAlt,
   ContentLayoutAlt,
   CUSTOM_BLOCK_PAGE,
   CUSTOM_BLOCK_LABEL,
   CUSTOM_BLOCK_IS_HERO,
 } from "./components/custom"
+import { BlockConfigContext } from "./components/BlockConfigContext"
+import type { BlockConfigs } from "./components/BlockConfigContext"
 
 type PageType = "home" | "article" | "content" | "collection"
 
@@ -32,6 +37,9 @@ const CUSTOM_BLOCK_REGISTRY: Record<string, ComponentType> = {
   "hero-blob-saas": HeroBlobSaaS,
   "table-styled": TableStyled,
   "cards-carousel": CardsCarousel,
+  "text-with-image": TextWithImage,
+  "callout-variants": CalloutVariants,
+  "footnotes": Footnotes,
 }
 
 function applyThemeVars(vars: Record<string, string>) {
@@ -91,6 +99,7 @@ function App() {
   const [layoutOverrides, setLayoutOverrides] = useState<
     Record<string, string | null>
   >({})
+  const [blockConfigs, setBlockConfigs] = useState<BlockConfigs>({})
 
   // Portal DOM nodes
   const [heroPortal, setHeroPortal] = useState<HTMLElement | null>(null)
@@ -99,6 +108,10 @@ function App() {
   const [articleHeaderPortal, setArticleHeaderPortal] =
     useState<HTMLElement | null>(null)
   const [contentHeaderPortal, setContentHeaderPortal] =
+    useState<HTMLElement | null>(null)
+  const [contentBodyPortal, setContentBodyPortal] =
+    useState<HTMLElement | null>(null)
+  const [articleBodyPortal, setArticleBodyPortal] =
     useState<HTMLElement | null>(null)
 
   // ── Message handler ──────────────────────────────────────────────────────
@@ -141,6 +154,15 @@ function App() {
           [bp]: (prev[bp] ?? []).filter((id) => id !== blockId),
         }))
       }
+      if (type === "setBlockConfig") {
+        const { blockId, key, value } = e.data as {
+          blockId: string; key: string; value: string
+        }
+        setBlockConfigs((prev) => ({
+          ...prev,
+          [blockId]: { ...(prev[blockId] ?? {}), [key]: value },
+        }))
+      }
       if (type === "setLayoutVariant") {
         const { variantId, page: vp } = e.data as {
           variantId: string | null; page: string
@@ -169,6 +191,8 @@ function App() {
     setAfterHeroPortal(null)
     setArticleHeaderPortal(null)
     setContentHeaderPortal(null)
+    setContentBodyPortal(null)
+    setArticleBodyPortal(null)
 
     const attempt = () => {
       // ── Homepage ──────────────────────────────────────────────────────
@@ -202,8 +226,9 @@ function App() {
 
       // ── Article ───────────────────────────────────────────────────────
       if (page === "article") {
-        // Remove portal before querying
+        // Remove portals before querying
         document.getElementById("article-header-portal")?.remove()
+        document.getElementById("article-body-portal")?.remove()
 
         const mainEl = document.querySelector("main") as HTMLElement
         if (!mainEl) return false
@@ -222,13 +247,27 @@ function App() {
           const portal = getOrCreatePortalBefore(narrowCol, "article-header-portal")
           setArticleHeaderPortal(portal)
         }
+
+        // Portal inserted just before the "Back to top" link
+        const backToTopLink = narrowCol.querySelector("a[href='#']") as HTMLElement | null
+        const bodyEl = document.createElement("div")
+        bodyEl.id = "article-body-portal"
+        bodyEl.style.width = "100%"
+        if (backToTopLink) {
+          backToTopLink.before(bodyEl)
+        } else {
+          narrowCol.appendChild(bodyEl)
+        }
+        setArticleBodyPortal(bodyEl)
+
         return true
       }
 
       // ── Content ───────────────────────────────────────────────────────
       if (page === "content") {
-        // Remove portal before querying
+        // Remove portals before querying
         document.getElementById("content-header-portal")?.remove()
+        document.getElementById("content-body-portal")?.remove()
 
         const mainEl = document.querySelector("main") as HTMLElement
         if (!mainEl) return false
@@ -247,6 +286,17 @@ function App() {
             getOrCreatePortalBefore(headerDiv, "content-header-portal"),
           )
         }
+
+        // Portal inserted after the prose <table> in the content body
+        document.getElementById("content-body-portal")?.remove()
+        const proseTable = mainEl.querySelector("table") as HTMLElement | null
+        if (proseTable) {
+          const el = document.createElement("div")
+          el.id = "content-body-portal"
+          proseTable.after(el)
+          setContentBodyPortal(el)
+        }
+
         return true
       }
 
@@ -270,9 +320,21 @@ function App() {
   const contentPageBlocks = activeCustomBlocks.filter(
     (id) => CUSTOM_BLOCK_PAGE[id] === "content",
   )
+  const articlePageBlocks = activeCustomBlocks.filter(
+    (id) => CUSTOM_BLOCK_PAGE[id] === "article",
+  )
+
+  const configContext = {
+    configs: blockConfigs,
+    setConfig: (blockId: string, key: string, value: string) =>
+      setBlockConfigs((prev) => ({
+        ...prev,
+        [blockId]: { ...(prev[blockId] ?? {}), [key]: value },
+      })),
+  }
 
   return (
-    <>
+    <BlockConfigContext.Provider value={configContext}>
       {renderLayout(pageData[page])}
 
       {/* Hero replacement portal */}
@@ -310,42 +372,52 @@ function App() {
           contentHeaderPortal,
         )}
 
-      {/* Content page custom blocks (appended after isomer content) */}
-      {page === "content" &&
+      {/* Article page custom blocks — portalled into the prose column */}
+      {articleBodyPortal &&
+        articlePageBlocks.map((id) => {
+          const Block = CUSTOM_BLOCK_REGISTRY[id]
+          return Block ? createPortal(<Block key={id} />, articleBodyPortal) : null
+        })}
+
+      {/* Content page custom blocks — portalled into <main> before footer */}
+      {contentBodyPortal &&
         contentPageBlocks.map((id) => {
           const Block = CUSTOM_BLOCK_REGISTRY[id]
           const label = CUSTOM_BLOCK_LABEL[id] ?? id
-          return Block ? (
-            <div key={id}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "0 48px",
-                  height: 34,
-                  background: "#f9fafb",
-                  borderTop: "1px solid #e5e7eb",
-                  borderBottom: "1px solid #e5e7eb",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 700,
-                    color: "#9ca3af",
-                    letterSpacing: "0.07em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  New Block — {label}
-                </span>
-              </div>
-              <Block />
-            </div>
-          ) : null
+          return Block
+            ? createPortal(
+                <div key={id}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "0 48px",
+                      height: 34,
+                      background: "#f9fafb",
+                      borderTop: "1px solid #e5e7eb",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "#9ca3af",
+                        letterSpacing: "0.07em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      New Block — {label}
+                    </span>
+                  </div>
+                  <Block />
+                </div>,
+                contentBodyPortal,
+              )
+            : null
         })}
-    </>
+    </BlockConfigContext.Provider>
   )
 }
 

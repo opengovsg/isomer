@@ -16,20 +16,43 @@
     /* Preview panel */
     #preview-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     #preview-controls { flex-shrink: 0; background: white; border-bottom: 1px solid #e5e7eb; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    #preview-viewport { flex: 1; overflow: auto; background: #e5e7eb; padding: 24px; display: flex; justify-content: center; align-items: flex-start; }
+    #preview-viewport { flex: 1; overflow: auto; background: #e5e7eb; padding: 24px; display: flex; justify-content: center; align-items: flex-start; scrollbar-width: none; }
+    #preview-viewport:hover { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
+    #preview-viewport::-webkit-scrollbar { width: 0; height: 0; }
+    #preview-viewport:hover::-webkit-scrollbar { width: 4px; height: 4px; }
+    #preview-viewport::-webkit-scrollbar-track { background: transparent; }
+    #preview-viewport::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
     #iframe-wrapper { background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.08); border-radius: 6px; overflow: hidden; flex-shrink: 0; }
     #preview-iframe { display: block; border: none; zoom: 0.75; }
 
     /* Controls panel */
-    #controls-panel { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; background: white; border-left: 1px solid #e5e7eb; overflow: hidden; }
-
-    /* Panel tabs */
-    .panel-tabs { display: flex; border-bottom: 1px solid #e5e7eb; flex-shrink: 0; }
-    .panel-tab { flex: 1; padding: 10px 12px; font-size: 13px; font-weight: 500; color: #6b7280; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.1s; }
-    .panel-tab:hover { color: #111827; }
-    .panel-tab.active { color: #111827; border-bottom-color: #111827; }
-    .panel-content { flex: 1; overflow-y: auto; padding: 16px; }
+    #controls-panel { display: flex; flex-direction: row; flex-shrink: 0; overflow: hidden; }
+    #panel-content-area { width: 300px; display: flex; flex-direction: column; background: white; border-left: 1px solid #e5e7eb; overflow: hidden; }
+    .panel-content { flex: 1; overflow-y: auto; padding: 16px; scrollbar-width: none; }
+    .panel-content:hover { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
+    .panel-content::-webkit-scrollbar { width: 0; }
+    .panel-content:hover::-webkit-scrollbar { width: 4px; }
+    .panel-content::-webkit-scrollbar-track { background: transparent; }
+    .panel-content::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
     .panel-content.hidden { display: none; }
+
+    /* Vertical icon rail */
+    #nav-rail {
+      width: 64px; flex-shrink: 0; background: white;
+      border-left: 1px solid #e5e7eb;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 8px 0; gap: 2px;
+    }
+    .rail-btn {
+      width: 52px; display: flex; flex-direction: column; align-items: center;
+      gap: 4px; padding: 8px 4px; border-radius: 8px; border: none;
+      background: none; cursor: pointer; transition: background 0.1s;
+      color: #9ca3af;
+    }
+    .rail-btn:hover { background: #f3f4f6; color: #374151; }
+    .rail-btn.active { background: #f0f0ff; color: #4f46e5; }
+    .rail-btn svg { flex-shrink: 0; }
+    .rail-label { font-size: 10px; font-weight: 500; text-align: center; line-height: 1.2; }
 
     /* Page type tabs */
     .page-tab { font-size: 13px; padding: 5px 12px; border-radius: 6px; font-weight: 500; color: #6b7280; background: transparent; border: none; cursor: pointer; transition: all 0.1s; }
@@ -190,14 +213,24 @@
 
     <!-- Right: Controls panel -->
     <div id="controls-panel">
-      <!-- Panel tabs -->
-      <div class="panel-tabs">
-        <button class="panel-tab active" onclick="switchPanel('theming')">Site Theming</button>
-        <button class="panel-tab" onclick="switchPanel('blocks')">New Blocks</button>
+
+      <!-- Panel content area -->
+      <div id="panel-content-area">
+
+      <!-- Theming panel -->
+      <div id="panel-theming" class="panel-content hidden">
+        <div class="section-label" style="margin-top:0">Site</div>
+        <select id="site-selector-panel" onchange="setSite(this.value)" style="width:100%;font-size:12px;font-weight:500;border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px;background:white;color:#374151;cursor:pointer;outline:none;margin-bottom:4px;">
+          <option value="corporate">🏛️ Corporate ministry</option>
+          <option value="campaign">📢 Campaign website</option>
+          <option value="formal">⚖️ Formal website</option>
+          <option value="modern">🖤 Modern website</option>
+          <option value="school">🎓 School website</option>
+        </select>
       </div>
 
-      <!-- Site Theming panel -->
-      <div id="panel-theming" class="panel-content">
+      <!-- Colours & Font panel -->
+      <div id="panel-colours" class="panel-content">
 
         <div class="section-label">Colours</div>
 
@@ -303,6 +336,56 @@
 
       </div>
 
+      <!-- Layouts panel -->
+      <div id="panel-layouts" class="panel-content hidden">
+        <div class="section-label" style="margin-top:0">Page Layouts</div>
+
+        <!-- Article layout alt -->
+        <div class="nb-card" id="nb-article-layout-alt" onclick="setLayoutVariant('article-alt','article')">
+          <div class="nb-thumb">
+            <div style="display:flex;flex-direction:column;gap:3px;width:100%;">
+              <div style="display:flex;gap:8px;align-items:flex-start;">
+                <div style="flex:1.1;display:flex;flex-direction:column;gap:2px;">
+                  <div style="height:5px;background:#111827;border-radius:2px;width:85%"></div>
+                  <div style="height:5px;background:#111827;border-radius:2px;width:70%"></div>
+                  <div style="height:5px;background:#111827;border-radius:2px;width:55%"></div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px;padding-top:1px;">
+                  <div style="height:3px;background:#d1d5db;border-radius:1px;"></div>
+                  <div style="height:3px;background:#d1d5db;border-radius:1px;width:90%;"></div>
+                  <div style="height:3px;background:#d1d5db;border-radius:1px;width:75%;"></div>
+                </div>
+              </div>
+              <div style="height:18px;background:#d1d5db;border-radius:2px;margin-top:4px;"></div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Article header split <span class="nb-page-tag">Article</span></div>
+            <div class="nb-desc">Title on left, summary on right (collapses on mobile). Full-bleed cover image below the header.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-article-layout-alt"><span class="nb-add-text">Apply to article page</span></div>
+        </div>
+
+        <!-- Content layout alt -->
+        <div class="nb-card" id="nb-content-layout-alt" onclick="setLayoutVariant('content-alt','content')">
+          <div class="nb-thumb">
+            <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
+              <div style="height:26px;background:#d1d5db;border-radius:2px;"></div>
+              <div style="display:flex;flex-direction:column;gap:2px;padding:0 2px;">
+                <div style="height:5px;background:#111827;border-radius:2px;width:80%"></div>
+                <div style="height:3px;background:#d1d5db;border-radius:1px;"></div>
+                <div style="height:3px;background:#d1d5db;border-radius:1px;width:90%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Content — no colour block <span class="nb-page-tag">Content</span></div>
+            <div class="nb-desc">Removes the brand-coloured header block. Full-bleed cover image at top, then plain text title and summary.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-content-layout-alt"><span class="nb-add-text">Apply to content page</span></div>
+        </div>
+      </div>
+
       <!-- New Blocks panel -->
       <div id="panel-blocks" class="panel-content hidden">
 
@@ -362,6 +445,33 @@
           <div class="nb-add-btn" id="nb-btn-hero-blob-saas"><span class="nb-add-text">+ Add to homepage</span></div>
         </div>
 
+        <div class="section-label">Callout</div>
+
+        <!-- Callout Variants -->
+        <div class="nb-card" id="nb-callout-variants" onclick="addBlock('callout-variants','content')">
+          <div class="nb-thumb">
+            <div style="width:100%;display:flex;flex-direction:column;gap:4px;">
+              <div style="display:flex;align-items:center;gap:6px;background:#dcfce7;border:1px solid #16a34a;border-radius:5px;padding:4px 8px;">
+                <div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #16a34a;flex-shrink:0;"></div>
+                <div style="height:3px;background:#16a34a;border-radius:1px;flex:1;opacity:0.5;"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;background:#fef3c7;border:1px solid #d97706;border-radius:5px;padding:4px 8px;">
+                <div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #d97706;flex-shrink:0;"></div>
+                <div style="height:3px;background:#d97706;border-radius:1px;flex:1;opacity:0.5;"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;background:#fee2e2;border:1px solid #dc2626;border-radius:5px;padding:4px 8px;">
+                <div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #dc2626;flex-shrink:0;"></div>
+                <div style="height:3px;background:#dc2626;border-radius:1px;flex:1;opacity:0.5;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Callout variants <span class="nb-page-tag">Content page</span></div>
+            <div class="nb-desc">Success, warning, danger, and custom callout styles. Same border-radius and typography as the default info callout.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-callout-variants"><span class="nb-add-text">+ Add to content page</span></div>
+        </div>
+
         <div class="section-label">Table</div>
 
         <!-- Table: Styled -->
@@ -397,56 +507,41 @@
           <div class="nb-add-btn" id="nb-btn-table-styled"><span class="nb-add-text">+ Add to content page</span></div>
         </div>
 
-        <div class="section-label">Page Layouts</div>
-
-        <!-- Article layout alt -->
-        <div class="nb-card" id="nb-article-layout-alt" onclick="setLayoutVariant('article-alt','article')">
+        <!-- Text with Image -->
+        <div class="nb-card" id="nb-text-with-image" onclick="addBlock('text-with-image','content')">
           <div class="nb-thumb">
-            <!-- mini: title left / summary right split, then image below -->
-            <div style="display:flex;flex-direction:column;gap:3px;width:100%;">
-              <div style="display:flex;gap:8px;align-items:flex-start;">
-                <div style="flex:1.1;display:flex;flex-direction:column;gap:2px;">
-                  <div style="height:5px;background:#111827;border-radius:2px;width:85%"></div>
-                  <div style="height:5px;background:#111827;border-radius:2px;width:70%"></div>
-                  <div style="height:5px;background:#111827;border-radius:2px;width:55%"></div>
-                </div>
-                <div style="flex:1;display:flex;flex-direction:column;gap:2px;padding-top:1px;">
-                  <div style="height:3px;background:#d1d5db;border-radius:1px;"></div>
-                  <div style="height:3px;background:#d1d5db;border-radius:1px;width:90%;"></div>
-                  <div style="height:3px;background:#d1d5db;border-radius:1px;width:75%;"></div>
-                </div>
-              </div>
-              <div style="height:18px;background:#d1d5db;border-radius:2px;margin-top:4px;"></div>
-            </div>
-          </div>
-          <div class="nb-info">
-            <div class="nb-title">Article header split <span class="nb-page-tag">Article</span></div>
-            <div class="nb-desc">Title on left, summary on right (collapses on mobile). Full-bleed cover image below the header.</div>
-          </div>
-          <div class="nb-add-btn" id="nb-btn-article-layout-alt"><span class="nb-add-text">Apply to article page</span></div>
-        </div>
-
-        <!-- Content layout alt -->
-        <div class="nb-card" id="nb-content-layout-alt" onclick="setLayoutVariant('content-alt','content')">
-          <div class="nb-thumb">
-            <!-- mini: full-bleed image row, then plain text below -->
-            <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
-              <div style="height:26px;background:#d1d5db;border-radius:2px;"></div>
-              <div style="display:flex;flex-direction:column;gap:2px;padding:0 2px;">
-                <div style="height:5px;background:#111827;border-radius:2px;width:80%"></div>
-                <div style="height:3px;background:#d1d5db;border-radius:1px;"></div>
-                <div style="height:3px;background:#d1d5db;border-radius:1px;width:90%;"></div>
+            <div style="width:100%;display:flex;gap:6px;align-items:center;">
+              <div style="flex:1;background:#e5e7eb;border-radius:3px;height:48px;"></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:4px;justify-content:center;">
+                <div style="height:4px;background:#d1d5db;border-radius:2px;width:90%;"></div>
+                <div style="height:3px;background:#e5e7eb;border-radius:2px;width:100%;"></div>
+                <div style="height:3px;background:#e5e7eb;border-radius:2px;width:80%;"></div>
+                <div style="height:3px;background:#e5e7eb;border-radius:2px;width:95%;"></div>
               </div>
             </div>
           </div>
           <div class="nb-info">
-            <div class="nb-title">Content — no colour block <span class="nb-page-tag">Content</span></div>
-            <div class="nb-desc">Removes the brand-coloured header block. Full-bleed cover image at top, then plain text title and summary.</div>
+            <div class="nb-title">Text with Image <span class="nb-page-tag">Content page</span></div>
+            <div class="nb-desc">Image floated left or right beside body text. Choose large (50%) or small (30%) image width.</div>
           </div>
-          <div class="nb-add-btn" id="nb-btn-content-layout-alt"><span class="nb-add-text">Apply to content page</span></div>
+          <div class="nb-add-btn" id="nb-btn-text-with-image"><span class="nb-add-text">+ Add to content page</span></div>
         </div>
 
-        <div class="section-label">Cards</div>
+        <!-- Text with Image controls (shown when block is active) -->
+        <div id="twi-controls" style="display:none; background:#f9fafb; border:1.5px solid #111827; border-radius:8px; padding:12px; margin-bottom:10px;">
+          <div class="section-label" style="margin-top:0; margin-bottom:8px;">Image position</div>
+          <div class="seg-control" style="margin-bottom:12px;">
+            <button class="seg-btn active" id="twi-pos-left" onclick="setTwiConfig('imagePosition','left')">Image left</button>
+            <button class="seg-btn" id="twi-pos-right" onclick="setTwiConfig('imagePosition','right')">Image right</button>
+          </div>
+          <div class="section-label" style="margin-top:0; margin-bottom:8px;">Image size</div>
+          <div class="seg-control" style="margin-bottom:0;">
+            <button class="seg-btn active" id="twi-size-large" onclick="setTwiConfig('imageSize','large')">Large (50%)</button>
+            <button class="seg-btn" id="twi-size-small" onclick="setTwiConfig('imageSize','small')">Small (30%)</button>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:0">Hero</div>
 
         <!-- Cards: Carousel -->
         <div class="nb-card" id="nb-cards-carousel" onclick="addBlock('cards-carousel','home')">
@@ -487,7 +582,81 @@
         </div>
 
       </div>
-    </div>
+
+      <!-- Formatting panel -->
+      <div id="panel-formatting" class="panel-content hidden">
+        <div class="section-label" style="margin-top:0">Footnotes</div>
+
+        <!-- Footnotes block -->
+        <div class="nb-card" id="nb-footnotes" onclick="addBlock('footnotes','article')">
+          <div class="nb-thumb">
+            <div style="width:100%;display:flex;flex-direction:column;gap:5px;justify-content:center;">
+              <div style="display:flex;gap:3px;align-items:baseline;">
+                <div style="height:3px;background:#d1d5db;border-radius:1px;width:30%;"></div>
+                <div style="height:3px;background:#374151;border-radius:1px;width:18%;text-decoration:underline;"></div>
+                <div style="width:5px;height:5px;border-radius:50%;background:#374151;margin-bottom:4px;"></div>
+                <div style="height:3px;background:#d1d5db;border-radius:1px;width:20%;"></div>
+                <div style="height:3px;background:#374151;border-radius:1px;width:12%;text-decoration:underline;"></div>
+                <div style="width:4px;height:4px;border-radius:50%;background:#374151;margin-bottom:3px;font-size:5px;"></div>
+              </div>
+              <div style="height:3px;background:#e5e7eb;border-radius:1px;width:95%;"></div>
+              <div style="height:3px;background:#e5e7eb;border-radius:1px;width:80%;"></div>
+              <!-- mini popover hint -->
+              <div style="margin-top:4px;background:white;border:1px solid #e5e7eb;border-radius:4px;padding:4px 6px;box-shadow:0 2px 6px rgba(0,0,0,0.1);width:80%;">
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:90%;margin-bottom:3px;"></div>
+                <div style="height:2px;background:#e5e7eb;border-radius:1px;width:60%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Footnotes <span class="nb-page-tag">Article page</span></div>
+            <div class="nb-desc">Inline superscript footnotes on underlined words. Click a word to reveal a dismissible popover with the footnote detail.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-footnotes"><span class="nb-add-text">+ Add to article page</span></div>
+        </div>
+
+      </div>
+
+      </div><!-- /panel-content-area -->
+
+      <!-- Vertical nav rail -->
+      <div id="nav-rail">
+        <button class="rail-btn" data-panel="theming" onclick="switchPanel('theming')" title="Theming">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            <path d="M19 3v4M21 5h-4"/>
+          </svg>
+          <span class="rail-label">Theming</span>
+        </button>
+        <button class="rail-btn active" data-panel="colours" onclick="switchPanel('colours')" title="Colours & Font">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="13" r="2.5"/><circle cx="6.5" cy="13" r="2.5"/>
+            <path d="M12 22a4 4 0 0 1-4-4c0-1.6 1.2-2.9 2.3-4.1L12 12l1.7 1.9C14.8 15.1 16 16.4 16 18a4 4 0 0 1-4 4Z"/>
+          </svg>
+          <span class="rail-label">Colours &amp; Font</span>
+        </button>
+        <button class="rail-btn" data-panel="layouts" onclick="switchPanel('layouts')" title="Layouts">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+          </svg>
+          <span class="rail-label">Layouts</span>
+        </button>
+        <button class="rail-btn" data-panel="blocks" onclick="switchPanel('blocks')" title="New Blocks">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+            <path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/>
+          </svg>
+          <span class="rail-label">New Blocks</span>
+        </button>
+        <button class="rail-btn" data-panel="formatting" onclick="switchPanel('formatting')" title="Formatting">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>
+          </svg>
+          <span class="rail-label">Formatting</span>
+        </button>
+      </div>
+
+    </div><!-- /controls-panel -->
   </div>
 </div>
 
@@ -752,7 +921,8 @@
       const card = document.getElementById('nb-' + blockId)
       const span = document.querySelector('#nb-btn-' + blockId + ' .nb-add-text')
       if (card) card.classList.remove('nb-added')
-      if (span) span.textContent = page === 'home' ? '+ Add to homepage' : '+ Add to content page'
+      const pageLabel = page === 'home' ? '+ Add to homepage' : page === 'article' ? '+ Add to article page' : '+ Add to content page'
+      if (span) span.textContent = pageLabel
     } else {
       // Add
       addedBlocks.add(blockId)
@@ -762,6 +932,24 @@
       const span = document.querySelector('#nb-btn-' + blockId + ' .nb-add-text')
       if (card) card.classList.add('nb-added')
       if (span) span.textContent = '✓ Added'
+    }
+    // Show/hide per-block controls
+    if (blockId === 'text-with-image') {
+      const ctrl = document.getElementById('twi-controls')
+      if (ctrl) ctrl.style.display = addedBlocks.has(blockId) ? 'block' : 'none'
+    }
+  }
+
+  function setTwiConfig(key, value) {
+    postToIframe({ type: 'setBlockConfig', blockId: 'text-with-image', key, value })
+    // Update seg-btn active states
+    if (key === 'imagePosition') {
+      document.getElementById('twi-pos-left').classList.toggle('active', value === 'left')
+      document.getElementById('twi-pos-right').classList.toggle('active', value === 'right')
+    }
+    if (key === 'imageSize') {
+      document.getElementById('twi-size-large').classList.toggle('active', value === 'large')
+      document.getElementById('twi-size-small').classList.toggle('active', value === 'small')
     }
   }
 
@@ -775,12 +963,15 @@
     document.documentElement.style.setProperty('--nb-canvas-alt', canvasAlt)
   }
 
+  const ALL_PANELS = ['theming', 'colours', 'layouts', 'blocks', 'formatting']
+
   function switchPanel(panel) {
-    document.querySelectorAll('.panel-tab').forEach((tab, i) => {
-      tab.classList.toggle('active', (i === 0 && panel === 'theming') || (i === 1 && panel === 'blocks'))
+    ALL_PANELS.forEach(id => {
+      document.getElementById('panel-' + id).classList.toggle('hidden', id !== panel)
     })
-    document.getElementById('panel-theming').classList.toggle('hidden', panel !== 'theming')
-    document.getElementById('panel-blocks').classList.toggle('hidden', panel !== 'blocks')
+    document.querySelectorAll('.rail-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.panel === panel)
+    })
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────
