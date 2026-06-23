@@ -1,5 +1,6 @@
 import { REFERENCE_LINK_REGEX } from "@opengovsg/isomer-components"
 import { z } from "zod"
+import { RESERVED_SOURCE_PREFIXES } from "~/constants/redirect"
 
 import { generateBigIntSchema } from "./common"
 import { offsetPaginationSchema } from "./pagination"
@@ -80,11 +81,6 @@ export const normalizeRedirectPath = (value: string) =>
 export const normalizeRedirectSource = (value: string) =>
   normalizeRedirectPath(value).toLowerCase()
 
-// Prefixes reserved by the framework that must never be a redirect source —
-// e.g. /_next serves Next.js build assets, so a redirect there would shadow
-// framework internals on the published site.
-const RESERVED_SOURCE_PREFIXES = ["/_next"] as const
-
 // True when the (normalised) source falls under a reserved prefix — the prefix
 // itself or anything nested beneath it.
 const isReservedSource = (value: string) => {
@@ -144,14 +140,13 @@ const destinationSchema = z
   .refine((value) => !INVALID_PATH_CHARS_REGEX.test(value), {
     message: "Add a valid URL.",
   })
-  // "../" path traversal only has meaning for an internal path; an external
-  // https URL may legitimately contain ".." in its own path, so scope this one
-  // to internal destinations.
-  .refine(
-    (value) =>
-      !value.startsWith("/") || !trimSlashes(value).split("/").includes(".."),
-    { message: "Add a valid URL." },
-  )
+  // Reject "../" path traversal in any destination. It is never meaningful here:
+  // an internal path is resolved on our side, and a live site collapses ".." in
+  // an external URL's path anyway — so the user can already express the intended
+  // target directly. Banning it outright keeps the rule simple.
+  .refine((value) => !trimSlashes(value).split("/").includes(".."), {
+    message: "Add a valid URL.",
+  })
   // An internal path can't redirect to an on-page anchor — the published
   // redirect emits a Location header, which can't target a fragment. External
   // https URLs may legitimately carry a #fragment, so this is scoped to paths.
@@ -197,46 +192,6 @@ export const createRedirectSchema = createRedirectObjectSchema.superRefine(
   refineSourceDestinationDiffer,
 )
 export type CreateRedirectInput = z.infer<typeof createRedirectSchema>
-
-// Codes returned by the redirect.validate preflight so the client can render a
-// specific message (and styling) per issue. Errors block creation; warnings do
-// not, but are surfaced so users can reconsider before the redirect goes live.
-export const RedirectValidationCode = {
-  AlreadyExists: "ALREADY_EXISTS",
-  RedirectLoop: "REDIRECT_LOOP",
-  SourceIsExistingPage: "SOURCE_IS_EXISTING_PAGE",
-  DestinationIsRedirectSource: "DESTINATION_IS_REDIRECT_SOURCE",
-  DestinationNotFound: "DESTINATION_NOT_FOUND",
-  DestinationNotPublished: "DESTINATION_NOT_PUBLISHED",
-} as const
-export type RedirectValidationCode =
-  (typeof RedirectValidationCode)[keyof typeof RedirectValidationCode]
-
-// User-facing copy shared between the validate preflight, the create-time
-// guards, and the add-redirect form, so the server and client can't drift.
-// Messages that interpolate the path (the loop detail and the chain warning)
-// are produced in the service since they aren't reused by the client.
-export const REDIRECT_MESSAGES = {
-  alreadyExists: "This page is already being redirected.",
-  loop: "This will trap visitors in a never-ending loop.",
-  destinationNotLive:
-    "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
-  sourceIsExistingPage:
-    "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
-} as const
-
-export interface RedirectValidationIssue {
-  code: RedirectValidationCode
-  message: string
-  // Optional secondary line rendered beneath the main message. The loop error
-  // uses it for its explanatory detail (matching the design's heading + body).
-  description?: string
-}
-
-export interface RedirectValidationResult {
-  errors: RedirectValidationIssue[]
-  warnings: RedirectValidationIssue[]
-}
 
 export const deleteRedirectSchema = z.object({
   siteId: z.number().min(1),

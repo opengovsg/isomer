@@ -21,12 +21,12 @@ import {
 } from "@opengovsg/design-system-react"
 import { useState } from "react"
 import { BiLinkAlt, BiPlus, BiRightArrowAlt } from "react-icons/bi"
+import { REDIRECT_MESSAGES } from "~/constants/redirect"
 import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
-import { REDIRECT_MESSAGES } from "~/schemas/redirect"
 
 import { useCreateRedirect, useValidateRedirect } from "../api"
 import { addRedirectSchema, type AddRedirectInput } from "../types"

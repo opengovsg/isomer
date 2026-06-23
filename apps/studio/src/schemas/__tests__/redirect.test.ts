@@ -441,15 +441,24 @@ describe("createRedirectSchema", () => {
       })
     })
 
-    it("should reject internal-path destinations with '..' path segments", () => {
-      // Arrange / Act
-      const result = createRedirectSchema.safeParse({
-        ...VALID_REDIRECT,
-        destination: "/foo/../bar",
-      })
+    it("should reject destinations with '..' path segments", () => {
+      // Arrange — "../" traversal is banned outright (internal path and external
+      // https URL alike), since it is never meaningful in a redirect target.
+      const invalidDestinations = [
+        "/foo/../bar",
+        "https://www.example.gov.sg/foo/../bar",
+      ]
 
-      // Assert
-      expect(result.success).toBe(false)
+      invalidDestinations.forEach((destination) => {
+        // Act
+        const result = createRedirectSchema.safeParse({
+          ...VALID_REDIRECT,
+          destination,
+        })
+
+        // Assert
+        expect(result.success).toBe(false)
+      })
     })
   })
 

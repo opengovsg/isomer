@@ -1,11 +1,13 @@
 import type {
+  RedirectValidationIssue,
+  RedirectValidationResult,
+} from "~/constants/redirect"
+import type {
   CountRedirectsInput,
   CreateRedirectInput,
   DeleteRedirectInput,
   ListRedirectsInput,
   RedirectSortField,
-  RedirectValidationIssue,
-  RedirectValidationResult,
   ResolveRedirectReferencesInput,
 } from "~/schemas/redirect"
 import {
@@ -13,11 +15,10 @@ import {
   REFERENCE_LINK_REGEX,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { REDIRECT_MESSAGES, RedirectValidationCode } from "~/constants/redirect"
 import {
   normalizeRedirectPath,
   normalizeRedirectSource,
-  REDIRECT_MESSAGES,
-  RedirectValidationCode,
 } from "~/schemas/redirect"
 import { getReferenceLink } from "~/utils/link"
 
@@ -176,22 +177,19 @@ const resolveStoredDestination = async (
   return permalinks.get(Number(resourceId)) ?? storedDestination
 }
 
-// Bound on how far the chain is followed when detecting a loop. A new redirect
-// closes a loop if following the existing chain from its destination returns to
-// `source` within this many hops; the visited-set also stops on a pre-existing
-// cycle. Generous — real chains are 1-2 hops.
-const MAX_REDIRECT_CHAIN_HOPS = 10
-
 // Detects whether adding `source -> destination` would chain into, or close a
-// loop with, existing redirects. Follows the chain from the destination (each
-// redirect's resolved target may itself be a redirect source) up to
-// MAX_REDIRECT_CHAIN_HOPS, reporting `isLoop` when it returns to `source`.
-// Returns the immediate next redirect and its `target` so a non-looping chain
-// can still be surfaced as a warning. Stored destinations may be `[resource:...]`
-// references, resolved to the page's current permalink before comparing. Only
-// internal paths chain; an external https destination never matches a source.
-// `source` is assumed already normalised (lowercased), so destinations are
-// normalised the same way before they are looked up as a source.
+// loop with, an existing redirect — looking exactly one hop deep. If the
+// destination is itself the source of a live redirect, that redirect's resolved
+// target is the next hop; the new redirect closes a loop when that target
+// resolves back to `source` (the mirror pair `/a -> /b` while `/b -> /a`).
+// Longer cycles (`/a -> /b -> /c -> /a`) are intentionally not chased — they're
+// rare, and the single-hop check keeps this to one extra read while still
+// surfacing the immediate next hop as a non-looping chain warning. Stored
+// destinations may be `[resource:...]` references, resolved to the page's
+// current permalink before comparing. Only internal paths chain; an external
+// https destination never matches a source. `source` is assumed already
+// normalised (lowercased), so the destination is normalised the same way before
+// it is looked up as a source.
 const getChainedRedirect = async (
   dbInstance: SafeKysely,
   {
@@ -212,36 +210,11 @@ const getChainedRedirect = async (
     return null
   }
 
-  // A hop closes a loop when its resolved (internal) target normalises to
-  // `source`; an external target can never match a source.
-  const closesLoop = (path: string) =>
-    path.startsWith("/") && normalizeRedirectSource(path) === source
-
   const target = await resolveStoredDestination(siteId, redirect.destination)
-  // Walk the chain from the immediate target onward; a loop exists if any hop
-  // resolves back to `source`. `visited` guards against an existing cycle that
-  // doesn't involve `source` (which would otherwise spin until the hop cap).
-  const visited = new Set([normalizedDestination])
-  let current = target
-  let isLoop = closesLoop(current)
-  let hops = 1
-  while (!isLoop && current.startsWith("/") && hops < MAX_REDIRECT_CHAIN_HOPS) {
-    const normalizedCurrent = normalizeRedirectSource(current)
-    if (visited.has(normalizedCurrent)) {
-      break
-    }
-    visited.add(normalizedCurrent)
-    const next = await getLiveRedirectBySource(dbInstance, {
-      siteId,
-      source: normalizedCurrent,
-    })
-    if (!next) {
-      break
-    }
-    current = await resolveStoredDestination(siteId, next.destination)
-    isLoop = closesLoop(current)
-    hops += 1
-  }
+  // The new redirect closes a loop when the existing redirect's (internal)
+  // target normalises back to `source`; an external target can never match.
+  const isLoop =
+    target.startsWith("/") && normalizeRedirectSource(target) === source
 
   return { redirect, normalizedDestination, target, isLoop }
 }

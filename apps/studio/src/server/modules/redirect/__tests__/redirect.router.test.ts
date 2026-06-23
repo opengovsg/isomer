@@ -482,9 +482,10 @@ describe("redirect.router", async () => {
       )
     })
 
-    it("should detect a multi-hop loop (A -> B -> C -> A)", async () => {
-      // Arrange — /b -> /c and /c -> /a already exist, so adding /a -> /b closes
-      // a three-redirect cycle that a single-hop check would miss.
+    it("should not flag a multi-hop cycle as a loop (only one hop is checked)", async () => {
+      // Arrange — /b -> /c and /c -> /a already exist. Adding /a -> /b closes a
+      // three-redirect cycle, but loop detection only looks one hop deep by
+      // design, so this surfaces as a chain warning rather than a loop error.
       await db
         .insertInto("Redirect")
         .values([
@@ -501,9 +502,14 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result.errors).toContainEqual(
+      expect(result.errors).not.toContainEqual(
         expect.objectContaining({ code: "REDIRECT_LOOP" }),
       )
+      expect(result.warnings).toContainEqual({
+        code: "DESTINATION_IS_REDIRECT_SOURCE",
+        message:
+          "This page already redirects to /c. Visitors will end up there instead.",
+      })
     })
 
     it("should not flag a multi-hop chain that never returns to the source", async () => {
@@ -906,8 +912,10 @@ describe("redirect.router", async () => {
       expect(rows).toHaveLength(0)
     })
 
-    it("should throw 422 and create nothing for a multi-hop loop", async () => {
-      // Arrange — /b -> /c -> /a, so creating /a -> /b closes a 3-redirect cycle
+    it("should create a redirect that only closes a multi-hop cycle (loop check is one hop)", async () => {
+      // Arrange — /b -> /c -> /a. Creating /a -> /b closes a 3-redirect cycle,
+      // but the loop guard only looks one hop deep by design, so the create is
+      // allowed (the preflight surfaces it as a non-blocking chain warning).
       await db
         .insertInto("Redirect")
         .values([
@@ -917,19 +925,17 @@ describe("redirect.router", async () => {
         .execute()
 
       // Act
-      const result = caller.create({ siteId, source: "/a", destination: "/b" })
+      await caller.create({ siteId, source: "/a", destination: "/b" })
 
       // Assert
-      await expect(result).rejects.toThrowError(
-        "This will trap visitors in a never-ending loop.",
-      )
       const rows = await db
         .selectFrom("Redirect")
         .select("source")
         .where("siteId", "=", siteId)
         .where("source", "=", "/a")
+        .where("deletedAt", "is", null)
         .execute()
-      expect(rows).toHaveLength(0)
+      expect(rows).toHaveLength(1)
     })
 
     it("should throw 412 and create nothing if the source is a published page's URL", async () => {
