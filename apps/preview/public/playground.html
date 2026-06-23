@@ -568,6 +568,42 @@
           <div class="nb-add-btn" id="nb-btn-grainy-hero"><span class="nb-add-text">+ Add to homepage</span></div>
         </div>
 
+        <!-- Cards: Carousel (moved here from Hero) -->
+        <div class="nb-card" id="nb-cards-carousel" onclick="addBlock('cards-carousel','home')">
+          <div class="nb-thumb">
+            <!-- mini: row of square cards, chevrons top right -->
+            <div style="width:100%;position:relative;">
+              <div style="display:flex;gap:4px;overflow:hidden;">
+                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;">
+                  <div style="height:38px;background:#d1d5db;"></div>
+                  <div style="padding:3px 4px;"><div style="height:3px;background:#9ca3af;border-radius:1px;margin-bottom:2px;"></div><div style="height:2px;background:#e5e7eb;border-radius:1px;width:80%;"></div></div>
+                </div>
+                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;">
+                  <div style="height:38px;background:#d1d5db;"></div>
+                  <div style="padding:3px 4px;"><div style="height:3px;background:#9ca3af;border-radius:1px;margin-bottom:2px;"></div><div style="height:2px;background:#e5e7eb;border-radius:1px;width:80%;"></div></div>
+                </div>
+                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;">
+                  <div style="height:38px;background:#d1d5db;"></div>
+                  <div style="padding:3px 4px;"><div style="height:3px;background:#9ca3af;border-radius:1px;margin-bottom:2px;"></div><div style="height:2px;background:#e5e7eb;border-radius:1px;width:80%;"></div></div>
+                </div>
+                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;opacity:0.4;">
+                  <div style="height:38px;background:#d1d5db;"></div>
+                </div>
+              </div>
+              <div style="position:absolute;top:0;right:0;bottom:0;width:24px;background:linear-gradient(to left,white,transparent);pointer-events:none;"></div>
+              <div style="position:absolute;top:0;right:2px;display:flex;gap:3px;">
+                <div style="width:14px;height:14px;border:1px solid #d1d5db;border-radius:3px;display:flex;align-items:center;justify-content:center;background:white;font-size:8px;color:#9ca3af;">‹</div>
+                <div style="width:14px;height:14px;border:1px solid #d1d5db;border-radius:3px;display:flex;align-items:center;justify-content:center;background:white;font-size:8px;color:#9ca3af;">›</div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Carousel cards <span class="nb-page-tag">Homepage</span></div>
+            <div class="nb-desc">Horizontal scroll row with left/right chevrons. Square images, no rounded corners, border on hover. Edges fade to signal more cards.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-cards-carousel"><span class="nb-add-text">+ Add to homepage</span></div>
+        </div>
+
         <div class="section-label">Callout</div>
 
         <!-- Callout Variants -->
@@ -664,44 +700,40 @@
           </div>
         </div>
 
-        <div class="section-label" style="margin-top:0">Hero</div>
+        <div class="section-label">Button</div>
 
-        <!-- Cards: Carousel -->
-        <div class="nb-card" id="nb-cards-carousel" onclick="addBlock('cards-carousel','home')">
+        <!-- Single Button -->
+        <div class="nb-card" id="nb-single-button" onclick="addSingleButton()">
           <div class="nb-thumb">
-            <!-- mini: row of square cards, chevrons top right -->
-            <div style="width:100%;position:relative;">
-              <div style="display:flex;gap:4px;overflow:hidden;">
-                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;">
-                  <div style="height:38px;background:#d1d5db;"></div>
-                  <div style="padding:3px 4px;"><div style="height:3px;background:#9ca3af;border-radius:1px;margin-bottom:2px;"></div><div style="height:2px;background:#e5e7eb;border-radius:1px;width:80%;"></div></div>
-                </div>
-                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;">
-                  <div style="height:38px;background:#d1d5db;"></div>
-                  <div style="padding:3px 4px;"><div style="height:3px;background:#9ca3af;border-radius:1px;margin-bottom:2px;"></div><div style="height:2px;background:#e5e7eb;border-radius:1px;width:80%;"></div></div>
-                </div>
-                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;">
-                  <div style="height:38px;background:#d1d5db;"></div>
-                  <div style="padding:3px 4px;"><div style="height:3px;background:#9ca3af;border-radius:1px;margin-bottom:2px;"></div><div style="height:2px;background:#e5e7eb;border-radius:1px;width:80%;"></div></div>
-                </div>
-                <div style="flex:0 0 38px;background:#f3f4f6;border:1px solid #e5e7eb;opacity:0.4;">
-                  <div style="height:38px;background:#d1d5db;"></div>
-                </div>
+            <div style="width:100%;display:flex;gap:8px;align-items:center;justify-content:center;height:48px;">
+              <div style="background:var(--nb-primary,#1a4a6b);border-radius:4px;padding:6px 14px;display:flex;align-items:center;">
+                <div style="height:3px;background:white;border-radius:1px;width:50px;"></div>
               </div>
-              <!-- Right fade hint -->
-              <div style="position:absolute;top:0;right:0;bottom:0;width:24px;background:linear-gradient(to left,white,transparent);pointer-events:none;"></div>
-              <!-- Chevrons -->
-              <div style="position:absolute;top:0;right:2px;display:flex;gap:3px;">
-                <div style="width:14px;height:14px;border:1px solid #d1d5db;border-radius:3px;display:flex;align-items:center;justify-content:center;background:white;font-size:8px;color:#9ca3af;">‹</div>
-                <div style="width:14px;height:14px;border:1px solid #d1d5db;border-radius:3px;display:flex;align-items:center;justify-content:center;background:white;font-size:8px;color:#9ca3af;">›</div>
+              <div style="border:1.5px solid var(--nb-primary,#1a4a6b);border-radius:4px;padding:6px 14px;display:flex;align-items:center;">
+                <div style="height:3px;background:var(--nb-primary,#1a4a6b);border-radius:1px;width:40px;"></div>
               </div>
             </div>
           </div>
           <div class="nb-info">
-            <div class="nb-title">Carousel cards <span class="nb-page-tag">Homepage</span></div>
-            <div class="nb-desc">Horizontal scroll row with left/right chevrons. Square images, no rounded corners, border on hover. Edges fade to signal more cards.</div>
+            <div class="nb-title">Button <span class="nb-page-tag">Article + Content</span></div>
+            <div class="nb-desc">A single CTA button using the Isomer design system. Choose between solid and outline styles, and three sizes.</div>
           </div>
-          <div class="nb-add-btn" id="nb-btn-cards-carousel"><span class="nb-add-text">+ Add to homepage</span></div>
+          <div class="nb-add-btn" id="nb-btn-single-button"><span class="nb-add-text">+ Add to article &amp; content page</span></div>
+        </div>
+
+        <!-- Button controls (shown when block is active) -->
+        <div id="btn-controls" style="display:none; background:#f9fafb; border:1.5px solid #111827; border-radius:8px; padding:12px; margin-bottom:10px;">
+          <div class="section-label" style="margin-top:0; margin-bottom:8px;">Style</div>
+          <div class="seg-control" style="margin-bottom:12px;">
+            <button class="seg-btn active" id="btn-variant-solid" onclick="setSingleButtonConfig('variant','solid')">Solid</button>
+            <button class="seg-btn" id="btn-variant-outline" onclick="setSingleButtonConfig('variant','outline')">Outline</button>
+          </div>
+          <div class="section-label" style="margin-top:0; margin-bottom:8px;">Size</div>
+          <div class="seg-control" style="margin-bottom:0;">
+            <button class="seg-btn" id="btn-size-sm" onclick="setSingleButtonConfig('size','sm')">Small</button>
+            <button class="seg-btn active" id="btn-size-base" onclick="setSingleButtonConfig('size','base')">Base</button>
+            <button class="seg-btn" id="btn-size-lg" onclick="setSingleButtonConfig('size','lg')">Large</button>
+          </div>
         </div>
 
       </div>
@@ -776,41 +808,25 @@
           <div class="nb-add-btn" id="nb-btn-lists-with-indentation"><span class="nb-add-text">+ Add to article page</span></div>
         </div>
 
-        <div class="section-label">Button</div>
+        <div class="section-label">Table</div>
 
-        <!-- Single Button -->
-        <div class="nb-card" id="nb-single-button" onclick="addSingleButton()">
-          <div class="nb-thumb">
-            <div style="width:100%;display:flex;gap:8px;align-items:center;justify-content:center;height:48px;">
-              <div style="background:var(--nb-primary,#1a4a6b);border-radius:4px;padding:6px 14px;display:flex;align-items:center;">
-                <div style="height:3px;background:white;border-radius:1px;width:50px;"></div>
-              </div>
-              <div style="border:1.5px solid var(--nb-primary,#1a4a6b);border-radius:4px;padding:6px 14px;display:flex;align-items:center;">
-                <div style="height:3px;background:var(--nb-primary,#1a4a6b);border-radius:1px;width:40px;"></div>
-              </div>
-            </div>
-          </div>
-          <div class="nb-info">
-            <div class="nb-title">Button <span class="nb-page-tag">Article + Content</span></div>
-            <div class="nb-desc">A single CTA button using the Isomer design system. Choose between solid and outline styles, and three sizes.</div>
-          </div>
-          <div class="nb-add-btn" id="nb-btn-single-button"><span class="nb-add-text">+ Add to article &amp; content page</span></div>
+        <div class="control-row" style="margin-bottom:10px;">
+          <span class="control-name">Adjust column width</span>
+          <button id="tbl-colwidth-toggle" role="switch" aria-checked="false" onclick="toggleTableColWidth()"
+            style="width:36px;height:20px;border-radius:999px;border:none;background:#d1d5db;cursor:pointer;padding:0;position:relative;flex-shrink:0;transition:background 0.15s;">
+            <span id="tbl-colwidth-knob" style="position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.15s;"></span>
+          </button>
         </div>
+        <p style="font-size:11px;color:#9ca3af;margin-bottom:14px;line-height:1.4;">Narrows the "Support rate" column.</p>
 
-        <!-- Button controls (shown when block is active) -->
-        <div id="btn-controls" style="display:none; background:#f9fafb; border:1.5px solid #111827; border-radius:8px; padding:12px; margin-bottom:10px;">
-          <div class="section-label" style="margin-top:0; margin-bottom:8px;">Style</div>
-          <div class="seg-control" style="margin-bottom:12px;">
-            <button class="seg-btn active" id="btn-variant-solid" onclick="setSingleButtonConfig('variant','solid')">Solid</button>
-            <button class="seg-btn" id="btn-variant-outline" onclick="setSingleButtonConfig('variant','outline')">Outline</button>
-          </div>
-          <div class="section-label" style="margin-top:0; margin-bottom:8px;">Size</div>
-          <div class="seg-control" style="margin-bottom:0;">
-            <button class="seg-btn" id="btn-size-sm" onclick="setSingleButtonConfig('size','sm')">Small</button>
-            <button class="seg-btn active" id="btn-size-base" onclick="setSingleButtonConfig('size','base')">Base</button>
-            <button class="seg-btn" id="btn-size-lg" onclick="setSingleButtonConfig('size','lg')">Large</button>
-          </div>
+        <div class="control-row" style="margin-bottom:10px;">
+          <span class="control-name">Header row &amp; column</span>
+          <button id="tbl-headercol-toggle" role="switch" aria-checked="false" onclick="toggleTableHeaderCol()"
+            style="width:36px;height:20px;border-radius:999px;border:none;background:#d1d5db;cursor:pointer;padding:0;position:relative;flex-shrink:0;transition:background 0.15s;">
+            <span id="tbl-headercol-knob" style="position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.15s;"></span>
+          </button>
         </div>
+        <p style="font-size:11px;color:#9ca3af;margin-bottom:14px;line-height:1.4;">Also colours the first column darker, matching the header row.</p>
 
       </div>
 
@@ -1083,6 +1099,68 @@
 
   // ── iframe lifecycle ──────────────────────────────────────────────────────
 
+  let tableColWidthEnabled = false
+  let tableHeaderColEnabled = false
+
+  function buildAndInjectCSS() {
+    const parts = [
+      // Always: palette-2 on quote border + infopic background
+      `section.bg-base-canvas-alt.border-l-4 {
+        background-color: var(--color-brand-canvas-alt) !important;
+        border-left-color: var(--palette-2-interaction) !important;
+      }
+      section.bg-base-canvas-backdrop {
+        background-color: var(--palette-2-canvas-alt) !important;
+      }`
+    ]
+
+    if (tableColWidthEnabled) {
+      parts.push(
+        `table th:nth-child(2), table td:nth-child(2) {
+          width: 100px !important;
+          min-width: 80px !important;
+          max-width: 100px !important;
+          white-space: nowrap;
+        }`
+      )
+    }
+
+    if (tableHeaderColEnabled) {
+      parts.push(
+        `table tr td:first-child {
+          background-color: #f3f4f6 !important;
+        }
+        table tr td:first-child p {
+          font-weight: 600 !important;
+        }`
+      )
+    }
+
+    postToIframe({ type: 'injectCSS', css: parts.join('\n') })
+  }
+
+  function toggleTableColWidth() {
+    tableColWidthEnabled = !tableColWidthEnabled
+    const toggle = document.getElementById('tbl-colwidth-toggle')
+    const knob = document.getElementById('tbl-colwidth-knob')
+    toggle.setAttribute('aria-checked', tableColWidthEnabled)
+    toggle.style.background = tableColWidthEnabled ? '#111827' : '#d1d5db'
+    knob.style.transform = tableColWidthEnabled ? 'translateX(16px)' : 'translateX(0)'
+    buildAndInjectCSS()
+    if (tableColWidthEnabled) setPage('content')
+  }
+
+  function toggleTableHeaderCol() {
+    tableHeaderColEnabled = !tableHeaderColEnabled
+    const toggle = document.getElementById('tbl-headercol-toggle')
+    const knob = document.getElementById('tbl-headercol-knob')
+    toggle.setAttribute('aria-checked', tableHeaderColEnabled)
+    toggle.style.background = tableHeaderColEnabled ? '#111827' : '#d1d5db'
+    knob.style.transform = tableHeaderColEnabled ? 'translateX(16px)' : 'translateX(0)'
+    buildAndInjectCSS()
+    if (tableHeaderColEnabled) setPage('content')
+  }
+
   iframe.addEventListener('load', () => {
     setTimeout(() => {
       applyThemeToIframe()
@@ -1091,21 +1169,7 @@
         const p = TYPO_PRESETS[activeCard.dataset.preset]
         if (p) postToIframe({ type: 'fonts', heading: p.heading, body: p.body })
       }
-      // Persistent component overrides — CSS vars keep them reactive to theme changes
-      postToIframe({
-        type: 'injectCSS',
-        css: `
-          /* Quote: primary canvas-alt bg, secondary vivid left border */
-          section.bg-base-canvas-alt.border-l-4 {
-            background-color: var(--color-brand-canvas-alt) !important;
-            border-left-color: var(--palette-2-interaction) !important;
-          }
-          /* Infopic: secondary light canvas as background */
-          section.bg-base-canvas-backdrop {
-            background-color: var(--palette-2-canvas-alt) !important;
-          }
-        `
-      })
+      buildAndInjectCSS()
     }, 200)
   })
 
@@ -1201,6 +1265,7 @@
       addedBlocks.add(blockId)
       postToIframe({ type: 'addBlock', blockId, page })
       setPage(page)
+      postToIframe({ type: 'scrollToBlock', blockId })
       const card = document.getElementById('nb-' + blockId)
       const span = document.querySelector('#nb-btn-' + blockId + ' .nb-add-text')
       if (card) card.classList.add('nb-added')

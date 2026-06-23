@@ -191,6 +191,17 @@ function App() {
           [blockId]: { ...(prev[blockId] ?? {}), [key]: value },
         }))
       }
+      if (type === "scrollToBlock") {
+        const { blockId } = e.data as { blockId: string }
+        setTimeout(() => {
+          const el =
+            document.querySelector(`[data-block-id="${blockId}"]`) ??
+            document.getElementById("event-layout-portal") ??
+            document.getElementById("after-hero-portal") ??
+            document.getElementById("hero-portal")
+          el?.scrollIntoView({ behavior: "smooth", block: "start" })
+        }, 200)
+      }
       if (type === "injectCSS") {
         let el = document.getElementById("playground-css-overrides")
         if (!el) {
@@ -403,7 +414,12 @@ function App() {
       {heroPortal &&
         heroBlocks.map((id) => {
           const Block = CUSTOM_BLOCK_REGISTRY[id]
-          return Block ? createPortal(<Block key={id} />, heroPortal) : null
+          return Block
+            ? createPortal(
+                <div key={id} data-block-id={id}><Block /></div>,
+                heroPortal,
+              )
+            : null
         })}
 
       {/* After-hero portal (non-hero homepage blocks) */}
@@ -411,7 +427,10 @@ function App() {
         afterHeroBlocks.map((id) => {
           const Block = CUSTOM_BLOCK_REGISTRY[id]
           return Block
-            ? createPortal(<Block key={id} />, afterHeroPortal)
+            ? createPortal(
+                <div key={id} data-block-id={id}><Block /></div>,
+                afterHeroPortal,
+              )
             : null
         })}
 
@@ -443,7 +462,12 @@ function App() {
       {articleBodyPortal &&
         articlePageBlocks.map((id) => {
           const Block = CUSTOM_BLOCK_REGISTRY[id]
-          return Block ? createPortal(<Block key={id} />, articleBodyPortal) : null
+          return Block
+            ? createPortal(
+                <div key={id} data-block-id={id}><Block /></div>,
+                articleBodyPortal,
+              )
+            : null
         })}
 
       {/* Content page custom blocks — portalled into <main> before footer */}
@@ -453,7 +477,7 @@ function App() {
           const label = CUSTOM_BLOCK_LABEL[id] ?? id
           return Block
             ? createPortal(
-                <div key={id}>
+                <div key={id} data-block-id={id}>
                   <div
                     style={{
                       display: "flex",

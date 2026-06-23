@@ -55,7 +55,7 @@ function LinkHubColumn({
   return (
     <div
       style={{
-        background: "var(--color-brand-canvas-alt, #eef2f7)",
+        background: "var(--color-brand-canvas-default, #f5f8fa)",
         borderRadius: 8,
         overflow: "hidden",
       }}
@@ -120,7 +120,7 @@ function LinkHubColumn({
         }}
       >
         {links.map((link) => (
-          <li key={link} className="prose-body-sm text-base-content" style={{ marginBottom: 6 }}>
+          <li key={link} className="prose-body-base text-base-content" style={{ marginBottom: 6 }}>
             <a href="#" className="hover:underline" style={{ color: "var(--color-brand-interaction-default)" }}>
               {link}
             </a>
@@ -134,7 +134,7 @@ function LinkHubColumn({
         style={{ listStyle: "disc", margin: 0, padding: "8px 20px 14px 36px" }}
       >
         {links.map((link) => (
-          <li key={link} className="prose-body-sm text-base-content" style={{ marginBottom: 6 }}>
+          <li key={link} className="prose-body-base text-base-content" style={{ marginBottom: 6 }}>
             <a href="#" className="hover:underline" style={{ color: "var(--color-brand-interaction-default)" }}>
               {link}
             </a>

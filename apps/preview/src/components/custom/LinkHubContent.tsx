@@ -11,7 +11,7 @@ export default function LinkHubContent() {
     <div
       className="my-6"
       style={{
-        background: "var(--color-brand-canvas-alt, #eef2f7)",
+        background: "var(--color-brand-canvas-default, #f5f8fa)",
         borderRadius: 8,
         padding: "16px 20px",
       }}
@@ -26,7 +26,7 @@ export default function LinkHubContent() {
         {LINKS.map((link) => (
           <li
             key={link}
-            className="prose-body-sm text-base-content"
+            className="prose-body-base text-base-content"
             style={{ marginBottom: 6 }}
           >
             <a
