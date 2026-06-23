@@ -339,20 +339,28 @@ describe("createRedirectSchema", () => {
       }
     })
 
-    it("should reject internal-path destinations with control characters or backslashes", () => {
-      // Arrange
-      const invalidDestinations = ["/bad\tpath", "/bad\\path"]
-
-      invalidDestinations.forEach((destination) => {
-        // Act
-        const result = createRedirectSchema.safeParse({
-          ...VALID_REDIRECT,
-          destination,
-        })
-
-        // Assert
-        expect(result.success).toBe(false)
+    it("should strip control characters from an internal-path destination", () => {
+      // Arrange / Act — a stray control char is silently removed rather than
+      // blocking the user; the stored value is left control-char-free.
+      const result = createRedirectSchema.parse({
+        ...VALID_REDIRECT,
+        destination: "/bad\tpath",
       })
+
+      // Assert
+      expect(result.destination).toBe("/badpath")
+    })
+
+    it("should reject destinations containing backslashes", () => {
+      // Arrange / Act — "\\" is ambiguous and could form an open redirect, so it
+      // is rejected outright rather than stripped.
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        destination: "/bad\\path",
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
     })
 
     it("should collapse a protocol-relative '//' destination to a single leading slash", () => {
@@ -412,32 +420,32 @@ describe("createRedirectSchema", () => {
       expect(result.success).toBe(true)
     })
 
-    it("should reject https destinations containing control characters (CRLF/NUL)", () => {
-      // Arrange
-      // Control bytes are never valid in a real URL and would otherwise be
-      // stored verbatim and emitted into the published site's redirect rules
-      // (S3 metadata / the CloudFront Location header).
-      const invalidDestinations = [
-        "https://evil.gov.sg/\r\nSet-Cookie: x=1",
-        "https://evil.gov.sg/\npath",
-        "https://evil.gov.sg/\x00",
-        "https://evil.gov.sg/\ttab",
+    it("should strip control characters (CRLF/NUL) from an https destination", () => {
+      // Arrange — control bytes are stripped before storage, so a CR/LF can
+      // never reach the published redirect rules (S3 metadata / the CloudFront
+      // Location header) where it could inject a response header.
+      const cases = [
+        {
+          input: "https://evil.gov.sg/\r\npath",
+          expected: "https://evil.gov.sg/path",
+        },
+        { input: "https://evil.gov.sg/\x00", expected: "https://evil.gov.sg/" },
+        {
+          input: "https://evil.gov.sg/\ttab",
+          expected: "https://evil.gov.sg/tab",
+        },
       ]
 
-      invalidDestinations.forEach((destination) => {
+      cases.forEach(({ input, expected }) => {
         // Act
-        const result = createRedirectSchema.safeParse({
+        const result = createRedirectSchema.parse({
           ...VALID_REDIRECT,
-          destination,
+          destination: input,
         })
 
         // Assert
-        expect(result.success).toBe(false)
-        if (!result.success) {
-          expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "Add a valid URL.",
-          )
-        }
+        expect(result.destination).not.toMatch(/[\x00-\x1f\x7f]/)
+        expect(result.destination).toBe(expected)
       })
     })
 

@@ -37,10 +37,12 @@ export const MAX_REDIRECT_PAGE_SIZE = 100
 // (spaces, control chars, "?", "#", "\\", non-ASCII) out up front.
 const SOURCE_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9\-._~!$&'()*+,;=:@%/]+$/
 
-// Matches ASCII control characters (0x00-0x1f, 0x7f) and backslashes. These are
-// never valid in a destination and can corrupt the generated redirect rules on
-// the published site. (Source paths use the stricter whitelist above instead.)
-const INVALID_PATH_CHARS_REGEX = /[\x00-\x1f\x7f\\]/
+// ASCII control characters (0x00-0x1f, 0x7f). A destination is persisted verbatim
+// and later emitted into the published site's redirect rules (S3 object metadata
+// and ultimately the CloudFront Location header), so a CR/LF/NUL must never reach
+// it. These are stripped (not rejected) — the global flag strips every match.
+// (Source paths use the stricter whitelist above instead.)
+const CONTROL_CHARS_REGEX = /[\x00-\x1f\x7f]/g
 
 // Anchored form of the shared [resource:siteId:resourceId] reference (the shared
 // regex is unanchored, so a value only counts as a reference when it is exactly
@@ -122,6 +124,10 @@ const destinationSchema = z
   .string()
   .min(1, { message: "Destination is required" })
   .max(MAX_REDIRECT_DESTINATION_LENGTH, { message: "Destination is too long" })
+  // Strip control characters up front (a stray pasted CR/LF/NUL shouldn't block
+  // the user, and must never reach the published redirect rules — see
+  // CONTROL_CHARS_REGEX). The cleaned value flows through the checks below.
+  .transform((value) => value.replace(CONTROL_CHARS_REGEX, ""))
   // Same-site path ("/..."), external https URL, or an already-resolved page
   // reference ([resource:...]); anything else (http://, javascript:, ...) rejected.
   .refine(
@@ -131,13 +137,9 @@ const destinationSchema = z
       REFERENCE_DESTINATION_REGEX.test(value),
     { message: "Add a valid URL." },
   )
-  // Control characters (incl. CR/LF/NUL) and backslashes are never valid in a
-  // redirect destination — internal path or external https URL alike. This is
-  // NOT gated on internal paths: a destination is persisted verbatim and later
-  // emitted into the published site's redirect rules (S3 object metadata and
-  // ultimately the CloudFront Location header), so a CR/LF in an https URL
-  // could otherwise reach a live response header.
-  .refine((value) => !INVALID_PATH_CHARS_REGEX.test(value), {
+  // Backslashes are rejected, not stripped: "\\" is ambiguous in a path/URL and
+  // silently removing it could turn "/\\evil.com" into an open redirect.
+  .refine((value) => !value.includes("\\"), {
     message: "Add a valid URL.",
   })
   // Reject "../" path traversal in any destination. It is never meaningful here:
