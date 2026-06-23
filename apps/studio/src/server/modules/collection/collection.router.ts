@@ -503,16 +503,6 @@ export const collectionRouter = router({
             resourceId: resource.id,
           })
 
-          const oldCategoryId = (oldBlob?.content as Record<string, any> | null)
-            ?.page?.categoryId
-          if (oldCategoryId && !categoryId) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message:
-                "Cannot clear categoryId from an item that already has one",
-            })
-          }
-
           const blob = await updateBlobById(tx, {
             content: {
               ...content,
