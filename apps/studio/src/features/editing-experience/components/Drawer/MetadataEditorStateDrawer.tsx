@@ -14,6 +14,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { useRequiredTagsValidation } from "../../hooks/useRequiredTagsValidation"
 import { pageSchema } from "../../schema"
@@ -42,9 +43,20 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     setSavedPageState,
     previewPageState,
     setPreviewPageState,
+    type,
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(pageSchema)
+
+  const isCollectionItem =
+    type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
+
+  const { data: collectionTags = [] } =
+    trpc.collection.getCollectionTags.useQuery(
+      { resourceId: pageId, siteId },
+      { enabled: isCollectionItem },
+    )
+
   const toast = useToast()
   const utils = trpc.useUtils()
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
@@ -90,10 +102,6 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   }, [metadataSchema, previewPageState.layout])
 
   const validateFn = ajv.compile<Static<typeof metadataSchema>>(filteredSchema)
-
-  const isTaggableLayout =
-    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Article ||
-    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Link
 
   const handleSaveChanges = useCallback(() => {
     setSavedPageState(previewPageState)
@@ -188,7 +196,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             py="1.5rem"
             px="2rem"
           >
-            {isTaggableLayout ? (
+            {collectionTags.length > 0 ? (
               <TagsAwareSaveButton
                 isLoading={isPending}
                 onClick={handleSaveChanges}

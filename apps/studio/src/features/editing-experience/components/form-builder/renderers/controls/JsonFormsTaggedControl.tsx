@@ -59,7 +59,6 @@ const SuspendableJsonFormsTaggedControl = ({
   const [tags] = trpc.collection.getCollectionTags.useSuspenseQuery({
     resourceId,
     siteId,
-    isPublishedCategories: true,
   })
 
   // NOTE: Because we render according to the schema,

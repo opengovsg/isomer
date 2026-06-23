@@ -538,41 +538,34 @@ export const collectionRouter = router({
 
   getCollectionTags: protectedProcedure
     .input(getCollectionTagsSchema)
-    .query(
-      async ({
-        ctx,
-        input: { resourceId, collectionId, siteId, isPublishedCategories },
-      }) => {
-        const resourceIdToValidate = collectionId ?? resourceId
-        await bulkValidateUserPermissionsForResources({
-          siteId,
-          action: "read",
-          userId: ctx.user.id,
-          resourceIds: resourceIdToValidate
-            ? [String(resourceIdToValidate)]
-            : [],
-        })
+    .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
+      const resourceIdToValidate = collectionId ?? resourceId
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+        resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
+      })
 
-        if (collectionId !== undefined) {
-          return getCollectionTagsForResource({
-            siteId,
-            collectionId,
-            isPublishedOnly: isPublishedCategories,
-          })
-        }
-        if (resourceId !== undefined) {
-          return getCollectionTagsForResource({
-            siteId,
-            resourceId,
-            isPublishedOnly: isPublishedCategories,
-          })
-        }
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Either collectionId or resourceId must be provided",
+      if (collectionId !== undefined) {
+        return getCollectionTagsForResource({
+          siteId,
+          collectionId,
+          isPublishedOnly: true,
         })
-      },
-    ),
+      }
+      if (resourceId !== undefined) {
+        return getCollectionTagsForResource({
+          siteId,
+          resourceId,
+          isPublishedOnly: true,
+        })
+      }
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Either collectionId or resourceId must be provided",
+      })
+    }),
 
   /**
    * Counts collection pages/links whose draft **or** published blob has `page.categoryId` equal to the

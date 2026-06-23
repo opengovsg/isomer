@@ -2540,58 +2540,7 @@ describe("collection.router", async () => {
       expect(result[0]).toMatchObject({ id: TAG_CATEGORY_ID, label: "Topic" })
     })
 
-    it("should fall back to draft blob when no published version exists", async () => {
-      // Arrange
-      const { collection, site, indexBlob } =
-        await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
-      await db
-        .updateTable("Blob")
-        .set({ content: jsonb(indexPageBlobWithTags()) })
-        .where("id", "=", indexBlob.id)
-        .execute()
-      const { page: collectionPage } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
-        parentId: collection.id,
-      })
-
-      // Act — isPublishedCategories omitted, defaults to false
-      const result = await caller.getCollectionTags({
-        siteId: site.id,
-        resourceId: Number(collectionPage.id),
-      })
-
-      // Assert
-      expect(result).toHaveLength(1)
-      expect(result[0]).toMatchObject({ id: TAG_CATEGORY_ID, label: "Topic" })
-    })
-
-    it("should return tag categories from published blob when isPublishedCategories is true", async () => {
-      // Arrange
-      const { collection, site, indexPage } =
-        await setupCollectionWithIndexPage()
-      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
-      await publishIndexPageWithTags(indexPage.id)
-      const { page: collectionPage } = await setupPageResource({
-        siteId: site.id,
-        resourceType: ResourceType.CollectionPage,
-        parentId: collection.id,
-      })
-
-      // Act
-      const result = await caller.getCollectionTags({
-        siteId: site.id,
-        resourceId: Number(collectionPage.id),
-        isPublishedCategories: true,
-      })
-
-      // Assert
-      expect(result).toHaveLength(1)
-      expect(result[0]).toMatchObject({ id: TAG_CATEGORY_ID, label: "Topic" })
-    })
-
-    it("should return empty array when collection has no published version and isPublishedCategories is true", async () => {
+    it("should return empty array when collection has no published version", async () => {
       // Arrange
       const { collection, site, indexBlob } =
         await setupCollectionWithIndexPage()
@@ -2612,10 +2561,9 @@ describe("collection.router", async () => {
       const result = await caller.getCollectionTags({
         siteId: site.id,
         resourceId: Number(collectionPage.id),
-        isPublishedCategories: true,
       })
 
-      // Assert: no draft fallback when isPublishedCategories is true
+      // Assert: always published-only, no draft fallback
       expect(result).toHaveLength(0)
     })
   })

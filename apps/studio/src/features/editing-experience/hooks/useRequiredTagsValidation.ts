@@ -15,7 +15,7 @@ export function useRequiredTagsValidation({
   enabled = true,
 }: UseRequiredTagsValidationProps) {
   const { data: tags = [] } = trpc.collection.getCollectionTags.useQuery(
-    { resourceId, siteId, isPublishedCategories: true },
+    { resourceId, siteId },
     { enabled },
   )
 
