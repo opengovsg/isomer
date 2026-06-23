@@ -44,7 +44,21 @@ function SuspendableJsonFormsCategoryIdSelect({
         label: optionLabel,
         value: id,
       }))}
-      isClearable={true} // TODO: change to false after migration where it's no longer optional
+      // Hardcoded false (not derived from `required`) because categoryId is still
+      // Type.Optional in the schema pending the category migration. Using `!required`
+      // would be true in the gap between "migration ran" and "schema updated",
+      // letting editors clear backfilled categoryIds. Correct behaviour across all states:
+      //
+      //   State                                 | isClearable=false
+      //   --------------------------------------|------------------------------------------
+      //   Pre-migration, old item (no categoryId) | nothing to clear — harmless
+      //   Pre-migration, new item (has categoryId) | can't clear — correct
+      //   Migration ran, schema not yet updated  | can't clear — protects migrated data
+      //   Migration ran + schema updated         | can't clear — correct
+      //
+      // Once migration is complete and categoryId is made required in the schema,
+      // replace with isClearable={!required}.
+      isClearable={false}
       onChange={(value) => {
         handleChange(path, value)
       }}
