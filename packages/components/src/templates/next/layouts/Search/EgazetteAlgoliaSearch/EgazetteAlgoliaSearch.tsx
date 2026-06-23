@@ -1,7 +1,7 @@
 "use client"
 
 import type { EgazetteAlgoliaSearchProps } from "~/interfaces/internal/EgazetteAlgoliaSearchInputBox"
-import { liteClient as algoliasearch } from "algoliasearch/lite"
+import algoliasearch from "algoliasearch/lite"
 import { useMemo } from "react"
 import { InstantSearch } from "react-instantsearch"
 
