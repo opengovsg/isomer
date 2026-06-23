@@ -62,5 +62,9 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 
 - [Reference catalog packages via "catalog:" not direct version strings](conventions/pnpm-catalog-references.md) — smell: direct version strings in package.json for packages defined in pnpm-workspace.yaml catalog
 
+### Configuration
+
+- [Register a new env var in .env.example, .env.test (and turbo.json if read by a task)](conventions/env-var-registration.md) — best practice: propagate a new env var beyond env.mjs to the example/test files and turbo globalEnv, or setup/CI/cache silently drift
+
 <!-- Each line: [Title](conventions/slug.md) — short hook (smell/best practice).
      Group under a category heading; create the heading if it's new. -->
