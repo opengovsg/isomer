@@ -16,6 +16,8 @@ import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import type { CollectionTags } from "../../hooks/useCollectionTags"
+import { useCollectionTags } from "../../hooks/useCollectionTags"
 import { useRequiredTagsValidation } from "../../hooks/useRequiredTagsValidation"
 import { pageSchema } from "../../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
@@ -51,11 +53,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const isCollectionItem =
     type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
 
-  const { data: collectionTags = [] } =
-    trpc.collection.getCollectionTags.useQuery(
-      { resourceId: pageId, siteId },
-      { enabled: isCollectionItem },
-    )
+  const { data: collectionTags = [] } = useCollectionTags({
+    resourceId: pageId,
+    siteId,
+    enabled: isCollectionItem,
+  })
 
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -200,8 +202,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
               <TagsAwareSaveButton
                 isLoading={isPending}
                 onClick={handleSaveChanges}
-                resourceId={pageId}
-                siteId={siteId}
+                tags={collectionTags}
                 tagged={(previewPageState.page as { tagged?: string[] }).tagged}
               />
             ) : (
@@ -240,17 +241,15 @@ const SaveButton = ({
 const TagsAwareSaveButton = ({
   onClick,
   isLoading,
-  resourceId,
-  siteId,
+  tags,
   tagged,
 }: {
   onClick: () => void
   isLoading: boolean
-  resourceId: number
-  siteId: number
+  tags: CollectionTags
   tagged: string[] | undefined
 }) => {
-  const { isValid } = useRequiredTagsValidation({ resourceId, siteId, tagged })
+  const { isValid } = useRequiredTagsValidation({ tags, tagged })
 
   return (
     <SaveButton isLoading={isLoading} onClick={onClick} isTagsValid={isValid} />
