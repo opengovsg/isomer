@@ -3,17 +3,6 @@ import { addRedirectSchema } from "../types"
 const VALID = { source: "/old-page" }
 
 describe("addRedirectSchema destination scheme normalisation", () => {
-  it("should prepend https:// to a bare host", () => {
-    // Arrange / Act
-    const result = addRedirectSchema.parse({
-      ...VALID,
-      destination: "www.example.gov.sg",
-    })
-
-    // Assert
-    expect(result.destination).toBe("https://www.example.gov.sg")
-  })
-
   it("should upgrade an http:// destination to https://", () => {
     // Arrange / Act
     const result = addRedirectSchema.parse({
@@ -47,23 +36,12 @@ describe("addRedirectSchema destination scheme normalisation", () => {
     expect(result.destination).toBe("/new-page")
   })
 
-  it("should trim surrounding whitespace before prepending the scheme", () => {
-    // Arrange / Act
-    const result = addRedirectSchema.parse({
-      ...VALID,
-      destination: "  www.example.gov.sg  ",
-    })
-
-    // Assert
-    expect(result.destination).toBe("https://www.example.gov.sg")
-  })
-
-  it("should still reject a bare single-label host once https:// is prepended", () => {
-    // Arrange / Act — "localhost" has no dot, so the prepended URL isn't a valid
-    // public destination; the scheme fix-up doesn't loosen that check.
+  it("should reject a schemeless host rather than inferring https://", () => {
+    // Arrange / Act — a bare host is ambiguous against an internal path, so it
+    // is not auto-prefixed; it fails validation as an invalid URL instead.
     const result = addRedirectSchema.safeParse({
       ...VALID,
-      destination: "localhost",
+      destination: "www.example.gov.sg",
     })
 
     // Assert
