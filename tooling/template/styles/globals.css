@@ -2,7 +2,5 @@
 @import "@opengovsg/isomer-components/presets/next/preset.css";
 @import "@opengovsg/isomer-components/presets/next/sources.css";
 
-@source "../app/**/*.{js,ts,jsx,tsx,mdx}";
-
 @plugin "../plugins/site-theme.js";
 @plugin "../plugins/polyfills.js";
