@@ -2,7 +2,7 @@ import { Box, Flex, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useRouter } from "next/router"
 import { SingpassFullLogo } from "~/components/Svg/SingpassFullLogo"
-import { SIGN_IN } from "~/lib/routes"
+import { SIGN_IN_SINGPASS } from "~/lib/routes"
 import { trpc } from "~/utils/trpc"
 import { getRedirectUrl } from "~/utils/url"
 
@@ -12,8 +12,8 @@ export const SingpassLoginButton = (): JSX.Element | null => {
     onSuccess: async ({ redirectUrl }) => {
       await router.push(redirectUrl)
     },
-    onError: async (error) => {
-      await router.push(`${SIGN_IN}?error=${error.message}`)
+    onError: async () => {
+      await router.push(`${SIGN_IN_SINGPASS}?error=true`)
     },
   })
 
