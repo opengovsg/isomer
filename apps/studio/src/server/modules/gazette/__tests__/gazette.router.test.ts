@@ -3,6 +3,8 @@ import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
+import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
+import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -18,6 +20,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
+import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -25,6 +28,12 @@ import {
   IsomerAdminRole,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
+
+// algolia.ts constructs the Algolia client at module load via
+// algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
+// not set in the test environment, so the import throws "appId is missing"
+// before any test runs. Mock the whole module to prevent this.
+vi.mock("~/lib/algolia")
 
 import { db } from "../../database"
 import { gazetteRouter } from "../gazette.router"
@@ -758,7 +767,13 @@ describe("gazette.router", async () => {
 
     beforeEach(() => {
       vi.restoreAllMocks()
-      // Mock external services
+      // Mock external services.
+      // The flag ENABLE_SEARCHSG_GAZETTE_INGESTION is OFF by default in tests
+      // (not in mockFeatureFlags), so the Algolia path is exercised here.
+      // SearchSG is mocked too so tests that enable the flag don't hit the network.
+      vi.spyOn(gazetteService, "removeGazetteFromAlgolia").mockResolvedValue(
+        undefined,
+      )
       vi.spyOn(
         gazetteService,
         "removeGazetteFromSearchIndex",
@@ -769,6 +784,15 @@ describe("gazette.router", async () => {
       vi.spyOn(mailService, "sendGazetteDeletionEmail").mockResolvedValue(
         undefined,
       )
+    })
+
+    afterEach(() => {
+      // Restore the GrowthBook forced features to the baseline so flag state
+      // set by individual tests (e.g. the ENABLE_SEARCHSG_GAZETTE_INGESTION ON
+      // test) does not leak into subsequent tests. Restoring to mockFeatureFlags
+      // (rather than an empty Map) preserves IS_SINGPASS_ENABLED and any other
+      // baseline flags that other tests may depend on.
+      mockGrowthBook.setForcedFeatures(mockFeatureFlags)
     })
 
     it("deletes a gazette within the 15-minute grace period", async () => {
@@ -803,10 +827,9 @@ describe("gazette.router", async () => {
         .execute()
       expect(auditLogs).toHaveLength(1)
 
-      // External services should be called
-      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledTimes(
-        1,
-      )
+      // External services should be called.
+      // Flag is OFF (default) so the Algolia path runs.
+      expect(gazetteService.removeGazetteFromAlgolia).toHaveBeenCalledTimes(1)
       expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledTimes(1)
     })
 
@@ -868,6 +891,7 @@ describe("gazette.router", async () => {
       expect(resource).toBeDefined()
 
       // External services should not be called
+      expect(gazetteService.removeGazetteFromAlgolia).not.toHaveBeenCalled()
       expect(gazetteService.removeGazetteFromSearchIndex).not.toHaveBeenCalled()
       expect(gazetteService.deleteGazetteAsset).not.toHaveBeenCalled()
     })
@@ -1072,6 +1096,33 @@ describe("gazette.router", async () => {
         .calls[0]?.[0]
       expect(call?.recipientEmail).toBe(env.DD_DELETION_EMAIL)
       expect(call?.cc).toEqual(["user@toppannext.com"])
+    })
+
+    it("calls removeGazetteFromSearchIndex and NOT removeGazetteFromAlgolia when ENABLE_SEARCHSG_GAZETTE_INGESTION is ON", async () => {
+      // Arrange
+      const { site, collection, user } = await seedToppanWithCollection()
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt: subMinutes(FIXED_NOW, 5),
+        userId: user.id,
+      })
+
+      // Enable the SearchSG flag for this test only.
+      // The afterEach in this describe block restores mockFeatureFlags baseline.
+      mockGrowthBook.setForcedFeatures(
+        new Map([[ENABLE_SEARCHSG_GAZETTE_INGESTION, true]]),
+      )
+
+      // Act
+      await caller.delete({ siteId: site.id, gazetteId })
+
+      // Assert — SearchSG path was taken, Algolia path was not.
+      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(gazetteService.removeGazetteFromAlgolia).not.toHaveBeenCalled()
+      expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledTimes(1)
     })
   })
 })

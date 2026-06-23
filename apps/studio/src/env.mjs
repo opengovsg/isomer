@@ -64,6 +64,9 @@ const server = z
     EGAZETTE_DOCUMENT_INDEX: z.string().optional(),
     DD_DELETION_EMAIL: z.email(),
     SEARCHSG_API_KEY: z.string(),
+    ALGOLIA_APP_ID: z.string(),
+    ALGOLIA_API_KEY: z.string(),
+    ALGOLIA_INDEX_NAME: z.string(),
   })
   .merge(s3Schema)
   .merge(singpassSchema)
@@ -89,6 +92,9 @@ const processEnv = {
   EGAZETTE_DOCUMENT_INDEX: process.env.EGAZETTE_DOCUMENT_INDEX,
   S3_GAZETTE_BUCKET_NAME: process.env.S3_GAZETTE_BUCKET_NAME,
   S3_GAZETTE_DOMAIN_NAME: process.env.S3_GAZETTE_DOMAIN_NAME,
+  ALGOLIA_APP_ID: process.env.ALGOLIA_APP_ID,
+  ALGOLIA_API_KEY: process.env.ALGOLIA_API_KEY,
+  ALGOLIA_INDEX_NAME: process.env.ALGOLIA_INDEX_NAME,
   NEXT_PUBLIC_S3_REGION: process.env.NEXT_PUBLIC_S3_REGION,
   NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME:
     process.env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,

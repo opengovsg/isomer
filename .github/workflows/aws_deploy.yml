@@ -319,8 +319,8 @@ jobs:
           ECS_TASK_EXEC_ROLE: ${{ inputs.ecs-task-exec-role }}
           ECS_TASK_DEFINITION_PATH: ${{ inputs.ecs-task-definition-path }}
         run: |
-          CPU=$([[ "$ENVIRONMENT" == "production" ]] && echo "1024" || echo "512")
-          MEMORY=$([[ "$ENVIRONMENT" == "production" ]] && echo "2048" || echo "1024")
+          CPU=$([[ "$ENVIRONMENT" == "production" ]] && echo "2048" || echo "512")
+          MEMORY=$([[ "$ENVIRONMENT" == "production" ]] && echo "16384" || echo "1024")
           sed -i "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" "$ECS_TASK_DEFINITION_PATH"
           sed -i "s/<ENV>/$ENVIRONMENT/g" "$ECS_TASK_DEFINITION_PATH"
           sed -i "s/<SHORT_ENV>/$SHORT_ENV/g" "$ECS_TASK_DEFINITION_PATH"
