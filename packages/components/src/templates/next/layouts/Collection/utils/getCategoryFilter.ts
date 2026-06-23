@@ -35,11 +35,11 @@ export const getCategoryFilter = (
       label.toLowerCase(),
     )
 
-    const known = categoryFilterItems.filter(
-      (item) => categoryOptionLabels.indexOf(item.id) !== -1,
+    const known = categoryFilterItems.filter((item) =>
+      categoryOptionLabels.includes(item.id),
     )
     const unknown = categoryFilterItems.filter(
-      (item) => categoryOptionLabels.indexOf(item.id) === -1,
+      (item) => !categoryOptionLabels.includes(item.id),
     )
 
     known.sort(
