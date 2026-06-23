@@ -836,9 +836,7 @@ export const getResourceIdByPermalink = async (
   for (const segment of segments) {
     const match = candidates.find(
       (candidate) =>
-        candidate.permalink === segment &&
-        (candidate.parentId === null ? null : String(candidate.parentId)) ===
-          parentId,
+        candidate.permalink === segment && candidate.parentId === parentId,
     )
     if (!match) {
       return null
