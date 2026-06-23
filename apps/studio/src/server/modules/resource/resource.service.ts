@@ -8,7 +8,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { normalizeRedirectPath } from "~/schemas/redirect"
+import { normalizeRedirectSource } from "~/schemas/redirect"
 import {
   getSitemapTree,
   injectTagMappings,
@@ -725,7 +725,9 @@ export const getDescendantResourceIds = async (
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "=", resourceId)
         .select("Resource.id")
-        .unionAll((fb) =>
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
+        // a cycle can't drive the recursion forever.
+        .union((fb) =>
           fb
             .selectFrom("Resource")
             .innerJoin("subtree", "subtree.id", "Resource.parentId")
@@ -1022,7 +1024,7 @@ export const publishPageResource = async ({
           .selectFrom("Redirect")
           .select("Redirect.id")
           .where("Redirect.siteId", "=", siteId)
-          .where("Redirect.source", "=", normalizeRedirectPath(fullPermalink))
+          .where("Redirect.source", "=", normalizeRedirectSource(fullPermalink))
           .where("Redirect.deletedAt", "is", null)
           .executeTakeFirst()
         if (blockingRedirect) {
