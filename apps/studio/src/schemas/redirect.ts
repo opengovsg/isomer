@@ -120,6 +120,12 @@ const sourceSchema = z
   // guard against shadowing) a real page at the same path.
   .transform(normalizeRedirectSource)
 
+// Shown whenever a destination isn't a shape we accept. Spells out the valid
+// forms (a site path or an external URL) instead of a terse "invalid" so the
+// user knows what to type.
+const INVALID_DESTINATION_MESSAGE =
+  "Enter a valid path (/path-to-page) or URL (starts with www., http://, or https://)."
+
 const destinationSchema = z
   .string()
   .min(1, { message: "Destination is required" })
@@ -135,19 +141,19 @@ const destinationSchema = z
       value.startsWith("/") ||
       isValidExternalDestination(value) ||
       REFERENCE_DESTINATION_REGEX.test(value),
-    { message: "Add a valid URL." },
+    { message: INVALID_DESTINATION_MESSAGE },
   )
   // Backslashes are rejected, not stripped: "\\" is ambiguous in a path/URL and
   // silently removing it could turn "/\\evil.com" into an open redirect.
   .refine((value) => !value.includes("\\"), {
-    message: "Add a valid URL.",
+    message: INVALID_DESTINATION_MESSAGE,
   })
   // Reject "../" path traversal in any destination. It is never meaningful here:
   // an internal path is resolved on our side, and a live site collapses ".." in
   // an external URL's path anyway — so the user can already express the intended
   // target directly. Banning it outright keeps the rule simple.
   .refine((value) => !trimSlashes(value).split("/").includes(".."), {
-    message: "Add a valid URL.",
+    message: INVALID_DESTINATION_MESSAGE,
   })
   // An internal path can't redirect to an on-page anchor — the published
   // redirect emits a Location header, which can't target a fragment. External

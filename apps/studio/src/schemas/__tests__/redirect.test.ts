@@ -303,7 +303,7 @@ describe("createRedirectSchema", () => {
         expect(result.success).toBe(false)
         if (!result.success) {
           expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "Add a valid URL.",
+            "Enter a valid path (/path-to-page) or URL (starts with www., http://, or https://).",
           )
         }
       })
