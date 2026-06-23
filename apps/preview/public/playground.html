@@ -248,8 +248,16 @@
           <div id="primary-swatch" class="hue-swatch"></div>
         </div>
 
+        <!-- Vibrancy -->
+        <div class="section-label" style="margin-top:14px;margin-bottom:8px">Vibrancy</div>
+        <div class="seg-control" style="margin-bottom:14px;">
+          <button class="seg-btn" id="vib-low" onclick="setVibrancy('low')">Low</button>
+          <button class="seg-btn active" id="vib-base" onclick="setVibrancy('base')">As-is</button>
+          <button class="seg-btn" id="vib-high" onclick="setVibrancy('high')">High</button>
+        </div>
+
         <!-- Accent palettes -->
-        <div class="section-label" style="margin-top:14px;margin-bottom:8px">Accent palette</div>
+        <div class="section-label" style="margin-bottom:8px">Accent palette</div>
         <div id="palette-none-row" class="palette-row selected" onclick="selectPalette(null)">
           <span class="palette-label">None</span>
           <span style="font-size:11px;color:#9ca3af;flex:1">Primary only</span>
@@ -560,49 +568,6 @@
           <div class="nb-add-btn" id="nb-btn-grainy-hero"><span class="nb-add-text">+ Add to homepage</span></div>
         </div>
 
-        <div class="section-label">Grid</div>
-
-        <!-- Bento Grid -->
-        <div class="nb-card" id="nb-bento-grid" onclick="addBlock('bento-grid','home')">
-          <div class="nb-thumb">
-            <div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:3px;height:48px;">
-              <div style="border-radius:3px;overflow:hidden;background:var(--nb-canvas-alt,#eef2f7);display:flex;flex-direction:column;">
-                <div style="height:60%;background:#d1d5db;"></div>
-                <div style="padding:2px 4px;display:flex;flex-direction:column;gap:1.5px;">
-                  <div style="height:2px;background:#9ca3af;border-radius:1px;width:80%;"></div>
-                  <div style="height:1.5px;background:#d1d5db;border-radius:1px;"></div>
-                </div>
-              </div>
-              <div style="border-radius:3px;overflow:hidden;background:var(--nb-canvas-alt,#eef2f7);filter:hue-rotate(30deg);display:flex;flex-direction:column;">
-                <div style="height:60%;background:#d1d5db;"></div>
-                <div style="padding:2px 4px;display:flex;flex-direction:column;gap:1.5px;">
-                  <div style="height:2px;background:#9ca3af;border-radius:1px;width:70%;"></div>
-                  <div style="height:1.5px;background:#d1d5db;border-radius:1px;"></div>
-                </div>
-              </div>
-              <div style="border-radius:3px;overflow:hidden;background:var(--nb-canvas-alt,#eef2f7);filter:hue-rotate(60deg);display:flex;flex-direction:column;">
-                <div style="height:60%;background:#d1d5db;"></div>
-                <div style="padding:2px 4px;display:flex;flex-direction:column;gap:1.5px;">
-                  <div style="height:2px;background:#9ca3af;border-radius:1px;width:75%;"></div>
-                  <div style="height:1.5px;background:#d1d5db;border-radius:1px;"></div>
-                </div>
-              </div>
-              <div style="border-radius:3px;overflow:hidden;background:var(--nb-canvas-alt,#eef2f7);filter:hue-rotate(90deg);display:flex;flex-direction:column;">
-                <div style="height:60%;background:#d1d5db;"></div>
-                <div style="padding:2px 4px;display:flex;flex-direction:column;gap:1.5px;">
-                  <div style="height:2px;background:#9ca3af;border-radius:1px;width:65%;"></div>
-                  <div style="height:1.5px;background:#d1d5db;border-radius:1px;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="nb-info">
-            <div class="nb-title">Bento Grid <span class="nb-page-tag">Homepage</span></div>
-            <div class="nb-desc">4 bento boxes in a 2×2 grid. Each box has an image and text, tinted with accent colours from the selected palette.</div>
-          </div>
-          <div class="nb-add-btn" id="nb-btn-bento-grid"><span class="nb-add-text">+ Add to homepage</span></div>
-        </div>
-
         <div class="section-label">Callout</div>
 
         <!-- Callout Variants -->
@@ -906,6 +871,7 @@
   let currentPage = 'home'
   let currentSize = 'desktop'
   let activePalette = null   // null | 0 | 1 | 2
+  let vibrancy = 'base'     // 'low' | 'base' | 'high'
   let primaryHue = 200
 
   // ── Core postMessage helper ───────────────────────────────────────────────
@@ -942,15 +908,27 @@
     return Math.round(h * 360)
   }
 
-  // Derive a full colour palette from a primary hue
+  const VIBRANCY_MULT = { low: 0.45, base: 1.0, high: 1.5 }
+
+  // Derive a full colour palette from a hue, applying the current vibrancy
   function paletteFromHue(h) {
+    const v = VIBRANCY_MULT[vibrancy] ?? 1.0
+    const c = x => Math.round(Math.min(100, Math.max(0, x)))
     return {
-      interaction:   hslToHex(h, 65, 28),   // dark rich primary
-      interactionHov:hslToHex(h, 65, 20),
-      canvasInverse: hslToHex(h, 65, 22),
-      canvasDefault: hslToHex(h, 20, 94),   // very light tint
-      canvasAlt:     hslToHex(h, 25, 88),
+      interaction:    hslToHex(h, c(65 * v), 28),
+      interactionHov: hslToHex(h, c(65 * v), 20),
+      canvasInverse:  hslToHex(h, c(65 * v), 22),
+      canvasDefault:  hslToHex(h, c(20 * v), 94),
+      canvasAlt:      hslToHex(h, c(25 * v), 88),
     }
+  }
+
+  function setVibrancy(level) {
+    vibrancy = level
+    ;['low', 'base', 'high'].forEach(l => {
+      document.getElementById('vib-' + l)?.classList.toggle('active', l === level)
+    })
+    buildAndApplyTheme()
   }
 
   // Generate 3 palettes of 5 hues each from the primary hue
@@ -1072,8 +1050,12 @@
 
     primaryHue = s.primaryHue
     activePalette = null
+    vibrancy = 'base'
 
     document.getElementById('primary-hue').value = primaryHue
+    ;['low', 'base', 'high'].forEach(l => {
+      document.getElementById('vib-' + l)?.classList.toggle('active', l === 'base')
+    })
 
     buildAndApplyTheme()
     postToIframe({ type: 'sitePreset', preset })
@@ -1109,6 +1091,21 @@
         const p = TYPO_PRESETS[activeCard.dataset.preset]
         if (p) postToIframe({ type: 'fonts', heading: p.heading, body: p.body })
       }
+      // Persistent component overrides — CSS vars keep them reactive to theme changes
+      postToIframe({
+        type: 'injectCSS',
+        css: `
+          /* Quote: primary canvas-alt bg, secondary vivid left border */
+          section.bg-base-canvas-alt.border-l-4 {
+            background-color: var(--color-brand-canvas-alt) !important;
+            border-left-color: var(--palette-2-interaction) !important;
+          }
+          /* Infopic: secondary light canvas as background */
+          section.bg-base-canvas-backdrop {
+            background-color: var(--palette-2-canvas-alt) !important;
+          }
+        `
+      })
     }, 200)
   })
 

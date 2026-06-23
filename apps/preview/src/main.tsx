@@ -17,7 +17,6 @@ import {
   HeroCollage,
   HeroBlobSaaS,
   GrainyHero,
-  BentoGrid,
   SingleButton,
   TableStyled,
   CardsCarousel,
@@ -43,7 +42,6 @@ const CUSTOM_BLOCK_REGISTRY: Record<string, ComponentType> = {
   "hero-collage": HeroCollage,
   "hero-blob-saas": HeroBlobSaaS,
   "grainy-hero": GrainyHero,
-  "bento-grid": BentoGrid,
   "single-button-article": SingleButton,
   "single-button-content": SingleButton,
   "table-styled": TableStyled,
@@ -192,6 +190,15 @@ function App() {
           ...prev,
           [blockId]: { ...(prev[blockId] ?? {}), [key]: value },
         }))
+      }
+      if (type === "injectCSS") {
+        let el = document.getElementById("playground-css-overrides")
+        if (!el) {
+          el = document.createElement("style")
+          el.id = "playground-css-overrides"
+          document.head.appendChild(el)
+        }
+        el.textContent = e.data.css as string
       }
       if (type === "setLayoutVariant") {
         const { variantId, page: vp } = e.data as {

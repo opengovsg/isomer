@@ -14,7 +14,6 @@ export { default as LinkHubHome } from "./LinkHubHome"
 export { default as LinkHubContent } from "./LinkHubContent"
 export { default as ListsWithIndentation } from "./ListsWithIndentation"
 export { default as GrainyHero } from "./GrainyHero"
-export { default as BentoGrid } from "./BentoGrid"
 export { default as SingleButton } from "./SingleButton"
 
 /** Which page each block belongs to */
@@ -23,7 +22,6 @@ export const CUSTOM_BLOCK_PAGE: Record<string, "home" | "content" | "article"> =
     "hero-collage": "home",
     "hero-blob-saas": "home",
     "grainy-hero": "home",
-    "bento-grid": "home",
     "table-styled": "content",
     "cards-carousel": "home",
     "text-with-image": "content",
@@ -41,7 +39,6 @@ export const CUSTOM_BLOCK_LABEL: Record<string, string> = {
   "hero-collage": "Hero — Image Collage",
   "hero-blob-saas": "Hero — Blob + SaaS",
   "grainy-hero": "Grainy Hero",
-  "bento-grid": "Bento Grid",
   "table-styled": "Table — Styled",
   "cards-carousel": "Cards — Carousel",
   "text-with-image": "Text with Image",
