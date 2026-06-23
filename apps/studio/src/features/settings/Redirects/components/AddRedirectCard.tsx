@@ -7,8 +7,10 @@ import {
   Input,
   InputGroup,
   InputLeftAddon,
+  ListItem,
   Stack,
   Text,
+  UnorderedList,
   useDisclosure,
 } from "@chakra-ui/react"
 import {
@@ -16,11 +18,10 @@ import {
   FormErrorMessage,
   FormLabel,
   Infobox,
-  Link,
   useToast,
 } from "@opengovsg/design-system-react"
 import { useState } from "react"
-import { BiLinkAlt, BiPlus, BiRightArrowAlt } from "react-icons/bi"
+import { BiPlus, BiRightArrowAlt, BiSearch } from "react-icons/bi"
 import { REDIRECT_MESSAGES } from "~/constants/redirect"
 import {
   BRIEF_TOAST_SETTINGS,
@@ -63,6 +64,10 @@ export const AddRedirectCard = ({
 
   const [source, destination] = watch(["source", "destination"])
   const isAddDisabled = !source?.trim() || !destination?.trim()
+
+  // The "Redirect to a page on your site..." dropdown only surfaces while the
+  // destination field is focused (per the design).
+  const [isDestinationFocused, setIsDestinationFocused] = useState(false)
 
   // Non-blocking warnings (e.g. the destination doesn't exist / isn't
   // published) are fetched on blur once the inputs are sync-valid.
@@ -191,23 +196,70 @@ export const AddRedirectCard = ({
           <Input
             placeholder="/redirect-to"
             size="xs"
+            onFocus={() => setIsDestinationFocused(true)}
             {...register("destination", {
-              onBlur: checkForWarnings,
+              onBlur: () => {
+                setIsDestinationFocused(false)
+                checkForWarnings()
+              },
               onChange: clearFieldFeedback("destination"),
             })}
           />
           <FormErrorMessage>{errors.destination?.message}</FormErrorMessage>
-          <Link
-            as="button"
-            type="button"
-            variant="standalone"
-            p="0"
-            mt="0.25rem"
-            onClick={onPageModalOpen}
-          >
-            <Icon as={BiLinkAlt} mr="0.25rem" />
-            Link to a page
-          </Link>
+
+          {/* Dropdown opens the page picker. Preventing the default mousedown
+              keeps the input focused so the click lands before blur removes
+              this element. */}
+          {isDestinationFocused && !errors.destination && (
+            <>
+              <Box
+                mt={0}
+                py="0.5rem"
+                bgColor="white"
+                borderRadius="0.25rem"
+                boxShadow="0px 0px 10px 0px rgba(191, 191, 191, 0.5)"
+                overflow="hidden"
+              >
+                <HStack
+                  as="button"
+                  type="button"
+                  w="full"
+                  spacing="0.5rem"
+                  px="0.75rem"
+                  py="0.5rem"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={onPageModalOpen}
+                  _hover={{ bgColor: "interaction.muted.main.hover" }}
+                >
+                  <Icon
+                    as={BiSearch}
+                    boxSize="1rem"
+                    color="interaction.main.default"
+                  />
+                  <Text textStyle="body-2" color="interaction.main.default">
+                    Redirect to a page on your site...
+                  </Text>
+                </HStack>
+              </Box>
+              <Infobox variant="info" size="sm" mt="1.25rem">
+                <Box>
+                  <Text textStyle="subhead-2" color="base.content.strong">
+                    Where can I redirect visitors to?
+                  </Text>
+                  <UnorderedList
+                    textStyle="body-2"
+                    color="base.content.default"
+                  >
+                    <ListItem>A page on your new site</ListItem>
+                    <ListItem>
+                      An external URL (e.g., https://www.gov.sg)
+                    </ListItem>
+                  </UnorderedList>
+                </Box>
+              </Infobox>
+            </>
+          )}
+
           {warnings.length > 0 && (
             <Stack spacing="0.5rem" mt="0.5rem">
               {warnings.map((warning) => (
