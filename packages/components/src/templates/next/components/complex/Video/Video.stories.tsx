@@ -53,3 +53,12 @@ export const FacebookVideo: Story = {
     url: "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Fworldcitiessummit%2Fvideos%2F696071555825049%2F&show_text=false&width=560&t=0",
   },
 }
+
+// Reels are vertical (9:16) videos and should render in a portrait box that is
+// capped in width, rather than the default 16:9 box (which clips them).
+export const FacebookReel: Story = {
+  args: {
+    title: "Facebook Reel",
+    url: "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F3028033664054832%2F&show_text=false&width=267&t=0",
+  },
+}
