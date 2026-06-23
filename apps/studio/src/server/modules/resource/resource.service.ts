@@ -710,6 +710,74 @@ export const getResourceFullPermalink = async (
   return `/${permalinkTree.join("/")}`
 }
 
+// Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
+// it, walking permalink segments from the site's root page. A Folder/Collection
+// is resolved to its IndexPage child, since that is what actually renders at the
+// container's URL (mirroring getFullPageById). Returns undefined when no
+// resource exists at the path. Best-effort: intended for non-blocking
+// validation (e.g. checking a redirect destination), not access control.
+export const getResourceByFullPermalink = async ({
+  siteId,
+  fullPermalink,
+}: {
+  siteId: number
+  fullPermalink: string
+}) => {
+  const segments = fullPermalink.split("/").filter(Boolean)
+
+  const root = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.type", "=", ResourceType.RootPage)
+    .where("Resource.parentId", "is", null)
+    .select(defaultResourceSelect)
+    .executeTakeFirst()
+  if (!root) {
+    return undefined
+  }
+
+  let current = root
+  for (const segment of segments) {
+    const child = await db
+      .selectFrom("Resource")
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.parentId", "=", current.id)
+      .where("Resource.permalink", "=", segment)
+      // Meta and index resources are not directly addressable by a path
+      // segment — the index page is reached via its parent container below.
+      .where("Resource.type", "not in", [
+        ResourceType.IndexPage,
+        ResourceType.FolderMeta,
+        ResourceType.CollectionMeta,
+      ])
+      .select(defaultResourceSelect)
+      .executeTakeFirst()
+    if (!child) {
+      return undefined
+    }
+    current = child
+  }
+
+  if (
+    current.type === ResourceType.Folder ||
+    current.type === ResourceType.Collection
+  ) {
+    const indexPage = await db
+      .selectFrom("Resource")
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.parentId", "=", current.id)
+      .where("Resource.type", "=", ResourceType.IndexPage)
+      .select(defaultResourceSelect)
+      .executeTakeFirst()
+    // A container with no index page has no page rendering at its URL, so fall
+    // back to the container itself — its null publishedVersionId then reads as
+    // "not published", which is the right signal for a destination warning.
+    return indexPage ?? current
+  }
+
+  return current
+}
+
 // Batched variant of getResourceFullPermalink: resolves many resources' full
 // permalinks in a single recursive query instead of one round-trip per id.
 // Used to render redirect destinations (stored as `[resource:...]` references)

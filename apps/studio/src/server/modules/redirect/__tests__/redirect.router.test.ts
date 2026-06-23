@@ -26,12 +26,16 @@ describe("redirect.router", async () => {
   let caller: ReturnType<typeof createCaller>
   let unauthedCaller: ReturnType<typeof createCaller>
   let siteId: number
+  let userId: string
   const session = await applyAuthedSession()
 
   beforeEach(async () => {
     await resetTables(
       "AuditLog",
       "Redirect",
+      "Blob",
+      "Version",
+      "Resource",
       "ResourcePermission",
       "Whitelist",
       "Site",
@@ -44,6 +48,7 @@ describe("redirect.router", async () => {
     await auth(user)
     const { site } = await setupSite()
     siteId = site.id
+    userId = user.id
     await setupAdminPermissions({ userId: user.id, siteId })
     caller = createCaller(createMockRequest(session))
     unauthedCaller = createCaller(createMockRequest(applySession()))
@@ -52,6 +57,32 @@ describe("redirect.router", async () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })
+
+  // Seeds a root page plus a child page at /{permalink} for the given site, so
+  // a destination "/{permalink}" resolves to that page during validation.
+  const seedPageAtRoot = async ({
+    permalink,
+    published,
+  }: {
+    permalink: string
+    published: boolean
+  }) => {
+    const { page: rootPage } = await setupPageResource({
+      siteId,
+      resourceType: ResourceType.RootPage,
+      parentId: null,
+    })
+    const { page } = await setupPageResource({
+      siteId,
+      resourceType: ResourceType.Page,
+      parentId: rootPage.id,
+      permalink,
+      ...(published
+        ? { state: ResourceState.Published, userId }
+        : { state: ResourceState.Draft }),
+    })
+    return page
+  }
 
   describe("list", () => {
     it("should throw 401 if not logged in", async () => {
@@ -321,6 +352,403 @@ describe("redirect.router", async () => {
     })
   })
 
+  describe("validate", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange / Act
+      const result = unauthedCaller.validate({
+        siteId,
+        source: "/old",
+        destination: "/new",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site: otherSite } = await setupSite()
+
+      // Act
+      const result = caller.validate({
+        siteId: otherSite.id,
+        source: "/old",
+        destination: "/new",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should report no issues for a redirect to an external URL", async () => {
+      // Arrange / Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "https://www.example.gov.sg/new",
+      })
+
+      // Assert
+      expect(result).toEqual({ errors: [], warnings: [] })
+    })
+
+    it("should report no issues for a redirect to a published page", async () => {
+      // Arrange
+      await seedPageAtRoot({ permalink: "published-page", published: true })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "/published-page",
+      })
+
+      // Assert
+      expect(result).toEqual({ errors: [], warnings: [] })
+    })
+
+    it("should error when a live redirect already exists for the source", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/old", destination: "/somewhere" })
+        .execute()
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "https://www.example.gov.sg",
+      })
+
+      // Assert
+      expect(result.errors).toContainEqual({
+        code: "ALREADY_EXISTS",
+        message: "This page is already being redirected.",
+      })
+    })
+
+    it("should error when the redirect would create a loop", async () => {
+      // Arrange
+      // /b already redirects to /a, so adding /a -> /b bounces straight back
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/b", destination: "/a" })
+        .execute()
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/a",
+        destination: "/b",
+      })
+
+      // Assert
+      expect(result.errors).toContainEqual({
+        code: "REDIRECT_LOOP",
+        message: "This will trap visitors in a never-ending loop.",
+        description:
+          "/b already redirects to /a. Visitors will get stuck in between pages. Delete existing redirects or direct to a different page.",
+      })
+    })
+
+    it("should detect a loop even when the existing destination has a trailing slash", async () => {
+      // Arrange
+      // Stored "/b -> /a/" must still loop with a new "/a -> /b" once the
+      // stored destination is normalised for comparison.
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/b", destination: "/a/" })
+        .execute()
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/a",
+        destination: "/b",
+      })
+
+      // Assert
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({ code: "REDIRECT_LOOP" }),
+      )
+    })
+
+    it("should not flag a multi-hop cycle as a loop (only one hop is checked)", async () => {
+      // Arrange — /b -> /c and /c -> /a already exist. Adding /a -> /b closes a
+      // three-redirect cycle, but loop detection only looks one hop deep by
+      // design, so this surfaces as a chain warning rather than a loop error.
+      await db
+        .insertInto("Redirect")
+        .values([
+          { siteId, source: "/b", destination: "/c" },
+          { siteId, source: "/c", destination: "/a" },
+        ])
+        .execute()
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/a",
+        destination: "/b",
+      })
+
+      // Assert
+      expect(result.errors).not.toContainEqual(
+        expect.objectContaining({ code: "REDIRECT_LOOP" }),
+      )
+      expect(result.warnings).toContainEqual({
+        code: "DESTINATION_IS_REDIRECT_SOURCE",
+        message:
+          "This page already redirects to /c. Visitors will end up there instead.",
+      })
+    })
+
+    it("should not flag a multi-hop chain that never returns to the source", async () => {
+      // Arrange — /b -> /c -> /d terminates at /d, so adding /a -> /b chains but
+      // does not loop; it is a warning, not an error.
+      await db
+        .insertInto("Redirect")
+        .values([
+          { siteId, source: "/b", destination: "/c" },
+          { siteId, source: "/c", destination: "/d" },
+        ])
+        .execute()
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/a",
+        destination: "/b",
+      })
+
+      // Assert
+      expect(result.errors).not.toContainEqual(
+        expect.objectContaining({ code: "REDIRECT_LOOP" }),
+      )
+    })
+
+    it("should not report ALREADY_EXISTS when only a soft-deleted redirect exists for the source", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/old",
+          destination: "/x",
+          deletedAt: new Date(),
+        })
+        .execute()
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "https://www.example.gov.sg",
+      })
+
+      // Assert
+      expect(result.errors).toEqual([])
+    })
+
+    it("should warn when the destination is itself a separate redirect source", async () => {
+      // Arrange
+      // /b redirects to /c, so /a -> /b would chain through /b to /c
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/b", destination: "/c" })
+        .execute()
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/a",
+        destination: "/b",
+      })
+
+      // Assert
+      expect(result.errors).toEqual([])
+      expect(result.warnings).toContainEqual({
+        code: "DESTINATION_IS_REDIRECT_SOURCE",
+        message:
+          "This page already redirects to /c. Visitors will end up there instead.",
+      })
+    })
+
+    it("should warn when the internal destination does not exist", async () => {
+      // Arrange / Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "/missing",
+      })
+
+      // Assert
+      expect(result.warnings).toContainEqual({
+        code: "DESTINATION_NOT_FOUND",
+        message:
+          "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
+      })
+    })
+
+    it("should warn when the internal destination exists but is not published", async () => {
+      // Arrange
+      await seedPageAtRoot({ permalink: "draft-page", published: false })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "/draft-page",
+      })
+
+      // Assert
+      expect(result.warnings).toContainEqual({
+        code: "DESTINATION_NOT_PUBLISHED",
+        message:
+          "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
+      })
+    })
+
+    it("should not warn for a published page nested under a folder", async () => {
+      // Arrange — /folder/leaf, where leaf is a published page under a folder.
+      // This exercises the multi-segment walk past depth 1.
+      const { page: rootPage } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: rootPage.id,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "leaf",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "/folder/leaf",
+      })
+
+      // Assert
+      expect(result.warnings).toEqual([])
+    })
+
+    it("should not warn for a folder whose index page is published", async () => {
+      // Arrange — "/folder" is served by the folder's published IndexPage, so
+      // it must resolve as published (exercises the folder->IndexPage branch).
+      const { page: rootPage } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: rootPage.id,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "/folder",
+      })
+
+      // Assert
+      expect(result.warnings).toEqual([])
+    })
+
+    it("should warn NOT_PUBLISHED for a folder with no index page", async () => {
+      // Arrange — a folder with no IndexPage has no live page at its URL, so
+      // resolution falls back to the (unpublished) container.
+      const { page: rootPage } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: rootPage.id,
+      })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "/folder",
+      })
+
+      // Assert
+      expect(result.warnings).toContainEqual({
+        code: "DESTINATION_NOT_PUBLISHED",
+        message:
+          "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
+      })
+    })
+
+    it("should error when the source is the URL of a published page", async () => {
+      // Arrange — a live page sits at /live-page; redirecting from there would
+      // shadow it on the published site.
+      await seedPageAtRoot({ permalink: "live-page", published: true })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/live-page",
+        destination: "/somewhere",
+      })
+
+      // Assert
+      expect(result.errors).toContainEqual({
+        code: "SOURCE_IS_EXISTING_PAGE",
+        message:
+          "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
+      })
+    })
+
+    it("should not error when the source matches only an unpublished page", async () => {
+      // Arrange — an unpublished page isn't live, so it can't be shadowed yet
+      // (publishing it later is guarded on the page side).
+      await seedPageAtRoot({ permalink: "draft-page", published: false })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/draft-page",
+        destination: "/somewhere",
+      })
+
+      // Assert
+      expect(result.errors).toEqual([])
+    })
+  })
+
   describe("create", () => {
     it("should throw 401 if not logged in", async () => {
       // Arrange / Act
@@ -389,6 +817,19 @@ describe("redirect.router", async () => {
       expect(result[0]!.source).toBe("/old/path")
     })
 
+    it("should persist an external destination unchanged", async () => {
+      // Arrange / Act
+      await caller.create({
+        siteId,
+        source: "/old",
+        destination: "https://www.example.gov.sg/path/",
+      })
+
+      // Assert
+      const result = await caller.list({ siteId })
+      expect(result[0]!.destination).toBe("https://www.example.gov.sg/path/")
+    })
+
     it("should throw 409 if a live redirect already exists for the source", async () => {
       // Arrange
       await db
@@ -445,6 +886,151 @@ describe("redirect.router", async () => {
         source: "/revived",
         destination: "https://example.com/new",
       })
+    })
+
+    it("should throw 422 and create nothing if the redirect would loop", async () => {
+      // Arrange
+      // /b already redirects to /a, so creating /a -> /b would bounce back
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/b", destination: "/a" })
+        .execute()
+
+      // Act
+      const result = caller.create({ siteId, source: "/a", destination: "/b" })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        "This will trap visitors in a never-ending loop.",
+      )
+      const rows = await db
+        .selectFrom("Redirect")
+        .select("source")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/a")
+        .execute()
+      expect(rows).toHaveLength(0)
+    })
+
+    it("should create a redirect that only closes a multi-hop cycle (loop check is one hop)", async () => {
+      // Arrange — /b -> /c -> /a. Creating /a -> /b closes a 3-redirect cycle,
+      // but the loop guard only looks one hop deep by design, so the create is
+      // allowed (the preflight surfaces it as a non-blocking chain warning).
+      await db
+        .insertInto("Redirect")
+        .values([
+          { siteId, source: "/b", destination: "/c" },
+          { siteId, source: "/c", destination: "/a" },
+        ])
+        .execute()
+
+      // Act
+      await caller.create({ siteId, source: "/a", destination: "/b" })
+
+      // Assert
+      const rows = await db
+        .selectFrom("Redirect")
+        .select("source")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/a")
+        .where("deletedAt", "is", null)
+        .execute()
+      expect(rows).toHaveLength(1)
+    })
+
+    it("should throw 412 and create nothing if the source is a published page's URL", async () => {
+      // Arrange — a live page sits at /live-page
+      await seedPageAtRoot({ permalink: "live-page", published: true })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/live-page",
+        destination: "/somewhere",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
+        }),
+      )
+      const rows = await db
+        .selectFrom("Redirect")
+        .select("source")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/live-page")
+        .execute()
+      expect(rows).toHaveLength(0)
+    })
+
+    it("should block an uppercase source that lowercases onto a published page", async () => {
+      // Arrange — the page lives at /live-page; "/Live-Page" lowercases to the
+      // same URL and would shadow it, so it must be blocked too.
+      await seedPageAtRoot({ permalink: "live-page", published: true })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/Live-Page",
+        destination: "https://example.com/somewhere",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({
+        code: "PRECONDITION_FAILED",
+      })
+    })
+
+    it("should create the redirect when only an unpublished page exists at the source", async () => {
+      // Arrange — an unpublished page at /draft-page isn't live, so it can't be
+      // shadowed; the redirect is allowed (publishing the page later is guarded
+      // on the page side). An external destination keeps the focus on the
+      // source check (an internal destination would need its own live page).
+      await seedPageAtRoot({ permalink: "draft-page", published: false })
+
+      // Act
+      await caller.create({
+        siteId,
+        source: "/draft-page",
+        destination: "https://www.example.gov.sg",
+      })
+
+      // Assert
+      const result = await caller.list({ siteId })
+      expect(result).toContainEqual(
+        expect.objectContaining({
+          source: "/draft-page",
+          destination: "https://www.example.gov.sg",
+        }),
+      )
+    })
+
+    it("should create the redirect when the destination is itself a redirect source", async () => {
+      // Arrange
+      // /b is a live page (so it is a valid destination, resolved to a
+      // reference), but also already redirects to /c. /a -> /b is a chain (a
+      // warning, not a loop), so the create proceeds.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "b",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/b", destination: "/c" })
+        .execute()
+
+      // Act
+      await caller.create({ siteId, source: "/a", destination: "/b" })
+
+      // Assert
+      const result = await caller.list({ siteId })
+      expect(result.map((row) => row.source)).toContain("/a")
     })
 
     it("should write a RedirectCreate audit log entry with the created row", async () => {
@@ -626,20 +1212,27 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe("/target-page?ref=footer")
     })
 
-    it("should throw 404 if the internal-path destination does not exist", async () => {
-      // Arrange / Act
-      const result = caller.create({
+    it("stores a literal path when the internal destination has no live page", async () => {
+      // Arrange / Act — no page lives at /no-such-page. The preflight warns, but
+      // create keeps the literal path so an admin can pre-create the redirect.
+      await caller.create({
         siteId,
         source: "/from",
         destination: "/no-such-page",
       })
 
       // Assert
-      await expect(result).rejects.toMatchObject({ code: "NOT_FOUND" })
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe("/no-such-page")
     })
 
-    it("should throw 404 if the destination page exists but is unpublished", async () => {
-      // Arrange — a draft page has no live URL, so it isn't a valid target
+    it("stores a literal path when the destination page exists but is unpublished", async () => {
+      // Arrange — a draft page has no live URL yet
       await setupPageResource({
         siteId,
         resourceType: ResourceType.Page,
@@ -648,14 +1241,20 @@ describe("redirect.router", async () => {
       })
 
       // Act
-      const result = caller.create({
+      await caller.create({
         siteId,
         source: "/from",
         destination: "/draft-page",
       })
 
-      // Assert
-      await expect(result).rejects.toMatchObject({ code: "NOT_FOUND" })
+      // Assert — kept literal (not converted to a reference, not rejected)
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe("/draft-page")
     })
 
     it("should resolve the site root '/' to the RootPage reference", async () => {
@@ -708,8 +1307,8 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe(`[resource:${siteId}:${folder.id}]`)
     })
 
-    it("should throw 404 for a folder destination whose index page is unpublished", async () => {
-      // Arrange — a folder with no live index page has no live URL behind it
+    it("stores a literal path for a folder destination whose index page is unpublished", async () => {
+      // Arrange — a folder with no live index page has no live URL behind it yet
       const { folder } = await setupFolder({ siteId, permalink: "about" })
       await setupPageResource({
         siteId,
@@ -720,14 +1319,20 @@ describe("redirect.router", async () => {
       })
 
       // Act
-      const result = caller.create({
+      await caller.create({
         siteId,
         source: "/from",
         destination: "/about",
       })
 
-      // Assert
-      await expect(result).rejects.toMatchObject({ code: "NOT_FOUND" })
+      // Assert — kept literal until the folder is published
+      const row = await db
+        .selectFrom("Redirect")
+        .select("destination")
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/from")
+        .executeTakeFirstOrThrow()
+      expect(row.destination).toBe("/about")
     })
   })
 

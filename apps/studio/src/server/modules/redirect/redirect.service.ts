@@ -1,4 +1,8 @@
 import type {
+  RedirectValidationIssue,
+  RedirectValidationResult,
+} from "~/constants/redirect"
+import type {
   CountRedirectsInput,
   CreateRedirectInput,
   DeleteRedirectInput,
@@ -6,16 +10,26 @@ import type {
   RedirectSortField,
   ResolveRedirectReferencesInput,
 } from "~/schemas/redirect"
-import { REFERENCE_LINK_REGEX } from "@opengovsg/isomer-components"
+import {
+  getResourceIdFromReferenceLink,
+  REFERENCE_LINK_REGEX,
+} from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { REDIRECT_MESSAGES, RedirectValidationCode } from "~/constants/redirect"
+import {
+  normalizeRedirectPath,
+  normalizeRedirectSource,
+} from "~/schemas/redirect"
 import { getReferenceLink } from "~/utils/link"
 
 import type { Logger } from "@isomer/logging"
 
+import type { SafeKysely } from "../database"
 import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db } from "../database"
 import {
+  getResourceByFullPermalink,
   getResourceFullPermalinks,
   getResourceIdByPermalink,
 } from "../resource/resource.service"
@@ -59,7 +73,10 @@ const parseDestination = (destination: string): ParsedDestination => {
 // Resolves a destination to its stored form. A bare internal path becomes a
 // [resource:...] reference (so it follows page renames); a query-suffixed path
 // stays literal (a query can't map to a single resource); references and
-// external URLs are stored verbatim.
+// external URLs are stored verbatim. An internal path with no live page yet is
+// also kept literal rather than rejected — the preflight surfaces this as a
+// non-blocking warning, so an admin can pre-create a redirect to a page they're
+// about to publish.
 const resolveDestinationForStorage = async (
   siteId: number,
   destination: string,
@@ -74,11 +91,9 @@ const resolveDestinationForStorage = async (
         return parsed.value
       }
       const resourceId = await getResourceIdByPermalink(siteId, parsed.value)
+      // No live page yet — keep the literal path; the preflight warns about it.
       if (resourceId === null) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `The page "${destination}" does not exist`,
-        })
+        return parsed.value
       }
       return getReferenceLink({
         siteId: String(siteId),
@@ -130,6 +145,150 @@ const getByUser = async (byUserId: string) =>
         }),
     )
 
+const getLiveRedirectBySource = (
+  dbInstance: SafeKysely,
+  { siteId, source }: { siteId: number; source: string },
+) =>
+  dbInstance
+    .selectFrom("Redirect")
+    .selectAll()
+    .where("siteId", "=", siteId)
+    .where("source", "=", source)
+    .where("deletedAt", "is", null)
+    .executeTakeFirst()
+
+// Resolves a stored destination to a comparable/displayable path: a reference
+// to the page's current permalink, a literal path normalised, an external URL
+// (or a reference to a missing page) verbatim.
+const resolveStoredDestination = async (
+  siteId: number,
+  storedDestination: string,
+): Promise<string> => {
+  if (storedDestination.startsWith("/")) {
+    return normalizeRedirectPath(storedDestination)
+  }
+  const resourceId = getResourceIdFromReferenceLink(storedDestination)
+  if (resourceId === "") {
+    return storedDestination
+  }
+  const permalinks = await getResourceFullPermalinks(siteId, [
+    Number(resourceId),
+  ])
+  return permalinks.get(Number(resourceId)) ?? storedDestination
+}
+
+// Detects whether adding `source -> destination` would chain into, or close a
+// loop with, an existing redirect — looking exactly one hop deep. If the
+// destination is itself the source of a live redirect, that redirect's resolved
+// target is the next hop; the new redirect closes a loop when that target
+// resolves back to `source` (the mirror pair `/a -> /b` while `/b -> /a`).
+// Longer cycles (`/a -> /b -> /c -> /a`) are intentionally not chased — they're
+// rare, and the single-hop check keeps this to one extra read while still
+// surfacing the immediate next hop as a non-looping chain warning. Stored
+// destinations may be `[resource:...]` references, resolved to the page's
+// current permalink before comparing. Only internal paths chain; an external
+// https destination never matches a source. `source` is assumed already
+// normalised (lowercased), so the destination is normalised the same way before
+// it is looked up as a source.
+const getChainedRedirect = async (
+  dbInstance: SafeKysely,
+  {
+    siteId,
+    source,
+    destination,
+  }: { siteId: number; source: string; destination: string },
+) => {
+  if (!destination.startsWith("/")) {
+    return null
+  }
+  const normalizedDestination = normalizeRedirectSource(destination)
+  const redirect = await getLiveRedirectBySource(dbInstance, {
+    siteId,
+    source: normalizedDestination,
+  })
+  if (!redirect) {
+    return null
+  }
+
+  const target = await resolveStoredDestination(siteId, redirect.destination)
+  // The new redirect closes a loop when the existing redirect's (internal)
+  // target normalises back to `source`; an external target can never match.
+  const isLoop =
+    target.startsWith("/") && normalizeRedirectSource(target) === source
+
+  return { redirect, normalizedDestination, target, isLoop }
+}
+
+// Preflight for redirect.create: returns blocking errors and non-blocking
+// warnings without mutating. Advisory only — create re-enforces every error.
+export const validateRedirect = async ({
+  siteId,
+  source,
+  destination,
+}: CreateRedirectInput): Promise<RedirectValidationResult> => {
+  const errors: RedirectValidationIssue[] = []
+  const warnings: RedirectValidationIssue[] = []
+
+  // Recreating a live redirect for the same source is not allowed — the user
+  // must delete the existing one first.
+  const existing = await getLiveRedirectBySource(db, { siteId, source })
+  if (existing) {
+    errors.push({
+      code: RedirectValidationCode.AlreadyExists,
+      message: REDIRECT_MESSAGES.alreadyExists,
+    })
+  }
+
+  // A redirect whose source is a published page's live URL would shadow that
+  // page, so block it. Only published pages block — an unpublished page isn't
+  // live yet, and publishing it later is guarded on the page side.
+  const pageAtSource = await getResourceByFullPermalink({
+    siteId,
+    fullPermalink: source,
+  })
+  if (pageAtSource && pageAtSource.publishedVersionId !== null) {
+    errors.push({
+      code: RedirectValidationCode.SourceIsExistingPage,
+      message: REDIRECT_MESSAGES.sourceIsExistingPage,
+    })
+  }
+
+  const chained = await getChainedRedirect(db, { siteId, source, destination })
+  if (chained?.isLoop) {
+    errors.push({
+      code: RedirectValidationCode.RedirectLoop,
+      message: REDIRECT_MESSAGES.loop,
+      description: `${chained.normalizedDestination} already redirects to ${source}. Visitors will get stuck in between pages. Delete existing redirects or direct to a different page.`,
+    })
+  } else if (chained) {
+    warnings.push({
+      code: RedirectValidationCode.DestinationIsRedirectSource,
+      message: `This page already redirects to ${chained.target}. Visitors will end up there instead.`,
+    })
+  } else if (destination.startsWith("/")) {
+    // An internal destination with no redirect of its own should point at a
+    // real, published page.
+    const normalizedDestination = normalizeRedirectPath(destination)
+    const resource = await getResourceByFullPermalink({
+      siteId,
+      fullPermalink: normalizedDestination,
+    })
+    if (!resource) {
+      warnings.push({
+        code: RedirectValidationCode.DestinationNotFound,
+        message: REDIRECT_MESSAGES.destinationNotLive,
+      })
+    } else if (resource.publishedVersionId === null) {
+      warnings.push({
+        code: RedirectValidationCode.DestinationNotPublished,
+        message: REDIRECT_MESSAGES.destinationNotLive,
+      })
+    }
+  }
+
+  return { errors, warnings }
+}
+
 export const listRedirects = async ({
   siteId,
   sortBy,
@@ -180,14 +339,6 @@ export const createRedirect = async ({
 }) => {
   const byUser = await getByUser(byUserId)
 
-  // Resolve an internal-path destination to a [resource:...] reference (a read,
-  // outside the tx) so the redirect follows the page if its permalink changes.
-  // Throws NOT_FOUND if the path matches no page.
-  const storedDestination = await resolveDestinationForStorage(
-    siteId,
-    destination,
-  )
-
   const created = await db.transaction().execute(async (tx) => {
     // Reject creating over a live redirect. A soft-deleted row for the same
     // source still holds the (siteId, source) unique constraint and is revived
@@ -204,6 +355,46 @@ export const createRedirect = async ({
         message: `A redirect already exists for ${source}`,
       })
     }
+
+    // Re-enforce the no-loop rule server-side; the preflight is advisory. Unlike
+    // the recreate check (constraint-backed), this is a plain read, so two admins
+    // racing the mirror pair (/a->/b and /b->/a) could each pass and persist a
+    // loop — accepted, since the result is recoverable by deleting either side.
+    const chained = await getChainedRedirect(tx, {
+      siteId,
+      source,
+      destination,
+    })
+    if (chained?.isLoop) {
+      // UNPROCESSABLE_CONTENT is reserved for the loop guard — the form maps it
+      // to the loop message on the destination field; don't reuse it elsewhere.
+      throw new TRPCError({
+        code: "UNPROCESSABLE_CONTENT",
+        message: REDIRECT_MESSAGES.loop,
+      })
+    }
+
+    // Re-enforce the source-vs-published-page guard (a published page at this
+    // URL would be shadowed). Also a plain read, so same accepted race as above.
+    // PRECONDITION_FAILED keeps it distinct from the already-exists CONFLICT.
+    const pageAtSource = await getResourceByFullPermalink({
+      siteId,
+      fullPermalink: source,
+    })
+    if (pageAtSource && pageAtSource.publishedVersionId !== null) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: REDIRECT_MESSAGES.sourceIsExistingPage,
+      })
+    }
+
+    // Resolve an internal-path destination to a [resource:...] reference (so it
+    // follows page renames); a path with no live page yet is kept literal (the
+    // preflight already warned). Never blocks the create.
+    const storedDestination = await resolveDestinationForStorage(
+      siteId,
+      destination,
+    )
 
     const created = await tx
       .insertInto("Redirect")
