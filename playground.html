@@ -338,7 +338,22 @@
 
       <!-- Layouts panel -->
       <div id="panel-layouts" class="panel-content hidden">
-        <div class="section-label" style="margin-top:0">Page Layouts</div>
+        <div class="section-label" style="margin-top:0">Navbar</div>
+
+        <div class="control-row" style="margin-bottom:16px;">
+          <span class="control-name">Sticky navbar</span>
+          <button
+            id="sticky-nav-toggle"
+            role="switch"
+            aria-checked="false"
+            onclick="toggleStickyNav()"
+            style="width:36px;height:20px;border-radius:999px;border:none;background:#d1d5db;cursor:pointer;padding:0;position:relative;flex-shrink:0;transition:background 0.15s;"
+          >
+            <span style="position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.15s;" id="sticky-nav-knob"></span>
+          </button>
+        </div>
+
+        <div class="section-label">Page Layouts</div>
 
         <!-- Article layout alt -->
         <div class="nb-card" id="nb-article-layout-alt" onclick="setLayoutVariant('article-alt','article')">
@@ -389,7 +404,48 @@
       <!-- New Blocks panel -->
       <div id="panel-blocks" class="panel-content hidden">
 
-        <div class="section-label" style="margin-top:0">Hero</div>
+        <div class="section-label" style="margin-top:0">Links</div>
+
+        <!-- Link Hub -->
+        <div class="nb-card" id="nb-link-hub" onclick="addLinkHub()">
+          <div class="nb-thumb">
+            <div style="width:100%;display:flex;gap:3px;">
+              <div style="flex:1;background:var(--nb-canvas-alt,#eef2f7);border-radius:3px;padding:5px 6px;display:flex;flex-direction:column;gap:3px;">
+                <div style="height:3px;background:#9ca3af;border-radius:1px;width:70%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:85%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:65%;"></div>
+              </div>
+              <div style="flex:1;background:var(--nb-canvas-alt,#eef2f7);border-radius:3px;padding:5px 6px;display:flex;flex-direction:column;gap:3px;">
+                <div style="height:3px;background:#9ca3af;border-radius:1px;width:80%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:90%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:75%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:60%;"></div>
+              </div>
+              <div style="flex:1;background:var(--nb-canvas-alt,#eef2f7);border-radius:3px;padding:5px 6px;display:flex;flex-direction:column;gap:3px;">
+                <div style="height:3px;background:#9ca3af;border-radius:1px;width:75%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:80%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:70%;"></div>
+              </div>
+              <div style="flex:1;background:var(--nb-canvas-alt,#eef2f7);border-radius:3px;padding:5px 6px;display:flex;flex-direction:column;gap:3px;">
+                <div style="height:3px;background:#9ca3af;border-radius:1px;width:60%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:95%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:50%;"></div>
+                <div style="height:2px;background:#d1d5db;border-radius:1px;width:80%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Link hub <span class="nb-page-tag">Homepage + Content</span></div>
+            <div class="nb-desc">4-column link containers on the homepage (below hero), single container on the content page. Uses the site's canvas colour.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-link-hub"><span class="nb-add-text">+ Add to homepage &amp; content page</span></div>
+        </div>
+
+        <div class="section-label">Hero</div>
 
         <!-- Hero: Image Collage -->
         <div class="nb-card" id="nb-hero-collage" onclick="addBlock('hero-collage','home')">
@@ -613,6 +669,35 @@
             <div class="nb-desc">Inline superscript footnotes on underlined words. Click a word to reveal a dismissible popover with the footnote detail.</div>
           </div>
           <div class="nb-add-btn" id="nb-btn-footnotes"><span class="nb-add-text">+ Add to article page</span></div>
+        </div>
+
+        <div class="section-label">Lists</div>
+
+        <!-- Lists with Indentation block -->
+        <div class="nb-card" id="nb-lists-with-indentation" onclick="addBlock('lists-with-indentation','article')">
+          <div class="nb-thumb">
+            <div style="width:100%;display:flex;flex-direction:column;gap:6px;justify-content:center;">
+              <div style="display:flex;gap:6px;align-items:flex-start;">
+                <span style="font-size:9px;font-weight:700;color:#374151;white-space:pre;flex-shrink:0;">1.    </span>
+                <div style="display:flex;flex-direction:column;gap:2px;flex:1;">
+                  <div style="height:2px;background:#d1d5db;border-radius:1px;"></div>
+                  <div style="height:2px;background:#d1d5db;border-radius:1px;width:80%;"></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;align-items:flex-start;">
+                <span style="font-size:9px;font-weight:700;color:#374151;white-space:pre;flex-shrink:0;">2.    </span>
+                <div style="display:flex;flex-direction:column;gap:2px;flex:1;">
+                  <div style="height:2px;background:#d1d5db;border-radius:1px;"></div>
+                  <div style="height:2px;background:#d1d5db;border-radius:1px;width:65%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">Lists with Indentation <span class="nb-page-tag">Article page</span></div>
+            <div class="nb-desc">Ordered list with tab-spaced indentation between number and text — illustrates deeper list support.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-lists-with-indentation"><span class="nb-add-text">+ Add to article page</span></div>
         </div>
 
       </div>
@@ -883,6 +968,20 @@
     postToIframe({ type: 'theme', vars: { '--max-width': maxWidth } })
   }
 
+  // ── Sticky nav ───────────────────────────────────────────────────────────
+
+  let stickyNavEnabled = false
+
+  function toggleStickyNav() {
+    stickyNavEnabled = !stickyNavEnabled
+    const toggle = document.getElementById('sticky-nav-toggle')
+    const knob = document.getElementById('sticky-nav-knob')
+    toggle.setAttribute('aria-checked', stickyNavEnabled)
+    toggle.style.background = stickyNavEnabled ? '#111827' : '#d1d5db'
+    knob.style.transform = stickyNavEnabled ? 'translateX(16px)' : 'translateX(0)'
+    postToIframe({ type: 'stickyNav', enabled: stickyNavEnabled })
+  }
+
   // ── New block actions ─────────────────────────────────────────────────────
 
   const addedBlocks = new Set()
@@ -937,6 +1036,31 @@
     if (blockId === 'text-with-image') {
       const ctrl = document.getElementById('twi-controls')
       if (ctrl) ctrl.style.display = addedBlocks.has(blockId) ? 'block' : 'none'
+    }
+  }
+
+  function addLinkHub() {
+    const card = document.getElementById('nb-link-hub')
+    const span = document.querySelector('#nb-btn-link-hub .nb-add-text')
+    const isActive = addedBlocks.has('link-hub-home')
+    if (isActive) {
+      // Remove both
+      addedBlocks.delete('link-hub-home')
+      addedBlocks.delete('link-hub-content')
+      postToIframe({ type: 'removeBlock', blockId: 'link-hub-home', page: 'home' })
+      postToIframe({ type: 'removeBlock', blockId: 'link-hub-content', page: 'content' })
+      if (card) card.classList.remove('nb-added')
+      if (span) span.textContent = '+ Add to homepage & content page'
+    } else {
+      // Add both
+      addedBlocks.add('link-hub-home')
+      addedBlocks.add('link-hub-content')
+      postToIframe({ type: 'addBlock', blockId: 'link-hub-home', page: 'home' })
+      postToIframe({ type: 'addBlock', blockId: 'link-hub-content', page: 'content' })
+      // Switch to homepage so user sees the block immediately
+      setPage('home')
+      if (card) card.classList.add('nb-added')
+      if (span) span.textContent = '✓ Added'
     }
   }
 

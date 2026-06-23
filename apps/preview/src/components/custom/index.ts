@@ -9,6 +9,9 @@ export { default as ContentLayoutAlt } from "./ContentLayoutAlt"
 export { default as TextWithImage } from "./TextWithImage"
 export { default as CalloutVariants } from "./CalloutVariants"
 export { default as Footnotes } from "./Footnotes"
+export { default as LinkHubHome } from "./LinkHubHome"
+export { default as LinkHubContent } from "./LinkHubContent"
+export { default as ListsWithIndentation } from "./ListsWithIndentation"
 
 /** Which page each block belongs to */
 export const CUSTOM_BLOCK_PAGE: Record<string, "home" | "content" | "article"> =
@@ -20,6 +23,9 @@ export const CUSTOM_BLOCK_PAGE: Record<string, "home" | "content" | "article"> =
     "text-with-image": "content",
     "callout-variants": "content",
     "footnotes": "article",
+    "link-hub-home": "home",
+    "link-hub-content": "content",
+    "lists-with-indentation": "article",
   }
 
 /** Human-readable labels */
@@ -31,6 +37,9 @@ export const CUSTOM_BLOCK_LABEL: Record<string, string> = {
   "text-with-image": "Text with Image",
   "callout-variants": "Callout Variants",
   "footnotes": "Footnotes",
+  "link-hub-home": "Link Hub",
+  "link-hub-content": "Link Hub",
+  "lists-with-indentation": "Lists with Indentation",
 }
 
 /** Whether a block ID is a hero variant (replaces rather than appends) */

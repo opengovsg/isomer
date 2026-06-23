@@ -21,6 +21,9 @@ import {
   TextWithImage,
   CalloutVariants,
   Footnotes,
+  LinkHubHome,
+  LinkHubContent,
+  ListsWithIndentation,
   ArticleLayoutAlt,
   ContentLayoutAlt,
   CUSTOM_BLOCK_PAGE,
@@ -40,6 +43,9 @@ const CUSTOM_BLOCK_REGISTRY: Record<string, ComponentType> = {
   "text-with-image": TextWithImage,
   "callout-variants": CalloutVariants,
   "footnotes": Footnotes,
+  "link-hub-home": LinkHubHome,
+  "link-hub-content": LinkHubContent,
+  "lists-with-indentation": ListsWithIndentation,
 }
 
 function applyThemeVars(vars: Record<string, string>) {
@@ -153,6 +159,20 @@ function App() {
           ...prev,
           [bp]: (prev[bp] ?? []).filter((id) => id !== blockId),
         }))
+      }
+      if (type === "stickyNav") {
+        let styleEl = document.getElementById("sticky-nav-style")
+        if (e.data.enabled) {
+          if (!styleEl) {
+            styleEl = document.createElement("style")
+            styleEl.id = "sticky-nav-style"
+            document.head.appendChild(styleEl)
+          }
+          styleEl.textContent =
+            "header { position: sticky !important; top: 0 !important; z-index: 50 !important; }"
+        } else {
+          styleEl?.remove()
+        }
       }
       if (type === "setBlockConfig") {
         const { blockId, key, value } = e.data as {
