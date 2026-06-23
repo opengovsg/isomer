@@ -13,6 +13,7 @@ import {
   setupCollection,
   setupCollectionLink,
   setupCollectionMeta,
+  setupCollectionPage,
   setupEditorPermissions,
   setupFolder,
   setupFolderMeta,
@@ -2041,6 +2042,39 @@ describe("resource.router", async () => {
             shouldCreateRedirect: true,
           }),
         ).resolves.toMatchObject({ id: page.id })
+      })
+
+      it("creates a redirect from the old URL for a published CollectionPage", async () => {
+        // Locks in the CollectionPage branch of the redirect orchestration.
+        const { site, collection: srcCollection } = await setupCollection({
+          permalink: "src-collection",
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        const { collection: destCollection } = await setupCollection({
+          siteId: site.id,
+          permalink: "dest-collection",
+        })
+        const { page } = await setupCollectionPage({
+          siteId: site.id,
+          parentId: srcCollection.id,
+          permalink: "old-article",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+
+        await caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: destCollection.id,
+          shouldCreateRedirect: true,
+        })
+
+        const redirects = await liveRedirects(site.id)
+        expect(redirects).toHaveLength(1)
+        expect(redirects[0]!.source).toBe("/src-collection/old-article")
+        expect(redirects[0]!.destination).toBe(
+          `[resource:${site.id}:${page.id}]`,
+        )
       })
     })
   })

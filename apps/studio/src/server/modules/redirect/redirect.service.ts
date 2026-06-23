@@ -608,6 +608,65 @@ export const clearReclaimedRedirect = async (
   return after
 }
 
+// Single entry point both permalink-change flows (move and rename) call to keep
+// redirects consistent. Owns the ordering the flows depend on so they can't
+// drift: block a shadowing redirect (published page only) -> clear a redirect
+// the page reclaims -> optionally preserve the old URL. Runs inside the caller's
+// transaction and publishes nothing — the caller's publish covers it. A no-op
+// when the URL is unchanged, so callers may invoke it unconditionally.
+export const applyPermalinkChangeRedirects = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    oldFullPermalink,
+    newFullPermalink,
+    resourceId,
+    isPublished,
+    shouldCreateRedirect,
+    byUserId,
+  }: {
+    siteId: number
+    oldFullPermalink: string
+    newFullPermalink: string
+    resourceId: string
+    isPublished: boolean
+    shouldCreateRedirect: boolean
+    byUserId: string
+  },
+) => {
+  // Nothing to reconcile when the URL did not actually change.
+  if (oldFullPermalink === newFullPermalink) {
+    return
+  }
+
+  // A published page must not land on a path a live redirect already points
+  // elsewhere from — it would be shadowed (mirror of the publish-block). The
+  // throw rolls back the enclosing move/rename.
+  if (isPublished) {
+    await assertPermalinkNotShadowed(tx, {
+      siteId,
+      newFullPermalink,
+      resourceId,
+    })
+  }
+  // Drop any redirect that pointed back here (it would self-shadow).
+  await clearReclaimedRedirect(tx, {
+    siteId,
+    newFullPermalink,
+    resourceId,
+    byUserId,
+  })
+  // Preserve the old URL when asked, for a published page.
+  if (shouldCreateRedirect && isPublished) {
+    await createRedirectForPermalinkChange(tx, {
+      siteId,
+      oldFullPermalink,
+      resourceId,
+      byUserId,
+    })
+  }
+}
+
 export const deleteRedirect = async ({
   siteId,
   id,
@@ -683,10 +742,18 @@ export const getRedirectBySource = async ({
   if (!redirect) {
     return null
   }
-  const referencedId = getResourceIdFromReferenceLink(redirect.destination)
+  // Resolve via the full reference so we can confirm the embedded siteId matches
+  // this site. getResourceIdFromReferenceLink discards the siteId, and the caller
+  // suppresses the shadow warning on a resourceId match — a reference embedding a
+  // different site's id with a colliding resourceId would suppress it wrongly. The
+  // lookup is already siteId-scoped so the ids should match; if they don't, fall
+  // back to null (show the warning) rather than trust a cross-site id.
+  const match = REFERENCE_LINK_REGEX.exec(redirect.destination)
+  const destinationResourceId =
+    match && Number(match[1]) === siteId ? Number(match[2]) : null
   return {
     destination: await resolveStoredDestination(siteId, redirect.destination),
-    destinationResourceId: referencedId === "" ? null : Number(referencedId),
+    destinationResourceId,
   }
 }
 

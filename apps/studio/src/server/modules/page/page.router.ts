@@ -50,11 +50,7 @@ import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import {
-  assertPermalinkNotShadowed,
-  clearReclaimedRedirect,
-  createRedirectForPermalinkChange,
-} from "../redirect/redirect.service"
+import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
   createResourceWithBlob,
   getBlobOfResource,
@@ -895,35 +891,15 @@ export const pageRouter = router({
               const oldFullPermalink = `${parentFullPermalink ?? ""}/${resource.permalink}`
               const newFullPermalink = `${parentFullPermalink ?? ""}/${updatedResource.permalink}`
 
-              // A published page must not land on a path a live redirect already
-              // points elsewhere from — it would be shadowed (mirror of the
-              // publish-block). Block before mutating anything further.
-              if (updatedResource.publishedVersionId !== null) {
-                await assertPermalinkNotShadowed(tx, {
-                  siteId,
-                  newFullPermalink,
-                  resourceId: String(pageId),
-                })
-              }
-              // Drop any redirect that pointed back here (it would self-shadow).
-              await clearReclaimedRedirect(tx, {
+              await applyPermalinkChangeRedirects(tx, {
                 siteId,
+                oldFullPermalink,
                 newFullPermalink,
                 resourceId: String(pageId),
+                isPublished: updatedResource.publishedVersionId !== null,
+                shouldCreateRedirect,
                 byUserId: ctx.user.id,
               })
-              // Preserve the old URL when asked, for a published page.
-              if (
-                shouldCreateRedirect &&
-                updatedResource.publishedVersionId !== null
-              ) {
-                await createRedirectForPermalinkChange(tx, {
-                  siteId,
-                  oldFullPermalink,
-                  resourceId: String(pageId),
-                  byUserId: ctx.user.id,
-                })
-              }
             }
 
             // We do an implicit publish so that we can make the changes to the

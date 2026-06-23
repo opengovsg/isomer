@@ -2541,6 +2541,44 @@ describe("page.router", async () => {
         expect(live).toHaveLength(1)
         expect(live[0]!.source).toBe("/old-page")
       })
+
+      it("revives a soft-deleted redirect at the old URL instead of duplicating it", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A previously soft-deleted redirect already occupies the old source
+        // (e.g. it was deleted earlier). The upsert should revive this row, not
+        // insert a second one at the same (siteId, source).
+        const stale = await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/old-page",
+            destination: "https://example.gov.sg/stale",
+            deletedAt: new Date(),
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        // Exactly one row at the old source — the stale one, revived in place.
+        const rows = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/old-page")
+          .execute()
+        expect(rows).toHaveLength(1)
+        expect(rows[0]!.id).toBe(stale.id)
+        expect(rows[0]!.deletedAt).toBeNull()
+        expect(rows[0]!.destination).toBe(`[resource:${site.id}:${page.id}]`)
+      })
     })
 
     it("should throw 401 if not logged in update", async () => {

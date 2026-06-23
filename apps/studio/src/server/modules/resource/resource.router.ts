@@ -39,9 +39,7 @@ import {
   getResourcePermission,
 } from "../permissions/permissions.service"
 import {
-  assertPermalinkNotShadowed,
-  clearReclaimedRedirect,
-  createRedirectForPermalinkChange,
+  applyPermalinkChangeRedirects,
   softDeleteRedirectsPointingToResource,
 } from "../redirect/redirect.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
@@ -551,40 +549,19 @@ export const resourceRouter = router({
             // Keep redirects consistent with the new URL — Page/CollectionPage
             // only (folders/collection links have no URL of their own).
             if (
-              toMove.type === ResourceType.Page ||
-              toMove.type === ResourceType.CollectionPage
+              (toMove.type === ResourceType.Page ||
+                toMove.type === ResourceType.CollectionPage) &&
+              oldFullPermalink !== null
             ) {
-              // A published page must not land on a path a live redirect already
-              // points elsewhere from — it would be shadowed (mirror of the
-              // publish-block). Block before mutating anything further.
-              if (toMove.publishedVersionId !== null) {
-                await assertPermalinkNotShadowed(tx, {
-                  siteId,
-                  newFullPermalink,
-                  resourceId: movedResourceId,
-                })
-              }
-              // Drop any redirect that pointed back here (it would self-shadow).
-              await clearReclaimedRedirect(tx, {
+              await applyPermalinkChangeRedirects(tx, {
                 siteId,
+                oldFullPermalink,
                 newFullPermalink,
                 resourceId: movedResourceId,
+                isPublished: toMove.publishedVersionId !== null,
+                shouldCreateRedirect,
                 byUserId: user.id,
               })
-              // Preserve the old URL when asked, if published and URL changed.
-              if (
-                shouldCreateRedirect &&
-                toMove.publishedVersionId !== null &&
-                oldFullPermalink !== null &&
-                oldFullPermalink !== newFullPermalink
-              ) {
-                await createRedirectForPermalinkChange(tx, {
-                  siteId,
-                  oldFullPermalink,
-                  resourceId: movedResourceId,
-                  byUserId: user.id,
-                })
-              }
             }
 
             return moved
