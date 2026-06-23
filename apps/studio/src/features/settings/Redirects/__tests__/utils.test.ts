@@ -1,4 +1,8 @@
-import { formatAddedAt, isReferenceDestination } from "../utils"
+import {
+  formatAddedAt,
+  getDestinationDisplay,
+  isReferenceDestination,
+} from "../utils"
 
 describe("formatAddedAt", () => {
   beforeEach(() => {
@@ -77,5 +81,36 @@ describe("isReferenceDestination", () => {
       isReferenceDestination("https://example.gov.sg/[resource:1:2]"),
     ).toBe(false)
     expect(isReferenceDestination("[resource:1:2]/extra")).toBe(false)
+  })
+})
+
+describe("getDestinationDisplay", () => {
+  it("shows a non-reference destination verbatim", () => {
+    expect(getDestinationDisplay("/about-us", new Map())).toEqual({
+      status: "resolved",
+      label: "/about-us",
+    })
+  })
+
+  it("is resolving until the reference lookup lands", () => {
+    expect(getDestinationDisplay("[resource:1:2]", new Map())).toEqual({
+      status: "resolving",
+    })
+  })
+
+  it("resolves a reference to the page's current permalink", () => {
+    const permalinkByReference = new Map([["[resource:1:2]", "/about/contact"]])
+    expect(
+      getDestinationDisplay("[resource:1:2]", permalinkByReference),
+    ).toEqual({ status: "resolved", label: "/about/contact" })
+  })
+
+  it("flags a reference whose page no longer exists as missing", () => {
+    const permalinkByReference = new Map<string, string | null>([
+      ["[resource:1:2]", null],
+    ])
+    expect(
+      getDestinationDisplay("[resource:1:2]", permalinkByReference),
+    ).toEqual({ status: "missing" })
   })
 })

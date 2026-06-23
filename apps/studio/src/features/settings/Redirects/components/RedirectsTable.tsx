@@ -33,6 +33,7 @@ import {
 import { useTablePagination } from "~/hooks/useTablePagination"
 
 import type { RedirectRow, RedirectSortField } from "../types"
+import type { DestinationDisplay } from "../utils"
 import {
   REDIRECTS_PAGE_SIZE,
   useCountRedirects,
@@ -42,31 +43,32 @@ import {
 } from "../api"
 import {
   formatAddedAt,
-  getDestinationLabel,
+  getDestinationDisplay,
   isReferenceDestination,
-  MISSING_PAGE_LABEL,
 } from "../utils"
 import { DeleteRedirectModal } from "./DeleteRedirectModal"
 
 const columnsHelper = createColumnHelper<RedirectRow>()
 
-// Renders a redirect destination. Reference destinations are shown as the
-// page's current permalink (resolved server-side); while that resolution is in
-// flight we show a skeleton, and a reference whose page no longer exists is
-// flagged rather than leaking the raw "[resource:...]" string.
+// Copy shown when a reference destination's page has since been deleted. Kept
+// here (the render site) so it can change without touching the resolution logic.
+const MISSING_PAGE_LABEL = "Page no longer exists"
+
+// Renders a pre-resolved redirect destination. Reference destinations arrive as
+// the page's current permalink; while that resolution is in flight we show a
+// skeleton, and a reference whose page no longer exists is flagged rather than
+// leaking the raw "[resource:...]" string.
 function DestinationCell({
-  destination,
-  permalinkByReference,
+  display,
 }: {
-  destination: string
-  permalinkByReference: Map<string, string | null>
+  display: DestinationDisplay
 }): JSX.Element {
-  const label = getDestinationLabel(destination, permalinkByReference)
-  if (label === null) {
+  if (display.status === "resolving") {
     return <Skeleton height="1.25rem" width="60%" />
   }
 
-  const isMissing = label === MISSING_PAGE_LABEL
+  const isMissing = display.status === "missing"
+  const label = isMissing ? MISSING_PAGE_LABEL : display.label
   return (
     <Tooltip label={label} openDelay={500} placement="top">
       <Text
@@ -79,6 +81,20 @@ function DestinationCell({
       </Text>
     </Tooltip>
   )
+}
+
+// Plain-text destination label for contexts without a skeleton (e.g. the delete
+// modal): resolved → permalink/path, missing → the missing-page copy, and still
+// resolving → "" so the raw "[resource:...]" token never shows.
+const destinationLabelFor = (display: DestinationDisplay): string => {
+  switch (display.status) {
+    case "resolving":
+      return ""
+    case "missing":
+      return MISSING_PAGE_LABEL
+    case "resolved":
+      return display.label
+  }
 }
 
 function SortableHeader({
@@ -190,8 +206,7 @@ const getColumns = (
     ),
     cell: ({ getValue }) => (
       <DestinationCell
-        destination={getValue()}
-        permalinkByReference={permalinkByReference}
+        display={getDestinationDisplay(getValue(), permalinkByReference)}
       />
     ),
   }),
@@ -365,12 +380,12 @@ export const RedirectsTable = ({
         redirect={redirectToDelete}
         destinationLabel={
           redirectToDelete
-            ? // Fall back to "" (not the raw destination) while a reference is
-              // still resolving, so the modal never shows the "[resource:...]" token.
-              (getDestinationLabel(
-                redirectToDelete.destination,
-                permalinkByReference,
-              ) ?? "")
+            ? destinationLabelFor(
+                getDestinationDisplay(
+                  redirectToDelete.destination,
+                  permalinkByReference,
+                ),
+              )
             : ""
         }
         isPending={isPending}

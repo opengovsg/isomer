@@ -188,5 +188,40 @@ describe("createRedirectSchema", () => {
       // Assert
       expect(result.destination).toBe("https://www.example.gov.sg/a//b")
     })
+
+    it("should allow a query string on an internal path", () => {
+      // Arrange / Act: a "?suffix" can't map to one resource, so it stays a
+      // literal path rather than being converted to a reference.
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        destination: "/search?q=tax",
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+    })
+
+    it("should reject an internal path that links to an on-page anchor", () => {
+      // Arrange / Act
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        destination: "/page#section",
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
+    })
+
+    it("should allow a #fragment on an external https URL", () => {
+      // Arrange / Act: fragments are legitimate on external destinations; only
+      // internal-path anchors are unsupported.
+      const result = createRedirectSchema.safeParse({
+        ...VALID_REDIRECT,
+        destination: "https://www.example.gov.sg/page#section",
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+    })
   })
 })

@@ -6,6 +6,7 @@ import type {
   RedirectSortField,
   ResolveRedirectReferencesInput,
 } from "~/schemas/redirect"
+import { REFERENCE_LINK_REGEX } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { getReferenceLink } from "~/utils/link"
 
@@ -30,38 +31,61 @@ const SORT_FIELD_TO_COLUMN = {
   "source" | "destination" | "createdAt"
 >
 
-// Anchored [resource:siteId:resourceId] reference, capturing siteId/resourceId.
-// Such a destination (or an external URL) is stored verbatim; only a bare
-// internal path becomes a reference.
-const REFERENCE_DESTINATION_REGEX = /^\[resource:(\d+):(\d+)\]$/
+// Anchored form of the shared [resource:siteId:resourceId] reference, capturing
+// siteId/resourceId (the shared regex is unanchored). A value only counts as a
+// reference when it is exactly one.
+const REFERENCE_DESTINATION_REGEX = new RegExp(
+  `^${REFERENCE_LINK_REGEX.source}$`,
+)
 
-// Resolves a destination to its stored form. An internal path with no query/hash
-// becomes a [resource:...] reference (so it follows page renames); a path with a
-// query/hash stays literal; references and external URLs are stored verbatim.
+// A destination is exactly one of three shapes. The `type` discriminant keeps
+// the branches in resolveDestinationForStorage explicit instead of a chain of
+// string checks.
+type ParsedDestination =
+  | { type: "reference"; value: string }
+  | { type: "external"; value: string }
+  | { type: "internalPath"; value: string }
+
+const parseDestination = (destination: string): ParsedDestination => {
+  if (REFERENCE_DESTINATION_REGEX.test(destination)) {
+    return { type: "reference", value: destination }
+  }
+  if (destination.startsWith("/")) {
+    return { type: "internalPath", value: destination }
+  }
+  return { type: "external", value: destination }
+}
+
+// Resolves a destination to its stored form. A bare internal path becomes a
+// [resource:...] reference (so it follows page renames); a query-suffixed path
+// stays literal (a query can't map to a single resource); references and
+// external URLs are stored verbatim.
 const resolveDestinationForStorage = async (
   siteId: number,
   destination: string,
 ): Promise<string> => {
-  if (
-    REFERENCE_DESTINATION_REGEX.test(destination) ||
-    !destination.startsWith("/") ||
-    destination.includes("?") ||
-    destination.includes("#")
-  ) {
-    return destination
+  const parsed = parseDestination(destination)
+  switch (parsed.type) {
+    case "reference":
+    case "external":
+      return parsed.value
+    case "internalPath": {
+      if (parsed.value.includes("?")) {
+        return parsed.value
+      }
+      const resourceId = await getResourceIdByPermalink(siteId, parsed.value)
+      if (resourceId === null) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `The page "${destination}" does not exist`,
+        })
+      }
+      return getReferenceLink({
+        siteId: String(siteId),
+        resourceId: String(resourceId),
+      })
+    }
   }
-
-  const resourceId = await getResourceIdByPermalink(siteId, destination)
-  if (resourceId === null) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: `The page "${destination}" does not exist`,
-    })
-  }
-  return getReferenceLink({
-    siteId: String(siteId),
-    resourceId: String(resourceId),
-  })
 }
 
 // Resolves stored [resource:...] destinations back to current permalinks for

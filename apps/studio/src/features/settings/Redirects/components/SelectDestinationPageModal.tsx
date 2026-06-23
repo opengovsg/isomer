@@ -6,15 +6,9 @@ import {
   ModalHeader,
   ModalOverlay,
 } from "@chakra-ui/react"
-import {
-  Button,
-  ModalCloseButton,
-  useToast,
-} from "@opengovsg/design-system-react"
+import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
 import { useState } from "react"
 import { ResourceSelector } from "~/components/ResourceSelector"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { trpc } from "~/utils/trpc"
 
 interface SelectDestinationPageModalProps {
   isOpen: boolean
@@ -31,39 +25,25 @@ export const SelectDestinationPageModal = ({
   onClose,
   onSelect,
 }: SelectDestinationPageModalProps): JSX.Element => {
-  const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const utils = trpc.useUtils()
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(
     null,
   )
-  const [isResolving, setIsResolving] = useState(false)
+  // ResourceSelector already builds the selected resource's full permalink, so
+  // we read it straight off onChange instead of re-fetching it on confirm.
+  const [selectedPermalink, setSelectedPermalink] = useState("")
 
   const handleClose = () => {
     setSelectedResourceId(null)
+    setSelectedPermalink("")
     onClose()
   }
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (!selectedResourceId) return
-    setIsResolving(true)
-    try {
-      // Resolve the picked resource to its current permalink so the user sees a
-      // real path in the input; conversion back to a reference happens on save.
-      const permalink = await utils.page.getFullPermalink.fetch({
-        siteId,
-        pageId: Number(selectedResourceId),
-      })
-      onSelect(permalink)
-      handleClose()
-    } catch {
-      toast({
-        title: "Couldn't select this page",
-        description: "Please try again.",
-        status: "error",
-      })
-    } finally {
-      setIsResolving(false)
-    }
+    // ResourceSelector's permalink has no leading slash; destinations are stored
+    // as rooted paths, and conversion to a reference happens on save.
+    onSelect(`/${selectedPermalink}`)
+    handleClose()
   }
 
   return (
@@ -77,7 +57,10 @@ export const SelectDestinationPageModal = ({
           <ResourceSelector
             interactionType="link"
             siteId={siteId}
-            onChange={setSelectedResourceId}
+            onChange={(resourceId, fullPermalink) => {
+              setSelectedResourceId(resourceId)
+              setSelectedPermalink(fullPermalink)
+            }}
             selectedResourceId={selectedResourceId ?? undefined}
           />
         </ModalBody>
@@ -91,11 +74,7 @@ export const SelectDestinationPageModal = ({
           >
             Cancel
           </Button>
-          <Button
-            isDisabled={!selectedResourceId}
-            isLoading={isResolving}
-            onClick={() => void handleConfirm()}
-          >
+          <Button isDisabled={!selectedResourceId} onClick={handleConfirm}>
             Use this page
           </Button>
         </ModalFooter>

@@ -713,9 +713,8 @@ export const getResourceFullPermalink = async (
 // Batched variant of getResourceFullPermalink: resolves many resources' full
 // permalinks in a single recursive query instead of one round-trip per id.
 // Used to render redirect destinations (stored as `[resource:...]` references)
-// without an N+1 over the visible page. Each row carries the `seedId` it
-// descends from so the ancestor chains can be reassembled per resource.
-// Resources missing from the map no longer exist (e.g. the page was deleted).
+// without an N+1 over the visible page. A resourceId absent from the returned
+// map no longer exists (e.g. the page was deleted).
 export const getResourceFullPermalinks = async (
   siteId: number,
   resourceIds: number[],
@@ -724,77 +723,73 @@ export const getResourceFullPermalinks = async (
     return new Map()
   }
 
+  // One recursive walk collects every node on the requested ids' ancestor
+  // chains. A node's permalink and parentId are intrinsic to its id (not to
+  // which chain reached it), so a single id-keyed map lets each requested id
+  // walk from itself up to the root.
   const rows = await db
-    .withRecursive("Ancestors", (eb) =>
+    .withRecursive("PermalinkChain", (eb) =>
       eb
-        // Base case: the resources we want permalinks for, each tagged as its
-        // own ancestry seed
+        // Base case: the resources we want permalinks for
         .selectFrom("Resource")
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "in", resourceIds.map(String))
-        .select([
-          "Resource.id as seedId",
-          "Resource.id as id",
-          "Resource.permalink as permalink",
-          "Resource.parentId as parentId",
-        ])
+        .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
         .unionAll((fb) =>
           fb
-            // Recursive case: walk up to each seed's ancestors, carrying the
-            // seedId so chains for different seeds don't intermingle
+            // Recursive case: walk up to each node's parent
             .selectFrom("Resource")
-            .innerJoin("Ancestors", "Ancestors.parentId", "Resource.id")
+            .innerJoin(
+              "PermalinkChain",
+              "PermalinkChain.parentId",
+              "Resource.id",
+            )
             .where("Resource.siteId", "=", siteId)
-            .select([
-              "Ancestors.seedId as seedId",
-              "Resource.id as id",
-              "Resource.permalink as permalink",
-              "Resource.parentId as parentId",
-            ]),
+            .select(["Resource.id", "Resource.permalink", "Resource.parentId"]),
         ),
     )
-    .selectFrom("Ancestors")
-    .select(["Ancestors.seedId", "Ancestors.id", "Ancestors.permalink"])
-    .select("Ancestors.parentId")
+    .selectFrom("PermalinkChain")
+    .select([
+      "PermalinkChain.id",
+      "PermalinkChain.permalink",
+      "PermalinkChain.parentId",
+    ])
     .execute()
 
-  // Index every fetched node by seed so each seed's chain can be walked from
-  // the leaf (the seed itself) up to the root in memory
-  const nodesBySeed = new Map<
+  const nodeById = new Map<
     string,
-    Map<string, { permalink: string; parentId: string | null }>
+    { permalink: string; parentId: string | null }
   >()
   for (const row of rows) {
-    const seedId = String(row.seedId)
-    const nodes =
-      nodesBySeed.get(seedId) ??
-      new Map<string, { permalink: string; parentId: string | null }>()
-    nodes.set(String(row.id), {
+    nodeById.set(String(row.id), {
       permalink: row.permalink,
       parentId: row.parentId === null ? null : String(row.parentId),
     })
-    nodesBySeed.set(seedId, nodes)
   }
 
   const result = new Map<number, string>()
-  for (const [seedId, nodes] of nodesBySeed) {
-    const chain: string[] = []
-    let currentId: string | null = seedId
+  for (const resourceId of resourceIds) {
+    const segments: string[] = []
+    let currentId: string | null = String(resourceId)
     while (currentId !== null) {
-      const node = nodes.get(currentId)
+      const node = nodeById.get(currentId)
       if (node === undefined) {
         break
       }
-      chain.push(node.permalink)
+      segments.push(node.permalink)
       currentId = node.parentId
     }
-    // chain is leaf→root; reverse to root→leaf and drop the `_index` segments
-    // (an index page represents its parent folder, not a path of its own)
-    const permalink = chain
+    // A missing id (deleted resource) yields no segments — omit it.
+    if (segments.length === 0) {
+      continue
+    }
+    // segments are leaf→root; reverse to root→leaf and drop the `_index`
+    // segments (an index page represents its parent folder, not a path).
+    const permalink = segments
       .reverse()
       .filter((segment) => segment !== INDEX_PAGE_PERMALINK)
       .join("/")
-    result.set(Number(seedId), `/${permalink}`)
+    result.set(resourceId, `/${permalink}`)
   }
   return result
 }

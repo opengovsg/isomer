@@ -10,9 +10,6 @@ export const formatAddedAt = (date: Date): string => {
   return format(date, "d MMM yyyy")
 }
 
-// Shown in place of a reference destination whose page has since been deleted.
-export const MISSING_PAGE_LABEL = "Page no longer exists"
-
 // Internal-page destinations are stored as "[resource:siteId:resourceId]"
 // references; literal paths and external URLs are not. Anchored (the shared
 // REFERENCE_LINK_REGEX is not) so a destination only counts as a reference when
@@ -23,18 +20,29 @@ const REFERENCE_DESTINATION_REGEX = new RegExp(
 export const isReferenceDestination = (destination: string): boolean =>
   REFERENCE_DESTINATION_REGEX.test(destination)
 
-// Turns a stored destination into a user-facing label: a reference becomes the
-// resolved permalink (or MISSING_PAGE_LABEL); non-references show verbatim.
-// Returns null while a reference is still resolving (caller shows a loader).
-export const getDestinationLabel = (
+// Resolution state of a stored destination for display. The status is a stable
+// sentinel — user-facing copy for the "missing" case lives at the render site,
+// so the wording can change without touching this logic.
+export type DestinationDisplay =
+  | { status: "resolving" }
+  | { status: "missing" }
+  | { status: "resolved"; label: string }
+
+// Maps a stored destination to its display state: a reference resolves to the
+// page's current permalink (or "missing" once we know the page is gone), and is
+// "resolving" until the lookup lands; non-references show verbatim.
+export const getDestinationDisplay = (
   destination: string,
   permalinkByReference: Map<string, string | null>,
-): string | null => {
+): DestinationDisplay => {
   if (!isReferenceDestination(destination)) {
-    return destination
+    return { status: "resolved", label: destination }
   }
   if (!permalinkByReference.has(destination)) {
-    return null
+    return { status: "resolving" }
   }
-  return permalinkByReference.get(destination) ?? MISSING_PAGE_LABEL
+  const permalink = permalinkByReference.get(destination) ?? null
+  return permalink === null
+    ? { status: "missing" }
+    : { status: "resolved", label: permalink }
 }
