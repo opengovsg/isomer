@@ -597,21 +597,30 @@ export const softDeleteRedirectsPointingToResource = async (
   }
 
   const byUser = await getByUser(byUserId)
-  const deleted: typeof toDelete = []
+  // Soft-delete the whole set in one statement, then emit a per-redirect audit
+  // entry (mirroring deleteRedirect) by pairing each before-row with its
+  // committed after-row.
+  const deleted = await tx
+    .updateTable("Redirect")
+    .set({ deletedAt: new Date() })
+    .where(
+      "id",
+      "in",
+      toDelete.map((redirect) => redirect.id),
+    )
+    .returningAll()
+    .execute()
+
+  const afterById = new Map(deleted.map((after) => [after.id, after]))
   for (const before of toDelete) {
-    const after = await tx
-      .updateTable("Redirect")
-      .set({ deletedAt: new Date() })
-      .where("id", "=", before.id)
-      .returningAll()
-      .executeTakeFirstOrThrow()
+    const after = afterById.get(before.id)
+    if (!after) continue
     await logRedirectEvent(tx, {
       siteId,
       by: byUser,
       eventType: AuditLogEvent.RedirectDelete,
       delta: { before, after },
     })
-    deleted.push(after)
   }
   return deleted
 }
