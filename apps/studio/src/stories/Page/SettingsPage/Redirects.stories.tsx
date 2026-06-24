@@ -77,7 +77,10 @@ const submitNewRedirect = async (canvasElement: HTMLElement) => {
   const screen = within(canvasElement.ownerDocument.body)
   const sourceInput = await screen.findByPlaceholderText("redirect-from")
   await userEvent.type(sourceInput, "old-page")
-  await userEvent.type(screen.getByPlaceholderText("/redirect-to"), "/new-page")
+  await userEvent.type(
+    screen.getByPlaceholderText("/path-to-page or https://www.google.com"),
+    "/new-page",
+  )
   const addButton = screen.getByRole("button", { name: "Add" })
   await waitFor(() => expect(addButton).toBeEnabled())
   await userEvent.click(addButton, { pointerEventsCheck: 0 })
@@ -154,7 +157,7 @@ export const DestinationNotFoundWarning: Story = {
       "old-page",
     )
     await userEvent.type(
-      screen.getByPlaceholderText("/redirect-to"),
+      screen.getByPlaceholderText("/path-to-page or https://www.google.com"),
       "/no-page",
     )
     // Blur the destination to trigger the on-blur validate call.
