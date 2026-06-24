@@ -1,14 +1,18 @@
-export const GAZETTE_CATEGORIES: { label: string; value: string }[] = [
-  { label: "Government Gazette", value: "Government Gazette" },
-  { label: "Legislative Supplements", value: "Legislative Supplements" },
-  { label: "Other Supplements", value: "Other Supplements" },
-]
-
+// Single source of truth for gazette category values. The SingleSelect items
+// (`GAZETTE_CATEGORIES`) and the `GazettesCategory` union (see ./types) are both
+// derived from this, so a category only ever needs to be declared once here.
 export const GazetteCategories = {
   GovernmentGazettes: "Government Gazette",
   LegislativeSupplements: "Legislative Supplements",
   OtherSupplements: "Other Supplements",
-}
+} as const
+
+// SingleSelect items — label and value are identical for gazette categories.
+export const GAZETTE_CATEGORIES: { label: string; value: string }[] =
+  Object.values(GazetteCategories).map((category) => ({
+    label: category,
+    value: category,
+  }))
 
 export const GAZETTE_SUBCATEGORY_LABEL = "Sub-category"
 

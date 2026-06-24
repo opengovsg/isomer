@@ -1,4 +1,4 @@
+import type { GazetteCategories } from "./constants"
+
 export type GazettesCategory =
-  | "Government Gazette"
-  | "Legislative Supplements"
-  | "Other Supplements"
+  (typeof GazetteCategories)[keyof typeof GazetteCategories]
