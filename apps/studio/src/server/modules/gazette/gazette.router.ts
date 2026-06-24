@@ -34,6 +34,7 @@ import {
 } from "../resource/resource.service"
 import {
   findCollectionLinkWithFilename,
+  hasDuplicateNotificationNumber,
   assertGazetteAccess,
   copyFileWithNewName,
   deleteGazetteAsset,
@@ -248,6 +249,28 @@ export const gazetteRouter = router({
               })
             }
           }
+
+          // Reject a duplicate notification number within the same category and
+          // publish year (and subcategory, for non-Government Gazette categories).
+          if (
+            description &&
+            (await hasDuplicateNotificationNumber({
+              trx: tx,
+              siteId,
+              parentId: String(collectionId),
+              notificationNumber: description,
+              publishDate: date,
+              category,
+              subCategory: tagged[0] ?? "",
+            }))
+          ) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message:
+                "A gazette with the same notification number already exists",
+            })
+          }
+
           const parentCollection = await tx
             .selectFrom("Resource")
             .where("Resource.id", "=", String(collectionId))
@@ -473,6 +496,29 @@ export const gazetteRouter = router({
                   message: "A gazette with the same file ID already exists",
                 })
               }
+            }
+
+            // Reject a duplicate notification number within the same category
+            // and publish year (and subcategory, for non-Government Gazette
+            // categories), excluding the gazette being edited.
+            if (
+              description &&
+              (await hasDuplicateNotificationNumber({
+                trx: tx,
+                siteId,
+                parentId: existingResource.parentId,
+                notificationNumber: description,
+                publishDate: date,
+                category,
+                subCategory: tagged[0] ?? "",
+                excludeId: String(gazetteId),
+              }))
+            ) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message:
+                  "A gazette with the same notification number already exists",
+              })
             }
 
             const updatedBlob = await updateBlobById(tx, {

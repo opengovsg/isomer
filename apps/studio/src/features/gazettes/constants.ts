@@ -4,6 +4,12 @@ export const GAZETTE_CATEGORIES: { label: string; value: string }[] = [
   { label: "Other Supplements", value: "Other Supplements" },
 ]
 
+export const GazetteCategories = {
+  GovernmentGazettes: "Government Gazette",
+  LegislationSupplements: "Legislation Supplements",
+  OtherSupplements: "Other Supplements",
+}
+
 export const GAZETTE_SUBCATEGORY_LABEL = "Sub-category"
 
 export const governmentGazetteSubcategories = {

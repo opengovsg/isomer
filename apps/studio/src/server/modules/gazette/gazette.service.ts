@@ -4,6 +4,7 @@ import filenamify from "filenamify"
 import { PdfReader } from "pdfreader"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { env } from "~/env.mjs"
+import { GazetteCategories } from "~/features/gazettes/constants"
 import { deleteObjectsFromSearchIndexByFilter } from "~/lib/algolia"
 import { createBaseLogger } from "~/lib/logger"
 import {
@@ -490,4 +491,73 @@ export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
     { count: documents.length },
     "Successfully pushed documents for ingestion",
   )
+}
+
+/**
+ * Detects whether another gazette in the same collection already uses the
+ * given notification number. A gazette is a duplicate when it shares the
+ * same notification number, category and publish year. For non-Government
+ * Gazette categories the subcategory must match too — Government Gazette
+ * numbers are unique within the category, not the subcategory.
+ *
+ * Gazette metadata lives in the resource's draft (or published) blob:
+ * `content.page.{description,category,date,tagged}`. `date` is stored as a
+ * "dd/MM/yyyy" string, so the year is its third "/"-delimited segment.
+ * Deleted gazettes are hard-deleted, so no soft-delete filter is needed.
+ */
+export const hasDuplicateNotificationNumber = async ({
+  trx = db,
+  siteId,
+  parentId,
+  notificationNumber,
+  publishDate,
+  category,
+  subCategory,
+  excludeId,
+}: {
+  trx?: Kysely<DB> | Transaction<DB>
+  siteId: number
+  parentId: string | null
+  notificationNumber: string
+  publishDate: string
+  category: string
+  subCategory: string
+  excludeId?: string
+}): Promise<boolean> => {
+  const isGovernmentGazette = category === GazetteCategories.GovernmentGazettes
+  // publishDate is a "dd/MM/yyyy" string — the year is the last segment.
+  const publishYear = publishDate.split("/").at(-1)
+
+  const content = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`
+
+  let query = trx
+    .selectFrom("Resource")
+    .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+    .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.parentId", "=", parentId)
+    .where("Resource.type", "=", ResourceType.CollectionLink)
+    .where(
+      sql<boolean>`${content}->'page'->>'description' = ${notificationNumber}`,
+    )
+    .where(sql<boolean>`${content}->'page'->>'category' = ${category}`)
+    .where(
+      sql<boolean>`split_part(${content}->'page'->>'date', '/', 3) = ${publishYear}`,
+    )
+    .select("Resource.id")
+
+  // Government gazettes are unique within category, not subcategory.
+  if (!isGovernmentGazette) {
+    query = query.where(
+      sql<boolean>`${content}->'page'->'tagged'->>0 = ${subCategory}`,
+    )
+  }
+
+  if (excludeId) {
+    query = query.where("Resource.id", "!=", excludeId)
+  }
+
+  const duplicate = await query.executeTakeFirst()
+  return duplicate !== undefined
 }
