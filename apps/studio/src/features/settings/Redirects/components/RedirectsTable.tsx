@@ -231,9 +231,10 @@ const getColumns = (
     size: 80,
     enableSorting: false,
     header: () => (
-      <TableHeader textStyle="subhead-2" color="base.content.medium">
-        Delete
-      </TableHeader>
+      <TableHeader
+        textStyle="subhead-2"
+        color="base.content.medium"
+      ></TableHeader>
     ),
     cell: ({ row }) => (
       <IconButton
