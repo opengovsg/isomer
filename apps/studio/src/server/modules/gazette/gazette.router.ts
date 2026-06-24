@@ -116,9 +116,7 @@ export const gazetteRouter = router({
             END`,
           "asc",
         )
-        // 2. Publish date descending
-        .orderBy("Version.publishedAt", (ob) => ob.desc())
-        // 3. Category priority from blob content
+        // 2. Category priority from blob content
         .orderBy((eb) => {
           const categoryExpr = sql<string>`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'category'`
           return eb
@@ -132,16 +130,21 @@ export const gazetteRouter = router({
             .else(4)
             .end()
         }, "asc")
-        // 4. Notification number descending (stored in page.description)
+        // 3. Notification number descending (stored in page.description)
         .orderBy(
           sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'description'`,
           (ob) => ob.desc(),
         )
-        // 5. File ID descending (extract filename from page.ref)
+        // 4. Toppan file ID descending — the last path segment of page.ref.
+        //    e.g. "/2026/Government Gazette/Advertisements/26adv6175b.pdf"
+        //    -> "26adv6175b.pdf". Strip everything up to the final slash so we
+        //    sort on the file ID, not the full path.
         .orderBy(
-          sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'ref'`,
+          sql`regexp_replace(COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'ref', '.*/', '')`,
           (ob) => ob.desc(),
         )
+        // 5. Publish date descending
+        .orderBy("Version.publishedAt", (ob) => ob.desc())
         // 6. Updated at descending (tie-breaker)
         .orderBy("Resource.updatedAt", "desc")
         .orderBy("Resource.id", "asc")
