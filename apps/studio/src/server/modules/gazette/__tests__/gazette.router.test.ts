@@ -345,6 +345,87 @@ describe("gazette.router", async () => {
         }),
       )
     })
+
+    it("rejects creation for a non-Government Gazette category when notification number, year and subcategory all match", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Supplement",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
+        category: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["Acts Supplement"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert: same notification number + same year + same subcategory is a duplicate
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Second Supplement",
+          permalink: crypto.randomUUID(),
+          ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
+          category: "Legislative Supplements",
+          date: "30/04/2026",
+          description: "N-2026-001", // Same notification number
+          tagged: ["Acts Supplement"], // Same subcategory
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same notification number already exists",
+        }),
+      )
+    })
+
+    it("allows creation for a non-Government Gazette category when the subcategory differs, even with the same notification number and year", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Supplement",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
+        category: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["Acts Supplement"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act: same notification number + same year but a different subcategory.
+      // For non-Government Gazette categories the subcategory disambiguates, so
+      // this is not a duplicate and must be allowed.
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Second Supplement",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid2/second-file.pdf",
+        category: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "N-2026-001", // Same notification number
+        tagged: ["Bills Supplement"], // Different subcategory
+        scheduledAt: PAST_DATE,
+      })
+
+      // Assert: the second gazette was created
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(resource.title).toBe("Second Supplement")
+    })
   })
 
   describe("update", () => {
