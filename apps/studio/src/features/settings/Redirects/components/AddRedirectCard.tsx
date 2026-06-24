@@ -145,22 +145,22 @@ export const AddRedirectCard = ({
       p="1.25rem"
       bgColor="base.canvas.default"
     >
-      <Text textStyle="subhead-1" mb="0.25rem">
+      <Text textStyle="h6" mb="0.25rem">
         Add new redirects
       </Text>
       <Text textStyle="body-2" color="base.content.medium" mb="1.25rem">
         Redirects go live as soon as you add them.
       </Text>
 
-      <HStack
-        as="form"
-        spacing="0.75rem"
-        align="flex-start"
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <FormControl flex={1} isInvalid={!!errors.source} isRequired>
-          <FormLabel>When someone visits</FormLabel>
-          <InputGroup size="xs">
+      <HStack as="form" align="flex-start" onSubmit={handleSubmit(onSubmit)}>
+        <FormControl
+          flex={1}
+          maxW="24rem"
+          isInvalid={!!errors.source}
+          isRequired
+        >
+          <FormLabel size="sm">When someone visits</FormLabel>
+          <InputGroup size="sm">
             <InputLeftAddon
               borderColor="base.divider.strong"
               bgColor="interaction.support.disabled"
@@ -179,23 +179,28 @@ export const AddRedirectCard = ({
         </FormControl>
 
         <Box flexShrink={0}>
-          <FormLabel aria-hidden visibility="hidden">
+          <FormLabel size="sm" aria-hidden visibility="hidden">
             &nbsp;
           </FormLabel>
           <Center h="2.5rem">
             <Icon
               as={BiRightArrowAlt}
               boxSize="1.5rem"
-              color="standard.black"
+              color="base.content.medium"
             />
           </Center>
         </Box>
 
-        <FormControl flex={1} isInvalid={!!errors.destination} isRequired>
-          <FormLabel>Redirect them to</FormLabel>
+        <FormControl
+          flex={1}
+          maxW="22rem"
+          isInvalid={!!errors.destination}
+          isRequired
+        >
+          <FormLabel size="sm">Redirect them to</FormLabel>
           <Input
-            placeholder="/redirect-to"
-            size="xs"
+            placeholder="/path-to-page or https://www.google.com"
+            size="sm"
             onFocus={() => setIsDestinationFocused(true)}
             {...register("destination", {
               onBlur: () => {
@@ -237,7 +242,7 @@ export const AddRedirectCard = ({
                     color="interaction.main.default"
                   />
                   <Text textStyle="body-2" color="interaction.main.default">
-                    Redirect to a page on your site...
+                    Redirect to a page on your site
                   </Text>
                 </HStack>
               </Box>
@@ -271,8 +276,8 @@ export const AddRedirectCard = ({
           )}
         </FormControl>
 
-        <Box flexShrink={0}>
-          <FormLabel aria-hidden visibility="hidden">
+        <Box flexShrink={0} ml="0.5rem">
+          <FormLabel size="sm" aria-hidden visibility="hidden">
             &nbsp;
           </FormLabel>
           <Button
@@ -280,7 +285,7 @@ export const AddRedirectCard = ({
             isDisabled={isAddDisabled}
             isLoading={isPending}
             leftIcon={<Icon as={BiPlus} />}
-            size="xs"
+            size="sm"
           >
             Add
           </Button>
