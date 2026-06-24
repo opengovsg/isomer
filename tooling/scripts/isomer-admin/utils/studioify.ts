@@ -77,7 +77,7 @@ const buildResourcesMap = (
   const resourcesMap: ResourcesMap = {};
 
   for (const resource of resources) {
-    resourcesMap[`/${resource.fullPermalink}`] = resource;
+    resourcesMap[`/${resource.fullPermalink.replace(/^\/+/, "")}`] = resource;
   }
 
   return resourcesMap;

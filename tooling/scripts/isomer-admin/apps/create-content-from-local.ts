@@ -19,17 +19,10 @@ type PageContent = {
   version?: string
 }
 
-// publisher ID: cm2sf5umz008jmiyfnxasyir2
 const INPUT_DIR = path.join(__dirname, "input")
 const ASSETS_INPUT_DIR = path.join(INPUT_DIR, "assets")
 const SCHEMAS_INPUT_DIR = path.join(INPUT_DIR, "schemas")
 const ASSETS_OUTPUT_DIR = "./output"
-
-// Configure before running
-const CONTAINER_PERMALINK = "/conservation-portal"
-const CONTAINER_NAME = "Conservation portal"
-// null = use INPUT_DIR/_index.json when present, otherwise auto-create a default index page
-const INDEX_PAGE_PATH: string | null = null
 
 const isJsonFile = (filename: string): boolean =>
   filename.endsWith(".json") && !filename.startsWith(".")
@@ -237,16 +230,19 @@ const validateSite = async (client: Client, siteId: string): Promise<void> => {
   )
 }
 
-const validatePublisher = async (
+const resolvePublisherId = async (
   client: Client,
-  publisherId: string,
-): Promise<void> => {
-  await assertRowExists(
-    client,
-    `SELECT id FROM "User" WHERE id = $1 AND "deletedAt" IS NULL`,
-    [publisherId],
-    `Publisher user with ID ${publisherId} was not found`,
+  email: string,
+): Promise<string> => {
+  const result = await client.query<{ id: string }>(
+    `SELECT id FROM "User" WHERE email = $1 AND "deletedAt" IS NULL`,
+    [email],
   )
+  const user = result.rows[0]
+  if (!user) {
+    throw new Error(`User with email ${email} was not found`)
+  }
+  return user.id
 }
 
 const validateParentFolder = async (
@@ -282,15 +278,34 @@ const validateParentFolder = async (
 }
 
 export const createContentFromLocal = async () => {
-  if (!CONTAINER_PERMALINK.trim() || !CONTAINER_NAME.trim()) {
-    console.error(
-      "Set CONTAINER_PERMALINK and CONTAINER_NAME at the top of create-content-from-local.ts before running.",
-    )
-    return
-  }
+  const containerPermalink = (
+    await input({
+      message:
+        "Enter the container permalink (e.g. conservation-portal — no leading slash)",
+      validate: (value) =>
+        value.trim().length > 0 ? true : "Permalink is required",
+    })
+  )
+    .trim()
+    .replace(/^\/+|\/+$/g, "")
 
-  const containerPermalink = CONTAINER_PERMALINK.trim()
-  const containerTitle = CONTAINER_NAME.trim()
+  const containerTitle = (
+    await input({
+      message: "Enter the container name / title",
+      validate: (value) =>
+        value.trim().length > 0 ? true : "Title is required",
+    })
+  ).trim()
+
+  const indexPagePathInput = (
+    await input({
+      message:
+        "Enter the index page JSON path (optional — leave blank to auto-create or use input/_index.json)",
+      default: "",
+    })
+  ).trim()
+  const INDEX_PAGE_PATH: string | null =
+    indexPagePathInput.length > 0 ? indexPagePathInput : null
 
   const siteId = await input({
     message: "Enter the site ID (required)",
@@ -313,11 +328,13 @@ export const createContentFromLocal = async () => {
   })
   const parentFolderId = parentFolderIdInput.trim() || null
 
-  const publisherId = await input({
-    message: "Enter the publisher user ID (required)",
-    validate: (value) =>
-      value.trim().length > 0 ? true : "Publisher user ID is required",
-  })
+  const publisherEmail = (
+    await input({
+      message: "Enter the publisher email address (e.g. name@open.gov.sg)",
+      validate: (value) =>
+        value.trim().length > 0 ? true : "Publisher email is required",
+    })
+  ).trim()
 
   console.log(
     `Using ${containerType.toLowerCase()} permalink "${containerPermalink}" and name "${containerTitle}"`,
@@ -429,7 +446,7 @@ export const createContentFromLocal = async () => {
 
   await withDbClient(async (client) => {
     await validateSite(client, siteId)
-    await validatePublisher(client, publisherId)
+    const publisherId = await resolvePublisherId(client, publisherEmail)
 
     if (parentFolderId) {
       await validateParentFolder(client, parentFolderId, siteId)

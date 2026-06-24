@@ -1,6 +1,7 @@
 import type { AssetsMap } from "../types"
 
-const buildCandidatePaths = (filename: string): string[] => {
+const buildCandidatePaths = (assetPath: string): string[] => {
+  const filename = assetPath.replace(/^\/(images|files)\//, "")
   const encodedFilename = filename.replaceAll(" ", "%20")
 
   return [
