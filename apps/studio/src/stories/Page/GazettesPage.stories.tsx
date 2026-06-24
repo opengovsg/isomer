@@ -122,7 +122,7 @@ export const InlineExternalLinkIcon: Story = {
             title: "Bills Supplement - Companies (Amendment) Bill 2024",
             content: createGazetteContent({
               ref: "/gazettes/26gg-bills-supplement-companies-amendment.pdf",
-              category: "Legislation Supplements",
+              category: "Legislative Supplements",
               description: "2199",
               tagged: ["Bills Supplement"],
             }),

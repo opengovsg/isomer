@@ -1,4 +1,4 @@
 export type GazettesCategory =
   | "Government Gazette"
-  | "Legislation Supplements"
+  | "Legislative Supplements"
   | "Other Supplements"

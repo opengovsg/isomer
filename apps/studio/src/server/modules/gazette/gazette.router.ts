@@ -125,7 +125,7 @@ export const gazetteRouter = router({
             .case()
             .when(categoryExpr, "=", "Government Gazette")
             .then(1)
-            .when(categoryExpr, "=", "Legislation Supplements")
+            .when(categoryExpr, "=", "Legislative Supplements")
             .then(2)
             .when(categoryExpr, "=", "Other Supplements")
             .then(3)
