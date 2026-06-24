@@ -1,20 +1,33 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { Box } from "@chakra-ui/react"
+import { Suspense } from "react"
+import { gazetteHandlers } from "tests/msw/handlers/gazette"
 import { ModifyGazetteModal } from "~/features/gazettes"
+import { GazetteSubcategoriesProvider } from "~/features/gazettes/contexts/GazetteSubcategoriesContext"
 
 const meta: Meta<typeof ModifyGazetteModal> = {
   title: "Pages/eGazette/Modify Gazette Modal",
   component: ModifyGazetteModal,
   decorators: [
-    (storyFn) => (
+    (storyFn, { args }) => (
       <Box w="100%" h="100vh">
-        {storyFn()}
+        <Suspense fallback={null}>
+          <GazetteSubcategoriesProvider
+            siteId={args.siteId}
+            gazettesCollectionId={args.collectionId}
+          >
+            {storyFn()}
+          </GazetteSubcategoriesProvider>
+        </Suspense>
       </Box>
     ),
   ],
   parameters: {
     layout: "fullscreen",
     chromatic: { delay: 200 },
+    msw: {
+      handlers: [gazetteHandlers.collectionTags.default()],
+    },
   },
   args: {
     isOpen: true,
