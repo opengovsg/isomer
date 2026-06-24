@@ -117,7 +117,7 @@ export const gazetteRouter = router({
           "asc",
         )
         // 2. Publish date descending
-        .orderBy("Version.publishedAt", (ob) => ob.desc().nullsLast())
+        .orderBy("Version.publishedAt", (ob) => ob.desc())
         // 3. Category priority from blob content
         .orderBy((eb) => {
           const categoryExpr = sql<string>`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'category'`
@@ -135,12 +135,12 @@ export const gazetteRouter = router({
         // 4. Notification number descending (stored in page.description)
         .orderBy(
           sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'description'`,
-          (ob) => ob.desc().nullsLast(),
+          (ob) => ob.desc(),
         )
         // 5. File ID descending (extract filename from page.ref)
         .orderBy(
           sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'ref'`,
-          (ob) => ob.desc().nullsLast(),
+          (ob) => ob.desc(),
         )
         // 6. Updated at descending (tie-breaker)
         .orderBy("Resource.updatedAt", "desc")
