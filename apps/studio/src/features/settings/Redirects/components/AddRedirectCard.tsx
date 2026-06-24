@@ -246,22 +246,6 @@ export const AddRedirectCard = ({
                   </Text>
                 </HStack>
               </Box>
-              <Infobox variant="info" size="sm" mt="1.25rem">
-                <Box>
-                  <Text textStyle="subhead-2" color="base.content.strong">
-                    Where can I redirect visitors to?
-                  </Text>
-                  <UnorderedList
-                    textStyle="body-2"
-                    color="base.content.default"
-                  >
-                    <ListItem>A page on your new site</ListItem>
-                    <ListItem>
-                      An external URL (e.g., https://www.gov.sg)
-                    </ListItem>
-                  </UnorderedList>
-                </Box>
-              </Infobox>
             </>
           )}
 
