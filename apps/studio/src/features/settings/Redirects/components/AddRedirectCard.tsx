@@ -141,6 +141,7 @@ export const AddRedirectCard = ({
       borderWidth="1px"
       borderRadius="0.5rem"
       p="1.25rem"
+      pb="1.5rem"
       bgColor="base.canvas.default"
     >
       <Text textStyle="h6" mb="0.25rem">
