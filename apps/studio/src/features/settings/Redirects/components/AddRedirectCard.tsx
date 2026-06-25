@@ -197,27 +197,32 @@ export const AddRedirectCard = ({
           isRequired
         >
           <FormLabel size="sm">Redirect them to</FormLabel>
-          <Input
-            placeholder="/path-to-page or https://www.google.com"
-            size="sm"
-            onFocus={() => setIsDestinationFocused(true)}
-            {...register("destination", {
-              onBlur: () => {
-                setIsDestinationFocused(false)
-                checkForWarnings()
-              },
-              onChange: clearFieldFeedback("destination"),
-            })}
-          />
-          <FormErrorMessage>{errors.destination?.message}</FormErrorMessage>
+          <Box position="relative">
+            <Input
+              placeholder="/path-to-page or https://www.google.com"
+              size="sm"
+              onFocus={() => setIsDestinationFocused(true)}
+              {...register("destination", {
+                onBlur: () => {
+                  setIsDestinationFocused(false)
+                  checkForWarnings()
+                },
+                onChange: clearFieldFeedback("destination"),
+              })}
+            />
 
-          {/* Dropdown opens the page picker. Preventing the default mousedown
-              keeps the input focused so the click lands before blur removes
-              this element. */}
-          {isDestinationFocused && !errors.destination && (
-            <>
+            {/* Dropdown opens the page picker. Preventing the default mousedown
+                keeps the input focused so the click lands before blur removes
+                this element. It's absolutely positioned below the input so
+                showing it doesn't shift the surrounding layout. */}
+            {isDestinationFocused && !errors.destination && (
               <Box
-                mt={0}
+                position="absolute"
+                top="100%"
+                left={0}
+                right={0}
+                zIndex="dropdown"
+                mt="0.25rem"
                 py="0.5rem"
                 bgColor="white"
                 borderRadius="0.25rem"
@@ -245,8 +250,9 @@ export const AddRedirectCard = ({
                   </Text>
                 </HStack>
               </Box>
-            </>
-          )}
+            )}
+          </Box>
+          <FormErrorMessage>{errors.destination?.message}</FormErrorMessage>
 
           {warnings.length > 0 && (
             <Stack spacing="0.5rem" mt="0.5rem">

@@ -25,7 +25,6 @@ import {
 } from "react-icons/bi"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
-import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
@@ -47,6 +46,7 @@ import {
   isReferenceDestination,
 } from "../utils"
 import { DeleteRedirectModal } from "./DeleteRedirectModal"
+import { RedirectsEmptyPlaceholder } from "./RedirectsEmptyPlaceholder"
 
 const columnsHelper = createColumnHelper<RedirectRow>()
 
@@ -211,7 +211,7 @@ const getColumns = (
     ),
   }),
   columnsHelper.accessor("publishedAt", {
-    size: 160,
+    size: 80,
     enableSorting: true,
     header: ({ column }) => (
       <SortableHeader
@@ -367,13 +367,7 @@ export const RedirectsTable = ({
         pagination
         totalRowCount={totalRowCount}
         isFetching={isLoading || isCountLoading}
-        emptyPlaceholder={
-          <EmptyTablePlaceholder
-            groupLabel="redirects"
-            entityName="redirect"
-            hasSearchTerm={false}
-          />
-        }
+        emptyPlaceholder={<RedirectsEmptyPlaceholder />}
         instance={tableInstance}
         sx={{ tableLayout: "fixed" }}
       />
