@@ -20,6 +20,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import { REDIRECT_MESSAGES, RedirectValidationCode } from "~/constants/redirect"
 import {
+  isValidExternalDestination,
   normalizeRedirectPath,
   normalizeRedirectSource,
 } from "~/schemas/redirect"
@@ -173,6 +174,18 @@ const resolveStoredDestination = async (
   }
   const resourceId = getResourceIdFromReferenceLink(storedDestination)
   if (resourceId === "") {
+    // Not an internal path and not a `[resource:...]` reference, so the only
+    // remaining valid shape is an external https URL (the form destinations are
+    // validated into on write). Assert it rather than silently returning the
+    // raw string — if a new destination format is ever added without updating
+    // this resolver, this surfaces the gap loudly instead of leaking an
+    // unresolved value into comparisons and the UI.
+    if (!isValidExternalDestination(storedDestination)) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Unrecognised redirect destination format: ${storedDestination}`,
+      })
+    }
     return storedDestination
   }
   const permalinks = await getResourceFullPermalinks(siteId, [
