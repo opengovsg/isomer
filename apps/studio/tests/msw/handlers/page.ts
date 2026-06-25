@@ -232,6 +232,39 @@ export const pageHandlers = {
         return []
       })
     },
+    withRequired: () => {
+      return trpcMsw.collection.getCollectionTags.query(() => {
+        return [
+          {
+            label: "Topic",
+            id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            isRequired: true,
+            options: [
+              {
+                label: "Technology",
+                id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+              },
+              { label: "Science", id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8" },
+            ],
+          },
+          {
+            label: "Industry",
+            id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+            isRequired: false,
+            options: [
+              {
+                label: "Agriculture & Food",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+              },
+              {
+                label: "Automotive",
+                id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
+              },
+            ],
+          },
+        ]
+      })
+    },
   },
   updateSettings: {
     collection: () => {

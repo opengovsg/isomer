@@ -37,7 +37,11 @@ export const Skeleton = ({
           logoUrl={site.logoUrl}
           logoAlt={site.siteName}
           layout={layout}
-          search={site.search}
+          search={
+            // Navbar only renders LocalSearch + SearchSG input boxes.
+            // Egazette Algolia search lives on its own page, not in the navbar.
+            site.search?.type === "egazette-algolia" ? undefined : site.search
+          }
           {...site.navbar}
           site={site}
         />

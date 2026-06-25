@@ -4,6 +4,7 @@ import { Type } from "@sinclair/typebox"
 import { FAVICON_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import {
   AskgovSchema,
+  EgazetteAlgoliaSearchSchema,
   generateImageSrcSchema,
   LocalSearchSchema,
   SearchSGSearchSchema,
@@ -45,13 +46,16 @@ export const SimpleIntegrationsSettingsSchema = Type.Object({
     }),
   ),
   search: Type.Optional(
-    Type.Union([LocalSearchSchema, SearchSGSearchSchema], {
-      title: "Search configuration",
-      description: "Configuration for the search functionality of the site.",
-      // NOTE: Overriding the default `Union` with this because we should
-      // not be showing the `localSearch` option to our agency users
-      format: "searchsg",
-    }),
+    Type.Union(
+      [LocalSearchSchema, SearchSGSearchSchema, EgazetteAlgoliaSearchSchema],
+      {
+        title: "Search configuration",
+        description: "Configuration for the search functionality of the site.",
+        // NOTE: Overriding the default `Union` with this because we should
+        // not be showing the `localSearch` option to our agency users
+        format: "searchsg",
+      },
+    ),
   ),
 })
 
