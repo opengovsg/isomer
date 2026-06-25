@@ -51,7 +51,9 @@ const inviteCollaborator = async (
   // The form debounces email + runs a whitelist check before enabling Send.
   await expect(sendBtn).toBeEnabled({ timeout: 10_000 })
   await sendBtn.click()
-  await expect(page.getByText(/Sent invite to/)).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText(/Sent invite to/)).toBeVisible({
+    timeout: 10_000,
+  })
 }
 
 // Polls the DB for the active permission role granted to an invitee on the
@@ -83,22 +85,25 @@ test.beforeEach(async () => {
     .execute()
 })
 
-test.afterEach(async () => {
-  // Hard-delete any e2e invitee users + their permissions so re-runs are clean.
-  // ResourcePermission has FK to User so delete permissions first.
-  const invitees = await db
+// Hard-delete e2e users matching `emailPattern` + their permissions so re-runs
+// are clean. ResourcePermission has FK to User so delete permissions first.
+const deleteUsersByEmail = async (emailPattern: string) => {
+  const users = await db
     .selectFrom("User")
-    .where("email", "like", "e2e-invitee-%@open.gov.sg")
+    .where("email", "like", emailPattern)
     .select(["id"])
     .execute()
-  if (invitees.length > 0) {
-    const ids = invitees.map((u) => u.id)
-    await db
-      .deleteFrom("ResourcePermission")
-      .where("userId", "in", ids)
-      .execute()
-    await db.deleteFrom("User").where("id", "in", ids).execute()
-  }
+  if (users.length === 0) return
+  const ids = users.map((u) => u.id)
+  await db.deleteFrom("ResourcePermission").where("userId", "in", ids).execute()
+  await db.deleteFrom("User").where("id", "in", ids).execute()
+}
+
+test.afterEach(async () => {
+  await deleteUsersByEmail("e2e-invitee-%@open.gov.sg")
+  // Symmetric cleanup for vendor users, in case a positive vendor-invite test
+  // is added later that creates User rows.
+  await deleteUsersByEmail("e2e-vendor-%@vendor.example.com")
   // Remove any vendor whitelist entries created by the negative-case tests.
   await db
     .deleteFrom("Whitelist")
