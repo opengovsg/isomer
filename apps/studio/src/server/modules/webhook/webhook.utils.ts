@@ -1,6 +1,7 @@
 import type { GrowthBook } from "@growthbook/growthbook"
 import type { BuildStatusType } from "~prisma/generated/prisma/client"
 import { compact } from "lodash-es"
+import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import {
   sendFailedPublishEmail,
   sendSuccessfulPublishEmail,
@@ -113,6 +114,13 @@ const sendEmails = async (
       .map((info) => {
         switch (buildStatus) {
           case "SUCCEEDED":
+            // Toppan users can only access gazettes in studio, and the
+            // successful publish email links to the raw studio resource which
+            // they cannot view. Suppress the email for them (Toppan users only
+            // ever publish gazettes).
+            if (info.email?.endsWith(TOPPAN_EMAIL_DOMAIN)) {
+              return // skip sending; this build is effectively not emailed
+            }
             return {
               id: info.codeBuildJobId, // codebuild job id
               promise: sendSuccessfulPublishEmail({
