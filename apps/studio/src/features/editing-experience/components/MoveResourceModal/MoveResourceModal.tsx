@@ -52,7 +52,7 @@ const MoveResourceContent = withSuspense(
     >(undefined)
     const { siteId } = useQueryParse(sitePageSchema)
     const setMovedItem = useSetAtom(moveResourceAtom)
-    const [{ title, type, permalink: movedSlug }] =
+    const [{ title, type, permalink: movedSlug, publishedVersionId }] =
       trpc.resource.getMetadataById.useSuspenseQuery({
         siteId: Number(siteId),
         resourceId,
@@ -128,9 +128,11 @@ const MoveResourceContent = withSuspense(
       { enabled: !!curResourceId },
     )
 
-    // Only Page/CollectionPage have a URL worth preserving.
+    // Only published Page/CollectionPage have a live URL worth preserving — the
+    // server skips redirect creation for unpublished pages, so don't offer it.
     const isRedirectableType =
-      type === ResourceType.Page || type === ResourceType.CollectionPage
+      (type === ResourceType.Page || type === ResourceType.CollectionPage) &&
+      publishedVersionId !== null
     const oldFullPermalink = normalizeRedirectPath(movedFullPermalink)
     const newFullPermalink = normalizeRedirectPath(
       `${curResourceId && destination ? destination.fullPermalink : ""}/${movedSlug}`,

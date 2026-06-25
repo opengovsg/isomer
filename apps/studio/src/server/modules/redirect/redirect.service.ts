@@ -761,7 +761,7 @@ export const getRedirectBySource = async ({
   // different site's id with a colliding resourceId would suppress it wrongly. The
   // lookup is already siteId-scoped so the ids should match; if they don't, fall
   // back to null (show the warning) rather than trust a cross-site id.
-  const match = REFERENCE_LINK_REGEX.exec(redirect.destination)
+  const match = REFERENCE_DESTINATION_REGEX.exec(redirect.destination)
   const destinationResourceId =
     match && Number(match[1]) === siteId ? Number(match[2]) : null
   return {

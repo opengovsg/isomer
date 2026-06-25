@@ -42,8 +42,9 @@ export const moveSchema = z.object({
   siteId: z.number(),
   movedResourceId: bigIntSchema,
   destinationResourceId: bigIntSchema.nullable(),
-  // Create a redirect from the resource's old URL on move. Defaults off.
-  shouldCreateRedirect: z.boolean().optional().default(false),
+  // Create a redirect from the resource's old URL on move. Defaults on,
+  // matching the checkbox's default-checked state.
+  shouldCreateRedirect: z.boolean().optional().default(true),
 })
 
 export const countResourceSchema = z.object({

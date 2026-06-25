@@ -124,6 +124,7 @@ export const resourceRouter = router({
           "Resource.permalink",
           "Resource.parentId",
           "Resource.siteId",
+          "Resource.publishedVersionId",
         ])
         .executeTakeFirst()
 

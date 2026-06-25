@@ -55,10 +55,11 @@ const PageSettingsModalContent = ({
   onClose,
 }: PageSettingsState & { onClose: () => void }) => {
   const { siteId } = useQueryParse(editSettingsSchema)
-  const [{ title: originalTitle }] = trpc.page.readPage.useSuspenseQuery({
-    pageId: Number(pageId),
-    siteId,
-  })
+  const [{ title: originalTitle, publishedVersionId }] =
+    trpc.page.readPage.useSuspenseQuery({
+      pageId: Number(pageId),
+      siteId,
+    })
   const [permalinkTree] = trpc.page.getPermalinkTree.useSuspenseQuery({
     pageId: Number(pageId),
     siteId,
@@ -130,10 +131,13 @@ const PageSettingsModalContent = ({
   )
 
   const originalPermalink = permalinkTree[permalinkTree.length - 1] ?? ""
-  // Offer the redirect only when a Page/CollectionPage URL actually changes.
+  // Offer the redirect only when a published Page/CollectionPage URL actually
+  // changes — an unpublished page has no live URL to preserve, so the server
+  // skips redirect creation for it anyway.
   const showRedirectOption =
     (type === ResourceType.Page || type === ResourceType.CollectionPage) &&
-    permalink !== originalPermalink
+    permalink !== originalPermalink &&
+    publishedVersionId !== null
   const oldFullPermalink = `${permalinksToRender.parentPermalinks}${originalPermalink}`
 
   const utils = trpc.useUtils()
