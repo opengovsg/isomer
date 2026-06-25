@@ -132,6 +132,8 @@ function App() {
     Record<string, string | null>
   >({})
   const [blockConfigs, setBlockConfigs] = useState<BlockConfigs>({})
+  const [headingSuperscriptEnabled, setHeadingSuperscriptEnabled] =
+    useState(false)
 
   // Portal DOM nodes
   const [heroPortal, setHeroPortal] = useState<HTMLElement | null>(null)
@@ -233,6 +235,10 @@ function App() {
         }
         el.textContent = e.data.css as string
       }
+      if (type === "setHeadingSuperscript") {
+        setHeadingSuperscriptEnabled((e.data as any).enabled)
+        setPage("content")
+      }
       if (type === "setLayoutVariant") {
         const { variantId, page: vp } = e.data as {
           variantId: string | null; page: string
@@ -245,6 +251,29 @@ function App() {
     window.addEventListener("message", onMessage)
     return () => window.removeEventListener("message", onMessage)
   }, [])
+
+  // ── Heading superscript ───────────────────────────────────────────────────
+
+  useEffect(() => {
+    const ATTR = "data-orig-text"
+    const apply = () => {
+      const h2 = document.querySelector("main h2") as HTMLElement | null
+      if (!h2) return
+      if (headingSuperscriptEnabled) {
+        if (!h2.getAttribute(ATTR)) h2.setAttribute(ATTR, h2.textContent ?? "")
+        h2.innerHTML =
+          'Innovations at Innov<sup style="font-size:0.6em;vertical-align:super;line-height:0;">3</sup>'
+      } else {
+        const orig = h2.getAttribute(ATTR)
+        if (orig) {
+          h2.textContent = orig
+          h2.removeAttribute(ATTR)
+        }
+      }
+    }
+    const timer = setTimeout(apply, 300)
+    return () => clearTimeout(timer)
+  }, [headingSuperscriptEnabled, page])
 
   // ── Portal setup (reset-and-rebuild on every relevant change) ────────────
 

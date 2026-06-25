@@ -808,6 +808,17 @@
           <div class="nb-add-btn" id="nb-btn-lists-with-indentation"><span class="nb-add-text">+ Add to article page</span></div>
         </div>
 
+        <div class="section-label">Headings</div>
+
+        <div class="control-row" style="margin-bottom:10px;">
+          <span class="control-name">Superscript in heading</span>
+          <button id="heading-sup-toggle" role="switch" aria-checked="false" onclick="toggleHeadingSuperscript()"
+            style="width:36px;height:20px;border-radius:999px;border:none;background:#d1d5db;cursor:pointer;padding:0;position:relative;flex-shrink:0;transition:background 0.15s;">
+            <span id="heading-sup-knob" style="position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.15s;"></span>
+          </button>
+        </div>
+        <p style="font-size:11px;color:#9ca3af;margin-bottom:14px;line-height:1.4;">Shows "Innovations at Innov<sup>3</sup>" — superscript within a page heading.</p>
+
         <div class="section-label">Table</div>
 
         <div class="control-row" style="margin-bottom:10px;">
@@ -827,6 +838,15 @@
           </button>
         </div>
         <p style="font-size:11px;color:#9ca3af;margin-bottom:14px;line-height:1.4;">Also colours the first column darker, matching the header row.</p>
+
+        <div class="control-row" style="margin-bottom:10px;">
+          <span class="control-name">Pin first column on mobile</span>
+          <button id="tbl-pincol-toggle" role="switch" aria-checked="false" onclick="toggleTablePinFirstCol()"
+            style="width:36px;height:20px;border-radius:999px;border:none;background:#d1d5db;cursor:pointer;padding:0;position:relative;flex-shrink:0;transition:background 0.15s;">
+            <span id="tbl-pincol-knob" style="position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.15s;"></span>
+          </button>
+        </div>
+        <p style="font-size:11px;color:#9ca3af;margin-bottom:14px;line-height:1.4;">First column stays fixed while the table scrolls horizontally.</p>
 
       </div>
 
@@ -1101,6 +1121,8 @@
 
   let tableColWidthEnabled = false
   let tableHeaderColEnabled = false
+  let tablePinFirstColEnabled = false
+  let headingSuperscriptEnabled = false
 
   function buildAndInjectCSS() {
     const parts = [
@@ -1136,7 +1158,57 @@
       )
     }
 
+    if (tablePinFirstColEnabled) {
+      parts.push(
+        `table {
+          display: block;
+          overflow-x: auto;
+        }
+        table td:first-child {
+          position: sticky;
+          left: 0;
+          z-index: 2;
+          background-color: var(--color-base-canvas-alt);
+        }
+        table th:first-child {
+          position: sticky;
+          left: 0;
+          z-index: 3;
+          background-color: var(--color-base-canvas-backdrop);
+        }`
+      )
+    }
+
+    if (tablePinFirstColEnabled && tableHeaderColEnabled) {
+      parts.push(
+        `table td:first-child {
+          background-color: #f3f4f6 !important;
+        }`
+      )
+    }
+
     postToIframe({ type: 'injectCSS', css: parts.join('\n') })
+  }
+
+  function toggleHeadingSuperscript() {
+    headingSuperscriptEnabled = !headingSuperscriptEnabled
+    const toggle = document.getElementById('heading-sup-toggle')
+    const knob = document.getElementById('heading-sup-knob')
+    toggle.setAttribute('aria-checked', headingSuperscriptEnabled)
+    toggle.style.background = headingSuperscriptEnabled ? '#111827' : '#d1d5db'
+    knob.style.transform = headingSuperscriptEnabled ? 'translateX(16px)' : 'translateX(0)'
+    postToIframe({ type: 'setHeadingSuperscript', enabled: headingSuperscriptEnabled })
+  }
+
+  function toggleTablePinFirstCol() {
+    tablePinFirstColEnabled = !tablePinFirstColEnabled
+    const toggle = document.getElementById('tbl-pincol-toggle')
+    const knob = document.getElementById('tbl-pincol-knob')
+    toggle.setAttribute('aria-checked', tablePinFirstColEnabled)
+    toggle.style.background = tablePinFirstColEnabled ? '#111827' : '#d1d5db'
+    knob.style.transform = tablePinFirstColEnabled ? 'translateX(16px)' : 'translateX(0)'
+    buildAndInjectCSS()
+    if (tablePinFirstColEnabled) setPage('content')
   }
 
   function toggleTableColWidth() {
