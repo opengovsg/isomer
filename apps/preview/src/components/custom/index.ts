@@ -15,6 +15,7 @@ export { default as LinkHubContent } from "./LinkHubContent"
 export { default as ListsWithIndentation } from "./ListsWithIndentation"
 export { default as GrainyHero } from "./GrainyHero"
 export { default as SingleButton } from "./SingleButton"
+export { default as ImageManipulation } from "./ImageManipulation"
 
 /** Which page each block belongs to */
 export const CUSTOM_BLOCK_PAGE: Record<string, "home" | "content" | "article"> =
@@ -32,6 +33,7 @@ export const CUSTOM_BLOCK_PAGE: Record<string, "home" | "content" | "article"> =
     "link-hub-home": "home",
     "link-hub-content": "content",
     "lists-with-indentation": "article",
+    "image-manipulation": "content",
   }
 
 /** Human-readable labels */

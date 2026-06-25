@@ -18,6 +18,7 @@ import {
   HeroBlobSaaS,
   GrainyHero,
   SingleButton,
+  ImageManipulation,
   TableStyled,
   CardsCarousel,
   TextWithImage,
@@ -52,6 +53,7 @@ const CUSTOM_BLOCK_REGISTRY: Record<string, ComponentType> = {
   "link-hub-home": LinkHubHome,
   "link-hub-content": LinkHubContent,
   "lists-with-indentation": ListsWithIndentation,
+  "image-manipulation": ImageManipulation,
 }
 
 function smoothScrollTo(targetY: number, duration = 1100) {

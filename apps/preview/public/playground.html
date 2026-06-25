@@ -848,6 +848,31 @@
         </div>
         <p style="font-size:11px;color:#9ca3af;margin-bottom:14px;line-height:1.4;">First column stays fixed while the table scrolls horizontally.</p>
 
+        <div class="section-label">Image manipulation</div>
+
+        <div class="control-row" style="margin-bottom:8px;">
+          <span class="control-name">Fitting</span>
+        </div>
+        <div class="seg-control" style="margin-bottom:14px;">
+          <button class="seg-btn active" id="img-fit-cover" onclick="setImgFitting('cover')">Cover</button>
+          <button class="seg-btn" id="img-fit-contain" onclick="setImgFitting('contain')">Fit</button>
+        </div>
+
+        <div class="control-row" style="margin-bottom:8px;">
+          <span class="control-name">Focal point</span>
+        </div>
+        <div id="img-focal-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:14px;width:96px;">
+          <!-- 3×3 grid, values match CSS object-position -->
+        </div>
+
+        <div class="control-row" style="margin-bottom:8px;">
+          <span class="control-name">Dimensions</span>
+        </div>
+        <div class="seg-control" style="margin-bottom:14px;">
+          <button class="seg-btn active" id="img-dim-landscape" onclick="setImgDimensions('landscape')">Landscape</button>
+          <button class="seg-btn" id="img-dim-portrait" onclick="setImgDimensions('portrait')">Portrait</button>
+        </div>
+
       </div>
 
       </div><!-- /panel-content-area -->
@@ -1123,6 +1148,78 @@
   let tableHeaderColEnabled = false
   let tablePinFirstColEnabled = false
   let headingSuperscriptEnabled = false
+  let imgFitting = 'cover'
+  let imgFocalPoint = 'center center'
+  let imgDimensions = 'landscape'
+  let imgBlockAdded = false
+
+  const FOCAL_POINTS = [
+    { value: 'left top',      label: '↖' },
+    { value: 'center top',    label: '↑' },
+    { value: 'right top',     label: '↗' },
+    { value: 'left center',   label: '←' },
+    { value: 'center center', label: '·' },
+    { value: 'right center',  label: '→' },
+    { value: 'left bottom',   label: '↙' },
+    { value: 'center bottom', label: '↓' },
+    { value: 'right bottom',  label: '↘' },
+  ]
+
+  function initFocalGrid() {
+    const grid = document.getElementById('img-focal-grid')
+    if (!grid) return
+    FOCAL_POINTS.forEach(fp => {
+      const btn = document.createElement('button')
+      btn.dataset.fp = fp.value
+      btn.textContent = fp.label
+      btn.title = fp.value
+      btn.style.cssText = 'width:28px;height:28px;border-radius:4px;border:1.5px solid #d1d5db;background:white;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all 0.1s;'
+      if (fp.value === imgFocalPoint) {
+        btn.style.background = '#111827'
+        btn.style.color = 'white'
+        btn.style.borderColor = '#111827'
+      }
+      btn.onclick = () => setImgFocalPoint(fp.value)
+      grid.appendChild(btn)
+    })
+  }
+
+  function ensureImgBlock() {
+    if (!imgBlockAdded) {
+      imgBlockAdded = true
+      postToIframe({ type: 'addBlock', blockId: 'image-manipulation', page: 'content' })
+    }
+    postToIframe({ type: 'page', page: 'content' })
+    document.querySelectorAll('.page-btn').forEach(b => b.classList.toggle('active', b.dataset.page === 'content'))
+  }
+
+  function setImgFitting(value) {
+    imgFitting = value
+    document.getElementById('img-fit-cover').classList.toggle('active', value === 'cover')
+    document.getElementById('img-fit-contain').classList.toggle('active', value === 'contain')
+    ensureImgBlock()
+    postToIframe({ type: 'setBlockConfig', blockId: 'image-manipulation', key: 'fitting', value })
+  }
+
+  function setImgFocalPoint(value) {
+    imgFocalPoint = value
+    document.querySelectorAll('#img-focal-grid button').forEach(btn => {
+      const active = btn.dataset.fp === value
+      btn.style.background = active ? '#111827' : 'white'
+      btn.style.color = active ? 'white' : ''
+      btn.style.borderColor = active ? '#111827' : '#d1d5db'
+    })
+    ensureImgBlock()
+    postToIframe({ type: 'setBlockConfig', blockId: 'image-manipulation', key: 'focalPoint', value })
+  }
+
+  function setImgDimensions(value) {
+    imgDimensions = value
+    document.getElementById('img-dim-landscape').classList.toggle('active', value === 'landscape')
+    document.getElementById('img-dim-portrait').classList.toggle('active', value === 'portrait')
+    ensureImgBlock()
+    postToIframe({ type: 'setBlockConfig', blockId: 'image-manipulation', key: 'dimensions', value })
+  }
 
   function buildAndInjectCSS() {
     const parts = [
@@ -1232,6 +1329,8 @@
     buildAndInjectCSS()
     if (tableHeaderColEnabled) setPage('content')
   }
+
+  initFocalGrid()
 
   iframe.addEventListener('load', () => {
     setTimeout(() => {
