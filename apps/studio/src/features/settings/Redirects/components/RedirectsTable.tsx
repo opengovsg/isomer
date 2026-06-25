@@ -29,6 +29,7 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { useIsTruncated } from "~/hooks/useIsTruncated"
 import { useTablePagination } from "~/hooks/useTablePagination"
 
 import type { RedirectRow, RedirectSortField } from "../types"
@@ -63,6 +64,8 @@ function DestinationCell({
 }: {
   display: DestinationDisplay
 }): JSX.Element {
+  const { ref, isTruncated } = useIsTruncated<HTMLParagraphElement>()
+
   if (display.status === "resolving") {
     return <Skeleton height="1.25rem" width="60%" />
   }
@@ -70,8 +73,14 @@ function DestinationCell({
   const isMissing = display.status === "missing"
   const label = isMissing ? MISSING_PAGE_LABEL : display.label
   return (
-    <Tooltip label={label} openDelay={500} placement="top">
+    <Tooltip
+      label={label}
+      openDelay={500}
+      placement="top"
+      isDisabled={!isTruncated}
+    >
       <Text
+        ref={ref}
         textStyle="body-2"
         color={isMissing ? "utility.feedback.critical" : "base.content.strong"}
         noOfLines={1}
@@ -135,6 +144,60 @@ function SortableHeader({
   )
 }
 
+// Renders a redirect source. A trailing "*" wildcard is shown as a badge rather
+// than literal text. The tooltip surfaces the full source only when the visible
+// text is clipped by the cell width.
+function SourceCell({ source }: { source: string }): JSX.Element {
+  const { ref, isTruncated } = useIsTruncated<HTMLParagraphElement>()
+  const isWildcard = source.endsWith("*")
+  const base = isWildcard ? source.slice(0, -1) : source
+  return (
+    <Tooltip
+      label={source}
+      openDelay={500}
+      placement="top"
+      isDisabled={!isTruncated}
+    >
+      <HStack spacing="0" align="baseline" overflow="hidden">
+        <Text
+          ref={ref}
+          textStyle="body-2"
+          color="base.content.strong"
+          noOfLines={1}
+          wordBreak="break-all"
+        >
+          {base}
+        </Text>
+        {isWildcard && (
+          <Box
+            as="span"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+            borderWidth="1px"
+            borderColor="base.divider.medium"
+            bg="utility.feedback.critical-subtle"
+            borderRadius="2px"
+            px="0.2rem"
+            ml="0.125rem"
+            flexShrink={0}
+            lineHeight="1"
+          >
+            <Text
+              as="span"
+              fontFamily="mono"
+              textStyle="subhead-2"
+              color="utility.feedback.critical"
+            >
+              *
+            </Text>
+          </Box>
+        )}
+      </HStack>
+    </Tooltip>
+  )
+}
+
 const getColumns = (
   onDeleteClick: (row: RedirectRow) => void,
   permalinkByReference: Map<string, string | null>,
@@ -149,50 +212,7 @@ const getColumns = (
         onClick={column.getToggleSortingHandler()}
       />
     ),
-    cell: ({ getValue }) => {
-      const source = getValue()
-      const isWildcard = source.endsWith("*")
-      const base = isWildcard ? source.slice(0, -1) : source
-      return (
-        <Tooltip label={source} openDelay={500} placement="top">
-          <HStack spacing="0" align="baseline" overflow="hidden">
-            <Text
-              textStyle="body-2"
-              color="base.content.strong"
-              noOfLines={1}
-              wordBreak="break-all"
-            >
-              {base}
-            </Text>
-            {isWildcard && (
-              <Box
-                as="span"
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                borderWidth="1px"
-                borderColor="base.divider.medium"
-                bg="utility.feedback.critical-subtle"
-                borderRadius="2px"
-                px="0.2rem"
-                ml="0.125rem"
-                flexShrink={0}
-                lineHeight="1"
-              >
-                <Text
-                  as="span"
-                  fontFamily="mono"
-                  textStyle="subhead-2"
-                  color="utility.feedback.critical"
-                >
-                  *
-                </Text>
-              </Box>
-            )}
-          </HStack>
-        </Tooltip>
-      )
-    },
+    cell: ({ getValue }) => <SourceCell source={getValue()} />,
   }),
   columnsHelper.accessor("destination", {
     minSize: 250,
