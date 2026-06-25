@@ -117,9 +117,13 @@ const buildPermalinkToResourceId = async (siteId: number) => {
   )
 
   const cache = new Map<string, string>()
-  const fullPermalinkOf = (id: string): string => {
+  // Guards against a parentId cycle in corrupt data (A -> B -> A), which would
+  // otherwise recurse until the call stack overflows.
+  const fullPermalinkOf = (id: string, visited = new Set<string>()): string => {
     const cached = cache.get(id)
     if (cached !== undefined) return cached
+    if (visited.has(id)) return "/"
+    visited.add(id)
     const resource = byId.get(id)
     if (!resource) return "/"
     const segment =
@@ -130,7 +134,7 @@ const buildPermalinkToResourceId = async (siteId: number) => {
     if (resource.parentId === null) {
       result = segment === "" ? "/" : `/${segment}`
     } else {
-      const parentPath = fullPermalinkOf(String(resource.parentId))
+      const parentPath = fullPermalinkOf(String(resource.parentId), visited)
       result =
         segment === ""
           ? parentPath
@@ -163,6 +167,12 @@ export const importRedirectsFromCsv = async ({
   csvPath,
   dryRun,
 }: ImportRedirectsFromCsvProps) => {
+  // Surface a clear message instead of an opaque ENOENT when csvPath is unset.
+  if (!csvPath) {
+    throw new Error(
+      "csvPath is empty - set the csvPath variable at the bottom of the script before running.",
+    )
+  }
   // Papa handles standard CSV quoting (fields containing commas) and CRLF
   // line endings; the BOM is stripped up front so spreadsheet-exported files
   // don't fail the header check below.
@@ -351,10 +361,14 @@ export const importRedirectsFromCsv = async ({
         // Re-running the import updates destinations in place and revives
         // soft-deleted rows, mirroring the publish flow - the script is
         // idempotent
+        // Kysely bypasses Prisma's client-side `@updatedAt`, so set updatedAt
+        // explicitly on conflict - otherwise it stays frozen at the original
+        // insert time when a re-run changes a destination
         .onConflict((oc) =>
           oc.columns(["siteId", "source"]).doUpdateSet((eb) => ({
             destination: eb.ref("excluded.destination"),
             deletedAt: null,
+            updatedAt: new Date(),
           })),
         )
         .execute()

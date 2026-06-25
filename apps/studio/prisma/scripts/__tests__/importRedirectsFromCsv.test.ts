@@ -354,6 +354,41 @@ describe("importRedirectsFromCsv", () => {
     ])
   })
 
+  it("bumps updatedAt when a re-run changes a destination in place", async () => {
+    // Arrange — Kysely bypasses Prisma's @updatedAt, so the conflict update
+    // must set it explicitly or it stays frozen at the original insert time
+    const siteId = await setupSiteWithUrl("www.alpha.gov.sg")
+    const firstCsvPath = writeCsv(["www.alpha.gov.sg,/old-page,/first"])
+    await importRedirectsFromCsv({ csvPath: firstCsvPath, dryRun: false })
+    const [before] = await db
+      .selectFrom("Redirect")
+      .select(["updatedAt"])
+      .where("siteId", "=", siteId)
+      .execute()
+    const secondCsvPath = writeCsv(["www.alpha.gov.sg,/old-page,/second"])
+
+    // Act
+    await importRedirectsFromCsv({ csvPath: secondCsvPath, dryRun: false })
+
+    // Assert
+    const [after] = await db
+      .selectFrom("Redirect")
+      .select(["updatedAt"])
+      .where("siteId", "=", siteId)
+      .execute()
+    expect(after?.updatedAt.getTime()).toBeGreaterThan(
+      before?.updatedAt.getTime() ?? 0,
+    )
+  })
+
+  it("throws a clear error when csvPath is empty", async () => {
+    // Act
+    const run = () => importRedirectsFromCsv({ csvPath: "", dryRun: true })
+
+    // Assert
+    await expect(run()).rejects.toThrow("csvPath is empty")
+  })
+
   it("writes nothing in dry-run mode but still reports the summary", async () => {
     // Arrange
     const siteId = await setupSiteWithUrl("www.alpha.gov.sg")
