@@ -24,7 +24,12 @@ const OpenedPageSettingsModal = (): JSX.Element => {
 // at /newsroom/collection-page, which is the path checked against redirects.
 const BASE_HANDLERS = [
   ...ADMIN_HANDLERS,
-  pageHandlers.readPage.homepage({ title: "Contact us" }),
+  // Published page so the "Redirect page automatically" option can appear when
+  // the URL changes (RedirectOptionShown).
+  pageHandlers.readPage.homepage({
+    title: "Contact us",
+    publishedVersionId: "1",
+  }),
   pageHandlers.getPermalinkTree.withParent(),
 ]
 
