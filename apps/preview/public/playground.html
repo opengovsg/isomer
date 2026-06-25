@@ -604,6 +604,61 @@
           <div class="nb-add-btn" id="nb-btn-cards-carousel"><span class="nb-add-text">+ Add to homepage</span></div>
         </div>
 
+        <div class="section-label">Layout</div>
+
+        <!-- Two-column grid card -->
+        <div class="nb-card" id="nb-two-column-grid" onclick="addTwoColumnGrid()">
+          <div class="nb-thumb">
+            <div style="width:100%;display:flex;gap:6px;align-items:stretch;height:52px;">
+              <div style="flex:1;border:1.5px dashed #9ca3af;border-radius:4px;display:flex;align-items:center;justify-content:center;">
+                <div style="display:flex;flex-direction:column;gap:3px;width:70%;">
+                  <div style="height:2px;background:#d1d5db;border-radius:1px;"></div>
+                  <div style="height:2px;background:#d1d5db;border-radius:1px;width:80%;"></div>
+                  <div style="height:2px;background:#d1d5db;border-radius:1px;width:60%;"></div>
+                </div>
+              </div>
+              <div style="flex:1;border:1.5px dashed #9ca3af;border-radius:4px;display:flex;align-items:center;justify-content:center;">
+                <div style="width:65%;height:32px;background:#e5e7eb;border-radius:3px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nb-info">
+            <div class="nb-title">2-column grid <span class="nb-page-tag">Content page</span></div>
+            <div class="nb-desc">Two side-by-side slots — each can hold text, image, quote, callout, CTA, video, map, or accordions. Collapses to single column on mobile.</div>
+          </div>
+          <div class="nb-add-btn" id="nb-btn-two-column-grid"><span class="nb-add-text">+ Add to content page</span></div>
+        </div>
+
+        <!-- Two-column grid controls -->
+        <div id="two-col-controls" style="display:none; background:#f9fafb; border:1.5px solid #111827; border-radius:8px; padding:12px; margin-bottom:10px;">
+          <div class="section-label" style="margin-top:0; margin-bottom:6px;">Left slot</div>
+          <select id="two-col-slot1" onchange="setTwoColSlot(1, this.value)"
+            style="width:100%;font-size:12px;border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px;background:white;color:#374151;margin-bottom:12px;outline:none;">
+            <option value="empty">— Empty —</option>
+            <option value="text">Text (prose)</option>
+            <option value="image">Image</option>
+            <option value="quote">Quote block</option>
+            <option value="callout">Callout</option>
+            <option value="cta">Call-to-action</option>
+            <option value="youtube">YouTube embed</option>
+            <option value="map">Map embed</option>
+            <option value="accordions">Accordions</option>
+          </select>
+          <div class="section-label" style="margin-top:0; margin-bottom:6px;">Right slot</div>
+          <select id="two-col-slot2" onchange="setTwoColSlot(2, this.value)"
+            style="width:100%;font-size:12px;border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px;background:white;color:#374151;outline:none;">
+            <option value="empty">— Empty —</option>
+            <option value="text">Text (prose)</option>
+            <option value="image">Image</option>
+            <option value="quote">Quote block</option>
+            <option value="callout">Callout</option>
+            <option value="cta">Call-to-action</option>
+            <option value="youtube">YouTube embed</option>
+            <option value="map">Map embed</option>
+            <option value="accordions">Accordions</option>
+          </select>
+        </div>
+
         <div class="section-label">Callout</div>
 
         <!-- Callout Variants -->
@@ -1477,6 +1532,32 @@
       if (card) card.classList.add('nb-added')
       if (span) span.textContent = '✓ Added'
     }
+  }
+
+  function addTwoColumnGrid() {
+    const card = document.getElementById('nb-two-column-grid')
+    const span = document.querySelector('#nb-btn-two-column-grid .nb-add-text')
+    const isActive = addedBlocks.has('two-column-grid')
+    if (isActive) {
+      addedBlocks.delete('two-column-grid')
+      postToIframe({ type: 'removeBlock', blockId: 'two-column-grid', page: 'content' })
+      if (card) card.classList.remove('nb-added')
+      if (span) span.textContent = '+ Add to content page'
+      document.getElementById('two-col-controls').style.display = 'none'
+    } else {
+      addedBlocks.add('two-column-grid')
+      postToIframe({ type: 'addBlock', blockId: 'two-column-grid', page: 'content' })
+      setPage('content')
+      postToIframe({ type: 'scrollToBlock', blockId: 'two-column-grid' })
+      if (card) card.classList.add('nb-added')
+      if (span) span.textContent = '✓ Added'
+      document.getElementById('two-col-controls').style.display = 'block'
+    }
+  }
+
+  function setTwoColSlot(slot, value) {
+    const key = slot === 1 ? 'slot1' : 'slot2'
+    postToIframe({ type: 'setBlockConfig', blockId: 'two-column-grid', key, value })
   }
 
   function addSingleButton() {

@@ -19,6 +19,7 @@ import {
   GrainyHero,
   SingleButton,
   ImageManipulation,
+  TwoColumnGrid,
   TableStyled,
   CardsCarousel,
   TextWithImage,
@@ -54,6 +55,7 @@ const CUSTOM_BLOCK_REGISTRY: Record<string, ComponentType> = {
   "link-hub-content": LinkHubContent,
   "lists-with-indentation": ListsWithIndentation,
   "image-manipulation": ImageManipulation,
+  "two-column-grid": TwoColumnGrid,
 }
 
 function smoothScrollTo(targetY: number, duration = 1100) {
