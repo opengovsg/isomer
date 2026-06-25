@@ -51,6 +51,7 @@ const inviteCollaborator = async (
   // The form debounces email + runs a whitelist check before enabling Send.
   await expect(sendBtn).toBeEnabled({ timeout: 10_000 })
   await sendBtn.click()
+  await expect(page.getByText(/Sent invite to/)).toBeVisible({ timeout: 10_000 })
 }
 
 // Polls the DB for the active permission role granted to an invitee on the
