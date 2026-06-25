@@ -121,6 +121,23 @@ test.describe("publisher", () => {
   })
 })
 
+test.describe("editor", () => {
+  test.use({ storageState: storageStateFor("editor") })
+
+  test.beforeEach(async () => {
+    await dismissWelcomeModal(TEST_EMAILS.editor)
+  })
+
+  test("editor does not see the Create new button", async ({ page }) => {
+    await page.goto(`/sites/${getSeedSiteId()}`)
+    // Editors, like publishers, only get read/update at the root, so the
+    // `<Can do="create" on={{ parentId: null }}>`-gated menu is absent.
+    await expect(
+      page.getByRole("button", { name: "Create new..." }),
+    ).not.toBeVisible()
+  })
+})
+
 // The permission model inside a folder differs from the root: base permissions
 // grant create on resources with a non-null parent to every role, and the
 // folder page does not gate the "Create new..." menu behind `<Can>`. So a
@@ -173,6 +190,39 @@ test.describe("publisher — create page in a subfolder", () => {
   })
 
   test("publisher can create a new page inside a folder", async ({ page }) => {
+    const title = UNIQUE_TITLE()
+    await createPageViaWizard(page, {
+      startUrl: `/sites/${getSeedSiteId()}/folders/${folderId}`,
+      title,
+    })
+
+    const created = await db
+      .selectFrom("Resource")
+      .where("siteId", "=", getSeedSiteId())
+      .where("title", "=", title)
+      .select(["id", "state", "parentId"])
+      .executeTakeFirst()
+    expect(created).toBeTruthy()
+    expect(created?.state).toBe("Draft")
+    expect(created?.parentId).toBe(folderId)
+  })
+})
+
+test.describe("editor — create page in a subfolder", () => {
+  test.use({ storageState: storageStateFor("editor") })
+
+  let folderId: string
+
+  test.beforeEach(async () => {
+    await dismissWelcomeModal(TEST_EMAILS.editor)
+    folderId = (await createSeedFolder()).id
+  })
+
+  test.afterEach(async () => {
+    await deleteFolder(folderId)
+  })
+
+  test("editor can create a new page inside a folder", async ({ page }) => {
     const title = UNIQUE_TITLE()
     await createPageViaWizard(page, {
       startUrl: `/sites/${getSeedSiteId()}/folders/${folderId}`,
