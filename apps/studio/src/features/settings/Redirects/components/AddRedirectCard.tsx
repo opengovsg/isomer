@@ -144,7 +144,7 @@ export const AddRedirectCard = ({
       pb="1.5rem"
       bgColor="base.canvas.default"
     >
-      <Text textStyle="h6" mb="0.25rem">
+      <Text textStyle="h6" mb="0.25rem" color="base.content.strong">
         Add new redirects
       </Text>
       <Text textStyle="body-2" color="base.content.medium" mb="1.25rem">
