@@ -40,6 +40,7 @@
     "setup": "run-s --print-label services:setup db:sleep migrate:dev generate db:seed",
     "setup:test": "run-s --print-label services:setup db:sleep migrate generate",
     "start": "next start",
+    "start:standalone": "rm -rf .next/standalone/apps/studio/public .next/standalone/apps/studio/.next/static && cp -R public .next/standalone/apps/studio/public && cp -R .next/static .next/standalone/apps/studio/.next/static && node .next/standalone/apps/studio/server.js",
     "storybook": "storybook dev -p 6007",
     "teardown": "docker compose down",
     "test": "run-s test:e2e test:load:build test:unit",
