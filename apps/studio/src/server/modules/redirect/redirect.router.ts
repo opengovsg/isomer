@@ -3,6 +3,7 @@ import {
   createRedirectSchema,
   deleteRedirectSchema,
   listRedirectsSchema,
+  resolveRedirectReferencesSchema,
 } from "~/schemas/redirect"
 import { protectedProcedure, router } from "~/server/trpc"
 
@@ -12,6 +13,8 @@ import {
   createRedirect,
   deleteRedirect,
   listRedirects,
+  resolveRedirectReferences,
+  validateRedirect,
 } from "./redirect.service"
 
 export const redirectRouter = router({
@@ -37,6 +40,36 @@ export const redirectRouter = router({
       })
 
       return countRedirects(input)
+    }),
+
+  // Preflight a would-be redirect, returning blocking errors and non-blocking
+  // warnings so the form can surface them before the user commits. Read-only
+  // and gated on "read" like the other queries — it exposes only whether
+  // internal pages/redirects exist, which read access already covers.
+  validate: protectedProcedure
+    .input(createRedirectSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        siteId: input.siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      return validateRedirect(input)
+    }),
+
+  // Resolves stored [resource:...] destinations to display permalinks. A read
+  // is enough — it only surfaces permalinks the caller can already see.
+  resolveReferences: protectedProcedure
+    .input(resolveRedirectReferencesSchema)
+    .query(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        siteId: input.siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      return resolveRedirectReferences(input)
     }),
 
   // create/delete publish immediately (no separate publish step). Site-wide
