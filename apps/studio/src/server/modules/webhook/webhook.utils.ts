@@ -119,7 +119,12 @@ const sendEmails = async (
             // they cannot view. Suppress the email for them (Toppan users only
             // ever publish gazettes).
             if (info.email?.endsWith(TOPPAN_EMAIL_DOMAIN)) {
-              return // skip sending; this build is effectively not emailed
+              // Skip sending. This job's id is intentionally NOT added to
+              // `codebuildJobIdsForSentEmails`, so its `emailSent` stays `false` —
+              // no email was sent. This is deliberate, not a pending notification:
+              // the suppression is idempotent on every webhook retry, so a Toppan
+              // job is never emailed.
+              return
             }
             return {
               id: info.codeBuildJobId, // codebuild job id
