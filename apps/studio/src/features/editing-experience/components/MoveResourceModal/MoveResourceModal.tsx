@@ -190,7 +190,7 @@ const MoveResourceContent = withSuspense(
                 >
                   <Checkbox
                     alignItems="flex-start"
-                    size="1.25rem"
+                    size="lg"
                     isChecked={shouldCreateRedirect}
                     onChange={(e) => setShouldCreateRedirect(e.target.checked)}
                   >
