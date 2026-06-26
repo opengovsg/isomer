@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { userEvent, within } from "storybook/test"
+import { expect, userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -10,6 +10,12 @@ import { ResetUpdateProfileModalDecorator } from "~/stories/decorators"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
+  resourceHandlers.getRolesFor.admin(),
+  sitesHandlers.getSiteName.default(),
+  pageHandlers.getRootPage.default(),
+]
+const REQUIRED_PROFILE_HANDLERS = [
+  meHandlers.notOnboarded(),
   resourceHandlers.getRolesFor.admin(),
   sitesHandlers.getSiteName.default(),
   pageHandlers.getRootPage.default(),
@@ -49,6 +55,24 @@ export const Default: Story = {
     await userEvent.click(editProfileButton, {
       pointerEventsCheck: 0,
     })
+  },
+}
+
+export const Required: Story = {
+  parameters: {
+    msw: {
+      handlers: REQUIRED_PROFILE_HANDLERS,
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body)
+    const modalHeader = await screen.findByText(
+      "Welcome to Studio! Tell us about yourself.",
+    )
+
+    await expect(modalHeader).toBeVisible()
+    await userEvent.keyboard("{Escape}")
+    await expect(modalHeader).toBeVisible()
   },
 }
 
