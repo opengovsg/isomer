@@ -98,6 +98,7 @@ test.describe("admin", () => {
       .executeTakeFirst()
     expect(created).toBeTruthy()
     expect(created?.state).toBe("Draft")
+    expect(created?.type).toBe("Page")
     expect(created?.parentId).toBeNull()
   })
 })
