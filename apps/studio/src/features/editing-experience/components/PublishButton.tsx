@@ -83,12 +83,12 @@ const SuspendablePublishButton = ({
 
   return (
     <Can do="publish" on="Resource" passThrough>
-      {(allowed) => (
+      {({ isAllowed }) => (
         <TouchableTooltip
           hidden={isChangesPendingPublish}
           label="All changes have been published"
         >
-          {allowed && (
+          {isAllowed && (
             <>
               {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
               {scheduledPublishingDisclosure.isOpen && (
