@@ -97,6 +97,14 @@ export const AdminWarningBanner: Story = {
 }
 
 export const NonGovEmailCannotBeAdmin: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        ...COMMON_HANDLERS,
+        whitelistHandlers.isEmailWhitelistedAsAdmin.false(),
+      ],
+    },
+  },
   play: async (context) => {
     const { canvasElement } = context
     await Default.play?.(context)
@@ -115,7 +123,7 @@ export const NonGovEmailCannotBeAdmin: Story = {
     }
 
     const nonGovEmailCannotBeAdminText = await screen.findByText(
-      "Non-gov.sg emails cannot be added as admin. Select another role.",
+      "This email can't be added as an admin. Select another role.",
     )
     await expect(nonGovEmailCannotBeAdminText).toBeVisible()
   },

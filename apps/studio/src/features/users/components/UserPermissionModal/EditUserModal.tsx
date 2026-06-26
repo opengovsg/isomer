@@ -15,13 +15,12 @@ import {
 } from "@chakra-ui/react"
 import { FormLabel, useToast } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { useEffect, useMemo } from "react"
+import { useEffect } from "react"
 import { z as zod } from "zod"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { updateUserInputSchema } from "~/schemas/user"
-import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
@@ -93,7 +92,14 @@ export const EditUserModal = () => {
 
   const selectedRole = watch("role")
 
-  const isNonGovEmailInput = useMemo(() => !isGovEmail(email), [email])
+  const { data: isEmailWhitelistedAsAdmin } =
+    trpc.whitelist.isEmailWhitelistedAsAdmin.useQuery(
+      { siteId, email },
+      { enabled: !!siteId && !!userId && !!email },
+    )
+
+  // Conservatively treat the email as not-admin-eligible until the check resolves
+  const isAdminRoleDisabled = !isEmailWhitelistedAsAdmin
 
   return (
     <Modal isOpen={!!siteId && !!userId} onClose={onClose}>
@@ -133,15 +139,17 @@ export const EditUserModal = () => {
                       isSelected={selectedRole === role}
                       onClick={() => setValue("role", role)}
                       permissionLabels={permissionLabels}
-                      isDisabled={role === RoleType.Admin && isNonGovEmailInput}
+                      isDisabled={
+                        role === RoleType.Admin && isAdminRoleDisabled
+                      }
                     />
                   ))}
                 </HStack>
               </FormControl>
-              {selectedRole === RoleType.Admin && !isNonGovEmailInput && (
+              {selectedRole === RoleType.Admin && !isAdminRoleDisabled && (
                 <AddAdminWarning />
               )}
-              {selectedRole === RoleType.Admin && isNonGovEmailInput && (
+              {selectedRole === RoleType.Admin && isAdminRoleDisabled && (
                 <NonGovEmailCannotBeAdmin />
               )}
             </VStack>

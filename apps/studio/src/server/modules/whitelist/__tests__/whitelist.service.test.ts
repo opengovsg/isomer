@@ -1,7 +1,10 @@
 import { resetTables } from "tests/integration/helpers/db"
 import { setUpWhitelist } from "tests/integration/helpers/seed"
 
-import { isEmailWhitelisted } from "../whitelist.service"
+import {
+  isEmailWhitelisted,
+  isEmailWhitelistedAsAdmin,
+} from "../whitelist.service"
 
 describe("whitelist.service", () => {
   beforeAll(async () => {
@@ -121,5 +124,73 @@ describe("whitelist.service", () => {
 
     // Assert
     expect(result).toBe(true)
+  })
+
+  describe("isEmailWhitelistedAsAdmin", () => {
+    it("should return true if the exact email address is whitelisted with a null expiry", async () => {
+      // Arrange
+      const email = "whitelisted@example.com"
+
+      // Act
+      const result = await isEmailWhitelistedAsAdmin(email)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it("should return true if the exact email domain is whitelisted with a null expiry", async () => {
+      // Arrange
+      const email = "user@vendor.com.sg"
+
+      // Act
+      const result = await isEmailWhitelistedAsAdmin(email)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it("should return true if the suffix of the email domain is whitelisted with a null expiry", async () => {
+      // Arrange
+      const email = "user@agency.gov.sg"
+
+      // Act
+      const result = await isEmailWhitelistedAsAdmin(email)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it("should return false if the exact email address is whitelisted only with a future (non-null) expiry", async () => {
+      // Arrange
+      const email = "vendor-whitelisted@example.com"
+
+      // Act
+      const result = await isEmailWhitelistedAsAdmin(email)
+
+      // Assert
+      expect(result).toBe(false)
+    })
+
+    it("should return false if the email domain is whitelisted only with a future (non-null) expiry", async () => {
+      // Arrange
+      const email = "user@whitelisted.com.sg"
+
+      // Act
+      const result = await isEmailWhitelistedAsAdmin(email)
+
+      // Assert
+      expect(result).toBe(false)
+    })
+
+    it("should return false if the email is not whitelisted", async () => {
+      // Arrange
+      const email = "not-whitelisted@example.com"
+
+      // Act
+      const result = await isEmailWhitelistedAsAdmin(email)
+
+      // Assert
+      expect(result).toBe(false)
+    })
   })
 })

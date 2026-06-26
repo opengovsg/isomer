@@ -2,6 +2,7 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
+import { whitelistHandlers } from "tests/msw/handlers/whitelist"
 
 export const ADMIN_HANDLERS = [
   meHandlers.me(),
@@ -10,4 +11,5 @@ export const ADMIN_HANDLERS = [
   userHandlers.count.default(),
   userHandlers.list.users(),
   userHandlers.isIsomerAdmin.default(),
+  whitelistHandlers.isEmailWhitelistedAsAdmin.true(),
 ]

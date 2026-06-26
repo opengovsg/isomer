@@ -10,6 +10,6 @@ export const NonGovEmailCannotBeAdmin = () => (
     w="100%"
     border="none"
   >
-    Non-gov.sg emails cannot be added as admin. Select another role.
+    This email can't be added as an admin. Select another role.
   </Infobox>
 )

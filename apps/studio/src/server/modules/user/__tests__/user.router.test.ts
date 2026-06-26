@@ -259,16 +259,20 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should throw 403 if assigning a whitelisted non-gov.sg email with admin role", async () => {
+    it("should throw 403 if assigning admin role to an email whitelisted with a non-null expiry", async () => {
       // Arrange
-      const nonGovSgEmail = "test@coolvendor.com"
+      // A vendor entry (future, non-null expiry) satisfies the whitelist gate
+      // but is not eligible for the Admin role.
+      const vendorEmail = "test@coolvendor.com"
+      const oneYearFromNow = new Date()
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
       await setupAdminPermissions({ userId: session.userId, siteId })
-      await setUpWhitelist({ email: nonGovSgEmail })
+      await setUpWhitelist({ email: vendorEmail, expiry: oneYearFromNow })
 
       // Act
       const result = caller.create({
         siteId,
-        users: [{ email: nonGovSgEmail, role: RoleType.Admin }],
+        users: [{ email: vendorEmail, role: RoleType.Admin }],
       })
 
       // Assert
@@ -276,7 +280,7 @@ describe("user.router", () => {
         new TRPCError({
           code: "FORBIDDEN",
           message:
-            "Non-gov.sg emails cannot be added as admin. Select another role.",
+            "This email cannot be added as an admin. Select another role.",
         }),
       )
 
@@ -1542,7 +1546,7 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should throw 403 if assigning a non-gov.sg email with admin role", async () => {
+    it("should throw 403 if assigning admin role to an email not whitelisted as admin", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
@@ -1564,7 +1568,7 @@ describe("user.router", () => {
         new TRPCError({
           code: "FORBIDDEN",
           message:
-            "Non-gov.sg emails cannot be added as admin. Select another role.",
+            "This email cannot be added as an admin. Select another role.",
         }),
       )
 

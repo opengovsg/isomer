@@ -85,7 +85,10 @@ export const whitelistEmails = async ({
   })
 }
 
-export const isEmailWhitelisted = async (email: string) => {
+const isEmailWhitelistedWithFilter = async (
+  email: string,
+  nullExpiryOnly: boolean,
+) => {
   const lowercaseEmail = email.toLowerCase()
 
   // Extra guard even if Zod validation has already checked
@@ -97,11 +100,15 @@ export const isEmailWhitelisted = async (email: string) => {
   }
 
   // Step 1: Check if the exact email address is whitelisted
+  // Admin entries have a null expiry; vendor entries have a future expiry.
+  // The admin gate matches only null-expiry entries.
   const exactMatch = await db
     .selectFrom("Whitelist")
     .where("email", "=", lowercaseEmail)
     .where(({ eb }) =>
-      eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
+      nullExpiryOnly
+        ? eb("expiry", "is", null)
+        : eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
     )
     .select(["id"])
     .executeTakeFirst()
@@ -124,7 +131,9 @@ export const isEmailWhitelisted = async (email: string) => {
     .selectFrom("Whitelist")
     .where("email", "=", emailDomain)
     .where(({ eb }) =>
-      eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
+      nullExpiryOnly
+        ? eb("expiry", "is", null)
+        : eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
     )
     .select(["id"])
     .executeTakeFirst()
@@ -143,7 +152,9 @@ export const isEmailWhitelisted = async (email: string) => {
       .selectFrom("Whitelist")
       .where("email", "=", suffix)
       .where(({ eb }) =>
-        eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
+        nullExpiryOnly
+          ? eb("expiry", "is", null)
+          : eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
       )
       .select(["id"])
       .executeTakeFirst()
@@ -155,3 +166,9 @@ export const isEmailWhitelisted = async (email: string) => {
 
   return false
 }
+
+export const isEmailWhitelisted = (email: string) =>
+  isEmailWhitelistedWithFilter(email, false)
+
+export const isEmailWhitelistedAsAdmin = (email: string) =>
+  isEmailWhitelistedWithFilter(email, true)

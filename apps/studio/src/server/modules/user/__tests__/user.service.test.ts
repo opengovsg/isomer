@@ -263,16 +263,20 @@ describe("user.service", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should throw 403 if assigning a non-gov.sg email with admin role", async () => {
+    it("should throw 403 if assigning admin role to an email whitelisted with a non-null expiry", async () => {
       // Arrange
-      const nonGovSgEmail = "test@coolvendor.com"
-      await setUpWhitelist({ email: nonGovSgEmail })
+      // A vendor entry has a future (non-null) expiry; it satisfies the
+      // whitelist gate but is NOT eligible for the Admin role.
+      const vendorEmail = "test@coolvendor.com"
+      const oneYearFromNow = new Date()
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+      await setUpWhitelist({ email: vendorEmail, expiry: oneYearFromNow })
 
       // Act
       const result = db.transaction().execute((tx) => {
         return createUserWithPermission({
           byUserId: creatorUserId,
-          email: nonGovSgEmail,
+          email: vendorEmail,
           role: RoleType.Admin,
           siteId,
           tx,
@@ -284,13 +288,82 @@ describe("user.service", () => {
         new TRPCError({
           code: "FORBIDDEN",
           message:
-            "Non-gov.sg emails cannot be added as admin. Select another role.",
+            "This email cannot be added as an admin. Select another role.",
         }),
       )
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(0)
+    })
+
+    it("should create a user with admin role if the email is whitelisted with a null expiry", async () => {
+      // Arrange
+      // A null-expiry whitelist entry is an admin entry, so the Admin role is
+      // allowed. TEST_EMAIL is whitelisted with a null expiry in beforeAll.
+      const role = RoleType.Admin
+
+      // Act
+      const { user, resourcePermission } = await db
+        .transaction()
+        .execute((tx) => {
+          return createUserWithPermission({
+            byUserId: creatorUserId,
+            email: TEST_EMAIL,
+            role,
+            siteId,
+            tx,
+          })
+        })
+
+      // Assert: Verify resource permission in database
+      const dbResourcePermissionResult = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", user.id)
+        .where("siteId", "=", siteId)
+        .selectAll()
+        .execute()
+
+      expect(dbResourcePermissionResult).toHaveLength(1)
+      expect(dbResourcePermissionResult[0]).toMatchObject({
+        userId: user.id,
+        siteId,
+        role: RoleType.Admin,
+      })
+
+      // Assert DB - audit logs (user)
+      const userAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "UserCreate")
+        .selectAll()
+        .execute()
+      expect(userAuditLogs).toHaveLength(1)
+      expect(userAuditLogs[0]).toMatchObject({
+        eventType: "UserCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            omit(user, ["createdAt", "updatedAt"]),
+          ),
+        }),
+      })
+
+      // Assert DB - audit logs (permission)
+      const permissionAuditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionCreate")
+        .selectAll()
+        .execute()
+      expect(permissionAuditLogs).toHaveLength(1)
+      expect(permissionAuditLogs[0]).toMatchObject({
+        eventType: "PermissionCreate",
+        delta: expect.objectContaining({
+          before: null,
+          after: expect.objectContaining(
+            omit(resourcePermission, ["createdAt", "updatedAt"]),
+          ),
+        }),
+      })
     })
 
     it("should create a non-gov.sg email with non-admin role", async () => {

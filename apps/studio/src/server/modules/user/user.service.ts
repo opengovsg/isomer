@@ -3,13 +3,15 @@ import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import isEmail from "validator/lib/isEmail"
-import { isGovEmail } from "~/utils/email"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { DB, Transaction } from "../database"
 import { logPermissionEvent, logUserEvent } from "../audit/audit.service"
 import { db, RoleType } from "../database"
-import { isEmailWhitelisted } from "../whitelist/whitelist.service"
+import {
+  isEmailWhitelisted,
+  isEmailWhitelistedAsAdmin,
+} from "../whitelist/whitelist.service"
 
 export const isUserDeleted = async (email: string) => {
   const lowercaseEmail = email.toLowerCase()
@@ -23,18 +25,17 @@ export const isUserDeleted = async (email: string) => {
   return user?.deletedAt ? true : false
 }
 
-export const validateEmailRoleCombination = ({
+export const validateEmailRoleCombination = async ({
   email,
   role,
 }: {
   email: string
   role: ResourcePermission["role"]
 }) => {
-  if (!isGovEmail(email) && role === RoleType.Admin) {
+  if (role === RoleType.Admin && !(await isEmailWhitelistedAsAdmin(email))) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message:
-        "Non-gov.sg emails cannot be added as admin. Select another role.",
+      message: "This email cannot be added as an admin. Select another role.",
     })
   }
 }
@@ -65,7 +66,7 @@ export const createUserWithPermission = async ({
     })
   }
 
-  validateEmailRoleCombination({ email, role })
+  await validateEmailRoleCombination({ email, role })
 
   const isWhitelisted = await isEmailWhitelisted(email)
   if (!isWhitelisted) {

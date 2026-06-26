@@ -10,7 +10,11 @@ import {
   validatePermissionsForManagingUsers,
   validateUserIsIsomerAdmin,
 } from "../permissions/permissions.service"
-import { isEmailWhitelisted, whitelistEmails } from "./whitelist.service"
+import {
+  isEmailWhitelisted,
+  isEmailWhitelistedAsAdmin,
+  whitelistEmails,
+} from "./whitelist.service"
 
 export const whitelistRouter = router({
   isEmailWhitelisted: protectedProcedure
@@ -27,6 +31,18 @@ export const whitelistRouter = router({
       })
 
       return await isEmailWhitelisted(email)
+    }),
+  isEmailWhitelistedAsAdmin: protectedProcedure
+    .input(isEmailWhitelistedInputSchema)
+    .output(isEmailWhitelistedOutputSchema)
+    .query(async ({ ctx, input: { siteId, email } }) => {
+      await validatePermissionsForManagingUsers({
+        siteId,
+        userId: ctx.user.id,
+        action: "manage",
+      })
+
+      return await isEmailWhitelistedAsAdmin(email)
     }),
   whitelistEmails: protectedProcedure
     .input(whitelistEmailsInputSchema)

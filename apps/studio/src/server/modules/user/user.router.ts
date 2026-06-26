@@ -306,7 +306,7 @@ export const userRouter = router({
         })
       }
 
-      validateEmailRoleCombination({ email: user.email, role })
+      await validateEmailRoleCombination({ email: user.email, role })
 
       const updatedUserPermission = await updateUserSitewidePermission({
         byUserId: ctx.user.id,

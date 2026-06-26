@@ -26,7 +26,6 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { createUserInputSchema } from "~/schemas/user"
-import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
@@ -69,16 +68,11 @@ export const AddUserModal = () => {
   const email = watch("email")
   const debouncedEmail = useDebounce(email, 300)
 
-  const isNonGovEmailInput = useMemo(
-    () => !!(!errors.email && email && !isGovEmail(email.trim())),
-    [errors.email, email],
-  )
-
   // Reason we are not using zodForm build-in schema is because the checking of whitelist
   // is an async operation requiring an API call, and combining them will be less readable
   const additionalEmailError = useMemo(
-    () => isNonGovEmailInput && hasWhitelistError,
-    [isNonGovEmailInput, hasWhitelistError],
+    () => hasWhitelistError,
+    [hasWhitelistError],
   )
 
   const { mutate: createUser, isPending } = trpc.user.create.useMutation({
@@ -112,6 +106,19 @@ export const AddUserModal = () => {
     },
   )
 
+  const { data: isWhitelistedAsAdmin, refetch: checkAdminWhitelist } =
+    trpc.whitelist.isEmailWhitelistedAsAdmin.useQuery(
+      { siteId, email: (debouncedEmail || "").trim() },
+      {
+        enabled: false,
+      },
+    )
+
+  const isEmailNotWhitelistedAsAdmin = useMemo(
+    () => !!(!errors.email && email && !isWhitelistedAsAdmin),
+    [errors.email, email, isWhitelistedAsAdmin],
+  )
+
   useEffect(() => {
     // Run after the whitelist check is successful
     if (!isSuccess) {
@@ -142,11 +149,12 @@ export const AddUserModal = () => {
     if (!debouncedEmail || errors.email) return
 
     void checkWhitelist()
+    void checkAdminWhitelist()
   }, [
     debouncedEmail,
-    isNonGovEmailInput,
     errors.email,
     checkWhitelist,
+    checkAdminWhitelist,
     setAddUserModalState,
   ])
 
@@ -209,7 +217,8 @@ export const AddUserModal = () => {
               <FormControl
                 isRequired
                 isInvalid={
-                  watch("role") === RoleType.Admin && isNonGovEmailInput
+                  watch("role") === RoleType.Admin &&
+                  isEmailNotWhitelistedAsAdmin
                 }
               >
                 <FormLabel
@@ -235,17 +244,17 @@ export const AddUserModal = () => {
                       isSelected={watch("role") === role}
                       onClick={() => setValue("role", role)}
                       permissionLabels={permissionLabels}
-                      isDisabled={role === RoleType.Admin && isNonGovEmailInput}
+                      isDisabled={
+                        role === RoleType.Admin && isEmailNotWhitelistedAsAdmin
+                      }
                     />
                   ))}
                 </HStack>
               </FormControl>
-              {watch("role") === RoleType.Admin && !isNonGovEmailInput && (
-                <AddAdminWarning />
-              )}
-              {watch("role") === RoleType.Admin && isNonGovEmailInput && (
-                <NonGovEmailCannotBeAdmin />
-              )}
+              {watch("role") === RoleType.Admin &&
+                !isEmailNotWhitelistedAsAdmin && <AddAdminWarning />}
+              {watch("role") === RoleType.Admin &&
+                isEmailNotWhitelistedAsAdmin && <NonGovEmailCannotBeAdmin />}
             </VStack>
           </VStack>
         </ModalBody>
@@ -267,7 +276,8 @@ export const AddUserModal = () => {
                 email === "" ||
                 additionalEmailError ||
                 email !== debouncedEmail || // check if email has changed
-                (watch("role") === RoleType.Admin && isNonGovEmailInput) ||
+                (watch("role") === RoleType.Admin &&
+                  isEmailNotWhitelistedAsAdmin) ||
                 !isSingpassEnabled
               }
             >
