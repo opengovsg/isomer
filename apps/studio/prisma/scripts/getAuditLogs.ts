@@ -20,6 +20,7 @@ const SITES_WITH_AUDIT_LOGS = [
   61, // ipos.gov.sg
   109, // agc.gov.sg
   145, // ite.edu.sg
+  157, // pmo.gov.sg
   166, // mti.gov.sg
   176, // colombo.mfa.gov.sg
   177, // prague.mfa.gov.sg
