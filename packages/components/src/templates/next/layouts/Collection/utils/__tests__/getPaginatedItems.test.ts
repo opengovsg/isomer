@@ -26,4 +26,22 @@ describe("getPaginatedItems", () => {
       items[3],
     ])
   })
+
+  it("clamps page 0 to page 1", () => {
+    expect(getPaginatedItems(items, itemsPerPage, 0)).toEqual([
+      items[0],
+      items[1],
+    ])
+  })
+
+  it("clamps a negative page to page 1", () => {
+    expect(getPaginatedItems(items, itemsPerPage, -1)).toEqual([
+      items[0],
+      items[1],
+    ])
+  })
+
+  it("returns an empty array when the page is beyond the last page", () => {
+    expect(getPaginatedItems(items, itemsPerPage, 99)).toEqual([])
+  })
 })
