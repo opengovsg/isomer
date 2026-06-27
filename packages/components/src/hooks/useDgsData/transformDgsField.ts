@@ -27,6 +27,9 @@ export const transformDgsField = <T extends string | undefined | null>(
   if (typeof value === "object") {
     return JSON.stringify(value) as T
   }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value) as T
+  }
 
-  return String(value) as T
+  return field
 }
