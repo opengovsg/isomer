@@ -14,7 +14,7 @@ import {
   useToast,
 } from "@opengovsg/design-system-react"
 import { useRouter } from "next/router"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
@@ -41,23 +41,13 @@ const SUPPORTED_SITE_CONFIG_TYPES = [
   "footer",
 ] as const
 
-const SiteAdminPage: NextPageWithLayout = () => {
-  const toast = useToast()
-  const router = useRouter()
-  const trpcUtils = trpc.useUtils()
-  const { siteId } = useQueryParse(siteAdminSchema)
-  const { isAdmin: isUserIsomerAdmin, isLoading } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
+interface SiteAdminFormProps {
+  siteId: number
+}
 
-  if (!isLoading && !isUserIsomerAdmin) {
-    toast({
-      title: "You do not have permission to access this page.",
-      status: "error",
-      ...BRIEF_TOAST_SETTINGS,
-    })
-    void router.push(`/sites/${siteId}`)
-  }
+const SiteAdminForm = ({ siteId }: SiteAdminFormProps) => {
+  const toast = useToast()
+  const trpcUtils = trpc.useUtils()
 
   const [previousConfig] = trpc.site.getConfig.useSuspenseQuery({
     id: siteId,
@@ -203,6 +193,36 @@ const SiteAdminPage: NextPageWithLayout = () => {
       </chakra.form>
     </>
   )
+}
+
+const SiteAdminPage: NextPageWithLayout = () => {
+  const toast = useToast()
+  const router = useRouter()
+  const hasRedirectedRef = useRef(false)
+  const { siteId } = useQueryParse(siteAdminSchema)
+  const { isAdmin: isUserIsomerAdmin, isLoading } = useIsUserIsomerAdmin({
+    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
+  })
+
+  useEffect(() => {
+    if (isLoading || isUserIsomerAdmin || hasRedirectedRef.current) {
+      return
+    }
+
+    hasRedirectedRef.current = true
+    toast({
+      title: "You do not have permission to access this page.",
+      status: "error",
+      ...BRIEF_TOAST_SETTINGS,
+    })
+    void router.push(`/sites/${siteId}`)
+  }, [isLoading, isUserIsomerAdmin, router, siteId, toast])
+
+  if (isLoading || !isUserIsomerAdmin) {
+    return null
+  }
+
+  return <SiteAdminForm siteId={siteId} />
 }
 
 SiteAdminPage.getLayout = (page) => {
