@@ -41,6 +41,8 @@ const SUPPORTED_SITE_CONFIG_TYPES = [
   "footer",
 ] as const
 
+const UNAUTHORIZED_TOAST_ID = "site-admin-unauthorized"
+
 interface SiteAdminFormProps {
   siteId: number
 }
@@ -210,11 +212,14 @@ const SiteAdminPage: NextPageWithLayout = () => {
     }
 
     hasRedirectedRef.current = true
-    toast({
-      title: "You do not have permission to access this page.",
-      status: "error",
-      ...BRIEF_TOAST_SETTINGS,
-    })
+    if (!toast.isActive(UNAUTHORIZED_TOAST_ID)) {
+      toast({
+        id: UNAUTHORIZED_TOAST_ID,
+        title: "You do not have permission to access this page.",
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    }
     void router.push(`/sites/${siteId}`)
   }, [isLoading, isUserIsomerAdmin, router, siteId, toast])
 
