@@ -72,7 +72,7 @@ catalog:
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
   jsdom: ^29.1.1
-  happy-dom: ^20.10.2
+  happy-dom: ^20.10.6
   isomorphic-dompurify: ^3.15.0
   mockdate: ^3.0.5
   msw: ^2.14.6
