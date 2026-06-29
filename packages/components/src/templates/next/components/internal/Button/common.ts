@@ -2,7 +2,7 @@ import { tv } from "~/lib/tv"
 import { focusRing } from "~/utils/tailwind"
 
 export const buttonStyles = tv({
-  base: "box-border flex h-full w-fit cursor-pointer items-center gap-2 rounded-sm text-center transition",
+  base: "box-border flex h-full w-fit cursor-pointer items-center gap-2 rounded-xs text-center transition",
   extend: focusRing,
   variants: {
     variant: {
@@ -23,7 +23,7 @@ export const buttonStyles = tv({
     size: {
       sm: "prose-label-md-medium px-4 py-2.5",
       base: "prose-headline-base-medium min-h-12 px-5 py-3",
-      lg: "prose-headline-lg-medium min-h-[3.25rem] px-6 py-3.5",
+      lg: "prose-headline-lg-medium min-h-13 px-6 py-3.5",
     },
   },
   compoundVariants: [

@@ -49,9 +49,10 @@ const ExpandFilterButton = ({
       <span>{label}</span>
       <BiChevronDown
         aria-hidden
-        className={`text-base-content-strong mr-3 h-6 w-6 shrink-0 transition-all duration-300 ease-in-out ${
-          isExpanded ? "rotate-180" : "rotate-0"
-        }`}
+        className={twMerge(
+          "text-base-content-strong mr-3 h-6 w-6 shrink-0 transition-all duration-300 ease-in-out",
+          isExpanded ? "rotate-180" : "rotate-0",
+        )}
       />
     </button>
   )

@@ -26,7 +26,7 @@ export const NotificationClient = ({
               {!!title && (
                 <h2 className="prose-headline-base-medium">{title}</h2>
               )}
-              <div className="[&_p]:!mt-0 [&_p]:!mb-0">{children}</div>
+              <div className="[&_p]:mt-0! [&_p]:mb-0!">{children}</div>
             </div>
           </div>
           <div aria-hidden className="flex h-6 w-6 shrink-0" />

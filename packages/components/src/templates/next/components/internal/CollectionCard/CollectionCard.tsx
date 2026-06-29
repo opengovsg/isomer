@@ -1,4 +1,5 @@
 import type { CollectionCardProps } from "~/interfaces"
+import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { ImageClient } from "../ImageClient"
@@ -35,7 +36,7 @@ export const CollectionCard = ({
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
-      <div className="text-base-content flex flex-grow flex-col gap-3 md:gap-2">
+      <div className="text-base-content flex grow flex-col gap-3 md:gap-2">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
         {tags && tags.length > 0 && (
           <>
@@ -65,7 +66,10 @@ export const CollectionCard = ({
             src={imageSrc || ""}
             alt={image.alt}
             width="100%"
-            className={`absolute left-0 h-full w-full rounded-sm ${isContainNeeded ? "object-contain" : "object-cover"}`}
+            className={twMerge(
+              "absolute left-0 h-full w-full rounded-xs",
+              isContainNeeded ? "object-contain" : "object-cover",
+            )}
             assetsBaseUrl={siteAssetsBaseUrl}
           />
         </div>

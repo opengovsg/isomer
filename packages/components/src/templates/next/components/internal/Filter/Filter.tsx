@@ -6,6 +6,7 @@ import { mergeProps } from "@react-aria/utils"
 import { useRef, useState } from "react"
 import { BiChevronDown, BiChevronRight } from "react-icons/bi"
 import { tv } from "~/lib/tv"
+import { twMerge } from "~/lib/twMerge"
 import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 
 import type { FilterProps } from "../../../types/Filter"
@@ -40,9 +41,10 @@ const FilterSectionButton = ({
       <label className={filterSectionLabelStyle()}>{label}</label>
       <BiChevronDown
         aria-hidden
-        className={`text-base-content-strong h-6 w-6 shrink-0 transition-all duration-300 ease-in-out ${
-          isOpen ? "rotate-180" : "rotate-0"
-        }`}
+        className={twMerge(
+          "text-base-content-strong h-6 w-6 shrink-0 transition-all duration-300 ease-in-out",
+          isOpen ? "rotate-180" : "rotate-0",
+        )}
       />
     </button>
   )

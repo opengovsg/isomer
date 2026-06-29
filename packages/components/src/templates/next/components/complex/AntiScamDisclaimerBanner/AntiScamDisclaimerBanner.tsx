@@ -1,4 +1,5 @@
 import { BiError } from "react-icons/bi"
+import { twMerge } from "~/lib/twMerge"
 
 import { ComponentContent } from "../../internal/customCssClass"
 import { Link } from "../../internal/Link"
@@ -6,7 +7,10 @@ import { Link } from "../../internal/Link"
 export const AntiScamDisclaimerBanner = () => {
   return (
     <div
-      className={`${ComponentContent} bg-base-canvas w-full rounded-lg px-5 py-12 md:px-6 lg:w-fit lg:max-w-full lg:py-16`}
+      className={twMerge(
+        ComponentContent,
+        "bg-base-canvas w-full rounded-lg px-5 py-12 md:px-6 lg:w-fit lg:max-w-full lg:py-16",
+      )}
       role="region"
       aria-label="Anti-scam notice"
     >

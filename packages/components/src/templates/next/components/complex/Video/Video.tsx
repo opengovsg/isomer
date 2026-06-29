@@ -1,4 +1,5 @@
 import type { VideoProps } from "~/interfaces"
+import { twMerge } from "~/lib/twMerge"
 import { isValidVideoUrl, VALID_VIDEO_DOMAINS } from "~/utils/validation"
 
 import { ComponentContent } from "../../internal/customCssClass"
@@ -101,15 +102,14 @@ export const Video = ({ title, url, shouldLazyLoad = true }: VideoProps) => {
   }
 
   return (
-    <section className={`${ComponentContent} mt-7 first:mt-0`}>
-      <div
-        className={isPortrait ? "mx-auto w-full max-w-[20.3125rem]" : "w-full"}
-      >
+    <section className={twMerge(ComponentContent, "mt-7 first:mt-0")}>
+      <div className={isPortrait ? "mx-auto w-full max-w-81.25" : "w-full"}>
         {/* NOTE: 56.25% is a 16:9 (landscape) aspect ratio; 177.78% is a 9:16 (portrait) aspect ratio */}
         <div
-          className={`relative w-full overflow-hidden ${
-            isPortrait ? "pt-[177.78%]" : "pt-[56.25%]"
-          }`}
+          className={twMerge(
+            "relative w-full overflow-hidden",
+            isPortrait ? "pt-[177.78%]" : "pt-[56.25%]",
+          )}
         >
           {renderVideo()}
         </div>

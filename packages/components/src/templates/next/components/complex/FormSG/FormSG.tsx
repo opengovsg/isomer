@@ -1,4 +1,5 @@
 import type { FormSGProps } from "~/interfaces"
+import { twMerge } from "~/lib/twMerge"
 import { isValidFormSGEmbedUrl } from "~/utils/validation"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
@@ -10,7 +11,7 @@ export const FormSG = ({ title, url, shouldLazyLoad = true }: FormSGProps) => {
   }
 
   return (
-    <section className={`${ComponentContent} mt-7 first:mt-0`}>
+    <section className={twMerge(ComponentContent, "mt-7 first:mt-0")}>
       <BaseParagraph
         content={`If the form below doesn't load, <a href="${url}" target="_blank">open it in a new window</a>.`}
         className="prose-body-base text-base-content pt-1 pb-2 opacity-90"

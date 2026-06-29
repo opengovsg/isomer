@@ -13,11 +13,11 @@ import { twMerge } from "~/lib/twMerge"
 import { IconButton } from "./IconButton"
 
 const inputStyles = tv({
-  base: "prose-body-base text-base-content placeholder:text-interaction-support-placeholder disabled:text-interaction-support-placeholder min-w-0 flex-1 bg-white outline outline-0",
+  base: "prose-body-base text-base-content placeholder:text-interaction-support-placeholder disabled:text-interaction-support-placeholder min-w-0 flex-1 bg-white outline",
 })
 
 const fieldGroupStyles = tv({
-  base: "group flex items-center gap-4 overflow-hidden rounded-sm bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
+  base: "group flex items-center gap-4 overflow-hidden rounded-xs bg-white py-1 pl-4 shadow-[0_0_0_1.5px] forced-colors:bg-[Field]",
   variants: {
     isFocusWithin: {
       false: "shadow-brand-interaction forced-colors:border-[ButtonBorder]",
@@ -88,11 +88,12 @@ export function SearchField({
       >
         <BiSearch
           aria-hidden
-          className={
+          className={twMerge(
+            "text-base-content-medium h-5 w-5",
             isDisabled
-              ? "text-base-content-medium h-5 w-5 forced-colors:text-[GrayText]"
-              : "text-base-content-medium h-5 w-5 forced-colors:text-[ButtonText]"
-          }
+              ? "forced-colors:text-[GrayText]"
+              : "forced-colors:text-[ButtonText]",
+          )}
         />
         <input
           {...mergeProps(inputProps, focusProps)}

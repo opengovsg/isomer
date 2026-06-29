@@ -14,7 +14,7 @@ import { mergeRefs } from "~/utils/rac"
 import { focusRing } from "~/utils/tailwind"
 
 const iconButtonStyles = tv({
-  base: "box-border flex w-fit cursor-pointer items-center justify-center rounded-sm text-center transition",
+  base: "box-border flex w-fit cursor-pointer items-center justify-center rounded-xs text-center transition",
   extend: focusRing,
   variants: {
     variant: {

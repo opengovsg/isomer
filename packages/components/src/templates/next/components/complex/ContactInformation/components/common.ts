@@ -17,8 +17,8 @@ export const commonContactInformationStyles = tv({
   variants: {
     isLoading: {
       true: {
-        title: "h-8 w-48 animate-pulse rounded-sm bg-[#0000001a]",
-        description: "h-6 w-64 animate-pulse rounded-sm bg-[#0000001a]",
+        title: "h-8 w-48 animate-pulse rounded-xs bg-[#0000001a]",
+        description: "h-6 w-64 animate-pulse rounded-xs bg-[#0000001a]",
       },
     },
   },
@@ -46,10 +46,10 @@ export const commonContactMethodStyles = tv({
     },
     isLoading: {
       true: {
-        icon: "size-8 animate-pulse rounded-sm bg-[#0000001a]",
-        label: "h-6 w-24 animate-pulse rounded-sm bg-[#0000001a]",
-        value: "h-6 w-48 animate-pulse rounded-sm bg-[#0000001a]",
-        caption: "h-4 w-20 animate-pulse rounded-sm bg-[#0000001a]",
+        icon: "size-8 animate-pulse rounded-xs bg-[#0000001a]",
+        label: "h-6 w-24 animate-pulse rounded-xs bg-[#0000001a]",
+        value: "h-6 w-48 animate-pulse rounded-xs bg-[#0000001a]",
+        caption: "h-4 w-20 animate-pulse rounded-xs bg-[#0000001a]",
       },
     },
   },

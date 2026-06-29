@@ -1,4 +1,5 @@
 import type { HeroSearchbarProps } from "~/interfaces/complex/Hero"
+import { twMerge } from "~/lib/twMerge"
 
 import { ComponentContent } from "../../../internal/customCssClass"
 import { LocalSearchInputBox } from "../../../internal/LocalSearchInputBox"
@@ -35,7 +36,10 @@ export const SearchbarContent = ({
 }: HeroSearchbarProps) => {
   return (
     <div
-      className={`relative mx-auto flex w-full flex-col items-center gap-6 px-6 pt-11 pb-12 md:gap-9 lg:pt-16 lg:pb-20 ${ComponentContent}`}
+      className={twMerge(
+        "relative mx-auto flex w-full flex-col items-center gap-6 px-6 pt-11 pb-12 md:gap-9 lg:pt-16 lg:pb-20",
+        ComponentContent,
+      )}
     >
       <div className="flex w-full max-w-[760px] flex-col items-center gap-5 text-center md:gap-6">
         <h1 className="prose-display-lg w-full text-center">{title}</h1>

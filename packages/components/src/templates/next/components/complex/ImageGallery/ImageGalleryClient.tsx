@@ -4,6 +4,7 @@ import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useCallback, useMemo, useRef, useState, useTransition } from "react"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
+import { twMerge } from "~/lib/twMerge"
 
 import { ImageClient } from "../../internal/ImageClient"
 import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./assets"
@@ -14,13 +15,13 @@ const createImagePreviewStyles = tv({
     container:
       // Height is responsive via CSS to avoid hydration mismatch:
       // sm/md screens show 3 previews (taller), lg screens show 5 previews (shorter)
-      "focus-visible:outline-utility-highlight relative aspect-1/1 w-full flex-1 shrink-0 cursor-pointer overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] sm:h-[7.375rem] lg:h-[5.375rem]",
+      "focus-visible:outline-utility-highlight relative aspect-square w-full flex-1 shrink-0 cursor-pointer overflow-hidden border focus-visible:outline focus-visible:outline-offset-[-0.75rem] sm:h-29.5 lg:h-21.5",
   },
   variants: {
     isSelected: {
       true: {
         container:
-          "border-base-content outline-base-content outline outline-[0.25rem] outline-offset-[-0.25rem]",
+          "border-base-content outline-base-content outline outline-offset-[-0.25rem]",
       },
       false: {
         container: "border-base-divider-medium hover:opacity-80",
@@ -198,11 +199,12 @@ export const ImageGalleryClient = ({
               shouldPreload && (
                 <div
                   key={image.src + index} // in case of same src, use index as key
-                  className={`absolute inset-0 h-full w-full transition-opacity duration-150 ease-out motion-reduce:transition-none ${
+                  className={twMerge(
+                    "absolute inset-0 h-full w-full transition-opacity duration-150 ease-out motion-reduce:transition-none",
                     // z-index ensures the current image always appears on top,
                     // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
-                    isCurrentImage ? "z-10 opacity-100" : "z-0 opacity-0"
-                  }`}
+                    isCurrentImage ? "z-10 opacity-100" : "z-0 opacity-0",
+                  )}
                   aria-hidden={!isCurrentImage}
                 >
                   <div className="relative h-full w-full">

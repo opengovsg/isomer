@@ -31,8 +31,8 @@ interface Size {
 const createNavbarStyles = tv({
   slots: {
     navbar: "relative flex flex-col",
-    navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
-    logo: "focus-visible:bg-utility-highlight flex shrink-0 rounded-sm",
+    navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-17",
+    logo: "focus-visible:bg-utility-highlight flex shrink-0 rounded-xs",
     navigationSection: "flex w-full flex-col items-center justify-between",
     primaryNavigationSection: "flex w-full items-center justify-end",
     utilityNavigationSection:

@@ -1,4 +1,5 @@
 import type { HeroGradientProps } from "~/interfaces/complex/Hero"
+import { twMerge } from "~/lib/twMerge"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 
 import { ComponentContent } from "../../internal/customCssClass"
@@ -16,9 +17,9 @@ export const HeroGradient = ({
   site,
 }: HeroGradientProps) => {
   return (
-    <section className="relative flex min-h-[15rem] sm:min-h-[22.5rem] lg:min-h-[31.25rem]">
+    <section className="relative flex min-h-60 sm:min-h-90 lg:min-h-125">
       <div
-        className="absolute inset-0 min-h-[15rem] min-w-full overflow-hidden sm:min-h-[22.5rem] lg:min-h-[31.25rem]"
+        className="absolute inset-0 min-h-60 min-w-full overflow-hidden sm:min-h-90 lg:min-h-125"
         style={{ contain: "layout" }}
         aria-hidden
       >
@@ -33,7 +34,10 @@ export const HeroGradient = ({
       </div>
       <div className="relative z-10 w-full content-center bg-gradient-to-r from-[rgba(0,0,0,85%)] to-[rgba(0,0,0,10%)] xl:from-[rgba(0,0,0,100%)]">
         <div
-          className={`${ComponentContent} text-base-content-inverse flex flex-row justify-start py-16 text-start`}
+          className={twMerge(
+            ComponentContent,
+            "text-base-content-inverse flex flex-row justify-start py-16 text-start",
+          )}
         >
           <div className="xl:max-w-50% flex w-full flex-col gap-9 sm:w-3/5">
             <div className="flex flex-col gap-6">
