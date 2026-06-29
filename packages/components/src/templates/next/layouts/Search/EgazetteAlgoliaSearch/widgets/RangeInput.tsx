@@ -142,7 +142,7 @@ export const RangeInput = ({
         <button
           type="submit"
           disabled={!canRefine}
-          className="prose-headline-base-medium h-10 rounded border border-base-content-strong bg-white px-3 text-base-content disabled:opacity-50"
+          className="prose-headline-base-medium border-base-content-strong text-base-content h-10 rounded border bg-white px-3 disabled:opacity-50"
         >
           Go
         </button>

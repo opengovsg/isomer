@@ -32,7 +32,7 @@ export const SearchBox = () => {
     <label className="relative flex w-full items-center">
       <BiSearch
         aria-hidden
-        className="pointer-events-none absolute left-3 h-5 w-5 text-base-content-medium"
+        className="text-base-content-medium pointer-events-none absolute left-3 h-5 w-5"
       />
       <span className="sr-only">Search</span>
       <input
@@ -46,7 +46,7 @@ export const SearchBox = () => {
           if (timerRef.current) clearTimeout(timerRef.current)
           timerRef.current = setTimeout(() => refine(next), DEBOUNCE_MS)
         }}
-        className="prose-body-base h-12 w-full rounded border border-base-content-strong bg-white pl-10 pr-3 text-base-content placeholder:text-base-content-medium focus:outline-none focus:ring-2 focus:ring-utility-highlight"
+        className="prose-body-base border-base-content-strong text-base-content placeholder:text-base-content-medium focus:ring-utility-highlight h-12 w-full rounded border bg-white pr-3 pl-10 focus:ring-2 focus:outline-none"
       />
     </label>
   )

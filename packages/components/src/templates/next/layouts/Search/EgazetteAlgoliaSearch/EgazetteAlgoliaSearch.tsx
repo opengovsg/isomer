@@ -25,7 +25,7 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
   <h3 className="prose-headline-base-semibold text-base-content">{children}</h3>
 )
 
-const Divider = () => <hr className="border-t border-base-divider-medium" />
+const Divider = () => <hr className="border-base-divider-medium border-t" />
 
 export const EgazetteAlgoliaSearch = ({
   config,

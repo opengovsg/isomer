@@ -35,13 +35,13 @@ export const CurrentRefinements = () => {
           return (
             <li
               key={`${group.attribute}-${refinement.value}`}
-              className="prose-body-sm inline-flex items-center gap-1 rounded-full border border-base-content-strong bg-white px-3 py-1 text-base-content transition-colors hover:bg-base-canvas-backdrop/50"
+              className="prose-body-sm border-base-content-strong text-base-content hover:bg-base-canvas-backdrop/50 inline-flex items-center gap-1 rounded-full border bg-white px-3 py-1 transition-colors"
             >
               {display}
               <Button
                 variant="unstyled"
                 onPress={() => refine(refinement)}
-                className="inline-flex h-auto min-h-0 items-center gap-0 rounded-full p-0 transition-colors active:bg-base-canvas-backdrop/80"
+                className="active:bg-base-canvas-backdrop/80 inline-flex h-auto min-h-0 items-center gap-0 rounded-full p-0 transition-colors"
               >
                 <BiX aria-hidden className="h-4 w-4" />
                 <span className="sr-only">Remove filter</span>

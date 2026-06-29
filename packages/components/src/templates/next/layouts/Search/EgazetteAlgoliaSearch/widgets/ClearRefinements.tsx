@@ -10,7 +10,7 @@ export const ClearRefinements = () => {
     <Button
       variant="unstyled"
       onClick={() => refine()}
-      className="prose-headline-base-medium self-start p-0 text-link underline underline-offset-2 hover:text-link-hover"
+      className="prose-headline-base-medium text-link hover:text-link-hover self-start p-0 underline underline-offset-2"
     >
       Clear refinements
     </Button>
