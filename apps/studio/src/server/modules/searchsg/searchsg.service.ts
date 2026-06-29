@@ -131,35 +131,45 @@ export const updateSearchSGConfig = async (
     throw error
   }
 
-  if (props._kind === "colour") {
-    const app = findWebsiteSearchApp(data.siteDetail.applications)
+  const kind = props._kind
+  switch (kind) {
+    case "colour":
+      const app = findWebsiteSearchApp(data.siteDetail.applications)
 
-    return client
-      .url(SearchSgApi.appPatch(searchsgClientId, app.appId))
-      .json({
-        config: { theme: { primary: props.colour, fontFamily: "Inter" } },
-      })
-      .patch()
-      .res()
-      .catch(logAndRethrow)
+      return client
+        .url(SearchSgApi.appPatch(searchsgClientId, app.appId))
+        .json({
+          config: { theme: { primary: props.colour, fontFamily: "Inter" } },
+        })
+        .patch()
+        .res()
+        .catch(logAndRethrow)
+    case "name":
+      const { projectId } = data.project
+      if (!projectId) {
+        logger.error(
+          { data },
+          `[ERROR] No projectId found in SearchSG site response for ${url} with searchsg client id: ${searchsgClientId}`,
+        )
+        throw new Error(
+          `No projectId found in SearchSG site response for searchsgClientId: ${searchsgClientId}`,
+        )
+      }
+
+      return client
+        .url(SearchSgApi.project(projectId))
+        .json({ projectName: props.name, adminList: ["isomer@open.gov.sg"] })
+        .patch()
+        .res()
+        .catch(logAndRethrow)
+    default: {
+      const exhaustiveCheck: never = kind
+      const invalidKind = exhaustiveCheck as string
+      logger.error(
+        { kind: invalidKind },
+        `[ERROR] Invalid SearchSG config update kind: ${invalidKind}`,
+      )
+      throw new Error(`Invalid SearchSG config update kind: ${invalidKind}`)
+    }
   }
-
-  // props._kind === "name"
-  const { projectId } = data.project
-  if (!projectId) {
-    logger.error(
-      { data },
-      `[ERROR] No projectId found in SearchSG site response for ${url} with searchsg client id: ${searchsgClientId}`,
-    )
-    throw new Error(
-      `No projectId found in SearchSG site response for searchsgClientId: ${searchsgClientId}`,
-    )
-  }
-
-  return client
-    .url(SearchSgApi.project(projectId))
-    .json({ projectName: props.name, adminList: ["isomer@open.gov.sg"] })
-    .patch()
-    .res()
-    .catch(logAndRethrow)
 }
