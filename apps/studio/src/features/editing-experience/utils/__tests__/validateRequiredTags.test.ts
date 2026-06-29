@@ -99,6 +99,26 @@ describe("validateRequiredTags", () => {
     expect(result.unfilledRequiredCategories).toEqual([otherRequiredCategory])
   })
 
+  it("treats a required category with no options as satisfied", () => {
+    // Arrange
+    const emptyRequiredCategory: CollectionTags[number] = {
+      id: "d81ef54f-9cgg-87b6-e9ab-4i46f6g7h813",
+      label: "Deleted options",
+      isRequired: true,
+      options: [],
+    }
+
+    // Act
+    const result = validateRequiredTags(
+      [emptyRequiredCategory, requiredCategory],
+      [],
+    )
+
+    // Assert
+    expect(result.isValid).toBe(false)
+    expect(result.unfilledRequiredCategories).toEqual([requiredCategory])
+  })
+
   it("treats isRequired as false when omitted on a category", () => {
     // Arrange
     const categoryWithoutRequiredFlag: CollectionTags[number] = {

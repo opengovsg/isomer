@@ -8,7 +8,9 @@ export function validateRequiredTags(
 ) {
   const unfilledRequiredCategories = tags.filter(
     ({ isRequired, options }) =>
-      isRequired && !options.some(({ id }) => tagged?.includes(id)),
+      isRequired &&
+      options.length > 0 &&
+      !options.some(({ id }) => tagged?.includes(id)),
   )
 
   return {
