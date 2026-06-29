@@ -26,12 +26,21 @@ const generateRequestData = ({
   primary,
 }: GenerateRequestDataParams) => {
   return {
-    project: { agencyId: 31, projectName: name, adminList: ["isomer@open.gov.sg"] },
+    project: {
+      agencyId: 31,
+      projectName: name,
+      adminList: ["isomer@open.gov.sg"],
+    },
     index: {
       indexType: "websiteSearch",
       indexName: name,
       dataSources: {
-        web: [{ startingUrl: domain, documentIndexConfig: { indexWhitelist: [], indexBlacklist: [] } }],
+        web: [
+          {
+            startingUrl: domain,
+            documentIndexConfig: { indexWhitelist: [], indexBlacklist: [] },
+          },
+        ],
         api: [],
         pushApi: { enabled: false },
       },
@@ -41,7 +50,12 @@ const generateRequestData = ({
         siteName: name,
         siteDomain,
         environment: "production",
-        apps: [{ appType: "websiteSearch", config: { theme: { primary, fontFamily: "Inter" } } }],
+        apps: [
+          {
+            appType: "websiteSearch",
+            config: { theme: { primary, fontFamily: "Inter" } },
+          },
+        ],
       },
     ],
   }
@@ -92,7 +106,7 @@ export const createSearchSgClientForGithub = async ({
 }
 
 interface SearchSgBootstrapResponse {
-  data: { sites: Array<{ siteClientId: string }> }
+  data: { sites: { siteClientId: string }[] }
 }
 
 interface SearchSgConfig {
