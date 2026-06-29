@@ -106,17 +106,33 @@ export const AddUserModal = () => {
     },
   )
 
-  const { data: isWhitelistedAsAdmin, refetch: checkAdminWhitelist } =
-    trpc.whitelist.isEmailWhitelistedAsAdmin.useQuery(
-      { siteId, email: (debouncedEmail || "").trim() },
-      {
-        enabled: false,
-      },
-    )
+  const {
+    data: isWhitelistedAsAdmin,
+    refetch: checkAdminWhitelist,
+    isFetching: isCheckingAdminWhitelist,
+  } = trpc.whitelist.isEmailWhitelistedAsAdmin.useQuery(
+    { siteId, email: (debouncedEmail || "").trim() },
+    {
+      enabled: false,
+    },
+  )
 
   const isEmailNotWhitelistedAsAdmin = useMemo(
-    () => !!(!errors.email && email && !isWhitelistedAsAdmin),
-    [errors.email, email, isWhitelistedAsAdmin],
+    () =>
+      !!(
+        !errors.email &&
+        email &&
+        (email !== debouncedEmail ||
+          isCheckingAdminWhitelist ||
+          !isWhitelistedAsAdmin)
+      ),
+    [
+      errors.email,
+      email,
+      debouncedEmail,
+      isCheckingAdminWhitelist,
+      isWhitelistedAsAdmin,
+    ],
   )
 
   useEffect(() => {
