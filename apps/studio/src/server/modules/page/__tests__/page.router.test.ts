@@ -22,6 +22,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { normalizeRedirectPath } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import {
   AuditLogEvent,
@@ -32,7 +33,11 @@ import {
 import type { User } from "../../database"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, jsonb } from "../../database"
-import { getBlobOfResource, getPageById } from "../../resource/resource.service"
+import {
+  getBlobOfResource,
+  getPageById,
+  getResourceFullPermalink,
+} from "../../resource/resource.service"
 import { pageRouter } from "../page.router"
 import { createDefaultPage } from "../page.service"
 
@@ -766,6 +771,177 @@ describe("page.router", async () => {
 
       // Assert
       expect(result).toBeDefined()
+    })
+  })
+
+  describe("getCategoryOptions", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.getCategoryOptions({ siteId: 1, pageId: 1 })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.CollectionPage,
+      })
+
+      // Act
+      const result = caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      expect(result.categoryOptions).toEqual([])
+    })
+
+    it("should throw 404 when the resource has no parent collection", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.RootPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Page not found",
+        }),
+      )
+    })
+
+    it("should throw 400 when the resource's parent is not a Collection", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Page is not a child of a Collection",
+        }),
+      )
+    })
+
+    it("should return category options from the published collection index blob", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { blob: indexBlob } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: user.id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", indexBlob.id)
+        .set({
+          content: jsonb({
+            ...indexBlob.content,
+            page: {
+              ...indexBlob.content.page,
+              categoryOptions: [
+                {
+                  id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                  label: "Alpha",
+                },
+                {
+                  id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                  label: "Beta",
+                },
+              ],
+            },
+          }),
+        })
+        .execute()
+
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(collectionPage.id),
+      })
+
+      // Assert
+      expect(result.categoryOptions).toEqual([
+        { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", label: "Alpha" },
+        { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", label: "Beta" },
+      ])
     })
   })
 
@@ -2051,6 +2227,110 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
       expect(auditLogs.length).toEqual(1)
+    })
+
+    it("should block the first publish when a live redirect occupies the page's URL", async () => {
+      // Arrange — a draft page whose URL already has a live redirect
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: normalizeRedirectPath(fullPermalink!),
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act
+      const result = caller.publishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert — blocked, and nothing published
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "CONFLICT",
+          message: `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
+        }),
+      )
+      const versions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versions.length).toEqual(0)
+    })
+
+    it("should allow publishing when a redirect exists at a different path", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/some-unrelated-path",
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — published normally
+      const versions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versions.length).toEqual(1)
+    })
+
+    it("should not block re-publishing an already-published page whose URL has a redirect", async () => {
+      // Arrange — an already-published page (the source-guard gap aside, this
+      // can happen via imported data). Only the first publish is gated.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: normalizeRedirectPath(fullPermalink!),
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act / Assert — re-publish is not blocked
+      await expect(
+        caller.publishPage({ siteId: site.id, pageId: Number(page.id) }),
+      ).resolves.toBeUndefined()
     })
   })
 

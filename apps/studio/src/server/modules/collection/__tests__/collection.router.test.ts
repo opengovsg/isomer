@@ -1451,6 +1451,50 @@ describe("collection.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
     })
 
+    it("should preserve `categoryId` in the blob after saving", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const testCategoryId = "aaaaaaaa-bbbb-4ccc-a222-aaaaaaaaaaaa"
+
+      // Act
+      const result = await caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "https://example.com",
+        linkId: Number(page.id),
+        categoryId: testCategoryId,
+      })
+
+      // Assert
+      expect(
+        (result.content.page as { categoryId?: string }).categoryId,
+      ).toEqual(testCategoryId)
+    })
+
+    it("should write `categoryId` as `undefined` when not provided in the input", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "CollectionLink",
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+      // Act — no categoryId passed
+      const result = await caller.updateCollectionLink({
+        siteId: site.id,
+        category: "category",
+        ref: "https://example.com",
+        linkId: Number(page.id),
+      })
+
+      // Assert
+      expect(
+        (result.content.page as { categoryId?: string }).categoryId,
+      ).toBeUndefined()
+    })
+
     it.skip("should throw when trying to update to a deleted `ref`")
 
     it.skip("should throw when trying to update to an invalid `ref`")
@@ -1638,6 +1682,313 @@ describe("collection.router", async () => {
     })
   })
 
+  describe("getCategoryOptionUsageCount", () => {
+    const CATEGORY_A = "aaaaaaaa-bbbb-4ccc-a222-aaaaaaaaaaaa"
+    const CATEGORY_B = "bbbbbbbb-bbbb-4ccc-b222-bbbbbbbbbbbb"
+
+    const articleBlobWithCategoryId = (categoryId: string) => ({
+      layout: "article" as const,
+      page: {
+        date: "01/01/2025",
+        category: "Label",
+        categoryId,
+        articlePageHeader: { summary: "Summary" },
+      },
+      content: [],
+      version: "0.1.0",
+    })
+
+    it("should throw 401 if not logged in", async () => {
+      // Act
+      const result = unauthedCaller.getCategoryOptionUsageCount({
+        siteId: 1,
+        indexPageId: 1,
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+
+      // Act
+      const result = caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        indexPageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw 404 when the page is not a collection index", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        indexPageId: Number(collectionPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        }),
+      )
+    })
+
+    it("should throw 404 when the index page's parent is a folder, not a collection", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page: folderIndexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        indexPageId: Number(folderIndexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        }),
+      )
+    })
+
+    it("should return count 0 when no item uses the category id", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      const { blob } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(articleBlobWithCategoryId(CATEGORY_B)) })
+        .where("id", "=", blob.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        indexPageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 0 })
+    })
+
+    it("should return count 1 when one draft item matches page.categoryId", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      const { blob } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(articleBlobWithCategoryId(CATEGORY_A)) })
+        .where("id", "=", blob.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        indexPageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 1 })
+    })
+
+    it("should return count 2 when two items share the same categoryId", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      const { blob: blob1 } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "item-one",
+      })
+      const { blob: blob2 } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "item-two",
+      })
+      const content = articleBlobWithCategoryId(CATEGORY_A)
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(content) })
+        .where("id", "=", blob1.id)
+        .execute()
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(content) })
+        .where("id", "=", blob2.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        indexPageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      expect(result).toEqual({ count: 2 })
+    })
+
+    it("should count an item that only has categoryId on the published blob", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      const { blob, page } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+        permalink: "published-only",
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(articleBlobWithCategoryId(CATEGORY_A)) })
+        .where("id", "=", blob.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        indexPageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .select(["draftBlobId", "publishedVersionId"])
+        .executeTakeFirstOrThrow()
+      expect(resource.draftBlobId).toBeNull()
+      expect(result).toEqual({ count: 1 })
+    })
+
+    it("should count a CollectionLink item that matches page.categoryId", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+      })
+      const { collectionLink, blob } = await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+      })
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(articleBlobWithCategoryId(CATEGORY_A)) })
+        .where("id", "=", blob.id)
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptionUsageCount({
+        siteId: site.id,
+        indexPageId: Number(indexPage.id),
+        categoryId: CATEGORY_A,
+      })
+
+      // Assert
+      expect(collectionLink.type).toBe(ResourceType.CollectionLink)
+      expect(result).toEqual({ count: 1 })
+    })
+  })
+
   describe("countTagOptionsUsage", () => {
     const TAG_OPTION_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
     const TAG_OPTION_B = "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"
@@ -1728,7 +2079,7 @@ describe("collection.router", async () => {
       )
     })
 
-    it("should throw 404 if pageId is not a collection index page", async () => {
+    it("should throw 404 if indexPageId is not a collection index page", async () => {
       // Arrange
       const { site, page } = await setupPageResource({ resourceType: "Page" })
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
@@ -2062,6 +2413,158 @@ describe("collection.router", async () => {
       })
 
       expect(result).toEqual({ count: 1 })
+    })
+  })
+
+  describe("getCollectionTags", () => {
+    const TAG_CATEGORY_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+    const TAG_OPTION_ID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+
+    const indexPageBlobWithTags = () => ({
+      layout: "collection" as const,
+      page: {
+        title: "Test Collection",
+        subtitle: "Test subtitle",
+        tagCategories: [
+          {
+            id: TAG_CATEGORY_ID,
+            label: "Topic",
+            isRequired: false,
+            options: [{ id: TAG_OPTION_ID, label: "Technology" }],
+          },
+        ],
+      },
+      content: [],
+      version: "0.1.0",
+    })
+
+    async function setupCollectionWithIndexPage() {
+      const { collection, site } = await setupCollection()
+      const { page: indexPage, blob: indexBlob } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: collection.id,
+      })
+      return { collection, site, indexPage, indexBlob }
+    }
+
+    async function publishIndexPageWithTags(indexPageId: string) {
+      const publishedBlob = await db
+        .insertInto("Blob")
+        .values({ content: jsonb(indexPageBlobWithTags()) })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: indexPageId,
+          blobId: publishedBlob.id,
+          publishedBy: session.userId!,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      await db
+        .updateTable("Resource")
+        .set({ publishedVersionId: version.id })
+        .where("id", "=", indexPageId)
+        .execute()
+    }
+
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = unauthedCaller.getCollectionTags({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = caller.getCollectionTags({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return tag categories from the published blob by default", async () => {
+      // Arrange
+      const { collection, site, indexPage } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      await publishIndexPageWithTags(indexPage.id)
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = await caller.getCollectionTags({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({ id: TAG_CATEGORY_ID, label: "Topic" })
+    })
+
+    it("should return empty array when collection has no published version", async () => {
+      // Arrange
+      const { collection, site, indexBlob } =
+        await setupCollectionWithIndexPage()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+      // Put tags in draft only — no published version
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(indexPageBlobWithTags()) })
+        .where("id", "=", indexBlob.id)
+        .execute()
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+      })
+
+      // Act
+      const result = await caller.getCollectionTags({
+        siteId: site.id,
+        resourceId: Number(collectionPage.id),
+      })
+
+      // Assert: always published-only, no draft fallback
+      expect(result).toHaveLength(0)
     })
   })
 })

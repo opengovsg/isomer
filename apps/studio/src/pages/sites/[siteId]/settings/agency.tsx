@@ -71,6 +71,7 @@ const AgencySettingsPage: NextPageWithLayout = () => {
   const onSubmit = () =>
     updateSiteConfigMutation.mutate({
       siteName: state.siteName,
+      agencyName: state.agencyName,
       siteId,
       ...rest,
     })
