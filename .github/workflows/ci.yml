@@ -96,7 +96,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
@@ -133,21 +132,31 @@ jobs:
           pnpm --filter isomer-base-template run build:template
           bash "$RUNNER_TEMP/measure-template-bundle.sh" tooling/template/out >> "$GITHUB_OUTPUT"
 
-      - name: Comment bundle size delta
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_FRAMEWORK: ${{ steps.pr.outputs.framework }}
-          PR_VENDOR: ${{ steps.pr.outputs.vendor }}
-          PR_PAGE: ${{ steps.pr.outputs.page }}
-          PR_CSS: ${{ steps.pr.outputs.css }}
-          PR_TOTAL: ${{ steps.pr.outputs.total }}
-          BASE_FRAMEWORK: ${{ steps.base.outputs.framework }}
-          BASE_VENDOR: ${{ steps.base.outputs.vendor }}
-          BASE_PAGE: ${{ steps.base.outputs.page }}
-          BASE_CSS: ${{ steps.base.outputs.css }}
-          BASE_TOTAL: ${{ steps.base.outputs.total }}
-        run: bash "$RUNNER_TEMP/comment-template-bundle-size.sh"
+      # Save metrics + the comment script into an artifact so post-pr-comment.yml
+      # can post the comment from the base-repo context (where GITHUB_TOKEN always
+      # has write access, even for fork PRs).
+      - name: Save bundle size metadata
+        run: |
+          mkdir -p /tmp/bundle-size-metadata
+          printf '%s' "${{ github.event.pull_request.number }}" > /tmp/bundle-size-metadata/pr-number.txt
+          printf '%s' "${{ steps.pr.outputs.framework }}"       > /tmp/bundle-size-metadata/pr-framework.txt
+          printf '%s' "${{ steps.pr.outputs.vendor }}"          > /tmp/bundle-size-metadata/pr-vendor.txt
+          printf '%s' "${{ steps.pr.outputs.page }}"            > /tmp/bundle-size-metadata/pr-page.txt
+          printf '%s' "${{ steps.pr.outputs.css }}"             > /tmp/bundle-size-metadata/pr-css.txt
+          printf '%s' "${{ steps.pr.outputs.total }}"           > /tmp/bundle-size-metadata/pr-total.txt
+          printf '%s' "${{ steps.base.outputs.framework }}"     > /tmp/bundle-size-metadata/base-framework.txt
+          printf '%s' "${{ steps.base.outputs.vendor }}"        > /tmp/bundle-size-metadata/base-vendor.txt
+          printf '%s' "${{ steps.base.outputs.page }}"          > /tmp/bundle-size-metadata/base-page.txt
+          printf '%s' "${{ steps.base.outputs.css }}"           > /tmp/bundle-size-metadata/base-css.txt
+          printf '%s' "${{ steps.base.outputs.total }}"         > /tmp/bundle-size-metadata/base-total.txt
+          cp "$RUNNER_TEMP/comment-template-bundle-size.sh"       /tmp/bundle-size-metadata/
+
+      - name: Upload bundle size metadata
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bundle-size-metadata
+          path: /tmp/bundle-size-metadata/
+          retention-days: 7
 
   unit-integration-tests:
     name: Unit & integration tests

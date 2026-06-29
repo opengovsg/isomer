@@ -78,3 +78,40 @@ jobs:
 
             Each test has its own directory under the zip; play `video.webm` to watch the run.
             Workflow: [run #${{ github.event.workflow_run.id }}](${{ github.event.workflow_run.html_url }}) — artifact expires in 7 days.
+
+  post-bundle-size-comment:
+    # Mirror of post-comment above — same fork-PR restriction applies.
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download bundle size metadata
+        id: download
+        # Won't exist when the components-bundle-size job was skipped (no
+        # component changes or optimizer short-circuit). continue-on-error lets
+        # the step gate cleanly on outcome instead of failing the job.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download ${{ github.event.workflow_run.id }} \
+            --name bundle-size-metadata \
+            --dir /tmp/bundle-size-metadata \
+            --repo ${{ github.repository }}
+
+      - name: Post bundle size comment
+        if: steps.download.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export PR_NUMBER=$(cat /tmp/bundle-size-metadata/pr-number.txt)
+          export PR_FRAMEWORK=$(cat /tmp/bundle-size-metadata/pr-framework.txt)
+          export PR_VENDOR=$(cat /tmp/bundle-size-metadata/pr-vendor.txt)
+          export PR_PAGE=$(cat /tmp/bundle-size-metadata/pr-page.txt)
+          export PR_CSS=$(cat /tmp/bundle-size-metadata/pr-css.txt)
+          export PR_TOTAL=$(cat /tmp/bundle-size-metadata/pr-total.txt)
+          export BASE_FRAMEWORK=$(cat /tmp/bundle-size-metadata/base-framework.txt)
+          export BASE_VENDOR=$(cat /tmp/bundle-size-metadata/base-vendor.txt)
+          export BASE_PAGE=$(cat /tmp/bundle-size-metadata/base-page.txt)
+          export BASE_CSS=$(cat /tmp/bundle-size-metadata/base-css.txt)
+          export BASE_TOTAL=$(cat /tmp/bundle-size-metadata/base-total.txt)
+          bash /tmp/bundle-size-metadata/comment-template-bundle-size.sh
