@@ -1,3 +1,4 @@
+import type { GetServerSideProps } from "next"
 import {
   Button,
   Center,
@@ -13,19 +14,23 @@ import {
   Textarea,
   useToast,
 } from "@opengovsg/design-system-react"
-import { useRouter } from "next/router"
-import { useEffect, useRef, useState } from "react"
+import { getIronSession } from "iron-session"
+import { useState } from "react"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
+import { type SessionData } from "~/lib/types/session"
 import { setSiteConfigByAdminSchema } from "~/schemas/site"
+import { generateSessionOptions } from "~/server/modules/auth/session"
+import { db } from "~/server/modules/database"
+import { defaultUserSelect } from "~/server/modules/me/me.select"
+import { isActiveIsomerAdmin } from "~/server/modules/permissions/permissions.service"
+import { isEmailWhitelisted } from "~/server/modules/whitelist/whitelist.service"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
@@ -41,13 +46,59 @@ const SUPPORTED_SITE_CONFIG_TYPES = [
   "footer",
 ] as const
 
-const UNAUTHORIZED_TOAST_ID = "site-admin-unauthorized"
-
-interface SiteAdminFormProps {
+interface SiteAdminPageProps {
   siteId: number
 }
 
-const SiteAdminForm = ({ siteId }: SiteAdminFormProps) => {
+export const getServerSideProps: GetServerSideProps<
+  SiteAdminPageProps
+> = async ({ params, req, res }) => {
+  const parsedParams = siteAdminSchema.safeParse(params)
+
+  if (!parsedParams.success) {
+    return { notFound: true }
+  }
+
+  const { siteId } = parsedParams.data
+  const session = await getIronSession<SessionData>(
+    req,
+    res,
+    generateSessionOptions({ ttlInHours: 1 }),
+  )
+  const user =
+    session.userId &&
+    (await db
+      .selectFrom("User")
+      .select(defaultUserSelect)
+      .where("id", "=", session.userId)
+      .where("deletedAt", "is", null)
+      .executeTakeFirst())
+
+  const isUserIsomerAdmin =
+    !!user &&
+    (await isEmailWhitelisted(user.email)) &&
+    (await isActiveIsomerAdmin(user.id, [
+      IsomerAdminRole.Core,
+      IsomerAdminRole.Migrator,
+    ]))
+
+  if (!isUserIsomerAdmin) {
+    return {
+      redirect: {
+        destination: `/sites/${siteId}`,
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: {
+      siteId,
+    },
+  }
+}
+
+const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
   const toast = useToast()
   const trpcUtils = trpc.useUtils()
 
@@ -195,39 +246,6 @@ const SiteAdminForm = ({ siteId }: SiteAdminFormProps) => {
       </chakra.form>
     </>
   )
-}
-
-const SiteAdminPage: NextPageWithLayout = () => {
-  const toast = useToast()
-  const router = useRouter()
-  const hasRedirectedRef = useRef(false)
-  const { siteId } = useQueryParse(siteAdminSchema)
-  const { isAdmin: isUserIsomerAdmin, isLoading } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
-
-  useEffect(() => {
-    if (isLoading || isUserIsomerAdmin || hasRedirectedRef.current) {
-      return
-    }
-
-    hasRedirectedRef.current = true
-    if (!toast.isActive(UNAUTHORIZED_TOAST_ID)) {
-      toast({
-        id: UNAUTHORIZED_TOAST_ID,
-        title: "You do not have permission to access this page.",
-        status: "error",
-        ...BRIEF_TOAST_SETTINGS,
-      })
-    }
-    void router.push(`/sites/${siteId}`)
-  }, [isLoading, isUserIsomerAdmin, router, siteId, toast])
-
-  if (isLoading || !isUserIsomerAdmin) {
-    return null
-  }
-
-  return <SiteAdminForm siteId={siteId} />
 }
 
 SiteAdminPage.getLayout = (page) => {
