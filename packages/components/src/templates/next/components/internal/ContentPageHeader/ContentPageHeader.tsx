@@ -18,7 +18,7 @@ const createContentPageHeaderStyles = tv({
     image:
       "row-span-1 h-full object-cover md:col-span-1 lg:col-span-5 lg:pr-10",
     lastUpdated: "prose-body-sm mt-8",
-    title: "prose-display-lg break-words",
+    title: "prose-display-lg wrap-break-word",
     summary: "prose-title-lg-regular mt-5",
     buttonPadding: "mt-9",
   },

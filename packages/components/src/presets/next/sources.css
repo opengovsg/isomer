@@ -1,0 +1,4 @@
+/* Tailwind v4 content sources for @opengovsg/isomer-components.
+   Paths are relative to this file inside the package. */
+@source "../../../dist/**/*.{js,mjs,cjs}";
+@source "../../**/*.{js,ts,jsx,tsx}";

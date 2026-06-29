@@ -3,7 +3,7 @@ import { tv } from "~/lib/tv"
 const createScrollForMoreButtonStyles = tv({
   slots: {
     container:
-      "bottom-16 left-1/2 -translate-x-1/2 animate-slide-up-fade-in rounded-full motion-reduce:animate-none",
+      "animate-slide-up-fade-in bottom-16 left-1/2 -translate-x-1/2 rounded-full motion-reduce:animate-none",
     button:
       "z-20 flex flex-row items-center gap-0.5 rounded-full bg-black/65 px-3 py-2 text-base",
     text: "prose-headline-base-medium whitespace-nowrap text-white",

@@ -1,3 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "@opengovsg/isomer-components/presets/next/preset.css";
+@import "@opengovsg/isomer-components/presets/next/sources.css";
+
+@plugin "../plugins/site-theme.js";
+@plugin "../plugins/polyfills.js";

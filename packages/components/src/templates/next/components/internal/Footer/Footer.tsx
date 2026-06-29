@@ -52,7 +52,7 @@ const SiteNameSection = ({ siteName }: Pick<FooterProps, "siteName">) => {
 
 const footerItemLinkStyle = tv({
   extend: focusVisibleHighlight,
-  base: "prose-body-sm line-clamp-1 flex w-fit items-center gap-1 text-base-content-inverse outline-none hover:text-base-content-inverse hover:underline hover:underline-offset-4 focus-visible:-m-0.5 focus-visible:p-0.5 focus-visible:shadow-none",
+  base: "prose-body-sm text-base-content-inverse hover:text-base-content-inverse line-clamp-1 flex w-fit items-center gap-1 outline-hidden hover:underline hover:underline-offset-4 focus-visible:-m-0.5 focus-visible:p-0.5 focus-visible:shadow-none",
   variants: {
     showExternalIcon: {
       true: `after:content-['_↗']`,
@@ -70,7 +70,7 @@ const FooterItem = ({ title, url }: FooterItemType) => {
         isWithFocusVisibleHighlight
       >
         {title}
-        <BiLinkExternal className="h-auto w-3.5 flex-shrink-0 lg:w-4" />
+        <BiLinkExternal className="h-auto w-3.5 shrink-0 lg:w-4" />
       </Link>
     )
   }
@@ -284,7 +284,7 @@ const LegalSection = ({
 
 const CreditsSection = () => {
   return (
-    <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:gap-8 xl:gap-20">
+    <div className="prose-label-md-regular flex flex-col gap-6 lg:flex-row lg:max-xl:gap-8 xl:gap-20">
       <Link
         href="https://www.isomer.gov.sg"
         isExternal

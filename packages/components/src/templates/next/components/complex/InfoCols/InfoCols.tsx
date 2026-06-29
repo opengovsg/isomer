@@ -17,19 +17,19 @@ const createInfoColsStyles = tv({
     outerContainer: `${ComponentContent}`,
     innerContainer: "flex flex-col gap-12",
     header: "flex w-full max-w-[47.5rem] flex-col items-start text-left",
-    headerTitle: "prose-display-sm break-words text-base-content-strong",
+    headerTitle: "prose-display-sm text-base-content-strong wrap-break-word",
     headerSubtitle: "prose-headline-lg-regular text-base-content",
     infoBoxesContainer:
       "grid grid-cols-1 gap-x-16 gap-y-10 md:grid-cols-2 md:gap-y-12 lg:grid-cols-3",
     infoBox: "group flex flex-col items-start gap-3 text-left outline-0",
-    infoBoxIcon: "h-auto w-6 text-base-content-strong",
+    infoBoxIcon: "text-base-content-strong h-auto w-6",
     infoBoxTitle: [
       groupFocusVisibleHighlight(),
       "prose-headline-lg-semibold text-base-content-strong",
     ],
     infoBoxDescription: "prose-body-base text-base-content",
     infoBoxButton:
-      "prose-headline-base-medium items-center gap-1 text-base-content-strong",
+      "prose-headline-base-medium text-base-content-strong items-center gap-1",
     infoBoxButtonIcon:
       "mb-0.5 ml-1 inline text-[1.375rem] transition ease-in group-hover:translate-x-1",
   },

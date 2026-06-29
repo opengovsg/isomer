@@ -9,7 +9,7 @@ export const HeroSearchbar = (props: HeroSearchbarProps) => {
   if (backgroundUrl) {
     // Stacking (back to front): background image (no z-index) → overlay (before:z-10) → content (z-20).
     return (
-      <section className="relative flex w-full flex-col justify-center text-base-content-inverse before:absolute before:inset-0 before:z-10 before:bg-[#182236] before:opacity-80 md:min-h-80 lg:min-h-96">
+      <section className="text-base-content-inverse relative flex w-full flex-col justify-center before:absolute before:inset-0 before:z-10 before:bg-[#182236] before:opacity-80 md:min-h-80 lg:min-h-96">
         <div
           className="absolute inset-0 min-w-full overflow-hidden md:min-h-80 lg:min-h-96"
           style={{ contain: "layout" }}
@@ -32,7 +32,7 @@ export const HeroSearchbar = (props: HeroSearchbarProps) => {
   } else {
     return (
       <section
-        className="flex w-full flex-col justify-center text-base-content-strong md:min-h-80 lg:min-h-96"
+        className="text-base-content-strong flex w-full flex-col justify-center md:min-h-80 lg:min-h-96"
         style={{
           background:
             // Very slightly diagonal gradient going from the right-top-ish (white) to the left-bottom-ish (brand canvas color)

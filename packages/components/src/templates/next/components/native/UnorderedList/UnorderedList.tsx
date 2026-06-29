@@ -16,7 +16,7 @@ const getUnorderedListType = (level?: number) => {
 export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
   return (
     <ul
-      className={`mt-6 ps-9 marker:text-base-content ${getUnorderedListType(level)}`}
+      className={`marker:text-base-content mt-6 ps-9 ${getUnorderedListType(level)}`}
     >
       {content.map((item, index) => (
         <ListItem key={index} {...item} level={level} site={site} />

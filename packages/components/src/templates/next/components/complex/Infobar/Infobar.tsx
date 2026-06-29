@@ -13,7 +13,7 @@ export const createInfobarStyles = tv({
     outerContainer: `${ComponentContent}`,
     innerContainer: "mx-auto flex flex-col items-start",
     headingContainer: "flex flex-col gap-6",
-    title: "break-words",
+    title: "wrap-break-word",
     description: "",
     buttonContainer: "flex flex-col gap-x-5 gap-y-4 sm:flex-row",
   },

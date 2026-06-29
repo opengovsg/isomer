@@ -31,8 +31,8 @@ interface Size {
 const createNavbarStyles = tv({
   slots: {
     navbar: "relative flex flex-col",
-    navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-[4.25rem]",
-    logo: "flex flex-shrink-0 rounded focus-visible:bg-utility-highlight",
+    navbarContainer: "flex min-h-16 w-full bg-white lg:min-h-17",
+    logo: "focus-visible:bg-utility-highlight flex shrink-0 rounded-xs",
     navigationSection: "flex w-full flex-col items-center justify-between",
     primaryNavigationSection: "flex w-full items-center justify-end",
     utilityNavigationSection:
@@ -41,10 +41,10 @@ const createNavbarStyles = tv({
     utilityItemsHeader: "prose-label-sm-medium text-base-content-strong",
     utilityItem: [
       focusVisibleHighlight(),
-      "prose-label-sm-medium inline-block py-1 text-base-content-subtle hover:underline",
+      "prose-label-sm-medium text-base-content-subtle inline-block py-1 hover:underline",
     ],
     navbarItems:
-      "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-4 pl-6 pr-3 md:px-10",
+      "mx-auto flex w-full max-w-screen-xl items-center justify-between gap-x-4 pr-3 pl-6 md:px-10",
     navItemContainer: "hidden flex-1 items-center gap-x-4 pl-2 lg:flex",
     callToAction: "align-content h-fit",
     buttonsSection: "flex flex-row gap-1",
@@ -225,7 +225,7 @@ export const NavbarClient = ({
                   isWithFocusVisibleHighlight
                 >
                   {isPinned ? (
-                    <span className="max-w-[10rem] truncate max-xs:line-clamp-2 max-xs:whitespace-normal">
+                    <span className="max-xs:line-clamp-2 max-xs:whitespace-normal max-w-[10rem] truncate">
                       {callToAction.label}
                     </span>
                   ) : (

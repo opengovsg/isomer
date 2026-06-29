@@ -4,6 +4,7 @@ import type { ImageGalleryClientProps } from "~/interfaces/complex/ImageGallery"
 import { useCallback, useMemo, useRef, useState, useTransition } from "react"
 import { useBreakpoint } from "~/hooks/useBreakpoint"
 import { tv } from "~/lib/tv"
+import { twMerge } from "~/lib/twMerge"
 
 import { ImageClient } from "../../internal/ImageClient"
 import { LEFT_ARROW_SVG, RIGHT_ARROW_SVG } from "./assets"
@@ -14,13 +15,13 @@ const createImagePreviewStyles = tv({
     container:
       // Height is responsive via CSS to avoid hydration mismatch:
       // sm/md screens show 3 previews (taller), lg screens show 5 previews (shorter)
-      "relative aspect-[1/1] w-full flex-1 flex-shrink-0 overflow-hidden border-[1px] focus-visible:outline focus-visible:outline-[0.75rem] focus-visible:outline-offset-[-0.75rem] focus-visible:outline-utility-highlight sm:h-[7.375rem] lg:h-[5.375rem]",
+      "focus-visible:outline-utility-highlight relative aspect-square w-full flex-1 shrink-0 cursor-pointer overflow-hidden border focus-visible:outline focus-visible:outline-offset-[-0.75rem] sm:h-29.5 lg:h-21.5",
   },
   variants: {
     isSelected: {
       true: {
         container:
-          "border-base-content outline outline-[0.25rem] outline-offset-[-0.25rem] outline-base-content",
+          "border-base-content outline-base-content outline outline-offset-[-0.25rem]",
       },
       false: {
         container: "border-base-divider-medium hover:opacity-80",
@@ -177,7 +178,7 @@ export const ImageGalleryClient = ({
       aria-label="Image gallery"
     >
       {/* Main Slideshow */}
-      <div className="relative h-[17rem] w-full overflow-hidden border bg-white sm:h-[28.5rem]">
+      <div className="border-base-divider-subtle relative h-[17rem] w-full overflow-hidden border bg-white sm:h-[28.5rem]">
         <div className="relative h-full w-full">
           {images.map((image, index) => {
             const isCurrentImage = index === currentIndex
@@ -197,11 +198,12 @@ export const ImageGalleryClient = ({
               shouldPreload && (
                 <div
                   key={image.src + index} // in case of same src, use index as key
-                  className={`absolute inset-0 h-full w-full transition-opacity duration-150 ease-out motion-reduce:transition-none ${
+                  className={twMerge(
+                    "absolute inset-0 h-full w-full transition-opacity duration-150 ease-out motion-reduce:transition-none",
                     // z-index ensures the current image always appears on top,
                     // preventing visual glitches when images overlap during transitions or when rapidly changing slides.
-                    isCurrentImage ? "z-10 opacity-100" : "z-0 opacity-0"
-                  }`}
+                    isCurrentImage ? "z-10 opacity-100" : "z-0 opacity-0",
+                  )}
                   aria-hidden={!isCurrentImage}
                 >
                   <div className="relative h-full w-full">
@@ -220,7 +222,7 @@ export const ImageGalleryClient = ({
                       }
                     />
                     {image.caption && (
-                      <div className="prose-label-sm-medium absolute bottom-0 left-0 right-0 bg-base-canvas-inverse-overlay/90 p-3 text-white">
+                      <div className="bg-base-canvas-inverse-overlay/90 prose-label-sm-medium absolute right-0 bottom-0 left-0 p-3 text-white">
                         <div className="line-clamp-3">{image.caption}</div>
                       </div>
                     )}
@@ -233,7 +235,7 @@ export const ImageGalleryClient = ({
 
         {/* Navigation Controls - Accessible via keyboard tab navigation */}
         <button
-          className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
+          className="bg-base-canvas-inverse-overlay/90 hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:ring-utility-highlight absolute top-1/2 left-4 z-20 -translate-y-1/2 cursor-pointer rounded-full border-2 border-white p-1 text-white focus-visible:ring-[0.375rem] focus-visible:outline-hidden"
           aria-label="Previous image"
           disabled={isPending}
           onMouseEnter={() => handlePreviewButtonEngagement()}
@@ -245,7 +247,7 @@ export const ImageGalleryClient = ({
         </button>
 
         <button
-          className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full border-2 border-white bg-base-canvas-inverse-overlay/90 p-1 text-white hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:outline-none focus-visible:ring-[0.375rem] focus-visible:ring-utility-highlight"
+          className="bg-base-canvas-inverse-overlay/90 hover:bg-base-canvas-inverse-overlay focus-visible:border-utility-highlight focus-visible:bg-base-canvas-inverse-overlay focus-visible:ring-utility-highlight absolute top-1/2 right-4 z-20 -translate-y-1/2 cursor-pointer rounded-full border-2 border-white p-1 text-white focus-visible:ring-[0.375rem] focus-visible:outline-hidden"
           aria-label="Next image"
           disabled={isPending}
           onTouchStart={() => preloadNextImage()}

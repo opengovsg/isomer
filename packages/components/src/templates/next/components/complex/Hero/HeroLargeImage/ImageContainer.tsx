@@ -62,7 +62,7 @@ export const ImageContainer = ({
         src={imageSrc}
         alt={imageAlt}
         width="100%"
-        className="aspect-square max-h-[60rem] w-full object-cover object-center md:aspect-[2/1]"
+        className="aspect-square max-h-[60rem] w-full object-cover object-center md:aspect-2/1"
         assetsBaseUrl={assetsBaseUrl}
         lazyLoading={false} // hero is always above the fold
       />

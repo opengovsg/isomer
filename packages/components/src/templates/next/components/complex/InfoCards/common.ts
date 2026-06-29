@@ -6,14 +6,14 @@ import { ComponentContent } from "../../internal/customCssClass"
 
 export const infoCardTitleStyle = tv({
   extend: groupFocusVisibleHighlight,
-  base: "prose-headline-lg-semibold relative text-base-content-strong",
+  base: "prose-headline-lg-semibold text-base-content-strong relative",
   variants: {
     isClickableCard: {
       true: "",
     },
     variant: {
       [INFOCARD_VARIANT.default]: "",
-      [INFOCARD_VARIANT.bold]: "h-full text-base-content-inverse",
+      [INFOCARD_VARIANT.bold]: "text-base-content-inverse h-full",
     },
   },
   compoundVariants: [
@@ -29,12 +29,12 @@ const singleInfoCardStyle = tv({
   slots: {
     cardContainer: "group flex flex-col gap-5 outline-0",
     cardImage: "h-full w-full object-center",
-    cardTextContainer: "flex flex-col break-words",
+    cardTextContainer: "flex flex-col wrap-break-word",
     cardTitleArrow:
       "mb-0.5 ml-1 inline h-auto w-6 shrink-0 transition ease-in group-hover:translate-x-1",
     cardDescription: "prose-body-base text-base-content",
     cardImageContainer:
-      "w-full overflow-hidden border border-base-divider-subtle bg-base-canvas drop-shadow-none transition ease-in",
+      "border-base-divider-subtle bg-base-canvas w-full overflow-hidden border drop-shadow-none transition ease-in",
   },
   variants: {
     variant: {
@@ -47,7 +47,7 @@ const singleInfoCardStyle = tv({
       [INFOCARD_VARIANT.bold]: {
         cardTextContainer: "align-self-bottom text-base-content-inverse",
         cardImageContainer: "h-full",
-        cardContainer: "relative aspect-square lg:aspect-[2/3]",
+        cardContainer: "relative aspect-square lg:aspect-2/3",
       },
     },
     isClickableCard: {
@@ -87,7 +87,7 @@ const createInfoCardsStyles = tv({
   slots: {
     container: `${ComponentContent} flex flex-col`,
     headingContainer: "flex flex-col",
-    headingTitle: "prose-display-sm break-words text-base-content-strong",
+    headingTitle: "prose-display-sm text-base-content-strong wrap-break-word",
     headingSubtitle: "text-base-content",
     // auto-rows-max and grid-template-rows:max-content are needed to make the grid items have the same height,
     // which otherwise would be an issue on some versions of Safari
@@ -100,7 +100,7 @@ const createInfoCardsStyles = tv({
     variant: {
       [INFOCARD_VARIANT.default]: {
         grid: "gap-10 md:gap-7 lg:gap-x-16 lg:gap-y-12",
-        cardImageContainer: "aspect-[3/2]",
+        cardImageContainer: "aspect-3/2",
       },
       [INFOCARD_VARIANT.bold]: {
         grid: "gap-1",
@@ -153,7 +153,7 @@ const createInfoCardsStyles = tv({
       layout: "homepage",
       maxColumns: "2",
       class: {
-        cardImageContainer: "lg:aspect-[2/1]",
+        cardImageContainer: "lg:aspect-2/1",
       },
     },
     {

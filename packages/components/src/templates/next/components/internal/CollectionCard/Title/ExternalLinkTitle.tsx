@@ -39,7 +39,7 @@ export const ExternalLinkTitle = ({ title }: { title: string }) => {
       {/* Show icon below text if truncated */}
       {isTruncated && (
         <div className="mt-1">
-          <BiLinkExternal className="h-auto w-3.5 text-base-content-subtle lg:w-4" />
+          <BiLinkExternal className="text-base-content-subtle h-auto w-3.5 lg:w-4" />
         </div>
       )}
     </h3>

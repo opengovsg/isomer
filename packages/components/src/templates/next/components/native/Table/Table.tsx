@@ -9,7 +9,7 @@ import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
 
 const tableCellStyles = tv({
-  base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:mb-4 [&_li]:mt-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
+  base: "border-base-divider-medium max-w-40 border px-4 py-3 align-top wrap-break-word [&_li]:mt-0 [&_li]:mb-4 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
   variants: {
     isHeader: {
       true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
@@ -22,15 +22,15 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
   const tableDescriptionId = useId()
 
   return (
-    <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
+    <div className="flex flex-col gap-4 not-first:mt-7">
       <BaseParagraph
         id={tableDescriptionId}
         content={caption}
-        className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
+        className="prose-label-md-regular text-base-content-subtle not-last:mb-0"
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
-          className="w-full border-collapse border-spacing-0 border border-base-divider-medium"
+          className="border-base-divider-medium w-full border-collapse border-spacing-0 border"
           aria-describedby={tableDescriptionId}
         >
           <tbody>

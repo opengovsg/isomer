@@ -50,7 +50,7 @@ export const Skeleton = ({
       <main
         id={SKIP_TO_CONTENT_ANCHOR_ID}
         tabIndex={-1}
-        className="focus-visible:outline-none"
+        className="focus-visible:outline-hidden"
       >
         {children}
       </main>

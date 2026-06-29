@@ -24,18 +24,18 @@ export const Hits = () => {
   if (items.length === 0) return null
 
   return (
-    <ul className="flex flex-col divide-y divide-base-divider-medium">
+    <ul className="divide-base-divider-medium flex flex-col divide-y">
       {items.map((hit) => (
         <li key={hit.objectID} className="flex flex-col gap-2 py-5">
           <h5 className="prose-headline-lg-semibold text-base-content-strong">
             <Link
               href={hit.fileUrl}
               isExternal
-              className="flex items-start gap-2 text-link hover:text-link-hover"
+              className="text-link hover:text-link-hover flex items-start gap-2"
             >
               <BiFile
                 aria-hidden
-                className="mt-0.5 size-6 shrink-0 text-base-content"
+                className="text-base-content mt-0.5 size-6 shrink-0"
               />
               <span className="underline underline-offset-2">
                 <Highlight attribute="title" hit={hit} />

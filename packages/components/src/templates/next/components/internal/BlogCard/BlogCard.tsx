@@ -1,5 +1,5 @@
 import type { CollectionCardProps } from "~/interfaces"
-import type { CollectionPageSchemaType } from "~/types"
+import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
@@ -30,28 +30,31 @@ export const BlogCard = ({
     // and to do that, we add a padding on smaller viewports
     <Link
       href={referenceLinkHref}
-      className="group flex flex-1 flex-col gap-3 border-b pb-5 pt-5 md:pt-0"
+      className="group border-b-base-divider-subtle flex flex-1 flex-col gap-3 border-b pt-5 pb-5 md:pt-0"
       isExternal={isExternalLink}
     >
       {image && (
-        <div className="relative mb-3 flex aspect-[2/1] h-auto min-h-40 shrink-0 items-center justify-center">
+        <div className="relative mb-3 flex aspect-2/1 h-auto min-h-40 shrink-0 items-center justify-center">
           {
             <ImageClient
               src={imageSrc || ""}
               alt={image.alt}
               width="100%"
-              className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
+              className={twMerge(
+                "absolute left-0 h-full w-full rounded-xs",
+                isContainNeeded ? "object-contain" : "object-cover",
+              )}
               assetsBaseUrl={siteAssetsBaseUrl}
             />
           }
         </div>
       )}
       {shouldShowDate && (
-        <p className="prose-label-md-regular shrink-0 text-base-content-subtle">
+        <p className="prose-label-md-regular text-base-content-subtle shrink-0">
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
-      <div className="flex flex-grow flex-col gap-3 text-base-content">
+      <div className="text-base-content flex grow flex-col gap-3">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
         {tags && tags.length > 0 && (
           <div className="-mt-1 flex flex-col gap-2">

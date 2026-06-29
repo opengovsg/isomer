@@ -1,4 +1,5 @@
 import type { CollectionCardProps } from "~/interfaces"
+import { twMerge } from "~/lib/twMerge"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { ImageClient } from "../ImageClient"
@@ -27,15 +28,15 @@ export const CollectionCard = ({
   return (
     <Link
       href={referenceLinkHref}
-      className="group flex border-collapse flex-col gap-3 border-b border-divider-medium py-5 first:border-t md:flex-row md:gap-6"
+      className="group border-divider-medium flex border-collapse flex-col gap-3 border-b py-5 first:border-t md:flex-row md:gap-6"
       isExternal={isExternalLink}
     >
       {shouldShowDate && (
-        <p className="prose-label-md-regular shrink-0 text-base-content-subtle md:w-[140px]">
+        <p className="prose-label-md-regular text-base-content-subtle shrink-0 md:w-[140px]">
           {formattedDate ? formattedDate : "-"}
         </p>
       )}
-      <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
+      <div className="text-base-content flex grow flex-col gap-3 md:gap-2">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
         {tags && tags.length > 0 && (
           <>
@@ -60,12 +61,15 @@ export const CollectionCard = ({
         <p className="prose-label-md text-base-content-subtle">{category}</p>
       </div>
       {image && (
-        <div className="relative mt-3 flex h-[160px] w-[200px] shrink-0 items-center justify-center md:ml-4 md:mt-0">
+        <div className="relative mt-3 flex h-[160px] w-[200px] shrink-0 items-center justify-center md:mt-0 md:ml-4">
           <ImageClient
             src={imageSrc || ""}
             alt={image.alt}
             width="100%"
-            className={`absolute left-0 h-full w-full rounded ${isContainNeeded ? "object-contain" : "object-cover"}`}
+            className={twMerge(
+              "absolute left-0 h-full w-full rounded-xs",
+              isContainNeeded ? "object-contain" : "object-cover",
+            )}
             assetsBaseUrl={siteAssetsBaseUrl}
           />
         </div>

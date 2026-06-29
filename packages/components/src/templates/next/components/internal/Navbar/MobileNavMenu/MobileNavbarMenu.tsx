@@ -57,9 +57,9 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
         }}
       >
         <FocusScope restoreFocus>
-          <div className="absolute inset-0 overflow-auto border-t border-t-base-divider-subtle bg-white">
+          <div className="border-t-base-divider-subtle absolute inset-0 overflow-auto border-t bg-white">
             {isPinned && !!search && (
-              <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
+              <div className="border-b-base-divider-subtle border-t-base-divider-subtle bg-base-canvas-alt border-y px-6 py-3">
                 {search.type === "localSearch" && (
                   <LocalSearchInputBox searchUrl={search.searchUrl} />
                 )}
@@ -69,7 +69,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
               </div>
             )}
             {!isPinned && !!callToAction && (
-              <div className="border-y border-b-base-divider-subtle bg-base-canvas-alt px-6 py-3">
+              <div className="border-b-base-divider-subtle border-t-base-divider-subtle bg-base-canvas-alt border-y px-6 py-3">
                 <LinkButton
                   href={callToAction.url}
                   isExternal={isExternalUrl(callToAction.url)}
@@ -98,7 +98,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
             ))}
 
             {!!utility && (
-              <div className="flex flex-col items-start gap-1 self-stretch bg-base-canvas-alt px-6 py-4">
+              <div className="bg-base-canvas-alt flex flex-col items-start gap-1 self-stretch px-6 py-4">
                 {!!utility.label && (
                   <p className="prose-label-sm-medium text-base-content-strong">
                     {utility.label}
@@ -131,7 +131,7 @@ export const MobileNavMenu = forwardRef<HTMLDivElement, MobileNavMenuProps>(
               ref={buttonRef}
               className={focusVisibleHighlight({
                 className:
-                  "prose-headline-base-medium absolute -left-[100000px] flex h-[1px] w-[1px] items-center justify-between gap-6 overflow-hidden px-6 py-3 text-left text-base-content focus:static focus:h-auto focus:w-full",
+                  "prose-headline-base-medium absolute -left-[100000px] flex h-[1px] w-[1px] cursor-pointer items-center justify-between gap-6 overflow-hidden px-6 py-3 text-left text-base-content focus:static focus:h-auto focus:w-full",
               })}
             >
               Exit navigation menu

@@ -70,7 +70,7 @@ export const SubCategoryRefinementList = () => {
           })}
         </CheckboxGroup>
       </div>
-      <hr className="border-t border-base-divider-medium" />
+      <hr className="border-base-divider-medium border-t" />
     </>
   )
 }

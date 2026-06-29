@@ -1,3 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "@opengovsg/isomer-components/presets/next/preset.css";
+@import "@opengovsg/isomer-components/presets/next/sources.css";
+@import "@opengovsg/isomer-components/presets/next/inter-fonts.css";
+
+/* Studio-specific theme overrides */
+@theme {
+  --color-site-secondary: #4e4541;
+  --color-site-secondary-100: #f4f2f1;
+}
