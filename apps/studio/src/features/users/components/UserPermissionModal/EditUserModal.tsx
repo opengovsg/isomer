@@ -98,8 +98,10 @@ export const EditUserModal = () => {
       { enabled: !!siteId && !!userId && !!email },
     )
 
-  // Conservatively treat the email as not-admin-eligible until the check resolves
-  const isAdminRoleDisabled = !isEmailWhitelistedAsAdmin
+  // Only disable the Admin role once the whitelist check has resolved to
+  // ineligible; while it's still loading (undefined) leave it enabled so the
+  // warning doesn't flash for users who already hold the Admin role.
+  const isAdminRoleDisabled = isEmailWhitelistedAsAdmin === false
 
   return (
     <Modal isOpen={!!siteId && !!userId} onClose={onClose}>
