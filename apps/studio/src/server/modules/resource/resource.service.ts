@@ -8,6 +8,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { normalizeRedirectSource } from "~/schemas/redirect"
 import {
   getSitemapTree,
   injectTagMappings,
@@ -740,6 +741,36 @@ export const getResourceFullPermalink = async (
   return `/${permalinkTree.join("/")}`
 }
 
+// Returns the id of `resourceId` plus every descendant in its subtree — the
+// rows a cascading delete (Resource.parentId is onDelete: Cascade) removes.
+// Accepts a tx so the delete path and the count path resolve the same set.
+export const getDescendantResourceIds = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<string[]> => {
+  const rows = await trx
+    .withRecursive("subtree", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", resourceId)
+        .select("Resource.id")
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
+        // a cycle can't drive the recursion forever.
+        .union((fb) =>
+          fb
+            .selectFrom("Resource")
+            .innerJoin("subtree", "subtree.id", "Resource.parentId")
+            .where("Resource.siteId", "=", siteId)
+            .select("Resource.id"),
+        ),
+    )
+    .selectFrom("subtree")
+    .select("id")
+    .execute()
+  return rows.map((row) => String(row.id))
+}
+
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
 // it, walking permalink segments from the site's root page. A Folder/Collection
 // is resolved to its IndexPage child, since that is what actually renders at the
@@ -1006,6 +1037,33 @@ export const publishPageResource = async ({
         message:
           "Please ensure you are attempting to publish a page that exists",
       })
+    }
+
+    // First-publish guard: taking a page live at a URL a live redirect occupies
+    // would let the redirect shadow it. Only the first publish is gated
+    // (re-publishing an already-live page is fine). Mirror of the redirect-create
+    // SOURCE_IS_EXISTING_PAGE guard. The Redirect table is queried directly to
+    // avoid a circular import (redirect.service already depends on this module).
+    if (fullResource.publishedVersionId === null) {
+      const fullPermalink = await getResourceFullPermalink(
+        siteId,
+        Number(resourceId),
+      )
+      if (fullPermalink) {
+        const blockingRedirect = await tx
+          .selectFrom("Redirect")
+          .select("Redirect.id")
+          .where("Redirect.siteId", "=", siteId)
+          .where("Redirect.source", "=", normalizeRedirectSource(fullPermalink))
+          .where("Redirect.deletedAt", "is", null)
+          .executeTakeFirst()
+        if (blockingRedirect) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
+          })
+        }
+      }
     }
 
     const version = await incrementVersion({ tx, siteId, resourceId, userId })

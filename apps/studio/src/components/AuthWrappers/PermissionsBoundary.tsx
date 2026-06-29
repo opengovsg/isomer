@@ -81,8 +81,8 @@ export const PermissionsBoundary = ({
   return (
     <PermissionsProvider siteId={siteId}>
       <Can do="read" on={{ parentId: null }} passThrough>
-        {(allowed) => {
-          return allowed ? (
+        {({ isAllowed }) => {
+          return isAllowed ? (
             page
           ) : (
             <DefaultLayout>

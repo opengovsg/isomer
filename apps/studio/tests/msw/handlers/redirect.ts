@@ -59,4 +59,19 @@ export const redirectHandlers = {
         ],
       })),
   },
+  getBySource: {
+    // The URL is not a redirect source — no settings warning shown.
+    none: () => trpcMsw.redirect.getBySource.query(() => null),
+    // The URL is already a redirect source — drives the settings-modal warning.
+    existing: () =>
+      trpcMsw.redirect.getBySource.query(() => ({
+        destination: "/somewhere-else",
+      })),
+  },
+  countByDestinationResource: {
+    // No redirects point here — no delete-modal warning shown.
+    none: () => trpcMsw.redirect.countByDestinationResource.query(() => 0),
+    // Some redirects point here — drives the delete-modal warning.
+    some: () => trpcMsw.redirect.countByDestinationResource.query(() => 3),
+  },
 }
