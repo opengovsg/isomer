@@ -18,7 +18,9 @@ const LINEAR_RGB_FACTORS = {
 // Normalise to hex so the hex-based contrast calculations below still work.
 const normalizeColorToHex = (color: string): string => {
   if (color.startsWith("#")) return color
-  return formatHex(parse(color) ?? color) ?? color
+  const parsed = parse(color)
+  if (!parsed) return color
+  return formatHex(parsed) ?? color
 }
 
 // NOTE: This is used to check relative contrast.
