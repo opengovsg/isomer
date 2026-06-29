@@ -4,6 +4,7 @@ import {
   HStack,
   Icon,
   IconButton,
+  Skeleton,
   Stack,
   Text,
   Tooltip,
@@ -32,16 +33,69 @@ import {
 import { useTablePagination } from "~/hooks/useTablePagination"
 
 import type { RedirectRow, RedirectSortField } from "../types"
+import type { DestinationDisplay } from "../utils"
 import {
   REDIRECTS_PAGE_SIZE,
   useCountRedirects,
   useDeleteRedirect,
   useListRedirects,
+  useResolveRedirectReferences,
 } from "../api"
-import { formatAddedAt } from "../utils"
+import {
+  formatAddedAt,
+  getDestinationDisplay,
+  isReferenceDestination,
+} from "../utils"
 import { DeleteRedirectModal } from "./DeleteRedirectModal"
 
 const columnsHelper = createColumnHelper<RedirectRow>()
+
+// Copy shown when a reference destination's page has since been deleted. Kept
+// here (the render site) so it can change without touching the resolution logic.
+const MISSING_PAGE_LABEL = "Page no longer exists"
+
+// Renders a pre-resolved redirect destination. Reference destinations arrive as
+// the page's current permalink; while that resolution is in flight we show a
+// skeleton, and a reference whose page no longer exists is flagged rather than
+// leaking the raw "[resource:...]" string.
+function DestinationCell({
+  display,
+}: {
+  display: DestinationDisplay
+}): JSX.Element {
+  if (display.status === "resolving") {
+    return <Skeleton height="1.25rem" width="60%" />
+  }
+
+  const isMissing = display.status === "missing"
+  const label = isMissing ? MISSING_PAGE_LABEL : display.label
+  return (
+    <Tooltip label={label} openDelay={500} placement="top">
+      <Text
+        textStyle="body-2"
+        color={isMissing ? "utility.feedback.critical" : "base.content.strong"}
+        noOfLines={1}
+        wordBreak="break-all"
+      >
+        {label}
+      </Text>
+    </Tooltip>
+  )
+}
+
+// Plain-text destination label for contexts without a skeleton (e.g. the delete
+// modal): resolved → permalink/path, missing → the missing-page copy, and still
+// resolving → "" so the raw "[resource:...]" token never shows.
+const destinationLabelFor = (display: DestinationDisplay): string => {
+  switch (display.status) {
+    case "resolving":
+      return ""
+    case "missing":
+      return MISSING_PAGE_LABEL
+    case "resolved":
+      return display.label
+  }
+}
 
 function SortableHeader({
   label,
@@ -81,7 +135,10 @@ function SortableHeader({
   )
 }
 
-const getColumns = (onDeleteClick: (row: RedirectRow) => void) => [
+const getColumns = (
+  onDeleteClick: (row: RedirectRow) => void,
+  permalinkByReference: Map<string, string | null>,
+) => [
   columnsHelper.accessor("source", {
     minSize: 250,
     enableSorting: true,
@@ -148,16 +205,9 @@ const getColumns = (onDeleteClick: (row: RedirectRow) => void) => [
       />
     ),
     cell: ({ getValue }) => (
-      <Tooltip label={getValue()} openDelay={500} placement="top">
-        <Text
-          textStyle="body-2"
-          color="base.content.strong"
-          noOfLines={1}
-          wordBreak="break-all"
-        >
-          {getValue()}
-        </Text>
-      </Tooltip>
+      <DestinationCell
+        display={getDestinationDisplay(getValue(), permalinkByReference)}
+      />
     ),
   }),
   columnsHelper.accessor("publishedAt", {
@@ -215,8 +265,6 @@ export const RedirectsTable = ({
     null,
   )
 
-  const columns = useMemo(() => getColumns(setRedirectToDelete), [])
-
   const { data: totalRowCount, isLoading: isCountLoading } =
     useCountRedirects(siteId)
 
@@ -235,6 +283,36 @@ export const RedirectsTable = ({
     sortBy: (sorting[0]?.id ?? "publishedAt") as RedirectSortField,
     sortDirection: (sorting[0]?.desc ?? true) ? "desc" : "asc",
   })
+
+  // Resolve the reference destinations on the visible page to permalinks for
+  // display, in one batched request rather than per row
+  const referenceDestinations = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          redirects
+            .map((redirect) => redirect.destination)
+            .filter(isReferenceDestination),
+        ),
+      ),
+    [redirects],
+  )
+  const { data: resolvedReferences } = useResolveRedirectReferences(
+    siteId,
+    referenceDestinations,
+  )
+  const permalinkByReference = useMemo(() => {
+    const map = new Map<string, string | null>()
+    resolvedReferences.forEach(({ reference, permalink }) =>
+      map.set(reference, permalink),
+    )
+    return map
+  }, [resolvedReferences])
+
+  const columns = useMemo(
+    () => getColumns(setRedirectToDelete, permalinkByReference),
+    [permalinkByReference],
+  )
 
   // Changing the sort order reshuffles rows across pages, so jump back to
   // the first page to avoid showing a stale slice
@@ -300,6 +378,16 @@ export const RedirectsTable = ({
       />
       <DeleteRedirectModal
         redirect={redirectToDelete}
+        destinationLabel={
+          redirectToDelete
+            ? destinationLabelFor(
+                getDestinationDisplay(
+                  redirectToDelete.destination,
+                  permalinkByReference,
+                ),
+              )
+            : ""
+        }
         isPending={isPending}
         onClose={() => setRedirectToDelete(null)}
         onDelete={handleDelete}

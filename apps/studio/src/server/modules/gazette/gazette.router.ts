@@ -7,6 +7,7 @@ import {
   sendGazetteDeletionEmail,
   sendScheduledPageEmail,
 } from "~/features/mail/service"
+import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import { getFileSize, markScheduledAssetAsCancelled } from "~/lib/s3"
 import {
   cancelScheduledPublishSchema,
@@ -33,12 +34,14 @@ import {
 } from "../resource/resource.service"
 import {
   findCollectionLinkWithFilename,
+  hasDuplicateNotificationNumber,
   assertGazetteAccess,
   copyFileWithNewName,
   deleteGazetteAsset,
   getPresignedGetUrl,
   getPresignedPutUrl,
   markFileAsDeleted,
+  removeGazetteFromAlgolia,
   removeGazetteFromSearchIndex,
 } from "./gazette.service"
 
@@ -113,32 +116,35 @@ export const gazetteRouter = router({
             END`,
           "asc",
         )
-        // 2. Publish date descending
-        .orderBy("Version.publishedAt", (ob) => ob.desc().nullsLast())
-        // 3. Category priority from blob content
+        // 2. Category priority from blob content
         .orderBy((eb) => {
           const categoryExpr = sql<string>`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'category'`
           return eb
             .case()
             .when(categoryExpr, "=", "Government Gazette")
             .then(1)
-            .when(categoryExpr, "=", "Legislation Supplements")
+            .when(categoryExpr, "=", "Legislative Supplements")
             .then(2)
             .when(categoryExpr, "=", "Other Supplements")
             .then(3)
             .else(4)
             .end()
         }, "asc")
-        // 4. Notification number descending (stored in page.description)
+        // 3. Notification number descending (stored in page.description)
         .orderBy(
           sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'description'`,
-          (ob) => ob.desc().nullsLast(),
+          (ob) => ob.desc(),
         )
-        // 5. File ID descending (extract filename from page.ref)
+        // 4. Toppan file ID descending — the last path segment of page.ref.
+        //    e.g. "/2026/Government Gazette/Advertisements/26adv6175b.pdf"
+        //    -> "26adv6175b.pdf". Strip everything up to the final slash so we
+        //    sort on the file ID, not the full path.
         .orderBy(
-          sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'ref'`,
-          (ob) => ob.desc().nullsLast(),
+          sql`regexp_replace(COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'ref', '.*/', '')`,
+          (ob) => ob.desc(),
         )
+        // 5. Publish date descending
+        .orderBy("Version.publishedAt", (ob) => ob.desc())
         // 6. Updated at descending (tie-breaker)
         .orderBy("Resource.updatedAt", "desc")
         .orderBy("Resource.id", "asc")
@@ -246,6 +252,28 @@ export const gazetteRouter = router({
               })
             }
           }
+
+          // Reject a duplicate notification number within the same category and
+          // publish year (and subcategory, for non-Government Gazette categories).
+          if (
+            description &&
+            (await hasDuplicateNotificationNumber({
+              trx: tx,
+              siteId,
+              parentId: String(collectionId),
+              notificationNumber: description,
+              publishDate: date,
+              category,
+              subCategory: tagged[0] ?? "",
+            }))
+          ) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message:
+                "A gazette with the same notification number already exists",
+            })
+          }
+
           const parentCollection = await tx
             .selectFrom("Resource")
             .where("Resource.id", "=", String(collectionId))
@@ -471,6 +499,29 @@ export const gazetteRouter = router({
                   message: "A gazette with the same file ID already exists",
                 })
               }
+            }
+
+            // Reject a duplicate notification number within the same category
+            // and publish year (and subcategory, for non-Government Gazette
+            // categories), excluding the gazette being edited.
+            if (
+              description &&
+              (await hasDuplicateNotificationNumber({
+                trx: tx,
+                siteId,
+                parentId: existingResource.parentId,
+                notificationNumber: description,
+                publishDate: date,
+                category,
+                subCategory: tagged[0] ?? "",
+                excludeId: String(gazetteId),
+              }))
+            ) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message:
+                  "A gazette with the same notification number already exists",
+              })
             }
 
             const updatedBlob = await updateBlobById(tx, {
@@ -844,7 +895,14 @@ export const gazetteRouter = router({
       // before proceeding to remove the database resource.
       // This is because the public uses those to access the gazette
       // but the database resource is purely for internal view.
-      await removeGazetteFromSearchIndex(ref, gazette.id)
+      //
+      // When OFF (default): gazette records live in Algolia, so delete from Algolia.
+      // When ON: records were pushed to SearchSG instead, so delete from SearchSG.
+      if (ctx.gb.isOn(ENABLE_SEARCHSG_GAZETTE_INGESTION)) {
+        await removeGazetteFromSearchIndex(ref, gazette.id)
+      } else {
+        await removeGazetteFromAlgolia(ref)
+      }
       await deleteGazetteAsset(ref)
 
       // Delete the resource in a transaction, then audit-log the deletion.

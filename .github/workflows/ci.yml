@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Optimize CI
         id: check_skip
-        uses: withgraphite/graphite-ci-action@9bc969adfd43bb790da3b64b543c78c75cef9689
+        uses: withgraphite/graphite-ci-action@b87de3d800df90082f5f1ba2817f4e1a6f3b0a7b
         with:
           graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
   # Detect which areas changed so dependent jobs can opt out when irrelevant.
@@ -29,7 +29,7 @@ jobs:
     outputs:
       components: ${{ steps.filter.outputs.components }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
         id: filter
         with:
@@ -98,7 +98,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -216,6 +216,8 @@ jobs:
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Setup
@@ -250,17 +252,40 @@ jobs:
         run: pnpm exec turbo db:seed
       - name: Run Playwright tests
         run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
-        env:
-          # Required to allow Datadog to trace Playwright tests
-          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
 
       - name: Stop test containers
         run: pnpm run teardown
 
       - name: Upload test results
         if: ${{ !cancelled() }}
+        id: upload-test-results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: test results
+          # Unique per run so that re-runs from the same PR don't collide.
+          name: e2e-test-results-${{ github.run_id }}
           path: apps/studio/tests/e2e/test-results
           retention-days: 7
+          if-no-files-found: warn
+
+      # Posting a PR comment requires write access, but GitHub restricts
+      # GITHUB_TOKEN to read-only for `pull_request` events from forks — no
+      # `permissions:` declaration overrides this. The actual comment is posted
+      # by post-pr-comment.yml, which uses a `workflow_run` trigger and runs in
+      # the base-repo context where write access is available. We pass the PR
+      # number and artifact URL through a small artifact because the two
+      # workflows run in separate contexts and can't share environment variables.
+      - name: Save E2E comment metadata
+        if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.upload-test-results.outputs.artifact-url != '' }}
+        run: |
+          mkdir -p /tmp/e2e-metadata
+          echo "${{ github.event.pull_request.number }}" > /tmp/e2e-metadata/pr-number.txt
+          echo "${{ steps.upload-test-results.outputs.artifact-url }}" > /tmp/e2e-metadata/artifact-url.txt
+
+      - name: Upload E2E comment metadata
+        if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.upload-test-results.outputs.artifact-url != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-comment-metadata
+          path: /tmp/e2e-metadata/
+          retention-days: 1
+          if-no-files-found: error

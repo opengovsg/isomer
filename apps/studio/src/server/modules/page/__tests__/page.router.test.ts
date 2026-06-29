@@ -22,6 +22,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { normalizeRedirectPath } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import {
   AuditLogEvent,
@@ -32,7 +33,11 @@ import {
 import type { User } from "../../database"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, jsonb } from "../../database"
-import { getBlobOfResource, getPageById } from "../../resource/resource.service"
+import {
+  getBlobOfResource,
+  getPageById,
+  getResourceFullPermalink,
+} from "../../resource/resource.service"
 import { pageRouter } from "../page.router"
 import { createDefaultPage } from "../page.service"
 
@@ -2222,6 +2227,110 @@ describe("page.router", async () => {
         .selectAll()
         .execute()
       expect(auditLogs.length).toEqual(1)
+    })
+
+    it("should block the first publish when a live redirect occupies the page's URL", async () => {
+      // Arrange — a draft page whose URL already has a live redirect
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: normalizeRedirectPath(fullPermalink!),
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act
+      const result = caller.publishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert — blocked, and nothing published
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "CONFLICT",
+          message: `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
+        }),
+      )
+      const versions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versions.length).toEqual(0)
+    })
+
+    it("should allow publishing when a redirect exists at a different path", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/some-unrelated-path",
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — published normally
+      const versions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versions.length).toEqual(1)
+    })
+
+    it("should not block re-publishing an already-published page whose URL has a redirect", async () => {
+      // Arrange — an already-published page (the source-guard gap aside, this
+      // can happen via imported data). Only the first publish is gated.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: normalizeRedirectPath(fullPermalink!),
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act / Assert — re-publish is not blocked
+      await expect(
+        caller.publishPage({ siteId: site.id, pageId: Number(page.id) }),
+      ).resolves.toBeUndefined()
     })
   })
 

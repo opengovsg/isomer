@@ -55,6 +55,10 @@ patchedDependencies:
   next@16.2.6: patches/next@16.2.6.patch
 
 catalog:
+  # v4 is pinned deliberately: the legacy egazette integration uses the v4 client API
+  # (algoliasearch(appId, key).initIndex(name), index.saveObjects, index.deleteBy).
+  # v5 changed the client API — do not "upgrade" this without reviewing egazette compatibility.
+  algoliasearch: ^4.24.0
   ajv: ^8.20.0
   axios: ^1.17.0
   bootstrap-icons: ^1.13.1
@@ -91,6 +95,7 @@ catalog:
   postcss-preset-env: ^11.3.1
   react-icons: ^5.2.0
   rimraf: ^6.1.3
+  react-instantsearch: ^7.35.0
   sherif: ^1.11.1
   start-server-and-test: ^3.0.11
   tailwindcss: ^3.4.4
