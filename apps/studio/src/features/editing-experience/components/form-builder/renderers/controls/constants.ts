@@ -25,16 +25,3 @@ export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
 export const RISKY_FILE_EXTENSIONS = new Set<
   keyof typeof FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING
 >([".doc", ".docx", ".xls", ".xlsx"])
-
-export const ROW_ACTIONS_MENU_BUTTON_PROPS = {
-  colorScheme: "neutral",
-  variant: "clear",
-  h: "2.125rem",
-  w: "2.125rem",
-  minH: "2.125rem",
-  minW: "2.125rem",
-  p: "0.25rem",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-} as const
