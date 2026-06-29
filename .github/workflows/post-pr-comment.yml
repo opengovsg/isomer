@@ -21,6 +21,7 @@ on:
     types: [completed]
 
 permissions:
+  actions: read # needed by `gh run download` to access the Actions artifacts API
   pull-requests: write
   issues: write # GitHub routes PR comments through the issues API endpoint
 
