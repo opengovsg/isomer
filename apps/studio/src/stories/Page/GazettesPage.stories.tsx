@@ -214,7 +214,8 @@ export const DuplicateNotificationNumber: Story = {
       await screen.findByText(
         "A gazette with the same notification number already exists",
         undefined,
-        { timeout: 5000 },
+        // NOTE: Change to 500 ms cos we don't want the chromatic step to take so long
+        { timeout: 500 },
       ),
     ).toBeInTheDocument()
   },
