@@ -138,18 +138,20 @@ jobs:
       - name: Save bundle size metadata
         run: |
           mkdir -p /tmp/bundle-size-metadata
-          printf '%s' "${{ github.event.pull_request.number }}" > /tmp/bundle-size-metadata/pr-number.txt
-          printf '%s' "${{ steps.pr.outputs.framework }}"       > /tmp/bundle-size-metadata/pr-framework.txt
-          printf '%s' "${{ steps.pr.outputs.vendor }}"          > /tmp/bundle-size-metadata/pr-vendor.txt
-          printf '%s' "${{ steps.pr.outputs.page }}"            > /tmp/bundle-size-metadata/pr-page.txt
-          printf '%s' "${{ steps.pr.outputs.css }}"             > /tmp/bundle-size-metadata/pr-css.txt
-          printf '%s' "${{ steps.pr.outputs.total }}"           > /tmp/bundle-size-metadata/pr-total.txt
-          printf '%s' "${{ steps.base.outputs.framework }}"     > /tmp/bundle-size-metadata/base-framework.txt
-          printf '%s' "${{ steps.base.outputs.vendor }}"        > /tmp/bundle-size-metadata/base-vendor.txt
-          printf '%s' "${{ steps.base.outputs.page }}"          > /tmp/bundle-size-metadata/base-page.txt
-          printf '%s' "${{ steps.base.outputs.css }}"           > /tmp/bundle-size-metadata/base-css.txt
-          printf '%s' "${{ steps.base.outputs.total }}"         > /tmp/bundle-size-metadata/base-total.txt
-          cp "$RUNNER_TEMP/comment-template-bundle-size.sh"       /tmp/bundle-size-metadata/
+          cat > /tmp/bundle-size-metadata/values.env <<'ENVEOF'
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          PR_FRAMEWORK=${{ steps.pr.outputs.framework }}
+          PR_VENDOR=${{ steps.pr.outputs.vendor }}
+          PR_PAGE=${{ steps.pr.outputs.page }}
+          PR_CSS=${{ steps.pr.outputs.css }}
+          PR_TOTAL=${{ steps.pr.outputs.total }}
+          BASE_FRAMEWORK=${{ steps.base.outputs.framework }}
+          BASE_VENDOR=${{ steps.base.outputs.vendor }}
+          BASE_PAGE=${{ steps.base.outputs.page }}
+          BASE_CSS=${{ steps.base.outputs.css }}
+          BASE_TOTAL=${{ steps.base.outputs.total }}
+          ENVEOF
+          cp "$RUNNER_TEMP/comment-template-bundle-size.sh" /tmp/bundle-size-metadata/
 
       - name: Upload bundle size metadata
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

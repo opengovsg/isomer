@@ -86,9 +86,8 @@ jobs:
     steps:
       - name: Download bundle size metadata
         id: download
-        # Won't exist when the components-bundle-size job was skipped (no
-        # component changes or optimizer short-circuit). continue-on-error lets
-        # the step gate cleanly on outcome instead of failing the job.
+        # Absent when components-bundle-size was skipped (no component changes
+        # or optimizer short-circuit); gate subsequent steps on outcome.
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -103,15 +102,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          export PR_NUMBER=$(cat /tmp/bundle-size-metadata/pr-number.txt)
-          export PR_FRAMEWORK=$(cat /tmp/bundle-size-metadata/pr-framework.txt)
-          export PR_VENDOR=$(cat /tmp/bundle-size-metadata/pr-vendor.txt)
-          export PR_PAGE=$(cat /tmp/bundle-size-metadata/pr-page.txt)
-          export PR_CSS=$(cat /tmp/bundle-size-metadata/pr-css.txt)
-          export PR_TOTAL=$(cat /tmp/bundle-size-metadata/pr-total.txt)
-          export BASE_FRAMEWORK=$(cat /tmp/bundle-size-metadata/base-framework.txt)
-          export BASE_VENDOR=$(cat /tmp/bundle-size-metadata/base-vendor.txt)
-          export BASE_PAGE=$(cat /tmp/bundle-size-metadata/base-page.txt)
-          export BASE_CSS=$(cat /tmp/bundle-size-metadata/base-css.txt)
-          export BASE_TOTAL=$(cat /tmp/bundle-size-metadata/base-total.txt)
+          set -a
+          source /tmp/bundle-size-metadata/values.env
+          set +a
           bash /tmp/bundle-size-metadata/comment-template-bundle-size.sh
