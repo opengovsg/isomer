@@ -48,9 +48,14 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 
   const { pageId, siteId } = useQueryParse(pageSchema)
 
+  const isCollectionItem =
+    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Article ||
+    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Link
+
   const { data: collectionTags = [] } = useCollectionTags({
     resourceId: pageId,
     siteId,
+    enabled: isCollectionItem,
   })
 
   const toast = useToast()
