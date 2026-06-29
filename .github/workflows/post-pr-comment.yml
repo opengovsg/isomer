@@ -1,0 +1,80 @@
+name: Post E2E video comment
+
+# Why a separate workflow instead of steps inside ci.yml?
+#
+# GitHub hard-restricts the GITHUB_TOKEN to read-only for `pull_request`
+# events triggered by a fork, regardless of what the `permissions:` block
+# declares. Posting a PR comment requires write access, so those steps would
+# always 403 on fork PRs.
+#
+# The `workflow_run` trigger is the official GitHub workaround: it fires after
+# the target workflow completes but runs in the BASE repo's context, so
+# GITHUB_TOKEN always has the permissions declared below — even when the
+# triggering PR came from a fork.
+#
+# The PR number and artifact URL can't be read from the triggering run's
+# environment (different context), so ci.yml writes them into a small artifact
+# ("e2e-comment-metadata") that this workflow downloads before posting.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  actions: read # needed by `gh run download` to access the Actions artifacts API
+  pull-requests: write
+  issues: write # GitHub routes PR comments through the issues API endpoint
+
+jobs:
+  post-comment:
+    # Only run for PR triggers; push runs on main/staging/production don't have
+    # a PR to comment on.
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download E2E comment metadata
+        id: download
+        # The artifact won't exist if the E2E job was skipped (Graphite
+        # optimizer) or if the test-results upload failed. continue-on-error
+        # lets subsequent steps gate on `steps.download.outcome` instead of
+        # failing the whole job.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download ${{ github.event.workflow_run.id }} \
+            --name e2e-comment-metadata \
+            --dir /tmp/e2e-metadata \
+            --repo ${{ github.repository }}
+
+      - name: Read metadata
+        if: steps.download.outcome == 'success'
+        id: metadata
+        run: |
+          echo "pr-number=$(cat /tmp/e2e-metadata/pr-number.txt)" >> $GITHUB_OUTPUT
+          echo "artifact-url=$(cat /tmp/e2e-metadata/artifact-url.txt)" >> $GITHUB_OUTPUT
+
+      - name: Find existing video-link comment
+        if: steps.download.outcome == 'success'
+        id: find-video-comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.metadata.outputs.pr-number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- e2e-video-link -->"
+
+      - name: Upsert PR comment with e2e video artifact link
+        if: steps.download.outcome == 'success'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ steps.find-video-comment.outputs.comment-id }}
+          issue-number: ${{ steps.metadata.outputs.pr-number }}
+          edit-mode: replace
+          body: |
+            <!-- e2e-video-link -->
+            🎥 **E2E test videos** — [Download artifact](${{ steps.metadata.outputs.artifact-url }})
+
+            Each test has its own directory under the zip; play `video.webm` to watch the run.
+            Workflow: [run #${{ github.event.workflow_run.id }}](${{ github.event.workflow_run.html_url }}) — artifact expires in 7 days.
