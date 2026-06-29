@@ -115,9 +115,8 @@ export const updateSearchSGConfig = async (
     `[INFO] Updating searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
   )
 
-  // NOTE: doing fetch before post to avoid cases
-  // where the search domain and data domains
-  // are not direct deriviatives of `site.url`
+  // NOTE: fetch site details first to retrieve the appId (for colour updates)
+  // and projectId (for name updates) needed by the v2 branched PATCH endpoints
   const { data } = await client
     .url(SearchSgApi.site(searchsgClientId))
     .get()
