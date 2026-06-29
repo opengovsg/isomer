@@ -88,7 +88,7 @@ catalog:
   "@sinclair/typebox": ^0.33.12
   "@tanstack/react-table": ^8.21.2
   "@testing-library/react": ^16.3.2
-  pg: ^8.21.0
+  pg: ^8.22.0
   pino: ^10.3.1
   pino-pretty: ^13.0.0
   postcss: ^8.5.15
