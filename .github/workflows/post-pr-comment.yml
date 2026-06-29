@@ -80,7 +80,7 @@ jobs:
 
   post-bundle-size-comment:
     # Mirror of post-e2e-comment above — same fork-PR restriction applies.
-    if: github.event.workflow_run.event == 'pull_request'
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Download bundle size metadata
