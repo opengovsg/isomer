@@ -158,7 +158,7 @@ export const updateSearchSGConfig = async (
 
       return client
         .url(SearchSgApi.project(projectId))
-        .json({ projectName: props.name, adminList: ["isomer@open.gov.sg"] })
+        .json({ projectName: props.name })
         .patch()
         .res()
         .catch(logAndRethrow)
