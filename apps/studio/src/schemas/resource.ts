@@ -113,8 +113,13 @@ export interface ResourceItemContent {
   parentId: string | null
 }
 
-// Prevent DoS via unbounded query length; value is arbitrary
-export const MAX_SEARCH_QUERY_LENGTH = 256
+// Prevent DoS via unbounded query length and excessive ILIKE conditions;
+// value is arbitrary - adjust if needed
+export const MAX_SEARCH_QUERY_LENGTH = 512
+export const MAX_SEARCH_TERMS = 10
+
+export const tokenizeSearchQuery = (query: string): string[] =>
+  query.trim().toLowerCase().split(/\s+/).filter(Boolean)
 
 export const searchSchema = z
   .object({
