@@ -72,7 +72,7 @@ catalog:
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
   jsdom: ^29.1.1
-  happy-dom: ^20.10.2
+  happy-dom: ^20.10.6
   isomorphic-dompurify: ^3.15.0
   mockdate: ^3.0.5
   msw: ^2.14.6
@@ -88,7 +88,7 @@ catalog:
   "@sinclair/typebox": ^0.33.12
   "@tanstack/react-table": ^8.21.2
   "@testing-library/react": ^16.3.2
-  pg: ^8.21.0
+  pg: ^8.22.0
   pino: ^10.3.1
   pino-pretty: ^13.0.0
   postcss: ^8.5.15
@@ -103,7 +103,7 @@ catalog:
   tsc-alias: ^1.8.17
   "@typescript/native-preview": 7.0.0-dev.20260615.1
   type-fest: ^5.7.0
-  tsx: ^4.22.3
+  tsx: ^4.22.4
   turbo: ^2.9.17
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
@@ -148,16 +148,16 @@ catalog:
   nanoid: ^5.1.11
   next: 16.2.6
   openid-client: ^5.7.1
-  oxfmt: ^0.54.0
-  oxlint: ^1.68.0
+  oxfmt: ^0.56.0
+  oxlint: ^1.71.0
   oxlint-tsgolint: ^0.23.0
-  papaparse: ^5.5.3
+  papaparse: ^5.5.4
   pg-boss: ^12.18.2
   postcss-load-config: ^6.0.1
   rate-limiter-flexible: ^11.2.0
   react-error-boundary: ^6.1.2
   react-frame-component: ^5.2.7
-  react-hook-form: ^7.77.0
+  react-hook-form: ^7.80.0
   react-markdown: ^10.1.0
   rehype-external-links: ^3.0.0
   sass: ^1.100.0
@@ -175,18 +175,18 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^1.8.1
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.2.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1065.0
-    "@aws-sdk/client-amplify": ^3.1065.0
-    "@aws-sdk/client-cloudfront": ^3.1065.0
-    "@aws-sdk/client-codebuild": ^3.1065.0
-    "@aws-sdk/client-s3": ^3.1065.0
-    "@aws-sdk/s3-request-presigner": ^3.1065.0
-    "@aws-sdk/credential-providers": ^3.1065.0
+    "@aws-sdk/client-acm": ^3.1073.0
+    "@aws-sdk/client-amplify": ^3.1073.0
+    "@aws-sdk/client-cloudfront": ^3.1073.0
+    "@aws-sdk/client-codebuild": ^3.1073.0
+    "@aws-sdk/client-s3": ^3.1073.0
+    "@aws-sdk/s3-request-presigner": ^3.1073.0
+    "@aws-sdk/credential-providers": ^3.1073.0
   babel:
-    "@babel/plugin-transform-class-properties": ^7.29.7
-    "@babel/plugin-transform-object-rest-spread": ^7.29.7
-    "@babel/preset-env": ^7.29.7
-    "@babel/preset-typescript": ^7.29.7
+    "@babel/plugin-transform-class-properties": ^8.0.1
+    "@babel/plugin-transform-object-rest-spread": ^8.0.1
+    "@babel/preset-env": ^8.0.2
+    "@babel/preset-typescript": ^8.0.1
   casl:
     "@casl/ability": ^7.0.0
     "@casl/react": ^7.0.0
@@ -238,35 +238,35 @@ catalogs:
     "@tanstack/react-query": ^5.101.0
     "@tanstack/react-query-devtools": ^5.101.0
   tiptap:
-    "@tiptap/core": ^3.26.1
-    "@tiptap/extension-bold": ^3.26.1
-    "@tiptap/extension-bullet-list": ^3.26.1
-    "@tiptap/extension-character-count": ^3.26.1
-    "@tiptap/extension-document": ^3.26.1
-    "@tiptap/extension-dropcursor": ^3.26.1
-    "@tiptap/extension-gapcursor": ^3.26.1
-    "@tiptap/extension-hard-break": ^3.26.1
-    "@tiptap/extension-heading": ^3.26.1
-    "@tiptap/extension-history": ^3.26.1
-    "@tiptap/extension-horizontal-rule": ^3.26.1
-    "@tiptap/extension-image": ^3.26.1
-    "@tiptap/extension-italic": ^3.26.1
-    "@tiptap/extension-link": ^3.26.1
-    "@tiptap/extension-list-item": ^3.26.1
-    "@tiptap/extension-ordered-list": ^3.26.1
-    "@tiptap/extension-paragraph": ^3.26.1
-    "@tiptap/extension-strike": ^3.26.1
-    "@tiptap/extension-subscript": ^3.26.1
-    "@tiptap/extension-superscript": ^3.26.1
-    "@tiptap/extension-table": ^3.26.1
-    "@tiptap/extension-table-cell": ^3.26.1
-    "@tiptap/extension-table-header": ^3.26.1
-    "@tiptap/extension-table-row": ^3.26.1
-    "@tiptap/extension-text": ^3.26.1
-    "@tiptap/extension-underline": ^3.26.1
-    "@tiptap/html": ^3.26.1
-    "@tiptap/pm": ^3.26.1
-    "@tiptap/react": ^3.26.1
+    "@tiptap/core": ^3.27.1
+    "@tiptap/extension-bold": ^3.27.1
+    "@tiptap/extension-bullet-list": ^3.27.1
+    "@tiptap/extension-character-count": ^3.27.1
+    "@tiptap/extension-document": ^3.27.1
+    "@tiptap/extension-dropcursor": ^3.27.1
+    "@tiptap/extension-gapcursor": ^3.27.1
+    "@tiptap/extension-hard-break": ^3.27.1
+    "@tiptap/extension-heading": ^3.27.1
+    "@tiptap/extension-history": ^3.27.1
+    "@tiptap/extension-horizontal-rule": ^3.27.1
+    "@tiptap/extension-image": ^3.27.1
+    "@tiptap/extension-italic": ^3.27.1
+    "@tiptap/extension-link": ^3.27.1
+    "@tiptap/extension-list-item": ^3.27.1
+    "@tiptap/extension-ordered-list": ^3.27.1
+    "@tiptap/extension-paragraph": ^3.27.1
+    "@tiptap/extension-strike": ^3.27.1
+    "@tiptap/extension-subscript": ^3.27.1
+    "@tiptap/extension-superscript": ^3.27.1
+    "@tiptap/extension-table": ^3.27.1
+    "@tiptap/extension-table-cell": ^3.27.1
+    "@tiptap/extension-table-header": ^3.27.1
+    "@tiptap/extension-table-row": ^3.27.1
+    "@tiptap/extension-text": ^3.27.1
+    "@tiptap/extension-underline": ^3.27.1
+    "@tiptap/html": ^3.27.1
+    "@tiptap/pm": ^3.27.1
+    "@tiptap/react": ^3.27.1
   trpc:
     "@trpc/client": ^11.17.0
     "@trpc/next": ^11.17.0

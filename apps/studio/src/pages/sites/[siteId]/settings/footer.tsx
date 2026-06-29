@@ -8,6 +8,7 @@ import {
   SettingsGrid,
   SettingsPreviewGridItem,
 } from "~/components/Settings"
+import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
@@ -42,6 +43,14 @@ const FooterSettingsPage: NextPageWithLayout = () => {
           ...BRIEF_TOAST_SETTINGS,
         })
       },
+      onError: () => {
+        toast({
+          status: "error",
+          title: "Error saving footer.",
+          description: `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
+          ...BRIEF_TOAST_SETTINGS,
+        })
+      },
     })
 
   const [previewFooterState, setPreviewFooterState] = useState<
@@ -68,6 +77,7 @@ const FooterSettingsPage: NextPageWithLayout = () => {
       <SettingsGrid>
         <SettingsEditorGridItem>
           <FooterEditor
+            savedFooterState={content}
             previewFooterState={previewFooterState}
             setPreviewFooterState={setPreviewFooterState}
             onSave={handleSaveFooter}
