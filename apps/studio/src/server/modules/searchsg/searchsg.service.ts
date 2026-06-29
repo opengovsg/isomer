@@ -115,13 +115,6 @@ export const updateSearchSGConfig = async (
     `[INFO] Updating searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
   )
 
-  // NOTE: fetch site details first to retrieve the appId (for colour updates)
-  // and projectId (for name updates) needed by the v2 branched PATCH endpoints
-  const { data } = await client
-    .url(SearchSgApi.site(searchsgClientId))
-    .get()
-    .json<SearchSGSiteResponse>()
-
   const logAndRethrow = (error: unknown): never => {
     logger.error(
       { error },
@@ -129,6 +122,14 @@ export const updateSearchSGConfig = async (
     )
     throw error
   }
+
+  // NOTE: fetch site details first to retrieve the appId (for colour updates)
+  // and projectId (for name updates) needed by the v2 branched PATCH endpoints
+  const { data } = await client
+    .url(SearchSgApi.site(searchsgClientId))
+    .get()
+    .json<SearchSGSiteResponse>()
+    .catch(logAndRethrow)
 
   const kind = props._kind
   switch (kind) {
