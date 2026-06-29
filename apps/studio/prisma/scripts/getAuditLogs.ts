@@ -119,6 +119,7 @@ const SITES_WITH_AUDIT_LOGS = [
   343, // www.motawardsceremony.gov.sg
   357, // www.ago.gov.sg
   397, // www.rp.edu.sg
+  409, // www.hsa.gov.sg
   484, // www.hpb.gov.sg
   492, // www.oneservice.gov.sg
 ]
