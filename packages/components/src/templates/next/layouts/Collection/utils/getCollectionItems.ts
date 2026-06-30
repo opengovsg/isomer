@@ -6,9 +6,9 @@ import type {
 } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
+import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
 
 import { getTagsFromTagged } from "./getTagsFromTagged"
-import { resolveCategoryLabel } from "./resolveCategoryLabel"
 import { sortCollectionItems } from "./sortCollectionItems"
 
 interface GetItemImageProps {
