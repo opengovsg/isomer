@@ -116,14 +116,6 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "algoliasearch"
         update-types: ["version-update:semver-major"]
-      # jsdom is pinned to 27.x (catalog + pnpm overrides in pnpm-workspace.yaml).
-      # jsdom >=28 moved its encoding stack to the ESM-only `@exodus/bytes`, which the
-      # CJS jsdom/html-encoding-sniffer `require()`. Next 16 builds with Turbopack and
-      # loads jsdom as an external (serverExternalPackages), so at runtime it hits a
-      # native require() of ESM → ERR_REQUIRE_ESM and the Vercel server crashes. Do not
-      # let Dependabot bump jsdom off 27 until isomorphic-dompurify/jsdom ship a build
-      # that loads `@exodus/bytes` via dynamic import (or we stop externalizing jsdom).
-      - dependency-name: "jsdom"
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

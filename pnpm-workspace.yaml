@@ -54,16 +54,6 @@ allowBuilds:
 patchedDependencies:
   next@16.2.6: patches/next@16.2.6.patch
 
-overrides:
-  # Force jsdom to 27.x across the whole tree (notably isomorphic-dompurify, which
-  # declares jsdom ^29). jsdom >=28 switched its encoding stack to the ESM-only
-  # `@exodus/bytes`, but jsdom/html-encoding-sniffer are CJS and `require()` it.
-  # Next 16 builds with Turbopack and keeps jsdom external (serverExternalPackages),
-  # so it's loaded via a native require() at runtime → ERR_REQUIRE_ESM crash on
-  # Vercel (webpack on AWS bundles+interops the ESM, hiding the bug). jsdom 27 is the
-  # last release on the CJS `whatwg-encoding`. See jsdom dep ignore in dependabot.yml.
-  jsdom: 27.0.0
-
 catalog:
   # v4 is pinned deliberately: the legacy egazette integration uses the v4 client API
   # (algoliasearch(appId, key).initIndex(name), index.saveObjects, index.deleteBy).
@@ -81,10 +71,7 @@ catalog:
   date-fns: ^4.4.0
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
-  # Pinned to 27.x: jsdom >=28 depends on the ESM-only `@exodus/bytes`, which a CJS
-  # `require()` cannot load under Turbopack's external loader (ERR_REQUIRE_ESM on
-  # Vercel). Kept in lockstep with the `overrides.jsdom` pin above. Do not bump.
-  jsdom: 27.0.0
+  jsdom: ^29.1.1
   happy-dom: ^20.10.6
   isomorphic-dompurify: ^3.15.0
   mockdate: ^3.0.5
