@@ -9,6 +9,8 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AuditLogExportFailedEmailTemplateData,
+  AuditLogExportReadyEmailTemplateData,
   CancelSchedulePageTemplateData,
   EmailTemplate,
   EmailTemplateFunction,
@@ -271,6 +273,52 @@ const accountDeactivationTemplate = (
   }
 }
 
+const auditLogExportReadyTemplate = (
+  data: AuditLogExportReadyEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, siteName, month, links } = data
+  const escapedRecipientEmail = escapeHtml(recipientEmail)
+  const escapedSiteName = escapeHtml(siteName)
+  const escapedMonth = escapeHtml(month)
+
+  // The href is a signed S3 URL (a trusted value we generated), but the label
+  // is escaped since it is interpolated as displayed text.
+  const downloadLinks = links
+    .map(
+      ({ label, url }) => `<li><a href="${url}">${escapeHtml(label)}</a></li>`,
+    )
+    .join("")
+
+  return {
+    subject: `[Isomer Studio] Your audit log export for ${escapedSiteName} (${escapedMonth}) is ready`,
+    body: `<p>Hi ${escapedRecipientEmail},</p>
+<p>Your audit log export for ${escapedSiteName} (${escapedMonth}) is ready to download.</p>
+<ul>${downloadLinks}</ul>
+<p>Each download link is valid for 3 days.</p>
+<p>If you have any questions, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
+const auditLogExportFailedTemplate = (
+  data: AuditLogExportFailedEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, siteName, month } = data
+  const escapedRecipientEmail = escapeHtml(recipientEmail)
+  const escapedSiteName = escapeHtml(siteName)
+  const escapedMonth = escapeHtml(month)
+
+  return {
+    subject: `[Isomer Studio] Your audit log export for ${escapedSiteName} (${escapedMonth}) could not be generated`,
+    body: `<p>Hi ${escapedRecipientEmail},</p>
+<p>We're sorry — we couldn't generate your audit log export for ${escapedSiteName} (${escapedMonth}).</p>
+<p>Please try again later. If the problem persists, contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
 const _templates = {
   invitation:
     invitationTemplate satisfies EmailTemplateFunction<InvitationEmailTemplateData>,
@@ -294,6 +342,10 @@ const _templates = {
     accountDeactivationTemplate satisfies EmailTemplateFunction<AccountDeactivationEmailTemplateData>,
   gazetteDeletion:
     gazetteDeletionTemplate satisfies EmailTemplateFunction<GazetteDeletionEmailTemplateData>,
+  auditLogExportReady:
+    auditLogExportReadyTemplate satisfies EmailTemplateFunction<AuditLogExportReadyEmailTemplateData>,
+  auditLogExportFailed:
+    auditLogExportFailedTemplate satisfies EmailTemplateFunction<AuditLogExportFailedEmailTemplateData>,
 } as const
 
 export const templates = escapeTemplateArguments(_templates)
