@@ -11,12 +11,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import {
-  composePaths,
-  createDefaultValue,
-  rankWith,
-  schemaMatches,
-} from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { Button, Infobox } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
@@ -42,6 +37,7 @@ import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { createDefaultCategoryOption } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
 
 /** Matches category option rows from JsonForms (`categoryOptions` array on collection index). */
@@ -188,7 +184,7 @@ function CategoryOptionsExpandedEditor({
                 {label}
               </Text>
               <AddItemButton
-                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+                onClick={addItem(path, createDefaultCategoryOption())}
                 isDisabled={isAddItemDisabled}
               >
                 Add option
