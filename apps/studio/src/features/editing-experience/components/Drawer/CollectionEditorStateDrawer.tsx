@@ -15,6 +15,7 @@ import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { env } from "~/env.mjs"
+import { useMe } from "~/features/me/api"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { triggerCsatSurveyOnce } from "~/lib/intercom"
@@ -47,6 +48,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     setPreviewPageState,
   } = useEditorDrawerContext()
 
+  const { me } = useMe()
   const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
@@ -121,7 +123,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
             hasTagsNow
           ) {
             trackEvent("first_tag_added")
-            triggerCsatSurveyOnce()
+            triggerCsatSurveyOnce({ userId: me.id })
           }
           setDrawerState({ state: "root" })
         },
@@ -135,6 +137,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     setDrawerState,
     setSavedPageState,
     siteId,
+    me.id,
   ])
 
   const handleChange = (data: unknown) => {

@@ -1,13 +1,23 @@
 import { startSurvey } from "@intercom/messenger-js-sdk"
 
-const triggerSurveyOnce = ({ surveyId }: { surveyId: string }): void => {
-  const key = `intercom_survey_${surveyId}_shown`
+interface TriggerSurveyOnceProps {
+  surveyId: string
+  userId: string
+}
+
+const triggerSurveyOnce = ({
+  surveyId,
+  userId,
+}: TriggerSurveyOnceProps): void => {
+  const key = `intercom_survey_${surveyId}_${userId}_shown`
   if (!localStorage.getItem(key)) {
     startSurvey(surveyId)
     localStorage.setItem(key, "1")
   }
 }
 
-export const triggerCsatSurveyOnce = (): void => {
-  triggerSurveyOnce({ surveyId: "65029624" })
+export const triggerCsatSurveyOnce = ({
+  userId,
+}: Omit<TriggerSurveyOnceProps, "surveyId">): void => {
+  triggerSurveyOnce({ surveyId: "65029624", userId })
 }
