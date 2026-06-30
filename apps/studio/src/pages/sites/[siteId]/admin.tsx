@@ -27,10 +27,7 @@ import { type NextPageWithLayout } from "~/lib/types"
 import { type SessionData } from "~/lib/types/session"
 import { setSiteConfigByAdminSchema } from "~/schemas/site"
 import { generateSessionOptions } from "~/server/modules/auth/session"
-import { db } from "~/server/modules/database"
-import { defaultUserSelect } from "~/server/modules/me/me.select"
 import { isActiveIsomerAdmin } from "~/server/modules/permissions/permissions.service"
-import { isEmailWhitelisted } from "~/server/modules/whitelist/whitelist.service"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
@@ -63,21 +60,12 @@ export const getServerSideProps: GetServerSideProps<
   const session = await getIronSession<SessionData>(
     req,
     res,
-    generateSessionOptions({ ttlInHours: 1 }),
+    generateSessionOptions(),
   )
-  const user =
-    session.userId &&
-    (await db
-      .selectFrom("User")
-      .select(defaultUserSelect)
-      .where("id", "=", session.userId)
-      .where("deletedAt", "is", null)
-      .executeTakeFirst())
 
   const isUserIsomerAdmin =
-    !!user &&
-    (await isEmailWhitelisted(user.email)) &&
-    (await isActiveIsomerAdmin(user.id, [
+    !!session.userId &&
+    (await isActiveIsomerAdmin(session.userId, [
       IsomerAdminRole.Core,
       IsomerAdminRole.Migrator,
     ]))
