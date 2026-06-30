@@ -8,9 +8,8 @@ import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 import { getTagsFromTagged } from "./getTagsFromTagged"
+import { resolveCategoryLabel } from "./resolveCategoryLabel"
 import { sortCollectionItems } from "./sortCollectionItems"
-
-const CATEGORY_OTHERS = "Others"
 
 interface GetItemImageProps {
   showThumbnail: CollectionPagePageProps["showThumbnail"]
@@ -133,12 +132,11 @@ export const getCollectionItems = ({
       id: item.permalink,
       date,
       lastModified: item.lastModified,
-      category:
-        item.categoryId && categoryOptions
-          ? (categoryOptions.find((opt) => opt.id === item.categoryId)?.label ??
-            item.category ??
-            CATEGORY_OTHERS)
-          : (item.category ?? CATEGORY_OTHERS),
+      category: resolveCategoryLabel({
+        categoryId: item.categoryId,
+        category: item.category,
+        categoryOptions,
+      }),
       title: item.title,
       description: item.summary,
       image,
