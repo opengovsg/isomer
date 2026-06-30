@@ -1,11 +1,11 @@
 name: "🤖 IsoBot: PR Review"
 
-# Runs when the author explicitly signals the PR is ready, or comments /isobot-review
-# after pushing fixes. Does NOT run on every synchronize — engineers should keep
-# the PR in draft while iterating to avoid burning review cycles on WIP commits.
+# Runs when a non-draft PR is opened or converted from draft to ready, or when a
+# member comments /isobot-review after pushing fixes. Does NOT run on every
+# synchronize — keep the PR in draft while iterating to avoid burning review cycles.
 on:
   pull_request:
-    types: [ready_for_review]
+    types: [ready_for_review, opened]
   issue_comment:
     types: [created]
 
@@ -14,12 +14,14 @@ jobs:
   # Downstream jobs use `needs: gate` so this condition is defined exactly once.
   gate:
     # Only run this job if the event matches one of these authorized triggers:
-    # 1. The event is a 'pull_request' and the PR author is an OWNER or MEMBER.
+    # 1. The event is a 'pull_request', the PR is not a draft, and the author is an OWNER or MEMBER.
+    #    Covers both 'opened' (PR created ready) and 'ready_for_review' (draft converted to ready).
     # 2. The event is a 'issue_comment', the comment is on a PR,
     #    the comment starts with '/isobot-review', and the comment author is an OWNER or MEMBER.
     if: |
       (
         github.event_name == 'pull_request' &&
+        !github.event.pull_request.draft &&
         contains(fromJSON('["OWNER", "MEMBER"]'), github.event.pull_request.author_association)
       ) ||
       (
@@ -69,6 +71,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--allowedTools Write"
           prompt: /compute-risk-tier ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
       - name: Read risk tier result
@@ -101,6 +104,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--allowedTools Write"
           prompt: /code-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
       - name: Read code review result
@@ -134,6 +138,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--allowedTools Write"
           prompt: /security-review ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
 
       - name: Read security review result
@@ -162,6 +167,7 @@ jobs:
       - uses: hmarr/auto-approve-action@f0939ea97e9205ef24d872e76833fa908a770363 # v4.0.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event_name == 'issue_comment' && github.event.issue.number || github.event.pull_request.number }}
           review-message: |
             🤖 All clear!
             - 🟢 Risk: low
@@ -169,3 +175,5 @@ jobs:
             - 🔒 Security: no blockers
 
             Still needs a human to merge — this just clears the approvals gate.
+
+            <sub>Posted by [🤖 IsoBot: PR Review](https://github.com/opengovsg/isomer/blob/main/.github/workflows/isobot-pr-review.yml)</sub>

@@ -56,6 +56,7 @@ export const editLinkSchema = z.object({
       alt: z.string(),
     })
     .optional(),
+  categoryId: z.string().optional(),
 })
 
 export const readLinkSchema = z.object({

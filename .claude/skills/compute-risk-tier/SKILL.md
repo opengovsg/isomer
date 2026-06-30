@@ -33,11 +33,11 @@ Compute the risk tier for a pull request.
 
 4. **Determine the tier.**
    a. Apply file-glob matching top-down — highest tier across all changed files wins.
-   b. Apply reversibility modifiers — bump one level if the diff:
-      - Sends external side-effects (email, Slack notification, outbound webhook call)
-      - Mutates existing rows outside of a database migration (backfill script, ad-hoc update)
-      - Changes a pgboss job handler function signature or job payload type
-   c. Note (but do not change the tier) if all new behaviour is gated behind a GrowthBook feature flag — record this in the reason.
+   b. Apply reversibility modifiers — bump one level if the diff matches any signal in the taxonomy's reversibility table. Detection hints: email/Slack/webhook calls, backfill scripts, pgboss handler removal/rename/payload change, `deleteObject`/`s3.delete`/CDN purge calls.
+   c. If the glob tier is MEDIUM, check content signals (see taxonomy) — these can lower MEDIUM → LOW, never HIGH:
+      - **Feature-flag gated**: All changed behaviour is wrapped in `useGrowthbookFlags`, `gb.isOn`, or `gb.getFeatureValue`. If yes, downgrade to LOW.
+      - **Purely additive**: No `-` hunks in MEDIUM-path files (excluding `---` diff metadata). If yes, downgrade to LOW.
+      If either applies, set tier to LOW and record which signal triggered it. See "What is NOT a reversibility risk" in the taxonomy for examples of changes that look risky but aren't.
 
 5. **Post a comment** on the PR explaining the decision:
    ```
@@ -67,8 +67,8 @@ Compute the risk tier for a pull request.
 ## Hard rules
 
 - **Read the taxonomy at run time.** Never rely on remembered glob patterns — the team updates the file frequently.
-- **Never downgrade a tier because the diff looks small.** Tier is determined by what is touched, not by how much is changed.
-- **Reversibility modifiers can only raise the tier, never lower it.** The feature-flag note is informational only.
+- **Never downgrade a HIGH-tier PR.** HIGH is determined by what is touched (auth, migrations, infra), not by how much is changed or whether it looks safe.
+- **Reversibility modifiers can only raise the tier, never lower it.**
 - **If `docs/risk-taxonomy.md` is missing**, abort and print an error — do not guess.
 
 ## Failure modes

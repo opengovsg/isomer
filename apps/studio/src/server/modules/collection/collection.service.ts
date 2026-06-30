@@ -61,7 +61,8 @@ export const getCollectionTagsForResource = async ({
   resourceId,
   collectionId,
   siteId,
-}: { siteId: number } & MergeExclusive<
+  isPublishedOnly = false,
+}: { siteId: number; isPublishedOnly?: boolean } & MergeExclusive<
   { resourceId: number },
   { collectionId: number }
 >): Promise<NonNullable<CollectionPageSchemaType["page"]["tagCategories"]>> => {
@@ -85,11 +86,11 @@ export const getCollectionTagsForResource = async ({
       ),
     )
     .select([
-      sql<CollectionPageSchemaType | null>`"draftBlob"."content"`.as(
-        "draftContent",
-      ),
       sql<CollectionPageSchemaType | null>`"publishedBlob"."content"`.as(
         "publishedContent",
+      ),
+      sql<CollectionPageSchemaType | null>`"draftBlob"."content"`.as(
+        "draftContent",
       ),
     ])
     .executeTakeFirst()
@@ -98,11 +99,11 @@ export const getCollectionTagsForResource = async ({
     return []
   }
 
-  return (
-    row.publishedContent?.page.tagCategories ??
-    row.draftContent?.page.tagCategories ??
-    []
-  )
+  return isPublishedOnly
+    ? (row.publishedContent?.page.tagCategories ?? [])
+    : (row.publishedContent?.page.tagCategories ??
+        row.draftContent?.page.tagCategories ??
+        [])
 }
 
 export const getCategoryOptionUsageCount = async ({
