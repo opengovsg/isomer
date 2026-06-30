@@ -174,6 +174,54 @@ describe("importRedirectsFromCsv", () => {
     expect(summary.unresolvedDestinations).toHaveLength(1)
   })
 
+  it("writes the migrated rows to migratedCsvPath with the expected Location as target", async () => {
+    // Arrange — one external, one reference (live page), one literal (no page)
+    const siteId = await setupSiteWithUrl("www.alpha.gov.sg")
+    const user = await setupUser({ email: "import-migrated@open.gov.sg" })
+    await setupPageResource({
+      siteId,
+      resourceType: ResourceType.Page,
+      permalink: "new-page",
+      parentId: null,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const csvPath = writeCsv([
+      "www.alpha.gov.sg,/ext,https://example.gov.sg/page",
+      "www.alpha.gov.sg,/old-page,/New-Page",
+      "www.alpha.gov.sg,/gone,/missing-page",
+    ])
+    const migratedCsvPath = path.join(tmpDir, "migrated.csv")
+
+    // Act
+    await importRedirectsFromCsv({ csvPath, dryRun: false, migratedCsvPath })
+
+    // Assert — header plus a row per migrated redirect; the reference target is
+    // the resolved (lowercased) permalink, not the [resource:...] reference
+    const lines = fs.readFileSync(migratedCsvPath, "utf8").trim().split(/\r?\n/)
+    expect(lines[0]).toBe("domainName,source,target")
+    expect(lines.slice(1).sort()).toEqual(
+      [
+        "www.alpha.gov.sg,/ext,https://example.gov.sg/page",
+        "www.alpha.gov.sg,/old-page,/new-page",
+        "www.alpha.gov.sg,/gone,/missing-page",
+      ].sort(),
+    )
+  })
+
+  it("does not write a migrated CSV on a dry run", async () => {
+    // Arrange
+    await setupSiteWithUrl("www.alpha.gov.sg")
+    const csvPath = writeCsv(["www.alpha.gov.sg,/old-page,/new-page"])
+    const migratedCsvPath = path.join(tmpDir, "should-not-exist.csv")
+
+    // Act
+    await importRedirectsFromCsv({ csvPath, dryRun: true, migratedCsvPath })
+
+    // Assert
+    expect(fs.existsSync(migratedCsvPath)).toBe(false)
+  })
+
   it("skips rows for domains with no matching site and reports them", async () => {
     // Arrange
     const siteId = await setupSiteWithUrl("www.alpha.gov.sg")

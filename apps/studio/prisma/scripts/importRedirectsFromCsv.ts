@@ -1,13 +1,21 @@
 import fs from "node:fs"
+import path, { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import Papa from "papaparse"
 import { z } from "zod"
 import { db, ResourceType } from "~/server/modules/database"
 
-// Inline copy of createRedirectSchema from ~/schemas/redirect on the
-// feat/redirects-management-backend branch, so this script can land off main
-// without depending on that branch. Once the redirects backend merges, drop
-// this block and import the schema instead so the two cannot drift.
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+// A deliberately lenient subset of the validation in ~/schemas/redirect. This
+// is a migration of legacy redirects from infra, so the goal is to preserve as
+// many existing rules as possible rather than retroactively enforce Studio's
+// stricter rules (reserved-prefix rejection, the source character whitelist,
+// lowercasing, self-redirect rejection, etc.) on data that predates them. Those
+// rules apply going forward — anything created or edited through Studio is still
+// validated by createRedirectSchema. We only reject what would corrupt the
+// published rules outright (control chars, backslashes, "..", non-path/https
+// destinations).
 const MAX_REDIRECT_PATH_LENGTH = 2000
 
 // Matches ASCII control characters (0x00-0x1f, 0x7f) and backslashes.
@@ -68,6 +76,12 @@ interface ImportRedirectsFromCsvProps {
   // isomer-next-infra/src/publishing/redirects.production.csv
   csvPath: string
   dryRun: boolean
+  // When set, a real (non-dry-run) import writes the rows it migrated to this
+  // path as a `domainName,source,target` CSV that verifyRedirectsLive.ts can
+  // read directly — so verification covers exactly the migrated redirects (and
+  // not unmatched domains or skipped rows). Omitted by tests, so no file is
+  // written there.
+  migratedCsvPath?: string
 }
 
 // Rows are inserted in chunks so a 38k-row import doesn't build one giant
@@ -179,6 +193,7 @@ const buildPermalinkToResourceId = async (siteId: number) => {
 export const importRedirectsFromCsv = async ({
   csvPath,
   dryRun,
+  migratedCsvPath,
 }: ImportRedirectsFromCsvProps) => {
   // Surface a clear message instead of an opaque ENOENT when csvPath is unset.
   if (!csvPath) {
@@ -206,9 +221,12 @@ export const importRedirectsFromCsv = async ({
 
   const sites = await db.selectFrom("Site").select(["id", "config"]).execute()
   const siteIdByDomain = new Map<string, number>()
+  const domainBySiteId = new Map<number, string>()
   for (const site of sites) {
     if (site.config.url) {
-      siteIdByDomain.set(normaliseDomain(site.config.url), site.id)
+      const domain = normaliseDomain(site.config.url)
+      siteIdByDomain.set(domain, site.id)
+      domainBySiteId.set(site.id, domain)
     }
   }
 
@@ -254,8 +272,9 @@ export const importRedirectsFromCsv = async ({
       return
     }
 
-    // Validate with the same rules as the Studio publish flow so imported
-    // rows are normalised exactly like redirects created through Studio
+    // Apply the lenient migration validation (see the schema block above) and
+    // normalise the source. This is intentionally weaker than Studio's
+    // createRedirectSchema so legacy redirects are preserved.
     const parsed = createRedirectSchema.safeParse({
       source,
       destination: target,
@@ -298,20 +317,31 @@ export const importRedirectsFromCsv = async ({
     source: string
     destination: string
   }[] = []
+  // The migrated rows, in `domainName,source,target` form for verification. The
+  // target is the Location the published redirect will emit: for a converted
+  // reference that's the resolved permalink, otherwise the destination as stored.
+  const migratedEntries: {
+    domainName: string
+    source: string
+    target: string
+  }[] = []
   let referenceCount = 0
   for (const [siteId, siteRedirects] of redirectsBySite) {
     const permalinkToResourceId = await buildPermalinkToResourceId(siteId)
+    const domainName = domainBySiteId.get(siteId) ?? ""
     for (const [source, destination] of siteRedirects) {
       if (destination.startsWith("https://")) {
         rowsToInsert.push({ siteId, source, destination })
+        migratedEntries.push({ domainName, source, target: destination })
         continue
       }
-      const resourceId = permalinkToResourceId.get(
-        normalizeRedirectSource(destination),
-      )
+      const normalisedDestination = normalizeRedirectSource(destination)
+      const resourceId = permalinkToResourceId.get(normalisedDestination)
       if (resourceId === undefined) {
         unresolvedDestinations.push({ siteId, source, destination })
         rowsToInsert.push({ siteId, source, destination })
+        // Kept as a literal path, so the published Location is that path as-is.
+        migratedEntries.push({ domainName, source, target: destination })
         continue
       }
       referenceCount += 1
@@ -319,6 +349,13 @@ export const importRedirectsFromCsv = async ({
         siteId,
         source,
         destination: toReferenceLink(siteId, resourceId),
+      })
+      // The reference resolves to this permalink at publish time, so that's the
+      // Location verification should expect.
+      migratedEntries.push({
+        domainName,
+        source,
+        target: normalisedDestination,
       })
     }
   }
@@ -392,6 +429,27 @@ export const importRedirectsFromCsv = async ({
   })
 
   console.log("Import complete")
+
+  // Write the migrated rows so verifyRedirectsLive.ts can probe exactly what was
+  // migrated. Same `domainName,source,target` header the verifier expects.
+  if (migratedCsvPath) {
+    fs.mkdirSync(path.dirname(migratedCsvPath), { recursive: true })
+    fs.writeFileSync(
+      migratedCsvPath,
+      Papa.unparse({
+        fields: ["domainName", "source", "target"],
+        data: migratedEntries.map((entry) => [
+          entry.domainName,
+          entry.source,
+          entry.target,
+        ]),
+      }),
+    )
+    console.log(
+      `Wrote ${migratedEntries.length} migrated entries to ${migratedCsvPath} (feed this to verifyRedirectsLive.ts)`,
+    )
+  }
+
   return summary
 }
 
@@ -401,9 +459,15 @@ if (isMain) {
   // NOTE: Update the CSV path and set dryRun to false before executing!
   const csvPath = ""
   const dryRun = true
+  // A real import writes the migrated rows here for verifyRedirectsLive.ts.
+  const migratedCsvPath = path.join(
+    __dirname,
+    "output",
+    "migrated-redirects.csv",
+  )
 
   try {
-    await importRedirectsFromCsv({ csvPath, dryRun })
+    await importRedirectsFromCsv({ csvPath, dryRun, migratedCsvPath })
   } finally {
     // Always release the connection pool, even when the import throws, so
     // the process does not hang on an open DB connection

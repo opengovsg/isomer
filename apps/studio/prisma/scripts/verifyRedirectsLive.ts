@@ -11,9 +11,11 @@ const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 interface VerifyRedirectsLiveProps {
-  // The same CSV used for the import (`domainName,source,target` header), e.g.
-  // isomer-next-infra/src/publishing/redirects.production.csv. The CSV is the
-  // source of truth: we verify the original legacy redirects still work live.
+  // A `domainName,source,target` CSV. Prefer the `migrated-redirects.csv` that a
+  // real import writes (under prisma/scripts/output) — it contains exactly the
+  // rows that were migrated, with the target set to the Location the published
+  // redirect should emit, so there are no unmatched-domain false failures. The
+  // original infra CSV also works, but will report un-migrated domains as errors.
   csvPath: string
   // Only verify this domain (bare hostname, e.g. "www.isomer.gov.sg"). Leave
   // empty to verify every domain in the CSV.
