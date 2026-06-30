@@ -687,11 +687,16 @@ const _updateOrderingForResource = (
   }
 }
 
+// Accepts an optional `trx` so callers inside a transaction (e.g. the publish
+// shadow-redirect guard) read the permalink within the same tx, instead of
+// racing a concurrent move that commits between reads. Opens its own
+// transaction only when called standalone.
 export const getResourcePermalinkTree = async (
   siteId: number,
   resourceId: number,
+  trx?: SafeKysely,
 ): Promise<string[]> => {
-  return db.transaction().execute(async (tx) => {
+  const run = async (tx: SafeKysely) => {
     // Guard against invalid resource
     const resource = await getById(tx, {
       siteId,
@@ -727,14 +732,17 @@ export const getResourcePermalinkTree = async (
       .map((r) => r.permalink)
       .reverse()
       .filter((v) => v !== INDEX_PAGE_PERMALINK)
-  })
+  }
+
+  return trx ? run(trx) : db.transaction().execute(run)
 }
 
 export const getResourceFullPermalink = async (
   siteId: number,
   resourceId: number,
+  trx?: SafeKysely,
 ) => {
-  const permalinkTree = await getResourcePermalinkTree(siteId, resourceId)
+  const permalinkTree = await getResourcePermalinkTree(siteId, resourceId, trx)
   if (permalinkTree.length === 0) {
     return null
   }
@@ -1048,6 +1056,7 @@ export const publishPageResource = async ({
       const fullPermalink = await getResourceFullPermalink(
         siteId,
         Number(resourceId),
+        tx,
       )
       if (fullPermalink) {
         const blockingRedirect = await tx
