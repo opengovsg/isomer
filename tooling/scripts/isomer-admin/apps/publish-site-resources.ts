@@ -106,6 +106,9 @@ export const publishSiteResources = async () => {
         console.log(`Published resource ${resource.id} (${resource.title})`);
       }
       console.log(`\nDone. ${resources.length} resource(s) published.`);
+      console.log(
+        "\nIMPORTANT: The static site has NOT been rebuilt. You must manually trigger a CodeBuild rebuild for the changes to go live.",
+      );
     } catch (err) {
       await client.query("ROLLBACK");
       console.error("Transaction rolled back. No resources were published.", err);
