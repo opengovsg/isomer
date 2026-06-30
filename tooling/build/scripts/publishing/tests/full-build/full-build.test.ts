@@ -65,14 +65,17 @@ beforeAll(async () => {
 
   try {
     // Act: replay publisher.sh's pre-build steps, then build the template
-    backupDir = mkdtempSync(join(tmpdir(), "template-fixtures-"))
-    // Phase 1: back up everything before touching the template so restoreTemplate
-    // always has a complete backupDir even if a later copy fails.
+    //
+    // Phase 1: complete all backups before touching the template. backupDir is
+    // only assigned once all copies succeed so restoreTemplate is never called
+    // with a partial backup (which would crash on a missing path).
+    const tmpBackupDir = mkdtempSync(join(tmpdir(), "template-fixtures-"))
     for (const swappedPath of SWAPPED_PATHS) {
-      cpSync(join(TEMPLATE_DIR, swappedPath), join(backupDir, swappedPath), {
+      cpSync(join(TEMPLATE_DIR, swappedPath), join(tmpBackupDir, swappedPath), {
         recursive: true,
       })
     }
+    backupDir = tmpBackupDir
     // Phase 2: replace template fixtures with publishing script output
     for (const swappedPath of SWAPPED_PATHS) {
       rmSync(join(TEMPLATE_DIR, swappedPath), { recursive: true, force: true })
@@ -81,7 +84,7 @@ beforeAll(async () => {
       })
     }
     cpSync(
-      join(TEMPLATE_DIR, "sitemap.json"),
+      join(outputDir, "sitemap.json"),
       join(TEMPLATE_DIR, "public", "sitemap.json"),
     )
     const indexJsonPath = join(TEMPLATE_DIR, "schema", "_index.json")
