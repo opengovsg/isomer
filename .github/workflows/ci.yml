@@ -242,11 +242,13 @@ jobs:
           key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-
-      - name: Build Studio app
+      - name: Build Studio app and start test containers
         # Loose env mode required for env vars to be passed to the run
-        run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
-      - name: Start test containers
-        run: pnpm run setup:test
+        run: |
+          pnpm run setup:test &
+          SETUP_PID=$!
+          pnpm exec turbo build --filter=isomer-studio --env-mode=loose
+          wait $SETUP_PID
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
         with:
