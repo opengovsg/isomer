@@ -92,6 +92,38 @@ describe("getTableOfContents", () => {
     ])
   })
 
+  it("strips hard breaks from level-2 heading toc entries", () => {
+    // Arrange
+    const site = generateSiteConfig()
+    const transformedContent = getTransformedPageContent([
+      {
+        type: "prose",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [
+              { type: "text", text: "Line one" },
+              { type: "hardBreak" } as unknown as {
+                type: "text"
+                text: string
+              },
+              { type: "text", text: "Line two" },
+            ],
+          },
+        ],
+      },
+    ])
+
+    // Act
+    const toc = getTableOfContents(site, transformedContent)
+
+    // Assert
+    expect(toc).toHaveLength(1)
+    expect(toc[0]?.content).toBe("Line one Line two")
+    expect(toc[0]?.content).not.toContain("<br")
+  })
+
   it("preserves order of toc entries across prose and blocks", () => {
     // Arrange
     const content: IsomerComponent[] = [

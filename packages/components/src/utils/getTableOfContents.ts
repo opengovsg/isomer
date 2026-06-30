@@ -30,7 +30,10 @@ export const getTableOfContents = (
       for (const component of block.content) {
         if (component.type === "heading" && component.attrs.level === 2) {
           result.push({
-            content: getTextAsHtml({ site, content: component.content }),
+            content: getTextAsHtml({ site, content: component.content })
+              .replace(/<br\s*\/?>/gi, " ")
+              .replace(/\s+/g, " ")
+              .trim(),
             anchorLink: "#" + component.attrs.id,
           })
         }
