@@ -2,22 +2,15 @@ import { z } from "zod"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { SearchResultResource } from "../server/modules/resource/resource.types"
+import { generateBigIntSchema } from "./common"
 import {
   infiniteOffsetPaginationSchema,
   offsetPaginationSchema,
 } from "./pagination"
 
-// NOTE: We want to accept string
-// but validate that the string conforms to bigint.
-// Oddly enough, kysely doesn't allow `bigint` to query
-const bigIntSchema = z
-  // NOTE: A valid `bigint` is one that
-  // begins with a non-zero digit
-  // and has length > 1
-  .string()
-  .min(1)
-  .regex(/^[0-9]+$/)
-  .refine((v) => !v.startsWith("0"))
+// A bigint resource id, surfaced as a string by kysely. Shared shape lives in
+// common.ts so other modules (e.g. redirects) validate ids identically.
+const bigIntSchema = generateBigIntSchema("ID")
 
 export const getMetadataSchema = z.object({
   siteId: z.number(),
@@ -49,6 +42,9 @@ export const moveSchema = z.object({
   siteId: z.number(),
   movedResourceId: bigIntSchema,
   destinationResourceId: bigIntSchema.nullable(),
+  // Create a redirect from the resource's old URL on move. Defaults on,
+  // matching the checkbox's default-checked state.
+  shouldCreateRedirect: z.boolean().optional().default(true),
 })
 
 export const countResourceSchema = z.object({

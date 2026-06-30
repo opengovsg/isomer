@@ -7,23 +7,30 @@ import {
   Input,
   InputGroup,
   InputLeftAddon,
+  Stack,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react"
 import {
   Button,
   FormErrorMessage,
   FormLabel,
+  Infobox,
+  Link,
   useToast,
 } from "@opengovsg/design-system-react"
-import { BiPlus, BiRightArrowAlt } from "react-icons/bi"
+import { useState } from "react"
+import { BiLinkAlt, BiPlus, BiRightArrowAlt } from "react-icons/bi"
+import { REDIRECT_MESSAGES } from "~/constants/redirect"
 import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 
-import { useCreateRedirect } from "../api"
+import { useCreateRedirect, useValidateRedirect } from "../api"
 import { addRedirectSchema, type AddRedirectInput } from "../types"
+import { SelectDestinationPageModal } from "./SelectDestinationPageModal"
 
 interface AddRedirectCardProps {
   siteId: number
@@ -36,7 +43,11 @@ export const AddRedirectCard = ({
     register,
     handleSubmit,
     reset,
+    setError,
+    clearErrors,
     watch,
+    getValues,
+    setValue,
     formState: { errors },
   } = useZodForm<typeof addRedirectSchema>({
     schema: addRedirectSchema,
@@ -44,27 +55,80 @@ export const AddRedirectCard = ({
   })
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { mutate: createRedirect, isPending } = useCreateRedirect()
+  const {
+    isOpen: isPageModalOpen,
+    onOpen: onPageModalOpen,
+    onClose: onPageModalClose,
+  } = useDisclosure()
 
   const [source, destination] = watch(["source", "destination"])
   const isAddDisabled = !source?.trim() || !destination?.trim()
 
+  // Non-blocking warnings (e.g. the destination doesn't exist / isn't
+  // published) are fetched on blur once the inputs are sync-valid.
+  const [validateInput, setValidateInput] = useState<AddRedirectInput | null>(
+    null,
+  )
+  const { warnings } = useValidateRedirect(siteId, validateInput)
+
+  const checkForWarnings = () => {
+    const parsed = addRedirectSchema.safeParse(getValues())
+    setValidateInput(parsed.success ? parsed.data : null)
+  }
+  // Drop any shown warning the moment a field changes, so it never lingers
+  // against edited input. (reset() doesn't fire onChange, so a successful add
+  // clears it explicitly in onSuccess below.)
+  const clearWarnings = () => setValidateInput(null)
+  // On edit, also clear any server-set error on that field — otherwise an
+  // inline "already redirected" / "loop" error (set via setError, which the
+  // onSubmit-mode form doesn't revalidate) would linger over freshly-typed
+  // input.
+  const clearFieldFeedback = (field: keyof AddRedirectInput) => () => {
+    clearWarnings()
+    clearErrors(field)
+  }
+
   const onSubmit = ({ source, destination }: AddRedirectInput) => {
-    const normalisedSource = `/${source.replace(/^\/+/, "")}`
+    // source arrives normalised (leading slash, no trailing slash) by the
+    // shared schema's transform. An internal-path destination is converted to a
+    // page reference server-side, which 404s if the page doesn't exist.
     createRedirect(
-      { siteId, source: normalisedSource, destination },
+      { siteId, source, destination },
       {
         onSuccess: () => {
           reset()
+          clearWarnings()
           toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
         },
-        // The inputs are left untouched on conflict so the user can adjust
-        // the source instead of retyping everything
-        onError: () =>
-          toast({
-            title: "A redirect already exists for this path",
-            description: `Delete the redirect for ${normalisedSource} first if you want to change where it points to.`,
-            status: "error",
-          }),
+        // The inputs are left untouched on error so the user can fix the
+        // offending field. The schema covers the synchronous rules; these are
+        // the DB-level checks the server re-enforces on create — surface them
+        // inline on the relevant field rather than as a toast. redirect.create
+        // only throws these codes; anything else is unexpected.
+        onError: (error) => {
+          switch (error.data?.code) {
+            case "CONFLICT":
+              setError("source", { message: REDIRECT_MESSAGES.alreadyExists })
+              break
+            case "PRECONDITION_FAILED":
+              setError("source", {
+                message: REDIRECT_MESSAGES.sourceIsExistingPage,
+              })
+              break
+            case "UNPROCESSABLE_CONTENT":
+              setError("destination", { message: REDIRECT_MESSAGES.loop })
+              break
+            default:
+              toast({
+                title: "Failed to add redirect",
+                // Surface the server's message (e.g. validation rejections).
+                // Client-side zod validation catches malformed input before
+                // submit, so what reaches here is a clean TRPCError message.
+                description: error.message,
+                status: "error",
+              })
+          }
+        },
       },
     )
   }
@@ -98,7 +162,13 @@ export const AddRedirectCard = ({
             >
               /
             </InputLeftAddon>
-            <Input placeholder="redirect-from" {...register("source")} />
+            <Input
+              placeholder="redirect-from"
+              {...register("source", {
+                onBlur: checkForWarnings,
+                onChange: clearFieldFeedback("source"),
+              })}
+            />
           </InputGroup>
           <FormErrorMessage>{errors.source?.message}</FormErrorMessage>
         </FormControl>
@@ -121,9 +191,32 @@ export const AddRedirectCard = ({
           <Input
             placeholder="/redirect-to"
             size="xs"
-            {...register("destination")}
+            {...register("destination", {
+              onBlur: checkForWarnings,
+              onChange: clearFieldFeedback("destination"),
+            })}
           />
           <FormErrorMessage>{errors.destination?.message}</FormErrorMessage>
+          <Link
+            as="button"
+            type="button"
+            variant="standalone"
+            p="0"
+            mt="0.25rem"
+            onClick={onPageModalOpen}
+          >
+            <Icon as={BiLinkAlt} mr="0.25rem" />
+            Link to a page
+          </Link>
+          {warnings.length > 0 && (
+            <Stack spacing="0.5rem" mt="0.5rem">
+              {warnings.map((warning) => (
+                <Infobox key={warning.code} variant="warning" size="sm">
+                  {warning.message}
+                </Infobox>
+              ))}
+            </Stack>
+          )}
         </FormControl>
 
         <Box flexShrink={0}>
@@ -141,6 +234,18 @@ export const AddRedirectCard = ({
           </Button>
         </Box>
       </HStack>
+
+      <SelectDestinationPageModal
+        isOpen={isPageModalOpen}
+        siteId={siteId}
+        onClose={onPageModalClose}
+        onSelect={(permalink) =>
+          setValue("destination", permalink, {
+            shouldValidate: true,
+            shouldDirty: true,
+          })
+        }
+      />
     </Box>
   )
 }

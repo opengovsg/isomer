@@ -4,6 +4,8 @@ import filenamify from "filenamify"
 import { PdfReader } from "pdfreader"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { env } from "~/env.mjs"
+import { GazetteCategories } from "~/features/gazettes/constants"
+import { deleteObjectsFromSearchIndexByFilter } from "~/lib/algolia"
 import { createBaseLogger } from "~/lib/logger"
 import {
   copyFile,
@@ -306,6 +308,154 @@ export interface PushDocument {
   categories: string[]
 }
 
+/**
+ * Shape of a gazette record pushed to the shared egazette Algolia index.
+ * Must match egazette field-for-field — the index schema is set by egazette.
+ *
+ * The index signature makes SearchRecord directly assignable to
+ * `({ objectID: string } & Record<string, unknown>)[]` (the saveObjectsToSearchIndex
+ * parameter type) without an unsafe cast.
+ */
+export interface SearchRecord {
+  objectID: string
+  objectGroup: string
+  title: string
+  category: string
+  subCategory: string
+  notificationNum?: string
+  lexiNotificationNum?: string
+  /** Publish date in "DD/MM/YYYY" format (Asia/Singapore local time). */
+  publishDate: string
+  publishYear: number
+  publishMonth: number
+  publishDay: number
+  /** Epoch milliseconds of the publish timestamp. */
+  publishTimestamp: number
+  fileUrl: string
+  /** One text chunk (up to 7 000 chars) from the parsed PDF. */
+  text: string
+  [key: string]: unknown
+}
+
+export interface BuildGazetteSearchRecordsParams {
+  parsedText: string
+  objectGroup: string
+  title: string
+  category: string
+  subCategory: string
+  notificationNum?: string
+  fileUrl: string
+  scheduledAt: Date
+}
+
+/**
+ * Build Algolia search records for a gazette, one record per text chunk.
+ *
+ * Pure function — no I/O, no env reads, no feature-flag checks.
+ * The caller (cron) is responsible for the flag check.
+ */
+export const buildGazetteSearchRecords = ({
+  parsedText,
+  objectGroup,
+  title,
+  category,
+  subCategory,
+  notificationNum,
+  fileUrl,
+  scheduledAt,
+}: BuildGazetteSearchRecordsParams): SearchRecord[] => {
+  if (!parsedText) return []
+
+  // Split parsedText into chunks of up to 7 000 characters, ending on a
+  // whitespace boundary where possible. This keeps each Algolia record well
+  // below the ~10 KB record-size limit.
+  //
+  // The regex matches up to 7 000 characters followed by whitespace OR
+  // end-of-string. The `g` flag advances through the string chunk by chunk.
+  // We use a while-loop (not matchAll/split) to mirror egazette's own
+  // chunking logic exactly.
+  //
+  // WHY end on whitespace: splitting mid-word fragments search tokens across
+  // two records and hurts recall; whitespace-aligned splits are semantically
+  // cleaner and egazette uses the same boundary.
+  //
+  // NOTE: a contiguous run of non-whitespace characters longer than 7000 chars
+  // causes the regex to skip the leading portion of that run (it begins matching
+  // at the first position from which it can consume up to 7000 chars ending at
+  // the string boundary). Same behavior as egazette; gazette PDFs are
+  // whitespace-delimited prose, so this does not arise in practice.
+  const CHUNK_REGEX = /.{1,7000}(?:\s|$)/g
+
+  const chunks: string[] = []
+  let match: RegExpExecArray | null
+  while ((match = CHUNK_REGEX.exec(parsedText)) !== null) {
+    chunks.push(match[0])
+  }
+
+  // Derive SG-local date fields from scheduledAt.
+  // Asia/Singapore is pinned explicitly because gazette publish dates are
+  // always expressed in Singapore time (SGT = UTC+8); using the server's
+  // local time would produce wrong year/month/day for any deployment outside
+  // the SGT zone.
+  const publishDate = scheduledAt.toLocaleDateString("en-SG", {
+    timeZone: "Asia/Singapore",
+  })
+  const [day, month, year] = publishDate.split("/").map(Number) as [
+    number,
+    number,
+    number,
+  ]
+
+  // lexiNotificationNum is notificationNum left-padded to 10 digits.
+  // 10 = egazette's MAX_NOTIFICATION_NUMBER_LENGTH; must match for consistent
+  // sort ordering in Algolia.
+  const lexiNotificationNum = notificationNum
+    ? notificationNum.padStart(10, "0")
+    : undefined
+
+  return chunks.map((chunk, idx) => ({
+    objectID: `${objectGroup}-text-${idx}`,
+    objectGroup,
+    title,
+    category,
+    subCategory,
+    notificationNum,
+    lexiNotificationNum,
+    publishDate,
+    publishYear: year,
+    publishMonth: month,
+    publishDay: day,
+    publishTimestamp: scheduledAt.getTime(),
+    fileUrl,
+    text: chunk,
+  }))
+}
+
+/**
+ * Remove all Algolia records for a gazette identified by its S3 ref.
+ *
+ * Deletes by objectGroup filter rather than individual objectIDs because the
+ * number of chunks is not known at delete time (Algolia's deleteBy handles the
+ * fan-out). resourceId is not needed for Algolia — objectGroup is the unique
+ * dedup key for all of a gazette's records.
+ *
+ * The objectGroup value is wrapped in double quotes in the filter expression
+ * because it contains forward slashes and a dot (e.g. "2026/cat/sub/file.pdf")
+ * which Algolia's filter parser would otherwise mis-tokenise.
+ */
+export const removeGazetteFromAlgolia = async (ref: string): Promise<void> => {
+  const objectGroup = ref.slice(1)
+  try {
+    await deleteObjectsFromSearchIndexByFilter(`objectGroup:"${objectGroup}"`)
+  } catch (error) {
+    logger.warn({ error, objectGroup }, "Failed to remove gazette from Algolia")
+    throw new TRPCError({
+      message: "Failed to remove gazette from search index",
+      code: "PRECONDITION_FAILED",
+    })
+  }
+}
+
 export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
   if (documents.length === 0) {
     return
@@ -341,4 +491,73 @@ export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
     { count: documents.length },
     "Successfully pushed documents for ingestion",
   )
+}
+
+/**
+ * Detects whether another gazette in the same collection already uses the
+ * given notification number. A gazette is a duplicate when it shares the
+ * same notification number, category and publish year. For non-Government
+ * Gazette categories the subcategory must match too — Government Gazette
+ * numbers are unique within the category, not the subcategory.
+ *
+ * Gazette metadata lives in the resource's draft (or published) blob:
+ * `content.page.{description,category,date,tagged}`. `date` is stored as a
+ * "dd/MM/yyyy" string, so the year is its third "/"-delimited segment.
+ * Deleted gazettes are hard-deleted, so no soft-delete filter is needed.
+ */
+export const hasDuplicateNotificationNumber = async ({
+  trx = db,
+  siteId,
+  parentId,
+  notificationNumber,
+  publishDate,
+  category,
+  subCategory,
+  excludeId,
+}: {
+  trx?: Kysely<DB> | Transaction<DB>
+  siteId: number
+  parentId: string | null
+  notificationNumber: string
+  publishDate: string
+  category: string
+  subCategory: string
+  excludeId?: string
+}): Promise<boolean> => {
+  const isGovernmentGazette = category === GazetteCategories.GovernmentGazettes
+  // publishDate is a "dd/MM/yyyy" string — the year is the last segment.
+  const publishYear = publishDate.split("/").at(-1)
+
+  const content = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`
+
+  let query = trx
+    .selectFrom("Resource")
+    .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+    .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.parentId", "=", parentId)
+    .where("Resource.type", "=", ResourceType.CollectionLink)
+    .where(
+      sql<boolean>`${content}->'page'->>'description' = ${notificationNumber}`,
+    )
+    .where(sql<boolean>`${content}->'page'->>'category' = ${category}`)
+    .where(
+      sql<boolean>`split_part(${content}->'page'->>'date', '/', 3) = ${publishYear}`,
+    )
+    .select("Resource.id")
+
+  // Government gazettes are unique within category, not subcategory.
+  if (!isGovernmentGazette) {
+    query = query.where(
+      sql<boolean>`${content}->'page'->'tagged'->>0 = ${subCategory}`,
+    )
+  }
+
+  if (excludeId) {
+    query = query.where("Resource.id", "!=", excludeId)
+  }
+
+  const duplicate = await query.executeTakeFirst()
+  return duplicate !== undefined
 }

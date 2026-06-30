@@ -27,6 +27,16 @@ const defaultMeGetQuery = () => {
   })
 }
 
+const notOnboardedMeGetQuery = () => {
+  return trpcMsw.me.get.query(() => {
+    return {
+      ...defaultUser,
+      name: "",
+      phone: "",
+    }
+  })
+}
+
 const unauthorizedMeGetQuery = () => {
   return trpcMsw.me.get.query(() => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
@@ -35,5 +45,6 @@ const unauthorizedMeGetQuery = () => {
 
 export const meHandlers = {
   me: defaultMeGetQuery,
+  notOnboarded: notOnboardedMeGetQuery,
   unauthorized: unauthorizedMeGetQuery,
 }

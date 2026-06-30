@@ -21,7 +21,7 @@ const FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM = 17.5
 interface ResourceSelectorProps {
   interactionType: "link" | "move"
   siteId: number
-  onChange: (resourceId: string | null) => void
+  onChange: (resourceId: string | null, fullPermalink: string) => void
   selectedResourceId?: string
   existingResource?: ResourceItemContent
   onlyShowFolders?: boolean
@@ -97,8 +97,8 @@ const SuspensableResourceSelector = ({
     existingResource,
     setResourceStack,
     removeFromStack,
-    onChange: (resourceId: string | null) => {
-      onChange(resourceId)
+    onChange: (resourceId: string | null, fullPermalink: string) => {
+      onChange(resourceId, fullPermalink)
       clearSearchValue()
     },
   })

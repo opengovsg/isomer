@@ -1,4 +1,5 @@
 import type { RouterOutput } from "~/utils/trpc"
+import { TRPCError } from "@trpc/server"
 import {
   GAZETTE_SUBCATEGORY_LABEL,
   governmentGazetteSubcategories,
@@ -135,5 +136,26 @@ export const gazetteHandlers = {
   collectionTags: {
     default: () =>
       trpcMsw.collection.getCollectionTags.query(() => GAZETTE_TAG_CATEGORIES),
+  },
+  getPresignedPutUrl: {
+    // Points the upload at the in-memory "/storybook/upload" PUT handler so the
+    // create flow can reach the gazette.create mutation without hitting S3.
+    default: () =>
+      trpcMsw.gazette.getPresignedPutUrl.mutation(() => ({
+        fileKey: "MOCK_STORYBOOK_GAZETTE.pdf",
+        presignedPutUrl: "/storybook/upload",
+        contentType: "application/pdf",
+        contentDisposition:
+          "inline; filename*=UTF-8''MOCK_STORYBOOK_GAZETTE.pdf",
+      })),
+  },
+  create: {
+    duplicateNotificationNumber: () =>
+      trpcMsw.gazette.create.mutation(() => {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same notification number already exists",
+        })
+      }),
   },
 }
