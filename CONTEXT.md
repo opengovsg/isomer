@@ -46,6 +46,9 @@ _Avoid_: survey cooldown, quarter (the period is configurable, not fixed)
 **Isomer Admin**: A user with the Core or Migrator role. The only role that can manage taxonomy (create, edit, delete Tag Categories and Tag Options) via the Manage Filters panel.
 _Avoid_: admin, site admin (different concept — refers to site-level admin permissions)
 
+**Site Admin**: A user holding the `Admin` role on a specific site (`ResourcePermission.role = Admin`). Can manage that site's users and permissions. Distinct from Isomer Admin.
+_Avoid_: admin (ambiguous), Isomer Admin (a different, platform-level role)
+
 ### Redirects
 
 **Redirect**: A rule that sends a visitor from an old path on this site to another location. Created and published by a site admin; publishing rebuilds the site so the rule goes live.
@@ -65,3 +68,17 @@ _Avoid_: sample file, example CSV
 
 **Bulk upload**: Creating many Redirects at once by uploading a filled-in Redirects template — every row is validated, and the whole batch publishes in one step.
 _Avoid_: import, mass create, batch add
+
+### Audit and access logging
+
+**Audit Log** (`AuditLog`): The append-only record of site events — resource create/update/delete, publish, login/logout, permission and config changes — each carrying a `delta` (before/after) and `metadata`, scoped by `siteId` and `createdAt`.
+_Avoid_: access log (a derived view, not the raw record), history
+
+**Audit Log Export**: The Site-Admin-initiated, asynchronous workflow that produces a downloadable report of a site's audit/access data for a selected month and emails the requester a link. Comprises one or both report types below.
+_Avoid_: audit log (the underlying record, not the export), download
+
+**Access report** (`type: "users"`): The export view answering *who has access* to a site — derived from `ResourcePermission` joined with `User` (email, role, date added, last login).
+_Avoid_: user list, access log
+
+**Activity report** (`type: "events"`): The export view answering *what happened* on a site during the selected month — derived from `AuditLog` events.
+_Avoid_: event log (ambiguous with the table), audit report
