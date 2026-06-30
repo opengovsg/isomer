@@ -124,6 +124,41 @@ describe("getTableOfContents", () => {
     expect(toc[0]?.content).not.toContain("<br")
   })
 
+  it("skips empty level-2 headings (e.g. containing only a hard break)", () => {
+    // Arrange
+    const site = generateSiteConfig()
+    const transformedContent = getTransformedPageContent([
+      {
+        type: "prose",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [
+              { type: "hardBreak" } as unknown as {
+                type: "text"
+                text: string
+              },
+            ],
+          },
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "Real heading" }],
+          },
+        ],
+      },
+    ])
+
+    // Act
+    const toc = getTableOfContents(site, transformedContent)
+
+    // Assert
+    expect(toc).toHaveLength(1)
+    expect(toc.map((t) => t.content)).toEqual(["Real heading"])
+    expect(toc[0]?.anchorLink).toEqual(expect.stringMatching(anchorPattern))
+  })
+
   it("preserves order of toc entries across prose and blocks", () => {
     // Arrange
     const content: IsomerComponent[] = [
