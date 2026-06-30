@@ -99,10 +99,12 @@ export const publishSiteResources = async () => {
           [newVersionRow.id, resource.id],
         );
 
-        console.log(`Published resource ${resource.id} (${resource.title})`);
       }
 
       await client.query("COMMIT");
+      for (const resource of resources) {
+        console.log(`Published resource ${resource.id} (${resource.title})`);
+      }
       console.log(`\nDone. ${resources.length} resource(s) published.`);
     } catch (err) {
       await client.query("ROLLBACK");
