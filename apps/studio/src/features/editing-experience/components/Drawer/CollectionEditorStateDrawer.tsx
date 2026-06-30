@@ -117,6 +117,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       },
       {
         onSuccess: () => {
+          setDrawerState({ state: "root" })
           if (
             env.NEXT_PUBLIC_INTERCOM_APP_ID &&
             hadNoTagsBefore &&
@@ -125,7 +126,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
             trackEvent("first_tag_added")
             triggerCollectionTagCsatSurveyOnce({ userId: me.id })
           }
-          setDrawerState({ state: "root" })
         },
       },
     )
