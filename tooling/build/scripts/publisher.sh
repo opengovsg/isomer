@@ -241,7 +241,10 @@ if [ $UPDATE_DISTRIBUTION_EXIT_CODE -ne 0 ]; then
     echo "PreconditionFailed: current origin path is $CURRENT_ORIGIN_PATH"
 
     # Extract the build number from the current origin path (format: /<site>/<build>/latest).
-    CURRENT_BUILD_NUMBER=$(echo "$CURRENT_ORIGIN_PATH" | sed "s|/$SITE_NAME/||; s|/latest||")
+    # The anchored pattern returns an empty string for any path that does not strictly match
+    # /<site>/<digits>/latest (e.g. a path missing /latest, or from a different site), which
+    # causes the numeric check below to fail and the build to exit loudly as intended.
+    CURRENT_BUILD_NUMBER=$(echo "$CURRENT_ORIGIN_PATH" | sed -n "s|^/$SITE_NAME/\([0-9]\+\)/latest$|\1|p")
 
     # Only skip if the winning update already points to a newer-or-equal build for this site.
     # A non-numeric result means the path is in an unexpected format (manual change, wrong site,
