@@ -66,10 +66,15 @@ beforeAll(async () => {
   try {
     // Act: replay publisher.sh's pre-build steps, then build the template
     backupDir = mkdtempSync(join(tmpdir(), "template-fixtures-"))
+    // Phase 1: back up everything before touching the template so restoreTemplate
+    // always has a complete backupDir even if a later copy fails.
     for (const swappedPath of SWAPPED_PATHS) {
       cpSync(join(TEMPLATE_DIR, swappedPath), join(backupDir, swappedPath), {
         recursive: true,
       })
+    }
+    // Phase 2: replace template fixtures with publishing script output
+    for (const swappedPath of SWAPPED_PATHS) {
       rmSync(join(TEMPLATE_DIR, swappedPath), { recursive: true, force: true })
       cpSync(join(outputDir, swappedPath), join(TEMPLATE_DIR, swappedPath), {
         recursive: true,
@@ -79,10 +84,13 @@ beforeAll(async () => {
       join(TEMPLATE_DIR, "sitemap.json"),
       join(TEMPLATE_DIR, "public", "sitemap.json"),
     )
-    cpSync(
-      join(TEMPLATE_DIR, "schema", "_index.json"),
-      join(TEMPLATE_DIR, "schema", "not-found.json"),
-    )
+    const indexJsonPath = join(TEMPLATE_DIR, "schema", "_index.json")
+    if (!existsSync(indexJsonPath)) {
+      throw new Error(
+        "Publishing script did not produce schema/_index.json; check the root page seed",
+      )
+    }
+    cpSync(indexJsonPath, join(TEMPLATE_DIR, "schema", "not-found.json"))
     rmSync(OUT_DIR, { recursive: true, force: true })
 
     const buildResult = spawnSync(NEXT_BIN, ["build", "--webpack"], {
@@ -111,6 +119,9 @@ afterAll(async () => {
   if (outputDir) {
     rmSync(outputDir, { recursive: true, force: true })
   }
+  if (backupDir) {
+    rmSync(backupDir, { recursive: true, force: true })
+  }
 })
 
 describe("full template build", () => {
@@ -137,7 +148,7 @@ describe("full template build", () => {
     expect(existsSync(join(OUT_DIR, "draft-page"))).toBe(false)
   })
 
-  it("renders the seeded site name and page title into the homepage", () => {
+  it("renders the seeded site name into the homepage", () => {
     // Arrange / Act
     const homepage = readFileSync(join(OUT_DIR, "index.html"), "utf-8")
 
