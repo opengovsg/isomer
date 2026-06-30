@@ -2,6 +2,7 @@ import type { HandleUploadBody } from "@vercel/blob/client"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { head } from "@vercel/blob"
 import { handleUpload } from "@vercel/blob/client"
+import { createHmac, timingSafeEqual } from "crypto"
 import { env } from "~/env.mjs"
 import {
   deleteFile as s3DeleteFile,
@@ -21,6 +22,7 @@ export type UploadConfig =
       handleUploadUrl: string
       contentType: string
       contentDisposition: string
+      clientPayload: string
     }
 
 interface GetUploadConfigParams {
@@ -79,8 +81,22 @@ class S3AssetStorage implements AssetStorage {
   }
 }
 
+const signFileKey = (key: string) =>
+  createHmac("sha256", env.SESSION_SECRET).update(key).digest("hex")
+
+const verifyFileKey = (
+  pathname: string,
+  clientPayload: string | null | undefined,
+) => {
+  if (!clientPayload) return false
+  const expected = Buffer.from(signFileKey(pathname))
+  const actual = Buffer.from(clientPayload)
+  return expected.length === actual.length && timingSafeEqual(expected, actual)
+}
+
 class VercelBlobAssetStorage implements AssetStorage {
   getUploadConfig({
+    key,
     contentType,
     contentDisposition,
   }: GetUploadConfigParams): Promise<UploadConfig> {
@@ -92,6 +108,7 @@ class VercelBlobAssetStorage implements AssetStorage {
       handleUploadUrl: "/api/blob/upload",
       contentType,
       contentDisposition,
+      clientPayload: signFileKey(key),
     })
   }
 
@@ -117,12 +134,16 @@ class VercelBlobAssetStorage implements AssetStorage {
       const jsonResponse = await handleUpload({
         body: req.body as HandleUploadBody,
         request: req,
-        onBeforeGenerateToken: () =>
-          Promise.resolve({
+        onBeforeGenerateToken: (pathname, clientPayload) => {
+          if (!verifyFileKey(pathname, clientPayload)) {
+            return Promise.reject(new Error("Unauthorized upload path"))
+          }
+          return Promise.resolve({
             allowedContentTypes,
             maximumSizeInBytes: 50 * 1024 * 1024,
             allowOverwrite: true,
-          }),
+          })
+        },
         onUploadCompleted: () => Promise.resolve(),
       })
       res.status(200).json(jsonResponse)

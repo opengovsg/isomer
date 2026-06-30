@@ -22,6 +22,7 @@ export const performUpload = async (
     access: "public",
     handleUploadUrl: config.handleUploadUrl,
     contentType: config.contentType,
+    clientPayload: config.clientPayload,
   })
   return blob.url
 }
