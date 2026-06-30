@@ -65,6 +65,24 @@ export interface GazetteDeletionEmailTemplateData extends BaseEmailTemplateData 
   gazetteTitle: string
 }
 
+export interface AuditLogExportDownloadLink {
+  label: string
+  url: string
+}
+
+export interface AuditLogExportReadyEmailTemplateData extends BaseEmailTemplateData {
+  siteName: string
+  // Human-readable month the export covers, e.g. "June 2026".
+  month: string
+  // One link for a single-report export, two for a "Both" export.
+  links: AuditLogExportDownloadLink[]
+}
+
+export interface AuditLogExportFailedEmailTemplateData extends BaseEmailTemplateData {
+  siteName: string
+  month: string
+}
+
 export interface EmailTemplate {
   subject: string
   body: string
