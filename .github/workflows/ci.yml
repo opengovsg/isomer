@@ -150,7 +150,7 @@ jobs:
         run: bash "$RUNNER_TEMP/comment-template-bundle-size.sh"
 
   test-studio:
-    name: Test Studio (${{ matrix.shard }}/{{ matrix.total_shards }})
+    name: Test Studio (${{ matrix.shard }}/${{ matrix.total_shards }})
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
@@ -158,7 +158,7 @@ jobs:
       fail-fast: false # so that we can run all shards and one shard can fail without failing the entire job
       matrix:
         shard: [1, 2] # extend this if we need to run more shards concurrently
-        total_shards: 2
+        total_shards: [2]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Setup
