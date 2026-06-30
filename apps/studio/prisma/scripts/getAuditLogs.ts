@@ -216,17 +216,17 @@ export const getAuditLogQuery = ({
             .where("AuditLog.createdAt", ">=", startDate)
             .where("AuditLog.createdAt", "<=", endDate),
         )
-        .with("emailsFromUsers", (eb) =>
+        .with("collaboratorWindows", (eb) =>
           eb
-            .selectFrom("User")
-            .select(["User.email", "User.id"])
-            .where("User.email", "not like", "%@open.gov.sg")
-            .where("User.id", "in", (fb) =>
-              fb
-                .selectFrom("ResourcePermission")
-                .select("ResourcePermission.userId")
-                .where("ResourcePermission.siteId", "=", siteId),
-            ),
+            .selectFrom("ResourcePermission as rp")
+            .innerJoin("User as cu", "cu.id", "rp.userId")
+            .select([
+              "cu.email",
+              "rp.createdAt as grantedAt",
+              "rp.deletedAt as revokedAt",
+            ])
+            .where("rp.siteId", "=", siteId)
+            .where("cu.email", "not like", "%@open.gov.sg"),
         )
         .selectFrom("AuditLog as al")
         .leftJoin("User as u", "al.userId", "u.id")
@@ -320,8 +320,16 @@ export const getAuditLogQuery = ({
                 "in",
                 (fb) =>
                   fb
-                    .selectFrom("emailsFromUsers")
-                    .select("emailsFromUsers.email")
+                    .selectFrom("collaboratorWindows as cw")
+                    .select("cw.email")
+                    // Only while the user was an active collaborator at event time
+                    .where("cw.grantedAt", "<=", sql<Date>`al."createdAt"`)
+                    .where((web) =>
+                      web.or([
+                        web("cw.revokedAt", "is", null),
+                        web("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
+                      ]),
+                    )
                     .union(
                       fb
                         .selectFrom("emailsFromPermissionChanges")
@@ -333,8 +341,16 @@ export const getAuditLogQuery = ({
               eb("al.eventType", "=", AuditLogEvent.Logout),
               eb(sql<string>`al.delta -> 'before' ->> 'email'`, "in", (fb) =>
                 fb
-                  .selectFrom("emailsFromUsers")
-                  .select("emailsFromUsers.email")
+                  .selectFrom("collaboratorWindows as cw")
+                  .select("cw.email")
+                  // Only while the user was an active collaborator at event time
+                  .where("cw.grantedAt", "<=", sql<Date>`al."createdAt"`)
+                  .where((web) =>
+                    web.or([
+                      web("cw.revokedAt", "is", null),
+                      web("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
+                    ]),
+                  )
                   .union(
                     fb
                       .selectFrom("emailsFromPermissionChanges")
