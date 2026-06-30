@@ -175,7 +175,7 @@ function CategoryOptionsExpandedEditor({
       <VStack align="stretch" spacing={0} w="full">
         <Infobox
           width="100%"
-          size="md"
+          size="sm"
           variant="warning"
           mb="1.25rem"
           border="1px solid"
