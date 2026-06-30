@@ -257,6 +257,7 @@ jobs:
         run: pnpm exec turbo test-ci:unit --filter=@isomer/validators --env-mode=loose
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+          TZ: Asia/Singapore
 
   test-pgboss:
     name: Test pgboss
