@@ -12,6 +12,8 @@ import type {
   IsomerAdminRole,
   AuditLogEvent,
   BuildStatusType,
+  AuditLogExportReportType,
+  AuditLogExportStatus,
 } from "./generatedEnums"
 
 export interface AuditLog {
@@ -28,6 +30,19 @@ export interface AuditLog {
    */
   delta: PrismaJson.AuditLogDeltaJsonContent
   ipAddress: string | null
+}
+export interface AuditLogExportRequest {
+  id: GeneratedAlways<string>
+  siteId: number
+  userId: string
+  month: string
+  reportType: AuditLogExportReportType
+  status: Generated<AuditLogExportStatus>
+  attempts: Generated<number>
+  errorMessage: string | null
+  objectKeys: Generated<string[]>
+  createdAt: Generated<Timestamp>
+  updatedAt: Generated<Timestamp>
 }
 export interface Blob {
   id: GeneratedAlways<string>
@@ -182,6 +197,7 @@ export interface Whitelist {
 }
 export interface DB {
   AuditLog: AuditLog
+  AuditLogExportRequest: AuditLogExportRequest
   Blob: Blob
   CodeBuildJobs: CodeBuildJobs
   Footer: Footer

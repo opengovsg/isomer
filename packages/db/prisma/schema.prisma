@@ -142,6 +142,7 @@ model User {
   CodeBuildJobs      CodeBuildJobs[]
   ScheduledResources Resource[]
   pushDocumentJobs   PushDocumentJob[]
+  AuditLogExportRequest AuditLogExportRequest[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -174,6 +175,7 @@ model Site {
   AuditLog           AuditLog[]
   CodeBuildJobs      CodeBuildJobs[]
   Redirect           Redirect[]
+  AuditLogExportRequest AuditLogExportRequest[]
 }
 
 model Redirect {
@@ -365,4 +367,36 @@ model PushDocumentJob {
 
   @@index([scheduledAt])
   @@index([resourceId])
+}
+
+enum AuditLogExportReportType {
+  Access // who had access (point-in-time)
+  Activity // what happened (events)
+  Both
+}
+
+enum AuditLogExportStatus {
+  Pending
+  Processing
+  Done
+  Failed
+}
+
+model AuditLogExportRequest {
+  id           BigInt                   @id @default(autoincrement())
+  site         Site                     @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  siteId       Int
+  user         User                     @relation(fields: [userId], references: [id])
+  userId       String
+  month        String // selected month as "yyyy-MM" (Asia/Singapore)
+  reportType   AuditLogExportReportType
+  status       AuditLogExportStatus     @default(Pending)
+  attempts     Int                      @default(0)
+  errorMessage String?
+  objectKeys   String[]                 @default([]) // S3 keys of generated CSV(s)
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @default(now()) @updatedAt
+
+  @@index([status])
+  @@index([siteId, userId, month, reportType])
 }
