@@ -66,5 +66,9 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 
 - [Register a new env var in .env.example, .env.test (and turbo.json if read by a task)](conventions/env-var-registration.md) — best practice: propagate a new env var beyond env.mjs to the example/test files and turbo globalEnv, or setup/CI/cache silently drift
 
+### Dates & time
+
+- [Build canonical date/month strings with date-fns-tz, not an Intl locale trick](conventions/canonical-dates-via-date-fns-not-intl-locale.md) — best practice: produce comparison/storage strings (e.g. `yyyy-MM`) with `formatInTimeZone` + explicit token, not `Intl.DateTimeFormat("en-CA")`; reserve locale formatting for display
+
 <!-- Each line: [Title](conventions/slug.md) — short hook (smell/best practice).
      Group under a category heading; create the heading if it's new. -->
