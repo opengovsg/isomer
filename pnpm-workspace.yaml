@@ -101,11 +101,10 @@ catalog:
   tailwindcss: ^3.4.4
   testcontainers: ^12.0.1
   tsc-alias: ^1.8.17
-  "@typescript/native-preview": 7.0.0-dev.20260615.1
   type-fest: ^5.7.0
   tsx: ^4.22.4
   turbo: ^2.9.17
-  typescript: ^6.0.3
+  typescript: 7.0.1-rc
   usehooks-ts: ^3.1.1
   webpack-cli: ^7.0.3
   webpack-glob-entries: ^1.0.1

@@ -52,7 +52,7 @@
     "test:load:build": "webpack-cli --config tests/load/webpack.config.cjs",
     "test:unit": "dotenv -e .env.test vitest run",
     "test:watch": "dotenv -e .env.test pnpm exec vitest watch",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "catalog:atlaskitPragmaticDnd",
@@ -188,7 +188,6 @@
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
     "@types/validator": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "@vitest/coverage-istanbul": "catalog:vitest",
     "autoprefixer": "catalog:",
     "clean-webpack-plugin": "catalog:",
