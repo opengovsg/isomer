@@ -30,7 +30,7 @@ interface GetIsSingpassEnabledProps {
 export const getIsSingpassEnabled = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
-  if (env.NEXT_PUBLIC_APP_ENV === "preview") return false
+  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) return false
   return gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
@@ -38,11 +38,12 @@ export const getIsSingpassEnabled = ({
 }
 
 // Whether singpass-off side effects (e.g. login alert email) should activate.
-// False in preview even though SingPass is also disabled there.
+// False when SingPass is skipped (preview) even though SingPass is also
+// disabled there.
 export const getIsSingpassDisabledInNonPreview = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
-  if (env.NEXT_PUBLIC_APP_ENV === "preview") return false
+  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) return false
   return !gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,

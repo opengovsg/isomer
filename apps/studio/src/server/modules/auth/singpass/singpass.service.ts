@@ -14,14 +14,15 @@ let singpassClient: Client | null = null
 
 // Lazy-initialise so that importing this module doesn't trigger a DNS lookup at
 // module load time. auth.router.ts imports singpass.router.ts unconditionally,
-// meaning every request (including email login in preview, where SingPass is
-// disabled) would otherwise attempt to resolve SINGPASS_ISSUER_ENDPOINT.
+// meaning every request (including email login when SingPass is skipped) would
+// otherwise attempt to resolve SINGPASS_ISSUER_ENDPOINT.
 const getSingpassClient = async (): Promise<Client> => {
-  // getIsSingpassEnabled() already returns false for preview, so this code path
-  // should never be reached. Guard explicitly anyway to avoid a DNS lookup
-  // against the placeholder SINGPASS_ISSUER_ENDPOINT value set in preview.
-  if (env.NEXT_PUBLIC_APP_ENV === "preview") {
-    throw new Error("SingPass is not available in preview environments")
+  // getIsSingpassEnabled() already returns false when SingPass is skipped, so
+  // this code path should never be reached. Guard explicitly anyway to avoid a
+  // DNS lookup against the placeholder SINGPASS_ISSUER_ENDPOINT value set in
+  // preview.
+  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
+    throw new Error("SingPass is disabled in this environment")
   }
 
   if (!singpassClient) {
