@@ -11,7 +11,7 @@ import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
-import { EmptyArray } from "../../components/EmptyArray"
+import { EmptyCategory } from "../../components/EmptyCategory"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
@@ -25,7 +25,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     data,
     path,
     enabled,
-    label,
     addItem,
     removeItems,
     arraySchema,
@@ -85,8 +84,12 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
-            <Text textStyle="subhead-1" flex={1}>
-              {label}
+            <Text
+              textStyle="subhead-2"
+              textColor="base.content.medium"
+              flex={1}
+            >
+              Custom Filters
             </Text>
             <AddItemButton
               onClick={addItem(path, createDefaultTagCategory())}
@@ -113,7 +116,12 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                   spacing={0}
                   ref={innerRef}
                 >
-                  {data === 0 && <EmptyArray />}
+                  {data === 0 && (
+                    <EmptyCategory
+                      title="Custom filters you add will appear here"
+                      description="Click 'Add a filter' to add one"
+                    />
+                  )}
 
                   {[...Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)
