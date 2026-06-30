@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { getIsActiveForResource } from "../useIsActive"
