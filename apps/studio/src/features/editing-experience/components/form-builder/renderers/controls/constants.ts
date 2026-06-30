@@ -1,14 +1,6 @@
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 
-type TagCategory = NonNullable<CollectionPagePageProps["tagCategories"]>[number]
-export const createDefaultTagCategory = (): TagCategory => ({
-  id: crypto.randomUUID(),
-  label: "New filter",
-  isRequired: true,
-  options: [],
-})
-
 export const ONE_MB_IN_BYTES = 1000000
 
 export const MAX_IMG_FILE_SIZE_BYTES = 5 * ONE_MB_IN_BYTES
@@ -34,3 +26,17 @@ export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
 export const RISKY_FILE_EXTENSIONS = new Set<
   keyof typeof FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING
 >([".doc", ".docx", ".xls", ".xlsx"])
+
+type TagCategory = NonNullable<CollectionPagePageProps["tagCategories"]>[number]
+export const createDefaultTagCategory = (): TagCategory => ({
+  id: crypto.randomUUID(),
+  label: "New filter",
+  isRequired: true,
+  options: [],
+})
+
+type TagOption = TagCategory["options"][number]
+export const createDefaultTagOption = (): TagOption => ({
+  id: crypto.randomUUID(),
+  label: "New option",
+})
