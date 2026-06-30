@@ -24,6 +24,13 @@ const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, "")
 const normalizeRedirectPath = (value: string) =>
   `/${trimSlashes(value).replace(/\/{2,}/g, "/")}`
 
+// Page permalinks are lowercase-only, so an internal destination is compared
+// against the live-permalink map in lowercase too — otherwise a mixed-case CSV
+// target (e.g. "/About-Us") would miss the "/about-us" key and fall back to a
+// literal path instead of resolving to a [resource:...] reference.
+const normalizeRedirectSource = (value: string) =>
+  normalizeRedirectPath(value).toLowerCase()
+
 const sourceSchema = z
   .string()
   .min(1, { message: "Source path is required" })
@@ -85,6 +92,11 @@ const toReferenceLink = (siteId: number, resourceId: number) =>
 
 const INDEX_PAGE_PERMALINK = "_index"
 
+// An empty permalink (the root) or an "_index" segment contributes no path
+// segment to a full permalink.
+const isIndexOrRoot = (permalink: string) =>
+  permalink === "" || permalink === INDEX_PAGE_PERMALINK
+
 // Maps every live, addressable full permalink on a site to the resource id a
 // redirect destination should reference, mirroring how Studio stores internal
 // destinations: a published page references itself; a Folder/Collection
@@ -126,10 +138,7 @@ const buildPermalinkToResourceId = async (siteId: number) => {
     visited.add(id)
     const resource = byId.get(id)
     if (!resource) return "/"
-    const segment =
-      resource.permalink === "" || resource.permalink === INDEX_PAGE_PERMALINK
-        ? ""
-        : resource.permalink
+    const segment = isIndexOrRoot(resource.permalink) ? "" : resource.permalink
     let result: string
     if (resource.parentId === null) {
       result = segment === "" ? "/" : `/${segment}`
@@ -157,7 +166,11 @@ const buildPermalinkToResourceId = async (siteId: number) => {
         resource.type === ResourceType.Collection) &&
       publishedContainerIds.has(id)
     if (isLivePage || isLiveContainer) {
-      permalinkToResourceId.set(fullPermalinkOf(id), Number(resource.id))
+      // Lowercase the key so the lowercased destination lookup below matches.
+      permalinkToResourceId.set(
+        fullPermalinkOf(id).toLowerCase(),
+        Number(resource.id),
+      )
     }
   }
   return permalinkToResourceId
@@ -294,7 +307,7 @@ export const importRedirectsFromCsv = async ({
         continue
       }
       const resourceId = permalinkToResourceId.get(
-        normalizeRedirectPath(destination),
+        normalizeRedirectSource(destination),
       )
       if (resourceId === undefined) {
         unresolvedDestinations.push({ siteId, source, destination })
