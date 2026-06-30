@@ -6,6 +6,7 @@ import { resetTables } from "../../../tests/integration/helpers/db"
 import {
   setupAdminPermissions,
   setupEditorPermissions,
+  setupIsomerAdmin,
   setupSite,
   setupUser,
 } from "../../../tests/integration/helpers/seed"
@@ -242,17 +243,18 @@ describe("getAuditLogQuery", () => {
       expect('"Date added"' in row).toBe(true)
     })
 
-    it("excludes @open.gov.sg emails", async () => {
+    it("excludes Isomer admins", async () => {
       // Arrange
-      const ogpUser = await setupUser({ email: "admin@open.gov.sg" })
-      await setupAdminPermissions({ userId: ogpUser.id, siteId })
+      const adminUser = await setupUser({ email: "admin@isomer.gov.sg" })
+      await setupAdminPermissions({ userId: adminUser.id, siteId })
+      await setupIsomerAdmin({ userId: adminUser.id })
 
       // Act
       const rows = await getUsersRows({ siteId, monthYear: TEST_MONTH })
 
       // Assert
       const emails = rows.map((r) => r.Email)
-      expect(emails).not.toContain("admin@open.gov.sg")
+      expect(emails).not.toContain("admin@isomer.gov.sg")
       expect(emails).toContain(user.email)
     })
 
@@ -749,15 +751,16 @@ describe("getAuditLogQuery", () => {
       expect(rows).toHaveLength(0)
     })
 
-    it("Logout by @open.gov.sg email is excluded", async () => {
+    it("Logout by Isomer admin is excluded", async () => {
       // Arrange
-      const ogpUser = await setupUser({ email: "admin@open.gov.sg" })
-      await setupAdminPermissions({ userId: ogpUser.id, siteId })
+      const adminUser = await setupUser({ email: "admin@isomer.gov.sg" })
+      await setupAdminPermissions({ userId: adminUser.id, siteId })
+      await setupIsomerAdmin({ userId: adminUser.id })
       await insertAuditLog({
         eventType: AuditLogEvent.Logout,
-        userId: ogpUser.id,
+        userId: adminUser.id,
         siteId: null,
-        delta: { before: { email: "admin@open.gov.sg" }, after: null },
+        delta: { before: { email: "admin@isomer.gov.sg" }, after: null },
         ipAddress: "1.2.3.4",
         createdAt: MID_MONTH,
       })
@@ -973,6 +976,63 @@ describe("getAuditLogQuery", () => {
       expect(times).toContain(T_05.getTime())
       expect(times).toContain(T_25.getTime())
       expect(times).not.toContain(MID_MONTH.getTime())
+    })
+
+    const insertLogoutFor = async (
+      collaborator: Awaited<ReturnType<typeof setupUser>>,
+      at: Date,
+    ) =>
+      insertAuditLog({
+        eventType: AuditLogEvent.Logout,
+        userId: collaborator.id,
+        siteId: null,
+        delta: { before: { email: collaborator.email }, after: null },
+        createdAt: at,
+      })
+
+    const logoutEmails = (rows: EventsQueryRow[]) =>
+      rows
+        .filter((r) => r['"Event type"'] === AuditLogEvent.Logout)
+        .map((r) => r.Email)
+
+    it("Logout at the exact moment of being granted is included", async () => {
+      // Arrange
+      const collaborator = await setupUser({
+        email: "logout-atgrant@agency.gov.sg",
+      })
+      await setupPermissionWindow({
+        userId: collaborator.id,
+        siteId,
+        grantedAt: MID_MONTH,
+        revokedAt: null,
+      })
+      await insertLogoutFor(collaborator, MID_MONTH)
+
+      // Act
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
+
+      // Assert
+      expect(logoutEmails(rows)).toContain(collaborator.email)
+    })
+
+    it("Logout at the exact moment of revocation is excluded", async () => {
+      // Arrange
+      const collaborator = await setupUser({
+        email: "logout-atrevoke@agency.gov.sg",
+      })
+      await setupPermissionWindow({
+        userId: collaborator.id,
+        siteId,
+        grantedAt: GRANTED_BEFORE_MONTH,
+        revokedAt: MID_MONTH,
+      })
+      await insertLogoutFor(collaborator, MID_MONTH)
+
+      // Act
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
+
+      // Assert
+      expect(logoutEmails(rows)).not.toContain(collaborator.email)
     })
   })
 

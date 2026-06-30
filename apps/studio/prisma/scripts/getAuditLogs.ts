@@ -177,18 +177,23 @@ export const getAuditLogQuery = ({
 
   switch (type) {
     case "users":
-      return db
-        .selectFrom("User as u")
-        .innerJoin("ResourcePermission as rp", "u.id", "rp.userId")
-        .select([
-          "u.email as Email",
-          'u.lastLoginAt as "Last login"',
-          "rp.role as Role",
-          'rp.createdAt as "Date added"',
-        ])
-        .where("rp.siteId", "=", siteId)
-        .where("u.email", "not like", "%@open.gov.sg")
-        .where("rp.deletedAt", "is", null)
+      return (
+        db
+          .selectFrom("User as u")
+          .innerJoin("ResourcePermission as rp", "u.id", "rp.userId")
+          .select([
+            "u.email as Email",
+            'u.lastLoginAt as "Last login"',
+            "rp.role as Role",
+            'rp.createdAt as "Date added"',
+          ])
+          .where("rp.siteId", "=", siteId)
+          // Exclude internal Isomer admins from agency-facing reports
+          .where("u.id", "not in", (eb) =>
+            eb.selectFrom("IsomerAdmin").select("IsomerAdmin.userId"),
+          )
+          .where("rp.deletedAt", "is", null)
+      )
     case "events":
       return db
         .with("emailsFromPermissionChanges", (eb) =>
@@ -218,15 +223,30 @@ export const getAuditLogQuery = ({
         )
         .with("collaboratorWindows", (eb) =>
           eb
-            .selectFrom("ResourcePermission as rp")
-            .innerJoin("User as cu", "cu.id", "rp.userId")
+            .selectFrom("ResourcePermission as permission")
+            .innerJoin(
+              "User as collaboratorUser",
+              "collaboratorUser.id",
+              "permission.userId",
+            )
             .select([
-              "cu.email",
-              "rp.createdAt as grantedAt",
-              "rp.deletedAt as revokedAt",
+              "collaboratorUser.email",
+              "permission.createdAt as grantedAt",
+              "permission.deletedAt as revokedAt",
             ])
-            .where("rp.siteId", "=", siteId)
-            .where("cu.email", "not like", "%@open.gov.sg"),
+            .where("permission.siteId", "=", siteId)
+            // Exclude internal Isomer admins from agency-facing reports
+            .where("collaboratorUser.id", "not in", (ieb) =>
+              ieb.selectFrom("IsomerAdmin").select("IsomerAdmin.userId"),
+            )
+            // Restrict to windows that could overlap the queried month
+            .where("permission.createdAt", "<=", endDate)
+            .where((eb) =>
+              eb.or([
+                eb("permission.deletedAt", "is", null),
+                eb("permission.deletedAt", ">", startDate),
+              ]),
+            ),
         )
         .selectFrom("AuditLog as al")
         .leftJoin("User as u", "al.userId", "u.id")
@@ -324,10 +344,10 @@ export const getAuditLogQuery = ({
                     .select("cw.email")
                     // Only while the user was an active collaborator at event time
                     .where("cw.grantedAt", "<=", sql<Date>`al."createdAt"`)
-                    .where((web) =>
-                      web.or([
-                        web("cw.revokedAt", "is", null),
-                        web("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
+                    .where((eb) =>
+                      eb.or([
+                        eb("cw.revokedAt", "is", null),
+                        eb("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
                       ]),
                     )
                     .union(
@@ -345,10 +365,10 @@ export const getAuditLogQuery = ({
                   .select("cw.email")
                   // Only while the user was an active collaborator at event time
                   .where("cw.grantedAt", "<=", sql<Date>`al."createdAt"`)
-                  .where((web) =>
-                    web.or([
-                      web("cw.revokedAt", "is", null),
-                      web("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
+                  .where((eb) =>
+                    eb.or([
+                      eb("cw.revokedAt", "is", null),
+                      eb("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
                     ]),
                   )
                   .union(
