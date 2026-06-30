@@ -111,18 +111,6 @@ const createFolder = async ({
   return folderId
 }
 
-const TEAM = [
-  "adriangoh",
-  "zhongjun",
-  "jiachin",
-  "harish",
-  "gautam",
-  "sehyun",
-  "rachellin",
-  "mingtingtay",
-  "shazli",
-]
-
 async function main() {
   const alreadySeeded = await db
     .selectFrom("Site")
@@ -135,29 +123,25 @@ async function main() {
     return
   }
 
-  // Create XXX@open.gov.sg users (will be assigned IsomerAdmin)
-  const isomerAdminUsers = await Promise.all(
-    TEAM.map((username) =>
-      db
-        .insertInto("User")
-        .values({
-          id: createId(),
-          email: `${username}@open.gov.sg`,
-          name: username,
-          phone: "88888888",
-        })
-        .onConflict((oc) =>
-          oc
-            .columns(["email", "deletedAt"])
-            .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
-        )
-        .returning(["id", "email"])
-        .executeTakeFirstOrThrow(),
-    ),
-  )
+  // Create isomeradmin@open.gov.sg (will be assigned IsomerAdmin)
+  const isomerAdminUser = await db
+    .insertInto("User")
+    .values({
+      id: createId(),
+      email: "isomeradmin@open.gov.sg",
+      name: "isomeradmin",
+      phone: "88888888",
+    })
+    .onConflict((oc) =>
+      oc
+        .columns(["email", "deletedAt"])
+        .doUpdateSet((eb) => ({ email: eb.ref("excluded.email") })),
+    )
+    .returning(["id", "email"])
+    .executeTakeFirstOrThrow()
 
   // Create "Sample Site" (gets ID 1 on a fresh DB)
-  const userId = isomerAdminUsers[0]?.id ?? ""
+  const userId = isomerAdminUser.id
   const { siteId } = await createSite({ siteName: "Sample Site", userId })
 
   // Create top-level pages so footer links resolve to real pages rather than 404s
@@ -213,50 +197,42 @@ async function main() {
     )
     .executeTakeFirstOrThrow()
 
-  // Assign IsomerAdmin (Core) to each XXX@open.gov.sg user
-  await Promise.all(
-    isomerAdminUsers.map(async (user) => {
-      await db
-        .insertInto("IsomerAdmin")
-        .values({ userId: user.id, role: IsomerAdminRole.Core })
-        .onConflict((oc) =>
-          oc
-            .columns(["userId", "role"])
-            .doUpdateSet((eb) => ({ role: eb.ref("excluded.role") })),
-        )
-        .executeTakeFirstOrThrow()
-      console.log(`IsomerAdmin assigned: ${user.email}`)
-    }),
-  )
+  // Assign IsomerAdmin (Core) to isomeradmin@open.gov.sg
+  await db
+    .insertInto("IsomerAdmin")
+    .values({ userId: isomerAdminUser.id, role: IsomerAdminRole.Core })
+    .onConflict((oc) =>
+      oc
+        .columns(["userId", "role"])
+        .doUpdateSet((eb) => ({ role: eb.ref("excluded.role") })),
+    )
+    .executeTakeFirstOrThrow()
+  console.log(`IsomerAdmin assigned: ${isomerAdminUser.email}`)
 
-  // Create XXX+editor, XXX+publisher, XXX+admin users and assign roles to site
-  await Promise.all(
-    TEAM.map((username) =>
-      addUsersToSite({
-        siteId,
-        users: [
-          {
-            name: username,
-            email: `${username}+editor@open.gov.sg`,
-            role: RoleType.Editor,
-            phone: "88888888",
-          },
-          {
-            name: username,
-            email: `${username}+publisher@open.gov.sg`,
-            role: RoleType.Publisher,
-            phone: "88888888",
-          },
-          {
-            name: username,
-            email: `${username}+admin@open.gov.sg`,
-            role: RoleType.Admin,
-            phone: "88888888",
-          },
-        ],
-      }),
-    ),
-  )
+  // Create role-based users and assign site roles
+  await addUsersToSite({
+    siteId,
+    users: [
+      {
+        name: "editor",
+        email: "editor@open.gov.sg",
+        role: RoleType.Editor,
+        phone: "88888888",
+      },
+      {
+        name: "publisher",
+        email: "publisher@open.gov.sg",
+        role: RoleType.Publisher,
+        phone: "88888888",
+      },
+      {
+        name: "admin",
+        email: "admin@open.gov.sg",
+        role: RoleType.Admin,
+        phone: "88888888",
+      },
+    ],
+  })
 }
 
 await main()
