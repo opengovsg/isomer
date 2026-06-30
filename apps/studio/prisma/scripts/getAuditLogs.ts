@@ -196,31 +196,6 @@ export const getAuditLogQuery = ({
       )
     case "events":
       return db
-        .with("emailsFromPermissionChanges", (eb) =>
-          eb
-            .selectFrom("AuditLog")
-            .select((fb) => [
-              fb
-                .case()
-                .when("AuditLog.eventType", "=", AuditLogEvent.PermissionCreate)
-                .then(sql<string>`"AuditLog".delta -> 'after' ->> 'userId'`)
-                .else(
-                  fb.fn<string>("coalesce", [
-                    sql<string>`"AuditLog".delta -> 'before' ->> 'userId'`,
-                    sql<string>`"AuditLog".delta -> 'after' ->> 'userId'`,
-                  ]),
-                )
-                .end()
-                .as("email"),
-            ])
-            .where("AuditLog.eventType", "in", [
-              AuditLogEvent.PermissionCreate,
-              AuditLogEvent.PermissionDelete,
-            ])
-            .where("AuditLog.siteId", "=", siteId)
-            .where("AuditLog.createdAt", ">=", startDate)
-            .where("AuditLog.createdAt", "<=", endDate),
-        )
         .with("collaboratorWindows", (eb) =>
           eb
             .selectFrom("ResourcePermission as permission")
@@ -349,11 +324,6 @@ export const getAuditLogQuery = ({
                         eb("cw.revokedAt", "is", null),
                         eb("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
                       ]),
-                    )
-                    .union(
-                      fb
-                        .selectFrom("emailsFromPermissionChanges")
-                        .select("emailsFromPermissionChanges.email"),
                     ),
               ),
             ]),
@@ -370,11 +340,6 @@ export const getAuditLogQuery = ({
                       eb("cw.revokedAt", "is", null),
                       eb("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
                     ]),
-                  )
-                  .union(
-                    fb
-                      .selectFrom("emailsFromPermissionChanges")
-                      .select("emailsFromPermissionChanges.email"),
                   ),
               ),
             ]),
