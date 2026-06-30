@@ -64,11 +64,10 @@ export const publishSiteResources = async () => {
       return;
     }
 
-    let successCount = 0;
-    let errorCount = 0;
+    await client.query("BEGIN");
 
-    for (const resource of resources) {
-      try {
+    try {
+      for (const resource of resources) {
         const currentVersion = await client.query<{ versionNum: number }>(
           `SELECT "versionNum" FROM "Version" WHERE id = $1`,
           [resource.publishedVersionId],
@@ -88,9 +87,9 @@ export const publishSiteResources = async () => {
 
         const newVersionRow = newVersion.rows[0];
         if (!newVersionRow) {
-          console.error(`Failed to create version for resource ${resource.id}`);
-          errorCount++;
-          continue;
+          throw new Error(
+            `Failed to create version for resource ${resource.id}`,
+          );
         }
 
         await client.query(
@@ -101,15 +100,13 @@ export const publishSiteResources = async () => {
         );
 
         console.log(`Published resource ${resource.id} (${resource.title})`);
-        successCount++;
-      } catch (err) {
-        console.error(`Error publishing resource ${resource.id}:`, err);
-        errorCount++;
       }
-    }
 
-    console.log(
-      `\nDone. ${successCount} published, ${errorCount} failed.`,
-    );
+      await client.query("COMMIT");
+      console.log(`\nDone. ${resources.length} resource(s) published.`);
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.error("Transaction rolled back. No resources were published.", err);
+    }
   });
 };
