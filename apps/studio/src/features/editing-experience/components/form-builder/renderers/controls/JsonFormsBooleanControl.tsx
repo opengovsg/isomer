@@ -40,6 +40,7 @@ function JsonFormsBooleanControl({
             description={description}
             htmlFor={id}
             mb={!description ? "0px" : "0.75rem"}
+            gap="0.25rem"
           >
             {label}
           </FormLabel>
