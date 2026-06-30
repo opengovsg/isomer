@@ -51,7 +51,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
 
   const { isQueryTooLong, hasExcessiveWords } = useMemo(
     () => ({
-      isQueryTooLong: searchValue.length > MAX_SEARCH_QUERY_LENGTH,
+      isQueryTooLong: searchValue.trim().length > MAX_SEARCH_QUERY_LENGTH,
       hasExcessiveWords:
         tokenizeSearchQuery(searchValue).length > MAX_SEARCH_TERMS,
     }),
