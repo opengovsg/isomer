@@ -1,4 +1,5 @@
 import { createBaseLogger } from "../../lib/logger"
+import { auditLogExportJob } from "./jobs/auditLogExportJob"
 import { deactivateInactiveUsersJob } from "./jobs/deactivateInactiveUsersJob"
 import { schedulePublishingJob } from "./jobs/schedulePublishingJob"
 import { schedulePushDocumentJob } from "./jobs/schedulePushDocumentJob"
@@ -20,6 +21,7 @@ export const initializeCronJobs = async () => {
     await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 1 }),
     await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 7 }),
     await sendAccountDeactivationWarningEmailsJob({ inHowManyDays: 14 }),
+    await auditLogExportJob(),
   )
 
   logger.info("Cron jobs initialized successfully")
