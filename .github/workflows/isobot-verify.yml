@@ -110,7 +110,7 @@ jobs:
       #     true, so the skill's bare `git push` reuses it. The push does NOT
       #     re-trigger ci.yml (GITHUB_TOKEN recursion guard) — that's fine: the
       #     `e2e` job below runs the test inline instead.
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0

@@ -5,7 +5,7 @@ description: Translate a PR's free-text "Manual Verification Steps" checklist in
 
 # Instructions
 
-Translate a PR's "Manual Verification Steps" checklist into a permanent, convention-following Playwright e2e test, commit it to the PR branch, and let a human review it. This skill is invoked from CI via `claude-code-action` as `/isobot-verify <pr-number>`, inside a checkout of the PR branch. Two distinct credentials are in play: `gh` commands (the PR comment) authenticate via `GITHUB_TOKEN` in the env, while `git push` uses the credential `actions/checkout` persisted into git config — a PAT / GitHub App token (`secrets.ISOBOT_PAT`) supplied by the `isobot-verify.yml` workflow, **not** `GITHUB_TOKEN`. The full rationale lives in `docs/adr/0003-ai-generated-verification-tests.md` — **read it at run time; it is the source of truth.**
+Translate a PR's "Manual Verification Steps" checklist into a permanent, convention-following Playwright e2e test, commit it to the PR branch, and let a human review it. This skill is invoked from CI via `claude-code-action` as `/isobot-verify <pr-number>`, inside a checkout of the PR branch. Both `gh` (the PR comment) and `git push` authenticate via `GITHUB_TOKEN` — `gh` reads it from the env, and `git push` uses it through the credential `actions/checkout` persisted into git config. The pushed commit does not need to re-trigger CI: the `isobot-verify.yml` workflow runs the generated test inline (via the shared `e2e-tests.yml` reusable workflow) after this skill finishes. The full rationale lives in `docs/adr/0003-ai-generated-verification-tests.md` — **read it at run time; it is the source of truth.**
 
 Generate **once**. The test is committed to the PR branch and reviewed by a human like any other code; it then becomes permanent regression coverage. The reviewer is the only safety net against a false-green test, so the generated test must contain **real assertions** and follow the suite conventions or it is worthless.
 
@@ -80,7 +80,7 @@ Generate **once**. The test is committed to the PR branch and reviewed by a huma
    git push
    ```
 
-   The trailer line is required per repo convention. Keep the push a **bare `git push`** so it uses the checkout-persisted PAT — do **not** rewrite the remote to `https://x-access-token:$GITHUB_TOKEN@github.com/...`. A push made with `GITHUB_TOKEN` does not fire downstream workflows, which would break the CI re-trigger this commit relies on.
+   The trailer line is required per repo convention. Keep the push a **bare `git push`** so it uses the checkout-persisted `GITHUB_TOKEN` — do not rewrite the remote URL. The push only needs to land the commit on the PR branch so the `isobot-verify.yml` workflow can run it inline; it does not need to trigger any other workflow.
 
 7. **Post a brief PR comment** noting that a verification test was generated and needs review. First resolve the repo URL for the footer:
 
