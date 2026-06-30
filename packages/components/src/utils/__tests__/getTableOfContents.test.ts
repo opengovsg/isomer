@@ -159,6 +159,41 @@ describe("getTableOfContents", () => {
     expect(toc[0]?.anchorLink).toEqual(expect.stringMatching(anchorPattern))
   })
 
+  it("skips whitespace-only level-2 headings (spaces, tabs, non-breaking space)", () => {
+    // Arrange
+    const site = generateSiteConfig()
+    const transformedContent = getTransformedPageContent([
+      {
+        type: "prose",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "   \t " }],
+          },
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: " " }],
+          },
+          {
+            type: "heading",
+            attrs: { level: 2 },
+            content: [{ type: "text", text: "Real heading" }],
+          },
+        ],
+      },
+    ])
+
+    // Act
+    const toc = getTableOfContents(site, transformedContent)
+
+    // Assert
+    expect(toc).toHaveLength(1)
+    expect(toc.map((t) => t.content)).toEqual(["Real heading"])
+    expect(toc[0]?.anchorLink).toEqual(expect.stringMatching(anchorPattern))
+  })
+
   it("preserves order of toc entries across prose and blocks", () => {
     // Arrange
     const content: IsomerComponent[] = [
