@@ -2,12 +2,7 @@ import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import {
-  composePaths,
-  createDefaultValue,
-  rankWith,
-  schemaMatches,
-} from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -23,6 +18,7 @@ import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { createDefaultTagCategory } from "./constants"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
@@ -93,16 +89,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               {label}
             </Text>
             <AddItemButton
-              onClick={addItem(path, {
-                ...(createDefaultValue(schema, rootSchema) as Record<
-                  string,
-                  unknown
-                >),
-                // Set on new filters but not in JSON Schema: Studio AJV runs with
-                // useDefaults, which would also apply the default to legacy rows
-                // that omit this key.
-                isRequired: true,
-              })}
+              onClick={addItem(path, createDefaultTagCategory())}
               isDisabled={isAddItemDisabled}
             >
               Add a filter

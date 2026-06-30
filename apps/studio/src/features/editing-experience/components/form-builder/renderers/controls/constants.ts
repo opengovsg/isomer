@@ -1,4 +1,13 @@
+import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
+
+type TagCategory = NonNullable<CollectionPagePageProps["tagCategories"]>[number]
+export const createDefaultTagCategory = (): TagCategory => ({
+  id: crypto.randomUUID(),
+  label: "New filter",
+  isRequired: true,
+  options: [],
+})
 
 export const ONE_MB_IN_BYTES = 1000000
 
