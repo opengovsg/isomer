@@ -57,3 +57,17 @@ export const BuildStatusType = {
 } as const
 export type BuildStatusType =
   (typeof BuildStatusType)[keyof typeof BuildStatusType]
+export const AuditLogExportReportType = {
+  Access: "Access",
+  Activity: "Activity",
+} as const
+export type AuditLogExportReportType =
+  (typeof AuditLogExportReportType)[keyof typeof AuditLogExportReportType]
+export const AuditLogExportStatus = {
+  Pending: "Pending",
+  Processing: "Processing",
+  Done: "Done",
+  Failed: "Failed",
+} as const
+export type AuditLogExportStatus =
+  (typeof AuditLogExportStatus)[keyof typeof AuditLogExportStatus]

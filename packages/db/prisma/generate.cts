@@ -6,6 +6,63 @@ const TYPE_FOLDER = "../src/generated"
 // THIS MUST BE PREFIXED WITH A DOT
 const TYPE_FILE = "./generatedTypes.ts"
 const GENERATED_FILE = "./selectableTypes.ts"
+const SCHEMA_FILE = "./schema.prisma"
+
+// prisma-kysely drops `Unsupported(...)` columns entirely (it skips fields of
+// kind "unsupported" before applying `@kyselyType` doc-comment overrides), so
+// we re-inject those fields into the generated Kysely types here, using each
+// field's `/// @kyselyType(X)` doc comment in schema.prisma as the emitted
+// type. Fields of type `Unsupported(...)` without a `/// @kyselyType(...)`
+// doc comment stay omitted, matching prisma-kysely's default behaviour.
+const patchUnsupportedColumns = async () => {
+  const schema = await fs.readFile(path.join(__dirname, SCHEMA_FILE), "utf8")
+  const typesPath = path.join(__dirname, TYPE_FOLDER, TYPE_FILE)
+  let types = await fs.readFile(typesPath, "utf8")
+
+  const modelPattern = /model\s+(\w+)\s+\{([\s\S]*?)\n\}/g
+  const fieldPattern =
+    /\/\/\/\s*@kyselyType\(([^)]+)\)\s*\n\s*(\w+)\s+Unsupported\("[^"]+"\)(\?)?/g
+
+  for (const [, modelName, modelBody] of schema.matchAll(modelPattern)) {
+    if (!modelName || !modelBody) {
+      continue
+    }
+    for (const [, kyselyType, fieldName, nullable] of modelBody.matchAll(
+      fieldPattern,
+    )) {
+      if (!kyselyType || !fieldName) {
+        continue
+      }
+      const fieldType = `${kyselyType}${nullable ? " | null" : ""}`
+      // prisma-kysely emits `export type X = {...};` (later rewritten to
+      // `export interface X {...}` by oxlint's --fix), so handle both forms.
+      const headers = [
+        {
+          header: `export type ${modelName} = {\n`,
+          property: `    ${fieldName}: ${fieldType};\n`,
+        },
+        {
+          header: `export interface ${modelName} {\n`,
+          property: `  ${fieldName}: ${fieldType}\n`,
+        },
+      ]
+      const match = headers.find(({ header }) => types.includes(header))
+      if (!match) {
+        throw new Error(
+          `Could not find generated type for model ${modelName} while injecting Unsupported column ${fieldName}`,
+        )
+      }
+      // Idempotency guard: `prisma generate` rewrites the file before this
+      // script runs, but skip re-injection if the script is run standalone.
+      if (new RegExp(`\\b${fieldName}\\s*[?:]`).test(types)) {
+        continue
+      }
+      types = types.replace(match.header, match.header + match.property)
+    }
+  }
+
+  await fs.writeFile(typesPath, types)
+}
 
 const KYSELY_IMPORT = ts.factory.createImportDeclaration(
   undefined,
@@ -87,6 +144,8 @@ const extractTableTypes = (source: ts.SourceFile) => {
 }
 
 export const generate = async () => {
+  await patchUnsupportedColumns()
+
   const file = await fs.readFile(path.join(__dirname, TYPE_FOLDER, TYPE_FILE))
   const source = ts.createSourceFile(
     TYPE_FILE,
