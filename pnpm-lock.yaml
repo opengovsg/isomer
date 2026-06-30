@@ -10,8 +10,8 @@ catalogs:
       specifier: ^1.8.1
       version: 1.8.1
     '@atlaskit/pragmatic-drag-and-drop-hitbox':
-      specifier: ^1.2.0
-      version: 1.2.0
+      specifier: ^2.0.0
+      version: 2.0.0
   aws-sdk:
     '@aws-sdk/client-acm':
       specifier: ^3.1073.0
@@ -416,11 +416,11 @@ catalogs:
       version: 1.6.5
   jsonforms:
     '@jsonforms/core':
-      specifier: ^3.5.1
-      version: 3.7.0
+      specifier: ^3.8.0
+      version: 3.8.0
     '@jsonforms/react':
-      specifier: ^3.5.1
-      version: 3.7.0
+      specifier: ^3.8.0
+      version: 3.8.0
   prisma:
     '@prisma/adapter-pg':
       specifier: 7.8.0
@@ -661,7 +661,7 @@ importers:
         version: 1.8.1
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
         specifier: catalog:atlaskitPragmaticDnd
-        version: 1.2.0
+        version: 2.0.0
       '@aws-sdk/client-codebuild':
         specifier: catalog:aws-sdk
         version: 3.1075.0
@@ -727,10 +727,10 @@ importers:
         version: link:../../packages/pgboss
       '@jsonforms/core':
         specifier: catalog:jsonforms
-        version: 3.7.0
+        version: 3.8.0
       '@jsonforms/react':
         specifier: catalog:jsonforms
-        version: 3.7.0(@jsonforms/core@3.7.0)(react@18.3.1)
+        version: 3.8.0(@jsonforms/core@3.8.0)(react@18.3.1)
       '@opengovsg/design-system-react':
         specifier: 'catalog:'
         version: 1.34.0(@chakra-ui/react@2.10.10(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(framer-motion@12.38.0(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.28)(prop-types@15.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1966,11 +1966,14 @@ packages:
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
 
-  '@atlaskit/pragmatic-drag-and-drop-hitbox@1.2.0':
-    resolution: {integrity: sha512-eWJvvuHZOC4Yk+Li7QpS+JM2F/I50/3PhMvEcyvcHbXI0FP0kCDD1MiF8Hv7uSOxpk5JNqKoOmK8e1ncOzTgqA==}
+  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.0.0':
+    resolution: {integrity: sha512-vkXCB/23pT8YgYU8biGmR9uu0fr9oWoaq2GMSKyiNPk3reA12XVrCdgB2SLBoB24Ic1FOm9PdaQJ9ZSUQdCVpw==}
 
   '@atlaskit/pragmatic-drag-and-drop@1.8.1':
     resolution: {integrity: sha512-uXWNPpL8n4OmTVbduH7nq8pk8htqGo/prR5cYEE8sVCPJGAUMWn6lzvWTfI+4VCeQvHiDRODVz4YzH06OVAxhw==}
+
+  '@atlaskit/pragmatic-drag-and-drop@2.0.1':
+    resolution: {integrity: sha512-5iSbCveKuWYh0HijDxfSsYKD2VE0UPObI9jO1pqq+RBk9LzaoOYeKyW0Fobv/6db8HAPcyT3vhRy8bmk5TMcMw==}
 
   '@aws-crypto/crc32@5.2.0':
     resolution: {integrity: sha512-nLbCWqQNgUiwwtFsen1AdzAtvuLRsQS8rYgMuxCrdKf9kOssamGLuPwyTY9wyYblNr9+1XM8v6zoDTPPSIeANg==}
@@ -4568,13 +4571,13 @@ packages:
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
 
-  '@jsonforms/core@3.7.0':
-    resolution: {integrity: sha512-CE9viWtwi9QWLqlWLeOul1/R1GRAyOA9y6OoUpsCc0FhyR+g5p29F3k0fUExHWxL0Sf4KHcXYkfhtqfRBPS8ww==}
+  '@jsonforms/core@3.8.0':
+    resolution: {integrity: sha512-XSvaZuQSs/MceG5nDDcrE879onPHkGBy0xEuLeZMUkSM/M8wc1dEUrJtMOZVNSITocm9YXFY1qQ5gnsPP38zAg==}
 
-  '@jsonforms/react@3.7.0':
-    resolution: {integrity: sha512-HkY7qAx8vW97wPEgZ7GxCB3iiXG1c95GuObxtcDHGPBJWMwnxWBnVYJmv5h7nthrInKsQKHZL5OusnC/sj/1GQ==}
+  '@jsonforms/react@3.8.0':
+    resolution: {integrity: sha512-k81+yWLpCQl+3XizS1bLjXoBwYhW1OAkjSXFA8W5qNtfPZjSOXDgtiuMOGYDv4b60tu2e9RB8h2P2O7QhfkhiA==}
     peerDependencies:
-      '@jsonforms/core': 3.7.0
+      '@jsonforms/core': 3.8.0
       react: ^16.12.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@kurkle/color@0.3.4':
@@ -12623,12 +12626,18 @@ snapshots:
 
   '@asamuzakjp/nwsapi@2.3.9': {}
 
-  '@atlaskit/pragmatic-drag-and-drop-hitbox@1.2.0':
+  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.0.0':
     dependencies:
-      '@atlaskit/pragmatic-drag-and-drop': 1.8.1
+      '@atlaskit/pragmatic-drag-and-drop': 2.0.1
       '@babel/runtime': 7.29.7
 
   '@atlaskit/pragmatic-drag-and-drop@1.8.1':
+    dependencies:
+      '@babel/runtime': 7.29.7
+      bind-event-listener: 3.0.0
+      raf-schd: 4.0.3
+
+  '@atlaskit/pragmatic-drag-and-drop@2.0.1':
     dependencies:
       '@babel/runtime': 7.29.7
       bind-event-listener: 3.0.0
@@ -15569,16 +15578,16 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@jsonforms/core@3.7.0':
+  '@jsonforms/core@3.8.0':
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.20.0
       ajv-formats: 2.1.1(ajv@8.20.0)
       lodash: 4.18.1
 
-  '@jsonforms/react@3.7.0(@jsonforms/core@3.7.0)(react@18.3.1)':
+  '@jsonforms/react@3.8.0(@jsonforms/core@3.8.0)(react@18.3.1)':
     dependencies:
-      '@jsonforms/core': 3.7.0
+      '@jsonforms/core': 3.8.0
       lodash: 4.18.1
       react: 18.3.1
 
