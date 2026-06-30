@@ -15,7 +15,7 @@ export const publishSiteResources = async () => {
 
   await withDbClient(async (client) => {
     const userResult = await client.query<{ id: string }>(
-      `SELECT id FROM "User" WHERE email = $1`,
+      `SELECT id FROM "User" WHERE email = $1 AND "deletedAt" IS NULL`,
       [publisherEmail.toLowerCase()],
     );
     const user = userResult.rows[0];
