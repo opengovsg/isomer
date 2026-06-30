@@ -14,7 +14,6 @@ const COMMON_HANDLERS = {
   siteName: sitesHandlers.getSiteName.default(),
   rootPage: pageHandlers.getRootPage.default(),
 }
-const RESET_MODAL_DECORATORS = [ResetUpdateProfileModalDecorator]
 
 const meta: Meta<typeof SitePage> = {
   title: "Pages/Profile Management/Profile Modal",
@@ -38,7 +37,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
-  decorators: RESET_MODAL_DECORATORS,
+  decorators: [ResetUpdateProfileModalDecorator],
   play: async (context) => {
     const screen = within(context.canvasElement)
     const testUserSelector = await screen.findByText(/TU/i)
@@ -75,7 +74,7 @@ export const Required: Story = {
 }
 
 export const Unfilled: Story = {
-  decorators: RESET_MODAL_DECORATORS,
+  decorators: [ResetUpdateProfileModalDecorator],
   play: async (context) => {
     const { canvasElement } = context
     await Default.play?.(context)
@@ -103,7 +102,7 @@ export const Unfilled: Story = {
 }
 
 export const PhoneNumberNot8Digits: Story = {
-  decorators: RESET_MODAL_DECORATORS,
+  decorators: [ResetUpdateProfileModalDecorator],
   play: async (context) => {
     const { canvasElement } = context
     await Default.play?.(context)
@@ -121,7 +120,7 @@ export const PhoneNumberNot8Digits: Story = {
 }
 
 export const NonSingaporePhone: Story = {
-  decorators: RESET_MODAL_DECORATORS,
+  decorators: [ResetUpdateProfileModalDecorator],
   play: async (context) => {
     const { canvasElement } = context
     await Default.play?.(context)
@@ -139,7 +138,7 @@ export const NonSingaporePhone: Story = {
 }
 
 export const Loading: Story = {
-  decorators: RESET_MODAL_DECORATORS,
+  decorators: [ResetUpdateProfileModalDecorator],
   parameters: {
     msw: {
       handlers: {
@@ -160,7 +159,7 @@ export const Loading: Story = {
 }
 
 export const Success: Story = {
-  decorators: RESET_MODAL_DECORATORS,
+  decorators: [ResetUpdateProfileModalDecorator],
   parameters: {
     msw: {
       handlers: {
