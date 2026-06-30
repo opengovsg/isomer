@@ -1010,9 +1010,10 @@ export const getSearchResults = async ({
   totalCount: number | null
   resources: SearchResultResource[]
 }> => {
-  const searchTerms: string[] = Array.from(
-    new Set(tokenizeSearchQuery(query)),
-  ).slice(0, MAX_SEARCH_TERMS)
+  const searchTerms: string[] = tokenizeSearchQuery(query).slice(
+    0,
+    MAX_SEARCH_TERMS,
+  )
 
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
