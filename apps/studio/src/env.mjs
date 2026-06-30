@@ -61,6 +61,7 @@ const server = z
     STUDIO_SSM_WEBHOOK_API_KEY: z.string().optional(),
     S3_GAZETTE_BUCKET_NAME: z.string(),
     S3_GAZETTE_DOMAIN_NAME: z.string(),
+    S3_AUDIT_LOG_EXPORT_BUCKET_NAME: z.string().optional(),
     EGAZETTE_DOCUMENT_INDEX: z.string().optional(),
     DD_DELETION_EMAIL: z.email(),
     SEARCHSG_API_KEY: z.string(),
@@ -100,6 +101,7 @@ const processEnv = {
     process.env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
   NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME:
     process.env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+  S3_AUDIT_LOG_EXPORT_BUCKET_NAME: process.env.S3_AUDIT_LOG_EXPORT_BUCKET_NAME,
   SINGPASS_CLIENT_ID: process.env.SINGPASS_CLIENT_ID,
   SINGPASS_ISSUER_ENDPOINT: process.env.SINGPASS_ISSUER_ENDPOINT,
   SINGPASS_REDIRECT_URI: process.env.SINGPASS_REDIRECT_URI,
