@@ -149,11 +149,14 @@ jobs:
           BASE_TOTAL: ${{ steps.base.outputs.total }}
         run: bash "$RUNNER_TEMP/comment-template-bundle-size.sh"
 
-  unit-integration-tests:
-    name: Unit & integration tests
+  test-studio:
+    name: Test Studio (${{ matrix.shard }}/4)
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
+    strategy:
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Setup
@@ -169,12 +172,64 @@ jobs:
           api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Studio
         # Loose env mode required for env vars to be passed to the run
-        run: pnpm exec turbo test-ci:unit --filter=isomer-studio --env-mode=loose
+        run: pnpm exec turbo test-ci:unit --filter=isomer-studio --env-mode=loose -- --reporter=blob --shard=${{ matrix.shard }}/4
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           # Set timezone to Singapore to ensure that the tests are run in the correct timezone
           TZ: Asia/Singapore
+      - name: Upload coverage blob
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-studio-shard-${{ matrix.shard }}
+          path: apps/studio/.vitest-reports/
+          retention-days: 1
+          if-no-files-found: error
+
+  test-studio-coverage:
+    name: Test Studio coverage (merged)
+    needs: [optimize_ci, test-studio]
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies
+        run: pnpm exec turbo run generate --filter=isomer-studio
+      - name: Download coverage blobs
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: coverage-studio-shard-*
+          path: apps/studio/.vitest-reports/
+          merge-multiple: true
+      - name: Merge coverage reports
+        working-directory: apps/studio
+        run: pnpm exec vitest --merge-reports .vitest-reports --coverage
+        env:
+          TZ: Asia/Singapore
+      - name: Upload merged coverage
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-studio
+          path: apps/studio/coverage/
+          retention-days: 7
+
+  test-components:
+    name: Test Components
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+        with:
+          languages: js
+          service: isomer-studio
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Components
         run: pnpm exec turbo test-ci:unit --filter=@opengovsg/isomer-components --env-mode=loose
         env:
@@ -182,10 +237,49 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           # Set timezone to Singapore to ensure that the tests are run in the correct timezone
           TZ: Asia/Singapore
+
+  test-validators:
+    name: Test Validators
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+        with:
+          languages: js
+          service: isomer-studio
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Validators
         run: pnpm exec turbo test-ci:unit --filter=@isomer/validators --env-mode=loose
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+
+  test-pgboss:
+    name: Test pgboss
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Start test containers
+        run: pnpm exec turbo run setup:test --filter=@isomer/pgboss
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+        with:
+          languages: js
+          service: isomer-pgboss
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - name: Test pgboss
+        run: pnpm exec turbo test-ci:unit --filter=@isomer/pgboss --env-mode=loose
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+          TZ: Asia/Singapore
 
   publishing-script-tests:
     name: Publishing script tests
