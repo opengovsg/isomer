@@ -27,7 +27,7 @@ const client = z
       "uat",
       "preview",
     ]),
-    NEXT_PUBLIC_STORAGE_PROVIDER: z.enum(["vercel-blob", "s3"]),
+    NEXT_PUBLIC_STORAGE_PROVIDER: z.enum(["vercel-blob", "s3"]).default("s3"),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_NAME: z.string().default("Isomer Studio"),
     NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
