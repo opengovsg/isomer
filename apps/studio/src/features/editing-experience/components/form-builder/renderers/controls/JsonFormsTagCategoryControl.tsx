@@ -80,7 +80,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
-      {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
@@ -103,6 +102,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               {description}
             </Text>
           )}
+          {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
         </VStack>
         <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
           <DragDropContext onDragEnd={onDragEnd}>

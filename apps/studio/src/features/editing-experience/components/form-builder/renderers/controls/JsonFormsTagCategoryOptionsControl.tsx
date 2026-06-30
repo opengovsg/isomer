@@ -91,7 +91,6 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
-      {duplicateOptionIndices.size > 0 && <DuplicateLabelError noun="option" />}
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
@@ -109,6 +108,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
             <Text textStyle="body-2" textColor="base.content.default">
               {description}
             </Text>
+          )}
+          {duplicateOptionIndices.size > 0 && (
+            <DuplicateLabelError noun="option" />
           )}
         </VStack>
         <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
