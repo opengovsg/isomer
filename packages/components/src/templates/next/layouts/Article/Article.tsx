@@ -7,7 +7,6 @@ import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
 import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
-import { resolveCategoryLabel } from "../Collection/utils/resolveCategoryLabel"
 import { Skeleton } from "../Skeleton"
 
 export const ArticleLayout = ({
