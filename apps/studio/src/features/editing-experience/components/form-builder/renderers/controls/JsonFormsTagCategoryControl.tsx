@@ -130,9 +130,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                     const count =
                       page?.tagCategories?.[index]?.options?.length ?? 0
                     const subtitle =
-                      count === 0
-                        ? "No option"
-                        : `${count} ${count > 1 ? "options" : "option"}`
+                      count === 1 ? "1 option" : `${count} options`
 
                     return (
                       <Draggable
