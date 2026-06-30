@@ -16,7 +16,7 @@ const triggerSurveyOnce = ({
   }
 }
 
-export const triggerCsatSurveyOnce = ({
+export const triggerCollectionTagCsatSurveyOnce = ({
   userId,
 }: Omit<TriggerSurveyOnceProps, "surveyId">): void => {
   triggerSurveyOnce({ surveyId: "65029624", userId })

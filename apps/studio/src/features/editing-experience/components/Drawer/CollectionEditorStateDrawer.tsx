@@ -18,7 +18,7 @@ import { env } from "~/env.mjs"
 import { useMe } from "~/features/me/api"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { triggerCsatSurveyOnce } from "~/lib/intercom"
+import { triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
@@ -123,7 +123,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
             hasTagsNow
           ) {
             trackEvent("first_tag_added")
-            triggerCsatSurveyOnce({ userId: me.id })
+            triggerCollectionTagCsatSurveyOnce({ userId: me.id })
           }
           setDrawerState({ state: "root" })
         },
