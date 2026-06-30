@@ -2,7 +2,8 @@ name: "🤖 IsoBot: Verify"
 
 # Translates a PR's free-text "Manual Verification Steps" checklist into a
 # committed, convention-following Playwright e2e test via the /isobot-verify
-# skill (anthropics/claude-code-action). Design source of truth:
+# skill (anthropics/claude-code-action), then runs that test and posts a link
+# to the recorded video artifact. Design source of truth:
 # docs/adr/0003-ai-generated-verification-tests.md. The skill contract lives in
 # .claude/skills/isobot-verify/SKILL.md.
 #
@@ -12,56 +13,30 @@ name: "🤖 IsoBot: Verify"
 # guard in the skill makes re-triggers a no-op once a test exists.
 #
 # ──────────────────────────────────────────────────────────────────────────
-# WHY THIS WORKFLOW NEEDS A SEPARATE PUSH CREDENTIAL (secrets.ISOBOT_PAT)
+# WHY GITHUB_TOKEN IS SUFFICIENT (no PAT needed)
 # ──────────────────────────────────────────────────────────────────────────
-# The whole point of this feature is that the bot's generated-test commit
-# re-triggers `ci.yml`'s `end-to-end-tests` job (which runs the new test) and
-# in turn fires `post-pr-comment.yml`'s video-artifact comment.
-#
-# GitHub deliberately PREVENTS that chain when a commit is pushed using the
-# default GITHUB_TOKEN: "events created by GITHUB_TOKEN do not create a new
-# workflow run" (a recursion guard against infinite CI loops). A commit pushed
-# with GITHUB_TOKEN would land silently and never run through CI — defeating the
-# feature.
-#
-# The fix is to push with a DIFFERENT credential stored as `secrets.ISOBOT_PAT`.
-# Pushes made with this token are attributed to its identity (not GITHUB_TOKEN),
-# so they DO trigger `ci.yml`'s `pull_request: synchronize` run.
-#
-# REQUIRED token type (least-privilege — not optional):
-#   • A GitHub App INSTALLATION token scoped to THIS repository only, with:
-#       - `contents: write`  — to push the commit to the PR head branch.
-#       - `workflow`         — required to push files under .github/workflows/
-#                              (and any branch that carries them); without it the
-#                              push is rejected with "refusing to allow ... to
-#                              create or update workflow ... without `workflow`
-#                              scope".
-#   • Do NOT use a broad classic PAT or an org-wide fine-grained PAT. A
-#     repo-scoped App installation token is the least-privilege option and keeps
-#     blast radius to this one repo if the secret leaks.
-# The `check-secrets` job below fails fast (with a clear ::error::) if this
-# secret has not yet been provisioned by an admin.
+# An earlier design pushed the generated-test commit and relied on it
+# re-triggering `ci.yml`'s e2e job. That requires a non-GITHUB_TOKEN credential,
+# because GitHub suppresses workflow runs for commits pushed with GITHUB_TOKEN
+# (a recursion guard). To avoid managing a PAT, this workflow instead runs the
+# e2e suite INLINE: after `generate` commits + pushes the test (GITHUB_TOKEN is
+# fine for the push — we do not depend on it re-triggering anything), the `e2e`
+# job calls the shared reusable workflow (.github/workflows/e2e-tests.yml) on
+# the PR head branch, and the `comment` job posts the video-artifact link
+# directly. GITHUB_TOKEN covers everything: contents:write to push the commit,
+# and pull-requests:write to comment. The OWNER/MEMBER gate excludes forks, so
+# the workflow runs in a context where these permissions are honoured.
 #
 # ──────────────────────────────────────────────────────────────────────────
-# TRUST ASSUMPTION (read before changing the gate or the token)
+# TRUST ASSUMPTION (read before changing the gate or the permissions)
 # ──────────────────────────────────────────────────────────────────────────
-# This `generate` job checks out PR-branch-controlled content and EXECUTES it
-# (claude-code-action runs the skill with Bash) under a write-capable token.
-# That is safe ONLY because BOTH of these hold:
-#   1. The `gate` job restricts execution to PRs authored by OWNER/MEMBER — we
-#      never run this on external-contributor branches.
-#   2. ISOBOT_PAT is least-privilege: repo-scoped, contents:write only. A leaked
-#      or abused token cannot reach other repos or org resources.
-# Weaken either and this becomes an arbitrary-code-execution-with-write-token
-# hole. Keep both.
-#
-# Residual risk: with `persist-credentials` at its default (true), the token is
-# written into `.git/config` for the duration of the run. We keep the default
-# because the skill's bare `git push` relies on it, and the token is equally
-# reachable via the job env regardless. Possible future hardening:
-# `persist-credentials: false` on checkout + have the skill push with an
-# explicit authenticated remote URL — deferred, not adopted here.
-# ──────────────────────────────────────────────────────────────────────────
+# The `generate` job checks out PR-branch-controlled content and EXECUTES it
+# (claude-code-action runs the skill with Bash) under a contents:write token.
+# That is safe ONLY because the `gate` job restricts execution to PRs authored
+# by OWNER/MEMBER — we never run this on external-contributor branches. The
+# token here is the ephemeral, repo-scoped GITHUB_TOKEN (smaller blast radius
+# than a long-lived PAT: it cannot reach other repos and expires with the run).
+# Weaken the gate and this becomes arbitrary-code-execution-with-write-token.
 on:
   pull_request:
     types: [ready_for_review]
@@ -111,21 +86,11 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
-      # See the header comment for why a PAT (not GITHUB_TOKEN) is mandatory: a
-      # GITHUB_TOKEN push would not re-trigger ci.yml, so the generated test
-      # would never run. This secret does not exist yet — an admin must add it.
-      - name: Verify ISOBOT_PAT is set
-        run: |
-          if [ -z "$ISOBOT_PAT" ]; then
-            echo "::error::ISOBOT_PAT secret is not set. This workflow pushes the generated test commit with a separate token (NOT GITHUB_TOKEN) so the push re-triggers ci.yml's end-to-end-tests job — a GITHUB_TOKEN push is suppressed by GitHub's recursion guard and would never run the test. An admin must provision a least-privilege GitHub App installation token scoped to THIS repo only, with contents:write (+ workflow scope, required to push files under .github/workflows/), and add it under Settings → Secrets and variables → Actions as ISOBOT_PAT. Do NOT use a broad classic PAT or an org-wide fine-grained PAT."
-            exit 1
-          fi
-        env:
-          ISOBOT_PAT: ${{ secrets.ISOBOT_PAT }}
-
   # Runs the /isobot-verify skill: it reads the PR's Manual Verification Steps,
   # generates a Playwright e2e test, commits it, pushes it to the PR branch, and
-  # posts a PR comment. The skill writes /tmp/verify-result.json with the outcome.
+  # posts a PR comment. The skill writes /tmp/verify-result.json with the
+  # outcome; this job exposes its `.generated` flag as an output so the e2e and
+  # comment jobs only run when a test was actually produced.
   generate:
     needs: [gate, check-secrets]
     runs-on: ubuntu-latest
@@ -133,21 +98,22 @@ jobs:
       contents: write # the skill pushes the generated-test commit
       pull-requests: write # the skill posts a PR comment
       id-token: write # required by anthropics/claude-code-action for OIDC-based tool authentication
+    outputs:
+      generated: ${{ steps.result.outputs.generated }}
     steps:
       # Check out the PR HEAD branch so the skill can commit/push to it.
       #   • ref: the PR's head branch (not the default merge ref) so `git push`
       #     updates the PR.
       #   • fetch-depth: 0 — the skill's idempotency fallback may run
       #     `git diff --name-only origin/<base>...HEAD`, which needs full history.
-      #   • token: ISOBOT_PAT — NOT the default GITHUB_TOKEN. persist-credentials
-      #     defaults to true, so the skill's `git push` reuses this PAT
-      #     automatically, and the resulting push re-triggers ci.yml (see the
-      #     header comment for the recursion-guard rationale).
+      #   • token: the default GITHUB_TOKEN. persist-credentials defaults to
+      #     true, so the skill's bare `git push` reuses it. The push does NOT
+      #     re-trigger ci.yml (GITHUB_TOKEN recursion guard) — that's fine: the
+      #     `e2e` job below runs the test inline instead.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
-          token: ${{ secrets.ISOBOT_PAT }}
 
       - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
         env:
@@ -158,8 +124,7 @@ jobs:
           # bump this to a stronger model.
           ANTHROPIC_MODEL: claude-sonnet-4-6
           # GITHUB_TOKEN is used by the skill's `gh pr view`/`gh pr comment`
-          # calls. Note: the skill's `git push` uses the PAT from the checkout
-          # above, NOT this token — the two credentials have distinct roles.
+          # calls AND (via persisted checkout credentials) its `git push`.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -172,26 +137,26 @@ jobs:
           # granted explicitly. A bare `Bash` (no parentheses) grants all bash
           # commands; scoped `Bash(cmd)` would be too narrow for the skill's
           # open-ended shelling. Read/Write are included so the skill can read
-          # conventions/fixtures and write the generated test. The sibling
-          # review skills use only `--allowedTools Write` because they merely
-          # read+comment via the action's default GitHub tooling; this skill's
-          # commit/push/jq work needs Bash on top.
+          # conventions/fixtures and write the generated test.
           claude_args: "--allowedTools Write,Read,Bash"
           prompt: /isobot-verify ${{ github.event.pull_request.number }}
 
-      # Surface the skill's outcome in the job log and the run's step summary.
+      # Read the skill's outcome: expose `generated` as a job output (default
+      # false when the file is absent) and mirror it into the step summary.
       # Best-effort: the result file may legitimately be absent — several
       # SKILL.md early-abort paths (e.g. PR number unresolved, PR body fetch
-      # fails) exit before writing it. The `else` branch handles that case, and
-      # `if: always()` is intentional so we still summarize even when the
-      # claude-code-action step above failed.
-      - name: Summarize verification result
+      # fails) exit before writing it. `if: always()` is intentional so we still
+      # summarize even when the claude-code-action step above failed; in that
+      # case `generated` defaults to false and the e2e/comment jobs are skipped.
+      - name: Read verification result
+        id: result
         if: always()
         run: |
           if [ -f /tmp/verify-result.json ]; then
             generated=$(jq -r '.generated' /tmp/verify-result.json)
             path=$(jq -r '.path' /tmp/verify-result.json)
             reason=$(jq -r '.reason' /tmp/verify-result.json)
+            echo "generated=$generated" >> "$GITHUB_OUTPUT"
             {
               echo "### 🤖 IsoBot Verify result"
               echo ""
@@ -205,6 +170,69 @@ jobs:
             echo "Path: $path"
             echo "Reason: $reason"
           else
+            echo "generated=false" >> "$GITHUB_OUTPUT"
             echo "No /tmp/verify-result.json was written by the skill." >> "$GITHUB_STEP_SUMMARY"
             echo "No /tmp/verify-result.json was written by the skill."
           fi
+
+  # Run the freshly generated test (and the rest of the suite) inline via the
+  # shared reusable workflow, on the PR head branch — which now includes the
+  # commit the skill just pushed. Only runs when a test was generated.
+  #
+  # Note: this checks out the head branch TIP (by name), not the PR merge ref
+  # that ci.yml validates. So it smoke-tests the generated test against the
+  # branch as-is; it is NOT a substitute for ci.yml's merge-ref e2e gate (which
+  # still runs on later pushes). The concurrency group above prevents a racing
+  # ready_for_review from moving the tip mid-run; an unrelated push landing
+  # between `generate` and `e2e` is a small, accepted staleness window.
+  e2e:
+    needs: generate
+    if: needs.generate.outputs.generated == 'true'
+    uses: ./.github/workflows/e2e-tests.yml
+    with:
+      ref: ${{ github.event.pull_request.head.ref }}
+    secrets:
+      DD_API_KEY_GITHUB_ACTIONS: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+
+  # Post (or update) a sticky PR comment linking the e2e video artifact. Uses
+  # the same `<!-- e2e-video-link -->` marker as post-pr-comment.yml so the two
+  # never duplicate — whichever runs last updates the single comment. We can
+  # comment directly here (no workflow_run indirection) because the gate
+  # excludes forks, so GITHUB_TOKEN has write access.
+  #
+  # Gated on artifact-url being non-empty. A genuine TEST FAILURE still uploads
+  # the artifact (the upload step is `if: !cancelled()`), so the video link is
+  # posted. But if the e2e job errors BEFORE the upload (build/setup failure),
+  # artifact-url is empty and this job is skipped — there is then no video
+  # comment; the failed `e2e` check on the PR is the signal that the inline run
+  # could not complete.
+  comment:
+    needs: [generate, e2e]
+    if: ${{ needs.generate.outputs.generated == 'true' && needs.e2e.outputs.artifact-url != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write # GitHub routes PR comments through the issues API endpoint
+    steps:
+      - name: Find existing video-link comment
+        id: find-video-comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- e2e-video-link -->"
+
+      - name: Upsert PR comment with e2e video artifact link
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ steps.find-video-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- e2e-video-link -->
+            🎥 **E2E test videos** — [Download artifact](${{ needs.e2e.outputs.artifact-url }})
+
+            Includes the AI-generated verification test for this PR. Each test has its own directory under the zip; play `video.webm` to watch the run.
+            Workflow: [run #${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) — artifact expires in 7 days.
