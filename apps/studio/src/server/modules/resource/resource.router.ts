@@ -38,6 +38,7 @@ import {
   definePermissionsForResource,
   getResourcePermission,
 } from "../permissions/permissions.service"
+import { softDeleteRedirectsPointingToResource } from "../redirect/redirect.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   defaultResourceSelect,
@@ -488,6 +489,7 @@ export const resourceRouter = router({
                 ResourceType.Page,
                 ResourceType.CollectionPage,
                 ResourceType.Folder,
+                ResourceType.Collection,
                 ResourceType.CollectionLink,
               ])
               .set({
@@ -681,6 +683,16 @@ export const resourceRouter = router({
           },
           by: user,
           eventType: AuditLogEvent.ResourceDelete,
+        })
+
+        // Soft-delete redirects pointing at this resource (or any descendant)
+        // in the same transaction — once the page is gone they resolve to
+        // nothing. Run before the delete while the subtree is still resolvable;
+        // the delete's site publish covers the removal.
+        await softDeleteRedirectsPointingToResource(tx, {
+          siteId: Number(siteId),
+          resourceId: String(resourceId),
+          byUserId: user.id,
         })
 
         return tx

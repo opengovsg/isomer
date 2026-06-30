@@ -83,6 +83,10 @@ updates:
         patterns:
           - "@jsonforms/core"
           - "@jsonforms/react"
+      casl:
+        applies-to: version-updates
+        patterns:
+          - "@casl/*"
       react-aria:
         applies-to: version-updates
         patterns:
@@ -109,6 +113,8 @@ updates:
       - dependency-name: "@chakra-ui/cli"
         update-types: ["version-update:semver-major"]
       - dependency-name: "chakra-react-select"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "algoliasearch"
         update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"

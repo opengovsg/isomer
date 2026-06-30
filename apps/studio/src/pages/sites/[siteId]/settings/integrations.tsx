@@ -109,6 +109,7 @@ const IntegrationsSettingsPage: NextPageWithLayout = () => {
         ...complexIntegrationSettings,
         siteName,
         url: url || `https://sample.isomer.gov.sg`,
+        ...(agencyName !== undefined && { agencyName }),
       },
     })
 

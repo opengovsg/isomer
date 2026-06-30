@@ -47,6 +47,7 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 
 - [Prefer a new component over overloading props](conventions/react-new-component-over-prop-overload.md) — smell: flag soup / single-caller props bending one component into two jobs
 - [Build forms with useZodForm, not per-field useState](conventions/react-forms-usezodform-over-usestate.md) — best practice: forms use the zod-wired useForm wrapper, schema reused from ~/schemas
+- [Drive modals with useDisclosure, renamed on destructure](conventions/react-modal-usedisclosure-renamed.md) — best practice: modals use Chakra's useDisclosure (not custom useState), aliased to names like isDeleteModalOpen
 
 ### Audit logging
 - [Audit deltas must log real DB rows, not hand-built objects](conventions/audit-log-real-db-rows.md) — best practice: log before/after as rows re-read from the DB inside the same tx, so deltas are accurate
@@ -60,6 +61,10 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 ### Dependencies
 
 - [Reference catalog packages via "catalog:" not direct version strings](conventions/pnpm-catalog-references.md) — smell: direct version strings in package.json for packages defined in pnpm-workspace.yaml catalog
+
+### Configuration
+
+- [Register a new env var in .env.example, .env.test (and turbo.json if read by a task)](conventions/env-var-registration.md) — best practice: propagate a new env var beyond env.mjs to the example/test files and turbo globalEnv, or setup/CI/cache silently drift
 
 <!-- Each line: [Title](conventions/slug.md) — short hook (smell/best practice).
      Group under a category heading; create the heading if it's new. -->

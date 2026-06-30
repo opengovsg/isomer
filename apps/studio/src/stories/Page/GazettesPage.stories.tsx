@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
+import { delay, http, HttpResponse } from "msw"
+import { expect, userEvent, within } from "storybook/test"
 import {
   createGazetteContent,
   createGazetteItem,
@@ -11,6 +13,12 @@ import GazettesPage from "~/pages/sites/[siteId]/gazettes"
 
 import { ADMIN_HANDLERS } from "../handlers"
 import { createEgazetteInfoGbParameters } from "../utils/growthbook"
+
+// Stands in for the S3 PUT during the create flow's file upload step.
+const uploadHandler = http.put("/storybook/upload", async () => {
+  await delay()
+  return HttpResponse.json()
+})
 
 // Must precede ADMIN_HANDLERS' isIsomerAdmin.default() (returns false), since
 // MSW resolves to the first matching handler. The page redirects away unless
@@ -122,7 +130,7 @@ export const InlineExternalLinkIcon: Story = {
             title: "Bills Supplement - Companies (Amendment) Bill 2024",
             content: createGazetteContent({
               ref: "/gazettes/26gg-bills-supplement-companies-amendment.pdf",
-              category: "Legislation Supplements",
+              category: "Legislative Supplements",
               description: "2199",
               tagged: ["Bills Supplement"],
             }),
@@ -130,5 +138,84 @@ export const InlineExternalLinkIcon: Story = {
         ]),
       ],
     },
+  },
+}
+
+// The collection already contains a Government Gazette with notification number
+// "2145" (visible in the table). Submitting the create form with that same
+// number surfaces the backend's CONFLICT error as an error toast, rather than
+// silently creating a duplicate.
+const DUPLICATE_NOTIFICATION_NUMBER = "2145"
+
+export const DuplicateNotificationNumber: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        ...baseHandlers,
+        // The existing gazette the new one would duplicate — its notification
+        // number shows in the table as the visual context for this scenario.
+        gazetteHandlers.list.default(),
+        gazetteHandlers.getPresignedPutUrl.default(),
+        gazetteHandlers.create.duplicateNotificationNumber(),
+        uploadHandler,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    // The modal renders in a portal, so query the whole document body.
+    const screen = within(canvasElement.ownerDocument.body)
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: /Add a new Gazette/i }),
+    )
+
+    await userEvent.type(
+      await screen.findByPlaceholderText("Enter a title"),
+      "Duplicate notice",
+    )
+
+    // Category defaults to "Government Gazette"; the form renders the Category
+    // and Subcategory SingleSelects in that order, so the second combobox is
+    // the subcategory. Pick "Tenders" — a label that doesn't appear in the
+    // seeded table row, so matching the option by its visible text stays
+    // unambiguous. Government Gazette duplicates are detected by category and
+    // year regardless of subcategory, so this is still a duplicate.
+    const subcategoryCombobox = (await screen.findAllByRole("combobox"))[1]
+    if (!subcategoryCombobox) {
+      throw new Error("Expected a subcategory combobox to be rendered")
+    }
+    await userEvent.click(subcategoryCombobox)
+    const virtuoso = await screen.findByTestId("virtuoso-item-list")
+    await userEvent.click(
+      await within(virtuoso).findByText(
+        governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS,
+      ),
+    )
+
+    await userEvent.type(
+      await screen.findByPlaceholderText("Enter Notification Number"),
+      DUPLICATE_NOTIFICATION_NUMBER,
+    )
+
+    // Uploading the PDF auto-fills the File ID and enables the submit button.
+    await userEvent.upload(
+      await screen.findByTestId("file-upload"),
+      new File(["dummy"], "26gg9999.pdf", { type: "application/pdf" }),
+    )
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: /Add Gazette/i }),
+    )
+
+    // The CONFLICT message is surfaced in the error toast's description.
+    // Submit awaits the upload + create round-trips before the toast renders,
+    // so allow more than the default 1s for the message to appear.
+    await expect(
+      await screen.findByText(
+        "A gazette with the same notification number already exists",
+        undefined,
+        { timeout: 5000 },
+      ),
+    ).toBeInTheDocument()
   },
 }
