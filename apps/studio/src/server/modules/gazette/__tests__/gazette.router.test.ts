@@ -3,6 +3,8 @@ import { subDays, subMinutes } from "date-fns"
 import MockDate from "mockdate"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
+import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
+import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -18,6 +20,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
 import * as mailService from "~/features/mail/service"
+import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import * as s3Lib from "~/lib/s3"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -25,6 +28,12 @@ import {
   IsomerAdminRole,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
+
+// algolia.ts constructs the Algolia client at module load via
+// algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
+// not set in the test environment, so the import throws "appId is missing"
+// before any test runs. Mock the whole module to prevent this.
+vi.mock("~/lib/algolia")
 
 import { db } from "../../database"
 import { gazetteRouter } from "../gazette.router"
@@ -296,6 +305,127 @@ describe("gazette.router", async () => {
         }),
       )
     })
+
+    it("rejects creation when a gazette with the same notification number already exists", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Create first gazette with a specific notification number
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert: creating a second gazette with the same notification number is rejected
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Second Notice",
+          permalink: crypto.randomUUID(),
+          ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
+          category: "Government Gazette",
+          date: "30/04/2026",
+          description: "N-2026-001", // Same notification number
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same notification number already exists",
+        }),
+      )
+    })
+
+    it("rejects creation for a non-Government Gazette category when notification number, year and subcategory all match", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Supplement",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
+        category: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["Acts Supplement"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert: same notification number + same year + same subcategory is a duplicate
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Second Supplement",
+          permalink: crypto.randomUUID(),
+          ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
+          category: "Legislative Supplements",
+          date: "30/04/2026",
+          description: "N-2026-001", // Same notification number
+          tagged: ["Acts Supplement"], // Same subcategory
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same notification number already exists",
+        }),
+      )
+    })
+
+    it("allows creation for a non-Government Gazette category when the subcategory differs, even with the same notification number and year", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Supplement",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
+        category: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["Acts Supplement"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act: same notification number + same year but a different subcategory.
+      // For non-Government Gazette categories the subcategory disambiguates, so
+      // this is not a duplicate and must be allowed.
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Second Supplement",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid2/second-file.pdf",
+        category: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "N-2026-001", // Same notification number
+        tagged: ["Bills Supplement"], // Different subcategory
+        scheduledAt: PAST_DATE,
+      })
+
+      // Assert: the second gazette was created
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(resource.title).toBe("Second Supplement")
+    })
   })
 
   describe("update", () => {
@@ -444,6 +574,96 @@ describe("gazette.router", async () => {
           message: "A gazette with the same file ID already exists",
         }),
       )
+    })
+
+    it("rejects update when changing to a notification number that already exists", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Create first gazette with a notification number
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Create second gazette with a different notification number
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Second Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid2/second-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        description: "N-2026-002",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert: updating to a notification number used by another gazette is rejected
+      await expect(
+        caller.update({
+          siteId: site.id,
+          gazetteId: Number(gazetteId),
+          title: "Second Notice",
+          category: "Government Gazette",
+          date: "30/04/2026",
+          description: "N-2026-001", // Same notification number as first
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same notification number already exists",
+        }),
+      )
+    })
+
+    it("allows update that keeps the gazette's own notification number", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Original",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act: editing other fields while retaining the same notification number
+      // must not trip the duplicate check against the gazette's own record.
+      await caller.update({
+        siteId: site.id,
+        gazetteId: Number(gazetteId),
+        title: "Renamed",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        description: "N-2026-001", // Unchanged
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Assert
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(resource.title).toBe("Renamed")
     })
   })
 
@@ -758,7 +978,13 @@ describe("gazette.router", async () => {
 
     beforeEach(() => {
       vi.restoreAllMocks()
-      // Mock external services
+      // Mock external services.
+      // The flag ENABLE_SEARCHSG_GAZETTE_INGESTION is OFF by default in tests
+      // (not in mockFeatureFlags), so the Algolia path is exercised here.
+      // SearchSG is mocked too so tests that enable the flag don't hit the network.
+      vi.spyOn(gazetteService, "removeGazetteFromAlgolia").mockResolvedValue(
+        undefined,
+      )
       vi.spyOn(
         gazetteService,
         "removeGazetteFromSearchIndex",
@@ -769,6 +995,15 @@ describe("gazette.router", async () => {
       vi.spyOn(mailService, "sendGazetteDeletionEmail").mockResolvedValue(
         undefined,
       )
+    })
+
+    afterEach(() => {
+      // Restore the GrowthBook forced features to the baseline so flag state
+      // set by individual tests (e.g. the ENABLE_SEARCHSG_GAZETTE_INGESTION ON
+      // test) does not leak into subsequent tests. Restoring to mockFeatureFlags
+      // (rather than an empty Map) preserves IS_SINGPASS_ENABLED and any other
+      // baseline flags that other tests may depend on.
+      mockGrowthBook.setForcedFeatures(mockFeatureFlags)
     })
 
     it("deletes a gazette within the 15-minute grace period", async () => {
@@ -803,10 +1038,9 @@ describe("gazette.router", async () => {
         .execute()
       expect(auditLogs).toHaveLength(1)
 
-      // External services should be called
-      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledTimes(
-        1,
-      )
+      // External services should be called.
+      // Flag is OFF (default) so the Algolia path runs.
+      expect(gazetteService.removeGazetteFromAlgolia).toHaveBeenCalledTimes(1)
       expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledTimes(1)
     })
 
@@ -868,6 +1102,7 @@ describe("gazette.router", async () => {
       expect(resource).toBeDefined()
 
       // External services should not be called
+      expect(gazetteService.removeGazetteFromAlgolia).not.toHaveBeenCalled()
       expect(gazetteService.removeGazetteFromSearchIndex).not.toHaveBeenCalled()
       expect(gazetteService.deleteGazetteAsset).not.toHaveBeenCalled()
     })
@@ -1072,6 +1307,33 @@ describe("gazette.router", async () => {
         .calls[0]?.[0]
       expect(call?.recipientEmail).toBe(env.DD_DELETION_EMAIL)
       expect(call?.cc).toEqual(["user@toppannext.com"])
+    })
+
+    it("calls removeGazetteFromSearchIndex and NOT removeGazetteFromAlgolia when ENABLE_SEARCHSG_GAZETTE_INGESTION is ON", async () => {
+      // Arrange
+      const { site, collection, user } = await seedToppanWithCollection()
+      const { gazetteId } = await seedPublishedGazette({
+        siteId: site.id,
+        collectionId: collection.id,
+        publishedAt: subMinutes(FIXED_NOW, 5),
+        userId: user.id,
+      })
+
+      // Enable the SearchSG flag for this test only.
+      // The afterEach in this describe block restores mockFeatureFlags baseline.
+      mockGrowthBook.setForcedFeatures(
+        new Map([[ENABLE_SEARCHSG_GAZETTE_INGESTION, true]]),
+      )
+
+      // Act
+      await caller.delete({ siteId: site.id, gazetteId })
+
+      // Assert — SearchSG path was taken, Algolia path was not.
+      expect(gazetteService.removeGazetteFromSearchIndex).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(gazetteService.removeGazetteFromAlgolia).not.toHaveBeenCalled()
+      expect(gazetteService.deleteGazetteAsset).toHaveBeenCalledTimes(1)
     })
   })
 })

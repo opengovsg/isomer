@@ -20,6 +20,7 @@ const SITES_WITH_AUDIT_LOGS = [
   61, // ipos.gov.sg
   109, // agc.gov.sg
   145, // ite.edu.sg
+  157, // pmo.gov.sg
   166, // mti.gov.sg
   176, // colombo.mfa.gov.sg
   177, // prague.mfa.gov.sg
@@ -113,11 +114,14 @@ const SITES_WITH_AUDIT_LOGS = [
   284, // www.ptc.gov.sg
   287, // www.mot.gov.sg
   289, // www.toteboard.gov.sg
+  334, // seab.gov.sg
   336, // www.caringcommuters.gov.sg
   343, // www.motawardsceremony.gov.sg
   357, // www.ago.gov.sg
   397, // www.rp.edu.sg
+  409, // www.hsa.gov.sg
   484, // www.hpb.gov.sg
+  492, // www.oneservice.gov.sg
 ]
 
 // Month and year to get audit logs for, in the format of YYYY-MM,
@@ -153,6 +157,8 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
   NavbarUpdate: sql<string>`'Navbar has been updated'`,
   FooterUpdate: sql<string>`'Footer has been updated'`,
   SiteConfigUpdate: sql<string>`'Site configuration has been updated'`,
+  RedirectCreate: sql<string>`CONCAT('Redirect from "', al.delta -> 'after' ->> 'source', '" to "', al.delta -> 'after' ->> 'destination', '" ', CASE WHEN al.delta -> 'before' ->> 'destination' IS NOT NULL THEN CONCAT('revived (was: "', al.delta -> 'before' ->> 'destination', '")') ELSE 'created' END)`,
+  RedirectDelete: sql<string>`CONCAT('Redirect from "', al.delta -> 'before' ->> 'source', '" to "', al.delta -> 'before' ->> 'destination', '" deleted')`,
   PermissionCreate: sql<string>`CONCAT('Permission (', al.delta -> 'after' ->> 'role', ') granted to ', pu.email)`,
   PermissionDelete: sql<string>`CONCAT('Permission (', al.delta -> 'before' ->> 'role', ') revoked from ', pu.email)`,
   Login: sql<string>`CONCAT('Login attempt by ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 1), ' from IP address ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 2))`,
@@ -171,55 +177,50 @@ export const getAuditLogQuery = ({
 
   switch (type) {
     case "users":
-      return db
-        .selectFrom("User as u")
-        .innerJoin("ResourcePermission as rp", "u.id", "rp.userId")
-        .select([
-          "u.email as Email",
-          'u.lastLoginAt as "Last login"',
-          "rp.role as Role",
-          'rp.createdAt as "Date added"',
-        ])
-        .where("rp.siteId", "=", siteId)
-        .where("u.email", "not like", "%@open.gov.sg")
-        .where("rp.deletedAt", "is", null)
+      return (
+        db
+          .selectFrom("User as u")
+          .innerJoin("ResourcePermission as rp", "u.id", "rp.userId")
+          .select([
+            "u.email as Email",
+            'u.lastLoginAt as "Last login"',
+            "rp.role as Role",
+            'rp.createdAt as "Date added"',
+          ])
+          .where("rp.siteId", "=", siteId)
+          // Exclude internal Isomer admins from agency-facing reports
+          .where("u.id", "not in", (eb) =>
+            eb.selectFrom("IsomerAdmin").select("IsomerAdmin.userId"),
+          )
+          .where("rp.deletedAt", "is", null)
+      )
     case "events":
       return db
-        .with("emailsFromPermissionChanges", (eb) =>
+        .with("collaboratorWindows", (eb) =>
           eb
-            .selectFrom("AuditLog")
-            .select((fb) => [
-              fb
-                .case()
-                .when("AuditLog.eventType", "=", AuditLogEvent.PermissionCreate)
-                .then(sql<string>`"AuditLog".delta -> 'after' ->> 'userId'`)
-                .else(
-                  fb.fn<string>("coalesce", [
-                    sql<string>`"AuditLog".delta -> 'before' ->> 'userId'`,
-                    sql<string>`"AuditLog".delta -> 'after' ->> 'userId'`,
-                  ]),
-                )
-                .end()
-                .as("email"),
+            .selectFrom("ResourcePermission as permission")
+            .innerJoin(
+              "User as collaboratorUser",
+              "collaboratorUser.id",
+              "permission.userId",
+            )
+            .select([
+              "collaboratorUser.email",
+              "permission.createdAt as grantedAt",
+              "permission.deletedAt as revokedAt",
             ])
-            .where("AuditLog.eventType", "in", [
-              AuditLogEvent.PermissionCreate,
-              AuditLogEvent.PermissionDelete,
-            ])
-            .where("AuditLog.siteId", "=", siteId)
-            .where("AuditLog.createdAt", ">=", startDate)
-            .where("AuditLog.createdAt", "<=", endDate),
-        )
-        .with("emailsFromUsers", (eb) =>
-          eb
-            .selectFrom("User")
-            .select(["User.email", "User.id"])
-            .where("User.email", "not like", "%@open.gov.sg")
-            .where("User.id", "in", (fb) =>
-              fb
-                .selectFrom("ResourcePermission")
-                .select("ResourcePermission.userId")
-                .where("ResourcePermission.siteId", "=", siteId),
+            .where("permission.siteId", "=", siteId)
+            // Exclude internal Isomer admins from agency-facing reports
+            .where("collaboratorUser.id", "not in", (ieb) =>
+              ieb.selectFrom("IsomerAdmin").select("IsomerAdmin.userId"),
+            )
+            // Restrict to windows that could overlap the queried month
+            .where("permission.createdAt", "<=", endDate)
+            .where((eb) =>
+              eb.or([
+                eb("permission.deletedAt", "is", null),
+                eb("permission.deletedAt", ">", startDate),
+              ]),
             ),
         )
         .selectFrom("AuditLog as al")
@@ -314,12 +315,15 @@ export const getAuditLogQuery = ({
                 "in",
                 (fb) =>
                   fb
-                    .selectFrom("emailsFromUsers")
-                    .select("emailsFromUsers.email")
-                    .union(
-                      fb
-                        .selectFrom("emailsFromPermissionChanges")
-                        .select("emailsFromPermissionChanges.email"),
+                    .selectFrom("collaboratorWindows as cw")
+                    .select("cw.email")
+                    // Only while the user was an active collaborator at event time
+                    .where("cw.grantedAt", "<=", sql<Date>`al."createdAt"`)
+                    .where((eb) =>
+                      eb.or([
+                        eb("cw.revokedAt", "is", null),
+                        eb("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
+                      ]),
                     ),
               ),
             ]),
@@ -327,12 +331,15 @@ export const getAuditLogQuery = ({
               eb("al.eventType", "=", AuditLogEvent.Logout),
               eb(sql<string>`al.delta -> 'before' ->> 'email'`, "in", (fb) =>
                 fb
-                  .selectFrom("emailsFromUsers")
-                  .select("emailsFromUsers.email")
-                  .union(
-                    fb
-                      .selectFrom("emailsFromPermissionChanges")
-                      .select("emailsFromPermissionChanges.email"),
+                  .selectFrom("collaboratorWindows as cw")
+                  .select("cw.email")
+                  // Only while the user was an active collaborator at event time
+                  .where("cw.grantedAt", "<=", sql<Date>`al."createdAt"`)
+                  .where((eb) =>
+                    eb.or([
+                      eb("cw.revokedAt", "is", null),
+                      eb("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
+                    ]),
                   ),
               ),
             ]),

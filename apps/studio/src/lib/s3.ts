@@ -86,6 +86,16 @@ export const deleteFile = async ({
 
   const originalTagSet = objectTag.TagSet ?? []
 
+  // If the file is already soft-deleted, short-circuit and skip the (paid,
+  // expensive) PutObjectTagging call. The cheap GetObjectTagging above is
+  // unavoidable, but re-tagging an already-deleted key would only overwrite
+  // the original deletion timestamp with a fresh one — so skipping is both
+  // cheaper and more correct (it preserves the original deletedAt).
+  const isAlreadyDeleted = originalTagSet.some(({ Key }) => Key === DELETE_TAG)
+  if (isAlreadyDeleted) {
+    return
+  }
+
   return storage.send(
     new PutObjectTaggingCommand({
       Bucket,
@@ -94,7 +104,7 @@ export const deleteFile = async ({
       // until the page is published
       Tagging: {
         TagSet: [
-          ...originalTagSet.filter(({ Key }) => Key !== DELETE_TAG),
+          ...originalTagSet,
           {
             Key: DELETE_TAG,
             // NOTE: milliseconds since epoch
@@ -262,4 +272,13 @@ export const getBlob = async (bucketName: string, key: string) => {
     })
     throw err
   }
+}
+
+export const putObjectDirect = async (
+  props: Pick<
+    PutObjectCommandInput,
+    "Bucket" | "Key" | "Body" | "ContentType" | "ContentDisposition" | "Tagging"
+  >,
+): Promise<void> => {
+  await storage.send(new PutObjectCommand(props))
 }

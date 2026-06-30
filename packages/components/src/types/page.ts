@@ -124,13 +124,17 @@ const CategoriesSchema = Type.Object({
     ),
   ),
 })
+
+export type CollectionPageCategoryOption = NonNullable<
+  Static<typeof CategoriesSchema>["categoryOptions"]
+>[number]
+
 const TaggedSchema = Type.Optional(
   // NOTE: This stores the `uuid` of the tag option
   Type.Array(TagOptionUuidSchema, {
     // NOTE: we need a custom format because this cannot just be a simple drop down
     // as we need to reference the existing data that is pointing to this
     format: "tagged",
-    description: "To add new options, contact your site owner(s).",
   }),
 )
 

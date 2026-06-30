@@ -1,10 +1,10 @@
 import type { NextPageWithLayout } from "~/lib/types"
-import { Center, Text } from "@chakra-ui/react"
 import { useGrowthBook } from "@growthbook/growthbook-react"
 import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { siteSchema } from "~/features/editing-experience/schema"
+import { RedirectsSettings } from "~/features/settings/Redirects"
 import { useIsRedirectionsEnabled } from "~/hooks/useIsRedirectionsEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
@@ -24,13 +24,7 @@ const RedirectsSettingsPage: NextPageWithLayout = () => {
 
   if (!gb?.ready || !isRedirectionsEnabled) return null
 
-  return (
-    <Center flex={1}>
-      <Text textStyle="h5" color="base.content.medium">
-        Redirects — coming soon
-      </Text>
-    </Center>
-  )
+  return <RedirectsSettings siteId={Number(siteId)} />
 }
 
 RedirectsSettingsPage.getLayout = (page) => {

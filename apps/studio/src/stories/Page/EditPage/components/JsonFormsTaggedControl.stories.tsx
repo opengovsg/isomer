@@ -15,6 +15,7 @@ const meta: Meta<typeof FormBuilder> = {
     msw: {
       handlers: [
         pageHandlers.getCategories.default(),
+        pageHandlers.getCategoryOptions.default(),
         pageHandlers.getCollectionTags.default(),
       ],
     },
@@ -43,6 +44,27 @@ const schema = Type.Object({
 })
 
 export const Default: Story = {
+  args: {
+    schema,
+    renderers: [
+      {
+        tester: jsonFormsTaggedControlTester,
+        renderer: JsonFormsTaggedControl,
+      },
+    ],
+  },
+}
+
+export const WithRequiredCategory: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.getCategories.default(),
+        pageHandlers.getCategoryOptions.default(),
+        pageHandlers.getCollectionTags.withRequired(),
+      ],
+    },
+  },
   args: {
     schema,
     renderers: [

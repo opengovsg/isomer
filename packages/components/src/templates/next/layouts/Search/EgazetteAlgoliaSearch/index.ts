@@ -1,0 +1,1 @@
+export { EgazetteAlgoliaSearch } from "./EgazetteAlgoliaSearch"
