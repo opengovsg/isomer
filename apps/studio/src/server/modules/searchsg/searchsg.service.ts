@@ -12,7 +12,7 @@ export const ISOMER_UA =
 const SearchSgApi = {
   auth: () => `/v1/auth/token`,
   site: (id: string) => `/v2/sites/${id}`,
-  appPatch: (id: string, appId: string) => `/v2/sites/${id}/apps/${appId}`,
+  app: (id: string, appId: string) => `/v2/sites/${id}/apps/${appId}`,
   project: (projectId: string) => `/v2/projects/${projectId}`,
 } as const
 
@@ -137,7 +137,7 @@ export const updateSearchSGConfig = async (
       const app = findWebsiteSearchApp(data.siteDetail.applications)
 
       return client
-        .url(SearchSgApi.appPatch(searchsgClientId, app.appId))
+        .url(SearchSgApi.app(searchsgClientId, app.appId))
         .json({
           config: { theme: { primary: props.colour, fontFamily: "Inter" } },
         })
