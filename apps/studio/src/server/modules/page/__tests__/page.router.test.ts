@@ -2332,6 +2332,76 @@ describe("page.router", async () => {
         caller.publishPage({ siteId: site.id, pageId: Number(page.id) }),
       ).resolves.toBeUndefined()
     })
+
+    it("should back-fill a literal redirect destination into a reference on first publish", async () => {
+      // Arrange — a draft page, plus a redirect whose destination is the page's
+      // literal path (created before the page was live). Publishing the page
+      // should rewrite that literal into a [resource:...] reference so the
+      // redirect follows the page's future moves.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: normalizeRedirectPath(fullPermalink!),
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — the literal destination is now a reference to the page
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual(`[resource:${site.id}:${page.id}]`)
+    })
+
+    it("should leave a literal redirect to a different path untouched on publish", async () => {
+      // Arrange — a redirect pointing at some other path must not be rewritten
+      // when an unrelated page is published.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: "/some-other-page",
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — destination is unchanged
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual("/some-other-page")
+    })
   })
 
   describe("updateMeta", () => {

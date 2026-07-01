@@ -266,8 +266,10 @@ export const validateRedirect = async ({
   }
 
   // A redirect whose source is a published page's live URL would shadow that
-  // page, so block it. Only published pages block — an unpublished page isn't
-  // live yet, and publishing it later is guarded on the page side.
+  // page, so block it. Resolves a folder/collection to its index page, so a
+  // live container is caught too. Only published resources block — an
+  // unpublished page isn't live yet, and publishing it later is guarded on the
+  // page side.
   const pageAtSource = await getResourceByFullPermalink({
     siteId,
     fullPermalink: source,
@@ -400,9 +402,10 @@ export const createRedirect = async ({
       })
     }
 
-    // Re-enforce the source-vs-published-page guard (a published page at this
-    // URL would be shadowed). Also a plain read, so same accepted race as above.
-    // PRECONDITION_FAILED keeps it distinct from the already-exists CONFLICT.
+    // Re-enforce the source-vs-published-page guard (a published page or live
+    // folder/collection at this URL would be shadowed). Also a plain read, so
+    // same accepted race as above. PRECONDITION_FAILED keeps it distinct from
+    // the already-exists CONFLICT.
     const pageAtSource = await getResourceByFullPermalink({
       siteId,
       fullPermalink: source,

@@ -67,7 +67,10 @@ describe("redirect.router", async () => {
     permalink: string
     published: boolean
   }) => {
-    const { page: rootPage } = await setupPageResource({
+    // Top-level resources are stored with parentId = null in production (they
+    // are NOT children of the RootPage's id), so seed them that way — otherwise
+    // getResourceByFullPermalink can't resolve them.
+    await setupPageResource({
       siteId,
       resourceType: ResourceType.RootPage,
       parentId: null,
@@ -75,7 +78,7 @@ describe("redirect.router", async () => {
     const { page } = await setupPageResource({
       siteId,
       resourceType: ResourceType.Page,
-      parentId: rootPage.id,
+      parentId: null,
       permalink,
       ...(published
         ? { state: ResourceState.Published, userId }
@@ -621,7 +624,7 @@ describe("redirect.router", async () => {
     it("should not warn for a published page nested under a folder", async () => {
       // Arrange — /folder/leaf, where leaf is a published page under a folder.
       // This exercises the multi-segment walk past depth 1.
-      const { page: rootPage } = await setupPageResource({
+      await setupPageResource({
         siteId,
         resourceType: ResourceType.RootPage,
         parentId: null,
@@ -629,7 +632,7 @@ describe("redirect.router", async () => {
       const { folder } = await setupFolder({
         siteId,
         permalink: "folder",
-        parentId: rootPage.id,
+        parentId: null,
       })
       await setupPageResource({
         siteId,
@@ -654,7 +657,7 @@ describe("redirect.router", async () => {
     it("should not warn for a folder whose index page is published", async () => {
       // Arrange — "/folder" is served by the folder's published IndexPage, so
       // it must resolve as published (exercises the folder->IndexPage branch).
-      const { page: rootPage } = await setupPageResource({
+      await setupPageResource({
         siteId,
         resourceType: ResourceType.RootPage,
         parentId: null,
@@ -662,7 +665,7 @@ describe("redirect.router", async () => {
       const { folder } = await setupFolder({
         siteId,
         permalink: "folder",
-        parentId: rootPage.id,
+        parentId: null,
       })
       await setupPageResource({
         siteId,
@@ -686,7 +689,7 @@ describe("redirect.router", async () => {
     it("should warn NOT_PUBLISHED for a folder with no index page", async () => {
       // Arrange — a folder with no IndexPage has no live page at its URL, so
       // resolution falls back to the (unpublished) container.
-      const { page: rootPage } = await setupPageResource({
+      await setupPageResource({
         siteId,
         resourceType: ResourceType.RootPage,
         parentId: null,
@@ -694,7 +697,7 @@ describe("redirect.router", async () => {
       await setupFolder({
         siteId,
         permalink: "folder",
-        parentId: rootPage.id,
+        parentId: null,
       })
 
       // Act
@@ -746,6 +749,43 @@ describe("redirect.router", async () => {
 
       // Assert
       expect(result.errors).toEqual([])
+    })
+
+    it("should error when the source is the URL of a live folder (published index)", async () => {
+      // Arrange — a folder whose index page is published is live at "/folder",
+      // so a redirect there would shadow it. Regression test: the source guard
+      // must resolve top-level containers (parentId = null), not only pages.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/folder",
+        destination: "/somewhere",
+      })
+
+      // Assert
+      expect(result.errors).toContainEqual({
+        code: "SOURCE_IS_EXISTING_PAGE",
+        message:
+          "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
+      })
     })
   })
 
