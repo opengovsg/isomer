@@ -247,7 +247,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
                                     value={item?.label ?? ""}
                                     placeholder={`Item ${index + 1}`}
                                     ariaLabel={`Option ${index + 1} name`}
-                                    isInvalid={hasError}
+                                    isInvalid={isDuplicate || isBlank}
                                     isDisabled={!enabled}
                                     isEditing={editingIndex === index}
                                     onSubmit={(value) =>
