@@ -45,13 +45,13 @@
     "teardown": "docker compose down",
     "test": "run-s test:e2e test:load:build test:unit",
     "test-ci:e2e": "dotenv -e .env.test start-server-and-test start http://127.0.0.1:3000 test:e2e",
-    "test-ci:unit": "dotenv -e .env.test vitest run --coverage",
+    "test-ci:unit": "dotenv -e .env.test -- vitest run --coverage",
     "test-dev": "start-server-and-test dev http://127.0.0.1:3000 test",
-    "test-dev:unit": "dotenv -e .env.test vitest",
+    "test-dev:unit": "dotenv -e .env.test -- vitest",
     "test:e2e": "dotenv -e .env.test pnpm exec playwright test",
     "test:load:build": "webpack-cli --config tests/load/webpack.config.cjs",
-    "test:unit": "dotenv -e .env.test vitest run",
-    "test:watch": "dotenv -e .env.test pnpm exec vitest watch",
+    "test:unit": "dotenv -e .env.test -- vitest run",
+    "test:watch": "dotenv -e .env.test -- pnpm exec vitest watch",
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
