@@ -4,6 +4,8 @@ import { isValidEmail } from "~/utils/email"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AuditLogExportFailedEmailTemplateData,
+  AuditLogExportReadyEmailTemplateData,
   BaseEmailTemplateData,
   CancelSchedulePageTemplateData,
   EmailTemplate,
@@ -173,5 +175,25 @@ export async function sendGazetteDeletionEmail(
     data,
     template: templates.gazetteDeletion(data),
     emailType: "gazette deletion",
+  })
+}
+
+export async function sendAuditLogExportReadyEmail(
+  data: AuditLogExportReadyEmailTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.auditLogExportReady(data),
+    emailType: "audit log export ready",
+  })
+}
+
+export async function sendAuditLogExportFailedEmail(
+  data: AuditLogExportFailedEmailTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.auditLogExportFailed(data),
+    emailType: "audit log export failed",
   })
 }

@@ -10,6 +10,9 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AuditLogExportDownloadLink,
+  AuditLogExportFailedEmailTemplateData,
+  AuditLogExportReadyEmailTemplateData,
   BaseEmailTemplateData,
   CancelSchedulePageTemplateData,
   EmailTemplate,
@@ -24,6 +27,15 @@ import type {
 } from "./types"
 
 const escapeHtml = (value: string | undefined): string => escape(value ?? "")
+
+const getListLabel = (label: AuditLogExportDownloadLink["label"]) => {
+  switch (label) {
+    case "access":
+      return "Download access review [.csv]"
+    case "audit":
+      return "Download audit logs [.csv]"
+  }
+}
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}">${escapeHtml(env.NEXT_PUBLIC_APP_URL?.replace("https://", ""))}</a>`
@@ -298,6 +310,59 @@ export const accountDeactivationTemplate = (
   }
 }
 
+const auditLogExportReadyTemplate = (
+  data: AuditLogExportReadyEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, siteName, month, links } = data
+  const escapedRecipientEmail = escapeHtml(recipientEmail)
+  const escapedSiteName = escapeHtml(siteName)
+  const escapedMonth = escapeHtml(month)
+  const isAccessLogsOnly = links.length === 1 && links[0]?.label === "access"
+
+  // The href is a signed S3 URL (a trusted value we generated), but the label
+  // is escaped since it is interpolated as displayed text.
+  const downloadLinks = links
+    .map(
+      ({ label, url }) =>
+        `<li><a href="${url}">${getListLabel(label)}</a></li>`,
+    )
+    .join("")
+
+  const subject = isAccessLogsOnly
+    ? `[Isomer] Access logs for ${escapedSiteName} (${escapedMonth}) is ready`
+    : `[Isomer] Site logs for ${escapedSiteName} (${escapedMonth}) is ready`
+
+  const logLabel = links.map(({ label }) => label).join(" and ")
+
+  return {
+    subject,
+    body: `<p>Hi ${escapedRecipientEmail},</p>
+<p>You requested for ${logLabel} logs for your site(s) for (${escapedMonth}) is ready to download. These links will expire after 3 days.</p>
+<br/>
+<ul>${downloadLinks}</ul>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
+const auditLogExportFailedTemplate = (
+  data: AuditLogExportFailedEmailTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, siteName, month } = data
+  const escapedRecipientEmail = escapeHtml(recipientEmail)
+  const escapedSiteName = escapeHtml(siteName)
+  const escapedMonth = escapeHtml(month)
+
+  return {
+    subject: `[Isomer Studio] Your audit log export for ${escapedSiteName} (${escapedMonth}) could not be generated`,
+    body: `<p>Hi ${escapedRecipientEmail},</p>
+<p>We're sorry — we couldn't generate your audit log export for ${escapedSiteName} (${escapedMonth}).</p>
+<p>Please try again later. If the problem persists, contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
+<p>Best,</p>
+<p>Isomer team</p>`,
+  }
+}
+
 type EmailTemplateFunction<
   T extends BaseEmailTemplateData = BaseEmailTemplateData,
 > = (data: T) => EmailTemplate
@@ -325,4 +390,8 @@ export const templates = {
     accountDeactivationTemplate satisfies EmailTemplateFunction<AccountDeactivationEmailTemplateData>,
   gazetteDeletion:
     gazetteDeletionTemplate satisfies EmailTemplateFunction<GazetteDeletionEmailTemplateData>,
+  auditLogExportReady:
+    auditLogExportReadyTemplate satisfies EmailTemplateFunction<AuditLogExportReadyEmailTemplateData>,
+  auditLogExportFailed:
+    auditLogExportFailedTemplate satisfies EmailTemplateFunction<AuditLogExportFailedEmailTemplateData>,
 } as const
