@@ -7,6 +7,8 @@ import { CmsCollapsibleSidenav } from "~/components/CmsSidebar/CmsCollapsibleSid
 import { siteSchema } from "~/features/editing-experience/schema"
 import { useIsRedirectionsEnabled } from "~/hooks/useIsRedirectionsEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
+import { trpc } from "~/utils/trpc"
 
 import { HeaderRow } from "./components"
 import { SettingsItem } from "./components/SettingsItem"
@@ -31,6 +33,16 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
   const router = useRouter()
   const isRedirectionsEnabled = useIsRedirectionsEnabled()
 
+  // Audit log export is a site-admin-only surface, gated by the same
+  // `manage UserManagement` ability used elsewhere for admin-only actions.
+  const { data: roles } = trpc.resource.getRolesFor.useQuery({
+    siteId: Number(siteId),
+    resourceId: null,
+  })
+  const isAdmin = roles
+    ? buildUserManagementPermissions(roles).can("manage", "UserManagement")
+    : false
+
   const SIDENAV_ITEMS: SideNavItem[] = [
     {
       header: { label: "General", icon: BiWrench },
@@ -49,6 +61,14 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
               {
                 label: "Redirects",
                 href: `/sites/${siteId}/settings/redirects`,
+              },
+            ]
+          : []),
+        ...(isAdmin
+          ? [
+              {
+                label: "Audit log export",
+                href: `/sites/${siteId}/settings/audit`,
               },
             ]
           : []),
