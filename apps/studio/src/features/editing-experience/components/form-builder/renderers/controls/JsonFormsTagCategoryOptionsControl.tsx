@@ -1,12 +1,7 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import {
-  composePaths,
-  createDefaultValue,
-  rankWith,
-  schemaMatches,
-} from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { get } from "lodash-es"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -24,6 +19,7 @@ import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { createDefaultTagOption } from "./constants"
 
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   props: ArrayLayoutProps,
@@ -91,7 +87,6 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
-      {duplicateOptionIndices.size > 0 && <DuplicateLabelError noun="option" />}
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
@@ -99,7 +94,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
               {label}
             </Text>
             <AddItemButton
-              onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+              onClick={addItem(path, createDefaultTagOption())}
               isDisabled={isAddItemDisabled}
             >
               Add option
@@ -109,6 +104,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
             <Text textStyle="body-2" textColor="base.content.default">
               {description}
             </Text>
+          )}
+          {duplicateOptionIndices.size > 0 && (
+            <DuplicateLabelError noun="option" />
           )}
         </VStack>
         <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
