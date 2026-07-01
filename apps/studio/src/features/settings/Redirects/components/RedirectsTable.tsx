@@ -8,6 +8,7 @@ import {
   Stack,
   Text,
   Tooltip,
+  VisuallyHidden,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
@@ -148,7 +149,13 @@ function SortableHeader({
 // than literal text. The tooltip surfaces the full source only when the visible
 // text is clipped by the cell width.
 function SourceCell({ source }: { source: string }): JSX.Element {
-  const { ref, isTruncated } = useIsTruncated<HTMLParagraphElement>()
+  // Measure both the text and the row: the text catches its own clamp, while the
+  // row catches the case where the wildcard badge is clipped even though the
+  // text is not.
+  const { ref: textRef, isTruncated: isTextTruncated } =
+    useIsTruncated<HTMLParagraphElement>()
+  const { ref: rowRef, isTruncated: isRowTruncated } =
+    useIsTruncated<HTMLDivElement>()
   const isWildcard = source.endsWith("*")
   const base = isWildcard ? source.slice(0, -1) : source
   return (
@@ -156,11 +163,11 @@ function SourceCell({ source }: { source: string }): JSX.Element {
       label={source}
       openDelay={500}
       placement="top"
-      isDisabled={!isTruncated}
+      isDisabled={!isTextTruncated && !isRowTruncated}
     >
-      <HStack spacing="0" align="baseline" overflow="hidden">
+      <HStack ref={rowRef} spacing="0" align="baseline" overflow="hidden">
         <Text
-          ref={ref}
+          ref={textRef}
           textStyle="body-2"
           color="base.content.strong"
           noOfLines={1}
@@ -251,10 +258,9 @@ const getColumns = (
     size: 80,
     enableSorting: false,
     header: () => (
-      <TableHeader
-        textStyle="subhead-2"
-        color="base.content.medium"
-      ></TableHeader>
+      <TableHeader textStyle="subhead-2" color="base.content.medium">
+        <VisuallyHidden>Actions</VisuallyHidden>
+      </TableHeader>
     ),
     cell: ({ row }) => (
       <IconButton

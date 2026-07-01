@@ -5,7 +5,7 @@ import { Link } from "@opengovsg/design-system-react"
 // generic EmptyTablePlaceholder, this points users to the redirects guide.
 export const RedirectsEmptyPlaceholder = (): JSX.Element => {
   return (
-    <Tr aria-hidden>
+    <Tr>
       <Td colSpan={4} border="none">
         <Flex align="center" justify="center" py="8.5rem">
           <Stack align="center" spacing="0.5rem" textAlign="center">

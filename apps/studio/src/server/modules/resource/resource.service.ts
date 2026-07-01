@@ -795,7 +795,12 @@ export const getResourceByFullPermalink = async ({
   siteId: number
   fullPermalink: string
 }) => {
-  const segments = fullPermalink.split("/").filter(Boolean)
+  // A redirect destination may keep a literal "?query"/"#fragment" suffix, which
+  // isn't part of the resource path — strip it before walking segments so
+  // "/page#section" still resolves to the "/page" resource.
+  const segments = (fullPermalink.split(/[?#]/)[0] ?? "")
+    .split("/")
+    .filter(Boolean)
 
   // The site root ("/") is the RootPage, whose permalink is empty so it has no
   // path segments to walk. Resolve it directly.
@@ -1100,25 +1105,27 @@ export const publishPageResource = async ({
       return
     }
 
-    // Reference back-fill: a redirect created to this page before it existed (or
-    // was published) is stored as a literal path — so it works once the page is
-    // live but does NOT follow the page's future moves. Now that the page is
-    // live at its URL, rewrite those literal destinations into a
-    // [resource:...] reference so they track the page from here on. Scoped to
-    // the first publish and to regular pages (an IndexPage's URL belongs to its
-    // container, whose reference is the container id — handled separately).
-    if (
-      isFirstPublish &&
-      fullPermalink &&
-      fullResource.type !== ResourceType.IndexPage
-    ) {
-      await tx
-        .updateTable("Redirect")
-        .set({ destination: `[resource:${siteId}:${resourceId}]` })
-        .where("siteId", "=", siteId)
-        .where("destination", "=", normalizeRedirectPath(fullPermalink))
-        .where("deletedAt", "is", null)
-        .execute()
+    // Reference back-fill: a redirect created to this resource's URL before it
+    // existed (or was published) is stored as a literal path — so it works once
+    // the URL is live but does NOT follow future moves. Now that the URL is
+    // live, rewrite those literal destinations into a [resource:...] reference
+    // so they track the resource from here on. An IndexPage renders at its
+    // container's URL, and creation stores the container id for that path, so
+    // reference the container (parent) id rather than the index page's own id.
+    if (isFirstPublish && fullPermalink) {
+      const referenceId =
+        fullResource.type === ResourceType.IndexPage
+          ? fullResource.parentId
+          : resourceId
+      if (referenceId) {
+        await tx
+          .updateTable("Redirect")
+          .set({ destination: `[resource:${siteId}:${referenceId}]` })
+          .where("siteId", "=", siteId)
+          .where("destination", "=", normalizeRedirectPath(fullPermalink))
+          .where("deletedAt", "is", null)
+          .execute()
+      }
     }
 
     const { previousVersion, newVersion } = version

@@ -2402,6 +2402,51 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(redirect.destination).toEqual("/some-other-page")
     })
+
+    it("should back-fill a literal redirect to a folder URL into a container reference when the folder's index page is first published", async () => {
+      // Arrange — a folder served by its (draft) IndexPage, plus a redirect
+      // whose destination is the folder's literal path. The IndexPage renders at
+      // the folder's URL, so publishing it should rewrite the literal into a
+      // reference to the CONTAINER (folder), not the index page itself.
+      const { site, folder } = await setupFolder({ permalink: "guides" })
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(folder.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: normalizeRedirectPath(fullPermalink!),
+        })
+        .execute()
+
+      // Act — publish the folder's index page (first publish)
+      await caller.publishPage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+      })
+
+      // Assert — the literal destination now references the folder, so it will
+      // follow the folder's future renames
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual(`[resource:${site.id}:${folder.id}]`)
+    })
   })
 
   describe("updateMeta", () => {

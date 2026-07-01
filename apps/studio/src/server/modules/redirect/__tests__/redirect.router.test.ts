@@ -686,6 +686,34 @@ describe("redirect.router", async () => {
       expect(result.warnings).toEqual([])
     })
 
+    it("should not warn for a published destination that carries a #fragment", async () => {
+      // Arrange — an internal destination may keep a literal "#fragment"; it must
+      // still resolve to the underlying published page rather than 404-ing.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: null,
+        permalink: "leaf",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "/leaf#section",
+      })
+
+      // Assert
+      expect(result.warnings).toEqual([])
+    })
+
     it("should warn NOT_PUBLISHED for a folder with no index page", async () => {
       // Arrange — a folder with no IndexPage has no live page at its URL, so
       // resolution falls back to the (unpublished) container.
