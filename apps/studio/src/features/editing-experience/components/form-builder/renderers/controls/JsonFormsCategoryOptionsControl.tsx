@@ -537,8 +537,8 @@ const JsonFormsCategoryOptionsControl = (props: ArrayLayoutProps) => {
   }
 
   return (
-    <VStack align="start" spacing="0.5rem" w="full">
-      <Text textStyle="subhead-2" textColor="base.content.medium">
+    <VStack align="start" spacing="1rem" w="full">
+      <Text textStyle="caption-3" textColor="base.content.medium">
         Default Filter
       </Text>
       <JsonFormsCategoryOptionsArrayLayout {...props} />
