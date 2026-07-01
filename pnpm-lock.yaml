@@ -402,8 +402,8 @@ catalogs:
       specifier: ^1.0.1
       version: 1.0.1
     wretch:
-      specifier: ^3.0.8
-      version: 3.0.8
+      specifier: ^3.0.9
+      version: 3.0.9
     zod:
       specifier: ^4.4.3
       version: 4.4.3
@@ -976,7 +976,7 @@ importers:
         version: 13.15.35
       wretch:
         specifier: 'catalog:'
-        version: 3.0.8
+        version: 3.0.9
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -12471,8 +12471,8 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
-  wretch@3.0.8:
-    resolution: {integrity: sha512-HDDFvyELFUVZFiw4hb/QfMkuh+xwHwJoRjCCTDO+E9ik3TrRJSVI7MmzSKQemimeDH9EwIRmQuh4HTgEcVcYVw==}
+  wretch@3.0.9:
+    resolution: {integrity: sha512-RXJQp5aOBfHQaDCLRyFXQooWDBOHrQxVgCH/6OFaFPBKjeUiXMQ3NV1b8qqI7CR+v4meVBWYs242P8n+rWRjzA==}
     engines: {node: '>=22'}
 
   write-file-atomic@3.0.3:
@@ -24120,7 +24120,7 @@ snapshots:
 
   wrappy@1.0.2: {}
 
-  wretch@3.0.8: {}
+  wretch@3.0.9: {}
 
   write-file-atomic@3.0.3:
     dependencies:
