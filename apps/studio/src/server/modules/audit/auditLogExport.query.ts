@@ -1,30 +1,66 @@
 import type { RawBuilder } from "kysely"
-import { endOfMonth, startOfMonth } from "date-fns"
+import type { IsoMonth } from "~/schemas/audit"
+import { addDays, addMonths, format, startOfMonth } from "date-fns"
 import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz"
 import Papa from "papaparse"
 
 import { AuditLogEvent, db, sql } from "../database"
 
+// NOTE: Sentinel for middle of month to ensure that we always land inside a month
+// and not have to worry about TZ conversion
+const MID_OF_MONTH = 15 as const
+
 // The fixed business timezone for audit months. We convert through date-fns-tz
 // (rather than hardcoding the +08:00 offset) so the zone handling is explicit.
 const SINGAPORE_TIME_ZONE = "Asia/Singapore"
 
+// Canonical Postgres daterange form: `[YYYY-MM-DD,YYYY-MM-DD)` — inclusive
+// lower, exclusive upper. The bounds are SGT (Asia/Singapore) CALENDAR DATES,
+// and the DB CHECK guarantees the stored range is non-empty and bounded.
+// Postgres always echoes ranges back in this canonical form.
+const AUDIT_LOG_DATE_RANGE_REGEX =
+  /^\[(\d{4}-\d{2}-\d{2}),(\d{4}-\d{2}-\d{2})\)$/
+
 /**
- * Given a `yyyy-MM` month string, return the UTC `Date` instants for the START
- * and END of that month, interpreting the month as Singapore time.
- *
- * The month is treated as an SGT calendar month: `startOfMonth`/`endOfMonth`
- * find its first and last wall-clock instants in SGT (inclusive `monthEnd` at
- * `23:59:59.999`), which are then converted to UTC.
- *
- * Example: month "2024-03" → monthStart = 2024-02-29T16:00:00.000Z (2024-03-01
- * 00:00 SGT), monthEnd = 2024-03-31T15:59:59.999Z (2024-03-31 23:59:59.999
- * SGT). So an event at 2024-03-31T23:30:00Z is 2024-04-01 07:30 SGT and
- * falls *after* monthEnd — it belongs to April, not March.
+ * Serialize SGT calendar-date bounds into the canonical daterange string,
+ * `[lowerInclusive,upperExclusive)`.
  */
-export const getSingaporeMonthBoundaries = (
-  month: string,
-): { monthStart: Date; monthEnd: Date } => {
+export const formatAuditLogDateRange = (
+  lowerInclusive: string,
+  upperExclusive: string,
+): string => `[${lowerInclusive},${upperExclusive})`
+
+/**
+ * Parse a canonical daterange string back into its SGT calendar-date bounds.
+ * Throws on non-canonical input — defensive only, since the DB CHECK plus
+ * Postgres canonicalisation guarantee we only ever read the canonical form.
+ */
+export const parseAuditLogDateRange = (
+  auditLogDateRange: string,
+): { lowerInclusive: string; upperExclusive: string } => {
+  const match = AUDIT_LOG_DATE_RANGE_REGEX.exec(auditLogDateRange)
+  if (!match?.[1] || !match[2]) {
+    throw new Error(
+      `Invalid audit log date range, expected "[YYYY-MM-DD,YYYY-MM-DD)" but got: ${auditLogDateRange}`,
+    )
+  }
+  return { lowerInclusive: match[1], upperExclusive: match[2] }
+}
+
+/**
+ * Convert a `yyyy-MM` month (interpreted in Singapore time) into the stored
+ * daterange string, `[YYYY-MM-DD,YYYY-MM-DD)` over SGT calendar dates.
+ *
+ * - Past month: the full calendar month, e.g. "2024-03" →
+ *   `[2024-03-01,2024-04-01)`.
+ * - Current SGT month (the month of `now` in Asia/Singapore): the upper bound
+ *   is clamped to SGT-today + 1 day so today's partial day is included. On the
+ *   1st this yields `[yyyy-MM-01,yyyy-MM-02)` — never empty.
+ *
+ * Future months are rejected upstream by zod; `now` is an explicit parameter
+ * (no internal clock reads) for testability.
+ */
+export const getMonthDateRange = (month: IsoMonth, now: Date): string => {
   const [year, monthIndex] = month.split("-").map(Number)
   if (
     year === undefined ||
@@ -38,22 +74,48 @@ export const getSingaporeMonthBoundaries = (
     throw new Error(`Invalid month, expected "yyyy-MM" but got: ${month}`)
   }
 
-  // Treat the month as Singapore time: express an instant within it as SGT
-  // wall-clock, let date-fns find the month's start/end in that wall clock,
-  // then convert both boundaries back to UTC instants.
-  const zoned = toZonedTime(
-    new Date(Date.UTC(year, monthIndex - 1, 1)),
-    SINGAPORE_TIME_ZONE,
-  )
-  const monthStart = fromZonedTime(startOfMonth(zoned), SINGAPORE_TIME_ZONE)
-  const monthEnd = fromZonedTime(endOfMonth(zoned), SINGAPORE_TIME_ZONE)
+  // A UTC instant mid-month falls inside the target month in every timezone,
+  // so we can derive the SGT month start from it without boundary surprises.
+  // `toZonedTime` re-labels the instant with SGT wall-clock fields, so the
+  // plain date-fns `format`/`startOfMonth`/`addMonths` below all operate on
+  // SGT calendar dates regardless of the server timezone.
+  const midMonth = new Date(Date.UTC(year, monthIndex - 1, MID_OF_MONTH))
+  const monthStart = startOfMonth(toZonedTime(midMonth, SINGAPORE_TIME_ZONE))
+  const lowerInclusive = format(monthStart, "yyyy-MM-dd")
+  const nextMonthStart = format(addMonths(monthStart, 1), "yyyy-MM-dd")
 
-  return { monthStart, monthEnd }
+  // Clamp the upper bound to SGT-today + 1 day so an in-progress month covers
+  // up to (and including) today's partial day. For past months the next month
+  // start is always the earlier bound, so the clamp is a no-op.
+  const sgtToday = toZonedTime(now, SINGAPORE_TIME_ZONE)
+  const dayAfterSgtToday = format(addDays(sgtToday, 1), "yyyy-MM-dd")
+  const upperExclusive =
+    nextMonthStart < dayAfterSgtToday ? nextMonthStart : dayAfterSgtToday
+
+  return formatAuditLogDateRange(lowerInclusive, upperExclusive)
+}
+
+/**
+ * The UTC instants bounding an export range, half-open: [rangeStart, rangeEnd).
+ * Each SGT calendar-date bound of the stored daterange maps to its SGT-midnight
+ * instant: the inclusive lower bound becomes `rangeStart` and the exclusive
+ * upper bound becomes `rangeEnd`. Singapore has no DST, so SGT midnight is
+ * unambiguous.
+ */
+export const getExportRange = (
+  auditLogDateRange: string,
+): { rangeStart: Date; rangeEnd: Date } => {
+  const { lowerInclusive, upperExclusive } =
+    parseAuditLogDateRange(auditLogDateRange)
+  return {
+    rangeStart: fromZonedTime(lowerInclusive, SINGAPORE_TIME_ZONE),
+    rangeEnd: fromZonedTime(upperExclusive, SINGAPORE_TIME_ZONE),
+  }
 }
 
 export interface AuditReportQueryParams {
   siteId: number
-  month: string // in the format of yyyy-MM
+  auditLogDateRange: string
 }
 
 // NOTE: The string-alias form `as "Date added"` keeps the double-quotes as
@@ -61,54 +123,78 @@ export interface AuditReportQueryParams {
 // runtime keys are `"Date added"` / `"Last login"` — quotes included. This
 // matches the original script, which relies on `toCsv` stripping the quotes
 // from the CSV header. The label text is preserved verbatim.
-export interface AccessReportRow {
+// (A type alias — not an interface — because only type aliases get an
+// implicit index signature, making rows assignable to `Record<string,
+// unknown>` so they can be passed straight to `toCsv`.)
+// oxlint-disable-next-line typescript/consistent-type-definitions
+export type AccessReportRow = {
   Email: string | null
+  '"Last login"': Date | null
   Role: string
   '"Date added"': Date
-  '"Last login"': Date | null
 }
 
 /**
  * POINT-IN-TIME access report (ADR docs/adr/0003).
  *
- * Returns who had access to the site **as of the end of the selected month
- * in Singapore time**, reconstructed from `ResourcePermission`
- * createdAt/deletedAt soft-delete history — NOT who has access now.
+ * Returns who had access to the site **as of the trailing edge of the export
+ * range** (the SGT-midnight instant of the daterange's exclusive upper bound),
+ * reconstructed from `ResourcePermission` createdAt/deletedAt soft-delete
+ * history — NOT who has access now.
  *
- * A row is included when it was created on or before `monthEnd` and had not
- * yet been revoked as of `monthEnd`:
- *   `createdAt <= monthEnd AND (deletedAt IS NULL OR deletedAt > monthEnd)`
+ * The export range is half-open `[rangeStart, rangeEnd)`, so the last covered
+ * instant is `rangeEndInclusive = rangeEnd - 1ms`. A row is included when it
+ * was created no later than that instant and had not yet been revoked as of
+ * that instant:
+ *   `createdAt <= rangeEndInclusive
+ *      AND (deletedAt IS NULL OR deletedAt > rangeEndInclusive)`
  *
- * For the current SGT month, `monthEnd` is in the future, so the predicate
- * naturally collapses to "who has access now" — this is intended.
+ * This mirrors the original script's `<= monthEnd` / `> monthEnd` semantics:
+ * a permission revoked exactly at the exclusive boundary (`deletedAt ===
+ * rangeEnd`) no longer had access at the last covered instant and is excluded.
  *
- * Isomer team members (`@open.gov.sg`) are excluded, matching the script.
+ * For an in-progress range (a current-month export clamped to SGT-today + 1
+ * day, whose trailing edge is still in the future) the predicate naturally
+ * collapses to "who has access now" — this is intended.
+ *
+ * Internal Isomer admins (rows in the `IsomerAdmin` table) are excluded,
+ * matching the script (PR #2612).
  */
 export const getAccessReportRows = async ({
   siteId,
-  month,
+  auditLogDateRange,
 }: AuditReportQueryParams): Promise<AccessReportRow[]> => {
-  const { monthEnd } = getSingaporeMonthBoundaries(month)
+  const { rangeEnd } = getExportRange(auditLogDateRange)
+  // The last covered instant of the half-open range (the exclusive boundary
+  // minus one millisecond). Using this — rather than the exclusive `rangeEnd`
+  // — is what excludes a revocation landing exactly on the boundary.
+  const rangeEndInclusive = new Date(rangeEnd.getTime() - 1)
 
   return (
     db
       .selectFrom("ResourcePermission as rp")
       .innerJoin("User as u", "u.id", "rp.userId")
+      // Column order matches the original script's CSV (Email, Last login,
+      // Role, Date added) so position-based consumers stay stable — `toCsv`
+      // emits headers/values in object-insertion order.
       .select([
         "u.email as Email",
+        'u.lastLoginAt as "Last login"',
         "rp.role as Role",
         'rp.createdAt as "Date added"',
-        'u.lastLoginAt as "Last login"',
       ])
       .where("rp.siteId", "=", siteId)
-      .where("u.email", "not like", "%@open.gov.sg")
-      // Point-in-time predicate: permission must already exist as of monthEnd,
-      // and must not have been revoked on or before monthEnd.
-      .where("rp.createdAt", "<=", monthEnd)
+      // Exclude internal Isomer admins from agency-facing reports
+      .where("u.id", "not in", (eb) =>
+        eb.selectFrom("IsomerAdmin").select("IsomerAdmin.userId"),
+      )
+      // Point-in-time predicate: permission must already exist as of the last
+      // covered instant, and must not have been revoked at or before it.
+      .where("rp.createdAt", "<=", rangeEndInclusive)
       .where((eb) =>
         eb.or([
           eb("rp.deletedAt", "is", null),
-          eb("rp.deletedAt", ">", monthEnd),
+          eb("rp.deletedAt", ">", rangeEndInclusive),
         ]),
       )
       .execute()
@@ -117,7 +203,8 @@ export const getAccessReportRows = async ({
 
 // NOTE: Only use these in the context of `getActivityReportRows`; they are
 // separated out for type safety to ensure all displayable event types are
-// handled. Ported verbatim from `prisma/scripts/getAuditLogs.ts`.
+// handled. This module is the single source of truth for the audit report
+// queries — `prisma/scripts/getAuditLogs.ts` is a thin wrapper over them.
 type DisplayableAuditLogEvent = Exclude<
   AuditLogEvent,
   | "UserCreate"
@@ -158,63 +245,77 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
 /**
  * Month-scoped Activity (events) report.
  *
- * Ported faithfully from the `"events"` branch of
- * `prisma/scripts/getAuditLogs.ts`: the same CTEs, the same event-type CASE
- * → human "Description", the same Login/Logout email filtering against
- * `emailsFromUsers`/`emailsFromPermissionChanges` (which excludes
- * `@open.gov.sg`), the same column labels, and the same `createdAt` ordering.
- * Only `siteId`/`month` are parameterised and the boundaries are computed in
- * Singapore time.
+ * Ported from the `"events"` branch of `prisma/scripts/getAuditLogs.ts`: the
+ * same event-type CASE → human "Description", the same column labels, and the
+ * same `createdAt` ordering. Login/Logout events are gated to ACTIVE
+ * collaborator windows (PR #2612): the `collaboratorWindows` CTE reconstructs
+ * each collaborator's `[grantedAt, revokedAt)` windows from
+ * `ResourcePermission` soft-delete history (restricted to windows overlapping
+ * the export range), and a Login/Logout row is included only if its email
+ * belonged to a window covering the event's own timestamp. Internal Isomer
+ * admins (rows in `IsomerAdmin`) are excluded. Only
+ * `siteId`/`auditLogDateRange` are parameterised; the daterange's SGT
+ * calendar-date bounds are converted to SGT-midnight instants via
+ * `getExportRange`.
  */
 export const getActivityReportRows = async ({
   siteId,
-  month,
+  auditLogDateRange,
 }: AuditReportQueryParams) => {
-  const { monthStart, monthEnd } = getSingaporeMonthBoundaries(month)
+  const { rangeStart, rangeEnd } = getExportRange(auditLogDateRange)
+
+  // The last covered instant of the half-open activity range. Used to decide
+  // which collaboration windows could overlap the export range for the
+  // Login/Logout gating CTE below.
+  const rangeEndInclusive = new Date(rangeEnd.getTime() - 1)
 
   return db
-    .with("emailsFromPermissionChanges", (eb) =>
+    .with("collaboratorWindows", (eb) =>
       eb
-        .selectFrom("AuditLog")
-        .select((fb) => [
-          fb
-            .case()
-            .when("AuditLog.eventType", "=", AuditLogEvent.PermissionCreate)
-            .then(sql<string>`"AuditLog".delta -> 'after' ->> 'userId'`)
-            .else(
-              fb.fn<string>("coalesce", [
-                sql<string>`"AuditLog".delta -> 'before' ->> 'userId'`,
-                sql<string>`"AuditLog".delta -> 'after' ->> 'userId'`,
-              ]),
-            )
-            .end()
-            .as("email"),
+        // One row per collaboration window: granted at `grantedAt`, revoked at
+        // `revokedAt` (null while still active), reconstructed from the
+        // `ResourcePermission` soft-delete history. Login/Logout events are
+        // only included while the user was an active collaborator at the
+        // event's own timestamp.
+        .selectFrom("ResourcePermission as permission")
+        .innerJoin(
+          "User as collaboratorUser",
+          "collaboratorUser.id",
+          "permission.userId",
+        )
+        .select([
+          "collaboratorUser.email",
+          "permission.createdAt as grantedAt",
+          "permission.deletedAt as revokedAt",
         ])
-        .where("AuditLog.eventType", "in", [
-          AuditLogEvent.PermissionCreate,
-          AuditLogEvent.PermissionDelete,
-        ])
-        .where("AuditLog.siteId", "=", siteId)
-        .where("AuditLog.createdAt", ">=", monthStart)
-        .where("AuditLog.createdAt", "<=", monthEnd),
-    )
-    .with("emailsFromUsers", (eb) =>
-      eb
-        .selectFrom("User")
-        .select(["User.email", "User.id"])
-        .where("User.email", "not like", "%@open.gov.sg")
-        .where("User.id", "in", (fb) =>
-          fb
-            .selectFrom("ResourcePermission")
-            .select("ResourcePermission.userId")
-            .where("ResourcePermission.siteId", "=", siteId),
+        .where("permission.siteId", "=", siteId)
+        // Exclude internal Isomer admins from agency-facing reports
+        .where("collaboratorUser.id", "not in", (ieb) =>
+          ieb.selectFrom("IsomerAdmin").select("IsomerAdmin.userId"),
+        )
+        // Restrict to windows that could overlap the export range
+        .where("permission.createdAt", "<=", rangeEndInclusive)
+        .where((web) =>
+          web.or([
+            web("permission.deletedAt", "is", null),
+            web("permission.deletedAt", ">", rangeStart),
+          ]),
         ),
     )
     .selectFrom("AuditLog as al")
     .leftJoin("User as u", "al.userId", "u.id")
     .leftJoin("User as pu", (eb) =>
       eb
-        .onRef("pu.id", "=", sql<string>`al.delta -> 'after' ->> 'userId'`)
+        // PermissionCreate carries the target userId under delta.after;
+        // PermissionDelete carries it under delta.before (delta.after is
+        // NULL). Anchoring only on `after` left `pu` NULL for every
+        // PermissionDelete, so `CONCAT(..., pu.email)` rendered the email as
+        // an empty string. Resolve from whichever side is populated.
+        .onRef(
+          "pu.id",
+          "=",
+          sql<string>`COALESCE(al.delta -> 'after' ->> 'userId', al.delta -> 'before' ->> 'userId')`,
+        )
         .on("al.eventType", "in", [
           AuditLogEvent.PermissionCreate,
           AuditLogEvent.PermissionDelete,
@@ -258,6 +359,10 @@ export const getActivityReportRows = async ({
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.FooterUpdate])
         .when("al.eventType", "=", AuditLogEvent.SiteConfigUpdate)
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.SiteConfigUpdate])
+        .when("al.eventType", "=", AuditLogEvent.RedirectCreate)
+        .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.RedirectCreate])
+        .when("al.eventType", "=", AuditLogEvent.RedirectDelete)
+        .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.RedirectDelete])
         .when("al.eventType", "=", AuditLogEvent.PermissionCreate)
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.PermissionCreate])
         .when("al.eventType", "=", AuditLogEvent.PermissionDelete)
@@ -288,7 +393,11 @@ export const getActivityReportRows = async ({
           ),
           eb.or([
             eb.eb("al.siteId", "=", siteId),
-            eb.eb(sql<number>`"al".delta -> 'after' ->> 'siteId'`, "=", siteId),
+            eb.eb(
+              sql<number>`("al".delta -> 'after' ->> 'siteId')::int`,
+              "=",
+              siteId,
+            ),
           ]),
         ]),
         eb.and([
@@ -298,12 +407,15 @@ export const getActivityReportRows = async ({
             "in",
             (fb) =>
               fb
-                .selectFrom("emailsFromUsers")
-                .select("emailsFromUsers.email")
-                .union(
-                  fb
-                    .selectFrom("emailsFromPermissionChanges")
-                    .select("emailsFromPermissionChanges.email"),
+                .selectFrom("collaboratorWindows as cw")
+                .select("cw.email")
+                // Only while the user was an active collaborator at event time
+                .where("cw.grantedAt", "<=", sql<Date>`al."createdAt"`)
+                .where((web) =>
+                  web.or([
+                    web("cw.revokedAt", "is", null),
+                    web("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
+                  ]),
                 ),
           ),
         ]),
@@ -311,19 +423,22 @@ export const getActivityReportRows = async ({
           eb("al.eventType", "=", AuditLogEvent.Logout),
           eb(sql<string>`al.delta -> 'before' ->> 'email'`, "in", (fb) =>
             fb
-              .selectFrom("emailsFromUsers")
-              .select("emailsFromUsers.email")
-              .union(
-                fb
-                  .selectFrom("emailsFromPermissionChanges")
-                  .select("emailsFromPermissionChanges.email"),
+              .selectFrom("collaboratorWindows as cw")
+              .select("cw.email")
+              // Only while the user was an active collaborator at event time
+              .where("cw.grantedAt", "<=", sql<Date>`al."createdAt"`)
+              .where((web) =>
+                web.or([
+                  web("cw.revokedAt", "is", null),
+                  web("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
+                ]),
               ),
           ),
         ]),
       ]),
     )
-    .where("al.createdAt", ">=", monthStart)
-    .where("al.createdAt", "<=", monthEnd)
+    .where("al.createdAt", ">=", rangeStart)
+    .where("al.createdAt", "<", rangeEnd)
     .orderBy("al.createdAt", "asc")
     .execute()
 }
