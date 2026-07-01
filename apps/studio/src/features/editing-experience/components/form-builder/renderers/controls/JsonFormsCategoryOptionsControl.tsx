@@ -11,7 +11,7 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches, update } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { Button, Infobox } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
@@ -29,14 +29,13 @@ import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
-import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyCategory } from "../../components/EmptyCategory"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
-import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultCategoryOption } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
 
@@ -69,14 +68,7 @@ function CategoryOptionUsageCount({
   )
 }
 
-interface CategoryOptionsExpandedEditorProps extends ArrayLayoutProps {
-  duplicateOptionIndices: Set<number>
-}
-
-function CategoryOptionsExpandedEditor({
-  duplicateOptionIndices,
-  ...props
-}: CategoryOptionsExpandedEditorProps) {
+function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
   const {
     data,
     path,
@@ -94,8 +86,15 @@ function CategoryOptionsExpandedEditor({
     description,
   } = props
   const { hasErrorAt } = useBuilderErrors()
-  const { core } = useJsonForms()
+  const { core, dispatch } = useJsonForms()
   const { pageId, siteId } = useQueryParse(pageSchema)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editingDraftLabel, setEditingDraftLabel] = useState("")
+
+  const {
+    blank: liveBlankOptionIndices,
+    duplicate: liveDuplicateOptionIndices,
+  } = useLiveLabelIssues({ path, editingIndex, editingDraftLabel })
 
   const arrayResult = useArray({
     data,
@@ -109,14 +108,16 @@ function CategoryOptionsExpandedEditor({
     moveUp,
     moveDown,
   })
-  const {
-    setSelectedIndex,
-    isAddItemDisabled,
-    isRemoveItemDisabled,
-    childUiSchema,
-    handleRemoveSelectedItem,
-    onDragEnd,
-  } = arrayResult
+  const { isAddItemDisabled, isRemoveItemDisabled, onDragEnd } = arrayResult
+
+  const handleLabelSubmit = (index: number, value: string) => {
+    dispatch?.(
+      update(
+        composePaths(composePaths(path, `${index}`), "label"),
+        () => value,
+      ),
+    )
+  }
 
   const {
     target: deleteTarget,
@@ -152,13 +153,6 @@ function CategoryOptionsExpandedEditor({
     }
 
     openDeleteModal(index)
-  }
-
-  const isBlankLabelAt = (index: number) => {
-    const item = get(core?.data, composePaths(path, `${index}`)) as
-      | { label?: string }
-      | undefined
-    return !item?.label?.trim()
   }
 
   return (
@@ -198,9 +192,6 @@ function CategoryOptionsExpandedEditor({
                 {description}
               </Text>
             )}
-            {duplicateOptionIndices.size > 0 && (
-              <DuplicateLabelError noun="option" />
-            )}
           </VStack>
           <Box w="full" mt="0.75rem">
             <DragDropContext onDragEnd={onDragEnd}>
@@ -220,10 +211,13 @@ function CategoryOptionsExpandedEditor({
 
                     {[...Array(data).keys()].map((index) => {
                       const childPath = composePaths(path, `${index}`)
-                      const isDuplicate = duplicateOptionIndices.has(index)
-                      const isBlank = isBlankLabelAt(index)
+                      const isDuplicate = liveDuplicateOptionIndices.has(index)
+                      const isBlank = liveBlankOptionIndices.has(index)
                       const hasError =
                         hasErrorAt(childPath) || isDuplicate || isBlank
+                      const item = get(core?.data, childPath) as
+                        | { label?: string }
+                        | undefined
 
                       return (
                         <Draggable
@@ -241,17 +235,31 @@ function CategoryOptionsExpandedEditor({
                               <DraggableTagButton.Handle
                                 dragHandleProps={dragHandleProps}
                               />
-                              <DraggableTagButton.Body
-                                onClick={() => setSelectedIndex(index)}
-                              >
-                                <DraggableTagButton.Content>
-                                  <DraggableTagButton.Label
-                                    index={index}
-                                    path={path}
-                                    schema={schema}
-                                    uischema={childUiSchema}
-                                    enabled={enabled}
-                                    removeItem={handleRemoveSelectedItem}
+                              <DraggableTagButton.Body>
+                                <DraggableTagButton.Content
+                                  gap={
+                                    editingIndex === index
+                                      ? "0.5rem"
+                                      : undefined
+                                  }
+                                >
+                                  <DraggableTagButton.EditableLabel
+                                    value={item?.label ?? ""}
+                                    placeholder={`Item ${index + 1}`}
+                                    ariaLabel={`Option ${index + 1} name`}
+                                    isInvalid={isDuplicate || isBlank}
+                                    isDisabled={!enabled}
+                                    isEditing={editingIndex === index}
+                                    onSubmit={(value) =>
+                                      handleLabelSubmit(index, value)
+                                    }
+                                    onEditingChange={(isEditing) => {
+                                      setEditingIndex(isEditing ? index : null)
+                                      setEditingDraftLabel(
+                                        isEditing ? (item?.label ?? "") : "",
+                                      )
+                                    }}
+                                    onDraftChange={setEditingDraftLabel}
                                   />
                                   {hasError && (
                                     <DraggableTagButton.ErrorCaption>
@@ -264,14 +272,16 @@ function CategoryOptionsExpandedEditor({
                                   )}
                                 </DraggableTagButton.Content>
                               </DraggableTagButton.Body>
-                              <DraggableTagButton.Trailing>
-                                <TagRowActionsMenu
-                                  noun="option"
-                                  index={index}
-                                  isDisabled={isRemoveItemDisabled}
-                                  onDelete={() => handleDeleteOption(index)}
-                                />
-                              </DraggableTagButton.Trailing>
+                              {editingIndex !== index && (
+                                <DraggableTagButton.Trailing>
+                                  <TagRowActionsMenu
+                                    noun="option"
+                                    index={index}
+                                    isDisabled={isRemoveItemDisabled}
+                                    onDelete={() => handleDeleteOption(index)}
+                                  />
+                                </DraggableTagButton.Trailing>
+                              )}
                             </DraggableTagButton.Root>
                           )}
                         </Draggable>
@@ -336,7 +346,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
     [core?.data, path],
   )
 
-  const duplicateOptionIndices = useDuplicateLabels(path)
+  const { duplicate: duplicateOptionIndices } = useLiveLabelIssues({ path })
 
   const cannotLeaveExpandedCategoryOptions = useMemo(
     () =>
@@ -371,10 +381,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
           backAriaLabel="Return to Category"
         />
         <Box w="100%" flex={1} minH={0} px="1.5rem" py="1rem" overflow="auto">
-          <CategoryOptionsExpandedEditor
-            {...props}
-            duplicateOptionIndices={duplicateOptionIndices}
-          />
+          <CategoryOptionsExpandedEditor {...props} />
         </Box>
         <Box
           bgColor="base.canvas.default"
@@ -399,9 +406,6 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   return (
     <Box position="relative" w="full">
       <VStack spacing={0} align="stretch" w="full">
-        {duplicateOptionIndices.size > 0 && (
-          <DuplicateLabelError noun="option" />
-        )}
         <Box w="full">
           <Box my="0.25rem" w="full">
             <HStack

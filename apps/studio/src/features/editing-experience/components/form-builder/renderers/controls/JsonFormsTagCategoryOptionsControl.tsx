@@ -1,9 +1,10 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches, update } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { get } from "lodash-es"
+import { useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
@@ -11,14 +12,13 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
-import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyCategory } from "../../components/EmptyCategory"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
-import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultTagOption } from "./constants"
 
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
@@ -40,8 +40,12 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     uischema,
     description,
   } = props
-  const { core } = useJsonForms()
-  const duplicateOptionIndices = useDuplicateLabels(path)
+  const { core, dispatch } = useJsonForms()
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editingDraftLabel, setEditingDraftLabel] = useState("")
+
+  const { blank: blankOptionIndices, duplicate: duplicateOptionIndices } =
+    useLiveLabelIssues({ path, editingIndex, editingDraftLabel })
 
   const arrayResult = useArray({
     data,
@@ -55,14 +59,16 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     moveUp,
     moveDown,
   })
-  const {
-    setSelectedIndex,
-    isAddItemDisabled,
-    isRemoveItemDisabled,
-    childUiSchema,
-    handleRemoveSelectedItem,
-    onDragEnd,
-  } = arrayResult
+  const { isAddItemDisabled, isRemoveItemDisabled, onDragEnd } = arrayResult
+
+  const handleLabelSubmit = (index: number, value: string) => {
+    dispatch?.(
+      update(
+        composePaths(composePaths(path, `${index}`), "label"),
+        () => value,
+      ),
+    )
+  }
 
   const {
     target: deleteTarget,
@@ -105,9 +111,6 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
               {description}
             </Text>
           )}
-          {duplicateOptionIndices.size > 0 && (
-            <DuplicateLabelError noun="option" />
-          )}
         </VStack>
         <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
           <DragDropContext onDragEnd={onDragEnd}>
@@ -128,7 +131,12 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                   {[...Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)
                     const isDuplicate = duplicateOptionIndices.has(index)
-                    const hasError = hasErrorAt(childPath) || isDuplicate
+                    const isBlank = blankOptionIndices.has(index)
+                    const hasError =
+                      hasErrorAt(childPath) || isDuplicate || isBlank
+                    const item = get(core?.data, childPath) as
+                      | { label?: string }
+                      | undefined
 
                     return (
                       <Draggable
@@ -146,35 +154,51 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                             <DraggableTagButton.Handle
                               dragHandleProps={dragHandleProps}
                             />
-                            <DraggableTagButton.Body
-                              onClick={() => setSelectedIndex(index)}
-                            >
-                              <DraggableTagButton.Content>
-                                <DraggableTagButton.Label
-                                  index={index}
-                                  path={path}
-                                  schema={schema}
-                                  uischema={childUiSchema}
-                                  enabled={enabled}
-                                  removeItem={handleRemoveSelectedItem}
+                            <DraggableTagButton.Body>
+                              <DraggableTagButton.Content
+                                gap={
+                                  editingIndex === index ? "0.5rem" : undefined
+                                }
+                              >
+                                <DraggableTagButton.EditableLabel
+                                  value={item?.label ?? ""}
+                                  placeholder={`Item ${index + 1}`}
+                                  ariaLabel={`Option ${index + 1} name`}
+                                  isInvalid={isDuplicate || isBlank}
+                                  isDisabled={!enabled}
+                                  isEditing={editingIndex === index}
+                                  onSubmit={(value) =>
+                                    handleLabelSubmit(index, value)
+                                  }
+                                  onEditingChange={(isEditing) => {
+                                    setEditingIndex(isEditing ? index : null)
+                                    setEditingDraftLabel(
+                                      isEditing ? (item?.label ?? "") : "",
+                                    )
+                                  }}
+                                  onDraftChange={setEditingDraftLabel}
                                 />
                                 {hasError && (
                                   <DraggableTagButton.ErrorCaption>
                                     {isDuplicate
                                       ? "An option with this name already exists."
-                                      : undefined}
+                                      : isBlank
+                                        ? "Option name cannot be empty."
+                                        : undefined}
                                   </DraggableTagButton.ErrorCaption>
                                 )}
                               </DraggableTagButton.Content>
                             </DraggableTagButton.Body>
-                            <DraggableTagButton.Trailing>
-                              <TagRowActionsMenu
-                                noun="option"
-                                index={index}
-                                isDisabled={isRemoveItemDisabled}
-                                onDelete={() => openDeleteModal(index)}
-                              />
-                            </DraggableTagButton.Trailing>
+                            {editingIndex !== index && (
+                              <DraggableTagButton.Trailing>
+                                <TagRowActionsMenu
+                                  noun="option"
+                                  index={index}
+                                  isDisabled={isRemoveItemDisabled}
+                                  onDelete={() => openDeleteModal(index)}
+                                />
+                              </DraggableTagButton.Trailing>
+                            )}
                           </DraggableTagButton.Root>
                         )}
                       </Draggable>
