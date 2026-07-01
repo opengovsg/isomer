@@ -9,40 +9,38 @@ describe("auditLogExportReady template", () => {
     month: "June 2026",
   }
 
-  it("includes both labels and URLs as hrefs for a two-link export", () => {
-    // Arrange
-    const data = {
-      ...baseData,
-      links: [
-        { label: "Access report", url: "https://s3.example/access?sig=abc" },
-        {
-          label: "Activity report",
-          url: "https://s3.example/activity?sig=def",
-        },
-      ],
-    }
-
+  it("maps the access label to its display text and keeps its signed URL", () => {
     // Act
-    const template = templates.auditLogExportReady(data)
+    const template = templates.auditLogExportReady({
+      ...baseData,
+      link: { label: "access", url: "https://s3.example/access?sig=abc" },
+    })
 
-    // Assert: both labels and both signed URLs rendered as anchors
+    // Assert: the label renders its mapped text against its own signed URL
     expect(template.body).toContain(
-      `<a href="https://s3.example/access?sig=abc">Access report</a>`,
-    )
-    expect(template.body).toContain(
-      `<a href="https://s3.example/activity?sig=def">Activity report</a>`,
+      `<a href="https://s3.example/access?sig=abc">Download access review [.csv]</a>`,
     )
   })
 
-  it("renders only one href for a single-link export", () => {
-    // Arrange
-    const data = {
-      ...baseData,
-      links: [{ label: "Access report", url: "https://s3.example/only?sig=1" }],
-    }
-
+  it("maps the audit label to its display text and keeps its signed URL", () => {
     // Act
-    const template = templates.auditLogExportReady(data)
+    const template = templates.auditLogExportReady({
+      ...baseData,
+      link: { label: "audit", url: "https://s3.example/audit?sig=def" },
+    })
+
+    // Assert: the label renders its mapped text against its own signed URL
+    expect(template.body).toContain(
+      `<a href="https://s3.example/audit?sig=def">Download audit logs [.csv]</a>`,
+    )
+  })
+
+  it("renders exactly one download link", () => {
+    // Act
+    const template = templates.auditLogExportReady({
+      ...baseData,
+      link: { label: "access", url: "https://s3.example/only?sig=1" },
+    })
 
     // Assert
     const hrefCount = (
@@ -50,51 +48,72 @@ describe("auditLogExportReady template", () => {
     ).length
     expect(hrefCount).toBe(1)
     expect(template.body).toContain(
-      `<a href="https://s3.example/only?sig=1">Access report</a>`,
+      `<a href="https://s3.example/only?sig=1">Download access review [.csv]</a>`,
     )
   })
 
-  it("puts the site name and month in the subject", () => {
+  it("uses an access-logs subject for an access report", () => {
     // Act
     const template = templates.auditLogExportReady({
       ...baseData,
-      links: [{ label: "Access report", url: "https://s3.example/x" }],
+      link: { label: "access", url: "https://s3.example/x" },
     })
 
     // Assert
     expect(template.subject).toBe(
-      "[Isomer Studio] Your audit log export for Test Site (June 2026) is ready",
+      "[Isomer] Access logs for Test Site (June 2026) is ready",
     )
   })
 
-  it("includes the 3-day validity note", () => {
+  it("uses an audit-logs subject for an audit report", () => {
     // Act
     const template = templates.auditLogExportReady({
       ...baseData,
-      links: [{ label: "Access report", url: "https://s3.example/x" }],
+      link: { label: "audit", url: "https://s3.example/a" },
     })
 
     // Assert
-    expect(template.body).toContain("valid for 3 days")
+    expect(template.subject).toBe(
+      "[Isomer] Audit logs for Test Site (June 2026) is ready",
+    )
   })
 
-  it("escapes HTML in the site name and link labels", () => {
-    // Arrange
-    const data = {
+  it("notes that the link expires after 3 days", () => {
+    // Act
+    const template = templates.auditLogExportReady({
+      ...baseData,
+      link: { label: "access", url: "https://s3.example/x" },
+    })
+
+    // Assert
+    expect(template.body).toContain("expire after 3 days")
+  })
+
+  it("escapes special chars in the link href so it can't break out of the attribute", () => {
+    // Act: a URL crafted to break out of the href attribute and inject markup
+    const template = templates.auditLogExportReady({
+      ...baseData,
+      link: { label: "access", url: `https://s3.example/x?a="><script>` },
+    })
+
+    // Assert: the raw injection payload never appears; the escaped form does
+    expect(template.body).not.toContain(`"><script>`)
+    expect(template.body).toContain(
+      `<a href="https://s3.example/x?a=&quot;&gt;&lt;script&gt;">`,
+    )
+  })
+
+  it("escapes HTML in the site name", () => {
+    // Act: the site name is interpolated into the subject
+    const template = templates.auditLogExportReady({
       ...baseData,
       siteName: `Evil <b>&</b> Co`,
-      links: [{ label: `Report <script>&`, url: "https://s3.example/x" }],
-    }
-
-    // Act
-    const template = templates.auditLogExportReady(data)
+      link: { label: "access", url: "https://s3.example/x" },
+    })
 
     // Assert: special chars escaped, no raw injection
     expect(template.subject).toContain("Evil &lt;b&gt;&amp;&lt;/b&gt; Co")
-    expect(template.body).toContain("Evil &lt;b&gt;&amp;&lt;/b&gt; Co")
-    expect(template.body).toContain("Report &lt;script&gt;&amp;")
-    expect(template.body).not.toContain("<b>&</b>")
-    expect(template.body).not.toContain("<script>")
+    expect(template.subject).not.toContain("<b>&</b>")
   })
 })
 

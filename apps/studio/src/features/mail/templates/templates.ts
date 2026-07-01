@@ -9,6 +9,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AuditLogExportDownloadLink,
   AuditLogExportFailedEmailTemplateData,
   AuditLogExportReadyEmailTemplateData,
   CancelSchedulePageTemplateData,
@@ -24,6 +25,15 @@ import type {
   SuccessfulPublishTemplateData,
 } from "./types"
 import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
+
+const getDownloadLinkLabel = (label: AuditLogExportDownloadLink["label"]) => {
+  switch (label) {
+    case "access":
+      return "Download access review [.csv]"
+    case "audit":
+      return "Download audit logs [.csv]"
+  }
+}
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}">${escapeHtml(env.NEXT_PUBLIC_APP_URL?.replace("https://", ""))}</a>`
@@ -276,26 +286,24 @@ const accountDeactivationTemplate = (
 const auditLogExportReadyTemplate = (
   data: AuditLogExportReadyEmailTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, siteName, month, links } = data
+  const { recipientEmail, siteName, month, link } = data
   const escapedRecipientEmail = escapeHtml(recipientEmail)
   const escapedSiteName = escapeHtml(siteName)
   const escapedMonth = escapeHtml(month)
 
-  // The href is a signed S3 URL (a trusted value we generated), but the label
-  // is escaped since it is interpolated as displayed text.
-  const downloadLinks = links
-    .map(
-      ({ label, url }) => `<li><a href="${url}">${escapeHtml(label)}</a></li>`,
-    )
-    .join("")
+  const logName = link.label === "access" ? "Access" : "Audit"
+
+  // The href is escaped since it is interpolated into HTML. Escaping the URL
+  // prevents a stray quote from breaking out of the href attribute and
+  // injecting markup.
+  const downloadLink = `<a href="${escapeHtml(link.url)}">${getDownloadLinkLabel(link.label)}</a>`
 
   return {
-    subject: `[Isomer Studio] Your audit log export for ${escapedSiteName} (${escapedMonth}) is ready`,
+    subject: `[Isomer] ${logName} logs for ${escapedSiteName} (${escapedMonth}) is ready`,
     body: `<p>Hi ${escapedRecipientEmail},</p>
-<p>Your audit log export for ${escapedSiteName} (${escapedMonth}) is ready to download.</p>
-<ul>${downloadLinks}</ul>
-<p>Each download link is valid for 3 days.</p>
-<p>If you have any questions, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
+<p>The ${logName.toLowerCase()} logs you requested for your site (${escapedMonth}) are ready to download. This link will expire after 3 days.</p>
+<br/>
+<p>${downloadLink}</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }

@@ -66,7 +66,7 @@ export interface GazetteDeletionEmailTemplateData extends BaseEmailTemplateData 
 }
 
 export interface AuditLogExportDownloadLink {
-  label: string
+  label: "access" | "audit"
   url: string
 }
 
@@ -74,8 +74,8 @@ export interface AuditLogExportReadyEmailTemplateData extends BaseEmailTemplateD
   siteName: string
   // Human-readable month the export covers, e.g. "June 2026".
   month: string
-  // One link for a single-report export, two for a "Both" export.
-  links: AuditLogExportDownloadLink[]
+  // Each export job produces exactly one report, so exactly one link.
+  link: AuditLogExportDownloadLink
 }
 
 export interface AuditLogExportFailedEmailTemplateData extends BaseEmailTemplateData {
