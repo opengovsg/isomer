@@ -76,7 +76,7 @@ Generate **once**. The test is committed to the PR branch and reviewed by a huma
 
    ```
    git add <test-file-path>
-   git commit -m "test(e2e): add verification test for PR #<number> [isobot-verify]" -m "Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
+   git commit -m "test(e2e): add verification test for PR #<number> [isobot-verify]" -m "Co-Authored-By: Claude (isobot-verify) <noreply@anthropic.com>"
    git push
    ```
 
