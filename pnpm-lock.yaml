@@ -231,8 +231,8 @@ catalogs:
       specifier: ^8.0.4
       version: 8.0.4
     isomorphic-dompurify:
-      specifier: ^3.15.0
-      version: 3.16.0
+      specifier: ^3.18.0
+      version: 3.18.0
     jose:
       specifier: ^6.2.3
       version: 6.2.3
@@ -892,7 +892,7 @@ importers:
         version: 8.0.4
       isomorphic-dompurify:
         specifier: 'catalog:'
-        version: 3.16.0(@noble/hashes@2.2.0)
+        version: 3.18.0(@noble/hashes@2.2.0)
       jose:
         specifier: 'catalog:'
         version: 6.2.3
@@ -1184,7 +1184,7 @@ importers:
         version: 2.0.0
       isomorphic-dompurify:
         specifier: 'catalog:'
-        version: 3.16.0(@noble/hashes@2.2.0)
+        version: 3.18.0(@noble/hashes@2.2.0)
       js-md5:
         specifier: 'catalog:'
         version: 0.8.3
@@ -1841,7 +1841,7 @@ importers:
         version: link:../../packages/components
       isomorphic-dompurify:
         specifier: 'catalog:'
-        version: 3.16.0(@noble/hashes@2.2.0)
+        version: 3.18.0(@noble/hashes@2.2.0)
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@2.2.0)
@@ -8189,8 +8189,8 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.4.8:
-    resolution: {integrity: sha512-yb1cEmaOum7wFvOCSQxyfgVlv5D47Rc30iZWoMpbDIWTnJ6grDDQyu2KFJzB2k7u0pMuJcQ1zphH//fFnw2tjQ==}
+  dompurify@3.4.11:
+    resolution: {integrity: sha512-zhlUV12GsaRzMsf9q5M254YhA4+VuF0fG+QFqu6aYpoGlKtz+w8//jBcGVYBgQkR5GHjUomejY84AV+/uPbWdw==}
 
   domutils@2.8.0:
     resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
@@ -9245,8 +9245,8 @@ packages:
     resolution: {integrity: sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg==}
     engines: {node: '>=0.10.0'}
 
-  isomorphic-dompurify@3.16.0:
-    resolution: {integrity: sha512-KzTJsMuVPqPwBOD0F6jKXoV/+v8CSx0rxVp+/67KV6Xbw++0zD/avT3bZsgwR0M5QRMiOE+QqQtoZLEJYy1C4Q==}
+  isomorphic-dompurify@3.18.0:
+    resolution: {integrity: sha512-ajp0D8laIHeoYlhBTevpE2HUhqWaqLXFk6K/wV3Ok8kDraBZpZsifwVWaY8IfJntMRIo1VSksgKV+lXyet9Q7A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0}
 
   istanbul-lib-coverage@3.2.2:
@@ -19097,7 +19097,7 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.4.8:
+  dompurify@3.4.11:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -20281,9 +20281,9 @@ snapshots:
 
   isobject@3.0.1: {}
 
-  isomorphic-dompurify@3.16.0(@noble/hashes@2.2.0):
+  isomorphic-dompurify@3.18.0(@noble/hashes@2.2.0):
     dependencies:
-      dompurify: 3.4.8
+      dompurify: 3.4.11
       jsdom: 29.1.1(@noble/hashes@2.2.0)
     transitivePeerDependencies:
       - '@noble/hashes'
