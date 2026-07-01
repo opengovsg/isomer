@@ -5,6 +5,10 @@ import Papa from "papaparse"
 
 import { AuditLogEvent, db, sql } from "../database"
 
+// NOTE: Sentinel for middle of month to ensure that we always land inside a month
+// and not have to worry about TZ conversion
+const MID_OF_MONTH = 15 as const
+
 // The fixed business timezone for audit months. We convert through date-fns-tz
 // (rather than hardcoding the +08:00 offset) so the zone handling is explicit.
 const SINGAPORE_TIME_ZONE = "Asia/Singapore"
@@ -42,9 +46,12 @@ export const getSingaporeMonthBoundaries = (
   // wall-clock, let date-fns find the month's start/end in that wall clock,
   // then convert both boundaries back to UTC instants.
   const zoned = toZonedTime(
-    new Date(Date.UTC(year, monthIndex - 1, 1)),
+    // NOTE: Get a DateTime within the month
+    // that is applicable for every TZ
+    new Date(Date.UTC(year, monthIndex - 1, MID_OF_MONTH)),
     SINGAPORE_TIME_ZONE,
   )
+  // Use date-fns to find the leading/trailing edge (start/end of month)
   const monthStart = fromZonedTime(startOfMonth(zoned), SINGAPORE_TIME_ZONE)
   const monthEnd = fromZonedTime(endOfMonth(zoned), SINGAPORE_TIME_ZONE)
 
