@@ -7,10 +7,12 @@ name: "🤖 IsoBot: Verify"
 # docs/adr/0003-ai-generated-verification-tests.md. The skill contract lives in
 # .claude/skills/isobot-verify/SKILL.md.
 #
-# Runs ONLY when a draft PR is marked ready-for-review — not on every push and
-# not on `opened`. Keeping the PR in draft while iterating avoids generating a
-# test before the verification steps are finalised; the diff-based idempotency
-# guard in the skill makes re-triggers a no-op once a test exists.
+# Runs when a PR first becomes non-draft: either opened directly as ready
+# (`opened`) or a draft marked ready (`ready_for_review`). The `gate` job's
+# `draft == false` check filters out drafts opened as drafts (they run later on
+# `ready_for_review`), so no PR is processed twice and drafts still get to
+# iterate before a test is generated. The diff-based idempotency guard in the
+# skill makes any re-trigger a no-op once a test exists.
 #
 # ──────────────────────────────────────────────────────────────────────────
 # WHY GITHUB_TOKEN IS SUFFICIENT (no PAT needed)
@@ -39,9 +41,12 @@ name: "🤖 IsoBot: Verify"
 # Weaken the gate and this becomes arbitrary-code-execution-with-write-token.
 on:
   pull_request:
-    types: [ready_for_review]
+    # `opened` catches PRs created directly as ready (which never emit
+    # `ready_for_review`); `ready_for_review` catches draft→ready. The gate
+    # filters drafts, so the two never double-process a PR.
+    types: [ready_for_review, opened]
 
-# Serialize per PR. Two `ready_for_review` events for the same PR (e.g. rapid
+# Serialize per PR. Two events for the same PR (e.g. rapid
 # draft→ready→draft→ready) would otherwise race two `git push`es; the second
 # loses to a non-fast-forward reject and the skill has no rebase/retry. The
 # sibling isobot-pr-review.yml omits this safely because it only posts comments
@@ -58,9 +63,9 @@ jobs:
   # exactly once. Mirrors isobot-pr-review.yml's gate, minus the issue_comment
   # branch (this workflow has no comment trigger).
   gate:
-    # Authorize only when the PR is not a draft (a `ready_for_review` event can
-    # only fire on a draft→ready transition, but assert it explicitly) AND the
-    # author is an OWNER or MEMBER — never run on external-contributor PRs.
+    # Authorize only when the PR is not a draft (required because `opened` also
+    # fires for PRs created as drafts — those must wait for `ready_for_review`)
+    # AND the author is an OWNER or MEMBER — never run on external-contributor PRs.
     if: |
       github.event_name == 'pull_request' &&
       github.event.pull_request.draft == false &&
