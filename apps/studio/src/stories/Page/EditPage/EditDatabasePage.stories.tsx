@@ -181,8 +181,11 @@ export const DatabaseModalLargeDataset: Story = {
     },
   },
   play: async ({ canvasElement, ...rest }) => {
-    await DatabaseModalEmptyString.play?.({ canvasElement, ...rest })
+    await EditFixedBlockDatabase.play?.({ canvasElement, ...rest })
     const screen = within(canvasElement.ownerDocument.body)
+
+    const editButton = await screen.findByRole("button", { name: /edit/i })
+    await userEvent.click(editButton)
 
     const input = await screen.findByPlaceholderText("Paste dataset URL here")
     await userEvent.type(input, "d_3c55210de27fcccda2ed0c63fdd2b352")
