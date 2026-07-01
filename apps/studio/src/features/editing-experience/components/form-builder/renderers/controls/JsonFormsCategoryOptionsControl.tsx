@@ -108,7 +108,15 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
     moveUp,
     moveDown,
   })
-  const { isAddItemDisabled, isRemoveItemDisabled, onDragEnd } = arrayResult
+  const { isAddItemDisabled, isRemoveItemDisabled } = arrayResult
+
+  // editingIndex is a row position, not item identity — clear before reorder so
+  // a pending label submit cannot write to whichever item ends up at that index.
+  const onDragEnd = (result: Parameters<typeof arrayResult.onDragEnd>[0]) => {
+    setEditingIndex(null)
+    setEditingDraftLabel("")
+    arrayResult.onDragEnd(result)
+  }
 
   const handleLabelSubmit = (index: number, value: string) => {
     dispatch?.(
