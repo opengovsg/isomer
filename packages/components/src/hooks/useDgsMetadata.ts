@@ -24,6 +24,7 @@ export const useDgsMetadata = ({
 
     const fetchMetadata = async () => {
       setIsLoading(true)
+      setMetadata(undefined)
       try {
         const metadata = await fetchDgsMetadata({ resourceId })
         setMetadata(metadata)
