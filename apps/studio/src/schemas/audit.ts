@@ -1,3 +1,11 @@
+import {
+  format,
+  isAfter,
+  isBefore,
+  isSameMonth,
+  parseISO,
+  subMonths,
+} from "date-fns"
 import { formatInTimeZone } from "date-fns-tz"
 import { z } from "zod"
 import { AuditLogExportReportType } from "~prisma/generated/generatedEnums"
@@ -25,12 +33,14 @@ export const getEarliestExportableMonth = (currentMonth: string): string => {
       `Invalid month, expected "yyyy-MM" but got: ${currentMonth}`,
     )
   }
-  const earliest = new Date(
-    Date.UTC(year, month - 1 - (AUDIT_LOG_EXPORT_MAX_MONTHS - 1), 1),
+  // Subtract the window with date-fns, keeping the current month inclusive.
+  // Construct and format in the same (local) frame so the resulting calendar
+  // month is unaffected by the runtime's zone.
+  const earliest = subMonths(
+    new Date(year, month - 1, 1),
+    AUDIT_LOG_EXPORT_MAX_MONTHS - 1,
   )
-  // `earliest` is a UTC-anchored instant; read it back in UTC so the calendar
-  // month is unaffected by the runtime's local zone.
-  return formatInTimeZone(earliest, "UTC", "yyyy-MM")
+  return format(earliest, "yyyy-MM")
 }
 
 // The current calendar month in Singapore time as "yyyy-MM". SGT is UTC+8 all
@@ -38,8 +48,7 @@ export const getEarliestExportableMonth = (currentMonth: string): string => {
 // correct wherever this runs — the server in any timezone, or the user's
 // browser. We use date-fns-tz's explicit "yyyy-MM" token rather than an
 // Intl locale trick (e.g. "en-CA"), which depends on ICU locale data and can
-// silently format differently on minimal-ICU runtimes. The zero-padded result
-// compares lexicographically the same as chronologically.
+// silently format differently on minimal-ICU runtimes.
 export const getCurrentSingaporeMonth = (): string =>
   formatInTimeZone(new Date(), SINGAPORE_TIME_ZONE, "yyyy-MM")
 
@@ -53,12 +62,25 @@ export const createAuditLogExportRequestSchema = z.object({
     .regex(MONTH_REGEX, {
       message: "Enter a month in the format YYYY-MM, e.g. 2026-03",
     })
-    .refine((month) => month <= getCurrentSingaporeMonth(), {
-      message: "You cannot export audit logs for a month that is in the future",
-    })
     .refine(
-      (month) =>
-        month >= getEarliestExportableMonth(getCurrentSingaporeMonth()),
+      (month) => {
+        const parsed = parseISO(`${month}-01`)
+        const current = parseISO(`${getCurrentSingaporeMonth()}-01`)
+        return isSameMonth(parsed, current) || isBefore(parsed, current)
+      },
+      {
+        message:
+          "You cannot export audit logs for a month that is in the future",
+      },
+    )
+    .refine(
+      (month) => {
+        const parsed = parseISO(`${month}-01`)
+        const earliest = parseISO(
+          `${getEarliestExportableMonth(getCurrentSingaporeMonth())}-01`,
+        )
+        return isSameMonth(parsed, earliest) || isAfter(parsed, earliest)
+      },
       { message: "You can only export audit logs from the past 12 months" },
     ),
   reportType: z.enum(AuditLogExportReportType, {
