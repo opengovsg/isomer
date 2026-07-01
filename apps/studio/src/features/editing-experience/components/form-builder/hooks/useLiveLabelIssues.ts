@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { indicesWithBlankLabels } from "../renderers/controls/utils/indicesWithBlankLabels"
 import { indicesWithDuplicateLabels } from "../renderers/controls/utils/indicesWithDuplicateLabels"
 
-type UseLiveLabelIssuesArgs = {
+interface UseLiveLabelIssuesArgs {
   path: string
   editingIndex?: number | null
   editingDraftLabel?: string
