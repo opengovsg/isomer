@@ -205,15 +205,18 @@ jobs:
   # comment directly here (no workflow_run indirection) because the gate
   # excludes forks, so GITHUB_TOKEN has write access.
   #
-  # Gated on artifact-url being non-empty. A genuine TEST FAILURE still uploads
-  # the artifact (the upload step is `if: !cancelled()`), so the video link is
-  # posted. But if the e2e job errors BEFORE the upload (build/setup failure),
-  # artifact-url is empty and this job is skipped — there is then no video
-  # comment; the failed `e2e` check on the PR is the signal that the inline run
-  # could not complete.
+  # The `!cancelled()` is load-bearing: without a status-check function GitHub
+  # implicitly ANDs `success()`, which would skip this job whenever the `e2e`
+  # job fails — the exact case where the video is most useful. A genuine TEST
+  # FAILURE still uploads the artifact (the upload step is `if: !cancelled()`)
+  # and its step-output-based artifact-url still propagates through the reusable
+  # workflow to `needs.e2e.outputs`, so the video link IS posted on failure.
+  # (This mirrors ci.yml's e2e-comment-metadata gate.) If the e2e job errors
+  # BEFORE the upload (build/setup failure), artifact-url is empty and this job
+  # no-ops — the failed `e2e` check is then the only signal.
   comment:
     needs: [generate, e2e]
-    if: ${{ needs.generate.outputs.generated == 'true' && needs.e2e.outputs.artifact-url != '' }}
+    if: ${{ !cancelled() && needs.generate.outputs.generated == 'true' && needs.e2e.outputs.artifact-url != '' }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
