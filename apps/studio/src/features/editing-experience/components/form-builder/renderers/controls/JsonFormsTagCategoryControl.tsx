@@ -101,8 +101,8 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
             <Text
-              textStyle="caption-2"
-              textColor="base.content.medium"
+              textStyle="subhead-2"
+              textColor="base.content.strong"
               flex={1}
             >
               Custom Filters
