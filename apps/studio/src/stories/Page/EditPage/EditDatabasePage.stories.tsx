@@ -151,7 +151,7 @@ export const DatabaseModalValidDatasetId: Story = {
     const screen = within(canvasElement.ownerDocument.body)
 
     const input = await screen.findByPlaceholderText("Paste dataset URL here")
-    await userEvent.type(input, "d_3f960c10fed6145404ca7b821f263b87")
+    await userEvent.type(input, "d_3c55210de27fcccda2ed0c63fdd2b352")
 
     await waitFor(() => screen.findByText(/Valid CSV dataset/), {
       timeout: 3000,
@@ -185,7 +185,7 @@ export const DatabaseModalLargeDataset: Story = {
     const screen = within(canvasElement.ownerDocument.body)
 
     const input = await screen.findByPlaceholderText("Paste dataset URL here")
-    await userEvent.type(input, "d_3f960c10fed6145404ca7b821f263b87")
+    await userEvent.type(input, "d_3c55210de27fcccda2ed0c63fdd2b352")
 
     await waitFor(
       () =>
