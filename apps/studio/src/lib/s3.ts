@@ -333,9 +333,9 @@ export const putObjectDirect = async (
 // rather than silently uploading to `undefined`. Exposed so the orchestrator
 // (next layer) can build keys / sign URLs against the same bucket.
 export const getAuditLogExportBucketName = (): string => {
-  const bucket = env.S3_AUDIT_LOG_EXPORT_BUCKET_NAME
+  const bucket = env.S3_STUDIO_ASSETS_BUCKET_NAME
   if (!bucket) {
-    throw new Error("S3_AUDIT_LOG_EXPORT_BUCKET_NAME is not configured")
+    throw new Error("S3_STUDIO_ASSETS_BUCKET_NAME is not configured")
   }
   return bucket
 }

@@ -3,14 +3,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 // Mock the env module so we can control whether the audit-log export bucket is
 // configured. The bucket name is mutated per-test via the mutable holder below.
-const { envHolder } = vi.hoisted(() => ({
-  envHolder: {
+const { envHolder } = vi.hoisted(() => {
+  const envHolder: {
+    NEXT_PUBLIC_S3_REGION: string
+    S3_STUDIO_ASSETS_BUCKET_NAME: string | undefined
+  } = {
     NEXT_PUBLIC_S3_REGION: "ap-southeast-1",
-    S3_AUDIT_LOG_EXPORT_BUCKET_NAME: "audit-export-bucket" as
-      | string
-      | undefined,
-  },
-}))
+    S3_STUDIO_ASSETS_BUCKET_NAME: "audit-export-bucket",
+  }
+  return { envHolder }
+})
 
 vi.mock("~/env.mjs", () => ({
   get env() {
@@ -36,7 +38,7 @@ const { uploadAuditLogExport } = await import("../s3")
 describe("uploadAuditLogExport", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    envHolder.S3_AUDIT_LOG_EXPORT_BUCKET_NAME = "audit-export-bucket"
+    envHolder.S3_STUDIO_ASSETS_BUCKET_NAME = "audit-export-bucket"
     sendMock.mockResolvedValue({})
   })
 
@@ -62,12 +64,12 @@ describe("uploadAuditLogExport", () => {
 
   it("throws a clear error when the bucket env var is unset", async () => {
     // Arrange
-    envHolder.S3_AUDIT_LOG_EXPORT_BUCKET_NAME = undefined
+    envHolder.S3_STUDIO_ASSETS_BUCKET_NAME = undefined
 
     // Act + Assert
     await expect(
       uploadAuditLogExport({ key: "site-1/2026-06/access.csv", body: "x" }),
-    ).rejects.toThrow("S3_AUDIT_LOG_EXPORT_BUCKET_NAME is not configured")
+    ).rejects.toThrow("S3_STUDIO_ASSETS_BUCKET_NAME is not configured")
     expect(sendMock).not.toHaveBeenCalled()
   })
 })
