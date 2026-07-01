@@ -60,8 +60,8 @@ catalog:
   # v5 changed the client API — do not "upgrade" this without reviewing egazette compatibility.
   algoliasearch: ^4.24.0
   ajv: ^8.20.0
-  autoprefixer: ^10.4.21
-  axios: ^1.17.0
+  autoprefixer: ^10.5.1
+  axios: ^1.18.1
   bootstrap-icons: ^1.13.1
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.0.0
@@ -73,13 +73,13 @@ catalog:
   dotenv-cli: ^11.0.0
   jsdom: ^29.1.1
   happy-dom: ^20.10.6
-  isomorphic-dompurify: ^3.15.0
+  isomorphic-dompurify: ^3.18.0
   mockdate: ^3.0.5
   msw: ^2.14.6
   msw-storybook-addon: ^2.0.7
   msw-trpc: ^2.0.1
   node-mocks-http: ^1.16.2
-  npm-run-all2: ^9.0.1
+  npm-run-all2: ^9.0.2
   "@octokit/rest": ^22.0.0
   "@inquirer/prompts": ^8.5.2
   "@opengovsg/design-system-react": ^1.31.0
@@ -134,7 +134,7 @@ catalog:
   date-fns-tz: ^3.1.3
   dd-trace: ^5.108.0
   exponential-backoff: ^3.1.2
-  filenamify: ^7.0.1
+  filenamify: ^7.0.2
   flat: ^6.0.1
   inter-ui: ^4.1.1
   interweave: ^13.1.0
@@ -153,7 +153,7 @@ catalog:
   oxlint: ^1.71.0
   oxlint-tsgolint: ^0.23.0
   papaparse: ^5.5.4
-  pg-boss: ^12.18.2
+  pg-boss: ^12.21.2
   postcss-load-config: ^6.0.1
   rate-limiter-flexible: ^11.2.0
   react-error-boundary: ^6.1.2
@@ -169,7 +169,7 @@ catalog:
   tiptap-text-direction: ^0.5.0
   transliteration: ^2.6.1
   validator: ^13.15.35
-  wretch: ^3.0.8
+  wretch: ^3.0.9
 
 catalogs:
   atlaskitPragmaticDnd:
@@ -269,13 +269,13 @@ catalogs:
     "@tiptap/pm": ^3.27.1
     "@tiptap/react": ^3.27.1
   trpc:
-    "@trpc/client": ^11.17.0
-    "@trpc/next": ^11.17.0
-    "@trpc/react-query": ^11.17.0
-    "@trpc/server": ^11.17.0
+    "@trpc/client": ^11.18.0
+    "@trpc/next": ^11.18.0
+    "@trpc/react-query": ^11.18.0
+    "@trpc/server": ^11.18.0
   vitest:
-    "@vitejs/plugin-react": ^6.0.2
+    "@vitejs/plugin-react": ^6.0.3
     "@vitest/coverage-istanbul": ^4.1.9
-    vite: ^8.0.16
+    vite: ^8.1.0
     vite-tsconfig-paths: ^6.1.1
     vitest: ^4.1.9
