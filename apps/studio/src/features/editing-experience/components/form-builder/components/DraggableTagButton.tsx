@@ -241,8 +241,8 @@ const EditableLabel = ({
   const isDirty = draft !== value
 
   const handleSave = () => {
-    if (!isDirty || isInvalid) return
-    onSubmit(draft)
+    if (isInvalid) return
+    if (isDirty) onSubmit(draft)
     onEditingChange(false)
   }
 
