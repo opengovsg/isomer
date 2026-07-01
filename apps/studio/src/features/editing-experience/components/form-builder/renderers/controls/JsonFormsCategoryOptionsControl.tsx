@@ -171,6 +171,9 @@ function CategoryOptionsExpandedEditor({
           mb="1.25rem"
           border="1px solid"
           borderColor="utility.feedback.warning"
+          borderRadius="0.25rem"
+          px="0.625rem"
+          py="0.5rem"
         >
           <Text textStyle="body-2" color="base.content.strong">
             This is the default filter, so you can't change its name or make it
