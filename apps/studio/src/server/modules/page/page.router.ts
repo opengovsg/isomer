@@ -50,6 +50,7 @@ import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
+import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
   createResourceWithBlob,
   getBlobOfResource,
@@ -65,7 +66,11 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  createDefaultPage,
+  createFolderIndexPage,
+  getCategoryOptionsForPage,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -193,6 +198,18 @@ export const pageRouter = router({
         .filter((c) => !!c && !!c.trim())
 
       return { categories }
+    }),
+
+  getCategoryOptions: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      return getCategoryOptionsForPage({ pageId, siteId })
     }),
 
   readPage: protectedProcedure
@@ -762,7 +779,17 @@ export const pageRouter = router({
   updateSettings: protectedProcedure
     .input(pageSettingsSchema)
     .mutation(
-      async ({ ctx, input: { pageId, siteId, title, ...settings } }) => {
+      async ({
+        ctx,
+        input: {
+          pageId,
+          siteId,
+          title,
+          type,
+          shouldCreateRedirect,
+          ...settings
+        },
+      }) => {
         await bulkValidateUserPermissionsForResources({
           siteId,
           action: "update",
@@ -847,6 +874,33 @@ export const pageRouter = router({
               delta: { before: resource, after: updatedResource },
               eventType: AuditLogEvent.ResourceUpdate,
             })
+
+            // Keep redirects consistent when a Page/CollectionPage URL changes
+            // (a title-only edit leaves the permalink untouched).
+            if (
+              (type === ResourceType.Page ||
+                type === ResourceType.CollectionPage) &&
+              updatedResource.permalink !== resource.permalink
+            ) {
+              const parentFullPermalink = resource.parentId
+                ? await getResourceFullPermalink(
+                    siteId,
+                    Number(resource.parentId),
+                  )
+                : null
+              const oldFullPermalink = `${parentFullPermalink ?? ""}/${resource.permalink}`
+              const newFullPermalink = `${parentFullPermalink ?? ""}/${updatedResource.permalink}`
+
+              await applyPermalinkChangeRedirects(tx, {
+                siteId,
+                oldFullPermalink,
+                newFullPermalink,
+                resourceId: String(pageId),
+                isPublished: updatedResource.publishedVersionId !== null,
+                shouldCreateRedirect,
+                byUserId: ctx.user.id,
+              })
+            }
 
             // We do an implicit publish so that we can make the changes to the
             // page settings immediately visible on the end site

@@ -1,16 +1,18 @@
 import wretch from "wretch"
+import { z } from "zod"
 import { env } from "~/env.mjs"
 import { createBaseLogger } from "~/lib/logger"
 
 const logger = createBaseLogger({ path: "searchsg.service" })
 
-const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
-
-const ISOMER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
+export const SEARCHSG_BASE_URL = "https://api.services.search.gov.sg/admin"
+export const EGAZETTE_DOCUMENT_INDEX = env.EGAZETTE_DOCUMENT_INDEX
+export const ISOMER_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
 const SearchSgApi = {
   auth: () => `/v1/auth/token`,
   site: (id: string) => `/v2/sites/${id}`,
-  appPatch: (id: string, appId: string) => `/v2/sites/${id}/apps/${appId}`,
+  app: (id: string, appId: string) => `/v2/sites/${id}/apps/${appId}`,
   project: (projectId: string) => `/v2/projects/${projectId}`,
 } as const
 
@@ -70,11 +72,23 @@ const requestSearchSGClient = async () => {
   })
 }
 
+export const isValidSearchSGClientId = (clientId: string): boolean =>
+  z.string().uuid().safeParse(clientId).success
+
 export const updateSearchSGConfig = async (
   props: UpdateSearchSGConfigProps,
   searchsgClientId: string,
   url: string,
 ) => {
+  // Reject non-UUID clientIds to prevent path traversal attacks
+  if (!isValidSearchSGClientId(searchsgClientId)) {
+    logger.error(
+      { searchsgClientId },
+      `[ERROR] Invalid SearchSG client ID format - aborting to prevent path traversal`,
+    )
+    return
+  }
+
   // Only update SearchSG in production and staging environments since SearchSG does not have non-prod env
   // This is to avoid accidentally updating a production site in a non-prod environment
   if (!["production", "staging"].includes(env.NEXT_PUBLIC_APP_ENV)) {
@@ -85,20 +99,21 @@ export const updateSearchSGConfig = async (
     return
   }
 
+  let actualUrl: URL
+  try {
+    actualUrl = new URL(url)
+  } catch (error) {
+    logger.error(
+      { error, url, ...props },
+      `[ERROR] Invalid URL format for SearchSG config update`,
+    )
+    return
+  }
   const client = await requestSearchSGClient()
-  const actualUrl = new URL(url)
   logger.info(
     { ...props, searchsgClientId, url: actualUrl.host },
     `[INFO] Updating searchsg config for ${url} with searchsg client id: ${searchsgClientId}`,
   )
-
-  // NOTE: doing fetch before post to avoid cases
-  // where the search domain and data domains
-  // are not direct deriviatives of `site.url`
-  const { data } = await client
-    .url(SearchSgApi.site(searchsgClientId))
-    .get()
-    .json<SearchSGSiteResponse>()
 
   const logAndRethrow = (error: unknown): never => {
     logger.error(
@@ -108,35 +123,53 @@ export const updateSearchSGConfig = async (
     throw error
   }
 
-  if (props._kind === "colour") {
-    const app = findWebsiteSearchApp(data.siteDetail.applications)
-
-    return client
-      .url(SearchSgApi.appPatch(searchsgClientId, app.appId))
-      .json({
-        config: { theme: { primary: props.colour, fontFamily: "Inter" } },
-      })
-      .patch()
-      .res()
-      .catch(logAndRethrow)
-  }
-
-  // props._kind === "name"
-  const { projectId } = data.project
-  if (!projectId) {
-    logger.error(
-      { data },
-      `[ERROR] No projectId found in SearchSG site response for ${url} with searchsg client id: ${searchsgClientId}`,
-    )
-    throw new Error(
-      `No projectId found in SearchSG site response for searchsgClientId: ${searchsgClientId}`,
-    )
-  }
-
-  return client
-    .url(SearchSgApi.project(projectId))
-    .json({ projectName: props.name, adminList: ["isomer@open.gov.sg"] })
-    .patch()
-    .res()
+  // NOTE: fetch site details first to retrieve the appId (for colour updates)
+  // and projectId (for name updates) needed by the v2 branched PATCH endpoints
+  const { data } = await client
+    .url(SearchSgApi.site(searchsgClientId))
+    .get()
+    .json<SearchSGSiteResponse>()
     .catch(logAndRethrow)
+
+  const kind = props._kind
+  switch (kind) {
+    case "colour":
+      const app = findWebsiteSearchApp(data.siteDetail.applications)
+
+      return client
+        .url(SearchSgApi.app(searchsgClientId, app.appId))
+        .json({
+          config: { theme: { primary: props.colour, fontFamily: "Inter" } },
+        })
+        .patch()
+        .res()
+        .catch(logAndRethrow)
+    case "name":
+      const { projectId } = data.project
+      if (!projectId) {
+        logger.error(
+          { data },
+          `[ERROR] No projectId found in SearchSG site response for ${url} with searchsg client id: ${searchsgClientId}`,
+        )
+        throw new Error(
+          `No projectId found in SearchSG site response for searchsgClientId: ${searchsgClientId}`,
+        )
+      }
+
+      return client
+        .url(SearchSgApi.project(projectId))
+        .json({ projectName: props.name, adminList: ["isomer@open.gov.sg"] })
+        .patch()
+        .res()
+        .catch(logAndRethrow)
+    default: {
+      const exhaustiveCheck: never = kind
+      const invalidKind = exhaustiveCheck as string
+      logger.error(
+        { kind: invalidKind },
+        `[ERROR] Invalid SearchSG config update kind: ${invalidKind}`,
+      )
+      throw new Error(`Invalid SearchSG config update kind: ${invalidKind}`)
+    }
+  }
 }

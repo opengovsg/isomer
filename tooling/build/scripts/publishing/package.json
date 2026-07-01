@@ -8,7 +8,11 @@
   "main": "index.ts",
   "scripts": {
     "start": "tsx index.ts ",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test-ci:build": "vitest run --config vitest.build.config.ts",
+    "test-ci:unit": "vitest run",
+    "test:full-build": "vitest run --config vitest.build.config.ts",
+    "test:watch": "vitest watch",
     "upload-redirects": "tsx uploadRedirects.ts"
   },
   "dependencies": {
@@ -17,7 +21,10 @@
     "tsx": "catalog:"
   },
   "devDependencies": {
-    "@types/pg": "catalog:"
-  },
-  "packageManager": "pnpm@10.33.0"
+    "@isomer/db": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "testcontainers": "catalog:",
+    "vitest": "catalog:vitest"
+  }
 }

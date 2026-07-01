@@ -26,8 +26,20 @@ type ResourceDto = Omit<
   summary?: string
   thumbnail?: string
   category?: string
+  categoryId?: string | null
+  tagged?: string | null
   date?: string
   content?: string
+}
+
+const parseTagged = (raw: string | null | undefined): string[] | undefined => {
+  if (!raw) return undefined
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed) ? (parsed as string[]) : undefined
+  } catch {
+    return undefined
+  }
 }
 
 type CollectionItemResourceDto = Omit<ResourceDto, "type" | "parentId"> & {
@@ -114,6 +126,8 @@ const getSitemapTreeFromArray = (
         lastModified: resource.updatedAt.toISOString(),
         permalink,
         category: resource.category ?? "Others",
+        categoryId: resource.categoryId ?? undefined,
+        tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",
@@ -136,6 +150,8 @@ const getSitemapTreeFromArray = (
         lastModified: resource.updatedAt.toISOString(),
         permalink,
         category: resource.category ?? "Others",
+        categoryId: resource.categoryId ?? undefined,
+        tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",
@@ -270,6 +286,14 @@ export const injectTagMappings = async (
     resourceId: resource.parentId,
   })
 
+  const childPageProps = draftBlobOfResource.content.page as
+    | ArticlePagePageProps
+    | FileRefPageProps
+    | LinkRefPageProps
+
+  const collectionPageProps = publishedIndexBlob.content
+    .page as unknown as CollectionPagePageProps
+
   return _injectTagMappings(
     sitemapTree,
     // NOTE: This cast is abit overkill,
@@ -278,14 +302,10 @@ export const injectTagMappings = async (
     // not the exact type so for safety,
     // we cast to all the possible `page` props
     // of a collection item
-    (
-      draftBlobOfResource.content.page as
-        | ArticlePagePageProps
-        | FileRefPageProps
-        | LinkRefPageProps
-    ).tagged,
-    (publishedIndexBlob.content.page as unknown as CollectionPagePageProps)
-      .tagCategories,
+    childPageProps.tagged,
+    collectionPageProps.tagCategories,
+    childPageProps.categoryId,
+    collectionPageProps.categoryOptions,
     resource.id,
     resource.parentId,
   )
@@ -296,17 +316,19 @@ const _injectTagMappings = (
   sitemap: IsomerSitemap,
   tagged: ArticlePagePageProps["tagged"],
   tagCategories: CollectionPagePageProps["tagCategories"],
+  categoryId: ArticlePagePageProps["categoryId"],
+  categoryOptions: CollectionPagePageProps["categoryOptions"],
   childId: CollectionItemResourceDto["id"],
   collectionId: CollectionItemResourceDto["parentId"],
 ): IsomerSitemap => {
   // NOTE: If the child id matches,
-  // just inject the tags
+  // inject the tags and categoryId
   if (sitemap.id === childId) {
-    return { ...sitemap, tagged }
+    return { ...sitemap, tagged, categoryId }
   }
 
   // NOTE: If the collection id matches,
-  // inject tag categories and process the children
+  // inject tag categories, categoryOptions and process the children
   if (
     sitemap.layout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
     sitemap.id === collectionId
@@ -316,9 +338,18 @@ const _injectTagMappings = (
       collectionPagePageProps: {
         ...sitemap.collectionPagePageProps,
         tagCategories,
+        categoryOptions,
       },
       children: sitemap.children?.map((child) =>
-        _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
+        _injectTagMappings(
+          child,
+          tagged,
+          tagCategories,
+          categoryId,
+          categoryOptions,
+          childId,
+          collectionId,
+        ),
       ),
     }
   }
@@ -328,7 +359,15 @@ const _injectTagMappings = (
   return {
     ...sitemap,
     children: sitemap.children?.map((child) =>
-      _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
+      _injectTagMappings(
+        child,
+        tagged,
+        tagCategories,
+        categoryId,
+        categoryOptions,
+        childId,
+        collectionId,
+      ),
     ),
   }
 }

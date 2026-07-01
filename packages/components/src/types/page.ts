@@ -9,49 +9,132 @@ import {
   SearchableTableSchema,
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
-import { NON_EMPTY_STRING_REGEX, REF_HREF_PATTERN } from "~/utils/validation"
+import {
+  REF_HREF_PATTERN,
+  TRIMMED_NON_EMPTY_STRING_REGEX,
+} from "~/utils/validation"
 
 // NOTE: a tag value is simply a uuid that maps to a given label;
 // essentially, it is just a pointer
 const generateUuidSchema = (options: Omit<StringOptions, "format">) =>
   Type.String({ format: "uuid", ...options })
 
-export const TagOptionUuidSchema = generateUuidSchema({
+const TagOptionUuidSchema = generateUuidSchema({
   title: "Uuid of a single tag option",
   description:
     "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
 })
-export const TagCategoryUuidSchema = generateUuidSchema({
+const TagCategoryUuidSchema = generateUuidSchema({
   title: "Uuid of a single tag",
   description:
     "This is the uuid of a single tag category and will be used to uniquely identify it.",
 })
-// NOTE: single value for now but we might extend this in the future with additional metadata,
-// so we will leave it as is
-const DropdownItemSchema = Type.Object({
-  label: Type.String({ pattern: NON_EMPTY_STRING_REGEX }),
-  id: TagOptionUuidSchema,
-})
-const TagOptionSchema = DropdownItemSchema
+
 const TagCategorySchema = Type.Composite([
   Type.Object({
-    options: Type.Array(TagOptionSchema),
+    label: Type.String({
+      title: "Filter name",
+      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+      errorMessage: {
+        pattern: "cannot be empty or have leading/trailing spaces",
+      },
+    }),
+    id: TagCategoryUuidSchema,
   }),
-  DropdownItemSchema,
+  Type.Object({
+    // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
+    // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
+    // same default to legacy rows that omit this key. New filters set `isRequired: true` in
+    // the tag-categories JsonForms control when adding an item.
+    isRequired: Type.Optional(
+      Type.Boolean({
+        title: "This filter is required",
+        description:
+          "Every item must have at least one option selected from this filter.",
+      }),
+    ),
+  }),
+  Type.Object({
+    options: Type.Array(
+      Type.Object({
+        label: Type.String({
+          title: "Option name",
+          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or have leading/trailing spaces",
+          },
+        }),
+        id: TagOptionUuidSchema,
+      }),
+      {
+        title: "Options",
+        description:
+          "Collection filter will display options in this order. Only options that are in use will appear on the Preview.",
+        format: "tag-category-options",
+      },
+    ),
+  }),
 ])
 // NOTE: can be optional because the categories might not exist
 const TagCategoriesSchema = Type.Object({
   tagCategories: Type.Optional(
-    Type.Array(TagCategorySchema, { format: "tag-categories" }),
+    Type.Array(TagCategorySchema, {
+      title: "Filters",
+      description:
+        "Add filters so visitors can find what they need. Editors can assign these options on items they create.",
+      format: "tag-categories",
+    }),
   ),
 })
+
+/**
+ * `categoryOptions` is optional for backward compatibility: persisted blobs may omit it, and we
+ * avoid misleading inferred types (Static<>) that claim the field is always present before
+ * migration. After rollout, run a script to populate blobs with `categoryOptions`, then we can
+ * make this property required. At the same time, mark `category` as deprecated on collection
+ * item props in favour of `categoryId` (and related fields) aligned with these options.
+ * Studio AJV still applies `default: []` when the key is missing.
+ *
+ * Display vs "Manage filters" in Studio is not encoded here: `getScopedSchema` in
+ * CollectionEditorStateDrawer includes this field only in the Filters drawer (with tag filters),
+ * not under Collection display.
+ */
+const CategoriesSchema = Type.Object({
+  categoryOptions: Type.Optional(
+    Type.Array(
+      Type.Object({
+        label: Type.String({
+          title: "Option name",
+          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+          errorMessage: {
+            pattern: "cannot be empty or have leading/trailing spaces",
+          },
+        }),
+        id: generateUuidSchema({
+          title: "Category id",
+          description:
+            "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
+        }),
+      }),
+      {
+        title: "Options",
+        format: "category-options",
+        default: [],
+      },
+    ),
+  ),
+})
+
+export type CollectionPageCategoryOption = NonNullable<
+  Static<typeof CategoriesSchema>["categoryOptions"]
+>[number]
+
 const TaggedSchema = Type.Optional(
   // NOTE: This stores the `uuid` of the tag option
   Type.Array(TagOptionUuidSchema, {
     // NOTE: we need a custom format because this cannot just be a simple drop down
     // as we need to reference the existing data that is pointing to this
     format: "tagged",
-    description: "To add new options, contact your site owner(s).",
   }),
 )
 
@@ -62,6 +145,21 @@ const categorySchemaObject = Type.Object({
     description:
       "The category is used for filtering in the parent collection page",
   }),
+  /**
+   * `categoryId` is optional for backward compatibility: persisted blobs may omit it, and we
+   * avoid misleading inferred types (Static<>) that claim the field is always present before
+   * migration from string `category`. After rollout, populate items with `categoryId` aligned
+   * with `categoryOptions` on the parent collection, then we can make this property required
+   * and deprecate `category`.
+   *
+   * @see {@link CategoriesSchema} for the parent collection's `categoryOptions` shape (`id` on each option).
+   */
+  categoryId: Type.Optional(
+    Type.String({
+      title: "Category",
+      format: "category-id",
+    }),
+  ),
 })
 
 const dateSchemaObject = Type.Object({
@@ -269,6 +367,7 @@ export const CollectionPagePageSchema = Type.Intersect([
     ),
   }),
   TagCategoriesSchema,
+  CategoriesSchema,
   TagsSchema,
 ])
 

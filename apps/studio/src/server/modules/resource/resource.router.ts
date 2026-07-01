@@ -38,10 +38,15 @@ import {
   definePermissionsForResource,
   getResourcePermission,
 } from "../permissions/permissions.service"
+import {
+  applyPermalinkChangeRedirects,
+  softDeleteRedirectsPointingToResource,
+} from "../redirect/redirect.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
+  getResourceFullPermalink,
   getSearchRecentlyEdited,
   getSearchResults,
   getSearchWithResourceIds,
@@ -119,6 +124,7 @@ export const resourceRouter = router({
           "Resource.permalink",
           "Resource.parentId",
           "Resource.siteId",
+          "Resource.publishedVersionId",
         ])
         .executeTakeFirst()
 
@@ -321,7 +327,12 @@ export const resourceRouter = router({
     .mutation(
       async ({
         ctx,
-        input: { siteId, movedResourceId, destinationResourceId },
+        input: {
+          siteId,
+          movedResourceId,
+          destinationResourceId,
+          shouldCreateRedirect,
+        },
       }) => {
         const isValid = await validateUserPermissionsForMove({
           from: movedResourceId,
@@ -480,6 +491,20 @@ export const resourceRouter = router({
               }
             }
 
+            // Old URL = current location (pre-UPDATE); new URL from the
+            // unchanged destination + slug, so neither read is stale.
+            const oldFullPermalink = await getResourceFullPermalink(
+              siteId,
+              Number(movedResourceId),
+            )
+            const destinationFullPermalink = destinationResourceId
+              ? await getResourceFullPermalink(
+                  siteId,
+                  Number(destinationResourceId),
+                )
+              : null
+            const newFullPermalink = `${destinationFullPermalink ?? ""}/${toMove.permalink}`
+
             await tx
               .updateTable("Resource")
               .where("siteId", "=", Number(siteId))
@@ -488,6 +513,7 @@ export const resourceRouter = router({
                 ResourceType.Page,
                 ResourceType.CollectionPage,
                 ResourceType.Folder,
+                ResourceType.Collection,
                 ResourceType.CollectionLink,
               ])
               .set({
@@ -520,6 +546,24 @@ export const resourceRouter = router({
               delta: { before: toMove, after: moved },
               by: user,
             })
+
+            // Keep redirects consistent with the new URL — Page/CollectionPage
+            // only (folders/collection links have no URL of their own).
+            if (
+              (toMove.type === ResourceType.Page ||
+                toMove.type === ResourceType.CollectionPage) &&
+              oldFullPermalink !== null
+            ) {
+              await applyPermalinkChangeRedirects(tx, {
+                siteId,
+                oldFullPermalink,
+                newFullPermalink,
+                resourceId: movedResourceId,
+                isPublished: toMove.publishedVersionId !== null,
+                shouldCreateRedirect,
+                byUserId: user.id,
+              })
+            }
 
             return moved
           })
@@ -683,6 +727,16 @@ export const resourceRouter = router({
           eventType: AuditLogEvent.ResourceDelete,
         })
 
+        // Soft-delete redirects pointing at this resource (or any descendant)
+        // in the same transaction — once the page is gone they resolve to
+        // nothing. Run before the delete while the subtree is still resolvable;
+        // the delete's site publish covers the removal.
+        await softDeleteRedirectsPointingToResource(tx, {
+          siteId: Number(siteId),
+          resourceId: String(resourceId),
+          byUserId: user.id,
+        })
+
         return tx
           .deleteFrom("Resource")
           .where("Resource.id", "=", String(resourceId))
@@ -752,7 +806,10 @@ export const resourceRouter = router({
         siteId: Number(siteId),
       })
 
-      const result = await getWithFullPermalink({ resourceIds: [resourceId] })
+      const result = await getWithFullPermalink({
+        resourceIds: [resourceId],
+        siteId: Number(siteId),
+      })
 
       if (result.length === 0 || !result[0]) {
         throw new TRPCError({ code: "NOT_FOUND" })

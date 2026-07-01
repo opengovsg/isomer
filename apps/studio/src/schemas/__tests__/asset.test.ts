@@ -2,7 +2,11 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 
-import { getPresignedPutUrlSchema } from "../asset"
+import {
+  deleteAssetsSchema,
+  getPresignedPutUrlSchema,
+  MAX_DELETE_FILE_KEYS,
+} from "../asset"
 
 describe("getPresignedPutUrlSchema", () => {
   const validBaseData = {
@@ -12,16 +16,26 @@ describe("getPresignedPutUrlSchema", () => {
 
   describe("fileName validation", () => {
     describe("file extension validation", () => {
-      // Test all allowed image extensions
-      Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING).forEach((extension) => {
-        it(`should accept valid image extension: ${extension}`, () => {
-          const fileName = `test-image${extension}`
-          const result = getPresignedPutUrlSchema.safeParse({
-            ...validBaseData,
-            fileName,
+      // Test all allowed image extensions except .svg (handled by uploadSvg endpoint)
+      Object.keys(IMAGE_ACCEPTED_MIME_TYPE_MAPPING)
+        .filter((ext) => ext !== ".svg")
+        .forEach((extension) => {
+          it(`should accept valid image extension: ${extension}`, () => {
+            const fileName = `test-image${extension}`
+            const result = getPresignedPutUrlSchema.safeParse({
+              ...validBaseData,
+              fileName,
+            })
+            expect(result.success).toBe(true)
           })
-          expect(result.success).toBe(true)
         })
+
+      it("should reject .svg files (use uploadSvg endpoint instead)", () => {
+        const result = getPresignedPutUrlSchema.safeParse({
+          ...validBaseData,
+          fileName: "test-image.svg",
+        })
+        expect(result.success).toBe(false)
       })
 
       // Test all allowed file extensions
@@ -256,5 +270,44 @@ describe("getPresignedPutUrlSchema", () => {
         expect(result.success).toBe(false)
       })
     })
+  })
+})
+
+describe("deleteAssetsSchema", () => {
+  const validBaseData = {
+    siteId: 1,
+    resourceId: "test-resource-id",
+  }
+
+  const makeFileKeys = (count: number) =>
+    Array.from({ length: count }, (_, i) => `1/uuid-${i}/file-${i}.png`)
+
+  it(`should accept exactly ${MAX_DELETE_FILE_KEYS} file keys`, () => {
+    const result = deleteAssetsSchema.safeParse({
+      ...validBaseData,
+      fileKeys: makeFileKeys(MAX_DELETE_FILE_KEYS),
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("should accept an empty file keys array", () => {
+    const result = deleteAssetsSchema.safeParse({
+      ...validBaseData,
+      fileKeys: [],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it(`should reject more than ${MAX_DELETE_FILE_KEYS} file keys`, () => {
+    const result = deleteAssetsSchema.safeParse({
+      ...validBaseData,
+      fileKeys: makeFileKeys(MAX_DELETE_FILE_KEYS + 1),
+    })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toBe(
+        `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
+      )
+    }
   })
 })

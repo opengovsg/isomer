@@ -1,23 +1,33 @@
-import type { getLayoutPageSchema } from "@opengovsg/isomer-components"
+import type {
+  CollectionPagePageProps,
+  getLayoutPageSchema,
+} from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
+import { trackEvent } from "@intercom/messenger-js-sdk"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getScopedSchema,
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { env } from "~/env.mjs"
+import { useMe } from "~/features/me/api"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
-import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
+import {
+  COLLECTION_DISPLAY_SAVED_MESSAGE,
+  FILTER_SAVED_MESSAGE,
+} from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
@@ -30,6 +40,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const {
+    drawerState,
     setDrawerState,
     savedPageState,
     setSavedPageState,
@@ -37,12 +48,21 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     setPreviewPageState,
   } = useEditorDrawerContext()
 
-  const isUserIsomerAdmin = useIsUserIsomerAdmin({
+  const { me } = useMe()
+  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
+
+  const drawerStateType = useMemo(() => {
+    if (drawerState.state !== "collectionEditor") {
+      return "display"
+    }
+    return drawerState.type
+  }, [drawerState])
+
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
@@ -50,21 +70,44 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       await utils.page.getCategories.invalidate({ pageId, siteId })
       toast({
         status: "success",
-        title: CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE,
+        title:
+          drawerStateType === "filter"
+            ? FILTER_SAVED_MESSAGE
+            : COLLECTION_DISPLAY_SAVED_MESSAGE,
         ...BRIEF_TOAST_SETTINGS,
       })
     },
   })
 
+  const schemaFields = useMemo(() => {
+    if (isUserIsomerAdmin) {
+      return drawerStateType === "display"
+        ? {
+            exclude: ["tagCategories", "tags", "categoryOptions"],
+          }
+        : {
+            include: ["tagCategories", "tags", "categoryOptions"],
+          }
+    }
+    return {
+      exclude: ["tagCategories", "tags", "categoryOptions"],
+    }
+  }, [drawerStateType, isUserIsomerAdmin])
+
   const metadataSchema = getScopedSchema({
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
     scope: "page",
-    exclude: isUserIsomerAdmin ? [] : ["tagCategories", "tags"],
+    ...schemaFields,
   })
   const validateFn =
     ajv.compile<Static<ReturnType<typeof getLayoutPageSchema>>>(metadataSchema)
 
   const handleSaveChanges = useCallback(() => {
+    const hadNoTagsBefore = !(savedPageState.page as CollectionPagePageProps)
+      .tagCategories?.length
+    const hasTagsNow = !!(previewPageState.page as CollectionPagePageProps)
+      .tagCategories?.length
+
     setSavedPageState(previewPageState)
     mutate(
       {
@@ -73,16 +116,28 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
         content: JSON.stringify(previewPageState),
       },
       {
-        onSuccess: () => setDrawerState({ state: "root" }),
+        onSuccess: () => {
+          setDrawerState({ state: "root" })
+          if (
+            env.NEXT_PUBLIC_INTERCOM_APP_ID &&
+            hadNoTagsBefore &&
+            hasTagsNow
+          ) {
+            trackEvent("first_tag_added")
+            triggerCollectionTagCsatSurveyOnce({ userId: me.id })
+          }
+        },
       },
     )
   }, [
     mutate,
     pageId,
     previewPageState,
+    savedPageState,
     setDrawerState,
     setSavedPageState,
     siteId,
+    me.id,
   ])
 
   const handleChange = (data: unknown) => {
@@ -118,13 +173,16 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
               handleDiscardChanges()
             }
           }}
-          label="Edit collection settings"
+          label={
+            drawerStateType === "display"
+              ? "Collection display"
+              : "Manage filters"
+          }
         />
 
         <ErrorProvider>
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
-            {savedPageState.layout ===
-              ISOMER_USABLE_PAGE_LAYOUTS.Collection && (
+            {drawerStateType === "display" && (
               <Box pb="1rem">
                 <Infobox
                   size="sm"
@@ -178,7 +236,10 @@ const SaveButton = ({
       w="100%"
       isLoading={isLoading}
       isDisabled={!isEmpty(errors)}
-      onClick={onClick}
+      onClick={() => {
+        if (!isEmpty(errors)) return
+        onClick()
+      }}
     >
       Save changes
     </Button>

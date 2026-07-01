@@ -1,12 +1,39 @@
 import type { Kysely, Transaction } from "kysely"
 import { TRPCError } from "@trpc/server"
+import filenamify from "filenamify"
+import { PdfReader } from "pdfreader"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
+import { env } from "~/env.mjs"
+import { GazetteCategories } from "~/features/gazettes/constants"
+import { deleteObjectsFromSearchIndexByFilter } from "~/lib/algolia"
+import { createBaseLogger } from "~/lib/logger"
+import {
+  copyFile,
+  deleteFile,
+  generateSignedGetUrl,
+  generateSignedPutUrl,
+} from "~/lib/s3"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 
+import {
+  generateTagsQueryString,
+  getContentDispositionForKey,
+  getContentTypeFromKey,
+} from "../asset/asset.service"
 import { db, ResourceType, sql } from "../database"
 import { isActiveIsomerAdmin } from "../permissions/permissions.service"
+import {
+  EGAZETTE_DOCUMENT_INDEX,
+  ISOMER_UA,
+  SEARCHSG_BASE_URL,
+} from "../searchsg/searchsg.service"
 
+export const generateDocumentId = (url: string, resourceId: string): string =>
+  `${url}-${resourceId}`
+
+const { S3_GAZETTE_BUCKET_NAME } = env
+const logger = createBaseLogger({ path: "gazette.service" })
 /**
  * Throws FORBIDDEN unless the user is from Toppan or a Core IsomerAdmin.
  *
@@ -80,4 +107,457 @@ export const findCollectionLinkWithFilename = async ({
   }
 
   return query.executeTakeFirst()
+}
+
+// NOTE: Identical to the one in assets.service.ts
+// just that we swap the bucket.
+// Not adding the prop because we want to keep it separate -
+// we want to isolate gazette stuff as much as possible
+export const getPresignedPutUrl = async ({
+  key,
+  tags,
+}: {
+  key: string
+  tags?: { key: string; value: string }[]
+}): Promise<{
+  presignedPutUrl: string
+  contentType: string
+  contentDisposition: string
+}> => {
+  const contentType = getContentTypeFromKey(key)
+  const contentDisposition = getContentDispositionForKey(key)
+  const stringifiedTags = tags && generateTagsQueryString(tags)
+
+  const presignedPutUrl = await generateSignedPutUrl({
+    Bucket: S3_GAZETTE_BUCKET_NAME,
+    Key: key,
+    ContentType: contentType,
+    ContentDisposition: contentDisposition,
+    Tagging: tags && stringifiedTags,
+  })
+  return { presignedPutUrl, contentType, contentDisposition }
+}
+
+export const getPresignedGetUrl = async ({
+  key,
+}: {
+  key: string
+}): Promise<string> => {
+  return generateSignedGetUrl({
+    Bucket: S3_GAZETTE_BUCKET_NAME,
+    Key: key,
+  })
+}
+
+/**
+ * Copy `sourceKey` to a new key derived by replacing the filename segment with
+ * `newFileName`. Does NOT delete the source — the caller is responsible for
+ * scheduling the soft-delete *after* whatever DB write references the new key
+ * has committed, so a tx rollback never leaves a resource pointing at a
+ * tombstoned object.
+ */
+export const copyFileWithNewName = async ({
+  sourceKey,
+  newFileName,
+}: {
+  sourceKey: string
+  newFileName: string
+}): Promise<string> => {
+  const parts = sourceKey.split("/")
+  // NOTE: This is in `/year/category/subcategory/filename` format
+  if (parts.length < 4) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid source key format",
+    })
+  }
+  const prefix = parts.slice(0, 3).join("/")
+
+  // Build new key with sanitized new filename
+  const sanitizedFileName = filenamify(newFileName, { replacement: "-" })
+  const newKey = `${prefix}/${sanitizedFileName}`
+
+  // Copy to new location. The aws-sdk v3 CopyObjectCommand defaults
+  // `TaggingDirective` to `COPY`, so the ISOMER_STATUS tag (and any other
+  // object tags) carry over without us having to set them explicitly.
+  await copyFile({
+    SourceKey: sourceKey,
+    DestKey: newKey,
+    Bucket: S3_GAZETTE_BUCKET_NAME,
+  })
+
+  return newKey
+}
+
+// Taken as is from egazette codebase.
+// Instantiates a fresh PdfReader per call — the cron handler parses PDFs
+// concurrently via Promise.all and pdfreader is built on pdf2json whose
+// underlying state is not safe to share across overlapping parseBuffer
+// invocations.
+export const parseFullTextFromPDF = async (pdfBuffer: Uint8Array) => {
+  const pdfReader = new PdfReader({})
+  const data: string[] = await new Promise((resolve, reject) => {
+    const parsedData: string[] = []
+    pdfReader.parseBuffer(Buffer.from(pdfBuffer), (err, item) => {
+      if (err) {
+        reject(new Error(err))
+      } else if (!item) {
+        resolve(parsedData)
+      } else if (item.text) {
+        parsedData.push(item.text)
+      }
+    })
+  })
+
+  return data.join(" ")
+}
+
+export const markFileAsDeleted = async ({ key }: { key: string }) => {
+  await deleteFile({
+    Key: key,
+    Bucket: S3_GAZETTE_BUCKET_NAME,
+  })
+}
+
+/**
+ * Remove a gazette document from the SearchSG index.
+ */
+export const removeGazetteFromSearchIndex = async (
+  ref: string,
+  resourceId: string,
+): Promise<void> => {
+  const documentId = generateDocumentId(ref, resourceId)
+  const { accessToken, tokenType } = await getSearchSGAuthToken()
+  const response = await fetch(
+    `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `${tokenType} ${accessToken}`,
+        "Content-Type": "application/json",
+        "User-Agent": ISOMER_UA,
+      },
+      body: JSON.stringify({ documentsToDelete: [documentId] }),
+    },
+  )
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    logger.warn(
+      { status: response.status, documentId, error: errorText },
+      "Failed to remove gazette from search index",
+    )
+    throw new TRPCError({
+      message: "Failed to remove gazette from search index",
+      code: "PRECONDITION_FAILED",
+    })
+  }
+}
+
+/**
+ * Mark a gazette asset as deleted in S3. Throws on failure — silent failure
+ * here would leave the PDF publicly reachable after the gazette is "deleted"
+ * from SearchSG and the DB, defeating the purpose of the grace-period delete.
+ *
+ * On failure we also log the public URL so ops has a recovery target — by
+ * this point SearchSG removal has already succeeded, so the gazette is
+ * deindexed but still reachable at this URL until the soft-delete completes.
+ */
+export const deleteGazetteAsset = async (ref: string): Promise<void> => {
+  const key = ref.slice(1) // Remove leading slash
+  try {
+    await markFileAsDeleted({ key })
+  } catch (err) {
+    const publicUrl = `https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`
+    logger.error(
+      { err, key, publicUrl },
+      "Failed to soft-delete gazette in S3; the file may still be publicly reachable at publicUrl until manually cleaned up",
+    )
+    throw err
+  }
+}
+
+const getSearchSGAuthToken = async () => {
+  const response = await fetch(`${SEARCHSG_BASE_URL}/v1/auth/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${env.SEARCHSG_API_KEY}`,
+      "User-Agent": ISOMER_UA,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to get SearchSG auth token: ${response.statusText}`)
+  }
+
+  const { accessToken, tokenType } = (await response.json()) as {
+    accessToken: string
+    tokenType: string
+  }
+
+  return { accessToken, tokenType }
+}
+
+export interface PushDocument {
+  documentId: string
+  title: string
+  url: string
+  contentType: string
+  content: string
+  date: string
+  categories: string[]
+}
+
+/**
+ * Shape of a gazette record pushed to the shared egazette Algolia index.
+ * Must match egazette field-for-field — the index schema is set by egazette.
+ *
+ * The index signature makes SearchRecord directly assignable to
+ * `({ objectID: string } & Record<string, unknown>)[]` (the saveObjectsToSearchIndex
+ * parameter type) without an unsafe cast.
+ */
+export interface SearchRecord {
+  objectID: string
+  objectGroup: string
+  title: string
+  category: string
+  subCategory: string
+  notificationNum?: string
+  lexiNotificationNum?: string
+  /** Publish date in "DD/MM/YYYY" format (Asia/Singapore local time). */
+  publishDate: string
+  publishYear: number
+  publishMonth: number
+  publishDay: number
+  /** Epoch milliseconds of the publish timestamp. */
+  publishTimestamp: number
+  fileUrl: string
+  /** One text chunk (up to 7 000 chars) from the parsed PDF. */
+  text: string
+  [key: string]: unknown
+}
+
+export interface BuildGazetteSearchRecordsParams {
+  parsedText: string
+  objectGroup: string
+  title: string
+  category: string
+  subCategory: string
+  notificationNum?: string
+  fileUrl: string
+  scheduledAt: Date
+}
+
+/**
+ * Build Algolia search records for a gazette, one record per text chunk.
+ *
+ * Pure function — no I/O, no env reads, no feature-flag checks.
+ * The caller (cron) is responsible for the flag check.
+ */
+export const buildGazetteSearchRecords = ({
+  parsedText,
+  objectGroup,
+  title,
+  category,
+  subCategory,
+  notificationNum,
+  fileUrl,
+  scheduledAt,
+}: BuildGazetteSearchRecordsParams): SearchRecord[] => {
+  if (!parsedText) return []
+
+  // Split parsedText into chunks of up to 7 000 characters, ending on a
+  // whitespace boundary where possible. This keeps each Algolia record well
+  // below the ~10 KB record-size limit.
+  //
+  // The regex matches up to 7 000 characters followed by whitespace OR
+  // end-of-string. The `g` flag advances through the string chunk by chunk.
+  // We use a while-loop (not matchAll/split) to mirror egazette's own
+  // chunking logic exactly.
+  //
+  // WHY end on whitespace: splitting mid-word fragments search tokens across
+  // two records and hurts recall; whitespace-aligned splits are semantically
+  // cleaner and egazette uses the same boundary.
+  //
+  // NOTE: a contiguous run of non-whitespace characters longer than 7000 chars
+  // causes the regex to skip the leading portion of that run (it begins matching
+  // at the first position from which it can consume up to 7000 chars ending at
+  // the string boundary). Same behavior as egazette; gazette PDFs are
+  // whitespace-delimited prose, so this does not arise in practice.
+  const CHUNK_REGEX = /.{1,7000}(?:\s|$)/g
+
+  const chunks: string[] = []
+  let match: RegExpExecArray | null
+  while ((match = CHUNK_REGEX.exec(parsedText)) !== null) {
+    chunks.push(match[0])
+  }
+
+  // Derive SG-local date fields from scheduledAt.
+  // Asia/Singapore is pinned explicitly because gazette publish dates are
+  // always expressed in Singapore time (SGT = UTC+8); using the server's
+  // local time would produce wrong year/month/day for any deployment outside
+  // the SGT zone.
+  const publishDate = scheduledAt.toLocaleDateString("en-SG", {
+    timeZone: "Asia/Singapore",
+  })
+  const [day, month, year] = publishDate.split("/").map(Number) as [
+    number,
+    number,
+    number,
+  ]
+
+  // lexiNotificationNum is notificationNum left-padded to 10 digits.
+  // 10 = egazette's MAX_NOTIFICATION_NUMBER_LENGTH; must match for consistent
+  // sort ordering in Algolia.
+  const lexiNotificationNum = notificationNum
+    ? notificationNum.padStart(10, "0")
+    : undefined
+
+  return chunks.map((chunk, idx) => ({
+    objectID: `${objectGroup}-text-${idx}`,
+    objectGroup,
+    title,
+    category,
+    subCategory,
+    notificationNum,
+    lexiNotificationNum,
+    publishDate,
+    publishYear: year,
+    publishMonth: month,
+    publishDay: day,
+    publishTimestamp: scheduledAt.getTime(),
+    fileUrl,
+    text: chunk,
+  }))
+}
+
+/**
+ * Remove all Algolia records for a gazette identified by its S3 ref.
+ *
+ * Deletes by objectGroup filter rather than individual objectIDs because the
+ * number of chunks is not known at delete time (Algolia's deleteBy handles the
+ * fan-out). resourceId is not needed for Algolia — objectGroup is the unique
+ * dedup key for all of a gazette's records.
+ *
+ * The objectGroup value is wrapped in double quotes in the filter expression
+ * because it contains forward slashes and a dot (e.g. "2026/cat/sub/file.pdf")
+ * which Algolia's filter parser would otherwise mis-tokenise.
+ */
+export const removeGazetteFromAlgolia = async (ref: string): Promise<void> => {
+  const objectGroup = ref.slice(1)
+  try {
+    await deleteObjectsFromSearchIndexByFilter(`objectGroup:"${objectGroup}"`)
+  } catch (error) {
+    logger.warn({ error, objectGroup }, "Failed to remove gazette from Algolia")
+    throw new TRPCError({
+      message: "Failed to remove gazette from search index",
+      code: "PRECONDITION_FAILED",
+    })
+  }
+}
+
+export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
+  if (documents.length === 0) {
+    return
+  }
+
+  const { accessToken, tokenType } = await getSearchSGAuthToken()
+
+  const response = await fetch(
+    `${SEARCHSG_BASE_URL}/v2/indexes/${EGAZETTE_DOCUMENT_INDEX}/documents`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `${tokenType} ${accessToken}`,
+        "Content-Type": "application/json",
+        "User-Agent": ISOMER_UA,
+      },
+      body: JSON.stringify({ documentsToAdd: documents }),
+    },
+  )
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    logger.error(
+      { status: response.status, error: errorText, documents },
+      "Failed to push documents for ingestion",
+    )
+    throw new Error(
+      `Failed to push documents for ingestion: ${response.statusText} ${errorText}`,
+    )
+  }
+
+  logger.info(
+    { count: documents.length },
+    "Successfully pushed documents for ingestion",
+  )
+}
+
+/**
+ * Detects whether another gazette in the same collection already uses the
+ * given notification number. A gazette is a duplicate when it shares the
+ * same notification number, category and publish year. For non-Government
+ * Gazette categories the subcategory must match too — Government Gazette
+ * numbers are unique within the category, not the subcategory.
+ *
+ * Gazette metadata lives in the resource's draft (or published) blob:
+ * `content.page.{description,category,date,tagged}`. `date` is stored as a
+ * "dd/MM/yyyy" string, so the year is its third "/"-delimited segment.
+ * Deleted gazettes are hard-deleted, so no soft-delete filter is needed.
+ */
+export const hasDuplicateNotificationNumber = async ({
+  trx = db,
+  siteId,
+  parentId,
+  notificationNumber,
+  publishDate,
+  category,
+  subCategory,
+  excludeId,
+}: {
+  trx?: Kysely<DB> | Transaction<DB>
+  siteId: number
+  parentId: string | null
+  notificationNumber: string
+  publishDate: string
+  category: string
+  subCategory: string
+  excludeId?: string
+}): Promise<boolean> => {
+  const isGovernmentGazette = category === GazetteCategories.GovernmentGazettes
+  // publishDate is a "dd/MM/yyyy" string — the year is the last segment.
+  const publishYear = publishDate.split("/").at(-1)
+
+  const content = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`
+
+  let query = trx
+    .selectFrom("Resource")
+    .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
+    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+    .leftJoin("Blob as PublishedBlob", "Version.blobId", "PublishedBlob.id")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.parentId", "=", parentId)
+    .where("Resource.type", "=", ResourceType.CollectionLink)
+    .where(
+      sql<boolean>`${content}->'page'->>'description' = ${notificationNumber}`,
+    )
+    .where(sql<boolean>`${content}->'page'->>'category' = ${category}`)
+    .where(
+      sql<boolean>`split_part(${content}->'page'->>'date', '/', 3) = ${publishYear}`,
+    )
+    .select("Resource.id")
+
+  // Government gazettes are unique within category, not subcategory.
+  if (!isGovernmentGazette) {
+    query = query.where(
+      sql<boolean>`${content}->'page'->'tagged'->>0 = ${subCategory}`,
+    )
+  }
+
+  if (excludeId) {
+    query = query.where("Resource.id", "!=", excludeId)
+  }
+
+  const duplicate = await query.executeTakeFirst()
+  return duplicate !== undefined
 }

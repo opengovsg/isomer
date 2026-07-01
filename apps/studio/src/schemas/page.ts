@@ -16,7 +16,9 @@ export const NEW_PAGE_LAYOUT_VALUES = [
 ] as const satisfies readonly PrismaJson.BlobJsonContent["layout"][]
 
 export const MAX_TITLE_LENGTH = 250
-export const MAX_PAGE_URL_LENGTH = 500
+// NOTE: 250 characters is the hard limit as file names have a max limit of 255
+// characters, and the file name includes ".json" suffix
+export const MAX_PAGE_URL_LENGTH = 250
 
 const pageTitleSchema = z
   .string({
@@ -122,6 +124,10 @@ export const getRootPageSchema = z.object({
 
 export const basePageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
+  // Create a redirect from the page's old URL when its permalink changes (acted
+  // on only for Page/CollectionPage). On the base so the union destructures
+  // cleanly. Defaults on, matching the checkbox's default-checked state.
+  shouldCreateRedirect: z.boolean().optional().default(true),
 })
 
 const rootPageSettingsSchema = basePageSettingsSchema.extend({

@@ -4,6 +4,8 @@ import type {
   DB,
   Footer,
   Navbar,
+  PushDocumentJob,
+  Redirect,
   Resource,
   ResourcePermission,
   Site,
@@ -42,10 +44,18 @@ interface ResourceEventDeltaMap {
     before: FullResource
     after: FullResource
   }
-  CancelSchedulePublish: {
-    before: FullResource
-    after: FullResource
-  }
+  CancelSchedulePublish:
+    | {
+        before: FullResource
+        after: FullResource
+      }
+    // egazette cancel: the resource is deleted in the same transaction, so we
+    // log the deleted PushDocumentJob row instead of a synthetic resource
+    // snapshot that never lands in the DB.
+    | {
+        before: WithoutMeta<PushDocumentJob>
+        after: null
+      }
 }
 
 interface BaseResourceEventLogProps {
@@ -127,6 +137,49 @@ interface SiteConfigUpdateEventLogProps {
 }
 
 export const logConfigEvent: AuditLogger<ConfigEventLogProps> = async (
+  tx,
+  { eventType, delta, by, ip, siteId },
+) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({
+      siteId,
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+      metadata: {},
+    })
+    .execute()
+}
+
+// map each event type to its delta type
+interface RedirectEventDeltaMap {
+  RedirectCreate: {
+    // Creating a redirect for a soft-deleted source revives it, so `before`
+    // is the soft-deleted row in that case and null otherwise
+    before: Redirect | null
+    after: Redirect
+  }
+  RedirectDelete: {
+    // Redirects are soft-deleted, so `after` is the real row with
+    // `deletedAt` set rather than null
+    before: Redirect
+    after: Redirect
+  }
+}
+
+export type RedirectEventLogProps = {
+  [K in keyof RedirectEventDeltaMap]: {
+    eventType: K
+    delta: RedirectEventDeltaMap[K]
+    by: User
+    ip?: string
+    siteId: Site["id"]
+  }
+}[keyof RedirectEventDeltaMap]
+
+export const logRedirectEvent: AuditLogger<RedirectEventLogProps> = async (
   tx,
   { eventType, delta, by, ip, siteId },
 ) => {

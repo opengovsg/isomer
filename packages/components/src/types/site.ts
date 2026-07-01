@@ -4,10 +4,12 @@ import { Type } from "@sinclair/typebox"
 import { FAVICON_ACCEPTED_MIME_TYPE_MAPPING } from "~/constants/image"
 import {
   AskgovSchema,
+  EgazetteAlgoliaSearchSchema,
   generateImageSrcSchema,
   LocalSearchSchema,
   SearchSGSearchSchema,
   VicaSchema,
+  ZendeskSchema,
 } from "~/interfaces"
 import { NotificationSettingsSchema } from "~/interfaces/internal/Notification"
 import { GTM_ID_STRING_REGEX, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
@@ -44,19 +46,23 @@ export const SimpleIntegrationsSettingsSchema = Type.Object({
     }),
   ),
   search: Type.Optional(
-    Type.Union([LocalSearchSchema, SearchSGSearchSchema], {
-      title: "Search configuration",
-      description: "Configuration for the search functionality of the site.",
-      // NOTE: Overriding the default `Union` with this because we should
-      // not be showing the `localSearch` option to our agency users
-      format: "searchsg",
-    }),
+    Type.Union(
+      [LocalSearchSchema, SearchSGSearchSchema, EgazetteAlgoliaSearchSchema],
+      {
+        title: "Search configuration",
+        description: "Configuration for the search functionality of the site.",
+        // NOTE: Overriding the default `Union` with this because we should
+        // not be showing the `localSearch` option to our agency users
+        format: "searchsg",
+      },
+    ),
   ),
 })
 
 export const ComplexIntegrationsSettingsSchema = Type.Object({
   askgov: Type.Optional(AskgovSchema),
   vica: Type.Optional(VicaSchema),
+  zendesk: Type.Optional(ZendeskSchema),
 })
 
 export const IntegrationsSettingsSchema = Type.Intersect([
@@ -91,13 +97,10 @@ export const SiteConfigSchema = Type.Intersect([
       description: "The base URL of the site.",
       format: "hidden",
     }),
-    theme: Type.Union(
-      [Type.Literal("isomer-classic"), Type.Literal("isomer-next")],
-      {
-        default: "isomer-next",
-        format: "hidden",
-      },
-    ),
+    theme: Type.Literal("isomer-next", {
+      default: "isomer-next",
+      format: "hidden",
+    }),
     isGovernment: Type.Optional(
       Type.Boolean({
         title: "Is this a Government site?",

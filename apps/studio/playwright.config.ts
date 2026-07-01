@@ -12,6 +12,7 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
   testDir: "./tests/e2e",
   timeout: 35e3,
+  globalSetup: "./tests/e2e/global-setup.ts",
   projects: [
     {
       name: "e2e",
@@ -22,7 +23,7 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         baseURL: baseUrl,
         headless: opts.headless,
-        video: "on",
+        video: "retain-on-failure",
       },
     },
   ],

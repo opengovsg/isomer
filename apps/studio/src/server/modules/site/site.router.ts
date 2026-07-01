@@ -42,6 +42,7 @@ import {
   getNotification,
   getSiteConfig,
   getSiteTheme,
+  resolveEgazetteAlgoliaSearchConfig,
   setSiteNotification,
   validateUserPermissionsForSite,
 } from "./site.service"
@@ -131,9 +132,20 @@ export const siteRouter = router({
       const { config } = site
 
       const updatedConfig = await db.transaction().execute(async (tx) => {
+        // Preserve the existing clientId from DB - only admins can update it via setSiteConfigByAdmin
+        const searchConfig =
+          rest.search?.type === "searchSG" && config.search?.type === "searchSG"
+            ? { ...rest.search, clientId: config.search.clientId }
+            : // egazette-algolia is admin-managed; site admins cannot switch
+              // to/from it or tamper with its Algolia credentials.
+              resolveEgazetteAlgoliaSearchConfig(config.search, rest.search)
+
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ name: siteName, config: jsonb({ ...rest, siteName }) })
+          .set({
+            name: siteName,
+            config: jsonb({ ...rest, siteName, search: searchConfig }),
+          })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()
@@ -159,10 +171,13 @@ export const siteRouter = router({
         (config.search?.type !== "searchSG" ||
           config.siteName !== updatedConfig.siteName)
       )
+        // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
         void updateSearchSGConfig(
           { name: siteName, _kind: "name" },
           updatedConfig.search.clientId,
           updatedConfig.url,
+        ).catch((error) =>
+          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed"),
         )
 
       return updatedConfig
@@ -202,9 +217,16 @@ export const siteRouter = router({
           })
         }
 
+        // egazette-algolia is admin-managed; site admins cannot switch to/from
+        // it or tamper with its Algolia credentials.
+        const search = resolveEgazetteAlgoliaSearchConfig(
+          site.config.search,
+          data.search,
+        )
+
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ config: jsonb(data) })
+          .set({ config: jsonb({ ...data, search }) })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()
@@ -309,10 +331,13 @@ export const siteRouter = router({
         oldTheme.colors.brand.canvas.inverse !==
           theme.colors.brand.canvas.inverse
       ) {
+        // IMPORTANT: clientId must always come from the DB, not user input (path traversal risk)
         void updateSearchSGConfig(
           { colour: theme.colors.brand.canvas.inverse, _kind: "colour" },
           site.config.search.clientId,
           site.config.url,
+        ).catch((error) =>
+          ctx.logger.error({ error }, "[ERROR] updateSearchSGConfig failed"),
         )
       }
 

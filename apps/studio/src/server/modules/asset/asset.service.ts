@@ -4,13 +4,18 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
+import DOMPurify from "isomorphic-dompurify"
+import { JSDOM } from "jsdom"
+
+const { DOMParser } = new JSDOM("").window
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { createBaseLogger } from "~/lib/logger"
 import {
-  copyFile,
   deleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
+  putObjectDirect,
 } from "~/lib/s3"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
@@ -19,10 +24,21 @@ import { bulkValidateUserPermissionsForResources } from "../permissions/permissi
 
 const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
+const logger = createBaseLogger({ path: "asset.service" })
+
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
 const EXTENSION_TO_MIME: Record<string, string> = {
   ...IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
   ...FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+}
+
+// NOTE: The format that s3 expects is in this format:
+// Tagging: "key1=value1&key2=value2"
+export const generateTagsQueryString = (
+  tags: { key: string; value: string }[],
+) => {
+  const entries = tags.map(({ key, value }) => `${key}=${value}`)
+  return entries.join("&")
 }
 
 /**
@@ -111,8 +127,10 @@ export const doAllFileKeysBelongToSite = ({
 
 export const getPresignedPutUrl = async ({
   key,
+  tags,
 }: {
   key: string
+  tags?: { key: string; value: string }[]
 }): Promise<{
   presignedPutUrl: string
   contentType: string
@@ -120,11 +138,13 @@ export const getPresignedPutUrl = async ({
 }> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
+  const stringifiedTags = tags && generateTagsQueryString(tags)
   const presignedPutUrl = await generateSignedPutUrl({
     Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
     Key: key,
     ContentType: contentType,
     ContentDisposition: contentDisposition,
+    Tagging: tags && stringifiedTags,
   })
   return { presignedPutUrl, contentType, contentDisposition }
 }
@@ -147,42 +167,74 @@ export const getPresignedGetUrl = async ({
   })
 }
 
-/**
- * Copy `sourceKey` to a new key derived by replacing the filename segment with
- * `newFileName`. Does NOT delete the source — the caller is responsible for
- * scheduling the soft-delete *after* whatever DB write references the new key
- * has committed, so a tx rollback never leaves a resource pointing at a
- * tombstoned object.
- */
-export const copyFileWithNewName = async ({
-  sourceKey,
-  newFileName,
-}: {
-  sourceKey: string
-  newFileName: string
-}): Promise<string> => {
-  // Extract siteId/uuid prefix from source key (format: siteId/uuid/filename)
-  const parts = sourceKey.split("/")
-  if (parts.length < 3) {
+export const sanitizeSvg = (content: string): string => {
+  // Must run BEFORE parsing. Entity expansion (e.g. billion-laughs) happens
+  // inside DOMParser.parseFromString — DOMPurify only sees the resulting DOM
+  // and cannot intercept it. No sanitization library operates at this layer.
+  if (/<!ENTITY/i.test(content)) {
+    logger.error("SVG rejected: contains disallowed XML entities")
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Invalid source key format",
+      message: "SVG contains disallowed XML entities",
     })
   }
-  const prefix = parts.slice(0, 2).join("/")
 
-  // Build new key with sanitized new filename
-  const sanitizedFileName = filenamify(newFileName, { replacement: "-" })
-  const newKey = `${prefix}/${sanitizedFileName}`
+  const doc = new DOMParser().parseFromString(content, "image/svg+xml")
 
-  // Copy to new location. The aws-sdk v3 CopyObjectCommand defaults
-  // `TaggingDirective` to `COPY`, so the ISOMER_STATUS tag (and any other
-  // object tags) carry over without us having to set them explicitly.
-  await copyFile({
-    SourceKey: sourceKey,
-    DestKey: newKey,
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+  if (doc.getElementsByTagName("parsererror").length > 0) {
+    logger.error("SVG rejected: failed to parse as valid XML")
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "SVG failed to parse as valid XML",
+    })
+  }
+
+  const root = doc.documentElement
+  if (
+    root.localName !== "svg" ||
+    root.namespaceURI !== "http://www.w3.org/2000/svg"
+  ) {
+    logger.error(
+      { localName: root.localName, namespaceURI: root.namespaceURI },
+      "SVG rejected: root element is not a valid SVG element",
+    )
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Root element is not a valid SVG element",
+    })
+  }
+
+  // DOMPurify's svg+svgFilters profile is the actual security boundary — it strips
+  // all on* event handlers and dangerous elements by default. The explicit lists
+  // below are defense-in-depth for the highest-risk items; do not treat them as
+  // exhaustive. Adding an entry here does not replace the profile's coverage.
+  const sanitized = DOMPurify.sanitize(content, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    FORBID_TAGS: ["script", "foreignObject", "use"],
+    FORBID_ATTR: ["onload", "onclick", "onerror", "onmouseover"],
   })
 
-  return newKey
+  return sanitized
+}
+
+export const putFileDirect = async ({
+  key,
+  body,
+  tags,
+}: {
+  key: string
+  body: string
+  tags?: { key: string; value: string }[]
+}): Promise<void> => {
+  const contentType = getContentTypeFromKey(key)
+  const contentDisposition = getContentDispositionForKey(key)
+  const stringifiedTags = tags && generateTagsQueryString(tags)
+  await putObjectDirect({
+    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+    Key: key,
+    Body: body,
+    ContentType: contentType,
+    ContentDisposition: contentDisposition,
+    Tagging: tags ? stringifiedTags : undefined,
+  })
 }

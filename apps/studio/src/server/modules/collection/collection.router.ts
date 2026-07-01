@@ -1,11 +1,12 @@
-import type { CollectionPageSchemaType } from "@opengovsg/isomer-components"
 import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
+  countTagOptionsUsageSchema,
   createCollectionSchema,
   editLinkSchema,
+  getCategoryOptionUsageCountSchema,
   getCollectionsSchema,
   getCollectionTagsSchema,
   readCollectionSchema,
@@ -22,6 +23,7 @@ import {
   jsonb,
   ResourceState,
   ResourceType,
+  sql,
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
@@ -38,6 +40,8 @@ import {
   createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,
+  getCategoryOptionUsageCount,
+  getCollectionTagsForResource,
 } from "./collection.service"
 
 export const collectionRouter = router({
@@ -311,6 +315,102 @@ export const collectionRouter = router({
           .execute()
       },
     ),
+
+  countTagOptionsUsage: protectedProcedure
+    .input(countTagOptionsUsageSchema)
+    .query(async ({ ctx, input: { siteId, pageId, tagOptionIds } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(pageId))
+        .where("siteId", "=", siteId)
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["parentId"])
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "NOT_FOUND",
+              message: "Collection index page not found",
+            }),
+        )
+
+      const { parentId } = indexPage
+      if (!parentId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection index page has no parent collection",
+        })
+      }
+      const collection = await getSiteResourceById({
+        siteId,
+        resourceId: parentId,
+        type: ResourceType.Collection,
+      })
+      if (!collection) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Collection not found",
+        })
+      }
+
+      const uniqueTagOptionIds = [...new Set(tagOptionIds)]
+      if (uniqueTagOptionIds.length === 0) {
+        return { count: 0 }
+      }
+
+      // Bound parameters as a Postgres text[] for use with = ANY(...).
+      // Compare as text: `tagged` is stored inside jsonb (no native uuid type),
+      // and jsonb_array_elements_text returns text. The z.string().uuid() validator
+      // is a request-boundary check, not a storage-type contract.
+      const optionIdsAsSqlArray = sql.join(
+        uniqueTagOptionIds.map((id) => sql`${id}::text`),
+        sql`, `,
+      )
+      const tagOptionIdArray = sql`ARRAY[${optionIdsAsSqlArray}]::text[]`
+
+      const row = await db
+        .selectFrom("Resource as r")
+        .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
+        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
+        .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
+        .where("r.parentId", "=", parentId)
+        .where("r.siteId", "=", siteId)
+        .where("r.type", "in", [
+          ResourceType.CollectionPage,
+          ResourceType.CollectionLink,
+        ])
+        // Match child resources whose page.tagged JSON array overlaps the queried
+        // option ids. Postgres has no jsonb && jsonb overlap; unnest to text and use ANY.
+        // Draft or published blob alone is enough; one row per resource still counts once.
+        .where(
+          sql<boolean>`(
+            EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements_text(
+                COALESCE("draftBlob"."content"->'page'->'tagged', '[]'::jsonb)
+              ) AS tag
+              WHERE tag = ANY(${tagOptionIdArray})
+            )
+            OR EXISTS (
+              SELECT 1
+              FROM jsonb_array_elements_text(
+                COALESCE("publishedBlob"."content"->'page'->'tagged', '[]'::jsonb)
+              ) AS tag
+              WHERE tag = ANY(${tagOptionIdArray})
+            )
+          )`,
+        )
+        .select(sql<number>`cast(count(*) as int)`.as("count"))
+        .executeTakeFirstOrThrow()
+
+      return { count: row.count }
+    }),
+
   readCollectionLink: protectedProcedure
     .input(readLinkSchema)
     .query(async ({ ctx, input: { linkId, siteId } }) => {
@@ -353,6 +453,7 @@ export const collectionRouter = router({
         input: {
           date,
           category,
+          categoryId,
           linkId,
           siteId,
           description,
@@ -405,7 +506,16 @@ export const collectionRouter = router({
           const blob = await updateBlobById(tx, {
             content: {
               ...content,
-              page: { description, ref, date, category, image, tags, tagged },
+              page: {
+                description,
+                ref,
+                date,
+                category,
+                categoryId,
+                image,
+                tags,
+                tagged,
+              },
             },
             pageId: linkId,
             siteId,
@@ -429,7 +539,7 @@ export const collectionRouter = router({
   getCollectionTags: protectedProcedure
     .input(getCollectionTagsSchema)
     .query(async ({ ctx, input: { resourceId, collectionId, siteId } }) => {
-      const resourceIdToValidate = resourceId ?? collectionId
+      const resourceIdToValidate = collectionId ?? resourceId
       await bulkValidateUserPermissionsForResources({
         siteId,
         action: "read",
@@ -437,88 +547,40 @@ export const collectionRouter = router({
         resourceIds: resourceIdToValidate ? [String(resourceIdToValidate)] : [],
       })
 
-      // The schema enforces that exactly one of collectionId / resourceId is set.
-      // For collectionId: the IndexPage sits directly under this collection.
-      // For resourceId: the IndexPage sits under the resource's parent collection.
-      const indexPage = await db
-        .selectFrom("Resource")
-        .where("type", "=", ResourceType.IndexPage)
-        .where("siteId", "=", siteId)
-        .$if(collectionId !== undefined, (qb) =>
-          qb.where("parentId", "=", String(collectionId)),
-        )
-        .$if(resourceId !== undefined, (qb) =>
-          qb.where("parentId", "=", (eb) =>
-            eb
-              .selectFrom("Resource")
-              .where("id", "=", String(resourceId))
-              .where("siteId", "=", siteId)
-              .select("parentId"),
-          ),
-        )
-        .select("id")
-        .executeTakeFirst()
-
-      if (!indexPage) {
-        return []
+      if (collectionId !== undefined) {
+        return getCollectionTagsForResource({
+          siteId,
+          collectionId,
+          isPublishedOnly: true,
+        })
       }
-
-      const { draftBlobId, publishedVersionId } = await db
-        .selectFrom("Resource")
-        .where("id", "=", String(indexPage.id))
-        .select(["draftBlobId", "publishedVersionId"])
-        .executeTakeFirstOrThrow(
-          () =>
-            new TRPCError({
-              code: "NOT_FOUND",
-              message: "The specified resource could not be found",
-            }),
-        )
-
-      if (publishedVersionId) {
-        const { content } = await db
-          .selectFrom("Blob")
-          .where("id", "=", (qb) =>
-            qb
-              .selectFrom("Version")
-              .where("id", "=", publishedVersionId)
-              .select("blobId"),
-          )
-          .selectAll()
-          // NOTE: Guaranteed to exist since this is a foreign key
-          .executeTakeFirstOrThrow()
-
-        return (
-          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
-          []
-        )
+      if (resourceId !== undefined) {
+        return getCollectionTagsForResource({
+          siteId,
+          resourceId,
+          isPublishedOnly: true,
+        })
       }
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Either collectionId or resourceId must be provided",
+      })
+    }),
 
-      if (draftBlobId) {
-        const { content } = await db
-          .selectFrom("Blob")
-          .where("id", "=", draftBlobId)
-          .selectAll()
-          // NOTE: Guaranteed to exist since this is a foreign key
-          .executeTakeFirstOrThrow()
+  /**
+   * Counts collection pages/links whose draft **or** published blob has `page.categoryId` equal to the
+   * given id.
+   */
+  getCategoryOptionUsageCount: protectedProcedure
+    .input(getCategoryOptionUsageCountSchema)
+    .query(async ({ ctx, input: { siteId, indexPageId, categoryId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
 
-        return (
-          (content as unknown as CollectionPageSchemaType).page.tagCategories ??
-          []
-        )
-      }
-
-      return []
-
-      // FIXME: we cannot do this yet because we still use `Type.Composite`
-      // over `Type.Intersect`, which causes typing errors above.
-      // Once we swap over to using `Type.Intersect`, we can uncomment this
-      // and the typing will work properly
-      // if (content.layout === "collection") {
-      //   return content.page.tagCategories
-      // }
-      //
-      // return []
+      return getCategoryOptionUsageCount({ siteId, indexPageId, categoryId })
     }),
 
   getCollections: protectedProcedure

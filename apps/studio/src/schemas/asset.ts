@@ -1,6 +1,9 @@
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { z } from "zod"
-import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import {
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  MAX_SVG_FILE_SIZE_BYTES,
+} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 
 // Combine allowed extensions from existing constants
 const ALLOWED_EXTENSIONS = [
@@ -8,23 +11,28 @@ const ALLOWED_EXTENSIONS = [
   ...Object.keys(FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING),
 ]
 
+const fileNameStartingCharRefine = (s: string) => /^[a-zA-Z0-9\-_]/.test(s)
+const fileNameStartingCharMessage =
+  "File name must start with a letter, number, hyphen, or underscore"
+
 export const getPresignedPutUrlSchema = z.object({
   siteId: z.number().min(1),
+  tags: z
+    .array(
+      z.object({
+        key: z.string(),
+        value: z.string(),
+      }),
+    )
+    .optional(),
   resourceId: z.string().optional(),
   fileName: z
     .string({
       error: "Missing file name",
     })
-    .refine(
-      (s) => {
-        const allowedStartingChars = new RegExp(/^[a-zA-Z0-9-_]/)
-        return allowedStartingChars.test(s)
-      },
-      {
-        message:
-          "File name must start with a letter, number, hyphen, or underscore",
-      },
-    )
+    .refine(fileNameStartingCharRefine, {
+      message: fileNameStartingCharMessage,
+    })
     // Check if extension is in allowed list (whitelist approach)
     // To ensure we don't allow any other file types that can have security implications
     .refine(
@@ -38,6 +46,13 @@ export const getPresignedPutUrlSchema = z.object({
         const extension = fileName
           .toLowerCase()
           .substring(fileName.lastIndexOf("."))
+
+        // SVGs must go through the dedicated uploadSvg endpoint which
+        // sanitizes the content server-side before uploading to S3.
+        // The presigned PUT path never sees the file bytes, so it cannot
+        // validate or strip embedded scripts/event handlers.
+        if (extension === ".svg") return false
+
         return ALLOWED_EXTENSIONS.includes(extension)
       },
       {
@@ -46,14 +61,46 @@ export const getPresignedPutUrlSchema = z.object({
     ),
 })
 
+export const uploadSvgSchema = z.object({
+  siteId: z.number().min(1),
+  fileName: z
+    .string()
+    .refine(fileNameStartingCharRefine, {
+      message: fileNameStartingCharMessage,
+    })
+    .refine((s) => s.toLowerCase().endsWith(".svg"), {
+      message: "Only .svg files are allowed",
+    })
+    .max(255),
+  // z.string().max() counts UTF-16 code units (JS string length), not bytes.
+  // Multi-byte characters can exceed the intended byte budget, but the difference
+  // is bounded: worst case is 3× (4-byte UTF-8 chars are 2 code units). Acceptable
+  // as a rough upper bound; use Buffer.byteLength for an exact byte check if needed.
+  content: z.string().max(MAX_SVG_FILE_SIZE_BYTES, {
+    message: `SVG file size must not exceed ${MAX_SVG_FILE_SIZE_BYTES / 1_000_000} MB`,
+  }),
+  resourceId: z.string().optional(),
+  tags: z.array(z.object({ key: z.string(), value: z.string() })).optional(),
+})
+
+// Upper bound on how many assets a single deleteAssets call may target.
+// Each key fans out to paid S3 tagging calls, so an uncapped array lets one
+// authenticated caller drive an unbounded number of S3 operations. Legitimate
+// saves only delete a handful of keys, so 100 sits far above real usage.
+export const MAX_DELETE_FILE_KEYS = 100
+
 export const deleteAssetsSchema = z.object({
   siteId: z.number().min(1),
   resourceId: z.string(),
-  fileKeys: z.array(
-    z.string({
-      error: "Missing file keys",
+  fileKeys: z
+    .array(
+      z.string({
+        error: "Missing file keys",
+      }),
+    )
+    .max(MAX_DELETE_FILE_KEYS, {
+      message: `You can only delete up to ${MAX_DELETE_FILE_KEYS} assets at a time`,
     }),
-  ),
 })
 
 export const getPresignedGetUrlSchema = z.object({

@@ -16,6 +16,7 @@ TODO: Removing this CSP first
 */
 
 // TODO: Stricten the CSP for images
+// Intercom CSP: https://www.intercom.com/help/en/articles/3894-using-intercom-with-content-security-policy
 const ContentSecurityPolicy = `
   default-src 'none';
   base-uri 'self';
@@ -39,6 +40,7 @@ const ContentSecurityPolicy = `
     'self'
     https://intercom-sheets.com
     https://www.intercom-reporting.com
+    https://www.youtube.com
     https://fast.wistia.net
     https://www.google.com
     https://www.googletagmanager.com
@@ -59,10 +61,9 @@ const ContentSecurityPolicy = `
     'self'
     'unsafe-eval'
     https://*.wogaa.sg
+    https://app.intercom.io
+    https://widget.intercom.io
     https://js.intercomcdn.com
-    https://downloads.intercomcdn.com
-    https://downloads.intercomcdn.eu
-    https://downloads.au.intercomcdn.com
     https://embed-cdn.spotifycdn.com
     https://open.spotify.com
     https://js-cdn.music.apple.com
@@ -94,6 +95,7 @@ const ContentSecurityPolicy = `
         ? `https://${env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME}`
         : "https://*.by.gov.sg"
     }
+    https://${env.S3_GAZETTE_DOMAIN_NAME}
     https://via.intercom.io
     https://api.intercom.io
     https://api.au.intercom.io
@@ -144,6 +146,11 @@ const ContentSecurityPolicy = `
 /** @type {import("next").NextConfig} */
 const config = {
   output: "standalone",
+  // Pin the tracing root so the standalone layout is always
+  // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
+  // Without this, Next infers the workspace root from the outermost lockfile, which varies by
+  // environment (e.g. nested git worktrees) and silently shifts the server.js path.
+  outputFileTracingRoot: new URL("../..", import.meta.url).pathname,
   reactStrictMode: true,
   logging: {
     browserToTerminal: false,

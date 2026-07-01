@@ -19,6 +19,10 @@ export { HardBreakSchema, type HardBreakProps } from "./HardBreak"
 export type { HeaderProps } from "./Header"
 export type { LinkProps } from "./Link"
 export { LocalSearchSchema, type LocalSearchProps } from "./LocalSearchInputBox"
+export {
+  EgazetteAlgoliaSearchSchema,
+  type EgazetteAlgoliaSearchProps,
+} from "./EgazetteAlgoliaSearchInputBox"
 export type { MastheadProps } from "./Masthead"
 export {
   NavbarSchema,
@@ -63,6 +67,11 @@ export {
   type AskgovWidgetProps,
   type AskgovProps,
 } from "./Askgov"
+export {
+  ZendeskSchema,
+  type ZendeskWidgetProps,
+  type ZendeskProps,
+} from "./Zendesk"
 export type { ImageClientProps } from "./Image"
 export {
   SearchableTableSchema,

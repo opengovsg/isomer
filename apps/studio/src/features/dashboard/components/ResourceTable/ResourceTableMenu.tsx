@@ -93,7 +93,9 @@ export const ResourceTableMenu = ({
           ) : (
             <>
               {/* TODO: Open edit modal depending on resource  */}
-              {type === ResourceType.Page && (
+              {(type === ResourceType.Page ||
+                type === ResourceType.CollectionPage ||
+                type === ResourceType.CollectionLink) && (
                 <MenuItem
                   onClick={() =>
                     setPageSettingsModalState({
@@ -118,7 +120,11 @@ export const ResourceTableMenu = ({
                   Edit folder settings
                 </MenuItem>
               )}
-              {(type === ResourceType.Page || type === ResourceType.Folder) && (
+              {(type === ResourceType.Page ||
+                type === ResourceType.CollectionPage ||
+                type === ResourceType.CollectionLink ||
+                type === ResourceType.Folder ||
+                type === ResourceType.Collection) && (
                 // TODO: we need to change the resourceid next time when we implement root level permissions
                 <Can do="move" on={{ parentId }}>
                   <MenuItem

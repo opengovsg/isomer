@@ -41,6 +41,17 @@ const createCaller = createCallerFactory(siteRouter)
 
 const MOCK_SITE_NAME = "isobad"
 const MOCK_LOGO_URL = "https://isobad.com/logo.png"
+const MOCK_SEARCHSG_CLIENT_ID = "550e8400-e29b-41d4-a716-446655440000"
+const MOCK_EGAZETTE_ALGOLIA_SEARCH = {
+  type: "egazette-algolia",
+  appId: "MOCK_APP_ID",
+  searchApiKey: "mock-search-only-key",
+  indexName: "egazette",
+  categories: [
+    { value: "notices", displayLabel: "Notices" },
+    { value: "acts", displayLabel: "Acts" },
+  ],
+} as const
 const MOCK_ISOMER_THEME = {
   colors: {
     brand: {
@@ -553,7 +564,7 @@ describe("site.router", async () => {
       const mockSearch = {
         search: {
           type: "searchSG",
-          clientId: "i-love-searchsg",
+          clientId: MOCK_SEARCHSG_CLIENT_ID,
         },
       } as const
       const searchSpy = vi.spyOn(searchSgService, "updateSearchSGConfig")
@@ -599,6 +610,178 @@ describe("site.router", async () => {
         theme: "isomer-next",
         ...mockSearch,
       })
+    })
+    it("should not allow a site admin to change the searchSG clientId", async () => {
+      // Arrange
+      const existingClientId = MOCK_SEARCHSG_CLIENT_ID
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({
+          config: {
+            ...site.config,
+            search: { type: "searchSG", clientId: existingClientId },
+          },
+        })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - submit with a different clientId
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        search: { type: "searchSG", clientId: "../../other-client-id" },
+      })
+
+      // Assert - the stored clientId should be the original DB value
+      expect(result.search).toEqual({
+        type: "searchSG",
+        clientId: existingClientId,
+      })
+    })
+    it("should call updateSearchSGConfig with the DB clientId, not the user-supplied one", async () => {
+      // Arrange
+      const existingClientId = MOCK_SEARCHSG_CLIENT_ID
+      const searchSpy = vi.spyOn(searchSgService, "updateSearchSGConfig")
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({
+          config: {
+            ...site.config,
+            search: { type: "searchSG", clientId: existingClientId },
+          },
+        })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - submit with a different clientId and changed siteName to trigger searchsg update
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        search: { type: "searchSG", clientId: "../../other-client-id" },
+      })
+
+      // Assert - updateSearchSGConfig is called with the preserved DB clientId
+      expect(searchSpy).toHaveBeenCalledWith(
+        { name: MOCK_SITE_NAME, _kind: "name" },
+        existingClientId,
+        result.url,
+      )
+    })
+    it("should not allow a site admin to switch search to egazette-algolia", async () => {
+      // Arrange - site is not on egazette-algolia
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - attempt to introduce egazette-algolia (admin-managed) credentials
+      const result = caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        search: MOCK_EGAZETTE_ALGOLIA_SEARCH,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cannot change the eGazette Algolia search integration. Contact Isomer Support to update it.",
+        }),
+      )
+    })
+    it("should not allow a site admin to switch search away from egazette-algolia", async () => {
+      // Arrange - site is already on egazette-algolia
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({
+          config: {
+            ...site.config,
+            search: MOCK_EGAZETTE_ALGOLIA_SEARCH,
+          },
+        })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - attempt to downgrade to localSearch
+      const result = caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        search: { type: "localSearch", searchUrl: "/search" },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cannot change the eGazette Algolia search integration. Contact Isomer Support to update it.",
+        }),
+      )
+    })
+    it("should preserve the egazette-algolia config from DB and ignore tampered credentials", async () => {
+      // Arrange - site is already on egazette-algolia
+      const { site } = await setupSite()
+      await db
+        .updateTable("Site")
+        .set({
+          config: {
+            ...site.config,
+            search: MOCK_EGAZETTE_ALGOLIA_SEARCH,
+          },
+        })
+        .where("id", "=", site.id)
+        .execute()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - submit egazette-algolia with tampered credentials
+      const result = await caller.updateSiteConfig({
+        siteName: MOCK_SITE_NAME,
+        logoUrl: MOCK_LOGO_URL,
+        url: "https://www.isomer.gov.sg",
+        theme: "isomer-next",
+        siteId: site.id,
+        search: {
+          ...MOCK_EGAZETTE_ALGOLIA_SEARCH,
+          appId: "attacker-app-id",
+          searchApiKey: "attacker-key",
+          indexName: "attacker-index",
+        },
+      })
+
+      // Assert - the stored search config is the original DB value
+      expect(result.search).toEqual(MOCK_EGAZETTE_ALGOLIA_SEARCH)
     })
   })
 
@@ -807,6 +990,106 @@ describe("site.router", async () => {
       // tRPC surfaces this as a Zod custom validation failure, not a plain TRPCError.
       await expect(result).rejects.toThrow("Invalid integration settings")
     })
+
+    it("should throw 400 if switching search integration to egazette-algolia", async () => {
+      // Arrange - site is not on egazette-algolia
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act - attempt to introduce egazette-algolia (admin-managed) credentials
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          search: MOCK_EGAZETTE_ALGOLIA_SEARCH,
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cannot change the eGazette Algolia search integration. Contact Isomer Support to update it.",
+        }),
+      )
+    })
+
+    it("should throw 400 if switching search integration away from egazette-algolia", async () => {
+      // Arrange - site is already on egazette-algolia
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await db
+        .updateTable("Site")
+        .set({
+          config: jsonb({
+            ...MOCK_INTEGRATION_DATA,
+            search: MOCK_EGAZETTE_ALGOLIA_SEARCH,
+          }),
+        })
+        .where("id", "=", site.id)
+        .execute()
+
+      // Act - attempt to downgrade to localSearch
+      const result = caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          search: { type: "localSearch", searchUrl: "/search" },
+        },
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Cannot change the eGazette Algolia search integration. Contact Isomer Support to update it.",
+        }),
+      )
+    })
+
+    it("should preserve the egazette-algolia config from DB and ignore tampered credentials", async () => {
+      // Arrange - site is already on egazette-algolia
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await db
+        .updateTable("Site")
+        .set({
+          config: jsonb({
+            ...MOCK_INTEGRATION_DATA,
+            search: MOCK_EGAZETTE_ALGOLIA_SEARCH,
+          }),
+        })
+        .where("id", "=", site.id)
+        .execute()
+
+      // Act - submit egazette-algolia with tampered credentials
+      const result = await caller.updateSiteIntegrations({
+        siteId: site.id,
+        data: {
+          ...MOCK_INTEGRATION_DATA,
+          search: {
+            ...MOCK_EGAZETTE_ALGOLIA_SEARCH,
+            appId: "attacker-app-id",
+            searchApiKey: "attacker-key",
+            indexName: "attacker-index",
+          },
+        },
+      })
+
+      // Assert - the stored search config is the original DB value
+      expect(result.config.search).toEqual(MOCK_EGAZETTE_ALGOLIA_SEARCH)
+    })
   })
 
   describe("setTheme", () => {
@@ -923,7 +1206,7 @@ describe("site.router", async () => {
     it("should update searchsg if the user is a site admin", async () => {
       // Arrange
       const mockSearchSg = {
-        search: { type: "searchSG", clientId: "mock-client-id" },
+        search: { type: "searchSG", clientId: MOCK_SEARCHSG_CLIENT_ID },
       } as const
       const { site } = await setupSite()
       const spy = vi.spyOn(searchSgService, "updateSearchSGConfig")
