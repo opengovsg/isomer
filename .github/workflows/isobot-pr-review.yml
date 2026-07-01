@@ -65,7 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
 
-      - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
+      - uses: anthropics/claude-code-action@428971d2ecd6e3a7cb0ee0da2a3a8b33fdb3678d
         env:
           ANTHROPIC_MODEL: claude-sonnet-4-6
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -98,7 +98,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
 
-      - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
+      - uses: anthropics/claude-code-action@428971d2ecd6e3a7cb0ee0da2a3a8b33fdb3678d
         env:
           ANTHROPIC_MODEL: claude-sonnet-4-6
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -132,7 +132,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
 
-      - uses: anthropics/claude-code-action@51705da45eecce209d4700538bf8377d5b5fc695
+      - uses: anthropics/claude-code-action@428971d2ecd6e3a7cb0ee0da2a3a8b33fdb3678d
         env:
           ANTHROPIC_MODEL: claude-sonnet-4-6
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
