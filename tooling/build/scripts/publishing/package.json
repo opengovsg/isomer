@@ -9,7 +9,9 @@
   "scripts": {
     "start": "tsx index.ts ",
     "test": "vitest run",
+    "test-ci:build": "vitest run --config vitest.build.config.ts",
     "test-ci:unit": "vitest run",
+    "test:full-build": "vitest run --config vitest.build.config.ts",
     "test:watch": "vitest watch",
     "upload-redirects": "tsx uploadRedirects.ts"
   },
