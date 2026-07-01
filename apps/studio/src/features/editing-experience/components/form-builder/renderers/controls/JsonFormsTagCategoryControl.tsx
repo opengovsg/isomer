@@ -16,7 +16,7 @@ import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
-import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultTagCategory } from "./constants"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
@@ -39,7 +39,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
   const page = core?.data as CollectionPagePageProps | undefined
-  const duplicateFilterIndices = useDuplicateLabels(path)
+  const { duplicate: duplicateFilterIndices } = useLiveLabelIssues({ path })
 
   const arrayResult = useArray({
     data,

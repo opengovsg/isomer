@@ -5,11 +5,17 @@ import { useMemo } from "react"
 import { indicesWithBlankLabels } from "../renderers/controls/utils/indicesWithBlankLabels"
 import { indicesWithDuplicateLabels } from "../renderers/controls/utils/indicesWithDuplicateLabels"
 
-export function useLiveLabelIssues(
-  path: string,
-  editingIndex: number | null,
-  editingDraftLabel: string,
-): { blank: Set<number>; duplicate: Set<number> } {
+type UseLiveLabelIssuesArgs = {
+  path: string
+  editingIndex?: number | null
+  editingDraftLabel?: string
+}
+
+export function useLiveLabelIssues({
+  path,
+  editingIndex = null,
+  editingDraftLabel = "",
+}: UseLiveLabelIssuesArgs): { blank: Set<number>; duplicate: Set<number> } {
   const { core } = useJsonForms()
   const items = get(core?.data, path) as { label?: string }[] | undefined
 

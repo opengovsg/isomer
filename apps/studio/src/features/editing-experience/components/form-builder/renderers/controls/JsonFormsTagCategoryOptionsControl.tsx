@@ -45,7 +45,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const [editingDraftLabel, setEditingDraftLabel] = useState("")
 
   const { blank: blankOptionIndices, duplicate: duplicateOptionIndices } =
-    useLiveLabelIssues(path, editingIndex, editingDraftLabel)
+    useLiveLabelIssues({ path, editingIndex, editingDraftLabel })
 
   const arrayResult = useArray({
     data,

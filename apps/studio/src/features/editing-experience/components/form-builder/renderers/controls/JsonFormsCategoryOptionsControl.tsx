@@ -35,7 +35,6 @@ import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
-import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
 import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultCategoryOption } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
@@ -95,7 +94,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
   const {
     blank: liveBlankOptionIndices,
     duplicate: liveDuplicateOptionIndices,
-  } = useLiveLabelIssues(path, editingIndex, editingDraftLabel)
+  } = useLiveLabelIssues({ path, editingIndex, editingDraftLabel })
 
   const arrayResult = useArray({
     data,
@@ -347,7 +346,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
     [core?.data, path],
   )
 
-  const duplicateOptionIndices = useDuplicateLabels(path)
+  const { duplicate: duplicateOptionIndices } = useLiveLabelIssues({ path })
 
   const cannotLeaveExpandedCategoryOptions = useMemo(
     () =>
