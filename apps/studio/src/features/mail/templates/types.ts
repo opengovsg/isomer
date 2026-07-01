@@ -66,7 +66,7 @@ export interface GazetteDeletionEmailTemplateData extends BaseEmailTemplateData 
 }
 
 export interface AuditLogExportDownloadLink {
-  label: string
+  label: "access" | "audit"
   url: string
 }
 

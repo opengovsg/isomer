@@ -10,6 +10,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
+  AuditLogExportDownloadLink,
   AuditLogExportFailedEmailTemplateData,
   AuditLogExportReadyEmailTemplateData,
   BaseEmailTemplateData,
@@ -26,6 +27,15 @@ import type {
 } from "./types"
 
 const escapeHtml = (value: string | undefined): string => escape(value ?? "")
+
+const getListLabel = (label: AuditLogExportDownloadLink["label"]) => {
+  switch (label) {
+    case "access":
+      return "Download access review [.csv]"
+    case "audit":
+      return "Download audit logs [.csv]"
+  }
+}
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}">${escapeHtml(env.NEXT_PUBLIC_APP_URL?.replace("https://", ""))}</a>`
@@ -307,22 +317,29 @@ const auditLogExportReadyTemplate = (
   const escapedRecipientEmail = escapeHtml(recipientEmail)
   const escapedSiteName = escapeHtml(siteName)
   const escapedMonth = escapeHtml(month)
+  const isAccessLogsOnly = links.length === 1 && links[0]?.label === "access"
 
   // The href is a signed S3 URL (a trusted value we generated), but the label
   // is escaped since it is interpolated as displayed text.
   const downloadLinks = links
     .map(
-      ({ label, url }) => `<li><a href="${url}">${escapeHtml(label)}</a></li>`,
+      ({ label, url }) =>
+        `<li><a href="${url}">${getListLabel(label)}</a></li>`,
     )
     .join("")
 
+  const subject = isAccessLogsOnly
+    ? `[Isomer] Access logs for ${escapedSiteName} (${escapedMonth}) is ready`
+    : `[Isomer] Site logs for ${escapedSiteName} (${escapedMonth}) is ready`
+
+  const logLabel = links.map(({ label }) => label).join(" and ")
+
   return {
-    subject: `[Isomer Studio] Your audit log export for ${escapedSiteName} (${escapedMonth}) is ready`,
+    subject,
     body: `<p>Hi ${escapedRecipientEmail},</p>
-<p>Your audit log export for ${escapedSiteName} (${escapedMonth}) is ready to download.</p>
+<p>You requested for ${logLabel} logs for your site(s) for (${escapedMonth}) is ready to download. These links will expire after 3 days.</p>
+<br/>
 <ul>${downloadLinks}</ul>
-<p>Each download link is valid for 3 days.</p>
-<p>If you have any questions, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }
