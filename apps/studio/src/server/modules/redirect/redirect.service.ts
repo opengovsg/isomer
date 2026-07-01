@@ -20,6 +20,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import { REDIRECT_MESSAGES, RedirectValidationCode } from "~/constants/redirect"
 import {
+  isValidExternalDestination,
   normalizeRedirectPath,
   normalizeRedirectSource,
 } from "~/schemas/redirect"
@@ -173,6 +174,18 @@ const resolveStoredDestination = async (
   }
   const resourceId = getResourceIdFromReferenceLink(storedDestination)
   if (resourceId === "") {
+    // Not an internal path and not a `[resource:...]` reference, so the only
+    // remaining valid shape is an external https URL (the form destinations are
+    // validated into on write). Assert it rather than silently returning the
+    // raw string — if a new destination format is ever added without updating
+    // this resolver, this surfaces the gap loudly instead of leaking an
+    // unresolved value into comparisons and the UI.
+    if (!isValidExternalDestination(storedDestination)) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Unrecognised redirect destination format: ${storedDestination}`,
+      })
+    }
     return storedDestination
   }
   const permalinks = await getResourceFullPermalinks(siteId, [
@@ -455,6 +468,218 @@ export const createRedirect = async ({
   return created
 }
 
+// Redirects driven by a permalink change (move / rename). Both run inside the
+// caller's transaction and publish nothing — the caller's publish covers them.
+
+// Creates the "old URL -> this page" redirect when a page's permalink changes.
+// Source/destination are server-derived (the page's old permalink + a reference
+// to itself), so we skip the existing-page, loop and format guards createRedirect
+// runs for typed-in input. They hold by construction: the page just vacated the
+// old path, and a published page is never left on a live redirect source (the
+// publish-block plus the move/edit shadow guard), so the old path carries at most
+// a soft-deleted redirect, which the upsert revives. Only (siteId, source)
+// uniqueness is enforced.
+export const createRedirectForPermalinkChange = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    oldFullPermalink,
+    resourceId,
+    byUserId,
+  }: {
+    siteId: number
+    oldFullPermalink: string
+    resourceId: string
+    byUserId: string
+  },
+) => {
+  const source = normalizeRedirectSource(oldFullPermalink)
+  const destination = getReferenceLink({
+    siteId: String(siteId),
+    resourceId: String(resourceId),
+  })
+  const byUser = await getByUser(byUserId)
+
+  const existing = await tx
+    .selectFrom("Redirect")
+    .selectAll()
+    .where("siteId", "=", siteId)
+    .where("source", "=", source)
+    .executeTakeFirst()
+
+  const created = await tx
+    .insertInto("Redirect")
+    .values({ siteId, source, destination })
+    .onConflict((oc) =>
+      oc
+        .columns(["siteId", "source"])
+        .doUpdateSet({ destination, deletedAt: null, createdAt: new Date() })
+        // Only revive a soft-deleted row; a live one must surface as a conflict.
+        .where("Redirect.deletedAt", "is not", null),
+    )
+    .returningAll()
+    .executeTakeFirstOrThrow(
+      () =>
+        new TRPCError({
+          code: "CONFLICT",
+          message: `A redirect already exists for ${source}`,
+        }),
+    )
+
+  await logRedirectEvent(tx, {
+    siteId,
+    by: byUser,
+    eventType: AuditLogEvent.RedirectCreate,
+    delta: { before: existing ?? null, after: created },
+  })
+
+  return created
+}
+
+// Blocks a permalink change that would land a PUBLISHED page on a path already
+// served by a live redirect pointing ELSEWHERE — the redirect would shadow the
+// page on the published site (the mirror of the publish-block guard). A redirect
+// pointing back at this page is the reclaim case (cleared separately), not a
+// block, so it is excluded here. Caller gates this on the page being published.
+export const assertPermalinkNotShadowed = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    newFullPermalink,
+    resourceId,
+  }: { siteId: number; newFullPermalink: string; resourceId: string },
+) => {
+  const reference = getReferenceLink({
+    siteId: String(siteId),
+    resourceId: String(resourceId),
+  })
+  const shadowing = await tx
+    .selectFrom("Redirect")
+    .select("Redirect.id")
+    .where("Redirect.siteId", "=", siteId)
+    .where("Redirect.source", "=", normalizeRedirectSource(newFullPermalink))
+    .where("Redirect.destination", "!=", reference)
+    .where("Redirect.deletedAt", "is", null)
+    .executeTakeFirst()
+  if (shadowing) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: `A redirect already exists at ${newFullPermalink}. Remove it on the Redirections page first.`,
+    })
+  }
+}
+
+// When a permalink change lands a page on a path whose redirect points back at
+// that same page (a self-shadow/loop), soft-delete it — the page reclaims its
+// URL. Scoped to redirects referencing THIS page; one pointing elsewhere is
+// blocked by assertPermalinkNotShadowed instead.
+export const clearReclaimedRedirect = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    newFullPermalink,
+    resourceId,
+    byUserId,
+  }: {
+    siteId: number
+    newFullPermalink: string
+    resourceId: string
+    byUserId: string
+  },
+) => {
+  const source = normalizeRedirectSource(newFullPermalink)
+  const reference = getReferenceLink({
+    siteId: String(siteId),
+    resourceId: String(resourceId),
+  })
+
+  const reclaimed = await tx
+    .selectFrom("Redirect")
+    .selectAll()
+    .where("siteId", "=", siteId)
+    .where("source", "=", source)
+    .where("destination", "=", reference)
+    .where("deletedAt", "is", null)
+    .executeTakeFirst()
+  if (!reclaimed) {
+    return null
+  }
+
+  const byUser = await getByUser(byUserId)
+  const after = await tx
+    .updateTable("Redirect")
+    .set({ deletedAt: new Date() })
+    .where("id", "=", reclaimed.id)
+    .returningAll()
+    .executeTakeFirstOrThrow()
+  await logRedirectEvent(tx, {
+    siteId,
+    by: byUser,
+    eventType: AuditLogEvent.RedirectDelete,
+    delta: { before: reclaimed, after },
+  })
+  return after
+}
+
+// Single entry point both permalink-change flows (move and rename) call to keep
+// redirects consistent. Owns the ordering the flows depend on so they can't
+// drift: block a shadowing redirect (published page only) -> clear a redirect
+// the page reclaims -> optionally preserve the old URL. Runs inside the caller's
+// transaction and publishes nothing — the caller's publish covers it. A no-op
+// when the URL is unchanged, so callers may invoke it unconditionally.
+export const applyPermalinkChangeRedirects = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    oldFullPermalink,
+    newFullPermalink,
+    resourceId,
+    isPublished,
+    shouldCreateRedirect,
+    byUserId,
+  }: {
+    siteId: number
+    oldFullPermalink: string
+    newFullPermalink: string
+    resourceId: string
+    isPublished: boolean
+    shouldCreateRedirect: boolean
+    byUserId: string
+  },
+) => {
+  // Nothing to reconcile when the URL did not actually change.
+  if (oldFullPermalink === newFullPermalink) {
+    return
+  }
+
+  // A published page must not land on a path a live redirect already points
+  // elsewhere from — it would be shadowed (mirror of the publish-block). The
+  // throw rolls back the enclosing move/rename.
+  if (isPublished) {
+    await assertPermalinkNotShadowed(tx, {
+      siteId,
+      newFullPermalink,
+      resourceId,
+    })
+  }
+  // Drop any redirect that pointed back here (it would self-shadow).
+  await clearReclaimedRedirect(tx, {
+    siteId,
+    newFullPermalink,
+    resourceId,
+    byUserId,
+  })
+  // Preserve the old URL when asked, for a published page.
+  if (shouldCreateRedirect && isPublished) {
+    await createRedirectForPermalinkChange(tx, {
+      siteId,
+      oldFullPermalink,
+      resourceId,
+      byUserId,
+    })
+  }
+}
+
 export const deleteRedirect = async ({
   siteId,
   id,
@@ -511,12 +736,18 @@ export const deleteRedirect = async ({
 }
 
 // Powers the page-settings warning: is `source` a live redirect's source, and
-// where does it point? `source` (a candidate page URL) is normalised like
-// stored sources before the lookup; the destination is resolved for display.
+// where does it point? `source` (a candidate page URL) is normalised like stored
+// sources before the lookup. `destination` is the resolved permalink for display;
+// `destinationResourceId` is the referenced resource (null for literal/external
+// destinations) so the caller can tell whether the redirect points back at the
+// page being edited (which would be reclaimed on save, not a real warning).
 export const getRedirectBySource = async ({
   siteId,
   source,
-}: GetRedirectBySourceInput): Promise<{ destination: string } | null> => {
+}: GetRedirectBySourceInput): Promise<{
+  destination: string
+  destinationResourceId: number | null
+} | null> => {
   const redirect = await getLiveRedirectBySource(db, {
     siteId,
     source: normalizeRedirectSource(source),
@@ -524,8 +755,18 @@ export const getRedirectBySource = async ({
   if (!redirect) {
     return null
   }
+  // Resolve via the full reference so we can confirm the embedded siteId matches
+  // this site. getResourceIdFromReferenceLink discards the siteId, and the caller
+  // suppresses the shadow warning on a resourceId match — a reference embedding a
+  // different site's id with a colliding resourceId would suppress it wrongly. The
+  // lookup is already siteId-scoped so the ids should match; if they don't, fall
+  // back to null (show the warning) rather than trust a cross-site id.
+  const match = REFERENCE_DESTINATION_REGEX.exec(redirect.destination)
+  const destinationResourceId =
+    match && Number(match[1]) === siteId ? Number(match[2]) : null
   return {
     destination: await resolveStoredDestination(siteId, redirect.destination),
+    destinationResourceId,
   }
 }
 

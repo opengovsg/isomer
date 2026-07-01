@@ -58,7 +58,7 @@ const REFERENCE_DESTINATION_REGEX = new RegExp(
 // whose host looks like a public domain (has a dot) — this rejects the doubled
 // scheme and bare single-label hosts (localhost, intranet names) that are never
 // valid redirect targets for a published site.
-const isValidExternalDestination = (value: string) => {
+export const isValidExternalDestination = (value: string) => {
   try {
     const url = new URL(value)
     return url.protocol === "https:" && url.hostname.includes(".")
@@ -253,7 +253,7 @@ export type ResolveRedirectReferencesInput = z.infer<
 // not necessarily a clean redirect source, so it is normalised server-side
 // before the lookup.
 export const getRedirectBySourceSchema = z.object({
-  siteId: z.number().min(1),
+  siteId: z.number().min(1, { message: "Site ID is required" }),
   source: z
     .string()
     .min(1, { message: "Source path is required" })
@@ -266,7 +266,7 @@ export type GetRedirectBySourceInput = z.infer<typeof getRedirectBySourceSchema>
 // will remove those redirects. Descendants are resolved server-side from the
 // resource being deleted.
 export const countRedirectsByDestinationSchema = z.object({
-  siteId: z.number().min(1),
+  siteId: z.number().min(1, { message: "Site ID is required" }),
   resourceId: generateBigIntSchema("resource ID"),
 })
 export type CountRedirectsByDestinationInput = z.infer<

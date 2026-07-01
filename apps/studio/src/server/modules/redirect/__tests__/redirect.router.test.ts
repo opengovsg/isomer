@@ -1686,7 +1686,10 @@ describe("redirect.router", async () => {
       const result = await caller.getBySource({ siteId, source: "/old" })
 
       // Assert
-      expect(result).toEqual({ destination: "https://www.example.gov.sg" })
+      expect(result).toEqual({
+        destination: "https://www.example.gov.sg",
+        destinationResourceId: null,
+      })
     })
 
     it("should resolve a reference destination to the page's current permalink", async () => {
@@ -1710,8 +1713,12 @@ describe("redirect.router", async () => {
       // Act
       const result = await caller.getBySource({ siteId, source: "/old" })
 
-      // Assert
-      expect(result).toEqual({ destination: "/target-page" })
+      // Assert — destinationResourceId lets the caller detect a redirect that
+      // points back at the page being edited
+      expect(result).toEqual({
+        destination: "/target-page",
+        destinationResourceId: Number(page.id),
+      })
     })
 
     it("should match regardless of leading/trailing slashes in the queried path", async () => {
@@ -1729,7 +1736,10 @@ describe("redirect.router", async () => {
       const result = await caller.getBySource({ siteId, source: "old/" })
 
       // Assert
-      expect(result).toEqual({ destination: "https://www.example.gov.sg" })
+      expect(result).toEqual({
+        destination: "https://www.example.gov.sg",
+        destinationResourceId: null,
+      })
     })
 
     it("should not match a soft-deleted redirect", async () => {
