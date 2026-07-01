@@ -63,6 +63,12 @@ const newCollectionFiltersIsomerAdminParameters = {
   },
 } satisfies Story["parameters"]
 
+/** Chromatic delay for play-driven inline edit snapshots. */
+const inlineEditSnapshotParameters = {
+  ...newCollectionFiltersIsomerAdminParameters,
+  chromatic: { delay: 300 },
+} satisfies Story["parameters"]
+
 async function playOpenManageFilters(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
   const filtersEntry = await canvas.findByRole("button", { name: /Filters/i })
@@ -89,6 +95,40 @@ async function clickOptionRowToEdit(
     throw new Error(`No editable option row found for index ${index0Based}`)
   }
   await userEvent.click(nextUnrenamedRow)
+}
+
+/** Open inline edit for an option row and wait for the name textbox (index is 0-based). */
+async function playOpenInlineOptionEdit(
+  canvasElement: HTMLElement,
+  index0Based = 0,
+) {
+  const canvas = within(canvasElement)
+  await clickOptionRowToEdit(canvasElement, index0Based)
+  await canvas.findByRole("textbox", {
+    name: `Option ${index0Based + 1} name`,
+  })
+}
+
+/** Manage filters → first filter editor with a single default option row. */
+async function playOpenFilterEditorWithOneOption(canvasElement: HTMLElement) {
+  await playOpenManageFilters(canvasElement)
+  await playOpenFirstFilterEditor(canvasElement)
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /^Add option$/i }),
+  )
+}
+
+/** Manage filters → Edit Category with a single default option row. */
+async function playOpenCategoryOptionsEditorWithOneOption(
+  canvasElement: HTMLElement,
+) {
+  await playOpenManageFilters(canvasElement)
+  await playOpenCategoryOptionsEditor(canvasElement)
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /^Add option$/i }),
+  )
 }
 
 /** Confirm inline option rename via the row's tick button (not the drawer save). */
@@ -562,19 +602,118 @@ export const FiltersDuplicateOptionNamesBlockSave: Story = {
   },
 }
 
-export const CategoryOptionsBlankLabelError: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+export const FiltersInlineEditOpen: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenFilterEditorWithOneOption(canvasElement)
+    await playOpenInlineOptionEdit(canvasElement, 0)
+  },
+}
+
+export const FiltersInlineEditTyping: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenFilterEditorWithOneOption(canvasElement)
+    await playOpenInlineOptionEdit(canvasElement, 0)
+    const canvas = within(canvasElement)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 1 name" })
+    await userEvent.clear(nameInput)
+    await userEvent.type(nameInput, "Announcements")
+  },
+}
+
+export const FiltersInlineEditBlankError: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenFilterEditorWithOneOption(canvasElement)
+    await playOpenInlineOptionEdit(canvasElement, 0)
+    const canvas = within(canvasElement)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 1 name" })
+    await userEvent.clear(nameInput)
+    await expect(
+      canvas.getByText(/Option name cannot be empty\./i),
+    ).toBeVisible()
+    const row = nameInput.parentElement
+    if (!row) throw new Error("Expected inline edit row container")
+    await expect(
+      within(row).getByRole("button", { name: /^Save changes$/i }),
+    ).toBeDisabled()
+  },
+}
+
+export const FiltersInlineEditDuplicateError: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenManageFilters(canvasElement)
+    await playOpenFirstFilterEditor(canvasElement)
+    const canvas = within(canvasElement)
+    const addOption = await canvas.findByRole("button", {
+      name: /^Add option$/i,
+    })
+    await userEvent.click(addOption)
+    await userEvent.click(addOption)
+    await renameOptionAtIndex(canvasElement, 0, "Same name")
+    await playOpenInlineOptionEdit(canvasElement, 1)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 2 name" })
+    await userEvent.clear(nameInput)
+    await userEvent.type(nameInput, "Same name")
+    const duplicateErrors = await canvas.findAllByText(
+      /An option with this name already exists\./i,
+    )
+    await expect(duplicateErrors.length).toBeGreaterThanOrEqual(2)
+  },
+}
+
+export const CategoryOptionsInlineEditOpen: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenCategoryOptionsEditorWithOneOption(canvasElement)
+    await playOpenInlineOptionEdit(canvasElement, 0)
+  },
+}
+
+export const CategoryOptionsInlineEditTyping: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenCategoryOptionsEditorWithOneOption(canvasElement)
+    await playOpenInlineOptionEdit(canvasElement, 0)
+    const canvas = within(canvasElement)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 1 name" })
+    await userEvent.clear(nameInput)
+    await userEvent.type(nameInput, "Press releases")
+  },
+}
+
+export const CategoryOptionsInlineEditDuplicateError: Story = {
+  parameters: inlineEditSnapshotParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     await playOpenCategoryOptionsEditor(canvasElement)
     const canvas = within(canvasElement)
-    await userEvent.click(
-      await canvas.findByRole("button", { name: /^Add option$/i }),
-    )
-    await userEvent.click(await canvas.findByText(/^New option$/))
-    const nameInput = await canvas.findByRole("textbox", {
-      name: "Option 1 name",
+    const addOption = await canvas.findByRole("button", {
+      name: /^Add option$/i,
     })
+    await userEvent.click(addOption)
+    await userEvent.click(addOption)
+    await renameOptionAtIndex(canvasElement, 0, "Same name")
+    await playOpenInlineOptionEdit(canvasElement, 1)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 2 name" })
+    await userEvent.clear(nameInput)
+    await userEvent.type(nameInput, "Same name")
+    const duplicateErrors = await canvas.findAllByText(
+      /An option with this name already exists\./i,
+    )
+    await expect(duplicateErrors.length).toBeGreaterThanOrEqual(2)
+  },
+}
+
+export const CategoryOptionsInlineEditBlankError: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenCategoryOptionsEditorWithOneOption(canvasElement)
+    await playOpenInlineOptionEdit(canvasElement, 0)
+    const canvas = within(canvasElement)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 1 name" })
     await userEvent.clear(nameInput)
     await expect(
       canvas.getByText(/Option name cannot be empty\./i),
