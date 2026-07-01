@@ -20,7 +20,7 @@ import {
 } from "@chakra-ui/react"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
 import { IconButton, Input } from "@opengovsg/design-system-react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { BiCheck, BiGridVertical, BiInfoCircle, BiX } from "react-icons/bi"
 
 import { ROW_ACTION_ICON_BUTTON_PROPS } from "./constants"
@@ -238,10 +238,6 @@ const EditableLabel = ({
 }: EditableLabelProps) => {
   const [draft, setDraft] = useState(value)
 
-  useEffect(() => {
-    if (isEditing) setDraft(value)
-  }, [isEditing, value])
-
   const isDirty = draft !== value
 
   const handleSave = () => {
@@ -263,7 +259,11 @@ const EditableLabel = ({
         color="base.content.default"
         cursor={isDisabled ? "default" : "pointer"}
         w="full"
-        onClick={() => !isDisabled && onEditingChange(true)}
+        onClick={() => {
+          if (isDisabled) return
+          setDraft(value)
+          onEditingChange(true)
+        }}
       >
         {value || placeholder}
       </Text>
