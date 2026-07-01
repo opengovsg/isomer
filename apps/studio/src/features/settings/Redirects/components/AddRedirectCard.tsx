@@ -148,7 +148,8 @@ export const AddRedirectCard = ({
         Add new redirects
       </Text>
       <Text textStyle="body-2" color="base.content.medium" mb="1.25rem">
-        Redirects go live as soon as you add them.
+        New redirects publish right away, but can take a few minutes to take
+        effect on your live site.
       </Text>
 
       <HStack as="form" align="flex-start" onSubmit={handleSubmit(onSubmit)}>
