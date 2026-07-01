@@ -173,7 +173,7 @@ catalog:
 catalogs:
   atlaskitPragmaticDnd:
     "@atlaskit/pragmatic-drag-and-drop": ^1.8.1
-    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.2.0
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.0.0
   "aws-sdk":
     "@aws-sdk/client-acm": ^3.1073.0
     "@aws-sdk/client-amplify": ^3.1073.0
@@ -201,8 +201,8 @@ catalogs:
     "@growthbook/growthbook": ^1.2.0
     "@growthbook/growthbook-react": ^1.2.0
   jsonforms:
-    "@jsonforms/core": ^3.5.1
-    "@jsonforms/react": ^3.5.1
+    "@jsonforms/core": ^3.8.0
+    "@jsonforms/react": ^3.8.0
   prisma:
     "@prisma/adapter-pg": 7.8.0
     "@prisma/client": 7.8.0
@@ -234,9 +234,9 @@ catalogs:
     eslint-plugin-storybook: ^10.4.3
     storybook-addon-pseudo-states: ^10.4.3
   tanstack-query:
-    "@tanstack/query-devtools": ^5.101.0
-    "@tanstack/react-query": ^5.101.0
-    "@tanstack/react-query-devtools": ^5.101.0
+    "@tanstack/query-devtools": ^5.101.1
+    "@tanstack/react-query": ^5.101.1
+    "@tanstack/react-query-devtools": ^5.101.1
   tiptap:
     "@tiptap/core": ^3.27.1
     "@tiptap/extension-bold": ^3.27.1

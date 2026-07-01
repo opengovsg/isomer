@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
+import { http, HttpResponse } from "msw"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
@@ -150,11 +151,52 @@ export const DatabaseModalValidDatasetId: Story = {
     const screen = within(canvasElement.ownerDocument.body)
 
     const input = await screen.findByPlaceholderText("Paste dataset URL here")
-    await userEvent.type(input, "d_3f960c10fed6145404ca7b821f263b87")
+    await userEvent.type(input, "d_3c55210de27fcccda2ed0c63fdd2b352")
 
     await waitFor(() => screen.findByText(/Valid CSV dataset/), {
       timeout: 3000,
     })
+  },
+}
+
+export const DatabaseModalLargeDataset: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        ...COMMON_HANDLERS,
+        http.get(
+          "https://api-production.data.gov.sg/v2/public/api/datasets/:resourceId/metadata",
+          () =>
+            HttpResponse.json({
+              data: {
+                name: "Large dataset",
+                format: "CSV",
+                // 5MB — exceeds the 4MB limit
+                datasetSize: 5 * 1024 * 1024,
+                columnMetadata: { metaMapping: {} },
+              },
+            }),
+        ),
+      ],
+    },
+  },
+  play: async ({ canvasElement, ...rest }) => {
+    await EditFixedBlockDatabase.play?.({ canvasElement, ...rest })
+    const screen = within(canvasElement.ownerDocument.body)
+
+    const editButton = await screen.findByRole("button", { name: /edit/i })
+    await userEvent.click(editButton)
+
+    const input = await screen.findByPlaceholderText("Paste dataset URL here")
+    await userEvent.type(input, "d_3c55210de27fcccda2ed0c63fdd2b352")
+
+    await waitFor(
+      () =>
+        screen.findByText(
+          "This dataset exceeds the 4MB size limit and cannot be used. Please use a smaller dataset.",
+        ),
+      { timeout: 3000 },
+    )
   },
 }
 
