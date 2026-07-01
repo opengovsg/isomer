@@ -1,0 +1,89 @@
+name: E2E tests
+
+# Reusable workflow that runs the Playwright e2e harness. Extracted from
+# ci.yml so other workflows (e.g. isobot-verify.yml) can run the exact same
+# e2e suite inline with only GITHUB_TOKEN, instead of re-triggering CI.
+#
+# Callers pass only the Datadog Test Visibility key explicitly (least
+# privilege — not `secrets: inherit`, which would expose every caller secret
+# to this workflow). The github context (event payload, run_id, etc.) is
+# inherited from the caller, so PR-number/artifact-URL handling stays there.
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Git ref/branch to check out; empty = default checkout behavior for the caller's event."
+        type: string
+        required: false
+        default: ""
+    secrets:
+      DD_API_KEY_GITHUB_ACTIONS:
+        description: "Datadog API key for Test Visibility. Optional — the suite runs without it, just untraced."
+        required: false
+    outputs:
+      artifact-url:
+        description: "URL of the uploaded e2e test-results artifact."
+        value: ${{ jobs.e2e.outputs.artifact-url }}
+
+env:
+  LOG_LEVEL: silent
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      artifact-url: ${{ steps.upload-test-results.outputs.artifact-url }}
+    steps:
+      # An empty `ref` is treated as unset by actions/checkout, so it falls
+      # back to default behavior (the ref/SHA that triggered the caller).
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install Playwright (Chromium)
+        run: pnpm --filter isomer-studio exec playwright install chromium
+      - name: Load .env file
+        uses: opengovsg/dotenv@eff1dce037c4c0143cc4180a810511024c2560c0 # v2
+        with:
+          path: apps/studio
+          mode: test
+      - name: Next.js cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-
+      - name: Build Studio app
+        # Loose env mode required for env vars to be passed to the run
+        run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
+      - name: Start test containers
+        run: pnpm run setup:test
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+        with:
+          languages: js
+          service: isomer-studio
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - name: Seed testing db
+        run: pnpm exec turbo db:seed
+      - name: Run Playwright tests
+        run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
+
+      - name: Stop test containers
+        run: pnpm run teardown
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        id: upload-test-results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          # Unique per run so that re-runs from the same PR don't collide.
+          name: e2e-test-results-${{ github.run_id }}
+          path: apps/studio/tests/e2e/test-results
+          retention-days: 7
+          if-no-files-found: warn
