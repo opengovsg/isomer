@@ -62,8 +62,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     onDragEnd,
   } = arrayResult
 
-  const hasDuplicateFilterNameError = duplicateFilterIndices.size > 0
-
   const {
     target: deleteTarget,
     openDeleteModal,
@@ -113,7 +111,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               Add a filter
             </AddItemButton>
           </HStack>
-          {hasDuplicateFilterNameError && <procee noun="filter" />}
         </VStack>
         <Box w="full" mt={hasLabelOrDescription ? "0.5rem" : "0.25rem"}>
           <DragDropContext onDragEnd={onDragEnd}>
