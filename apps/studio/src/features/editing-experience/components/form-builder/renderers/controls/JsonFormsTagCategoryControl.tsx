@@ -10,7 +10,6 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
-import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyCategory } from "../../components/EmptyCategory"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
@@ -114,7 +113,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               Add a filter
             </AddItemButton>
           </HStack>
-          {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
+          {hasDuplicateFilterNameError && <procee noun="filter" />}
         </VStack>
         <Box w="full" mt={hasLabelOrDescription ? "0.5rem" : "0.25rem"}>
           <DragDropContext onDragEnd={onDragEnd}>

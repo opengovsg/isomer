@@ -4,17 +4,11 @@ import { upperFirst } from "lodash-es"
 import { BiDotsHorizontalRounded, BiTrash } from "react-icons/bi"
 import { MenuItem } from "~/components/Menu"
 
+import { ROW_ACTION_ICON_BUTTON_PROPS } from "./constants"
+
 const ROW_ACTIONS_MENU_BUTTON_PROPS = {
+  ...ROW_ACTION_ICON_BUTTON_PROPS,
   colorScheme: "neutral",
-  variant: "clear",
-  h: "2.125rem",
-  w: "2.125rem",
-  minH: "2.125rem",
-  minW: "2.125rem",
-  p: "0.25rem",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
 } as const
 
 interface TagRowActionsMenuProps {

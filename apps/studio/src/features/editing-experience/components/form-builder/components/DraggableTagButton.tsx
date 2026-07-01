@@ -19,7 +19,11 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
-import { BiGridVertical, BiInfoCircle } from "react-icons/bi"
+import { IconButton, Input } from "@opengovsg/design-system-react"
+import { useEffect, useState } from "react"
+import { BiCheck, BiGridVertical, BiInfoCircle, BiX } from "react-icons/bi"
+
+import { ROW_ACTION_ICON_BUTTON_PROPS } from "./constants"
 
 interface RootProps {
   draggableProps: DraggableProvidedDraggableProps
@@ -97,31 +101,49 @@ const Handle = ({ dragHandleProps, py = "0.5rem" }: HandleProps) => (
 )
 
 interface BodyProps {
-  onClick: () => void
+  onClick?: () => void
   children: ReactNode
   py?: BoxProps["py"]
 }
 
-const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => (
-  <Box
-    layerStyle="focusRing"
-    as="button"
-    type="button"
-    flex={1}
-    minW={0}
-    display="flex"
-    alignItems="center"
-    cursor="pointer"
-    py={py}
-    pl="0.25rem"
-    pr="1rem"
-    onClick={onClick}
-  >
+const BODY_BASE_STYLE: BoxProps = {
+  layerStyle: "focusRing",
+  flex: 1,
+  minW: 0,
+  display: "flex",
+  alignItems: "center",
+  pl: "0.25rem",
+  pr: "1rem",
+}
+
+const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => {
+  const content = (
     <HStack align="stretch" spacing="0.75rem" w="full">
       {children}
     </HStack>
-  </Box>
-)
+  )
+
+  if (!onClick) {
+    return (
+      <Box {...BODY_BASE_STYLE} cursor="default" py={py}>
+        {content}
+      </Box>
+    )
+  }
+
+  return (
+    <Box
+      {...BODY_BASE_STYLE}
+      as="button"
+      type="button"
+      cursor="pointer"
+      py={py}
+      onClick={onClick}
+    >
+      {content}
+    </Box>
+  )
+}
 
 interface IconBadgeProps {
   icon: IconType
@@ -146,11 +168,21 @@ const IconBadge = ({ icon }: IconBadgeProps) => (
   </Flex>
 )
 
-const Content = ({ children }: { children: ReactNode }) => (
-  <Stack align="start" gap="0.25rem" flex={1} minW={0}>
+interface ContentProps {
+  children: ReactNode
+  gap?: BoxProps["gap"]
+}
+
+const Content = ({ children, gap = "0.25rem" }: ContentProps) => (
+  <Stack align="start" gap={gap} flex={1} minW={0}>
     {children}
   </Stack>
 )
+
+const EDITABLE_LABEL_ICON_BUTTON_PROPS = {
+  ...ROW_ACTION_ICON_BUTTON_PROPS,
+  color: "interaction.links.neutral-default",
+} as const
 
 const LabelRaw = withJsonFormsMasterListItemProps(
   ({ childLabel, index }: StatePropsOfMasterItem) => (
@@ -174,6 +206,109 @@ const Label = (props: LabelProps) => (
     translations={{}}
   />
 )
+
+interface EditableLabelProps {
+  value: string
+  placeholder: string
+  ariaLabel: string
+  isInvalid: boolean
+  isDisabled: boolean
+  isEditing: boolean
+  onSubmit: (value: string) => void
+  onEditingChange: (isEditing: boolean) => void
+  onDraftChange?: (draft: string) => void
+}
+
+/**
+ * Click-to-edit label used by rows whose only editable field is their name.
+ * `isEditing` is controlled by the parent so opening one row's editor closes any other.
+ * `onDraftChange` lets the parent validate (e.g. duplicate/blank checks) against the
+ * in-progress value before it's committed via `onSubmit`.
+ */
+const EditableLabel = ({
+  value,
+  placeholder,
+  ariaLabel,
+  isInvalid,
+  isDisabled,
+  isEditing,
+  onSubmit,
+  onEditingChange,
+  onDraftChange,
+}: EditableLabelProps) => {
+  const [draft, setDraft] = useState(value)
+
+  useEffect(() => {
+    if (isEditing) setDraft(value)
+  }, [isEditing, value])
+
+  const handleSave = () => {
+    if (draft === value || isInvalid) return
+    onSubmit(draft)
+    onEditingChange(false)
+  }
+
+  const handleDiscard = () => {
+    setDraft(value)
+    onEditingChange(false)
+  }
+
+  if (!isEditing) {
+    return (
+      <Text
+        textStyle="subhead-2"
+        textAlign="start"
+        color="base.content.default"
+        cursor={isDisabled ? "default" : "pointer"}
+        w="full"
+        onClick={() => !isDisabled && onEditingChange(true)}
+      >
+        {value || placeholder}
+      </Text>
+    )
+  }
+
+  const isDirty = draft !== value
+
+  return (
+    <HStack spacing="0.25rem" align="center" w="full">
+      <Input
+        autoFocus
+        size="sm"
+        value={draft}
+        placeholder={placeholder}
+        aria-label={ariaLabel}
+        isInvalid={isInvalid}
+        focusBorderColor={
+          isInvalid ? "interaction.critical.default" : undefined
+        }
+        onChange={(e) => {
+          setDraft(e.target.value)
+          onDraftChange?.(e.target.value)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSave()
+          if (e.key === "Escape") handleDiscard()
+        }}
+      />
+      <IconButton
+        aria-label="Save changes"
+        icon={<BiCheck fontSize="1.5rem" />}
+        {...EDITABLE_LABEL_ICON_BUTTON_PROPS}
+        colorScheme="success"
+        isDisabled={!isDirty || isInvalid}
+        onClick={handleSave}
+      />
+      <IconButton
+        aria-label="Discard changes"
+        icon={<BiX fontSize="1.5rem" />}
+        {...EDITABLE_LABEL_ICON_BUTTON_PROPS}
+        colorScheme="critical"
+        onClick={handleDiscard}
+      />
+    </HStack>
+  )
+}
 
 const Subtitle = ({ children }: { children: ReactNode }) => (
   <Text textStyle="caption-2" color="base.content.medium">
@@ -212,6 +347,7 @@ export const DraggableTagButton = {
   Icon: IconBadge,
   Content,
   Label,
+  EditableLabel,
   Subtitle,
   ErrorCaption,
   Trailing,
