@@ -242,8 +242,10 @@ const EditableLabel = ({
     if (isEditing) setDraft(value)
   }, [isEditing, value])
 
+  const isDirty = draft !== value
+
   const handleSave = () => {
-    if (draft === value || isInvalid) return
+    if (!isDirty || isInvalid) return
     onSubmit(draft)
     onEditingChange(false)
   }
@@ -267,8 +269,6 @@ const EditableLabel = ({
       </Text>
     )
   }
-
-  const isDirty = draft !== value
 
   return (
     <HStack spacing="0.25rem" align="center" w="full">
