@@ -7,7 +7,7 @@ import type {
   OwnPropsOfMasterListItem,
   StatePropsOfMasterItem,
 } from "@jsonforms/core"
-import type { ReactNode } from "react"
+import type { ComponentProps, ReactNode } from "react"
 import type { IconType } from "react-icons"
 import {
   Box,
@@ -20,20 +20,27 @@ import {
 } from "@chakra-ui/react"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
 import { IconButton, Input } from "@opengovsg/design-system-react"
-import { useState } from "react"
+import { createContext, useContext, useState } from "react"
 import { BiCheck, BiGridVertical, BiInfoCircle, BiX } from "react-icons/bi"
 
 import { ROW_ACTION_ICON_BUTTON_PROPS } from "./constants"
+import { TagRowActionsMenu } from "./TagRowActionsMenu"
+
+const DraggableTagButtonContext = createContext({ isDragDisabled: false })
+
+const useDraggableTagButton = () => useContext(DraggableTagButtonContext)
 
 interface RootProps {
   draggableProps: DraggableProvidedDraggableProps
   isError: boolean
+  isDragDisabled?: boolean
   children: ReactNode
 }
 
 const Root = forwardRef<RootProps, "div">(
-  ({ draggableProps, isError, children }, ref) => (
-    <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
+  ({ draggableProps, isError, isDragDisabled = false, children }, ref) => (
+    <DraggableTagButtonContext.Provider value={{ isDragDisabled }}>
+      <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
       <HStack
         spacing={0}
         border="1px solid"
@@ -43,24 +50,28 @@ const Root = forwardRef<RootProps, "div">(
         transitionProperty="common"
         transitionDuration="normal"
         aria-invalid={isError}
-        _hover={{
-          bg: "interaction.muted.main.hover",
-          borderColor: "interaction.main-subtle.hover",
-          _invalid: {
-            bg: "interaction.muted.critical.hover",
-            borderColor: "utility.feedback.critical",
-          },
-        }}
-        _active={{
-          bg: "interaction.main-subtle.default",
-          borderColor: "interaction.main-subtle.hover",
-          shadow: "0px 1px 6px 0px #1361F026",
-          _invalid: {
-            bg: "interaction.muted.critical.hover",
-            borderColor: "utility.feedback.critical",
-            shadow: "0px 1px 6px 0px #C0343426",
-          },
-        }}
+        {...(isDragDisabled
+          ? undefined
+          : {
+              _hover: {
+                bg: "interaction.muted.main.hover",
+                borderColor: "interaction.main-subtle.hover",
+                _invalid: {
+                  bg: "interaction.muted.critical.hover",
+                  borderColor: "utility.feedback.critical",
+                },
+              },
+              _active: {
+                bg: "interaction.main-subtle.default",
+                borderColor: "interaction.main-subtle.hover",
+                shadow: "0px 1px 6px 0px #1361F026",
+                _invalid: {
+                  bg: "interaction.muted.critical.hover",
+                  borderColor: "utility.feedback.critical",
+                  shadow: "0px 1px 6px 0px #C0343426",
+                },
+              },
+            })}
         align="stretch"
         overflow="hidden"
       >
@@ -77,6 +88,7 @@ const Root = forwardRef<RootProps, "div">(
         </HStack>
       </HStack>
     </Box>
+    </DraggableTagButtonContext.Provider>
   ),
 )
 
@@ -85,20 +97,28 @@ interface HandleProps {
   py?: BoxProps["py"]
 }
 
-const Handle = ({ dragHandleProps, py = "0.5rem" }: HandleProps) => (
-  <Flex
-    cursor="grab"
-    flexShrink={0}
-    align="center"
-    layerStyle="focusRing"
-    py={py}
-    pl="0.5rem"
-    pr="0.25rem"
-    {...dragHandleProps}
-  >
-    <ChakraIcon as={BiGridVertical} fontSize="1.5rem" color="slate.300" />
-  </Flex>
-)
+const Handle = ({
+  dragHandleProps,
+  py = "0.5rem",
+}: HandleProps) => {
+  const { isDragDisabled } = useDraggableTagButton()
+
+  return (
+    <Flex
+      cursor={isDragDisabled ? "not-allowed" : "grab"}
+      flexShrink={0}
+      align="center"
+      layerStyle="focusRing"
+      py={py}
+      pl="0.5rem"
+      pr="0.25rem"
+      opacity={isDragDisabled ? 0.4 : 1}
+      {...(isDragDisabled ? undefined : dragHandleProps)}
+    >
+      <ChakraIcon as={BiGridVertical} fontSize="1.5rem" color="slate.300" />
+    </Flex>
+  )
+}
 
 interface BodyProps {
   onClick?: () => void
@@ -236,6 +256,7 @@ const EditableLabel = ({
   onEditingChange,
   onDraftChange,
 }: EditableLabelProps) => {
+  const { isDragDisabled } = useDraggableTagButton()
   const [draft, setDraft] = useState(value)
 
   const isDirty = draft !== value
@@ -256,7 +277,11 @@ const EditableLabel = ({
       <Text
         textStyle="subhead-2"
         textAlign="start"
-        color="base.content.default"
+        color={
+          isDragDisabled
+            ? "interaction.support.disabled-content"
+            : "base.content.default"
+        }
         cursor={isDisabled ? "default" : "pointer"}
         w="full"
         onClick={() => {
@@ -295,7 +320,7 @@ const EditableLabel = ({
         aria-label="Save changes"
         icon={<BiCheck fontSize="1.5rem" />}
         {...EDITABLE_LABEL_ICON_BUTTON_PROPS}
-        colorScheme="success"
+        color="utility.feedback.success"
         isDisabled={!isDirty || isInvalid}
         onClick={handleSave}
       />
@@ -340,6 +365,16 @@ const Trailing = ({ children }: { children: ReactNode }) => (
   </Flex>
 )
 
+type ActionsMenuProps = Omit<
+  ComponentProps<typeof TagRowActionsMenu>,
+  "isDragDisabled"
+>
+
+const ActionsMenu = (props: ActionsMenuProps) => {
+  const { isDragDisabled } = useDraggableTagButton()
+  return <TagRowActionsMenu {...props} isDragDisabled={isDragDisabled} />
+}
+
 export const DraggableTagButton = {
   Root,
   Handle,
@@ -351,4 +386,5 @@ export const DraggableTagButton = {
   Subtitle,
   ErrorCaption,
   Trailing,
+  ActionsMenu,
 }

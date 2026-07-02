@@ -15,6 +15,7 @@ interface TagRowActionsMenuProps {
   noun: string
   index: number
   isDisabled: boolean
+  isDragDisabled?: boolean
   onDelete: () => void
 }
 
@@ -22,6 +23,7 @@ export function TagRowActionsMenu({
   noun,
   index,
   isDisabled,
+  isDragDisabled = false,
   onDelete,
 }: TagRowActionsMenuProps) {
   return (
@@ -30,6 +32,9 @@ export function TagRowActionsMenu({
         as={IconButton}
         icon={<BiDotsHorizontalRounded fontSize="1.5rem" />}
         {...ROW_ACTIONS_MENU_BUTTON_PROPS}
+        color={
+          isDragDisabled ? "interaction.support.disabled" : undefined
+        }
         isDisabled={isDisabled}
         aria-label={`${upperFirst(noun)} ${index + 1} actions`}
         onClick={(e) => e.stopPropagation()}
