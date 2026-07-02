@@ -16,11 +16,10 @@ import {
   FormErrorMessage,
   FormLabel,
   Infobox,
-  Link,
   useToast,
 } from "@opengovsg/design-system-react"
 import { useState } from "react"
-import { BiLinkAlt, BiPlus, BiRightArrowAlt } from "react-icons/bi"
+import { BiPlus, BiRightArrowAlt, BiSearch } from "react-icons/bi"
 import { REDIRECT_MESSAGES } from "~/constants/redirect"
 import {
   BRIEF_TOAST_SETTINGS,
@@ -63,6 +62,10 @@ export const AddRedirectCard = ({
 
   const [source, destination] = watch(["source", "destination"])
   const isAddDisabled = !source?.trim() || !destination?.trim()
+
+  // The "Redirect to a page on your site..." dropdown only surfaces while the
+  // destination field is focused (per the design).
+  const [isDestinationFocused, setIsDestinationFocused] = useState(false)
 
   // Non-blocking warnings (e.g. the destination doesn't exist / isn't
   // published) are fetched on blur once the inputs are sync-valid.
@@ -138,24 +141,26 @@ export const AddRedirectCard = ({
       borderWidth="1px"
       borderRadius="0.5rem"
       p="1.25rem"
+      pb="1.5rem"
       bgColor="base.canvas.default"
     >
-      <Text textStyle="subhead-1" mb="0.25rem">
+      <Text textStyle="h6" mb="0.25rem" color="base.content.strong">
         Add new redirects
       </Text>
       <Text textStyle="body-2" color="base.content.medium" mb="1.25rem">
-        Redirects go live as soon as you add them.
+        New redirects publish right away, but can take a few minutes to take
+        effect on your live site.
       </Text>
 
-      <HStack
-        as="form"
-        spacing="0.75rem"
-        align="flex-start"
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <FormControl flex={1} isInvalid={!!errors.source} isRequired>
-          <FormLabel>When someone visits</FormLabel>
-          <InputGroup size="xs">
+      <HStack as="form" align="flex-start" onSubmit={handleSubmit(onSubmit)}>
+        <FormControl
+          flex={1}
+          maxW="24rem"
+          isInvalid={!!errors.source}
+          isRequired
+        >
+          <FormLabel size="sm">When someone visits</FormLabel>
+          <InputGroup size="sm">
             <InputLeftAddon
               borderColor="base.divider.strong"
               bgColor="interaction.support.disabled"
@@ -174,40 +179,82 @@ export const AddRedirectCard = ({
         </FormControl>
 
         <Box flexShrink={0}>
-          <FormLabel aria-hidden visibility="hidden">
+          <FormLabel size="sm" aria-hidden visibility="hidden">
             &nbsp;
           </FormLabel>
           <Center h="2.5rem">
             <Icon
               as={BiRightArrowAlt}
               boxSize="1.5rem"
-              color="standard.black"
+              color="base.content.medium"
             />
           </Center>
         </Box>
 
-        <FormControl flex={1} isInvalid={!!errors.destination} isRequired>
-          <FormLabel>Redirect them to</FormLabel>
-          <Input
-            placeholder="/redirect-to"
-            size="xs"
-            {...register("destination", {
-              onBlur: checkForWarnings,
-              onChange: clearFieldFeedback("destination"),
-            })}
-          />
+        <FormControl
+          flex={1}
+          maxW="22rem"
+          isInvalid={!!errors.destination}
+          isRequired
+        >
+          <FormLabel size="sm">Redirect them to</FormLabel>
+          <Box position="relative">
+            <Input
+              placeholder="/path-to-page or https://www.google.com"
+              size="sm"
+              onFocus={() => setIsDestinationFocused(true)}
+              {...register("destination", {
+                onBlur: () => {
+                  setIsDestinationFocused(false)
+                  checkForWarnings()
+                },
+                onChange: clearFieldFeedback("destination"),
+              })}
+            />
+
+            {/* Dropdown opens the page picker. Preventing the default mousedown
+                keeps the input focused so the click lands before blur removes
+                this element. It's absolutely positioned below the input so
+                showing it doesn't shift the surrounding layout. */}
+            {isDestinationFocused && !errors.destination && (
+              <Box
+                position="absolute"
+                top="100%"
+                left={0}
+                right={0}
+                zIndex="dropdown"
+                mt="0.25rem"
+                py="0.5rem"
+                bgColor="white"
+                borderRadius="0.25rem"
+                boxShadow="0px 0px 10px 0px rgba(191, 191, 191, 0.5)"
+                overflow="hidden"
+              >
+                <HStack
+                  as="button"
+                  type="button"
+                  w="full"
+                  spacing="0.5rem"
+                  px="0.75rem"
+                  py="0.5rem"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={onPageModalOpen}
+                  _hover={{ bgColor: "interaction.muted.main.hover" }}
+                >
+                  <Icon
+                    as={BiSearch}
+                    boxSize="1rem"
+                    color="interaction.main.default"
+                  />
+                  <Text textStyle="body-2" color="interaction.main.default">
+                    Redirect to a page on your site
+                  </Text>
+                </HStack>
+              </Box>
+            )}
+          </Box>
           <FormErrorMessage>{errors.destination?.message}</FormErrorMessage>
-          <Link
-            as="button"
-            type="button"
-            variant="standalone"
-            p="0"
-            mt="0.25rem"
-            onClick={onPageModalOpen}
-          >
-            <Icon as={BiLinkAlt} mr="0.25rem" />
-            Link to a page
-          </Link>
+
           {warnings.length > 0 && (
             <Stack spacing="0.5rem" mt="0.5rem">
               {warnings.map((warning) => (
@@ -219,8 +266,8 @@ export const AddRedirectCard = ({
           )}
         </FormControl>
 
-        <Box flexShrink={0}>
-          <FormLabel aria-hidden visibility="hidden">
+        <Box flexShrink={0} ml="0.5rem">
+          <FormLabel size="sm" aria-hidden visibility="hidden">
             &nbsp;
           </FormLabel>
           <Button
@@ -228,7 +275,7 @@ export const AddRedirectCard = ({
             isDisabled={isAddDisabled}
             isLoading={isPending}
             leftIcon={<Icon as={BiPlus} />}
-            size="xs"
+            size="sm"
           >
             Add
           </Button>

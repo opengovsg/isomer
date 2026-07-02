@@ -67,7 +67,10 @@ describe("redirect.router", async () => {
     permalink: string
     published: boolean
   }) => {
-    const { page: rootPage } = await setupPageResource({
+    // Top-level resources are stored with parentId = null in production (they
+    // are NOT children of the RootPage's id), so seed them that way — otherwise
+    // getResourceByFullPermalink can't resolve them.
+    await setupPageResource({
       siteId,
       resourceType: ResourceType.RootPage,
       parentId: null,
@@ -75,7 +78,7 @@ describe("redirect.router", async () => {
     const { page } = await setupPageResource({
       siteId,
       resourceType: ResourceType.Page,
-      parentId: rootPage.id,
+      parentId: null,
       permalink,
       ...(published
         ? { state: ResourceState.Published, userId }
@@ -621,7 +624,7 @@ describe("redirect.router", async () => {
     it("should not warn for a published page nested under a folder", async () => {
       // Arrange — /folder/leaf, where leaf is a published page under a folder.
       // This exercises the multi-segment walk past depth 1.
-      const { page: rootPage } = await setupPageResource({
+      await setupPageResource({
         siteId,
         resourceType: ResourceType.RootPage,
         parentId: null,
@@ -629,7 +632,7 @@ describe("redirect.router", async () => {
       const { folder } = await setupFolder({
         siteId,
         permalink: "folder",
-        parentId: rootPage.id,
+        parentId: null,
       })
       await setupPageResource({
         siteId,
@@ -654,7 +657,7 @@ describe("redirect.router", async () => {
     it("should not warn for a folder whose index page is published", async () => {
       // Arrange — "/folder" is served by the folder's published IndexPage, so
       // it must resolve as published (exercises the folder->IndexPage branch).
-      const { page: rootPage } = await setupPageResource({
+      await setupPageResource({
         siteId,
         resourceType: ResourceType.RootPage,
         parentId: null,
@@ -662,7 +665,7 @@ describe("redirect.router", async () => {
       const { folder } = await setupFolder({
         siteId,
         permalink: "folder",
-        parentId: rootPage.id,
+        parentId: null,
       })
       await setupPageResource({
         siteId,
@@ -683,10 +686,38 @@ describe("redirect.router", async () => {
       expect(result.warnings).toEqual([])
     })
 
+    it("should not warn for a published destination that carries a #fragment", async () => {
+      // Arrange — an internal destination may keep a literal "#fragment"; it must
+      // still resolve to the underlying published page rather than 404-ing.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: null,
+        permalink: "leaf",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/old",
+        destination: "/leaf#section",
+      })
+
+      // Assert
+      expect(result.warnings).toEqual([])
+    })
+
     it("should warn NOT_PUBLISHED for a folder with no index page", async () => {
       // Arrange — a folder with no IndexPage has no live page at its URL, so
       // resolution falls back to the (unpublished) container.
-      const { page: rootPage } = await setupPageResource({
+      await setupPageResource({
         siteId,
         resourceType: ResourceType.RootPage,
         parentId: null,
@@ -694,7 +725,7 @@ describe("redirect.router", async () => {
       await setupFolder({
         siteId,
         permalink: "folder",
-        parentId: rootPage.id,
+        parentId: null,
       })
 
       // Act
@@ -746,6 +777,43 @@ describe("redirect.router", async () => {
 
       // Assert
       expect(result.errors).toEqual([])
+    })
+
+    it("should error when the source is the URL of a live folder (published index)", async () => {
+      // Arrange — a folder whose index page is published is live at "/folder",
+      // so a redirect there would shadow it. Regression test: the source guard
+      // must resolve top-level containers (parentId = null), not only pages.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/folder",
+        destination: "/somewhere",
+      })
+
+      // Assert
+      expect(result.errors).toContainEqual({
+        code: "SOURCE_IS_EXISTING_PAGE",
+        message:
+          "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
+      })
     })
   })
 
@@ -1231,9 +1299,10 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe("/no-such-page")
     })
 
-    it("stores a literal path when the destination page exists but is unpublished", async () => {
-      // Arrange — a draft page has no live URL yet
-      await setupPageResource({
+    it("stores a reference when the destination page exists but is unpublished", async () => {
+      // Arrange — a draft page exists at /draft-page; it has no live URL yet, but
+      // the redirect references it so it starts working once the page publishes
+      const { page } = await setupPageResource({
         siteId,
         resourceType: ResourceType.Page,
         permalink: "draft-page",
@@ -1247,14 +1316,14 @@ describe("redirect.router", async () => {
         destination: "/draft-page",
       })
 
-      // Assert — kept literal (not converted to a reference, not rejected)
+      // Assert — resolved to a [resource:...] reference, not kept literal
       const row = await db
         .selectFrom("Redirect")
         .select("destination")
         .where("siteId", "=", siteId)
         .where("source", "=", "/from")
         .executeTakeFirstOrThrow()
-      expect(row.destination).toBe("/draft-page")
+      expect(row.destination).toBe(`[resource:${siteId}:${page.id}]`)
     })
 
     it("should resolve the site root '/' to the RootPage reference", async () => {
@@ -1307,8 +1376,9 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe(`[resource:${siteId}:${folder.id}]`)
     })
 
-    it("stores a literal path for a folder destination whose index page is unpublished", async () => {
-      // Arrange — a folder with no live index page has no live URL behind it yet
+    it("stores the folder reference for a folder destination whose index page is unpublished", async () => {
+      // Arrange — a folder whose index page is still a draft has no live URL yet,
+      // but the redirect references the folder so it works once it's published
       const { folder } = await setupFolder({ siteId, permalink: "about" })
       await setupPageResource({
         siteId,
@@ -1325,14 +1395,14 @@ describe("redirect.router", async () => {
         destination: "/about",
       })
 
-      // Assert — kept literal until the folder is published
+      // Assert — resolved to the folder reference, not kept literal
       const row = await db
         .selectFrom("Redirect")
         .select("destination")
         .where("siteId", "=", siteId)
         .where("source", "=", "/from")
         .executeTakeFirstOrThrow()
-      expect(row.destination).toBe("/about")
+      expect(row.destination).toBe(`[resource:${siteId}:${folder.id}]`)
     })
   })
 

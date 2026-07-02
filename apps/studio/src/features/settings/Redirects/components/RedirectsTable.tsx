@@ -8,6 +8,7 @@ import {
   Stack,
   Text,
   Tooltip,
+  VisuallyHidden,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
@@ -25,11 +26,11 @@ import {
 } from "react-icons/bi"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
-import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { useIsTruncated } from "~/hooks/useIsTruncated"
 import { useTablePagination } from "~/hooks/useTablePagination"
 
 import type { RedirectRow, RedirectSortField } from "../types"
@@ -47,12 +48,24 @@ import {
   isReferenceDestination,
 } from "../utils"
 import { DeleteRedirectModal } from "./DeleteRedirectModal"
+import { RedirectsEmptyPlaceholder } from "./RedirectsEmptyPlaceholder"
 
 const columnsHelper = createColumnHelper<RedirectRow>()
 
 // Copy shown when a reference destination's page has since been deleted. Kept
 // here (the render site) so it can change without touching the resolution logic.
 const MISSING_PAGE_LABEL = "Page no longer exists"
+
+// Middle truncation: the head CSS-truncates with an ellipsis while the last
+// TRUNCATION_TAIL_LENGTH characters stay pinned, so a long path keeps its most
+// specific segment visible ("/promo/really-long…/end.html") instead of losing
+// the tail to a plain end-ellipsis.
+const TRUNCATION_TAIL_LENGTH = 10
+
+const splitForMiddleTruncation = (value: string) => {
+  const splitAt = Math.max(0, value.length - TRUNCATION_TAIL_LENGTH)
+  return { head: value.slice(0, splitAt), tail: value.slice(splitAt) }
+}
 
 // Renders a pre-resolved redirect destination. Reference destinations arrive as
 // the page's current permalink; while that resolution is in flight we show a
@@ -63,22 +76,44 @@ function DestinationCell({
 }: {
   display: DestinationDisplay
 }): JSX.Element {
+  const { ref, isTruncated } = useIsTruncated<HTMLParagraphElement>()
+
   if (display.status === "resolving") {
     return <Skeleton height="1.25rem" width="60%" />
   }
 
   const isMissing = display.status === "missing"
   const label = isMissing ? MISSING_PAGE_LABEL : display.label
+  const color = isMissing ? "utility.feedback.critical" : "base.content.strong"
+  const { head, tail } = splitForMiddleTruncation(label)
   return (
-    <Tooltip label={label} openDelay={500} placement="top">
-      <Text
-        textStyle="body-2"
-        color={isMissing ? "utility.feedback.critical" : "base.content.strong"}
-        noOfLines={1}
-        wordBreak="break-all"
-      >
-        {label}
-      </Text>
+    <Tooltip
+      label={label}
+      openDelay={500}
+      placement="top"
+      isDisabled={!isTruncated}
+    >
+      <HStack spacing="0" align="center" overflow="hidden">
+        <Text
+          ref={ref}
+          textStyle="body-2"
+          color={color}
+          minW={0}
+          overflow="hidden"
+          whiteSpace="nowrap"
+          textOverflow="ellipsis"
+        >
+          {head}
+        </Text>
+        <Text
+          textStyle="body-2"
+          color={color}
+          flexShrink={0}
+          whiteSpace="nowrap"
+        >
+          {tail}
+        </Text>
+      </HStack>
     </Tooltip>
   )
 }
@@ -135,6 +170,77 @@ function SortableHeader({
   )
 }
 
+// Renders a redirect source. A trailing "*" wildcard is shown as a badge rather
+// than literal text. The tooltip surfaces the full source only when the visible
+// text is clipped by the cell width.
+function SourceCell({ source }: { source: string }): JSX.Element {
+  // Measure both the text and the row: the text catches its own clamp, while the
+  // row catches the case where the wildcard badge is clipped even though the
+  // text is not.
+  const { ref: textRef, isTruncated: isTextTruncated } =
+    useIsTruncated<HTMLParagraphElement>()
+  const { ref: rowRef, isTruncated: isRowTruncated } =
+    useIsTruncated<HTMLDivElement>()
+  const isWildcard = source.endsWith("*")
+  const base = isWildcard ? source.slice(0, -1) : source
+  const { head, tail } = splitForMiddleTruncation(base)
+  return (
+    <Tooltip
+      label={source}
+      openDelay={500}
+      placement="top"
+      isDisabled={!isTextTruncated && !isRowTruncated}
+    >
+      <HStack ref={rowRef} spacing="0" align="center" overflow="hidden">
+        <Text
+          ref={textRef}
+          textStyle="body-2"
+          color="base.content.strong"
+          minW={0}
+          overflow="hidden"
+          whiteSpace="nowrap"
+          textOverflow="ellipsis"
+        >
+          {head}
+        </Text>
+        <Text
+          textStyle="body-2"
+          color="base.content.strong"
+          flexShrink={0}
+          whiteSpace="nowrap"
+        >
+          {tail}
+        </Text>
+        {isWildcard && (
+          <Box
+            as="span"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+            borderWidth="1px"
+            borderColor="base.divider.medium"
+            bg="utility.feedback.critical-subtle"
+            borderRadius="2px"
+            px="0.2rem"
+            ml="0.125rem"
+            flexShrink={0}
+            lineHeight="1"
+          >
+            <Text
+              as="span"
+              fontFamily="mono"
+              textStyle="subhead-2"
+              color="utility.feedback.critical"
+            >
+              *
+            </Text>
+          </Box>
+        )}
+      </HStack>
+    </Tooltip>
+  )
+}
+
 const getColumns = (
   onDeleteClick: (row: RedirectRow) => void,
   permalinkByReference: Map<string, string | null>,
@@ -149,50 +255,7 @@ const getColumns = (
         onClick={column.getToggleSortingHandler()}
       />
     ),
-    cell: ({ getValue }) => {
-      const source = getValue()
-      const isWildcard = source.endsWith("*")
-      const base = isWildcard ? source.slice(0, -1) : source
-      return (
-        <Tooltip label={source} openDelay={500} placement="top">
-          <HStack spacing="0" align="baseline" overflow="hidden">
-            <Text
-              textStyle="body-2"
-              color="base.content.strong"
-              noOfLines={1}
-              wordBreak="break-all"
-            >
-              {base}
-            </Text>
-            {isWildcard && (
-              <Box
-                as="span"
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                borderWidth="1px"
-                borderColor="base.divider.medium"
-                bg="utility.feedback.critical-subtle"
-                borderRadius="2px"
-                px="0.2rem"
-                ml="0.125rem"
-                flexShrink={0}
-                lineHeight="1"
-              >
-                <Text
-                  as="span"
-                  fontFamily="mono"
-                  textStyle="subhead-2"
-                  color="utility.feedback.critical"
-                >
-                  *
-                </Text>
-              </Box>
-            )}
-          </HStack>
-        </Tooltip>
-      )
-    },
+    cell: ({ getValue }) => <SourceCell source={getValue()} />,
   }),
   columnsHelper.accessor("destination", {
     minSize: 250,
@@ -211,7 +274,7 @@ const getColumns = (
     ),
   }),
   columnsHelper.accessor("publishedAt", {
-    size: 160,
+    size: 80,
     enableSorting: true,
     header: ({ column }) => (
       <SortableHeader
@@ -232,7 +295,7 @@ const getColumns = (
     enableSorting: false,
     header: () => (
       <TableHeader textStyle="subhead-2" color="base.content.medium">
-        Delete
+        <VisuallyHidden>Actions</VisuallyHidden>
       </TableHeader>
     ),
     cell: ({ row }) => (
@@ -366,13 +429,7 @@ export const RedirectsTable = ({
         pagination
         totalRowCount={totalRowCount}
         isFetching={isLoading || isCountLoading}
-        emptyPlaceholder={
-          <EmptyTablePlaceholder
-            groupLabel="redirects"
-            entityName="redirect"
-            hasSearchTerm={false}
-          />
-        }
+        emptyPlaceholder={<RedirectsEmptyPlaceholder />}
         instance={tableInstance}
         sx={{ tableLayout: "fixed" }}
       />
