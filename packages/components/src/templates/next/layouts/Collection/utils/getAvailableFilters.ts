@@ -11,12 +11,12 @@ export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"],
   categoryOptions?: CollectionPageCategoryOption[],
-  categoryLabel?: string,
+  categoryLabel?: CollectionPageSchemaType["page"]["categoryLabel"],
 ): Filter[] => {
   // TODO: Allow user to pass in order of filters to be shown
   return [
     ...getTagFilters(items, tagCategories),
-    getCategoryFilter(items, categoryOptions, categoryLabel),
+    getCategoryFilter({ items, categoryOptions, categoryLabel }),
     getYearFilter(items),
   ].filter((filter) => filter.items.length >= 1)
 }

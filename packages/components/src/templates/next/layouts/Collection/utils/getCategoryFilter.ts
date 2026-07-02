@@ -1,15 +1,24 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { Filter } from "~/templates/next/types/Filter"
-import type { CollectionPageCategoryOption } from "~/types/page"
-
-import { FILTER_ID_CATEGORY } from "./constants"
+import type {
+  CollectionPageCategoryLabel,
+  CollectionPageCategoryOption,
+} from "~/types/page"
 import { resolveCategoryFilterLabel } from "~/utils/resolveCategoryFilterLabel"
 
-export const getCategoryFilter = (
-  items: ProcessedCollectionCardProps[],
-  categoryOptions?: CollectionPageCategoryOption[],
-  categoryLabel?: string,
-): Filter => {
+import { FILTER_ID_CATEGORY } from "./constants"
+
+export interface GetCategoryFilterProps {
+  items: ProcessedCollectionCardProps[]
+  categoryOptions?: CollectionPageCategoryOption[]
+  categoryLabel?: CollectionPageCategoryLabel
+}
+
+export const getCategoryFilter = ({
+  items,
+  categoryOptions,
+  categoryLabel,
+}: GetCategoryFilterProps): Filter => {
   const categories: Record<string, number> = {}
 
   items.forEach(({ category }) => {

@@ -10,7 +10,7 @@ describe("getCategoryFilter", () => {
     const items: ProcessedCollectionCardProps[] = []
 
     // Act
-    const result = getCategoryFilter(items)
+    const result = getCategoryFilter({ items })
 
     // Assert
     expect(result).toEqual({
@@ -41,7 +41,7 @@ describe("getCategoryFilter", () => {
     ]
 
     // Act
-    const result = getCategoryFilter(items)
+    const result = getCategoryFilter({ items })
 
     // Assert
     expect(result).toEqual({
@@ -65,7 +65,7 @@ describe("getCategoryFilter", () => {
     ]
 
     // Act
-    const result = getCategoryFilter(items)
+    const result = getCategoryFilter({ items })
 
     // Assert
     expect(result.items.map((i) => i.label)).toEqual([
@@ -91,7 +91,7 @@ describe("getCategoryFilter", () => {
     ]
 
     // Act
-    const result = getCategoryFilter(items, categoryOptions)
+    const result = getCategoryFilter({ items, categoryOptions })
 
     // Assert
     expect(result).toEqual({
@@ -119,7 +119,7 @@ describe("getCategoryFilter", () => {
     ]
 
     // Act
-    const result = getCategoryFilter(items, categoryOptions)
+    const result = getCategoryFilter({ items, categoryOptions })
 
     // Assert
     expect(result.items.map((i) => i.label)).toEqual(["Policy", "News"])
@@ -143,7 +143,7 @@ describe("getCategoryFilter", () => {
     ]
 
     // Act
-    const result = getCategoryFilter(items, categoryOptions)
+    const result = getCategoryFilter({ items, categoryOptions })
 
     // Assert — order must follow categoryOptions, not fall back to alphabetical
     expect(result.items.map((i) => i.id)).toEqual([
@@ -168,7 +168,7 @@ describe("getCategoryFilter", () => {
     ]
 
     // Act
-    const result = getCategoryFilter(items, categoryOptions)
+    const result = getCategoryFilter({ items, categoryOptions })
 
     // Assert
     expect(result.items.map((i) => i.label)).toEqual([
@@ -194,7 +194,7 @@ describe("getCategoryFilter", () => {
     ]
 
     // Act
-    const result = getCategoryFilter(items, categoryOptions)
+    const result = getCategoryFilter({ items, categoryOptions })
 
     // Assert — known items first in editor order, unknown items alphabetically after
     expect(result.items.map((i) => i.label)).toEqual([
@@ -212,7 +212,7 @@ describe("getCategoryFilter", () => {
     ]
 
     // Act
-    const result = getCategoryFilter(items, undefined, "Topic")
+    const result = getCategoryFilter({ items, categoryLabel: "Topic" })
 
     // Assert
     expect(result.label).toBe("Topic")
@@ -229,7 +229,7 @@ describe("getCategoryFilter", () => {
     ]
 
     // Act
-    const result = getCategoryFilter(items, undefined, label)
+    const result = getCategoryFilter({ items, categoryLabel: label })
 
     // Assert
     expect(result.label).toBe("Category")
