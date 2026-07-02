@@ -166,6 +166,7 @@ const MoveResourceContent = withSuspense(
               interactionType="move"
               siteId={siteId}
               onlyShowFolders
+              showSelectedResourcePreview={false}
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
