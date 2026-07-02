@@ -242,6 +242,8 @@ interface EditableLabelProps {
  * `isEditing` is controlled by the parent so opening one row's editor closes any other.
  * `onDraftChange` lets the parent validate (e.g. duplicate/blank checks) against the
  * in-progress value before it's committed via `onSubmit`.
+ * Leading/trailing whitespace is trimmed on save so schema validation stays silent
+ * during editing and values are normalised when the user confirms.
  */
 const EditableLabel = ({
   value,
@@ -261,7 +263,8 @@ const EditableLabel = ({
 
   const handleSave = () => {
     if (isInvalid) return
-    if (isDirty) onSubmit(draft)
+    const trimmed = draft.trim()
+    if (trimmed !== value) onSubmit(trimmed)
     onEditingChange(false)
   }
 
