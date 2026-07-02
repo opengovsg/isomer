@@ -68,7 +68,6 @@ function SuspendableJsonFormsCategoryIdSelect({
 
 export function JsonFormsCategoryIdControl({
   description,
-  required,
   label,
   ...props
 }: ControlProps) {
@@ -91,7 +90,7 @@ export function JsonFormsCategoryIdControl({
   if (resourceId === undefined) return null
 
   return enabledSites.includes(parsedQuery.data.siteId.toString()) ? (
-    <FormControl isRequired={required} gap="0.5rem">
+    <FormControl isRequired gap="0.5rem">
       <FormLabel description={description}>{label}</FormLabel>
       <ErrorBoundary fallbackRender={() => null}>
         <Suspense fallback={<Skeleton />}>
