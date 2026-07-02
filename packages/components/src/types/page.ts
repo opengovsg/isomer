@@ -100,6 +100,18 @@ const TagCategoriesSchema = Type.Object({
  * not under Collection display.
  */
 const CategoriesSchema = Type.Object({
+  categoryLabel: Type.Optional(
+    Type.String({
+      title: "Filter name",
+      description:
+        "The label visitors see for the default filter on your collection page.",
+      pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
+      errorMessage: {
+        pattern: "cannot be empty or have leading/trailing spaces",
+      },
+      default: "Category", // default value for backward compatibility and auto backfilling
+    }),
+  ),
   categoryOptions: Type.Optional(
     Type.Array(
       Type.Object({

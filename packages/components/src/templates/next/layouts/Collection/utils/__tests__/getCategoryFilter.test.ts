@@ -204,4 +204,34 @@ describe("getCategoryFilter", () => {
       "Zebra",
     ])
   })
+
+  it("uses a custom categoryLabel when provided", () => {
+    // Arrange
+    const items: ProcessedCollectionCardProps[] = [
+      { category: "News" } as ProcessedCollectionCardProps,
+    ]
+
+    // Act
+    const result = getCategoryFilter(items, undefined, "Topic")
+
+    // Assert
+    expect(result.label).toBe("Topic")
+  })
+
+  it.each([
+    ["omitted", undefined],
+    ["empty string", ""],
+    ["whitespace", "   "],
+  ] as const)("falls back to Category when categoryLabel is %s", (_, label) => {
+    // Arrange
+    const items: ProcessedCollectionCardProps[] = [
+      { category: "News" } as ProcessedCollectionCardProps,
+    ]
+
+    // Act
+    const result = getCategoryFilter(items, undefined, label)
+
+    // Assert
+    expect(result.label).toBe("Category")
+  })
 })

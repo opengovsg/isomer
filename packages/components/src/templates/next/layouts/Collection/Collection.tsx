@@ -22,6 +22,7 @@ export const CollectionLayout = ({
     defaultSortDirection,
     tagCategories,
     categoryOptions,
+    categoryLabel,
     showDate,
     showThumbnail,
   } = page
@@ -53,6 +54,7 @@ export const CollectionLayout = ({
           processedItems,
           tagCategories,
           categoryOptions,
+          categoryLabel,
         )}
         shouldShowDate={shouldShowDate(processedItems)}
         siteAssetsBaseUrl={site.assetsBaseUrl}

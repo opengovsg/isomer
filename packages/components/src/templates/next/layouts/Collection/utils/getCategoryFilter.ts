@@ -3,10 +3,12 @@ import type { Filter } from "~/templates/next/types/Filter"
 import type { CollectionPageCategoryOption } from "~/types/page"
 
 import { FILTER_ID_CATEGORY } from "./constants"
+import { resolveCategoryFilterLabel } from "~/utils/resolveCategoryFilterLabel"
 
 export const getCategoryFilter = (
   items: ProcessedCollectionCardProps[],
   categoryOptions?: CollectionPageCategoryOption[],
+  categoryLabel?: string,
 ): Filter => {
   const categories: Record<string, number> = {}
 
@@ -52,7 +54,7 @@ export const getCategoryFilter = (
 
     return {
       id: FILTER_ID_CATEGORY,
-      label: "Category",
+      label: resolveCategoryFilterLabel(categoryLabel),
       items: [...known, ...unknown],
     }
   }
@@ -63,7 +65,7 @@ export const getCategoryFilter = (
 
   return {
     id: FILTER_ID_CATEGORY,
-    label: "Category",
+    label: resolveCategoryFilterLabel(categoryLabel),
     items: categoryFilterItems,
   }
 }

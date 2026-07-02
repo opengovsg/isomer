@@ -1,5 +1,9 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import {
+  resolveCategoryFilterLabel,
+  type CollectionPagePageProps,
+} from "@opengovsg/isomer-components"
+import {
   Box,
   chakra,
   Flex,
@@ -13,7 +17,7 @@ import {
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { Button, Infobox } from "@opengovsg/design-system-react"
+import { Button } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { Suspense, useMemo, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
@@ -164,22 +168,6 @@ function CategoryOptionsExpandedEditor({
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
       <VStack align="stretch" spacing={0} w="full">
-        <Infobox
-          width="100%"
-          size="sm"
-          variant="warning"
-          mb="1.25rem"
-          border="1px solid"
-          borderColor="utility.feedback.warning"
-          borderRadius="0.25rem"
-          px="0.625rem"
-          py="0.5rem"
-        >
-          <Text textStyle="body-2" color="base.content.strong">
-            This is the default filter, so you can't change its name or make it
-            optional.
-          </Text>
-        </Infobox>
         <VStack spacing={0} align="start">
           <VStack align="start" spacing="0.25rem" w="full">
             <HStack w="full" justifyContent="space-between" align="center">
@@ -331,6 +319,9 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const [expandedOpen, setExpandedOpen] = useState(false)
 
+  const page = core?.data as CollectionPagePageProps | undefined
+  const categoryFilterLabel = resolveCategoryFilterLabel(page?.categoryLabel)
+
   const items = useMemo(
     () => get(core?.data, path) as { label?: string }[] | undefined,
     [core?.data, path],
@@ -364,11 +355,11 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
         gap={0}
       >
         <DrawerHeader
-          label="Edit Category"
+          label={`Edit ${categoryFilterLabel}`}
           isDisabled={cannotLeaveExpandedCategoryOptions}
           onBackClick={handleCloseExpandedCategoryOptions}
           textStyle="subhead-1"
-          backAriaLabel="Return to Category"
+          backAriaLabel={`Return to ${categoryFilterLabel}`}
         />
         <Box w="100%" flex={1} minH={0} px="1.5rem" py="1rem" overflow="auto">
           <CategoryOptionsExpandedEditor
@@ -481,7 +472,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                         flexWrap="wrap"
                       >
                         <Text textStyle="subhead-2" textAlign="start">
-                          Category
+                          {categoryFilterLabel}
                         </Text>
                       </HStack>
                       <Text textStyle="caption-2" color="base.content.medium">

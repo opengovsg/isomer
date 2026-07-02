@@ -83,14 +83,14 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     if (isUserIsomerAdmin) {
       return drawerStateType === "display"
         ? {
-            exclude: ["tagCategories", "tags", "categoryOptions"],
+            exclude: ["tagCategories", "tags", "categoryOptions", "categoryLabel"],
           }
         : {
-            include: ["tagCategories", "tags", "categoryOptions"],
+            include: ["tagCategories", "tags", "categoryOptions", "categoryLabel"],
           }
     }
     return {
-      exclude: ["tagCategories", "tags", "categoryOptions"],
+      exclude: ["tagCategories", "tags", "categoryOptions", "categoryLabel"],
     }
   }, [drawerStateType, isUserIsomerAdmin])
 

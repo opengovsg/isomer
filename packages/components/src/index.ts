@@ -12,6 +12,8 @@ export {
   createChildrenPagesComparator,
   formatBytes,
   DGS_REQUEST_MAX_BYTES,
+  DEFAULT_CATEGORY_FILTER_LABEL,
+  resolveCategoryFilterLabel,
 } from "./utils"
 export * from "./schemas"
 export * from "./types"

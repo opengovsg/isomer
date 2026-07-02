@@ -39,3 +39,7 @@ export {
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
+export {
+  DEFAULT_CATEGORY_FILTER_LABEL,
+  resolveCategoryFilterLabel,
+} from "./resolveCategoryFilterLabel"
