@@ -13,7 +13,7 @@ import {
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Button, Infobox } from "@opengovsg/design-system-react"
 import {
   resolveCategoryFilterLabel,
   type CollectionPagePageProps,
@@ -168,6 +168,21 @@ function CategoryOptionsExpandedEditor({
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
       <VStack align="stretch" spacing={0} w="full">
+        <Infobox
+          width="100%"
+          size="sm"
+          variant="warning"
+          mb="1.25rem"
+          border="1px solid"
+          borderColor="utility.feedback.warning"
+          borderRadius="0.25rem"
+          px="0.625rem"
+          py="0.5rem"
+        >
+          <Text textStyle="body-2" color="base.content.strong">
+            This is the default filter, so you can't make it optional.
+          </Text>
+        </Infobox>
         <VStack spacing={0} align="start">
           <VStack align="start" spacing="0.25rem" w="full">
             <HStack w="full" justifyContent="space-between" align="center">
