@@ -1,4 +1,4 @@
-import type { BoxProps } from "@chakra-ui/react"
+import type { BoxProps, StackProps } from "@chakra-ui/react"
 import type {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
@@ -7,7 +7,7 @@ import type {
   OwnPropsOfMasterListItem,
   StatePropsOfMasterItem,
 } from "@jsonforms/core"
-import type { ReactNode } from "react"
+import type { ComponentProps, ReactNode } from "react"
 import type { IconType } from "react-icons"
 import {
   Box,
@@ -19,60 +19,76 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
-import { BiGridVertical, BiInfoCircle } from "react-icons/bi"
+import { IconButton, Input } from "@opengovsg/design-system-react"
+import { createContext, useContext, useState } from "react"
+import { BiCheck, BiGridVertical, BiSolidInfoCircle, BiX } from "react-icons/bi"
+
+import { ROW_ACTION_ICON_BUTTON_PROPS } from "./constants"
+import { TagRowActionsMenu } from "./TagRowActionsMenu"
+
+const DraggableTagButtonContext = createContext({ isDragDisabled: false })
+
+const useDraggableTagButton = () => useContext(DraggableTagButtonContext)
 
 interface RootProps {
   draggableProps: DraggableProvidedDraggableProps
   isError: boolean
+  isDragDisabled?: boolean
   children: ReactNode
 }
 
 const Root = forwardRef<RootProps, "div">(
-  ({ draggableProps, isError, children }, ref) => (
-    <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
-      <HStack
-        spacing={0}
-        border="1px solid"
-        borderColor="base.divider.medium"
-        borderRadius="6px"
-        bg="white"
-        transitionProperty="common"
-        transitionDuration="normal"
-        aria-invalid={isError}
-        _hover={{
-          bg: "interaction.muted.main.hover",
-          borderColor: "interaction.main-subtle.hover",
-          _invalid: {
-            bg: "interaction.muted.critical.hover",
-            borderColor: "utility.feedback.critical",
-          },
-        }}
-        _active={{
-          bg: "interaction.main-subtle.default",
-          borderColor: "interaction.main-subtle.hover",
-          shadow: "0px 1px 6px 0px #1361F026",
-          _invalid: {
-            bg: "interaction.muted.critical.hover",
-            borderColor: "utility.feedback.critical",
-            shadow: "0px 1px 6px 0px #C0343426",
-          },
-        }}
-        align="stretch"
-        overflow="hidden"
-      >
-        {isError && (
-          <Box
-            aria-hidden
-            bg="utility.feedback.critical"
-            width="6px"
-            mr="-6px"
-          />
-        )}
-        <HStack flex={1} align="stretch" spacing={0} minW={0} w="100%">
-          {children}
+  ({ draggableProps, isError, isDragDisabled = false, children }, ref) => (
+    <DraggableTagButtonContext.Provider value={{ isDragDisabled }}>
+      <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
+        <HStack
+          spacing={0}
+          border="1px solid"
+          borderColor="base.divider.medium"
+          borderRadius="6px"
+          bg="white"
+          transitionProperty="common"
+          transitionDuration="normal"
+          aria-invalid={isError}
+          {...(isDragDisabled
+            ? undefined
+            : {
+                _hover: {
+                  bg: "interaction.muted.main.hover",
+                  borderColor: "interaction.main-subtle.hover",
+                  _invalid: {
+                    bg: "interaction.muted.critical.hover",
+                    borderColor: "utility.feedback.critical",
+                  },
+                },
+                _active: {
+                  bg: "interaction.main-subtle.default",
+                  borderColor: "interaction.main-subtle.hover",
+                  shadow: "0px 1px 6px 0px #1361F026",
+                  _invalid: {
+                    bg: "interaction.muted.critical.hover",
+                    borderColor: "utility.feedback.critical",
+                    shadow: "0px 1px 6px 0px #C0343426",
+                  },
+                },
+              })}
+          align="stretch"
+          overflow="hidden"
+        >
+          {isError && (
+            <Box
+              aria-hidden
+              bg="utility.feedback.critical"
+              width="6px"
+              mr="-6px"
+            />
+          )}
+          <HStack flex={1} align="stretch" spacing={0} minW={0} w="100%">
+            {children}
+          </HStack>
         </HStack>
-      </HStack>
-    </Box>
+      </Box>
+    </DraggableTagButtonContext.Provider>
   ),
 )
 
@@ -81,47 +97,70 @@ interface HandleProps {
   py?: BoxProps["py"]
 }
 
-const Handle = ({ dragHandleProps, py = "0.5rem" }: HandleProps) => (
-  <Flex
-    cursor="grab"
-    flexShrink={0}
-    align="center"
-    layerStyle="focusRing"
-    py={py}
-    pl="0.5rem"
-    pr="0.25rem"
-    {...dragHandleProps}
-  >
-    <ChakraIcon as={BiGridVertical} fontSize="1.5rem" color="slate.300" />
-  </Flex>
-)
+const Handle = ({ dragHandleProps, py = "0.5rem" }: HandleProps) => {
+  const { isDragDisabled } = useDraggableTagButton()
+
+  return (
+    <Flex
+      cursor={isDragDisabled ? "not-allowed" : "grab"}
+      flexShrink={0}
+      align="center"
+      layerStyle="focusRing"
+      py={py}
+      pl="0.5rem"
+      pr="0.25rem"
+      opacity={isDragDisabled ? 0.4 : 1}
+      {...(isDragDisabled ? undefined : dragHandleProps)}
+    >
+      <ChakraIcon as={BiGridVertical} fontSize="1.5rem" color="slate.300" />
+    </Flex>
+  )
+}
 
 interface BodyProps {
-  onClick: () => void
+  onClick?: () => void
   children: ReactNode
   py?: BoxProps["py"]
 }
 
-const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => (
-  <Box
-    layerStyle="focusRing"
-    as="button"
-    type="button"
-    flex={1}
-    minW={0}
-    display="flex"
-    alignItems="center"
-    cursor="pointer"
-    py={py}
-    pl="0.25rem"
-    pr="1rem"
-    onClick={onClick}
-  >
+const BODY_BASE_STYLE: BoxProps = {
+  layerStyle: "focusRing",
+  flex: 1,
+  minW: 0,
+  display: "flex",
+  alignItems: "center",
+  pl: "0.25rem",
+  pr: "1rem",
+}
+
+const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => {
+  const content = (
     <HStack align="stretch" spacing="0.75rem" w="full">
       {children}
     </HStack>
-  </Box>
-)
+  )
+
+  if (!onClick) {
+    return (
+      <Box {...BODY_BASE_STYLE} cursor="default" py={py}>
+        {content}
+      </Box>
+    )
+  }
+
+  return (
+    <Box
+      {...BODY_BASE_STYLE}
+      as="button"
+      type="button"
+      cursor="pointer"
+      py={py}
+      onClick={onClick}
+    >
+      {content}
+    </Box>
+  )
+}
 
 interface IconBadgeProps {
   icon: IconType
@@ -146,11 +185,18 @@ const IconBadge = ({ icon }: IconBadgeProps) => (
   </Flex>
 )
 
-const Content = ({ children }: { children: ReactNode }) => (
-  <Stack align="start" gap="0.25rem" flex={1} minW={0}>
+type ContentProps = Pick<StackProps, "children" | "gap">
+
+const Content = ({ children, gap = "0.25rem" }: ContentProps) => (
+  <Stack align="start" gap={gap} flex={1} minW={0}>
     {children}
   </Stack>
 )
+
+const EDITABLE_LABEL_ICON_BUTTON_PROPS = {
+  ...ROW_ACTION_ICON_BUTTON_PROPS,
+  color: "interaction.links.neutral-default",
+} as const
 
 const LabelRaw = withJsonFormsMasterListItemProps(
   ({ childLabel, index }: StatePropsOfMasterItem) => (
@@ -175,6 +221,117 @@ const Label = (props: LabelProps) => (
   />
 )
 
+interface EditableLabelProps {
+  value: string
+  placeholder: string
+  ariaLabel: string
+  isInvalid: boolean
+  isDisabled: boolean
+  isEditing: boolean
+  onSubmit: (value: string) => void
+  onEditingChange: (isEditing: boolean) => void
+  onDraftChange?: (draft: string) => void
+}
+
+/**
+ * Click-to-edit label used by rows whose only editable field is their name.
+ * `isEditing` is controlled by the parent so opening one row's editor closes any other.
+ * `onDraftChange` lets the parent validate (e.g. duplicate/blank checks) against the
+ * in-progress value before it's committed via `onSubmit`.
+ * Leading/trailing whitespace is trimmed on save so schema validation stays silent
+ * during editing and values are normalised when the user confirms.
+ */
+const EditableLabel = ({
+  value,
+  placeholder,
+  ariaLabel,
+  isInvalid,
+  isDisabled,
+  isEditing,
+  onSubmit,
+  onEditingChange,
+  onDraftChange,
+}: EditableLabelProps) => {
+  const { isDragDisabled } = useDraggableTagButton()
+  const [draft, setDraft] = useState(value)
+
+  const isDirty = draft !== value
+
+  const handleSave = () => {
+    if (isInvalid) return
+    const trimmed = draft.trim()
+    if (trimmed !== value) onSubmit(trimmed)
+    onEditingChange(false)
+  }
+
+  const handleDiscard = () => {
+    setDraft(value)
+    onEditingChange(false)
+  }
+
+  if (!isEditing) {
+    return (
+      <Text
+        textStyle="subhead-2"
+        textAlign="start"
+        color={
+          isDragDisabled
+            ? "interaction.support.disabled-content"
+            : "base.content.default"
+        }
+        cursor={isDisabled ? "default" : "pointer"}
+        w="full"
+        onClick={() => {
+          if (isDisabled) return
+          setDraft(value)
+          onEditingChange(true)
+        }}
+      >
+        {value || placeholder}
+      </Text>
+    )
+  }
+
+  return (
+    <HStack spacing="0.25rem" align="center" w="full">
+      <Input
+        autoFocus
+        size="sm"
+        value={draft}
+        placeholder={placeholder}
+        aria-label={ariaLabel}
+        isInvalid={isInvalid}
+        focusBorderColor={
+          isInvalid ? "interaction.critical.default" : undefined
+        }
+        onChange={(e) => {
+          setDraft(e.target.value)
+          onDraftChange?.(e.target.value)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSave()
+          if (e.key === "Escape") handleDiscard()
+        }}
+      />
+      <IconButton
+        aria-label="Save changes"
+        icon={<BiCheck fontSize="1.5rem" />}
+        {...EDITABLE_LABEL_ICON_BUTTON_PROPS}
+        color="utility.feedback.success"
+        isDisabled={!isDirty || isInvalid}
+        onClick={handleSave}
+      />
+      <IconButton
+        aria-label="Discard changes"
+        icon={<BiX fontSize="1.5rem" />}
+        {...EDITABLE_LABEL_ICON_BUTTON_PROPS}
+        colorScheme="critical"
+        onClick={handleDiscard}
+      />
+    </HStack>
+  )
+}
+
 const Subtitle = ({ children }: { children: ReactNode }) => (
   <Text textStyle="caption-2" color="base.content.medium">
     {children}
@@ -189,8 +346,32 @@ const ErrorCaption = ({ children }: { children?: ReactNode }) => (
     display="flex"
     alignItems="center"
   >
-    <ChakraIcon aria-hidden as={BiInfoCircle} fontSize="0.75rem" mr="0.25rem" />
+    <ChakraIcon
+      aria-hidden
+      as={BiSolidInfoCircle}
+      fontSize="0.75rem"
+      mr="0.25rem"
+    />
     {children ?? "Fix issues before saving"}
+  </Text>
+)
+
+const InfoCaption = ({ children }: { children: ReactNode }) => (
+  <Text
+    as="span"
+    textStyle="caption-2"
+    color="base.content.default"
+    display="flex"
+    alignItems="center"
+  >
+    <ChakraIcon
+      aria-hidden
+      as={BiSolidInfoCircle}
+      fontSize="0.75rem"
+      mr="0.25rem"
+      color="base.content.medium"
+    />
+    {children}
   </Text>
 )
 
@@ -205,6 +386,16 @@ const Trailing = ({ children }: { children: ReactNode }) => (
   </Flex>
 )
 
+type ActionsMenuProps = Omit<
+  ComponentProps<typeof TagRowActionsMenu>,
+  "isDragDisabled"
+>
+
+const ActionsMenu = (props: ActionsMenuProps) => {
+  const { isDragDisabled } = useDraggableTagButton()
+  return <TagRowActionsMenu {...props} isDragDisabled={isDragDisabled} />
+}
+
 export const DraggableTagButton = {
   Root,
   Handle,
@@ -212,7 +403,10 @@ export const DraggableTagButton = {
   Icon: IconBadge,
   Content,
   Label,
+  EditableLabel,
   Subtitle,
   ErrorCaption,
+  InfoCaption,
   Trailing,
+  ActionsMenu,
 }

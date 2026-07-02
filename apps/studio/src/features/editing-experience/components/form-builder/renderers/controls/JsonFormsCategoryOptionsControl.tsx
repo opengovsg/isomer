@@ -10,7 +10,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { Button, Infobox } from "@opengovsg/design-system-react"
@@ -29,14 +29,14 @@ import { DrawerHeader } from "../../../Drawer/DrawerHeader"
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
-import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyCategory } from "../../components/EmptyCategory"
+import { InlineEditableOptionRow } from "../../components/InlineEditableOptionRow"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
-import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
-import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { useInlineEditableOptionRows } from "../../hooks/useInlineEditableOptionRows"
+import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultCategoryOption } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
 
@@ -69,14 +69,7 @@ function CategoryOptionUsageCount({
   )
 }
 
-interface CategoryOptionsExpandedEditorProps extends ArrayLayoutProps {
-  duplicateOptionIndices: Set<number>
-}
-
-function CategoryOptionsExpandedEditor({
-  duplicateOptionIndices,
-  ...props
-}: CategoryOptionsExpandedEditorProps) {
+function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
   const {
     data,
     path,
@@ -96,6 +89,16 @@ function CategoryOptionsExpandedEditor({
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
   const { pageId, siteId } = useQueryParse(pageSchema)
+  const {
+    editingIndex,
+    isAnyRowEditing,
+    setEditingDraftLabel,
+    blankOptionIndices: liveBlankOptionIndices,
+    duplicateOptionIndices: liveDuplicateOptionIndices,
+    wrapDragEnd,
+    submitLabel,
+    createEditingChangeHandler,
+  } = useInlineEditableOptionRows(path)
 
   const arrayResult = useArray({
     data,
@@ -109,14 +112,7 @@ function CategoryOptionsExpandedEditor({
     moveUp,
     moveDown,
   })
-  const {
-    setSelectedIndex,
-    isAddItemDisabled,
-    isRemoveItemDisabled,
-    childUiSchema,
-    handleRemoveSelectedItem,
-    onDragEnd,
-  } = arrayResult
+  const { isAddItemDisabled, isRemoveItemDisabled } = arrayResult
 
   const {
     target: deleteTarget,
@@ -154,13 +150,6 @@ function CategoryOptionsExpandedEditor({
     openDeleteModal(index)
   }
 
-  const isBlankLabelAt = (index: number) => {
-    const item = get(core?.data, composePaths(path, `${index}`)) as
-      | { label?: string }
-      | undefined
-    return !item?.label?.trim()
-  }
-
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
       <VStack align="stretch" spacing={0} w="full">
@@ -188,7 +177,7 @@ function CategoryOptionsExpandedEditor({
               </Text>
               <AddItemButton
                 onClick={addItem(path, createDefaultCategoryOption())}
-                isDisabled={isAddItemDisabled}
+                isDisabled={isAddItemDisabled || isAnyRowEditing}
               >
                 Add option
               </AddItemButton>
@@ -198,12 +187,9 @@ function CategoryOptionsExpandedEditor({
                 {description}
               </Text>
             )}
-            {duplicateOptionIndices.size > 0 && (
-              <DuplicateLabelError noun="option" />
-            )}
           </VStack>
           <Box w="full" mt="0.75rem">
-            <DragDropContext onDragEnd={onDragEnd}>
+            <DragDropContext onDragEnd={wrapDragEnd(arrayResult.onDragEnd)}>
               <Droppable droppableId="blocks">
                 {({ droppableProps, innerRef, placeholder }) => (
                   <VStack
@@ -220,61 +206,45 @@ function CategoryOptionsExpandedEditor({
 
                     {[...Array(data).keys()].map((index) => {
                       const childPath = composePaths(path, `${index}`)
-                      const isDuplicate = duplicateOptionIndices.has(index)
-                      const isBlank = isBlankLabelAt(index)
+                      const isDuplicate = liveDuplicateOptionIndices.has(index)
+                      const isBlank = liveBlankOptionIndices.has(index)
                       const hasError =
                         hasErrorAt(childPath) || isDuplicate || isBlank
+                      const item = get(core?.data, childPath) as
+                        | { label?: string }
+                        | undefined
+                      const committedLabel = item?.label ?? ""
 
                       return (
-                        <Draggable
+                        <InlineEditableOptionRow
                           key={childPath}
                           draggableId={childPath}
-                          disableInteractiveElementBlocking
                           index={index}
-                        >
-                          {({ draggableProps, dragHandleProps, innerRef }) => (
-                            <DraggableTagButton.Root
-                              draggableProps={draggableProps}
-                              isError={hasError}
-                              ref={innerRef}
-                            >
-                              <DraggableTagButton.Handle
-                                dragHandleProps={dragHandleProps}
-                              />
-                              <DraggableTagButton.Body
-                                onClick={() => setSelectedIndex(index)}
-                              >
-                                <DraggableTagButton.Content>
-                                  <DraggableTagButton.Label
-                                    index={index}
-                                    path={path}
-                                    schema={schema}
-                                    uischema={childUiSchema}
-                                    enabled={enabled}
-                                    removeItem={handleRemoveSelectedItem}
-                                  />
-                                  {hasError && (
-                                    <DraggableTagButton.ErrorCaption>
-                                      {isDuplicate
-                                        ? "An option with this name already exists."
-                                        : isBlank
-                                          ? "Option name cannot be empty."
-                                          : undefined}
-                                    </DraggableTagButton.ErrorCaption>
-                                  )}
-                                </DraggableTagButton.Content>
-                              </DraggableTagButton.Body>
-                              <DraggableTagButton.Trailing>
-                                <TagRowActionsMenu
-                                  noun="option"
-                                  index={index}
-                                  isDisabled={isRemoveItemDisabled}
-                                  onDelete={() => handleDeleteOption(index)}
-                                />
-                              </DraggableTagButton.Trailing>
-                            </DraggableTagButton.Root>
+                          enabled={enabled}
+                          label={committedLabel}
+                          isAnyRowEditing={isAnyRowEditing}
+                          isEditing={editingIndex === index}
+                          isAnotherRowEditing={
+                            isAnyRowEditing && editingIndex !== index
+                          }
+                          isDuplicate={isDuplicate}
+                          isBlank={isBlank}
+                          hasError={hasError}
+                          onSubmit={(value) => submitLabel(index, value)}
+                          onEditingChange={createEditingChangeHandler(
+                            index,
+                            committedLabel,
                           )}
-                        </Draggable>
+                          onDraftChange={setEditingDraftLabel}
+                          trailing={
+                            <DraggableTagButton.ActionsMenu
+                              noun="option"
+                              index={index}
+                              isDisabled={isRemoveItemDisabled}
+                              onDelete={() => handleDeleteOption(index)}
+                            />
+                          }
+                        />
                       )
                     })}
 
@@ -336,7 +306,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
     [core?.data, path],
   )
 
-  const duplicateOptionIndices = useDuplicateLabels(path)
+  const { duplicate: duplicateOptionIndices } = useLiveLabelIssues({ path })
 
   const cannotLeaveExpandedCategoryOptions = useMemo(
     () =>
@@ -371,10 +341,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
           backAriaLabel="Return to Category"
         />
         <Box w="100%" flex={1} minH={0} px="1.5rem" py="1rem" overflow="auto">
-          <CategoryOptionsExpandedEditor
-            {...props}
-            duplicateOptionIndices={duplicateOptionIndices}
-          />
+          <CategoryOptionsExpandedEditor {...props} />
         </Box>
         <Box
           bgColor="base.canvas.default"
@@ -399,9 +366,6 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   return (
     <Box position="relative" w="full">
       <VStack spacing={0} align="stretch" w="full">
-        {duplicateOptionIndices.size > 0 && (
-          <DuplicateLabelError noun="option" />
-        )}
         <Box w="full">
           <Box my="0.25rem" w="full">
             <HStack
