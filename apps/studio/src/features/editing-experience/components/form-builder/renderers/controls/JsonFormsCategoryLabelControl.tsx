@@ -1,9 +1,12 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import type { JsonFormsCellRendererRegistryEntry, JsonFormsRendererRegistryEntry } from "@jsonforms/core"
+import type {
+  JsonFormsCellRendererRegistryEntry,
+  JsonFormsRendererRegistryEntry,
+} from "@jsonforms/core"
 import type { PropsWithChildren } from "react"
+import { Box } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { JsonFormsDispatch, withJsonFormsControlProps } from "@jsonforms/react"
-import { Box } from "@chakra-ui/react"
 import { CollectionPageCategoriesSchema } from "@opengovsg/isomer-components"
 import { createContext, useContext } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -29,7 +32,9 @@ export const jsonFormsCategoryLabelControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "category-label"),
 )
 
-function JsonFormsCategoryLabelControl(props: ControlProps): JSX.Element | null {
+function JsonFormsCategoryLabelControl(
+  props: ControlProps,
+): JSX.Element | null {
   const show = useContext(CategoryLabelRenderContext)
   if (!show) {
     return null
