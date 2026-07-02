@@ -1,11 +1,13 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import { Box, FormControl, Skeleton, Text } from "@chakra-ui/react"
+import { datadogRum } from "@datadog/browser-rum"
 import { and, isStringControl, rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import {
   Attachment,
   FormErrorMessage,
   FormLabel,
+  useToast,
 } from "@opengovsg/design-system-react"
 import {
   IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
@@ -40,6 +42,7 @@ interface JsonFormsMetaImageControlProps extends ControlProps {
 function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
   const { label, handleChange, path, required, errors, description, data } =
     props
+  const toast = useToast()
   const { image } = useS3Image(data)
   const { handleAssetUpload, isLoading } = useAssetUpload({})
   const { siteId, pageId } = useQueryParse(pageSchema)
@@ -84,8 +87,44 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
               { file },
               {
                 onSuccess: ({ path: imagePath }) => {
-                  void handleAssetUpload(imagePath).then((src) => {
-                    handleChange(path, src)
+                  void handleAssetUpload(imagePath)
+                    .then((src) => {
+                      datadogRum.addAction("asset_upload_verified", {
+                        fileName: file.name,
+                        fileKey: src,
+                      })
+                      handleChange(path, src)
+                    })
+                    .catch((e: unknown) => {
+                      toast({
+                        title: "Image failed to upload",
+                        description:
+                          "Your file was uploaded but we couldn't confirm it's ready. Refresh the page and check before publishing.",
+                        status: "error",
+                      })
+                      datadogRum.addError(e, {
+                        feature: "asset-upload",
+                        stage: "verification-polling",
+                        fileName: file.name,
+                        fileSize: file.size,
+                        siteId,
+                        resourceId: String(pageId),
+                      })
+                    })
+                },
+                onError: (error) => {
+                  toast({
+                    title: "Image failed to upload",
+                    description: "Please try uploading the file again.",
+                    status: "error",
+                  })
+                  datadogRum.addError(error, {
+                    feature: "asset-upload",
+                    stage: "upload",
+                    fileName: file.name,
+                    fileSize: file.size,
+                    siteId,
+                    resourceId: String(pageId),
                   })
                 },
               },
