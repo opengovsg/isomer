@@ -74,6 +74,9 @@ export const deleteFile = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  // Belt-and-suspenders: assetStorage routes to VercelBlobAssetStorage in
+  // preview (already a no-op), but this guard also protects any direct callers.
+  if (env.NEXT_PUBLIC_APP_ENV === "preview") return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -122,6 +125,7 @@ export const setAssetAsPublished = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  if (env.NEXT_PUBLIC_APP_ENV === "preview") return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -214,6 +218,7 @@ export const markScheduledAssetAsCancelled = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  if (env.NEXT_PUBLIC_APP_ENV === "preview") return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,

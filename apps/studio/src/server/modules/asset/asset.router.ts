@@ -32,11 +32,10 @@ export const assetRouter = router({
 
         const fileKey = getFileKey({ siteId, fileName })
 
-        const { presignedPutUrl, contentType, contentDisposition } =
-          await getPresignedPutUrl({
-            key: fileKey,
-            tags,
-          })
+        const uploadConfig = await getPresignedPutUrl({
+          key: fileKey,
+          tags,
+        })
 
         ctx.logger.info(
           {
@@ -45,15 +44,10 @@ export const assetRouter = router({
             fileName,
             fileKey,
           },
-          `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
+          `Generated upload config for ${fileKey} for site ${siteId}`,
         )
 
-        return {
-          fileKey,
-          presignedPutUrl,
-          contentType,
-          contentDisposition,
-        }
+        return { fileKey, uploadConfig }
       },
     ),
 

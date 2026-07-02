@@ -127,6 +127,7 @@ catalog:
   "@intercom/messenger-js-sdk": ^0.0.19
   "@playwright/test": ^1.60.0
   "@uidotdev/usehooks": ^2.4.1
+  "@vercel/blob": ^2.4.0
   ajv-errors: ^3.0.0
   chakra-react-select: ^5.1.1
   commander: ^15.0.0

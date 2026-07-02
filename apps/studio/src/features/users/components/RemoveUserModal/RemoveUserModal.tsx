@@ -30,7 +30,7 @@ export const RemoveUserModal = () => {
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
   const onClose = () => setRemoveUserModalState(DEFAULT_REMOVE_USER_MODAL_STATE)
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const { isSingpassEnabled } = useIsSingpassEnabled()
 
   const { mutate, isPending } = trpc.user.delete.useMutation({
     onSettled: onClose,
