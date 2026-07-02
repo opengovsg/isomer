@@ -7,7 +7,6 @@ import {
   Input,
   InputGroup,
   InputLeftAddon,
-  Stack,
   Text,
   useDisclosure,
 } from "@chakra-ui/react"
@@ -15,7 +14,6 @@ import {
   Button,
   FormErrorMessage,
   FormLabel,
-  Infobox,
   useToast,
 } from "@opengovsg/design-system-react"
 import { useState } from "react"
@@ -27,7 +25,7 @@ import {
 } from "~/constants/toast"
 import { useZodForm } from "~/lib/form"
 
-import { useCreateRedirect, useValidateRedirect } from "../api"
+import { useCreateRedirect } from "../api"
 import { addRedirectSchema, type AddRedirectInput } from "../types"
 import { SelectDestinationPageModal } from "./SelectDestinationPageModal"
 
@@ -45,7 +43,6 @@ export const AddRedirectCard = ({
     setError,
     clearErrors,
     watch,
-    getValues,
     setValue,
     formState: { errors },
   } = useZodForm<typeof addRedirectSchema>({
@@ -67,27 +64,11 @@ export const AddRedirectCard = ({
   // destination field is focused (per the design).
   const [isDestinationFocused, setIsDestinationFocused] = useState(false)
 
-  // Non-blocking warnings (e.g. the destination doesn't exist / isn't
-  // published) are fetched on blur once the inputs are sync-valid.
-  const [validateInput, setValidateInput] = useState<AddRedirectInput | null>(
-    null,
-  )
-  const { warnings } = useValidateRedirect(siteId, validateInput)
-
-  const checkForWarnings = () => {
-    const parsed = addRedirectSchema.safeParse(getValues())
-    setValidateInput(parsed.success ? parsed.data : null)
-  }
-  // Drop any shown warning the moment a field changes, so it never lingers
-  // against edited input. (reset() doesn't fire onChange, so a successful add
-  // clears it explicitly in onSuccess below.)
-  const clearWarnings = () => setValidateInput(null)
-  // On edit, also clear any server-set error on that field — otherwise an
-  // inline "already redirected" / "loop" error (set via setError, which the
+  // On edit, clear any server-set error on that field — otherwise an inline
+  // "already redirected" / "loop" error (set via setError, which the
   // onSubmit-mode form doesn't revalidate) would linger over freshly-typed
   // input.
   const clearFieldFeedback = (field: keyof AddRedirectInput) => () => {
-    clearWarnings()
     clearErrors(field)
   }
 
@@ -100,7 +81,6 @@ export const AddRedirectCard = ({
       {
         onSuccess: () => {
           reset()
-          clearWarnings()
           toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
         },
         // The inputs are left untouched on error so the user can fix the
@@ -170,7 +150,6 @@ export const AddRedirectCard = ({
             <Input
               placeholder="redirect-from"
               {...register("source", {
-                onBlur: checkForWarnings,
                 onChange: clearFieldFeedback("source"),
               })}
             />
@@ -204,10 +183,7 @@ export const AddRedirectCard = ({
               size="sm"
               onFocus={() => setIsDestinationFocused(true)}
               {...register("destination", {
-                onBlur: () => {
-                  setIsDestinationFocused(false)
-                  checkForWarnings()
-                },
+                onBlur: () => setIsDestinationFocused(false),
                 onChange: clearFieldFeedback("destination"),
               })}
             />
@@ -254,16 +230,6 @@ export const AddRedirectCard = ({
             )}
           </Box>
           <FormErrorMessage>{errors.destination?.message}</FormErrorMessage>
-
-          {warnings.length > 0 && (
-            <Stack spacing="0.5rem" mt="0.5rem">
-              {warnings.map((warning) => (
-                <Infobox key={warning.code} variant="warning" size="sm">
-                  {warning.message}
-                </Infobox>
-              ))}
-            </Stack>
-          )}
         </FormControl>
 
         <Box flexShrink={0} ml="0.5rem">
