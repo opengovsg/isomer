@@ -1,4 +1,7 @@
-import type { IsomerSchema } from "@opengovsg/isomer-components"
+import type {
+  ArticlePagePageProps,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
@@ -14,7 +17,9 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
+import { useIsCategorySelectionValid } from "../../hooks/useIsCategorySelectionValid"
 import { pageSchema } from "../../schema"
 import { CHANGES_SAVED_PLEASE_PUBLISH_MESSAGE } from "../constants"
 import { DiscardChangesModal } from "../DiscardChangesModal"
@@ -36,6 +41,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const {
+    type,
     setDrawerState,
     savedPageState,
     setSavedPageState,
@@ -44,6 +50,16 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const { pageId, siteId } = useQueryParse(pageSchema)
+  const isCollectionItem =
+    type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
+  const pageProps = previewPageState.page as ArticlePagePageProps
+  const isCategoryValid = useIsCategorySelectionValid({
+    resourceId: pageId,
+    siteId,
+    categoryId: pageProps.categoryId,
+    category: pageProps.category,
+    enabled: isCollectionItem,
+  })
   const toast = useToast()
   const utils = trpc.useUtils()
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
@@ -183,7 +199,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
             py="1.5rem"
             px="2rem"
           >
-            <SaveButton isLoading={isPending} onClick={handleSaveChanges} />
+            <SaveButton
+              isLoading={isPending}
+              isCategoryValid={isCategoryValid}
+              onClick={handleSaveChanges}
+            />
           </Box>
         </ErrorProvider>
       </Flex>
@@ -194,9 +214,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
 const SaveButton = ({
   onClick,
   isLoading,
+  isCategoryValid = true,
 }: {
   onClick: () => void
   isLoading: boolean
+  isCategoryValid?: boolean
 }) => {
   const { errors } = useBuilderErrors()
 
@@ -204,7 +226,7 @@ const SaveButton = ({
     <Button
       w="100%"
       isLoading={isLoading}
-      isDisabled={!isEmpty(errors)}
+      isDisabled={!isEmpty(errors) || !isCategoryValid}
       onClick={onClick}
     >
       Save changes

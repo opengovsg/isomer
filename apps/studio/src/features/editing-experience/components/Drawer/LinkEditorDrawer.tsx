@@ -14,6 +14,7 @@ import { safeJsonParse } from "~/utils/safeJsonParse"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+import { useIsCategorySelectionValid } from "../../hooks/useIsCategorySelectionValid"
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
 import { ErrorProvider, useBuilderErrors } from "../form-builder/ErrorProvider"
 import FormBuilder from "../form-builder/FormBuilder"
@@ -44,7 +45,15 @@ const InnerDrawer = ({
   handleSaveChanges,
   setDrawerState,
 }: LinkEditorDrawerStateProps) => {
+  const { linkId, siteId } = useQueryParse(editLinkSchema)
   const { errors } = useBuilderErrors()
+  const isCategoryValid = useIsCategorySelectionValid({
+    resourceId: linkId,
+    siteId,
+    categoryId: previewPageState.categoryId,
+    category: previewPageState.category,
+    enabled: true,
+  })
   const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
@@ -84,7 +93,9 @@ const InnerDrawer = ({
           w="full"
           alignSelf="flex-start"
           onClick={handleSaveChanges}
-          isDisabled={!isEmpty(errors) || !previewPageState.ref}
+          isDisabled={
+            !isEmpty(errors) || !previewPageState.ref || !isCategoryValid
+          }
           isLoading={isLoading}
         >
           Save
