@@ -165,7 +165,6 @@ const MoveResourceContent = withSuspense(
             <ResourceSelector
               interactionType="move"
               siteId={siteId}
-              onlyShowFolders
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
