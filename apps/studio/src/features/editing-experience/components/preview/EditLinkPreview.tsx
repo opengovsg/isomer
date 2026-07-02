@@ -1,7 +1,7 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { useMemo } from "react"
-import { useCollectionTagsSuspense } from "~/features/editing-experience/hooks/useCollectionTags"
+import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { trpc } from "~/utils/trpc"
@@ -34,7 +34,7 @@ export const EditCollectionLinkPreview = ({
     siteId,
   })
 
-  const [tagCategories] = useCollectionTagsSuspense({
+  const [tagCategories] = useSuspenseCollectionTags({
     resourceId: linkId,
     siteId,
   })

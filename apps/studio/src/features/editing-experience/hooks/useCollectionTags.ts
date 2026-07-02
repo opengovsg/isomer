@@ -23,7 +23,7 @@ export function useCollectionTags({
   )
 }
 
-export function useCollectionTagsSuspense({
+export function useSuspenseCollectionTags({
   resourceId,
   siteId,
 }: UseCollectionTagsInput) {

@@ -10,7 +10,7 @@ import {
 } from "@opengovsg/design-system-react"
 import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-import { useCollectionTagsSuspense } from "~/features/editing-experience/hooks/useCollectionTags"
+import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
@@ -56,7 +56,7 @@ const SuspendableJsonFormsTaggedControl = ({
   // NOTE: Since this is only rendered inside a collection page or collection link,
   // we should always have the `resourceId` specifier
   const resourceId = linkId ?? pageId ?? 1
-  const [tags] = useCollectionTagsSuspense({ resourceId, siteId })
+  const [tags] = useSuspenseCollectionTags({ resourceId, siteId })
 
   // NOTE: Because we render according to the schema,
   // this will also be rendered for Article pages

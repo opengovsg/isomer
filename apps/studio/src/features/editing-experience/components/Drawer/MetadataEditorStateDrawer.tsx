@@ -14,6 +14,7 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { CollectionTags } from "../../hooks/useCollectionTags"
 import { useCollectionTags } from "../../hooks/useCollectionTags"
@@ -39,6 +40,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
     onClose: onDiscardChangesModalClose,
   } = useDisclosure()
   const {
+    type,
     setDrawerState,
     savedPageState,
     setSavedPageState,
@@ -49,8 +51,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const { pageId, siteId } = useQueryParse(pageSchema)
 
   const isCollectionItem =
-    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Article ||
-    previewPageState.layout === ISOMER_USABLE_PAGE_LAYOUTS.Link
+    type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
 
   const { data: collectionTags = [] } = useCollectionTags({
     resourceId: pageId,
