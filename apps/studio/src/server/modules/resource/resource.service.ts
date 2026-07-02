@@ -8,6 +8,7 @@ import {
 import { TRPCError } from "@trpc/server"
 import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { MAX_SEARCH_TERMS, tokenizeSearchQuery } from "~/schemas/resource"
 import { normalizeRedirectSource } from "~/schemas/redirect"
 import {
   getSitemapTree,
@@ -1340,9 +1341,7 @@ export const getSearchResults = async ({
   totalCount: number | null
   resources: SearchResultResource[]
 }> => {
-  const searchTerms: string[] = Array.from(
-    new Set(query.trim().toLowerCase().split(/\s+/)),
-  )
+  const searchTerms = tokenizeSearchQuery(query).slice(0, MAX_SEARCH_TERMS)
 
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
