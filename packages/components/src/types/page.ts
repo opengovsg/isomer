@@ -105,7 +105,7 @@ const CategoriesSchema = Type.Object({
     Type.String({
       title: "Filter name",
       description:
-        "The label visitors see for the default filter on your collection page.",
+        "The label visitors see for the default filter. It defaults to 'Category'.",
       format: "category-label",
       pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
       errorMessage: {
