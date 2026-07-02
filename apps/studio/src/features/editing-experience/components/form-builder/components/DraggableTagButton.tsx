@@ -21,7 +21,7 @@ import {
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
 import { IconButton, Input } from "@opengovsg/design-system-react"
 import { createContext, useContext, useState } from "react"
-import { BiCheck, BiGridVertical, BiInfoCircle, BiX } from "react-icons/bi"
+import { BiCheck, BiGridVertical, BiSolidInfoCircle, BiX } from "react-icons/bi"
 
 import { ROW_ACTION_ICON_BUTTON_PROPS } from "./constants"
 import { TagRowActionsMenu } from "./TagRowActionsMenu"
@@ -349,8 +349,27 @@ const ErrorCaption = ({ children }: { children?: ReactNode }) => (
     display="flex"
     alignItems="center"
   >
-    <ChakraIcon aria-hidden as={BiInfoCircle} fontSize="0.75rem" mr="0.25rem" />
+    <ChakraIcon aria-hidden as={BiSolidInfoCircle} fontSize="0.75rem" mr="0.25rem" />
     {children ?? "Fix issues before saving"}
+  </Text>
+)
+
+const InfoCaption = ({ children }: { children: ReactNode }) => (
+  <Text
+    as="span"
+    textStyle="caption-2"
+    color="base.content.default"
+    display="flex"
+    alignItems="center"
+  >
+    <ChakraIcon
+      aria-hidden
+      as={BiSolidInfoCircle}
+      fontSize="0.75rem"
+      mr="0.25rem"
+      color="base.content.medium"
+    />
+    {children}
   </Text>
 )
 
@@ -385,6 +404,7 @@ export const DraggableTagButton = {
   EditableLabel,
   Subtitle,
   ErrorCaption,
+  InfoCaption,
   Trailing,
   ActionsMenu,
 }

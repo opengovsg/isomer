@@ -64,7 +64,7 @@ export function InlineEditableOptionRow({
                 onEditingChange={onEditingChange}
                 onDraftChange={onDraftChange}
               />
-              {hasError && (
+              {hasError ? (
                 <DraggableTagButton.ErrorCaption>
                   {isDuplicate
                     ? "An option with this name already exists."
@@ -72,6 +72,12 @@ export function InlineEditableOptionRow({
                       ? "Option name cannot be empty."
                       : undefined}
                 </DraggableTagButton.ErrorCaption>
+              ) : (
+                isEditing && (
+                  <DraggableTagButton.InfoCaption>
+                    This will update across all items that use this option.
+                  </DraggableTagButton.InfoCaption>
+                )
               )}
             </DraggableTagButton.Content>
           </DraggableTagButton.Body>
