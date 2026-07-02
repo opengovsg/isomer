@@ -89,6 +89,15 @@ export const gazetteRouter = router({
         userId: ctx.user.id,
       })
 
+      // Toppan file ID — the last path segment of page.ref.
+      //   e.g. "/2026/Government Gazette/Advertisements/26adv6175b.pdf"
+      //   -> "26adv6175b.pdf". Strip everything up to the final slash so we
+      //   sort on the file ID, not the full path.
+      const fileId = sql`regexp_replace(COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'ref', '.*/', '')`
+      // Advertisements are a subcategory of Government Gazette, identified by
+      // the "/Advertisements/" segment in their file ref path.
+      const isAdvertisement = sql<boolean>`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'ref' ILIKE '%/Advertisements/%'`
+
       const results = await db
         .selectFrom("Resource")
         .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
@@ -135,14 +144,28 @@ export const gazetteRouter = router({
           sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'description'`,
           (ob) => ob.desc(),
         )
-        // 4. Publish date descending
-        .orderBy("Version.publishedAt", (ob) => ob.desc())
-        // 5. Toppan file ID descending — the last path segment of page.ref.
-        //    e.g. "/2026/Government Gazette/Advertisements/26adv6175b.pdf"
-        //    -> "26adv6175b.pdf". Strip everything up to the final slash so we
-        //    sort on the file ID, not the full path.
+        // 4. Advertisements form their own block within the category tier.
+        //    They need the opposite file-ID/publish-date priority to every
+        //    other gazette, so we separate the two groups here — a single sort
+        //    can't compare an advertisement against a non-advertisement when
+        //    each wants a different key to dominate. Non-advertisements first,
+        //    advertisements last.
+        .orderBy(isAdvertisement, "asc")
+        // 5a. Advertisements: Toppan file ID descending, then publish date.
+        .orderBy(sql`CASE WHEN ${isAdvertisement} THEN ${fileId} END`, (ob) =>
+          ob.desc(),
+        )
         .orderBy(
-          sql`regexp_replace(COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'ref', '.*/', '')`,
+          sql`CASE WHEN ${isAdvertisement} THEN "Version"."publishedAt" END`,
+          (ob) => ob.desc(),
+        )
+        // 5b. All other gazettes: publish date descending, then Toppan file ID.
+        .orderBy(
+          sql`CASE WHEN NOT ${isAdvertisement} THEN "Version"."publishedAt" END`,
+          (ob) => ob.desc(),
+        )
+        .orderBy(
+          sql`CASE WHEN NOT ${isAdvertisement} THEN ${fileId} END`,
           (ob) => ob.desc(),
         )
         // 6. Updated at descending (tie-breaker)
