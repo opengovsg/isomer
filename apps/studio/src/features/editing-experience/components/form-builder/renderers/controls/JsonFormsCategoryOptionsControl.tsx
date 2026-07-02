@@ -1,9 +1,5 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import {
-  resolveCategoryFilterLabel,
-  type CollectionPagePageProps,
-} from "@opengovsg/isomer-components"
-import {
   Box,
   chakra,
   Flex,
@@ -18,6 +14,10 @@ import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { Button } from "@opengovsg/design-system-react"
+import {
+  resolveCategoryFilterLabel,
+  type CollectionPagePageProps,
+} from "@opengovsg/isomer-components"
 import { get } from "lodash-es"
 import { Suspense, useMemo, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
