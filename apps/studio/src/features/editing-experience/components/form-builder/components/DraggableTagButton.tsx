@@ -1,4 +1,4 @@
-import type { BoxProps } from "@chakra-ui/react"
+import type { BoxProps, StackProps } from "@chakra-ui/react"
 import type {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
@@ -19,7 +19,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
-import { IconButton, Input } from "@opengovsg/design-system-react"
+import { Button, IconButton, Input } from "@opengovsg/design-system-react"
 import { createContext, useContext, useState } from "react"
 import { BiCheck, BiGridVertical, BiSolidInfoCircle, BiX } from "react-icons/bi"
 
@@ -126,7 +126,7 @@ interface BodyProps {
   py?: BoxProps["py"]
 }
 
-const BODY_BASE_STYLE: BoxProps = {
+const BODY_BASE_STYLE = {
   layerStyle: "focusRing",
   flex: 1,
   minW: 0,
@@ -134,7 +134,7 @@ const BODY_BASE_STYLE: BoxProps = {
   alignItems: "center",
   pl: "0.25rem",
   pr: "1rem",
-}
+} as const
 
 const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => {
   const content = (
@@ -152,16 +152,17 @@ const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => {
   }
 
   return (
-    <Box
+    <Button
+      variant="unstyled"
       {...BODY_BASE_STYLE}
-      as="button"
       type="button"
+      h="auto"
       cursor="pointer"
       py={py}
       onClick={onClick}
     >
       {content}
-    </Box>
+    </Button>
   )
 }
 
@@ -188,10 +189,7 @@ const IconBadge = ({ icon }: IconBadgeProps) => (
   </Flex>
 )
 
-interface ContentProps {
-  children: ReactNode
-  gap?: BoxProps["gap"]
-}
+type ContentProps = Pick<StackProps, "children" | "gap">
 
 const Content = ({ children, gap = "0.25rem" }: ContentProps) => (
   <Stack align="start" gap={gap} flex={1} minW={0}>
