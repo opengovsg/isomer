@@ -25,10 +25,6 @@ interface DeleteConfirmModalProps {
   noun: string
   /** Content rendered inside the warning Infobox */
   warningBody: ReactNode
-  /** When set, replaces the default "Delete {noun} \"{label}\"?" header */
-  title?: ReactNode
-  /** When set, replaces the default checkbox label */
-  confirmCheckboxLabel?: string
   onClose: () => void
   onConfirm: () => void
 }
@@ -38,21 +34,18 @@ export function DeleteConfirmModal({
   label,
   noun,
   warningBody,
-  title,
-  confirmCheckboxLabel,
   onClose,
   onConfirm,
 }: DeleteConfirmModalProps) {
   const [isChecked, setIsChecked] = useState(false)
 
-  const defaultTitle =
-    label.length > 0 ? `Delete ${noun} "${label}"?` : `Delete ${noun}?`
-
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader mr="3.5rem">{title ?? defaultTitle}</ModalHeader>
+        <ModalHeader mr="3.5rem">
+          {label.length > 0 ? `Delete ${noun} "${label}"?` : `Delete ${noun}?`}
+        </ModalHeader>
         <ModalCloseButton size="lg" />
 
         <ModalBody>
@@ -66,8 +59,7 @@ export function DeleteConfirmModal({
                 onChange={(e) => setIsChecked(e.target.checked)}
               >
                 <Text textStyle="body-2">
-                  {confirmCheckboxLabel ??
-                    `Yes, delete this ${noun} permanently`}
+                  Yes, delete this {noun} permanently
                 </Text>
               </Checkbox>
             </HStack>

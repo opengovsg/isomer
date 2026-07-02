@@ -1,19 +1,17 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { Box, HStack, Skeleton, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
-import { Suspense, useMemo } from "react"
-import { ErrorBoundary } from "react-error-boundary"
+import { useMemo } from "react"
 import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { trpc } from "~/utils/trpc"
 
 import { AddItemButton } from "../../components/AddItemButton"
-import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
+import { DeleteFilterModal } from "../../components/DeleteFilterModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyCategory } from "../../components/EmptyCategory"
@@ -24,28 +22,6 @@ import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
 import { createDefaultTagCategory } from "./constants"
-
-function TagCategoryUsageCount({
-  siteId,
-  pageId,
-  tagOptionIds,
-}: {
-  siteId: number
-  pageId: number
-  tagOptionIds: string[]
-}) {
-  if (tagOptionIds.length === 0) {
-    return <>0 items</>
-  }
-
-  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
-    siteId,
-    pageId,
-    tagOptionIds,
-  })
-
-  return <>{count === 1 ? "1 item" : `${count} items`}</>
-}
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
@@ -244,41 +220,11 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
         </Box>
       </VStack>
       {deleteTarget && (
-        <DeleteConfirmModal
+        <DeleteFilterModal
           isOpen
-          label={deleteTarget.label}
-          noun="filter"
-          title={
-            <Text textStyle="subhead-1" color="base.content.strong">
-              You are deleting an entire filter. It&apos;s being used on{" "}
-              <ErrorBoundary fallbackRender={() => <>— items</>}>
-                <Suspense
-                  fallback={
-                    <Skeleton
-                      as="span"
-                      display="inline-block"
-                      verticalAlign="middle"
-                      height="1em"
-                      width="2ch"
-                    />
-                  }
-                >
-                  <TagCategoryUsageCount
-                    siteId={siteId}
-                    pageId={pageId}
-                    tagOptionIds={deleteTargetTagOptionIds}
-                  />
-                </Suspense>
-              </ErrorBoundary>
-            </Text>
-          }
-          warningBody={
-            <Text textStyle="body-1" color="base.content.strong">
-              To undo this change, you will need to recreate this filter and
-              assign options to each item individually.
-            </Text>
-          }
-          confirmCheckboxLabel="Yes, delete the entire filter permanently"
+          siteId={siteId}
+          pageId={pageId}
+          tagOptionIds={deleteTargetTagOptionIds}
           onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
         />
