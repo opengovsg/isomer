@@ -33,7 +33,7 @@ import type {
   User,
 } from "../database"
 import type { SearchResultResource } from "./resource.types"
-import { logPublishEvent } from "../audit/audit.service"
+import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -1118,13 +1118,37 @@ export const publishPageResource = async ({
           ? fullResource.parentId
           : resourceId
       if (referenceId) {
-        await tx
+        const literalDestination = normalizeRedirectPath(fullPermalink)
+        const backfilled = await tx
           .updateTable("Redirect")
           .set({ destination: `[resource:${siteId}:${referenceId}]` })
           .where("siteId", "=", siteId)
-          .where("destination", "=", normalizeRedirectPath(fullPermalink))
+          .where("destination", "=", literalDestination)
           .where("deletedAt", "is", null)
+          .returningAll()
           .execute()
+
+        // Audit the rewrite as a delete of the literal redirect followed by a
+        // create of the reference one — the destination change isn't otherwise
+        // captured, and there's no dedicated RedirectUpdate event.
+        if (backfilled.length > 0) {
+          const byUser = await getUserById(userId)
+          for (const rewritten of backfilled) {
+            const literal = { ...rewritten, destination: literalDestination }
+            await logRedirectEvent(tx, {
+              siteId,
+              by: byUser,
+              eventType: AuditLogEvent.RedirectDelete,
+              delta: { before: literal, after: literal },
+            })
+            await logRedirectEvent(tx, {
+              siteId,
+              by: byUser,
+              eventType: AuditLogEvent.RedirectCreate,
+              delta: { before: null, after: rewritten },
+            })
+          }
+        }
       }
     }
 

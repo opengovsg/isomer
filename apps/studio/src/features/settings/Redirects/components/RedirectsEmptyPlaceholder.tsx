@@ -14,7 +14,11 @@ export const RedirectsEmptyPlaceholder = (): JSX.Element => {
             </Text>
             <Text textStyle="body-2" color="base.content.default">
               Unsure how to use redirects?{" "}
-              <Link variant="inline" href="https://support.isomer.gov.sg">
+              <Link
+                variant="inline"
+                isExternal
+                href="https://support.isomer.gov.sg"
+              >
                 Read our guide
               </Link>
               .
