@@ -1691,20 +1691,20 @@ describe("collection.router", async () => {
       )
     })
 
-    it("should reject when tagOptionIds exceeds the maximum length", async () => {
+    it("should accept more than 100 tagOptionIds", async () => {
       // Arrange
       const { site, indexPage } = await setupCollectionWithIndexPage()
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
 
       // Act
-      const result = caller.countTagOptionsUsage({
+      const result = await caller.countTagOptionsUsage({
         siteId: site.id,
         pageId: Number(indexPage.id),
         tagOptionIds: Array.from({ length: 100 + 1 }, () => randomUUID()),
       })
 
       // Assert
-      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+      expect(result).toEqual({ count: 0 })
     })
 
     it("should throw 404 if index page does not exist", async () => {
