@@ -24,13 +24,12 @@ import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
-import { getFormattedDate } from "~/utils/getFormattedDate"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
 
 import { Link } from "../Link"
-import { ClientCopyrightYear } from "./ClientCopyrightYear"
+import { ClientCopyright } from "./ClientCopyright"
 
 const SocialMediaTypeToIconMap: Record<SocialMediaType, IconType> = {
   facebook: FaFacebook,
@@ -238,9 +237,11 @@ const LegalSection = ({
     <div className="flex h-full">
       <div className="flex flex-col justify-end gap-4 lg:gap-2">
         <p className="prose-label-md-regular text-base-content-inverse-subtle">
-          <ClientCopyrightYear />{" "}
-          {isGovernment ? "Government of Singapore" : agencyName}, last updated{" "}
-          {getFormattedDate(lastUpdated)}
+          <ClientCopyright
+            isGovernment={isGovernment}
+            agencyName={agencyName}
+            lastUpdated={lastUpdated}
+          />
         </p>
         <div className="prose-body-sm flex flex-col gap-3 lg:flex-row lg:gap-8">
           {isGovernment && (
