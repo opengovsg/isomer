@@ -113,14 +113,17 @@ const SITES_WITH_AUDIT_LOGS = [
   284, // www.ptc.gov.sg
   287, // www.mot.gov.sg
   289, // www.toteboard.gov.sg
+  301, // space.gov.sg
   334, // seab.gov.sg
   336, // www.caringcommuters.gov.sg
   343, // www.motawardsceremony.gov.sg
   357, // www.ago.gov.sg
+  378, // osir.gov.sg
   397, // www.rp.edu.sg
   409, // www.hsa.gov.sg
   484, // www.hpb.gov.sg
   492, // www.oneservice.gov.sg
+  512, // cap.gov.sg
 ]
 
 // Month and year to get audit logs for, in the format of YYYY-MM,
