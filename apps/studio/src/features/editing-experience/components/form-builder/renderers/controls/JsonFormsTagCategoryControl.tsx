@@ -1,11 +1,16 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
+import { Suspense, useMemo } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { trpc } from "~/utils/trpc"
 
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
@@ -19,6 +24,28 @@ import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
 import { createDefaultTagCategory } from "./constants"
+
+function TagCategoryUsageCount({
+  siteId,
+  pageId,
+  tagOptionIds,
+}: {
+  siteId: number
+  pageId: number
+  tagOptionIds: string[]
+}) {
+  if (tagOptionIds.length === 0) {
+    return <>0 items</>
+  }
+
+  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
+    siteId,
+    pageId,
+    tagOptionIds,
+  })
+
+  return <>{count === 1 ? "1 item" : `${count} items`}</>
+}
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
@@ -39,6 +66,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   } = props
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const page = core?.data as CollectionPagePageProps | undefined
   const duplicateFilterIndices = useDuplicateLabels(path)
 
@@ -78,6 +106,15 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       label: page?.tagCategories?.[index]?.label?.trim() ?? "",
     }),
   })
+
+  const deleteTargetTagOptionIds = useMemo(() => {
+    if (!deleteTarget) return []
+    return (
+      page?.tagCategories?.[deleteTarget.index]?.options
+        ?.map((option) => option.id)
+        .filter((id): id is string => Boolean(id)) ?? []
+    )
+  }, [deleteTarget, page?.tagCategories])
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
@@ -196,13 +233,37 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
           isOpen
           label={deleteTarget.label}
           noun="filter"
-          warningBody={
-            <Text textStyle="body-1" color="base.content.strong">
-              This removes the filter and its options from the collection.
-              Collection items that use these options may need to be updated
-              manually.
+          title={
+            <Text textStyle="subhead-1" color="base.content.strong">
+              You are deleting an entire filter. It&apos;s being used on{" "}
+              <ErrorBoundary fallbackRender={() => <>— items</>}>
+                <Suspense
+                  fallback={
+                    <Skeleton
+                      as="span"
+                      display="inline-block"
+                      verticalAlign="middle"
+                      height="1em"
+                      width="2ch"
+                    />
+                  }
+                >
+                  <TagCategoryUsageCount
+                    siteId={siteId}
+                    pageId={pageId}
+                    tagOptionIds={deleteTargetTagOptionIds}
+                  />
+                </Suspense>
+              </ErrorBoundary>
             </Text>
           }
+          warningBody={
+            <Text textStyle="body-1" color="base.content.strong">
+              To undo this change, you will need to recreate this filter and
+              assign options to each item individually.
+            </Text>
+          }
+          confirmCheckboxLabel="Yes, delete the entire filter permanently"
           onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
         />
