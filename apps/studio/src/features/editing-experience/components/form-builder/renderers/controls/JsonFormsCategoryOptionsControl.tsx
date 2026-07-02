@@ -177,7 +177,7 @@ function CategoryOptionsExpandedEditor(props: ArrayLayoutProps) {
               </Text>
               <AddItemButton
                 onClick={addItem(path, createDefaultCategoryOption())}
-                isDisabled={isAddItemDisabled}
+                isDisabled={isAddItemDisabled || isAnyRowEditing}
               >
                 Add option
               </AddItemButton>

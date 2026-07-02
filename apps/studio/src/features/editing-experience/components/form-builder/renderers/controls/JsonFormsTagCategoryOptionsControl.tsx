@@ -96,7 +96,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
             </Text>
             <AddItemButton
               onClick={addItem(path, createDefaultTagOption())}
-              isDisabled={isAddItemDisabled}
+              isDisabled={isAddItemDisabled || isAnyRowEditing}
             >
               Add option
             </AddItemButton>
