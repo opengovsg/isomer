@@ -41,53 +41,53 @@ const Root = forwardRef<RootProps, "div">(
   ({ draggableProps, isError, isDragDisabled = false, children }, ref) => (
     <DraggableTagButtonContext.Provider value={{ isDragDisabled }}>
       <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
-      <HStack
-        spacing={0}
-        border="1px solid"
-        borderColor="base.divider.medium"
-        borderRadius="6px"
-        bg="white"
-        transitionProperty="common"
-        transitionDuration="normal"
-        aria-invalid={isError}
-        {...(isDragDisabled
-          ? undefined
-          : {
-              _hover: {
-                bg: "interaction.muted.main.hover",
-                borderColor: "interaction.main-subtle.hover",
-                _invalid: {
-                  bg: "interaction.muted.critical.hover",
-                  borderColor: "utility.feedback.critical",
+        <HStack
+          spacing={0}
+          border="1px solid"
+          borderColor="base.divider.medium"
+          borderRadius="6px"
+          bg="white"
+          transitionProperty="common"
+          transitionDuration="normal"
+          aria-invalid={isError}
+          {...(isDragDisabled
+            ? undefined
+            : {
+                _hover: {
+                  bg: "interaction.muted.main.hover",
+                  borderColor: "interaction.main-subtle.hover",
+                  _invalid: {
+                    bg: "interaction.muted.critical.hover",
+                    borderColor: "utility.feedback.critical",
+                  },
                 },
-              },
-              _active: {
-                bg: "interaction.main-subtle.default",
-                borderColor: "interaction.main-subtle.hover",
-                shadow: "0px 1px 6px 0px #1361F026",
-                _invalid: {
-                  bg: "interaction.muted.critical.hover",
-                  borderColor: "utility.feedback.critical",
-                  shadow: "0px 1px 6px 0px #C0343426",
+                _active: {
+                  bg: "interaction.main-subtle.default",
+                  borderColor: "interaction.main-subtle.hover",
+                  shadow: "0px 1px 6px 0px #1361F026",
+                  _invalid: {
+                    bg: "interaction.muted.critical.hover",
+                    borderColor: "utility.feedback.critical",
+                    shadow: "0px 1px 6px 0px #C0343426",
+                  },
                 },
-              },
-            })}
-        align="stretch"
-        overflow="hidden"
-      >
-        {isError && (
-          <Box
-            aria-hidden
-            bg="utility.feedback.critical"
-            width="6px"
-            mr="-6px"
-          />
-        )}
-        <HStack flex={1} align="stretch" spacing={0} minW={0} w="100%">
-          {children}
+              })}
+          align="stretch"
+          overflow="hidden"
+        >
+          {isError && (
+            <Box
+              aria-hidden
+              bg="utility.feedback.critical"
+              width="6px"
+              mr="-6px"
+            />
+          )}
+          <HStack flex={1} align="stretch" spacing={0} minW={0} w="100%">
+            {children}
+          </HStack>
         </HStack>
-      </HStack>
-    </Box>
+      </Box>
     </DraggableTagButtonContext.Provider>
   ),
 )
@@ -97,10 +97,7 @@ interface HandleProps {
   py?: BoxProps["py"]
 }
 
-const Handle = ({
-  dragHandleProps,
-  py = "0.5rem",
-}: HandleProps) => {
+const Handle = ({ dragHandleProps, py = "0.5rem" }: HandleProps) => {
   const { isDragDisabled } = useDraggableTagButton()
 
   return (
@@ -349,7 +346,12 @@ const ErrorCaption = ({ children }: { children?: ReactNode }) => (
     display="flex"
     alignItems="center"
   >
-    <ChakraIcon aria-hidden as={BiSolidInfoCircle} fontSize="0.75rem" mr="0.25rem" />
+    <ChakraIcon
+      aria-hidden
+      as={BiSolidInfoCircle}
+      fontSize="0.75rem"
+      mr="0.25rem"
+    />
     {children ?? "Fix issues before saving"}
   </Text>
 )

@@ -82,7 +82,9 @@ export function InlineEditableOptionRow({
             </DraggableTagButton.Content>
           </DraggableTagButton.Body>
           {!isEditing && (
-            <DraggableTagButton.Trailing>{trailing}</DraggableTagButton.Trailing>
+            <DraggableTagButton.Trailing>
+              {trailing}
+            </DraggableTagButton.Trailing>
           )}
         </DraggableTagButton.Root>
       )}
