@@ -19,7 +19,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
-import { Button, IconButton, Input } from "@opengovsg/design-system-react"
+import { IconButton, Input } from "@opengovsg/design-system-react"
 import { createContext, useContext, useState } from "react"
 import { BiCheck, BiGridVertical, BiSolidInfoCircle, BiX } from "react-icons/bi"
 
@@ -126,7 +126,7 @@ interface BodyProps {
   py?: BoxProps["py"]
 }
 
-const BODY_BASE_STYLE = {
+const BODY_BASE_STYLE: BoxProps = {
   layerStyle: "focusRing",
   flex: 1,
   minW: 0,
@@ -134,7 +134,7 @@ const BODY_BASE_STYLE = {
   alignItems: "center",
   pl: "0.25rem",
   pr: "1rem",
-} as const
+}
 
 const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => {
   const content = (
@@ -152,17 +152,16 @@ const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => {
   }
 
   return (
-    <Button
-      variant="unstyled"
+    <Box
       {...BODY_BASE_STYLE}
+      as="button"
       type="button"
-      h="auto"
       cursor="pointer"
       py={py}
       onClick={onClick}
     >
       {content}
-    </Button>
+    </Box>
   )
 }
 
