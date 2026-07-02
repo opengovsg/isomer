@@ -38,10 +38,6 @@ function FilterUsageCount({
   pageId: number
   tagOptionIds: string[]
 }) {
-  if (tagOptionIds.length === 0) {
-    return <>0 items</>
-  }
-
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
     siteId,
     pageId,
