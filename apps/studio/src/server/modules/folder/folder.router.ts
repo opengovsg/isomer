@@ -1,5 +1,6 @@
+import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
-import { get, pick } from "lodash-es"
+import { get, merge, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
   createFolderSchema,
@@ -10,19 +11,154 @@ import {
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 
-import { logResourceEvent } from "../audit/audit.service"
+import { logPublishEvent, logResourceEvent } from "../audit/audit.service"
 import {
   AuditLogEvent,
   db,
   jsonb,
   ResourceState,
   ResourceType,
+  type Blob,
+  type DB,
+  type Resource,
+  type Transaction,
+  type User,
 } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { createFolderIndexPage } from "../page/page.service"
+import {
+  createFolderIndexPage,
+  getIndexPageSummary,
+} from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { publishResource } from "../resource/resource.service"
+import { createVersion } from "../version/version.service"
 import { defaultFolderSelect } from "./folder.select"
+
+const updateIndexPageBlobTitle = async (
+  tx: Transaction<DB>,
+  {
+    indexPage,
+    title,
+    user,
+    siteId,
+  }: {
+    indexPage: {
+      id: string
+      draftBlobId: string | null
+      publishedVersionId: string | null
+    }
+    title: string
+    user: User
+    siteId: number
+  },
+) => {
+  const mergeTitle = (
+    existing: UnwrapTagged<PrismaJson.BlobJsonContent>,
+  ): UnwrapTagged<PrismaJson.BlobJsonContent> =>
+    merge({}, existing, {
+      page: {
+        title,
+        contentPageHeader: { summary: getIndexPageSummary(title) },
+      },
+    }) as UnwrapTagged<PrismaJson.BlobJsonContent>
+
+  if (indexPage.draftBlobId) {
+    // Has a draft: update the draft blob in-place, preserving
+    // any user-edited blocks alongside the updated title/summary.
+    const [indexPageResource, oldBlob] = await Promise.all([
+      tx
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(),
+      tx
+        .selectFrom("Blob")
+        .where("id", "=", indexPage.draftBlobId)
+        .selectAll()
+        .executeTakeFirstOrThrow(),
+    ])
+
+    const updatedBlob = await tx
+      .updateTable("Blob")
+      .set({
+        content: jsonb(
+          mergeTitle(
+            oldBlob.content as UnwrapTagged<PrismaJson.BlobJsonContent>,
+          ),
+        ),
+      })
+      .where("id", "=", indexPage.draftBlobId)
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    await logResourceEvent(tx, {
+      siteId,
+      eventType: AuditLogEvent.ResourceUpdate,
+      delta: {
+        before: { blob: oldBlob, resource: indexPageResource },
+        after: { blob: updatedBlob, resource: indexPageResource },
+      },
+      by: user,
+    })
+  } else if (indexPage.publishedVersionId) {
+    // No draft but previously published: create a new blob+version from the
+    // published content so the rename lands on the live site after the rebuild
+    // triggered by editFolder.
+    const indexPageResource = await tx
+      .selectFrom("Resource")
+      .where("id", "=", indexPage.id)
+      .selectAll()
+      .executeTakeFirstOrThrow()
+
+    const { blobId: publishedBlobId, versionNum } = await tx
+      .selectFrom("Version")
+      .where("id", "=", indexPage.publishedVersionId)
+      .select(["blobId", "versionNum"])
+      .executeTakeFirstOrThrow()
+
+    const oldBlob = await tx
+      .selectFrom("Blob")
+      .where("id", "=", publishedBlobId)
+      .selectAll()
+      .executeTakeFirstOrThrow()
+
+    const newBlob = await tx
+      .insertInto("Blob")
+      .values({
+        content: jsonb(
+          mergeTitle(
+            oldBlob.content as UnwrapTagged<PrismaJson.BlobJsonContent>,
+          ),
+        ),
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    const newVersion = await createVersion(tx, {
+      versionNum: versionNum + 1,
+      resourceId: indexPage.id,
+      blobId: newBlob.id,
+      publisherId: user.id,
+    })
+
+    await tx
+      .updateTable("Resource")
+      .where("id", "=", indexPage.id)
+      .set({ publishedVersionId: newVersion.id })
+      .execute()
+
+    await logPublishEvent(tx, {
+      siteId,
+      by: user,
+      delta: {
+        before: { versionId: indexPage.publishedVersionId },
+        after: { versionId: newVersion.id },
+      },
+      eventType: AuditLogEvent.Publish,
+      metadata: { ...indexPageResource, ...newBlob } as Resource & Blob,
+    })
+  }
+}
 
 export const folderRouter = router({
   create: protectedProcedure
@@ -255,7 +391,7 @@ export const folderRouter = router({
             })
 
           // NOTE: update the index page's title so that they stay in sync
-          await tx
+          const indexPage = await tx
             .updateTable("Resource")
             .where("Resource.parentId", "=", oldResource.id)
             .where("Resource.siteId", "=", oldResource.siteId)
@@ -265,7 +401,19 @@ export const folderRouter = router({
             })
             // NOTE: we cannot throw here because
             // it's entirely possible that the index page doesn't exist
+            .returning(["id", "draftBlobId", "publishedVersionId"])
             .executeTakeFirst()
+
+          // NOTE: also update the blob content so the rendered page title
+          // and breadcrumb summary reflect the new folder name.
+          if (indexPage) {
+            await updateIndexPageBlobTitle(tx, {
+              indexPage,
+              title,
+              user,
+              siteId: oldResource.siteId,
+            })
+          }
 
           await logResourceEvent(tx, {
             siteId: Number(siteId),

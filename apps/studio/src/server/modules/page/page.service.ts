@@ -71,6 +71,8 @@ export const createDefaultPage = ({
   }
 }
 
+export const getIndexPageSummary = (title: string) => `Pages in ${title}`
+
 export const createFolderIndexPage = (title: string) => {
   return {
     version: "0.1.0",
@@ -81,7 +83,7 @@ export const createFolderIndexPage = (title: string) => {
     page: {
       title,
       lastModified: new Date().toISOString(),
-      contentPageHeader: { summary: `Pages in ${title}` },
+      contentPageHeader: { summary: getIndexPageSummary(title) },
     },
     content: [DEFAULT_CHILDREN_PAGES_BLOCK],
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>

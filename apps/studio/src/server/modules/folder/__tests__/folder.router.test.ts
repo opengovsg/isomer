@@ -17,6 +17,7 @@ import {
 import { createCallerFactory } from "~/server/trpc"
 
 import { AuditLogEvent, db, ResourceState, ResourceType } from "../../database"
+import { getIndexPageSummary } from "../../page/page.service"
 import { folderRouter } from "../folder.router"
 
 const createCaller = createCallerFactory(folderRouter)
@@ -735,6 +736,115 @@ describe("folder.router", async () => {
       expect(auditLogs).toBeDefined()
       expect(auditLogs?.userId).toEqual(session.userId)
       expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
+    })
+
+    it("should update only title/summary in the index page blob, preserving other content", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({ title: "Old Title" })
+      const { blob } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const newTitle = "New Folder Name"
+
+      // Act
+      await caller.editFolder({
+        siteId: String(site.id),
+        resourceId: folder.id,
+        title: newTitle,
+        permalink: folder.permalink,
+      })
+
+      // Assert
+      const updatedBlob = await db
+        .selectFrom("Blob")
+        .where("id", "=", blob.id)
+        .select("content")
+        .executeTakeFirstOrThrow()
+
+      // title and summary reflect the new folder name
+      expect(updatedBlob.content).toMatchObject({
+        page: {
+          title: newTitle,
+          contentPageHeader: { summary: getIndexPageSummary(newTitle) },
+        },
+      })
+      // existing content blocks are preserved (not overwritten by a fresh template)
+      expect(updatedBlob.content).toMatchObject({
+        content: blob.content.content,
+      })
+      // audit log: folder ResourceUpdate + index page ResourceUpdate + folder Publish
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(3)
+      expect(
+        auditLogs.some(
+          (log) =>
+            log.eventType === AuditLogEvent.ResourceUpdate &&
+            (log.delta as { after: { blob?: unknown } }).after?.blob !==
+              undefined,
+        ),
+      ).toBe(true)
+    })
+
+    it("should create a new published version with updated title when index page has no draft", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({ title: "Old Title" })
+      const { blob, page: indexPage } = await setupPageResource({
+        resourceType: ResourceType.IndexPage,
+        siteId: site.id,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const newTitle = "New Folder Name"
+
+      // Act
+      await caller.editFolder({
+        siteId: String(site.id),
+        resourceId: folder.id,
+        title: newTitle,
+        permalink: folder.permalink,
+      })
+
+      // Assert: a new Version should have been created
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .select(["publishedVersionId", "draftBlobId"])
+        .executeTakeFirstOrThrow()
+
+      expect(updatedIndexPage.draftBlobId).toBeNull()
+      expect(updatedIndexPage.publishedVersionId).not.toEqual(
+        indexPage.publishedVersionId,
+      )
+
+      // The new published version's blob should have the updated title/summary
+      const newPublishedBlob = await db
+        .selectFrom("Version")
+        .innerJoin("Blob", "Blob.id", "Version.blobId")
+        .where("Version.id", "=", updatedIndexPage.publishedVersionId!)
+        .select("Blob.content")
+        .executeTakeFirstOrThrow()
+
+      expect(newPublishedBlob.content).toMatchObject({
+        page: {
+          title: newTitle,
+          contentPageHeader: { summary: getIndexPageSummary(newTitle) },
+        },
+      })
+      // original content blocks are preserved
+      expect(newPublishedBlob.content).toMatchObject({
+        content: blob.content.content,
+      })
+      // audit log: folder ResourceUpdate + index page Publish + folder Publish
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(3)
+      expect(
+        auditLogs.some((log) => log.eventType === AuditLogEvent.Publish),
+      ).toBe(true)
     })
   })
 
