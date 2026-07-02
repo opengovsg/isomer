@@ -135,7 +135,9 @@ export const gazetteRouter = router({
           sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'description'`,
           (ob) => ob.desc(),
         )
-        // 4. Toppan file ID descending — the last path segment of page.ref.
+        // 4. Publish date descending
+        .orderBy("Version.publishedAt", (ob) => ob.desc())
+        // 5. Toppan file ID descending — the last path segment of page.ref.
         //    e.g. "/2026/Government Gazette/Advertisements/26adv6175b.pdf"
         //    -> "26adv6175b.pdf". Strip everything up to the final slash so we
         //    sort on the file ID, not the full path.
@@ -143,8 +145,6 @@ export const gazetteRouter = router({
           sql`regexp_replace(COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'ref', '.*/', '')`,
           (ob) => ob.desc(),
         )
-        // 5. Publish date descending
-        .orderBy("Version.publishedAt", (ob) => ob.desc())
         // 6. Updated at descending (tie-breaker)
         .orderBy("Resource.updatedAt", "desc")
         .orderBy("Resource.id", "asc")
