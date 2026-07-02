@@ -56,6 +56,17 @@ const columnsHelper = createColumnHelper<RedirectRow>()
 // here (the render site) so it can change without touching the resolution logic.
 const MISSING_PAGE_LABEL = "Page no longer exists"
 
+// Middle truncation: the head CSS-truncates with an ellipsis while the last
+// TRUNCATION_TAIL_LENGTH characters stay pinned, so a long path keeps its most
+// specific segment visible ("/promo/really-long…/end.html") instead of losing
+// the tail to a plain end-ellipsis.
+const TRUNCATION_TAIL_LENGTH = 10
+
+const splitForMiddleTruncation = (value: string) => {
+  const splitAt = Math.max(0, value.length - TRUNCATION_TAIL_LENGTH)
+  return { head: value.slice(0, splitAt), tail: value.slice(splitAt) }
+}
+
 // Renders a pre-resolved redirect destination. Reference destinations arrive as
 // the page's current permalink; while that resolution is in flight we show a
 // skeleton, and a reference whose page no longer exists is flagged rather than
@@ -73,6 +84,8 @@ function DestinationCell({
 
   const isMissing = display.status === "missing"
   const label = isMissing ? MISSING_PAGE_LABEL : display.label
+  const color = isMissing ? "utility.feedback.critical" : "base.content.strong"
+  const { head, tail } = splitForMiddleTruncation(label)
   return (
     <Tooltip
       label={label}
@@ -80,15 +93,27 @@ function DestinationCell({
       placement="top"
       isDisabled={!isTruncated}
     >
-      <Text
-        ref={ref}
-        textStyle="body-2"
-        color={isMissing ? "utility.feedback.critical" : "base.content.strong"}
-        noOfLines={1}
-        wordBreak="break-all"
-      >
-        {label}
-      </Text>
+      <HStack spacing="0" align="center" overflow="hidden">
+        <Text
+          ref={ref}
+          textStyle="body-2"
+          color={color}
+          minW={0}
+          overflow="hidden"
+          whiteSpace="nowrap"
+          textOverflow="ellipsis"
+        >
+          {head}
+        </Text>
+        <Text
+          textStyle="body-2"
+          color={color}
+          flexShrink={0}
+          whiteSpace="nowrap"
+        >
+          {tail}
+        </Text>
+      </HStack>
     </Tooltip>
   )
 }
@@ -158,6 +183,7 @@ function SourceCell({ source }: { source: string }): JSX.Element {
     useIsTruncated<HTMLDivElement>()
   const isWildcard = source.endsWith("*")
   const base = isWildcard ? source.slice(0, -1) : source
+  const { head, tail } = splitForMiddleTruncation(base)
   return (
     <Tooltip
       label={source}
@@ -165,15 +191,25 @@ function SourceCell({ source }: { source: string }): JSX.Element {
       placement="top"
       isDisabled={!isTextTruncated && !isRowTruncated}
     >
-      <HStack ref={rowRef} spacing="0" align="baseline" overflow="hidden">
+      <HStack ref={rowRef} spacing="0" align="center" overflow="hidden">
         <Text
           ref={textRef}
           textStyle="body-2"
           color="base.content.strong"
-          noOfLines={1}
-          wordBreak="break-all"
+          minW={0}
+          overflow="hidden"
+          whiteSpace="nowrap"
+          textOverflow="ellipsis"
         >
-          {base}
+          {head}
+        </Text>
+        <Text
+          textStyle="body-2"
+          color="base.content.strong"
+          flexShrink={0}
+          whiteSpace="nowrap"
+        >
+          {tail}
         </Text>
         {isWildcard && (
           <Box
