@@ -97,7 +97,8 @@ const TagCategoriesSchema = Type.Object({
  *
  * Display vs "Manage filters" in Studio is not encoded here: `getScopedSchema` in
  * CollectionEditorStateDrawer includes this field only in the Filters drawer (with tag filters),
- * not under Collection display.
+ * not under Collection display. The `category-label` format hides it from the top-level filters
+ * list; Studio renders it inside the default filter editor instead.
  */
 const CategoriesSchema = Type.Object({
   categoryLabel: Type.Optional(
@@ -105,6 +106,7 @@ const CategoriesSchema = Type.Object({
       title: "Filter name",
       description:
         "The label visitors see for the default filter on your collection page.",
+      format: "category-label",
       pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
       errorMessage: {
         pattern: "cannot be empty or have leading/trailing spaces",
@@ -136,6 +138,9 @@ const CategoriesSchema = Type.Object({
     ),
   ),
 })
+
+/** Categories filter fields on a collection index page (`categoryLabel`, `categoryOptions`). */
+export const CollectionPageCategoriesSchema = CategoriesSchema
 
 export type CollectionPageCategoryOption = NonNullable<
   Static<typeof CategoriesSchema>["categoryOptions"]

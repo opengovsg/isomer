@@ -117,6 +117,10 @@ export {
   jsonFormsCategoryOptionsControlTester,
 } from "./JsonFormsCategoryOptionsControl"
 export {
+  default as JsonFormsCategoryLabelControl,
+  jsonFormsCategoryLabelControlTester,
+} from "./JsonFormsCategoryLabelControl"
+export {
   default as JsonFormsNavbarControl,
   jsonFormsNavbarControlTester,
 } from "./JsonFormsNavbarControl"

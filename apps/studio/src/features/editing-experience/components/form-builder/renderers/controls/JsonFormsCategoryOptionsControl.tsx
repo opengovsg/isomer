@@ -42,7 +42,10 @@ import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
 import { createDefaultCategoryOption } from "./constants"
+import { CategoryLabelEditor } from "./JsonFormsCategoryLabelControl"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
+
+const CATEGORY_LABEL_PATH = "categoryLabel"
 
 /** Matches category option rows from JsonForms (`categoryOptions` array on collection index). */
 type CategoryOptionItem = Partial<{
@@ -96,6 +99,9 @@ function CategoryOptionsExpandedEditor({
     uischemas,
     uischema,
     description,
+    renderers,
+    cells,
+    visible,
   } = props
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
@@ -183,6 +189,12 @@ function CategoryOptionsExpandedEditor({
             This is the default filter, so you can't make it optional.
           </Text>
         </Infobox>
+        <CategoryLabelEditor
+          enabled={enabled}
+          renderers={renderers}
+          cells={cells}
+          visible={visible}
+        />
         <VStack spacing={0} align="start">
           <VStack align="start" spacing="0.25rem" w="full">
             <HStack w="full" justifyContent="space-between" align="center">
@@ -348,7 +360,8 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
     () =>
       hasBlankOptionLabel(items) ||
       duplicateOptionIndices.size > 0 ||
-      hasErrorAt(path),
+      hasErrorAt(path) ||
+      hasErrorAt(CATEGORY_LABEL_PATH),
     [items, path, duplicateOptionIndices, hasErrorAt],
   )
 
