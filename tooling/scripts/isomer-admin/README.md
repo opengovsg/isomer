@@ -52,6 +52,33 @@ Exports JSON blobs for all children of a given parent resource ID (a Folder or C
 
 Validates JSON blobs against the Isomer Next page schema. Supports two modes: checking all resources in the database, or validating local JSON files in a directory. Results are written to `invalid-schema.txt`.
 
+### Create Content From Local
+
+Creates a new **Collection** or **Folder** from local permalink-named schema JSON. Mirrors the `seed-from-repo` studioify flow. Requires a **site ID** and **publisher user ID**; **parent folder ID** is optional (leave blank to create at site root). Set `CONTAINER_PERMALINK`, `CONTAINER_NAME`, and optionally `INPUT_DIR` / `INDEX_PAGE_PATH` at the top of `create-content-from-local.ts` before running.
+
+1. **Prepare assets** — reads from `{script}/input/assets/images/` and `{script}/input/assets/files/` (v1 layout), or flat files in `{script}/input/assets/`. Copies to `./output/{siteId}/{uuid}/{filename}` and writes `{siteId}-file-mapping.csv` with paths like `/images/foo.png`.
+2. **Create container** — inserts a published `Collection` or `Folder` and child pages with v1-style paths (`Version` + `publishedVersionId` set via publisher user ID).
+3. **Studioify published pages** — rewrites asset paths and internal page links on the published blobs.
+
+Expected input layout (`isomer-admin/apps/input/` next to `create-content-from-local.ts`):
+
+```
+isomer-admin/apps/input/
+  /assets
+    /images
+      hero.png
+    /files
+      report.pdf
+  /schemas
+    page-one.json             # permalink = page-one
+    page-two.json
+  _index.json                 # optional — used when present (see INDEX_PAGE_PATH)
+```
+
+`INDEX_PAGE_PATH` controls the index page: set an explicit path (must exist), or leave `null` to use `input/_index.json` beside the script when present and otherwise auto-create a default `childrenpages` index.
+
+**NOTE:** Upload `./output/{siteId}/` to the assets S3 bucket, then manually trigger a site rebuild in CodeBuild.
+
 ### Import Folder JSONs
 
 Imports JSON files from `./input` to update existing resources in the database. Matches resources by ID extracted from the filename (`{id}.json`). Optionally publishes the updated resources. Looks up the publisher by email address.
