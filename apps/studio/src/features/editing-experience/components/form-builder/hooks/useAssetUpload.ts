@@ -1,3 +1,4 @@
+import { datadogRum } from "@datadog/browser-rum"
 import { backOff } from "exponential-backoff"
 import { useState } from "react"
 import { ASSETS_BASE_URL } from "~/utils/generateAssetUrl"
@@ -41,7 +42,13 @@ export const useAssetUpload = ({
       }, getAssetUploadBackoffOptions({ numOfAttempts, baseTimeoutMs }))
       return src
     } catch (e) {
-      console.error(e)
+      datadogRum.addError(e, {
+        feature: "asset-upload",
+        stage: "verification-polling",
+        src,
+        numOfAttempts,
+      })
+      throw e
     } finally {
       setIsLoading(false)
     }

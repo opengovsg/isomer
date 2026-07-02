@@ -1,6 +1,7 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
-import { Attachment } from "@opengovsg/design-system-react"
+import { datadogRum } from "@datadog/browser-rum"
+import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
@@ -44,6 +45,7 @@ export const FileAttachment = ({
     null,
   )
   // TODO: Add a mutation for deletion next time of s3 resources
+  const toast = useToast()
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
     resourceId,
@@ -62,8 +64,46 @@ export const FileAttachment = ({
         onSuccess: ({ path }) => {
           onUploadedFile?.(file)
           if (shouldFetchResource) {
-            void handleAssetUpload(path).then((src) => setHref(src))
+            void handleAssetUpload(path)
+              .then((src) => {
+                datadogRum.addAction("asset_upload_verified", {
+                  fileName: file.name,
+                  fileKey: src,
+                })
+                setHref(src)
+              })
+              .catch((e: unknown) => {
+                toast({
+                  title: "Image failed to upload",
+                  description:
+                    "Your file was uploaded but we couldn't confirm it's ready. Refresh the page and check before publishing.",
+                  status: "error",
+                })
+                datadogRum.addError(e, {
+                  feature: "asset-upload",
+                  stage: "verification-polling",
+                  fileName: file.name,
+                  fileSize: file.size,
+                  siteId,
+                  resourceId,
+                })
+              })
           } else setHref(path)
+        },
+        onError: (error) => {
+          toast({
+            title: "Image failed to upload",
+            description: "Please try uploading the file again.",
+            status: "error",
+          })
+          datadogRum.addError(error, {
+            feature: "asset-upload",
+            stage: "upload",
+            fileName: file.name,
+            fileSize: file.size,
+            siteId,
+            resourceId,
+          })
         },
       },
     )

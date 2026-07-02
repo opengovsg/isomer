@@ -23,7 +23,21 @@ export const handleAssetUpload = async ({
   })
 
   if (!response.ok) {
-    const data = (await response.json()) as unknown as { error: string }
-    throw new Error(data.error)
+    let detail: string
+    try {
+      const contentType = response.headers.get("content-type") ?? ""
+      if (contentType.includes("application/json")) {
+        const data = (await response.json()) as unknown as { error: string }
+        detail = data.error
+      } else {
+        const text = await response.text()
+        detail = text.slice(0, 200)
+      }
+    } catch {
+      detail = response.statusText
+    }
+    throw new Error(
+      `Upload failed (HTTP ${response.status}): ${detail || response.statusText}`,
+    )
   }
 }
