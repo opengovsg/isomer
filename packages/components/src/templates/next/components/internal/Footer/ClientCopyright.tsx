@@ -2,9 +2,10 @@
 
 import type { IsomerSiteProps } from "~/types"
 
-interface ClientCopyrightProps {
-  isGovernment: IsomerSiteProps["isGovernment"]
-  agencyName: string
+interface ClientCopyrightProps extends Pick<
+  IsomerSiteProps,
+  "isGovernment" | "agencyName"
+> {
   // Pre-formatted on the server so date-fns stays out of the client bundle.
   formattedLastUpdated: string
 }
