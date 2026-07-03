@@ -1,7 +1,4 @@
-import type {
-  CollectionPageCategoryOption,
-  CollectionPagePageProps,
-} from "@opengovsg/isomer-components"
+import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 
 export const ACCEPTED_IMAGE_TYPES_MESSAGE = Object.keys(
@@ -21,9 +18,3 @@ export const createDefaultTagOption = (): TagOption => ({
   id: crypto.randomUUID(),
   label: "New option",
 })
-
-export const createDefaultCategoryOption =
-  (): CollectionPageCategoryOption => ({
-    id: crypto.randomUUID(),
-    label: "New option",
-  })

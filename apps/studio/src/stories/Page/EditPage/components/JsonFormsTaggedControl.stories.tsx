@@ -15,7 +15,6 @@ const meta: Meta<typeof FormBuilder> = {
     msw: {
       handlers: [
         pageHandlers.getCategories.default(),
-        pageHandlers.getCategoryOptions.default(),
         pageHandlers.getCollectionTags.default(),
       ],
     },
@@ -60,7 +59,6 @@ export const WithRequiredCategory: Story = {
     msw: {
       handlers: [
         pageHandlers.getCategories.default(),
-        pageHandlers.getCategoryOptions.default(),
         pageHandlers.getCollectionTags.withRequired(),
       ],
     },

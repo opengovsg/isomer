@@ -6,7 +6,6 @@ import {
   jsonFormsCategoryControlTester,
 } from "~/features/editing-experience/components/form-builder/renderers/controls/JsonFormsCategoryControl"
 import {
-  createCategoryIdDropdownGbParameters,
   createDropdownGbParameters,
 } from "~/stories/utils/growthbook"
 
@@ -17,10 +16,7 @@ const meta: Meta<typeof FormBuilder> = {
   component: FormBuilder,
   parameters: {
     msw: {
-      handlers: [
-        pageHandlers.getCategories.default(),
-        pageHandlers.getCategoryOptions.default(),
-      ],
+      handlers: [pageHandlers.getCategories.default()],
     },
     nextjs: {
       router: {
@@ -46,24 +42,8 @@ const schema = Type.Object({
   }),
 })
 
-/** CATEGORY_ID_DROPDOWN_FEATURE_KEY flag is off for this site — legacy free-text field is visible. */
+/** Legacy free-text field is visible when category dropdown flag is off. */
 export const FlagOff: Story = {
-  args: {
-    schema,
-    renderers: [
-      {
-        tester: jsonFormsCategoryControlTester,
-        renderer: JsonFormsCategoryControl,
-      },
-    ],
-  },
-}
-
-/** CATEGORY_ID_DROPDOWN_FEATURE_KEY flag is on for this site — component renders nothing. */
-export const FlagOn: Story = {
-  parameters: {
-    growthbook: [createCategoryIdDropdownGbParameters("1")],
-  },
   args: {
     schema,
     renderers: [
@@ -79,10 +59,7 @@ export const Dropdown: Story = {
   parameters: {
     growthbook: [createDropdownGbParameters("1")],
     msw: {
-      handlers: [
-        pageHandlers.getCategories.default(),
-        pageHandlers.getCategoryOptions.default(),
-      ],
+      handlers: [pageHandlers.getCategories.default()],
     },
   },
   args: {
