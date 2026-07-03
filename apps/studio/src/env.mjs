@@ -110,28 +110,30 @@ const server = z
     }
     // Static OTP bypasses OTP security entirely, so structurally forbid it
     // outside preview — a boot-time failure, not an operational assumption.
-    if (data.NEXT_PUBLIC_APP_ENV !== "preview") {
-      if (data.DANGEROUSLY_SET_STATIC_OTP) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            "DANGEROUSLY_SET_STATIC_OTP may only be set in preview environments",
-          path: ["DANGEROUSLY_SET_STATIC_OTP"],
-        })
-      }
+    if (
+      data.NEXT_PUBLIC_APP_ENV !== "preview" &&
+      data.DANGEROUSLY_SET_STATIC_OTP
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "DANGEROUSLY_SET_STATIC_OTP may only be set in preview environments",
+        path: ["DANGEROUSLY_SET_STATIC_OTP"],
+      })
     }
     // Skipping SingPass bypasses the primary authentication mechanism, so
     // structurally forbid it outside preview — a boot-time failure, not an
     // operational assumption.
-    if (data.NEXT_PUBLIC_APP_ENV !== "preview") {
-      if (data.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            "NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS may only be set in preview environments",
-          path: ["NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS"],
-        })
-      }
+    if (
+      data.NEXT_PUBLIC_APP_ENV !== "preview" &&
+      data.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS may only be set in preview environments",
+        path: ["NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS"],
+      })
     }
   })
 
