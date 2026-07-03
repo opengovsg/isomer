@@ -333,13 +333,7 @@ const _injectTagMappings = (
         tagCategories,
       },
       children: sitemap.children?.map((child) =>
-        _injectTagMappings(
-          child,
-          tagged,
-          tagCategories,
-          childId,
-          collectionId,
-        ),
+        _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
       ),
     }
   }
