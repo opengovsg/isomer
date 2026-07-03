@@ -41,20 +41,60 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     uischema,
     description,
   } = props
-  const { core } = useJsonForms()
+  const { core, dispatch } = useJsonForms()
   const { hasErrorAt } = useBuilderErrors()
-  const {
-    editingIndex,
-    isAnyRowEditing,
-    setEditingDraftLabel,
-    blankOptionIndices,
-    duplicateOptionIndices,
-    bindDragEnd,
-    handleDragEnd,
-    clearEditing,
-    submitLabel,
-    handleEditingChange,
-  } = useInlineEditableOptionRows(path)
+  // Inline label editing is keyed by array index. editingDraftLabel feeds
+  // useLiveLabelIssues so duplicate/blank checks reflect unsaved keystrokes.
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editingDraftLabel, setEditingDraftLabel] = useState("")
+
+  // Ref holds useArray's onDragEnd so handleDragEnd (defined before useArray) can
+  // delegate reorder without recreating the DragDropContext callback each render.
+  const onDragEndRef = useRef<(result: DropResult) => void>(() => {})
+
+  const isAnyRowEditing = editingIndex !== null
+
+  const { blank: blankOptionIndices, duplicate: duplicateOptionIndices } =
+    useLiveLabelIssues({ path, editingIndex, editingDraftLabel })
+
+  // Resets inline edit state; called on drag-end and before opening delete.
+  const clearEditing = useCallback(() => {
+    setEditingIndex(null)
+    setEditingDraftLabel("")
+  }, [])
+
+  // editingIndex is a row position, not item identity — clear before reorder so
+  // a pending label submit cannot write to whichever item ends up at that index.
+  const handleDragEnd = useCallback(
+    (result: DropResult) => {
+      clearEditing()
+      onDragEndRef.current(result)
+    },
+    [clearEditing],
+  )
+
+  // Persists a committed label edit to JSON Forms at options[index].label.
+  const submitLabel = useCallback(
+    (index: number, value: string) => {
+      dispatch?.(
+        update(
+          composePaths(composePaths(path, `${index}`), "label"),
+          () => value,
+        ),
+      )
+    },
+    [dispatch, path],
+  )
+
+  // Only one row may be in edit mode; ignore focus into another row while editing.
+  const handleEditingChange = useCallback(
+    (index: number, committedLabel: string, isEditing: boolean) => {
+      if (isEditing && editingIndex !== null && editingIndex !== index) return
+      setEditingIndex(isEditing ? index : null)
+      setEditingDraftLabel(isEditing ? committedLabel : "")
+    },
+    [editingIndex],
+  )
 
   const arrayResult = useArray({
     data,
@@ -90,7 +130,8 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     },
   })
 
-  bindDragEnd(arrayResult.onDragEnd)
+  // Sync ref each render — see onDragEndRef above.
+  onDragEndRef.current = arrayResult.onDragEnd
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
@@ -262,6 +303,7 @@ export const jsonFormsTagCategoryOptionsControlTester: RankedTester = rankWith(
 )
 
 const JsonFormsTagCategoryOptionsControl = (props: ArrayLayoutProps) => {
+  // Tag category options are admin-only until the feature ships broadly.
   const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
@@ -271,71 +313,6 @@ const JsonFormsTagCategoryOptionsControl = (props: ArrayLayoutProps) => {
   }
 
   return <JsonFormsTagCategoryOptionsArrayLayout {...props} />
-}
-
-function useInlineEditableOptionRows(path: string) {
-  const { dispatch } = useJsonForms()
-  const [editingIndex, setEditingIndex] = useState<number | null>(null)
-  const [editingDraftLabel, setEditingDraftLabel] = useState("")
-  const onDragEndRef = useRef<(result: DropResult) => void>(() => {})
-
-  const isAnyRowEditing = editingIndex !== null
-
-  const { blank: blankOptionIndices, duplicate: duplicateOptionIndices } =
-    useLiveLabelIssues({ path, editingIndex, editingDraftLabel })
-
-  const clearEditing = useCallback(() => {
-    setEditingIndex(null)
-    setEditingDraftLabel("")
-  }, [])
-
-  const bindDragEnd = useCallback((onDragEnd: (result: DropResult) => void) => {
-    onDragEndRef.current = onDragEnd
-  }, [])
-
-  // editingIndex is a row position, not item identity — clear before reorder so
-  // a pending label submit cannot write to whichever item ends up at that index.
-  const handleDragEnd = useCallback(
-    (result: DropResult) => {
-      clearEditing()
-      onDragEndRef.current(result)
-    },
-    [clearEditing],
-  )
-
-  const submitLabel = useCallback(
-    (index: number, value: string) => {
-      dispatch?.(
-        update(
-          composePaths(composePaths(path, `${index}`), "label"),
-          () => value,
-        ),
-      )
-    },
-    [dispatch, path],
-  )
-
-  const handleEditingChange = useCallback(
-    (index: number, committedLabel: string, isEditing: boolean) => {
-      if (isEditing && editingIndex !== null && editingIndex !== index) return
-      setEditingIndex(isEditing ? index : null)
-      setEditingDraftLabel(isEditing ? committedLabel : "")
-    },
-    [editingIndex],
-  )
-
-  return {
-    editingIndex,
-    isAnyRowEditing,
-    setEditingDraftLabel,
-    blankOptionIndices,
-    duplicateOptionIndices,
-    bindDragEnd,
-    handleDragEnd,
-    clearEditing,
-    submitLabel,
-    handleEditingChange,
-  }
 }
 
 export default JsonFormsTagCategoryOptionsControl
