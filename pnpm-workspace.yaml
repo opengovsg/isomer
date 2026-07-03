@@ -109,7 +109,7 @@ catalog:
   turbo: ^2.9.17
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
-  webpack-cli: ^7.0.3
+  webpack-cli: ^7.1.0
   webpack-glob-entries: ^1.0.1
   zod: ^4.4.3
   "@types/lodash-es": ^4.17.12
