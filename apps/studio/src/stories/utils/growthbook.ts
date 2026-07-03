@@ -3,7 +3,6 @@ import { GrowthBook } from "@growthbook/growthbook"
 import {
   BANNER_FEATURE_KEY,
   CATEGORY_DROPDOWN_FEATURE_KEY,
-  CATEGORY_ID_DROPDOWN_FEATURE_KEY,
   EGAZETTE_INFO_FEATURE_KEY,
   IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY,
   IS_REDIRECTIONS_ENABLED_FEATURE_KEY,
@@ -35,10 +34,6 @@ export const createBannerGbParameters = ({
 
 export const createDropdownGbParameters = (siteId: string) => {
   return [CATEGORY_DROPDOWN_FEATURE_KEY, { enabledSites: [siteId] }]
-}
-
-export const createCategoryIdDropdownGbParameters = (siteId: string) => {
-  return [CATEGORY_ID_DROPDOWN_FEATURE_KEY, { enabledSites: [siteId] }]
 }
 
 export const createSingpassEnabledGbParameters = (isEnabled: boolean) => {
