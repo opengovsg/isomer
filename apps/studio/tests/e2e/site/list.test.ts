@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test"
 import { storageStateFor } from "../fixtures/auth"
 
 test.describe("site list", () => {
-  test("editor sees the Isomer seed site", async ({ browser, baseURL }) => {
+  test("editor sees the Sample Site seed site", async ({ browser, baseURL }) => {
     const ctx = await browser.newContext({
       baseURL,
       storageState: storageStateFor("editor"),
@@ -14,7 +14,7 @@ test.describe("site list", () => {
     await expect(
       page.getByRole("heading", { name: "Your sites" }),
     ).toBeVisible()
-    await expect(page.getByRole("link", { name: "Isomer" })).toBeVisible()
+    await expect(page.getByRole("link", { name: "Sample Site" })).toBeVisible()
     await ctx.close()
   })
 
@@ -32,7 +32,9 @@ test.describe("site list", () => {
     await expect(
       page.getByText("You don't have access to any sites yet."),
     ).toBeVisible()
-    await expect(page.getByRole("link", { name: "Isomer" })).not.toBeVisible()
+    await expect(
+      page.getByRole("link", { name: "Sample Site" }),
+    ).not.toBeVisible()
     await ctx.close()
   })
 })
