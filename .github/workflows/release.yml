@@ -25,6 +25,8 @@ name: 🚀 Release
 
 on:
   workflow_dispatch:
+    branches:
+      - main
     inputs:
       bump:
         description: "Semver bump from the latest tag"
