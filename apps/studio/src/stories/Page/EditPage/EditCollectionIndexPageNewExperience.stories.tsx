@@ -30,7 +30,6 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
   pageHandlers.getFullPermalink.collection(),
-  collectionHandlers.getCategoryOptionUsageCount.default(),
   collectionHandlers.countTagOptionsUsage.default(),
 ]
 
