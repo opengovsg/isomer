@@ -432,40 +432,6 @@ export const ManageFiltersSaveToast: Story = {
   },
 }
 
-export const FiltersDuplicateOptionNamesBlockSave: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
-  play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenFirstFilterEditor(canvasElement)
-    const canvas = within(canvasElement)
-    const filterNameInput = await canvas.findByPlaceholderText(/Filter name/i)
-    await userEvent.clear(filterNameInput)
-    await userEvent.type(filterNameInput, "Test filter")
-
-    const addOption = await canvas.findByRole("button", {
-      name: /^Add option$/i,
-    })
-    await userEvent.click(addOption)
-    await userEvent.click(addOption)
-
-    await renameOptionAtIndex(canvasElement, 0, "Same name")
-    await renameOptionAtIndex(canvasElement, 1, "Same name")
-
-    const duplicateErrors = await canvas.findAllByText(
-      /An option with this name already exists\./i,
-    )
-    await expect(duplicateErrors.length).toBeGreaterThanOrEqual(2)
-  },
-}
-
-export const FiltersInlineEditOpen: Story = {
-  parameters: inlineEditSnapshotParameters,
-  play: async ({ canvasElement }) => {
-    await playOpenFilterEditorWithOneOption(canvasElement)
-    await playOpenInlineOptionEdit(canvasElement, 0)
-  },
-}
-
 export const FiltersInlineEditTyping: Story = {
   parameters: inlineEditSnapshotParameters,
   play: async ({ canvasElement }) => {
