@@ -9,14 +9,12 @@ interface UseLiveLabelIssuesArgs {
   path: string
   editingIndex?: number | null
   editingDraftLabel?: string
-  includeBlank?: boolean
 }
 
 export function useLiveLabelIssues({
   path,
   editingIndex = null,
   editingDraftLabel = "",
-  includeBlank = true,
 }: UseLiveLabelIssuesArgs): { blank: Set<number>; duplicate: Set<number> } {
   const { core } = useJsonForms()
   const items = get(core?.data, path) as { label?: string }[] | undefined
@@ -30,8 +28,8 @@ export function useLiveLabelIssues({
           )
 
     return {
-      blank: includeBlank ? indicesWithBlankLabels(liveItems) : new Set<number>(),
+      blank: indicesWithBlankLabels(liveItems),
       duplicate: indicesWithDuplicateLabels(liveItems),
     }
-  }, [includeBlank, items, editingIndex, editingDraftLabel])
+  }, [items, editingIndex, editingDraftLabel])
 }

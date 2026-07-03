@@ -39,10 +39,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
   const page = core?.data as CollectionPagePageProps | undefined
-  const { duplicate: duplicateFilterIndices } = useLiveLabelIssues({
-    path,
-    includeBlank: false,
-  })
+  const { duplicate: duplicateFilterIndices } = useLiveLabelIssues({ path })
 
   const arrayResult = useArray({
     data,
