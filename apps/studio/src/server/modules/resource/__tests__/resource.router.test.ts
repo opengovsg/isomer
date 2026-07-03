@@ -4040,20 +4040,21 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
-    it("should rank results by character length of search term matches", async () => {
-      // Arrange
+    it("should require each search term to prefix-match a title word", async () => {
+      // Arrange — a title word that is only a prefix of a search term (e.g.
+      // "long" for "longterm") must not count as a match
       const { site } = await setupSite()
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
       })
-      const { page: page1 } = await setupPageResource({
+      const { page: matchingPage } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
         title: "longterm short",
         permalink: "longterm-short",
       })
-      const { page: page2 } = await setupPageResource({
+      await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
         title: "long short",
@@ -4068,17 +4069,12 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = {
-        totalCount: 2,
+        totalCount: 1,
         resources: [
           {
-            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
-            lastUpdatedAt: page1.updatedAt,
-          },
-          {
-            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page2.permalink}`,
-            lastUpdatedAt: page2.updatedAt,
+            ...pick(matchingPage, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${matchingPage.permalink}`,
+            lastUpdatedAt: matchingPage.updatedAt,
           },
         ],
         recentlyEdited: [],
