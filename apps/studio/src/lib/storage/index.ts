@@ -1,6 +1,6 @@
 import type { HandleUploadBody } from "@vercel/blob/client"
 import type { NextApiRequest, NextApiResponse } from "next"
-import { head } from "@vercel/blob"
+import { head, put } from "@vercel/blob"
 import { handleUpload } from "@vercel/blob/client"
 import { createHmac, timingSafeEqual } from "crypto"
 import { env } from "~/env.mjs"
@@ -8,6 +8,7 @@ import {
   deleteFile as s3DeleteFile,
   generateSignedGetUrl,
   generateSignedPutUrl,
+  putObjectDirect,
 } from "~/lib/s3"
 
 export type UploadConfig =
@@ -32,8 +33,21 @@ interface GetUploadConfigParams {
   tags?: { key: string; value: string }[]
 }
 
+interface PutFileParams {
+  key: string
+  body: string
+  contentType: string
+  contentDisposition: string
+  tags?: { key: string; value: string }[]
+}
+
+interface PutFileResult {
+  url?: string
+}
+
 interface AssetStorage {
   getUploadConfig(params: GetUploadConfigParams): Promise<UploadConfig>
+  putFile(params: PutFileParams): Promise<PutFileResult>
   getReadUrl(key: string): Promise<string>
   deleteFile(key: string): Promise<void>
   createUploadHandler(
@@ -61,6 +75,25 @@ class S3AssetStorage implements AssetStorage {
       Tagging: tagging,
     })
     return { provider: "s3", presignedPutUrl, contentType, contentDisposition }
+  }
+
+  async putFile({
+    key,
+    body,
+    contentType,
+    contentDisposition,
+    tags,
+  }: PutFileParams): Promise<PutFileResult> {
+    const tagging = tags?.map(({ key, value }) => `${key}=${value}`).join("&")
+    await putObjectDirect({
+      Bucket: this.bucket,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+      ContentDisposition: contentDisposition,
+      Tagging: tags ? tagging : undefined,
+    })
+    return {}
   }
 
   async getReadUrl(key: string): Promise<string> {
@@ -110,6 +143,22 @@ class VercelBlobAssetStorage implements AssetStorage {
       contentDisposition,
       clientPayload: signFileKey(key),
     })
+  }
+
+  async putFile({
+    key,
+    body,
+    contentType,
+  }: PutFileParams): Promise<PutFileResult> {
+    // `contentDisposition` and `tags` are intentionally dropped: Vercel Blob
+    // has no equivalent to S3 object metadata, and scheduled-publishing tags
+    // are no-op'd in preview anyway.
+    const blob = await put(key, body, {
+      access: "public",
+      contentType,
+      allowOverwrite: true,
+    })
+    return { url: blob.url }
   }
 
   async getReadUrl(key: string): Promise<string> {

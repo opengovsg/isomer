@@ -4,18 +4,14 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
-import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { createBaseLogger } from "~/lib/logger"
-import { putObjectDirect } from "~/lib/s3"
 import { getServerDomPurify } from "~/lib/server-dom-purify"
 import { assetStorage } from "~/lib/storage"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-
-const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
 
 const logger = createBaseLogger({ path: "asset.service" })
 
@@ -207,16 +203,14 @@ export const putFileDirect = async ({
   key: string
   body: string
   tags?: { key: string; value: string }[]
-}): Promise<void> => {
+}) => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
-  const stringifiedTags = tags && generateTagsQueryString(tags)
-  await putObjectDirect({
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-    Key: key,
-    Body: body,
-    ContentType: contentType,
-    ContentDisposition: contentDisposition,
-    Tagging: tags ? stringifiedTags : undefined,
+  return assetStorage.putFile({
+    key,
+    body,
+    contentType,
+    contentDisposition,
+    tags,
   })
 }

@@ -155,7 +155,11 @@ export const assetRouter = router({
         const fileKey = getFileKey({ siteId, fileName })
         const sanitized = sanitizeSvg(content)
 
-        await putFileDirect({ key: fileKey, body: sanitized, tags })
+        const { url } = await putFileDirect({
+          key: fileKey,
+          body: sanitized,
+          tags,
+        })
 
         ctx.logger.info(
           {
@@ -167,7 +171,7 @@ export const assetRouter = router({
           `Uploaded sanitized SVG ${fileKey} for site ${siteId}`,
         )
 
-        return { fileKey }
+        return { fileKey, url }
       },
     ),
 })
