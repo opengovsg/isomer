@@ -1,3 +1,4 @@
+import type { DropResult } from "@hello-pangea/dnd"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
@@ -74,6 +75,17 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     setEditingDraftLabel("")
   }
 
+  // editingIndex is a row position, not item identity — clear before reorder so
+  // a pending label submit cannot write to whichever item ends up at that index.
+  const handleDragEnd = (result: DropResult) => {
+    clearEditing()
+    onDragEnd(result)
+  }
+
+  const submitLabel = (childPath: string, value: string) => {
+    dispatch?.(update(composePaths(childPath, "label"), () => value))
+  }
+
   const handleEditingChange = (
     index: number,
     committedLabel: string,
@@ -121,14 +133,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           )}
         </VStack>
         <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
-          <DragDropContext
-            onDragEnd={(result) => {
-              // editingIndex is row position, not item identity — clear before
-              // reorder so a pending submit cannot land on the wrong option.
-              clearEditing()
-              onDragEnd(result)
-            }}
-          >
+          <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="blocks">
               {({ droppableProps, innerRef, placeholder }) => (
                 <VStack
@@ -186,17 +191,11 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                                   ariaLabel={`${optionName} name`}
                                   isInvalid={isDuplicate || isBlank}
                                   isDisabled={
-                                    !enabled ||
-                                    (isAnyRowEditing && !isEditing)
+                                    !enabled || (isAnyRowEditing && !isEditing)
                                   }
                                   isEditing={isEditing}
                                   onSubmit={(value) =>
-                                    dispatch?.(
-                                      update(
-                                        composePaths(childPath, "label"),
-                                        () => value,
-                                      ),
-                                    )
+                                    submitLabel(childPath, value)
                                   }
                                   onEditingChange={(nextIsEditing) =>
                                     handleEditingChange(
@@ -214,8 +213,8 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                                 ) : (
                                   isEditing && (
                                     <DraggableTagButton.InfoCaption>
-                                      This will update across all items that
-                                      use this option.
+                                      This will update across all items that use
+                                      this option.
                                     </DraggableTagButton.InfoCaption>
                                   )
                                 )}
