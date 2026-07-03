@@ -8,8 +8,8 @@ import {
 import { TRPCError } from "@trpc/server"
 import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { tokenizeSearchQuery } from "~/schemas/resource"
 import { normalizeRedirectSource } from "~/schemas/redirect"
+import { tokenizeSearchQuery } from "~/schemas/resource"
 import {
   getSitemapTree,
   injectTagMappings,
