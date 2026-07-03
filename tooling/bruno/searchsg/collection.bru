@@ -1,0 +1,19 @@
+meta {
+  name: searchsg
+}
+
+headers {
+  User-Agent: {{userAgent}}
+}
+
+docs {
+  # SearchSG Admin API
+
+  Base URL: `https://api.services.search.gov.sg/admin`
+
+  Run **1 - Auth Token** first. The post-response script captures `accessToken` and
+  `tokenType` into the environment automatically.
+
+  For PATCH requests, run **2 - Get Site** first to retrieve `appId` and `projectId`,
+  then copy those values into the environment.
+}

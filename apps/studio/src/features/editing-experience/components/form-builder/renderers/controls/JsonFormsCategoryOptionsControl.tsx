@@ -11,23 +11,13 @@ import {
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import {
-  composePaths,
-  createDefaultValue,
-  rankWith,
-  schemaMatches,
-} from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { Button, Infobox } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { Suspense, useMemo, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import {
-  BiDotsHorizontalRounded,
-  BiGridVertical,
-  BiInfoCircle,
-  BiPurchaseTag,
-} from "react-icons/bi"
+import { BiInfoCircle, BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
@@ -47,6 +37,7 @@ import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { createDefaultCategoryOption } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
 
 /** Matches category option rows from JsonForms (`categoryOptions` array on collection index). */
@@ -175,11 +166,14 @@ function CategoryOptionsExpandedEditor({
       <VStack align="stretch" spacing={0} w="full">
         <Infobox
           width="100%"
-          size="md"
+          size="sm"
           variant="warning"
           mb="1.25rem"
           border="1px solid"
           borderColor="utility.feedback.warning"
+          borderRadius="0.25rem"
+          px="0.625rem"
+          py="0.5rem"
         >
           <Text textStyle="body-2" color="base.content.strong">
             This is the default filter, so you can't change its name or make it
@@ -193,7 +187,7 @@ function CategoryOptionsExpandedEditor({
                 {label}
               </Text>
               <AddItemButton
-                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+                onClick={addItem(path, createDefaultCategoryOption())}
                 isDisabled={isAddItemDisabled}
               >
                 Add option
@@ -296,7 +290,7 @@ function CategoryOptionsExpandedEditor({
         <DeleteConfirmModal
           isOpen
           label={deleteTarget.label}
-          noun="category option"
+          noun="option"
           warningBody={
             <Text textStyle="body-2">
               This option is being used in{" "}
@@ -408,8 +402,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
         {duplicateOptionIndices.size > 0 && (
           <DuplicateLabelError noun="option" />
         )}
-        {/* Offsets the bottom margin the JsonForms control wrapper injects above this row. */}
-        <Box w="full" mt="-1.25rem">
+        <Box w="full">
           <Box my="0.25rem" w="full">
             <HStack
               spacing={0}
@@ -450,25 +443,6 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                 />
               )}
               <HStack flex={1} align="stretch" spacing={0} minW={0} w="100%">
-                <Flex
-                  flexShrink={0}
-                  align="center"
-                  alignSelf="stretch"
-                  pl="0.5rem"
-                  pr="0.25rem"
-                  cursor="not-allowed"
-                  pointerEvents="none"
-                  userSelect="none"
-                  aria-hidden
-                  py="0.5rem"
-                >
-                  <Icon
-                    as={BiGridVertical}
-                    fontSize="1.5rem"
-                    color="interaction.support.disabled"
-                    aria-hidden
-                  />
-                </Flex>
                 <chakra.button
                   type="button"
                   flex={1}
@@ -478,8 +452,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                   cursor="pointer"
                   layerStyle="focusRing"
                   textAlign="start"
-                  pl="0.25rem"
-                  pr="1rem"
+                  px="1rem"
                   onClick={() => setExpandedOpen(true)}
                   disabled={!enabled}
                   py="0.5rem"
@@ -510,13 +483,6 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                         <Text textStyle="subhead-2" textAlign="start">
                           Category
                         </Text>
-                        <Text
-                          as="span"
-                          textStyle="subhead-2"
-                          color="interaction.support.placeholder"
-                        >
-                          (Default)
-                        </Text>
                       </HStack>
                       <Text textStyle="caption-2" color="base.content.medium">
                         {data === 0
@@ -543,31 +509,6 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                     </Stack>
                   </HStack>
                 </chakra.button>
-                <Flex
-                  alignItems="center"
-                  flexShrink={0}
-                  p="0.5rem"
-                  pointerEvents="none"
-                  userSelect="none"
-                  aria-hidden
-                >
-                  <Flex
-                    align="center"
-                    justifyContent="center"
-                    h="2.125rem"
-                    w="2.125rem"
-                    minH="2.125rem"
-                    minW="2.125rem"
-                    p="0.25rem"
-                  >
-                    <Icon
-                      as={BiDotsHorizontalRounded}
-                      fontSize="1.5rem"
-                      color="interaction.support.disabled"
-                      aria-hidden
-                    />
-                  </Flex>
-                </Flex>
               </HStack>
             </HStack>
           </Box>
@@ -595,7 +536,14 @@ const JsonFormsCategoryOptionsControl = (props: ArrayLayoutProps) => {
     return null
   }
 
-  return <JsonFormsCategoryOptionsArrayLayout {...props} />
+  return (
+    <VStack align="start" spacing="1rem" w="full">
+      <Text textStyle="subhead-2" textColor="base.content.strong">
+        Default Filter
+      </Text>
+      <JsonFormsCategoryOptionsArrayLayout {...props} />
+    </VStack>
+  )
 }
 
 export default JsonFormsCategoryOptionsControl

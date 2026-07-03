@@ -23,7 +23,7 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         baseURL: baseUrl,
         headless: opts.headless,
-        video: "on",
+        video: "retain-on-failure",
       },
     },
   ],
