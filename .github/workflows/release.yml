@@ -1,0 +1,91 @@
+name: 🚀 Release
+
+# Cut a release from the GitHub UI/CLI instead of running tag scripts locally.
+# This computes the next semver tag, then creates an annotated tag + GitHub Release
+# with auto-generated notes. Publishing the release fires the existing
+# `release: released` triggers in deploy_uat.yml and deploy_production.yml, which
+# deploy those environments. This workflow does NOT deploy directly — the release
+# stays the single source of truth (publisher.sh reads the latest tag).
+#
+# IMPORTANT: the release MUST be created with a PAT or GitHub App token
+# (secrets.RELEASE_TOKEN), NOT the default GITHUB_TOKEN. A release created by
+# GITHUB_TOKEN does not trigger other workflows, so the deploys would never run.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Semver bump from the latest tag"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      dry_run:
+        description: "Compute the next version only; do not create the release"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Cut release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # Full history + tags are required to find the latest tag.
+          fetch-depth: 0
+
+      - name: Compute next version
+        id: version
+        run: |
+          set -euo pipefail
+
+          # Find the highest existing v-prefixed tag (e.g. v0.17.0). --sort=-v:refname
+          # orders by semver descending, so head -n1 is the latest. Default to v0.0.0
+          # when the repo has no tags yet.
+          latest=$(git tag --list 'v*' --sort=-v:refname | head -n1)
+          latest=${latest:-v0.0.0}
+
+          # Drop the leading "v" and split "MAJOR.MINOR.PATCH" into three variables.
+          ver=${latest#v}
+          IFS='.' read -r major minor patch <<< "$ver"
+
+          # Increment the chosen component and reset the lower ones (semver rules).
+          case "${{ inputs.bump }}" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            patch) patch=$((patch + 1)) ;;
+          esac
+          next="v${major}.${minor}.${patch}"
+
+          # Hand the result to later steps (steps.version.outputs.next).
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+
+          # Log + a summary panel on the workflow run page.
+          echo "Latest tag: $latest → Next: $next (bump: ${{ inputs.bump }})"
+          {
+            echo "### Release"
+            echo "- Latest: \`$latest\`"
+            echo "- Next: \`$next\` (${{ inputs.bump }})"
+            echo "- Commit: \`${{ github.sha }}\` on \`${{ github.ref_name }}\`"
+            [ "${{ inputs.dry_run }}" = "true" ] && echo "- **Dry run — no release created.**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create tag + release
+        if: ${{ inputs.dry_run == false }}
+        env:
+          # PAT / App token so the `release: released` event triggers the deploys.
+          # GITHUB_TOKEN would create the release but NOT trigger downstream workflows.
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release create "${{ steps.version.outputs.next }}" \
+            --target "${{ github.sha }}" \
+            --title "${{ steps.version.outputs.next }}" \
+            --generate-notes
