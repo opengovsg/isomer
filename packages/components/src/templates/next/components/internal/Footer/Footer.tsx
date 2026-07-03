@@ -24,6 +24,7 @@ import { IsomerLogo } from "~/assets/IsomerLogo"
 import { OgpLogo } from "~/assets/OgpLogo"
 import { tv } from "~/lib/tv"
 import { twMerge } from "~/lib/twMerge"
+import { getFormattedDate } from "~/utils/getFormattedDate"
 import { getReferenceLinkHref } from "~/utils/getReferenceLinkHref"
 import { isExternalUrl } from "~/utils/isExternalUrl"
 import { focusVisibleHighlight } from "~/utils/tailwind"
@@ -240,7 +241,7 @@ const LegalSection = ({
           <ClientCopyright
             isGovernment={isGovernment}
             agencyName={agencyName}
-            lastUpdated={lastUpdated}
+            formattedLastUpdated={getFormattedDate(lastUpdated)}
           />
         </p>
         <div className="prose-body-sm flex flex-col gap-3 lg:flex-row lg:gap-8">
