@@ -1,11 +1,12 @@
 "use client"
 
-import { getFormattedDate } from "~/utils/getFormattedDate"
+import type { IsomerSiteProps } from "~/types"
 
 interface ClientCopyrightProps {
-  isGovernment?: boolean
+  isGovernment: IsomerSiteProps["isGovernment"]
   agencyName: string
-  lastUpdated: string
+  // Pre-formatted on the server so date-fns stays out of the client bundle.
+  formattedLastUpdated: string
 }
 
 // Rendered on the client so the copyright year reflects the visitor's current
@@ -13,7 +14,7 @@ interface ClientCopyrightProps {
 export const ClientCopyright = ({
   isGovernment,
   agencyName,
-  lastUpdated,
+  formattedLastUpdated,
 }: ClientCopyrightProps) => {
-  return `© ${new Date().getFullYear()} ${isGovernment ? "Government of Singapore" : agencyName}, last updated on ${getFormattedDate(lastUpdated)}`
+  return `© ${new Date().getFullYear()} ${isGovernment ? "Government of Singapore" : agencyName}, last updated on ${formattedLastUpdated}`
 }
