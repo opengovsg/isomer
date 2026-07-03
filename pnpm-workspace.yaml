@@ -7,6 +7,8 @@ packages:
   - "tooling/build/amplify"
   - "tooling/build/1password"
   - "tooling/build/scripts/publishing"
+  # Bruno API collections, not an npm package
+  - "!tooling/bruno"
 
 linkWorkspacePackages: true
 
