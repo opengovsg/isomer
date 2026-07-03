@@ -99,14 +99,15 @@ const server = z
         })
       }
     }
-    if (data.NEXT_PUBLIC_STORAGE_PROVIDER === "vercel-blob") {
-      if (!data.BLOB_READ_WRITE_TOKEN) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Required when storage provider is vercel-blob",
-          path: ["BLOB_READ_WRITE_TOKEN"],
-        })
-      }
+    if (
+      data.NEXT_PUBLIC_STORAGE_PROVIDER === "vercel-blob" &&
+      !data.BLOB_READ_WRITE_TOKEN
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Required when storage provider is vercel-blob",
+        path: ["BLOB_READ_WRITE_TOKEN"],
+      })
     }
     // Static OTP bypasses OTP security entirely, so structurally forbid it
     // outside preview — a boot-time failure, not an operational assumption.
