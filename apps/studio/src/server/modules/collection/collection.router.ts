@@ -6,7 +6,6 @@ import {
   countTagOptionsUsageSchema,
   createCollectionSchema,
   editLinkSchema,
-  getCategoryOptionUsageCountSchema,
   getCollectionsSchema,
   getCollectionTagsSchema,
   readCollectionSchema,
@@ -40,7 +39,6 @@ import {
   createCollectionIndexJson,
   createCollectionLinkJson,
   createCollectionPageJson,
-  getCategoryOptionUsageCount,
   getCollectionTagsForResource,
 } from "./collection.service"
 
@@ -453,7 +451,6 @@ export const collectionRouter = router({
         input: {
           date,
           category,
-          categoryId,
           linkId,
           siteId,
           description,
@@ -511,7 +508,6 @@ export const collectionRouter = router({
                 ref,
                 date,
                 category,
-                categoryId,
                 image,
                 tags,
                 tagged,
@@ -565,22 +561,6 @@ export const collectionRouter = router({
         code: "BAD_REQUEST",
         message: "Either collectionId or resourceId must be provided",
       })
-    }),
-
-  /**
-   * Counts collection pages/links whose draft **or** published blob has `page.categoryId` equal to the
-   * given id.
-   */
-  getCategoryOptionUsageCount: protectedProcedure
-    .input(getCategoryOptionUsageCountSchema)
-    .query(async ({ ctx, input: { siteId, indexPageId, categoryId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      return getCategoryOptionUsageCount({ siteId, indexPageId, categoryId })
     }),
 
   getCollections: protectedProcedure
