@@ -1,0 +1,39 @@
+meta {
+  name: Patch Project Name
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/v2/projects/{{projectId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  User-Agent: {{userAgent}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "projectName": "My Site"
+  }
+}
+
+docs {
+  Updates the project name for a SearchSG project.
+
+  Prerequisites:
+  1. Run **1 - Auth Token** to obtain an access token.
+  2. Run **2 - Get Site** and copy `data.project.projectId` into the environment var
+     `projectId`.
+
+  Update `projectName` in the request body to the desired site display name.
+
+  SearchSG has no non-production environment — use caution when running against a live site.
+}
