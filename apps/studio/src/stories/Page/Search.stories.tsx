@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { expect, userEvent, within } from "storybook/test"
+import { userEvent, within } from "storybook/test"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import SitePage from "~/pages/sites/[siteId]"
-import { MAX_SEARCH_QUERY_LENGTH } from "~/schemas/resource"
 
 import { ADMIN_HANDLERS } from "../handlers"
 
@@ -136,50 +135,6 @@ export const ShowHint: Story = {
     await userEvent.keyboard(" test")
     await new Promise((resolve) => setTimeout(resolve, 1000))
     await userEvent.keyboard(" 1")
-  },
-}
-
-export const QueryTooLong: Story = {
-  parameters: {
-    msw: {
-      handlers: [...SHARED_HANDLERS, resourceHandlers.search.initial()],
-    },
-  },
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    const searchButton = await screen.findByRole("button", {
-      name: "search-button",
-    })
-    await userEvent.click(searchButton)
-    await userEvent.paste("a".repeat(MAX_SEARCH_QUERY_LENGTH + 1))
-    const modal = within(canvasElement.ownerDocument.body)
-    await expect(
-      modal.getByText(
-        "Your search is a bit long — try shortening it a little.",
-      ),
-    ).toBeVisible()
-  },
-}
-
-export const ExcessiveWords: Story = {
-  parameters: {
-    msw: {
-      handlers: [...SHARED_HANDLERS, resourceHandlers.search.results()],
-    },
-  },
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    const searchButton = await screen.findByRole("button", {
-      name: "search-button",
-    })
-    await userEvent.click(searchButton)
-    await userEvent.keyboard(
-      "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11",
-    )
-    const modal = within(canvasElement.ownerDocument.body)
-    await expect(
-      modal.getByText("Showing results for the first 10 words only."),
-    ).toBeVisible()
   },
 }
 

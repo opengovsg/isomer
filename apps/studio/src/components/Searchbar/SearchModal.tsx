@@ -7,14 +7,9 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Searchbar as OgpSearchBar } from "@opengovsg/design-system-react"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useState } from "react"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
-import {
-  MAX_SEARCH_QUERY_LENGTH,
-  MAX_SEARCH_TERMS,
-  tokenizeSearchQuery,
-} from "~/schemas/resource"
 
 import { CommandKey } from "./CommandKey"
 import {
@@ -34,7 +29,6 @@ interface SearchModalProps {
 export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
   const [queryCount, setQueryCount] = useState(0)
   const {
-    searchValue,
     setSearchValue,
     debouncedSearchTerm,
     matchedResources,
@@ -48,15 +42,6 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
       setQueryCount((prev) => prev + 1)
     }, []),
   })
-
-  const { isQueryTooLong, hasExcessiveWords } = useMemo(
-    () => ({
-      isQueryTooLong: searchValue.trim().length > MAX_SEARCH_QUERY_LENGTH,
-      hasExcessiveWords:
-        tokenizeSearchQuery(searchValue).length > MAX_SEARCH_TERMS,
-    }),
-    [searchValue],
-  )
 
   const renderModalBody = (): React.ReactNode => {
     if (!!debouncedSearchTerm) {
@@ -120,21 +105,10 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
           justifyContent="space-between"
           borderBottomRadius="base"
         >
-          <Text
-            textStyle="caption-2"
-            textColor={
-              isQueryTooLong
-                ? "utility.feedback.critical"
-                : "base.content.medium"
-            }
-          >
-            {isQueryTooLong
-              ? "Your search is a bit long — try shortening it a little."
-              : hasExcessiveWords
-                ? `Showing results for the first ${MAX_SEARCH_TERMS} words only.`
-                : matchedResources.length === 0
-                  ? "Tip: Type in the full title to get the most accurate search results."
-                  : "Scroll to see more results. Too many results? Try typing something longer."}
+          <Text textStyle="caption-2" textColor="base.content.medium">
+            {matchedResources.length === 0
+              ? "Tip: Type in the full title to get the most accurate search results."
+              : "Scroll to see more results. Too many results? Try typing something longer."}
           </Text>
           <CommandKey boxShadow="sm" />
         </ModalFooter>
