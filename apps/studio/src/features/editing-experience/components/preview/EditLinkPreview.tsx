@@ -79,14 +79,7 @@ export const EditCollectionLinkPreview = ({
           },
         ],
       }) satisfies IsomerSitemap,
-    [
-      parentPermalink,
-      parentTitle,
-      tagCategories,
-      link,
-      permalink,
-      title,
-    ],
+    [parentPermalink, parentTitle, tagCategories, link, permalink, title],
   )
 
   return (

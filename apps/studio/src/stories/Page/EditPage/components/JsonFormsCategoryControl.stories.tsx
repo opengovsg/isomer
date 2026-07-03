@@ -5,9 +5,7 @@ import {
   JsonFormsCategoryControl,
   jsonFormsCategoryControlTester,
 } from "~/features/editing-experience/components/form-builder/renderers/controls/JsonFormsCategoryControl"
-import {
-  createDropdownGbParameters,
-} from "~/stories/utils/growthbook"
+import { createDropdownGbParameters } from "~/stories/utils/growthbook"
 
 import { FormBuilder } from "./formBuilder"
 
