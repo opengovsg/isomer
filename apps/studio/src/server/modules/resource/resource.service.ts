@@ -9,7 +9,6 @@ import { TRPCError } from "@trpc/server"
 import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { normalizeRedirectSource } from "~/schemas/redirect"
-import { tokenizeSearchQuery } from "~/schemas/resource"
 import {
   getSitemapTree,
   injectTagMappings,
@@ -38,6 +37,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
+import { tokenizeSearchQuery } from "./resource.utils"
 
 // Specify the default columns to return from the Resource table
 export const defaultResourceSelect = [
