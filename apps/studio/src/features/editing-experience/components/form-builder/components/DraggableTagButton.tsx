@@ -274,6 +274,8 @@ const EditableLabel = ({
   if (!isEditing) {
     return (
       <Text
+        as="button"
+        type="button"
         textStyle="subhead-2"
         textAlign="start"
         color={
@@ -283,8 +285,8 @@ const EditableLabel = ({
         }
         cursor={isDisabled ? "default" : "pointer"}
         w="full"
+        disabled={isDisabled}
         onClick={() => {
-          if (isDisabled) return
           setDraft(value)
           onEditingChange(true)
         }}
