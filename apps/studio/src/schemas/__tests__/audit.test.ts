@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { AuditLogExportReportType } from "~prisma/generated/generatedEnums"
 
+import type { IsoMonth } from "../audit"
 import {
   AUDIT_LOG_EXPORT_MAX_MONTHS,
+  AuditLogExportRequestedReportType,
   createAuditLogExportRequestSchema,
   getCurrentSingaporeMonth,
   getEarliestExportableMonth,
@@ -16,7 +17,7 @@ const CURRENT_MONTH = getCurrentSingaporeMonth()
 const VALID_INPUT = {
   siteId: 1,
   month: CURRENT_MONTH,
-  reportType: AuditLogExportReportType.Both,
+  reportType: AuditLogExportRequestedReportType.Both,
 }
 
 describe("createAuditLogExportRequestSchema", () => {
@@ -90,9 +91,9 @@ describe("createAuditLogExportRequestSchema", () => {
 
   describe("reportType", () => {
     it.each([
-      AuditLogExportReportType.Access,
-      AuditLogExportReportType.Activity,
-      AuditLogExportReportType.Both,
+      AuditLogExportRequestedReportType.Access,
+      AuditLogExportRequestedReportType.Activity,
+      AuditLogExportRequestedReportType.Both,
     ])("should accept the valid report type %s", (reportType) => {
       // Arrange / Act
       const result = createAuditLogExportRequestSchema.safeParse({
@@ -122,7 +123,9 @@ describe("createAuditLogExportRequestSchema", () => {
       expect(getEarliestExportableMonth("2026-06")).toBe("2025-07")
     })
 
-    it.each([
+    // `it.each` widens tuple literals to `string`, so type the cases
+    // explicitly to satisfy the `IsoMonth` parameter.
+    it.each<[IsoMonth, IsoMonth]>([
       ["2026-01", "2025-02"],
       ["2026-12", "2026-01"],
       ["2026-11", "2025-12"],
@@ -138,6 +141,49 @@ describe("createAuditLogExportRequestSchema", () => {
   })
 
   describe("siteId", () => {
+    it("should accept a plain number siteId", () => {
+      // Arrange / Act
+      const result = createAuditLogExportRequestSchema.safeParse({
+        ...VALID_INPUT,
+        siteId: 1,
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+      expect(result.data?.siteId).toBe(1)
+    })
+
+    it("should coerce a numeric-string siteId (e.g. from a native form input)", () => {
+      // Arrange / Act
+      const result = createAuditLogExportRequestSchema.safeParse({
+        ...VALID_INPUT,
+        siteId: "1",
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+      expect(result.data?.siteId).toBe(1)
+    })
+
+    // JS numeric coercion turns true -> 1, [1] -> 1, and "" / [] -> 0. The
+    // union guard must reject these non-ID JSON values rather than silently
+    // treating them as a valid site.
+    it.each([
+      ["boolean true", true],
+      ["single-element array", [1]],
+      ["empty object", {}],
+      ["non-numeric string", "abc"],
+    ])("should reject a non-ID siteId (%s)", (_label, siteId) => {
+      // Arrange / Act
+      const result = createAuditLogExportRequestSchema.safeParse({
+        ...VALID_INPUT,
+        siteId,
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
+    })
+
     it("should reject a non-positive siteId", () => {
       // Arrange / Act
       const result = createAuditLogExportRequestSchema.safeParse({
