@@ -5,7 +5,7 @@ import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches, update } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { get } from "lodash-es"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
@@ -48,14 +48,24 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editingDraftLabel, setEditingDraftLabel] = useState("")
 
-  // Ref holds useArray's onDragEnd so handleDragEnd (defined before useArray) can
-  // delegate reorder without recreating the DragDropContext callback each render.
-  const onDragEndRef = useRef<(result: DropResult) => void>(() => {})
-
   const isAnyRowEditing = editingIndex !== null
 
   const { blank: blankOptionIndices, duplicate: duplicateOptionIndices } =
     useLiveLabelIssues({ path, editingIndex, editingDraftLabel })
+
+  const arrayResult = useArray({
+    data,
+    path,
+    arraySchema,
+    schema,
+    rootSchema,
+    uischemas,
+    uischema,
+    removeItems,
+    moveUp,
+    moveDown,
+  })
+  const { isAddItemDisabled, isRemoveItemDisabled, onDragEnd } = arrayResult
 
   // Resets inline edit state; called on drag-end and before opening delete.
   const clearEditing = useCallback(() => {
@@ -68,9 +78,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const handleDragEnd = useCallback(
     (result: DropResult) => {
       clearEditing()
-      onDragEndRef.current(result)
+      onDragEnd(result)
     },
-    [clearEditing],
+    [clearEditing, onDragEnd],
   )
 
   // Persists a committed label edit to JSON Forms at options[index].label.
@@ -96,20 +106,6 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     [editingIndex],
   )
 
-  const arrayResult = useArray({
-    data,
-    path,
-    arraySchema,
-    schema,
-    rootSchema,
-    uischemas,
-    uischema,
-    removeItems,
-    moveUp,
-    moveDown,
-  })
-  const { isAddItemDisabled, isRemoveItemDisabled } = arrayResult
-
   const {
     target: deleteTarget,
     openDeleteModal,
@@ -129,9 +125,6 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
       }
     },
   })
-
-  // Sync ref each render — see onDragEndRef above.
-  onDragEndRef.current = arrayResult.onDragEnd
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
