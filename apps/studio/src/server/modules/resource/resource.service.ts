@@ -37,6 +37,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
+import { tokenizeSearchQuery } from "./resource.utils"
 
 // Specify the default columns to return from the Resource table
 export const defaultResourceSelect = [
@@ -1340,16 +1341,14 @@ export const getSearchResults = async ({
   totalCount: number | null
   resources: SearchResultResource[]
 }> => {
-  const searchTerms: string[] = Array.from(
-    new Set(query.trim().toLowerCase().split(/\s+/)),
-  )
+  const searchTerms = tokenizeSearchQuery(query)
 
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
   })
     .where("Resource.type", "in", resourceTypes)
     .where((eb) =>
-      eb.or(
+      eb.and(
         searchTerms.map((searchTerm) =>
           // Match if the search term is at the start of the title
           eb("Resource.title", "ilike", `${searchTerm}%`).or(
