@@ -11,6 +11,14 @@ on:
   release:
     types:
       - released # we should deploy to `uat` on every release so that the environment will stay up to date
+  # Callable from release.yml so a dispatched release can deploy directly (a release
+  # created by GITHUB_TOKEN cannot trigger the `release` event above).
+  workflow_call:
+    inputs:
+      app-version:
+        description: "Version label for the deploy (defaults to the commit SHA)"
+        required: false
+        type: string
 
 jobs:
   deploy_uat:
@@ -40,7 +48,7 @@ jobs:
       ecs-task-exec-role: studio-uat-ecs-task-exec-role
       app-url: "https://sandbox-studio.isomer.gov.sg"
       app-name: "Isomer Studio Sandbox"
-      app-version: ${{ github.sha }}
+      app-version: ${{ inputs.app-version || github.sha }}
       app-s3-region: "ap-southeast-1"
       app-s3-assets-bucket-name: "isomer-next-infra-uat-assets-private-e728930"
       app-s3-assets-domain-name: "isomer-user-content-uat.by.gov.sg"

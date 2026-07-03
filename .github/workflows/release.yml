@@ -1,15 +1,27 @@
 name: 🚀 Release
 
 # Cut a release from the GitHub UI/CLI instead of running tag scripts locally.
-# This computes the next semver tag, then creates an annotated tag + GitHub Release
-# with auto-generated notes. Publishing the release fires the existing
-# `release: released` triggers in deploy_uat.yml and deploy_production.yml, which
-# deploy those environments. This workflow does NOT deploy directly — the release
-# stays the single source of truth (publisher.sh reads the latest tag).
+# Computes the next semver tag, creates the tag + GitHub Release (auto-generated
+# notes), then deploys uat + production in the SAME run.
 #
-# IMPORTANT: the release MUST be created with a PAT or GitHub App token
-# (secrets.RELEASE_TOKEN), NOT the default GITHUB_TOKEN. A release created by
-# GITHUB_TOKEN does not trigger other workflows, so the deploys would never run.
+# WHY WE DEPLOY DIRECTLY HERE instead of relying on the `release: released`
+# triggers in deploy_uat.yml / deploy_production.yml:
+#   A GitHub Release created with the default GITHUB_TOKEN does NOT trigger other
+#   workflows (GitHub blocks this to prevent recursive runs). The two usual ways to
+#   make it trigger were both rejected because we don't want anything to maintain:
+#     - Personal Access Token (PAT): tied to an individual's account — it breaks
+#       when that person leaves and has to be rotated on a schedule. We don't want
+#       to own a credential's lifecycle.
+#     - GitHub App token: works and auto-rotates, but is extra one-time setup
+#       (create the app, install it, store app id + private key as secrets).
+#   Instead we stay zero-config: create the release with the built-in GITHUB_TOKEN
+#   (fine for the tag + notes, which is all publisher.sh and humans need) and
+#   trigger the deploys directly by CALLING the deploy workflows in this same run.
+#   Nothing to own, nothing to rotate.
+#
+# The `release: released` triggers in the deploy workflows are left in place as a
+# fallback for releases created by hand in the GitHub UI (those DO trigger, because
+# they are created by a real user rather than GITHUB_TOKEN).
 
 on:
   workflow_dispatch:
@@ -23,17 +35,24 @@ on:
           - major
         default: patch
       dry_run:
-        description: "Compute the next version only; do not create the release"
+        description: "Compute the next version only; do not release or deploy"
         type: boolean
         default: false
-
-permissions:
-  contents: read
 
 jobs:
   release:
     name: Cut release
     runs-on: ubuntu-latest
+    outputs:
+      next: ${{ steps.version.outputs.next }}
+    # Scoped to THIS job only: `gh release create` needs contents: write. Keeping it
+    # job-level (not workflow-level) means the deploy jobs below stay at default
+    # permissions — the same as when the release event triggers them today — so the
+    # nested aws_deploy still gets id-token: write from its OWN declaration and AWS
+    # OIDC keeps working. A workflow-level block would cap the whole chain and force
+    # us to re-grant id-token here; scoping avoids that.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -80,12 +99,34 @@ jobs:
       - name: Create tag + release
         if: ${{ inputs.dry_run == false }}
         env:
-          # PAT / App token so the `release: released` event triggers the deploys.
-          # GITHUB_TOKEN would create the release but NOT trigger downstream workflows.
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          # Built-in token — no PAT/App to own. It cannot trigger the downstream
+          # deploy workflows (that is the whole reason we deploy directly below),
+          # but it is perfectly fine for creating the tag + release notes.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           gh release create "${{ steps.version.outputs.next }}" \
             --target "${{ github.sha }}" \
             --title "${{ steps.version.outputs.next }}" \
             --generate-notes
+
+  # Deploy directly (see the header comment for why we don't rely on the release
+  # event). Both call the existing deploy workflows, so there is no duplicated
+  # per-environment infra config to keep in sync. app-version is the new tag.
+  deploy_uat:
+    name: Deploy uat
+    needs: release
+    if: ${{ inputs.dry_run == false }}
+    uses: ./.github/workflows/deploy_uat.yml
+    with:
+      app-version: ${{ needs.release.outputs.next }}
+    secrets: inherit
+
+  deploy_production:
+    name: Deploy production
+    needs: release
+    if: ${{ inputs.dry_run == false }}
+    uses: ./.github/workflows/deploy_production.yml
+    with:
+      app-version: ${{ needs.release.outputs.next }}
+    secrets: inherit

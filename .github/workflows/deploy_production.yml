@@ -8,6 +8,14 @@ on:
   release:
     types:
       - released
+  # Callable from release.yml so a dispatched release can deploy directly (a release
+  # created by GITHUB_TOKEN cannot trigger the `release` event above).
+  workflow_call:
+    inputs:
+      app-version:
+        description: "Version label for the deploy (defaults to the release tag)"
+        required: false
+        type: string
 
 # NOTE: This is actually using our federated isomer-production account
 jobs:
@@ -39,7 +47,7 @@ jobs:
       ecs-task-exec-role: studio-production-ecs-task-exec-role
       app-url: "https://studio.isomer.gov.sg"
       app-name: "Isomer Studio"
-      app-version: ${{ github.event.release.tag_name }}
+      app-version: ${{ inputs.app-version || github.event.release.tag_name }}
       app-s3-region: "ap-southeast-1"
       app-s3-assets-bucket-name: "isomer-next-infra-prod-assets-private-a319984"
       app-s3-assets-domain-name: "isomer-user-content.by.gov.sg"
