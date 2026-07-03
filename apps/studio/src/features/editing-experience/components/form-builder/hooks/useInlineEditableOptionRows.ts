@@ -1,7 +1,7 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import { composePaths, update } from "@jsonforms/core"
 import { useJsonForms } from "@jsonforms/react"
-import { useCallback, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 
 import { useLiveLabelIssues } from "./useLiveLabelIssues"
 
@@ -9,6 +9,7 @@ export function useInlineEditableOptionRows(path: string) {
   const { dispatch } = useJsonForms()
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editingDraftLabel, setEditingDraftLabel] = useState("")
+  const onDragEndRef = useRef<(result: DropResult) => void>(() => {})
 
   const isAnyRowEditing = editingIndex !== null
 
@@ -20,12 +21,16 @@ export function useInlineEditableOptionRows(path: string) {
     setEditingDraftLabel("")
   }, [])
 
+  const bindDragEnd = useCallback((onDragEnd: (result: DropResult) => void) => {
+    onDragEndRef.current = onDragEnd
+  }, [])
+
   // editingIndex is a row position, not item identity — clear before reorder so
   // a pending label submit cannot write to whichever item ends up at that index.
-  const wrapDragEnd = useCallback(
-    (onDragEnd: (result: DropResult) => void) => (result: DropResult) => {
+  const handleDragEnd = useCallback(
+    (result: DropResult) => {
       clearEditing()
-      onDragEnd(result)
+      onDragEndRef.current(result)
     },
     [clearEditing],
   )
@@ -42,13 +47,13 @@ export function useInlineEditableOptionRows(path: string) {
     [dispatch, path],
   )
 
-  const createEditingChangeHandler = useCallback(
-    (index: number, committedLabel: string) => (isEditing: boolean) => {
-      if (isEditing && isAnyRowEditing && editingIndex !== index) return
+  const handleEditingChange = useCallback(
+    (index: number, committedLabel: string, isEditing: boolean) => {
+      if (isEditing && editingIndex !== null && editingIndex !== index) return
       setEditingIndex(isEditing ? index : null)
       setEditingDraftLabel(isEditing ? committedLabel : "")
     },
-    [editingIndex, isAnyRowEditing],
+    [editingIndex],
   )
 
   return {
@@ -57,8 +62,10 @@ export function useInlineEditableOptionRows(path: string) {
     setEditingDraftLabel,
     blankOptionIndices,
     duplicateOptionIndices,
-    wrapDragEnd,
+    bindDragEnd,
+    handleDragEnd,
+    clearEditing,
     submitLabel,
-    createEditingChangeHandler,
+    handleEditingChange,
   }
 }

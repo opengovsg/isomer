@@ -7,7 +7,7 @@ import type {
   OwnPropsOfMasterListItem,
   StatePropsOfMasterItem,
 } from "@jsonforms/core"
-import type { ComponentProps, ReactNode } from "react"
+import type { ReactNode } from "react"
 import type { IconType } from "react-icons"
 import {
   Box,
@@ -20,11 +20,10 @@ import {
 } from "@chakra-ui/react"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
 import { IconButton, Input } from "@opengovsg/design-system-react"
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { BiCheck, BiGridVertical, BiSolidInfoCircle, BiX } from "react-icons/bi"
 
 import { ROW_ACTION_ICON_BUTTON_PROPS } from "./constants"
-import { TagRowActionsMenu } from "./TagRowActionsMenu"
 
 const DraggableTagButtonContext = createContext({ isDragDisabled: false })
 
@@ -38,8 +37,14 @@ interface RootProps {
 }
 
 const Root = forwardRef<RootProps, "div">(
-  ({ draggableProps, isError, isDragDisabled = false, children }, ref) => (
-    <DraggableTagButtonContext.Provider value={{ isDragDisabled }}>
+  ({ draggableProps, isError, isDragDisabled = false, children }, ref) => {
+    const contextValue = useMemo(
+      () => ({ isDragDisabled }),
+      [isDragDisabled],
+    )
+
+    return (
+    <DraggableTagButtonContext.Provider value={contextValue}>
       <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
         <HStack
           spacing={0}
@@ -89,7 +94,8 @@ const Root = forwardRef<RootProps, "div">(
         </HStack>
       </Box>
     </DraggableTagButtonContext.Provider>
-  ),
+    )
+  },
 )
 
 interface HandleProps {
@@ -234,12 +240,7 @@ interface EditableLabelProps {
 }
 
 /**
- * Click-to-edit label used by rows whose only editable field is their name.
- * `isEditing` is controlled by the parent so opening one row's editor closes any other.
- * `onDraftChange` lets the parent validate (e.g. duplicate/blank checks) against the
- * in-progress value before it's committed via `onSubmit`.
- * Leading/trailing whitespace is trimmed on save so schema validation stays silent
- * during editing and values are normalised when the user confirms.
+ * Parent-controlled click-to-edit label. Draft is trimmed on save.
  */
 const EditableLabel = ({
   value,
@@ -254,6 +255,10 @@ const EditableLabel = ({
 }: EditableLabelProps) => {
   const { isDragDisabled } = useDraggableTagButton()
   const [draft, setDraft] = useState(value)
+
+  useEffect(() => {
+    if (!isEditing) setDraft(value)
+  }, [isEditing, value])
 
   const isDirty = draft !== value
 
@@ -386,16 +391,6 @@ const Trailing = ({ children }: { children: ReactNode }) => (
   </Flex>
 )
 
-type ActionsMenuProps = Omit<
-  ComponentProps<typeof TagRowActionsMenu>,
-  "isDragDisabled"
->
-
-const ActionsMenu = (props: ActionsMenuProps) => {
-  const { isDragDisabled } = useDraggableTagButton()
-  return <TagRowActionsMenu {...props} isDragDisabled={isDragDisabled} />
-}
-
 export const DraggableTagButton = {
   Root,
   Handle,
@@ -408,5 +403,4 @@ export const DraggableTagButton = {
   ErrorCaption,
   InfoCaption,
   Trailing,
-  ActionsMenu,
 }
