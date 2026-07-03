@@ -39,7 +39,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Install Playwright (Chromium)
-        run: pnpm --filter isomer-studio exec playwright install chromium
+        run: pnpm --filter isomer-studio exec playwright install chromium --with-deps
       - name: Run smoke tests against ${{ inputs.environment }}
         env:
           PLAYWRIGHT_TEST_BASE_URL: ${{ inputs.app-url }}
