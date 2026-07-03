@@ -3527,7 +3527,7 @@ describe("resource.router", async () => {
       expect(result.recentlyEdited).toEqual([])
     })
 
-    it("should match and order by splitting the query into an array of search terms", async () => {
+    it("should match all search terms and order by relevance", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -3537,19 +3537,19 @@ describe("resource.router", async () => {
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "apple banana cherry durian", // should match 3 terms
+        title: "apple banana cherry durian", // matches all search terms
         permalink: "apple-banana-cherry-durian",
       })
-      const { page: page2 } = await setupPageResource({
+      await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "apple banana cherry", // should match 2 terms
+        title: "apple banana cherry", // missing durian
         permalink: "apple-banana-cherry",
       })
-      const { page: page3 } = await setupPageResource({
+      await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "banana", // should match 1 term
+        title: "banana", // missing apple and durian
         permalink: "banana",
       })
 
@@ -3561,22 +3561,114 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = {
-        totalCount: 3,
+        totalCount: 1,
         resources: [
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
             fullPermalink: `${page1.permalink}`,
             lastUpdatedAt: page1.updatedAt,
           },
+        ],
+        recentlyEdited: [],
+        nextOffset: null,
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should exclude resources that match only some search terms", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "apple pie",
+        permalink: "apple-pie",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "apple banana",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 0,
+        resources: [],
+        recentlyEdited: [],
+        nextOffset: null,
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should match all search terms when some appear mid-title", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Guide to Apple Services",
+        permalink: "guide-to-apple-services",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "guide apple",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 1,
+        resources: [
           {
-            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page2.permalink}`,
-            lastUpdatedAt: page2.updatedAt,
+            ...pick(page, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page.permalink}`,
+            lastUpdatedAt: page.updatedAt,
           },
+        ],
+        recentlyEdited: [],
+        nextOffset: null,
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should match all search terms case-insensitively", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Annual Budget Report",
+        permalink: "annual-budget-report",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "ANNUAL budget",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 1,
+        resources: [
           {
-            ...pick(page3, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page3.permalink}`,
-            lastUpdatedAt: page3.updatedAt,
+            ...pick(page, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page.permalink}`,
+            lastUpdatedAt: page.updatedAt,
           },
         ],
         recentlyEdited: [],
@@ -3729,20 +3821,20 @@ describe("resource.router", async () => {
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "looooongword",
-        permalink: "looooongword",
+        title: "longterm short",
+        permalink: "longterm-short",
       })
       const { page: page2 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "shortword",
-        permalink: "shortword",
+        title: "long short",
+        permalink: "long-short",
       })
 
       // Act
       const result = await caller.search({
         siteId: String(site.id),
-        query: "shortword looooongword",
+        query: "longterm short",
       })
 
       // Assert

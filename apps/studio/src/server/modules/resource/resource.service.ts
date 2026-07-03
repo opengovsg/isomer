@@ -1339,7 +1339,7 @@ export const getSearchResults = async ({
   })
     .where("Resource.type", "in", resourceTypes)
     .where((eb) =>
-      eb.or(
+      eb.and(
         searchTerms.map((searchTerm) =>
           // Match if the search term is at the start of the title
           eb("Resource.title", "ilike", `${searchTerm}%`).or(
