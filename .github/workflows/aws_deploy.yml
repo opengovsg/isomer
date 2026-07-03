@@ -385,3 +385,22 @@ jobs:
           payload: |
             channel: ${{ secrets.SLACK_CHANNEL_ID }}
             text: "<!subteam^${{ secrets.SLACK_NOTIFY_TEAM_ID }}> Deployment of *${{ inputs.app-name }}* to *${{ inputs.environment }}* environment has *failed* :warning: \n> Version: *${{ inputs.app-version }}*\n> Attempted by: ${{ github.actor }}"
+
+  # Post-deploy smoke against the deployed environment (all environments).
+  # Runs AFTER the CodeDeploy blue/green shift completes, so it detects a bad deploy
+  # but does not gate traffic pre-shift. To gate BEFORE live traffic, move this to a
+  # CodeDeploy AfterAllowTestTraffic lifecycle hook against the green task set; to
+  # auto-recover on failure, wire rollback here (tag-rollback workflow, or
+  # `aws deploy stop-deployment --auto-rollback-enabled` during the bake window).
+  smoke:
+    name: Smoke test deployed environment
+    needs: deploy
+    if: ${{ inputs.app-url != '' }}
+    uses: ./.github/workflows/smoke.yml
+    with:
+      app-url: ${{ inputs.app-url }}
+      environment: ${{ inputs.environment }}
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+      SLACK_NOTIFY_TEAM_ID: ${{ secrets.SLACK_NOTIFY_TEAM_ID }}

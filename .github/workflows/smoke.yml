@@ -1,0 +1,55 @@
+name: 🚬 Smoke test
+
+# Reusable: verifies a DEPLOYED environment is alive and correctly wired (app boots,
+# routing + auth reachable, real integrations serving) by running the smoke suite
+# against its public URL. It does NOT verify that any change is correct.
+#
+# Called from aws_deploy.yml after every deploy, so it runs on all environments.
+# Can also be called on a schedule for ongoing synthetic monitoring of production.
+
+on:
+  workflow_call:
+    inputs:
+      app-url:
+        description: "Public URL of the deployed environment to smoke test"
+        required: true
+        type: string
+      environment:
+        description: "Deployment environment (for env-scoped secrets)"
+        required: true
+        type: string
+    secrets:
+      SLACK_BOT_TOKEN:
+        description: "Slack bot token with permissions to post messages"
+      SLACK_CHANNEL_ID:
+        description: "Slack channel ID to post smoke failures to"
+      SLACK_NOTIFY_TEAM_ID:
+        description: "Slack team ID to mention on smoke failure"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install Playwright (Chromium)
+        run: pnpm --filter isomer-studio exec playwright install chromium
+      - name: Run smoke tests against ${{ inputs.environment }}
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: ${{ inputs.app-url }}
+        run: pnpm --filter isomer-studio run test:smoke
+      - name: Notify smoke failure
+        if: ${{ failure() }}
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channel: ${{ secrets.SLACK_CHANNEL_ID }}
+            text: "<!subteam^${{ secrets.SLACK_NOTIFY_TEAM_ID }}> :warning: Post-deploy smoke tests FAILED against *${{ inputs.environment }}* (${{ inputs.app-url }}) — the deployed environment may be broken. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
