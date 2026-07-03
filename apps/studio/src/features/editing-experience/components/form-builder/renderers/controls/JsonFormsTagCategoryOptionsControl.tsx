@@ -1,9 +1,11 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import type { DropResult } from "@hello-pangea/dnd"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches, update } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { get } from "lodash-es"
+import { useCallback, useRef, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
@@ -17,7 +19,7 @@ import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
-import { useInlineEditableOptionRows } from "../../hooks/useInlineEditableOptionRows"
+import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultTagOption } from "./constants"
 
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
@@ -269,6 +271,71 @@ const JsonFormsTagCategoryOptionsControl = (props: ArrayLayoutProps) => {
   }
 
   return <JsonFormsTagCategoryOptionsArrayLayout {...props} />
+}
+
+function useInlineEditableOptionRows(path: string) {
+  const { dispatch } = useJsonForms()
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editingDraftLabel, setEditingDraftLabel] = useState("")
+  const onDragEndRef = useRef<(result: DropResult) => void>(() => {})
+
+  const isAnyRowEditing = editingIndex !== null
+
+  const { blank: blankOptionIndices, duplicate: duplicateOptionIndices } =
+    useLiveLabelIssues({ path, editingIndex, editingDraftLabel })
+
+  const clearEditing = useCallback(() => {
+    setEditingIndex(null)
+    setEditingDraftLabel("")
+  }, [])
+
+  const bindDragEnd = useCallback((onDragEnd: (result: DropResult) => void) => {
+    onDragEndRef.current = onDragEnd
+  }, [])
+
+  // editingIndex is a row position, not item identity — clear before reorder so
+  // a pending label submit cannot write to whichever item ends up at that index.
+  const handleDragEnd = useCallback(
+    (result: DropResult) => {
+      clearEditing()
+      onDragEndRef.current(result)
+    },
+    [clearEditing],
+  )
+
+  const submitLabel = useCallback(
+    (index: number, value: string) => {
+      dispatch?.(
+        update(
+          composePaths(composePaths(path, `${index}`), "label"),
+          () => value,
+        ),
+      )
+    },
+    [dispatch, path],
+  )
+
+  const handleEditingChange = useCallback(
+    (index: number, committedLabel: string, isEditing: boolean) => {
+      if (isEditing && editingIndex !== null && editingIndex !== index) return
+      setEditingIndex(isEditing ? index : null)
+      setEditingDraftLabel(isEditing ? committedLabel : "")
+    },
+    [editingIndex],
+  )
+
+  return {
+    editingIndex,
+    isAnyRowEditing,
+    setEditingDraftLabel,
+    blankOptionIndices,
+    duplicateOptionIndices,
+    bindDragEnd,
+    handleDragEnd,
+    clearEditing,
+    submitLabel,
+    handleEditingChange,
+  }
 }
 
 export default JsonFormsTagCategoryOptionsControl
