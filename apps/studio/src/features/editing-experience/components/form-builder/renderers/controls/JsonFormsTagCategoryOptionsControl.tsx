@@ -1,6 +1,6 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
-import { DragDropContext, Droppable } from "@hello-pangea/dnd"
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { get } from "lodash-es"
@@ -12,8 +12,8 @@ import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { EmptyCategory } from "../../components/EmptyCategory"
-import { InlineEditableOptionRow } from "../../components/InlineEditableOptionRow"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
+import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
@@ -47,9 +47,11 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     setEditingDraftLabel,
     blankOptionIndices,
     duplicateOptionIndices,
-    wrapDragEnd,
+    bindDragEnd,
+    handleDragEnd,
+    clearEditing,
     submitLabel,
-    createEditingChangeHandler,
+    handleEditingChange,
   } = useInlineEditableOptionRows(path)
 
   const arrayResult = useArray({
@@ -86,6 +88,8 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     },
   })
 
+  bindDragEnd(arrayResult.onDragEnd)
+
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
       <VStack spacing={0} align="start">
@@ -108,7 +112,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           )}
         </VStack>
         <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
-          <DragDropContext onDragEnd={wrapDragEnd(arrayResult.onDragEnd)}>
+          <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="blocks">
               {({ droppableProps, innerRef, placeholder }) => (
                 <VStack
@@ -133,37 +137,88 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                       | { label?: string }
                       | undefined
                     const committedLabel = item?.label ?? ""
+                    const isEditing = editingIndex === index
+                    const optionName = `Option ${index + 1}`
 
                     return (
-                      <InlineEditableOptionRow
+                      <Draggable
                         key={childPath}
                         draggableId={childPath}
+                        disableInteractiveElementBlocking
+                        isDragDisabled={isAnyRowEditing}
                         index={index}
-                        enabled={enabled}
-                        label={committedLabel}
-                        isAnyRowEditing={isAnyRowEditing}
-                        isEditing={editingIndex === index}
-                        isAnotherRowEditing={
-                          isAnyRowEditing && editingIndex !== index
-                        }
-                        isDuplicate={isDuplicate}
-                        isBlank={isBlank}
-                        hasError={hasError}
-                        onSubmit={(value) => submitLabel(index, value)}
-                        onEditingChange={createEditingChangeHandler(
-                          index,
-                          committedLabel,
+                      >
+                        {({ draggableProps, dragHandleProps, innerRef }) => (
+                          <DraggableTagButton.Root
+                            draggableProps={draggableProps}
+                            isError={hasError}
+                            isDragDisabled={isAnyRowEditing}
+                            ref={innerRef}
+                          >
+                            <DraggableTagButton.Handle
+                              dragHandleProps={dragHandleProps}
+                            />
+                            <DraggableTagButton.Body>
+                              <DraggableTagButton.Content
+                                gap={isEditing ? "0.5rem" : undefined}
+                              >
+                                <DraggableTagButton.EditableLabel
+                                  value={committedLabel}
+                                  placeholder={optionName}
+                                  ariaLabel={`${optionName} name`}
+                                  isInvalid={isDuplicate || isBlank}
+                                  isDisabled={
+                                    !enabled ||
+                                    (isAnyRowEditing && !isEditing)
+                                  }
+                                  isEditing={isEditing}
+                                  onSubmit={(value) =>
+                                    submitLabel(index, value)
+                                  }
+                                  onEditingChange={(nextIsEditing) =>
+                                    handleEditingChange(
+                                      index,
+                                      committedLabel,
+                                      nextIsEditing,
+                                    )
+                                  }
+                                  onDraftChange={setEditingDraftLabel}
+                                />
+                                {hasError ? (
+                                  <DraggableTagButton.ErrorCaption>
+                                    {isDuplicate
+                                      ? "An option with this name already exists."
+                                      : isBlank
+                                        ? "Option name cannot be empty."
+                                        : undefined}
+                                  </DraggableTagButton.ErrorCaption>
+                                ) : (
+                                  isEditing && (
+                                    <DraggableTagButton.InfoCaption>
+                                      This will update across all items that
+                                      use this option.
+                                    </DraggableTagButton.InfoCaption>
+                                  )
+                                )}
+                              </DraggableTagButton.Content>
+                            </DraggableTagButton.Body>
+                            {!isEditing && (
+                              <DraggableTagButton.Trailing>
+                                <TagRowActionsMenu
+                                  noun="option"
+                                  index={index}
+                                  isDisabled={isRemoveItemDisabled}
+                                  isDragDisabled={isAnyRowEditing}
+                                  onDelete={() => {
+                                    clearEditing()
+                                    openDeleteModal(index)
+                                  }}
+                                />
+                              </DraggableTagButton.Trailing>
+                            )}
+                          </DraggableTagButton.Root>
                         )}
-                        onDraftChange={setEditingDraftLabel}
-                        trailing={
-                          <DraggableTagButton.ActionsMenu
-                            noun="option"
-                            index={index}
-                            isDisabled={isRemoveItemDisabled}
-                            onDelete={() => openDeleteModal(index)}
-                          />
-                        }
-                      />
+                      </Draggable>
                     )
                   })}
 
