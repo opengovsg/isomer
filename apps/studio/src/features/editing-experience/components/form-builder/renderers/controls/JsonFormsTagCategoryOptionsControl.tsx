@@ -1,11 +1,10 @@
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
-import type { DropResult } from "@hello-pangea/dnd"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches, update } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { get } from "lodash-es"
-import { useCallback, useState } from "react"
+import { useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
@@ -43,6 +42,9 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   } = props
   const { core, dispatch } = useJsonForms()
   const { hasErrorAt } = useBuilderErrors()
+  const items = get(core?.data, path) as
+    | { label?: string; id?: string }[]
+    | undefined
   // Inline label editing is keyed by array index. editingDraftLabel feeds
   // useLiveLabelIssues so duplicate/blank checks reflect unsaved keystrokes.
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
@@ -67,44 +69,20 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   })
   const { isAddItemDisabled, isRemoveItemDisabled, onDragEnd } = arrayResult
 
-  // Resets inline edit state; called on drag-end and before opening delete.
-  const clearEditing = useCallback(() => {
+  const clearEditing = () => {
     setEditingIndex(null)
     setEditingDraftLabel("")
-  }, [])
+  }
 
-  // editingIndex is a row position, not item identity — clear before reorder so
-  // a pending label submit cannot write to whichever item ends up at that index.
-  const handleDragEnd = useCallback(
-    (result: DropResult) => {
-      clearEditing()
-      onDragEnd(result)
-    },
-    [clearEditing, onDragEnd],
-  )
-
-  // Persists a committed label edit to JSON Forms at options[index].label.
-  const submitLabel = useCallback(
-    (index: number, value: string) => {
-      dispatch?.(
-        update(
-          composePaths(composePaths(path, `${index}`), "label"),
-          () => value,
-        ),
-      )
-    },
-    [dispatch, path],
-  )
-
-  // Only one row may be in edit mode; ignore focus into another row while editing.
-  const handleEditingChange = useCallback(
-    (index: number, committedLabel: string, isEditing: boolean) => {
-      if (isEditing && editingIndex !== null && editingIndex !== index) return
-      setEditingIndex(isEditing ? index : null)
-      setEditingDraftLabel(isEditing ? committedLabel : "")
-    },
-    [editingIndex],
-  )
+  const handleEditingChange = (
+    index: number,
+    committedLabel: string,
+    isEditing: boolean,
+  ) => {
+    if (isEditing && editingIndex !== null && editingIndex !== index) return
+    setEditingIndex(isEditing ? index : null)
+    setEditingDraftLabel(isEditing ? committedLabel : "")
+  }
 
   const {
     target: deleteTarget,
@@ -115,15 +93,10 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     path,
     removeItems,
     isRemoveItemDisabled,
-    resolveTarget: (index) => {
-      const item = get(core?.data, composePaths(path, `${index}`)) as
-        | { label?: string; id?: string }
-        | undefined
-      return {
-        label: item?.label?.trim() ?? "",
-        tagId: item?.id,
-      }
-    },
+    resolveTarget: (index) => ({
+      label: items?.[index]?.label?.trim() ?? "",
+      tagId: items?.[index]?.id,
+    }),
   })
 
   return (
@@ -148,7 +121,14 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           )}
         </VStack>
         <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
-          <DragDropContext onDragEnd={handleDragEnd}>
+          <DragDropContext
+            onDragEnd={(result) => {
+              // editingIndex is row position, not item identity — clear before
+              // reorder so a pending submit cannot land on the wrong option.
+              clearEditing()
+              onDragEnd(result)
+            }}
+          >
             <Droppable droppableId="blocks">
               {({ droppableProps, innerRef, placeholder }) => (
                 <VStack
@@ -169,12 +149,14 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                     const isBlank = blankOptionIndices.has(index)
                     const hasError =
                       hasErrorAt(childPath) || isDuplicate || isBlank
-                    const item = get(core?.data, childPath) as
-                      | { label?: string }
-                      | undefined
-                    const committedLabel = item?.label ?? ""
+                    const committedLabel = items?.[index]?.label ?? ""
                     const isEditing = editingIndex === index
                     const optionName = `Option ${index + 1}`
+                    const errorMessage = isDuplicate
+                      ? "An option with this name already exists."
+                      : isBlank
+                        ? "Option name cannot be empty."
+                        : undefined
 
                     return (
                       <Draggable
@@ -209,7 +191,12 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                                   }
                                   isEditing={isEditing}
                                   onSubmit={(value) =>
-                                    submitLabel(index, value)
+                                    dispatch?.(
+                                      update(
+                                        composePaths(childPath, "label"),
+                                        () => value,
+                                      ),
+                                    )
                                   }
                                   onEditingChange={(nextIsEditing) =>
                                     handleEditingChange(
@@ -222,11 +209,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
                                 />
                                 {hasError ? (
                                   <DraggableTagButton.ErrorCaption>
-                                    {isDuplicate
-                                      ? "An option with this name already exists."
-                                      : isBlank
-                                        ? "Option name cannot be empty."
-                                        : undefined}
+                                    {errorMessage}
                                   </DraggableTagButton.ErrorCaption>
                                 ) : (
                                   isEditing && (
