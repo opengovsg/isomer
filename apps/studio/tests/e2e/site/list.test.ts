@@ -3,7 +3,10 @@ import { expect, test } from "@playwright/test"
 import { storageStateFor } from "../fixtures/auth"
 
 test.describe("site list", () => {
-  test("editor sees the Sample Site seed site", async ({ browser, baseURL }) => {
+  test("editor sees the Sample Site seed site", async ({
+    browser,
+    baseURL,
+  }) => {
     const ctx = await browser.newContext({
       baseURL,
       storageState: storageStateFor("editor"),
