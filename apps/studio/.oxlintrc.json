@@ -78,6 +78,7 @@
     {
       "files": [
         "playwright.config.ts",
+        "playwright.smoke.config.ts",
         "tests/**/*.ts",
         "tests/**/*.tsx",
         ".storybook/**/*.ts",
