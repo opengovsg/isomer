@@ -1,0 +1,100 @@
+# Design: draft-aware migration of legacy `category` into `tagCategories`
+
+**Related**: [02-migration-script-and-rendering-cutover.md](../../../02-migration-script-and-rendering-cutover.md) (references "ADR 0003" as the source decision; no such file exists yet under `docs/adr/`)
+**File**: `apps/studio/prisma/scripts/migrateCategoryToTagCategories.ts`
+
+## Problem
+
+The current implementation of `migrateCategoryToTagCategories.ts` picks a single "effective" content blob per resource — published if it exists, otherwise draft (`resolveEffectiveContent`). This collapses two independent states into one:
+
+- If a Collection Item or its Index has both a published version and a newer unpublished draft, the script reads and writes **only the published blob**. The draft blob is left with its old, pre-migration shape (no `tagCategories` "Category" group, no `tagged` entry).
+- If that draft is later published — even with no category-related edits — Studio's publish flow (`incrementVersion`) repoints the resource's `Version.blobId` at the literal, untouched draft Blob row and nulls `draftBlobId`. This silently reverts the migration: the published site loses the "Category" filter and its tagged items, with no error or warning.
+- A category value that exists only in a draft (never published) is never collected into the option list at all, since `deriveDistinctCategories` only sees the "effective" (published-preferred) category per item.
+
+This design makes both the Index page and every Collection Item's draft and published content independently draft-aware, so the migration can't be silently undone by a later, unrelated publish.
+
+## Goals
+
+- A category value in *either* a draft or published `category` field gets an option slot in the Index's new "Category" tagCategories group.
+- Both the draft and published blob (whichever exist) for the Index and for every Item get updated, each self-consistent with its own `category` value.
+- Published-side changes go through proper version history (new Blob + new Version + bumped `publishedVersionId`), not an in-place rewrite of a historical Blob row.
+- Draft-side changes never trigger a publish — a draft may contain unrelated pending edits that aren't ready to ship.
+- The whole thing runs once per site, correctly, without needing to be re-run.
+
+## Non-goals
+
+- Idempotency / safe re-running. This is a one-time migration against sites where no collection has ever had a "Category" group. Operator discipline (run once) is the safety mechanism, not the code. Re-running against an already-migrated site is expected to double-append a group and re-tag items — this is an accepted limitation, not a bug to fix here.
+- Removing the legacy `category` field from items — untouched, still required at the schema level (a later slice removes it).
+- Rendering cutover (`getAvailableFilters.ts` etc.) — covered separately in the same PR per the existing plan doc, not part of this script.
+
+## Design
+
+### 1. Category collection
+
+For a given Collection, gather every Item's `category` value from **both** its draft and published content (wherever each exists), dedupe, trim, and sort — same as today's `deriveDistinctCategories`, just fed from a union of two sources per item instead of one "effective" source.
+
+### 2. Building the new group
+
+Since no collection has been migrated before, there is no existing "Category" group to reconcile against. Build exactly **one** fresh group via `buildCategoryTagGroup`:
+
+```ts
+{ id: <uuid>, label: "Category", isRequired: true, options: [{ id: <uuid>, label }, ...] }
+```
+
+This single object (with its generated ids) is reused verbatim for every blob it gets written into, so an option label always resolves to the same id everywhere — draft and published Index, and every Item's `tagged` reference.
+
+### 3. Index page writes
+
+Handled independently per side; both can happen in the same run:
+
+- **Published side** (if a published version exists): read the current published content and its `Version.versionNum`. Append the new group to the **end** of its existing `tagCategories` array. Insert a new `Blob` row with that content, insert a new `Version` row (`versionNum: previous + 1`, `publishedBy: <operator-supplied user id>`), and update `Resource.publishedVersionId` to point at it. `draftBlobId` and `state` are untouched.
+- **Draft side** (if a draft blob exists): append the same group to the end of its own existing `tagCategories` array (which may differ from the published array's prior contents) and `UPDATE Blob.content` **in place** on that row. No new Version, no Resource changes — this must not publish anything.
+- If the Index has no content on either side, the collection is skipped (`no-index`), same as today.
+
+### 4. Item writes
+
+Same per-side independence, applied to every Collection Item:
+
+- For each side (draft / published) that has a `category` value, look up its option id from the group built in step 2, and append it into that side's own `tagged` array (preserving whatever's already there).
+- Published-side tagging: new Blob + new Version + bumped `publishedVersionId`, mirroring the Index's published write.
+- Draft-side tagging: in-place `Blob.content` update, mirroring the Index's draft write.
+- An item's draft and published `category` can differ (or exist on only one side) — each side is tagged strictly from its own value, so no cross-contamination.
+- An item with no `category` value on a given side produces no write for that side (mirrors today's "skip items with no matching category").
+
+### 5. Publisher attribution
+
+Every new `Version` row requires a valid `publishedBy` user id (NOT NULL FK to `User`). Following the convention in `convert-folder-to-collection/shared.ts`:
+
+- At script start, interactively prompt for a user id.
+- Verify it exists via a `verifyUser`-style check before proceeding; throw if not found.
+- Skip the prompt entirely in `--dry-run` mode, since nothing is written.
+- Reuse the same verified id as `publishedBy` for every Version created during the run.
+
+### 6. Idempotency
+
+None. No `hasCategoryGroup` pre-check anywhere in the script. Every collection is assumed unmigrated and is always processed. `no-categories` remains as a status (no item has any category value on either side, on that Collection) — that's a data condition, not an idempotency check.
+
+### 7. Transaction scope
+
+Everything for one Collection — the Index's draft write, the Index's published write (new Blob + Version + Resource update), and every Item's draft/published writes (new Blobs + Versions + Resource updates) — runs inside a **single DB transaction** per collection. A failure partway through leaves that collection entirely unmigrated rather than half-done. This is the same transaction boundary the script already has (`db.transaction().execute(...)` inside `migrateCollection`), just covering more operations.
+
+### 8. Result reporting
+
+- `itemsUpdated` counts distinct items touched (dedup across a single item's possible draft + published writes).
+- Log output should make clear how many new Versions were created (Index + items), so an operator can sanity-check the run.
+
+## Shape changes
+
+- `MigrationPlanItem`: `{ resourceId, draftCategory?, draftTagged?, publishedCategory?, publishedTagged? }` (only the fields for states that exist) instead of `{ resourceId, category? }`.
+- `MigrationPlan.itemUpdates`: `{ resourceId, state: "draft" | "published", tagged: string[] }[]` instead of `{ resourceId, tagged: string[] }[]`.
+- `MigrationPlan`: gains `group` (the shared new group) and `indexUpdates: { state: "draft" | "published" }[]` (which side(s) need writing) instead of a single `newTagCategories` array.
+- `MigrationPlan.status`: `"migrated" | "no-categories" | "no-index"` — `"already-migrated"` is removed.
+- DB read helpers (`getIndexPageRow`, `getItemRows`) need to additionally select `Version.versionNum` so the new-version insert can compute `versionNum: previous + 1`.
+
+## Testing
+
+New/changed coverage needed, replacing anything that tested idempotency or the old single-"effective"-content model:
+
+- Pure function tests (`buildMigrationPlan` and friends): item with diverging draft vs. published category; item with a category only in draft and no published content; item with a category only in published and a draft that lacks one; group always appended as the last element of an existing `tagCategories` array.
+- Integration tests: Index with both draft and published blobs, both get the group written (published via new Version, draft in place); Index published-only; Index draft-only (no publish should occur); an item's published-side write correctly bumps `versionNum` and `publishedVersionId` while leaving `draftBlobId` alone; an item's draft-side write mutates content in place without touching `publishedVersionId`; the whole per-collection operation is atomic (a forced failure partway through leaves no partial writes); the publisher-id prompt is invoked and verified in a real run and skipped entirely in `--dry-run`.
+- Remove: the existing "is idempotent: re-running against an already-migrated collection makes no changes" test, since idempotency is no longer a goal.
