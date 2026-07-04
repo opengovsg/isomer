@@ -1,11 +1,11 @@
 import { type ArticlePageSchemaType } from "~/types"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
-import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
 
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
+import { getCategoryFromTagged } from "../Collection/utils/getCategoryFromTagged"
 import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
 import { Skeleton } from "../Skeleton"
 
@@ -24,16 +24,17 @@ export const ArticleLayout = ({
   const tagged = page.tagged
   const tags = page.tags
 
+  const parentTagCategories =
+    parent?.layout === "collection"
+      ? parent.collectionPagePageProps?.tagCategories
+      : undefined
+
   const resolvedTags =
-    tagged &&
-    parent?.layout === "collection" &&
-    parent.collectionPagePageProps?.tagCategories
-      ? getTagsFromTagged(tagged, parent.collectionPagePageProps?.tagCategories)
+    tagged && parentTagCategories
+      ? getTagsFromTagged(tagged, parentTagCategories)
       : tags
 
-  const resolvedCategory = resolveCategoryLabel({
-    category: page.category,
-  })
+  const resolvedCategory = getCategoryFromTagged(tagged, parentTagCategories)
 
   return (
     <Skeleton site={site} page={page} layout={layout}>

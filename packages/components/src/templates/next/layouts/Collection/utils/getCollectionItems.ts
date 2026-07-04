@@ -3,8 +3,8 @@ import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
-import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
 
+import { getCategoryFromTagged } from "./getCategoryFromTagged"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
 
@@ -127,9 +127,7 @@ export const getCollectionItems = ({
       id: item.permalink,
       date,
       lastModified: item.lastModified,
-      category: resolveCategoryLabel({
-        category: item.category,
-      }),
+      category: getCategoryFromTagged(item.tagged, tagCategories),
       title: item.title,
       description: item.summary,
       image,

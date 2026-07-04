@@ -18,7 +18,9 @@ export const ArticlePageHeader = ({
         <Breadcrumb links={breadcrumb.links} />
       </div>
 
-      <div className="prose-body-base mb-3 text-base-content">{category}</div>
+      {category && (
+        <div className="prose-body-base mb-3 text-base-content">{category}</div>
+      )}
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">

@@ -73,9 +73,11 @@ export const BlogCard = ({
           </p>
         )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
-        <p className="prose-label-sm-medium text-base-content-subtle">
-          {category}
-        </p>
+        {category && (
+          <p className="prose-label-sm-medium text-base-content-subtle">
+            {category}
+          </p>
+        )}
       </div>
     </Link>
   )

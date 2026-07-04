@@ -15,7 +15,7 @@ interface BaseCardProps {
   id: string
   date?: Date
   lastModified: string
-  category: string
+  category: string | undefined
   title: string
   url: string
   description: string

@@ -57,7 +57,9 @@ export const CollectionCard = ({
           </p>
         )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
-        <p className="prose-label-md text-base-content-subtle">{category}</p>
+        {category && (
+          <p className="prose-label-md text-base-content-subtle">{category}</p>
+        )}
       </div>
       {image && (
         <div className="relative mt-3 flex h-[160px] w-[200px] shrink-0 items-center justify-center md:ml-4 md:mt-0">

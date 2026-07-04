@@ -75,13 +75,16 @@ const compareCategories = (
   b: AllCardProps,
   sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
 ): number => {
+  const aCategory = a.category ?? ""
+  const bCategory = b.category ?? ""
+
   switch (sortDirection) {
     case "asc":
-      return a.category.localeCompare(b.category, undefined, {
+      return aCategory.localeCompare(bCategory, undefined, {
         numeric: true,
       })
     case "desc":
-      return b.category.localeCompare(a.category, undefined, {
+      return bCategory.localeCompare(aCategory, undefined, {
         numeric: true,
       })
     default:

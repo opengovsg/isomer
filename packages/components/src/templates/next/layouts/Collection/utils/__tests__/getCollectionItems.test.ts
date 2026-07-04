@@ -326,27 +326,62 @@ describe("getCollectionItems", () => {
   })
 
   describe("category resolution", () => {
-    it("should use legacy category string", () => {
+    const tagCategories = [
+      {
+        label: "Topic",
+        id: "topic-1",
+        options: [{ label: "Health", id: "topic-opt-1" }],
+      },
+      {
+        label: "Category",
+        id: "cat-1",
+        options: [
+          { label: "Guides", id: "cat-opt-1" },
+          { label: "Articles", id: "cat-opt-2" },
+        ],
+      },
+    ]
+
+    it("resolves category from the last tagCategories group via the item's tagged options", () => {
       // Arrange
       const site = createSiteWithChildren([
-        createArticleChild({ category: "Legacy Category" }),
+        createArticleChild({ tagged: ["cat-opt-1"] }),
       ])
 
       // Act
       const result = getCollectionItems({
         site,
         permalink: "/collection",
+        tagCategories,
       })
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.category).toBe("Legacy Category")
+      expect(result[0]!.category).toBe("Guides")
     })
 
-    it("should fall back to 'Others' when category is absent", () => {
+    it("joins multiple selected options in the last group with a comma", () => {
       // Arrange
       const site = createSiteWithChildren([
-        createArticleChild({ category: undefined }),
+        createArticleChild({ tagged: ["cat-opt-1", "cat-opt-2"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.category).toBe("Guides, Articles")
+    })
+
+    it("returns undefined when the collection has no tagCategories", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["cat-opt-1"] }),
       ])
 
       // Act
@@ -357,7 +392,25 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.category).toBe("Others")
+      expect(result[0]!.category).toBeUndefined()
+    })
+
+    it("returns undefined when the item has no tagged options", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: undefined }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.category).toBeUndefined()
     })
   })
 })
