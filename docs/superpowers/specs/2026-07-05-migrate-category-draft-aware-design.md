@@ -81,7 +81,23 @@ Everything for one Collection — the Index's draft write, the Index's published
 ### 8. Result reporting
 
 - `itemsUpdated` counts distinct items touched (dedup across a single item's possible draft + published writes).
-- Log output should make clear how many new Versions were created (Index + items), so an operator can sanity-check the run.
+- `CollectionMigrationResult` also carries `versionsCreated` — the Index's published write (0 or 1) plus one per item published-side update — and `formatResult`'s log line reports it (`new versions created=N`, or `to create=N` in `--dry-run`), so an operator can see how many Versions a run touched without inspecting the DB.
+
+### 9. Operational prerequisites
+
+This script mutates live Resource/Blob/Version rows directly (a backfill, not a formal Prisma migration) and creates real Versions via `publishNewContent` — but unlike Studio's own publish flow (`publishPageResource` → `getFullPageById`), it does **not** take a row lock (`SELECT ... FOR UPDATE`) before reading `publishedVersionId`/`versionNum`, and its final `UPDATE Resource SET publishedVersionId = ...` is unconditional (no optimistic-concurrency check against the value it read). Concretely:
+
+- If a human editor publishes a page in the same collection while the script is running, both the editor's publish and the script's write can read the same stale `versionNum`, and whichever `UPDATE Resource` commits last silently overwrites the other — a lost publish, and potentially two `Version` rows sharing the same `versionNum` (the `Version` table has no `@@unique([resourceId, versionNum])` constraint).
+- The same stale-read-then-blind-overwrite pattern applies to draft content: a concurrent draft autosave to the same Index or Item during the run can be silently reverted.
+- **Scheduled publishes count as concurrent activity too.** `apps/studio/src/server/cron/jobs/schedulePublishingJob.ts` calls the same `publishPageResource` path independently of the Studio UI, for any resource whose `scheduledAt` comes due — locking human editors out of Studio does not stop it.
+
+Given this, the script is safe to run only under these operational conditions, which must hold for the entire duration of the run against a given site:
+
+1. **No human editing** — agencies must not be actively editing content on the target site while the migration runs (Studio access effectively frozen for that site, e.g. via a maintenance-window comms to agencies).
+2. **No scheduled publishes due during the window** — confirm no resource on the target site has a `scheduledAt` falling inside the run window before starting (agencies are told not to schedule publishes for that period; ideally cross-checked against the DB before running).
+3. **One site at a time, run to completion** — since the script iterates collections sequentially and each collection's writes are transactional but independent, avoid overlapping two invocations against the same site.
+
+These are process/runbook requirements, not something the script enforces in code — no preflight check for pending schedules or in-flight edits exists yet. If the migration needs to run against a site that cannot get a clean maintenance window, treat the concurrency issue above as a blocker to fix first (e.g. add `SELECT ... FOR UPDATE` locking and an optimistic-concurrency check on the final `Resource` update, mirroring `getFullPageById`/`publishPageResource`).
 
 ## Shape changes
 
@@ -96,5 +112,7 @@ Everything for one Collection — the Index's draft write, the Index's published
 New/changed coverage needed, replacing anything that tested idempotency or the old single-"effective"-content model:
 
 - Pure function tests (`buildMigrationPlan` and friends): item with diverging draft vs. published category; item with a category only in draft and no published content; item with a category only in published and a draft that lacks one; group always appended as the last element of an existing `tagCategories` array.
-- Integration tests: Index with both draft and published blobs, both get the group written (published via new Version, draft in place); Index published-only; Index draft-only (no publish should occur); an item's published-side write correctly bumps `versionNum` and `publishedVersionId` while leaving `draftBlobId` alone; an item's draft-side write mutates content in place without touching `publishedVersionId`; the whole per-collection operation is atomic (a forced failure partway through leaves no partial writes); the publisher-id prompt is invoked and verified in a real run and skipped entirely in `--dry-run`.
+- Integration tests: Index with both draft and published blobs, both get the group written (published via new Version, draft in place); Index published-only; Index draft-only (no publish should occur); an item's published-side write correctly bumps `versionNum` and `publishedVersionId` while leaving `draftBlobId` alone; an item's draft-side write mutates content in place without touching `publishedVersionId`; `versionsCreated` is asserted alongside `itemsUpdated` on the published and divergence fixtures.
+- `main` is exported (accepting an optional `argv` override for testability) and covered directly: `input()` from `@inquirer/prompts` is asserted not called in `--dry-run`, called and its result passed through `verifyUser` outside `--dry-run`, and the promise rejects when the prompted user id doesn't exist. `verifyUser` itself has direct found/not-found coverage.
 - Remove: the existing "is idempotent: re-running against an already-migrated collection makes no changes" test, since idempotency is no longer a goal.
+- Not covered (accepted gap): the concurrency scenarios in [Operational prerequisites](#9-operational-prerequisites) — no test exercises a concurrent publish or draft save racing the migration, since there's no code-level mitigation to verify yet.
