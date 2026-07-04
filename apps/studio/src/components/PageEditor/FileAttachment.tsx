@@ -104,11 +104,16 @@ export const FileAttachment = ({
               // endpoint (not the presigned PUT path), so use uploadSvgSchema
               // for filename validation to avoid the deliberate SVG rejection
               // in getPresignedPutUrlSchema.
-              const isSvg = file.name.toLowerCase().endsWith(".svg")
-              const schema = isSvg
-                ? uploadSvgSchema.pick({ fileName: true })
-                : getPresignedPutUrlSchema.pick({ fileName: true })
-              const parseResult = schema.safeParse({ fileName: file.name })
+              const parseResult = file.name.toLowerCase().endsWith(".svg")
+                ? uploadSvgSchema
+                    .pick({ fileName: true })
+                    .safeParse({ fileName: file.name })
+                : getPresignedPutUrlSchema.safeParse({
+                    siteId,
+                    resourceId,
+                    fileName: file.name,
+                    fileSize: file.size,
+                  })
 
               if (parseResult.success) return null
               // NOTE: safe assertion here because we're in error path and there's at least 1 error

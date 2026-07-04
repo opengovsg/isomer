@@ -63,9 +63,12 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
           value={image}
           name="file-upload"
           onFileValidation={(file) => {
-            const parseResult = getPresignedPutUrlSchema
-              .pick({ fileName: true })
-              .safeParse({ fileName: file.name })
+            const parseResult = getPresignedPutUrlSchema.safeParse({
+              siteId,
+              resourceId: String(pageId),
+              fileName: file.name,
+              fileSize: file.size,
+            })
 
             if (parseResult.success) return null
             // NOTE: safe assertion here because we're in error path and there's at least 1 error
