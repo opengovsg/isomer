@@ -52,6 +52,7 @@ describe("getCollectionPages", () => {
     image,
     firstImage,
     category,
+    tagged,
   }: {
     id: string
     permalink: string
@@ -59,6 +60,7 @@ describe("getCollectionPages", () => {
     image?: { src: string; alt: string }
     firstImage?: { src: string; alt: string }
     category?: string
+    tagged?: string[]
   }): IsomerSitemap => ({
     id,
     title: `${id} title`,
@@ -68,6 +70,7 @@ describe("getCollectionPages", () => {
     layout: "article",
     date,
     category,
+    tagged,
     image,
     firstImage,
   })
@@ -362,5 +365,80 @@ describe("getCollectionPages", () => {
     // Assert
     expect(result[0]?.itemTitle).toEqual(`${collectionId}2 title`)
     expect(result[1]?.itemTitle).toEqual(`${collectionId}1 title`)
+  })
+
+  describe("category resolution", () => {
+    it("threads the referenced Collection's tagCategories through to derive each card's category from its tagged options", () => {
+      // Arrange
+      const collectionParent: IsomerSitemap = {
+        id: collectionId,
+        title: "Collection 1",
+        permalink: collectionPermalink,
+        layout: "collection",
+        summary: "Collection 1 summary",
+        lastModified: new Date("2021-01-01").toISOString(),
+        children: [
+          createMockCollectionItem({
+            id: `${collectionId}1`,
+            permalink: `${collectionPermalink}/1`,
+            tagged: ["cat-opt-1"],
+          }),
+        ],
+        collectionPagePageProps: {
+          tagCategories: [
+            {
+              label: "Category",
+              id: "cat-1",
+              options: [{ label: "Guides", id: "cat-opt-1" }],
+            },
+          ],
+        },
+      }
+      site = {
+        ...site,
+        siteMap: {
+          ...site.siteMap,
+          children: [collectionParent],
+        },
+      }
+
+      // Act
+      const result = getCollectionPages({ site, collectionParent })
+
+      // Assert
+      expect(result[0]?.category).toBe("Guides")
+    })
+
+    it("resolves category to undefined when the referenced Collection has no tagCategories", () => {
+      // Arrange
+      const collectionParent: IsomerSitemap = {
+        id: collectionId,
+        title: "Collection 1",
+        permalink: collectionPermalink,
+        layout: "collection",
+        summary: "Collection 1 summary",
+        lastModified: new Date("2021-01-01").toISOString(),
+        children: [
+          createMockCollectionItem({
+            id: `${collectionId}1`,
+            permalink: `${collectionPermalink}/1`,
+            tagged: ["cat-opt-1"],
+          }),
+        ],
+      }
+      site = {
+        ...site,
+        siteMap: {
+          ...site.siteMap,
+          children: [collectionParent],
+        },
+      }
+
+      // Act
+      const result = getCollectionPages({ site, collectionParent })
+
+      // Assert
+      expect(result[0]?.category).toBeUndefined()
+    })
   })
 })
