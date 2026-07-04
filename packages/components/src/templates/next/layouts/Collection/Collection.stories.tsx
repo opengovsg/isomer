@@ -86,9 +86,11 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
 const generateArgs = ({
   collectionItems = COLLECTION_ITEMS,
   variant = "collection",
+  tagCategories,
 }: {
   collectionItems?: IsomerSitemap[]
   variant?: CollectionPageSchemaType["page"]["variant"]
+  tagCategories?: CollectionPageSchemaType["page"]["tagCategories"]
 } = {}): CollectionPageSchemaType => {
   return {
     layout: "collection",
@@ -140,6 +142,7 @@ const generateArgs = ({
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
       variant,
+      tagCategories,
     },
     content: [],
   }
@@ -202,8 +205,23 @@ export const NoResults: Story = {
   },
 }
 
+// Category is now an ordinary tagCategories group — an item is tagged with
+// an option UUID rather than carrying a plain `category` string.
+const CATEGORY_NAME_2_OPTION_ID = "category-name-2"
+const CATEGORY_TAG_CATEGORY: NonNullable<
+  CollectionPageSchemaType["page"]["tagCategories"]
+> = [
+  {
+    label: "Category",
+    id: "category-group",
+    isRequired: true,
+    options: [{ label: "Category Name 2", id: CATEGORY_NAME_2_OPTION_ID }],
+  },
+]
+
 export const FilteredEmptyResults: Story = {
   args: generateArgs({
+    tagCategories: CATEGORY_TAG_CATEGORY,
     collectionItems: [
       ...COLLECTION_ITEMS,
       {
@@ -215,7 +233,7 @@ export const FilteredEmptyResults: Story = {
         summary:
           "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
         date: "2025-05-07",
-        category: "Category Name 2",
+        tagged: [CATEGORY_NAME_2_OPTION_ID],
         ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
         fileDetails: {
           type: "png",
@@ -280,12 +298,24 @@ export const AllResultsNoDate: Story = {
   },
 }
 
+const THE_ONLY_CATEGORY_OPTION_ID = "the-only-category"
+
 export const AllResultsSameCategory: Story = {
   name: "Should show category filter even if all items have same category",
   args: generateArgs({
+    tagCategories: [
+      {
+        label: "Category",
+        id: "category-group",
+        isRequired: true,
+        options: [
+          { label: "The only category", id: THE_ONLY_CATEGORY_OPTION_ID },
+        ],
+      },
+    ],
     collectionItems: COLLECTION_ITEMS.map((item) => ({
       ...item,
-      category: "The only category",
+      tagged: [THE_ONLY_CATEGORY_OPTION_ID],
     })),
   }),
   play: async ({ canvasElement }) => {
@@ -310,6 +340,26 @@ export const AllResultsSameYear: Story = {
     const screen = within(canvasElement)
     const yearFilter = screen.queryByText(/Year/i)
     await expect(yearFilter).toBeInTheDocument()
+  },
+}
+
+const itemsWithNoFilterableAttributes = COLLECTION_ITEMS.map((item) => ({
+  ...item,
+  date: undefined,
+  tags: undefined,
+}))
+
+export const NoFiltersAvailable: Story = {
+  name: "Should show 'Nothing to filter by' when there is no year filter and no tag categories",
+  args: generateArgs({ collectionItems: itemsWithNoFilterableAttributes }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+
+    const yearFilter = screen.queryByText(/Year/i)
+    await expect(yearFilter).not.toBeInTheDocument()
+
+    const nothingToFilterBy = await screen.findByText(/Nothing to filter by/i)
+    await expect(nothingToFilterBy).toBeInTheDocument()
   },
 }
 

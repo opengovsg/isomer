@@ -92,6 +92,10 @@ export const CardWithoutImage: Story = {
   args: generateArgs({ image: undefined }),
 }
 
+export const CardWithoutCategory: Story = {
+  args: generateArgs({ category: undefined }),
+}
+
 export const ShortDescription: Story = {
   args: generateArgs({
     title: "Short title",

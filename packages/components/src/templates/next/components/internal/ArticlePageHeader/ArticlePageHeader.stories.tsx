@@ -46,6 +46,13 @@ export const SingleSummaryItem: Story = {
   args: ARTICLE,
 }
 
+export const WithoutCategory: Story = {
+  args: {
+    ...ARTICLE,
+    category: undefined,
+  },
+}
+
 export const ArticleWithTags: Story = {
   args: {
     ...ARTICLE,

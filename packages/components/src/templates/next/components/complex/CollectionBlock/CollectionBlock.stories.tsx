@@ -34,12 +34,16 @@ const generateArgs = ({
     withImageFallback?: boolean
   }
 >): Partial<CollectionBlockProps> => {
+  // Category is now an ordinary tagCategories group — the option a card is
+  // tagged with is what CollectionBlock displays under its title.
+  const CATEGORY_OPTION_ID = "category-option-yes-i-am-a-category"
+
   const cards: IsomerSitemap[] = [
     {
       id: "3",
       title:
         "Date of Government Gazette Notification on Dissolution of Parliament",
-      category: "yes i am a category",
+      tagged: [CATEGORY_OPTION_ID],
       permalink: "/collection-1/item-1",
       layout: "article",
       summary: "",
@@ -58,7 +62,7 @@ const generateArgs = ({
     {
       id: "4",
       title: "Impact of Foreign Professionals on our Economy and Society",
-      category: "yes i am a category",
+      tagged: [CATEGORY_OPTION_ID],
       permalink: "/collection-1/item-2",
       layout: "article",
       summary: "",
@@ -73,7 +77,7 @@ const generateArgs = ({
     {
       id: "5",
       title: "Where does Government revenue come from?",
-      category: "yes i am a category",
+      tagged: [CATEGORY_OPTION_ID],
       permalink: "/collection-1/item-3",
       layout: "article",
       summary: "",
@@ -111,6 +115,18 @@ const generateArgs = ({
               "Clarifying widespread or common misperceptions of Government policy, or inaccurate assertions on matters of public concern that can harm Singapore's social fabric.",
             lastModified: "2021-01-01",
             children: cards.slice(0, numberOfCards),
+            collectionPagePageProps: {
+              tagCategories: [
+                {
+                  label: "Category",
+                  id: "category-group",
+                  isRequired: true,
+                  options: [
+                    { label: "yes i am a category", id: CATEGORY_OPTION_ID },
+                  ],
+                },
+              ],
+            },
           },
         ],
       },
