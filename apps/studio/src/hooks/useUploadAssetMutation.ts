@@ -57,6 +57,7 @@ export const useUploadAssetMutation = ({
             siteId,
             resourceId,
             fileName: effectiveName,
+            fileSize: file.size,
             tags: scheduledAt
               ? [
                   {
