@@ -349,18 +349,30 @@ const itemsWithNoFilterableAttributes = COLLECTION_ITEMS.map((item) => ({
   tags: undefined,
 }))
 
-export const NoFiltersAvailable: Story = {
-  name: "Should show 'Nothing to filter by' when there is no year filter and no tag categories",
-  args: generateArgs({ collectionItems: itemsWithNoFilterableAttributes }),
+export const NoFiltersCollectionCard: Story = {
+  name: "No Filters (Collection Card)",
+  args: generateArgs({
+    collectionItems: itemsWithNoFilterableAttributes,
+    variant: "collection",
+  }),
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
 
     const yearFilter = screen.queryByText(/Year/i)
     await expect(yearFilter).not.toBeInTheDocument()
 
-    const nothingToFilterBy = await screen.findByText(/Nothing to filter by/i)
-    await expect(nothingToFilterBy).toBeInTheDocument()
+    const filtersHeading = screen.queryByRole("heading", { name: /Filters/i })
+    await expect(filtersHeading).not.toBeInTheDocument()
   },
+}
+
+export const NoFiltersBlogCard: Story = {
+  name: "No Filters (Blog Card)",
+  args: generateArgs({
+    collectionItems: itemsWithNoFilterableAttributes,
+    variant: "blog",
+  }),
+  play: NoFiltersCollectionCard.play,
 }
 
 export const FileCard: Story = {
