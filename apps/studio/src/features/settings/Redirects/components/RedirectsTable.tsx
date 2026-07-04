@@ -93,6 +93,10 @@ function DestinationCell({
   const label = isMissing ? MISSING_PAGE_LABEL : display.label
   const color = isMissing ? "utility.feedback.critical" : "base.content.strong"
   const { head, tail } = splitForMiddleTruncation(label)
+  // A missing reference already reads as "Page no longer exists" in red — the
+  // not-yet-published icon would contradict that, so only warn when the label
+  // itself isn't already flagging the problem.
+  const showWarningIcon = showWarning && !isMissing
   return (
     <HStack spacing="0.5rem" align="center" overflow="hidden" w="full">
       <Tooltip
@@ -129,7 +133,7 @@ function DestinationCell({
           </Text>
         </HStack>
       </Tooltip>
-      {showWarning && (
+      {showWarningIcon && (
         <Tooltip
           label={REDIRECT_MESSAGES.destinationNotPublished}
           placement="top"

@@ -39,6 +39,7 @@ import {
   getResourceByFullPermalink,
   getResourceFullPermalinks,
   getResourceIdByPermalink,
+  getResourceIdsByPermalinks,
 } from "../resource/resource.service"
 
 // Sort field → column. `publishedAt` maps to `createdAt`; `satisfies` keeps the
@@ -192,26 +193,42 @@ export const resolveRedirectReferences = async ({
   // resource path — resolve against the bare path.
   const stripQueryFragment = (value: string) => value.split(/[?#]/)[0] ?? value
 
-  // Classify each destination and resolve literal paths to a resource id.
-  // References are anchored AND must belong to this site; a cross-site
-  // reference can't resolve here.
-  const parsed = await Promise.all(
-    references.map(async (reference) => {
-      const match = REFERENCE_DESTINATION_REGEX.exec(reference)
-      if (match) {
-        const resourceId = Number(match[1]) === siteId ? Number(match[2]) : null
-        return { reference, kind: "reference" as const, resourceId }
+  // Classify each destination synchronously. References are anchored AND must
+  // belong to this site; a cross-site reference can't resolve here. Literal
+  // paths carry their bare path so they can be resolved together in one batch
+  // (rather than a DB round-trip each).
+  const classified = references.map((reference) => {
+    const match = REFERENCE_DESTINATION_REGEX.exec(reference)
+    if (match) {
+      const resourceId = Number(match[1]) === siteId ? Number(match[2]) : null
+      return { reference, kind: "reference" as const, resourceId, path: null }
+    }
+    if (reference.startsWith("/")) {
+      return {
+        reference,
+        kind: "literal" as const,
+        resourceId: null,
+        path: stripQueryFragment(reference),
       }
-      if (reference.startsWith("/")) {
-        const resourceId = await getResourceIdByPermalink(
-          siteId,
-          stripQueryFragment(reference),
-        )
-        return { reference, kind: "literal" as const, resourceId }
-      }
-      return { reference, kind: "external" as const, resourceId: null }
-    }),
+    }
+    return {
+      reference,
+      kind: "external" as const,
+      resourceId: null,
+      path: null,
+    }
+  })
+
+  const idByPath = await getResourceIdsByPermalinks(
+    siteId,
+    classified.flatMap(({ path }) => (path !== null ? [path] : [])),
   )
+
+  const parsed = classified.map(({ reference, kind, resourceId, path }) => ({
+    reference,
+    kind,
+    resourceId: path !== null ? (idByPath.get(path) ?? null) : resourceId,
+  }))
 
   const resourceIds = parsed
     .map(({ resourceId }) => resourceId)
