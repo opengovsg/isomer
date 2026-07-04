@@ -40,7 +40,6 @@ export const JSON_FORMS_RANKING = {
   SearchSGControl: 4,
   AnyOfControl: 3,
   OneOfControl: 3,
-  CategoryControl: 3,
   CollectionDropdownControl: 3,
   ProseControl: 3,
   LinkControl: 3,

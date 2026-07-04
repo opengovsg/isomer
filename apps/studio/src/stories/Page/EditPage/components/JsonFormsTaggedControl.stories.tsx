@@ -13,10 +13,7 @@ const meta: Meta<typeof FormBuilder> = {
   component: FormBuilder,
   parameters: {
     msw: {
-      handlers: [
-        pageHandlers.getCategories.default(),
-        pageHandlers.getCollectionTags.default(),
-      ],
+      handlers: [pageHandlers.getCollectionTags.default()],
     },
     nextjs: {
       router: {
@@ -54,13 +51,41 @@ export const Default: Story = {
   },
 }
 
+/** No tagCategories groups exist yet on the site — the control renders nothing. */
+export const Empty: Story = {
+  parameters: {
+    msw: {
+      handlers: [pageHandlers.getCollectionTags.empty()],
+    },
+  },
+  args: {
+    schema,
+    renderers: [
+      {
+        tester: jsonFormsTaggedControlTester,
+        renderer: JsonFormsTaggedControl,
+      },
+    ],
+  },
+}
+
+export const Populated: Story = {
+  args: {
+    schema,
+    data: ["6ba7b810-9dad-11d1-80b4-00c04fd430c8"],
+    renderers: [
+      {
+        tester: jsonFormsTaggedControlTester,
+        renderer: JsonFormsTaggedControl,
+      },
+    ],
+  },
+}
+
 export const WithRequiredCategory: Story = {
   parameters: {
     msw: {
-      handlers: [
-        pageHandlers.getCategories.default(),
-        pageHandlers.getCollectionTags.withRequired(),
-      ],
+      handlers: [pageHandlers.getCollectionTags.withRequired()],
     },
   },
   args: {
