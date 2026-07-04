@@ -1,4 +1,8 @@
 import type { UnwrapTagged } from "type-fest"
+
+vi.mock("@inquirer/prompts")
+
+import { input } from "@inquirer/prompts"
 import {
   db,
   jsonb,
@@ -20,9 +24,11 @@ import {
   buildCategoryTagGroup,
   buildMigrationPlan,
   deriveDistinctCategories,
+  main,
   migrateCollection,
   migrateSite,
   type TagCategoryGroup,
+  verifyUser,
 } from "../migrateCategoryToTagCategories"
 
 const setupCollectionIndexPage = async ({
@@ -345,6 +351,7 @@ describe("migrateCollection / migrateSite", () => {
     expect(result.status).toBe("migrated")
     expect(result.categories).toEqual(["Articles", "Guides"])
     expect(result.itemsUpdated).toBe(2)
+    expect(result.versionsCreated).toBe(0) // nothing published in this fixture
 
     const indexContentAfter = await getBlobContent(indexBlob.id)
     expect(indexContentAfter.page.tagCategories).toBeUndefined()
@@ -388,6 +395,7 @@ describe("migrateCollection / migrateSite", () => {
     expect(result.status).toBe("migrated")
     expect(result.categories).toEqual(["Guides"])
     expect(result.itemsUpdated).toBe(1)
+    expect(result.versionsCreated).toBe(0) // draft-only, nothing published
 
     const indexContentAfter = await getBlobContent(indexBlob.id)
     const newTagCategories = indexContentAfter.page.tagCategories
@@ -441,6 +449,7 @@ describe("migrateCollection / migrateSite", () => {
 
     // Assert
     expect(result.status).toBe("migrated")
+    expect(result.versionsCreated).toBe(2) // index + the one published item
 
     const indexResourceAfter = await getResource(indexPage.id)
     expect(indexResourceAfter.draftBlobId).toBeNull()
@@ -573,6 +582,8 @@ describe("migrateCollection / migrateSite", () => {
     expect(result.status).toBe("migrated")
     expect(result.categories).toEqual(["Events", "Forms", "Guides"])
     expect(result.itemsUpdated).toBe(3)
+    // index + itemA (published) + itemB (published) — itemC is draft-only
+    expect(result.versionsCreated).toBe(3)
 
     // Index: draft updated in place (same blob row, own prior array kept)
     const indexDraftContentAfter = await getBlobContent(indexDraftBlob.id)
@@ -670,6 +681,7 @@ describe("migrateCollection / migrateSite", () => {
       status: "no-index",
       categories: [],
       itemsUpdated: 0,
+      versionsCreated: 0,
     })
   })
 
@@ -738,5 +750,67 @@ describe("migrateCollection / migrateSite", () => {
     expect(results).toHaveLength(1)
     expect(results[0]!.collectionId).toBe(collectionA.id)
     expect(results[0]!.status).toBe("migrated")
+  })
+})
+
+describe("verifyUser", () => {
+  beforeEach(async () => {
+    await resetTables("Resource", "Blob", "Version", "Site", "Navbar", "Footer")
+  })
+
+  it("resolves when the user exists", async () => {
+    // Arrange
+    const user = await setupUser({})
+
+    // Act + Assert
+    await expect(verifyUser(user.id)).resolves.toEqual({ id: user.id })
+  })
+
+  it("throws when the user does not exist", async () => {
+    // Act + Assert
+    await expect(verifyUser("no-such-user")).rejects.toThrow(
+      "User no-such-user not found",
+    )
+  })
+})
+
+describe("main (CLI entrypoint)", () => {
+  let siteId: number
+
+  beforeEach(async () => {
+    await resetTables("Resource", "Blob", "Version", "Site", "Navbar", "Footer")
+    const { site } = await setupSite()
+    siteId = site.id
+    vi.mocked(input).mockReset()
+  })
+
+  it("does not prompt for a publisher id in --dry-run mode", async () => {
+    // Act
+    await main(["--site-id", String(siteId), "--dry-run"])
+
+    // Assert
+    expect(input).not.toHaveBeenCalled()
+  })
+
+  it("prompts for and verifies a publisher id outside --dry-run mode", async () => {
+    // Arrange
+    const user = await setupUser({})
+    vi.mocked(input).mockResolvedValue(user.id)
+
+    // Act
+    await main(["--site-id", String(siteId)])
+
+    // Assert
+    expect(input).toHaveBeenCalledTimes(1)
+  })
+
+  it("rejects when the prompted publisher id does not exist", async () => {
+    // Arrange
+    vi.mocked(input).mockResolvedValue("no-such-user")
+
+    // Act + Assert
+    await expect(main(["--site-id", String(siteId)])).rejects.toThrow(
+      "User no-such-user not found",
+    )
   })
 })

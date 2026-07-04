@@ -313,6 +313,7 @@ export interface CollectionMigrationResult {
   status: MigrationPlan["status"] | "no-index"
   categories: string[]
   itemsUpdated: number
+  versionsCreated: number
 }
 
 export const migrateCollection = async ({
@@ -328,7 +329,13 @@ export const migrateCollection = async ({
 }): Promise<CollectionMigrationResult> => {
   const indexRow = await getIndexPageRow(collectionId, siteId)
   if (!indexRow || (!indexRow.draftContent && !indexRow.publishedContent)) {
-    return { collectionId, status: "no-index", categories: [], itemsUpdated: 0 }
+    return {
+      collectionId,
+      status: "no-index",
+      categories: [],
+      itemsUpdated: 0,
+      versionsCreated: 0,
+    }
   }
 
   const itemRows = await getItemRows(collectionId, siteId)
@@ -346,9 +353,22 @@ export const migrateCollection = async ({
   const categories =
     plan.status === "migrated" ? plan.group.options.map((o) => o.label) : []
   const itemsUpdated = new Set(plan.itemUpdates.map((u) => u.resourceId)).size
+  // New Versions this run will (or, in dry-run, would) create — the index's
+  // published side plus one per item published-side update.
+  const versionsCreated =
+    plan.status === "migrated"
+      ? (indexRow.publishedContent ? 1 : 0) +
+        plan.itemUpdates.filter((u) => u.state === "published").length
+      : 0
 
   if (plan.status !== "migrated" || dryRun) {
-    return { collectionId, status: plan.status, categories, itemsUpdated }
+    return {
+      collectionId,
+      status: plan.status,
+      categories,
+      itemsUpdated,
+      versionsCreated,
+    }
   }
 
   const group = plan.group
@@ -423,7 +443,13 @@ export const migrateCollection = async ({
     }
   })
 
-  return { collectionId, status: "migrated", categories, itemsUpdated }
+  return {
+    collectionId,
+    status: "migrated",
+    categories,
+    itemsUpdated,
+    versionsCreated,
+  }
 }
 
 export const migrateSite = async ({
@@ -464,7 +490,7 @@ const formatResult = (
   const prefix = `"${title}" (${result.collectionId})`
   switch (result.status) {
     case "migrated":
-      return `${dryRun ? "[dry-run] would migrate" : "migrated"} ${prefix}: categories=[${result.categories.join(", ")}], items updated=${result.itemsUpdated}`
+      return `${dryRun ? "[dry-run] would migrate" : "migrated"} ${prefix}: categories=[${result.categories.join(", ")}], items updated=${result.itemsUpdated}, new versions ${dryRun ? "to create" : "created"}=${result.versionsCreated}`
     case "no-categories":
       return `skipped ${prefix}: no legacy category values found on any item`
     case "no-index":
@@ -478,8 +504,9 @@ const formatResult = (
 // CLI entrypoint
 // ---------------------------------------------------------------------------
 
-const main = async () => {
+export const main = async (argv: string[] = process.argv.slice(2)) => {
   const { values } = parseArgs({
+    args: argv,
     options: {
       "site-id": { type: "string" },
       "dry-run": { type: "boolean", default: false },
