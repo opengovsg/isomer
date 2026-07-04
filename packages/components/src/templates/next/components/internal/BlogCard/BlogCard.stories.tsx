@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionCardProps } from "~/interfaces"
+import { expect, within } from "storybook/test"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -46,7 +47,7 @@ const generateArgs = ({
     itemTitle:
       "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
     shouldShowDate,
-    tags: [],
+    displayTags: [],
     ...overrides,
   }
 }
@@ -114,7 +115,7 @@ export const TagsWithImage: Story = {
   args: generateArgs({
     title: "Collection card with tags",
     description: "This is a random description that will be on the card",
-    tags: [
+    displayTags: [
       {
         category: "long",
         selected: [
@@ -130,7 +131,7 @@ export const TagsWithoutImage: Story = {
     title: "Collection card without tags",
     image: undefined,
     description: "This is a random description\nthat will be on the card",
-    tags: [
+    displayTags: [
       {
         category: "very long",
         selected: [
@@ -139,4 +140,32 @@ export const TagsWithoutImage: Story = {
       },
     ],
   }),
+}
+
+export const CategoryGroupExcludedFromTags: Story = {
+  args: generateArgs({
+    title: "Category group is not duplicated as a pill",
+    description:
+      "The `category` prop (e.g. Research) is rendered as plain text under the title, and `displayTags` should never contain an entry for that same category group.",
+    category: "Research",
+    displayTags: [
+      {
+        category: "Topic",
+        selected: ["Health"],
+      },
+    ],
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+
+    // The category is rendered once as plain text
+    const categoryMatches = await screen.findAllByText("Research")
+    await expect(categoryMatches).toHaveLength(1)
+
+    // displayTags renders the non-category group as a pill
+    await expect(screen.getByText("Health")).toBeInTheDocument()
+
+    // The category group's own label ("Category") must not appear as a pill heading
+    await expect(screen.queryByText("Category")).not.toBeInTheDocument()
+  },
 }

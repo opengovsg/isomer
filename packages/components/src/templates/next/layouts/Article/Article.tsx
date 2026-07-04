@@ -29,9 +29,11 @@ export const ArticleLayout = ({
       ? parent.collectionPagePageProps?.tagCategories
       : undefined
 
+  // NOTE: Excludes the last tagCategories group, since it's already shown
+  // separately via `resolvedCategory` below
   const resolvedTags =
     tagged && parentTagCategories
-      ? getTagsFromTagged(tagged, parentTagCategories)
+      ? getTagsFromTagged(tagged, parentTagCategories.slice(0, -1))
       : tags
 
   const resolvedCategory = getCategoryFromTagged(tagged, parentTagCategories)

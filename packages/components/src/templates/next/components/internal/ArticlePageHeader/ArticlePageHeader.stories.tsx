@@ -56,6 +56,9 @@ export const WithoutCategory: Story = {
 export const ArticleWithTags: Story = {
   args: {
     ...ARTICLE,
+    // NOTE: `tags` here is expected to already exclude the tagCategories
+    // group used to resolve `category` above (see Article.tsx's
+    // `resolvedTags`), so that the category isn't duplicated as a pill.
     tags: [
       {
         category: "Tags",

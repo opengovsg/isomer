@@ -17,7 +17,7 @@ export const BlogCard = ({
   itemTitle,
   siteAssetsBaseUrl,
   shouldShowDate = true,
-  tags = [],
+  displayTags = [],
   formattedDate,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
@@ -53,9 +53,9 @@ export const BlogCard = ({
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
-        {tags && tags.length > 0 && (
+        {displayTags && displayTags.length > 0 && (
           <div className="-mt-1 flex flex-col gap-2">
-            {tags.flatMap(({ category, selected: labels }) => {
+            {displayTags.flatMap(({ category, selected: labels }) => {
               return (
                 <div className="flex w-full flex-wrap items-center gap-1.5">
                   <p className="prose-label-sm">{category}</p>

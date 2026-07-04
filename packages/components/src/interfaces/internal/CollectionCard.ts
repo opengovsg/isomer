@@ -11,6 +11,9 @@ interface FileDetails {
 }
 interface BaseCardProps {
   tags?: ArticlePagePageProps["tags"]
+  // NOTE: Same as `tags`, but excludes the tagCategories group used to
+  // resolve `category` (see getCategoryFromTagged), so it isn't shown twice
+  displayTags?: ArticlePagePageProps["tags"]
   tagged?: ArticlePagePageProps["tagged"]
   id: string
   date?: Date
@@ -51,6 +54,7 @@ export type CollectionCardProps = Pick<
   | "description"
   | "image"
   | "tags"
+  | "displayTags"
   | "tagged"
   | "isContainNeeded"
 > & {

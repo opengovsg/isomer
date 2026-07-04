@@ -413,4 +413,94 @@ describe("getCollectionItems", () => {
       expect(result[0]!.category).toBeUndefined()
     })
   })
+
+  describe("displayTags exclude the category group", () => {
+    const tagCategories = [
+      {
+        label: "Topic",
+        id: "topic-1",
+        options: [{ label: "Health", id: "topic-opt-1" }],
+      },
+      {
+        label: "Category",
+        id: "cat-1",
+        options: [
+          { label: "Guides", id: "cat-opt-1" },
+          { label: "Articles", id: "cat-opt-2" },
+        ],
+      },
+    ]
+
+    it("includes both groups in tags, but only the non-last group in displayTags", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["topic-opt-1", "cat-opt-1"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.tags).toEqual([
+        { category: "Topic", selected: ["Health"] },
+        { category: "Category", selected: ["Guides"] },
+      ])
+      expect(result[0]!.displayTags).toEqual([
+        { category: "Topic", selected: ["Health"] },
+      ])
+    })
+
+    it("falls back to item.tags when tagCategories is undefined, same as tags", () => {
+      // Arrange
+      const itemTags = [{ category: "Legacy", selected: ["Some value"] }]
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["topic-opt-1"], tags: itemTags }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.tags).toEqual(itemTags)
+      expect(result[0]!.displayTags).toEqual(itemTags)
+      expect(result[0]!.displayTags).toEqual(result[0]!.tags)
+    })
+
+    it("returns an empty array for displayTags when there is only one tagCategories group", () => {
+      // Arrange
+      const singleTagCategory = [
+        {
+          label: "Category",
+          id: "cat-1",
+          options: [{ label: "Guides", id: "cat-opt-1" }],
+        },
+      ]
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["cat-opt-1"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories: singleTagCategory,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.tags).toEqual([
+        { category: "Category", selected: ["Guides"] },
+      ])
+      expect(result[0]!.displayTags).toEqual([])
+    })
+  })
 })

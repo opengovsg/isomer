@@ -137,6 +137,12 @@ export const getCollectionItems = ({
         tagCategories && item.tagged
           ? getTagsFromTagged(item.tagged, tagCategories)
           : item.tags,
+      // NOTE: Excludes the last tagCategories group, since it's already
+      // shown separately via `category` above
+      displayTags:
+        tagCategories && item.tagged
+          ? getTagsFromTagged(item.tagged, tagCategories.slice(0, -1))
+          : item.tags,
     }
 
     if (item.layout === "file") {
