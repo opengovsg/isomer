@@ -8,6 +8,7 @@ import {
 
 import { resetTables } from "../../../tests/integration/helpers/db"
 import {
+  collectionPageBlobContent,
   setupCollection,
   setupCollectionPage,
   setupPageResource,
@@ -19,7 +20,6 @@ import {
   buildCategoryTagGroup,
   buildMigrationPlan,
   deriveDistinctCategories,
-  hasCategoryGroup,
   migrateCollection,
   migrateSite,
   type TagCategoryGroup,
@@ -84,6 +84,48 @@ const getBlobContent = async (
   return row.content as unknown as { page: TestBlobPage }
 }
 
+const getResource = (resourceId: string) =>
+  db
+    .selectFrom("Resource")
+    .where("id", "=", resourceId)
+    .select(["draftBlobId", "publishedVersionId"])
+    .executeTakeFirstOrThrow()
+
+const getVersion = (versionId: string) =>
+  db
+    .selectFrom("Version")
+    .where("id", "=", versionId)
+    .select(["versionNum", "blobId"])
+    .executeTakeFirstOrThrow()
+
+/** Simulates an unpublished edit made after a resource was already published. */
+const addStaleDraft = async (
+  resourceId: string,
+  content: UnwrapTagged<PrismaJson.BlobJsonContent>,
+) => {
+  const draftBlob = await db
+    .insertInto("Blob")
+    .values({ content: jsonb(content) })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+  await db
+    .updateTable("Resource")
+    .set({ draftBlobId: draftBlob.id })
+    .where("id", "=", resourceId)
+    .execute()
+  return draftBlob
+}
+
+const indexContent = (
+  tagCategories?: TagCategoryGroup[],
+): UnwrapTagged<PrismaJson.BlobJsonContent> =>
+  ({
+    layout: "collection",
+    page: { subtitle: "Subtitle", sortOrder: "date-desc", tagCategories },
+    content: [],
+    version: "0.1.0",
+  }) as unknown as UnwrapTagged<PrismaJson.BlobJsonContent>
+
 // Group A: pure unit tests — no DB required
 describe("deriveDistinctCategories", () => {
   it("dedupes and sorts alphabetically", () => {
@@ -115,24 +157,6 @@ describe("deriveDistinctCategories", () => {
   it("returns an empty array for no input", () => {
     // Act + Assert
     expect(deriveDistinctCategories([])).toEqual([])
-  })
-})
-
-describe("hasCategoryGroup", () => {
-  it("returns false when tagCategories is undefined", () => {
-    expect(hasCategoryGroup(undefined)).toBe(false)
-  })
-
-  it("returns false when no group is labelled Category", () => {
-    expect(hasCategoryGroup([{ id: "1", label: "Topic", options: [] }])).toBe(
-      false,
-    )
-  })
-
-  it("returns true when a group is labelled Category", () => {
-    expect(
-      hasCategoryGroup([{ id: "1", label: "Category", options: [] }]),
-    ).toBe(true)
   })
 })
 
@@ -180,91 +204,102 @@ describe("buildCategoryTagGroup", () => {
 })
 
 describe("buildMigrationPlan", () => {
-  it("returns already-migrated when a Category group already exists, making no changes", () => {
-    // Arrange
-    const existingTagCategories: TagCategoryGroup[] = [
-      { id: "cat-1", label: "Category", options: [] },
-    ]
-
+  it("returns no-categories when no item has a category value on either side", () => {
     // Act
     const plan = buildMigrationPlan({
-      tagCategories: existingTagCategories,
-      items: [{ resourceId: "1", category: "Guides" }],
-      existingTagged: new Map(),
-    })
-
-    // Assert
-    expect(plan).toEqual({ status: "already-migrated", itemUpdates: [] })
-  })
-
-  it("returns no-categories when no item has a legacy category value", () => {
-    // Act
-    const plan = buildMigrationPlan({
-      tagCategories: undefined,
-      items: [{ resourceId: "1", category: "" }, { resourceId: "2" }],
-      existingTagged: new Map(),
+      items: [
+        { resourceId: "1", draftCategory: "", publishedCategory: undefined },
+        { resourceId: "2" },
+      ],
     })
 
     // Assert
     expect(plan).toEqual({ status: "no-categories", itemUpdates: [] })
   })
 
-  it("appends the new Category group to the end of existing tagCategories", () => {
+  it("collects categories from both draft and published values across items", () => {
     // Arrange
     let counter = 0
     const generateId = () => `id-${counter++}`
-    const existingTagCategories: TagCategoryGroup[] = [
-      {
-        id: "topic-1",
-        label: "Topic",
-        options: [{ id: "t-1", label: "Health" }],
-      },
-    ]
 
-    // Act
+    // Act — "Guides" only published on item 1, "Events" only in draft on item 2
     const plan = buildMigrationPlan({
-      tagCategories: existingTagCategories,
-      items: [{ resourceId: "1", category: "Guides" }],
-      existingTagged: new Map(),
+      items: [
+        { resourceId: "1", publishedCategory: "Guides" },
+        { resourceId: "2", draftCategory: "Events" },
+      ],
       generateId,
     })
 
     // Assert
     expect(plan.status).toBe("migrated")
-    expect(plan.newTagCategories).toEqual([
-      existingTagCategories[0],
-      {
-        id: "id-0",
-        label: "Category",
-        isRequired: true,
-        options: [{ id: "id-1", label: "Guides" }],
-      },
-    ])
+    if (plan.status !== "migrated") return
+    expect(plan.group).toEqual({
+      id: "id-0",
+      label: "Category",
+      isRequired: true,
+      options: [
+        { id: "id-1", label: "Events" },
+        { id: "id-2", label: "Guides" },
+      ],
+    })
   })
 
-  it("computes tagged updates per item, preserving existing tagged entries and skipping items with no matching category", () => {
+  it("tags draft and published sides independently, preserving each side's existing tagged entries", () => {
     // Arrange
     let counter = 0
     const generateId = () => `id-${counter++}`
 
-    // Act
+    // Act — options sorted: Articles=id-1, Guides=id-2
     const plan = buildMigrationPlan({
-      tagCategories: undefined,
       items: [
-        { resourceId: "1", category: "Guides" },
-        { resourceId: "2", category: "Articles" },
-        { resourceId: "3", category: "" },
-        { resourceId: "4" },
+        {
+          resourceId: "1",
+          publishedCategory: "Guides",
+          publishedTagged: ["existing-tag"],
+        },
+        { resourceId: "2", draftCategory: "Articles" },
+        { resourceId: "3", draftCategory: "", publishedCategory: undefined },
       ],
-      existingTagged: new Map([["1", ["existing-tag"]]]),
       generateId,
     })
 
-    // Assert — group id-0, options sorted: Articles=id-1, Guides=id-2
+    // Assert
     expect(plan.status).toBe("migrated")
     expect(plan.itemUpdates).toEqual([
-      { resourceId: "1", tagged: ["existing-tag", "id-2"] },
-      { resourceId: "2", tagged: ["id-1"] },
+      {
+        resourceId: "1",
+        state: "published",
+        tagged: ["existing-tag", "id-2"],
+      },
+      { resourceId: "2", state: "draft", tagged: ["id-1"] },
+    ])
+  })
+
+  it("tags an item's draft and published sides differently when its category diverges between them", () => {
+    // Arrange
+    let counter = 0
+    const generateId = () => `id-${counter++}`
+
+    // Act — options sorted: Forms=id-1, Guides=id-2
+    const plan = buildMigrationPlan({
+      items: [
+        {
+          resourceId: "1",
+          draftCategory: "Forms",
+          draftTagged: [],
+          publishedCategory: "Guides",
+          publishedTagged: [],
+        },
+      ],
+      generateId,
+    })
+
+    // Assert
+    expect(plan.status).toBe("migrated")
+    expect(plan.itemUpdates).toEqual([
+      { resourceId: "1", state: "draft", tagged: ["id-1"] },
+      { resourceId: "1", state: "published", tagged: ["id-2"] },
     ])
   })
 })
@@ -303,6 +338,7 @@ describe("migrateCollection / migrateSite", () => {
       collectionId: collection.id,
       siteId,
       dryRun: true,
+      publisherId: null,
     })
 
     // Assert
@@ -310,14 +346,14 @@ describe("migrateCollection / migrateSite", () => {
     expect(result.categories).toEqual(["Articles", "Guides"])
     expect(result.itemsUpdated).toBe(2)
 
-    const indexContent = await getBlobContent(indexBlob.id)
-    expect(indexContent.page.tagCategories).toBeUndefined()
+    const indexContentAfter = await getBlobContent(indexBlob.id)
+    expect(indexContentAfter.page.tagCategories).toBeUndefined()
 
     const itemContent = await getBlobContent(itemBlob1.id)
     expect(itemContent.page.tagged).toEqual([])
   })
 
-  it("migrates a collection: appends the Category group and tags each item, leaving `category` untouched", async () => {
+  it("migrates a draft-only collection in place: appends the Category group and tags each item, leaving `category` untouched", async () => {
     // Arrange
     const { collection } = await setupCollection({ siteId })
     const existingTagCategories: TagCategoryGroup[] = [
@@ -327,12 +363,14 @@ describe("migrateCollection / migrateSite", () => {
         options: [{ id: "t-1", label: "Health" }],
       },
     ]
-    const { blob: indexBlob } = await setupCollectionIndexPage({
-      collectionId: collection.id,
-      siteId,
-      tagCategories: existingTagCategories,
-    })
-    const { blob: itemBlob } = await setupCollectionPage({
+    const { blob: indexBlob, page: indexPage } = await setupCollectionIndexPage(
+      {
+        collectionId: collection.id,
+        siteId,
+        tagCategories: existingTagCategories,
+      },
+    )
+    const { blob: itemBlob, page: itemPage } = await setupCollectionPage({
       siteId,
       parentId: collection.id,
       category: "Guides",
@@ -343,6 +381,7 @@ describe("migrateCollection / migrateSite", () => {
       collectionId: collection.id,
       siteId,
       dryRun: false,
+      publisherId: null,
     })
 
     // Assert
@@ -350,8 +389,8 @@ describe("migrateCollection / migrateSite", () => {
     expect(result.categories).toEqual(["Guides"])
     expect(result.itemsUpdated).toBe(1)
 
-    const indexContent = await getBlobContent(indexBlob.id)
-    const newTagCategories = indexContent.page.tagCategories
+    const indexContentAfter = await getBlobContent(indexBlob.id)
+    const newTagCategories = indexContentAfter.page.tagCategories
     expect(newTagCategories).toHaveLength(2)
     expect(newTagCategories?.[0]).toEqual(existingTagCategories[0])
     const categoryGroup = newTagCategories?.[1]
@@ -364,41 +403,248 @@ describe("migrateCollection / migrateSite", () => {
     const itemContent = await getBlobContent(itemBlob.id)
     expect(itemContent.page.category).toBe("Guides") // legacy field untouched
     expect(itemContent.page.tagged).toEqual([categoryGroup?.options[0]?.id])
+
+    // No publish should have happened — draft-only content stays draft-only
+    const indexResource = await getResource(indexPage.id)
+    expect(indexResource.publishedVersionId).toBeNull()
+    expect(indexResource.draftBlobId).toBe(indexBlob.id)
+    const itemResource = await getResource(itemPage.id)
+    expect(itemResource.publishedVersionId).toBeNull()
+    expect(itemResource.draftBlobId).toBe(itemBlob.id)
   })
 
-  it("is idempotent: re-running against an already-migrated collection makes no changes", async () => {
+  it("migrates a published collection via a new Version, without touching draftBlobId", async () => {
     // Arrange
+    const user = await setupUser({})
     const { collection } = await setupCollection({ siteId })
-    const { blob: indexBlob } = await setupCollectionIndexPage({
+    const { page: indexPage } = await setupCollectionIndexPage({
       collectionId: collection.id,
       siteId,
+      state: ResourceState.Published,
+      userId: user.id,
     })
-    const { blob: itemBlob } = await setupCollectionPage({
+    const { page: itemPage } = await setupCollectionPage({
       siteId,
       parentId: collection.id,
       category: "Guides",
+      state: ResourceState.Published,
+      userId: user.id,
     })
-    await migrateCollection({
-      collectionId: collection.id,
-      siteId,
-      dryRun: false,
-    })
-    const indexContentAfterFirstRun = await getBlobContent(indexBlob.id)
-    const itemContentAfterFirstRun = await getBlobContent(itemBlob.id)
 
     // Act
     const result = await migrateCollection({
       collectionId: collection.id,
       siteId,
       dryRun: false,
+      publisherId: user.id,
     })
 
     // Assert
-    expect(result.status).toBe("already-migrated")
-    expect(await getBlobContent(indexBlob.id)).toEqual(
-      indexContentAfterFirstRun,
+    expect(result.status).toBe("migrated")
+
+    const indexResourceAfter = await getResource(indexPage.id)
+    expect(indexResourceAfter.draftBlobId).toBeNull()
+    expect(indexResourceAfter.publishedVersionId).not.toBe(
+      indexPage.publishedVersionId,
     )
-    expect(await getBlobContent(itemBlob.id)).toEqual(itemContentAfterFirstRun)
+    const indexVersion = await getVersion(
+      indexResourceAfter.publishedVersionId!,
+    )
+    expect(indexVersion.versionNum).toBe(2)
+    const indexContentAfter = await getBlobContent(indexVersion.blobId)
+    expect(indexContentAfter.page.tagCategories).toHaveLength(1)
+    expect(indexContentAfter.page.tagCategories?.[0]?.label).toBe("Category")
+
+    const itemResourceAfter = await getResource(itemPage.id)
+    expect(itemResourceAfter.draftBlobId).toBeNull()
+    const itemVersion = await getVersion(itemResourceAfter.publishedVersionId!)
+    expect(itemVersion.versionNum).toBe(2)
+    const itemContentAfter = await getBlobContent(itemVersion.blobId)
+    expect(itemContentAfter.page.tagged).toHaveLength(1)
+  })
+
+  it("throws when publisherId is missing outside dry-run for a collection with published content", async () => {
+    // Arrange
+    const user = await setupUser({})
+    const { collection } = await setupCollection({ siteId })
+    await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      category: "Guides",
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+
+    // Act + Assert
+    await expect(
+      migrateCollection({
+        collectionId: collection.id,
+        siteId,
+        dryRun: false,
+        publisherId: null,
+      }),
+    ).rejects.toThrow("publisherId is required")
+  })
+
+  it("handles diverging draft vs. published content: draft updated in place, published via a new Version, each tagged for its own category", async () => {
+    // Arrange
+    const user = await setupUser({})
+    const { collection } = await setupCollection({ siteId })
+
+    // Index: published with a Topic group; a later, unrelated draft edit adds
+    // a Region group. Both should end up with the same Category group.
+    const publishedTagCategories: TagCategoryGroup[] = [
+      {
+        id: "topic-1",
+        label: "Topic",
+        options: [{ id: "t-1", label: "Health" }],
+      },
+    ]
+    const { page: indexPage, blob: indexPublishedBlob } =
+      await setupCollectionIndexPage({
+        collectionId: collection.id,
+        siteId,
+        tagCategories: publishedTagCategories,
+        state: ResourceState.Published,
+        userId: user.id,
+      })
+    const draftTagCategories: TagCategoryGroup[] = [
+      ...publishedTagCategories,
+      {
+        id: "region-1",
+        label: "Region",
+        options: [{ id: "r-1", label: "North" }],
+      },
+    ]
+    const indexDraftBlob = await addStaleDraft(
+      indexPage.id,
+      indexContent(draftTagCategories),
+    )
+
+    // Item A: published only, category "Guides"
+    const { page: itemAPage } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      permalink: "item-a",
+      category: "Guides",
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+
+    // Item B: published "Guides", but a stale draft changed it to "Forms"
+    const { page: itemBPage } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      permalink: "item-b",
+      category: "Guides",
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const itemBDraftBlob = await addStaleDraft(
+      itemBPage.id,
+      collectionPageBlobContent([], "Forms"),
+    )
+
+    // Item C: draft-only, never published, category "Events"
+    const { page: itemCPage, blob: itemCDraftBlob } = await setupCollectionPage(
+      {
+        siteId,
+        parentId: collection.id,
+        permalink: "item-c",
+        category: "Events",
+      },
+    )
+
+    // Act
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: user.id,
+    })
+
+    // Assert
+    expect(result.status).toBe("migrated")
+    expect(result.categories).toEqual(["Events", "Forms", "Guides"])
+    expect(result.itemsUpdated).toBe(3)
+
+    // Index: draft updated in place (same blob row, own prior array kept)
+    const indexDraftContentAfter = await getBlobContent(indexDraftBlob.id)
+    expect(indexDraftContentAfter.page.tagCategories).toHaveLength(3)
+    expect(indexDraftContentAfter.page.tagCategories?.[0]).toEqual(
+      publishedTagCategories[0],
+    )
+    expect(indexDraftContentAfter.page.tagCategories?.[1]).toEqual(
+      draftTagCategories[1],
+    )
+    const draftCategoryGroup = indexDraftContentAfter.page.tagCategories?.[2]
+    expect(draftCategoryGroup?.label).toBe("Category")
+
+    // Index: published side got a new Version, with its own prior array kept
+    const indexResourceAfter = await getResource(indexPage.id)
+    expect(indexResourceAfter.draftBlobId).toBe(indexDraftBlob.id) // untouched
+    const indexPublishedVersion = await getVersion(
+      indexResourceAfter.publishedVersionId!,
+    )
+    expect(indexPublishedVersion.versionNum).toBe(2)
+    expect(indexPublishedVersion.blobId).not.toBe(indexPublishedBlob.id)
+    const indexPublishedContentAfter = await getBlobContent(
+      indexPublishedVersion.blobId,
+    )
+    expect(indexPublishedContentAfter.page.tagCategories).toHaveLength(2)
+    const publishedCategoryGroup =
+      indexPublishedContentAfter.page.tagCategories?.[1]
+    expect(publishedCategoryGroup?.label).toBe("Category")
+
+    // Same option ids reused on both sides
+    expect(publishedCategoryGroup).toEqual(draftCategoryGroup)
+
+    const optionIdByLabel = new Map(
+      draftCategoryGroup?.options.map((o) => [o.label, o.id]),
+    )
+
+    // Item A: published-only, tagged via a new Version
+    const itemAResourceAfter = await getResource(itemAPage.id)
+    expect(itemAResourceAfter.draftBlobId).toBeNull()
+    const itemAVersion = await getVersion(
+      itemAResourceAfter.publishedVersionId!,
+    )
+    const itemAContentAfter = await getBlobContent(itemAVersion.blobId)
+    expect(itemAContentAfter.page.tagged).toEqual([
+      optionIdByLabel.get("Guides"),
+    ])
+
+    // Item B: draft tagged for "Forms" in place; published untouched content-wise
+    // except tagged for its own "Guides" value via a new Version
+    const itemBResourceAfter = await getResource(itemBPage.id)
+    expect(itemBResourceAfter.draftBlobId).toBe(itemBDraftBlob.id) // in place, same row
+    const itemBDraftContentAfter = await getBlobContent(itemBDraftBlob.id)
+    expect(itemBDraftContentAfter.page.tagged).toEqual([
+      optionIdByLabel.get("Forms"),
+    ])
+    const itemBVersion = await getVersion(
+      itemBResourceAfter.publishedVersionId!,
+    )
+    const itemBPublishedContentAfter = await getBlobContent(itemBVersion.blobId)
+    expect(itemBPublishedContentAfter.page.category).toBe("Guides")
+    expect(itemBPublishedContentAfter.page.tagged).toEqual([
+      optionIdByLabel.get("Guides"),
+    ])
+
+    // Item C: draft-only, tagged in place, never published
+    const itemCResourceAfter = await getResource(itemCPage.id)
+    expect(itemCResourceAfter.publishedVersionId).toBeNull()
+    expect(itemCResourceAfter.draftBlobId).toBe(itemCDraftBlob.id)
+    const itemCContentAfter = await getBlobContent(itemCDraftBlob.id)
+    expect(itemCContentAfter.page.tagged).toEqual([
+      optionIdByLabel.get("Events"),
+    ])
   })
 
   it("skips a collection with no Index page", async () => {
@@ -415,6 +661,7 @@ describe("migrateCollection / migrateSite", () => {
       collectionId: collection.id,
       siteId,
       dryRun: false,
+      publisherId: null,
     })
 
     // Assert
@@ -426,7 +673,7 @@ describe("migrateCollection / migrateSite", () => {
     })
   })
 
-  it("skips items whose legacy category is empty, without failing the migration", async () => {
+  it("skips items whose legacy category is empty on both sides, without failing the migration", async () => {
     // Arrange
     const { collection } = await setupCollection({ siteId })
     await setupCollectionIndexPage({ collectionId: collection.id, siteId })
@@ -447,6 +694,7 @@ describe("migrateCollection / migrateSite", () => {
       collectionId: collection.id,
       siteId,
       dryRun: false,
+      publisherId: null,
     })
 
     // Assert
@@ -454,41 +702,6 @@ describe("migrateCollection / migrateSite", () => {
     expect(result.itemsUpdated).toBe(1)
     const emptyItemContent = await getBlobContent(emptyItemBlob.id)
     expect(emptyItemContent.page.tagged).toEqual([])
-  })
-
-  it("migrates the published blob when the collection is published, not just the draft", async () => {
-    // Arrange
-    const user = await setupUser({})
-    const { collection } = await setupCollection({ siteId })
-    const { blob: indexBlob } = await setupCollectionIndexPage({
-      collectionId: collection.id,
-      siteId,
-      state: ResourceState.Published,
-      userId: user.id,
-    })
-    const { blob: itemBlob } = await setupCollectionPage({
-      siteId,
-      parentId: collection.id,
-      category: "Guides",
-      state: ResourceState.Published,
-      userId: user.id,
-    })
-
-    // Act
-    const result = await migrateCollection({
-      collectionId: collection.id,
-      siteId,
-      dryRun: false,
-    })
-
-    // Assert
-    expect(result.status).toBe("migrated")
-    const indexContent = await getBlobContent(indexBlob.id)
-    expect(indexContent.page.tagCategories).toHaveLength(1)
-    expect(indexContent.page.tagCategories?.[0]?.label).toBe("Category")
-
-    const itemContent = await getBlobContent(itemBlob.id)
-    expect(itemContent.page.tagged).toHaveLength(1)
   })
 
   it("migrateSite processes every collection on the site and skips collections on other sites", async () => {
@@ -515,7 +728,11 @@ describe("migrateCollection / migrateSite", () => {
     })
 
     // Act
-    const results = await migrateSite({ siteId, dryRun: false })
+    const results = await migrateSite({
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
 
     // Assert
     expect(results).toHaveLength(1)

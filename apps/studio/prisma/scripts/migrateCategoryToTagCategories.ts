@@ -8,18 +8,40 @@
  * Appends the "Category" group to the END of the existing `tagCategories`
  * array so the current filter display order is preserved.
  *
- * Idempotent: a Collection whose Index already has a "Category" group is
- * skipped.
+ * Draft-aware: a Collection Item or Index can have draft content that
+ * diverges from its published content (or exists only on one side). Both
+ * sides are read and updated independently, so a category value sitting
+ * only in someone's unpublished draft still gets an option slot, and isn't
+ * silently lost or reverted by a later, unrelated publish:
+ *   - Published-side changes go through a proper new Version (new Blob +
+ *     new Version row + bumped `publishedVersionId`) — never an in-place
+ *     rewrite of a historical Blob row.
+ *   - Draft-side changes mutate the draft Blob's content in place, and
+ *     never trigger a publish — a draft may hold unrelated pending edits
+ *     that aren't ready to ship.
+ *
+ * Not idempotent: this is a one-time migration intended to run exactly
+ * once per site, against sites where no collection has a "Category" group
+ * yet. Re-running it against an already-migrated site will double-append a
+ * second "Category" group and re-tag every item.
  *
  * Usage:
  *   cd apps/studio
  *   source .env && pnpm exec tsx prisma/scripts/migrateCategoryToTagCategories.ts --site-id 123 [--dry-run]
  */
 import type { UnwrapTagged } from "type-fest"
+import { input } from "@inquirer/prompts"
 import { randomUUID } from "crypto"
 import { fileURLToPath } from "url"
 import { parseArgs } from "util"
-import { db, jsonb, ResourceType, sql } from "~/server/modules/database"
+import {
+  db,
+  type DB,
+  jsonb,
+  ResourceType,
+  sql,
+  type Transaction,
+} from "~/server/modules/database"
 
 const CATEGORY_GROUP_LABEL = "Category"
 
@@ -45,9 +67,6 @@ interface CollectionIndexContent {
 interface CollectionItemContent {
   page: { category?: string; tagged?: string[] }
 }
-
-export const hasCategoryGroup = (tagCategories?: TagCategoryGroup[]): boolean =>
-  (tagCategories ?? []).some((group) => group.label === CATEGORY_GROUP_LABEL)
 
 export const deriveDistinctCategories = (
   categories: (string | undefined)[],
@@ -84,31 +103,36 @@ export const appendTagged = (
 
 export interface MigrationPlanItem {
   resourceId: string
-  category?: string
+  draftCategory?: string
+  draftTagged?: string[]
+  publishedCategory?: string
+  publishedTagged?: string[]
 }
 
-export interface MigrationPlan {
-  status: "migrated" | "already-migrated" | "no-categories"
-  newTagCategories?: TagCategoryGroup[]
-  itemUpdates: { resourceId: string; tagged: string[] }[]
+export interface ItemTagUpdate {
+  resourceId: string
+  state: "draft" | "published"
+  tagged: string[]
 }
+
+export type MigrationPlan =
+  | { status: "no-categories"; itemUpdates: [] }
+  | {
+      status: "migrated"
+      group: TagCategoryGroup
+      itemUpdates: ItemTagUpdate[]
+    }
 
 export const buildMigrationPlan = ({
-  tagCategories,
   items,
-  existingTagged,
   generateId = randomUUID,
 }: {
-  tagCategories?: TagCategoryGroup[]
   items: MigrationPlanItem[]
-  existingTagged: Map<string, string[] | undefined>
   generateId?: () => string
 }): MigrationPlan => {
-  if (hasCategoryGroup(tagCategories)) {
-    return { status: "already-migrated", itemUpdates: [] }
-  }
-
-  const categories = deriveDistinctCategories(items.map((i) => i.category))
+  const categories = deriveDistinctCategories(
+    items.flatMap((item) => [item.draftCategory, item.publishedCategory]),
+  )
   if (categories.length === 0) {
     return { status: "no-categories", itemUpdates: [] }
   }
@@ -116,46 +140,57 @@ export const buildMigrationPlan = ({
   const group = buildCategoryTagGroup({ categories, generateId })
   const optionIdByLabel = new Map(group.options.map((o) => [o.label, o.id]))
 
-  const itemUpdates = items.flatMap(({ resourceId, category }) => {
-    const optionId = category ? optionIdByLabel.get(category.trim()) : undefined
-    if (!optionId) return []
-    return [
-      {
-        resourceId,
-        tagged: appendTagged(existingTagged.get(resourceId), optionId),
-      },
-    ]
-  })
+  const itemUpdates = items.flatMap(
+    ({
+      resourceId,
+      draftCategory,
+      draftTagged,
+      publishedCategory,
+      publishedTagged,
+    }): ItemTagUpdate[] => {
+      const updates: ItemTagUpdate[] = []
 
-  return {
-    status: "migrated",
-    newTagCategories: [...(tagCategories ?? []), group],
-    itemUpdates,
-  }
+      const draftOptionId = draftCategory
+        ? optionIdByLabel.get(draftCategory.trim())
+        : undefined
+      if (draftOptionId) {
+        updates.push({
+          resourceId,
+          state: "draft",
+          tagged: appendTagged(draftTagged, draftOptionId),
+        })
+      }
+
+      const publishedOptionId = publishedCategory
+        ? optionIdByLabel.get(publishedCategory.trim())
+        : undefined
+      if (publishedOptionId) {
+        updates.push({
+          resourceId,
+          state: "published",
+          tagged: appendTagged(publishedTagged, publishedOptionId),
+        })
+      }
+
+      return updates
+    },
+  )
+
+  return { status: "migrated", group, itemUpdates }
 }
 
 // ---------------------------------------------------------------------------
 // DB access
 // ---------------------------------------------------------------------------
 
-interface BlobRow<T> {
-  resourceId: string
-  draftBlobId: string | null
-  publishedBlobId: string | null
-  draftContent: T | null
-  publishedContent: T | null
-}
-
-const resolveEffectiveContent = <T>(
-  row: BlobRow<T>,
-): { blobId: string; content: T } | null => {
-  if (row.publishedBlobId && row.publishedContent) {
-    return { blobId: row.publishedBlobId, content: row.publishedContent }
-  }
-  if (row.draftBlobId && row.draftContent) {
-    return { blobId: row.draftBlobId, content: row.draftContent }
-  }
-  return null
+export const verifyUser = async (userId: string) => {
+  const user = await db
+    .selectFrom("User")
+    .where("id", "=", userId)
+    .select("id")
+    .executeTakeFirst()
+  if (!user) throw new Error(`User ${userId} not found`)
+  return user
 }
 
 const getIndexPageRow = (collectionId: string, siteId: number) =>
@@ -170,7 +205,9 @@ const getIndexPageRow = (collectionId: string, siteId: number) =>
     .select([
       "r.id as resourceId",
       "r.draftBlobId",
+      "r.publishedVersionId",
       "v.blobId as publishedBlobId",
+      "v.versionNum as publishedVersionNum",
       sql<CollectionIndexContent | null>`"draftBlob"."content"`.as(
         "draftContent",
       ),
@@ -195,7 +232,9 @@ const getItemRows = (collectionId: string, siteId: number) =>
     .select([
       "r.id as resourceId",
       "r.draftBlobId",
+      "r.publishedVersionId",
       "v.blobId as publishedBlobId",
+      "v.versionNum as publishedVersionNum",
       sql<CollectionItemContent | null>`"draftBlob"."content"`.as(
         "draftContent",
       ),
@@ -204,6 +243,70 @@ const getItemRows = (collectionId: string, siteId: number) =>
       ),
     ])
     .execute()
+
+const updateBlobContent = <T>(
+  tx: Transaction<DB>,
+  blobId: string,
+  content: T,
+) =>
+  tx
+    .updateTable("Blob")
+    .set({
+      content: jsonb(
+        content as unknown as UnwrapTagged<PrismaJson.BlobJsonContent>,
+      ),
+    })
+    .where("id", "=", blobId)
+    .execute()
+
+/** Publishes new content as a brand-new Version — never rewrites a historical Blob. */
+const publishNewContent = async <T>(
+  tx: Transaction<DB>,
+  {
+    resourceId,
+    previousVersionNum,
+    publisherId,
+    content,
+  }: {
+    resourceId: string
+    previousVersionNum: number
+    publisherId: string
+    content: T
+  },
+) => {
+  const newBlob = await tx
+    .insertInto("Blob")
+    .values({
+      content: jsonb(
+        content as unknown as UnwrapTagged<PrismaJson.BlobJsonContent>,
+      ),
+    })
+    .returning("id")
+    .executeTakeFirstOrThrow()
+
+  const newVersion = await tx
+    .insertInto("Version")
+    .values({
+      versionNum: previousVersionNum + 1,
+      resourceId,
+      blobId: newBlob.id,
+      publishedAt: new Date(),
+      publishedBy: publisherId,
+    })
+    .returning("id")
+    .executeTakeFirstOrThrow()
+
+  await tx
+    .updateTable("Resource")
+    .set({ publishedVersionId: newVersion.id })
+    .where("id", "=", resourceId)
+    .execute()
+}
+
+const appendCategoryGroup = (
+  tagCategories: TagCategoryGroup[] | undefined,
+  group: TagCategoryGroup,
+): TagCategoryGroup[] => [...(tagCategories ?? []), group]
 
 export interface CollectionMigrationResult {
   collectionId: string
@@ -216,105 +319,121 @@ export const migrateCollection = async ({
   collectionId,
   siteId,
   dryRun,
+  publisherId,
 }: {
   collectionId: string
   siteId: number
   dryRun: boolean
+  publisherId: string | null
 }): Promise<CollectionMigrationResult> => {
   const indexRow = await getIndexPageRow(collectionId, siteId)
-  const effectiveIndex = indexRow ? resolveEffectiveContent(indexRow) : null
-  if (!effectiveIndex) {
+  if (!indexRow || (!indexRow.draftContent && !indexRow.publishedContent)) {
     return { collectionId, status: "no-index", categories: [], itemsUpdated: 0 }
   }
 
   const itemRows = await getItemRows(collectionId, siteId)
-  const effectiveItems = itemRows
-    .map((row) => {
-      const effective = resolveEffectiveContent(row)
-      return effective && { resourceId: row.resourceId, ...effective }
-    })
-    .filter(
-      (
-        x,
-      ): x is {
-        resourceId: string
-        blobId: string
-        content: CollectionItemContent
-      } => !!x,
-    )
-
-  const existingTagged = new Map(
-    effectiveItems.map((item) => [item.resourceId, item.content.page.tagged]),
-  )
 
   const plan = buildMigrationPlan({
-    tagCategories: effectiveIndex.content.page.tagCategories,
-    items: effectiveItems.map(({ resourceId, content }) => ({
-      resourceId,
-      category: content.page.category,
+    items: itemRows.map((row) => ({
+      resourceId: row.resourceId,
+      draftCategory: row.draftContent?.page.category,
+      draftTagged: row.draftContent?.page.tagged,
+      publishedCategory: row.publishedContent?.page.category,
+      publishedTagged: row.publishedContent?.page.tagged,
     })),
-    existingTagged,
   })
 
   const categories =
-    plan.newTagCategories?.at(-1)?.options.map((o) => o.label) ?? []
+    plan.status === "migrated" ? plan.group.options.map((o) => o.label) : []
+  const itemsUpdated = new Set(plan.itemUpdates.map((u) => u.resourceId)).size
 
   if (plan.status !== "migrated" || dryRun) {
-    return {
-      collectionId,
-      status: plan.status,
-      categories,
-      itemsUpdated: plan.itemUpdates.length,
+    return { collectionId, status: plan.status, categories, itemsUpdated }
+  }
+
+  const group = plan.group
+  const requirePublisherId = (): string => {
+    if (!publisherId) {
+      throw new Error(
+        "publisherId is required to migrate a collection with published content outside --dry-run",
+      )
     }
+    return publisherId
   }
 
   await db.transaction().execute(async (tx) => {
-    await tx
-      .updateTable("Blob")
-      .set({
-        content: jsonb({
-          ...effectiveIndex.content,
-          page: {
-            ...effectiveIndex.content.page,
-            tagCategories: plan.newTagCategories,
-          },
-        } as unknown as UnwrapTagged<PrismaJson.BlobJsonContent>),
+    if (indexRow.draftContent && indexRow.draftBlobId) {
+      await updateBlobContent(tx, indexRow.draftBlobId, {
+        ...indexRow.draftContent,
+        page: {
+          ...indexRow.draftContent.page,
+          tagCategories: appendCategoryGroup(
+            indexRow.draftContent.page.tagCategories,
+            group,
+          ),
+        },
       })
-      .where("id", "=", effectiveIndex.blobId)
-      .execute()
+    }
 
+    if (indexRow.publishedContent && indexRow.publishedVersionNum != null) {
+      await publishNewContent(tx, {
+        resourceId: indexRow.resourceId,
+        previousVersionNum: indexRow.publishedVersionNum,
+        publisherId: requirePublisherId(),
+        content: {
+          ...indexRow.publishedContent,
+          page: {
+            ...indexRow.publishedContent.page,
+            tagCategories: appendCategoryGroup(
+              indexRow.publishedContent.page.tagCategories,
+              group,
+            ),
+          },
+        },
+      })
+    }
+
+    const itemRowByResourceId = new Map(
+      itemRows.map((row) => [row.resourceId, row]),
+    )
     for (const update of plan.itemUpdates) {
-      const item = effectiveItems.find(
-        (i) => i.resourceId === update.resourceId,
-      )
-      if (!item) continue
-      await tx
-        .updateTable("Blob")
-        .set({
-          content: jsonb({
-            ...item.content,
-            page: { ...item.content.page, tagged: update.tagged },
-          } as unknown as UnwrapTagged<PrismaJson.BlobJsonContent>),
+      const row = itemRowByResourceId.get(update.resourceId)
+      if (!row) continue
+
+      if (update.state === "draft" && row.draftContent && row.draftBlobId) {
+        await updateBlobContent(tx, row.draftBlobId, {
+          ...row.draftContent,
+          page: { ...row.draftContent.page, tagged: update.tagged },
         })
-        .where("id", "=", item.blobId)
-        .execute()
+      } else if (
+        update.state === "published" &&
+        row.publishedContent &&
+        row.publishedVersionNum != null
+      ) {
+        await publishNewContent(tx, {
+          resourceId: row.resourceId,
+          previousVersionNum: row.publishedVersionNum,
+          publisherId: requirePublisherId(),
+          content: {
+            ...row.publishedContent,
+            page: { ...row.publishedContent.page, tagged: update.tagged },
+          },
+        })
+      }
     }
   })
 
-  return {
-    collectionId,
-    status: "migrated",
-    categories,
-    itemsUpdated: plan.itemUpdates.length,
-  }
+  return { collectionId, status: "migrated", categories, itemsUpdated }
 }
 
 export const migrateSite = async ({
   siteId,
   dryRun,
+  publisherId,
 }: {
   siteId: number
   dryRun: boolean
+  publisherId: string | null
 }): Promise<CollectionMigrationResult[]> => {
   const collections = await db
     .selectFrom("Resource")
@@ -329,6 +448,7 @@ export const migrateSite = async ({
       collectionId: collection.id,
       siteId,
       dryRun,
+      publisherId,
     })
     results.push(result)
     console.log(formatResult(result, collection.title, dryRun))
@@ -345,8 +465,6 @@ const formatResult = (
   switch (result.status) {
     case "migrated":
       return `${dryRun ? "[dry-run] would migrate" : "migrated"} ${prefix}: categories=[${result.categories.join(", ")}], items updated=${result.itemsUpdated}`
-    case "already-migrated":
-      return `skipped ${prefix}: already has a "Category" tagCategories group`
     case "no-categories":
       return `skipped ${prefix}: no legacy category values found on any item`
     case "no-index":
@@ -380,10 +498,21 @@ const main = async () => {
   const siteId = Number(siteIdStr)
   const dryRun = values["dry-run"] === true
 
+  let publisherId: string | null = null
+  if (!dryRun) {
+    const rawUserId = await input({
+      message:
+        "User ID to record as publisher for the new Version rows this migration creates",
+      validate: (v) => v.trim().length > 0 || "User ID is required",
+    })
+    publisherId = rawUserId.trim()
+    await verifyUser(publisherId)
+  }
+
   console.log(
     `${dryRun ? "[DRY RUN] " : ""}Migrating category → tagCategories for site ${siteId}…`,
   )
-  const results = await migrateSite({ siteId, dryRun })
+  const results = await migrateSite({ siteId, dryRun, publisherId })
   console.log(`\nDone. ${results.length} collection(s) processed.`)
 }
 
