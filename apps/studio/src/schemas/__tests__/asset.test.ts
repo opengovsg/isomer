@@ -1,6 +1,10 @@
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
-import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import {
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  MAX_FILE_SIZE_BYTES,
+  MAX_IMG_FILE_SIZE_BYTES,
+} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 
 import {
   deleteAssetsSchema,
@@ -12,6 +16,7 @@ describe("getPresignedPutUrlSchema", () => {
   const validBaseData = {
     siteId: 1,
     resourceId: "test-resource-id",
+    fileSize: 1,
   }
 
   describe("fileName validation", () => {
@@ -269,6 +274,35 @@ describe("getPresignedPutUrlSchema", () => {
         })
         expect(result.success).toBe(false)
       })
+    })
+  })
+
+  describe("fileSize validation", () => {
+    it.each([
+      [
+        "images larger than the image limit",
+        "test.png",
+        MAX_IMG_FILE_SIZE_BYTES + 1,
+        `File size must not exceed ${MAX_IMG_FILE_SIZE_BYTES} bytes`,
+      ],
+      [
+        "documents larger than the file limit",
+        "test.pdf",
+        MAX_FILE_SIZE_BYTES + 1,
+        `File size must not exceed ${MAX_FILE_SIZE_BYTES} bytes`,
+      ],
+    ])("should reject %s", (_label, fileName, fileSize, message) => {
+      const result = getPresignedPutUrlSchema.safeParse({
+        ...validBaseData,
+        fileName,
+        fileSize,
+      })
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues[0]?.path).toEqual(["fileSize"])
+        expect(result.error.issues[0]?.message).toBe(message)
+      }
     })
   })
 })
