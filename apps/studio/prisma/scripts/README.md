@@ -24,3 +24,10 @@
 
 1. This script updates all users of a site to have a specific `RoleType`
 2. Edit the `siteId` and `role` at the end of the script
+
+## Migrate category to tag categories
+
+1. Migrates each Collection's legacy `category` string values into a "Category" tagCategories group, and tags every Collection Item with the matching option UUID via `tagged`. The legacy `category` field is left untouched.
+2. Idempotent — a Collection whose Index already has a "Category" group is skipped.
+3. Invoke with `--site-id <id>` (required) and optionally `--dry-run` to preview without writing:
+   `source .env && pnpm exec tsx prisma/scripts/migrateCategoryToTagCategories.ts --site-id 123 --dry-run`
