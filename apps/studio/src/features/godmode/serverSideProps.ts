@@ -51,11 +51,15 @@ export const requireGodModeAdminWithRoleProps = async (
   const userGodModeRoles: IsomerAdminRole[] = []
 
   if (session.userId) {
-    for (const role of allowedRoles) {
-      if (await isActiveIsomerAdmin(session.userId, [role])) {
-        userGodModeRoles.push(role)
-      }
-    }
+    const userId = session.userId
+    const roles = await Promise.all(
+      allowedRoles.map(async (role) =>
+        (await isActiveIsomerAdmin(userId, [role])) ? role : null,
+      ),
+    )
+    userGodModeRoles.push(
+      ...roles.filter((role): role is IsomerAdminRole => role !== null),
+    )
   }
 
   if (userGodModeRoles.length === 0) {
