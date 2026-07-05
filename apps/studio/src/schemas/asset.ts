@@ -6,6 +6,7 @@ import {
   MAX_IMG_FILE_SIZE_BYTES,
   MAX_SVG_FILE_SIZE_BYTES,
 } from "~/lib/fileUpload"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
 // Combine allowed extensions from existing constants
 const ALLOWED_EXTENSIONS = [
@@ -81,7 +82,7 @@ export const getPresignedPutUrlSchema = z
     ctx.addIssue({
       code: "custom",
       path: ["fileSize"],
-      message: `File size must not exceed ${maxFileSize} bytes`,
+      message: `File size must not exceed ${formatFileSizeLimit({ bytes: maxFileSize })}`,
     })
   })
 

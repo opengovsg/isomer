@@ -283,13 +283,13 @@ describe("getPresignedPutUrlSchema", () => {
         "images larger than the image limit",
         "test.png",
         MAX_IMG_FILE_SIZE_BYTES + 1,
-        `File size must not exceed ${MAX_IMG_FILE_SIZE_BYTES} bytes`,
+        "File size must not exceed 5 MB",
       ],
       [
         "documents larger than the file limit",
         "test.pdf",
         MAX_FILE_SIZE_BYTES + 1,
-        `File size must not exceed ${MAX_FILE_SIZE_BYTES} bytes`,
+        "File size must not exceed 50 MB",
       ],
     ])("should reject %s", (_label, fileName, fileSize, message) => {
       const result = getPresignedPutUrlSchema.safeParse({

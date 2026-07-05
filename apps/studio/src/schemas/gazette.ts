@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { MAX_FILE_SIZE_BYTES } from "~/lib/fileUpload"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
 import { offsetPaginationSchema } from "./pagination"
 
@@ -109,7 +110,7 @@ export const getPresignedPutUrlSchema = z.object({
     .int()
     .min(1, { message: "File size must be greater than 0 bytes" })
     .max(MAX_FILE_SIZE_BYTES, {
-      message: `File size must not exceed ${MAX_FILE_SIZE_BYTES} bytes`,
+      message: `File size must not exceed ${formatFileSizeLimit({ bytes: MAX_FILE_SIZE_BYTES })}`,
     }),
   fileName: z
     .string({

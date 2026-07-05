@@ -55,7 +55,7 @@ export const generateSignedPutUrl = async ({
     }),
     {
       expiresIn: 60 * 5, // 5 minutes
-      // Sign these headers so S3 rejects PUTs with different values (prevents type-confusion XSS)
+      // Sign these headers so S3 rejects PUTs with different values (prevents type-confusion XSS and enforces exact upload size)
       signableHeaders: new Set([
         "content-type",
         "content-disposition",
