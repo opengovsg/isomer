@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { MAX_FILE_SIZE_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { MAX_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
 import { offsetPaginationSchema } from "./pagination"
 

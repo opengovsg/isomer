@@ -4,7 +4,7 @@ import {
   FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   MAX_FILE_SIZE_BYTES,
   MAX_IMG_FILE_SIZE_BYTES,
-} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+} from "~/lib/fileUpload"
 
 import {
   deleteAssetsSchema,

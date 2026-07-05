@@ -17,7 +17,7 @@ import {
 import { useState } from "react"
 import { Controller, useWatch } from "react-hook-form"
 import { TimeSelect } from "~/components/Select/TimeSelect"
-import { MAX_FILE_SIZE_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { MAX_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
 import type { GazettesCategory } from "../../types"
 import { GAZETTE_CATEGORIES } from "../../constants"

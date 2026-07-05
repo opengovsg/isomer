@@ -5,7 +5,7 @@ import {
   MAX_FILE_SIZE_BYTES,
   MAX_IMG_FILE_SIZE_BYTES,
   MAX_SVG_FILE_SIZE_BYTES,
-} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+} from "~/lib/fileUpload"
 
 // Combine allowed extensions from existing constants
 const ALLOWED_EXTENSIONS = [

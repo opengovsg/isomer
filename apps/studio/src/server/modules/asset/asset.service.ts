@@ -9,7 +9,7 @@ import { JSDOM } from "jsdom"
 
 const { DOMParser } = new JSDOM("").window
 import { env } from "~/env.mjs"
-import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/lib/fileUpload"
 import { createBaseLogger } from "~/lib/logger"
 import {
   deleteFile,

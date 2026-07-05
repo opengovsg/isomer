@@ -23,7 +23,7 @@ import { z } from "zod"
 import {
   FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
   MAX_FILE_SIZE_BYTES,
-} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+} from "~/lib/fileUpload"
 import { LinkHrefEditor } from "~/features/editing-experience/components/LinkEditor"
 import { LINK_TYPES } from "~/features/editing-experience/components/LinkEditor/constants"
 import {
