@@ -51,10 +51,11 @@ const InnerDrawer = ({
     roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
   })
   const { linkId, siteId } = useQueryParse(editLinkSchema)
-  const { data: collectionTags = [] } = useCollectionTags({
-    resourceId: linkId,
-    siteId,
-  })
+  const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
+    useCollectionTags({
+      resourceId: linkId,
+      siteId,
+    })
   const { isValid: isTagsValid } = validateRequiredTags(
     collectionTags,
     previewPageState.tagged,
@@ -96,7 +97,10 @@ const InnerDrawer = ({
           alignSelf="flex-start"
           onClick={handleSaveChanges}
           isDisabled={
-            !isEmpty(errors) || !previewPageState.ref || !isTagsValid
+            !isEmpty(errors) ||
+            !previewPageState.ref ||
+            !isTagsValid ||
+            isCollectionTagsLoading
           }
           isLoading={isLoading}
         >

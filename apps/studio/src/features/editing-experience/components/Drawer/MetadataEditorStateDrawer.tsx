@@ -53,11 +53,12 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const isCollectionItem =
     type === ResourceType.CollectionPage || type === ResourceType.CollectionLink
 
-  const { data: collectionTags = [] } = useCollectionTags({
-    resourceId: pageId,
-    siteId,
-    enabled: isCollectionItem,
-  })
+  const { data: collectionTags = [], isLoading: isCollectionTagsLoading } =
+    useCollectionTags({
+      resourceId: pageId,
+      siteId,
+      enabled: isCollectionItem,
+    })
 
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -206,7 +207,11 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
                 tagged={(previewPageState.page as { tagged?: string[] }).tagged}
               />
             ) : (
-              <SaveButton isLoading={isPending} onClick={handleSaveChanges} />
+              <SaveButton
+                isLoading={isPending}
+                onClick={handleSaveChanges}
+                isTagsValid={!isCollectionItem || !isCollectionTagsLoading}
+              />
             )}
           </Box>
         </ErrorProvider>
