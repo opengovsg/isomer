@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"
 
@@ -11,6 +11,7 @@ import {
   getRootPageId,
   readBlobContent,
 } from "../fixtures/collection"
+import { CollectionPO } from "../fixtures/collection.po"
 import { getSeedSiteId } from "../fixtures/seed"
 
 const siteId = getSeedSiteId()
@@ -28,14 +29,6 @@ const TAG_CATEGORY_ID = crypto.randomUUID()
 const TAG_OPTION_ID = crypto.randomUUID()
 const TAG_CATEGORY_LABEL = "Topic"
 const TAG_OPTION_LABEL = "Technology"
-
-// Both LinkEditorDrawer and MetadataEditorStateDrawer render the required
-// tag category through the same JsonFormsTaggedControl multi-select.
-const selectRequiredTagOption = async (page: Page) => {
-  await page.getByLabel(TAG_CATEGORY_LABEL).click()
-  await page.getByRole("option", { name: TAG_OPTION_LABEL }).click()
-  await page.keyboard.press("Escape")
-}
 
 test.describe("collection link — required tag categories", () => {
   test.use({ storageState: storageStateFor("admin") })
@@ -73,12 +66,13 @@ test.describe("collection link — required tag categories", () => {
   test("admin can save after filling the required tag category", async ({
     page,
   }) => {
+    const collection = new CollectionPO(page)
     await page.goto(`/sites/${siteId}/links/${linkId}`)
 
     const saveButton = page.getByRole("button", { name: "Save", exact: true })
     await expect(saveButton).toBeDisabled()
 
-    await selectRequiredTagOption(page)
+    await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
     await expect(saveButton).toBeEnabled()
 
     await saveButton.click()
@@ -96,14 +90,13 @@ test.describe("collection link — required tag categories", () => {
   test("save stays disabled while the required tag category is unfilled", async ({
     page,
   }) => {
+    const collection = new CollectionPO(page)
     await page.goto(`/sites/${siteId}/links/${linkId}`)
 
     await expect(
       page.getByRole("button", { name: "Save", exact: true }),
     ).toBeDisabled()
-    await expect(
-      page.getByText("At least one option must be selected"),
-    ).toBeVisible()
+    await collection.expectRequiredTagError()
   })
 })
 
@@ -136,6 +129,7 @@ test.describe("collection page — required tag categories", () => {
   test("admin can save after filling the required tag category", async ({
     page,
   }) => {
+    const collection = new CollectionPO(page)
     await page.goto(`/sites/${siteId}/pages/${pageId}`)
     await page.getByRole("button", { name: "Article page header" }).click()
 
@@ -145,7 +139,7 @@ test.describe("collection page — required tag categories", () => {
     })
     await expect(saveButton).toBeDisabled()
 
-    await selectRequiredTagOption(page)
+    await collection.selectTagOption(TAG_CATEGORY_LABEL, TAG_OPTION_LABEL)
     await expect(saveButton).toBeEnabled()
 
     await saveButton.click()
@@ -167,14 +161,13 @@ test.describe("collection page — required tag categories", () => {
   test("save stays disabled while the required tag category is unfilled", async ({
     page,
   }) => {
+    const collection = new CollectionPO(page)
     await page.goto(`/sites/${siteId}/pages/${pageId}`)
     await page.getByRole("button", { name: "Article page header" }).click()
 
     await expect(
       page.getByRole("button", { name: "Save changes", exact: true }),
     ).toBeDisabled()
-    await expect(
-      page.getByText("At least one option must be selected"),
-    ).toBeVisible()
+    await collection.expectRequiredTagError()
   })
 })
