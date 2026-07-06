@@ -174,7 +174,7 @@
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/storybook-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
-    "@playwright/test": "catalog:",
+    "@playwright/test": "catalog:playwright",
     "@storybook/addon-a11y": "catalog:storybook",
     "@storybook/addon-docs": "catalog:storybook",
     "@storybook/addon-links": "catalog:storybook",
