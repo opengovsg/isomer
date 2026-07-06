@@ -163,6 +163,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Setup
         uses: ./.github/actions/setup
+      - name: Install Playwright (Chromium)
+        # Required by the vitest "browser" project (Vitest Browser Mode).
+        run: pnpm --filter isomer-studio exec playwright install chromium
       - name: Install dependencies
         # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
         run: pnpm exec turbo run generate --filter=isomer-studio
@@ -190,6 +193,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Setup
         uses: ./.github/actions/setup
+      - name: Install Playwright (Chromium)
+        # Required by the vitest "browser" project (Vitest Browser Mode).
+        run: pnpm --filter @opengovsg/isomer-components exec playwright install chromium
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
         with:
