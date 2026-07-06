@@ -278,5 +278,4 @@ catalogs:
     "@vitejs/plugin-react": ^6.0.3
     "@vitest/coverage-istanbul": ^4.1.9
     vite: ^8.1.0
-    vite-tsconfig-paths: ^6.1.1
     vitest: ^4.1.9
