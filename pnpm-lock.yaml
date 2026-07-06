@@ -624,9 +624,6 @@ catalogs:
     vite:
       specifier: ^8.1.0
       version: 8.1.1
-    vite-tsconfig-paths:
-      specifier: ^6.1.1
-      version: 6.1.1
     vitest:
       specifier: ^4.1.9
       version: 4.1.9
@@ -1122,9 +1119,6 @@ importers:
       vite:
         specifier: catalog:vitest
         version: 8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)
-      vite-tsconfig-paths:
-        specifier: catalog:vitest
-        version: 6.1.1(typescript@6.0.3)(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3))
       vitest:
         specifier: catalog:vitest
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-istanbul@4.1.9)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3))
@@ -1324,9 +1318,6 @@ importers:
       vite:
         specifier: catalog:vitest
         version: 8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)
-      vite-tsconfig-paths:
-        specifier: catalog:vitest
-        version: 6.1.1(typescript@6.0.3)(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3))
       vitest:
         specifier: catalog:vitest
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-istanbul@4.1.9)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3))
@@ -8819,9 +8810,6 @@ packages:
     resolution: {integrity: sha512-KVbFv2TQtbzCoxAnfD6JcHZTYCzyliEaaeM/gH8qQdkKr5s0OP9scEgvdcngyk7AVdY6YVW/TJHd+lQ/Df3Daw==}
     engines: {node: '>=0.10.0'}
 
-  globrex@0.1.2:
-    resolution: {integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==}
-
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
@@ -11972,17 +11960,6 @@ packages:
     engines: {node: '>=16.20.2'}
     hasBin: true
 
-  tsconfck@3.1.6:
-    resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
-    engines: {node: ^18 || >=20}
-    deprecated: unmaintained
-    hasBin: true
-    peerDependencies:
-      typescript: ^5.0.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
   tsconfig-paths-webpack-plugin@4.2.0:
     resolution: {integrity: sha512-zbem3rfRS8BgeNK50Zz5SIQgXzLafiHjOwUAvk/38/o1jHn/V5QAgVUcz884or7WYcPaH3N2CIfUc2u0ul7UcA==}
     engines: {node: '>=10.13.0'}
@@ -12233,11 +12210,6 @@ packages:
 
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
-
-  vite-tsconfig-paths@6.1.1:
-    resolution: {integrity: sha512-2cihq7zliibCCZ8P9cKJrQBkfgdvcFkOOc3Y02o3GWUDLgqjWsZudaoiuOwO/gzTzy17cS5F7ZPo4bsnS4DGkg==}
-    peerDependencies:
-      vite: '*'
 
   vite@8.1.1:
     resolution: {integrity: sha512-X/05/cT+VITy2AeDc1der6smvGWWREtL4hPbPTaVbjSBuuWkmNOjR6HP3NzqcQA2nF6VHGUPaFRJyft/2AE9Kg==}
@@ -19911,8 +19883,6 @@ snapshots:
       pify: 2.3.0
       pinkie-promise: 2.0.1
 
-  globrex@0.1.2: {}
-
   gopd@1.2.0: {}
 
   got@12.6.1:
@@ -23548,10 +23518,6 @@ snapshots:
       normalize-path: 3.0.0
       plimit-lit: 1.6.1
 
-  tsconfck@3.1.6(typescript@6.0.3):
-    optionalDependencies:
-      typescript: 6.0.3
-
   tsconfig-paths-webpack-plugin@4.2.0:
     dependencies:
       chalk: 4.1.2
@@ -23808,26 +23774,6 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
-
-  vite-tsconfig-paths@6.1.1(typescript@6.0.3)(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)):
-    dependencies:
-      debug: 4.4.3
-      globrex: 0.1.2
-      tsconfck: 3.1.6(typescript@6.0.3)
-      vite: 8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
-  vite-tsconfig-paths@6.1.1(typescript@6.0.3)(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)):
-    dependencies:
-      debug: 4.4.3
-      globrex: 0.1.2
-      tsconfck: 3.1.6(typescript@6.0.3)
-      vite: 8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
 
   vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3):
     dependencies:
