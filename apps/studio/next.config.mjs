@@ -164,12 +164,14 @@ const config = {
     "@opengovsg/starter-kitty-validators",
   ],
   images: {
-    remotePatterns: [
-      {
-        protocol: /** @type {"https"} */ ("https"),
-        hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
-      },
-    ],
+    remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
+      ? [
+          {
+            protocol: /** @type {"https"} */ ("https"),
+            hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+          },
+        ]
+      : [],
   },
   async headers() {
     return [
