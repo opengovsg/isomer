@@ -78,8 +78,8 @@ catalogs:
       specifier: ^0.4.0
       version: 0.4.0
     '@datadog/browser-rum':
-      specifier: ^7.2.0
-      version: 7.2.0
+      specifier: ^7.4.0
+      version: 7.4.0
     '@fontsource/ibm-plex-mono':
       specifier: ^5.1.1
       version: 5.2.7
@@ -162,7 +162,7 @@ catalogs:
       specifier: ^4.24.0
       version: 4.27.0
     autoprefixer:
-      specifier: ^10.5.1
+      specifier: ^10.5.2
       version: 10.5.2
     axios:
       specifier: ^1.18.1
@@ -180,8 +180,8 @@ catalogs:
       specifier: ^1.0.0
       version: 1.2.0
     chromatic:
-      specifier: ^17.3.0
-      version: 17.4.1
+      specifier: ^17.7.1
+      version: 17.8.0
     clean-webpack-plugin:
       specifier: ^4.0.0
       version: 4.0.0
@@ -330,8 +330,8 @@ catalogs:
       specifier: ^5.2.0
       version: 5.6.0
     react-instantsearch:
-      specifier: ^7.35.0
-      version: 7.36.0
+      specifier: ^7.37.0
+      version: 7.38.0
     react-markdown:
       specifier: ^10.1.0
       version: 10.1.0
@@ -366,8 +366,8 @@ catalogs:
       specifier: ^1.1.4
       version: 1.2.0
     testcontainers:
-      specifier: ^12.0.1
-      version: 12.0.1
+      specifier: ^12.0.3
+      version: 12.0.4
     tiptap-text-direction:
       specifier: ^0.5.0
       version: 0.5.0
@@ -381,8 +381,8 @@ catalogs:
       specifier: ^4.22.4
       version: 4.22.4
     turbo:
-      specifier: ^2.9.17
-      version: 2.9.18
+      specifier: ^2.10.0
+      version: 2.10.2
     type-fest:
       specifier: ^5.7.0
       version: 5.7.0
@@ -396,8 +396,8 @@ catalogs:
       specifier: ^13.15.35
       version: 13.15.35
     webpack-cli:
-      specifier: ^7.0.3
-      version: 7.0.3
+      specifier: ^7.1.0
+      version: 7.1.0
     webpack-glob-entries:
       specifier: ^1.0.1
       version: 1.0.1
@@ -624,9 +624,6 @@ catalogs:
     vite:
       specifier: ^8.1.0
       version: 8.1.1
-    vite-tsconfig-paths:
-      specifier: ^6.1.1
-      version: 6.1.1
     vitest:
       specifier: ^4.1.9
       version: 4.1.9
@@ -652,7 +649,7 @@ importers:
         version: 1.11.1
       turbo:
         specifier: 'catalog:'
-        version: 2.9.18
+        version: 2.10.2
 
   apps/studio:
     dependencies:
@@ -694,7 +691,7 @@ importers:
         version: 2.2.2(react@18.3.1)
       '@datadog/browser-rum':
         specifier: 'catalog:'
-        version: 7.2.0
+        version: 7.4.0
       '@fontsource/ibm-plex-mono':
         specifier: 'catalog:'
         version: 5.2.7
@@ -1025,7 +1022,7 @@ importers:
         version: 10.4.6(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/nextjs':
         specifier: catalog:storybook
-        version: 10.4.6(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(esbuild@0.28.0)(next@16.2.6(patch_hash=96c056d3c2fe2195b5487aa4adf46a46a96f6dc0e872c060e5563e3c74b51409)(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(type-fest@5.7.0)(typescript@6.0.3)(webpack-cli@7.0.3)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)
+        version: 10.4.6(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(esbuild@0.28.0)(next@16.2.6(patch_hash=96c056d3c2fe2195b5487aa4adf46a46a96f6dc0e872c060e5563e3c74b51409)(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(type-fest@5.7.0)(typescript@6.0.3)(webpack-cli@7.1.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1112,7 +1109,7 @@ importers:
         version: 3.4.19(tsx@4.22.4)(yaml@2.8.3)
       testcontainers:
         specifier: 'catalog:'
-        version: 12.0.1
+        version: 12.0.4
       tsx:
         specifier: 'catalog:'
         version: 4.22.4
@@ -1122,15 +1119,12 @@ importers:
       vite:
         specifier: catalog:vitest
         version: 8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)
-      vite-tsconfig-paths:
-        specifier: catalog:vitest
-        version: 6.1.1(typescript@6.0.3)(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3))
       vitest:
         specifier: catalog:vitest
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-istanbul@4.1.9)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3))
       webpack-cli:
         specifier: 'catalog:'
-        version: 7.0.3(webpack@5.105.4)
+        version: 7.1.0(js-yaml@4.3.0)(json5@2.2.3)(webpack@5.105.4)
       webpack-glob-entries:
         specifier: 'catalog:'
         version: 1.0.1
@@ -1199,7 +1193,7 @@ importers:
         version: 5.6.0(react@18.3.1)
       react-instantsearch:
         specifier: 'catalog:'
-        version: 7.36.0(algoliasearch@4.27.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 7.38.0(algoliasearch@4.27.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
         specifier: 'catalog:'
         version: 2.6.1
@@ -1275,7 +1269,7 @@ importers:
         version: 4.1.4(browserslist@4.28.4)
       chromatic:
         specifier: 'catalog:'
-        version: 17.4.1
+        version: 17.8.0
       eslint-plugin-storybook:
         specifier: catalog:storybook
         version: 10.4.6(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)
@@ -1324,9 +1318,6 @@ importers:
       vite:
         specifier: catalog:vitest
         version: 8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)
-      vite-tsconfig-paths:
-        specifier: catalog:vitest
-        version: 6.1.1(typescript@6.0.3)(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3))
       vitest:
         specifier: catalog:vitest
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-istanbul@4.1.9)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3))
@@ -1531,7 +1522,7 @@ importers:
         version: 8.20.0
       testcontainers:
         specifier: 'catalog:'
-        version: 12.0.1
+        version: 12.0.4
       vitest:
         specifier: catalog:vitest
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-istanbul@4.1.9)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3))
@@ -3585,22 +3576,25 @@ packages:
     peerDependencies:
       postcss: ^8.4
 
-  '@datadog/browser-core@7.2.0':
-    resolution: {integrity: sha512-/KOJiLyLP149qZTMs8W8P8MBKxmbrYYramChTDAplhbIXR+nBE+g97RRbluIBDec4GngnA1j13JWDEXBmT0AJw==}
+  '@datadog/browser-core@7.4.0':
+    resolution: {integrity: sha512-SwBlEX53yhLhDnOgBk0q7YhvEAQ+qj2yQiQky5FcQ3BaU/NITqJxPn0Jbt7WAMjBr6UsHJbEIGHNb9t3gQeqxQ==}
 
-  '@datadog/browser-rum-core@7.2.0':
-    resolution: {integrity: sha512-xYgKmBzgpPdXNWxGKBGgJc/EUq6387USzM3Tq22kSD843QTzgzG2jYWkBZZ1FAel1T/0hF2FMJ8Mxo5BwxpoJQ==}
+  '@datadog/browser-rum-core@7.4.0':
+    resolution: {integrity: sha512-mB23lchR5XbhXzEU+7GS0+X1PJn9BQQleXGrOF5y4XGRTTUClXPfyc2dza82lJnUsvENFGKNNPXiihVEoEfYPQ==}
 
-  '@datadog/browser-rum@7.2.0':
-    resolution: {integrity: sha512-cPNTtSyrKSDcwtsWOq7C7662dseUoYmSqK3bJh2rJ0IPW/nVDTZrxt1a6cuGHLFjcE6KFCQJLrnC2YDdw8uJGw==}
+  '@datadog/browser-rum@7.4.0':
+    resolution: {integrity: sha512-hihyYswLtij1IF+9jIoMew9ODOmZaejvNuzP4DfTX3iN/KAwGWtbnIPI+dm3X2Vl+/ibVuUU6b83mBeBmZChBg==}
     peerDependencies:
-      '@datadog/browser-logs': 7.2.0
+      '@datadog/browser-logs': 7.4.0
     peerDependenciesMeta:
       '@datadog/browser-logs':
         optional: true
 
   '@datadog/flagging-core@1.2.1':
     resolution: {integrity: sha512-qeDkki9fFlqyoZBrn7tneT6pZ04EKKvf3xxisYw1a74zbJihvQui/ARUsjXCurRpzpFqGGTJw/oz+HnXaKhcdw==}
+
+  '@datadog/js-core@0.0.4':
+    resolution: {integrity: sha512-igckHli6HrqETON4cT79uDY6YtlDPfY2ecymlBfo6ruD65VGNGw3BfhEP2GIej50IE01gxF+iYXQ4nIGzfRsXg==}
 
   '@datadog/libdatadog@0.9.4':
     resolution: {integrity: sha512-55wHHAuhHOOrBGoWV+fRuEDypN6PMJZq4LTOwExnhoDMvVcZKtqYT05xea/toRs0o75+A1IeNAQHsRLbJMf5oA==}
@@ -6534,33 +6528,33 @@ packages:
     peerDependencies:
       typescript: '>=5.7.2'
 
-  '@turbo/darwin-64@2.9.18':
-    resolution: {integrity: sha512-9f27peFu16ur8c0v9nUFUEyBnbKuuFsUTjHFWfmwGfzySBXbHwzU44QhZon6Mznz0cHsIr3984NQj/bVrnGSRw==}
+  '@turbo/darwin-64@2.10.2':
+    resolution: {integrity: sha512-wBM3ObqOWnKUDmg7QfUFDkDHPFUAJmrYlYqmEM8jMPAPA/I6wRJIbWimeQUqhOiQ8xPKhzyWM+xaiUP0wz8FEQ==}
     cpu: [x64]
     os: [darwin]
 
-  '@turbo/darwin-arm64@2.9.18':
-    resolution: {integrity: sha512-9A6TMRq/Ib+QnbhLlgkhOm+624wO4pzSQ/yQviQfWHOlFvaYxdnIAYmu2H6TS6y7kSVL0DvzNe04NbESTOzFVQ==}
+  '@turbo/darwin-arm64@2.10.2':
+    resolution: {integrity: sha512-/Cq0joWnuMjDPfhjbFP4sv+C/7gkQ415zlaO4XUzD5EZxbtrKgXKvuuydMvogG8GeUnN1aDltW71RlmEfpjbyw==}
     cpu: [arm64]
     os: [darwin]
 
-  '@turbo/linux-64@2.9.18':
-    resolution: {integrity: sha512-zCdIDtz69AnbYh913elJRRoF3QY5aa2HNnf+4rAkc7bQ+tWujiDkCNV7stazOUPggaDvhKIf2Z87qHftTeXSkw==}
+  '@turbo/linux-64@2.10.2':
+    resolution: {integrity: sha512-mMsf5IIhiKuceEXNstd25IbadjBXZ0amxzFOqliEzJX6HyeeHdBQPVSY583PWqYDyqM/FB8d5ZjkthfBSeuH3Q==}
     cpu: [x64]
     os: [linux]
 
-  '@turbo/linux-arm64@2.9.18':
-    resolution: {integrity: sha512-Va1kXI04naMgYwqv/5Dfa36dTDx8015U7oaQAjrXa45ua9OoFjSV4OmvkML4EmXvUclQHCiBRbY8bvd0jV7eAg==}
+  '@turbo/linux-arm64@2.10.2':
+    resolution: {integrity: sha512-Wcng1i2kaKmXutmwxT9MUoYZvdaIekXAdlGr4+0TpgbhGLw7nDuEcRBFrxb5BbRoX1d1q8SpdRxLc45TvDZIdQ==}
     cpu: [arm64]
     os: [linux]
 
-  '@turbo/windows-64@2.9.18':
-    resolution: {integrity: sha512-m0kDhZANxSNz9ck1ybogFscHabriAsp4eDFNrN/1H5WrgTF7b3VlcPZnhuO3v2+E2KnCbeAc+UUT10BZZHdDKw==}
+  '@turbo/windows-64@2.10.2':
+    resolution: {integrity: sha512-SsNhM7Ho7EpAdwtrJKBOic9Hso23vu6Dp0gAfLOvUFjPzurr/sGQlXZEvr6z89ne4RDOypTwz5CBDrixpMKtXw==}
     cpu: [x64]
     os: [win32]
 
-  '@turbo/windows-arm64@2.9.18':
-    resolution: {integrity: sha512-nUdR8WqoomUys9iIQmG45TMiizJ+5BV8egSeLLZba/AWblyp3fVBcIH1kSE58OtK4g2YzbMJEth6Ttv9w5rqMA==}
+  '@turbo/windows-arm64@2.10.2':
+    resolution: {integrity: sha512-Gf+S7ICAdimT/n02bOuVWKvhHnct/HYjZg3oBNIz5hZ9ZyWHbQim9J3P5Qip8WpX0ksxF7eaBVziJCuLnjhqDg==}
     cpu: [arm64]
     os: [win32]
 
@@ -7580,8 +7574,8 @@ packages:
   chownr@1.1.4:
     resolution: {integrity: sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==}
 
-  chromatic@17.4.1:
-    resolution: {integrity: sha512-qL1f0IhOBi0Z6kpQZGR62fJzzCOdjFJLHrJw3QL9YNktj2Kl3+adlU+6psqNGfZUycKF7+pizCSbhsUQNIS/uQ==}
+  chromatic@17.8.0:
+    resolution: {integrity: sha512-xcn2TGdbrKHQbGAo3wZc5qoKaPe+CEvhAEcky9OCpofGd3DJucLFEYpk8wYgHKgR5XAI9X8Op1C6fWlvdjxE/g==}
     engines: {node: '>=22.0.0'}
     hasBin: true
     peerDependencies:
@@ -8676,9 +8670,9 @@ packages:
   get-port-please@3.2.0:
     resolution: {integrity: sha512-I9QVvBw5U/hw3RmWpYKRumUeaDgxTPd401x364rLmWBJcOQ753eov1eTgzDqRG9bqFIfDc7gfzcQEWrUri3o1A==}
 
-  get-port@7.2.0:
-    resolution: {integrity: sha512-afP4W205ONCuMoPBqcR6PSXnzX35KTcJygfJfcp+QY+uwm3p20p1YczWXhlICIzGMCxYBQcySEcOgsJcrkyobg==}
-    engines: {node: '>=16'}
+  get-port@5.1.1:
+    resolution: {integrity: sha512-g/Q1aTSDOxFpchXC4i8ZWvxA1lnPqx/JHqcpIw0/LX9T8x/GBbi6YnlN5nhaKIFkT8oFsscUKgDJYxfwfS6QsQ==}
+    engines: {node: '>=8'}
 
   get-proto@1.0.1:
     resolution: {integrity: sha512-sTSfBjoXBp89JvIKIefqw7U2CCebsc74kiY6awiGogKtoSGbgjYE/G/+l9sF3MWFPNc9IcoOC4ODfKHfxFmp0g==}
@@ -8738,9 +8732,6 @@ packages:
   globby@6.1.0:
     resolution: {integrity: sha512-KVbFv2TQtbzCoxAnfD6JcHZTYCzyliEaaeM/gH8qQdkKr5s0OP9scEgvdcngyk7AVdY6YVW/TJHd+lQ/Df3Daw==}
     engines: {node: '>=0.10.0'}
-
-  globrex@0.1.2:
-    resolution: {integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==}
 
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
@@ -8975,11 +8966,11 @@ packages:
   inline-style-parser@0.2.7:
     resolution: {integrity: sha512-Nb2ctOyNR8DqQoR0OwRG95uNWIC0C1lCgf5Naz5H6Ji72KZ8OcFZLz2P5sNgwlyoJ8Yif11oMuYs5pBQa86csA==}
 
-  instantsearch-ui-components@0.31.0:
-    resolution: {integrity: sha512-mdbxlzsCQKs4IygXEibO29LrA8uFtToBKQyHUHeQiHvPWOdZWxhBZ1ZE1C6GjmKnOBZWDnVAn/rwhNKTYhCFKw==}
+  instantsearch-ui-components@0.33.0:
+    resolution: {integrity: sha512-fvGafCzi677tQ8kiLwxAndeZ2QfU6bEX3ZKeD+F929qUCEsNoh5qpE1SwmdZyrUmtaBPryW3av8bneJQ90Bixw==}
 
-  instantsearch.js@4.102.0:
-    resolution: {integrity: sha512-Ury18PgLVyQ7NFlWLJI/DvPGaM+tMW+AntjsEADA/2ZJ1MS+iX/END2ojLcHSWfp2oeHWAs6fG8x/hbcgm2g5Q==}
+  instantsearch.js@4.104.0:
+    resolution: {integrity: sha512-3cVEqklCqz1YiJfAcbbfpDo3xH2Sh9m7WwAdLIJflDmNpW9kwMbiZ4mTIfTlpG69i5lnt4lzLiDnLhOZjmJ8vg==}
     peerDependencies:
       algoliasearch: '>= 3.1 < 6'
 
@@ -10908,14 +10899,14 @@ packages:
       react: '>=16.8'
       react-dom: '>=16.8'
 
-  react-instantsearch-core@7.36.0:
-    resolution: {integrity: sha512-fabUeh82h6j6ph6SNa6m7aJxLRUWldncO+nR2RgZ6tb9J5sDKNGHepQWptSorLQM3TRWJQWzMCUf5FHxe5YWag==}
+  react-instantsearch-core@7.38.0:
+    resolution: {integrity: sha512-Rb28Zu82iiXtnDqFBn5lbwBuQbkuDk1ZCKWbDmk9iANqkHSiFHqd4LuOSWtS+AkU9AqrTzXanOkM26kcyupU3A==}
     peerDependencies:
       algoliasearch: '>= 3.1 < 6'
       react: '>= 16.8.0 < 20'
 
-  react-instantsearch@7.36.0:
-    resolution: {integrity: sha512-yvD5Edgm8aGl37vbSnF2xa2eQsaOsKJ9wlY4LkcPwx2p4eBj2JHv32YH1esnhhmguzuyTAmh8xEfg6Qbf+YyZg==}
+  react-instantsearch@7.38.0:
+    resolution: {integrity: sha512-6opEJpuw5i3Hs95i6y5iqAr2NmX4h51x9LzfUeUwXvsYGA8mdjSK2NqjRMjv3B+4D0iA+Xx3HBQD6DcU2r/Ikg==}
     peerDependencies:
       algoliasearch: '>= 3.1 < 6'
       react: '>= 16.8.0 < 20'
@@ -11734,8 +11725,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  testcontainers@12.0.1:
-    resolution: {integrity: sha512-EMjjfMNJf3HlL7V3elkxqKUO1r3CtqNBTdmKGwwma/lOtUGfoWvFJ0WQ/KQf1DHEMnRjLWzW4cXbv/Tndsbcbw==}
+  testcontainers@12.0.4:
+    resolution: {integrity: sha512-QIR/8xF1+F/26cIM+9B4yyxNTbKJxAv3hygZyhPRgZ8Q2AhlPZjDdpXRuk16V37X4bgJRI3hXFhoEICMBA7Adg==}
 
   text-decoder@1.2.7:
     resolution: {integrity: sha512-vlLytXkeP4xvEq2otHeJfSQIRyWxo/oZGEbXrtEEF9Hnmrdly59sUbzZ/QgyWuLYHctCHxFF4tRQZNQ9k60ExQ==}
@@ -11860,17 +11851,6 @@ packages:
     engines: {node: '>=16.20.2'}
     hasBin: true
 
-  tsconfck@3.1.6:
-    resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
-    engines: {node: ^18 || >=20}
-    deprecated: unmaintained
-    hasBin: true
-    peerDependencies:
-      typescript: ^5.0.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
   tsconfig-paths-webpack-plugin@4.2.0:
     resolution: {integrity: sha512-zbem3rfRS8BgeNK50Zz5SIQgXzLafiHjOwUAvk/38/o1jHn/V5QAgVUcz884or7WYcPaH3N2CIfUc2u0ul7UcA==}
     engines: {node: '>=10.13.0'}
@@ -11893,8 +11873,8 @@ packages:
   tty-browserify@0.0.1:
     resolution: {integrity: sha512-C3TaO7K81YvjCgQH9Q1S3R3P3BtN3RIM8n+OvX4il1K1zgE8ZhI0op7kClgkxtutIE8hQrcrHBXvIheqKUUCxw==}
 
-  turbo@2.9.18:
-    resolution: {integrity: sha512-bwabv6PupzeavybzEoArBAkwq5fnzwf8OFnRtpHwnviFWuwJPFxtyH+aVp36TmIqK3aYYgtTJ3J0m2ysxxSzQg==}
+  turbo@2.10.2:
+    resolution: {integrity: sha512-wTExrNrRjB8qzIcg+ZLm0A3GFNLDsWNwdS/RBXB0FPrBDyzk3i96Yx+TxWZC7a0k1SIreFB8ciUbxjmEqTH8IQ==}
     hasBin: true
 
   tweetnacl@0.14.5:
@@ -11953,6 +11933,10 @@ packages:
   undici@7.25.0:
     resolution: {integrity: sha512-xXnp4kTyor2Zq+J1FfPI6Eq3ew5h6Vl0F/8d9XU5zZQf1tX9s2Su1/3PiMmUANFULpmksxkClamIZcaUqryHsQ==}
     engines: {node: '>=20.18.1'}
+
+  undici@8.6.0:
+    resolution: {integrity: sha512-l2FlC6I510GawyEd1qgcE/okihKrzy+BRTEBlu6T0fdbM9m5yxtIH5Oa3ysRsH0zC4EhmWUEaSDsy2QngBeRlw==}
+    engines: {node: '>=22.19.0'}
 
   unicode-canonical-property-names-ecmascript@2.0.1:
     resolution: {integrity: sha512-dA8WbNeb2a6oQzAQ55YlT5vQAWGV9WXOsi3SskE3bcCdM0P4SDd+24zS/OCacdRq5BkdsRj9q3Pg6YyQoxIGqg==}
@@ -12114,11 +12098,6 @@ packages:
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
 
-  vite-tsconfig-paths@6.1.1:
-    resolution: {integrity: sha512-2cihq7zliibCCZ8P9cKJrQBkfgdvcFkOOc3Y02o3GWUDLgqjWsZudaoiuOwO/gzTzy17cS5F7ZPo4bsnS4DGkg==}
-    peerDependencies:
-      vite: '*'
-
   vite@8.1.1:
     resolution: {integrity: sha512-X/05/cT+VITy2AeDc1der6smvGWWREtL4hPbPTaVbjSBuuWkmNOjR6HP3NzqcQA2nF6VHGUPaFRJyft/2AE9Kg==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -12239,15 +12218,24 @@ packages:
     resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
     engines: {node: '>=20'}
 
-  webpack-cli@7.0.3:
-    resolution: {integrity: sha512-2E2C6A1e2El7791zQgTH7LPIuwLjRliow9OHS/qlJc9pwhZlCoL/uiwqd/1WSlXT83wJfmfDbkcqHXuXoPJZ3g==}
+  webpack-cli@7.1.0:
+    resolution: {integrity: sha512-pSJ5p5PkXRD88sfCq5Wo+coc42QykwRu5Md0DyESj0rT6PPPA2wTNabpHPKgqH8EMkfTDo3IWx3iiNXMu8XDBQ==}
     engines: {node: '>=20.9.0'}
     hasBin: true
     peerDependencies:
+      js-yaml: ^4.0.0 || ^5.0.0
+      json5: ^2.2.3
+      toml: ^3.0.0 || ^4.0.0
       webpack: ^5.101.0
       webpack-bundle-analyzer: ^4.0.0 || ^5.0.0
       webpack-dev-server: ^5.0.0
     peerDependenciesMeta:
+      js-yaml:
+        optional: true
+      json5:
+        optional: true
+      toml:
+        optional: true
       webpack-bundle-analyzer:
         optional: true
       webpack-dev-server:
@@ -14699,21 +14687,27 @@ snapshots:
     dependencies:
       postcss: 8.5.16
 
-  '@datadog/browser-core@7.2.0': {}
-
-  '@datadog/browser-rum-core@7.2.0':
+  '@datadog/browser-core@7.4.0':
     dependencies:
-      '@datadog/browser-core': 7.2.0
+      '@datadog/js-core': 0.0.4
 
-  '@datadog/browser-rum@7.2.0':
+  '@datadog/browser-rum-core@7.4.0':
     dependencies:
-      '@datadog/browser-core': 7.2.0
-      '@datadog/browser-rum-core': 7.2.0
+      '@datadog/browser-core': 7.4.0
+      '@datadog/js-core': 0.0.4
+
+  '@datadog/browser-rum@7.4.0':
+    dependencies:
+      '@datadog/browser-core': 7.4.0
+      '@datadog/browser-rum-core': 7.4.0
+      '@datadog/js-core': 0.0.4
 
   '@datadog/flagging-core@1.2.1':
     dependencies:
       spark-md5: 3.0.2
     optional: true
+
+  '@datadog/js-core@0.0.4': {}
 
   '@datadog/libdatadog@0.9.4':
     optional: true
@@ -16147,7 +16141,7 @@ snapshots:
       react-refresh: 0.14.2
       schema-utils: 4.3.3
       source-map: 0.7.6
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
     optionalDependencies:
       type-fest: 5.7.0
       webpack-hot-middleware: 2.26.1
@@ -16714,7 +16708,7 @@ snapshots:
       - rollup
       - webpack
 
-  '@storybook/builder-webpack5@10.4.6(esbuild@0.28.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)(webpack-cli@7.0.3)':
+  '@storybook/builder-webpack5@10.4.6(esbuild@0.28.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)(webpack-cli@7.1.0)':
     dependencies:
       '@storybook/core-webpack': 10.4.6(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       case-sensitive-paths-webpack-plugin: 2.4.0
@@ -16728,7 +16722,7 @@ snapshots:
       style-loader: 4.0.0(webpack@5.105.4)
       terser-webpack-plugin: 5.4.0(esbuild@0.28.0)(webpack@5.105.4)
       ts-dedent: 2.2.0
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
       webpack-dev-middleware: 6.1.3(webpack@5.105.4)
       webpack-hot-middleware: 2.26.1
       webpack-virtual-modules: 0.6.2
@@ -16754,7 +16748,7 @@ snapshots:
       esbuild: 0.28.0
       rollup: 4.60.1
       vite: 8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   '@storybook/csf-plugin@10.4.6(esbuild@0.28.0)(rollup@4.60.1)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3))(webpack@5.105.4(esbuild@0.28.0))':
     dependencies:
@@ -16773,7 +16767,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@storybook/nextjs@10.4.6(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(esbuild@0.28.0)(next@16.2.6(patch_hash=96c056d3c2fe2195b5487aa4adf46a46a96f6dc0e872c060e5563e3c74b51409)(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(type-fest@5.7.0)(typescript@6.0.3)(webpack-cli@7.0.3)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)':
+  '@storybook/nextjs@10.4.6(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(esbuild@0.28.0)(next@16.2.6(patch_hash=96c056d3c2fe2195b5487aa4adf46a46a96f6dc0e872c060e5563e3c74b51409)(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(type-fest@5.7.0)(typescript@6.0.3)(webpack-cli@7.1.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@7.29.0)
@@ -16789,8 +16783,8 @@ snapshots:
       '@babel/preset-typescript': 7.29.7(@babel/core@7.29.0)
       '@babel/runtime': 7.29.7
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(react-refresh@0.14.2)(type-fest@5.7.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)
-      '@storybook/builder-webpack5': 10.4.6(esbuild@0.28.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)(webpack-cli@7.0.3)
-      '@storybook/preset-react-webpack': 10.4.6(esbuild@0.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)(webpack-cli@7.0.3)
+      '@storybook/builder-webpack5': 10.4.6(esbuild@0.28.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)(webpack-cli@7.1.0)
+      '@storybook/preset-react-webpack': 10.4.6(esbuild@0.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)(webpack-cli@7.1.0)
       '@storybook/react': 10.4.6(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)
       '@types/semver': 7.7.1
       babel-loader: 9.2.1(@babel/core@7.29.0)(webpack@5.105.4)
@@ -16816,7 +16810,7 @@ snapshots:
       '@types/react': 18.3.28
       '@types/react-dom': 18.3.7(@types/react@18.3.28)
       typescript: 6.0.3
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
     transitivePeerDependencies:
       - '@rspack/core'
       - '@swc/core'
@@ -16835,7 +16829,7 @@ snapshots:
       - webpack-hot-middleware
       - webpack-plugin-serve
 
-  '@storybook/preset-react-webpack@10.4.6(esbuild@0.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)(webpack-cli@7.0.3)':
+  '@storybook/preset-react-webpack@10.4.6(esbuild@0.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)(webpack-cli@7.1.0)':
     dependencies:
       '@storybook/core-webpack': 10.4.6(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/react-docgen-typescript-plugin': 1.0.6--canary.9.0c3f3b7.0(typescript@6.0.3)(webpack@5.105.4)
@@ -16848,7 +16842,7 @@ snapshots:
       semver: 7.8.2
       storybook: 10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tsconfig-paths: 4.2.0
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
     optionalDependencies:
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -16868,7 +16862,7 @@ snapshots:
       react-docgen-typescript: 2.4.0(typescript@6.0.3)
       tslib: 2.8.1
       typescript: 6.0.3
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -17209,22 +17203,22 @@ snapshots:
     dependencies:
       typescript: 6.0.3
 
-  '@turbo/darwin-64@2.9.18':
+  '@turbo/darwin-64@2.10.2':
     optional: true
 
-  '@turbo/darwin-arm64@2.9.18':
+  '@turbo/darwin-arm64@2.10.2':
     optional: true
 
-  '@turbo/linux-64@2.9.18':
+  '@turbo/linux-64@2.10.2':
     optional: true
 
-  '@turbo/linux-arm64@2.9.18':
+  '@turbo/linux-arm64@2.10.2':
     optional: true
 
-  '@turbo/windows-64@2.9.18':
+  '@turbo/windows-64@2.10.2':
     optional: true
 
-  '@turbo/windows-arm64@2.9.18':
+  '@turbo/windows-arm64@2.10.2':
     optional: true
 
   '@tybys/wasm-util@0.10.3':
@@ -17979,7 +17973,7 @@ snapshots:
       '@babel/core': 7.29.0
       find-cache-dir: 4.0.0
       schema-utils: 4.3.3
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   babel-plugin-macros@3.1.0:
     dependencies:
@@ -18405,7 +18399,7 @@ snapshots:
 
   chownr@1.1.4: {}
 
-  chromatic@17.4.1:
+  chromatic@17.8.0:
     dependencies:
       semver: 7.8.2
 
@@ -18430,7 +18424,7 @@ snapshots:
   clean-webpack-plugin@4.0.0(webpack@5.105.4):
     dependencies:
       del: 4.1.1
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   clear-any-console@1.16.3(react@18.3.1)(ws@8.21.0):
     dependencies:
@@ -18696,7 +18690,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.8.2
     optionalDependencies:
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   css-loader@7.1.4(webpack@5.105.4):
     dependencies:
@@ -18709,7 +18703,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.8.2
     optionalDependencies:
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   css-prefers-color-scheme@11.0.0(postcss@8.5.16):
     dependencies:
@@ -19520,7 +19514,7 @@ snapshots:
       semver: 7.8.2
       tapable: 2.3.2
       typescript: 6.0.3
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   form-data-encoder@1.7.2: {}
 
@@ -19621,7 +19615,7 @@ snapshots:
 
   get-port-please@3.2.0: {}
 
-  get-port@7.2.0: {}
+  get-port@5.1.1: {}
 
   get-proto@1.0.1:
     dependencies:
@@ -19700,8 +19694,6 @@ snapshots:
       object-assign: 4.1.1
       pify: 2.3.0
       pinkie-promise: 2.0.1
-
-  globrex@0.1.2: {}
 
   gopd@1.2.0: {}
 
@@ -19865,7 +19857,7 @@ snapshots:
       pretty-error: 4.0.0
       tapable: 2.3.2
     optionalDependencies:
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   htmlparser2@10.1.0:
     dependencies:
@@ -19961,14 +19953,14 @@ snapshots:
 
   inline-style-parser@0.2.7: {}
 
-  instantsearch-ui-components@0.31.0(react@18.3.1):
+  instantsearch-ui-components@0.33.0(react@18.3.1):
     dependencies:
       '@swc/helpers': 0.5.18
       markdown-to-jsx: 7.7.17(react@18.3.1)
     transitivePeerDependencies:
       - react
 
-  instantsearch.js@4.102.0(algoliasearch@4.27.0):
+  instantsearch.js@4.104.0(algoliasearch@4.27.0):
     dependencies:
       '@algolia/events': 4.0.1
       '@swc/helpers': 0.5.18
@@ -19980,7 +19972,7 @@ snapshots:
       algoliasearch-helper: 3.29.1(algoliasearch@4.27.0)
       hogan.js: 3.0.2
       htm: 3.1.1
-      instantsearch-ui-components: 0.31.0(react@18.3.1)
+      instantsearch-ui-components: 0.33.0(react@18.3.1)
       preact: 10.29.2
       qs: 6.15.0
       react: 18.3.1
@@ -20958,7 +20950,7 @@ snapshots:
       url: 0.11.4
       util: 0.12.5
       vm-browserify: 1.1.2
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   node-releases@2.0.50: {}
 
@@ -21640,7 +21632,7 @@ snapshots:
       postcss: 8.5.16
       semver: 7.8.2
     optionalDependencies:
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
     transitivePeerDependencies:
       - typescript
 
@@ -22189,24 +22181,24 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       warning: 4.0.3
 
-  react-instantsearch-core@7.36.0(algoliasearch@4.27.0)(react@18.3.1):
+  react-instantsearch-core@7.38.0(algoliasearch@4.27.0)(react@18.3.1):
     dependencies:
       '@swc/helpers': 0.5.18
       algoliasearch: 4.27.0
       algoliasearch-helper: 3.29.1(algoliasearch@4.27.0)
-      instantsearch.js: 4.102.0(algoliasearch@4.27.0)
+      instantsearch.js: 4.104.0(algoliasearch@4.27.0)
       react: 18.3.1
       use-sync-external-store: 1.6.0(react@18.3.1)
 
-  react-instantsearch@7.36.0(algoliasearch@4.27.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-instantsearch@7.38.0(algoliasearch@4.27.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@swc/helpers': 0.5.18
       algoliasearch: 4.27.0
-      instantsearch-ui-components: 0.31.0(react@18.3.1)
-      instantsearch.js: 4.102.0(algoliasearch@4.27.0)
+      instantsearch-ui-components: 0.33.0(react@18.3.1)
+      instantsearch.js: 4.104.0(algoliasearch@4.27.0)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      react-instantsearch-core: 7.36.0(algoliasearch@4.27.0)(react@18.3.1)
+      react-instantsearch-core: 7.38.0(algoliasearch@4.27.0)(react@18.3.1)
 
   react-is@16.13.1: {}
 
@@ -22623,7 +22615,7 @@ snapshots:
       neo-async: 2.6.2
     optionalDependencies:
       sass: 1.101.0
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   sass@1.101.0:
     dependencies:
@@ -22989,11 +22981,11 @@ snapshots:
 
   style-loader@3.3.4(webpack@5.105.4):
     dependencies:
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   style-loader@4.0.0(webpack@5.105.4):
     dependencies:
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   style-parser@1.1.1:
     dependencies:
@@ -23161,7 +23153,7 @@ snapshots:
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.46.1
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
     optionalDependencies:
       esbuild: 0.28.0
 
@@ -23172,7 +23164,7 @@ snapshots:
       commander: 2.20.3
       source-map-support: 0.5.21
 
-  testcontainers@12.0.1:
+  testcontainers@12.0.4:
     dependencies:
       '@balena/dockerignore': 1.0.2
       '@types/dockerode': 4.0.1
@@ -23182,13 +23174,13 @@ snapshots:
       debug: 4.4.3
       docker-compose: 1.4.2
       dockerode: 5.0.0
-      get-port: 7.2.0
+      get-port: 5.1.1
       proper-lockfile: 4.1.2
       properties-reader: 3.0.1
       ssh-remote-port-forward: 1.0.4
       tar-fs: 3.1.2
       tmp: 0.2.7
-      undici: 7.25.0
+      undici: 8.6.0
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -23299,10 +23291,6 @@ snapshots:
       normalize-path: 3.0.0
       plimit-lit: 1.6.1
 
-  tsconfck@3.1.6(typescript@6.0.3):
-    optionalDependencies:
-      typescript: 6.0.3
-
   tsconfig-paths-webpack-plugin@4.2.0:
     dependencies:
       chalk: 4.1.2
@@ -23328,14 +23316,14 @@ snapshots:
 
   tty-browserify@0.0.1: {}
 
-  turbo@2.9.18:
+  turbo@2.10.2:
     optionalDependencies:
-      '@turbo/darwin-64': 2.9.18
-      '@turbo/darwin-arm64': 2.9.18
-      '@turbo/linux-64': 2.9.18
-      '@turbo/linux-arm64': 2.9.18
-      '@turbo/windows-64': 2.9.18
-      '@turbo/windows-arm64': 2.9.18
+      '@turbo/darwin-64': 2.10.2
+      '@turbo/darwin-arm64': 2.10.2
+      '@turbo/linux-64': 2.10.2
+      '@turbo/linux-arm64': 2.10.2
+      '@turbo/windows-64': 2.10.2
+      '@turbo/windows-arm64': 2.10.2
 
   tweetnacl@0.14.5: {}
 
@@ -23379,6 +23367,8 @@ snapshots:
   undici-types@7.24.6: {}
 
   undici@7.25.0: {}
+
+  undici@8.6.0: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 
@@ -23548,26 +23538,6 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite-tsconfig-paths@6.1.1(typescript@6.0.3)(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)):
-    dependencies:
-      debug: 4.4.3
-      globrex: 0.1.2
-      tsconfck: 3.1.6(typescript@6.0.3)
-      vite: 8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
-  vite-tsconfig-paths@6.1.1(typescript@6.0.3)(vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)):
-    dependencies:
-      debug: 4.4.3
-      globrex: 0.1.2
-      tsconfck: 3.1.6(typescript@6.0.3)
-      vite: 8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3)
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
   vite@8.1.1(@types/node@25.9.3)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.22.4)(yaml@2.8.3):
     dependencies:
       lightningcss: 1.32.0
@@ -23703,7 +23673,7 @@ snapshots:
 
   webidl-conversions@8.0.1: {}
 
-  webpack-cli@7.0.3(webpack@5.105.4):
+  webpack-cli@7.1.0(js-yaml@4.3.0)(json5@2.2.3)(webpack@5.105.4):
     dependencies:
       '@discoveryjs/json-ext': 1.1.0
       commander: 14.0.3
@@ -23712,8 +23682,11 @@ snapshots:
       import-local: 3.2.0
       interpret: 3.1.1
       rechoir: 0.8.0
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
       webpack-merge: 6.0.1
+    optionalDependencies:
+      js-yaml: 4.3.0
+      json5: 2.2.3
 
   webpack-dev-middleware@6.1.3(webpack@5.105.4):
     dependencies:
@@ -23723,7 +23696,7 @@ snapshots:
       range-parser: 1.2.1
       schema-utils: 4.3.3
     optionalDependencies:
-      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3)
+      webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
   webpack-glob-entries@1.0.1:
     dependencies:
@@ -23778,7 +23751,7 @@ snapshots:
       - uglify-js
     optional: true
 
-  webpack@5.105.4(esbuild@0.28.0)(webpack-cli@7.0.3):
+  webpack@5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0):
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.9
@@ -23806,7 +23779,7 @@ snapshots:
       watchpack: 2.5.1
       webpack-sources: 3.3.4
     optionalDependencies:
-      webpack-cli: 7.0.3(webpack@5.105.4)
+      webpack-cli: 7.1.0(js-yaml@4.3.0)(json5@2.2.3)(webpack@5.105.4)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
