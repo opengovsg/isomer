@@ -198,7 +198,6 @@ describe("asset.router", async () => {
       expect(result).toMatchObject({
         fileKey: expect.any(String),
         uploadConfig: {
-          provider: "s3",
           presignedPutUrl: "https://example.com/signed-url",
           contentType: "application/pdf",
           contentDisposition: expect.stringMatching(

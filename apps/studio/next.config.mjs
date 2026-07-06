@@ -6,16 +6,6 @@ const { env } = await import("./src/env.mjs")
 
 // NOTE: Keep the `unsafe-eval` for `script-src` as the removal
 // led to nextjs crashing on start
-/*
-TODO: Removing this CSP first
-  // img-src 'self' data: blob: ${
-  //   // For displaying images from R2
-  //   env.R2_PUBLIC_HOSTNAME ? `https://${env.R2_PUBLIC_HOSTNAME}` : ''
-  // };
-  // script-src 'self' ${env.NODE_ENV === "production" ? "" : "'unsafe-eval'"};
-*/
-
-const isVercelBlob = env.NEXT_PUBLIC_STORAGE_PROVIDER === "vercel-blob"
 
 // TODO: Stricten the CSP for images
 // Intercom CSP: https://www.intercom.com/help/en/articles/3894-using-intercom-with-content-security-policy
@@ -91,6 +81,7 @@ const ContentSecurityPolicy = `
     https://*.browser-intake-datadoghq.com
     https://vitals.vercel-insights.com
     https://*.amazonaws.com
+    ${env.R2_ACCOUNT_ID ? `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com` : ""}
     https://*.wogaa.sg
     https://placehold.co
     https://cdn.growthbook.io
@@ -131,9 +122,6 @@ const ContentSecurityPolicy = `
     https://*.wg.spotify.com
     https://*.podcasts.apple.com
     https://*.xp.apple.com
-    ${isVercelBlob ? "https://*.public.blob.vercel-storage.com" : ""}
-    ${isVercelBlob ? "https://blob.vercel-storage.com" : ""}
-    ${isVercelBlob ? "https://vercel.com" : ""}
     ;
   worker-src
     'self'
@@ -177,24 +165,10 @@ const config = {
   ],
   images: {
     remotePatterns: [
-      ...(env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
-        ? [
-            {
-              protocol: /** @type {"https"} */ ("https"),
-              hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
-            },
-          ]
-        : []),
-      // Vercel Blob is preview-only, so only trust the blob domain there —
-      // mirrors the preview-gated blob CSP entries above.
-      ...(isVercelBlob
-        ? [
-            {
-              protocol: /** @type {"https"} */ ("https"),
-              hostname: "*.public.blob.vercel-storage.com",
-            },
-          ]
-        : []),
+      {
+        protocol: /** @type {"https"} */ ("https"),
+        hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+      },
     ],
   },
   async headers() {

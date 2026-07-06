@@ -34,7 +34,7 @@ export const useUploadAssetMutation = ({
 
         if (effectiveName.toLowerCase().endsWith(".svg")) {
           const content = await file.text()
-          const { fileKey, url } = await uploadSvg({
+          const { fileKey } = await uploadSvg({
             siteId,
             resourceId,
             fileName: effectiveName,
@@ -48,7 +48,7 @@ export const useUploadAssetMutation = ({
                 ]
               : undefined,
           })
-          return { path: url ?? `/${fileKey}` }
+          return { path: `/${fileKey}` }
         }
 
         const { fileKey, uploadConfig } = await getPresignedPutUrl({

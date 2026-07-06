@@ -2,8 +2,16 @@ import { z } from "zod"
 
 const s3Schema = z.object({
   NEXT_PUBLIC_S3_REGION: z.string().default("us-east-1"),
-  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string().optional(),
-  NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z.string().optional(),
+  NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME: z.string(),
+  NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME: z.string(),
+})
+
+// R2 is the S3-compatible storage backend used when its credentials are
+// present (currently: preview environments); otherwise falls back to AWS S3.
+const r2Schema = z.object({
+  R2_ACCOUNT_ID: z.string().optional(),
+  R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_SECRET_ACCESS_KEY: z.string().optional(),
 })
 
 const cronHeartbeatSchema = z.object({
@@ -27,7 +35,6 @@ const client = z
       "uat",
       "preview",
     ]),
-    NEXT_PUBLIC_STORAGE_PROVIDER: z.enum(["vercel-blob", "s3"]).default("s3"),
     // WARNING: Setting this bypasses SingPass login entirely. For preview
     // environments only — never set in staging or production.
     NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS: z
@@ -40,8 +47,8 @@ const client = z
     NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     NEXT_PUBLIC_INTERCOM_APP_ID: z.string().optional(),
   })
-  .merge(s3Schema)
-  .merge(cronHeartbeatSchema)
+  .extend(s3Schema.shape)
+  .extend(cronHeartbeatSchema.shape)
 
 const singpassSchema = z.object({
   SINGPASS_CLIENT_ID: z.string().min(1),
@@ -74,39 +81,28 @@ const server = z
     EGAZETTE_DOCUMENT_INDEX: z.string().optional(),
     DD_DELETION_EMAIL: z.email(),
     SEARCHSG_API_KEY: z.string(),
-    BLOB_READ_WRITE_TOKEN: z.string().optional(),
     ALGOLIA_APP_ID: z.string(),
     ALGOLIA_API_KEY: z.string(),
     ALGOLIA_INDEX_NAME: z.string(),
   })
-  .merge(s3Schema)
-  .merge(singpassSchema)
-  .merge(client)
+  .extend(s3Schema.shape)
+  .extend(r2Schema.shape)
+  .extend(singpassSchema.shape)
+  .extend(client.shape)
   .superRefine((data, ctx) => {
-    if (data.NEXT_PUBLIC_STORAGE_PROVIDER === "s3") {
-      if (!data.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Required for non-preview environments",
-          path: ["NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME"],
-        })
-      }
-      if (!data.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Required for non-preview environments",
-          path: ["NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME"],
-        })
-      }
-    }
-    if (
-      data.NEXT_PUBLIC_STORAGE_PROVIDER === "vercel-blob" &&
-      !data.BLOB_READ_WRITE_TOKEN
-    ) {
+    // Which storage backend to use is decided by whether R2 credentials are
+    // present, not by NEXT_PUBLIC_APP_ENV — so these must be set together.
+    const r2Vars = [
+      data.R2_ACCOUNT_ID,
+      data.R2_ACCESS_KEY_ID,
+      data.R2_SECRET_ACCESS_KEY,
+    ]
+    if (r2Vars.some(Boolean) && !r2Vars.every(Boolean)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Required when storage provider is vercel-blob",
-        path: ["BLOB_READ_WRITE_TOKEN"],
+        message:
+          "R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY must be set together",
+        path: ["R2_ACCOUNT_ID"],
       })
     }
     // Static OTP bypasses OTP security entirely, so structurally forbid it
@@ -166,6 +162,9 @@ const processEnv = {
     process.env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
   NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME:
     process.env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+  R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
+  R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
+  R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
   SINGPASS_CLIENT_ID: process.env.SINGPASS_CLIENT_ID,
   SINGPASS_ISSUER_ENDPOINT: process.env.SINGPASS_ISSUER_ENDPOINT,
   SINGPASS_REDIRECT_URI: process.env.SINGPASS_REDIRECT_URI,
@@ -174,13 +173,11 @@ const processEnv = {
   SINGPASS_SIGNING_PRIVATE_KEY: process.env.SINGPASS_SIGNING_PRIVATE_KEY,
   SINGPASS_SIGNING_KEY_ALG: process.env.SINGPASS_SIGNING_KEY_ALG,
   STUDIO_SSM_WEBHOOK_API_KEY: process.env.STUDIO_SSM_WEBHOOK_API_KEY,
-  BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
   DANGEROUSLY_SET_STATIC_OTP: process.env.DANGEROUSLY_SET_STATIC_OTP,
   // Client-side env vars
   NEXT_PUBLIC_APP_ENV:
     process.env.NEXT_PUBLIC_APP_ENV ??
     (process.env.NEXT_PUBLIC_VERCEL_ENV === "preview" ? "preview" : undefined),
-  NEXT_PUBLIC_STORAGE_PROVIDER: process.env.NEXT_PUBLIC_STORAGE_PROVIDER,
   NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS:
     process.env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS,
   NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,

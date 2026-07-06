@@ -1,28 +1,16 @@
-import { upload as vercelUpload } from "@vercel/blob/client"
+import type { UploadConfig } from "~/server/modules/asset/asset.service"
 import { handleAssetUpload } from "~/hooks/handleAssetUpload"
-
-import type { UploadConfig } from "."
 
 export const performUpload = async (
   file: File,
   fileKey: string,
   config: UploadConfig,
 ): Promise<string> => {
-  if (config.provider === "s3") {
-    await handleAssetUpload({
-      file,
-      presignedPutUrl: config.presignedPutUrl,
-      contentType: config.contentType,
-      contentDisposition: config.contentDisposition,
-    })
-    return `/${fileKey}`
-  }
-
-  const blob = await vercelUpload(fileKey, file, {
-    access: "public",
-    handleUploadUrl: config.handleUploadUrl,
+  await handleAssetUpload({
+    file,
+    presignedPutUrl: config.presignedPutUrl,
     contentType: config.contentType,
-    clientPayload: config.clientPayload,
+    contentDisposition: config.contentDisposition,
   })
-  return blob.url
+  return `/${fileKey}`
 }

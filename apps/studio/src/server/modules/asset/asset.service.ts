@@ -4,16 +4,29 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
+import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { createBaseLogger } from "~/lib/logger"
+import {
+  deleteFile,
+  generateSignedGetUrl,
+  generateSignedPutUrl,
+  putObjectDirect,
+} from "~/lib/s3"
 import { getServerDomPurify } from "~/lib/server-dom-purify"
-import { assetStorage } from "~/lib/storage"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 const logger = createBaseLogger({ path: "asset.service" })
+const bucket = env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME
+
+export interface UploadConfig {
+  presignedPutUrl: string
+  contentType: string
+  contentDisposition: string
+}
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
 const EXTENSION_TO_MIME: Record<string, string> = {
@@ -120,19 +133,21 @@ export const getPresignedPutUrl = async ({
 }: {
   key: string
   tags?: { key: string; value: string }[]
-}) => {
+}): Promise<UploadConfig> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
-  return assetStorage.getUploadConfig({
-    key,
-    contentType,
-    contentDisposition,
-    tags,
+  const presignedPutUrl = await generateSignedPutUrl({
+    Bucket: bucket,
+    Key: key,
+    ContentType: contentType,
+    ContentDisposition: contentDisposition,
+    Tagging: tags && generateTagsQueryString(tags),
   })
+  return { presignedPutUrl, contentType, contentDisposition }
 }
 
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
-  await assetStorage.deleteFile(key)
+  await deleteFile({ Key: key, Bucket: bucket })
 }
 
 export const getPresignedGetUrl = async ({
@@ -140,7 +155,7 @@ export const getPresignedGetUrl = async ({
 }: {
   key: string
 }): Promise<string> => {
-  return assetStorage.getReadUrl(key)
+  return generateSignedGetUrl({ Bucket: bucket, Key: key })
 }
 
 export const sanitizeSvg = (content: string): string => {
@@ -203,14 +218,15 @@ export const putFileDirect = async ({
   key: string
   body: string
   tags?: { key: string; value: string }[]
-}) => {
+}): Promise<void> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
-  return assetStorage.putFile({
-    key,
-    body,
-    contentType,
-    contentDisposition,
-    tags,
+  await putObjectDirect({
+    Bucket: bucket,
+    Key: key,
+    Body: body,
+    ContentType: contentType,
+    ContentDisposition: contentDisposition,
+    Tagging: tags && generateTagsQueryString(tags),
   })
 }
