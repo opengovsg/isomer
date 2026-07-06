@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { AbilityProvider } from "@casl/react"
