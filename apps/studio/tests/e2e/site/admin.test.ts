@@ -33,9 +33,20 @@ for (const role of deniedRoles) {
     test("is redirected away from the site admin config page", async ({
       page,
     }) => {
-      await page.goto(`/sites/${getSeedSiteId()}/admin`)
+      const siteId = getSeedSiteId()
+      const adminResponsePromise = page.waitForResponse((response) => {
+        const url = new URL(response.url())
+        return (
+          url.pathname === `/sites/${siteId}/admin` &&
+          response.request().isNavigationRequest()
+        )
+      })
 
-      await expect(page).toHaveURL(new RegExp(`/sites/${getSeedSiteId()}$`))
+      await page.goto(`/sites/${siteId}/admin`)
+      const adminResponse = await adminResponsePromise
+
+      expect(adminResponse.status()).toBe(307)
+      await expect(page).toHaveURL(new RegExp(`/sites/${siteId}$`))
       await expect(
         page.getByText("Manage site configurations"),
       ).not.toBeVisible()
