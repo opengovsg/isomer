@@ -13,6 +13,7 @@ import {
   setupCollection,
   setupCollectionLink,
   setupCollectionMeta,
+  setupCollectionPage,
   setupEditorPermissions,
   setupFolder,
   setupFolderMeta,
@@ -25,6 +26,7 @@ import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
+import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { db } from "../../database"
 import { resourceRouter } from "../resource.router"
@@ -1848,6 +1850,233 @@ describe("resource.router", async () => {
     it.skip("should throw 403 if user does not have write access to destination resource", async () => {})
 
     it.skip("should throw 403 if user does not have write access to origin resource", async () => {})
+
+    describe("redirect on move", () => {
+      const setup = async () => {
+        const { page: rootPage, site } = await setupPageResource({
+          resourceType: ResourceType.RootPage,
+          parentId: null,
+        })
+        const { folder } = await setupFolder({
+          siteId: site.id,
+          permalink: "dest",
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        return { site, rootPage, folder }
+      }
+
+      const liveRedirects = (siteId: number) =>
+        db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", siteId)
+          .where("deletedAt", "is", null)
+          .execute()
+
+      it("creates a redirect from the old URL for a published page", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+
+        await caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: folder.id,
+          shouldCreateRedirect: true,
+        })
+
+        const redirects = await liveRedirects(site.id)
+        expect(redirects).toHaveLength(1)
+        expect(redirects[0]!.source).toBe("/old-page")
+        expect(redirects[0]!.destination).toBe(
+          `[resource:${site.id}:${page.id}]`,
+        )
+      })
+
+      it("does not create a redirect when shouldCreateRedirect is false", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+
+        await caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: folder.id,
+          shouldCreateRedirect: false,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("does not create a redirect for an unpublished page", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Draft,
+        })
+
+        await caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: folder.id,
+          shouldCreateRedirect: true,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("soft-deletes a redirect pointing back at the page when it reclaims that URL", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        // A redirect at the path the page is about to occupy, pointing at it.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/dest/old-page",
+            destination: `[resource:${site.id}:${page.id}]`,
+          })
+          .execute()
+
+        await caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: folder.id,
+          shouldCreateRedirect: false,
+        })
+
+        const reclaimed = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/dest/old-page")
+          .executeTakeFirstOrThrow()
+        expect(reclaimed.deletedAt).not.toBeNull()
+      })
+
+      it("blocks moving a published page onto a path a live redirect points elsewhere from", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        // A live redirect already occupies the destination URL, pointing
+        // elsewhere — moving the page there would shadow it.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/dest/old-page",
+            destination: "https://example.gov.sg/elsewhere",
+          })
+          .execute()
+
+        const result = caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: folder.id,
+          shouldCreateRedirect: false,
+        })
+
+        // Assert — blocked, and the whole move is rolled back (page stays put).
+        await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+        const stillThere = await db
+          .selectFrom("Resource")
+          .select("parentId")
+          .where("id", "=", page.id)
+          .executeTakeFirstOrThrow()
+        expect(String(stillThere.parentId)).toBe(String(rootPage.id))
+      })
+
+      it("allows moving an unpublished page onto a path with a live redirect", async () => {
+        const { site, rootPage, folder } = await setup()
+        const { page } = await setupPageResource({
+          siteId: site.id,
+          resourceType: ResourceType.Page,
+          parentId: rootPage.id,
+          permalink: "old-page",
+          state: ResourceState.Draft,
+        })
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/dest/old-page",
+            destination: "https://example.gov.sg/elsewhere",
+          })
+          .execute()
+
+        // No live shadow yet (the page isn't published); the eventual publish is
+        // guarded separately, so the move is allowed.
+        await expect(
+          caller.move({
+            siteId: site.id,
+            movedResourceId: page.id,
+            destinationResourceId: folder.id,
+            shouldCreateRedirect: true,
+          }),
+        ).resolves.toMatchObject({ id: page.id })
+      })
+
+      it("creates a redirect from the old URL for a published CollectionPage", async () => {
+        // Locks in the CollectionPage branch of the redirect orchestration.
+        const { site, collection: srcCollection } = await setupCollection({
+          permalink: "src-collection",
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        const { collection: destCollection } = await setupCollection({
+          siteId: site.id,
+          permalink: "dest-collection",
+        })
+        const { page } = await setupCollectionPage({
+          siteId: site.id,
+          parentId: srcCollection.id,
+          permalink: "old-article",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+
+        await caller.move({
+          siteId: site.id,
+          movedResourceId: page.id,
+          destinationResourceId: destCollection.id,
+          shouldCreateRedirect: true,
+        })
+
+        const redirects = await liveRedirects(site.id)
+        expect(redirects).toHaveLength(1)
+        expect(redirects[0]!.source).toBe("/src-collection/old-article")
+        expect(redirects[0]!.destination).toBe(
+          `[resource:${site.id}:${page.id}]`,
+        )
+      })
+    })
   })
 
   describe("countWithoutRoot", () => {
@@ -3527,7 +3756,7 @@ describe("resource.router", async () => {
       expect(result.recentlyEdited).toEqual([])
     })
 
-    it("should match and order by splitting the query into an array of search terms", async () => {
+    it("should match all search terms and order by relevance", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -3537,19 +3766,19 @@ describe("resource.router", async () => {
       const { page: page1 } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "apple banana cherry durian", // should match 3 terms
+        title: "apple banana cherry durian", // matches all search terms
         permalink: "apple-banana-cherry-durian",
       })
-      const { page: page2 } = await setupPageResource({
+      await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "apple banana cherry", // should match 2 terms
+        title: "apple banana cherry", // missing durian
         permalink: "apple-banana-cherry",
       })
-      const { page: page3 } = await setupPageResource({
+      await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "banana", // should match 1 term
+        title: "banana", // missing apple and durian
         permalink: "banana",
       })
 
@@ -3561,22 +3790,114 @@ describe("resource.router", async () => {
 
       // Assert
       const expected = {
-        totalCount: 3,
+        totalCount: 1,
         resources: [
           {
             ...pick(page1, RESOURCE_FIELDS_TO_PICK),
             fullPermalink: `${page1.permalink}`,
             lastUpdatedAt: page1.updatedAt,
           },
+        ],
+        recentlyEdited: [],
+        nextOffset: null,
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should exclude resources that match only some search terms", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "apple pie",
+        permalink: "apple-pie",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "apple banana",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 0,
+        resources: [],
+        recentlyEdited: [],
+        nextOffset: null,
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should match all search terms when some appear mid-title", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Guide to Apple Services",
+        permalink: "guide-to-apple-services",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "guide apple",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 1,
+        resources: [
           {
-            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page2.permalink}`,
-            lastUpdatedAt: page2.updatedAt,
+            ...pick(page, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page.permalink}`,
+            lastUpdatedAt: page.updatedAt,
           },
+        ],
+        recentlyEdited: [],
+        nextOffset: null,
+      }
+      expect(result).toEqual(expected)
+    })
+
+    it("should match all search terms case-insensitively", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const { page } = await setupPageResource({
+        resourceType: "Page",
+        siteId: site.id,
+        title: "Annual Budget Report",
+        permalink: "annual-budget-report",
+      })
+
+      // Act
+      const result = await caller.search({
+        siteId: String(site.id),
+        query: "ANNUAL budget",
+      })
+
+      // Assert
+      const expected = {
+        totalCount: 1,
+        resources: [
           {
-            ...pick(page3, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page3.permalink}`,
-            lastUpdatedAt: page3.updatedAt,
+            ...pick(page, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${page.permalink}`,
+            lastUpdatedAt: page.updatedAt,
           },
         ],
         recentlyEdited: [],
@@ -3719,45 +4040,41 @@ describe("resource.router", async () => {
       expect(result).toEqual(expected)
     })
 
-    it("should rank results by character length of search term matches", async () => {
-      // Arrange
+    it("should require each search term to prefix-match a title word", async () => {
+      // Arrange — a title word that is only a prefix of a search term (e.g.
+      // "long" for "longterm") must not count as a match
       const { site } = await setupSite()
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
       })
-      const { page: page1 } = await setupPageResource({
+      const { page: matchingPage } = await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "looooongword",
-        permalink: "looooongword",
+        title: "longterm short",
+        permalink: "longterm-short",
       })
-      const { page: page2 } = await setupPageResource({
+      await setupPageResource({
         resourceType: "Page",
         siteId: site.id,
-        title: "shortword",
-        permalink: "shortword",
+        title: "long short",
+        permalink: "long-short",
       })
 
       // Act
       const result = await caller.search({
         siteId: String(site.id),
-        query: "shortword looooongword",
+        query: "longterm short",
       })
 
       // Assert
       const expected = {
-        totalCount: 2,
+        totalCount: 1,
         resources: [
           {
-            ...pick(page1, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page1.permalink}`,
-            lastUpdatedAt: page1.updatedAt,
-          },
-          {
-            ...pick(page2, RESOURCE_FIELDS_TO_PICK),
-            fullPermalink: `${page2.permalink}`,
-            lastUpdatedAt: page2.updatedAt,
+            ...pick(matchingPage, RESOURCE_FIELDS_TO_PICK),
+            fullPermalink: `${matchingPage.permalink}`,
+            lastUpdatedAt: matchingPage.updatedAt,
           },
         ],
         recentlyEdited: [],

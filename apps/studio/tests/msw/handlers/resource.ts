@@ -187,6 +187,7 @@ export const resourceHandlers = {
           permalink: "home",
           parentId: null,
           siteId: 1,
+          publishedVersionId: null,
         }
       }),
     content: () =>
@@ -198,6 +199,7 @@ export const resourceHandlers = {
           permalink: "page-title-here",
           parentId: null,
           siteId: 1,
+          publishedVersionId: "1",
         }
       }),
     article: () =>
@@ -209,6 +211,7 @@ export const resourceHandlers = {
           permalink: "article-layout",
           parentId: null,
           siteId: 1,
+          publishedVersionId: null,
         }
       }),
     index: () =>
@@ -220,6 +223,7 @@ export const resourceHandlers = {
           permalink: "_index",
           parentId: null,
           siteId: 1,
+          publishedVersionId: null,
         }
       }),
     database: () =>
@@ -231,6 +235,7 @@ export const resourceHandlers = {
           permalink: "database-layout",
           parentId: null,
           siteId: 1,
+          publishedVersionId: null,
         }
       }),
   },

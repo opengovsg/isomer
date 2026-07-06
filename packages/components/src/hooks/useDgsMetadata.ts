@@ -22,20 +22,33 @@ export const useDgsMetadata = ({
       return
     }
 
+    const controller = new AbortController()
+
     const fetchMetadata = async () => {
       setIsLoading(true)
+      setMetadata(undefined)
       try {
-        const metadata = await fetchDgsMetadata({ resourceId })
+        const metadata = await fetchDgsMetadata({
+          resourceId,
+          signal: controller.signal,
+        })
         setMetadata(metadata)
         setIsError(false)
-      } catch {
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return
+        }
         setIsError(true)
       } finally {
-        setIsLoading(false)
+        if (!controller.signal.aborted) setIsLoading(false)
       }
     }
 
     void fetchMetadata()
+
+    return () => {
+      controller.abort()
+    }
   }, [resourceId, enabled])
 
   return {

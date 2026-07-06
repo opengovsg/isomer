@@ -44,3 +44,4 @@ jobs:
       app-s3-assets-bucket-name: "isomer-next-infra-stg-assets-private-b18ec1f"
       app-s3-assets-domain-name: "isomer-user-content-stg.by.gov.sg"
       app-growthbook-client-key: "sdk-x4jkIJGr4TizR8qK"
+      app-intercom-app-id: "jv2tjc3g"

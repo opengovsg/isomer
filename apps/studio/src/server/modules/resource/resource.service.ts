@@ -37,6 +37,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
+import { tokenizeSearchQuery } from "./resource.utils"
 
 // Specify the default columns to return from the Resource table
 export const defaultResourceSelect = [
@@ -687,11 +688,16 @@ const _updateOrderingForResource = (
   }
 }
 
+// Accepts an optional `trx` so callers inside a transaction (e.g. the publish
+// shadow-redirect guard) read the permalink within the same tx, instead of
+// racing a concurrent move that commits between reads. Opens its own
+// transaction only when called standalone.
 export const getResourcePermalinkTree = async (
   siteId: number,
   resourceId: number,
+  trx?: SafeKysely,
 ): Promise<string[]> => {
-  return db.transaction().execute(async (tx) => {
+  const run = async (tx: SafeKysely) => {
     // Guard against invalid resource
     const resource = await getById(tx, {
       siteId,
@@ -727,14 +733,17 @@ export const getResourcePermalinkTree = async (
       .map((r) => r.permalink)
       .reverse()
       .filter((v) => v !== INDEX_PAGE_PERMALINK)
-  })
+  }
+
+  return trx ? run(trx) : db.transaction().execute(run)
 }
 
 export const getResourceFullPermalink = async (
   siteId: number,
   resourceId: number,
+  trx?: SafeKysely,
 ) => {
-  const permalinkTree = await getResourcePermalinkTree(siteId, resourceId)
+  const permalinkTree = await getResourcePermalinkTree(siteId, resourceId, trx)
   if (permalinkTree.length === 0) {
     return null
   }
@@ -1048,6 +1057,7 @@ export const publishPageResource = async ({
       const fullPermalink = await getResourceFullPermalink(
         siteId,
         Number(resourceId),
+        tx,
       )
       if (fullPermalink) {
         const blockingRedirect = await tx
@@ -1331,16 +1341,14 @@ export const getSearchResults = async ({
   totalCount: number | null
   resources: SearchResultResource[]
 }> => {
-  const searchTerms: string[] = Array.from(
-    new Set(query.trim().toLowerCase().split(/\s+/)),
-  )
+  const searchTerms = tokenizeSearchQuery(query)
 
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
   })
     .where("Resource.type", "in", resourceTypes)
     .where((eb) =>
-      eb.or(
+      eb.and(
         searchTerms.map((searchTerm) =>
           // Match if the search term is at the start of the title
           eb("Resource.title", "ilike", `${searchTerm}%`).or(

@@ -2,6 +2,7 @@ import { isCkanInternalColumn } from "./isCkanInternalColumn"
 
 interface FetchDgsMetadataProps {
   resourceId: string
+  signal?: AbortSignal
 }
 
 interface MetaMappingType {
@@ -37,10 +38,12 @@ export type FetchDgsMetadataOutput = Pick<
 
 export const fetchDgsMetadata = async ({
   resourceId,
+  signal,
 }: FetchDgsMetadataProps): Promise<FetchDgsMetadataOutput> => {
   // For simplicity sake, we will always use data.gov.sg production API
   const response = await fetch(
     `https://api-production.data.gov.sg/v2/public/api/datasets/${resourceId}/metadata`,
+    { signal },
   )
 
   if (!response.ok) {

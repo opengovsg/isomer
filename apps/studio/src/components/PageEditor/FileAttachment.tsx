@@ -7,7 +7,7 @@ import { useEffect, useState } from "react"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { RISKY_FILE_EXTENSIONS } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
-import { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { getPresignedPutUrlSchema, uploadSvgSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 import { getFileExtension } from "~/utils/getFileExtension"
 
@@ -100,9 +100,15 @@ export const FileAttachment = ({
               ...Object.values(acceptedFileTypes),
             ])}
             onFileValidation={(file) => {
-              const parseResult = getPresignedPutUrlSchema
-                .pick({ fileName: true })
-                .safeParse({ fileName: file.name })
+              // SVGs are validated and uploaded via the dedicated uploadSvg
+              // endpoint (not the presigned PUT path), so use uploadSvgSchema
+              // for filename validation to avoid the deliberate SVG rejection
+              // in getPresignedPutUrlSchema.
+              const isSvg = file.name.toLowerCase().endsWith(".svg")
+              const schema = isSvg
+                ? uploadSvgSchema.pick({ fileName: true })
+                : getPresignedPutUrlSchema.pick({ fileName: true })
+              const parseResult = schema.safeParse({ fileName: file.name })
 
               if (parseResult.success) return null
               // NOTE: safe assertion here because we're in error path and there's at least 1 error
