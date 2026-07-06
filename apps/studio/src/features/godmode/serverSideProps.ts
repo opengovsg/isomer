@@ -13,34 +13,6 @@ export interface GodModeAdminRoleProps {
 export const requireGodModeAdmin = async (
   { req, res }: GetServerSidePropsContext,
   allowedRoles: readonly IsomerAdminRole[],
-): Promise<GetServerSidePropsResult<Record<string, never>>> => {
-  const session = await getIronSession<SessionData>(
-    req,
-    res,
-    generateSessionOptions(),
-  )
-
-  const isUserGodModeAdmin =
-    !!session.userId &&
-    (await isActiveIsomerAdmin(session.userId, [...allowedRoles]))
-
-  if (!isUserGodModeAdmin) {
-    return {
-      redirect: {
-        destination: DASHBOARD,
-        permanent: false,
-      },
-    }
-  }
-
-  return {
-    props: {},
-  }
-}
-
-export const requireGodModeAdminWithRoleProps = async (
-  { req, res }: GetServerSidePropsContext,
-  allowedRoles: readonly IsomerAdminRole[],
 ): Promise<GetServerSidePropsResult<GodModeAdminRoleProps>> => {
   const session = await getIronSession<SessionData>(
     req,

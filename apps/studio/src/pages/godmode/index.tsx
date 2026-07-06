@@ -8,7 +8,7 @@ import {
 } from "@chakra-ui/react"
 import NextLink from "next/link"
 import {
-  requireGodModeAdminWithRoleProps,
+  requireGodModeAdmin,
   type GodModeAdminRoleProps,
 } from "~/features/godmode/serverSideProps"
 import { type NextPageWithLayout } from "~/lib/types"
@@ -43,10 +43,7 @@ const GODMODE_LINKS: readonly GodModeLink[] = [
 export const getServerSideProps: GetServerSideProps<GodModeAdminRoleProps> = (
   context,
 ) =>
-  requireGodModeAdminWithRoleProps(context, [
-    IsomerAdminRole.Core,
-    IsomerAdminRole.Migrator,
-  ])
+  requireGodModeAdmin(context, [IsomerAdminRole.Core, IsomerAdminRole.Migrator])
 
 const GodModePage: NextPageWithLayout<GodModeAdminRoleProps> = ({
   userGodModeRoles,
