@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getTagFilters } from "../getTagFilters"
 
@@ -67,13 +68,13 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Acute", id: "o-1" }],
       },
       {
         label: "Body parts",
         id: "b-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Brain", id: "o-2" }],
       },
     ]
@@ -121,7 +122,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
           { label: "Brain", id: "bp-brain" },
@@ -131,7 +132,7 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Chronic", id: "c-chronic" },
           { label: "Acute", id: "c-acute" },
@@ -254,7 +255,7 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Acute", id: "c-acute" },
           { label: "Chronic", id: "c-chronic" },
@@ -263,7 +264,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
           { label: "Brain", id: "bp-brain" },
@@ -318,13 +319,13 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [], // Empty options array
       },
       {
         label: "Body parts",
         id: "b-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
           { label: "Brain", id: "bp-brain" },
@@ -485,7 +486,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
           { label: "Brain", id: "bp-brain" },

@@ -1,5 +1,8 @@
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
-import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
+import {
+  DEFAULT_TAG_CATEGORY_DISPLAY,
+  IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
+} from "@opengovsg/isomer-components"
 
 export const ONE_MB_IN_BYTES = 1000000
 
@@ -32,7 +35,7 @@ export const createDefaultTagCategory = (): TagCategory => ({
   id: crypto.randomUUID(),
   label: "New filter",
   isRequired: true,
-  display: "pills",
+  display: DEFAULT_TAG_CATEGORY_DISPLAY,
   options: [],
 })
 
