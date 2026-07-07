@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CollectionBlockProps } from "~/interfaces"
-import type { IsomerSitemap } from "~/types/sitemap"
+import type {
+  IsomerCollectionPageSitemap,
+  IsomerSitemap,
+} from "~/types/sitemap"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { CollectionBlock } from "./CollectionBlock"
@@ -19,6 +22,23 @@ const meta: Meta<CollectionBlockProps> = {
 export default meta
 type Story = StoryObj<typeof CollectionBlock>
 
+type TagCategories = NonNullable<
+  IsomerCollectionPageSitemap["collectionPagePageProps"]
+>["tagCategories"]
+
+// Category is now an ordinary tagCategories group — the option a card is
+// tagged with is what CollectionBlock displays under its title.
+const DEFAULT_CATEGORY_OPTION_ID = "category-option-yes-i-am-a-category"
+const DEFAULT_TAG_CATEGORIES: TagCategories = [
+  {
+    label: "Category",
+    id: "category-group",
+    isRequired: true,
+    display: "plaintext",
+    options: [{ label: "yes i am a category", id: DEFAULT_CATEGORY_OPTION_ID }],
+  },
+]
+
 const generateArgs = ({
   collectionReferenceLink = "[resource:1:2]",
   displayThumbnail,
@@ -27,23 +47,23 @@ const generateArgs = ({
   buttonLabel = "View all corrections",
   isDateless = false,
   numberOfCards = 3,
+  tagCategories = DEFAULT_TAG_CATEGORIES,
+  taggedOptionIds = [DEFAULT_CATEGORY_OPTION_ID],
 }: Partial<
   Omit<CollectionBlockProps, "site"> & {
     isDateless?: boolean
     numberOfCards?: number
     withImageFallback?: boolean
+    tagCategories?: TagCategories
+    taggedOptionIds?: string[]
   }
 >): Partial<CollectionBlockProps> => {
-  // Category is now an ordinary tagCategories group — the option a card is
-  // tagged with is what CollectionBlock displays under its title.
-  const CATEGORY_OPTION_ID = "category-option-yes-i-am-a-category"
-
   const cards: IsomerSitemap[] = [
     {
       id: "3",
       title:
         "Date of Government Gazette Notification on Dissolution of Parliament",
-      tagged: [CATEGORY_OPTION_ID],
+      tagged: taggedOptionIds,
       permalink: "/collection-1/item-1",
       layout: "article",
       summary: "",
@@ -62,7 +82,7 @@ const generateArgs = ({
     {
       id: "4",
       title: "Impact of Foreign Professionals on our Economy and Society",
-      tagged: [CATEGORY_OPTION_ID],
+      tagged: taggedOptionIds,
       permalink: "/collection-1/item-2",
       layout: "article",
       summary: "",
@@ -77,7 +97,7 @@ const generateArgs = ({
     {
       id: "5",
       title: "Where does Government revenue come from?",
-      tagged: [CATEGORY_OPTION_ID],
+      tagged: taggedOptionIds,
       permalink: "/collection-1/item-3",
       layout: "article",
       summary: "",
@@ -116,17 +136,7 @@ const generateArgs = ({
             lastModified: "2021-01-01",
             children: cards.slice(0, numberOfCards),
             collectionPagePageProps: {
-              tagCategories: [
-                {
-                  label: "Category",
-                  id: "category-group",
-                  isRequired: true,
-                  display: "plaintext",
-                  options: [
-                    { label: "yes i am a category", id: CATEGORY_OPTION_ID },
-                  ],
-                },
-              ],
+              tagCategories,
             },
           },
         ],
@@ -183,5 +193,49 @@ export const TwoCards: Story = {
     displayThumbnail: true,
     displayCategory: true,
     numberOfCards: 2,
+  }),
+}
+
+export const WithoutPlaintextTags: Story = {
+  name: "Without Plaintext Tags",
+  args: generateArgs({
+    displayThumbnail: true,
+    displayCategory: true,
+    tagCategories: [],
+    taggedOptionIds: [],
+  }),
+}
+
+const TOPIC_OPTION_1_ID = "topic-option-environment"
+const TOPIC_OPTION_2_ID = "topic-option-wildlife"
+const REGION_OPTION_ID = "region-option-southeast-asia"
+
+export const MultiplePlaintextTags: Story = {
+  name: "Multiple Plaintext Tags",
+  args: generateArgs({
+    displayThumbnail: true,
+    displayCategory: true,
+    // One group with 2 selected options (comma-joined) and another with
+    // only 1, so both the comma and the dot separator are visible together
+    tagCategories: [
+      {
+        label: "Topic",
+        id: "topic-group",
+        isRequired: true,
+        display: "plaintext",
+        options: [
+          { label: "Environment", id: TOPIC_OPTION_1_ID },
+          { label: "Wildlife", id: TOPIC_OPTION_2_ID },
+        ],
+      },
+      {
+        label: "Region",
+        id: "region-group",
+        isRequired: true,
+        display: "plaintext",
+        options: [{ label: "Southeast Asia", id: REGION_OPTION_ID }],
+      },
+    ],
+    taggedOptionIds: [TOPIC_OPTION_1_ID, TOPIC_OPTION_2_ID, REGION_OPTION_ID],
   }),
 }

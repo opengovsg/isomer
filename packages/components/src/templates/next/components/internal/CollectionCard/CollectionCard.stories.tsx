@@ -93,7 +93,7 @@ export const CardWithoutImage: Story = {
   args: generateArgs({ image: undefined }),
 }
 
-export const CardWithoutCategory: Story = {
+export const CardWithoutPlaintextTags: Story = {
   args: generateArgs({ plaintextTags: [] }),
 }
 
