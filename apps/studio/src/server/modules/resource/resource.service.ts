@@ -37,6 +37,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
+import { tokenizeSearchQuery } from "./resource.utils"
 
 // Specify the default columns to return from the Resource table
 export const defaultResourceSelect = [
@@ -410,13 +411,6 @@ export const getLocalisedSitemap = async (
       ELSE ''
     END
 `.as("content")
-  const categoryIdSql = sql<string | null>`
-    CASE
-      WHEN (published.content ->> 'layout') IN ('article','link')
-      THEN (published.content -> 'page' ->> 'categoryId')
-      ELSE NULL
-    END
-`.as("categoryId")
   const taggedSql = sql<string | null>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
@@ -446,7 +440,6 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
-          categoryIdSql,
           taggedSql,
           ...defaultResourceSelect,
         ])
@@ -466,7 +459,6 @@ export const getLocalisedSitemap = async (
               eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
               eb.cast<string>(eb.val(""), "text").as("content"),
-              eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
@@ -495,7 +487,6 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
-          categoryIdSql,
           taggedSql,
           ...defaultResourceSelect,
         ]),
@@ -519,7 +510,6 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
-          eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
           eb.cast<string | null>(eb.val(null), "text").as("tagged"),
           ...defaultResourceSelect,
         ])
@@ -546,7 +536,6 @@ export const getLocalisedSitemap = async (
               categorySql,
               dateSql,
               contentSql,
-              eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
@@ -560,7 +549,6 @@ export const getLocalisedSitemap = async (
       "category",
       "date",
       "content",
-      "categoryId",
       "tagged",
       ...defaultResourceSelect,
     ])
@@ -573,7 +561,6 @@ export const getLocalisedSitemap = async (
           "category",
           "date",
           "content",
-          "categoryId",
           "tagged",
           ...defaultResourceSelect,
         ]),
@@ -587,7 +574,6 @@ export const getLocalisedSitemap = async (
           "category",
           "date",
           "content",
-          "categoryId",
           "tagged",
           ...defaultResourceSelect,
         ]),
@@ -1340,16 +1326,14 @@ export const getSearchResults = async ({
   totalCount: number | null
   resources: SearchResultResource[]
 }> => {
-  const searchTerms: string[] = Array.from(
-    new Set(query.trim().toLowerCase().split(/\s+/)),
-  )
+  const searchTerms = tokenizeSearchQuery(query)
 
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
   })
     .where("Resource.type", "in", resourceTypes)
     .where((eb) =>
-      eb.or(
+      eb.and(
         searchTerms.map((searchTerm) =>
           // Match if the search term is at the start of the title
           eb("Resource.title", "ilike", `${searchTerm}%`).or(

@@ -1,0 +1,38 @@
+meta {
+  name: Get Site
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v2/sites/{{siteClientId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  User-Agent: {{userAgent}}
+  Content-Type: application/json
+}
+
+docs {
+  Fetches the SearchSG site details for a given `siteClientId`.
+
+  Response shape:
+  ```json
+  {
+    "data": {
+      "siteDetail": { "applications": [{ "appId": "...", "appType": "websiteSearch", ... }] },
+      "project": { "projectId": "..." }
+    }
+  }
+  ```
+
+  After running this request, copy `data.siteDetail.applications[].appId` (where
+  `appType === "websiteSearch"`) and `data.project.projectId` into the environment vars
+  `appId` and `projectId` before running the PATCH requests.
+}

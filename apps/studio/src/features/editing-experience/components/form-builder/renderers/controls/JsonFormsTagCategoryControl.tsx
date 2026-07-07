@@ -2,12 +2,7 @@ import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import type { CollectionPagePageProps } from "@opengovsg/isomer-components"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import {
-  composePaths,
-  createDefaultValue,
-  rankWith,
-  schemaMatches,
-} from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -16,20 +11,20 @@ import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
 import { DuplicateLabelError } from "../../components/DuplicateLabelError"
-import { EmptyArray } from "../../components/EmptyArray"
+import { EmptyCategory } from "../../components/EmptyCategory"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { createDefaultTagCategory } from "./constants"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const {
     data,
     path,
     enabled,
-    label,
     addItem,
     removeItems,
     arraySchema,
@@ -39,6 +34,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     uischema,
     moveUp,
     moveDown,
+    label,
     description,
   } = props
   const { hasErrorAt } = useBuilderErrors()
@@ -85,7 +81,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
-      {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
       <VStack spacing={0} align="start">
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
@@ -93,16 +88,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               {label}
             </Text>
             <AddItemButton
-              onClick={addItem(path, {
-                ...(createDefaultValue(schema, rootSchema) as Record<
-                  string,
-                  unknown
-                >),
-                // Set on new filters but not in JSON Schema: Studio AJV runs with
-                // useDefaults, which would also apply the default to legacy rows
-                // that omit this key.
-                isRequired: true,
-              })}
+              onClick={addItem(path, createDefaultTagCategory())}
               isDisabled={isAddItemDisabled}
             >
               Add a filter
@@ -113,6 +99,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               {description}
             </Text>
           )}
+          {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
         </VStack>
         <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
           <DragDropContext onDragEnd={onDragEnd}>
@@ -126,7 +113,12 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                   spacing={0}
                   ref={innerRef}
                 >
-                  {data === 0 && <EmptyArray />}
+                  {data === 0 && (
+                    <EmptyCategory
+                      title="Filters you add will appear here"
+                      description="Click 'Add a filter' to add one"
+                    />
+                  )}
 
                   {[...Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)
@@ -135,9 +127,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                     const count =
                       page?.tagCategories?.[index]?.options?.length ?? 0
                     const subtitle =
-                      count === 0
-                        ? "No option"
-                        : `${count} ${count > 1 ? "options" : "option"}`
+                      count === 1 ? "1 option" : `${count} options`
 
                     return (
                       <Draggable

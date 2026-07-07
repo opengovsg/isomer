@@ -26,7 +26,6 @@ type ResourceDto = Omit<
   summary?: string
   thumbnail?: string
   category?: string
-  categoryId?: string | null
   tagged?: string | null
   date?: string
   content?: string
@@ -126,7 +125,6 @@ const getSitemapTreeFromArray = (
         lastModified: resource.updatedAt.toISOString(),
         permalink,
         category: resource.category ?? "Others",
-        categoryId: resource.categoryId ?? undefined,
         tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
         image: {
@@ -150,7 +148,6 @@ const getSitemapTreeFromArray = (
         lastModified: resource.updatedAt.toISOString(),
         permalink,
         category: resource.category ?? "Others",
-        categoryId: resource.categoryId ?? undefined,
         tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
         image: {
@@ -304,8 +301,6 @@ export const injectTagMappings = async (
     // of a collection item
     childPageProps.tagged,
     collectionPageProps.tagCategories,
-    childPageProps.categoryId,
-    collectionPageProps.categoryOptions,
     resource.id,
     resource.parentId,
   )
@@ -316,19 +311,17 @@ const _injectTagMappings = (
   sitemap: IsomerSitemap,
   tagged: ArticlePagePageProps["tagged"],
   tagCategories: CollectionPagePageProps["tagCategories"],
-  categoryId: ArticlePagePageProps["categoryId"],
-  categoryOptions: CollectionPagePageProps["categoryOptions"],
   childId: CollectionItemResourceDto["id"],
   collectionId: CollectionItemResourceDto["parentId"],
 ): IsomerSitemap => {
   // NOTE: If the child id matches,
-  // inject the tags and categoryId
+  // inject the tags
   if (sitemap.id === childId) {
-    return { ...sitemap, tagged, categoryId }
+    return { ...sitemap, tagged }
   }
 
   // NOTE: If the collection id matches,
-  // inject tag categories, categoryOptions and process the children
+  // inject tag categories and process the children
   if (
     sitemap.layout === ISOMER_USABLE_PAGE_LAYOUTS.Collection &&
     sitemap.id === collectionId
@@ -338,18 +331,9 @@ const _injectTagMappings = (
       collectionPagePageProps: {
         ...sitemap.collectionPagePageProps,
         tagCategories,
-        categoryOptions,
       },
       children: sitemap.children?.map((child) =>
-        _injectTagMappings(
-          child,
-          tagged,
-          tagCategories,
-          categoryId,
-          categoryOptions,
-          childId,
-          collectionId,
-        ),
+        _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
       ),
     }
   }
@@ -359,15 +343,7 @@ const _injectTagMappings = (
   return {
     ...sitemap,
     children: sitemap.children?.map((child) =>
-      _injectTagMappings(
-        child,
-        tagged,
-        tagCategories,
-        categoryId,
-        categoryOptions,
-        childId,
-        collectionId,
-      ),
+      _injectTagMappings(child, tagged, tagCategories, childId, collectionId),
     ),
   }
 }

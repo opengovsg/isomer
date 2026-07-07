@@ -21,7 +21,6 @@ export const CollectionLayout = ({
     defaultSortBy,
     defaultSortDirection,
     tagCategories,
-    categoryOptions,
     showDate,
     showThumbnail,
   } = page
@@ -33,7 +32,6 @@ export const CollectionLayout = ({
     sortBy: defaultSortBy,
     sortDirection: defaultSortDirection,
     tagCategories,
-    categoryOptions,
     showDate,
     showThumbnail,
   })
@@ -49,11 +47,7 @@ export const CollectionLayout = ({
         page={page}
         breadcrumb={breadcrumb}
         items={processedItems}
-        filters={getAvailableFilters(
-          processedItems,
-          tagCategories,
-          categoryOptions,
-        )}
+        filters={getAvailableFilters(processedItems, tagCategories)}
         shouldShowDate={shouldShowDate(processedItems)}
         siteAssetsBaseUrl={site.assetsBaseUrl}
       />

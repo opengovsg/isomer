@@ -39,11 +39,6 @@ export const EditCollectionLinkPreview = ({
     siteId,
   })
 
-  const [{ categoryOptions }] = trpc.page.getCategoryOptions.useSuspenseQuery({
-    pageId: linkId,
-    siteId,
-  })
-
   const parentPermalink = useMemo(
     () => permalink.split("/").slice(0, -1).join("/"),
     [permalink],
@@ -70,7 +65,7 @@ export const EditCollectionLinkPreview = ({
             layout: "collection",
             title: parentTitle,
             summary: "",
-            collectionPagePageProps: { tagCategories, categoryOptions },
+            collectionPagePageProps: { tagCategories },
             children: [
               {
                 id: "9999999",
@@ -85,22 +80,14 @@ export const EditCollectionLinkPreview = ({
           },
         ],
       }) satisfies IsomerSitemap,
-    [
-      parentPermalink,
-      parentTitle,
-      tagCategories,
-      categoryOptions,
-      link,
-      permalink,
-      title,
-    ],
+    [parentPermalink, parentTitle, tagCategories, link, permalink, title],
   )
 
   return (
     <ViewportContainer siteId={siteId}>
       <PreviewWithCustomSitemap
         content={[]}
-        page={{ title: parentTitle, tagCategories, categoryOptions }}
+        page={{ title: parentTitle, tagCategories }}
         layout={"collection"}
         siteId={siteId}
         siteMap={siteMap}
