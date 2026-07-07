@@ -30,6 +30,7 @@ describe("getAvailableFilters", () => {
         label: "Category",
         id: "cat-1",
         isRequired: true,
+        display: "pills",
         options: [{ label: "Guides", id: "opt-1" }],
       },
     ]

@@ -389,6 +389,7 @@ describe("getCollectionPages", () => {
             {
               label: "Category",
               id: "cat-1",
+              display: "pills",
               options: [{ label: "Guides", id: "cat-opt-1" }],
             },
           ],

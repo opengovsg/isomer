@@ -10,11 +10,13 @@ describe("getCategoryFromTagged", () => {
       {
         label: "Topic",
         id: "topic-1",
+        display: "pills",
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        display: "pills",
         options: [
           { label: "Guides", id: "cat-opt-1" },
           { label: "Articles", id: "cat-opt-2" },
@@ -35,6 +37,7 @@ describe("getCategoryFromTagged", () => {
       {
         label: "Category",
         id: "cat-1",
+        display: "pills",
         options: [
           { label: "Guides", id: "cat-opt-1" },
           { label: "Articles", id: "cat-opt-2" },
@@ -58,11 +61,13 @@ describe("getCategoryFromTagged", () => {
       {
         label: "Topic",
         id: "topic-1",
+        display: "pills",
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        display: "pills",
         options: [{ label: "Guides", id: "cat-opt-1" }],
       },
     ]
@@ -88,6 +93,7 @@ describe("getCategoryFromTagged", () => {
       {
         label: "Category",
         id: "cat-1",
+        display: "pills",
         options: [{ label: "Guides", id: "cat-opt-1" }],
       },
     ]
@@ -102,6 +108,7 @@ describe("getCategoryFromTagged", () => {
       {
         label: "Category",
         id: "cat-1",
+        display: "pills",
         options: [{ label: "Guides", id: "cat-opt-1" }],
       },
     ]
@@ -118,6 +125,7 @@ describe("getCategoryFromTagged", () => {
       {
         label: "Category",
         id: "cat-1",
+        display: "pills",
         options: [
           { label: "Guides", id: "cat-opt-1" },
           { label: "Articles", id: "cat-opt-2" },

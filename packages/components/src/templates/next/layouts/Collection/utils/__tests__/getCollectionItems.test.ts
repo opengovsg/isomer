@@ -1,4 +1,4 @@
-import type { IsomerSitemap } from "~/types"
+import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 
@@ -326,15 +326,17 @@ describe("getCollectionItems", () => {
   })
 
   describe("category resolution", () => {
-    const tagCategories = [
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
         label: "Topic",
         id: "topic-1",
+        display: "pills",
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        display: "pills",
         options: [
           { label: "Guides", id: "cat-opt-1" },
           { label: "Articles", id: "cat-opt-2" },
@@ -415,15 +417,17 @@ describe("getCollectionItems", () => {
   })
 
   describe("displayTags exclude the category group", () => {
-    const tagCategories = [
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
         label: "Topic",
         id: "topic-1",
+        display: "pills",
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        display: "pills",
         options: [
           { label: "Guides", id: "cat-opt-1" },
           { label: "Articles", id: "cat-opt-2" },
@@ -481,6 +485,7 @@ describe("getCollectionItems", () => {
         {
           label: "Category",
           id: "cat-1",
+          display: "pills" as const,
           options: [{ label: "Guides", id: "cat-opt-1" }],
         },
       ]
