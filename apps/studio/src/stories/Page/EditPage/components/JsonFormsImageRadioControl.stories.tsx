@@ -1,4 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
+import {
+  DEFAULT_TAG_CATEGORY_DISPLAY,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+  type TagCategoryDisplay,
+} from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
 
 import { FormBuilder } from "./formBuilder"
@@ -12,20 +17,20 @@ export default meta
 type Story = StoryObj<typeof FormBuilder>
 
 const schema = Type.Object({
-  display: Type.Unsafe<"pills" | "plaintext">({
+  display: Type.Unsafe<TagCategoryDisplay>({
     oneOf: [
       {
-        const: "pills",
+        const: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         image: "tagcategory-pills",
       },
       {
-        const: "plaintext",
+        const: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         image: "tagcategory-plaintext",
       },
     ],
     title: "Show as",
     format: "image-radio",
-    default: "pills",
+    default: DEFAULT_TAG_CATEGORY_DISPLAY,
   }),
 })
 
@@ -39,6 +44,6 @@ export const Default: Story = {
 export const PlaintextSelected: Story = {
   args: {
     schema,
-    data: { display: "plaintext" },
+    data: { display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext },
   },
 }
