@@ -32,6 +32,7 @@ export const createDefaultTagCategory = (): TagCategory => ({
   id: crypto.randomUUID(),
   label: "New filter",
   isRequired: true,
+  display: "pills",
   options: [],
 })
 
