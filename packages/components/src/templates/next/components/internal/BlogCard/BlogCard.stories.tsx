@@ -33,7 +33,7 @@ const generateArgs = ({
 } => {
   return {
     date: new Date("2023-12-02"),
-    category: "Research",
+    plaintextTags: [{ category: "Category", selected: ["Research"] }],
     title:
       "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
     description:
@@ -47,7 +47,7 @@ const generateArgs = ({
     itemTitle:
       "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
     shouldShowDate,
-    displayTags: [],
+    pillTags: [],
     ...overrides,
   }
 }
@@ -94,7 +94,7 @@ export const CardWithoutImage: Story = {
 }
 
 export const CardWithoutCategory: Story = {
-  args: generateArgs({ category: undefined }),
+  args: generateArgs({ plaintextTags: [] }),
 }
 
 export const ShortDescription: Story = {
@@ -115,7 +115,7 @@ export const TagsWithImage: Story = {
   args: generateArgs({
     title: "Collection card with tags",
     description: "This is a random description that will be on the card",
-    displayTags: [
+    pillTags: [
       {
         category: "long",
         selected: [
@@ -131,7 +131,7 @@ export const TagsWithoutImage: Story = {
     title: "Collection card without tags",
     image: undefined,
     description: "This is a random description\nthat will be on the card",
-    displayTags: [
+    pillTags: [
       {
         category: "very long",
         selected: [
@@ -142,13 +142,16 @@ export const TagsWithoutImage: Story = {
   }),
 }
 
-export const CategoryGroupExcludedFromTags: Story = {
+export const MultiplePlaintextTags: Story = {
   args: generateArgs({
-    title: "Category group is not duplicated as a pill",
+    title: "Multiple plaintext-display groups are joined with a dot",
     description:
-      "The `category` prop (e.g. Research) is rendered as plain text under the title, and `displayTags` should never contain an entry for that same category group.",
-    category: "Research",
-    displayTags: [
+      "Each `plaintextTags` entry (e.g. Research, Guides) is rendered as plain text under the title, separated by a dot, and `pillTags` should never contain an entry for those same groups.",
+    plaintextTags: [
+      { category: "Category", selected: ["Research"] },
+      { category: "Region", selected: ["Guides"] },
+    ],
+    pillTags: [
       {
         category: "Topic",
         selected: ["Health"],
@@ -158,14 +161,14 @@ export const CategoryGroupExcludedFromTags: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
 
-    // The category is rendered once as plain text
-    const categoryMatches = await screen.findAllByText("Research")
-    await expect(categoryMatches).toHaveLength(1)
+    // Each plaintext group is rendered once as plain text
+    await expect(screen.getByText("Research")).toBeInTheDocument()
+    await expect(screen.getByText("Guides")).toBeInTheDocument()
 
-    // displayTags renders the non-category group as a pill
+    // pillTags renders the non-plaintext group as a pill
     await expect(screen.getByText("Health")).toBeInTheDocument()
 
-    // The category group's own label ("Category") must not appear as a pill heading
+    // The plaintext groups' own labels must not appear as pill headings
     await expect(screen.queryByText("Category")).not.toBeInTheDocument()
   },
 }

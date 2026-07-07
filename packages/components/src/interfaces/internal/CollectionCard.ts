@@ -11,14 +11,17 @@ interface FileDetails {
 }
 interface BaseCardProps {
   tags?: ArticlePagePageProps["tags"]
-  // NOTE: Same as `tags`, but excludes the tagCategories group used to
-  // resolve `category` (see getCategoryFromTagged), so it isn't shown twice
-  displayTags?: ArticlePagePageProps["tags"]
+  // NOTE: Same as `tags`, but only includes groups with `display: "pills"`
+  // (see getTagsFromTagged) — plaintext groups are shown via `plaintextTags`
+  pillTags?: ArticlePagePageProps["tags"]
   tagged?: ArticlePagePageProps["tagged"]
   id: string
   date?: Date
   lastModified: string
-  category: string | undefined
+  // NOTE: Same shape as `tags`, but only includes groups with
+  // `display: "plaintext"` — rendered as comma-joined text, dot-separated
+  // between groups (see PlaintextTags)
+  plaintextTags?: ArticlePagePageProps["tags"]
   title: string
   url: string
   description: string
@@ -49,12 +52,12 @@ export type CollectionCardProps = Pick<
   AllCardProps,
   | "id"
   | "date"
-  | "category"
+  | "plaintextTags"
   | "title"
   | "description"
   | "image"
   | "tags"
-  | "displayTags"
+  | "pillTags"
   | "tagged"
   | "isContainNeeded"
 > & {

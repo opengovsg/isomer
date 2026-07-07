@@ -14,7 +14,6 @@ describe("getTagFilters", () => {
           { selected: ["Brain", "Heart"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-        category: "category1",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
@@ -22,7 +21,6 @@ describe("getTagFilters", () => {
           { selected: ["Brain"], category: "Body parts" },
           { selected: ["Chronic"], category: "Condition" },
         ],
-        category: "category2",
       } as ProcessedCollectionCardProps,
     ]
 
@@ -59,7 +57,6 @@ describe("getTagFilters", () => {
           { selected: ["Brain"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-        category: "category1",
       } as ProcessedCollectionCardProps,
     ]
 
@@ -105,7 +102,6 @@ describe("getTagFilters", () => {
           { selected: ["Brain", "Arm"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-        category: "category1",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
@@ -113,7 +109,6 @@ describe("getTagFilters", () => {
           { selected: ["Heart"], category: "Body parts" },
           { selected: ["Chronic"], category: "Condition" },
         ],
-        category: "category2",
       } as ProcessedCollectionCardProps,
     ]
 
@@ -170,17 +165,14 @@ describe("getTagFilters", () => {
       {
         title: "Item 1",
         tags: [{ selected: ["Banana"], category: "Fruits" }],
-        category: "c1",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
         tags: [{ selected: ["Apple"], category: "Fruits" }],
-        category: "c2",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 3",
         tags: [{ selected: ["Banana"], category: "Fruits" }],
-        category: "c3",
       } as ProcessedCollectionCardProps,
     ]
 
@@ -206,7 +198,6 @@ describe("getTagFilters", () => {
       {
         title: "Item 1",
         description: "Description 1",
-        category: "category1",
       } as ProcessedCollectionCardProps,
     ]
 
@@ -238,7 +229,6 @@ describe("getTagFilters", () => {
           { selected: ["Acute"], category: "Condition" },
           { selected: ["Red"], category: "Color" },
         ],
-        category: "category1",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
@@ -246,7 +236,6 @@ describe("getTagFilters", () => {
           { selected: ["Heart"], category: "Body parts" },
           { selected: ["Blue"], category: "Color" },
         ],
-        category: "category2",
       } as ProcessedCollectionCardProps,
     ]
 
@@ -310,7 +299,6 @@ describe("getTagFilters", () => {
           { selected: ["Brain", "Heart"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-        category: "category1",
       } as ProcessedCollectionCardProps,
     ]
 
@@ -362,7 +350,6 @@ describe("getTagFilters", () => {
           { selected: ["Brain", "Heart"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-        category: "category1",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
@@ -370,7 +357,6 @@ describe("getTagFilters", () => {
           { selected: ["Brain"], category: "Body parts" },
           { selected: ["Acute", "Chronic"], category: "Condition" },
         ],
-        category: "category2",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 3",
@@ -378,7 +364,6 @@ describe("getTagFilters", () => {
           { selected: ["Heart"], category: "Body parts" },
           { selected: ["Acute"], category: "Condition" },
         ],
-        category: "category3",
       } as ProcessedCollectionCardProps,
     ]
 
@@ -412,12 +397,10 @@ describe("getTagFilters", () => {
       {
         title: "Item 1",
         tags: [{ selected: ["Brain"], category: "Body parts" }],
-        category: "category1",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
         // No tags property
-        category: "category2",
         id: "item2",
         description: "Description 2",
         date: new Date("2023-01-01"),
@@ -429,7 +412,6 @@ describe("getTagFilters", () => {
       {
         title: "Item 3",
         tags: [], // Empty tags array
-        category: "category3",
         id: "item3",
         description: "Description 3",
         date: new Date("2023-01-01"),
@@ -443,7 +425,6 @@ describe("getTagFilters", () => {
         tags: [
           { selected: [], category: "Body parts" }, // Empty selected array
         ],
-        category: "category4",
         id: "item4",
         description: "Description 4",
         date: new Date("2023-01-01"),
@@ -477,7 +458,6 @@ describe("getTagFilters", () => {
           { selected: ["Acute"], category: "Condition" },
           { selected: ["Red"], category: "Color" },
         ],
-        category: "category1",
       } as ProcessedCollectionCardProps,
     ]
 

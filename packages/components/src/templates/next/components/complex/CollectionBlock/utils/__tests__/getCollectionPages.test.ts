@@ -367,8 +367,8 @@ describe("getCollectionPages", () => {
     expect(result[1]?.itemTitle).toEqual(`${collectionId}1 title`)
   })
 
-  describe("category resolution", () => {
-    it("threads the referenced Collection's tagCategories through to derive each card's category from its tagged options", () => {
+  describe("plaintextTags resolution", () => {
+    it("threads the referenced Collection's tagCategories through to derive each card's plaintextTags from its tagged options", () => {
       // Arrange
       const collectionParent: IsomerSitemap = {
         id: collectionId,
@@ -389,7 +389,7 @@ describe("getCollectionPages", () => {
             {
               label: "Category",
               id: "cat-1",
-              display: "pills",
+              display: "plaintext",
               options: [{ label: "Guides", id: "cat-opt-1" }],
             },
           ],
@@ -407,10 +407,12 @@ describe("getCollectionPages", () => {
       const result = getCollectionPages({ site, collectionParent })
 
       // Assert
-      expect(result[0]?.category).toBe("Guides")
+      expect(result[0]?.plaintextTags).toEqual([
+        { category: "Category", selected: ["Guides"] },
+      ])
     })
 
-    it("resolves category to undefined when the referenced Collection has no tagCategories", () => {
+    it("resolves plaintextTags to undefined when the referenced Collection has no tagCategories", () => {
       // Arrange
       const collectionParent: IsomerSitemap = {
         id: collectionId,
@@ -439,7 +441,7 @@ describe("getCollectionPages", () => {
       const result = getCollectionPages({ site, collectionParent })
 
       // Assert
-      expect(result[0]?.category).toBeUndefined()
+      expect(result[0]?.plaintextTags).toBeUndefined()
     })
   })
 })

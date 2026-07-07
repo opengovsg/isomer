@@ -121,6 +121,7 @@ const generateArgs = ({
                   label: "Category",
                   id: "category-group",
                   isRequired: true,
+                  display: "plaintext",
                   options: [
                     { label: "yes i am a category", id: CATEGORY_OPTION_ID },
                   ],

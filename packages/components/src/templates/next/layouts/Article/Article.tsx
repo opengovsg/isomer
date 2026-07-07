@@ -5,7 +5,6 @@ import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
-import { getCategoryFromTagged } from "../Collection/utils/getCategoryFromTagged"
 import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
 import { Skeleton } from "../Skeleton"
 
@@ -29,14 +28,23 @@ export const ArticleLayout = ({
       ? parent.collectionPagePageProps?.tagCategories
       : undefined
 
-  // NOTE: Excludes the last tagCategories group, since it's already shown
-  // separately via `resolvedCategory` below
-  const resolvedTags =
+  // NOTE: Only includes groups with `display: "pills"` — plaintext groups
+  // are shown separately via `plaintextTags` below
+  const pillTags =
     tagged && parentTagCategories
-      ? getTagsFromTagged(tagged, parentTagCategories.slice(0, -1))
+      ? getTagsFromTagged(
+          tagged,
+          parentTagCategories.filter(({ display }) => display === "pills"),
+        )
       : tags
 
-  const resolvedCategory = getCategoryFromTagged(tagged, parentTagCategories)
+  const plaintextTags =
+    tagged && parentTagCategories
+      ? getTagsFromTagged(
+          tagged,
+          parentTagCategories.filter(({ display }) => display === "plaintext"),
+        )
+      : undefined
 
   return (
     <Skeleton site={site} page={page} layout={layout}>
@@ -44,10 +52,10 @@ export const ArticleLayout = ({
         <ArticlePageHeader
           {...page.articlePageHeader}
           breadcrumb={breadcrumb}
-          category={resolvedCategory}
+          plaintextTags={plaintextTags}
           title={page.title}
           date={page.date}
-          tags={resolvedTags}
+          pillTags={pillTags}
         />
 
         <div className="mx-auto w-full gap-10 pb-20">

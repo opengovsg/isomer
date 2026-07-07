@@ -325,7 +325,7 @@ describe("getCollectionItems", () => {
     })
   })
 
-  describe("category resolution", () => {
+  describe("plaintextTags resolution", () => {
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
         label: "Topic",
@@ -336,7 +336,7 @@ describe("getCollectionItems", () => {
       {
         label: "Category",
         id: "cat-1",
-        display: "pills",
+        display: "plaintext",
         options: [
           { label: "Guides", id: "cat-opt-1" },
           { label: "Articles", id: "cat-opt-2" },
@@ -344,7 +344,7 @@ describe("getCollectionItems", () => {
       },
     ]
 
-    it("resolves category from the last tagCategories group via the item's tagged options", () => {
+    it('resolves plaintextTags from groups with display: "plaintext" via the item\'s tagged options', () => {
       // Arrange
       const site = createSiteWithChildren([
         createArticleChild({ tagged: ["cat-opt-1"] }),
@@ -359,10 +359,12 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.category).toBe("Guides")
+      expect(result[0]!.plaintextTags).toEqual([
+        { category: "Category", selected: ["Guides"] },
+      ])
     })
 
-    it("joins multiple selected options in the last group with a comma", () => {
+    it("keeps all selected options for a plaintext group, uncombined (joining is a render concern)", () => {
       // Arrange
       const site = createSiteWithChildren([
         createArticleChild({ tagged: ["cat-opt-1", "cat-opt-2"] }),
@@ -377,7 +379,9 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.category).toBe("Guides, Articles")
+      expect(result[0]!.plaintextTags).toEqual([
+        { category: "Category", selected: ["Guides", "Articles"] },
+      ])
     })
 
     it("returns undefined when the collection has no tagCategories", () => {
@@ -394,7 +398,7 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.category).toBeUndefined()
+      expect(result[0]!.plaintextTags).toBeUndefined()
     })
 
     it("returns undefined when the item has no tagged options", () => {
@@ -412,11 +416,11 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.category).toBeUndefined()
+      expect(result[0]!.plaintextTags).toBeUndefined()
     })
   })
 
-  describe("displayTags exclude the category group", () => {
+  describe('pillTags include only display: "pills" groups', () => {
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
         label: "Topic",
@@ -427,7 +431,7 @@ describe("getCollectionItems", () => {
       {
         label: "Category",
         id: "cat-1",
-        display: "pills",
+        display: "plaintext",
         options: [
           { label: "Guides", id: "cat-opt-1" },
           { label: "Articles", id: "cat-opt-2" },
@@ -435,7 +439,7 @@ describe("getCollectionItems", () => {
       },
     ]
 
-    it("includes both groups in tags, but only the non-last group in displayTags", () => {
+    it("includes all groups in tags, but only pills groups in pillTags", () => {
       // Arrange
       const site = createSiteWithChildren([
         createArticleChild({ tagged: ["topic-opt-1", "cat-opt-1"] }),
@@ -454,7 +458,7 @@ describe("getCollectionItems", () => {
         { category: "Topic", selected: ["Health"] },
         { category: "Category", selected: ["Guides"] },
       ])
-      expect(result[0]!.displayTags).toEqual([
+      expect(result[0]!.pillTags).toEqual([
         { category: "Topic", selected: ["Health"] },
       ])
     })
@@ -475,17 +479,17 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.tags).toEqual(itemTags)
-      expect(result[0]!.displayTags).toEqual(itemTags)
-      expect(result[0]!.displayTags).toEqual(result[0]!.tags)
+      expect(result[0]!.pillTags).toEqual(itemTags)
+      expect(result[0]!.pillTags).toEqual(result[0]!.tags)
     })
 
-    it("returns an empty array for displayTags when there is only one tagCategories group", () => {
+    it('returns an empty array for pillTags when the only group is display: "plaintext"', () => {
       // Arrange
       const singleTagCategory = [
         {
           label: "Category",
           id: "cat-1",
-          display: "pills" as const,
+          display: "plaintext" as const,
           options: [{ label: "Guides", id: "cat-opt-1" }],
         },
       ]
@@ -505,7 +509,7 @@ describe("getCollectionItems", () => {
       expect(result[0]!.tags).toEqual([
         { category: "Category", selected: ["Guides"] },
       ])
-      expect(result[0]!.displayTags).toEqual([])
+      expect(result[0]!.pillTags).toEqual([])
     })
   })
 })

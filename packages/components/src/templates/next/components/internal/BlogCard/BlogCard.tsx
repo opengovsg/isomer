@@ -5,11 +5,12 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
+import { PlaintextTags } from "../PlaintextTags"
 import { Tag } from "../Tag"
 
 export const BlogCard = ({
   description,
-  category,
+  plaintextTags,
   image,
   isContainNeeded,
   referenceLinkHref,
@@ -17,7 +18,7 @@ export const BlogCard = ({
   itemTitle,
   siteAssetsBaseUrl,
   shouldShowDate = true,
-  displayTags = [],
+  pillTags = [],
   formattedDate,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
@@ -53,9 +54,9 @@ export const BlogCard = ({
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
-        {displayTags && displayTags.length > 0 && (
+        {pillTags && pillTags.length > 0 && (
           <div className="-mt-1 flex flex-col gap-2">
-            {displayTags.flatMap(({ category, selected: labels }) => {
+            {pillTags.flatMap(({ category, selected: labels }) => {
               return (
                 <div className="flex w-full flex-wrap items-center gap-1.5">
                   <p className="prose-label-sm">{category}</p>
@@ -73,11 +74,10 @@ export const BlogCard = ({
           </p>
         )}
         {/* TODO: Feature enhancement? Filter by category when clicked */}
-        {category && (
-          <p className="prose-label-sm-medium text-base-content-subtle">
-            {category}
-          </p>
-        )}
+        <PlaintextTags
+          tags={plaintextTags}
+          className="prose-label-sm-medium text-base-content-subtle"
+        />
       </div>
     </Link>
   )

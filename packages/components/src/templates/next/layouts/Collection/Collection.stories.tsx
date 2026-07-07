@@ -215,6 +215,7 @@ const CATEGORY_TAG_CATEGORY: NonNullable<
     label: "Category",
     id: "category-group",
     isRequired: true,
+    display: "plaintext",
     options: [{ label: "Category Name 2", id: CATEGORY_NAME_2_OPTION_ID }],
   },
 ]
@@ -308,6 +309,7 @@ export const AllResultsSameCategory: Story = {
         label: "Category",
         id: "category-group",
         isRequired: true,
+        display: "plaintext",
         options: [
           { label: "The only category", id: THE_ONLY_CATEGORY_OPTION_ID },
         ],

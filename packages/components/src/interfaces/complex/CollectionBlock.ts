@@ -58,7 +58,7 @@ export type CollectionBlockSingleCardProps = Pick<
   | "title"
   | "image"
   | "isContainNeeded"
-  | "category"
+  | "plaintextTags"
   | "referenceLinkHref"
   | "formattedDate"
 > &

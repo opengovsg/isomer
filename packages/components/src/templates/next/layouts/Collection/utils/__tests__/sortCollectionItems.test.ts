@@ -16,7 +16,7 @@ describe("sortCollectionItems", () => {
       variant: "article",
       url: "/test-item",
       description: "",
-      category: "Category",
+      plaintextTags: [{ category: "Category", selected: ["Category"] }],
       site: {
         siteMap: {
           id: "root",
@@ -490,9 +490,15 @@ describe("sortCollectionItems", () => {
     it("should sort items by category (alphabetically) by default", () => {
       // Arrange
       const items = [
-        createItem({ category: "2000" }),
-        createItem({ category: "2002" }),
-        createItem({ category: "2001" }),
+        createItem({
+          plaintextTags: [{ category: "Category", selected: ["2000"] }],
+        }),
+        createItem({
+          plaintextTags: [{ category: "Category", selected: ["2002"] }],
+        }),
+        createItem({
+          plaintextTags: [{ category: "Category", selected: ["2001"] }],
+        }),
       ]
 
       // Act
@@ -507,16 +513,30 @@ describe("sortCollectionItems", () => {
 
       // Assert
       const expectedCategories = ["2000", "2001", "2002"]
-      expect(sorted.map((item) => item.category)).toEqual(expectedCategories)
-      expect(sortedTwo.map((item) => item.category)).toEqual(expectedCategories)
+      expect(
+        sorted.map((item) =>
+          (item.plaintextTags ?? []).flatMap((t) => t.selected).join(", "),
+        ),
+      ).toEqual(expectedCategories)
+      expect(
+        sortedTwo.map((item) =>
+          (item.plaintextTags ?? []).flatMap((t) => t.selected).join(", "),
+        ),
+      ).toEqual(expectedCategories)
     })
 
     it("should sort items by category (reverse alphabetically) when sort direction is descending", () => {
       // Arrange
       const items = [
-        createItem({ category: "2000" }),
-        createItem({ category: "2002" }),
-        createItem({ category: "2001" }),
+        createItem({
+          plaintextTags: [{ category: "Category", selected: ["2000"] }],
+        }),
+        createItem({
+          plaintextTags: [{ category: "Category", selected: ["2002"] }],
+        }),
+        createItem({
+          plaintextTags: [{ category: "Category", selected: ["2001"] }],
+        }),
       ]
 
       // Act
@@ -532,16 +552,39 @@ describe("sortCollectionItems", () => {
 
       // Assert
       const expectedCategories = ["2002", "2001", "2000"]
-      expect(sorted.map((item) => item.category)).toEqual(expectedCategories)
-      expect(sortedTwo.map((item) => item.category)).toEqual(expectedCategories)
+      expect(
+        sorted.map((item) =>
+          (item.plaintextTags ?? []).flatMap((t) => t.selected).join(", "),
+        ),
+      ).toEqual(expectedCategories)
+      expect(
+        sortedTwo.map((item) =>
+          (item.plaintextTags ?? []).flatMap((t) => t.selected).join(", "),
+        ),
+      ).toEqual(expectedCategories)
     })
 
     it("should sort items by title when categories are the same", () => {
       // Arrange
       const items = [
-        createItem({ category: "Same Category", title: "Charlie" }),
-        createItem({ category: "Same Category", title: "Alice" }),
-        createItem({ category: "Same Category", title: "Bob" }),
+        createItem({
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
+          title: "Charlie",
+        }),
+        createItem({
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
+          title: "Alice",
+        }),
+        createItem({
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
+          title: "Bob",
+        }),
       ]
 
       // Act
@@ -564,17 +607,23 @@ describe("sortCollectionItems", () => {
       // Arrange
       const items = [
         createItem({
-          category: "Same Category",
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
           title: "Same Title",
           date: new Date("2023-01-01"),
         }),
         createItem({
-          category: "Same Category",
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
           title: "Same Title",
           date: new Date("2023-12-31"),
         }),
         createItem({
-          category: "Same Category",
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
           title: "Same Title",
           date: new Date("2023-06-15"),
         }),
@@ -603,9 +652,24 @@ describe("sortCollectionItems", () => {
     it("should sort items by title and take into account numbers in the title when categories are the same", () => {
       // Arrange
       const items = [
-        createItem({ category: "Same Category", title: "2 ogpeople" }),
-        createItem({ category: "Same Category", title: "1 ogpeople" }),
-        createItem({ category: "Same Category", title: "10 ogpeople" }),
+        createItem({
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
+          title: "2 ogpeople",
+        }),
+        createItem({
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
+          title: "1 ogpeople",
+        }),
+        createItem({
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
+          title: "10 ogpeople",
+        }),
       ]
 
       // Act
@@ -628,19 +692,25 @@ describe("sortCollectionItems", () => {
       // Arrange
       const items = [
         createItem({
-          category: "Same Category",
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
           title: "Same Title",
           date: undefined,
           lastModified: "2025-01-01T12:00:00Z",
         }),
         createItem({
-          category: "Same Category",
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
           title: "Same Title",
           date: undefined,
           lastModified: "2025-03-01T12:00:00Z",
         }),
         createItem({
-          category: "Same Category",
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
           title: "Same Title",
           date: undefined,
           lastModified: "2025-02-01T12:00:00Z",
@@ -674,10 +744,30 @@ describe("sortCollectionItems", () => {
     it("should sort items with published dates before items without published dates when they all have the same category", () => {
       // Arrange
       const items = [
-        createItem({ category: "Same Category", date: undefined }),
-        createItem({ category: "Same Category", date: new Date("2023-12-31") }),
-        createItem({ category: "Same Category", date: undefined }),
-        createItem({ category: "Same Category", date: new Date("2023-01-01") }),
+        createItem({
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
+          date: undefined,
+        }),
+        createItem({
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
+          date: new Date("2023-12-31"),
+        }),
+        createItem({
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
+          date: undefined,
+        }),
+        createItem({
+          plaintextTags: [
+            { category: "Category", selected: ["Same Category"] },
+          ],
+          date: new Date("2023-01-01"),
+        }),
       ]
 
       // Act

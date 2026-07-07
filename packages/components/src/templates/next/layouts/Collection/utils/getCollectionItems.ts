@@ -4,7 +4,6 @@ import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
-import { getCategoryFromTagged } from "./getCategoryFromTagged"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
 
@@ -127,7 +126,15 @@ export const getCollectionItems = ({
       id: item.permalink,
       date,
       lastModified: item.lastModified,
-      category: getCategoryFromTagged(item.tagged, tagCategories),
+      // NOTE: Only includes groups with `display: "plaintext"` — pills
+      // groups are shown separately via `pillTags` below
+      plaintextTags:
+        tagCategories && item.tagged
+          ? getTagsFromTagged(
+              item.tagged,
+              tagCategories.filter(({ display }) => display === "plaintext"),
+            )
+          : undefined,
       title: item.title,
       description: item.summary,
       image,
@@ -137,11 +144,14 @@ export const getCollectionItems = ({
         tagCategories && item.tagged
           ? getTagsFromTagged(item.tagged, tagCategories)
           : item.tags,
-      // NOTE: Excludes the last tagCategories group, since it's already
-      // shown separately via `category` above
-      displayTags:
+      // NOTE: Only includes groups with `display: "pills"` — plaintext
+      // groups are shown separately via `plaintextTags` above
+      pillTags:
         tagCategories && item.tagged
-          ? getTagsFromTagged(item.tagged, tagCategories.slice(0, -1))
+          ? getTagsFromTagged(
+              item.tagged,
+              tagCategories.filter(({ display }) => display === "pills"),
+            )
           : item.tags,
     }
 

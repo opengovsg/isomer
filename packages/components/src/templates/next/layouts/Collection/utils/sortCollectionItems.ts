@@ -70,13 +70,18 @@ const compareTitles = (
   }
 }
 
+// Flattens every selected option across all `plaintextTags` groups into one
+// comma-joined string, so items can be compared/sorted by a single key
+const getPlaintextTagsSortKey = (item: AllCardProps): string =>
+  (item.plaintextTags ?? []).flatMap(({ selected }) => selected).join(", ")
+
 const compareCategories = (
   a: AllCardProps,
   b: AllCardProps,
   sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
 ): number => {
-  const aCategory = a.category ?? ""
-  const bCategory = b.category ?? ""
+  const aCategory = getPlaintextTagsSortKey(a)
+  const bCategory = getPlaintextTagsSortKey(b)
 
   switch (sortDirection) {
     case "asc":
@@ -229,7 +234,8 @@ const sortCollectionItemsByCategory = ({
   sortDirection = "asc",
 }: Omit<SortCollectionItemsProps, "sortBy">) => {
   return items.sort((a, b) => {
-    const bothSameCategory = a.category === b.category
+    const bothSameCategory =
+      getPlaintextTagsSortKey(a) === getPlaintextTagsSortKey(b)
     const bothSameTitle = a.title === b.title
     const bothHaveDates = a.date instanceof Date && b.date instanceof Date
     const bothSameDates = a.date?.getTime() === b.date?.getTime()
