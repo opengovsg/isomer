@@ -38,7 +38,7 @@ export const CollectionCard = ({
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
-        {pillTags && pillTags.length > 0 && (
+        {pillTags.length > 0 && (
           <>
             {pillTags.flatMap(({ category, selected: labels }) => {
               return (
