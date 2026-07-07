@@ -19,6 +19,7 @@ export interface ResourceRowWithSiteAndTitle {
 
 export type IsomerAdminScriptType =
   | "bulk-upload-assets"
+  | "check-uptimerobot-monitors"
   | "export-individual-jsons"
   | "export-site-jsons"
   | "extract-folder-jsons"

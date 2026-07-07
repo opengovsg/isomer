@@ -2,6 +2,7 @@ import { select } from "@inquirer/prompts"
 
 import type { IsomerAdminScriptType } from "./types"
 import { bulkUploadAssets } from "./apps/bulk-upload-assets"
+import { checkUptimeRobotMonitors } from "./apps/check-uptimerobot-monitors"
 import { exportIndividualJsons } from "./apps/export-individual-jsons"
 import { exportSiteJsons } from "./apps/export-site-jsons"
 import { extractFolderJsons } from "./apps/extract-folder-jsons"
@@ -19,6 +20,12 @@ const main = async () => {
         description:
           "Prepare assets for S3 upload by assigning UUIDs and generating a mapping CSV.",
         value: "bulk-upload-assets",
+      },
+      {
+        name: "Check UptimeRobot monitors",
+        description:
+          "Verify every LAUNCHED site has an UptimeRobot monitor, and flag www sites monitored on www instead of the apex domain.",
+        value: "check-uptimerobot-monitors",
       },
       {
         name: "Export individual JSONs",
@@ -67,6 +74,9 @@ const main = async () => {
   switch (script) {
     case "bulk-upload-assets":
       await bulkUploadAssets()
+      break
+    case "check-uptimerobot-monitors":
+      await checkUptimeRobotMonitors()
       break
     case "export-individual-jsons":
       await exportIndividualJsons()

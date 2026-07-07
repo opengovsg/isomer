@@ -30,6 +30,14 @@ Prepares assets for S3 upload. Reads files from `./input`, assigns a random UUID
 
 **NOTE:** This requires you to place the files inside `./input` first before running.
 
+### Check UptimeRobot Monitors
+
+Verifies that every LAUNCHED site in `sites.production.csv` has a matching UptimeRobot monitor. For sites whose `domainAliases` is a `www.` domain, the monitor is expected to target the apex domain (e.g. `domain.com`) so the www redirect is exercised — sites monitored only on the www domain are flagged separately from sites with no monitor at all. Results are printed to the console and written to `uptimerobot-monitor-check.txt`.
+
+After the analysis, prompts you to (1) create monitors for all sites with none, and (2) update existing www-only monitors to target the apex domain instead.
+
+**Requires** `UPTIMEROBOT_API_KEY` set in `.env` — a Main API Key with read access is sufficient for the analysis, but write access is required if you confirm either remediation prompt. Also requires `sites.production.csv` copied into this `isomer-admin` folder.
+
 ### Export Individual JSONs
 
 Exports JSON blobs for a set of resource IDs from the database. Fetches both draft and published versions, excludes Folder, Collection, and IndexPage types, and saves each as `{id}.json` in `./output`.
