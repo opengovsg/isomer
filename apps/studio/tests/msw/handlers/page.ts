@@ -87,6 +87,7 @@ export const pageHandlers = {
           {
             label: "Topic",
             id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            display: "pills",
             options: [
               {
                 label: "Technology",
@@ -99,11 +100,13 @@ export const pageHandlers = {
           {
             label: "Empty Category",
             id: "123e4567-e89b-12d3-a456-426614174000",
+            display: "pills",
             options: [],
           },
           {
             label: "Industries",
             id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+            display: "pills",
             options: [
               {
                 label: "Agriculture & Food",
@@ -217,6 +220,7 @@ export const pageHandlers = {
             label: "Topic",
             id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
             isRequired: true,
+            display: "pills",
             options: [
               {
                 label: "Technology",
@@ -229,6 +233,7 @@ export const pageHandlers = {
             label: "Industry",
             id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
             isRequired: false,
+            display: "pills",
             options: [
               {
                 label: "Agriculture & Food",

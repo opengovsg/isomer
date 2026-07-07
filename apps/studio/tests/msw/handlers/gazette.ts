@@ -117,6 +117,7 @@ const GAZETTE_TAG_CATEGORIES = [
   {
     label: GAZETTE_SUBCATEGORY_LABEL,
     id: "0e02b2c3-58cc-4372-a567-f47ac10b3d47",
+    display: "pills" as const,
     options: Object.values(governmentGazetteSubcategories).map(
       (label, index) => ({
         label,
