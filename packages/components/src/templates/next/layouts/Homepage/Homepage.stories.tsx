@@ -7,6 +7,7 @@ import {
   withSearchSgSetup,
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -88,7 +89,7 @@ const generateArgs = ({
                   label: "Category",
                   id: "category-group",
                   isRequired: true,
-                  display: "plaintext",
+                  display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
                   options: [
                     {
                       label: "yes i am a category",

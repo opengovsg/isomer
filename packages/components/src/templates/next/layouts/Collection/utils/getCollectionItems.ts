@@ -1,6 +1,10 @@
 import type { AllCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
+import {
+  resolveTagCategoryDisplay,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "~/types/constants"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
@@ -126,13 +130,17 @@ export const getCollectionItems = ({
       id: item.permalink,
       date,
       lastModified: item.lastModified,
-      // NOTE: Only includes groups with `display: "plaintext"` — pills
-      // groups are shown separately via `pillTags` below
+      // NOTE: Only includes groups shown as plaintext — pill groups are shown
+      // separately via `pillTags` below
       plaintextTags:
         tagCategories && item.tagged
           ? getTagsFromTagged(
               item.tagged,
-              tagCategories.filter(({ display }) => display === "plaintext"),
+              tagCategories.filter(
+                ({ display }) =>
+                  resolveTagCategoryDisplay(display) ===
+                  TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+              ),
             )
           : undefined,
       title: item.title,
@@ -144,13 +152,18 @@ export const getCollectionItems = ({
         tagCategories && item.tagged
           ? getTagsFromTagged(item.tagged, tagCategories)
           : item.tags,
-      // NOTE: Only includes groups with `display: "pills"` — plaintext
-      // groups are shown separately via `plaintextTags` above
+      // NOTE: Only includes groups shown as pills — plaintext groups are shown
+      // separately via `plaintextTags` above. Legacy rows omitting `display`
+      // default to pills via `resolveTagCategoryDisplay`.
       pillTags:
         tagCategories && item.tagged
           ? getTagsFromTagged(
               item.tagged,
-              tagCategories.filter(({ display }) => display === "pills"),
+              tagCategories.filter(
+                ({ display }) =>
+                  resolveTagCategoryDisplay(display) ===
+                  TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+              ),
             )
           : item.tags,
     }

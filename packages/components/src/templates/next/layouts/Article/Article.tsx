@@ -1,4 +1,8 @@
 import { type ArticlePageSchemaType } from "~/types"
+import {
+  resolveTagCategoryDisplay,
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+} from "~/types/constants"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 
@@ -28,13 +32,18 @@ export const ArticleLayout = ({
       ? parent.collectionPagePageProps?.tagCategories
       : undefined
 
-  // NOTE: Only includes groups with `display: "pills"` — plaintext groups
-  // are shown separately via `plaintextTags` below
+  // NOTE: Only includes groups shown as pills — plaintext groups are shown
+  // separately via `plaintextTags` below. Legacy rows omitting `display` default
+  // to pills via `resolveTagCategoryDisplay`.
   const pillTags =
     tagged && parentTagCategories
       ? getTagsFromTagged(
           tagged,
-          parentTagCategories.filter(({ display }) => display === "pills"),
+          parentTagCategories.filter(
+            ({ display }) =>
+              resolveTagCategoryDisplay(display) ===
+              TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+          ),
         )
       : tags
 
@@ -42,7 +51,11 @@ export const ArticleLayout = ({
     tagged && parentTagCategories
       ? getTagsFromTagged(
           tagged,
-          parentTagCategories.filter(({ display }) => display === "plaintext"),
+          parentTagCategories.filter(
+            ({ display }) =>
+              resolveTagCategoryDisplay(display) ===
+              TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+          ),
         )
       : undefined
 

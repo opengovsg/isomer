@@ -1,6 +1,7 @@
 import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getCollectionItems } from "../getCollectionItems"
 
@@ -330,13 +331,13 @@ describe("getCollectionItems", () => {
       {
         label: "Topic",
         id: "topic-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
-        display: "plaintext",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [
           { label: "Guides", id: "cat-opt-1" },
           { label: "Articles", id: "cat-opt-2" },
@@ -425,13 +426,13 @@ describe("getCollectionItems", () => {
       {
         label: "Topic",
         id: "topic-1",
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
-        display: "plaintext",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [
           { label: "Guides", id: "cat-opt-1" },
           { label: "Articles", id: "cat-opt-2" },
@@ -483,13 +484,41 @@ describe("getCollectionItems", () => {
       expect(result[0]!.pillTags).toEqual(result[0]!.tags)
     })
 
+    it("treats legacy tag categories without display as pills in pillTags", () => {
+      // Arrange
+      const legacyTagCategories = [
+        {
+          label: "Topic",
+          id: "topic-1",
+          options: [{ label: "Health", id: "topic-opt-1" }],
+        },
+      ] satisfies CollectionPageSchemaType["page"]["tagCategories"]
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["topic-opt-1"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories: legacyTagCategories,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.pillTags).toEqual([
+        { category: "Topic", selected: ["Health"] },
+      ])
+      expect(result[0]!.plaintextTags).toEqual([])
+    })
+
     it('returns an empty array for pillTags when the only group is display: "plaintext"', () => {
       // Arrange
       const singleTagCategory = [
         {
           label: "Category",
           id: "cat-1",
-          display: "plaintext" as const,
+          display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
           options: [{ label: "Guides", id: "cat-opt-1" }],
         },
       ]

@@ -1,5 +1,6 @@
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import { describe, expect, it } from "vitest"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getCollectionPages } from "../getCollectionPages"
 
@@ -389,7 +390,7 @@ describe("getCollectionPages", () => {
             {
               label: "Category",
               id: "cat-1",
-              display: "plaintext",
+              display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
               options: [{ label: "Guides", id: "cat-opt-1" }],
             },
           ],

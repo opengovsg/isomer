@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
 import { describe, expect, it } from "vitest"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getAvailableFilters } from "../getAvailableFilters"
 
@@ -30,7 +31,7 @@ describe("getAvailableFilters", () => {
         label: "Category",
         id: "cat-1",
         isRequired: true,
-        display: "pills",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Guides", id: "opt-1" }],
       },
     ]

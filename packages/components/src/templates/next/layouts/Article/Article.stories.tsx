@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { generateSiteConfig } from "~/stories/helpers"
 import { type ArticlePageSchemaType } from "~/types"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { ArticleLayout } from "./Article"
 
@@ -681,7 +682,7 @@ export const TaggedArticleWithTagCategories: Story = {
                     {
                       label: "Tags",
                       id: "tags-group",
-                      display: "pills",
+                      display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
                       options: [
                         {
                           label: "NParks Happenings",
@@ -692,7 +693,7 @@ export const TaggedArticleWithTagCategories: Story = {
                     {
                       label: "Category",
                       id: "category-group",
-                      display: "plaintext",
+                      display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
                       options: [
                         {
                           label: "Citizen Engagement",
@@ -703,7 +704,7 @@ export const TaggedArticleWithTagCategories: Story = {
                     {
                       label: "Region",
                       id: "region-group",
-                      display: "plaintext",
+                      display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
                       options: [
                         { label: "Wildlife", id: TAGGED_REGION_OPTION_ID },
                       ],

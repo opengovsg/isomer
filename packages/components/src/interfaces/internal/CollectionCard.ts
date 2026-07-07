@@ -11,16 +11,15 @@ interface FileDetails {
 }
 interface BaseCardProps {
   tags?: ArticlePagePageProps["tags"]
-  // NOTE: Same as `tags`, but only includes groups with `display: "pills"`
+  // NOTE: Same as `tags`, but only includes groups shown as pills
   // (see getTagsFromTagged) — plaintext groups are shown via `plaintextTags`
   pillTags?: ArticlePagePageProps["tags"]
   tagged?: ArticlePagePageProps["tagged"]
   id: string
   date?: Date
   lastModified: string
-  // NOTE: Same shape as `tags`, but only includes groups with
-  // `display: "plaintext"` — rendered as comma-joined text, dot-separated
-  // between groups (see PlaintextTags)
+  // NOTE: Same shape as `tags`, but only includes groups shown as plaintext
+  // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
   plaintextTags?: ArticlePagePageProps["tags"]
   title: string
   url: string

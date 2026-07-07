@@ -5,6 +5,7 @@ import type {
   IsomerSitemap,
 } from "~/types/sitemap"
 import { generateSiteConfig } from "~/stories/helpers"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { CollectionBlock } from "./CollectionBlock"
 
@@ -34,7 +35,7 @@ const DEFAULT_TAG_CATEGORIES: TagCategories = [
     label: "Category",
     id: "category-group",
     isRequired: true,
-    display: "plaintext",
+    display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
     options: [{ label: "yes i am a category", id: DEFAULT_CATEGORY_OPTION_ID }],
   },
 ]
@@ -222,7 +223,7 @@ export const MultiplePlaintextTags: Story = {
         label: "Topic",
         id: "topic-group",
         isRequired: true,
-        display: "plaintext",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [
           { label: "Environment", id: TOPIC_OPTION_1_ID },
           { label: "Wildlife", id: TOPIC_OPTION_2_ID },
@@ -232,7 +233,7 @@ export const MultiplePlaintextTags: Story = {
         label: "Region",
         id: "region-group",
         isRequired: true,
-        display: "plaintext",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [{ label: "Southeast Asia", id: REGION_OPTION_ID }],
       },
     ],
