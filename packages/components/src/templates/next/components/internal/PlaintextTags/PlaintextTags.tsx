@@ -1,4 +1,5 @@
 import { Fragment } from "react"
+import { twMerge } from "~/lib/twMerge"
 
 interface PlaintextTagsProps {
   tags?: { category: string; selected: string[] }[]
@@ -11,7 +12,7 @@ export const PlaintextTags = ({ tags = [], className }: PlaintextTagsProps) => {
   }
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${className ?? ""}`}>
+    <div className={twMerge("flex flex-wrap items-center gap-2", className)}>
       {tags.map(({ category, selected }, index) => (
         <Fragment key={category}>
           {index > 0 && <TagSeparator />}
