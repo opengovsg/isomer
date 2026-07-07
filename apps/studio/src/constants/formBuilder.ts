@@ -13,6 +13,7 @@ export const JSON_FORMS_RANKING = {
   TextAreaControl: 1,
   ColourPickerControl: 2,
   TextControl: 1,
+  ImageRadioControl: 4,
   // NOTE: has to be higher than `TextControl`
   UuidControl: 2,
   WidgetControl: 3,

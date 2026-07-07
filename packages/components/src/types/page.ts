@@ -55,6 +55,23 @@ const TagCategorySchema = Type.Composite([
     ),
   }),
   Type.Object({
+    display: Type.Unsafe<"pills" | "plaintext">({
+      oneOf: [
+        {
+          const: "pills",
+          image: "tagcategory-pills",
+        },
+        {
+          const: "plaintext",
+          image: "tagcategory-plaintext",
+        },
+      ],
+      title: "Show as",
+      format: "image-radio",
+      default: "pills",
+    }),
+  }),
+  Type.Object({
     options: Type.Array(
       Type.Object({
         label: Type.String({

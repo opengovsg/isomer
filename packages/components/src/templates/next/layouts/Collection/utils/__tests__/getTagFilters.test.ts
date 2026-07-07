@@ -67,11 +67,13 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        display: "pills",
         options: [{ label: "Acute", id: "o-1" }],
       },
       {
         label: "Body parts",
         id: "b-1",
+        display: "pills",
         options: [{ label: "Brain", id: "o-2" }],
       },
     ]
@@ -119,6 +121,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
+        display: "pills",
         options: [
           { label: "Heart", id: "bp-heart" },
           { label: "Brain", id: "bp-brain" },
@@ -128,6 +131,7 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        display: "pills",
         options: [
           { label: "Chronic", id: "c-chronic" },
           { label: "Acute", id: "c-acute" },
@@ -250,6 +254,7 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        display: "pills",
         options: [
           { label: "Acute", id: "c-acute" },
           { label: "Chronic", id: "c-chronic" },
@@ -258,6 +263,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
+        display: "pills",
         options: [
           { label: "Heart", id: "bp-heart" },
           { label: "Brain", id: "bp-brain" },
@@ -312,11 +318,13 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        display: "pills",
         options: [], // Empty options array
       },
       {
         label: "Body parts",
         id: "b-1",
+        display: "pills",
         options: [
           { label: "Heart", id: "bp-heart" },
           { label: "Brain", id: "bp-brain" },
@@ -477,6 +485,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
+        display: "pills",
         options: [
           { label: "Heart", id: "bp-heart" },
           { label: "Brain", id: "bp-brain" },

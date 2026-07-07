@@ -1,0 +1,11 @@
+<svg width="176" height="96" viewBox="0 0 176 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tag category pills display preview">
+  <rect width="176" height="96" rx="8" fill="#F8FAFC"/>
+  <rect x="24" y="22" width="62" height="22" rx="11" fill="#E0F2FE"/>
+  <rect x="94" y="22" width="58" height="22" rx="11" fill="#EDE9FE"/>
+  <rect x="24" y="52" width="52" height="22" rx="11" fill="#DCFCE7"/>
+  <rect x="84" y="52" width="68" height="22" rx="11" fill="#FEF3C7"/>
+  <path d="M38 33H72" stroke="#0369A1" stroke-width="2" stroke-linecap="round"/>
+  <path d="M108 33H138" stroke="#6D28D9" stroke-width="2" stroke-linecap="round"/>
+  <path d="M38 63H62" stroke="#15803D" stroke-width="2" stroke-linecap="round"/>
+  <path d="M98 63H138" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
+</svg>
