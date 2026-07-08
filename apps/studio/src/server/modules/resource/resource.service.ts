@@ -26,6 +26,7 @@ import type { Logger } from "@isomer/logging"
 import type {
   Footer,
   Navbar,
+  Redirect,
   Resource,
   SafeKysely,
   Site,
@@ -1034,6 +1035,81 @@ export const getResourceIdByPermalink = async (
   return Number(leaf.id)
 }
 
+// Batched variant of getResourceIdByPermalink: resolves many full-permalink
+// paths to the resource sitting at each path in a single pair of queries rather
+// than one walk (and round-trip) per path. Returns each path's leaf resource id
+// — a folder/collection resolves to its own id — regardless of publish state; a
+// path matching no resource maps to null. Liveness (including whether a
+// container has a published index page) is left to the caller's publish-state
+// lookup, so this is used to resolve the literal-path redirect destinations on
+// the visible page without an N+1.
+export const getResourceIdsByPermalinks = async (
+  siteId: number,
+  fullPermalinks: string[],
+): Promise<Map<string, number | null>> => {
+  const result = new Map<string, number | null>()
+  const uniquePaths = [...new Set(fullPermalinks)]
+  if (uniquePaths.length === 0) {
+    return result
+  }
+
+  const segmentsByPath = new Map(
+    uniquePaths.map((path) => [path, path.split("/").filter(Boolean)]),
+  )
+  const needsRoot = [...segmentsByPath.values()].some(
+    (segments) => segments.length === 0,
+  )
+  const allSegments = [...new Set([...segmentsByPath.values()].flat())]
+
+  // One query for every candidate segment across all paths, plus the root page
+  // only when a bare "/" path is present — two round-trips regardless of N.
+  const [root, candidates] = await Promise.all([
+    needsRoot
+      ? db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "=", ResourceType.RootPage)
+          .where("Resource.parentId", "is", null)
+          .select("Resource.id")
+          .executeTakeFirst()
+      : Promise.resolve(undefined),
+    allSegments.length > 0
+      ? db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.permalink", "in", allSegments)
+          .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
+          .execute()
+      : Promise.resolve([]),
+  ])
+
+  for (const [path, segments] of segmentsByPath) {
+    if (segments.length === 0) {
+      result.set(path, root ? Number(root.id) : null)
+      continue
+    }
+    // Walk the (parentId, permalink) chain in memory — the same unambiguous
+    // step the singular helper makes, resolved against the shared candidate set.
+    let parentId: string | null = null
+    let leafId: number | null = null
+    let resolved = true
+    for (const segment of segments) {
+      const match = candidates.find(
+        (candidate) =>
+          candidate.permalink === segment && candidate.parentId === parentId,
+      )
+      if (!match) {
+        resolved = false
+        break
+      }
+      leafId = Number(match.id)
+      parentId = String(match.id)
+    }
+    result.set(path, resolved ? leafId : null)
+  }
+  return result
+}
+
 interface PublishPageResourceArgs {
   logger: Logger<string>
   userId: string
@@ -1135,12 +1211,21 @@ export const publishPageResource = async ({
         if (backfilled.length > 0) {
           const byUser = await getUserById(userId)
           for (const rewritten of backfilled) {
-            const literal = { ...rewritten, destination: literalDestination }
+            const literalBefore: Redirect = {
+              ...rewritten,
+              destination: literalDestination,
+              deletedAt: null,
+            }
+            const literalAfter: Redirect = {
+              ...rewritten,
+              destination: literalDestination,
+              deletedAt: new Date(),
+            }
             await logRedirectEvent(tx, {
               siteId,
               by: byUser,
               eventType: AuditLogEvent.RedirectDelete,
-              delta: { before: literal, after: literal },
+              delta: { before: literalBefore, after: literalAfter },
             })
             await logRedirectEvent(tx, {
               siteId,
