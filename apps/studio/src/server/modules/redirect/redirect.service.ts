@@ -26,6 +26,7 @@ import {
   normalizeRedirectSource,
 } from "~/schemas/redirect"
 import { getReferenceLink } from "~/utils/link"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { Logger } from "@isomer/logging"
 
@@ -38,6 +39,7 @@ import {
   getResourceByFullPermalink,
   getResourceFullPermalinks,
   getResourceIdByPermalink,
+  getResourceIdsByPermalinks,
 } from "../resource/resource.service"
 
 // Sort field → column. `publishedAt` maps to `createdAt`; `satisfies` keeps the
@@ -117,33 +119,143 @@ const resolveDestinationForStorage = async (
   }
 }
 
-// Resolves stored [resource:...] destinations back to current permalinks for
-// display, batched into one query. A reference to a missing page resolves to null.
+// Batch publish-state for a set of resource ids. A Page/CollectionPage is live
+// when it has a published version; a Folder/Collection is served by its
+// IndexPage, so it's live when that index page is published (mirrors
+// getResourceByFullPermalink's container handling).
+const getPublishedStateByResourceIds = async (
+  siteId: number,
+  resourceIds: number[],
+): Promise<Map<number, boolean>> => {
+  const result = new Map<number, boolean>()
+  if (resourceIds.length === 0) {
+    return result
+  }
+  const ids = resourceIds.map(String)
+  const resources = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.id", "in", ids)
+    .select(["Resource.id", "Resource.type", "Resource.publishedVersionId"])
+    .execute()
+
+  const containerIds = resources
+    .filter(
+      (r) =>
+        r.type === ResourceType.Folder || r.type === ResourceType.Collection,
+    )
+    .map((r) => String(r.id))
+  const publishedByContainerId = new Map<string, boolean>()
+  if (containerIds.length > 0) {
+    const indexPages = await db
+      .selectFrom("Resource")
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.parentId", "in", containerIds)
+      .where("Resource.type", "=", ResourceType.IndexPage)
+      .select(["Resource.parentId", "Resource.publishedVersionId"])
+      .execute()
+    for (const indexPage of indexPages) {
+      publishedByContainerId.set(
+        String(indexPage.parentId),
+        indexPage.publishedVersionId !== null,
+      )
+    }
+  }
+
+  for (const resource of resources) {
+    const isContainer =
+      resource.type === ResourceType.Folder ||
+      resource.type === ResourceType.Collection
+    result.set(
+      Number(resource.id),
+      isContainer
+        ? (publishedByContainerId.get(String(resource.id)) ?? false)
+        : resource.publishedVersionId !== null,
+    )
+  }
+  return result
+}
+
+// Resolves stored internal destinations (both [resource:...] references and
+// literal "/paths") for the table. For references it returns the destination
+// page's current permalink for display (null if the page is gone). `warn` is
+// true when the destination doesn't resolve to a published page — i.e. it's
+// missing (no such page/folder) or exists but isn't published yet — so the
+// table can flag redirects that currently lead nowhere. External URLs never
+// warn. Input keeps the `references` name but accepts any internal destination.
 export const resolveRedirectReferences = async ({
   siteId,
   references,
 }: ResolveRedirectReferencesInput): Promise<
-  { reference: string; permalink: string | null }[]
+  { reference: string; permalink: string | null; warn: boolean }[]
 > => {
-  // Resolve only references that are anchored AND belong to this site — a
-  // reference to another site can't resolve here, so it stays unresolved.
-  const parsed = references.map((reference) => {
+  // A literal path may carry a "?query"/"#fragment" that isn't part of the
+  // resource path — resolve against the bare path.
+  const stripQueryFragment = (value: string) => value.split(/[?#]/)[0] ?? value
+
+  // Classify each destination synchronously. References are anchored AND must
+  // belong to this site; a cross-site reference can't resolve here. Literal
+  // paths carry their bare path so they can be resolved together in one batch
+  // (rather than a DB round-trip each).
+  const classified = references.map((reference) => {
     const match = REFERENCE_DESTINATION_REGEX.exec(reference)
+    if (match) {
+      const resourceId = Number(match[1]) === siteId ? Number(match[2]) : null
+      return { reference, kind: "reference" as const, resourceId, path: null }
+    }
+    if (reference.startsWith("/")) {
+      return {
+        reference,
+        kind: "literal" as const,
+        resourceId: null,
+        path: stripQueryFragment(reference),
+      }
+    }
     return {
       reference,
-      resourceId:
-        match && Number(match[1]) === siteId ? Number(match[2]) : null,
+      kind: "external" as const,
+      resourceId: null,
+      path: null,
     }
   })
+
+  const idByPath = await getResourceIdsByPermalinks(
+    siteId,
+    classified.flatMap(({ path }) => (path !== null ? [path] : [])),
+  )
+
+  const parsed = classified.map(({ reference, kind, resourceId, path }) => ({
+    reference,
+    kind,
+    resourceId: path !== null ? (idByPath.get(path) ?? null) : resourceId,
+  }))
+
   const resourceIds = parsed
     .map(({ resourceId }) => resourceId)
     .filter((id): id is number => id !== null)
-  const permalinks = await getResourceFullPermalinks(siteId, resourceIds)
-  return parsed.map(({ reference, resourceId }) => ({
-    reference,
-    permalink:
-      resourceId === null ? null : (permalinks.get(resourceId) ?? null),
-  }))
+  const [permalinks, publishedState] = await Promise.all([
+    getResourceFullPermalinks(siteId, resourceIds),
+    getPublishedStateByResourceIds(siteId, resourceIds),
+  ])
+
+  return parsed.map(({ reference, kind, resourceId }) => {
+    if (kind === "external") {
+      return { reference, permalink: null, warn: false }
+    }
+    // Only references render the resolved permalink; a literal path shows as
+    // typed, so its display permalink stays null.
+    const permalink =
+      kind === "reference" && resourceId !== null
+        ? (permalinks.get(resourceId) ?? null)
+        : null
+    // Warn when the internal destination has no published page behind it: the
+    // resource is missing (no id, or a reference whose page was deleted) or it
+    // exists but isn't published yet.
+    const isMissing =
+      resourceId === null || (kind === "reference" && permalink === null)
+    const warn = isMissing || !(publishedState.get(resourceId ?? -1) ?? false)
+    return { reference, permalink, warn }
+  })
 }
 
 const getByUser = async (byUserId: string) =>
@@ -245,15 +357,15 @@ const getChainedRedirect = async (
   return { redirect, normalizedDestination, target, isLoop }
 }
 
-// Preflight for redirect.create: returns blocking errors and non-blocking
-// warnings without mutating. Advisory only — create re-enforces every error.
+// Preflight for redirect.create: returns blocking errors without mutating.
+// Advisory only — create re-enforces every error. Destination-liveness is no
+// longer warned here; the table flags not-yet-published destinations instead.
 export const validateRedirect = async ({
   siteId,
   source,
   destination,
 }: CreateRedirectInput): Promise<RedirectValidationResult> => {
   const errors: RedirectValidationIssue[] = []
-  const warnings: RedirectValidationIssue[] = []
 
   // Recreating a live redirect for the same source is not allowed — the user
   // must delete the existing one first.
@@ -288,33 +400,9 @@ export const validateRedirect = async ({
       message: REDIRECT_MESSAGES.loop,
       description: `${chained.normalizedDestination} already redirects to ${source}. Visitors will get stuck in between pages. Delete existing redirects or direct to a different page.`,
     })
-  } else if (chained) {
-    warnings.push({
-      code: RedirectValidationCode.DestinationIsRedirectSource,
-      message: `This page already redirects to ${chained.target}. Visitors will end up there instead.`,
-    })
-  } else if (destination.startsWith("/")) {
-    // An internal destination with no redirect of its own should point at a
-    // real, published page.
-    const normalizedDestination = normalizeRedirectPath(destination)
-    const resource = await getResourceByFullPermalink({
-      siteId,
-      fullPermalink: normalizedDestination,
-    })
-    if (!resource) {
-      warnings.push({
-        code: RedirectValidationCode.DestinationNotFound,
-        message: REDIRECT_MESSAGES.destinationNotLive,
-      })
-    } else if (resource.publishedVersionId === null) {
-      warnings.push({
-        code: RedirectValidationCode.DestinationNotPublished,
-        message: REDIRECT_MESSAGES.destinationNotLive,
-      })
-    }
   }
 
-  return { errors, warnings }
+  return { errors }
 }
 
 export const listRedirects = async ({

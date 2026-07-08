@@ -20,12 +20,14 @@ import {
 import { useEffect, useMemo, useState } from "react"
 import {
   BiDownArrowAlt,
+  BiSolidErrorCircle,
   BiSortAlt2,
   BiTrash,
   BiUpArrowAlt,
 } from "react-icons/bi"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
+import { REDIRECT_MESSAGES } from "~/constants/redirect"
 import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
@@ -34,7 +36,7 @@ import { useIsTruncated } from "~/hooks/useIsTruncated"
 import { useTablePagination } from "~/hooks/useTablePagination"
 
 import type { RedirectRow, RedirectSortField } from "../types"
-import type { DestinationDisplay } from "../utils"
+import type { DestinationDisplay, ResolvedDestination } from "../utils"
 import {
   REDIRECTS_PAGE_SIZE,
   useCountRedirects,
@@ -46,6 +48,7 @@ import {
   formatAddedAt,
   getDestinationDisplay,
   isReferenceDestination,
+  shouldWarnDestination,
 } from "../utils"
 import { DeleteRedirectModal } from "./DeleteRedirectModal"
 import { RedirectsEmptyPlaceholder } from "./RedirectsEmptyPlaceholder"
@@ -70,11 +73,15 @@ const splitForMiddleTruncation = (value: string) => {
 // Renders a pre-resolved redirect destination. Reference destinations arrive as
 // the page's current permalink; while that resolution is in flight we show a
 // skeleton, and a reference whose page no longer exists is flagged rather than
-// leaking the raw "[resource:...]" string.
+// leaking the raw "[resource:...]" string. When the destination has no published
+// page behind it (missing or not-yet-published), a warning icon is pinned to the
+// end of the column.
 function DestinationCell({
   display,
+  showWarning,
 }: {
   display: DestinationDisplay
+  showWarning: boolean
 }): JSX.Element {
   const { ref, isTruncated } = useIsTruncated<HTMLParagraphElement>()
 
@@ -86,35 +93,68 @@ function DestinationCell({
   const label = isMissing ? MISSING_PAGE_LABEL : display.label
   const color = isMissing ? "utility.feedback.critical" : "base.content.strong"
   const { head, tail } = splitForMiddleTruncation(label)
+  // A missing reference already reads as "Page no longer exists" in red — the
+  // not-yet-published icon would contradict that, so only warn when the label
+  // itself isn't already flagging the problem.
+  const showWarningIcon = showWarning && !isMissing
   return (
-    <Tooltip
-      label={label}
-      openDelay={500}
-      placement="top"
-      isDisabled={!isTruncated}
-    >
-      <HStack spacing="0" align="center" overflow="hidden">
-        <Text
-          ref={ref}
-          textStyle="body-2"
-          color={color}
-          minW={0}
+    <HStack spacing="0.5rem" align="center" overflow="hidden" w="full">
+      <Tooltip
+        label={label}
+        openDelay={500}
+        placement="top"
+        isDisabled={!isTruncated}
+      >
+        <HStack
+          spacing="0"
+          align="center"
           overflow="hidden"
-          whiteSpace="nowrap"
-          textOverflow="ellipsis"
+          minW={0}
+          flexShrink={1}
         >
-          {head}
-        </Text>
-        <Text
-          textStyle="body-2"
-          color={color}
-          flexShrink={0}
-          whiteSpace="nowrap"
+          <Text
+            ref={ref}
+            textStyle="body-2"
+            color={color}
+            minW={0}
+            overflow="hidden"
+            whiteSpace="nowrap"
+            textOverflow="ellipsis"
+          >
+            {head}
+          </Text>
+          <Text
+            textStyle="body-2"
+            color={color}
+            flexShrink={0}
+            whiteSpace="nowrap"
+          >
+            {tail}
+          </Text>
+        </HStack>
+      </Tooltip>
+      {showWarningIcon && (
+        <Tooltip
+          label={REDIRECT_MESSAGES.destinationNotPublished}
+          placement="top"
         >
-          {tail}
-        </Text>
-      </HStack>
-    </Tooltip>
+          <Box
+            as="span"
+            ml="auto"
+            flexShrink={0}
+            display="inline-flex"
+            lineHeight="0"
+          >
+            <Icon
+              as={BiSolidErrorCircle}
+              boxSize="1rem"
+              color="utility.feedback.warning"
+              aria-label={REDIRECT_MESSAGES.destinationNotPublished}
+            />
+          </Box>
+        </Tooltip>
+      )}
+    </HStack>
   )
 }
 
@@ -191,7 +231,13 @@ function SourceCell({ source }: { source: string }): JSX.Element {
       placement="top"
       isDisabled={!isTextTruncated && !isRowTruncated}
     >
-      <HStack ref={rowRef} spacing="0" align="center" overflow="hidden">
+      <HStack
+        ref={rowRef}
+        spacing="0"
+        align="center"
+        overflow="hidden"
+        minW={0}
+      >
         <Text
           ref={textRef}
           textStyle="body-2"
@@ -243,7 +289,7 @@ function SourceCell({ source }: { source: string }): JSX.Element {
 
 const getColumns = (
   onDeleteClick: (row: RedirectRow) => void,
-  permalinkByReference: Map<string, string | null>,
+  infoByDestination: Map<string, ResolvedDestination>,
 ) => [
   columnsHelper.accessor("source", {
     minSize: 250,
@@ -255,7 +301,7 @@ const getColumns = (
         onClick={column.getToggleSortingHandler()}
       />
     ),
-    cell: ({ getValue }) => <SourceCell source={getValue()} />,
+    cell: ({ row }) => <SourceCell source={row.original.source} />,
   }),
   columnsHelper.accessor("destination", {
     minSize: 250,
@@ -269,7 +315,8 @@ const getColumns = (
     ),
     cell: ({ getValue }) => (
       <DestinationCell
-        display={getDestinationDisplay(getValue(), permalinkByReference)}
+        display={getDestinationDisplay(getValue(), infoByDestination)}
+        showWarning={shouldWarnDestination(getValue(), infoByDestination)}
       />
     ),
   }),
@@ -347,34 +394,41 @@ export const RedirectsTable = ({
     sortDirection: (sorting[0]?.desc ?? true) ? "desc" : "asc",
   })
 
-  // Resolve the reference destinations on the visible page to permalinks for
-  // display, in one batched request rather than per row
-  const referenceDestinations = useMemo(
+  // Resolve the internal destinations on the visible page in one batched
+  // request rather than per row — references resolve to their current permalink
+  // for display, and every internal destination reports whether it currently
+  // leads to a published page (for the not-yet-published warning). External
+  // URLs need neither, so they're left out.
+  const internalDestinations = useMemo(
     () =>
       Array.from(
         new Set(
           redirects
             .map((redirect) => redirect.destination)
-            .filter(isReferenceDestination),
+            .filter(
+              (destination) =>
+                isReferenceDestination(destination) ||
+                destination.startsWith("/"),
+            ),
         ),
       ),
     [redirects],
   )
-  const { data: resolvedReferences } = useResolveRedirectReferences(
+  const { data: resolvedDestinations } = useResolveRedirectReferences(
     siteId,
-    referenceDestinations,
+    internalDestinations,
   )
-  const permalinkByReference = useMemo(() => {
-    const map = new Map<string, string | null>()
-    resolvedReferences.forEach(({ reference, permalink }) =>
-      map.set(reference, permalink),
+  const infoByDestination = useMemo(() => {
+    const map = new Map<string, ResolvedDestination>()
+    resolvedDestinations.forEach(({ reference, permalink, warn }) =>
+      map.set(reference, { permalink, warn }),
     )
     return map
-  }, [resolvedReferences])
+  }, [resolvedDestinations])
 
   const columns = useMemo(
-    () => getColumns(setRedirectToDelete, permalinkByReference),
-    [permalinkByReference],
+    () => getColumns(setRedirectToDelete, infoByDestination),
+    [infoByDestination],
   )
 
   // Changing the sort order reshuffles rows across pages, so jump back to
@@ -440,7 +494,7 @@ export const RedirectsTable = ({
             ? destinationLabelFor(
                 getDestinationDisplay(
                   redirectToDelete.destination,
-                  permalinkByReference,
+                  infoByDestination,
                 ),
               )
             : ""
