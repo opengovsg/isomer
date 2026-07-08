@@ -54,7 +54,7 @@ export const emailSessionRouter = router({
       const expiryMinutes = Math.floor(env.OTP_EXPIRY / 60)
       const staticOtp = env.DANGEROUSLY_SET_STATIC_OTP
       const token = staticOtp ?? createVfnToken()
-      const otpPrefix = staticOtp != null ? "OTP" : createVfnPrefix()
+      const otpPrefix = staticOtp !== undefined ? "OTP" : createVfnPrefix()
       const hashedToken = createTokenHash(token, email)
 
       const url = new URL(getBaseUrl())
@@ -63,7 +63,7 @@ export const emailSessionRouter = router({
 
       // May have one of them fail,
       // so users may get an email but not have the token saved, but that should be fine.
-      const isStaticOtp = staticOtp != null
+      const isStaticOtp = staticOtp !== undefined
 
       try {
         await Promise.all([
