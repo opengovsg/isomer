@@ -92,9 +92,10 @@ export const deleteFile = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
-  // R2 supports tagging fine — this soft-delete is tied to the
-  // scheduled-publishing/gazette retention workflow, which is meaningless
-  // for ephemeral preview data, so skip straight to a no-op.
+  // R2 doesn't implement the S3 object tagging API (GetObjectTagging/
+  // PutObjectTagging), so this soft-delete tagging can't work there anyway.
+  // It's also tied to the scheduled-publishing/gazette retention workflow,
+  // which is meaningless for ephemeral preview data, so skip to a no-op.
   if (isR2Configured) return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
@@ -241,8 +242,9 @@ export const markScheduledAssetAsCancelled = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
-  // R2 supports tagging fine — this is tied to the scheduled-publishing
-  // workflow, which is meaningless for ephemeral preview data.
+  // R2 doesn't implement the S3 object tagging API, so this can't work
+  // there anyway. It's also tied to the scheduled-publishing workflow,
+  // which is meaningless for ephemeral preview data.
   if (isR2Configured) return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
