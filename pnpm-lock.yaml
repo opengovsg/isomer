@@ -1751,6 +1751,9 @@ importers:
       '@isomer/tsconfig':
         specifier: workspace:*
         version: link:../typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.0
       '@types/pg':
         specifier: 'catalog:'
         version: 8.20.0
