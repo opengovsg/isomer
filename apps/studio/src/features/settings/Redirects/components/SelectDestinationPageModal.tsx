@@ -5,6 +5,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Text,
 } from "@chakra-ui/react"
 import { Button, ModalCloseButton } from "@opengovsg/design-system-react"
 import { useState } from "react"
@@ -47,13 +48,17 @@ export const SelectDestinationPageModal = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="xl">
+    <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader mr="3.5rem">Link to a page</ModalHeader>
+        <ModalHeader mr="3.5rem">Redirect to a page on your site</ModalHeader>
         <ModalCloseButton size="lg" />
 
         <ModalBody>
+          <Text textStyle="subhead-1" mb="0.75rem">
+            Redirect to...
+          </Text>
+
           <ResourceSelector
             interactionType="link"
             siteId={siteId}
@@ -66,16 +71,8 @@ export const SelectDestinationPageModal = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button
-            variant="clear"
-            colorScheme="neutral"
-            onClick={handleClose}
-            mr="1rem"
-          >
-            Cancel
-          </Button>
           <Button isDisabled={!selectedResourceId} onClick={handleConfirm}>
-            Use this page
+            Redirect here
           </Button>
         </ModalFooter>
       </ModalContent>
