@@ -82,6 +82,15 @@ interface ImportRedirectsFromCsvProps {
   // not unmatched domains or skipped rows). Omitted by tests, so no file is
   // written there.
   migratedCsvPath?: string
+  // When set, only migrate redirects for these domains (bare hostnames or full
+  // URLs — normalised the same way as Site.config.url). Rows for other domains
+  // are left untouched in the remaining CSV.
+  domainFilter?: string[]
+  // When set (and not a dry-run), writes the original CSV rows that were NOT
+  // successfully migrated here — rows for out-of-filter domains, wildcards,
+  // invalid rows, unmatched domains, and duplicates are all preserved so you
+  // can re-run on leftovers or archive what was skipped.
+  remainingCsvPath?: string
 }
 
 // Rows are inserted in chunks so a 38k-row import doesn't build one giant
@@ -194,6 +203,8 @@ export const importRedirectsFromCsv = async ({
   csvPath,
   dryRun,
   migratedCsvPath,
+  domainFilter,
+  remainingCsvPath,
 }: ImportRedirectsFromCsvProps) => {
   // Surface a clear message instead of an opaque ENOENT when csvPath is unset.
   if (!csvPath) {
@@ -230,10 +241,19 @@ export const importRedirectsFromCsv = async ({
     }
   }
 
+  // Pre-normalise the domain filter for O(1) lookup.
+  const filterSet =
+    domainFilter && domainFilter.length > 0
+      ? new Set(domainFilter.map(normaliseDomain))
+      : null
+
   const unmatchedDomains = new Map<string, number>()
   const invalidRows: { lineNumber: number; line: string; reason: string }[] = []
   const duplicateRows: { lineNumber: number; line: string }[] = []
   const redirectsBySite = new Map<number, Map<string, string>>()
+  // Tracks which dataRow indices were queued for migration so the remaining CSV
+  // can exclude exactly those rows (and only those rows).
+  const migratedIndices = new Set<number>()
   let wildcardRowCount = 0
   let queryParamRowCount = 0
 
@@ -265,10 +285,20 @@ export const importRedirectsFromCsv = async ({
       return
     }
 
-    const siteId = siteIdByDomain.get(normaliseDomain(domainName))
+    const normalisedDomain = normaliseDomain(domainName)
+
+    // Silently skip rows outside the domain filter — they are not counted as
+    // unmatched and are preserved in the remaining CSV.
+    if (filterSet && !filterSet.has(normalisedDomain)) {
+      return
+    }
+
+    const siteId = siteIdByDomain.get(normalisedDomain)
     if (siteId === undefined) {
-      const domain = normaliseDomain(domainName)
-      unmatchedDomains.set(domain, (unmatchedDomains.get(domain) ?? 0) + 1)
+      unmatchedDomains.set(
+        normalisedDomain,
+        (unmatchedDomains.get(normalisedDomain) ?? 0) + 1,
+      )
       return
     }
 
@@ -299,6 +329,7 @@ export const importRedirectsFromCsv = async ({
       return
     }
     siteRedirects.set(parsed.data.source, parsed.data.destination)
+    migratedIndices.add(index)
   })
 
   // Resolve destinations to the stored form. An internal path that resolves to
@@ -450,6 +481,24 @@ export const importRedirectsFromCsv = async ({
     )
   }
 
+  // Write the original rows that were not migrated so the caller can re-run on
+  // leftovers or archive what was skipped (wildcards, invalid rows, unmatched
+  // domains, duplicates, and rows outside the domain filter).
+  if (remainingCsvPath) {
+    const remainingRows = dataRows.filter((_, i) => !migratedIndices.has(i))
+    fs.mkdirSync(path.dirname(remainingCsvPath), { recursive: true })
+    fs.writeFileSync(
+      remainingCsvPath,
+      Papa.unparse({
+        fields: ["domainName", "source", "target"],
+        data: remainingRows,
+      }),
+    )
+    console.log(
+      `Wrote ${remainingRows.length} remaining rows to ${remainingCsvPath}`,
+    )
+  }
+
   return summary
 }
 
@@ -459,15 +508,30 @@ if (isMain) {
   // NOTE: Update the CSV path and set dryRun to false before executing!
   const csvPath = ""
   const dryRun = true
+  // Optional: restrict migration to specific domains (bare hostnames).
+  // Leave as undefined to migrate all matched domains.
+  const domainFilter: string[] | undefined = undefined
   // A real import writes the migrated rows here for verifyRedirectsLive.ts.
   const migratedCsvPath = path.join(
     __dirname,
     "output",
     "migrated-redirects.csv",
   )
+  // The original CSV minus migrated rows — re-run on this to process leftovers.
+  const remainingCsvPath = path.join(
+    __dirname,
+    "output",
+    "remaining-redirects.csv",
+  )
 
   try {
-    await importRedirectsFromCsv({ csvPath, dryRun, migratedCsvPath })
+    await importRedirectsFromCsv({
+      csvPath,
+      dryRun,
+      domainFilter,
+      migratedCsvPath,
+      remainingCsvPath,
+    })
   } finally {
     // Always release the connection pool, even when the import throws, so
     // the process does not hang on an open DB connection
