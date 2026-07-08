@@ -4,10 +4,6 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
-import DOMPurify from "isomorphic-dompurify"
-import { JSDOM } from "jsdom"
-
-const { DOMParser } = new JSDOM("").window
 import { env } from "~/env.mjs"
 import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { createBaseLogger } from "~/lib/logger"
@@ -17,14 +13,20 @@ import {
   generateSignedPutUrl,
   putObjectDirect,
 } from "~/lib/s3"
+import { getServerDomPurify } from "~/lib/server-dom-purify"
 
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
-const { NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME } = env
-
 const logger = createBaseLogger({ path: "asset.service" })
+const bucket = env.NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME
+
+export interface UploadConfig {
+  presignedPutUrl: string
+  contentType: string
+  contentDisposition: string
+}
 
 // Server-side allowlist: extension (lowercase, e.g. ".jpg") -> MIME (used for signed upload metadata)
 const EXTENSION_TO_MIME: Record<string, string> = {
@@ -131,29 +133,21 @@ export const getPresignedPutUrl = async ({
 }: {
   key: string
   tags?: { key: string; value: string }[]
-}): Promise<{
-  presignedPutUrl: string
-  contentType: string
-  contentDisposition: string
-}> => {
+}): Promise<UploadConfig> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
-  const stringifiedTags = tags && generateTagsQueryString(tags)
   const presignedPutUrl = await generateSignedPutUrl({
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+    Bucket: bucket,
     Key: key,
     ContentType: contentType,
     ContentDisposition: contentDisposition,
-    Tagging: tags && stringifiedTags,
+    Tagging: tags && generateTagsQueryString(tags),
   })
   return { presignedPutUrl, contentType, contentDisposition }
 }
 
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
-  await deleteFile({
-    Key: key,
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-  })
+  await deleteFile({ Key: key, Bucket: bucket })
 }
 
 export const getPresignedGetUrl = async ({
@@ -161,10 +155,7 @@ export const getPresignedGetUrl = async ({
 }: {
   key: string
 }): Promise<string> => {
-  return generateSignedGetUrl({
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
-    Key: key,
-  })
+  return generateSignedGetUrl({ Bucket: bucket, Key: key })
 }
 
 export const sanitizeSvg = (content: string): string => {
@@ -178,6 +169,8 @@ export const sanitizeSvg = (content: string): string => {
       message: "SVG contains disallowed XML entities",
     })
   }
+
+  const { DOMParser, DOMPurify } = getServerDomPurify()
 
   const doc = new DOMParser().parseFromString(content, "image/svg+xml")
 
@@ -228,13 +221,12 @@ export const putFileDirect = async ({
 }): Promise<void> => {
   const contentType = getContentTypeFromKey(key)
   const contentDisposition = getContentDispositionForKey(key)
-  const stringifiedTags = tags && generateTagsQueryString(tags)
   await putObjectDirect({
-    Bucket: NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME,
+    Bucket: bucket,
     Key: key,
     Body: body,
     ContentType: contentType,
     ContentDisposition: contentDisposition,
-    Tagging: tags ? stringifiedTags : undefined,
+    Tagging: tags && generateTagsQueryString(tags),
   })
 }

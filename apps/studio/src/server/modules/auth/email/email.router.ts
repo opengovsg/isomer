@@ -4,7 +4,10 @@ import { TRPCError } from "@trpc/server"
 import { pick, set } from "lodash-es"
 import { env } from "~/env.mjs"
 import { sendLoginAlertEmail } from "~/features/mail/service"
-import { getIsSingpassEnabled } from "~/lib/growthbook"
+import {
+  getIsSingpassDisabledInNonPreview,
+  getIsSingpassEnabled,
+} from "~/lib/growthbook"
 import { sendMail } from "~/lib/mail"
 import {
   emailSignInSchema,
@@ -49,8 +52,12 @@ export const emailSessionRouter = router({
       // TODO: rate limit this endpoint also
       const expires = new Date(Date.now() + env.OTP_EXPIRY * 1000)
       const expiryMinutes = Math.floor(env.OTP_EXPIRY / 60)
-      const token = createVfnToken()
-      const otpPrefix = createVfnPrefix()
+
+      const staticOtp = env.DANGEROUSLY_SET_STATIC_OTP
+      const isStaticOtp = staticOtp !== undefined
+
+      const token = staticOtp ?? createVfnToken()
+      const otpPrefix = isStaticOtp ? "OTP" : createVfnPrefix()
       const hashedToken = createTokenHash(token, email)
 
       const url = new URL(getBaseUrl())
@@ -76,13 +83,15 @@ export const emailSessionRouter = router({
               expires,
             },
           }),
-          sendMail({
-            subject: `Sign in to ${url.host}`,
-            body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It expires in ${expiryMinutes} minutes.
+          isStaticOtp
+            ? Promise.resolve()
+            : sendMail({
+                subject: `Sign in to ${url.host}`,
+                body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It expires in ${expiryMinutes} minutes.
       Please use this to login to your account.
       <p>If your OTP does not work, please request for a new one.</p>`,
-            recipient: email,
-          }),
+                recipient: email,
+              }),
         ])
       } catch (e) {
         ctx.logger.error(
@@ -170,7 +179,9 @@ export const emailSessionRouter = router({
           return pick(user, defaultUserSelect)
         })
 
-        await sendLoginAlertEmail({ recipientEmail: email })
+        if (getIsSingpassDisabledInNonPreview({ gb: ctx.gb })) {
+          await sendLoginAlertEmail({ recipientEmail: email })
+        }
 
         return user
       }

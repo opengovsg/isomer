@@ -6,14 +6,6 @@ const { env } = await import("./src/env.mjs")
 
 // NOTE: Keep the `unsafe-eval` for `script-src` as the removal
 // led to nextjs crashing on start
-/*
-TODO: Removing this CSP first
-  // img-src 'self' data: blob: ${
-  //   // For displaying images from R2
-  //   env.R2_PUBLIC_HOSTNAME ? `https://${env.R2_PUBLIC_HOSTNAME}` : ''
-  // };
-  // script-src 'self' ${env.NODE_ENV === "production" ? "" : "'unsafe-eval'"};
-*/
 
 // TODO: Stricten the CSP for images
 // Intercom CSP: https://www.intercom.com/help/en/articles/3894-using-intercom-with-content-security-policy
@@ -55,6 +47,7 @@ const ContentSecurityPolicy = `
     https://open.spotify.com
     https://embed-standalone.spotify.com
     https://embed.podcasts.apple.com
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://vercel.live" : ""}
     ;
   object-src 'none';
   script-src
@@ -67,6 +60,7 @@ const ContentSecurityPolicy = `
     https://embed-cdn.spotifycdn.com
     https://open.spotify.com
     https://js-cdn.music.apple.com
+    ${env.NEXT_PUBLIC_APP_ENV === "preview" ? "https://vercel.live" : ""}
     ;
   style-src
     'self'
@@ -87,6 +81,7 @@ const ContentSecurityPolicy = `
     https://*.browser-intake-datadoghq.com
     https://vitals.vercel-insights.com
     https://*.amazonaws.com
+    ${env.R2_ACCOUNT_ID ? `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com` : ""}
     https://*.wogaa.sg
     https://placehold.co
     https://cdn.growthbook.io
@@ -160,7 +155,7 @@ const config = {
   // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   productionBrowserSourceMaps: true,
-  /** We already do typechecking as a separate task in CI */
+  /** We already do typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [
     "@isomer/logging",
@@ -170,7 +165,12 @@ const config = {
   ],
   images: {
     remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
-      ? [{ protocol: "https", hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME }]
+      ? [
+          {
+            protocol: /** @type {"https"} */ ("https"),
+            hostname: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME,
+          },
+        ]
       : [],
   },
   async headers() {
