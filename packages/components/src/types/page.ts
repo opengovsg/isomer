@@ -71,11 +71,11 @@ const TagCategorySchema = Type.Composite([
         oneOf: [
           {
             const: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-            image: "tagcategory-pills",
+            image: "tagcategory/pills",
           },
           {
             const: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-            image: "tagcategory-plaintext",
+            image: "tagcategory/plaintext",
           },
         ],
         title: "Show as",
