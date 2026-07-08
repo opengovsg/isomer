@@ -201,6 +201,7 @@ describe("buildCategoryTagGroup", () => {
       id: "id-0",
       label: "Category",
       isRequired: true,
+      display: "plaintext",
       options: [
         { id: "id-1", label: "Articles" },
         { id: "id-2", label: "Guides" },
@@ -244,6 +245,7 @@ describe("buildMigrationPlan", () => {
       id: "id-0",
       label: "Category",
       isRequired: true,
+      display: "plaintext",
       options: [
         { id: "id-1", label: "Events" },
         { id: "id-2", label: "Guides" },
@@ -400,10 +402,14 @@ describe("migrateCollection / migrateSite", () => {
     const indexContentAfter = await getBlobContent(indexBlob.id)
     const newTagCategories = indexContentAfter.page.tagCategories
     expect(newTagCategories).toHaveLength(2)
-    expect(newTagCategories?.[0]).toEqual(existingTagCategories[0])
+    expect(newTagCategories?.[0]).toEqual({
+      ...existingTagCategories[0],
+      display: "pills",
+    })
     const categoryGroup = newTagCategories?.[1]
     expect(categoryGroup?.label).toBe("Category")
     expect(categoryGroup?.isRequired).toBe(true)
+    expect(categoryGroup?.display).toBe("plaintext")
     expect(categoryGroup?.options).toEqual([
       { id: expect.any(String), label: "Guides" },
     ])
@@ -463,6 +469,7 @@ describe("migrateCollection / migrateSite", () => {
     const indexContentAfter = await getBlobContent(indexVersion.blobId)
     expect(indexContentAfter.page.tagCategories).toHaveLength(1)
     expect(indexContentAfter.page.tagCategories?.[0]?.label).toBe("Category")
+    expect(indexContentAfter.page.tagCategories?.[0]?.display).toBe("plaintext")
 
     const itemResourceAfter = await getResource(itemPage.id)
     expect(itemResourceAfter.draftBlobId).toBeNull()
@@ -585,17 +592,21 @@ describe("migrateCollection / migrateSite", () => {
     // index + itemA (published) + itemB (published) — itemC is draft-only
     expect(result.versionsCreated).toBe(3)
 
-    // Index: draft updated in place (same blob row, own prior array kept)
+    // Index: draft updated in place (same blob row, own prior array kept,
+    // pre-existing groups stamped with an explicit "pills" display)
     const indexDraftContentAfter = await getBlobContent(indexDraftBlob.id)
     expect(indexDraftContentAfter.page.tagCategories).toHaveLength(3)
-    expect(indexDraftContentAfter.page.tagCategories?.[0]).toEqual(
-      publishedTagCategories[0],
-    )
-    expect(indexDraftContentAfter.page.tagCategories?.[1]).toEqual(
-      draftTagCategories[1],
-    )
+    expect(indexDraftContentAfter.page.tagCategories?.[0]).toEqual({
+      ...publishedTagCategories[0],
+      display: "pills",
+    })
+    expect(indexDraftContentAfter.page.tagCategories?.[1]).toEqual({
+      ...draftTagCategories[1],
+      display: "pills",
+    })
     const draftCategoryGroup = indexDraftContentAfter.page.tagCategories?.[2]
     expect(draftCategoryGroup?.label).toBe("Category")
+    expect(draftCategoryGroup?.display).toBe("plaintext")
 
     // Index: published side got a new Version, with its own prior array kept
     const indexResourceAfter = await getResource(indexPage.id)
@@ -609,6 +620,10 @@ describe("migrateCollection / migrateSite", () => {
       indexPublishedVersion.blobId,
     )
     expect(indexPublishedContentAfter.page.tagCategories).toHaveLength(2)
+    expect(indexPublishedContentAfter.page.tagCategories?.[0]).toEqual({
+      ...publishedTagCategories[0],
+      display: "pills",
+    })
     const publishedCategoryGroup =
       indexPublishedContentAfter.page.tagCategories?.[1]
     expect(publishedCategoryGroup?.label).toBe("Category")

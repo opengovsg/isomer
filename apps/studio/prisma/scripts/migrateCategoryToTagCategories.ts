@@ -25,6 +25,11 @@
  * yet. Re-running it against an already-migrated site will double-append a
  * second "Category" group and re-tag every item.
  *
+ * Display: the new "Category" group is written with `display: "plaintext"`.
+ * Every pre-existing group on the same Index is stamped with an explicit
+ * `display: "pills"` — the rendering behaviour they already had by default —
+ * since the `display` field postdates those groups and they don't have it set.
+ *
  * Usage:
  *   cd apps/studio
  *   source .env && pnpm exec tsx prisma/scripts/migrateCategoryToTagCategories.ts --site-id 123 [--dry-run]
@@ -45,6 +50,18 @@ import {
 
 const CATEGORY_GROUP_LABEL = "Category"
 
+// Mirrors TAG_CATEGORY_DISPLAY_OPTIONS in
+// packages/components/src/types/constants.ts — kept local so tsx does not
+// load the full @opengovsg/isomer-components bundle (its dist still has
+// unresolved `~` paths).
+const TAG_CATEGORY_DISPLAY_OPTIONS = {
+  Pills: "pills",
+  Plaintext: "plaintext",
+} as const
+
+type TagCategoryDisplay =
+  (typeof TAG_CATEGORY_DISPLAY_OPTIONS)[keyof typeof TAG_CATEGORY_DISPLAY_OPTIONS]
+
 export interface TagCategoryOption {
   id: string
   label: string
@@ -54,6 +71,7 @@ export interface TagCategoryGroup {
   id: string
   label: string
   isRequired?: boolean
+  display?: TagCategoryDisplay
   options: TagCategoryOption[]
 }
 
@@ -89,6 +107,7 @@ export const buildCategoryTagGroup = ({
   id: generateId(),
   label: CATEGORY_GROUP_LABEL,
   isRequired: true,
+  display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
   options: categories.map((label) => ({ id: generateId(), label })),
 })
 
@@ -306,7 +325,13 @@ const publishNewContent = async <T>(
 const appendCategoryGroup = (
   tagCategories: TagCategoryGroup[] | undefined,
   group: TagCategoryGroup,
-): TagCategoryGroup[] => [...(tagCategories ?? []), group]
+): TagCategoryGroup[] => [
+  ...(tagCategories ?? []).map((existing) => ({
+    ...existing,
+    display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+  })),
+  group,
+]
 
 export interface CollectionMigrationResult {
   collectionId: string
