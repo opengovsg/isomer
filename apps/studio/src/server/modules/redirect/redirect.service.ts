@@ -18,6 +18,7 @@ import {
   REFERENCE_LINK_REGEX,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import { sql } from "kysely"
 import { REDIRECT_MESSAGES, RedirectValidationCode } from "~/constants/redirect"
 import {
   isValidExternalDestination,
@@ -57,6 +58,14 @@ const REFERENCE_DESTINATION_REGEX = new RegExp(
   `^${REFERENCE_LINK_REGEX.source}$`,
 )
 
+// Write timestamps with the database clock, matching the columns' @default(now()).
+// A JS `new Date()` is serialized by the pg driver in the Node process's local
+// timezone; because these are `timestamp without time zone` columns, Postgres
+// stores that local wall-clock verbatim — so a value written as new Date() lands
+// hours off from the UTC that the now() default writes on a fresh insert. Using
+// now() server-side keeps every createdAt/deletedAt consistent and in UTC.
+const dbNow = sql<Date>`now()`
+
 // A destination is exactly one of three shapes. The `type` discriminant keeps
 // the branches in resolveDestinationForStorage explicit instead of a chain of
 // string checks.
@@ -76,12 +85,12 @@ const parseDestination = (destination: string): ParsedDestination => {
 }
 
 // Resolves a destination to its stored form. A bare internal path becomes a
-// [resource:...] reference (so it follows page renames); a query-suffixed path
-// stays literal (a query can't map to a single resource); references and
-// external URLs are stored verbatim. An internal path with no live page yet is
-// also kept literal rather than rejected — the preflight surfaces this as a
-// non-blocking warning, so an admin can pre-create a redirect to a page they're
-// about to publish.
+// [resource:...] reference (so it follows page renames, and starts working once
+// the page is published); references and external URLs are stored verbatim. A
+// path that can't map to a single resource — a query- or fragment-suffixed path,
+// or one with no matching resource at all — stays literal. A resource that
+// exists but is unpublished still resolves to a reference: the preflight warns
+// it isn't live yet, and the published redirect rules only include it once it is.
 const resolveDestinationForStorage = async (
   siteId: number,
   destination: string,
@@ -92,11 +101,11 @@ const resolveDestinationForStorage = async (
     case "external":
       return parsed.value
     case "internalPath": {
-      if (parsed.value.includes("?")) {
+      if (parsed.value.includes("?") || parsed.value.includes("#")) {
         return parsed.value
       }
       const resourceId = await getResourceIdByPermalink(siteId, parsed.value)
-      // No live page yet — keep the literal path; the preflight warns about it.
+      // No resource at this path — keep the literal path; the preflight warns.
       if (resourceId === null) {
         return parsed.value
       }
@@ -257,8 +266,10 @@ export const validateRedirect = async ({
   }
 
   // A redirect whose source is a published page's live URL would shadow that
-  // page, so block it. Only published pages block — an unpublished page isn't
-  // live yet, and publishing it later is guarded on the page side.
+  // page, so block it. Resolves a folder/collection to its index page, so a
+  // live container is caught too. Only published resources block — an
+  // unpublished page isn't live yet, and publishing it later is guarded on the
+  // page side.
   const pageAtSource = await getResourceByFullPermalink({
     siteId,
     fullPermalink: source,
@@ -391,9 +402,10 @@ export const createRedirect = async ({
       })
     }
 
-    // Re-enforce the source-vs-published-page guard (a published page at this
-    // URL would be shadowed). Also a plain read, so same accepted race as above.
-    // PRECONDITION_FAILED keeps it distinct from the already-exists CONFLICT.
+    // Re-enforce the source-vs-published-page guard (a published page or live
+    // folder/collection at this URL would be shadowed). Also a plain read, so
+    // same accepted race as above. PRECONDITION_FAILED keeps it distinct from
+    // the already-exists CONFLICT.
     const pageAtSource = await getResourceByFullPermalink({
       siteId,
       fullPermalink: source,
@@ -424,7 +436,7 @@ export const createRedirect = async ({
             deletedAt: null,
             // Revived rows republish now, so refresh createdAt (the publish
             // time shown to users).
-            createdAt: new Date(),
+            createdAt: dbNow,
           })
           // Only soft-deleted rows may be revived; a concurrent live create
           // must surface as a conflict, not silently overwrite.
@@ -513,7 +525,7 @@ export const createRedirectForPermalinkChange = async (
     .onConflict((oc) =>
       oc
         .columns(["siteId", "source"])
-        .doUpdateSet({ destination, deletedAt: null, createdAt: new Date() })
+        .doUpdateSet({ destination, deletedAt: null, createdAt: dbNow })
         // Only revive a soft-deleted row; a live one must surface as a conflict.
         .where("Redirect.deletedAt", "is not", null),
     )
@@ -608,7 +620,7 @@ export const clearReclaimedRedirect = async (
   const byUser = await getByUser(byUserId)
   const after = await tx
     .updateTable("Redirect")
-    .set({ deletedAt: new Date() })
+    .set({ deletedAt: dbNow })
     .where("id", "=", reclaimed.id)
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -708,7 +720,7 @@ export const deleteRedirect = async ({
 
     const deleted = await tx
       .updateTable("Redirect")
-      .set({ deletedAt: new Date() })
+      .set({ deletedAt: dbNow })
       .where("id", "=", before.id)
       .returningAll()
       .executeTakeFirstOrThrow()
@@ -843,7 +855,7 @@ export const softDeleteRedirectsPointingToResource = async (
   // committed after-row.
   const deleted = await tx
     .updateTable("Redirect")
-    .set({ deletedAt: new Date() })
+    .set({ deletedAt: dbNow })
     .where(
       "id",
       "in",

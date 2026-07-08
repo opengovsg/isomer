@@ -121,6 +121,10 @@ const SuspendableModalContent = ({
     onSettled: onClose,
     onSuccess: async () => {
       await utils.resource.listWithoutRoot.invalidate()
+      // Renaming a folder changes its title/permalink, so the cached resource
+      // search results are now stale — invalidate them too (the page-settings
+      // path already does a broad invalidate; this keeps folder rename in sync).
+      await utils.resource.search.invalidate()
       await utils.resource.getChildrenOf.invalidate({
         resourceId: parentId ? String(parentId) : null,
       })
