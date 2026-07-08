@@ -26,6 +26,7 @@ import type { Logger } from "@isomer/logging"
 import type {
   Footer,
   Navbar,
+  Redirect,
   Resource,
   SafeKysely,
   Site,
@@ -1210,12 +1211,21 @@ export const publishPageResource = async ({
         if (backfilled.length > 0) {
           const byUser = await getUserById(userId)
           for (const rewritten of backfilled) {
-            const literal = { ...rewritten, destination: literalDestination }
+            const literalBefore: Redirect = {
+              ...rewritten,
+              destination: literalDestination,
+              deletedAt: null,
+            }
+            const literalAfter: Redirect = {
+              ...rewritten,
+              destination: literalDestination,
+              deletedAt: new Date(),
+            }
             await logRedirectEvent(tx, {
               siteId,
               by: byUser,
               eventType: AuditLogEvent.RedirectDelete,
-              delta: { before: literal, after: literal },
+              delta: { before: literalBefore, after: literalAfter },
             })
             await logRedirectEvent(tx, {
               siteId,

@@ -2349,12 +2349,13 @@ describe("page.router", async () => {
         site.id,
         Number(page.id),
       )
+      const literalDestination = normalizeRedirectPath(fullPermalink!)
       await db
         .insertInto("Redirect")
         .values({
           siteId: site.id,
           source: "/old-url",
-          destination: normalizeRedirectPath(fullPermalink!),
+          destination: literalDestination,
         })
         .execute()
 
@@ -2369,6 +2370,40 @@ describe("page.router", async () => {
         .where("source", "=", "/old-url")
         .executeTakeFirstOrThrow()
       expect(redirect.destination).toEqual(`[resource:${site.id}:${page.id}]`)
+
+      // Assert — a RedirectDelete entry records the literal form being retired
+      const deleteEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectDelete")
+        .executeTakeFirstOrThrow()
+      expect(deleteEntry.userId).toBe(session.userId)
+      const deleteDelta = deleteEntry.delta as {
+        before: { destination: string; deletedAt: string | null }
+        after: { destination: string; deletedAt: string | null }
+      }
+      expect(deleteDelta.before.destination).toBe(literalDestination)
+      expect(deleteDelta.before.deletedAt).toBeNull()
+      expect(deleteDelta.after.destination).toBe(literalDestination)
+      expect(deleteDelta.after.deletedAt).not.toBeNull()
+
+      // Assert — a RedirectCreate entry records the reference form being adopted
+      const createEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectCreate")
+        .executeTakeFirstOrThrow()
+      expect(createEntry.userId).toBe(session.userId)
+      const createDelta = createEntry.delta as {
+        before: null
+        after: { destination: string }
+      }
+      expect(createDelta.before).toBeNull()
+      expect(createDelta.after.destination).toBe(
+        `[resource:${site.id}:${page.id}]`,
+      )
     })
 
     it("should leave a literal redirect to a different path untouched on publish", async () => {
