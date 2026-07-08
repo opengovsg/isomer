@@ -46,7 +46,7 @@ const ImageRadioOption = ({
         borderColor={
           isSelected ? "interaction.main.default" : "base.divider.medium"
         }
-        bg={isSelected ? "interaction.muted.main.hover" : undefined}
+        bg={isSelected ? "white" : undefined}
         boxShadow={
           isSelected ? "0 0 10px 0 rgba(191, 191, 191, 0.50)" : undefined
         }
