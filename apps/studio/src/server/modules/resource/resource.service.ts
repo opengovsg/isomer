@@ -1341,7 +1341,6 @@ export const getSearchResults = async ({
   totalCount: number | null
   resources: SearchResultResource[]
 }> => {
-  
   // An empty `in` list is invalid SQL, so guard like getWithFullPermalink.
   if (resourceTypes.length === 0) {
     return { resources: [], totalCount: 0 }

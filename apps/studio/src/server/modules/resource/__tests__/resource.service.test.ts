@@ -1702,7 +1702,7 @@ describe("resource.service", () => {
     it("returns an empty array when given no resourceTypes", async () => {
       //Arrange
       const { site } = await setupPageResource({
-        resourceType: ResourceType.Page
+        resourceType: ResourceType.Page,
       })
 
       //Search with no resourceTypes
@@ -1711,7 +1711,7 @@ describe("resource.service", () => {
         resourceTypes: [],
         query: "test",
         limit: 10,
-        offset: 0
+        offset: 0,
       })
 
       //Should return empty array, with totalCount 0
