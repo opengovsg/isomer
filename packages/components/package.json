@@ -47,7 +47,7 @@
     "test-ci:unit": "dotenv -e .env.test vitest run --coverage",
     "test:unit": "dotenv -e .env.test vitest run",
     "test:watch": "pnpm exec vitest watch",
-    "typecheck": "tsgo --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@headlessui/react": "catalog:",
@@ -92,7 +92,6 @@
     "@types/lunr": "catalog:",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
-    "@typescript/native-preview": "catalog:",
     "@vitejs/plugin-react": "catalog:vitest",
     "@vitest/coverage-istanbul": "catalog:vitest",
     "bootstrap-icons": "catalog:",

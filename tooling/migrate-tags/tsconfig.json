@@ -30,8 +30,7 @@
     "listFiles": false /* Print names of files part of the compilation. */,
     "pretty": true /* Stylize errors and messages using color and context. */,
 
-    "typeRoots": ["node_modules/@types", "src/types"],
-    "baseUrl": "./"
+    "typeRoots": ["node_modules/@types", "src/types"]
   },
   "include": ["../../apps/studio/prisma/**/*.ts", "**/*"],
   "compileOnSave": false
