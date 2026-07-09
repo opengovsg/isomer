@@ -104,7 +104,7 @@ catalog:
   testcontainers: ^12.0.3
   tsc-alias: ^1.8.17
   type-fest: ^5.7.0
-  tsx: ^4.22.4
+  tsx: ^4.22.5
   turbo: ^2.10.0
   typescript: ^7.0.2
   usehooks-ts: ^3.1.1
