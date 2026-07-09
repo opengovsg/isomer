@@ -272,7 +272,7 @@ const PageSettingsModalContent = ({
                     >
                       <Checkbox
                         alignItems="flex-start"
-                        size="1.25rem"
+                        size="lg"
                         isChecked={!!value}
                         onChange={(e) => onChange(e.target.checked)}
                         ref={ref}
@@ -295,7 +295,7 @@ const PageSettingsModalContent = ({
             </FormControl>
           )}
 
-          <Infobox variant="warning">
+          <Infobox variant="warning" size="sm">
             {`Changes to your title${type === ResourceType.CollectionLink ? "" : " and URL"} will get published immediately. If you
             don't want to publish ${type === ResourceType.CollectionLink ? "it" : "them"}, make this change later.`}
           </Infobox>

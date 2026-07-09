@@ -25,6 +25,9 @@ interface ResourceSelectorProps {
   selectedResourceId?: string
   existingResource?: ResourceItemContent
   fileExplorerHeight?: number
+  // Whether to render the "You selected ..." preview box below the tree.
+  // Defaults to true; the move modal hides it in favour of its own notice.
+  showSelectedResourcePreview?: boolean
 }
 
 const LINK_RESOURCE_TYPES = [
@@ -54,6 +57,7 @@ const SuspensableResourceSelector = ({
   selectedResourceId,
   existingResource,
   fileExplorerHeight = FILE_EXPLORER_DEFAULT_HEIGHT_IN_REM,
+  showSelectedResourcePreview = true,
   searchQuery,
   isLoading,
   matchedResources,
@@ -201,17 +205,19 @@ const SuspensableResourceSelector = ({
           </Button>
         )}
       </Box>
-      <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
-        <Flex flexDirection="column" gap="0.25rem">
-          <Text textStyle="caption-1">You selected /{fullPermalink}</Text>
-          {existingResource && (
-            <Text textStyle="caption-2">
-              The URL for "{existingResource.title}" will change to /
-              {moveDestPermalink}
-            </Text>
-          )}
-        </Flex>
-      </Box>
+      {showSelectedResourcePreview && (
+        <Box bg="utility.feedback.info-subtle" p="0.75rem" w="full">
+          <Flex flexDirection="column" gap="0.25rem">
+            <Text textStyle="caption-1">You selected /{fullPermalink}</Text>
+            {existingResource && (
+              <Text textStyle="caption-2">
+                The URL for "{existingResource.title}" will change to /
+                {moveDestPermalink}
+              </Text>
+            )}
+          </Flex>
+        </Box>
+      )}
     </>
   )
 }

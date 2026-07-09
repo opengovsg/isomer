@@ -21,11 +21,29 @@ import { env } from "~/env.mjs"
 
 const DELETE_TAG = "deletedAt"
 const EGAZETTE_COMPLIANCE_HOLD_IN_DAYS = 10000
-const { NEXT_PUBLIC_S3_REGION } = env
 
-const storage = new S3Client({
-  region: NEXT_PUBLIC_S3_REGION,
-})
+// R2 credentials are only set for preview, but the choice of backend is
+// driven by their presence rather than the environment name. Exported so
+// other modules don't have to re-derive this from the raw env vars.
+export const isR2Configured = !!(
+  env.R2_ACCOUNT_ID &&
+  env.R2_ACCESS_KEY_ID &&
+  env.R2_SECRET_ACCESS_KEY
+)
+
+const storage = new S3Client(
+  isR2Configured
+    ? {
+        region: "auto",
+        endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        forcePathStyle: true,
+        credentials: {
+          accessKeyId: env.R2_ACCESS_KEY_ID ?? "",
+          secretAccessKey: env.R2_SECRET_ACCESS_KEY ?? "",
+        },
+      }
+    : { region: env.NEXT_PUBLIC_S3_REGION },
+)
 
 export const generateSignedPutUrl = async ({
   Bucket,
@@ -74,6 +92,11 @@ export const deleteFile = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  // R2 doesn't implement the S3 object tagging API (GetObjectTagging/
+  // PutObjectTagging), so this soft-delete tagging can't work there anyway.
+  // It's also tied to the scheduled-publishing/gazette retention workflow,
+  // which is meaningless for ephemeral preview data, so skip to a no-op.
+  if (isR2Configured) return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -122,6 +145,11 @@ export const setAssetAsPublished = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  // Skip on R2: the COMPLIANCE-mode Object Lock below is irreversible for
+  // ~27 years — applying it to a shared preview bucket would permanently
+  // lock every test upload. The GuardDuty malware-scan tag check is also
+  // moot, since GuardDuty is an AWS-only service that never scans R2 objects.
+  if (isR2Configured) return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -214,6 +242,10 @@ export const markScheduledAssetAsCancelled = async ({
   Key,
   Bucket,
 }: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  // R2 doesn't implement the S3 object tagging API, so this can't work
+  // there anyway. It's also tied to the scheduled-publishing workflow,
+  // which is meaningless for ephemeral preview data.
+  if (isR2Configured) return
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,

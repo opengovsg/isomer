@@ -20,8 +20,8 @@ export const RedirectsHeader = (): JSX.Element => {
           </Text>
         </Flex>
         <Text textStyle="body-2" color="base.content.medium">
-          When someone visits a link that is no longer in use, redirects send
-          them elsewhere so they don&apos;t get lost. Learn{" "}
+          Keep old links working. Redirects send anyone who visits an outdated
+          URL to the right place instead. Learn{" "}
           <Link variant="inline" href="https://support.isomer.gov.sg">
             how to use redirects
           </Link>

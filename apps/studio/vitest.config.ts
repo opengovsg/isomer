@@ -1,8 +1,9 @@
-import tsconfigPaths from "vite-tsconfig-paths"
 import { configDefaults, defineConfig } from "vitest/config"
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     include: ["src/**/*.test.{ts,tsx}", "prisma/scripts/**/*.test.ts"],
     retry: 0,

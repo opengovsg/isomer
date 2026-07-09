@@ -1,6 +1,6 @@
 import { createId } from "@paralleldrive/cuid2"
 import { db } from "~/server/modules/database"
-import { RoleType } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS } from "./auth"
 
@@ -69,10 +69,27 @@ const ensureUserWithRole = async (
   return user
 }
 
+const ensureGodModeAdmin = async (
+  email: string,
+  role: (typeof IsomerAdminRole)[keyof typeof IsomerAdminRole],
+) => {
+  const user = await ensureUserWithRole(email, null)
+
+  await db
+    .insertInto("IsomerAdmin")
+    .values({ userId: user.id, role, expiry: null })
+    .onConflict((oc) =>
+      oc.columns(["userId", "role"]).doUpdateSet({ expiry: null }),
+    )
+    .execute()
+}
+
 export const seedRolesForE2E = async () => {
   await ensureUserWithRole(TEST_EMAILS.admin, RoleType.Admin)
   await ensureUserWithRole(TEST_EMAILS.nomember, null)
   // editor + publisher are seeded by prisma/seed.ts; ensure they're still active
   await ensureUserWithRole(TEST_EMAILS.editor, RoleType.Editor)
   await ensureUserWithRole(TEST_EMAILS.publisher, RoleType.Publisher)
+  await ensureGodModeAdmin(TEST_EMAILS.core, IsomerAdminRole.Core)
+  await ensureGodModeAdmin(TEST_EMAILS.migrator, IsomerAdminRole.Migrator)
 }
