@@ -102,11 +102,10 @@ catalog:
   tailwindcss: ^3.4.19
   testcontainers: ^12.1.0
   tsc-alias: ^1.9.4
-  "@typescript/native-preview": 7.0.0-dev.20260707.2
   type-fest: ^5.9.0
   tsx: ^4.23.13
   turbo: ^2.10.12
-  typescript: ^6.0.3
+  typescript: ^7.0.2
   usehooks-ts: ^3.1.1
   webpack-cli: ^7.2.3
   webpack-glob-entries: ^1.0.1
@@ -220,6 +219,9 @@ catalogs:
     prisma: 7.10.0
     prisma-json-types-generator: 5.1.1
     prisma-kysely: 3.2.1
+  # TS 6 for @isomer/db — prisma-json-types-generator and generate.cts need the compiler API
+  typescript6:
+    typescript: ^6.0.3
   react:
     react: ^18.3.1
     react-dom: ^18.3.1
