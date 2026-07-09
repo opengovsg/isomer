@@ -103,7 +103,7 @@ catalog:
   tailwindcss: ^3.4.4
   testcontainers: ^12.0.3
   tsc-alias: ^1.8.17
-  "@typescript/native-preview": 7.0.0-dev.20260615.1
+  "@typescript/native-preview": 7.0.0-dev.20260702.3
   type-fest: ^5.7.0
   tsx: ^4.22.4
   turbo: ^2.10.0
