@@ -127,7 +127,7 @@ catalog:
   "@hello-pangea/dnd": ^18.0.1
   "@hookform/resolvers": ^5.4.0
   "@intercom/messenger-js-sdk": ^0.0.20
-  "@playwright/test": ^1.60.0
+  "@playwright/test": ^1.61.1
   "@uidotdev/usehooks": ^2.4.1
   ajv-errors: ^3.0.0
   chakra-react-select: ^5.1.1
