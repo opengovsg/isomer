@@ -62,7 +62,12 @@ export const VerificationInput = (): JSX.Element | null => {
   const verifyOtpMutation = trpc.auth.email.verifyOtp.useMutation({
     onSuccess: async () => {
       if (isSingpassEnabled) {
-        await router.push(SIGN_IN_SINGPASS)
+        await router.push({
+          pathname: SIGN_IN_SINGPASS,
+          query: {
+            [CALLBACK_URL_KEY]: router.query[CALLBACK_URL_KEY],
+          },
+        })
       } else {
         setHasLoginStateFlag()
         await utils.me.get.invalidate()
