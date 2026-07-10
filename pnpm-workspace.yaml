@@ -74,7 +74,6 @@ catalog:
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
   jsdom: ^29.1.1
-  happy-dom: ^20.10.6
   isomorphic-dompurify: ^3.18.0
   mockdate: ^3.0.5
   msw: ^2.14.6
@@ -127,7 +126,6 @@ catalog:
   "@hello-pangea/dnd": ^18.0.1
   "@hookform/resolvers": ^5.4.0
   "@intercom/messenger-js-sdk": ^0.0.20
-  "@playwright/test": ^1.61.1
   "@uidotdev/usehooks": ^2.4.1
   ajv-errors: ^3.0.0
   chakra-react-select: ^5.1.1
@@ -205,6 +203,9 @@ catalogs:
   jsonforms:
     "@jsonforms/core": ^3.8.0
     "@jsonforms/react": ^3.8.0
+  playwright:
+    "@playwright/test": ^1.61.1
+    playwright: ^1.61.1
   prisma:
     "@prisma/adapter-pg": 7.8.0
     "@prisma/client": 7.8.0
@@ -276,6 +277,7 @@ catalogs:
     "@trpc/server": ^11.18.0
   vitest:
     "@vitejs/plugin-react": ^6.0.3
+    "@vitest/browser-playwright": ^4.1.9
     "@vitest/coverage-istanbul": ^4.1.9
     vite: ^8.1.2
     vitest: ^4.1.9

@@ -32,6 +32,11 @@ updates:
         patterns:
           - "pg"
           - "@types/pg"
+      playwright:
+        applies-to: version-updates
+        patterns:
+          - "playwright"
+          - "@playwright/test"
       prisma:
         applies-to: version-updates
         patterns:

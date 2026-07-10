@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { act, render, renderHook } from "@testing-library/react"
