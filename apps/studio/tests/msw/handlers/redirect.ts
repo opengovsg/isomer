@@ -44,28 +44,22 @@ export const redirectHandlers = {
         throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
       }),
   },
-  validate: {
-    noIssues: () =>
-      trpcMsw.redirect.validate.query(() => ({ errors: [], warnings: [] })),
-    destinationNotFound: () =>
-      trpcMsw.redirect.validate.query(() => ({
-        errors: [],
-        warnings: [
-          {
-            code: "DESTINATION_NOT_FOUND",
-            message:
-              "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
-          },
-        ],
-      })),
-  },
   getBySource: {
     // The URL is not a redirect source — no settings warning shown.
     none: () => trpcMsw.redirect.getBySource.query(() => null),
-    // The URL is already a redirect source — drives the settings-modal warning.
+    // The URL is already a redirect source pointing elsewhere — drives the
+    // settings-modal warning.
     existing: () =>
       trpcMsw.redirect.getBySource.query(() => ({
         destination: "/somewhere-else",
+        destinationResourceId: null,
+      })),
+    // The URL redirects back to this page (destinationResourceId === the page
+    // being edited); the modal suppresses the warning since saving auto-clears it.
+    toResource: (resourceId = 1) =>
+      trpcMsw.redirect.getBySource.query(() => ({
+        destination: "/this-page",
+        destinationResourceId: resourceId,
       })),
   },
   countByDestinationResource: {

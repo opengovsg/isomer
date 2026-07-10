@@ -2332,6 +2332,156 @@ describe("page.router", async () => {
         caller.publishPage({ siteId: site.id, pageId: Number(page.id) }),
       ).resolves.toBeUndefined()
     })
+
+    it("should back-fill a literal redirect destination into a reference on first publish", async () => {
+      // Arrange — a draft page, plus a redirect whose destination is the page's
+      // literal path (created before the page was live). Publishing the page
+      // should rewrite that literal into a [resource:...] reference so the
+      // redirect follows the page's future moves.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      const literalDestination = normalizeRedirectPath(fullPermalink!)
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: literalDestination,
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — the literal destination is now a reference to the page
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual(`[resource:${site.id}:${page.id}]`)
+
+      // Assert — a RedirectDelete entry records the literal form being retired
+      const deleteEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectDelete")
+        .executeTakeFirstOrThrow()
+      expect(deleteEntry.userId).toBe(session.userId)
+      const deleteDelta = deleteEntry.delta as {
+        before: { destination: string; deletedAt: string | null }
+        after: { destination: string; deletedAt: string | null }
+      }
+      expect(deleteDelta.before.destination).toBe(literalDestination)
+      expect(deleteDelta.before.deletedAt).toBeNull()
+      expect(deleteDelta.after.destination).toBe(literalDestination)
+      expect(deleteDelta.after.deletedAt).not.toBeNull()
+
+      // Assert — a RedirectCreate entry records the reference form being adopted
+      const createEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectCreate")
+        .executeTakeFirstOrThrow()
+      expect(createEntry.userId).toBe(session.userId)
+      const createDelta = createEntry.delta as {
+        before: null
+        after: { destination: string }
+      }
+      expect(createDelta.before).toBeNull()
+      expect(createDelta.after.destination).toBe(
+        `[resource:${site.id}:${page.id}]`,
+      )
+    })
+
+    it("should leave a literal redirect to a different path untouched on publish", async () => {
+      // Arrange — a redirect pointing at some other path must not be rewritten
+      // when an unrelated page is published.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: "/some-other-page",
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — destination is unchanged
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual("/some-other-page")
+    })
+
+    it("should back-fill a literal redirect to a folder URL into a container reference when the folder's index page is first published", async () => {
+      // Arrange — a folder served by its (draft) IndexPage, plus a redirect
+      // whose destination is the folder's literal path. The IndexPage renders at
+      // the folder's URL, so publishing it should rewrite the literal into a
+      // reference to the CONTAINER (folder), not the index page itself.
+      const { site, folder } = await setupFolder({ permalink: "guides" })
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(folder.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: normalizeRedirectPath(fullPermalink!),
+        })
+        .execute()
+
+      // Act — publish the folder's index page (first publish)
+      await caller.publishPage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+      })
+
+      // Assert — the literal destination now references the folder, so it will
+      // follow the folder's future renames
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual(`[resource:${site.id}:${folder.id}]`)
+    })
   })
 
   describe("updateMeta", () => {
@@ -2404,6 +2554,183 @@ describe("page.router", async () => {
   })
 
   describe("updateSettings", () => {
+    describe("redirect on settings change", () => {
+      const liveRedirects = (siteId: number) =>
+        db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", siteId)
+          .where("deletedAt", "is", null)
+          .execute()
+
+      const setupPublishedPage = async (permalink: string) => {
+        const { site, page } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          permalink,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        return { site, page }
+      }
+
+      it("creates a redirect from the old URL when the permalink changes", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        const redirects = await liveRedirects(site.id)
+        expect(redirects).toHaveLength(1)
+        expect(redirects[0]!.source).toBe("/old-page")
+        expect(redirects[0]!.destination).toBe(
+          `[resource:${site.id}:${page.id}]`,
+        )
+      })
+
+      it("does not create a redirect for a title-only change", async () => {
+        const { site, page } = await setupPublishedPage("stay")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Renamed title only",
+          permalink: "stay",
+          shouldCreateRedirect: true,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("does not create a redirect when shouldCreateRedirect is false", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: false,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("blocks renaming a published page onto a path a live redirect points elsewhere from", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A live redirect already occupies the new URL, pointing elsewhere —
+        // renaming the page onto it would shadow the page.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-page",
+            destination: "https://example.gov.sg/elsewhere",
+          })
+          .execute()
+
+        const result = caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: false,
+        })
+
+        // Assert — blocked, and the whole edit is rolled back (permalink unchanged).
+        await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+        const unchanged = await db
+          .selectFrom("Resource")
+          .select("permalink")
+          .where("id", "=", String(page.id))
+          .executeTakeFirstOrThrow()
+        expect(unchanged.permalink).toBe("old-page")
+      })
+
+      it("reclaims a redirect pointing back at the page when the URL is renamed onto it", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A redirect at the URL the page is about to occupy, pointing back at it
+        // — this is the reclaim case, not a shadow, so the rename is allowed.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-page",
+            destination: `[resource:${site.id}:${page.id}]`,
+          })
+          .execute()
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        // The self-pointing redirect at /new-page is reclaimed (soft-deleted)...
+        const reclaimed = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/new-page")
+          .executeTakeFirstOrThrow()
+        expect(reclaimed.deletedAt).not.toBeNull()
+        // ...and the old URL gets its own redirect.
+        const live = await liveRedirects(site.id)
+        expect(live).toHaveLength(1)
+        expect(live[0]!.source).toBe("/old-page")
+      })
+
+      it("revives a soft-deleted redirect at the old URL instead of duplicating it", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A previously soft-deleted redirect already occupies the old source
+        // (e.g. it was deleted earlier). The upsert should revive this row, not
+        // insert a second one at the same (siteId, source).
+        const stale = await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/old-page",
+            destination: "https://example.gov.sg/stale",
+            deletedAt: new Date(),
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        // Exactly one row at the old source — the stale one, revived in place.
+        const rows = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/old-page")
+          .execute()
+        expect(rows).toHaveLength(1)
+        expect(rows[0]!.id).toBe(stale.id)
+        expect(rows[0]!.deletedAt).toBeNull()
+        expect(rows[0]!.destination).toBe(`[resource:${site.id}:${page.id}]`)
+      })
+    })
+
     it("should throw 401 if not logged in update", async () => {
       // Arrange
       const unauthedSession = applySession()

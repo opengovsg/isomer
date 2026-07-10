@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs"
 import { Box } from "@chakra-ui/react"
 import { useSetAtom } from "jotai"
 import { useEffect } from "react"
+import { expect, userEvent, within } from "storybook/test"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { redirectHandlers } from "tests/msw/handlers/redirect"
 import { pageSettingsModalAtom } from "~/features/dashboard/atoms"
@@ -19,11 +20,18 @@ const OpenedPageSettingsModal = (): JSX.Element => {
   return <PageSettingsModal />
 }
 
-// readPage supplies the title; getPermalinkTree.withParent makes the page live
-// at /newsroom/collection-page, which is the path checked against redirects.
+// readPage supplies the title and (here) a published page, so the redirect
+// option can surface; getPermalinkTree.withParent makes the page live at
+// /newsroom/collection-page, which is the path checked against redirects.
 const BASE_HANDLERS = [
   ...ADMIN_HANDLERS,
-  pageHandlers.readPage.homepage({ title: "Contact us" }),
+  // Published page so the "Redirect page automatically" option can appear when
+  // the URL changes (RedirectOptionShown).
+  pageHandlers.readPage.homepage({
+    title: "Contact us",
+    publishedVersionId: "1",
+    state: "Published",
+  }),
   pageHandlers.getPermalinkTree.withParent(),
 ]
 
@@ -61,5 +69,56 @@ export const UrlIsRedirectSource: Story = {
     msw: {
       handlers: [...BASE_HANDLERS, redirectHandlers.getBySource.existing()],
     },
+  },
+}
+
+// The existing redirect points back at this page, so the warning is suppressed
+// (saving auto-clears it).
+export const UrlRedirectsToThisPage: Story = {
+  parameters: {
+    msw: {
+      handlers: [...BASE_HANDLERS, redirectHandlers.getBySource.toResource()],
+    },
+  },
+}
+
+// Changing the URL reveals the "Redirect page automatically" option.
+export const RedirectOptionShown: Story = {
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const urlInput = await body.findByPlaceholderText(
+      "URL will be autopopulated if left untouched",
+    )
+    await userEvent.clear(urlInput)
+    await userEvent.type(urlInput, "renamed-page")
+  },
+}
+
+// An unpublished page has no live URL to preserve, so changing its URL must NOT
+// offer the redirect option even though the URL changed.
+export const UnpublishedPageHidesRedirectOption: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        ...ADMIN_HANDLERS,
+        pageHandlers.readPage.homepage({
+          title: "Contact us",
+          publishedVersionId: null,
+          state: "Draft",
+        }),
+        pageHandlers.getPermalinkTree.withParent(),
+        redirectHandlers.getBySource.none(),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body)
+    const urlInput = await body.findByPlaceholderText(
+      "URL will be autopopulated if left untouched",
+    )
+    await userEvent.clear(urlInput)
+    await userEvent.type(urlInput, "renamed-page")
+    // The "Redirect page automatically" option must not appear.
+    await expect(body.queryByText("Redirect page automatically")).toBeNull()
   },
 }

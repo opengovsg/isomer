@@ -8,6 +8,7 @@ import {
   Stack,
   Text,
   Tooltip,
+  VisuallyHidden,
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import {
@@ -19,21 +20,23 @@ import {
 import { useEffect, useMemo, useState } from "react"
 import {
   BiDownArrowAlt,
+  BiSolidErrorCircle,
   BiSortAlt2,
   BiTrash,
   BiUpArrowAlt,
 } from "react-icons/bi"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
-import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
+import { REDIRECT_MESSAGES } from "~/constants/redirect"
 import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { useIsTruncated } from "~/hooks/useIsTruncated"
 import { useTablePagination } from "~/hooks/useTablePagination"
 
 import type { RedirectRow, RedirectSortField } from "../types"
-import type { DestinationDisplay } from "../utils"
+import type { DestinationDisplay, ResolvedDestination } from "../utils"
 import {
   REDIRECTS_PAGE_SIZE,
   useCountRedirects,
@@ -45,8 +48,10 @@ import {
   formatAddedAt,
   getDestinationDisplay,
   isReferenceDestination,
+  shouldWarnDestination,
 } from "../utils"
 import { DeleteRedirectModal } from "./DeleteRedirectModal"
+import { RedirectsEmptyPlaceholder } from "./RedirectsEmptyPlaceholder"
 
 const columnsHelper = createColumnHelper<RedirectRow>()
 
@@ -54,32 +59,102 @@ const columnsHelper = createColumnHelper<RedirectRow>()
 // here (the render site) so it can change without touching the resolution logic.
 const MISSING_PAGE_LABEL = "Page no longer exists"
 
+// Middle truncation: the head CSS-truncates with an ellipsis while the last
+// TRUNCATION_TAIL_LENGTH characters stay pinned, so a long path keeps its most
+// specific segment visible ("/promo/really-long…/end.html") instead of losing
+// the tail to a plain end-ellipsis.
+const TRUNCATION_TAIL_LENGTH = 10
+
+const splitForMiddleTruncation = (value: string) => {
+  const splitAt = Math.max(0, value.length - TRUNCATION_TAIL_LENGTH)
+  return { head: value.slice(0, splitAt), tail: value.slice(splitAt) }
+}
+
 // Renders a pre-resolved redirect destination. Reference destinations arrive as
 // the page's current permalink; while that resolution is in flight we show a
 // skeleton, and a reference whose page no longer exists is flagged rather than
-// leaking the raw "[resource:...]" string.
+// leaking the raw "[resource:...]" string. When the destination has no published
+// page behind it (missing or not-yet-published), a warning icon is pinned to the
+// end of the column.
 function DestinationCell({
   display,
+  showWarning,
 }: {
   display: DestinationDisplay
+  showWarning: boolean
 }): JSX.Element {
+  const { ref, isTruncated } = useIsTruncated<HTMLParagraphElement>()
+
   if (display.status === "resolving") {
     return <Skeleton height="1.25rem" width="60%" />
   }
 
   const isMissing = display.status === "missing"
   const label = isMissing ? MISSING_PAGE_LABEL : display.label
+  const color = isMissing ? "utility.feedback.critical" : "base.content.strong"
+  const { head, tail } = splitForMiddleTruncation(label)
+  // A missing reference already reads as "Page no longer exists" in red — the
+  // not-yet-published icon would contradict that, so only warn when the label
+  // itself isn't already flagging the problem.
+  const showWarningIcon = showWarning && !isMissing
   return (
-    <Tooltip label={label} openDelay={500} placement="top">
-      <Text
-        textStyle="body-2"
-        color={isMissing ? "utility.feedback.critical" : "base.content.strong"}
-        noOfLines={1}
-        wordBreak="break-all"
+    <HStack spacing="0.5rem" align="center" overflow="hidden" w="full">
+      <Tooltip
+        label={label}
+        openDelay={500}
+        placement="top"
+        isDisabled={!isTruncated}
       >
-        {label}
-      </Text>
-    </Tooltip>
+        <HStack
+          spacing="0"
+          align="center"
+          overflow="hidden"
+          minW={0}
+          flexShrink={1}
+        >
+          <Text
+            ref={ref}
+            textStyle="body-2"
+            color={color}
+            minW={0}
+            overflow="hidden"
+            whiteSpace="nowrap"
+            textOverflow="ellipsis"
+          >
+            {head}
+          </Text>
+          <Text
+            textStyle="body-2"
+            color={color}
+            flexShrink={0}
+            whiteSpace="nowrap"
+          >
+            {tail}
+          </Text>
+        </HStack>
+      </Tooltip>
+      {showWarningIcon && (
+        <Tooltip
+          label={REDIRECT_MESSAGES.destinationNotPublished}
+          placement="top"
+        >
+          <Box
+            as="span"
+            ml="auto"
+            flexShrink={0}
+            display="inline-flex"
+            lineHeight="0"
+          >
+            <Icon
+              as={BiSolidErrorCircle}
+              boxSize="1rem"
+              color="utility.feedback.warning"
+              aria-label={REDIRECT_MESSAGES.destinationNotPublished}
+            />
+          </Box>
+        </Tooltip>
+      )}
+    </HStack>
   )
 }
 
@@ -135,9 +210,86 @@ function SortableHeader({
   )
 }
 
+// Renders a redirect source. A trailing "*" wildcard is shown as a badge rather
+// than literal text. The tooltip surfaces the full source only when the visible
+// text is clipped by the cell width.
+function SourceCell({ source }: { source: string }): JSX.Element {
+  // Measure both the text and the row: the text catches its own clamp, while the
+  // row catches the case where the wildcard badge is clipped even though the
+  // text is not.
+  const { ref: textRef, isTruncated: isTextTruncated } =
+    useIsTruncated<HTMLParagraphElement>()
+  const { ref: rowRef, isTruncated: isRowTruncated } =
+    useIsTruncated<HTMLDivElement>()
+  const isWildcard = source.endsWith("*")
+  const base = isWildcard ? source.slice(0, -1) : source
+  const { head, tail } = splitForMiddleTruncation(base)
+  return (
+    <Tooltip
+      label={source}
+      openDelay={500}
+      placement="top"
+      isDisabled={!isTextTruncated && !isRowTruncated}
+    >
+      <HStack
+        ref={rowRef}
+        spacing="0"
+        align="center"
+        overflow="hidden"
+        minW={0}
+      >
+        <Text
+          ref={textRef}
+          textStyle="body-2"
+          color="base.content.strong"
+          minW={0}
+          overflow="hidden"
+          whiteSpace="nowrap"
+          textOverflow="ellipsis"
+        >
+          {head}
+        </Text>
+        <Text
+          textStyle="body-2"
+          color="base.content.strong"
+          flexShrink={0}
+          whiteSpace="nowrap"
+        >
+          {tail}
+        </Text>
+        {isWildcard && (
+          <Box
+            as="span"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+            borderWidth="1px"
+            borderColor="base.divider.medium"
+            bg="utility.feedback.critical-subtle"
+            borderRadius="2px"
+            px="0.2rem"
+            ml="0.125rem"
+            flexShrink={0}
+            lineHeight="1"
+          >
+            <Text
+              as="span"
+              fontFamily="mono"
+              textStyle="subhead-2"
+              color="utility.feedback.critical"
+            >
+              *
+            </Text>
+          </Box>
+        )}
+      </HStack>
+    </Tooltip>
+  )
+}
+
 const getColumns = (
   onDeleteClick: (row: RedirectRow) => void,
-  permalinkByReference: Map<string, string | null>,
+  infoByDestination: Map<string, ResolvedDestination>,
 ) => [
   columnsHelper.accessor("source", {
     minSize: 250,
@@ -149,50 +301,7 @@ const getColumns = (
         onClick={column.getToggleSortingHandler()}
       />
     ),
-    cell: ({ getValue }) => {
-      const source = getValue()
-      const isWildcard = source.endsWith("*")
-      const base = isWildcard ? source.slice(0, -1) : source
-      return (
-        <Tooltip label={source} openDelay={500} placement="top">
-          <HStack spacing="0" align="baseline" overflow="hidden">
-            <Text
-              textStyle="body-2"
-              color="base.content.strong"
-              noOfLines={1}
-              wordBreak="break-all"
-            >
-              {base}
-            </Text>
-            {isWildcard && (
-              <Box
-                as="span"
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                borderWidth="1px"
-                borderColor="base.divider.medium"
-                bg="utility.feedback.critical-subtle"
-                borderRadius="2px"
-                px="0.2rem"
-                ml="0.125rem"
-                flexShrink={0}
-                lineHeight="1"
-              >
-                <Text
-                  as="span"
-                  fontFamily="mono"
-                  textStyle="subhead-2"
-                  color="utility.feedback.critical"
-                >
-                  *
-                </Text>
-              </Box>
-            )}
-          </HStack>
-        </Tooltip>
-      )
-    },
+    cell: ({ row }) => <SourceCell source={row.original.source} />,
   }),
   columnsHelper.accessor("destination", {
     minSize: 250,
@@ -206,12 +315,13 @@ const getColumns = (
     ),
     cell: ({ getValue }) => (
       <DestinationCell
-        display={getDestinationDisplay(getValue(), permalinkByReference)}
+        display={getDestinationDisplay(getValue(), infoByDestination)}
+        showWarning={shouldWarnDestination(getValue(), infoByDestination)}
       />
     ),
   }),
   columnsHelper.accessor("publishedAt", {
-    size: 160,
+    size: 80,
     enableSorting: true,
     header: ({ column }) => (
       <SortableHeader
@@ -232,7 +342,7 @@ const getColumns = (
     enableSorting: false,
     header: () => (
       <TableHeader textStyle="subhead-2" color="base.content.medium">
-        Delete
+        <VisuallyHidden>Actions</VisuallyHidden>
       </TableHeader>
     ),
     cell: ({ row }) => (
@@ -284,34 +394,41 @@ export const RedirectsTable = ({
     sortDirection: (sorting[0]?.desc ?? true) ? "desc" : "asc",
   })
 
-  // Resolve the reference destinations on the visible page to permalinks for
-  // display, in one batched request rather than per row
-  const referenceDestinations = useMemo(
+  // Resolve the internal destinations on the visible page in one batched
+  // request rather than per row — references resolve to their current permalink
+  // for display, and every internal destination reports whether it currently
+  // leads to a published page (for the not-yet-published warning). External
+  // URLs need neither, so they're left out.
+  const internalDestinations = useMemo(
     () =>
       Array.from(
         new Set(
           redirects
             .map((redirect) => redirect.destination)
-            .filter(isReferenceDestination),
+            .filter(
+              (destination) =>
+                isReferenceDestination(destination) ||
+                destination.startsWith("/"),
+            ),
         ),
       ),
     [redirects],
   )
-  const { data: resolvedReferences } = useResolveRedirectReferences(
+  const { data: resolvedDestinations } = useResolveRedirectReferences(
     siteId,
-    referenceDestinations,
+    internalDestinations,
   )
-  const permalinkByReference = useMemo(() => {
-    const map = new Map<string, string | null>()
-    resolvedReferences.forEach(({ reference, permalink }) =>
-      map.set(reference, permalink),
+  const infoByDestination = useMemo(() => {
+    const map = new Map<string, ResolvedDestination>()
+    resolvedDestinations.forEach(({ reference, permalink, warn }) =>
+      map.set(reference, { permalink, warn }),
     )
     return map
-  }, [resolvedReferences])
+  }, [resolvedDestinations])
 
   const columns = useMemo(
-    () => getColumns(setRedirectToDelete, permalinkByReference),
-    [permalinkByReference],
+    () => getColumns(setRedirectToDelete, infoByDestination),
+    [infoByDestination],
   )
 
   // Changing the sort order reshuffles rows across pages, so jump back to
@@ -366,13 +483,7 @@ export const RedirectsTable = ({
         pagination
         totalRowCount={totalRowCount}
         isFetching={isLoading || isCountLoading}
-        emptyPlaceholder={
-          <EmptyTablePlaceholder
-            groupLabel="redirects"
-            entityName="redirect"
-            hasSearchTerm={false}
-          />
-        }
+        emptyPlaceholder={<RedirectsEmptyPlaceholder />}
         instance={tableInstance}
         sx={{ tableLayout: "fixed" }}
       />
@@ -383,7 +494,7 @@ export const RedirectsTable = ({
             ? destinationLabelFor(
                 getDestinationDisplay(
                   redirectToDelete.destination,
-                  permalinkByReference,
+                  infoByDestination,
                 ),
               )
             : ""

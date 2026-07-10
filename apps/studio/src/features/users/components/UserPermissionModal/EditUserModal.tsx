@@ -41,7 +41,7 @@ export const EditUserModal = () => {
   const { siteId, userId, email, role } = useAtomValue(updateUserModalAtom)
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const { isSingpassEnabled } = useIsSingpassEnabled()
 
   const onClose = () => {
     reset()
