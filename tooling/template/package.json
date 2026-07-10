@@ -12,7 +12,7 @@
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
     "start": "next start",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@isomer/validators": "workspace:*",
@@ -32,7 +32,6 @@
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:react",
-    "@types/react-dom": "catalog:react",
-    "@typescript/native-preview": "catalog:"
+    "@types/react-dom": "catalog:react"
   }
 }
