@@ -205,7 +205,7 @@ describe("schedulePushDocumentJobHandler", async () => {
     // Two sequential fetches: auth token, then ingest POST.
     vi.spyOn(global, "fetch").mockImplementation(
       // eslint-disable-next-line @typescript-eslint/require-await
-      (async (input: Parameters<typeof fetch>[0]) => {
+      async (input: Parameters<typeof fetch>[0]) => {
         const u = urlToString(input)
         if (u.endsWith("/v1/auth/token")) {
           return new Response(
@@ -217,7 +217,7 @@ describe("schedulePushDocumentJobHandler", async () => {
           return new Response("{}", { status: 200 })
         }
         throw new Error(`Unexpected fetch: ${u}`)
-      }) as typeof fetch,
+      },
     )
   })
 
