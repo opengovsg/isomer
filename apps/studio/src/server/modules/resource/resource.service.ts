@@ -8,7 +8,10 @@ import {
 import { TRPCError } from "@trpc/server"
 import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { normalizeRedirectSource } from "~/schemas/redirect"
+import {
+  normalizeRedirectPath,
+  normalizeRedirectSource,
+} from "~/schemas/redirect"
 import {
   getSitemapTree,
   injectTagMappings,
@@ -23,6 +26,7 @@ import type { Logger } from "@isomer/logging"
 import type {
   Footer,
   Navbar,
+  Redirect,
   Resource,
   SafeKysely,
   Site,
@@ -30,7 +34,7 @@ import type {
   User,
 } from "../database"
 import type { SearchResultResource } from "./resource.types"
-import { logPublishEvent } from "../audit/audit.service"
+import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -793,39 +797,58 @@ export const getResourceByFullPermalink = async ({
   siteId: number
   fullPermalink: string
 }) => {
-  const segments = fullPermalink.split("/").filter(Boolean)
+  // A redirect destination may keep a literal "?query"/"#fragment" suffix, which
+  // isn't part of the resource path — strip it before walking segments so
+  // "/page#section" still resolves to the "/page" resource.
+  const segments = (fullPermalink.split(/[?#]/)[0] ?? "")
+    .split("/")
+    .filter(Boolean)
 
-  const root = await db
-    .selectFrom("Resource")
-    .where("Resource.siteId", "=", siteId)
-    .where("Resource.type", "=", ResourceType.RootPage)
-    .where("Resource.parentId", "is", null)
-    .select(defaultResourceSelect)
-    .executeTakeFirst()
-  if (!root) {
-    return undefined
-  }
-
-  let current = root
-  for (const segment of segments) {
-    const child = await db
+  // The site root ("/") is the RootPage, whose permalink is empty so it has no
+  // path segments to walk. Resolve it directly.
+  if (segments.length === 0) {
+    return db
       .selectFrom("Resource")
       .where("Resource.siteId", "=", siteId)
-      .where("Resource.parentId", "=", current.id)
-      .where("Resource.permalink", "=", segment)
-      // Meta and index resources are not directly addressable by a path
-      // segment — the index page is reached via its parent container below.
-      .where("Resource.type", "not in", [
-        ResourceType.IndexPage,
-        ResourceType.FolderMeta,
-        ResourceType.CollectionMeta,
-      ])
+      .where("Resource.type", "=", ResourceType.RootPage)
+      .where("Resource.parentId", "is", null)
       .select(defaultResourceSelect)
       .executeTakeFirst()
-    if (!child) {
+  }
+
+  // Fetch every resource whose permalink matches a segment, then walk the
+  // (parentId, permalink) chain in memory. Top-level resources have
+  // parentId = null (they are NOT stored as children of the RootPage's id), so
+  // the walk starts from null — matching getResourceIdByPermalink. Walking from
+  // the root page's id instead silently misses every top-level resource. Meta
+  // and index resources are never addressable by a path segment; the index page
+  // is reached via its parent container below.
+  const candidates = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.permalink", "in", segments)
+    .where("Resource.type", "not in", [
+      ResourceType.IndexPage,
+      ResourceType.FolderMeta,
+      ResourceType.CollectionMeta,
+    ])
+    .select(defaultResourceSelect)
+    .execute()
+
+  let parentId: string | null = null
+  let current: (typeof candidates)[number] | undefined
+  for (const segment of segments) {
+    current = candidates.find(
+      (candidate) =>
+        candidate.permalink === segment && candidate.parentId === parentId,
+    )
+    if (!current) {
       return undefined
     }
-    current = child
+    parentId = String(current.id)
+  }
+  if (!current) {
+    return undefined
   }
 
   if (
@@ -933,10 +956,14 @@ export const getResourceFullPermalinks = async (
 }
 
 // Reverse of getResourceFullPermalink: resolves a full permalink path back to
-// the live resource it points at (for storing a redirect destination as a
-// [resource:...] reference), or null if nothing live matches. One query fetches
-// every resource matching a path segment, then walks the parent chain in memory
-// — the (siteId, parentId, permalink) constraint makes each step unambiguous.
+// the resource it points at (for storing a redirect destination as a
+// [resource:...] reference), or null if no resource matches. Resolves
+// regardless of publish state — a reference to a not-yet-published page is
+// valid, and the published redirect rules only include it once it goes live, so
+// the redirect can be pre-created and starts working on publish. One query
+// fetches every resource matching a path segment, then walks the parent chain in
+// memory — the (siteId, parentId, permalink) constraint makes each step
+// unambiguous.
 export const getResourceIdByPermalink = async (
   siteId: number,
   fullPermalink: string,
@@ -944,13 +971,12 @@ export const getResourceIdByPermalink = async (
   const segments = fullPermalink.split("/").filter(Boolean)
 
   // The site root ("/") is the RootPage, whose permalink is empty so it has no
-  // path segments to walk. Resolve it directly (published only, as below).
+  // path segments to walk. Resolve it directly.
   if (segments.length === 0) {
     const root = await db
       .selectFrom("Resource")
       .where("Resource.siteId", "=", siteId)
       .where("Resource.type", "=", ResourceType.RootPage)
-      .where("Resource.publishedVersionId", "is not", null)
       .select("Resource.id")
       .executeTakeFirst()
     return root ? Number(root.id) : null
@@ -989,8 +1015,9 @@ export const getResourceIdByPermalink = async (
 
   // A Folder/Collection is served by its IndexPage child, and the published
   // site keys the URL on the container's id (the index page's id never appears
-  // there — the build remaps it to the folder). Resolve to the container,
-  // treating it as live when its index page is published.
+  // there — the build remaps it to the folder). Resolve to the container when it
+  // has an index page; publish state doesn't matter here (the build emits the
+  // redirect only once that index page is published).
   if (
     leaf.type === ResourceType.Folder ||
     leaf.type === ResourceType.Collection
@@ -1000,18 +1027,87 @@ export const getResourceIdByPermalink = async (
       .where("Resource.siteId", "=", siteId)
       .where("Resource.parentId", "=", String(leaf.id))
       .where("Resource.type", "=", ResourceType.IndexPage)
-      .where("Resource.publishedVersionId", "is not", null)
       .select("Resource.id")
       .executeTakeFirst()
     return indexPage ? Number(leaf.id) : null
   }
 
-  // Any other resource type must itself be published — the walk traverses
-  // unpublished folders as path segments, but the target page must be live.
-  if (leaf.publishedVersionId === null) {
-    return null
-  }
   return Number(leaf.id)
+}
+
+// Batched variant of getResourceIdByPermalink: resolves many full-permalink
+// paths to the resource sitting at each path in a single pair of queries rather
+// than one walk (and round-trip) per path. Returns each path's leaf resource id
+// — a folder/collection resolves to its own id — regardless of publish state; a
+// path matching no resource maps to null. Liveness (including whether a
+// container has a published index page) is left to the caller's publish-state
+// lookup, so this is used to resolve the literal-path redirect destinations on
+// the visible page without an N+1.
+export const getResourceIdsByPermalinks = async (
+  siteId: number,
+  fullPermalinks: string[],
+): Promise<Map<string, number | null>> => {
+  const result = new Map<string, number | null>()
+  const uniquePaths = [...new Set(fullPermalinks)]
+  if (uniquePaths.length === 0) {
+    return result
+  }
+
+  const segmentsByPath = new Map(
+    uniquePaths.map((path) => [path, path.split("/").filter(Boolean)]),
+  )
+  const needsRoot = [...segmentsByPath.values()].some(
+    (segments) => segments.length === 0,
+  )
+  const allSegments = [...new Set([...segmentsByPath.values()].flat())]
+
+  // One query for every candidate segment across all paths, plus the root page
+  // only when a bare "/" path is present — two round-trips regardless of N.
+  const [root, candidates] = await Promise.all([
+    needsRoot
+      ? db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "=", ResourceType.RootPage)
+          .where("Resource.parentId", "is", null)
+          .select("Resource.id")
+          .executeTakeFirst()
+      : Promise.resolve(undefined),
+    allSegments.length > 0
+      ? db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.permalink", "in", allSegments)
+          .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
+          .execute()
+      : Promise.resolve([]),
+  ])
+
+  for (const [path, segments] of segmentsByPath) {
+    if (segments.length === 0) {
+      result.set(path, root ? Number(root.id) : null)
+      continue
+    }
+    // Walk the (parentId, permalink) chain in memory — the same unambiguous
+    // step the singular helper makes, resolved against the shared candidate set.
+    let parentId: string | null = null
+    let leafId: number | null = null
+    let resolved = true
+    for (const segment of segments) {
+      const match = candidates.find(
+        (candidate) =>
+          candidate.permalink === segment && candidate.parentId === parentId,
+      )
+      if (!match) {
+        resolved = false
+        break
+      }
+      leafId = Number(match.id)
+      parentId = String(match.id)
+    }
+    result.set(path, resolved ? leafId : null)
+  }
+  return result
 }
 
 interface PublishPageResourceArgs {
@@ -1048,31 +1144,32 @@ export const publishPageResource = async ({
       })
     }
 
+    // Only the first publish needs the redirect handling below: the shadow
+    // guard (re-publishing an already-live page is fine) and the reference
+    // back-fill (a page that has published before was already back-filled). The
+    // full permalink drives both, so compute it once here.
+    const isFirstPublish = fullResource.publishedVersionId === null
+    const fullPermalink = isFirstPublish
+      ? await getResourceFullPermalink(siteId, Number(resourceId), tx)
+      : null
+
     // First-publish guard: taking a page live at a URL a live redirect occupies
-    // would let the redirect shadow it. Only the first publish is gated
-    // (re-publishing an already-live page is fine). Mirror of the redirect-create
+    // would let the redirect shadow it. Mirror of the redirect-create
     // SOURCE_IS_EXISTING_PAGE guard. The Redirect table is queried directly to
     // avoid a circular import (redirect.service already depends on this module).
-    if (fullResource.publishedVersionId === null) {
-      const fullPermalink = await getResourceFullPermalink(
-        siteId,
-        Number(resourceId),
-        tx,
-      )
-      if (fullPermalink) {
-        const blockingRedirect = await tx
-          .selectFrom("Redirect")
-          .select("Redirect.id")
-          .where("Redirect.siteId", "=", siteId)
-          .where("Redirect.source", "=", normalizeRedirectSource(fullPermalink))
-          .where("Redirect.deletedAt", "is", null)
-          .executeTakeFirst()
-        if (blockingRedirect) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
-          })
-        }
+    if (isFirstPublish && fullPermalink) {
+      const blockingRedirect = await tx
+        .selectFrom("Redirect")
+        .select("Redirect.id")
+        .where("Redirect.siteId", "=", siteId)
+        .where("Redirect.source", "=", normalizeRedirectSource(fullPermalink))
+        .where("Redirect.deletedAt", "is", null)
+        .executeTakeFirst()
+      if (blockingRedirect) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
+        })
       }
     }
 
@@ -1083,6 +1180,62 @@ export const publishPageResource = async ({
         `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
       )
       return
+    }
+
+    // Reference back-fill: a redirect created to this resource's URL before it
+    // existed (or was published) is stored as a literal path — so it works once
+    // the URL is live but does NOT follow future moves. Now that the URL is
+    // live, rewrite those literal destinations into a [resource:...] reference
+    // so they track the resource from here on. An IndexPage renders at its
+    // container's URL, and creation stores the container id for that path, so
+    // reference the container (parent) id rather than the index page's own id.
+    if (isFirstPublish && fullPermalink) {
+      const referenceId =
+        fullResource.type === ResourceType.IndexPage
+          ? fullResource.parentId
+          : resourceId
+      if (referenceId) {
+        const literalDestination = normalizeRedirectPath(fullPermalink)
+        const backfilled = await tx
+          .updateTable("Redirect")
+          .set({ destination: `[resource:${siteId}:${referenceId}]` })
+          .where("siteId", "=", siteId)
+          .where("destination", "=", literalDestination)
+          .where("deletedAt", "is", null)
+          .returningAll()
+          .execute()
+
+        // Audit the rewrite as a delete of the literal redirect followed by a
+        // create of the reference one — the destination change isn't otherwise
+        // captured, and there's no dedicated RedirectUpdate event.
+        if (backfilled.length > 0) {
+          const byUser = await getUserById(userId)
+          for (const rewritten of backfilled) {
+            const literalBefore: Redirect = {
+              ...rewritten,
+              destination: literalDestination,
+              deletedAt: null,
+            }
+            const literalAfter: Redirect = {
+              ...rewritten,
+              destination: literalDestination,
+              deletedAt: new Date(),
+            }
+            await logRedirectEvent(tx, {
+              siteId,
+              by: byUser,
+              eventType: AuditLogEvent.RedirectDelete,
+              delta: { before: literalBefore, after: literalAfter },
+            })
+            await logRedirectEvent(tx, {
+              siteId,
+              by: byUser,
+              eventType: AuditLogEvent.RedirectCreate,
+              delta: { before: null, after: rewritten },
+            })
+          }
+        }
+      }
     }
 
     const { previousVersion, newVersion } = version
@@ -1341,6 +1494,11 @@ export const getSearchResults = async ({
   totalCount: number | null
   resources: SearchResultResource[]
 }> => {
+  // An empty `in` list is invalid SQL, so guard like getWithFullPermalink.
+  if (resourceTypes.length === 0) {
+    return { resources: [], totalCount: 0 }
+  }
+
   const searchTerms = tokenizeSearchQuery(query)
 
   const queriedResources = getResourcesWithLastUpdatedAt({

@@ -116,7 +116,6 @@
     "tsc-alias": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:vitest",
-    "vite-tsconfig-paths": "catalog:vitest",
     "vitest": "catalog:vitest"
   },
   "peerDependencies": {

@@ -1,5 +1,4 @@
 import { playwright } from "@vitest/browser-playwright"
-import tsconfigPaths from "vite-tsconfig-paths"
 import { configDefaults, defineConfig } from "vitest/config"
 
 // Tests that need a real DOM (component/hook rendering) are named
@@ -8,6 +7,9 @@ import { configDefaults, defineConfig } from "vitest/config"
 const BROWSER_TEST_PATTERN = "src/**/*.browser.test.{ts,tsx}"
 
 export default defineConfig({
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     coverage: {
       provider: "istanbul",
@@ -22,7 +24,6 @@ export default defineConfig({
     projects: [
       {
         extends: true,
-        plugins: [tsconfigPaths()],
         test: {
           name: "node",
           include: ["src/**/*.test.{ts,tsx}", "prisma/scripts/**/*.test.ts"],
@@ -40,7 +41,6 @@ export default defineConfig({
       },
       {
         extends: true,
-        plugins: [tsconfigPaths()],
         test: {
           name: "browser",
           include: [BROWSER_TEST_PATTERN],
