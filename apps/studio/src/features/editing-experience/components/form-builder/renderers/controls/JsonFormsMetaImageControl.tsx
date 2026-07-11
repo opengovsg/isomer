@@ -17,7 +17,7 @@ import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
 import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
-import { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { fileNameAndSizeSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
 import { useAssetUpload } from "../../hooks/useAssetUpload"
@@ -61,9 +61,7 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
           value={image}
           name="file-upload"
           onFileValidation={(file) => {
-            const parseResult = getPresignedPutUrlSchema.safeParse({
-              siteId,
-              resourceId: String(pageId),
+            const parseResult = fileNameAndSizeSchema.safeParse({
               fileName: file.name,
               fileSize: file.size,
             })

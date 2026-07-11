@@ -25,16 +25,12 @@ const fileNameSchema = z
   .refine(fileNameStartingCharRefine, {
     message: fileNameStartingCharMessage,
   })
-  // Check if extension is in allowed list (whitelist approach)
-  // To ensure we don't allow any other file types that can have security implications
   .refine(
     (fileName) => {
-      // Must have an extension
       if (!fileName.includes(".")) {
         return false
       }
 
-      // Check if extension is in allowed list (whitelist approach)
       const extension = fileName
         .toLowerCase()
         .substring(fileName.lastIndexOf("."))
@@ -57,9 +53,9 @@ const fileSizeSchema = z
   .int()
   .min(1, { message: "File size must be greater than 0 bytes" })
 
-// The file size limit depends on the file name's extension, so it cannot be
-// expressed as a per-field constraint. Share this refinement between the full
-// input schema and the client-side pre-upload validation schema.
+// Cross-field: the size limit that applies to `fileSize` depends on `fileName`'s
+// extension, so it can't be expressed as a per-field constraint. Shared between
+// `getPresignedPutUrlSchema` and `fileNameAndSizeSchema` so both stay in sync.
 const fileSizeRefine = (
   { fileName, fileSize }: { fileName: string; fileSize: number },
   ctx: z.RefinementCtx,
@@ -96,9 +92,10 @@ const getPresignedPutUrlBaseSchema = z.object({
 export const getPresignedPutUrlSchema =
   getPresignedPutUrlBaseSchema.superRefine(fileSizeRefine)
 
-// Subset of getPresignedPutUrlSchema for client-side pre-upload validation.
-// Pick from the same unrefined base so the field constraints stay in sync
-// without requiring identifiers that are irrelevant to file validation.
+// Subset of getPresignedPutUrlSchema for client-side pre-upload validation
+// (previewing fileName/fileSize errors before the mutation fires). Picked from
+// the same unrefined base so field shapes can't drift from the full schema,
+// and doesn't require siteId/resourceId, which the size/name check never uses.
 export const fileNameAndSizeSchema = getPresignedPutUrlBaseSchema
   .pick({ fileName: true, fileSize: true })
   .superRefine(fileSizeRefine)
