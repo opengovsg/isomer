@@ -8,6 +8,7 @@ import {
 
 import {
   deleteAssetsSchema,
+  fileNameAndSizeSchema,
   getPresignedPutUrlSchema,
   MAX_DELETE_FILE_KEYS,
 } from "../asset"
@@ -304,6 +305,32 @@ describe("getPresignedPutUrlSchema", () => {
         expect(result.error.issues[0]?.message).toBe(message)
       }
     })
+  })
+})
+
+describe("fileNameAndSizeSchema", () => {
+  it("should validate a file without site or resource identifiers", () => {
+    const result = fileNameAndSizeSchema.safeParse({
+      fileName: "test.png",
+      fileSize: 1,
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it("should apply the file type-specific size limit", () => {
+    const result = fileNameAndSizeSchema.safeParse({
+      fileName: "test.png",
+      fileSize: MAX_IMG_FILE_SIZE_BYTES + 1,
+    })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0]?.path).toEqual(["fileSize"])
+      expect(result.error.issues[0]?.message).toBe(
+        "File size must not exceed 5 MB",
+      )
+    }
   })
 })
 
