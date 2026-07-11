@@ -6,6 +6,7 @@ import {
   Attachment,
   FormErrorMessage,
   FormLabel,
+  useToast,
 } from "@opengovsg/design-system-react"
 import {
   IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
@@ -13,6 +14,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { uniq } from "lodash-es"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
@@ -43,6 +45,7 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
   const { image } = useS3Image(data)
   const { handleAssetUpload, isLoading } = useAssetUpload({})
   const { siteId, pageId } = useQueryParse(pageSchema)
+  const toast = useToast()
   const { mutate: uploadFile } = useUploadAssetMutation({
     siteId,
     resourceId: String(pageId),
@@ -84,9 +87,18 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
               { file },
               {
                 onSuccess: ({ path: imagePath }) => {
-                  void handleAssetUpload(imagePath).then((src) => {
-                    handleChange(path, src)
-                  })
+                  void handleAssetUpload(imagePath)
+                    .then((src) => {
+                      handleChange(path, src)
+                    })
+                    .catch(() => {
+                      toast({
+                        title: "Failed to upload image",
+                        description: "Please try again.",
+                        status: "error",
+                        ...BRIEF_TOAST_SETTINGS,
+                      })
+                    })
                 },
               },
             )
