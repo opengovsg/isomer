@@ -1,4 +1,5 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
+import { env } from "~/env.mjs"
 
 export const ENABLE_CODEBUILD_JOBS = "enable-codebuild-jobs"
 export const ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY =
@@ -29,7 +30,21 @@ interface GetIsSingpassEnabledProps {
 export const getIsSingpassEnabled = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
+  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) return false
   return gb.getFeatureValue(
+    IS_SINGPASS_ENABLED_FEATURE_KEY,
+    IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+  )
+}
+
+// Whether singpass-off side effects (e.g. login alert email) should activate.
+// False when SingPass is skipped (preview) even though SingPass is also
+// disabled there.
+export const getIsSingpassDisabledInNonPreview = ({
+  gb,
+}: GetIsSingpassEnabledProps): boolean => {
+  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) return false
+  return !gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
   )

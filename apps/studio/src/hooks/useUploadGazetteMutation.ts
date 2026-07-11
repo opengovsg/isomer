@@ -1,9 +1,8 @@
 import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/gazette"
 import { useMutation } from "@tanstack/react-query"
+import { performUpload } from "~/lib/storage/client"
 import { trpc } from "~/utils/trpc"
-
-import { handleAssetUpload } from "./handleAssetUpload"
 
 type UploadAssetMutationParams = Pick<
   z.infer<typeof getPresignedPutUrlSchema>,
@@ -23,8 +22,8 @@ export interface UploadAssetMutationOutput {
   path: string
 }
 
-// NOTE: Duplicated from `useUploadAssetMutation` but we have a separate one
-// because we want to upload in a different bucket as well as with different file path
+// NOTE: Separate from `useUploadAssetMutation` because we upload to a
+// different bucket with a different file path, via a different tRPC router
 export const useUploadGazetteMutation = ({
   siteId,
   resourceId,
@@ -60,16 +59,13 @@ export const useUploadGazetteMutation = ({
                 ]
               : undefined,
           })
-        await handleAssetUpload({
-          file,
+        const path = await performUpload(file, fileKey, {
           presignedPutUrl,
           contentType,
           contentDisposition,
         })
 
-        return {
-          path: `/${fileKey}`,
-        }
+        return { path }
       },
       retry: false,
     },

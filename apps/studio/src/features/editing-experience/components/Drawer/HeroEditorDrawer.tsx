@@ -68,6 +68,8 @@ export default function HeroEditorDrawer(): JSX.Element {
   const handleSaveChanges = useCallback(async () => {
     let newPageState = previewPageState
 
+    let assetsToDelete: string[] = []
+
     if (modifiedAssets.length > 0) {
       const updatedBlocks = Array.from(previewPageState.content)
       const newBlock = cloneDeep(updatedBlocks[currActiveIdx])
@@ -108,24 +110,15 @@ export default function HeroEditorDrawer(): JSX.Element {
         return
       }
 
-      // Delete the original assets for those that have been modified
-      // This is done by deleting the file key stored in the src attribute, as
-      // it would have been replaced by new file keys after uploading
-      const assetsToDelete = modifiedAssets
-        .map(({ src }) => src?.slice(1))
-        .filter((src) => src !== PLACEHOLDER_IMAGE_FILENAME)
-        .reduce<string[]>((acc, curr) => {
-          if (curr !== undefined) {
-            acc.push(curr)
-          }
-          return acc
-        }, [])
-
-      deleteAssets({
-        siteId,
-        resourceId: String(pageId),
-        fileKeys: assetsToDelete,
-      })
+      // Collect the original asset keys so they can be deleted after the page
+      // save succeeds.
+      assetsToDelete = modifiedAssets.reduce<string[]>((acc, { src }) => {
+        const fileKey = src?.slice(1)
+        if (fileKey !== undefined && fileKey !== PLACEHOLDER_IMAGE_FILENAME) {
+          acc.push(fileKey)
+        }
+        return acc
+      }, [])
     }
 
     mutate(
@@ -140,6 +133,13 @@ export default function HeroEditorDrawer(): JSX.Element {
           setPreviewPageState(newPageState)
           setSavedPageState(newPageState)
           setDrawerState({ state: "root" })
+          if (assetsToDelete.length > 0) {
+            deleteAssets({
+              siteId,
+              resourceId: String(pageId),
+              fileKeys: assetsToDelete,
+            })
+          }
         },
       },
     )

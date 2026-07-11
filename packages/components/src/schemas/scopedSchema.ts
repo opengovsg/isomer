@@ -183,7 +183,7 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
         ...currentSchema,
         ...componentSchemaDefinitions,
         allOf: filteredAllOf,
-      } as TSchema
+      }
     }
 
     if (currentSchema.properties) {
@@ -201,5 +201,5 @@ export function getScopedSchema<T extends ScopedSchemaLayout>({
   return {
     ...currentSchema,
     ...componentSchemaDefinitions,
-  } as TSchema
+  }
 }

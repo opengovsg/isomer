@@ -35,12 +35,11 @@ export const assetRouter = router({
 
         const fileKey = getFileKey({ siteId, fileName })
 
-        const { presignedPutUrl, contentType, contentDisposition } =
-          await getPresignedPutUrl({
-            key: fileKey,
-            fileSize,
-            tags,
-          })
+        const uploadConfig = await getPresignedPutUrl({
+          key: fileKey,
+          fileSize,
+          tags,
+        })
 
         ctx.logger.info(
           {
@@ -49,15 +48,10 @@ export const assetRouter = router({
             fileName,
             fileKey,
           },
-          `Generated presigned PUT URL for ${fileKey} for site ${siteId}`,
+          `Generated upload config for ${fileKey} for site ${siteId}`,
         )
 
-        return {
-          fileKey,
-          presignedPutUrl,
-          contentType,
-          contentDisposition,
-        }
+        return { fileKey, uploadConfig }
       },
     ),
 
@@ -165,7 +159,11 @@ export const assetRouter = router({
         const fileKey = getFileKey({ siteId, fileName })
         const sanitized = sanitizeSvg(content)
 
-        await putFileDirect({ key: fileKey, body: sanitized, tags })
+        await putFileDirect({
+          key: fileKey,
+          body: sanitized,
+          tags,
+        })
 
         ctx.logger.info(
           {
