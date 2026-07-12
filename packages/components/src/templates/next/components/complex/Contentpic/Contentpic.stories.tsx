@@ -180,6 +180,27 @@ type Story = StoryObj<typeof Contentpic>
 // Default scenario
 export const Default: Story = {}
 
+export const TextFirst: Story = {
+  args: {
+    orientation: "textFirst",
+  },
+}
+
+export const HalfHalf: Story = {
+  name: "Size/Half-half",
+  args: {
+    size: "halfHalf",
+  },
+}
+
+export const HalfHalfTextFirst: Story = {
+  name: "Size/Half-half, Text first",
+  args: {
+    size: "halfHalf",
+    orientation: "textFirst",
+  },
+}
+
 export const ShortParagraph: Story = {
   args: {
     content: {

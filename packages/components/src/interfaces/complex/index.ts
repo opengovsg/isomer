@@ -3,7 +3,12 @@ export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export { CalloutSchema, CalloutVariant, type CalloutProps } from "./Callout"
 export { type CardsProps } from "./Cards"
-export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
+export {
+  ContentpicSchema,
+  CONTENTPIC_ORIENTATION,
+  CONTENTPIC_SIZE,
+  type ContentpicProps,
+} from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"
 export { HERO_STYLE, HeroSchema, type HeroProps } from "./Hero"
 export { IframeSchema, type IframeProps } from "./Iframe"
