@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CalloutProps } from "~/interfaces"
+import { CalloutVariant } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { Callout } from "./Callout"
@@ -17,23 +18,57 @@ const meta: Meta<CalloutProps> = {
 export default meta
 type Story = StoryObj<typeof Callout>
 
+const content: CalloutProps["content"] = {
+  type: "prose",
+  content: [
+    {
+      type: "paragraph",
+      content: [
+        {
+          type: "text",
+          text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
+        },
+      ],
+    },
+  ],
+}
+
 // Default scenario
 export const Default: Story = {
   args: {
     site: generateSiteConfig(),
-    content: {
-      type: "prose",
-      content: [
-        {
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: `As of December 1, 2024, the scheme is being reviewed for new criteria in 2025. To view the new criteria please refer to <a href="/faq">New Idea Scheme Proposal</a> while it is being updated.`,
-            },
-          ],
-        },
-      ],
-    },
+    content,
+  },
+}
+
+export const GoodNews: Story = {
+  args: {
+    site: generateSiteConfig(),
+    content,
+    variant: CalloutVariant.GoodNews.value,
+  },
+}
+
+export const PleaseNote: Story = {
+  args: {
+    site: generateSiteConfig(),
+    content,
+    variant: CalloutVariant.Note.value,
+  },
+}
+
+export const ActionNeeded: Story = {
+  args: {
+    site: generateSiteConfig(),
+    content,
+    variant: CalloutVariant.ActionNeeded.value,
+  },
+}
+
+export const AdditionalInformation: Story = {
+  args: {
+    site: generateSiteConfig(),
+    content,
+    variant: CalloutVariant.AdditionalInformation.value,
   },
 }
