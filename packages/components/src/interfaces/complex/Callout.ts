@@ -39,7 +39,7 @@ export const CalloutSchema = Type.Object(
           }),
         ],
         {
-          title: "You're communicating",
+          title: "Message type",
           default: CalloutVariant.Important.value,
           format: ARRAY_RADIO_FORMAT,
         },
