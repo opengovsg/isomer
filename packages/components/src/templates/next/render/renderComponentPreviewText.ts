@@ -96,6 +96,8 @@ export function renderComponentPreviewText({
         : textContentOfProse
     case "keystatistics":
       return component.title
+    case "linkhub":
+      return component.title || "Link hub"
     case "map":
       return component.title || "Map embed"
     case "logocloud":
