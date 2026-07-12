@@ -182,7 +182,7 @@ export const Default: Story = {}
 
 export const TextFirst: Story = {
   args: {
-    orientation: "textFirst",
+    order: "textFirst",
   },
 }
 
@@ -197,7 +197,7 @@ export const HalfHalfTextFirst: Story = {
   name: "Size/Half-half, Text first",
   args: {
     size: "halfHalf",
-    orientation: "textFirst",
+    order: "textFirst",
   },
 }
 

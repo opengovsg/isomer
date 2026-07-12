@@ -6,13 +6,13 @@ import { ARRAY_RADIO_FORMAT } from "../format"
 import { ContentpicProseSchema } from "../native/Prose"
 import { AltTextSchema, ImageSrcSchema } from "./Image"
 
-export const CONTENTPIC_ORIENTATION = {
+export const CONTENTPIC_ORDER = {
   ImageFirst: { value: "imageFirst", label: "Image first (Default)" },
   TextFirst: { value: "textFirst", label: "Text first" },
 } as const
 
 export const CONTENTPIC_SIZE = {
-  Default: { value: "default", label: "Default" },
+  Default: { value: "default", label: "Small image (default)" },
   HalfHalf: { value: "halfHalf", label: "Half-half" },
 } as const
 
@@ -21,19 +21,19 @@ export const ContentpicSchema = Type.Object(
     type: Type.Literal("contentpic", { default: "contentpic" }),
     imageSrc: ImageSrcSchema,
     imageAlt: AltTextSchema,
-    orientation: Type.Optional(
+    order: Type.Optional(
       Type.Union(
         [
-          Type.Literal(CONTENTPIC_ORIENTATION.ImageFirst.value, {
-            title: CONTENTPIC_ORIENTATION.ImageFirst.label,
+          Type.Literal(CONTENTPIC_ORDER.ImageFirst.value, {
+            title: CONTENTPIC_ORDER.ImageFirst.label,
           }),
-          Type.Literal(CONTENTPIC_ORIENTATION.TextFirst.value, {
-            title: CONTENTPIC_ORIENTATION.TextFirst.label,
+          Type.Literal(CONTENTPIC_ORDER.TextFirst.value, {
+            title: CONTENTPIC_ORDER.TextFirst.label,
           }),
         ],
         {
-          title: "Orientation",
-          default: CONTENTPIC_ORIENTATION.ImageFirst.value,
+          title: "Order",
+          default: CONTENTPIC_ORDER.ImageFirst.value,
           format: ARRAY_RADIO_FORMAT,
         },
       ),

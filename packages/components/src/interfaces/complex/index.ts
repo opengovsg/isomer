@@ -5,7 +5,7 @@ export { CalloutSchema, CalloutVariant, type CalloutProps } from "./Callout"
 export { type CardsProps } from "./Cards"
 export {
   ContentpicSchema,
-  CONTENTPIC_ORIENTATION,
+  CONTENTPIC_ORDER,
   CONTENTPIC_SIZE,
   type ContentpicProps,
 } from "./Contentpic"
