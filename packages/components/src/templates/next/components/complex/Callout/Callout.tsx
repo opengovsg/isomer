@@ -17,7 +17,7 @@ const CALLOUT_ICONS: Partial<
 const calloutStyles = tv({
   slots: {
     container:
-      "border-1.5 flex items-start gap-3 rounded-lg px-5 py-4 [&:not(:first-child)]:mt-7",
+      "flex items-start gap-3 rounded-lg border-[1.5px] px-5 py-4 [&:not(:first-child)]:mt-7",
     content: "prose-headline-lg-regular",
     icon: "h-6 w-6 flex-shrink-0",
   },
