@@ -37,6 +37,7 @@ export type ComponentsWithProse =
   | "accordion"
   | "callout"
   | "contentpic"
+  | "link-hub"
   | "simple-prose"
 
 const generateProseSchema = ({
@@ -90,6 +91,9 @@ export const CalloutProseSchema = generateProseSchema({
 export const ContentpicProseSchema = generateProseSchema({
   format: "contentpic",
   isRequired: true,
+})
+export const LinkHubProseSchema = generateProseSchema({
+  format: "link-hub",
 })
 
 export type ProseProps = Static<typeof ProseSchema> & {

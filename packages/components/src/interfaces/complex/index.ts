@@ -22,6 +22,11 @@ export {
 } from "./InfoCards"
 export { InfoColsSchema, type InfoColsProps } from "./InfoCols"
 export {
+  LinkHubSchema,
+  type LinkHubLinkProps,
+  type LinkHubProps,
+} from "./LinkHub"
+export {
   InfobarDefaultSchema,
   InfobarHomepageSchema,
   type InfobarProps,

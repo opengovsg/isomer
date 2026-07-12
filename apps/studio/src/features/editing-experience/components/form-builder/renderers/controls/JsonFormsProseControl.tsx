@@ -34,6 +34,7 @@ export const jsonFormsProseControlTester: RankedTester = rankWith(
         schema.format === "accordion" ||
         schema.format === "callout" ||
         schema.format === "contentpic" ||
+        schema.format === "link-hub" ||
         schema.format === "simple-prose",
     ),
   ),
@@ -56,6 +57,7 @@ const getEditorHookAndEditor = (
     case "callout":
       return { EditorHook: useCalloutEditor, Editor: TiptapCalloutEditor }
     case "contentpic":
+    case "link-hub":
       return { EditorHook: useProseEditor, Editor: TiptapProseEditor }
     case "prose":
       return { EditorHook: useProseEditor, Editor: TiptapProseEditor }

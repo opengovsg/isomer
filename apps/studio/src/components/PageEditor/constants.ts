@@ -287,6 +287,34 @@ export const DEFAULT_BLOCKS = {
       },
     ],
   },
+  linkhub: {
+    type: "linkhub",
+    title: "Enter a title.",
+    description: {
+      type: "prose",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Elaborate on the title.",
+            },
+          ],
+        },
+      ],
+    },
+    links: [
+      {
+        title: "Enter a title for your first link.",
+        url: "https://www.google.com",
+      },
+      {
+        title: "Enter a title for your second link.",
+        url: "https://www.google.com",
+      },
+    ],
+  },
   dynamiccomponentlist: {
     type: "dynamiccomponentlist",
     dataSource: {
@@ -443,6 +471,12 @@ export const BLOCK_TO_META: Record<
     usageText: "Let people know how they can reach you.",
     // TODO: Add imageSrc
   },
+  linkhub: {
+    label: "Link hub",
+    description: "Display a curated list of links.",
+    usageText: "Group related links, files, and contact details together.",
+    // TODO: Add imageSrc
+  },
   dynamiccomponentlist: {
     label: "Dynamic component list",
     description: "Display a list of dynamic components.",
@@ -475,6 +509,7 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "imagegallery",
     ],
   },
+  { label: "Add a new section", types: ["linkhub"] },
   { label: "Embed external content", types: ["map", "video"] },
 ]
 
@@ -494,7 +529,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics"],
+    types: ["infocards", "infocols", "keystatistics", "linkhub"],
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]
