@@ -45,6 +45,7 @@ describe("getAvailableFilters", () => {
     expect(categoryFilters[0]).toEqual({
       id: "Category",
       label: "Category",
+      display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
       items: [{ id: "Guides", label: "Guides", count: 1 }],
     })
   })
