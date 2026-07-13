@@ -218,6 +218,38 @@ describe("createRedirectSchema", () => {
         }
       })
     })
+
+    it("should trim surrounding whitespace from the source", () => {
+      // Arrange / Act
+      const result = createRedirectSchema.parse({
+        ...VALID_REDIRECT,
+        source: "  /old-page  ",
+      })
+
+      // Assert
+      expect(result.source).toBe("/old-page")
+    })
+
+    it("should reject sources containing a wildcard with the unsupported-wildcard message", () => {
+      // Arrange
+      const wildcardSources = ["/promo/*", "/promo/**", "/pro*mo"]
+
+      wildcardSources.forEach((source) => {
+        // Act
+        const result = createRedirectSchema.safeParse({
+          ...VALID_REDIRECT,
+          source,
+        })
+
+        // Assert
+        expect(result.success).toBe(false)
+        if (!result.success) {
+          expect(result.error.issues.map((issue) => issue.message)).toContain(
+            "Wildcards aren't supported yet — enter the full path",
+          )
+        }
+      })
+    })
   })
 
   describe("destination", () => {
@@ -251,6 +283,17 @@ describe("createRedirectSchema", () => {
 
       // Assert
       expect(result.success).toBe(true)
+    })
+
+    it("should trim surrounding whitespace from an internal destination", () => {
+      // Arrange / Act
+      const result = createRedirectSchema.parse({
+        ...VALID_REDIRECT,
+        destination: "  /new-page  ",
+      })
+
+      // Assert
+      expect(result.destination).toBe("/new-page")
     })
 
     it("should accept destinations starting with 'https://'", () => {
@@ -397,20 +440,20 @@ describe("createRedirectSchema", () => {
       expect(result.success).toBe(true)
     })
 
-    it("should reject an internal path that links to an on-page anchor", () => {
-      // Arrange / Act
+    it("should allow an internal path that links to an on-page anchor", () => {
+      // Arrange / Act: anchors are permitted on internal paths too — the
+      // published redirect's Location header can carry the fragment.
       const result = createRedirectSchema.safeParse({
         ...VALID_REDIRECT,
         destination: "/page#section",
       })
 
       // Assert
-      expect(result.success).toBe(false)
+      expect(result.success).toBe(true)
     })
 
     it("should allow a #fragment on an external https URL", () => {
-      // Arrange / Act: fragments are legitimate on external destinations; only
-      // internal-path anchors are unsupported.
+      // Arrange / Act: fragments are legitimate on external destinations too.
       const result = createRedirectSchema.safeParse({
         ...VALID_REDIRECT,
         destination: "https://www.example.gov.sg/page#section",

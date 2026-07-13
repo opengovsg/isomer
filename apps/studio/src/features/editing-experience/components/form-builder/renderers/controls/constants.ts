@@ -4,31 +4,9 @@ import type {
 } from "@opengovsg/isomer-components"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 
-export const ONE_MB_IN_BYTES = 1000000
-
-export const MAX_IMG_FILE_SIZE_BYTES = 5 * ONE_MB_IN_BYTES
-// Lower than MAX_IMG_FILE_SIZE_BYTES: SVGs are sanitized server-side (CPU/memory cost per request)
-export const MAX_SVG_FILE_SIZE_BYTES = 1 * ONE_MB_IN_BYTES
-
 export const ACCEPTED_IMAGE_TYPES_MESSAGE = Object.keys(
   IMAGE_ACCEPTED_MIME_TYPE_MAPPING,
 ).join(", ")
-
-export const MAX_FILE_SIZE_BYTES = 50 * ONE_MB_IN_BYTES
-export const FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
-  ".pdf": "application/pdf",
-  ".xls": "application/vnd.ms-excel",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ".csv": "text/csv",
-  ".tsv": "text/tab-separated-values",
-  ".doc": "application/msword",
-  ".docx":
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-}
-
-export const RISKY_FILE_EXTENSIONS = new Set<
-  keyof typeof FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING
->([".doc", ".docx", ".xls", ".xlsx"])
 
 type TagCategory = NonNullable<CollectionPagePageProps["tagCategories"]>[number]
 export const createDefaultTagCategory = (): TagCategory => ({

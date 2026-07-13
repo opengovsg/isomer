@@ -19,9 +19,25 @@ const formatDate = (timestamp: number) => {
 }
 
 export const Hits = () => {
-  const { items } = useHits<EgazetteHit>()
+  const { items, results } = useHits<EgazetteHit>()
 
-  if (items.length === 0) return null
+  if (items.length === 0) {
+    // Artificial results are the placeholder response rendered before the
+    // first Algolia response arrives — showing "no results" then would flash
+    // the empty state on every page load.
+    if (results?.__isArtificial) return null
+
+    return (
+      <div className="flex flex-col gap-1 py-32 text-center">
+        <p className="prose-headline-lg-regular text-base-content-subtle">
+          We couldn’t find any results.
+        </p>
+        <p className="prose-body-base text-base-content">
+          Try different search terms or filters.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <ul className="flex flex-col divide-y divide-base-divider-medium">

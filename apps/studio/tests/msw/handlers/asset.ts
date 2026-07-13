@@ -6,9 +6,12 @@ export const assetHandler = {
       return trpcMsw.asset.getPresignedPutUrl.mutation(() => {
         return {
           fileKey: "MOCK_STORYBOOK_ASSET",
-          presignedPutUrl: "/storybook/upload",
-          contentType: "application/octet-stream",
-          contentDisposition: "inline; filename*=UTF-8''MOCK_STORYBOOK_ASSET",
+          uploadConfig: {
+            provider: "s3" as const,
+            presignedPutUrl: "/storybook/upload",
+            contentType: "application/octet-stream",
+            contentDisposition: "inline; filename*=UTF-8''MOCK_STORYBOOK_ASSET",
+          },
         }
       })
     },

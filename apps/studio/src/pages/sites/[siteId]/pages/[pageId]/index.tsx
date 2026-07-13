@@ -4,6 +4,10 @@ import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
 import { EditPageDrawer } from "~/features/editing-experience/components/Drawer/EditPageDrawer"
 import { EditPagePreview } from "~/features/editing-experience/components/preview/EditPagePreview"
+import {
+  useContentEditTracker,
+  useLeftEditorSurveyTracker,
+} from "~/features/editing-experience/hooks/useContentEditSurvey"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useResourceLocalViewHistory } from "~/hooks/useResourceLocalViewHistory"
@@ -50,6 +54,9 @@ const EditPage: NextPageWithLayout = () => {
 }
 
 const PageEditingView = () => {
+  useContentEditTracker()
+  useLeftEditorSurveyTracker()
+
   return (
     <Grid h="full" w="100%" templateColumns="repeat(3, 1fr)" gap={0}>
       <GridItem colSpan={1} overflow="auto" minW="28rem">

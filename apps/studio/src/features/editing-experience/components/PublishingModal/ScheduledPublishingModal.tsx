@@ -28,6 +28,8 @@ import { useZodForm } from "~/lib/form"
 import { schedulePublishClientSchema } from "~/schemas/schedule"
 import { trpc } from "~/utils/trpc"
 
+import { PUBLISHED_AFTER_EDITING_EVENT } from "../../constants"
+import { useFireContentEditSurveyEvent } from "../../hooks/useContentEditSurvey"
 import { SchedulePublishDetails } from "./ScheduledPublishDetails"
 
 interface ScheduledPublishingModalProps extends UseDisclosureReturn {
@@ -43,6 +45,7 @@ export const ScheduledPublishingModal = ({
 }: ScheduledPublishingModalProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
+  const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()
   const [isScheduledPublishValid, setIsScheduledPublishValid] = useState(false)
 
   const methods = useZodForm<typeof schedulePublishClientSchema>({
@@ -71,6 +74,7 @@ export const ScheduledPublishingModal = ({
         onClose()
       },
       onSuccess: () => {
+        fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
         toast({
           status: "success",
           title: "Page scheduled successfully",

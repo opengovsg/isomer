@@ -134,6 +134,25 @@ const withDeepLinkParams = (search: string): Decorator => {
   }
 }
 
+export const EgazetteAlgoliaNoResults: Story = {
+  args: EGAZETTE_ARGS,
+  parameters: liveAlgoliaParameters,
+  decorators: [withDeepLinkParams("?q=zzzzquerywithnoresultszzzz")],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      () =>
+        expect(
+          canvas.getByText("We couldn’t find any results."),
+        ).toBeInTheDocument(),
+      { timeout: 10000 },
+    )
+    await expect(
+      canvas.getByText("Try different search terms or filters."),
+    ).toBeInTheDocument()
+  },
+}
+
 export const EgazetteAlgoliaWithDeepLink: Story = {
   args: EGAZETTE_ARGS,
   parameters: liveAlgoliaParameters,
