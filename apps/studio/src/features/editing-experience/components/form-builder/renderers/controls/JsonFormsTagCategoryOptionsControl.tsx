@@ -1,13 +1,17 @@
 import type { DropResult } from "@hello-pangea/dnd"
 import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
+import { Box, HStack, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches, update } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { get } from "lodash-es"
-import { useState } from "react"
+import { Suspense, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { AddItemButton } from "../../components/AddItemButton"
@@ -21,6 +25,28 @@ import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultTagOption } from "./constants"
+
+function TagOptionUsageCount({
+  siteId,
+  pageId,
+  tagId,
+}: {
+  siteId: number
+  pageId: number
+  tagId: string
+}) {
+  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
+    siteId,
+    pageId,
+    tagOptionIds: [tagId],
+  })
+
+  return (
+    <>
+      {count} {count === 1 ? "item" : "items"}
+    </>
+  )
+}
 
 const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   props: ArrayLayoutProps,
@@ -43,6 +69,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   } = props
   const { core, dispatch } = useJsonForms()
   const { hasErrorAt } = useBuilderErrors()
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const items = get(core?.data, path) as
     | { label?: string; id?: string }[]
     | undefined
@@ -255,9 +282,32 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           noun="filter option"
           warningBody={
             <Text textStyle="body-2">
-              {/* TODO: replace XX with usage count from backend */}
-              This option is being used in XX items. To undo this change, you
-              will need to create and re-assign this option to all items.
+              This option is being used in{" "}
+              <ErrorBoundary fallbackRender={() => <>—</>}>
+                <Suspense
+                  fallback={
+                    <Skeleton
+                      as="span"
+                      display="inline-block"
+                      verticalAlign="middle"
+                      height="1em"
+                      width="2ch"
+                    />
+                  }
+                >
+                  {deleteTarget.tagId ? (
+                    <TagOptionUsageCount
+                      siteId={siteId}
+                      pageId={pageId}
+                      tagId={deleteTarget.tagId}
+                    />
+                  ) : (
+                    <>0 items</>
+                  )}
+                </Suspense>
+              </ErrorBoundary>
+              {". "}To undo this change, you will need to create and re-assign
+              this option to all items.
             </Text>
           }
           onClose={closeDeleteModal}
