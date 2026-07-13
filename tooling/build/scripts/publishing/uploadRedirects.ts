@@ -33,12 +33,18 @@ const EMPTY_FILE = path.join(os.tmpdir(), "isomer-redirect-empty")
 
 function uploadOne(source: string, destination: string): Promise<void> {
   return new Promise((resolve, reject) => {
+    // Mirror the CloudFront redirect function's assumption (see
+    // generateRedirectFnCode in isomer-next-infra): if the last 5 characters
+    // contain a ".", the source is treated as a file path and used as-is.
+    // Otherwise it is a directory path and resolves to its "/index.html" object.
+    const isPotentialFilePath = source.slice(-5).includes(".")
+    const key = isPotentialFilePath ? source : `${source}/index.html`
     const proc = spawn("aws", [
       "s3",
       "cp",
       "--only-show-errors",
       EMPTY_FILE,
-      `s3://${S3_BUCKET}/${SITE_NAME}/${BUILD_NUMBER}/latest/${source}/index.html`,
+      `s3://${S3_BUCKET}/${SITE_NAME}/${BUILD_NUMBER}/latest/${key}`,
       "--content-type",
       "text/html",
       "--cache-control",
