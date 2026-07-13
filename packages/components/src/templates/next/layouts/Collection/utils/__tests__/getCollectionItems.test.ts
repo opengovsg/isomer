@@ -464,11 +464,10 @@ describe("getCollectionItems", () => {
       ])
     })
 
-    it("falls back to item.tags when tagCategories is undefined, same as tags", () => {
+    it("returns undefined for tags and pillTags when tagCategories is undefined", () => {
       // Arrange
-      const itemTags = [{ category: "Legacy", selected: ["Some value"] }]
       const site = createSiteWithChildren([
-        createArticleChild({ tagged: ["topic-opt-1"], tags: itemTags }),
+        createArticleChild({ tagged: ["topic-opt-1"] }),
       ])
 
       // Act
@@ -479,9 +478,8 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.tags).toEqual(itemTags)
-      expect(result[0]!.pillTags).toEqual(itemTags)
-      expect(result[0]!.pillTags).toEqual(result[0]!.tags)
+      expect(result[0]!.tags).toBeUndefined()
+      expect(result[0]!.pillTags).toBeUndefined()
     })
 
     it("treats legacy tag categories without display as pills in pillTags", () => {

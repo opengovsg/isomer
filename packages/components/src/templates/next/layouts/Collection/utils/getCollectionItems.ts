@@ -137,11 +137,13 @@ export const getCollectionItems = ({
       image,
       isContainNeeded: image?.isContainNeeded || false,
       site,
+      // NOTE: `tags` no longer falls back to the legacy `item.tags` field — Collection
+      // Items are expected to carry `tagged` + the parent's `tagCategories` going forward.
       tags:
         tagCategories && item.tagged
           ? getTagsFromTagged(item.tagged, tagCategories)
-          : item.tags,
-      pillTags: pillTags ?? item.tags,
+          : undefined,
+      pillTags,
     }
 
     if (item.layout === "file") {

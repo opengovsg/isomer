@@ -20,17 +20,18 @@ export const ArticleLayout = ({
   )
 
   const parent = getIndexByPermalink(page.permalink, site.siteMap)
-  const tagged = page.tagged
-  const tags = page.tags
 
   const parentTagCategories =
     parent?.layout === "collection"
       ? parent.collectionPagePageProps?.tagCategories
       : undefined
 
-  const derived = getPillAndPlaintextTags(tagged, parentTagCategories)
-  const pillTags = derived.pillTags ?? tags
-  const plaintextTags = derived.plaintextTags
+  // NOTE: No longer falls back to the legacy `page.tags` field — Article Pages are
+  // expected to carry `tagged` + the parent Collection's `tagCategories` going forward.
+  const { pillTags, plaintextTags } = getPillAndPlaintextTags(
+    page.tagged,
+    parentTagCategories,
+  )
 
   return (
     <Skeleton site={site} page={page} layout={layout}>
