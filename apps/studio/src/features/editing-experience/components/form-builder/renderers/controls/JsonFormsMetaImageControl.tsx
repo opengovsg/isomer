@@ -18,15 +18,13 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { pageSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
-import { getPresignedPutUrlSchema } from "~/schemas/asset"
+import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
+import { fileNameAndSizeSchema } from "~/schemas/asset"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
 import { useAssetUpload } from "../../hooks/useAssetUpload"
 import { useS3Image } from "../../hooks/useS3Image"
-import {
-  ACCEPTED_IMAGE_TYPES_MESSAGE,
-  MAX_IMG_FILE_SIZE_BYTES,
-} from "./constants"
+import { ACCEPTED_IMAGE_TYPES_MESSAGE } from "./constants"
 import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsMetaImageControlTester: RankedTester = rankWith(
@@ -66,9 +64,10 @@ function JsonFormsMetaImageControl(props: JsonFormsMetaImageControlProps) {
           value={image}
           name="file-upload"
           onFileValidation={(file) => {
-            const parseResult = getPresignedPutUrlSchema
-              .pick({ fileName: true })
-              .safeParse({ fileName: file.name })
+            const parseResult = fileNameAndSizeSchema.safeParse({
+              fileName: file.name,
+              fileSize: file.size,
+            })
 
             if (parseResult.success) return null
             // NOTE: safe assertion here because we're in error path and there's at least 1 error

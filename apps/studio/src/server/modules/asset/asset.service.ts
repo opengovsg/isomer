@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
 import { env } from "~/env.mjs"
-import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/lib/fileUpload"
 import { createBaseLogger } from "~/lib/logger"
 import {
   deleteFile,
@@ -129,9 +129,11 @@ export const doAllFileKeysBelongToSite = ({
 
 export const getPresignedPutUrl = async ({
   key,
+  fileSize,
   tags,
 }: {
   key: string
+  fileSize: number
   tags?: { key: string; value: string }[]
 }): Promise<UploadConfig> => {
   const contentType = getContentTypeFromKey(key)
@@ -141,6 +143,7 @@ export const getPresignedPutUrl = async ({
     Key: key,
     ContentType: contentType,
     ContentDisposition: contentDisposition,
+    ContentLength: fileSize,
     Tagging: tags && generateTagsQueryString(tags),
   })
   return { presignedPutUrl, contentType, contentDisposition }
