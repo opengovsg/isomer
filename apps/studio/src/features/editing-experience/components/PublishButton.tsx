@@ -23,6 +23,8 @@ import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
+import { PUBLISHED_AFTER_EDITING_EVENT } from "../constants"
+import { useFireContentEditSurveyEvent } from "../hooks/useContentEditSurvey"
 import { PublishingModal, ScheduledPublishingModal } from "./PublishingModal"
 import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
 
@@ -38,6 +40,7 @@ const SuspendablePublishButton = ({
 }: PublishButtonProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
+  const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()
   // the current disclosures for the publish modals
   const publishNowDisclosure = useDisclosure()
   const scheduledPublishingDisclosure = useDisclosure()
@@ -49,7 +52,6 @@ const SuspendablePublishButton = ({
     onSettled: () => {
       void Promise.all([
         utils.page.readPage.refetch({ pageId, siteId }),
-        utils.page.getCategories.invalidate(),
         utils.site.getLocalisedSitemap.invalidate({
           resourceId: pageId,
           siteId,
@@ -57,6 +59,7 @@ const SuspendablePublishButton = ({
       ])
     },
     onSuccess: () => {
+      fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
       toast({
         status: "success",
         title: "Page published successfully",

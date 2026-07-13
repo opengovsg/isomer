@@ -1,6 +1,5 @@
 import { act, renderHook } from "@testing-library/react"
-import { Window } from "happy-dom"
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { useLinkEditorFileMetaSuffix } from "../useLinkEditorFileMetaSuffix"
 
@@ -13,22 +12,6 @@ const EXTERNAL_HREF = "https://example.com/page"
 const EMAIL_HREF = "mailto:user@example.com"
 
 const INITIAL_FILE_LINK_TEXT = "Download [PDF, 1.00 MB]"
-
-let happyDomWindow: Window
-
-beforeAll(() => {
-  happyDomWindow = new Window()
-  const global = globalThis as typeof globalThis & {
-    IS_REACT_ACT_ENVIRONMENT: boolean
-  }
-  global.IS_REACT_ACT_ENVIRONMENT = true
-  vi.stubGlobal("window", happyDomWindow)
-  vi.stubGlobal("document", happyDomWindow.document)
-})
-
-afterAll(() => {
-  happyDomWindow.close()
-})
 
 describe("useLinkEditorFileMetaSuffix", () => {
   it("strips file meta suffix on open and re-appends it on save for file links", () => {

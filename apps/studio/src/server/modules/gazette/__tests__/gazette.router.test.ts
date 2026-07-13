@@ -842,6 +842,7 @@ describe("gazette.router", async () => {
         category: "Government Gazette",
         subcategory: "Public",
         fileName: "notice-1.pdf",
+        fileSize: 1234,
         tags: [{ key: "scheduledAt", value: "1700000000000" }],
       })
 
@@ -869,6 +870,7 @@ describe("gazette.router", async () => {
         category: "Government Gazette",
         subcategory: "Public",
         fileName: "notice-2.pdf",
+        fileSize: 1234,
       })
 
       const signerArgs = signedPutSpy.mock.calls[0]![0]

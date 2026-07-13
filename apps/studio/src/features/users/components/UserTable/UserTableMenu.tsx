@@ -50,7 +50,7 @@ export const UserTableMenu = ({
   const setUpdateUserModalState = useSetAtom(updateUserModalAtom)
   const setRemoveUserModalState = useSetAtom(removeUserModalAtom)
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const { isSingpassEnabled } = useIsSingpassEnabled()
 
   const { mutate: resendInvite, isPending: isResendingInvite } =
     trpc.user.resendInvite.useMutation({

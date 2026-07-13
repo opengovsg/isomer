@@ -774,6 +774,7 @@ export const gazetteRouter = router({
           tags,
           siteId,
           fileName,
+          fileSize,
           resourceId,
         },
       }) => {
@@ -791,6 +792,7 @@ export const gazetteRouter = router({
         const { presignedPutUrl, contentType, contentDisposition } =
           await getPresignedPutUrl({
             key: fileKey,
+            fileSize,
             tags,
           })
 

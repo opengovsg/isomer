@@ -9,30 +9,28 @@
 export const RESERVED_SOURCE_PREFIXES = ["/_next"] as const
 
 // Codes returned by the redirect.validate preflight so the client can render a
-// specific message (and styling) per issue. Errors block creation; warnings do
-// not, but are surfaced so users can reconsider before the redirect goes live.
+// specific message per blocking issue. All of these block creation — advisory
+// destination-liveness is surfaced on the table row instead.
 export const RedirectValidationCode = {
   AlreadyExists: "ALREADY_EXISTS",
   RedirectLoop: "REDIRECT_LOOP",
   SourceIsExistingPage: "SOURCE_IS_EXISTING_PAGE",
-  DestinationIsRedirectSource: "DESTINATION_IS_REDIRECT_SOURCE",
-  DestinationNotFound: "DESTINATION_NOT_FOUND",
-  DestinationNotPublished: "DESTINATION_NOT_PUBLISHED",
 } as const
 export type RedirectValidationCode =
   (typeof RedirectValidationCode)[keyof typeof RedirectValidationCode]
 
-// User-facing copy shared between the validate preflight, the create-time
-// guards, and the add-redirect form, so the server and client can't drift.
-// Messages that interpolate the path (the loop detail and the chain warning)
-// are produced in the service since they aren't reused by the client.
+// User-facing copy shared between the validate preflight and the create-time
+// guards, so the server and client can't drift. Messages that interpolate the
+// path (the loop detail) are produced in the service since they aren't reused.
 export const REDIRECT_MESSAGES = {
   alreadyExists: "This page is already being redirected.",
   loop: "This will trap visitors in a never-ending loop.",
-  destinationNotLive:
-    "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
   sourceIsExistingPage:
     "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
+  // Shown on a table row whose destination points at a page/folder that isn't
+  // published yet, so the redirect currently leads nowhere.
+  destinationNotPublished:
+    "This page or folder you're redirecting to hasn't been published yet.",
 } as const
 
 export interface RedirectValidationIssue {
@@ -45,5 +43,4 @@ export interface RedirectValidationIssue {
 
 export interface RedirectValidationResult {
   errors: RedirectValidationIssue[]
-  warnings: RedirectValidationIssue[]
 }
