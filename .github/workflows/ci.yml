@@ -13,6 +13,12 @@ env:
   LOG_LEVEL: silent
 
 jobs:
+  echo:
+    name: Echo to CLI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo TEST
+        run: echo "TEST"
   optimize_ci:
     runs-on: ubuntu-latest # or whichever runner you use for your CI
     outputs:
