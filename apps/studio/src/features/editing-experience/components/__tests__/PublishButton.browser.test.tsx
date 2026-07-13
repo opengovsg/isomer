@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import type { ResourceAbility } from "~/server/modules/permissions/permissions.type"
 import { AbilityBuilder, createMongoAbility } from "@casl/ability"
 import { AbilityProvider } from "@casl/react"
@@ -31,6 +30,14 @@ vi.mock("@chakra-ui/react", async (importActual) => {
 // Next.js router to be ready before mounting children. Provide a ready router.
 vi.mock("next/router", () => ({
   useRouter: () => ({ isReady: true }),
+}))
+
+// useFireContentEditSurveyEvent pulls in ~/env.mjs, which reads process.env
+// directly at module scope — harmless under jsdom but a ReferenceError under
+// Browser Mode's real-browser runtime, where `process` doesn't exist. It's
+// unrelated to the permission gate under test, so stub it out.
+vi.mock("../../hooks/useContentEditSurvey", () => ({
+  useFireContentEditSurveyEvent: () => vi.fn(),
 }))
 
 // PublishButton reads the current page (to decide the enabled/pending state) and

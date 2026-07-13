@@ -155,7 +155,7 @@ export const buildCollectionIndexBlob = (
       title: folderTitle,
       subtitle: current.page.contentPageHeader.summary,
       sortOrder: "date-desc",
-      ...optionalPageImage(current.page as PageWithContentHeader),
+      ...optionalPageImage(current.page),
     },
     content: [],
   }) as unknown as IsomerSchema
@@ -184,7 +184,7 @@ export const buildArticleBlob = (
       articlePageHeader: {
         summary: current.page.contentPageHeader.summary,
       },
-      ...optionalPageImage(current.page as PageWithContentHeader),
+      ...optionalPageImage(current.page),
     },
     content: current.content,
   } as unknown as IsomerSchema

@@ -25,25 +25,6 @@ export function useCountRedirects(siteId: number) {
   return { data: data ?? 0, isLoading }
 }
 
-// Preflight a would-be redirect for non-blocking warnings (e.g. the
-// destination doesn't exist or isn't published yet). Only enabled once the
-// caller has a sync-valid source + destination, since validate shares the
-// create input schema and would otherwise reject the half-typed values.
-export function useValidateRedirect(
-  siteId: number,
-  input: { source: string; destination: string } | null,
-) {
-  const { data } = trpc.redirect.validate.useQuery(
-    {
-      siteId,
-      source: input?.source ?? "",
-      destination: input?.destination ?? "",
-    },
-    { enabled: input !== null },
-  )
-  return { warnings: data?.warnings ?? [] }
-}
-
 // Resolves stored [resource:...] destinations to the page's current permalink
 // for display. Kept separate from the list query so the read path stays plain;
 // the table calls this once with the references on the visible page.

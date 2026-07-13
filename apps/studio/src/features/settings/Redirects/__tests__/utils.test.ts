@@ -1,7 +1,9 @@
+import type { ResolvedDestination } from "../utils"
 import {
   formatAddedAt,
   getDestinationDisplay,
   isReferenceDestination,
+  shouldWarnDestination,
 } from "../utils"
 
 describe("formatAddedAt", () => {
@@ -99,18 +101,50 @@ describe("getDestinationDisplay", () => {
   })
 
   it("resolves a reference to the page's current permalink", () => {
-    const permalinkByReference = new Map([["[resource:1:2]", "/about/contact"]])
-    expect(
-      getDestinationDisplay("[resource:1:2]", permalinkByReference),
-    ).toEqual({ status: "resolved", label: "/about/contact" })
+    const infoByDestination = new Map<string, ResolvedDestination>([
+      ["[resource:1:2]", { permalink: "/about/contact", warn: false }],
+    ])
+    expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toEqual({
+      status: "resolved",
+      label: "/about/contact",
+    })
   })
 
   it("flags a reference whose page no longer exists as missing", () => {
-    const permalinkByReference = new Map<string, string | null>([
-      ["[resource:1:2]", null],
+    const infoByDestination = new Map<string, ResolvedDestination>([
+      ["[resource:1:2]", { permalink: null, warn: true }],
     ])
-    expect(
-      getDestinationDisplay("[resource:1:2]", permalinkByReference),
-    ).toEqual({ status: "missing" })
+    expect(getDestinationDisplay("[resource:1:2]", infoByDestination)).toEqual({
+      status: "missing",
+    })
+  })
+})
+
+describe("shouldWarnDestination", () => {
+  it("warns when the server flagged the destination as leading nowhere", () => {
+    const infoByDestination = new Map<string, ResolvedDestination>([
+      ["[resource:1:2]", { permalink: null, warn: true }],
+      ["/unpublished", { permalink: null, warn: true }],
+    ])
+    expect(shouldWarnDestination("[resource:1:2]", infoByDestination)).toBe(
+      true,
+    )
+    expect(shouldWarnDestination("/unpublished", infoByDestination)).toBe(true)
+  })
+
+  it("does not warn for a published destination", () => {
+    const infoByDestination = new Map<string, ResolvedDestination>([
+      ["[resource:1:2]", { permalink: "/about/contact", warn: false }],
+    ])
+    expect(shouldWarnDestination("[resource:1:2]", infoByDestination)).toBe(
+      false,
+    )
+  })
+
+  it("does not warn for a destination that is still resolving or external", () => {
+    expect(shouldWarnDestination("https://example.gov.sg", new Map())).toBe(
+      false,
+    )
+    expect(shouldWarnDestination("[resource:1:2]", new Map())).toBe(false)
   })
 })

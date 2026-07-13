@@ -12,6 +12,7 @@ const __dirname = dirname(__filename)
 // Sites requiring audit logs
 const SITES_WITH_AUDIT_LOGS = [
   1, // stb.gov.sg
+  41, // ssg.gov.sg
   46, // sportsingapore.gov.sg
   48, // muis.gov.sg
   50, // knowledgehub.clc.gov.sg
@@ -273,6 +274,10 @@ export const getAuditLogQuery = ({
             .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.FooterUpdate])
             .when("al.eventType", "=", AuditLogEvent.SiteConfigUpdate)
             .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.SiteConfigUpdate])
+            .when("al.eventType", "=", AuditLogEvent.RedirectCreate)
+            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.RedirectCreate])
+            .when("al.eventType", "=", AuditLogEvent.RedirectDelete)
+            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.RedirectDelete])
             .when("al.eventType", "=", AuditLogEvent.PermissionCreate)
             .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.PermissionCreate])
             .when("al.eventType", "=", AuditLogEvent.PermissionDelete)
