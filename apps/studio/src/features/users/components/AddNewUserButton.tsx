@@ -23,7 +23,7 @@ export const AddNewUserButton = ({
   const ability = useContext(UserManagementContext)
   const canManageUsers = ability.can("manage", "UserManagement")
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const { isSingpassEnabled } = useIsSingpassEnabled()
 
   const setAddUserModalState = useSetAtom(addUserModalAtom)
 

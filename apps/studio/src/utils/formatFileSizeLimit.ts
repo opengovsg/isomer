@@ -1,4 +1,4 @@
-import { ONE_MB_IN_BYTES } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import { ONE_MB_IN_BYTES } from "~/lib/fileUpload"
 
 const ONE_KB_IN_BYTES = ONE_MB_IN_BYTES / 1000
 
