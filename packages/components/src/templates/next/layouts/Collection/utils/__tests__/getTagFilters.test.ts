@@ -35,6 +35,7 @@ describe("getTagFilters", () => {
       {
         id: "Body parts",
         label: "Body parts",
+        display: "pills",
         items: [
           { id: "Brain", label: "Brain", count: 2 },
           { id: "Heart", label: "Heart", count: 1 },
@@ -43,6 +44,7 @@ describe("getTagFilters", () => {
       {
         id: "Condition",
         label: "Condition",
+        display: "pills",
         items: [
           { id: "Acute", label: "Acute", count: 1 },
           { id: "Chronic", label: "Chronic", count: 1 },
@@ -87,11 +89,13 @@ describe("getTagFilters", () => {
       {
         id: "Condition",
         label: "Condition",
+        display: "pills",
         items: [{ id: "Acute", label: "Acute", count: 1 }],
       },
       {
         id: "Body parts",
         label: "Body parts",
+        display: "pills",
         items: [{ id: "Brain", label: "Brain", count: 1 }],
       },
     ])
@@ -148,6 +152,7 @@ describe("getTagFilters", () => {
       {
         id: "Body parts",
         label: "Body parts",
+        display: "pills",
         items: [
           { id: "Arm", label: "Arm", count: 1 }, // Unlisted; comes first
           { id: "Heart", label: "Heart", count: 1 },
@@ -157,6 +162,7 @@ describe("getTagFilters", () => {
       {
         id: "Condition",
         label: "Condition",
+        display: "pills",
         items: [
           { id: "Chronic", label: "Chronic", count: 1 },
           { id: "Acute", label: "Acute", count: 1 },
@@ -193,6 +199,7 @@ describe("getTagFilters", () => {
       {
         id: "Fruits",
         label: "Fruits",
+        display: "pills",
         items: [
           { id: "Banana", label: "Banana", count: 2 },
           { id: "Apple", label: "Apple", count: 1 },
@@ -281,11 +288,13 @@ describe("getTagFilters", () => {
       {
         id: "Condition",
         label: "Condition",
+        display: "pills",
         items: [{ id: "Acute", label: "Acute", count: 1 }],
       },
       {
         id: "Body parts",
         label: "Body parts",
+        display: "pills",
         items: [
           { id: "Heart", label: "Heart", count: 1 },
           { id: "Brain", label: "Brain", count: 1 },
@@ -294,6 +303,7 @@ describe("getTagFilters", () => {
       {
         id: "Color",
         label: "Color",
+        display: "pills",
         items: [
           { id: "Red", label: "Red", count: 1 },
           { id: "Blue", label: "Blue", count: 1 },
@@ -341,11 +351,13 @@ describe("getTagFilters", () => {
       {
         id: "Condition",
         label: "Condition",
+        display: "pills",
         items: [{ id: "Acute", label: "Acute", count: 1 }], // Unlisted item appears first
       },
       {
         id: "Body parts",
         label: "Body parts",
+        display: "pills",
         items: [
           { id: "Heart", label: "Heart", count: 1 },
           { id: "Brain", label: "Brain", count: 1 },
@@ -391,6 +403,7 @@ describe("getTagFilters", () => {
       {
         id: "Body parts",
         label: "Body parts",
+        display: "pills",
         items: [
           { id: "Brain", label: "Brain", count: 2 }, // Appears in 2 items
           { id: "Heart", label: "Heart", count: 2 }, // Appears in 2 items
@@ -399,6 +412,7 @@ describe("getTagFilters", () => {
       {
         id: "Condition",
         label: "Condition",
+        display: "pills",
         items: [
           { id: "Acute", label: "Acute", count: 3 }, // Appears in 3 items
           { id: "Chronic", label: "Chronic", count: 1 }, // Appears in 1 item
@@ -463,6 +477,7 @@ describe("getTagFilters", () => {
       {
         id: "Body parts",
         label: "Body parts",
+        display: "pills",
         items: [{ id: "Brain", label: "Brain", count: 1 }],
       },
     ])
@@ -503,6 +518,7 @@ describe("getTagFilters", () => {
       {
         id: "Body parts",
         label: "Body parts",
+        display: "pills",
         items: [
           { id: "Heart", label: "Heart", count: 1 },
           { id: "Brain", label: "Brain", count: 1 },
@@ -511,11 +527,13 @@ describe("getTagFilters", () => {
       {
         id: "Condition",
         label: "Condition",
+        display: "pills",
         items: [{ id: "Acute", label: "Acute", count: 1 }],
       },
       {
         id: "Color",
         label: "Color",
+        display: "pills",
         items: [{ id: "Red", label: "Red", count: 1 }],
       },
     ])
