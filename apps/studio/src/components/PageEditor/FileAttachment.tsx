@@ -1,9 +1,10 @@
 import type { AttachmentProps } from "@opengovsg/design-system-react"
 import { FormControl, Skeleton, Text } from "@chakra-ui/react"
-import { Attachment } from "@opengovsg/design-system-react"
+import { Attachment, useToast } from "@opengovsg/design-system-react"
 import { uniq } from "lodash-es"
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
+import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useAssetUpload } from "~/features/editing-experience/components/form-builder/hooks/useAssetUpload"
 import { RISKY_FILE_EXTENSIONS } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
 import { useUploadAssetMutation } from "~/hooks/useUploadAssetMutation"
@@ -49,6 +50,7 @@ export const FileAttachment = ({
     resourceId,
   })
   const { handleAssetUpload, isLoading } = useAssetUpload({})
+  const toast = useToast()
 
   useEffect(() => {
     // NOTE: The outer link modal uses this to disable the button
@@ -62,7 +64,16 @@ export const FileAttachment = ({
         onSuccess: ({ path }) => {
           onUploadedFile?.(file)
           if (shouldFetchResource) {
-            void handleAssetUpload(path).then((src) => setHref(src))
+            void handleAssetUpload(path)
+              .then((src) => setHref(src))
+              .catch(() => {
+                toast({
+                  title: "Failed to upload file",
+                  description: "Please try again.",
+                  status: "error",
+                  ...BRIEF_TOAST_SETTINGS,
+                })
+              })
           } else setHref(path)
         },
       },
