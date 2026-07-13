@@ -13,6 +13,10 @@ const config = {
     "./node_modules/@opengovsg/isomer-components/dist/**/*.{js,mjs,cjs}",
     "./node_modules/@opengovsg/isomer-components/src/**/*.{js,ts,jsx,tsx}",
   ],
+  // Prevents Tailwind's content scanner from matching the "[resource:some-resource]"
+  // test fixture string in isExternalUrl.test.ts as an arbitrary-property utility.
+  // It's valid CSS but stray noise with no styling purpose.
+  blocklist: ["[resource:some-resource]"],
   // Use createNextPreset with includeFonts: false since we load Inter via next/font/google in layout.tsx
   presets: [createNextPreset({ includeFonts: false })],
   plugins: [
