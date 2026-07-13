@@ -18,6 +18,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { Suspense, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
+import { MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT } from "~/schemas/collection"
 import { trpc } from "~/utils/trpc"
 
 interface DeleteFilterModalProps {
@@ -44,7 +45,44 @@ function FilterUsageCount({
     tagOptionIds,
   })
 
-  return <>{count === 1 ? "1 item" : `${count} items`}</>
+  return (
+    <>
+      You are deleting an entire filter. It&apos;s being used on{" "}
+      {count === 1 ? "1 item" : `${count} items`}.
+    </>
+  )
+}
+
+// Querying usage counts for very large filters is disallowed server-side
+// (see MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) since the count is not worth the
+// request/SQL cost at that scale. Skip the query entirely and say so, rather
+// than sending a request we know will fail or truncating to a misleading
+// capped number like "999+".
+function FilterUsageMessage({
+  siteId,
+  pageId,
+  tagOptionIds,
+}: {
+  siteId: number
+  pageId: number
+  tagOptionIds: string[]
+}) {
+  if (tagOptionIds.length > MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) {
+    return (
+      <>
+        You are deleting an entire filter. It&apos;s being used on a large
+        number of results.
+      </>
+    )
+  }
+
+  return (
+    <FilterUsageCount
+      siteId={siteId}
+      pageId={pageId}
+      tagOptionIds={tagOptionIds}
+    />
+  )
 }
 
 export function DeleteFilterModal({
@@ -63,20 +101,11 @@ export function DeleteFilterModal({
       <ModalContent>
         <ModalHeader mr="3.5rem">
           <Text textStyle="subhead-1" color="base.content.strong">
-            You are deleting an entire filter. It&apos;s being used on{" "}
-            <ErrorBoundary fallbackRender={() => <>— items</>}>
-              <Suspense
-                fallback={
-                  <Skeleton
-                    as="span"
-                    display="inline-block"
-                    verticalAlign="middle"
-                    height="1em"
-                    width="2ch"
-                  />
-                }
-              >
-                <FilterUsageCount
+            <ErrorBoundary
+              fallbackRender={() => <>You are deleting an entire filter.</>}
+            >
+              <Suspense fallback={<Skeleton height="1.5em" width="100%" />}>
+                <FilterUsageMessage
                   siteId={siteId}
                   pageId={pageId}
                   tagOptionIds={tagOptionIds}
