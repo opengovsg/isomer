@@ -278,6 +278,6 @@ catalogs:
   vitest:
     "@vitejs/plugin-react": ^6.0.3
     "@vitest/browser-playwright": ^4.1.9
-    "@vitest/coverage-istanbul": ^4.1.9
+    "@vitest/coverage-istanbul": ^4.1.10
     vite: ^8.1.2
-    vitest: ^4.1.9
+    vitest: ^4.1.10
