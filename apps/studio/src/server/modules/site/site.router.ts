@@ -565,12 +565,10 @@ export const siteRouter = router({
         action: "update",
       })
 
-      const site = await db.transaction().execute(async () => {
-        return await setSiteNotification({
-          siteId,
-          userId: ctx.user.id,
-          notification,
-        })
+      const site = await setSiteNotification({
+        siteId,
+        userId: ctx.user.id,
+        notification,
       })
 
       await publishSiteConfig(ctx.user.id, { site }, ctx.logger)
