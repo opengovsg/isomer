@@ -116,11 +116,13 @@ describe("gazette.service", () => {
 
       await getPresignedPutUrl({
         key: "2026/Government Gazette/Public/notice.pdf",
+        fileSize: 1234,
         tags: [{ key: "scheduledAt", value: "1700000000000" }],
       })
 
       const args = signedPutSpy.mock.calls[0]![0]
       expect(args.Tagging).toContain("scheduledAt=1700000000000")
+      expect(args.ContentLength).toBe(1234)
     })
 
     it("omits Tagging when no tags supplied", async () => {
@@ -130,6 +132,7 @@ describe("gazette.service", () => {
 
       await getPresignedPutUrl({
         key: "2026/Government Gazette/Public/notice.pdf",
+        fileSize: 1234,
       })
 
       const args = signedPutSpy.mock.calls[0]![0]

@@ -36,7 +36,7 @@ export const VerificationInput = (): JSX.Element | null => {
 
   const { vfnStepData, timer, setVfnStepData, resetTimer } = useSignInContext()
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const { isSingpassEnabled } = useIsSingpassEnabled()
 
   useInterval(
     () => setShowOtpDelayMessage(true),

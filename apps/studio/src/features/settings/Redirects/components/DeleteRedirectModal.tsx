@@ -41,7 +41,7 @@ export const DeleteRedirectModal = ({
         <ModalBody>
           <Stack spacing="1.5rem">
             <Text textStyle="body-1">
-              Are you sure you want to delete this redirect?
+              This will permanently delete the redirect.
             </Text>
             <HStack
               spacing="1.5rem"

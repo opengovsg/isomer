@@ -44,7 +44,7 @@ export const AddUserModal = () => {
   const { siteId, hasWhitelistError } = addUserModalState
   const setAddUserModalState = useSetAtom(addUserModalAtom)
 
-  const isSingpassEnabled = useIsSingpassEnabled()
+  const { isSingpassEnabled } = useIsSingpassEnabled()
 
   const {
     watch,

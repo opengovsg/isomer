@@ -1,3 +1,5 @@
+import type { ReactEventHandler } from "react"
+
 export interface ImageClientProps {
   src: string
   alt: string
@@ -5,5 +7,5 @@ export interface ImageClientProps {
   className: string
   assetsBaseUrl?: string
   lazyLoading?: boolean
-  onLoad?: React.ReactEventHandler<HTMLImageElement>
+  onLoad?: ReactEventHandler<HTMLImageElement>
 }

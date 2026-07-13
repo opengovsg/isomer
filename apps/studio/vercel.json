@@ -1,3 +1,5 @@
 {
-  "regions": ["sin1"]
+  "regions": ["sin1"],
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm run vercel-build"
 }

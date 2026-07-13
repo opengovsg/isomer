@@ -1,14 +1,14 @@
 # PR risk taxonomy
 
-This doc maps file-glob heuristics and content signals → risk tier. It is the source of truth for the `/compute-risk-tier`, `/pr-review`, and `/security-review` skills, the auto-approve gate, and any future code-review automation.
+This doc maps file-glob heuristics and content signals → risk tier. It is the source of truth for the `/pr-review` skill and any future code-review automation.
 
 Tiers reflect actual reversibility and blast radius: if multiple globs match a single PR, the **highest** tier wins, but content-based signals (additive-only, feature-flag gating) can lower MEDIUM → LOW.
 
 ## Tiers
 
-| Tier         | Meaning                                                                                       | Auto-approve? |
+| Tier         | Meaning                                                                                       | Auto-approve eligible? |
 | ------------ | --------------------------------------------------------------------------------------------- | ------------- |
-| `risk:low`   | Cosmetic, docs, deps, copy, pure UI, utilities. Cannot break runtime behaviour or change data. | Yes, with caveats below. |
+| `risk:low`   | Cosmetic, docs, deps, copy, pure UI, utilities. Cannot break runtime behaviour or change data. | Yes, with caveats below (flagged by `pr-review`; a human still approves). |
 | `risk:medium`| Changes server-side behaviour, data contracts, or shared library code. Requires human approve. | No.           |
 | `risk:high`  | Touches security, auth, migrations, infra, or cross-cutting code. Requires human approve + a tagged reviewer. | No.           |
 
@@ -91,40 +91,25 @@ Client-side UI code, utilities, docs, and tests — reversible, contained blast 
 
 ## Auto-approve caveats
 
-`risk:low` is *eligible* for AI approval (a formal GitHub APPROVE review submitted by the bot, counting toward required approvals). It is auto-approved only when **all** of the following hold:
+There is no bot that submits an actual GitHub APPROVE review — the `pr-review` skill only flags eligibility in its comment as a signal for human reviewers. It marks a `risk:low` PR eligible only when **all** of the following hold:
 
 1. The PR touches no file outside the `risk:low` globs.
 2. CI is green (lint, typecheck, build, tests).
-3. The code review agent finds no Must Fix or Should Fix findings (after any dismissals).
-4. The security review agent finds no blocking findings.
+3. Code review (human, since there is no automated code-review skill) surfaces no blocking issues.
+4. Security review (human, since there is no automated security-review skill) surfaces no blocking issues.
 5. The PR does not change `package.json` scripts, `engines`, `pnpm.overrides`, or workspace dependencies.
 6. No reversibility modifier applies (external side-effects, row mutations, pgboss handler removal/rename/payload change, S3 object deletions).
 
-If any condition fails, the PR is downgraded to "human review required" and the agent leaves an annotation explaining why. A human still clicks merge — the bot approval satisfies the required-approvals gate but does not auto-merge.
+If any condition fails, `pr-review` marks the PR "human review required" and leaves an annotation explaining why. A human always clicks approve and merge.
 
 ## Hot paths to flag (any tier)
 
-Even within `risk:medium`, the following sub-paths are "hot" and should be called out by the `pr-review` skill with a banner. Code review agent findings in hot-path files are escalated by one severity level (Consider → Should Fix, Should Fix → Must Fix):
+Even within `risk:medium`, the following sub-paths are "hot" and should be called out by the `pr-review` skill with a banner:
 
 - `apps/studio/src/server/modules/page/page.service.ts` — publish + scheduled publish flow
 - `apps/studio/src/server/modules/resource/**` — resource graph mutations
 - `apps/studio/src/features/editing-experience/**` — the editor core; any change risks publisher data loss
 - `packages/components/src/schemas/**` — published-site JSON Schema; backward compatibility required
-
-## Code review severity
-
-The code review agent uses four severity levels:
-
-| Severity | Definition | Blocks AI approval? |
-| -------- | ---------- | ------------------- |
-| **Must Fix** | Likely bug, data loss risk, broken contract between Studio and components schema | Yes |
-| **Should Fix** | Pattern that will cause a bug under a realistic edge case, or misleads the next engineer | Yes |
-| **Consider** | Style, minor duplication, test coverage gap | No — annotation only |
-| **Pre-existing** | Issue in code not introduced by this PR | No — annotate once, never repeat |
-
-Authors may dismiss a Should Fix finding by replying `/dismiss: <reason>`. Dismissals are logged and surfaced to the human reviewer in the AI review summary — they do not disappear silently. The agent acknowledges the dismissal and clears the block.
-
-Test coverage delta is a soft signal only: if a PR adds significant logic with no new tests, the agent annotates it as a Consider finding regardless of tier. It never hard-blocks on coverage alone.
 
 ## Evolution
 
