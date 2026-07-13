@@ -73,10 +73,6 @@ export {
   jsonFormsUnionRootControlTester,
 } from "./JsonFormsUnionRootControl"
 export {
-  default as JsonFormsCategoryControl,
-  jsonFormsCategoryControlTester,
-} from "./JsonFormsCategoryControl"
-export {
   default as JsonFormsCollectionDropdownControl,
   jsonFormsCollectionDropdownControlTester,
 } from "./JsonFormsCollectionDropdownControl"

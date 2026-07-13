@@ -65,7 +65,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
       toast({
         status: "success",
         title:

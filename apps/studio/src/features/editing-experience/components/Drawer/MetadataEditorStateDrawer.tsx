@@ -67,7 +67,6 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
       void Promise.all([
         utils.page.readPageAndBlob.invalidate({ pageId, siteId }),
         utils.page.readPage.invalidate({ pageId, siteId }),
-        utils.page.getCategories.invalidate(),
       ])
       toast({
         status: "success",
