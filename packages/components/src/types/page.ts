@@ -71,11 +71,11 @@ const TagCategorySchema = Type.Composite([
         oneOf: [
           {
             const: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-            image: "tagcategory-pills",
+            image: "tagcategory/pills",
           },
           {
             const: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-            image: "tagcategory-plaintext",
+            image: "tagcategory/plaintext",
           },
         ],
         title: "Show as",
@@ -128,7 +128,7 @@ const TaggedSchema = Type.Optional(
 const categorySchemaObject = Type.Object({
   category: Type.String({
     title: "Article category",
-    format: "category",
+    format: "hidden", // We will properly deprecate this key during the post-launch cleanup. Hiding it in Studio UI in the meantime.
     description:
       "The category is used for filtering in the parent collection page",
   }),

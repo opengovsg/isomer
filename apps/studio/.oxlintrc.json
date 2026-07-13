@@ -78,6 +78,7 @@
     {
       "files": [
         "playwright.config.ts",
+        "vitest.config.ts",
         "tests/**/*.ts",
         "tests/**/*.tsx",
         ".storybook/**/*.ts",

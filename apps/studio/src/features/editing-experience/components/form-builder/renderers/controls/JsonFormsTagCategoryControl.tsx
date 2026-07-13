@@ -10,14 +10,13 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
-import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyCategory } from "../../components/EmptyCategory"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
-import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultTagCategory } from "./constants"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
@@ -40,7 +39,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
   const page = core?.data as CollectionPagePageProps | undefined
-  const duplicateFilterIndices = useDuplicateLabels(path)
+  const { duplicate: duplicateFilterIndices } = useLiveLabelIssues({ path })
 
   const arrayResult = useArray({
     data,
@@ -62,8 +61,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     handleRemoveSelectedItem,
     onDragEnd,
   } = arrayResult
-
-  const hasDuplicateFilterNameError = duplicateFilterIndices.size > 0
 
   const {
     target: deleteTarget,
@@ -99,7 +96,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               {description}
             </Text>
           )}
-          {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
         </VStack>
         <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
           <DragDropContext onDragEnd={onDragEnd}>
