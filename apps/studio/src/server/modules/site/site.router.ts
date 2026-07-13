@@ -763,7 +763,7 @@ export const siteRouter = router({
             }),
         )
 
-      return db.transaction().execute(async (tx) => {
+      await db.transaction().execute(async (tx) => {
         await logPublishEvent(tx, {
           by: byUser,
           eventType: AuditLogEvent.Publish,
@@ -771,7 +771,8 @@ export const siteRouter = router({
           metadata: {},
           siteId,
         })
-        await publishSite(ctx.logger, { siteId: siteId })
       })
+
+      await publishSite(ctx.logger, { siteId: siteId })
     }),
 })
