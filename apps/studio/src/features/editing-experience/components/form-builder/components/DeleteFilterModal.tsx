@@ -84,9 +84,7 @@ export function DeleteFilterModal({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader mr="3.5rem">
-          <Text textStyle="subhead-1" color="base.content.strong">
-            You are deleting an entire filter.
-          </Text>
+          You are deleting an entire filter.
         </ModalHeader>
         <ModalCloseButton size="lg" />
 
