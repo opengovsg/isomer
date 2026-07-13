@@ -1,6 +1,5 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
-import type { CollectionPageCategoryOption } from "~/types/page"
 
 import type { Filter } from "../../../types/Filter"
 import { getCategoryFilter } from "./getCategoryFilter"
@@ -10,12 +9,11 @@ import { getYearFilter } from "./getYearFilter"
 export const getAvailableFilters = (
   items: ProcessedCollectionCardProps[],
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"],
-  categoryOptions?: CollectionPageCategoryOption[],
 ): Filter[] => {
   // TODO: Allow user to pass in order of filters to be shown
   return [
     ...getTagFilters(items, tagCategories),
-    getCategoryFilter(items, categoryOptions),
+    getCategoryFilter(items),
     getYearFilter(items),
   ].filter((filter) => filter.items.length >= 1)
 }

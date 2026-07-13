@@ -52,7 +52,6 @@ describe("getCollectionPages", () => {
     image,
     firstImage,
     category,
-    categoryId,
   }: {
     id: string
     permalink: string
@@ -60,7 +59,6 @@ describe("getCollectionPages", () => {
     image?: { src: string; alt: string }
     firstImage?: { src: string; alt: string }
     category?: string
-    categoryId?: string
   }): IsomerSitemap => ({
     id,
     title: `${id} title`,
@@ -70,7 +68,6 @@ describe("getCollectionPages", () => {
     layout: "article",
     date,
     category,
-    categoryId,
     image,
     firstImage,
   })
@@ -327,46 +324,6 @@ describe("getCollectionPages", () => {
         isContainNeeded: true,
       })
     })
-  })
-
-  it("should resolve categoryId to the matching label from categoryOptions", () => {
-    // Arrange
-    const collectionParent: IsomerSitemap = {
-      id: collectionId,
-      title: "Collection 1",
-      permalink: collectionPermalink,
-      layout: "collection",
-      summary: "Collection 1 summary",
-      lastModified: new Date("2021-01-01").toISOString(),
-      collectionPagePageProps: {
-        categoryOptions: [
-          { id: "cat-uuid-1", label: "Policy" },
-          { id: "cat-uuid-2", label: "Research" },
-        ],
-      },
-      children: [
-        createMockCollectionItem({
-          id: `${collectionId}1`,
-          permalink: `${collectionPermalink}/1`,
-          categoryId: "cat-uuid-2",
-          category: "legacy",
-        }),
-      ],
-    }
-    site = {
-      ...site,
-      siteMap: {
-        ...site.siteMap,
-        children: [collectionParent],
-      },
-    }
-
-    // Act
-    const result = getCollectionPages({ site, collectionParent })
-
-    // Assert
-    expect(result).toHaveLength(1)
-    expect(result[0]?.category).toBe("Research")
   })
 
   it("should use default sort values (date desc) when collectionPagePageProps sort values are absent", () => {

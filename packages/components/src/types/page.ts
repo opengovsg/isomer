@@ -87,48 +87,6 @@ const TagCategoriesSchema = Type.Object({
   ),
 })
 
-/**
- * `categoryOptions` is optional for backward compatibility: persisted blobs may omit it, and we
- * avoid misleading inferred types (Static<>) that claim the field is always present before
- * migration. After rollout, run a script to populate blobs with `categoryOptions`, then we can
- * make this property required. At the same time, mark `category` as deprecated on collection
- * item props in favour of `categoryId` (and related fields) aligned with these options.
- * Studio AJV still applies `default: []` when the key is missing.
- *
- * Display vs "Manage filters" in Studio is not encoded here: `getScopedSchema` in
- * CollectionEditorStateDrawer includes this field only in the Filters drawer (with tag filters),
- * not under Collection display.
- */
-const CategoriesSchema = Type.Object({
-  categoryOptions: Type.Optional(
-    Type.Array(
-      Type.Object({
-        label: Type.String({
-          title: "Option name",
-          pattern: TRIMMED_NON_EMPTY_STRING_REGEX,
-          errorMessage: {
-            pattern: "cannot be empty or have leading/trailing spaces",
-          },
-        }),
-        id: generateUuidSchema({
-          title: "Category id",
-          description:
-            "This is the uuid of a single tag option and will be used to uniquely identify it. This is the uuid of the options of each category",
-        }),
-      }),
-      {
-        title: "Options",
-        format: "category-options",
-        default: [],
-      },
-    ),
-  ),
-})
-
-export type CollectionPageCategoryOption = NonNullable<
-  Static<typeof CategoriesSchema>["categoryOptions"]
->[number]
-
 const TaggedSchema = Type.Optional(
   // NOTE: This stores the `uuid` of the tag option
   Type.Array(TagOptionUuidSchema, {
@@ -145,21 +103,6 @@ const categorySchemaObject = Type.Object({
     description:
       "The category is used for filtering in the parent collection page",
   }),
-  /**
-   * `categoryId` is optional for backward compatibility: persisted blobs may omit it, and we
-   * avoid misleading inferred types (Static<>) that claim the field is always present before
-   * migration from string `category`. After rollout, populate items with `categoryId` aligned
-   * with `categoryOptions` on the parent collection, then we can make this property required
-   * and deprecate `category`.
-   *
-   * @see {@link CategoriesSchema} for the parent collection's `categoryOptions` shape (`id` on each option).
-   */
-  categoryId: Type.Optional(
-    Type.String({
-      title: "Category",
-      format: "category-id",
-    }),
-  ),
 })
 
 const dateSchemaObject = Type.Object({
@@ -363,7 +306,6 @@ export const CollectionPagePageSchema = Type.Intersect([
     ),
   }),
   TagCategoriesSchema,
-  CategoriesSchema,
   TagsSchema,
 ])
 

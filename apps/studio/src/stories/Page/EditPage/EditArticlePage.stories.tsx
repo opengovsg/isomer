@@ -14,7 +14,6 @@ import { ResourceState } from "~prisma/generated/generatedEnums"
 const COMMON_HANDLERS = [
   meHandlers.me(),
   pageHandlers.getCategories.default(),
-  pageHandlers.getCategoryOptions.default(),
   pageHandlers.updatePageBlob.default(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),

@@ -438,13 +438,6 @@ export const getLocalisedSitemap = async (
       ELSE ''
     END
 `.as("content")
-  const categoryIdSql = sql<string | null>`
-    CASE
-      WHEN (published.content ->> 'layout') IN ('article','link')
-      THEN (published.content -> 'page' ->> 'categoryId')
-      ELSE NULL
-    END
-`.as("categoryId")
   const taggedSql = sql<string | null>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
@@ -474,7 +467,6 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
-          categoryIdSql,
           taggedSql,
           ...defaultResourceSelect,
         ])
@@ -494,7 +486,6 @@ export const getLocalisedSitemap = async (
               eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
               eb.cast<string>(eb.val(""), "text").as("content"),
-              eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
@@ -523,7 +514,6 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
-          categoryIdSql,
           taggedSql,
           ...defaultResourceSelect,
         ]),
@@ -547,7 +537,6 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
-          eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
           eb.cast<string | null>(eb.val(null), "text").as("tagged"),
           ...defaultResourceSelect,
         ])
@@ -574,7 +563,6 @@ export const getLocalisedSitemap = async (
               categorySql,
               dateSql,
               contentSql,
-              eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
@@ -588,7 +576,6 @@ export const getLocalisedSitemap = async (
       "category",
       "date",
       "content",
-      "categoryId",
       "tagged",
       ...defaultResourceSelect,
     ])
@@ -601,7 +588,6 @@ export const getLocalisedSitemap = async (
           "category",
           "date",
           "content",
-          "categoryId",
           "tagged",
           ...defaultResourceSelect,
         ]),
@@ -615,7 +601,6 @@ export const getLocalisedSitemap = async (
           "category",
           "date",
           "content",
-          "categoryId",
           "tagged",
           ...defaultResourceSelect,
         ]),

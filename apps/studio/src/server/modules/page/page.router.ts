@@ -66,11 +66,7 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import {
-  createDefaultPage,
-  createFolderIndexPage,
-  getCategoryOptionsForPage,
-} from "./page.service"
+import { createDefaultPage, createFolderIndexPage } from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -198,18 +194,6 @@ export const pageRouter = router({
         .filter((c) => !!c && !!c.trim())
 
       return { categories }
-    }),
-
-  getCategoryOptions: protectedProcedure
-    .input(basePageSchema)
-    .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      return getCategoryOptionsForPage({ pageId, siteId })
     }),
 
   readPage: protectedProcedure

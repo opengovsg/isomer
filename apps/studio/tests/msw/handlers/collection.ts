@@ -58,12 +58,6 @@ export const collectionHandlers = {
         draftBlobId: "1",
       })),
   },
-  getCategoryOptionUsageCount: {
-    default: () =>
-      trpcMsw.collection.getCategoryOptionUsageCount.query(() => ({
-        count: 3,
-      })),
-  },
   readCollectionLink: {
     default: () => {
       return trpcMsw.collection.readCollectionLink.query(() => ({
