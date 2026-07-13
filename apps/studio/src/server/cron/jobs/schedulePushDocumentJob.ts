@@ -93,7 +93,7 @@ const extractResourceData = async ({
   // as we need to derive the subcategory
   const { content: indexPageContent } = await db
     .selectFrom("Resource")
-    .innerJoin("Version", "Version.resourceId", "Resource.id")
+    .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
     .innerJoin("Blob", "Blob.id", "Version.blobId")
     .where("type", "=", "IndexPage")
     .where("parentId", "=", parentId)
