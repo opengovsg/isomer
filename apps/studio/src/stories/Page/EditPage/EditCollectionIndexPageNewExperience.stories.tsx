@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { expect, userEvent, waitFor, within } from "storybook/test"
+import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -29,6 +30,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
   pageHandlers.getFullPermalink.collection(),
+  collectionHandlers.countTagOptionsUsage.default(),
 ]
 
 const meta: Meta<typeof EditPage> = {
@@ -351,7 +353,9 @@ export const FiltersDeleteFilterModalDisabledCta: Story = {
     await userEvent.click(
       await portals.findByRole("menuitem", { name: /Delete filter/i }),
     )
-    await portals.findByText(/Delete filter "Test filter"\?/i)
+    await portals.findByText(
+      /You are deleting an entire filter\. It's being used on/i,
+    )
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).toBeDisabled()
@@ -365,7 +369,7 @@ export const FiltersDeleteFilterModalEnabledCta: Story = {
     const portals = withinPortals(context.canvasElement)
     await userEvent.click(
       portals.getByRole("checkbox", {
-        name: /Yes, delete this filter permanently/i,
+        name: /Yes, delete the entire filter permanently/i,
       }),
     )
     await expect(
