@@ -108,8 +108,10 @@ const seedDocumentReadyForIngestion = async ({
     .where("id", "=", String(indexBlob.id))
     .execute()
 
-  // A published Version for the IndexPage.
-  await db
+  // A published Version for the IndexPage. Publishing sets
+  // publishedVersionId on the Resource (see version.service.ts), and the
+  // handler resolves the index page blob through it.
+  const indexVersion = await db
     .insertInto("Version")
     .values({
       versionNum: 1,
@@ -117,6 +119,12 @@ const seedDocumentReadyForIngestion = async ({
       blobId: indexBlob.id,
       publishedBy,
     })
+    .returning("id")
+    .executeTakeFirstOrThrow()
+  await db
+    .updateTable("Resource")
+    .set({ publishedVersionId: indexVersion.id })
+    .where("id", "=", indexPage.id)
     .execute()
 
   // Child page that points at the PDF asset.
