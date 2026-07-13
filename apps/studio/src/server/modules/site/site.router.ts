@@ -590,7 +590,7 @@ export const siteRouter = router({
           roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
         })
 
-        await db.transaction().execute(async (tx) => {
+        const { newSite, newNavbar, newFooter } = await db.transaction().execute(async (tx) => {
           const user = await tx
             .selectFrom("User")
             .where("id", "=", ctx.user.id)
@@ -724,13 +724,14 @@ export const siteRouter = router({
             delta: { before: oldFooter, after: newFooter },
             by: user,
           })
-
-          await publishSiteConfig(
-            ctx.user.id,
-            { site: newSite, navbar: newNavbar, footer: newFooter },
-            ctx.logger,
-          )
+          return { newSite, newNavbar, newFooter }
         })
+
+        await publishSiteConfig(
+          ctx.user.id,
+          { site: newSite, navbar: newNavbar, footer: newFooter },
+          ctx.logger,
+        )
       },
     ),
   create: protectedProcedure
