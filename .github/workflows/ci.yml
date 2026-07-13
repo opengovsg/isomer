@@ -20,7 +20,7 @@ jobs:
       - name: Echo TEST
         run: echo "TEST"
       - name: Echo CHIN 
-        run: echo "ECHO MADE BY CHIN"
+        run: echo "ECHO MADE BY CHIN ROUND 2"
   optimize_ci:
     runs-on: ubuntu-latest # or whichever runner you use for your CI
     outputs:
