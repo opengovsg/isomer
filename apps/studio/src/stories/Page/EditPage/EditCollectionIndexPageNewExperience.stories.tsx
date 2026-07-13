@@ -61,6 +61,12 @@ const newCollectionFiltersIsomerAdminParameters = {
   },
 } satisfies Story["parameters"]
 
+/** Chromatic delay for play-driven inline edit snapshots. */
+const inlineEditSnapshotParameters = {
+  ...newCollectionFiltersIsomerAdminParameters,
+  chromatic: { delay: 300 },
+} satisfies Story["parameters"]
+
 async function playOpenManageFilters(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
   const filtersEntry = await canvas.findByRole("button", { name: /Filters/i })
@@ -68,21 +74,96 @@ async function playOpenManageFilters(canvasElement: HTMLElement) {
   await canvas.findByText(/Manage filters/i)
 }
 
+/** Click an option row's label to enter inline edit mode (index is 0-based). */
+async function clickOptionRowToEdit(
+  canvasElement: HTMLElement,
+  index0Based: number,
+) {
+  const canvas = within(canvasElement)
+  const namedRow = canvas.queryByText(new RegExp(`^Option ${index0Based + 1}$`))
+  if (namedRow) {
+    await userEvent.click(namedRow)
+    return
+  }
+
+  // When filling rows in order, the next unnamed row is always the first
+  // remaining "New option" label (not the nth match).
+  const [nextUnrenamedRow] = canvas.getAllByText(/^New option$/)
+  if (!nextUnrenamedRow) {
+    throw new Error(`No editable option row found for index ${index0Based}`)
+  }
+  await userEvent.click(nextUnrenamedRow)
+}
+
+/** Open inline edit for an option row and wait for the name textbox (index is 0-based). */
+async function playOpenInlineOptionEdit(
+  canvasElement: HTMLElement,
+  index0Based = 0,
+) {
+  const canvas = within(canvasElement)
+  await clickOptionRowToEdit(canvasElement, index0Based)
+  await canvas.findByRole("textbox", {
+    name: `Option ${index0Based + 1} name`,
+  })
+}
+
+/** Manage filters → first filter editor with a single default option row. */
+async function playOpenFilterEditorWithOneOption(canvasElement: HTMLElement) {
+  await playOpenManageFilters(canvasElement)
+  await playOpenFirstFilterEditor(canvasElement)
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /^Add option$/i }),
+  )
+}
+
+/** Confirm inline option rename via the row's tick button (not the drawer save). */
+async function confirmInlineOptionRename(nameInput: HTMLElement) {
+  const row = nameInput.parentElement
+  if (!row) {
+    throw new Error("Expected inline edit row container")
+  }
+  await userEvent.click(
+    within(row).getByRole("button", { name: /^Save changes$/i }),
+  )
+}
+
+/** Rename an option row via inline EditableLabel (index is 0-based). */
+async function renameOptionAtIndex(
+  canvasElement: HTMLElement,
+  index0Based: number,
+  name: string,
+) {
+  const canvas = within(canvasElement)
+  await clickOptionRowToEdit(canvasElement, index0Based)
+  const nameInput = await canvas.findByRole("textbox", {
+    name: `Option ${index0Based + 1} name`,
+  })
+  await userEvent.clear(nameInput)
+  await userEvent.type(nameInput, name)
+  await confirmInlineOptionRename(nameInput)
+}
+
+/** Assert three default option rows show clickable "New option" labels. */
+async function assertThreeDefaultOptionRows(canvasElement: HTMLElement) {
+  const canvas = within(canvasElement)
+  const newOptionLabels = await canvas.findAllByText(/^New option$/)
+  await expect(newOptionLabels).toHaveLength(3)
+}
+
 /** Ensures at least one filter row exists, opens nested "Edit Filters" editor. */
 async function playOpenFirstFilterEditor(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
-  if (!canvas.queryByRole("button", { name: /New option/i })) {
+  if (!canvas.queryByText("New filter")) {
     await userEvent.click(
       await canvas.findByRole("button", { name: /Add a filter/i }),
     )
   }
-  await userEvent.click(
-    await canvas.findByRole("button", { name: /New Filter/i }),
-  )
+  await userEvent.click(await canvas.findByText("New filter"))
   await canvas.findByText(/Edit Filters/i)
 }
 
-/** From "Edit Filters": add three options and assert default row labels. */
+/** From "Edit Filters": rename filter, add three options, assert default row labels. */
 async function playFillFilterNameAndAddThreeOptions(
   canvasElement: HTMLElement,
 ) {
@@ -96,10 +177,7 @@ async function playFillFilterNameAndAddThreeOptions(
     await userEvent.click(addOption)
   }
 
-  const newOptionButtons = await canvas.findAllByRole("button", {
-    name: /New option/i,
-  })
-  await expect(newOptionButtons).toHaveLength(3)
+  await assertThreeDefaultOptionRows(canvasElement)
 }
 
 async function clickOptionActionsMenu(
@@ -179,6 +257,7 @@ export const FiltersOpenOptionRowMenu: Story = {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
     await playFillFilterNameAndAddThreeOptions(canvasElement)
+    await renameOptionAtIndex(canvasElement, 0, "Option 1")
     await clickOptionActionsMenu(canvasElement, 1)
     const portals = withinPortals(canvasElement)
     await expect(await portals.findByText(/^Delete option$/i)).toBeVisible()
@@ -191,6 +270,7 @@ export const FiltersDeleteOptionModalDisabledCta: Story = {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
     await playFillFilterNameAndAddThreeOptions(canvasElement)
+    await renameOptionAtIndex(canvasElement, 0, "Option 1")
     await clickOptionActionsMenu(canvasElement, 1)
     const portals = withinPortals(canvasElement)
     await userEvent.click(await portals.findByText(/^Delete option$/i), {
@@ -349,5 +429,59 @@ export const ManageFiltersSaveToast: Story = {
       },
       { timeout: 5000 },
     )
+  },
+}
+
+export const FiltersInlineEditTyping: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenFilterEditorWithOneOption(canvasElement)
+    await playOpenInlineOptionEdit(canvasElement, 0)
+    const canvas = within(canvasElement)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 1 name" })
+    await userEvent.clear(nameInput)
+    await userEvent.type(nameInput, "Announcements")
+  },
+}
+
+export const FiltersInlineEditBlankError: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenFilterEditorWithOneOption(canvasElement)
+    await playOpenInlineOptionEdit(canvasElement, 0)
+    const canvas = within(canvasElement)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 1 name" })
+    await userEvent.clear(nameInput)
+    await expect(
+      canvas.getByText(/Option name cannot be empty\./i),
+    ).toBeVisible()
+    const row = nameInput.parentElement
+    if (!row) throw new Error("Expected inline edit row container")
+    await expect(
+      within(row).getByRole("button", { name: /^Save changes$/i }),
+    ).toBeDisabled()
+  },
+}
+
+export const FiltersInlineEditDuplicateError: Story = {
+  parameters: inlineEditSnapshotParameters,
+  play: async ({ canvasElement }) => {
+    await playOpenManageFilters(canvasElement)
+    await playOpenFirstFilterEditor(canvasElement)
+    const canvas = within(canvasElement)
+    const addOption = await canvas.findByRole("button", {
+      name: /^Add option$/i,
+    })
+    await userEvent.click(addOption)
+    await userEvent.click(addOption)
+    await renameOptionAtIndex(canvasElement, 0, "Same name")
+    await playOpenInlineOptionEdit(canvasElement, 1)
+    const nameInput = canvas.getByRole("textbox", { name: "Option 2 name" })
+    await userEvent.clear(nameInput)
+    await userEvent.type(nameInput, "Same name")
+    const duplicateErrors = await canvas.findAllByText(
+      /An option with this name already exists\./i,
+    )
+    await expect(duplicateErrors.length).toBeGreaterThanOrEqual(2)
   },
 }
