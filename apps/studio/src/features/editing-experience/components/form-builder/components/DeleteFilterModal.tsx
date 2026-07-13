@@ -30,36 +30,12 @@ interface DeleteFilterModalProps {
   onConfirm: () => void
 }
 
-function FilterUsageInfobox({
-  siteId,
-  pageId,
-  tagOptionIds,
-}: {
-  siteId: number
-  pageId: number
-  tagOptionIds: string[]
-}) {
-  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
-    siteId,
-    pageId,
-    tagOptionIds,
-  })
-
-  return (
-    <Text textStyle="body-1" color="base.content.strong">
-      It’s being used on {count === 1 ? "1 item" : `${count} items`}. To undo
-      this change, you will need to recreate this filter and assign options to
-      each item individually.
-    </Text>
-  )
-}
-
 // Querying usage counts for very large filters is disallowed server-side
 // (see MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) since the count is not worth the
 // request/SQL cost at that scale. Skip the query entirely and say so, rather
 // than sending a request we know will fail or truncating to a misleading
 // capped number like "999+".
-function FilterUsageInfoboxMessage({
+function FilterUsageInfobox({
   siteId,
   pageId,
   tagOptionIds,
@@ -78,12 +54,18 @@ function FilterUsageInfoboxMessage({
     )
   }
 
+  const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
+    siteId,
+    pageId,
+    tagOptionIds,
+  })
+
   return (
-    <FilterUsageInfobox
-      siteId={siteId}
-      pageId={pageId}
-      tagOptionIds={tagOptionIds}
-    />
+    <Text textStyle="body-1" color="base.content.strong">
+      It’s being used on {count === 1 ? "1 item" : `${count} items`}. To undo
+      this change, you will need to recreate this filter and assign options to
+      each item individually.
+    </Text>
   )
 }
 
@@ -120,7 +102,7 @@ export function DeleteFilterModal({
                 )}
               >
                 <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
-                  <FilterUsageInfoboxMessage
+                  <FilterUsageInfobox
                     siteId={siteId}
                     pageId={pageId}
                     tagOptionIds={tagOptionIds}
