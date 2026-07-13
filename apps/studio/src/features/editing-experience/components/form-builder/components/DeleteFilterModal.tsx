@@ -47,7 +47,7 @@ function FilterUsageCount({
 
   return (
     <>
-      You are deleting an entire filter. It&apos;s being used on{" "}
+      You are deleting an entire filter. It’s being used on{" "}
       {count === 1 ? "1 item" : `${count} items`}.
     </>
   )
@@ -70,8 +70,8 @@ function FilterUsageMessage({
   if (tagOptionIds.length > MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) {
     return (
       <>
-        You are deleting an entire filter. It&apos;s being used on a large
-        number of results.
+        You are deleting an entire filter. It’s being used on a large number of
+        results.
       </>
     )
   }
