@@ -79,33 +79,13 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     }),
   })
 
-  const hasLabelOrDescription = !!label || !!description
-
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
       <VStack spacing={0} align="start">
-        {hasLabelOrDescription && (
-          <VStack align="start" spacing="0.25rem" w="full" mb="1rem">
-            {label && (
-              <Text textStyle="subhead-1" textColor="base.content.strong">
-                {label}
-              </Text>
-            )}
-            {description && (
-              <Text textStyle="body-2" textColor="base.content.default">
-                {description}
-              </Text>
-            )}
-          </VStack>
-        )}
         <VStack align="start" spacing="0.25rem" w="full">
           <HStack w="full" justifyContent="space-between" align="center">
-            <Text
-              textStyle="subhead-2"
-              textColor="base.content.strong"
-              flex={1}
-            >
-              Custom Filters
+            <Text textStyle="subhead-1" flex={1}>
+              {label}
             </Text>
             <AddItemButton
               onClick={addItem(path, createDefaultTagCategory())}
@@ -114,9 +94,14 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               Add a filter
             </AddItemButton>
           </HStack>
+          {description && (
+            <Text textStyle="body-2" textColor="base.content.default">
+              {description}
+            </Text>
+          )}
           {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
         </VStack>
-        <Box w="full" mt={hasLabelOrDescription ? "0.5rem" : "0.25rem"}>
+        <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="blocks">
               {({ droppableProps, innerRef, placeholder }) => (
@@ -130,7 +115,7 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
                 >
                   {data === 0 && (
                     <EmptyCategory
-                      title="Custom filters you add will appear here"
+                      title="Filters you add will appear here"
                       description="Click 'Add a filter' to add one"
                     />
                   )}

@@ -52,8 +52,6 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
         utils.page.readPageAndBlob.invalidate({ pageId, siteId }),
         utils.page.readPage.invalidate({ pageId, siteId }),
         utils.page.getCategories.invalidate(),
-        utils.page.getCategoryOptions.invalidate(),
-        utils.collection.getCategoryOptionUsageCount.invalidate(),
       ])
       toast({
         status: "success",

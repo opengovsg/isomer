@@ -31,15 +31,8 @@ export const ArticleLayout = ({
       ? getTagsFromTagged(tagged, parent.collectionPagePageProps?.tagCategories)
       : tags
 
-  const categoryOptions =
-    parent?.layout === "collection"
-      ? parent.collectionPagePageProps?.categoryOptions
-      : undefined
-
   const resolvedCategory = resolveCategoryLabel({
-    categoryId: page.categoryId,
     category: page.category,
-    categoryOptions,
   })
 
   return (

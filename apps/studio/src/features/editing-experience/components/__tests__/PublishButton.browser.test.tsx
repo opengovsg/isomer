@@ -62,9 +62,7 @@ vi.mock("~/utils/trpc", () => {
         page: {
           readPage: { refetch: noop },
           getCategories: { invalidate: noop },
-          getCategoryOptions: { invalidate: noop },
         },
-        collection: { getCategoryOptionUsageCount: { invalidate: noop } },
         site: { getLocalisedSitemap: { invalidate: noop } },
       }),
     },
