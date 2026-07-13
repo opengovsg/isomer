@@ -30,7 +30,7 @@ interface DeleteFilterModalProps {
   onConfirm: () => void
 }
 
-function FilterUsageCount({
+function FilterUsageInfobox({
   siteId,
   pageId,
   tagOptionIds,
@@ -46,10 +46,11 @@ function FilterUsageCount({
   })
 
   return (
-    <>
-      You are deleting an entire filter. It’s being used on{" "}
-      {count === 1 ? "1 item" : `${count} items`}.
-    </>
+    <Text textStyle="body-1" color="base.content.strong">
+      It’s being used on {count === 1 ? "1 item" : `${count} items`}. To undo
+      this change, you will need to recreate this filter and assign options to
+      each item individually.
+    </Text>
   )
 }
 
@@ -58,7 +59,7 @@ function FilterUsageCount({
 // request/SQL cost at that scale. Skip the query entirely and say so, rather
 // than sending a request we know will fail or truncating to a misleading
 // capped number like "999+".
-function FilterUsageMessage({
+function FilterUsageInfoboxMessage({
   siteId,
   pageId,
   tagOptionIds,
@@ -69,15 +70,16 @@ function FilterUsageMessage({
 }) {
   if (tagOptionIds.length > MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) {
     return (
-      <>
-        You are deleting an entire filter. It’s being used on a large number of
-        results.
-      </>
+      <Text textStyle="body-1" color="base.content.strong">
+        It’s being used on a large number of results. To undo this change, you
+        will need to recreate this filter and assign options to each item
+        individually.
+      </Text>
     )
   }
 
   return (
-    <FilterUsageCount
+    <FilterUsageInfobox
       siteId={siteId}
       pageId={pageId}
       tagOptionIds={tagOptionIds}
@@ -101,17 +103,7 @@ export function DeleteFilterModal({
       <ModalContent>
         <ModalHeader mr="3.5rem">
           <Text textStyle="subhead-1" color="base.content.strong">
-            <ErrorBoundary
-              fallbackRender={() => <>You are deleting an entire filter.</>}
-            >
-              <Suspense fallback={<Skeleton height="1.5em" width="100%" />}>
-                <FilterUsageMessage
-                  siteId={siteId}
-                  pageId={pageId}
-                  tagOptionIds={tagOptionIds}
-                />
-              </Suspense>
-            </ErrorBoundary>
+            You are deleting an entire filter.
           </Text>
         </ModalHeader>
         <ModalCloseButton size="lg" />
@@ -119,10 +111,22 @@ export function DeleteFilterModal({
         <ModalBody>
           <VStack align="stretch" spacing="1.5rem">
             <Infobox width="100%" size="md" variant="warning">
-              <Text textStyle="body-1" color="base.content.strong">
-                To undo this change, you will need to recreate this filter and
-                assign options to each item individually.
-              </Text>
+              <ErrorBoundary
+                fallbackRender={() => (
+                  <Text textStyle="body-1" color="base.content.strong">
+                    To undo this change, you will need to recreate this filter
+                    and assign options to each item individually.
+                  </Text>
+                )}
+              >
+                <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
+                  <FilterUsageInfoboxMessage
+                    siteId={siteId}
+                    pageId={pageId}
+                    tagOptionIds={tagOptionIds}
+                  />
+                </Suspense>
+              </ErrorBoundary>
             </Infobox>
             <HStack align="start">
               <Checkbox

@@ -353,9 +353,8 @@ export const FiltersDeleteFilterModalDisabledCta: Story = {
     await userEvent.click(
       await portals.findByRole("menuitem", { name: /Delete filter/i }),
     )
-    await portals.findByText(
-      /You are deleting an entire filter\. It's being used on/i,
-    )
+    await portals.findByText(/You are deleting an entire filter\./i)
+    await portals.findByText(/It’s being used on/i)
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).toBeDisabled()
