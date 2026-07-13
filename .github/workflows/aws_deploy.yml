@@ -120,6 +120,12 @@ permissions:
   contents: read
 
 jobs:
+  echo:
+    name: Echo to CLI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo TEST
+        run: echo "TEST AWS"
   build:
     name: Build and push image to ECR
     environment: ${{ inputs.environment }}
