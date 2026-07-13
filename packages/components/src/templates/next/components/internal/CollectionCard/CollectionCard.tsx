@@ -3,8 +3,7 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
-import { PlaintextTags } from "../PlaintextTags"
-import { Tag } from "../Tag"
+import { PillTags, PlaintextTags } from "../Tags"
 import { Title } from "./Title"
 
 export const CollectionCard = ({
@@ -17,7 +16,7 @@ export const CollectionCard = ({
   itemTitle,
   siteAssetsBaseUrl,
   shouldShowDate = true,
-  pillTags = [],
+  pillTags,
   formattedDate,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
@@ -38,26 +37,15 @@ export const CollectionCard = ({
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
-        {pillTags.length > 0 && (
-          <>
-            {pillTags.flatMap(({ category, selected: labels }) => {
-              return (
-                <div className="flex w-full flex-wrap items-center gap-2">
-                  <p className="prose-label-sm">{category}</p>
-                  {labels.map((label) => {
-                    return <Tag>{label}</Tag>
-                  })}
-                </div>
-              )
-            })}
-          </>
-        )}
+        <PillTags
+          tags={pillTags}
+          className="flex w-full flex-wrap items-center gap-2"
+        />
         {description && description.trim() !== "" && (
           <p className="prose-body-base mb-3 line-clamp-3 whitespace-pre-wrap md:mb-2">
             {description}
           </p>
         )}
-        {/* TODO: Feature enhancement? Filter by category when clicked */}
         <PlaintextTags
           tags={plaintextTags}
           className="prose-label-md text-base-content-subtle"

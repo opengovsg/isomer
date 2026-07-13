@@ -1,13 +1,10 @@
 import type { AllCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
 import type { CollectionPagePageProps } from "~/types/page"
-import {
-  resolveTagCategoryDisplay,
-  TAG_CATEGORY_DISPLAY_OPTIONS,
-} from "~/types/constants"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
+import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
 
@@ -124,25 +121,17 @@ export const getCollectionItems = ({
         ? getParsedDate(item.date)
         : undefined
     const image = getItemImage({ showThumbnail, item, site })
+    const { pillTags, plaintextTags } = getPillAndPlaintextTags(
+      item.tagged,
+      tagCategories,
+    )
 
     const baseItem = {
       type: "collectionCard" as const,
       id: item.permalink,
       date,
       lastModified: item.lastModified,
-      // NOTE: Only includes groups shown as plaintext — pill groups are shown
-      // separately via `pillTags` below
-      plaintextTags:
-        tagCategories && item.tagged
-          ? getTagsFromTagged(
-              item.tagged,
-              tagCategories.filter(
-                ({ display }) =>
-                  resolveTagCategoryDisplay(display) ===
-                  TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-              ),
-            )
-          : undefined,
+      plaintextTags,
       title: item.title,
       description: item.summary,
       image,
@@ -152,20 +141,7 @@ export const getCollectionItems = ({
         tagCategories && item.tagged
           ? getTagsFromTagged(item.tagged, tagCategories)
           : item.tags,
-      // NOTE: Only includes groups shown as pills — plaintext groups are shown
-      // separately via `plaintextTags` above. Legacy rows omitting `display`
-      // default to pills via `resolveTagCategoryDisplay`.
-      pillTags:
-        tagCategories && item.tagged
-          ? getTagsFromTagged(
-              item.tagged,
-              tagCategories.filter(
-                ({ display }) =>
-                  resolveTagCategoryDisplay(display) ===
-                  TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-              ),
-            )
-          : item.tags,
+      pillTags: pillTags ?? item.tags,
     }
 
     if (item.layout === "file") {

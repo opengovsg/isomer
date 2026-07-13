@@ -13,7 +13,7 @@ import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
-import { PlaintextTags } from "../../internal/PlaintextTags"
+import { PlaintextTags } from "../../internal/Tags"
 import {
   getCollectionPages,
   getCollectionParent,

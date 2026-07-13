@@ -1,15 +1,11 @@
 import { type ArticlePageSchemaType } from "~/types"
-import {
-  resolveTagCategoryDisplay,
-  TAG_CATEGORY_DISPLAY_OPTIONS,
-} from "~/types/constants"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
-import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
+import { getPillAndPlaintextTags } from "../Collection/utils/getPillAndPlaintextTags"
 import { Skeleton } from "../Skeleton"
 
 export const ArticleLayout = ({
@@ -32,32 +28,9 @@ export const ArticleLayout = ({
       ? parent.collectionPagePageProps?.tagCategories
       : undefined
 
-  // NOTE: Only includes groups shown as pills — plaintext groups are shown
-  // separately via `plaintextTags` below. Legacy rows omitting `display` default
-  // to pills via `resolveTagCategoryDisplay`.
-  const pillTags =
-    tagged && parentTagCategories
-      ? getTagsFromTagged(
-          tagged,
-          parentTagCategories.filter(
-            ({ display }) =>
-              resolveTagCategoryDisplay(display) ===
-              TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-          ),
-        )
-      : tags
-
-  const plaintextTags =
-    tagged && parentTagCategories
-      ? getTagsFromTagged(
-          tagged,
-          parentTagCategories.filter(
-            ({ display }) =>
-              resolveTagCategoryDisplay(display) ===
-              TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-          ),
-        )
-      : undefined
+  const derived = getPillAndPlaintextTags(tagged, parentTagCategories)
+  const pillTags = derived.pillTags ?? tags
+  const plaintextTags = derived.plaintextTags
 
   return (
     <Skeleton site={site} page={page} layout={layout}>

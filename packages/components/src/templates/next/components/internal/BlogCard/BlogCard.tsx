@@ -5,8 +5,7 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { Title } from "../CollectionCard/Title" // Reusing since the logic is the same for both
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
-import { PlaintextTags } from "../PlaintextTags"
-import { Tag } from "../Tag"
+import { PillTags, PlaintextTags } from "../Tags"
 
 export const BlogCard = ({
   description,
@@ -18,7 +17,7 @@ export const BlogCard = ({
   itemTitle,
   siteAssetsBaseUrl,
   shouldShowDate = true,
-  pillTags = [],
+  pillTags,
   formattedDate,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
@@ -54,26 +53,16 @@ export const BlogCard = ({
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content">
         <Title title={itemTitle} isExternalLink={isExternalLink} />
-        {pillTags.length > 0 && (
-          <div className="-mt-1 flex flex-col gap-2">
-            {pillTags.flatMap(({ category, selected: labels }) => {
-              return (
-                <div className="flex w-full flex-wrap items-center gap-1.5">
-                  <p className="prose-label-sm">{category}</p>
-                  {labels.map((label) => {
-                    return <Tag>{label}</Tag>
-                  })}
-                </div>
-              )
-            })}
-          </div>
-        )}
+        <PillTags
+          tags={pillTags}
+          className="flex w-full flex-wrap items-center gap-1.5"
+          containerClassName="-mt-1 flex flex-col gap-2"
+        />
         {description && description.trim() !== "" && (
           <p className="prose-body-base line-clamp-3 whitespace-pre-wrap">
             {description}
           </p>
         )}
-        {/* TODO: Feature enhancement? Filter by category when clicked */}
         <PlaintextTags
           tags={plaintextTags}
           className="prose-label-sm-medium text-base-content-subtle"

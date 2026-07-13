@@ -409,7 +409,7 @@ describe("getCollectionPages", () => {
 
       // Assert
       expect(result[0]?.plaintextTags).toEqual([
-        { category: "Category", selected: ["Guides"] },
+        { id: "cat-1", category: "Category", selected: ["Guides"] },
       ])
     })
 

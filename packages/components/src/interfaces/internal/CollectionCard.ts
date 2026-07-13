@@ -3,6 +3,7 @@ import type {
   ArticlePagePageProps,
   FormattedDate,
   IsomerSiteProps,
+  TagGroup,
 } from "~/types"
 
 interface FileDetails {
@@ -12,15 +13,15 @@ interface FileDetails {
 interface BaseCardProps {
   tags?: ArticlePagePageProps["tags"]
   // NOTE: Same as `tags`, but only includes groups shown as pills
-  // (see getTagsFromTagged) — plaintext groups are shown via `plaintextTags`
-  pillTags?: ArticlePagePageProps["tags"]
+  // (see getPillAndPlaintextTags) — plaintext groups are shown via `plaintextTags`
+  pillTags?: TagGroup[]
   tagged?: ArticlePagePageProps["tagged"]
   id: string
   date?: Date
   lastModified: string
-  // NOTE: Same shape as `tags`, but only includes groups shown as plaintext
+  // NOTE: Same shape as `pillTags`, but only includes groups shown as plaintext
   // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
-  plaintextTags?: ArticlePagePageProps["tags"]
+  plaintextTags?: TagGroup[]
   title: string
   url: string
   description: string
