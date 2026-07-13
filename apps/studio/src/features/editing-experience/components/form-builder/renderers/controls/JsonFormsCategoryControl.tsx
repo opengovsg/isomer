@@ -8,10 +8,7 @@ import Suspense from "~/components/Suspense"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { collectionItemSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import {
-  CATEGORY_DROPDOWN_FEATURE_KEY,
-  CATEGORY_ID_DROPDOWN_FEATURE_KEY,
-} from "~/lib/growthbook"
+import { CATEGORY_DROPDOWN_FEATURE_KEY } from "~/lib/growthbook"
 import { trpc } from "~/utils/trpc"
 
 import { JsonFormsTextControl } from "./JsonFormsTextControl"
@@ -67,11 +64,6 @@ export function JsonFormsCategoryControl({
     CATEGORY_DROPDOWN_FEATURE_KEY,
     { enabledSites: [] },
   )
-  const { enabledSites: categoryIdEnabledSites } = useFeatureValue<{
-    enabledSites: string[]
-  }>(CATEGORY_ID_DROPDOWN_FEATURE_KEY, { enabledSites: [] })
-
-  if (categoryIdEnabledSites.includes(siteId.toString())) return null
 
   const isDropdownEnabled = enabledSites.includes(siteId.toString())
   return isDropdownEnabled ? (

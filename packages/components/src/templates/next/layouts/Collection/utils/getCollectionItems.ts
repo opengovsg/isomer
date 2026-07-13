@@ -1,9 +1,6 @@
 import type { AllCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
-import type {
-  CollectionPageCategoryOption,
-  CollectionPagePageProps,
-} from "~/types/page"
+import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
@@ -72,7 +69,6 @@ export type GetCollectionItemsProps = Pick<
   permalink: string
   sortBy?: CollectionPagePageProps["defaultSortBy"]
   sortDirection?: CollectionPagePageProps["defaultSortDirection"]
-  categoryOptions?: CollectionPageCategoryOption[]
 }
 
 export const getCollectionItems = ({
@@ -84,7 +80,6 @@ export const getCollectionItems = ({
   showDate,
   showThumbnail,
   tagCategories,
-  categoryOptions,
 }: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap: IsomerSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
@@ -133,9 +128,7 @@ export const getCollectionItems = ({
       date,
       lastModified: item.lastModified,
       category: resolveCategoryLabel({
-        categoryId: item.categoryId,
         category: item.category,
-        categoryOptions,
       }),
       title: item.title,
       description: item.summary,
