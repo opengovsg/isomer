@@ -61,7 +61,6 @@ vi.mock("~/utils/trpc", () => {
       useUtils: () => ({
         page: {
           readPage: { refetch: noop },
-          getCategories: { invalidate: noop },
         },
         site: { getLocalisedSitemap: { invalidate: noop } },
       }),

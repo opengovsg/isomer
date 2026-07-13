@@ -378,7 +378,7 @@ export const CollectionDisplaySaveToast: Story = {
   parameters: {
     growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
-      handlers: [pageHandlers.getCategories.default(), ...COMMON_HANDLERS],
+      handlers: COMMON_HANDLERS,
     },
   },
   play: async ({ canvasElement }) => {
@@ -406,11 +406,7 @@ export const ManageFiltersSaveToast: Story = {
   parameters: {
     growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
-      handlers: [
-        userHandlers.isIsomerAdmin.admin(),
-        pageHandlers.getCategories.default(),
-        ...COMMON_HANDLERS,
-      ],
+      handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
     },
   },
   play: async ({ canvasElement }) => {
