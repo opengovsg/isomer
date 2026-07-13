@@ -93,7 +93,7 @@ const extractResourceData = async ({
   // as we need to derive the subcategory
   const { content: indexPageContent } = await db
     .selectFrom("Resource")
-    .innerJoin("Version", "Version.resourceId", "Resource.id")
+    .innerJoin("Version", "Version.id", "Resource.publishedVersionId")
     .innerJoin("Blob", "Blob.id", "Version.blobId")
     .where("type", "=", "IndexPage")
     .where("parentId", "=", parentId)
@@ -160,18 +160,29 @@ export const schedulePushDocumentJobHandler = async () => {
   try {
     const useSearchSg = gb.isOn(ENABLE_SEARCHSG_GAZETTE_INGESTION)
 
-    // Pick the latest published Version per resource so we ingest the
-    // version that was just (or is being) published — distinctOn(Resource.id)
-    // + ordered by Version.id desc.
+    // Pick the content to index: prefer the published Version's blob, fall
+    // back to the draft blob. The schedule-publishing cron fires on the same
+    // scheduledAt as this job and publishing clears draftBlobId (the draft
+    // becomes the Version — see version.service.ts), so joining only on the
+    // draft blob silently drops any gazette whose publish won the race. The
+    // draft fallback covers the opposite ordering, where this job runs first
+    // and the identical content is published moments later. A row where both
+    // blobs are somehow missing yields null content, which fails the Zod
+    // parse below and is logged + skipped rather than silently dropped.
     const scheduledResources = await db
       .selectFrom("PushDocumentJob")
       .innerJoin("Resource", "Resource.id", "PushDocumentJob.resourceId")
-      .innerJoin("Blob", "Blob.id", "Resource.draftBlobId")
+      .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
+      .leftJoin("Blob as PublishedBlob", "PublishedBlob.id", "Version.blobId")
+      .leftJoin("Blob as DraftBlob", "DraftBlob.id", "Resource.draftBlobId")
       .where("PushDocumentJob.scheduledAt", "<=", scheduledAtCutoff)
       .distinctOn("Resource.id")
       .orderBy("Resource.id")
       .select([
-        "Blob.content",
+        (eb) =>
+          eb.fn
+            .coalesce("PublishedBlob.content", "DraftBlob.content")
+            .as("content"),
         "Resource.title",
         "Resource.id as resourceId",
         "Resource.parentId",

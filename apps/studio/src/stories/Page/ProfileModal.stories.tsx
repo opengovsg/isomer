@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -67,9 +67,9 @@ export const Required: Story = {
       "Welcome to Studio! Tell us about yourself.",
     )
 
-    await expect(modalHeader).toBeVisible()
+    await waitFor(() => expect(modalHeader).toBeVisible())
     await userEvent.keyboard("{Escape}")
-    await expect(modalHeader).toBeVisible()
+    await waitFor(() => expect(modalHeader).toBeVisible())
   },
 }
 

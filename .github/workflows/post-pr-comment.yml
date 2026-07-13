@@ -1,4 +1,4 @@
-name: Post E2E video comment
+name: Post PR comments
 
 # Why a separate workflow instead of steps inside ci.yml?
 #
@@ -12,9 +12,8 @@ name: Post E2E video comment
 # GITHUB_TOKEN always has the permissions declared below — even when the
 # triggering PR came from a fork.
 #
-# The PR number and artifact URL can't be read from the triggering run's
-# environment (different context), so ci.yml writes them into a small artifact
-# ("e2e-comment-metadata") that this workflow downloads before posting.
+# Each job downloads a small metadata artifact written by ci.yml, since the
+# two workflows run in separate contexts and can't share environment variables.
 on:
   workflow_run:
     workflows: ["CI"]
@@ -26,7 +25,7 @@ permissions:
   issues: write # GitHub routes PR comments through the issues API endpoint
 
 jobs:
-  post-comment:
+  post-e2e-comment:
     # Only run for PR triggers; push runs on main/staging/production don't have
     # a PR to comment on.
     if: github.event.workflow_run.event == 'pull_request'
@@ -78,3 +77,31 @@ jobs:
 
             Each test has its own directory under the zip; play `video.webm` to watch the run.
             Workflow: [run #${{ github.event.workflow_run.id }}](${{ github.event.workflow_run.html_url }}) — artifact expires in 7 days.
+
+  post-bundle-size-comment:
+    # Mirror of post-e2e-comment above — same fork-PR restriction applies.
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download bundle size metadata
+        id: download
+        # Absent when components-bundle-size was skipped (no component changes
+        # or optimizer short-circuit); gate subsequent steps on outcome.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download ${{ github.event.workflow_run.id }} \
+            --name bundle-size-metadata \
+            --dir /tmp/bundle-size-metadata \
+            --repo ${{ github.repository }}
+
+      - name: Post bundle size comment
+        if: steps.download.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -a
+          source /tmp/bundle-size-metadata/values.env
+          set +a
+          bash /tmp/bundle-size-metadata/comment-template-bundle-size.sh

@@ -50,7 +50,6 @@ export const Default: Story = {
       handlers: [
         redirectHandlers.list.default(),
         redirectHandlers.count.default(),
-        redirectHandlers.validate.noIssues(),
         ...COMMON_HANDLERS,
       ],
     },
@@ -64,7 +63,6 @@ export const Empty: Story = {
       handlers: [
         redirectHandlers.list.empty(),
         redirectHandlers.count.empty(),
-        redirectHandlers.validate.noIssues(),
         ...COMMON_HANDLERS,
       ],
     },
@@ -77,7 +75,10 @@ const submitNewRedirect = async (canvasElement: HTMLElement) => {
   const screen = within(canvasElement.ownerDocument.body)
   const sourceInput = await screen.findByPlaceholderText("redirect-from")
   await userEvent.type(sourceInput, "old-page")
-  await userEvent.type(screen.getByPlaceholderText("/redirect-to"), "/new-page")
+  await userEvent.type(
+    screen.getByPlaceholderText("/path-to-page or https://www.google.com"),
+    "/new-page",
+  )
   const addButton = screen.getByRole("button", { name: "Add" })
   await waitFor(() => expect(addButton).toBeEnabled())
   await userEvent.click(addButton, { pointerEventsCheck: 0 })
@@ -93,7 +94,6 @@ export const AlreadyExistsError: Story = {
         redirectHandlers.list.default(),
         redirectHandlers.count.default(),
         redirectHandlers.create.alreadyExists(),
-        redirectHandlers.validate.noIssues(),
         ...COMMON_HANDLERS,
       ],
     },
@@ -115,7 +115,6 @@ export const RedirectLoopError: Story = {
         redirectHandlers.list.default(),
         redirectHandlers.count.default(),
         redirectHandlers.create.loop(),
-        redirectHandlers.validate.noIssues(),
         ...COMMON_HANDLERS,
       ],
     },
@@ -130,39 +129,5 @@ export const RedirectLoopError: Story = {
     // The loop error is inline only — the generic failure toast must not also
     // fire (regression guard for the error switch falling through to default).
     await expect(screen.queryByText("Failed to add redirect")).toBeNull()
-  },
-}
-
-// Typing a destination that doesn't resolve to a page and blurring the field
-// surfaces a (non-blocking) warning beneath the row.
-export const DestinationNotFoundWarning: Story = {
-  parameters: {
-    growthbook: [createRedirectionsEnabledGbParameters(true)],
-    msw: {
-      handlers: [
-        redirectHandlers.list.default(),
-        redirectHandlers.count.default(),
-        redirectHandlers.validate.destinationNotFound(),
-        ...COMMON_HANDLERS,
-      ],
-    },
-  },
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement.ownerDocument.body)
-    await userEvent.type(
-      await screen.findByPlaceholderText("redirect-from"),
-      "old-page",
-    )
-    await userEvent.type(
-      screen.getByPlaceholderText("/redirect-to"),
-      "/no-page",
-    )
-    // Blur the destination to trigger the on-blur validate call.
-    await userEvent.tab()
-    await expect(
-      await screen.findByText(
-        "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
-      ),
-    ).toBeVisible()
   },
 }

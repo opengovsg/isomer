@@ -20,6 +20,14 @@ const REFERENCE_DESTINATION_REGEX = new RegExp(
 export const isReferenceDestination = (destination: string): boolean =>
   REFERENCE_DESTINATION_REGEX.test(destination)
 
+// Resolved info for a stored internal destination: a reference's current
+// permalink for display (null once the page is gone), and `warn` — true when the
+// destination has no published page behind it (missing or not-yet-published).
+export interface ResolvedDestination {
+  permalink: string | null
+  warn: boolean
+}
+
 // Resolution state of a stored destination for display. The status is a stable
 // sentinel — user-facing copy for the "missing" case lives at the render site,
 // so the wording can change without touching this logic.
@@ -33,16 +41,24 @@ export type DestinationDisplay =
 // "resolving" until the lookup lands; non-references show verbatim.
 export const getDestinationDisplay = (
   destination: string,
-  permalinkByReference: Map<string, string | null>,
+  infoByDestination: Map<string, ResolvedDestination>,
 ): DestinationDisplay => {
   if (!isReferenceDestination(destination)) {
     return { status: "resolved", label: destination }
   }
-  if (!permalinkByReference.has(destination)) {
+  const info = infoByDestination.get(destination)
+  if (!info) {
     return { status: "resolving" }
   }
-  const permalink = permalinkByReference.get(destination) ?? null
-  return permalink === null
+  return info.permalink === null
     ? { status: "missing" }
-    : { status: "resolved", label: permalink }
+    : { status: "resolved", label: info.permalink }
 }
+
+// Whether the table should flag this destination as leading nowhere (missing or
+// not-yet-published). Driven by the server's resolved `warn`; external URLs and
+// still-resolving references don't warn.
+export const shouldWarnDestination = (
+  destination: string,
+  infoByDestination: Map<string, ResolvedDestination>,
+): boolean => infoByDestination.get(destination)?.warn ?? false
