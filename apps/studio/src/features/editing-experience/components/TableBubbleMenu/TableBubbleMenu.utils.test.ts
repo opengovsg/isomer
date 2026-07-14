@@ -1,16 +1,53 @@
+import type { Node } from "@tiptap/pm/model"
 import { describe, expect, it } from "vitest"
 
 import {
   getColumnMovePlan,
   getRowMovePlan,
   getTableSelectionKind,
+  selectionIncludesHeaderColumn,
+  selectionIncludesHeaderRow,
+  type TableHeaderOverlapRect,
 } from "./TableBubbleMenu.utils"
+
+// Builds a rect whose map offsets are 0..n-1 and whose table.nodeAt(i) returns
+// the ith cell type — enough for the header-overlap helpers without a live editor.
+const overlapRect = ({
+  top,
+  left,
+  width,
+  height,
+  cellTypes,
+}: {
+  top: number
+  left: number
+  width: number
+  height: number
+  cellTypes: string[]
+}): TableHeaderOverlapRect => {
+  const map = cellTypes.map((_, index) => index)
+  const table = {
+    nodeAt: (pos: number) => {
+      const typeName = cellTypes[pos]
+      return typeName ? { type: { name: typeName } } : null
+    },
+  } as Node
+
+  return {
+    top,
+    left,
+    map: { width, height, map },
+    table,
+  }
+}
 
 describe("getTableSelectionKind", () => {
   const partialSelection = {
     spansEntireTableWidth: false,
     spansEntireTableHeight: false,
     allCellsAreHeaders: false,
+    isTopRow: false,
+    isLeftmostColumn: false,
     selectsSingleCellNode: false,
     selectedCellIsMerged: false,
   }
@@ -34,8 +71,19 @@ describe("getTableSelectionKind", () => {
       facts: {
         spansEntireTableWidth: true,
         allCellsAreHeaders: true,
+        isTopRow: true,
       },
       expected: "header-row",
+    },
+    {
+      // A full-width body row that happens to be all header cells is still a
+      // normal row — TipTap's header-row toggle only targets the first row.
+      facts: {
+        spansEntireTableWidth: true,
+        allCellsAreHeaders: true,
+        isTopRow: false,
+      },
+      expected: "row",
     },
     {
       facts: { spansEntireTableHeight: true },
@@ -45,8 +93,17 @@ describe("getTableSelectionKind", () => {
       facts: {
         spansEntireTableHeight: true,
         allCellsAreHeaders: true,
+        isLeftmostColumn: true,
       },
       expected: "header-column",
+    },
+    {
+      facts: {
+        spansEntireTableHeight: true,
+        allCellsAreHeaders: true,
+        isLeftmostColumn: false,
+      },
+      expected: "column",
     },
   ])("classifies an axis selection as $expected", ({ facts, expected }) => {
     expect(getTableSelectionKind({ ...partialSelection, ...facts })).toBe(
@@ -78,6 +135,118 @@ describe("getTableSelectionKind", () => {
 
   it("classifies the remaining selection shape as multi-cell", () => {
     expect(getTableSelectionKind(partialSelection)).toBe("multi-cell")
+  })
+})
+
+describe("selectionIncludesHeaderRow", () => {
+  const headerThenBody = [
+    "tableHeader",
+    "tableHeader",
+    "tableHeader",
+    "tableCell",
+    "tableCell",
+    "tableCell",
+  ]
+
+  it("is true when the selection overlaps a header row at the top", () => {
+    expect(
+      selectionIncludesHeaderRow(
+        overlapRect({
+          top: 0,
+          left: 0,
+          width: 3,
+          height: 2,
+          cellTypes: headerThenBody,
+        }),
+      ),
+    ).toBe(true)
+  })
+
+  it("is false when the selection starts below the header row", () => {
+    expect(
+      selectionIncludesHeaderRow(
+        overlapRect({
+          top: 1,
+          left: 0,
+          width: 3,
+          height: 2,
+          cellTypes: headerThenBody,
+        }),
+      ),
+    ).toBe(false)
+  })
+
+  it("is false when the top row is ordinary body cells", () => {
+    expect(
+      selectionIncludesHeaderRow(
+        overlapRect({
+          top: 0,
+          left: 0,
+          width: 2,
+          height: 1,
+          cellTypes: ["tableCell", "tableCell"],
+        }),
+      ),
+    ).toBe(false)
+  })
+})
+
+describe("selectionIncludesHeaderColumn", () => {
+  // Header row + header column (intersection and first body cell are headers).
+  const headerRowAndColumn = [
+    "tableHeader",
+    "tableHeader",
+    "tableHeader",
+    "tableCell",
+    "tableHeader",
+    "tableCell",
+  ]
+
+  it("is true when the selection overlaps a header column at the left", () => {
+    expect(
+      selectionIncludesHeaderColumn(
+        overlapRect({
+          top: 0,
+          left: 0,
+          width: 2,
+          height: 3,
+          cellTypes: headerRowAndColumn,
+        }),
+      ),
+    ).toBe(true)
+  })
+
+  it("is false when the selection starts to the right of the header column", () => {
+    expect(
+      selectionIncludesHeaderColumn(
+        overlapRect({
+          top: 0,
+          left: 1,
+          width: 2,
+          height: 3,
+          cellTypes: headerRowAndColumn,
+        }),
+      ),
+    ).toBe(false)
+  })
+
+  it("is false when only the first row is headers (header row, not column)", () => {
+    expect(
+      selectionIncludesHeaderColumn(
+        overlapRect({
+          top: 0,
+          left: 0,
+          width: 2,
+          height: 2,
+          cellTypes: [
+            "tableHeader",
+            "tableHeader",
+            "tableCell",
+            "tableCell",
+          ],
+        }),
+      ),
+    ).toBe(false)
   })
 })
 
