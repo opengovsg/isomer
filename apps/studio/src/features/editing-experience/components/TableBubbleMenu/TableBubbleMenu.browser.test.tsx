@@ -3,8 +3,8 @@
 // the `*.browser.test.{ts,tsx}` convention in apps/studio/vitest.config.ts.
 import type { Editor, JSONContent } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { tableEditingKey } from "@tiptap/pm/tables"
 import { act, render, waitFor } from "@testing-library/react"
+import { tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
@@ -75,7 +75,9 @@ const selectCells = (editor: Editor, startIndex: number, endIndex: number) => {
   const anchorCell = nthCellPos(editor, startIndex)
   const headCell = nthCellPos(editor, endIndex)
   act(() => {
-    editor.commands.setCellSelection({ anchorCell, headCell })
+    // A real pointer selection focuses the editor. Make that precondition
+    // explicit instead of relying on menu rendering to steal focus.
+    editor.chain().focus().setCellSelection({ anchorCell, headCell }).run()
   })
 }
 
@@ -123,6 +125,23 @@ const firstRowTexts = (editor: Editor): string[] => {
 }
 
 describe("TableBubbleMenu", () => {
+  it("stacks the menu above the selected-cell highlight", async () => {
+    const { editor, findByText, container } = await renderHarness()
+
+    selectCells(editor, 3, 5)
+
+    const action = await findByText("Add row above")
+    const menuSurface = action.closest("button")?.parentElement?.parentElement
+    const selectedCell = container.querySelector(".selectedCell")
+
+    expect(menuSurface).not.toBeNull()
+    expect(selectedCell).not.toBeNull()
+
+    const menuZIndex = Number(getComputedStyle(menuSurface!).zIndex)
+    // The `.selectedCell::after` highlight in tiptap.scss uses z-index: 2.
+    expect(menuZIndex).toBeGreaterThan(2)
+  })
+
   it("shows row actions (including Delete row) when a body row is selected", async () => {
     const { editor, findByText, queryByText } = await renderHarness()
 
