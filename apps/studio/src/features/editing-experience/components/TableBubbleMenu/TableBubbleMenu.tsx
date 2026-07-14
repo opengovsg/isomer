@@ -465,14 +465,13 @@ const TableSelectionActions = ({
   }
 }
 
-// Stable module-level reference. `useTextEditor` runs with
+// Stable module-level references. `useTextEditor` runs with
 // `shouldRerenderOnTransaction: true`, so every transaction re-renders every
-// editor consumer, including this component. If `shouldShow` were a fresh
-// inline closure on each render, TipTap's BubbleMenu would treat it as changed
-// props and re-register its plugin, which dispatches a transaction — which
-// triggers another re-render, forever. Keeping this function reference stable
-// across renders is what breaks that loop. See
-// .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
+// editor consumer, including this component. If `shouldShow` / `options` /
+// `appendTo` were fresh values on each render, TipTap's BubbleMenu would
+// treat them as changed props and dispatch an options-update transaction —
+// which triggers another re-render. Keeping these stable breaks that loop.
+// See .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
 //
 // Only CellSelections that have table actions (row/column/table/merge/split)
 // show the menu. A plain text cursor inside a cell must not.
