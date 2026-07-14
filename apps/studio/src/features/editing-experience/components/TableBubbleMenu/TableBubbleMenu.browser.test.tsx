@@ -162,4 +162,21 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Split cell")).toBeNull()
     expect(queryByText("Merge cells")).toBeNull()
   })
+
+  it("does not show Superscript/Subscript when the text cursor is inside a cell", async () => {
+    // Arrange
+    const { editor, queryByText } = await renderHarness()
+    const cellPos = nthCellPos(editor, 3)
+
+    // Act — place a plain text cursor inside the cell (what a click does),
+    // not a CellSelection.
+    act(() => {
+      editor.commands.setTextSelection(cellPos + 1)
+    })
+
+    // Assert
+    expect(queryByText("Superscript")).toBeNull()
+    expect(queryByText("Subscript")).toBeNull()
+    expect(queryByText("Delete row")).toBeNull()
+  })
 })
