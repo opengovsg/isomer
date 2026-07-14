@@ -287,7 +287,9 @@ describe("TableBubbleMenu", () => {
     })
 
     selectCells(editor, 0, 6) // header column alone
-    expect(await findByRole("checkbox", { name: "Header column" })).toBeChecked()
+    expect(
+      await findByRole("checkbox", { name: "Header column" }),
+    ).toBeChecked()
     expect(queryByText("Delete column")).toBeNull()
 
     // Header column + next column: still withhold Delete; Header switch only
