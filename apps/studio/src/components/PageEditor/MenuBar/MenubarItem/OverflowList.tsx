@@ -22,9 +22,10 @@ export const MenubarOverflowList = ({
 }: MenubarOverflowListProps): JSX.Element => {
   return (
     // TipTap toolbar pattern: preventDefault on mousedown so the trigger
-    // does not steal focus from the editor. Without it, a CellSelection
-    // blur races the Popover open and the menu snaps shut immediately.
-    <Popover placement="bottom" isLazy>
+    // does not steal focus from the editor. Pair with closeOnBlur=false —
+    // otherwise focus never enters the popover and closeOnBlur immediately
+    // dismisses (or fights) the open state.
+    <Popover placement="bottom" closeOnBlur={false} isLazy>
       {({ isOpen, onClose }) => (
         <>
           <PopoverTrigger>
