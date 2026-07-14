@@ -188,8 +188,8 @@ catalogs:
     "@babel/preset-env": ^8.0.2
     "@babel/preset-typescript": ^8.0.1
   casl:
-    "@casl/ability": ^7.0.0
-    "@casl/react": ^7.0.0
+    "@casl/ability": ^7.0.1
+    "@casl/react": ^7.0.1
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
     "@chakra-ui/cli": ^2.5.8

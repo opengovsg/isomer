@@ -49,11 +49,11 @@ catalogs:
       version: 8.0.1
   casl:
     '@casl/ability':
-      specifier: ^7.0.0
-      version: 7.0.0
+      specifier: ^7.0.1
+      version: 7.0.1
     '@casl/react':
-      specifier: ^7.0.0
-      version: 7.0.0
+      specifier: ^7.0.1
+      version: 7.0.1
   chakra:
     '@chakra-ui/anatomy':
       specifier: ^2.3.4
@@ -674,10 +674,10 @@ importers:
         version: 3.1079.0
       '@casl/ability':
         specifier: catalog:casl
-        version: 7.0.0
+        version: 7.0.1
       '@casl/react':
         specifier: catalog:casl
-        version: 7.0.0(@casl/ability@7.0.0)(react@18.3.1)
+        version: 7.0.1(@casl/ability@7.0.1)(react@18.3.1)
       '@chakra-ui/anatomy':
         specifier: catalog:chakra
         version: 2.3.4
@@ -3150,11 +3150,11 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@casl/ability@7.0.0':
-    resolution: {integrity: sha512-QhwRflkTucpdS2uw1XScrzLWbgLYJGvPoq2Xm5OjeRci3dwtPixxnjUKJ04Ss1ivNS9tZQ8y4sjWeelWsrwo4g==}
+  '@casl/ability@7.0.1':
+    resolution: {integrity: sha512-krOW1zQGEie5lH6fpryrcsPvc5r2pe5Vn5xbthuzc5X9gwzHIyZgGGgw9dMoSLHXdjB4BIVxGG/HBkG+1NuyZQ==}
 
-  '@casl/react@7.0.0':
-    resolution: {integrity: sha512-TfSujWNo4IosHoYZpkGdKXwlKdUBeJCm5CxaApjsOeyNFRfXcGWhHkikK4b6D0L+HgiRiizE7PxHhpc7lv3Z/g==}
+  '@casl/react@7.0.1':
+    resolution: {integrity: sha512-HFfBxQD5wFUIyd9gAPa5LDqMbB7CIOqRcocxzwMC589d8vLMzaz/OAdFLglGiBz9pAcumC0ULp5QLFiYZ46mUw==}
     peerDependencies:
       '@casl/ability': ^4.0.0 || ^5.1.0 || ^6.0.0 || ^7.0.0
       react: ^18.0.0 || ^19.0.0
@@ -14148,13 +14148,13 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@casl/ability@7.0.0':
+  '@casl/ability@7.0.1':
     dependencies:
       '@ucast/mongo2js': 2.0.0
 
-  '@casl/react@7.0.0(@casl/ability@7.0.0)(react@18.3.1)':
+  '@casl/react@7.0.1(@casl/ability@7.0.1)(react@18.3.1)':
     dependencies:
-      '@casl/ability': 7.0.0
+      '@casl/ability': 7.0.1
       react: 18.3.1
 
   '@chakra-ui/anatomy@2.3.4': {}
