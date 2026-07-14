@@ -1,6 +1,5 @@
 import type { Editor } from "@tiptap/react"
-import { Box, Button, HStack } from "@chakra-ui/react"
-import { TextSelection } from "@tiptap/pm/state"
+import { Button, HStack } from "@chakra-ui/react"
 import {
   CellSelection,
   moveTableColumn,
@@ -74,22 +73,6 @@ const detectSelectionType = (editor: Editor): SelectionKind => {
   return "multi-cell"
 }
 
-// True when the current selection is a plain text cursor/range (not a table
-// CellSelection) resolved somewhere inside a table node — e.g. editing text
-// inside a single cell. Used to surface table-scoped superscript/subscript
-// (promoted out of the ellipsis menu per the table-ux planning doc), since a
-// single selected cell otherwise shows no bubble menu at all.
-const isTextSelectionInsideTable = (editor: Editor): boolean => {
-  const { selection } = editor.state
-  if (!(selection instanceof TextSelection)) return false
-
-  const { $from } = selection
-  for (let depth = $from.depth; depth >= 0; depth--) {
-    if ($from.node(depth).type.name === "table") return true
-  }
-  return false
-}
-
 const moveRow = (editor: Editor, direction: "up" | "down") => {
   const rect = selectedRect(editor.state)
   const from = rect.top
@@ -117,22 +100,6 @@ const ActionButton = ({
     {label}
   </Button>
 )
-
-const SuperscriptSubscriptButtons = ({ editor }: { editor: Editor }) => {
-  const focus = editor.chain().focus()
-  return (
-    <>
-      <ActionButton
-        label="Superscript"
-        onClick={() => focus.toggleSuperscript().run()}
-      />
-      <ActionButton
-        label="Subscript"
-        onClick={() => focus.toggleSubscript().run()}
-      />
-    </>
-  )
-}
 
 const TableSelectionActions = ({
   editor,
@@ -279,16 +246,17 @@ const TableSelectionActions = ({
 // triggers another re-render, forever. Keeping this function reference stable
 // across renders is what breaks that loop. See
 // .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
+//
+// Only CellSelections that have table actions (row/column/table/merge/split)
+// show the menu. A plain text cursor inside a cell must not — otherwise
+// clicking into a cell floats Superscript/Subscript over the content.
 const shouldShowTableBubbleMenu = ({ editor }: { editor: Editor }) => {
   const kind = detectSelectionType(editor)
-  if (kind !== "none" && kind !== "single-cell") return true
-  return isTextSelectionInsideTable(editor)
+  return kind !== "none" && kind !== "single-cell"
 }
 
 export const TableBubbleMenu = ({ editor }: TableBubbleMenuProps) => {
   const kind = detectSelectionType(editor)
-  const showSupSub = isTextSelectionInsideTable(editor)
-  const hasTableActions = kind !== "none" && kind !== "single-cell"
 
   return (
     <BubbleMenu editor={editor} shouldShow={shouldShowTableBubbleMenu}>
@@ -302,17 +270,6 @@ export const TableBubbleMenu = ({ editor }: TableBubbleMenuProps) => {
         gap="0.25rem"
       >
         <TableSelectionActions editor={editor} kind={kind} />
-        {showSupSub && (
-          <Box
-            display="flex"
-            gap="0.25rem"
-            pl={hasTableActions ? "0.25rem" : "0"}
-            borderLeft={hasTableActions ? "1px solid" : "none"}
-            borderColor="base.divider.medium"
-          >
-            <SuperscriptSubscriptButtons editor={editor} />
-          </Box>
-        )}
       </HStack>
     </BubbleMenu>
   )
