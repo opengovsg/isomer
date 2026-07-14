@@ -36,6 +36,8 @@ import {
   getColumnMovePlan,
   getRowMovePlan,
   getTableSelectionKind,
+  selectionIncludesHeaderColumn,
+  selectionIncludesHeaderRow,
   type SelectionKind,
 } from "./TableBubbleMenu.utils"
 
@@ -86,6 +88,10 @@ const detectSelectionType = (editor: Editor): SelectionKind => {
     spansEntireTableWidth: rect.left === 0 && rect.right === rect.map.width,
     spansEntireTableHeight: rect.top === 0 && rect.bottom === rect.map.height,
     allCellsAreHeaders: allHeader,
+    // Exactly the first row/column (half-open span of 1). Broader selections
+    // that merely overlap that edge stay ordinary row/column kinds.
+    isTopRow: rect.top === 0 && rect.bottom === 1,
+    isLeftmostColumn: rect.left === 0 && rect.right === 1,
     selectsSingleCellNode,
     selectedCellIsMerged: selectsSingleCellNode && isMergedCell(rect),
   })
@@ -253,15 +259,17 @@ type SelectionRect = ReturnType<typeof selectedRect>
 const RowSelectionActions = ({
   editor,
   rect,
-  isHeader,
 }: {
   editor: Editor
   rect: SelectionRect
-  isHeader: boolean
 }) => {
   const canMoveUp = rect.top > 0
   const canMoveDown = rect.bottom < rect.map.height
-  const showHeaderToggle = rect.top === 0
+  // TipTap's toggleHeaderRow always rewrites the first table row only — show
+  // the switch for that exact row, not for a multi-row selection that merely
+  // overlaps it.
+  const showHeaderToggle = rect.top === 0 && rect.bottom === 1
+  const includesHeaderRow = selectionIncludesHeaderRow(rect)
 
   return (
     <>
@@ -270,7 +278,7 @@ const RowSelectionActions = ({
           <ActionGroup>
             <HeaderToggle
               label="Header row"
-              isChecked={isHeader}
+              isChecked={includesHeaderRow}
               onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
             />
           </ActionGroup>
@@ -310,7 +318,7 @@ const RowSelectionActions = ({
           </ActionGroup>
         </>
       )}
-      {!isHeader && (
+      {!includesHeaderRow && (
         <>
           <ActionDivider />
           <ActionGroup>
@@ -329,15 +337,17 @@ const RowSelectionActions = ({
 const ColumnSelectionActions = ({
   editor,
   rect,
-  isHeader,
 }: {
   editor: Editor
   rect: SelectionRect
-  isHeader: boolean
 }) => {
   const canMoveLeft = rect.left > 0
   const canMoveRight = rect.right < rect.map.width
-  const showHeaderToggle = rect.left === 0
+  // TipTap's toggleHeaderColumn always rewrites the first table column only —
+  // show the switch for that exact column, not for a multi-column selection
+  // that merely overlaps it.
+  const showHeaderToggle = rect.left === 0 && rect.right === 1
+  const includesHeaderColumn = selectionIncludesHeaderColumn(rect)
 
   return (
     <>
@@ -346,7 +356,7 @@ const ColumnSelectionActions = ({
           <ActionGroup>
             <HeaderToggle
               label="Header column"
-              isChecked={isHeader}
+              isChecked={includesHeaderColumn}
               onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
             />
           </ActionGroup>
@@ -386,14 +396,18 @@ const ColumnSelectionActions = ({
           </ActionGroup>
         </>
       )}
-      <ActionDivider />
-      <ActionGroup>
-        <ActionButton
-          label="Delete column"
-          icon={<IconDelCol boxSize="1rem" />}
-          onClick={() => editor.chain().focus().deleteColumn().run()}
-        />
-      </ActionGroup>
+      {!includesHeaderColumn && (
+        <>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Delete column"
+              icon={<IconDelCol boxSize="1rem" />}
+              onClick={() => editor.chain().focus().deleteColumn().run()}
+            />
+          </ActionGroup>
+        </>
+      )}
     </>
   )
 }
@@ -412,7 +426,6 @@ const TableSelectionActions = ({
         <RowSelectionActions
           editor={editor}
           rect={selectedRect(editor.state)}
-          isHeader={kind === "header-row"}
         />
       )
     case "column":
@@ -421,7 +434,6 @@ const TableSelectionActions = ({
         <ColumnSelectionActions
           editor={editor}
           rect={selectedRect(editor.state)}
-          isHeader={kind === "header-column"}
         />
       )
     case "table":
