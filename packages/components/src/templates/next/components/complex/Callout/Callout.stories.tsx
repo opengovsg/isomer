@@ -41,34 +41,34 @@ export const Default: Story = {
   },
 }
 
-export const GoodNews: Story = {
+export const GoodToKnow: Story = {
   args: {
     site: generateSiteConfig(),
     content,
-    variant: CalloutVariant.GoodNews.value,
+    variant: CalloutVariant.GoodToKnow.value,
   },
 }
 
-export const PleaseNote: Story = {
+export const Warning: Story = {
+  args: {
+    site: generateSiteConfig(),
+    content,
+    variant: CalloutVariant.Warning.value,
+  },
+}
+
+export const Urgent: Story = {
+  args: {
+    site: generateSiteConfig(),
+    content,
+    variant: CalloutVariant.Urgent.value,
+  },
+}
+
+export const Note: Story = {
   args: {
     site: generateSiteConfig(),
     content,
     variant: CalloutVariant.Note.value,
-  },
-}
-
-export const ActionNeeded: Story = {
-  args: {
-    site: generateSiteConfig(),
-    content,
-    variant: CalloutVariant.ActionNeeded.value,
-  },
-}
-
-export const AdditionalInformation: Story = {
-  args: {
-    site: generateSiteConfig(),
-    content,
-    variant: CalloutVariant.AdditionalInformation.value,
   },
 }
