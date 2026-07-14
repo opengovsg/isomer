@@ -1,10 +1,9 @@
-import { trackEvent } from "@intercom/messenger-js-sdk"
 import { useStore } from "jotai"
 import { isEqual } from "lodash-es"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useRef } from "react"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { env } from "~/env.mjs"
+import { trackEvent } from "~/lib/intercom"
 
 import type { ContentEditSurveyEvent } from "../constants"
 import { hasContentEditAtom } from "../atoms"
@@ -19,9 +18,7 @@ export const useFireContentEditSurveyEvent = (): ((
     (eventName: ContentEditSurveyEvent) => {
       if (!store.get(hasContentEditAtom)) return
       store.set(hasContentEditAtom, false)
-      if (env.NEXT_PUBLIC_INTERCOM_APP_ID) {
-        trackEvent(eventName)
-      }
+      trackEvent(eventName)
     },
     [store],
   )
