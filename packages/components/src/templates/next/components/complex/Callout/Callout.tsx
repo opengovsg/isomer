@@ -9,9 +9,9 @@ import { Prose } from "../../native/Prose"
 const CALLOUT_ICONS: Partial<
   Record<NonNullable<CalloutProps["variant"]>, IconType>
 > = {
-  [CalloutVariant.GoodNews.value]: BiCheckCircle,
-  [CalloutVariant.Note.value]: BiErrorCircle,
-  [CalloutVariant.ActionNeeded.value]: BiError,
+  [CalloutVariant.GoodToKnow.value]: BiCheckCircle,
+  [CalloutVariant.Warning.value]: BiErrorCircle,
+  [CalloutVariant.Urgent.value]: BiError,
 }
 
 const calloutStyles = tv({
@@ -23,29 +23,29 @@ const calloutStyles = tv({
   },
   variants: {
     variant: {
-      [CalloutVariant.Important.value]: {
+      [CalloutVariant.Information.value]: {
         container:
           "border-utility-feedback-info bg-utility-feedback-info-subtle",
       },
-      [CalloutVariant.GoodNews.value]: {
+      [CalloutVariant.GoodToKnow.value]: {
         container: "border-[#009D47] bg-[#DCEAE2]",
         icon: "text-[#009D47]",
       },
-      [CalloutVariant.Note.value]: {
+      [CalloutVariant.Warning.value]: {
         container: "border-[#FAC515] bg-[#FEF7C3]",
         icon: "text-[#FAC515]",
       },
-      [CalloutVariant.ActionNeeded.value]: {
+      [CalloutVariant.Urgent.value]: {
         container: "border-[#D90000] bg-[#FCF1F1]",
         icon: "text-[#D90000]",
       },
-      [CalloutVariant.AdditionalInformation.value]: {
+      [CalloutVariant.Note.value]: {
         container: "border-0 bg-[#EEF0F3]",
       },
     },
   },
   defaultVariants: {
-    variant: CalloutVariant.Important.value,
+    variant: CalloutVariant.Information.value,
   },
 })
 
