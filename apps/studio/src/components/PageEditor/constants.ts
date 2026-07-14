@@ -42,7 +42,7 @@ export const DEFAULT_BLOCKS = {
           content: [
             {
               type: "text",
-              text: "Callout content",
+              text: "We’re closing applications for this position on Thursday, July 3rd. Make sure to apply by then.",
             },
           ],
         },
