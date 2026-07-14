@@ -68,9 +68,7 @@ describe("computeCaptionLayout", () => {
 
 describe("captionRectsEqual", () => {
   it("returns false when previous is null", () => {
-    expect(
-      captionRectsEqual(null, { top: 0, left: 0, width: 100 }),
-    ).toBe(false)
+    expect(captionRectsEqual(null, { top: 0, left: 0, width: 100 })).toBe(false)
   })
 
   it("returns true only when all fields match", () => {

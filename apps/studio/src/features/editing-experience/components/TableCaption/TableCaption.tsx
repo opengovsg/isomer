@@ -36,9 +36,7 @@ const CounterText = ({ length }: { length: number }) => {
     <Text
       as="span"
       fontSize="xs"
-      color={
-        isAtLimit ? "utility.feedback.critical" : "base.content.medium"
-      }
+      color={isAtLimit ? "utility.feedback.critical" : "base.content.medium"}
       fontWeight={isAtLimit ? "semibold" : "normal"}
     >
       {length}/{CAPTION_MAX_LENGTH} characters
@@ -294,8 +292,7 @@ const TableCaptionReady = ({
       tables: getTableInstances(currentEditor),
       doc: currentEditor.state.doc,
     }),
-    equalityFn: (previous, next) =>
-      next !== null && previous.doc === next.doc,
+    equalityFn: (previous, next) => next !== null && previous.doc === next.doc,
   })
 
   return (
