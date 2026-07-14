@@ -1,9 +1,21 @@
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
 import { Box, Input, Text } from "@chakra-ui/react"
+import { useEditorState } from "@tiptap/react"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
-const CAPTION_MAX_LENGTH = 200
+import {
+  CAPTION_MAX_LENGTH,
+  CAPTION_TABLE_GAP_PX,
+  captionRectsEqual,
+  clampCaptionLength,
+  computeCaptionLayout,
+  getTableInstances,
+  resolveCaptionOnBlur,
+  setTableCaptionAtPos,
+  type CaptionLayoutRect,
+} from "./utils"
+
 const CAPTION_PLACEHOLDER = "Add a caption..."
 
 export interface TableCaptionProps {
@@ -15,59 +27,6 @@ export interface TableCaptionProps {
    * the element that directly wraps `EditorContent`.
    */
   containerRef: RefObject<HTMLElement>
-}
-
-interface TableInstance {
-  /** ProseMirror document position of the `table` node. */
-  pos: number
-  caption: string
-}
-
-/**
- * Walks the document and returns the position + caption of every `table`
- * node, in document order. Scoping reads/writes to a specific table's `pos`
- * (rather than "whichever table is at the current selection") is what makes
- * this correct for documents containing more than one table.
- */
-const getTableInstances = (editor: TiptapEditor): TableInstance[] => {
-  const instances: TableInstance[] = []
-  editor.state.doc.descendants((node, pos) => {
-    if (node.type.name === "table") {
-      instances.push({
-        pos,
-        caption: (node.attrs.caption as string | undefined) ?? "",
-      })
-      // Tables cannot be nested inside one another, so we don't need to
-      // descend into this node's content to find more `table` nodes.
-      return false
-    }
-    return true
-  })
-  return instances
-}
-
-/**
- * Writes `caption` onto the `table` node at `pos`, without touching the
- * editor's current selection. `editor.chain().updateAttributes('table', ...)`
- * is selection-scoped (it updates whichever table node the current selection
- * is inside), so it can't target an arbitrary table instance when a document
- * has more than one table. Instead we build a transaction directly with
- * `tr.setNodeMarkup`, which updates the node at an explicit document
- * position regardless of selection.
- */
-const setTableCaptionAtPos = (
-  editor: TiptapEditor,
-  pos: number,
-  caption: string,
-): void => {
-  const node = editor.state.doc.nodeAt(pos)
-  if (!node || node.type.name !== "table") return
-
-  const tr = editor.state.tr.setNodeMarkup(pos, undefined, {
-    ...node.attrs,
-    caption,
-  })
-  editor.view.dispatch(tr)
 }
 
 const CounterText = ({ length }: { length: number }) => {
@@ -101,6 +60,10 @@ interface SingleTableCaptionProps {
  * from when focus began; blur/Enter with an empty draft also restores that
  * baseline (empty captions are not persisted). A character counter is shown
  * only while focused. At the character limit the counter turns red.
+ *
+ * `draft` / `isFocused` stay as React state: the caption is a React `<Input>`
+ * overlay outside the ProseMirror editable, so TipTap does not own this
+ * focus/draft UX.
  */
 const SingleTableCaption = ({
   editor,
@@ -136,7 +99,7 @@ const SingleTableCaption = ({
         ref={inputRef}
         value={draft}
         onChange={(e) => {
-          const value = e.target.value.slice(0, CAPTION_MAX_LENGTH)
+          const value = clampCaptionLength(e.target.value)
           setDraft(value)
           // Live-write so the right-hand preview updates as the user types.
           setTableCaptionAtPos(editor, pos, value)
@@ -151,9 +114,7 @@ const SingleTableCaption = ({
             finish(baselineRef.current)
             return
           }
-          const next = draftRef.current.trim()
-          // Empty captions are not persisted — restore the value from focus.
-          finish(next ? next : baselineRef.current)
+          finish(resolveCaptionOnBlur(draftRef.current, baselineRef.current))
         }}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
@@ -225,20 +186,16 @@ interface TableCaptionSlotProps extends SingleTableCaptionProps {
  * editor transaction so a caption stays correctly positioned and sized as
  * rows/columns are added, removed, or reordered, or as the caption itself
  * wraps to more/fewer lines.
+ *
+ * `rect` stays as React state: it is DOM layout measurement, not editor JSON.
  */
-const CAPTION_TABLE_GAP_PX = 8
-
 const TableCaptionSlot = ({
   editor,
   pos,
   caption,
   containerRef,
 }: TableCaptionSlotProps) => {
-  const [rect, setRect] = useState<{
-    top: number
-    left: number
-    width: number
-  } | null>(null)
+  const [rect, setRect] = useState<CaptionLayoutRect | null>(null)
   const captionRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
@@ -254,39 +211,22 @@ const TableCaptionSlot = ({
         return
       }
 
-      // Reserve real layout space above the table for the caption, sized to
-      // the caption's own rendered height, so the caption never has to be
-      // positioned outside the container's bounds (e.g. when the table is
-      // the first block in the document). The caption box below is always
-      // mounted (just hidden until positioned), so it already has a real
-      // height to read here even on this very first measurement.
+      // Caption box is always mounted (just hidden until positioned), so it
+      // already has a real height on the first measurement.
       const captionHeight = captionRef.current?.offsetHeight ?? 0
-      tableDom.style.marginTop = `${captionHeight + CAPTION_TABLE_GAP_PX}px`
+      const { rect: next, marginTop } = computeCaptionLayout({
+        tableRect: tableDom.getBoundingClientRect(),
+        containerRect: container.getBoundingClientRect(),
+        scrollTop: container.scrollTop,
+        scrollLeft: container.scrollLeft,
+        captionHeight,
+        gapPx: CAPTION_TABLE_GAP_PX,
+      })
+      tableDom.style.marginTop = `${marginTop}px`
 
-      const tableRect = tableDom.getBoundingClientRect()
-      const containerRect = container.getBoundingClientRect()
-      const next = {
-        top:
-          tableRect.top -
-          containerRect.top +
-          container.scrollTop -
-          captionHeight -
-          CAPTION_TABLE_GAP_PX,
-        left: tableRect.left - containerRect.left + container.scrollLeft,
-        // Match table width so the always-visible input has a usable hit
-        // target (especially when empty / placeholder-only).
-        width: tableRect.width,
-      }
       // Bail when nothing moved — otherwise ResizeObserver ↔ setRect can
       // feedback-loop (marginTop / position changes re-fire the observer).
-      setRect((prev) =>
-        prev &&
-        prev.top === next.top &&
-        prev.left === next.left &&
-        prev.width === next.width
-          ? prev
-          : next,
-      )
+      setRect((prev) => (captionRectsEqual(prev, next) ? prev : next))
     }
 
     measure()
@@ -329,6 +269,54 @@ const TableCaptionSlot = ({
   )
 }
 
+interface TableCaptionReadyProps {
+  editor: TiptapEditor
+  containerRef: RefObject<HTMLElement>
+}
+
+/**
+ * Inner body that only mounts once `editor` is non-null. TipTap's
+ * `useEditorState` builds its snapshot manager with the initial `editor`
+ * value and does not refresh that snapshot when `editor` later changes
+ * from `null` → ready (it only bumps on transactions). Mounting this
+ * subtree deliberately avoids that stale-null snapshot.
+ */
+const TableCaptionReady = ({
+  editor,
+  containerRef,
+}: TableCaptionReadyProps) => {
+  // TipTap's selector replaces manual event subscriptions for document-
+  // derived state. Document identity represents `update`; meta-only
+  // transactions compare equal and therefore do not re-render.
+  const { tables } = useEditorState({
+    editor,
+    selector: ({ editor: currentEditor }) => ({
+      tables: getTableInstances(currentEditor),
+      doc: currentEditor.state.doc,
+    }),
+    equalityFn: (previous, next) =>
+      next !== null && previous.doc === next.doc,
+  })
+
+  return (
+    <>
+      {tables.map((table) => (
+        <TableCaptionSlot
+          // A table's `pos` shifts when content earlier in the document
+          // changes, but within a single transaction batch it uniquely
+          // identifies one table instance, and useEditorState re-derives
+          // fresh positions/captions whenever `doc` identity changes.
+          key={table.pos}
+          editor={editor}
+          pos={table.pos}
+          caption={table.caption}
+          containerRef={containerRef}
+        />
+      ))}
+    </>
+  )
+}
+
 /**
  * Renders one always-editable caption above EACH `table` node in the
  * editor's document — not just the first. Each caption's position is
@@ -342,43 +330,6 @@ const TableCaptionSlot = ({
  * absolutely against that container's bounding box.
  */
 export const TableCaption = ({ editor, containerRef }: TableCaptionProps) => {
-  const [tables, setTables] = useState<TableInstance[]>([])
-
-  useEffect(() => {
-    if (!editor) {
-      setTables([])
-      return
-    }
-
-    const sync = () => setTables(getTableInstances(editor))
-    sync()
-
-    editor.on("update", sync)
-    editor.on("transaction", sync)
-    return () => {
-      editor.off("update", sync)
-      editor.off("transaction", sync)
-    }
-  }, [editor])
-
   if (!editor) return null
-
-  return (
-    <>
-      {tables.map((table) => (
-        <TableCaptionSlot
-          // A table's `pos` shifts when content earlier in the document
-          // changes, but within a single transaction batch it uniquely
-          // identifies one table instance, and `sync()` re-derives fresh
-          // positions/captions on every transaction, so this never goes
-          // stale across edits.
-          key={table.pos}
-          editor={editor}
-          pos={table.pos}
-          caption={table.caption}
-          containerRef={containerRef}
-        />
-      ))}
-    </>
-  )
+  return <TableCaptionReady editor={editor} containerRef={containerRef} />
 }
