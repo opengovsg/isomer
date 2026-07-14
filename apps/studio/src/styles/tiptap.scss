@@ -117,7 +117,7 @@ $max-depth: 13;
     width: 100%;
 
     .selectedCell:after {
-      background: rgba(19, 97, 240, 0.35);
+      background: rgba(200, 200, 255, 0.2);
       content: "";
       left: 0;
       right: 0;
@@ -143,8 +143,7 @@ $max-depth: 13;
     }
 
     th {
-      background-color: #f8f9f9;
-      border-bottom: 2px solid #bfc2c8;
+      background-color: var(--chakra-colors-base-canvas-alt);
       color: #323232;
       font-weight: bold;
       text-align: left;
