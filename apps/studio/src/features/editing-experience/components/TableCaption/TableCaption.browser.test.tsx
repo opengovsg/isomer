@@ -180,14 +180,10 @@ describe("TableCaption", () => {
     // Paste a long string once — typing 200+ keystrokes is slow and noisy
     // under browser testing (per-keystroke remeasures).
     await userEvent.fill(input, "a".repeat(185))
-    expect(
-      await screen.findByText("185/200 characters"),
-    ).toBeInTheDocument()
+    expect(await screen.findByText("185/200 characters")).toBeInTheDocument()
 
     await userEvent.fill(input, "a".repeat(250))
-    expect(
-      await screen.findByText("200/200 characters"),
-    ).toBeInTheDocument()
+    expect(await screen.findByText("200/200 characters")).toBeInTheDocument()
     expect(input).toHaveValue("a".repeat(200))
   })
 
@@ -221,7 +217,9 @@ describe("TableCaption", () => {
       ],
     })
 
-    const first = await getCaptionInput(/edit table caption: First table caption/i)
+    const first = await getCaptionInput(
+      /edit table caption: First table caption/i,
+    )
     const second = await getCaptionInput("Add a caption")
     expect(first).toHaveValue("First table caption")
     expect(second).toHaveValue("")
