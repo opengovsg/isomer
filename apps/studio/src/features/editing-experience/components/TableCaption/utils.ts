@@ -21,6 +21,14 @@ export interface ComputeCaptionLayoutParams {
   scrollTop: number
   scrollLeft: number
   captionHeight: number
+  /**
+   * The table's currently applied top margin in px. `tableRect.top` is the
+   * border-box top (so it already reflects this margin); subtracting it
+   * recovers the margin-edge origin. Pass the margin that is on the table
+   * *right now* — not the margin about to be written — otherwise the caption
+   * jumps whenever its height changes (e.g. the focus character counter).
+   */
+  currentMarginTop: number
   gapPx?: number
 }
 
@@ -108,6 +116,15 @@ export const resolveCaptionOnBlur = (
  *
  * Coordinates are container-relative, including scroll offsets, so the
  * caption stays aligned as the editor scrolls.
+ *
+ * The caption's `top` is the table's margin-edge (border-box top minus the
+ * margin currently applied). Anchoring there — instead of at
+ * `borderBoxTop - newMarginTop` — keeps the input line stable when the
+ * caption box grows or shrinks: extra height expands downward into the
+ * reserved margin, and the table's margin is resized to match. Using the
+ * new reserved height as the offset was the source of the "jumps up on
+ * focus / overlaps the table on blur" bug when the character counter
+ * toggled.
  */
 export const computeCaptionLayout = ({
   tableRect,
@@ -115,13 +132,16 @@ export const computeCaptionLayout = ({
   scrollTop,
   scrollLeft,
   captionHeight,
+  currentMarginTop,
   gapPx = CAPTION_TABLE_GAP_PX,
 }: ComputeCaptionLayoutParams): CaptionLayout => {
   const marginTop = captionHeight + gapPx
+  const marginEdgeTop =
+    tableRect.top - containerRect.top + scrollTop - currentMarginTop
   return {
     marginTop,
     rect: {
-      top: tableRect.top - containerRect.top + scrollTop - marginTop,
+      top: marginEdgeTop,
       left: tableRect.left - containerRect.left + scrollLeft,
       width: tableRect.width,
     },
