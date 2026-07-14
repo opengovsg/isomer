@@ -1,10 +1,9 @@
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
-import { Box, Text, Textarea } from "@chakra-ui/react"
+import { Box, Input, Text } from "@chakra-ui/react"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 const CAPTION_MAX_LENGTH = 200
-const CAPTION_NEAR_LIMIT_THRESHOLD = 20
 const CAPTION_PLACEHOLDER = "Add a caption..."
 
 export interface TableCaptionProps {
@@ -73,23 +72,17 @@ const setTableCaptionAtPos = (
 
 const CounterText = ({ length }: { length: number }) => {
   const isAtLimit = length >= CAPTION_MAX_LENGTH
-  const isNearLimit =
-    length >= CAPTION_MAX_LENGTH - CAPTION_NEAR_LIMIT_THRESHOLD
 
   return (
     <Text
       as="span"
       fontSize="xs"
       color={
-        isAtLimit
-          ? "utility.feedback.critical"
-          : isNearLimit
-            ? "utility.feedback.warning"
-            : "base.content.medium"
+        isAtLimit ? "utility.feedback.critical" : "base.content.medium"
       }
       fontWeight={isAtLimit ? "semibold" : "normal"}
     >
-      {length}/{CAPTION_MAX_LENGTH}
+      {length}/{CAPTION_MAX_LENGTH} characters
     </Text>
   )
 }
@@ -101,87 +94,104 @@ interface SingleTableCaptionProps {
 }
 
 /**
- * Click-to-edit caption line for a single table instance, scoped to `pos`.
- * Renders a quiet (italic when empty) text line; clicking swaps in an
- * editable textarea. Blur or Enter commits, Escape cancels. A character
- * counter is shown only while editing, turning amber near the limit and red
- * at the limit.
+ * Always-editable caption line for a single table instance, scoped to `pos`.
+ * Renders a borderless single-line input styled as quiet caption text
+ * (italic placeholder when empty). Writes to the table attribute on every
+ * keystroke so the live preview stays in sync. Escape restores the caption
+ * from when focus began; blur/Enter with an empty draft also restores that
+ * baseline (empty captions are not persisted). A character counter is shown
+ * only while focused. At the character limit the counter turns red.
  */
 const SingleTableCaption = ({
   editor,
   pos,
   caption,
 }: SingleTableCaptionProps) => {
-  const [isEditing, setIsEditing] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
   const [draft, setDraft] = useState(caption)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const draftRef = useRef(draft)
+  const baselineRef = useRef(caption)
+  const isCancellingRef = useRef(false)
 
+  draftRef.current = draft
+
+  // Keep the visible value in sync with the document when not focused
+  // (e.g. undo, or another path updating the caption attr).
   useEffect(() => {
-    if (isEditing) {
+    if (!isFocused) {
       setDraft(caption)
-      // Focus after the textarea mounts.
-      requestAnimationFrame(() => inputRef.current?.focus())
     }
-    // Only re-sync the draft when entering edit mode, not on every keystroke.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditing])
+  }, [caption, isFocused])
 
-  const commit = () => {
-    setTableCaptionAtPos(editor, pos, draft)
-    setIsEditing(false)
-  }
-
-  if (isEditing) {
-    return (
-      <Box>
-        <Textarea
-          ref={inputRef}
-          value={draft}
-          onChange={(e) =>
-            setDraft(e.target.value.slice(0, CAPTION_MAX_LENGTH))
-          }
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              setIsEditing(false)
-            }
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault()
-              commit()
-            }
-          }}
-          placeholder={CAPTION_PLACEHOLDER}
-          size="sm"
-          rows={2}
-          resize="vertical"
-          bg="base.canvas.default"
-        />
-        <Box textAlign="right" mt="0.25rem">
-          <CounterText length={draft.length} />
-        </Box>
-      </Box>
-    )
+  const finish = (next: string) => {
+    setTableCaptionAtPos(editor, pos, next)
+    setDraft(next)
+    setIsFocused(false)
   }
 
   return (
-    <Text
-      role="button"
-      tabIndex={0}
-      aria-label={caption ? `Edit table caption: ${caption}` : "Add a caption"}
-      onClick={() => setIsEditing(true)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") setIsEditing(true)
-      }}
-      px="0.25rem"
-      py="0.125rem"
-      borderRadius="0.25rem"
-      cursor="text"
-      fontStyle={caption ? "normal" : "italic"}
-      color={caption ? "base.content.strong" : "base.content.medium"}
-      _hover={{ bg: "interaction.muted.main.hover" }}
-    >
-      {caption || CAPTION_PLACEHOLDER}
-    </Text>
+    <Box>
+      <Input
+        ref={inputRef}
+        value={draft}
+        onChange={(e) => {
+          const value = e.target.value.slice(0, CAPTION_MAX_LENGTH)
+          setDraft(value)
+          // Live-write so the right-hand preview updates as the user types.
+          setTableCaptionAtPos(editor, pos, value)
+        }}
+        onFocus={() => {
+          baselineRef.current = caption
+          setIsFocused(true)
+        }}
+        onBlur={() => {
+          if (isCancellingRef.current) {
+            isCancellingRef.current = false
+            finish(baselineRef.current)
+            return
+          }
+          const next = draftRef.current.trim()
+          // Empty captions are not persisted — restore the value from focus.
+          finish(next ? next : baselineRef.current)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.preventDefault()
+            isCancellingRef.current = true
+            inputRef.current?.blur()
+            return
+          }
+          if (e.key === "Enter") {
+            e.preventDefault()
+            inputRef.current?.blur()
+          }
+        }}
+        placeholder={CAPTION_PLACEHOLDER}
+        aria-label={
+          caption ? `Edit table caption: ${caption}` : "Add a caption"
+        }
+        variant="unstyled"
+        size="sm"
+        px="0.25rem"
+        py="0.125rem"
+        borderRadius="0.25rem"
+        cursor="text"
+        fontStyle={draft ? "normal" : "italic"}
+        color={draft ? "base.content.strong" : "base.content.medium"}
+        _placeholder={{
+          fontStyle: "italic",
+          color: "base.content.medium",
+        }}
+        _hover={{ bg: "interaction.muted.main.hover" }}
+        _focus={{ bg: "interaction.muted.main.hover" }}
+      />
+      {isFocused && (
+        <Box textAlign="right" mt="0.25rem">
+          <CounterText length={draft.length} />
+        </Box>
+      )}
+    </Box>
   )
 }
 
@@ -224,7 +234,11 @@ const TableCaptionSlot = ({
   caption,
   containerRef,
 }: TableCaptionSlotProps) => {
-  const [rect, setRect] = useState<{ top: number; left: number } | null>(null)
+  const [rect, setRect] = useState<{
+    top: number
+    left: number
+    width: number
+  } | null>(null)
   const captionRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
@@ -251,7 +265,7 @@ const TableCaptionSlot = ({
 
       const tableRect = tableDom.getBoundingClientRect()
       const containerRect = container.getBoundingClientRect()
-      setRect({
+      const next = {
         top:
           tableRect.top -
           containerRect.top +
@@ -259,13 +273,35 @@ const TableCaptionSlot = ({
           captionHeight -
           CAPTION_TABLE_GAP_PX,
         left: tableRect.left - containerRect.left + container.scrollLeft,
-      })
+        // Match table width so the always-visible input has a usable hit
+        // target (especially when empty / placeholder-only).
+        width: tableRect.width,
+      }
+      // Bail when nothing moved — otherwise ResizeObserver ↔ setRect can
+      // feedback-loop (marginTop / position changes re-fire the observer).
+      setRect((prev) =>
+        prev &&
+        prev.top === next.top &&
+        prev.left === next.left &&
+        prev.width === next.width
+          ? prev
+          : next,
+      )
     }
 
     measure()
     editor.on("transaction", measure)
+
+    // Re-measure when the caption box grows/shrinks (e.g. counter
+    // appearing on focus), which does not emit an editor transaction.
+    const resizeObserver = new ResizeObserver(measure)
+    if (captionRef.current) {
+      resizeObserver.observe(captionRef.current)
+    }
+
     return () => {
       editor.off("transaction", measure)
+      resizeObserver.disconnect()
       tableDom.style.marginTop = previousMarginTop
     }
   }, [editor, pos, containerRef])
@@ -285,6 +321,7 @@ const TableCaptionSlot = ({
       visibility={rect ? "visible" : "hidden"}
       top={`${rect?.top ?? 0}px`}
       left={`${rect?.left ?? 0}px`}
+      width={rect ? `${rect.width}px` : undefined}
       zIndex="1"
     >
       <SingleTableCaption editor={editor} pos={pos} caption={caption} />
@@ -293,7 +330,7 @@ const TableCaptionSlot = ({
 }
 
 /**
- * Renders one inline, click-to-edit caption above EACH `table` node in the
+ * Renders one always-editable caption above EACH `table` node in the
  * editor's document — not just the first. Each caption's position is
  * re-derived from the live document on every transaction (so it stays
  * correct as tables are inserted, removed, or reordered), and every
