@@ -82,11 +82,18 @@ const getTableCaptions = (editor: TiptapEditor): string[] => {
   return captions
 }
 
+const getCaptionInput = async (name?: string | RegExp) =>
+  screen.findByRole("textbox", {
+    name: name ?? /add a caption|edit table caption/i,
+  })
+
 describe("TableCaption", () => {
-  it("renders the empty-state placeholder when the table has no caption", async () => {
+  it("renders an always-editable input with placeholder when empty", async () => {
     renderHarness({ type: "prose", content: [tableContent("")] })
 
-    expect(await screen.findByText("Add a caption...")).toBeInTheDocument()
+    const input = await getCaptionInput("Add a caption")
+    expect(input).toHaveAttribute("placeholder", "Add a caption...")
+    expect(input).toHaveValue("")
   })
 
   it("renders the existing caption text when the table already has one", async () => {
@@ -95,7 +102,24 @@ describe("TableCaption", () => {
       content: [tableContent("Existing caption")],
     })
 
-    expect(await screen.findByText("Existing caption")).toBeInTheDocument()
+    expect(
+      await getCaptionInput(/edit table caption: Existing caption/i),
+    ).toHaveValue("Existing caption")
+  })
+
+  it("updates the table caption attribute as the user types", async () => {
+    const { getEditor } = renderHarness({
+      type: "prose",
+      content: [tableContent("")],
+    })
+
+    const input = await getCaptionInput()
+    await userEvent.click(input)
+    await userEvent.type(input, "Live")
+
+    await waitFor(() => {
+      expect(getTableCaptions(getEditor()!)).toEqual(["Live"])
+    })
   })
 
   it("commits an edited caption to the table's attribute on blur", async () => {
@@ -104,15 +128,13 @@ describe("TableCaption", () => {
       content: [tableContent("")],
     })
 
-    const placeholder = await screen.findByText("Add a caption...")
-    await userEvent.click(placeholder)
-
-    const textarea = await screen.findByPlaceholderText("Add a caption...")
-    await userEvent.type(textarea, "A new caption")
+    const input = await getCaptionInput()
+    await userEvent.click(input)
+    await userEvent.type(input, "A new caption")
     await userEvent.tab()
 
     await waitFor(() => {
-      expect(screen.getByText("A new caption")).toBeInTheDocument()
+      expect(input).toHaveValue("A new caption")
     })
 
     const editor = getEditor()
@@ -120,52 +142,70 @@ describe("TableCaption", () => {
     expect(getTableCaptions(editor!)).toEqual(["A new caption"])
   })
 
-  it("commits on Enter and cancels on Escape without writing", async () => {
+  it("commits on Enter and restores the focus-time caption on Escape", async () => {
     const { getEditor } = renderHarness({
       type: "prose",
       content: [tableContent("")],
     })
 
-    // Escape: draft is discarded, no write happens.
-    const placeholder = await screen.findByText("Add a caption...")
-    await userEvent.click(placeholder)
-    const escTextarea = await screen.findByPlaceholderText("Add a caption...")
-    await userEvent.type(escTextarea, "should not be saved")
+    const input = await getCaptionInput()
+
+    // Escape: live writes are undone back to the baseline from focus.
+    await userEvent.click(input)
+    await userEvent.type(input, "should not be saved")
     await userEvent.keyboard("{Escape}")
 
     await waitFor(() => {
-      expect(screen.getByText("Add a caption...")).toBeInTheDocument()
+      expect(input).toHaveValue("")
     })
     expect(getTableCaptions(getEditor()!)).toEqual([""])
 
-    // Enter: commits immediately.
-    await userEvent.click(screen.getByText("Add a caption..."))
-    const enterTextarea = await screen.findByPlaceholderText("Add a caption...")
-    await userEvent.type(enterTextarea, "saved via enter")
+    // Enter: keeps the live-written value (trimmed on blur).
+    await userEvent.click(input)
+    await userEvent.type(input, "saved via enter")
     await userEvent.keyboard("{Enter}")
 
     await waitFor(() => {
-      expect(screen.getByText("saved via enter")).toBeInTheDocument()
+      expect(input).toHaveValue("saved via enter")
     })
     expect(getTableCaptions(getEditor()!)).toEqual(["saved via enter"])
   })
 
-  it("truncates input at 200 characters and shows a counter while editing", async () => {
+  it("truncates input at 200 characters and shows a counter while focused", async () => {
     renderHarness({ type: "prose", content: [tableContent("")] })
 
-    const placeholder = await screen.findByText("Add a caption...")
-    await userEvent.click(placeholder)
-    const textarea = await screen.findByPlaceholderText("Add a caption...")
+    const input = await getCaptionInput()
+    await userEvent.click(input)
 
-    // No counter shown until editing — it appeared as soon as we entered
-    // edit mode above, so just assert the "near limit" and "at limit" states.
-    await userEvent.type(textarea, "a".repeat(185))
-    expect(await screen.findByText("185/200")).toBeInTheDocument()
+    // Paste a long string once — typing 200+ keystrokes is slow and noisy
+    // under browser testing (per-keystroke remeasures).
+    await userEvent.fill(input, "a".repeat(185))
+    expect(
+      await screen.findByText("185/200 characters"),
+    ).toBeInTheDocument()
 
-    await userEvent.type(textarea, "a".repeat(50))
-    // Input is truncated at 200 regardless of how many characters were typed.
-    expect(await screen.findByText("200/200")).toBeInTheDocument()
-    expect((textarea as HTMLTextAreaElement).value).toHaveLength(200)
+    await userEvent.fill(input, "a".repeat(250))
+    expect(
+      await screen.findByText("200/200 characters"),
+    ).toBeInTheDocument()
+    expect(input).toHaveValue("a".repeat(200))
+  })
+
+  it("does not save an empty caption and restores the previous value on blur", async () => {
+    const { getEditor } = renderHarness({
+      type: "prose",
+      content: [tableContent("Kept caption")],
+    })
+
+    const input = await getCaptionInput(/edit table caption: Kept caption/i)
+    await userEvent.click(input)
+    await userEvent.clear(input)
+    await userEvent.tab()
+
+    await waitFor(() => {
+      expect(input).toHaveValue("Kept caption")
+    })
+    expect(getTableCaptions(getEditor()!)).toEqual(["Kept caption"])
   })
 
   it("renders one caption per table and scopes edits to the correct table instance", async () => {
@@ -181,20 +221,21 @@ describe("TableCaption", () => {
       ],
     })
 
-    expect(await screen.findByText("First table caption")).toBeInTheDocument()
-    expect(await screen.findByText("Add a caption...")).toBeInTheDocument()
+    const first = await getCaptionInput(/edit table caption: First table caption/i)
+    const second = await getCaptionInput("Add a caption")
+    expect(first).toHaveValue("First table caption")
+    expect(second).toHaveValue("")
 
     // Edit only the second table's (empty) caption.
-    await userEvent.click(screen.getByText("Add a caption..."))
-    const textarea = await screen.findByPlaceholderText("Add a caption...")
-    await userEvent.type(textarea, "Second table caption")
+    await userEvent.click(second)
+    await userEvent.type(second, "Second table caption")
     await userEvent.tab()
 
     await waitFor(() => {
-      expect(screen.getByText("Second table caption")).toBeInTheDocument()
+      expect(second).toHaveValue("Second table caption")
     })
     // The first table's caption must be untouched.
-    expect(screen.getByText("First table caption")).toBeInTheDocument()
+    expect(first).toHaveValue("First table caption")
 
     const editor = getEditor()
     expect(getTableCaptions(editor!)).toEqual([
