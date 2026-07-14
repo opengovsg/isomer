@@ -21,8 +21,12 @@ export const MenubarOverflowList = ({
   items,
 }: MenubarOverflowListProps): JSX.Element => {
   return (
-    <Popover placement="bottom">
-      {({ isOpen }) => (
+    // closeOnBlur=false: with a TipTap CellSelection active, clicking the
+    // trigger blurs the editor and TipTap's BubbleMenu tear-down races the
+    // Popover open — closeOnBlur would immediately dismiss it. Keep the menu
+    // open until the user clicks outside or picks an item.
+    <Popover placement="bottom" closeOnBlur={false} isLazy>
+      {({ isOpen, onClose }) => (
         <>
           <PopoverTrigger>
             <IconButton
@@ -38,6 +42,10 @@ export const MenubarOverflowList = ({
               minW="1.75rem"
               p="0.25rem"
               aria-label="More options"
+              // Keep the editor selection (e.g. CellSelection) when opening
+              // the overflow menu — otherwise mousedown steals focus and the
+              // popover open/close cycle fights TipTap's blur handlers.
+              onMouseDown={(event) => event.preventDefault()}
             >
               <Icon
                 as={BiDotsHorizontalRounded}
@@ -54,7 +62,10 @@ export const MenubarOverflowList = ({
                     key={index}
                     icon={subItem.icon}
                     title={subItem.title}
-                    action={subItem.action}
+                    action={() => {
+                      subItem.action()
+                      onClose()
+                    }}
                     isActive={subItem.isActive}
                   />
                 ))}

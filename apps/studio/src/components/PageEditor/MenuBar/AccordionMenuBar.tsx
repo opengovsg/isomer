@@ -100,13 +100,20 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         type: "divider",
       },
       {
-        // Delete table is now covered by TableBubbleMenu's "Delete table"
-        // action (shown when the whole table is selected), so this button
-        // only needs to insert.
+        // Toggle: insert when outside a table, delete when inside. Without the
+        // isActive guard, insertTable() nests/splits the current table.
+        // Whole-table CellSelection also surfaces "Delete table" on
+        // TableBubbleMenu; this toolbar toggle matches pre-bubble-menu UX.
         type: "item",
         icon: BiTable,
         title: "Table",
-        action: () => editor.chain().focus().insertTable().run(),
+        action: () => {
+          if (editor.isActive("table")) {
+            return editor.chain().focus().deleteTable().run()
+          }
+          return editor.chain().focus().insertTable().run()
+        },
+        isActive: () => editor.isActive("table"),
       },
       // "Table settings" (the caption editor) is the one item from the old
       // table toolbar group not yet covered by TableBubbleMenu — every other

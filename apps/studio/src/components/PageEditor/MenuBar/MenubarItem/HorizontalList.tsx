@@ -31,8 +31,8 @@ export const MenubarHorizontalList = ({
     return null
   }
   return (
-    <Popover placement="bottom">
-      {({ isOpen }) => (
+    <Popover placement="bottom" closeOnBlur={false} isLazy>
+      {({ isOpen, onClose }) => (
         <>
           <PopoverTrigger>
             <HStack>
@@ -47,6 +47,9 @@ export const MenubarHorizontalList = ({
                 _active={{
                   bg: "interaction.muted.main.active",
                 }}
+                // Keep the editor selection when opening the list menu —
+                // otherwise mousedown steals focus from TipTap.
+                onMouseDown={(event) => event.preventDefault()}
               >
                 <HStack spacing={0}>
                   <Icon
@@ -71,7 +74,10 @@ export const MenubarHorizontalList = ({
                     key={index}
                     icon={subItem.icon}
                     title={subItem.title}
-                    action={subItem.action}
+                    action={() => {
+                      subItem.action()
+                      onClose()
+                    }}
                     isActive={subItem.isActive}
                   />
                 ))}
