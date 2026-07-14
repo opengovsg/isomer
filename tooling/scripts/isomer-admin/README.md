@@ -58,6 +58,16 @@ Imports JSON files from `./input` to update existing resources in the database. 
 
 **NOTE:** This requires you to place the files inside `./input` first before running.
 
+### Insert Anti-Scam Banner
+
+Inserts the `AntiScamDisclaimerBanner` block at the bottom of RootPage content across sites. Lists all RootPage resources (grouped by site) and lets you scope the run to all of them, specific sites, or specific resources. For each selected resource:
+
+- If it has a published blob only, creates a new Blob (published content + banner) and a new Version, and updates `publishedVersionId`.
+- If it also has a draft blob, does the above **and** updates the existing draft blob in place to append the banner.
+- If it has a draft blob only (never published), updates the existing draft blob in place.
+
+Skips a blob if it already contains an anti-scam banner block. All writes run in a single transaction — any failure rolls back the whole batch. Looks up the publisher by email address. Does not trigger a site rebuild.
+
 ### Publish Site Resources
 
 Publishes all draft resources for a given site ID in the database. Lists matching resources for review before confirming. For each resource, creates a new Version record and transitions the resource state from Draft to Published.
