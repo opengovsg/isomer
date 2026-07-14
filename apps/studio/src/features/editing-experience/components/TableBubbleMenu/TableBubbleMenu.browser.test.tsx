@@ -179,4 +179,61 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Subscript")).toBeNull()
     expect(queryByText("Delete row")).toBeNull()
   })
+
+  it("hides when focus moves outside the editor (e.g. Table Settings modal)", async () => {
+    // appendTo must not be document.body: TipTap skips hide when
+    // parentNode.contains(relatedTarget), and body contains the whole page
+    // (including Chakra Modal). A row selection + blur onto another body
+    // node must leave the menu hidden.
+    const { editor, findByText, queryByText } = await renderHarness()
+
+    selectCells(editor, 3, 5)
+    expect(await findByText("Delete row")).toBeTruthy()
+
+    expect(
+      document.querySelector("[data-table-bubble-menu-portal]"),
+    ).not.toBeNull()
+
+    act(() => {
+      const outside = document.createElement("button")
+      outside.type = "button"
+      outside.textContent = "outside"
+      document.body.appendChild(outside)
+      // TipTap's focusEvents plugin only emits `blur` from a DOM blur event
+      // on the editor view — that drives BubbleMenu's blurHandler.
+      editor.view.dom.dispatchEvent(
+        new FocusEvent("blur", { bubbles: true, relatedTarget: outside }),
+      )
+      outside.focus()
+    })
+
+    await waitFor(() => {
+      expect(queryByText("Delete row")).toBeNull()
+    })
+
+    // Doc change while blurred (CellSelection preserved) — shouldShow must
+    // stay false so the menu is not re-appended into the portal.
+    act(() => {
+      let tablePos: number | null = null
+      editor.state.doc.descendants((node, pos) => {
+        if (tablePos !== null) return false
+        if (node.type.name === "table") {
+          tablePos = pos
+          return false
+        }
+        return true
+      })
+      if (tablePos === null) throw new Error("expected a table node")
+      const table = editor.state.doc.nodeAt(tablePos)
+      if (!table) throw new Error("expected a table node at tablePos")
+      editor.view.dispatch(
+        editor.state.tr.setNodeMarkup(tablePos, undefined, {
+          ...table.attrs,
+          caption: "blurred-update",
+        }),
+      )
+    })
+
+    expect(queryByText("Delete row")).toBeNull()
+  })
 })

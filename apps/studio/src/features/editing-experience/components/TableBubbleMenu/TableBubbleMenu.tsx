@@ -1,6 +1,7 @@
 import type { ReactElement } from "react"
 import type { Editor } from "@tiptap/react"
-import { Button, VStack } from "@chakra-ui/react"
+import { VStack } from "@chakra-ui/react"
+import { Button } from "@opengovsg/design-system-react"
 import {
   CellSelection,
   moveTableColumn,
@@ -120,11 +121,15 @@ const ActionButton = ({
 }) => (
   <Button
     size="xs"
-    variant="outline"
+    variant="clear"
+    colorScheme="neutral"
     onClick={onClick}
     leftIcon={icon}
-    justifyContent="flex-start"
     w="100%"
+    textAlign="left"
+    sx={{
+      justifyContent: "flex-start",
+    }}
   >
     {label}
   </Button>
@@ -307,9 +312,9 @@ const TableSelectionActions = ({
 // clicking into a cell floats Superscript/Subscript over the content.
 //
 // Also require editor (or menu) focus — TipTap's default shouldShow does this.
-// Without it, opening Table Settings (or any modal) blurs the editor, the
-// menu hides on blur, then the next transaction re-shows it on document.body
-// where it fights Chakra's Modal focus lock and can hang the tab.
+// Defense in depth with the dedicated portal root below: opening Table
+// Settings blurs the editor and must not leave (or re-show) the menu where it
+// can fight Chakra's Modal focus lock.
 const shouldShowTableBubbleMenu = ({
   editor,
   view,
@@ -326,21 +331,38 @@ const shouldShowTableBubbleMenu = ({
   return view.hasFocus() || isChildOfMenu
 }
 
-// `fixed` + body append escapes the editor drawer / EditorContent overflow
-// clipping that otherwise hides the menu (TipTap defaults to `absolute` and
-// appends beside ProseMirror inside an overflow:auto ancestor).
+// `fixed` + a body-level portal escapes the editor drawer / EditorContent
+// overflow clipping that otherwise hides the menu (TipTap defaults to
+// `absolute` and appends beside ProseMirror inside an overflow:auto ancestor).
 const TABLE_BUBBLE_MENU_OPTIONS = {
   strategy: "fixed" as const,
   placement: "top" as const,
   offset: 8,
 }
 
-const getBubbleMenuAppendTo = () => document.body
+// Dedicated portal root — NOT `document.body`. TipTap's BubbleMenu blur
+// handler skips hide when `element.parentNode.contains(relatedTarget)`. If
+// parentNode is `body`, that is true for every focus target on the page
+// (including Chakra Modal), so the menu never hides on blur and fights the
+// modal focus lock — hanging the tab when Table Settings opens.
+// A dedicated empty div still escapes editor overflow clipping (via `fixed`)
+// without that body-wide contains() false positive.
+let tableBubbleMenuPortalRoot: HTMLElement | null = null
+
+const getBubbleMenuAppendTo = (): HTMLElement => {
+  if (!tableBubbleMenuPortalRoot) {
+    tableBubbleMenuPortalRoot = document.createElement("div")
+    tableBubbleMenuPortalRoot.setAttribute("data-table-bubble-menu-portal", "")
+    document.body.appendChild(tableBubbleMenuPortalRoot)
+  }
+  return tableBubbleMenuPortalRoot
+}
 
 // Stable style object — avoid a fresh `{}` each render (same footgun class as
 // shouldShow / options / appendTo above, for attributes TipTap syncs).
 const TABLE_BUBBLE_MENU_STYLE = {
   zIndex: "var(--chakra-zIndices-popover)",
+  textAlign: "left",
 } as const
 
 export const TableBubbleMenu = ({ editor }: TableBubbleMenuProps) => {
@@ -357,6 +379,7 @@ export const TableBubbleMenu = ({ editor }: TableBubbleMenuProps) => {
     >
       <VStack
         align="stretch"
+        textAlign="left"
         bg="base.canvas.default"
         boxShadow="md"
         borderRadius="md"
