@@ -59,14 +59,14 @@ const ImageRadioOption = ({
         {ImageRadioIcon && (
           <ImageRadioIcon width="100%" display="block" aria-hidden />
         )}
-        <Box
+        <ImageRadioIndicator
+          isSelected={isSelected}
           position="absolute"
           top="0.5rem"
           left="0.5rem"
           pointerEvents="none"
-        >
-          <ImageRadioIndicator isSelected={isSelected} aria-hidden />
-        </Box>
+          aria-hidden
+        />
       </Box>
     </Box>
   )
