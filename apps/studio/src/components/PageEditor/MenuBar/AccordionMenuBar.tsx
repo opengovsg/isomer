@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react"
-import { Icon, useDisclosure } from "@chakra-ui/react"
+import { useDisclosure } from "@chakra-ui/react"
 import { useMemo } from "react"
 import {
   BiBold,
@@ -11,19 +11,8 @@ import {
   BiStrikethrough,
   BiTable,
   BiUnderline,
-  BiWrench,
 } from "react-icons/bi"
 import { MdHorizontalRule, MdSubscript, MdSuperscript } from "react-icons/md"
-import {
-  IconAddColLeft,
-  IconAddColRight,
-  IconAddRowAbove,
-  IconAddRowBelow,
-  IconDelCol,
-  IconDelRow,
-  IconMergeCells,
-  IconSplitCell,
-} from "~/components/icons"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { TableSettingsModal } from "../TableSettingsModal"
@@ -111,82 +100,24 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         type: "divider",
       },
       {
+        // Delete table is now covered by TableBubbleMenu's "Delete table"
+        // action (shown when the whole table is selected), so this button
+        // only needs to insert.
         type: "item",
         icon: BiTable,
         title: "Table",
-        action: () => {
-          if (editor.isActive("table")) {
-            return editor.chain().focus().deleteTable().run()
-          }
-          return editor.chain().focus().insertTable().run()
-        },
-        isActive: () => editor.isActive("table"),
+        action: () => editor.chain().focus().insertTable().run(),
       },
+      // "Table settings" (the caption editor) is the one item from the old
+      // table toolbar group not yet covered by TableBubbleMenu — every other
+      // action (add/delete row/column, merge, split) moved there already.
+      // This stays until the inline TableCaption component replaces it.
       {
-        type: "horizontal-list",
-        label: "Table",
-        defaultIcon: BiWrench,
+        type: "item",
+        icon: BiCog,
+        title: "Table settings",
         isHidden: () => !editor.isActive("table"),
-        items: [
-          {
-            type: "item",
-            icon: () => (
-              <Icon color="base.content.medium" as={IconAddColRight} />
-            ),
-            title: "Add column after",
-            action: () => editor.chain().focus().addColumnAfter().run(),
-          },
-          {
-            type: "item",
-            icon: () => (
-              <Icon as={IconAddColLeft} color="base.content.medium" />
-            ),
-            title: "Add column before",
-            action: () => editor.chain().focus().addColumnBefore().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconDelCol} />,
-            title: "Delete column",
-            action: () => editor.chain().focus().deleteColumn().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconAddRowAbove} />,
-            title: "Add row before",
-            action: () => editor.chain().focus().addRowBefore().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconAddRowBelow} />,
-            title: "Add row after",
-            action: () => editor.chain().focus().addRowAfter().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconDelRow} />,
-            title: "Delete row",
-            action: () => editor.chain().focus().deleteRow().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconMergeCells} />,
-            title: "Merge cells",
-            action: () => editor.chain().focus().mergeCells().run(),
-          },
-          {
-            type: "item",
-            icon: () => <Icon as={IconSplitCell} />,
-            title: "Split cell",
-            action: () => editor.chain().focus().splitCell().run(),
-          },
-          {
-            type: "item",
-            icon: BiCog,
-            title: "Table settings",
-            action: onTableSettingsModalOpen,
-          },
-        ],
+        action: onTableSettingsModalOpen,
       },
       // Lesser-used commands are kept inside the overflow items list
       {
