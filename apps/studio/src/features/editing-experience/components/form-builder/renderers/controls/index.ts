@@ -152,6 +152,10 @@ export {
   default as JsonFormsCollectionVariantControl,
   jsonFormsCollectionVariantControlTester,
 } from "./JsonFormsCollectionVariantControl"
+export {
+  default as JsonFormsCalloutVariantControl,
+  jsonFormsCalloutVariantControlTester,
+} from "./JsonFormsCalloutVariantControl"
 
 export {
   default as JsonFormsPrefillLinkControl,
