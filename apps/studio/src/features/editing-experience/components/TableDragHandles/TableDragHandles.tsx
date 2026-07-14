@@ -24,24 +24,59 @@ interface TableLocation {
 }
 
 /**
- * Finds the single `table` node in the doc and returns its node + doc
- * position. Ported from the verified prototype
- * (`prototype/rte-table-drag-handle`); unlike `TableCaption` (which must
- * support multiple tables in one document), drag handles only ever act on
- * "the table currently being interacted with", resolved fresh per
- * measurement pass.
+ * Walks the document and returns every `table` node + its doc position, in
+ * document order. Drag handles only ever act on one table at a time ("the
+ * table currently being interacted with"), but that table must be resolved
+ * by pointer hit-testing — not by always taking the first table in the doc
+ * (which left subsequent tables without handles).
  */
-const findTable = (editor: TiptapEditor): TableLocation | null => {
-  let result: TableLocation | null = null
+const findAllTables = (editor: TiptapEditor): TableLocation[] => {
+  const tables: TableLocation[] = []
   editor.state.doc.descendants((node, pos) => {
-    if (result) return false
     if (node.type.name === "table") {
-      result = { pos, node }
+      tables.push({ pos, node })
+      // Tables cannot be nested, so skip their contents.
       return false
     }
     return true
   })
-  return result
+  return tables
+}
+
+const measureTableGeometry = (
+  editor: TiptapEditor,
+  table: TableLocation,
+  container: HTMLElement,
+  containerRect: DOMRect,
+): TableGeometry => {
+  const map = TableMap.get(table.node)
+  const rowRects: (Rect | null)[] = []
+  for (let r = 0; r < map.height; r++) {
+    const dom = getRowDom(editor, table.pos, map, r)
+    rowRects.push(
+      dom
+        ? domRectToContainerRelative(
+            dom.getBoundingClientRect(),
+            containerRect,
+            container,
+          )
+        : null,
+    )
+  }
+  const colRects: (Rect | null)[] = []
+  for (let c = 0; c < map.width; c++) {
+    const dom = getCellDom(editor, table.pos, map, 0, c)
+    colRects.push(
+      dom
+        ? domRectToContainerRelative(
+            dom.getBoundingClientRect(),
+            containerRect,
+            container,
+          )
+        : null,
+    )
+  }
+  return { pos: table.pos, rowRects, colRects }
 }
 
 const getRowDom = (
@@ -90,9 +125,18 @@ const domRectToContainerRelative = (
   height: domRect.height,
 })
 
+interface TableGeometry {
+  /** ProseMirror document position of this table's opening boundary. */
+  pos: number
+  rowRects: (Rect | null)[]
+  colRects: (Rect | null)[]
+}
+
 interface DragState {
   axis: "row" | "column"
   from: number
+  /** Table this drag targets — must not be re-resolved from "first table in doc". */
+  tablePos: number
   /** Current pointer position, in the same container-relative coordinate space as `boundaries`. */
   pointer: number
   /**
@@ -131,6 +175,8 @@ const HANDLE_SIZE_PX = 20
 /** Distance from the table border to the handle's outer edge; half the
  *  handle size so the chip is centered on the border. */
 const HANDLE_OFFSET_PX = HANDLE_SIZE_PX / 2
+/** Stable empty rect list — avoids a fresh `[]` each render breaking useMemo deps. */
+const EMPTY_RECTS: (Rect | null)[] = []
 
 const handleStyle = {
   display: "flex",
@@ -228,13 +274,13 @@ export const TableDragHandles = ({
   editor,
   containerRef,
 }: TableDragHandlesProps) => {
+  const [hoverTablePos, setHoverTablePos] = useState<number | null>(null)
   const [hoverRow, setHoverRow] = useState<number | null>(null)
   const [hoverCol, setHoverCol] = useState<number | null>(null)
   const [drag, setDrag] = useState<DragState | null>(null)
   const dragRef = useRef<DragState | null>(null)
 
-  const [rowRects, setRowRects] = useState<(Rect | null)[]>([])
-  const [colRects, setColRects] = useState<(Rect | null)[]>([])
+  const [geometries, setGeometries] = useState<TableGeometry[]>([])
 
   // Bug 1 fix: measure in useLayoutEffect (after DOM update, before paint),
   // not during render, and re-measure on every editor transaction so
@@ -252,51 +298,22 @@ export const TableDragHandles = ({
   // resorting to polling.
   useLayoutEffect(() => {
     if (!editor) {
-      setRowRects([])
-      setColRects([])
+      setGeometries([])
       return
     }
 
     const measure = () => {
       const container = containerRef.current
-      const table = findTable(editor)
-      if (!container || !table) {
-        setRowRects([])
-        setColRects([])
+      if (!container) {
+        setGeometries([])
         return
       }
-      const map = TableMap.get(table.node)
       const containerRect = container.getBoundingClientRect()
-
-      const rows: (Rect | null)[] = []
-      for (let r = 0; r < map.height; r++) {
-        const dom = getRowDom(editor, table.pos, map, r)
-        rows.push(
-          dom
-            ? domRectToContainerRelative(
-                dom.getBoundingClientRect(),
-                containerRect,
-                container,
-              )
-            : null,
-        )
-      }
-      setRowRects(rows)
-
-      const cols: (Rect | null)[] = []
-      for (let c = 0; c < map.width; c++) {
-        const dom = getCellDom(editor, table.pos, map, 0, c)
-        cols.push(
-          dom
-            ? domRectToContainerRelative(
-                dom.getBoundingClientRect(),
-                containerRect,
-                container,
-              )
-            : null,
-        )
-      }
-      setColRects(cols)
+      setGeometries(
+        findAllTables(editor).map((table) =>
+          measureTableGeometry(editor, table, container, containerRect),
+        ),
+      )
     }
 
     measure()
@@ -323,53 +340,75 @@ export const TableDragHandles = ({
       const containerRect = container.getBoundingClientRect()
       const { clientX, clientY } = e
 
+      let matchedTablePos: number | null = null
       let matchedRow: number | null = null
-      rowRects.forEach((rect, i) => {
-        if (!rect) return
-        if (i === 0) return // header row is not draggable — no hover handle either
-        const top = rect.top + containerRect.top
-        const bottom = top + rect.height
-        const left = rect.left + containerRect.left
-        const right = left + rect.width
-        if (
-          clientY >= top &&
-          clientY <= bottom &&
-          clientX >= left - HANDLE_MARGIN_PX &&
-          clientX <= right
-        ) {
-          matchedRow = i
-        }
-      })
-      setHoverRow(matchedRow)
-
       let matchedCol: number | null = null
-      const headerRowRect = rowRects[0]
-      if (headerRowRect) {
-        const headerTop = headerRowRect.top + containerRect.top
-        const headerBottom = headerTop + headerRowRect.height
-        colRects.forEach((rect, i) => {
+
+      for (const geometry of geometries) {
+        let rowHit: number | null = null
+        geometry.rowRects.forEach((rect, i) => {
           if (!rect) return
+          if (i === 0) return // header row is not draggable — no hover handle either
+          const top = rect.top + containerRect.top
+          const bottom = top + rect.height
           const left = rect.left + containerRect.left
           const right = left + rect.width
           if (
-            clientX >= left &&
-            clientX <= right &&
-            clientY >= headerTop - HANDLE_MARGIN_PX &&
-            clientY <= headerBottom
+            clientY >= top &&
+            clientY <= bottom &&
+            clientX >= left - HANDLE_MARGIN_PX &&
+            clientX <= right
           ) {
-            matchedCol = i
+            rowHit = i
           }
         })
+
+        let colHit: number | null = null
+        const headerRowRect = geometry.rowRects[0]
+        if (headerRowRect) {
+          const headerTop = headerRowRect.top + containerRect.top
+          const headerBottom = headerTop + headerRowRect.height
+          geometry.colRects.forEach((rect, i) => {
+            if (!rect) return
+            const left = rect.left + containerRect.left
+            const right = left + rect.width
+            if (
+              clientX >= left &&
+              clientX <= right &&
+              clientY >= headerTop - HANDLE_MARGIN_PX &&
+              clientY <= headerBottom
+            ) {
+              colHit = i
+            }
+          })
+        }
+
+        if (rowHit !== null || colHit !== null) {
+          matchedTablePos = geometry.pos
+          matchedRow = rowHit
+          matchedCol = colHit
+          break
+        }
       }
+
+      setHoverTablePos(matchedTablePos)
+      setHoverRow(matchedRow)
       setHoverCol(matchedCol)
     }
 
     window.addEventListener("mousemove", onMove)
     return () => window.removeEventListener("mousemove", onMove)
-  }, [rowRects, colRects, containerRef])
+  }, [geometries, containerRef])
+
+  const activeTablePos = drag?.tablePos ?? hoverTablePos
+  const activeGeometry =
+    geometries.find((g) => g.pos === activeTablePos) ?? null
+  const rowRects = activeGeometry?.rowRects ?? EMPTY_RECTS
+  const colRects = activeGeometry?.colRects ?? EMPTY_RECTS
 
   const startRowDrag = (rowIndex: number) => (e: React.MouseEvent) => {
     e.preventDefault()
+    if (activeTablePos === null) return
     const boundaries: number[] = []
     rowRects.forEach((rect, i) => {
       if (!rect) return
@@ -381,6 +420,7 @@ export const TableDragHandles = ({
     const state: DragState = {
       axis: "row",
       from: rowIndex,
+      tablePos: activeTablePos,
       pointer: e.clientY - containerTop,
       boundaries,
     }
@@ -390,6 +430,7 @@ export const TableDragHandles = ({
 
   const startColDrag = (colIndex: number) => (e: React.MouseEvent) => {
     e.preventDefault()
+    if (activeTablePos === null) return
     const boundaries: number[] = []
     colRects.forEach((rect, i) => {
       if (!rect) return
@@ -401,6 +442,7 @@ export const TableDragHandles = ({
     const state: DragState = {
       axis: "column",
       from: colIndex,
+      tablePos: activeTablePos,
       pointer: e.clientX - containerLeft,
       boundaries,
     }
@@ -428,8 +470,6 @@ export const TableDragHandles = ({
       dragRef.current = null
       setDrag(null)
       if (!current || !editor) return
-      const table = findTable(editor)
-      if (!table) return
 
       const boundaryIndex = nearestBoundaryIndex(
         current.pointer,
@@ -443,14 +483,16 @@ export const TableDragHandles = ({
       // ancestor chain) — `table.pos` alone is the table's own opening
       // boundary, one level too shallow, and the command silently returns
       // `false`. `table.pos + 1` resolves just inside the table.
+      // Use the table captured at drag start — never re-resolve to the
+      // first table in the document.
       if (current.axis === "row") {
-        moveTableRow({ from: current.from, to, pos: table.pos + 1 })(
+        moveTableRow({ from: current.from, to, pos: current.tablePos + 1 })(
           editor.state,
           editor.view.dispatch,
         )
         return
       }
-      moveTableColumn({ from: current.from, to, pos: table.pos + 1 })(
+      moveTableColumn({ from: current.from, to, pos: current.tablePos + 1 })(
         editor.state,
         editor.view.dispatch,
       )
@@ -498,7 +540,7 @@ export const TableDragHandles = ({
         if (!isHovered && !isDragging) return null
         return (
           <RowHandle
-            key={`row-${i}`}
+            key={`row-${activeTablePos}-${i}`}
             rect={rect}
             onMouseDown={startRowDrag(i)}
           />
@@ -512,7 +554,7 @@ export const TableDragHandles = ({
         if (!isHovered && !isDragging) return null
         return (
           <ColumnHandle
-            key={`col-${i}`}
+            key={`col-${activeTablePos}-${i}`}
             rect={rect}
             onMouseDown={startColDrag(i)}
           />

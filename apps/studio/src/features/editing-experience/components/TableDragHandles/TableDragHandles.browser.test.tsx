@@ -153,6 +153,73 @@ describe("TableDragHandles", () => {
     await hoverUntil(x, y - 20, () => getByLabelText("Drag to reorder column"))
   })
 
+  it("reveals a row handle when hovering a data row of a second table", async () => {
+    const twoTables: JSONContent = {
+      type: "prose",
+      content: [
+        SEED_CONTENT.content![0]!,
+        {
+          type: "table",
+          attrs: { caption: "Second table" },
+          content: [
+            {
+              type: "tableRow",
+              content: ["X", "Y"].map((text) => ({
+                type: "tableHeader",
+                content: [
+                  { type: "paragraph", content: [{ type: "text", text }] },
+                ],
+              })),
+            },
+            {
+              type: "tableRow",
+              content: ["Second-1-A", "Second-1-B"].map((text) => ({
+                type: "tableCell",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text }],
+                  },
+                ],
+              })),
+            },
+          ],
+        },
+      ],
+    }
+
+    let editor: Editor | undefined
+    const TwoTableHarness = () => {
+      const tipTap = useTextEditor({
+        data: twoTables,
+        handleChange: () => null,
+      })
+      const containerRef = useRef<HTMLDivElement>(null)
+      if (tipTap) editor = tipTap
+      return (
+        <div ref={containerRef} style={{ position: "relative" }}>
+          {tipTap && (
+            <TableDragHandles editor={tipTap} containerRef={containerRef} />
+          )}
+          {tipTap && <EditorContent editor={tipTap} />}
+        </div>
+      )
+    }
+
+    const { container, getByLabelText, queryByLabelText } = render(
+      <TwoTableHarness />,
+    )
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+
+    expect(queryByLabelText("Drag to reorder row")).toBeNull()
+
+    const cell = findByCellText(container, "Second-1-A")
+    const { x, y } = centreOf(cell)
+    await hoverUntil(x, y, () => getByLabelText("Drag to reorder row"))
+  })
+
   it("drags a data row to a new position and reorders the document", async () => {
     const { editor, container, getByLabelText } = await renderHarness()
 
