@@ -2,13 +2,17 @@ import type { ReactElement, ReactNode } from "react"
 import type { Editor } from "@tiptap/react"
 import { Divider, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
+import { PluginKey } from "@tiptap/pm/state"
 import {
   CellSelection,
   moveTableColumn,
   moveTableRow,
   selectedRect,
+  TableMap,
+  tableEditingKey,
 } from "@tiptap/pm/tables"
 import { BubbleMenu } from "@tiptap/react/menus"
+import { memo, useEffect, useState, useSyncExternalStore } from "react"
 import {
   BiDownArrowAlt,
   BiLeftArrowAlt,
@@ -93,20 +97,100 @@ const detectSelectionType = (editor: Editor): SelectionKind => {
   return "multi-cell"
 }
 
+// Move a selected block of rows/columns by swapping the adjacent neighbour
+// past the whole block. `moveTableRow`/`moveTableColumn` expand around a
+// single index (colspan/rowspan only), so passing `from: rect.left` for a
+// multi-column selection only moves the first column — e.g. A,B right of
+// A,B,C becomes B,A,C instead of C,A,B. Moving the neighbour into the
+// selection's far edge relocates the entire block in one step.
 const moveRow = (editor: Editor, direction: "up" | "down") => {
-  const rect = selectedRect(editor.state)
-  const from = rect.top
-  const to = direction === "up" ? rect.top - 1 : rect.top + 1
-  if (to < 0 || to >= rect.map.height) return
-  moveTableRow({ from, to })(editor.state, editor.view.dispatch)
+  const { state, view } = editor
+  const rect = selectedRect(state)
+  const rowCount = rect.bottom - rect.top
+  const tablePos = rect.tableStart - 1
+
+  let from: number
+  let to: number
+  let newTop: number
+
+  if (direction === "up") {
+    if (rect.top === 0) return
+    from = rect.top - 1
+    to = rect.bottom - 1
+    newTop = rect.top - 1
+  } else {
+    if (rect.bottom >= rect.map.height) return
+    from = rect.bottom
+    to = rect.top
+    newTop = rect.top + 1
+  }
+
+  moveTableRow({
+    from,
+    to,
+    select: false,
+    pos: rect.tableStart,
+  })(state, (tr) => {
+    const table = tr.doc.nodeAt(tablePos)
+    if (!table) {
+      view.dispatch(tr)
+      return
+    }
+    const map = TableMap.get(table)
+    const tableStart = tablePos + 1
+    const newBottom = newTop + rowCount
+    const anchor = map.positionAt(newTop, 0, table)
+    const head = map.positionAt(newBottom - 1, map.width - 1, table)
+    tr.setSelection(
+      CellSelection.create(tr.doc, tableStart + anchor, tableStart + head),
+    )
+    view.dispatch(tr)
+  })
 }
 
 const moveColumn = (editor: Editor, direction: "left" | "right") => {
-  const rect = selectedRect(editor.state)
-  const from = rect.left
-  const to = direction === "left" ? rect.left - 1 : rect.left + 1
-  if (to < 0 || to >= rect.map.width) return
-  moveTableColumn({ from, to })(editor.state, editor.view.dispatch)
+  const { state, view } = editor
+  const rect = selectedRect(state)
+  const colCount = rect.right - rect.left
+  const tablePos = rect.tableStart - 1
+
+  let from: number
+  let to: number
+  let newLeft: number
+
+  if (direction === "left") {
+    if (rect.left === 0) return
+    from = rect.left - 1
+    to = rect.right - 1
+    newLeft = rect.left - 1
+  } else {
+    if (rect.right >= rect.map.width) return
+    from = rect.right
+    to = rect.left
+    newLeft = rect.left + 1
+  }
+
+  moveTableColumn({
+    from,
+    to,
+    select: false,
+    pos: rect.tableStart,
+  })(state, (tr) => {
+    const table = tr.doc.nodeAt(tablePos)
+    if (!table) {
+      view.dispatch(tr)
+      return
+    }
+    const map = TableMap.get(table)
+    const tableStart = tablePos + 1
+    const newRight = newLeft + colCount
+    const anchor = map.positionAt(map.height - 1, newLeft, table)
+    const head = map.positionAt(0, newRight - 1, table)
+    tr.setSelection(
+      CellSelection.create(tr.doc, tableStart + anchor, tableStart + head),
+    )
+    view.dispatch(tr)
+  })
 }
 
 const ActionButton = ({
@@ -186,10 +270,40 @@ const TableSelectionActions = ({
 }) => {
   const focus = editor.chain().focus()
 
+  const rect =
+    kind === "row" ||
+    kind === "header-row" ||
+    kind === "column" ||
+    kind === "header-column"
+      ? selectedRect(editor.state)
+      : null
+  const canMoveLeft = rect !== null && rect.left > 0
+  const canMoveRight = rect !== null && rect.right < rect.map.width
+  const canMoveUp = rect !== null && rect.top > 0
+  const canMoveDown = rect !== null && rect.bottom < rect.map.height
+  const hasRowMoves = canMoveUp || canMoveDown
+  const hasColumnMoves = canMoveLeft || canMoveRight
+  // TipTap's toggleHeaderRow/Column always targets the first row/column, so
+  // only offer the switch when that edge is part of the current selection.
+  const showHeaderRow = rect !== null && rect.top === 0
+  const showHeaderColumn = rect !== null && rect.left === 0
+
   switch (kind) {
     case "row":
       return (
         <>
+          {showHeaderRow && (
+            <>
+              <ActionGroup>
+                <HeaderToggle
+                  label="Header row"
+                  isChecked={false}
+                  onToggle={() => focus.toggleHeaderRow().run()}
+                />
+              </ActionGroup>
+              <ActionDivider />
+            </>
+          )}
           <ActionGroup>
             <ActionButton
               label="Add row above"
@@ -202,19 +316,27 @@ const TableSelectionActions = ({
               onClick={() => focus.addRowAfter().run()}
             />
           </ActionGroup>
-          <ActionDivider />
-          <ActionGroup>
-            <ActionButton
-              label="Move up"
-              icon={<BiUpArrowAlt fontSize="1rem" />}
-              onClick={() => moveRow(editor, "up")}
-            />
-            <ActionButton
-              label="Move down"
-              icon={<BiDownArrowAlt fontSize="1rem" />}
-              onClick={() => moveRow(editor, "down")}
-            />
-          </ActionGroup>
+          {hasRowMoves && (
+            <>
+              <ActionDivider />
+              <ActionGroup>
+                {canMoveUp && (
+                  <ActionButton
+                    label="Move up"
+                    icon={<BiUpArrowAlt fontSize="1rem" />}
+                    onClick={() => moveRow(editor, "up")}
+                  />
+                )}
+                {canMoveDown && (
+                  <ActionButton
+                    label="Move down"
+                    icon={<BiDownArrowAlt fontSize="1rem" />}
+                    onClick={() => moveRow(editor, "down")}
+                  />
+                )}
+              </ActionGroup>
+            </>
+          )}
           <ActionDivider />
           <ActionGroup>
             <ActionButton
@@ -228,6 +350,18 @@ const TableSelectionActions = ({
     case "header-row":
       return (
         <>
+          {showHeaderRow && (
+            <>
+              <ActionGroup>
+                <HeaderToggle
+                  label="Header row"
+                  isChecked
+                  onToggle={() => focus.toggleHeaderRow().run()}
+                />
+              </ActionGroup>
+              <ActionDivider />
+            </>
+          )}
           <ActionGroup>
             <ActionButton
               label="Add row above"
@@ -240,27 +374,44 @@ const TableSelectionActions = ({
               onClick={() => focus.addRowAfter().run()}
             />
           </ActionGroup>
-          <ActionDivider />
-          <ActionGroup>
-            <ActionButton
-              label="Move down"
-              icon={<BiDownArrowAlt fontSize="1rem" />}
-              onClick={() => moveRow(editor, "down")}
-            />
-          </ActionGroup>
-          <ActionDivider />
-          <ActionGroup>
-            <HeaderToggle
-              label="Header row"
-              isChecked
-              onToggle={() => focus.toggleHeaderRow().run()}
-            />
-          </ActionGroup>
+          {hasRowMoves && (
+            <>
+              <ActionDivider />
+              <ActionGroup>
+                {canMoveUp && (
+                  <ActionButton
+                    label="Move up"
+                    icon={<BiUpArrowAlt fontSize="1rem" />}
+                    onClick={() => moveRow(editor, "up")}
+                  />
+                )}
+                {canMoveDown && (
+                  <ActionButton
+                    label="Move down"
+                    icon={<BiDownArrowAlt fontSize="1rem" />}
+                    onClick={() => moveRow(editor, "down")}
+                  />
+                )}
+              </ActionGroup>
+            </>
+          )}
         </>
       )
     case "column":
       return (
         <>
+          {showHeaderColumn && (
+            <>
+              <ActionGroup>
+                <HeaderToggle
+                  label="Header column"
+                  isChecked={false}
+                  onToggle={() => focus.toggleHeaderColumn().run()}
+                />
+              </ActionGroup>
+              <ActionDivider />
+            </>
+          )}
           <ActionGroup>
             <ActionButton
               label="Add column left"
@@ -273,33 +424,33 @@ const TableSelectionActions = ({
               onClick={() => focus.addColumnAfter().run()}
             />
           </ActionGroup>
-          <ActionDivider />
-          <ActionGroup>
-            <ActionButton
-              label="Move left"
-              icon={<BiLeftArrowAlt fontSize="1rem" />}
-              onClick={() => moveColumn(editor, "left")}
-            />
-            <ActionButton
-              label="Move right"
-              icon={<BiRightArrowAlt fontSize="1rem" />}
-              onClick={() => moveColumn(editor, "right")}
-            />
-          </ActionGroup>
+          {hasColumnMoves && (
+            <>
+              <ActionDivider />
+              <ActionGroup>
+                {canMoveLeft && (
+                  <ActionButton
+                    label="Move left"
+                    icon={<BiLeftArrowAlt fontSize="1rem" />}
+                    onClick={() => moveColumn(editor, "left")}
+                  />
+                )}
+                {canMoveRight && (
+                  <ActionButton
+                    label="Move right"
+                    icon={<BiRightArrowAlt fontSize="1rem" />}
+                    onClick={() => moveColumn(editor, "right")}
+                  />
+                )}
+              </ActionGroup>
+            </>
+          )}
           <ActionDivider />
           <ActionGroup>
             <ActionButton
               label="Delete column"
               icon={<IconDelCol boxSize="1rem" />}
               onClick={() => focus.deleteColumn().run()}
-            />
-          </ActionGroup>
-          <ActionDivider />
-          <ActionGroup>
-            <HeaderToggle
-              label="Header column"
-              isChecked={false}
-              onToggle={() => focus.toggleHeaderColumn().run()}
             />
           </ActionGroup>
         </>
@@ -307,6 +458,18 @@ const TableSelectionActions = ({
     case "header-column":
       return (
         <>
+          {showHeaderColumn && (
+            <>
+              <ActionGroup>
+                <HeaderToggle
+                  label="Header column"
+                  isChecked
+                  onToggle={() => focus.toggleHeaderColumn().run()}
+                />
+              </ActionGroup>
+              <ActionDivider />
+            </>
+          )}
           <ActionGroup>
             <ActionButton
               label="Add column left"
@@ -319,33 +482,33 @@ const TableSelectionActions = ({
               onClick={() => focus.addColumnAfter().run()}
             />
           </ActionGroup>
-          <ActionDivider />
-          <ActionGroup>
-            <ActionButton
-              label="Move left"
-              icon={<BiLeftArrowAlt fontSize="1rem" />}
-              onClick={() => moveColumn(editor, "left")}
-            />
-            <ActionButton
-              label="Move right"
-              icon={<BiRightArrowAlt fontSize="1rem" />}
-              onClick={() => moveColumn(editor, "right")}
-            />
-          </ActionGroup>
+          {hasColumnMoves && (
+            <>
+              <ActionDivider />
+              <ActionGroup>
+                {canMoveLeft && (
+                  <ActionButton
+                    label="Move left"
+                    icon={<BiLeftArrowAlt fontSize="1rem" />}
+                    onClick={() => moveColumn(editor, "left")}
+                  />
+                )}
+                {canMoveRight && (
+                  <ActionButton
+                    label="Move right"
+                    icon={<BiRightArrowAlt fontSize="1rem" />}
+                    onClick={() => moveColumn(editor, "right")}
+                  />
+                )}
+              </ActionGroup>
+            </>
+          )}
           <ActionDivider />
           <ActionGroup>
             <ActionButton
               label="Delete column"
               icon={<IconDelCol boxSize="1rem" />}
               onClick={() => focus.deleteColumn().run()}
-            />
-          </ActionGroup>
-          <ActionDivider />
-          <ActionGroup>
-            <HeaderToggle
-              label="Header column"
-              isChecked
-              onToggle={() => focus.toggleHeaderColumn().run()}
             />
           </ActionGroup>
         </>
@@ -379,22 +542,22 @@ const TableSelectionActions = ({
   }
 }
 
-// Stable module-level references. `useTextEditor` runs with
+// Stable module-level reference. `useTextEditor` runs with
 // `shouldRerenderOnTransaction: true`, so every transaction re-renders every
-// editor consumer, including this component. If `shouldShow` / `options` /
-// `appendTo` were fresh values on each render, TipTap's BubbleMenu would
-// treat them as changed props and dispatch an options-update transaction —
-// which triggers another re-render. Keeping these stable breaks that loop.
-// See .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
+// editor consumer, including this component. If `shouldShow` were a fresh
+// inline closure on each render, TipTap's BubbleMenu would treat it as changed
+// props and re-register its plugin, which dispatches a transaction — which
+// triggers another re-render, forever. Keeping this function reference stable
+// across renders is what breaks that loop. See
+// .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
 //
 // Only CellSelections that have table actions (row/column/table/merge/split)
-// show the menu. A plain text cursor inside a cell must not — otherwise
-// clicking into a cell floats Superscript/Subscript over the content.
+// show the menu. A plain text cursor inside a cell must not.
+// Require editor (or menu) focus — TipTap's default shouldShow does this.
 //
-// Also require editor (or menu) focus — TipTap's default shouldShow does this.
-// Defense in depth with the dedicated portal root below: opening Table
-// Settings blurs the editor and must not leave (or re-show) the menu where it
-// can fight Chakra's Modal focus lock.
+// Also stay hidden while prosemirror-tables is mid cell-drag
+// (`tableEditingKey` is set in mousemove, cleared to null on mouseup) so the
+// menu only settles after the drag commits — not for every intermediate rect.
 const shouldShowTableBubbleMenu = ({
   editor,
   view,
@@ -404,6 +567,8 @@ const shouldShowTableBubbleMenu = ({
   view: Editor["view"]
   element: HTMLElement
 }) => {
+  if (tableEditingKey.getState(view.state) != null) return false
+
   const kind = detectSelectionType(editor)
   if (kind === "none" || kind === "single-cell") return false
 
@@ -411,65 +576,126 @@ const shouldShowTableBubbleMenu = ({
   return view.hasFocus() || isChildOfMenu
 }
 
-// `fixed` + a body-level portal escapes the editor drawer / EditorContent
-// overflow clipping that otherwise hides the menu (TipTap defaults to
-// `absolute` and appends beside ProseMirror inside an overflow:auto ancestor).
-const TABLE_BUBBLE_MENU_OPTIONS = {
-  strategy: "fixed" as const,
-  placement: "top" as const,
-  offset: 8,
-}
+// Immediate show/hide once `shouldShow` flips — TipTap's default 250ms delay
+// would keep a stale menu visible into the start of a drag, then lag the
+// post-mouseup reveal. Drag gating is handled by `tableEditingKey` above.
+const TABLE_BUBBLE_MENU_UPDATE_DELAY = 0
 
-// Dedicated portal root — NOT `document.body`. TipTap's BubbleMenu blur
-// handler skips hide when `element.parentNode.contains(relatedTarget)`. If
-// parentNode is `body`, that is true for every focus target on the page
-// (including Chakra Modal), so the menu never hides on blur and fights the
-// modal focus lock — hanging the tab when Table Settings opens.
-// A dedicated empty div still escapes editor overflow clipping (via `fixed`)
-// without that body-wide contains() false positive.
-let tableBubbleMenuPortalRoot: HTMLElement | null = null
+// Stable explicit plugin key so we can nudge TipTap's show/hide when
+// `tableEditingKey` flips without a selection/doc change (mouseup only clears
+// the selectingCells meta — TipTap's BubbleMenu early-returns on those and
+// would otherwise never re-run `shouldShow`).
+const TABLE_BUBBLE_MENU_PLUGIN_KEY = new PluginKey("tableBubbleMenu")
 
-const getBubbleMenuAppendTo = (): HTMLElement => {
-  if (!tableBubbleMenuPortalRoot) {
-    tableBubbleMenuPortalRoot = document.createElement("div")
-    tableBubbleMenuPortalRoot.setAttribute("data-table-bubble-menu-portal", "")
-    document.body.appendChild(tableBubbleMenuPortalRoot)
-  }
-  return tableBubbleMenuPortalRoot
-}
+// memo: parent Editor re-renders on every TipTap transaction, including the
+// blur/focus meta transactions Chakra Modal FocusLock generates. TipTap's
+// BubbleMenu React wrapper re-runs useMenuElementProps on each render (fresh
+// restProps object) and fights FocusLock → tab hang when opening Table
+// Settings. Skipping parent-driven re-renders breaks that loop.
+//
+// Re-render only on selectionUpdate/update (not blur/focus meta) so kind and
+// move-edge affordances stay correct without FocusLock thrash.
+export const TableBubbleMenu = memo(function TableBubbleMenu({
+  editor,
+}: TableBubbleMenuProps) {
+  const [, setRevision] = useState(0)
 
-// Stable style object — avoid a fresh `{}` each render (same footgun class as
-// shouldShow / options / appendTo above, for attributes TipTap syncs).
-const TABLE_BUBBLE_MENU_STYLE = {
-  zIndex: "var(--chakra-zIndices-popover)",
-  textAlign: "left",
-} as const
+  useEffect(() => {
+    const sync = () => setRevision((n) => n + 1)
+    editor.on("selectionUpdate", sync)
+    editor.on("update", sync)
+    return () => {
+      editor.off("selectionUpdate", sync)
+      editor.off("update", sync)
+    }
+  }, [editor])
 
-export const TableBubbleMenu = ({ editor }: TableBubbleMenuProps) => {
+  // Drive content off `tableEditingKey` as well: TipTap only re-runs
+  // `shouldShow` when selection/doc changes, but mouseup clears selectingCells
+  // with a meta-only transaction. Subscribing here unmounts actions mid-drag
+  // and remounts them on commit even when TipTap's shell lag/early-return
+  // would leave stale DOM briefly.
+  const isSelectingCells = useSyncExternalStore(
+    (onStoreChange) => {
+      const sync = () => onStoreChange()
+      editor.on("transaction", sync)
+      return () => {
+        editor.off("transaction", sync)
+      }
+    },
+    () => tableEditingKey.getState(editor.state) != null,
+    () => false,
+  )
+
+  // TipTap early-returns when selection/doc are unchanged, so meta-only
+  // selectingCells transitions never re-run `shouldShow`. Nudge the plugin
+  // shell hide/show after those transitions; TipTap's `show` meta skips
+  // shouldShow, so only fire it when the menu is actually allowed.
+  useEffect(() => {
+    const onTransaction = ({
+      transaction,
+    }: {
+      transaction: { getMeta: (key: typeof tableEditingKey) => unknown }
+    }) => {
+      if (transaction.getMeta(tableEditingKey) === undefined) return
+
+      queueMicrotask(() => {
+        if (editor.isDestroyed) return
+        if (tableEditingKey.getState(editor.state) != null) {
+          editor.view.dispatch(
+            editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
+          )
+          return
+        }
+        if (
+          shouldShowTableBubbleMenu({
+            editor,
+            view: editor.view,
+            // Menu element isn't available here; focus on the editor is the
+            // practical gate after a cell drag (menu isn't focused mid-drag).
+            element: editor.view.dom,
+          })
+        ) {
+          editor.view.dispatch(
+            editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "show"),
+          )
+          return
+        }
+        editor.view.dispatch(
+          editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
+        )
+      })
+    }
+    editor.on("transaction", onTransaction)
+    return () => {
+      editor.off("transaction", onTransaction)
+    }
+  }, [editor])
+
   const kind = detectSelectionType(editor)
 
   return (
     <BubbleMenu
       editor={editor}
+      pluginKey={TABLE_BUBBLE_MENU_PLUGIN_KEY}
       shouldShow={shouldShowTableBubbleMenu}
-      updateDelay={0}
-      options={TABLE_BUBBLE_MENU_OPTIONS}
-      appendTo={getBubbleMenuAppendTo}
-      style={TABLE_BUBBLE_MENU_STYLE}
+      updateDelay={TABLE_BUBBLE_MENU_UPDATE_DELAY}
     >
-      <VStack
-        align="stretch"
-        textAlign="left"
-        bg="base.canvas.default"
-        boxShadow="md"
-        borderRadius="md"
-        border="1px solid"
-        borderColor="base.divider.medium"
-        p="0.375rem"
-        gap="0"
-      >
-        <TableSelectionActions editor={editor} kind={kind} />
-      </VStack>
+      {!isSelectingCells && (
+        <VStack
+          align="stretch"
+          textAlign="left"
+          bg="base.canvas.default"
+          boxShadow="md"
+          borderRadius="md"
+          border="1px solid"
+          borderColor="base.divider.medium"
+          p="0.375rem"
+          gap="0"
+        >
+          <TableSelectionActions editor={editor} kind={kind} />
+        </VStack>
+      )}
     </BubbleMenu>
   )
-}
+})
