@@ -126,8 +126,27 @@ const boundaryToTargetIndex = (boundaryIndex: number, from: number) => {
 const GRIP = "⣏⣏" // stacked braille-pattern grip glyph
 
 const HANDLE_MARGIN_PX = 28
-const HANDLE_SIZE_REM = "1.25rem"
+/** Outer size of the compact grip chip (square). */
+const HANDLE_SIZE_PX = 20
 const HANDLE_OFFSET_PX = 24
+
+const handleStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "grab",
+  color: "base.content.medium",
+  bg: "base.canvas.default",
+  border: "1px solid",
+  borderColor: "interaction.main.default",
+  borderRadius: "0.25rem",
+  fontSize: "0.7rem",
+  lineHeight: 1,
+  userSelect: "none",
+  zIndex: "2",
+  w: `${HANDLE_SIZE_PX}px`,
+  h: `${HANDLE_SIZE_PX}px`,
+} as const
 
 const RowHandle = ({
   rect,
@@ -139,22 +158,9 @@ const RowHandle = ({
   <Box
     position="absolute"
     left={`${rect.left - HANDLE_OFFSET_PX}px`}
-    top={`${rect.top}px`}
-    h={`${rect.height}px`}
-    w={HANDLE_SIZE_REM}
-    display="flex"
-    alignItems="center"
-    justifyContent="center"
-    cursor="grab"
-    color="base.content.medium"
-    bg="base.canvas.default"
-    border="1px solid"
-    borderColor="interaction.main.default"
-    borderRadius="0.25rem"
-    fontSize="0.7rem"
-    userSelect="none"
+    top={`${rect.top + (rect.height - HANDLE_SIZE_PX) / 2}px`}
+    {...handleStyle}
     onMouseDown={onMouseDown}
-    zIndex="2"
     title="Drag to reorder row"
     aria-label="Drag to reorder row"
     role="button"
@@ -173,22 +179,9 @@ const ColumnHandle = ({
   <Box
     position="absolute"
     top={`${rect.top - HANDLE_OFFSET_PX}px`}
-    left={`${rect.left}px`}
-    w={`${rect.width}px`}
-    h={HANDLE_SIZE_REM}
-    display="flex"
-    alignItems="center"
-    justifyContent="center"
-    cursor="grab"
-    color="base.content.medium"
-    bg="base.canvas.default"
-    border="1px solid"
-    borderColor="interaction.main.default"
-    borderRadius="0.25rem"
-    fontSize="0.7rem"
-    userSelect="none"
+    left={`${rect.left + (rect.width - HANDLE_SIZE_PX) / 2}px`}
+    {...handleStyle}
     onMouseDown={onMouseDown}
-    zIndex="2"
     title="Drag to reorder column"
     aria-label="Drag to reorder column"
     role="button"
