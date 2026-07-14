@@ -1,5 +1,6 @@
+import type { ReactElement } from "react"
 import type { Editor } from "@tiptap/react"
-import { Button, HStack } from "@chakra-ui/react"
+import { Button, VStack } from "@chakra-ui/react"
 import {
   CellSelection,
   moveTableColumn,
@@ -7,6 +8,25 @@ import {
   selectedRect,
 } from "@tiptap/pm/tables"
 import { BubbleMenu } from "@tiptap/react/menus"
+import {
+  BiDownArrowAlt,
+  BiHeading,
+  BiLeftArrowAlt,
+  BiRightArrowAlt,
+  BiTrash,
+  BiUpArrowAlt,
+} from "react-icons/bi"
+
+import {
+  IconAddColLeft,
+  IconAddColRight,
+  IconAddRowAbove,
+  IconAddRowBelow,
+  IconDelCol,
+  IconDelRow,
+  IconMergeCells,
+  IconSplitCell,
+} from "~/components/icons"
 
 export interface TableBubbleMenuProps {
   editor: Editor
@@ -91,12 +111,21 @@ const moveColumn = (editor: Editor, direction: "left" | "right") => {
 
 const ActionButton = ({
   label,
+  icon,
   onClick,
 }: {
   label: string
+  icon: ReactElement
   onClick: () => void
 }) => (
-  <Button size="xs" variant="outline" onClick={onClick}>
+  <Button
+    size="xs"
+    variant="outline"
+    onClick={onClick}
+    leftIcon={icon}
+    justifyContent="flex-start"
+    w="100%"
+  >
     {label}
   </Button>
 )
@@ -116,19 +145,27 @@ const TableSelectionActions = ({
         <>
           <ActionButton
             label="Add row above"
+            icon={<IconAddRowAbove boxSize="1rem" />}
             onClick={() => focus.addRowBefore().run()}
           />
           <ActionButton
             label="Add row below"
+            icon={<IconAddRowBelow boxSize="1rem" />}
             onClick={() => focus.addRowAfter().run()}
           />
-          <ActionButton label="Move up" onClick={() => moveRow(editor, "up")} />
+          <ActionButton
+            label="Move up"
+            icon={<BiUpArrowAlt fontSize="1rem" />}
+            onClick={() => moveRow(editor, "up")}
+          />
           <ActionButton
             label="Move down"
+            icon={<BiDownArrowAlt fontSize="1rem" />}
             onClick={() => moveRow(editor, "down")}
           />
           <ActionButton
             label="Delete row"
+            icon={<IconDelRow boxSize="1rem" />}
             onClick={() => focus.deleteRow().run()}
           />
         </>
@@ -138,18 +175,22 @@ const TableSelectionActions = ({
         <>
           <ActionButton
             label="Unset header row"
+            icon={<BiHeading fontSize="1rem" />}
             onClick={() => focus.toggleHeaderRow().run()}
           />
           <ActionButton
             label="Add row above"
+            icon={<IconAddRowAbove boxSize="1rem" />}
             onClick={() => focus.addRowBefore().run()}
           />
           <ActionButton
             label="Add row below"
+            icon={<IconAddRowBelow boxSize="1rem" />}
             onClick={() => focus.addRowAfter().run()}
           />
           <ActionButton
             label="Move down"
+            icon={<BiDownArrowAlt fontSize="1rem" />}
             onClick={() => moveRow(editor, "down")}
           />
         </>
@@ -159,26 +200,32 @@ const TableSelectionActions = ({
         <>
           <ActionButton
             label="Add column left"
+            icon={<IconAddColLeft boxSize="1rem" />}
             onClick={() => focus.addColumnBefore().run()}
           />
           <ActionButton
             label="Add column right"
+            icon={<IconAddColRight boxSize="1rem" />}
             onClick={() => focus.addColumnAfter().run()}
           />
           <ActionButton
             label="Move left"
+            icon={<BiLeftArrowAlt fontSize="1rem" />}
             onClick={() => moveColumn(editor, "left")}
           />
           <ActionButton
             label="Move right"
+            icon={<BiRightArrowAlt fontSize="1rem" />}
             onClick={() => moveColumn(editor, "right")}
           />
           <ActionButton
             label="Delete column"
+            icon={<IconDelCol boxSize="1rem" />}
             onClick={() => focus.deleteColumn().run()}
           />
           <ActionButton
             label="Set as header column"
+            icon={<BiHeading fontSize="1rem" />}
             onClick={() => focus.toggleHeaderColumn().run()}
           />
         </>
@@ -188,26 +235,32 @@ const TableSelectionActions = ({
         <>
           <ActionButton
             label="Unset header column"
+            icon={<BiHeading fontSize="1rem" />}
             onClick={() => focus.toggleHeaderColumn().run()}
           />
           <ActionButton
             label="Add column left"
+            icon={<IconAddColLeft boxSize="1rem" />}
             onClick={() => focus.addColumnBefore().run()}
           />
           <ActionButton
             label="Add column right"
+            icon={<IconAddColRight boxSize="1rem" />}
             onClick={() => focus.addColumnAfter().run()}
           />
           <ActionButton
             label="Move left"
+            icon={<BiLeftArrowAlt fontSize="1rem" />}
             onClick={() => moveColumn(editor, "left")}
           />
           <ActionButton
             label="Move right"
+            icon={<BiRightArrowAlt fontSize="1rem" />}
             onClick={() => moveColumn(editor, "right")}
           />
           <ActionButton
             label="Delete column"
+            icon={<IconDelCol boxSize="1rem" />}
             onClick={() => focus.deleteColumn().run()}
           />
         </>
@@ -216,6 +269,7 @@ const TableSelectionActions = ({
       return (
         <ActionButton
           label="Delete table"
+          icon={<BiTrash fontSize="1rem" />}
           onClick={() => focus.deleteTable().run()}
         />
       )
@@ -223,6 +277,7 @@ const TableSelectionActions = ({
       return (
         <ActionButton
           label="Merge cells"
+          icon={<IconMergeCells boxSize="1rem" />}
           onClick={() => focus.mergeCells().run()}
         />
       )
@@ -230,6 +285,7 @@ const TableSelectionActions = ({
       return (
         <ActionButton
           label="Split cell"
+          icon={<IconSplitCell boxSize="1rem" />}
           onClick={() => focus.splitCell().run()}
         />
       )
@@ -249,9 +305,25 @@ const TableSelectionActions = ({
 // Only CellSelections that have table actions (row/column/table/merge/split)
 // show the menu. A plain text cursor inside a cell must not — otherwise
 // clicking into a cell floats Superscript/Subscript over the content.
-const shouldShowTableBubbleMenu = ({ editor }: { editor: Editor }) => {
+//
+// Also require editor (or menu) focus — TipTap's default shouldShow does this.
+// Without it, opening Table Settings (or any modal) blurs the editor, the
+// menu hides on blur, then the next transaction re-shows it on document.body
+// where it fights Chakra's Modal focus lock and can hang the tab.
+const shouldShowTableBubbleMenu = ({
+  editor,
+  view,
+  element,
+}: {
+  editor: Editor
+  view: Editor["view"]
+  element: HTMLElement
+}) => {
   const kind = detectSelectionType(editor)
-  return kind !== "none" && kind !== "single-cell"
+  if (kind === "none" || kind === "single-cell") return false
+
+  const isChildOfMenu = element.contains(document.activeElement)
+  return view.hasFocus() || isChildOfMenu
 }
 
 // `fixed` + body append escapes the editor drawer / EditorContent overflow
@@ -265,6 +337,12 @@ const TABLE_BUBBLE_MENU_OPTIONS = {
 
 const getBubbleMenuAppendTo = () => document.body
 
+// Stable style object — avoid a fresh `{}` each render (same footgun class as
+// shouldShow / options / appendTo above, for attributes TipTap syncs).
+const TABLE_BUBBLE_MENU_STYLE = {
+  zIndex: "var(--chakra-zIndices-popover)",
+} as const
+
 export const TableBubbleMenu = ({ editor }: TableBubbleMenuProps) => {
   const kind = detectSelectionType(editor)
 
@@ -275,9 +353,10 @@ export const TableBubbleMenu = ({ editor }: TableBubbleMenuProps) => {
       updateDelay={0}
       options={TABLE_BUBBLE_MENU_OPTIONS}
       appendTo={getBubbleMenuAppendTo}
-      style={{ zIndex: "var(--chakra-zIndices-popover)" }}
+      style={TABLE_BUBBLE_MENU_STYLE}
     >
-      <HStack
+      <VStack
+        align="stretch"
         bg="base.canvas.default"
         boxShadow="md"
         borderRadius="md"
@@ -287,7 +366,7 @@ export const TableBubbleMenu = ({ editor }: TableBubbleMenuProps) => {
         gap="0.25rem"
       >
         <TableSelectionActions editor={editor} kind={kind} />
-      </HStack>
+      </VStack>
     </BubbleMenu>
   )
 }
