@@ -12,7 +12,7 @@ import {
   tableEditingKey,
 } from "@tiptap/pm/tables"
 import { BubbleMenu } from "@tiptap/react/menus"
-import { memo, useEffect, useState, useSyncExternalStore } from "react"
+import { memo, useEffect, useState } from "react"
 import {
   BiDownArrowAlt,
   BiLeftArrowAlt,
@@ -581,11 +581,46 @@ const shouldShowTableBubbleMenu = ({
 // post-mouseup reveal. Drag gating is handled by `tableEditingKey` above.
 const TABLE_BUBBLE_MENU_UPDATE_DELAY = 0
 
+// `fixed` escapes the editor's overflow:auto clipping (absolute positioning
+// anchors inside EditorContent and the menu gets clipped above the selection).
+// Do NOT appendTo document.body — TipTap's blur handler treats any body focus
+// target as "inside the menu" via parentNode.contains and hangs FocusLock.
+const TABLE_BUBBLE_MENU_OPTIONS = {
+  strategy: "fixed" as const,
+  placement: "top" as const,
+  offset: 8,
+}
+
 // Stable explicit plugin key so we can nudge TipTap's show/hide when
 // `tableEditingKey` flips without a selection/doc change (mouseup only clears
 // the selectingCells meta — TipTap's BubbleMenu early-returns on those and
 // would otherwise never re-run `shouldShow`).
 const TABLE_BUBBLE_MENU_PLUGIN_KEY = new PluginKey("tableBubbleMenu")
+
+// TipTap's `show` meta runs `updatePosition()` *before* `show()`, and
+// `updatePosition` no-ops while `!isVisible` — so a bare `show` meta leaves
+// the menu unpositioned (often effectively invisible). Show first, then
+// position.
+const revealTableBubbleMenu = (editor: Editor) => {
+  if (
+    !shouldShowTableBubbleMenu({
+      editor,
+      view: editor.view,
+      element: editor.view.dom,
+    })
+  ) {
+    editor.view.dispatch(
+      editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
+    )
+    return
+  }
+  editor.view.dispatch(
+    editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "show"),
+  )
+  editor.view.dispatch(
+    editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "updatePosition"),
+  )
+}
 
 // memo: parent Editor re-renders on every TipTap transaction, including the
 // blur/focus meta transactions Chakra Modal FocusLock generates. TipTap's
@@ -610,27 +645,9 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
     }
   }, [editor])
 
-  // Drive content off `tableEditingKey` as well: TipTap only re-runs
-  // `shouldShow` when selection/doc changes, but mouseup clears selectingCells
-  // with a meta-only transaction. Subscribing here unmounts actions mid-drag
-  // and remounts them on commit even when TipTap's shell lag/early-return
-  // would leave stale DOM briefly.
-  const isSelectingCells = useSyncExternalStore(
-    (onStoreChange) => {
-      const sync = () => onStoreChange()
-      editor.on("transaction", sync)
-      return () => {
-        editor.off("transaction", sync)
-      }
-    },
-    () => tableEditingKey.getState(editor.state) != null,
-    () => false,
-  )
-
-  // TipTap early-returns when selection/doc are unchanged, so meta-only
-  // selectingCells transitions never re-run `shouldShow`. Nudge the plugin
-  // shell hide/show after those transitions; TipTap's `show` meta skips
-  // shouldShow, so only fire it when the menu is actually allowed.
+  // TipTap early-returns when selection/doc are unchanged, so mouseup's
+  // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
+  // (or an explicit hide while selecting) force hide/reveal.
   useEffect(() => {
     const onTransaction = ({
       transaction,
@@ -647,23 +664,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
           )
           return
         }
-        if (
-          shouldShowTableBubbleMenu({
-            editor,
-            view: editor.view,
-            // Menu element isn't available here; focus on the editor is the
-            // practical gate after a cell drag (menu isn't focused mid-drag).
-            element: editor.view.dom,
-          })
-        ) {
-          editor.view.dispatch(
-            editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "show"),
-          )
-          return
-        }
-        editor.view.dispatch(
-          editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
-        )
+        revealTableBubbleMenu(editor)
       })
     }
     editor.on("transaction", onTransaction)
@@ -680,22 +681,21 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       pluginKey={TABLE_BUBBLE_MENU_PLUGIN_KEY}
       shouldShow={shouldShowTableBubbleMenu}
       updateDelay={TABLE_BUBBLE_MENU_UPDATE_DELAY}
+      options={TABLE_BUBBLE_MENU_OPTIONS}
     >
-      {!isSelectingCells && (
-        <VStack
-          align="stretch"
-          textAlign="left"
-          bg="base.canvas.default"
-          boxShadow="md"
-          borderRadius="md"
-          border="1px solid"
-          borderColor="base.divider.medium"
-          p="0.375rem"
-          gap="0"
-        >
-          <TableSelectionActions editor={editor} kind={kind} />
-        </VStack>
-      )}
+      <VStack
+        align="stretch"
+        textAlign="left"
+        bg="base.canvas.default"
+        boxShadow="md"
+        borderRadius="md"
+        border="1px solid"
+        borderColor="base.divider.medium"
+        p="0.375rem"
+        gap="0"
+      >
+        <TableSelectionActions editor={editor} kind={kind} />
+      </VStack>
     </BubbleMenu>
   )
 })
