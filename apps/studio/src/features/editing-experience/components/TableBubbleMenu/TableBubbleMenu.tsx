@@ -1,7 +1,7 @@
-import type { ReactElement } from "react"
+import type { ReactElement, ReactNode } from "react"
 import type { Editor } from "@tiptap/react"
-import { VStack } from "@chakra-ui/react"
-import { Button } from "@opengovsg/design-system-react"
+import { Divider, Flex, Text, VStack } from "@chakra-ui/react"
+import { Button, Switch } from "@opengovsg/design-system-react"
 import {
   CellSelection,
   moveTableColumn,
@@ -11,7 +11,6 @@ import {
 import { BubbleMenu } from "@tiptap/react/menus"
 import {
   BiDownArrowAlt,
-  BiHeading,
   BiLeftArrowAlt,
   BiRightArrowAlt,
   BiTrash,
@@ -135,6 +134,49 @@ const ActionButton = ({
   </Button>
 )
 
+const ActionGroup = ({ children }: { children: ReactNode }) => (
+  <VStack align="stretch" gap="0" w="100%">
+    {children}
+  </VStack>
+)
+
+const ActionDivider = () => (
+  <Divider borderColor="base.divider.medium" my="0.25rem" opacity={1} />
+)
+
+// Label + switch — one control for set/unset instead of separate action
+// buttons. TipTap toolbar pattern: preventDefault on mousedown so the click
+// does not steal focus (and thus CellSelection) from the editor.
+// Text uses the same subhead-2 sizing as ActionButton (Button size="xs");
+// Switch `sm` is the smallest size in the design system.
+const HeaderToggle = ({
+  label,
+  isChecked,
+  onToggle,
+}: {
+  label: string
+  isChecked: boolean
+  onToggle: () => void
+}) => (
+  <Flex
+    w="100%"
+    minH="2.25rem"
+    align="center"
+    justify="space-between"
+    px="15px"
+    gap="0.5rem"
+    onMouseDown={(event) => event.preventDefault()}
+  >
+    <Text textStyle="subhead-2">{label}</Text>
+    <Switch
+      size="sm"
+      isChecked={isChecked}
+      onChange={onToggle}
+      aria-label={label}
+    />
+  </Flex>
+)
+
 const TableSelectionActions = ({
   editor,
   kind,
@@ -148,126 +190,164 @@ const TableSelectionActions = ({
     case "row":
       return (
         <>
-          <ActionButton
-            label="Add row above"
-            icon={<IconAddRowAbove boxSize="1rem" />}
-            onClick={() => focus.addRowBefore().run()}
-          />
-          <ActionButton
-            label="Add row below"
-            icon={<IconAddRowBelow boxSize="1rem" />}
-            onClick={() => focus.addRowAfter().run()}
-          />
-          <ActionButton
-            label="Move up"
-            icon={<BiUpArrowAlt fontSize="1rem" />}
-            onClick={() => moveRow(editor, "up")}
-          />
-          <ActionButton
-            label="Move down"
-            icon={<BiDownArrowAlt fontSize="1rem" />}
-            onClick={() => moveRow(editor, "down")}
-          />
-          <ActionButton
-            label="Delete row"
-            icon={<IconDelRow boxSize="1rem" />}
-            onClick={() => focus.deleteRow().run()}
-          />
+          <ActionGroup>
+            <ActionButton
+              label="Add row above"
+              icon={<IconAddRowAbove boxSize="1rem" />}
+              onClick={() => focus.addRowBefore().run()}
+            />
+            <ActionButton
+              label="Add row below"
+              icon={<IconAddRowBelow boxSize="1rem" />}
+              onClick={() => focus.addRowAfter().run()}
+            />
+          </ActionGroup>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Move up"
+              icon={<BiUpArrowAlt fontSize="1rem" />}
+              onClick={() => moveRow(editor, "up")}
+            />
+            <ActionButton
+              label="Move down"
+              icon={<BiDownArrowAlt fontSize="1rem" />}
+              onClick={() => moveRow(editor, "down")}
+            />
+          </ActionGroup>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Delete row"
+              icon={<IconDelRow boxSize="1rem" />}
+              onClick={() => focus.deleteRow().run()}
+            />
+          </ActionGroup>
         </>
       )
     case "header-row":
       return (
         <>
-          <ActionButton
-            label="Unset header row"
-            icon={<BiHeading fontSize="1rem" />}
-            onClick={() => focus.toggleHeaderRow().run()}
-          />
-          <ActionButton
-            label="Add row above"
-            icon={<IconAddRowAbove boxSize="1rem" />}
-            onClick={() => focus.addRowBefore().run()}
-          />
-          <ActionButton
-            label="Add row below"
-            icon={<IconAddRowBelow boxSize="1rem" />}
-            onClick={() => focus.addRowAfter().run()}
-          />
-          <ActionButton
-            label="Move down"
-            icon={<BiDownArrowAlt fontSize="1rem" />}
-            onClick={() => moveRow(editor, "down")}
-          />
+          <ActionGroup>
+            <ActionButton
+              label="Add row above"
+              icon={<IconAddRowAbove boxSize="1rem" />}
+              onClick={() => focus.addRowBefore().run()}
+            />
+            <ActionButton
+              label="Add row below"
+              icon={<IconAddRowBelow boxSize="1rem" />}
+              onClick={() => focus.addRowAfter().run()}
+            />
+          </ActionGroup>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Move down"
+              icon={<BiDownArrowAlt fontSize="1rem" />}
+              onClick={() => moveRow(editor, "down")}
+            />
+          </ActionGroup>
+          <ActionDivider />
+          <ActionGroup>
+            <HeaderToggle
+              label="Header row"
+              isChecked
+              onToggle={() => focus.toggleHeaderRow().run()}
+            />
+          </ActionGroup>
         </>
       )
     case "column":
       return (
         <>
-          <ActionButton
-            label="Add column left"
-            icon={<IconAddColLeft boxSize="1rem" />}
-            onClick={() => focus.addColumnBefore().run()}
-          />
-          <ActionButton
-            label="Add column right"
-            icon={<IconAddColRight boxSize="1rem" />}
-            onClick={() => focus.addColumnAfter().run()}
-          />
-          <ActionButton
-            label="Move left"
-            icon={<BiLeftArrowAlt fontSize="1rem" />}
-            onClick={() => moveColumn(editor, "left")}
-          />
-          <ActionButton
-            label="Move right"
-            icon={<BiRightArrowAlt fontSize="1rem" />}
-            onClick={() => moveColumn(editor, "right")}
-          />
-          <ActionButton
-            label="Delete column"
-            icon={<IconDelCol boxSize="1rem" />}
-            onClick={() => focus.deleteColumn().run()}
-          />
-          <ActionButton
-            label="Set as header column"
-            icon={<BiHeading fontSize="1rem" />}
-            onClick={() => focus.toggleHeaderColumn().run()}
-          />
+          <ActionGroup>
+            <ActionButton
+              label="Add column left"
+              icon={<IconAddColLeft boxSize="1rem" />}
+              onClick={() => focus.addColumnBefore().run()}
+            />
+            <ActionButton
+              label="Add column right"
+              icon={<IconAddColRight boxSize="1rem" />}
+              onClick={() => focus.addColumnAfter().run()}
+            />
+          </ActionGroup>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Move left"
+              icon={<BiLeftArrowAlt fontSize="1rem" />}
+              onClick={() => moveColumn(editor, "left")}
+            />
+            <ActionButton
+              label="Move right"
+              icon={<BiRightArrowAlt fontSize="1rem" />}
+              onClick={() => moveColumn(editor, "right")}
+            />
+          </ActionGroup>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Delete column"
+              icon={<IconDelCol boxSize="1rem" />}
+              onClick={() => focus.deleteColumn().run()}
+            />
+          </ActionGroup>
+          <ActionDivider />
+          <ActionGroup>
+            <HeaderToggle
+              label="Header column"
+              isChecked={false}
+              onToggle={() => focus.toggleHeaderColumn().run()}
+            />
+          </ActionGroup>
         </>
       )
     case "header-column":
       return (
         <>
-          <ActionButton
-            label="Unset header column"
-            icon={<BiHeading fontSize="1rem" />}
-            onClick={() => focus.toggleHeaderColumn().run()}
-          />
-          <ActionButton
-            label="Add column left"
-            icon={<IconAddColLeft boxSize="1rem" />}
-            onClick={() => focus.addColumnBefore().run()}
-          />
-          <ActionButton
-            label="Add column right"
-            icon={<IconAddColRight boxSize="1rem" />}
-            onClick={() => focus.addColumnAfter().run()}
-          />
-          <ActionButton
-            label="Move left"
-            icon={<BiLeftArrowAlt fontSize="1rem" />}
-            onClick={() => moveColumn(editor, "left")}
-          />
-          <ActionButton
-            label="Move right"
-            icon={<BiRightArrowAlt fontSize="1rem" />}
-            onClick={() => moveColumn(editor, "right")}
-          />
-          <ActionButton
-            label="Delete column"
-            icon={<IconDelCol boxSize="1rem" />}
-            onClick={() => focus.deleteColumn().run()}
-          />
+          <ActionGroup>
+            <ActionButton
+              label="Add column left"
+              icon={<IconAddColLeft boxSize="1rem" />}
+              onClick={() => focus.addColumnBefore().run()}
+            />
+            <ActionButton
+              label="Add column right"
+              icon={<IconAddColRight boxSize="1rem" />}
+              onClick={() => focus.addColumnAfter().run()}
+            />
+          </ActionGroup>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Move left"
+              icon={<BiLeftArrowAlt fontSize="1rem" />}
+              onClick={() => moveColumn(editor, "left")}
+            />
+            <ActionButton
+              label="Move right"
+              icon={<BiRightArrowAlt fontSize="1rem" />}
+              onClick={() => moveColumn(editor, "right")}
+            />
+          </ActionGroup>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Delete column"
+              icon={<IconDelCol boxSize="1rem" />}
+              onClick={() => focus.deleteColumn().run()}
+            />
+          </ActionGroup>
+          <ActionDivider />
+          <ActionGroup>
+            <HeaderToggle
+              label="Header column"
+              isChecked
+              onToggle={() => focus.toggleHeaderColumn().run()}
+            />
+          </ActionGroup>
         </>
       )
     case "table":
@@ -386,7 +466,7 @@ export const TableBubbleMenu = ({ editor }: TableBubbleMenuProps) => {
         border="1px solid"
         borderColor="base.divider.medium"
         p="0.375rem"
-        gap="0.25rem"
+        gap="0"
       >
         <TableSelectionActions editor={editor} kind={kind} />
       </VStack>
