@@ -107,15 +107,17 @@ describe("TableBubbleMenu", () => {
     expect(await findByText("Move up")).toBeTruthy()
     expect(await findByText("Move down")).toBeTruthy()
     expect(await findByText("Delete row")).toBeTruthy()
-    expect(queryByText("Unset header row")).toBeNull()
+    expect(queryByText("Header row")).toBeNull()
   })
 
   it("excludes Delete row from the header row's action set", async () => {
-    const { editor, findByText, queryByText } = await renderHarness()
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
 
     selectCells(editor, 0, 2) // the full header row
 
-    expect(await findByText("Unset header row")).toBeTruthy()
+    const headerToggle = await findByRole("checkbox", { name: "Header row" })
+    expect(headerToggle).toBeChecked()
     expect(await findByText("Add row above")).toBeTruthy()
     expect(await findByText("Add row below")).toBeTruthy()
     expect(await findByText("Move down")).toBeTruthy()
