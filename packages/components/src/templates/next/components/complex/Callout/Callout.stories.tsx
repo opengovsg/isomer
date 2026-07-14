@@ -91,6 +91,50 @@ export const UnorderedListFirst: Story = {
   },
 }
 
+export const UnorderedListOnly: Story = {
+  args: {
+    site: generateSiteConfig(),
+    content: {
+      type: "prose",
+      content: [
+        {
+          type: "unorderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Feeds on grasses, leaves, and shoots.",
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Uses its horn for defence and foraging.",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
+
 export const OrderedListFirst: Story = {
   args: {
     site: generateSiteConfig(),

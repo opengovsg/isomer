@@ -172,6 +172,48 @@ export const UnorderedListFirst: Story = {
   },
 }
 
+export const UnorderedListOnly: Story = {
+  args: {
+    summary: "Title for accordion item",
+    details: {
+      type: "prose",
+      content: [
+        {
+          type: "unorderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "This is a bullet point" }],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    { type: "text", text: "This is another bullet point" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByText(`${UnorderedListOnly.args?.summary}1`),
+    )
+  },
+}
+
 export const OrderedListFirst: Story = {
   args: {
     summary: "Title for accordion item",
