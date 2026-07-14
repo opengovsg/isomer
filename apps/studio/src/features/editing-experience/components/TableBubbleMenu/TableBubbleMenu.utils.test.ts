@@ -238,12 +238,7 @@ describe("selectionIncludesHeaderColumn", () => {
           left: 0,
           width: 2,
           height: 2,
-          cellTypes: [
-            "tableHeader",
-            "tableHeader",
-            "tableCell",
-            "tableCell",
-          ],
+          cellTypes: ["tableHeader", "tableHeader", "tableCell", "tableCell"],
         }),
       ),
     ).toBe(false)
