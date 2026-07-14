@@ -2,10 +2,13 @@
 // EditorView), so this runs under Vitest Browser Mode rather than jsdom — see
 // the `*.browser.test.{ts,tsx}` convention in apps/studio/vitest.config.ts.
 import type { Editor, JSONContent } from "@tiptap/react"
+import { ThemeProvider } from "@opengovsg/design-system-react"
 import { act, render, waitFor } from "@testing-library/react"
+import { tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
+import { theme } from "~/theme"
 
 import { TableBubbleMenu } from "./TableBubbleMenu"
 
@@ -72,7 +75,9 @@ const selectCells = (editor: Editor, startIndex: number, endIndex: number) => {
   const anchorCell = nthCellPos(editor, startIndex)
   const headCell = nthCellPos(editor, endIndex)
   act(() => {
-    editor.commands.setCellSelection({ anchorCell, headCell })
+    // A real pointer selection focuses the editor. Make that precondition
+    // explicit instead of relying on menu rendering to steal focus.
+    editor.chain().focus().setCellSelection({ anchorCell, headCell }).run()
   })
 }
 
@@ -89,7 +94,11 @@ const Harness = ({ onReady }: { onReady: (editor: Editor) => void }) => {
 
 const renderHarness = async () => {
   let editor: Editor | undefined
-  const utils = render(<Harness onReady={(e) => (editor = e)} />)
+  const utils = render(
+    <ThemeProvider theme={theme}>
+      <Harness onReady={(e) => (editor = e)} />
+    </ThemeProvider>,
+  )
   await waitFor(() => {
     if (!editor) throw new Error("editor not ready")
   })
@@ -97,25 +106,148 @@ const renderHarness = async () => {
   return { ...utils, editor: editor! }
 }
 
+// First-row cell text contents in left-to-right order — used to assert
+// column reordering after Move left/right.
+const firstRowTexts = (editor: Editor): string[] => {
+  const texts: string[] = []
+  let foundTable = false
+  editor.state.doc.descendants((node) => {
+    if (foundTable) return false
+    if (node.type.name !== "table") return true
+    foundTable = true
+    const firstRow = node.child(0)
+    firstRow.forEach((cell) => {
+      texts.push(cell.textContent)
+    })
+    return false
+  })
+  return texts
+}
+
 describe("TableBubbleMenu", () => {
+  it("stacks the menu above the selected-cell highlight", async () => {
+    const { editor, findByText, container } = await renderHarness()
+
+    selectCells(editor, 3, 5)
+
+    const action = await findByText("Add row above")
+    const menuSurface = action.closest("button")?.parentElement?.parentElement
+    const selectedCell = container.querySelector(".selectedCell")
+
+    expect(menuSurface).not.toBeNull()
+    expect(selectedCell).not.toBeNull()
+
+    const menuZIndex = Number(getComputedStyle(menuSurface!).zIndex)
+    // The `.selectedCell::after` highlight in tiptap.scss uses z-index: 2.
+    expect(menuZIndex).toBeGreaterThan(2)
+  })
+
   it("shows row actions (including Delete row) when a body row is selected", async () => {
     const { editor, findByText, queryByText } = await renderHarness()
 
-    selectCells(editor, 3, 5) // the full body row
+    selectCells(editor, 3, 5) // the full body row (not the first row)
 
+    expect(queryByText("Header row")).toBeNull()
     expect(await findByText("Add row above")).toBeTruthy()
     expect(await findByText("Move up")).toBeTruthy()
     expect(await findByText("Move down")).toBeTruthy()
     expect(await findByText("Delete row")).toBeTruthy()
-    expect(queryByText("Unset header row")).toBeNull()
+  })
+
+  it("shows Header row/column only when the first row/column is in the selection", async () => {
+    const { editor, findByRole, queryByRole } = await renderHarness()
+
+    // Body row — does not include row 0
+    selectCells(editor, 3, 5)
+    expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
+
+    // Header row — includes row 0
+    selectCells(editor, 0, 2)
+    expect(await findByRole("checkbox", { name: "Header row" })).toBeChecked()
+
+    // Middle column — does not include column 0
+    selectCells(editor, 1, 7)
+    expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()
+
+    // Leftmost column — includes column 0
+    selectCells(editor, 0, 6)
+    expect(
+      await findByRole("checkbox", { name: "Header column" }),
+    ).not.toBeChecked()
+  })
+
+  it("places the Header row/column toggle above other actions when shown", async () => {
+    const { editor, findByRole, findByText } = await renderHarness()
+
+    selectCells(editor, 0, 2) // header row (includes first row)
+    const rowToggle = await findByRole("checkbox", { name: "Header row" })
+    const addRow = await findByText("Add row above")
+    expect(
+      rowToggle.compareDocumentPosition(addRow) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+
+    selectCells(editor, 0, 6) // leftmost column (includes first column)
+    const colToggle = await findByRole("checkbox", { name: "Header column" })
+    const addCol = await findByText("Add column left")
+    expect(
+      colToggle.compareDocumentPosition(addCol) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it("hides Move left/right (and up/down) when the selection is already at that edge", async () => {
+    const { editor, findByText, queryByText } = await renderHarness()
+
+    // Leftmost column (A): cells 0, 3, 6
+    selectCells(editor, 0, 6)
+    expect(queryByText("Move left")).toBeNull()
+    expect(await findByText("Move right")).toBeTruthy()
+
+    // Rightmost column (C): cells 2, 5, 8
+    selectCells(editor, 2, 8)
+    expect(queryByText("Move right")).toBeNull()
+    expect(await findByText("Move left")).toBeTruthy()
+
+    // Leftmost two columns (A+B): anchor header A → bottom of B
+    selectCells(editor, 0, 7)
+    expect(queryByText("Move left")).toBeNull()
+    expect(await findByText("Move right")).toBeTruthy()
+
+    // Bottom body row
+    selectCells(editor, 6, 8)
+    expect(queryByText("Move down")).toBeNull()
+    expect(await findByText("Move up")).toBeTruthy()
+
+    // Header row (top)
+    selectCells(editor, 0, 2)
+    expect(queryByText("Move up")).toBeNull()
+    expect(await findByText("Move down")).toBeTruthy()
+  })
+
+  it("moves a multi-column selection as a block (A,B → right becomes C,A,B)", async () => {
+    const { editor, findByText } = await renderHarness()
+
+    // Full columns A+B
+    selectCells(editor, 0, 7)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
+
+    const moveRight = await findByText("Move right")
+    act(() => {
+      moveRight.click()
+    })
+
+    expect(firstRowTexts(editor)).toEqual(["Column C", "Column A", "Column B"])
   })
 
   it("excludes Delete row from the header row's action set", async () => {
-    const { editor, findByText, queryByText } = await renderHarness()
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
 
     selectCells(editor, 0, 2) // the full header row
 
-    expect(await findByText("Unset header row")).toBeTruthy()
+    const headerToggle = await findByRole("checkbox", { name: "Header row" })
+    expect(headerToggle).toBeChecked()
     expect(await findByText("Add row above")).toBeTruthy()
     expect(await findByText("Add row below")).toBeTruthy()
     expect(await findByText("Move down")).toBeTruthy()
@@ -178,5 +310,101 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Superscript")).toBeNull()
     expect(queryByText("Subscript")).toBeNull()
     expect(queryByText("Delete row")).toBeNull()
+  })
+
+  it("hides when focus moves outside the editor (e.g. Table Settings modal)", async () => {
+    // TipTap's blur handler hides the menu when focus leaves the editor.
+    const { editor, findByText, queryByText } = await renderHarness()
+
+    selectCells(editor, 3, 5)
+    expect(await findByText("Delete row")).toBeTruthy()
+
+    act(() => {
+      const outside = document.createElement("button")
+      outside.type = "button"
+      outside.textContent = "outside"
+      document.body.appendChild(outside)
+      editor.view.dom.dispatchEvent(
+        new FocusEvent("blur", { bubbles: true, relatedTarget: outside }),
+      )
+      outside.focus()
+    })
+
+    await waitFor(() => {
+      expect(queryByText("Delete row")).toBeNull()
+    })
+  })
+
+  it("does not resync BubbleMenu on blur/focus meta traffic after a CellSelection", async () => {
+    // Hang path: Modal FocusLock ↔ TipTap blur/focus meta transactions
+    // re-render BubbleMenu; useMenuElementProps rebinds listeners each
+    // render. memo + selection-only kind updates must keep this finite.
+    const { editor, findByText, queryByText } = await renderHarness()
+
+    selectCells(editor, 3, 5)
+    expect(await findByText("Delete row")).toBeTruthy()
+
+    const outside = document.createElement("button")
+    outside.type = "button"
+    outside.textContent = "outside"
+    document.body.appendChild(outside)
+
+    act(() => {
+      editor.view.dom.dispatchEvent(
+        new FocusEvent("blur", { bubbles: true, relatedTarget: outside }),
+      )
+      outside.focus()
+    })
+
+    await waitFor(() => {
+      expect(queryByText("Delete row")).toBeNull()
+    })
+
+    act(() => {
+      for (let i = 0; i < 40; i += 1) {
+        editor.view.dispatch(
+          editor.state.tr
+            .setMeta("blur", { event: new FocusEvent("blur") })
+            .setMeta("addToHistory", false),
+        )
+        editor.view.dispatch(
+          editor.state.tr
+            .setMeta("focus", { event: new FocusEvent("focus") })
+            .setMeta("addToHistory", false),
+        )
+      }
+    })
+
+    expect(queryByText("Delete row")).toBeNull()
+  })
+
+  it("stays hidden while a cell drag-select is in progress, then shows after it commits", async () => {
+    // prosemirror-tables sets `tableEditingKey` for the duration of a cell
+    // drag (mousemove) and clears it on mouseup. The menu must not appear for
+    // intermediate selection rects during that window.
+    const { editor, findByText, queryByText } = await renderHarness()
+
+    selectCells(editor, 3, 5)
+    expect(await findByText("Delete row")).toBeTruthy()
+
+    act(() => {
+      editor.view.dispatch(
+        editor.state.tr.setMeta(tableEditingKey, nthCellPos(editor, 3)),
+      )
+    })
+    await waitFor(() => {
+      expect(queryByText("Delete row")).toBeNull()
+    })
+
+    // Intermediate selection expansion while still "dragging"
+    selectCells(editor, 3, 7)
+    expect(queryByText("Delete row")).toBeNull()
+    expect(queryByText("Merge cells")).toBeNull()
+
+    // mouseup clears selectingCells state (meta -1 → null)
+    act(() => {
+      editor.view.dispatch(editor.state.tr.setMeta(tableEditingKey, -1))
+    })
+    expect(await findByText("Merge cells")).toBeTruthy()
   })
 })

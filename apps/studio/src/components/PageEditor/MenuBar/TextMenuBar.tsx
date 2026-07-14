@@ -142,13 +142,20 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         isActive: () => editor.isActive("link"),
       },
       {
-        // Delete table is covered by TableBubbleMenu's "Delete table" action
-        // (whole-table selection), and the caption is now edited inline via
-        // TableCaption — so this button only needs to insert.
+        // Toggle: insert when outside a table, delete when inside. Without the
+        // isActive guard, insertTable() nests/splits the current table.
+        // Whole-table CellSelection also surfaces "Delete table" on
+        // TableBubbleMenu; this toolbar toggle matches pre-bubble-menu UX.
         type: "item",
         icon: BiTable,
         title: "Table",
-        action: () => editor.chain().focus().insertTable().run(),
+        action: () => {
+          if (editor.isActive("table")) {
+            return editor.chain().focus().deleteTable().run()
+          }
+          return editor.chain().focus().insertTable().run()
+        },
+        isActive: () => editor.isActive("table"),
       },
       // Lesser-used commands are kept inside the overflow items list
       {
