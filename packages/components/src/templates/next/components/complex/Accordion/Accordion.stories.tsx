@@ -123,3 +123,99 @@ export const Expanded: Story = {
     await userEvent.click(canvas.getByText(`${LongContent.args?.summary}2`))
   },
 }
+
+export const UnorderedListFirst: Story = {
+  args: {
+    summary: "Title for accordion item",
+    details: {
+      type: "prose",
+      content: [
+        {
+          type: "unorderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "This is a bullet point" }],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    { type: "text", text: "This is another bullet point" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "Enter content for the accordion here." },
+          ],
+        },
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByText(`${UnorderedListFirst.args?.summary}1`),
+    )
+  },
+}
+
+export const OrderedListFirst: Story = {
+  args: {
+    summary: "Title for accordion item",
+    details: {
+      type: "prose",
+      content: [
+        {
+          type: "orderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "This is a bullet point" }],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    { type: "text", text: "This is another bullet point" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "Enter content for the accordion here." },
+          ],
+        },
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      canvas.getByText(`${OrderedListFirst.args?.summary}1`),
+    )
+  },
+}
