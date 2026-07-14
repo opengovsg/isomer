@@ -14,6 +14,11 @@ import {
   TRIMMED_NON_EMPTY_STRING_REGEX,
 } from "~/utils/validation"
 
+import {
+  TAG_CATEGORY_DISPLAY_OPTIONS,
+  type TagCategoryDisplay,
+} from "./constants"
+
 // NOTE: a tag value is simply a uuid that maps to a given label;
 // essentially, it is just a pointer
 const generateUuidSchema = (options: Omit<StringOptions, "format">) =>
@@ -51,6 +56,30 @@ const TagCategorySchema = Type.Composite([
         title: "This filter is required",
         description:
           "Every item must have at least one option selected from this filter.",
+      }),
+    ),
+  }),
+  Type.Object({
+    // Optional for backward compatibility. Missing/`undefined` must be read as
+    // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
+    // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
+    // same default to legacy rows that omit this key. New filters set
+    // `display: DEFAULT_TAG_CATEGORY_DISPLAY` in the tag-categories JsonForms control
+    // when adding an item.
+    display: Type.Optional(
+      Type.Unsafe<TagCategoryDisplay>({
+        oneOf: [
+          {
+            const: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+            image: "tagcategory/pills",
+          },
+          {
+            const: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+            image: "tagcategory/plaintext",
+          },
+        ],
+        title: "Show as",
+        format: "image-radio",
       }),
     ),
   }),
