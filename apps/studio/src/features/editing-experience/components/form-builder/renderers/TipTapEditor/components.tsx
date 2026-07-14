@@ -80,7 +80,7 @@ const EditorContentWrapper = ({
         cursor="text"
       />
       {showTableExtras && (
-        <> 
+        <>
           <TableCaption editor={editor} containerRef={containerRef} />
           <TableDragHandles editor={editor} containerRef={containerRef} />
         </>
