@@ -5,6 +5,7 @@ import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 import { useMemo } from "react"
+import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 
 const EditorContainer = ({
   children,
@@ -65,11 +66,22 @@ interface EditorProps {
   menubar: EditorMenuBar
   editor: TiptapEditor
   isNested?: boolean
+  /**
+   * Mount the contextual table bubble menu. Only set on editors whose
+   * extensions include tables (`TiptapTextEditor`, `TiptapAccordionEditor`).
+   */
+  showTableExtras?: boolean
 }
-export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
+export const Editor = ({
+  editor,
+  menubar,
+  isNested,
+  showTableExtras,
+}: EditorProps) => {
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
+      {showTableExtras && <TableBubbleMenu editor={editor} />}
       <EditorContentWrapper editor={editor} />
     </EditorContainer>
   )
