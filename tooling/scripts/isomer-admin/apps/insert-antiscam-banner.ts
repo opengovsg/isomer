@@ -2,22 +2,28 @@ import { checkbox, confirm, input, select } from "@inquirer/prompts"
 
 import { withDbClient } from "../utils/db"
 
-const ANTISCAM_BANNER_BLOCK = { type: "antiscambanner" }
+export const ANTISCAM_BANNER_BLOCK = { type: "antiscambanner" }
 
-interface RootPageRow {
+export type BlobContent = { content?: unknown[] } & Record<string, unknown>
+
+export interface RootPageRow {
   id: string
   title: string
   siteId: number
   siteName: string
   draftBlobId: string | null
   publishedVersionId: string | null
-  draftContent: ({ content?: unknown[] } & Record<string, unknown>) | null
-  publishedContent: ({ content?: unknown[] } & Record<string, unknown>) | null
+  draftContent: BlobContent | null
+  publishedContent: BlobContent | null
 }
 
-type Bucket = "published-only" | "published-and-draft" | "draft-only" | "none"
+export type Bucket =
+  | "published-only"
+  | "published-and-draft"
+  | "draft-only"
+  | "none"
 
-const getBucket = (row: RootPageRow): Bucket => {
+export const getBucket = (row: RootPageRow): Bucket => {
   const hasPublished = row.publishedVersionId !== null
   const hasDraft = row.draftBlobId !== null
   if (hasPublished && hasDraft) return "published-and-draft"
@@ -26,20 +32,63 @@ const getBucket = (row: RootPageRow): Bucket => {
   return "none"
 }
 
-const hasAntiscamBanner = (
-  content: ({ content?: unknown[] } & Record<string, unknown>) | null,
-): boolean => {
+export const hasAntiscamBanner = (content: BlobContent | null): boolean => {
   if (!content || !Array.isArray(content.content)) return false
   return content.content.some(
     (block) => (block as { type?: string })?.type === "antiscambanner",
   )
 }
 
-const appendAntiscamBanner = (
-  content: { content?: unknown[] } & Record<string, unknown>,
-) => {
+export const appendAntiscamBanner = (content: BlobContent): BlobContent => {
   const existingBlocks = Array.isArray(content.content) ? content.content : []
   return { ...content, content: [...existingBlocks, ANTISCAM_BANNER_BLOCK] }
+}
+
+export type PublishedStep =
+  | { action: "create-version"; newContent: BlobContent }
+  | { action: "skip-already-has-banner" }
+  | { action: "none" }
+
+export type DraftStep =
+  | { action: "update-draft"; newContent: BlobContent }
+  | { action: "skip-already-has-banner" }
+  | { action: "none" }
+
+export interface ResourcePlan {
+  bucket: Bucket
+  publishedStep: PublishedStep
+  draftStep: DraftStep
+}
+
+/**
+ * Pure decision logic for a single RootPage row: given its bucket and
+ * current content, decides what (if anything) should happen to its
+ * published version and its draft blob. No I/O.
+ */
+export const planResource = (row: RootPageRow): ResourcePlan => {
+  const bucket = getBucket(row)
+
+  const publishedStep: PublishedStep =
+    bucket === "published-only" || bucket === "published-and-draft"
+      ? hasAntiscamBanner(row.publishedContent)
+        ? { action: "skip-already-has-banner" }
+        : {
+            action: "create-version",
+            newContent: appendAntiscamBanner(row.publishedContent!),
+          }
+      : { action: "none" }
+
+  const draftStep: DraftStep =
+    bucket === "published-and-draft" || bucket === "draft-only"
+      ? hasAntiscamBanner(row.draftContent)
+        ? { action: "skip-already-has-banner" }
+        : {
+            action: "update-draft",
+            newContent: appendAntiscamBanner(row.draftContent!),
+          }
+      : { action: "none" }
+
+  return { bucket, publishedStep, draftStep }
 }
 
 export const insertAntiscamBanner = async () => {
@@ -162,74 +211,69 @@ export const insertAntiscamBanner = async () => {
 
     await client.query("BEGIN")
     try {
-      for (const { row, bucket } of selectedRows) {
-        if (bucket === "published-only" || bucket === "published-and-draft") {
-          if (hasAntiscamBanner(row.publishedContent)) {
-            results.push({
-              id: row.id,
-              title: row.title,
-              status: "published: already has banner, skipped",
-            })
-          } else {
-            const newContent = appendAntiscamBanner(row.publishedContent!)
+      for (const { row } of selectedRows) {
+        const plan = planResource(row)
 
-            const currentVersion = await client.query<{ versionNum: number }>(
-              `SELECT "versionNum" FROM "Version" WHERE id = $1`,
-              [row.publishedVersionId],
-            )
-            const latestVersionNumber = currentVersion.rows[0]?.versionNum ?? 0
+        if (plan.publishedStep.action === "skip-already-has-banner") {
+          results.push({
+            id: row.id,
+            title: row.title,
+            status: "published: already has banner, skipped",
+          })
+        } else if (plan.publishedStep.action === "create-version") {
+          const currentVersion = await client.query<{ versionNum: number }>(
+            `SELECT "versionNum" FROM "Version" WHERE id = $1`,
+            [row.publishedVersionId],
+          )
+          const latestVersionNumber = currentVersion.rows[0]?.versionNum ?? 0
 
-            const newBlob = await client.query<{ id: string }>(
-              `INSERT INTO "Blob" (content) VALUES ($1) RETURNING id`,
-              [JSON.stringify(newContent)],
-            )
-            const newBlobRow = newBlob.rows[0]
-            if (!newBlobRow) {
-              throw new Error(`Failed to create blob for resource ${row.id}`)
-            }
-
-            const newVersion = await client.query<{ id: string }>(
-              `INSERT INTO "Version" ("blobId", "versionNum", "resourceId", "publishedBy")
-               VALUES ($1, $2, $3, $4) RETURNING id`,
-              [newBlobRow.id, latestVersionNumber + 1, row.id, publisherUserId],
-            )
-            const newVersionRow = newVersion.rows[0]
-            if (!newVersionRow) {
-              throw new Error(`Failed to create version for resource ${row.id}`)
-            }
-
-            await client.query(
-              `UPDATE "Resource" SET "publishedVersionId" = $1, "updatedAt" = NOW() WHERE id = $2`,
-              [newVersionRow.id, row.id],
-            )
-
-            results.push({
-              id: row.id,
-              title: row.title,
-              status: "published: new version created",
-            })
+          const newBlob = await client.query<{ id: string }>(
+            `INSERT INTO "Blob" (content) VALUES ($1) RETURNING id`,
+            [JSON.stringify(plan.publishedStep.newContent)],
+          )
+          const newBlobRow = newBlob.rows[0]
+          if (!newBlobRow) {
+            throw new Error(`Failed to create blob for resource ${row.id}`)
           }
+
+          const newVersion = await client.query<{ id: string }>(
+            `INSERT INTO "Version" ("blobId", "versionNum", "resourceId", "publishedBy")
+             VALUES ($1, $2, $3, $4) RETURNING id`,
+            [newBlobRow.id, latestVersionNumber + 1, row.id, publisherUserId],
+          )
+          const newVersionRow = newVersion.rows[0]
+          if (!newVersionRow) {
+            throw new Error(`Failed to create version for resource ${row.id}`)
+          }
+
+          await client.query(
+            `UPDATE "Resource" SET "publishedVersionId" = $1, "updatedAt" = NOW() WHERE id = $2`,
+            [newVersionRow.id, row.id],
+          )
+
+          results.push({
+            id: row.id,
+            title: row.title,
+            status: "published: new version created",
+          })
         }
 
-        if (bucket === "published-and-draft" || bucket === "draft-only") {
-          if (hasAntiscamBanner(row.draftContent)) {
-            results.push({
-              id: row.id,
-              title: row.title,
-              status: "draft: already has banner, skipped",
-            })
-          } else {
-            const newDraftContent = appendAntiscamBanner(row.draftContent!)
-            await client.query(
-              `UPDATE "Blob" SET content = $1, "updatedAt" = NOW() WHERE id = $2`,
-              [JSON.stringify(newDraftContent), row.draftBlobId],
-            )
-            results.push({
-              id: row.id,
-              title: row.title,
-              status: "draft: updated in place",
-            })
-          }
+        if (plan.draftStep.action === "skip-already-has-banner") {
+          results.push({
+            id: row.id,
+            title: row.title,
+            status: "draft: already has banner, skipped",
+          })
+        } else if (plan.draftStep.action === "update-draft") {
+          await client.query(
+            `UPDATE "Blob" SET content = $1, "updatedAt" = NOW() WHERE id = $2`,
+            [JSON.stringify(plan.draftStep.newContent), row.draftBlobId],
+          )
+          results.push({
+            id: row.id,
+            title: row.title,
+            status: "draft: updated in place",
+          })
         }
       }
 

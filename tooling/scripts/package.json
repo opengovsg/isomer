@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "isomer-admin": "dotenv -e isomer-admin/.env -- tsx isomer-admin/index.ts"
+    "isomer-admin": "dotenv -e isomer-admin/.env -- tsx isomer-admin/index.ts",
+    "test:unit": "vitest run"
   },
   "dependencies": {
     "@aws-sdk/client-codebuild": "catalog:aws-sdk",
@@ -17,6 +18,7 @@
   },
   "devDependencies": {
     "@isomer/tsconfig": "workspace:*",
-    "@types/pg": "catalog:"
+    "@types/pg": "catalog:",
+    "vitest": "catalog:vitest"
   }
 }
