@@ -7,6 +7,7 @@ import { EditorContent } from "@tiptap/react"
 import { useMemo, useRef } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 import { TableCaption } from "~/features/editing-experience/components/TableCaption/TableCaption"
+import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
 
 const EditorContainer = ({
   children,
@@ -81,6 +82,9 @@ const EditorContentWrapper = ({
       {showTableExtras && (
         <TableCaption editor={editor} containerRef={containerRef} />
       )}
+      {showTableExtras && (
+        <TableDragHandles editor={editor} containerRef={containerRef} />
+      )}
     </Box>
   )
 }
@@ -94,9 +98,10 @@ interface EditorProps {
    * `useTextEditor`/`TiptapTextEditor` and
    * `useAccordionEditor`/`TiptapAccordionEditor` — see
    * `hooks/useTextEditor/useTextEditor.ts`) should set this. It mounts the
-   * contextual table bubble menu and inline table captions; editors without
-   * table extensions (Prose, Callout, SimpleProse) have no table nodes for
-   * either to react to, so there's nothing for them to mount.
+   * contextual table bubble menu, inline table captions, and row/column
+   * drag handles; editors without table extensions (Prose, Callout,
+   * SimpleProse) have no table nodes for any of them to react to, so
+   * there's nothing for them to mount.
    */
   showTableExtras?: boolean
 }
