@@ -17,6 +17,8 @@ import {
   jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
+  JsonFormsCalloutVariantControl,
+  jsonFormsCalloutVariantControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
@@ -197,6 +199,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCollectionVariantControlTester,
     renderer: JsonFormsCollectionVariantControl,
+  },
+  {
+    tester: jsonFormsCalloutVariantControlTester,
+    renderer: JsonFormsCalloutVariantControl,
   },
   {
     // NOTE: If we fall through all our previous testers,
