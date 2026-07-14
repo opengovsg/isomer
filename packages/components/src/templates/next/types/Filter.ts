@@ -1,4 +1,3 @@
-import type { TagCategoryDisplay } from "~/types/constants"
 import { z } from "zod"
 
 export interface FilterItem {
@@ -11,8 +10,6 @@ export interface Filter {
   id: string
   label: string
   items: FilterItem[]
-  // NOTE: only set for tag-category filters; category/year filters omit this.
-  display?: TagCategoryDisplay
 }
 
 interface AppliedFilterItem {
