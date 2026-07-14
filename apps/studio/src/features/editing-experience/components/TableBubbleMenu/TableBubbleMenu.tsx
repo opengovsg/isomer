@@ -1,5 +1,5 @@
-import type { ReactElement, ReactNode } from "react"
 import type { Editor } from "@tiptap/react"
+import type { ReactElement, ReactNode } from "react"
 import { Divider, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
 import { PluginKey } from "@tiptap/pm/state"
@@ -11,8 +11,9 @@ import {
   TableMap,
   tableEditingKey,
 } from "@tiptap/pm/tables"
+import { useEditorState } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
-import { memo, useEffect, useState } from "react"
+import { memo, useEffect } from "react"
 import {
   BiDownArrowAlt,
   BiLeftArrowAlt,
@@ -20,7 +21,6 @@ import {
   BiTrash,
   BiUpArrowAlt,
 } from "react-icons/bi"
-
 import {
   IconAddColLeft,
   IconAddColRight,
@@ -32,20 +32,16 @@ import {
   IconSplitCell,
 } from "~/components/icons"
 
+import {
+  getColumnMovePlan,
+  getRowMovePlan,
+  getTableSelectionKind,
+  type SelectionKind,
+} from "./TableBubbleMenu.utils"
+
 export interface TableBubbleMenuProps {
   editor: Editor
 }
-
-type SelectionKind =
-  | "none"
-  | "single-cell"
-  | "merged-cell"
-  | "row"
-  | "header-row"
-  | "column"
-  | "header-column"
-  | "table"
-  | "multi-cell"
 
 // A single selected cell that came from a previous merge (colspan/rowspan >
 // 1) is the only single-cell case that shows a bubble menu — "Split cell" is
@@ -59,8 +55,7 @@ type SelectionKind =
 const isSingleCellSelection = (selection: CellSelection): boolean =>
   selection.$anchorCell.pos === selection.$headCell.pos
 
-const isMergedCell = (editor: Editor): boolean => {
-  const rect = selectedRect(editor.state)
+const isMergedCell = (rect: ReturnType<typeof selectedRect>): boolean => {
   const cellStart = rect.map.map[rect.top * rect.map.width + rect.left]
   if (cellStart === undefined) return false
   const node = rect.table.nodeAt(cellStart)
@@ -80,21 +75,20 @@ const detectSelectionType = (editor: Editor): SelectionKind => {
   if (!(selection instanceof CellSelection)) return "none"
 
   const rect = selectedRect(editor.state)
-  const isFullWidth = rect.left === 0 && rect.right === rect.map.width
-  const isFullHeight = rect.top === 0 && rect.bottom === rect.map.height
 
   let allHeader = true
   selection.forEachCell((node) => {
     if (node.type.name !== "tableHeader") allHeader = false
   })
 
-  if (isFullWidth && isFullHeight) return "table"
-  if (isFullWidth) return allHeader ? "header-row" : "row"
-  if (isFullHeight) return allHeader ? "header-column" : "column"
-  if (isSingleCellSelection(selection)) {
-    return isMergedCell(editor) ? "merged-cell" : "single-cell"
-  }
-  return "multi-cell"
+  const selectsSingleCellNode = isSingleCellSelection(selection)
+  return getTableSelectionKind({
+    spansEntireTableWidth: rect.left === 0 && rect.right === rect.map.width,
+    spansEntireTableHeight: rect.top === 0 && rect.bottom === rect.map.height,
+    allCellsAreHeaders: allHeader,
+    selectsSingleCellNode,
+    selectedCellIsMerged: selectsSingleCellNode && isMergedCell(rect),
+  })
 }
 
 // Move a selected block of rows/columns by swapping the adjacent neighbour
@@ -106,28 +100,23 @@ const detectSelectionType = (editor: Editor): SelectionKind => {
 const moveRow = (editor: Editor, direction: "up" | "down") => {
   const { state, view } = editor
   const rect = selectedRect(state)
-  const rowCount = rect.bottom - rect.top
+  const plan = getRowMovePlan(
+    {
+      top: rect.top,
+      bottom: rect.bottom,
+      tableHeight: rect.map.height,
+    },
+    direction,
+  )
+  if (!plan) return
+
+  // selectedRect.tableStart points inside the table; nodeAt needs the table's
+  // own document position, one position earlier.
   const tablePos = rect.tableStart - 1
 
-  let from: number
-  let to: number
-  let newTop: number
-
-  if (direction === "up") {
-    if (rect.top === 0) return
-    from = rect.top - 1
-    to = rect.bottom - 1
-    newTop = rect.top - 1
-  } else {
-    if (rect.bottom >= rect.map.height) return
-    from = rect.bottom
-    to = rect.top
-    newTop = rect.top + 1
-  }
-
   moveTableRow({
-    from,
-    to,
+    from: plan.from,
+    to: plan.to,
     select: false,
     pos: rect.tableStart,
   })(state, (tr) => {
@@ -138,8 +127,9 @@ const moveRow = (editor: Editor, direction: "up" | "down") => {
     }
     const map = TableMap.get(table)
     const tableStart = tablePos + 1
-    const newBottom = newTop + rowCount
-    const anchor = map.positionAt(newTop, 0, table)
+    const newBottom = plan.newStart + plan.span
+    // Reselect the moved block from its top-left to bottom-right cells.
+    const anchor = map.positionAt(plan.newStart, 0, table)
     const head = map.positionAt(newBottom - 1, map.width - 1, table)
     tr.setSelection(
       CellSelection.create(tr.doc, tableStart + anchor, tableStart + head),
@@ -151,28 +141,23 @@ const moveRow = (editor: Editor, direction: "up" | "down") => {
 const moveColumn = (editor: Editor, direction: "left" | "right") => {
   const { state, view } = editor
   const rect = selectedRect(state)
-  const colCount = rect.right - rect.left
+  const plan = getColumnMovePlan(
+    {
+      left: rect.left,
+      right: rect.right,
+      tableWidth: rect.map.width,
+    },
+    direction,
+  )
+  if (!plan) return
+
+  // selectedRect.tableStart points inside the table; nodeAt needs the table's
+  // own document position, one position earlier.
   const tablePos = rect.tableStart - 1
 
-  let from: number
-  let to: number
-  let newLeft: number
-
-  if (direction === "left") {
-    if (rect.left === 0) return
-    from = rect.left - 1
-    to = rect.right - 1
-    newLeft = rect.left - 1
-  } else {
-    if (rect.right >= rect.map.width) return
-    from = rect.right
-    to = rect.left
-    newLeft = rect.left + 1
-  }
-
   moveTableColumn({
-    from,
-    to,
+    from: plan.from,
+    to: plan.to,
     select: false,
     pos: rect.tableStart,
   })(state, (tr) => {
@@ -183,8 +168,10 @@ const moveColumn = (editor: Editor, direction: "left" | "right") => {
     }
     const map = TableMap.get(table)
     const tableStart = tablePos + 1
-    const newRight = newLeft + colCount
-    const anchor = map.positionAt(map.height - 1, newLeft, table)
+    const newRight = plan.newStart + plan.span
+    // CellSelection accepts either diagonal. Starting at the bottom-left
+    // preserves TipTap's full-column selection orientation after the move.
+    const anchor = map.positionAt(map.height - 1, plan.newStart, table)
     const head = map.positionAt(0, newRight - 1, table)
     tr.setSelection(
       CellSelection.create(tr.doc, tableStart + anchor, tableStart + head),
@@ -261,6 +248,156 @@ const HeaderToggle = ({
   </Flex>
 )
 
+type SelectionRect = ReturnType<typeof selectedRect>
+
+const RowSelectionActions = ({
+  editor,
+  rect,
+  isHeader,
+}: {
+  editor: Editor
+  rect: SelectionRect
+  isHeader: boolean
+}) => {
+  const canMoveUp = rect.top > 0
+  const canMoveDown = rect.bottom < rect.map.height
+  const showHeaderToggle = rect.top === 0
+
+  return (
+    <>
+      {showHeaderToggle && (
+        <>
+          <ActionGroup>
+            <HeaderToggle
+              label="Header row"
+              isChecked={isHeader}
+              onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
+            />
+          </ActionGroup>
+          <ActionDivider />
+        </>
+      )}
+      <ActionGroup>
+        <ActionButton
+          label="Add row above"
+          icon={<IconAddRowAbove boxSize="1rem" />}
+          onClick={() => editor.chain().focus().addRowBefore().run()}
+        />
+        <ActionButton
+          label="Add row below"
+          icon={<IconAddRowBelow boxSize="1rem" />}
+          onClick={() => editor.chain().focus().addRowAfter().run()}
+        />
+      </ActionGroup>
+      {(canMoveUp || canMoveDown) && (
+        <>
+          <ActionDivider />
+          <ActionGroup>
+            {canMoveUp && (
+              <ActionButton
+                label="Move up"
+                icon={<BiUpArrowAlt fontSize="1rem" />}
+                onClick={() => moveRow(editor, "up")}
+              />
+            )}
+            {canMoveDown && (
+              <ActionButton
+                label="Move down"
+                icon={<BiDownArrowAlt fontSize="1rem" />}
+                onClick={() => moveRow(editor, "down")}
+              />
+            )}
+          </ActionGroup>
+        </>
+      )}
+      {!isHeader && (
+        <>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Delete row"
+              icon={<IconDelRow boxSize="1rem" />}
+              onClick={() => editor.chain().focus().deleteRow().run()}
+            />
+          </ActionGroup>
+        </>
+      )}
+    </>
+  )
+}
+
+const ColumnSelectionActions = ({
+  editor,
+  rect,
+  isHeader,
+}: {
+  editor: Editor
+  rect: SelectionRect
+  isHeader: boolean
+}) => {
+  const canMoveLeft = rect.left > 0
+  const canMoveRight = rect.right < rect.map.width
+  const showHeaderToggle = rect.left === 0
+
+  return (
+    <>
+      {showHeaderToggle && (
+        <>
+          <ActionGroup>
+            <HeaderToggle
+              label="Header column"
+              isChecked={isHeader}
+              onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
+            />
+          </ActionGroup>
+          <ActionDivider />
+        </>
+      )}
+      <ActionGroup>
+        <ActionButton
+          label="Add column left"
+          icon={<IconAddColLeft boxSize="1rem" />}
+          onClick={() => editor.chain().focus().addColumnBefore().run()}
+        />
+        <ActionButton
+          label="Add column right"
+          icon={<IconAddColRight boxSize="1rem" />}
+          onClick={() => editor.chain().focus().addColumnAfter().run()}
+        />
+      </ActionGroup>
+      {(canMoveLeft || canMoveRight) && (
+        <>
+          <ActionDivider />
+          <ActionGroup>
+            {canMoveLeft && (
+              <ActionButton
+                label="Move left"
+                icon={<BiLeftArrowAlt fontSize="1rem" />}
+                onClick={() => moveColumn(editor, "left")}
+              />
+            )}
+            {canMoveRight && (
+              <ActionButton
+                label="Move right"
+                icon={<BiRightArrowAlt fontSize="1rem" />}
+                onClick={() => moveColumn(editor, "right")}
+              />
+            )}
+          </ActionGroup>
+        </>
+      )}
+      <ActionDivider />
+      <ActionGroup>
+        <ActionButton
+          label="Delete column"
+          icon={<IconDelCol boxSize="1rem" />}
+          onClick={() => editor.chain().focus().deleteColumn().run()}
+        />
+      </ActionGroup>
+    </>
+  )
+}
+
 const TableSelectionActions = ({
   editor,
   kind,
@@ -268,257 +405,31 @@ const TableSelectionActions = ({
   editor: Editor
   kind: SelectionKind
 }) => {
-  const focus = editor.chain().focus()
-
-  const rect =
-    kind === "row" ||
-    kind === "header-row" ||
-    kind === "column" ||
-    kind === "header-column"
-      ? selectedRect(editor.state)
-      : null
-  const canMoveLeft = rect !== null && rect.left > 0
-  const canMoveRight = rect !== null && rect.right < rect.map.width
-  const canMoveUp = rect !== null && rect.top > 0
-  const canMoveDown = rect !== null && rect.bottom < rect.map.height
-  const hasRowMoves = canMoveUp || canMoveDown
-  const hasColumnMoves = canMoveLeft || canMoveRight
-  // TipTap's toggleHeaderRow/Column always targets the first row/column, so
-  // only offer the switch when that edge is part of the current selection.
-  const showHeaderRow = rect !== null && rect.top === 0
-  const showHeaderColumn = rect !== null && rect.left === 0
-
   switch (kind) {
     case "row":
-      return (
-        <>
-          {showHeaderRow && (
-            <>
-              <ActionGroup>
-                <HeaderToggle
-                  label="Header row"
-                  isChecked={false}
-                  onToggle={() => focus.toggleHeaderRow().run()}
-                />
-              </ActionGroup>
-              <ActionDivider />
-            </>
-          )}
-          <ActionGroup>
-            <ActionButton
-              label="Add row above"
-              icon={<IconAddRowAbove boxSize="1rem" />}
-              onClick={() => focus.addRowBefore().run()}
-            />
-            <ActionButton
-              label="Add row below"
-              icon={<IconAddRowBelow boxSize="1rem" />}
-              onClick={() => focus.addRowAfter().run()}
-            />
-          </ActionGroup>
-          {hasRowMoves && (
-            <>
-              <ActionDivider />
-              <ActionGroup>
-                {canMoveUp && (
-                  <ActionButton
-                    label="Move up"
-                    icon={<BiUpArrowAlt fontSize="1rem" />}
-                    onClick={() => moveRow(editor, "up")}
-                  />
-                )}
-                {canMoveDown && (
-                  <ActionButton
-                    label="Move down"
-                    icon={<BiDownArrowAlt fontSize="1rem" />}
-                    onClick={() => moveRow(editor, "down")}
-                  />
-                )}
-              </ActionGroup>
-            </>
-          )}
-          <ActionDivider />
-          <ActionGroup>
-            <ActionButton
-              label="Delete row"
-              icon={<IconDelRow boxSize="1rem" />}
-              onClick={() => focus.deleteRow().run()}
-            />
-          </ActionGroup>
-        </>
-      )
     case "header-row":
       return (
-        <>
-          {showHeaderRow && (
-            <>
-              <ActionGroup>
-                <HeaderToggle
-                  label="Header row"
-                  isChecked
-                  onToggle={() => focus.toggleHeaderRow().run()}
-                />
-              </ActionGroup>
-              <ActionDivider />
-            </>
-          )}
-          <ActionGroup>
-            <ActionButton
-              label="Add row above"
-              icon={<IconAddRowAbove boxSize="1rem" />}
-              onClick={() => focus.addRowBefore().run()}
-            />
-            <ActionButton
-              label="Add row below"
-              icon={<IconAddRowBelow boxSize="1rem" />}
-              onClick={() => focus.addRowAfter().run()}
-            />
-          </ActionGroup>
-          {hasRowMoves && (
-            <>
-              <ActionDivider />
-              <ActionGroup>
-                {canMoveUp && (
-                  <ActionButton
-                    label="Move up"
-                    icon={<BiUpArrowAlt fontSize="1rem" />}
-                    onClick={() => moveRow(editor, "up")}
-                  />
-                )}
-                {canMoveDown && (
-                  <ActionButton
-                    label="Move down"
-                    icon={<BiDownArrowAlt fontSize="1rem" />}
-                    onClick={() => moveRow(editor, "down")}
-                  />
-                )}
-              </ActionGroup>
-            </>
-          )}
-        </>
+        <RowSelectionActions
+          editor={editor}
+          rect={selectedRect(editor.state)}
+          isHeader={kind === "header-row"}
+        />
       )
     case "column":
-      return (
-        <>
-          {showHeaderColumn && (
-            <>
-              <ActionGroup>
-                <HeaderToggle
-                  label="Header column"
-                  isChecked={false}
-                  onToggle={() => focus.toggleHeaderColumn().run()}
-                />
-              </ActionGroup>
-              <ActionDivider />
-            </>
-          )}
-          <ActionGroup>
-            <ActionButton
-              label="Add column left"
-              icon={<IconAddColLeft boxSize="1rem" />}
-              onClick={() => focus.addColumnBefore().run()}
-            />
-            <ActionButton
-              label="Add column right"
-              icon={<IconAddColRight boxSize="1rem" />}
-              onClick={() => focus.addColumnAfter().run()}
-            />
-          </ActionGroup>
-          {hasColumnMoves && (
-            <>
-              <ActionDivider />
-              <ActionGroup>
-                {canMoveLeft && (
-                  <ActionButton
-                    label="Move left"
-                    icon={<BiLeftArrowAlt fontSize="1rem" />}
-                    onClick={() => moveColumn(editor, "left")}
-                  />
-                )}
-                {canMoveRight && (
-                  <ActionButton
-                    label="Move right"
-                    icon={<BiRightArrowAlt fontSize="1rem" />}
-                    onClick={() => moveColumn(editor, "right")}
-                  />
-                )}
-              </ActionGroup>
-            </>
-          )}
-          <ActionDivider />
-          <ActionGroup>
-            <ActionButton
-              label="Delete column"
-              icon={<IconDelCol boxSize="1rem" />}
-              onClick={() => focus.deleteColumn().run()}
-            />
-          </ActionGroup>
-        </>
-      )
     case "header-column":
       return (
-        <>
-          {showHeaderColumn && (
-            <>
-              <ActionGroup>
-                <HeaderToggle
-                  label="Header column"
-                  isChecked
-                  onToggle={() => focus.toggleHeaderColumn().run()}
-                />
-              </ActionGroup>
-              <ActionDivider />
-            </>
-          )}
-          <ActionGroup>
-            <ActionButton
-              label="Add column left"
-              icon={<IconAddColLeft boxSize="1rem" />}
-              onClick={() => focus.addColumnBefore().run()}
-            />
-            <ActionButton
-              label="Add column right"
-              icon={<IconAddColRight boxSize="1rem" />}
-              onClick={() => focus.addColumnAfter().run()}
-            />
-          </ActionGroup>
-          {hasColumnMoves && (
-            <>
-              <ActionDivider />
-              <ActionGroup>
-                {canMoveLeft && (
-                  <ActionButton
-                    label="Move left"
-                    icon={<BiLeftArrowAlt fontSize="1rem" />}
-                    onClick={() => moveColumn(editor, "left")}
-                  />
-                )}
-                {canMoveRight && (
-                  <ActionButton
-                    label="Move right"
-                    icon={<BiRightArrowAlt fontSize="1rem" />}
-                    onClick={() => moveColumn(editor, "right")}
-                  />
-                )}
-              </ActionGroup>
-            </>
-          )}
-          <ActionDivider />
-          <ActionGroup>
-            <ActionButton
-              label="Delete column"
-              icon={<IconDelCol boxSize="1rem" />}
-              onClick={() => focus.deleteColumn().run()}
-            />
-          </ActionGroup>
-        </>
+        <ColumnSelectionActions
+          editor={editor}
+          rect={selectedRect(editor.state)}
+          isHeader={kind === "header-column"}
+        />
       )
     case "table":
       return (
         <ActionButton
           label="Delete table"
           icon={<BiTrash fontSize="1rem" />}
-          onClick={() => focus.deleteTable().run()}
+          onClick={() => editor.chain().focus().deleteTable().run()}
         />
       )
     case "multi-cell":
@@ -526,7 +437,7 @@ const TableSelectionActions = ({
         <ActionButton
           label="Merge cells"
           icon={<IconMergeCells boxSize="1rem" />}
-          onClick={() => focus.mergeCells().run()}
+          onClick={() => editor.chain().focus().mergeCells().run()}
         />
       )
     case "merged-cell":
@@ -534,7 +445,7 @@ const TableSelectionActions = ({
         <ActionButton
           label="Split cell"
           icon={<IconSplitCell boxSize="1rem" />}
-          onClick={() => focus.splitCell().run()}
+          onClick={() => editor.chain().focus().splitCell().run()}
         />
       )
     default:
@@ -622,32 +533,7 @@ const revealTableBubbleMenu = (editor: Editor) => {
   )
 }
 
-// memo: parent Editor re-renders on every TipTap transaction, including the
-// blur/focus meta transactions Chakra Modal FocusLock generates. TipTap's
-// BubbleMenu React wrapper re-runs useMenuElementProps on each render (fresh
-// restProps object) and fights FocusLock → tab hang when opening Table
-// Settings. Skipping parent-driven re-renders breaks that loop.
-//
-// Re-render only on selectionUpdate/update (not blur/focus meta) so kind and
-// move-edge affordances stay correct without FocusLock thrash.
-export const TableBubbleMenu = memo(function TableBubbleMenu({
-  editor,
-}: TableBubbleMenuProps) {
-  const [, setRevision] = useState(0)
-
-  useEffect(() => {
-    const sync = () => setRevision((n) => n + 1)
-    editor.on("selectionUpdate", sync)
-    editor.on("update", sync)
-    return () => {
-      editor.off("selectionUpdate", sync)
-      editor.off("update", sync)
-    }
-  }, [editor])
-
-  // TipTap early-returns when selection/doc are unchanged, so mouseup's
-  // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
-  // (or an explicit hide while selecting) force hide/reveal.
+const useTableBubbleMenuDragSync = (editor: Editor) => {
   useEffect(() => {
     const onTransaction = ({
       transaction,
@@ -672,8 +558,39 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       editor.off("transaction", onTransaction)
     }
   }, [editor])
+}
 
-  const kind = detectSelectionType(editor)
+// memo: parent Editor re-renders on every TipTap transaction, including the
+// blur/focus meta transactions Chakra Modal FocusLock generates. TipTap's
+// BubbleMenu React wrapper re-runs useMenuElementProps on each render (fresh
+// restProps object) and fights FocusLock → tab hang when opening Table
+// Settings. Skipping parent-driven re-renders breaks that loop.
+//
+// Re-render only on selectionUpdate/update (not blur/focus meta) so kind and
+// move-edge affordances stay correct without FocusLock thrash.
+export const TableBubbleMenu = memo(function TableBubbleMenu({
+  editor,
+}: TableBubbleMenuProps) {
+  // TipTap's selector replaces manual event subscriptions. Document identity
+  // represents `update`; Selection.eq represents `selectionUpdate`. Meta-only
+  // blur/focus transactions compare equal and therefore do not re-render.
+  const { kind } = useEditorState({
+    editor,
+    selector: ({ editor: currentEditor }) => ({
+      kind: detectSelectionType(currentEditor),
+      doc: currentEditor.state.doc,
+      selection: currentEditor.state.selection,
+    }),
+    equalityFn: (previous, next) =>
+      next !== null &&
+      previous.doc === next.doc &&
+      previous.selection.eq(next.selection),
+  })
+
+  // TipTap early-returns when selection/doc are unchanged, so mouseup's
+  // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
+  // (or an explicit hide while selecting) force hide/reveal.
+  useTableBubbleMenuDragSync(editor)
 
   return (
     <BubbleMenu
@@ -686,6 +603,8 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       <VStack
         align="stretch"
         textAlign="left"
+        position="relative"
+        zIndex="dropdown"
         bg="base.canvas.default"
         boxShadow="md"
         borderRadius="md"
