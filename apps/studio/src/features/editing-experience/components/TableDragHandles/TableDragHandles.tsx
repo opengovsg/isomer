@@ -128,7 +128,9 @@ const GRIP = "⣏⣏" // stacked braille-pattern grip glyph
 const HANDLE_MARGIN_PX = 28
 /** Outer size of the compact grip chip (square). */
 const HANDLE_SIZE_PX = 20
-const HANDLE_OFFSET_PX = 24
+/** Distance from the table border to the handle's outer edge; half the
+ *  handle size so the chip is centered on the border. */
+const HANDLE_OFFSET_PX = HANDLE_SIZE_PX / 2
 
 const handleStyle = {
   display: "flex",
