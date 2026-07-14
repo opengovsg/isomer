@@ -70,6 +70,7 @@ While writing:
 **Frontend (`apps/studio/src/features/**`, `apps/studio/src/components/**`, `packages/components/src/templates/**`):**
 
 - A Storybook story covering empty, populated, and (where applicable) error states.
+- **Exception:** TipTap/editor-contextual overlays (bubble menus, selection-driven inline UI) must not get a standalone story — cover them with a `*.browser.test.tsx` instead, and story the parent editor once the overlay is wired in. See [no-isolated-storybook-for-editor-overlays](../isomer-conventions/conventions/no-isolated-storybook-for-editor-overlays.md).
 - A component test if the component has interactive logic.
 
 **Backend (`apps/studio/src/server/modules/**`):**
@@ -172,7 +173,7 @@ If this is a `design-iteration` and Chromatic is wired up, attach the preview li
 ## Anti-patterns the agent must refuse
 
 - Combining FE + BE + schema changes into one PR.
-- Skipping the Storybook story because "the change is obvious".
+- Skipping the Storybook story because "the change is obvious" (the editor-overlay exception above is the only allowed skip — and it still requires a `*.browser.test.tsx`).
 - Mocking the database in BE integration tests.
 - Adding `// TODO` markers without an attached follow-up ticket.
 - Editing `CLAUDE.md` to make a rule fit your implementation choice.

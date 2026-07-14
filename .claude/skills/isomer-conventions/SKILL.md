@@ -57,6 +57,7 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 
 ### Testing
 - [Structure tests as Arrange / Act / Assert](conventions/tests-arrange-act-assert.md) — best practice: mark AAA phases (collapse adjacent markers when trivial), one Act per test
+- [Don't Storybook TipTap overlays in isolation](conventions/no-isolated-storybook-for-editor-overlays.md) — smell: standalone stories for bubble menus / selection-driven editor overlays; use `*.browser.test.tsx` (and story the parent editor once wired)
 
 ### Dependencies
 
