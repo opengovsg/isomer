@@ -177,6 +177,12 @@ interface TableCaptionSlotProps extends SingleTableCaptionProps {
  * `IsomerTable` extension/CSS, so this stays scoped to this component and
  * doesn't affect tables anywhere else. The margin is restored on cleanup.
  *
+ * Caption `top` is the table's margin-edge (border-box top minus the margin
+ * currently on the table), not `borderBoxTop - newMargin`. That keeps the
+ * input line stable when the caption box grows/shrinks — e.g. when the
+ * character counter mounts on focus — instead of jumping the whole caption
+ * up and later dropping it into the table on blur.
+ *
  * Measurement happens in `useLayoutEffect`, not inline during render — doing
  * it in a plain `useMemo`/render body can capture an all-zero rect if the
  * browser hasn't flushed layout yet, and (since deps may not change again)
@@ -212,12 +218,18 @@ const TableCaptionSlot = ({
       // Caption box is always mounted (just hidden until positioned), so it
       // already has a real height on the first measurement.
       const captionHeight = captionRef.current?.offsetHeight ?? 0
+      // Peel off the margin we last wrote so the caption anchors to the
+      // margin-edge origin. Using the *new* reserved height here instead
+      // would jump the input up when the focus counter appears, and drop it
+      // into the table when the counter disappears.
+      const currentMarginTop = Number.parseFloat(tableDom.style.marginTop) || 0
       const { rect: next, marginTop } = computeCaptionLayout({
         tableRect: tableDom.getBoundingClientRect(),
         containerRect: container.getBoundingClientRect(),
         scrollTop: container.scrollTop,
         scrollLeft: container.scrollLeft,
         captionHeight,
+        currentMarginTop,
         gapPx: CAPTION_TABLE_GAP_PX,
       })
       tableDom.style.marginTop = `${marginTop}px`
