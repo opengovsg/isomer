@@ -82,7 +82,32 @@
     {
       "files": ["src/lib/intercom.ts"],
       "rules": {
-        "no-restricted-imports": "off"
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "process",
+                "importNames": ["env"],
+                "message": "Use `import { env } from '~/env'` instead to ensure validated types."
+              },
+              {
+                "name": "@chakra-ui/react",
+                "importNames": ["useToast"],
+                "message": "Please use useToast from @opengovsg/design-system-react instead."
+              },
+              {
+                "name": "@chakra-ui/react",
+                "importNames": [
+                  "FormLabel",
+                  "FormErrorMessage",
+                  "FormHelperText"
+                ],
+                "message": "Please use FormLabel, FormErrorMessage, and FormHelperText from @opengovsg/design-system-react instead."
+              }
+            ]
+          }
+        ]
       }
     },
     {
