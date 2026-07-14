@@ -77,6 +77,7 @@ describe("Table colgroup", () => {
     // Arrange / Act
     const html = renderToStaticMarkup(
       <Table
+        type="table"
         site={generateSiteConfig()}
         attrs={{
           caption: "Staggered merges — logical 3 columns",
@@ -100,6 +101,7 @@ describe("Table colgroup", () => {
     // Arrange / Act
     const html = renderToStaticMarkup(
       <Table
+        type="table"
         site={generateSiteConfig()}
         attrs={{ caption: "Two columns" }}
         content={[
