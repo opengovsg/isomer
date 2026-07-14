@@ -154,26 +154,34 @@ describe("TableBubbleMenu", () => {
     expect(await findByText("Delete row")).toBeTruthy()
   })
 
-  it("shows Header row/column only when the first row/column is in the selection", async () => {
+  it("shows Header row/column only for the exact top row / leftmost column", async () => {
     const { editor, findByRole, queryByRole } = await renderHarness()
 
-    // Body row — does not include row 0
+    // Body row — not the top row
     selectCells(editor, 3, 5)
     expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
 
-    // Header row — includes row 0
+    // Exact header / top row
     selectCells(editor, 0, 2)
     expect(await findByRole("checkbox", { name: "Header row" })).toBeChecked()
 
-    // Middle column — does not include column 0
+    // Top row + body row — overlaps the top row but is not exactly it
+    selectCells(editor, 0, 5)
+    expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
+
+    // Middle column — not the leftmost column
     selectCells(editor, 1, 7)
     expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()
 
-    // Leftmost column — includes column 0
+    // Exact leftmost column
     selectCells(editor, 0, 6)
     expect(
       await findByRole("checkbox", { name: "Header column" }),
     ).not.toBeChecked()
+
+    // Leftmost + next column — overlaps leftmost but is not exactly it
+    selectCells(editor, 0, 7)
+    expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()
   })
 
   it("places the Header row/column toggle above other actions when shown", async () => {
@@ -240,8 +248,8 @@ describe("TableBubbleMenu", () => {
     expect(firstRowTexts(editor)).toEqual(["Column C", "Column A", "Column B"])
   })
 
-  it("excludes Delete row from the header row's action set", async () => {
-    const { editor, findByText, findByRole, queryByText } =
+  it("excludes Delete row when the selection includes the header row", async () => {
+    const { editor, findByText, findByRole, queryByText, queryByRole } =
       await renderHarness()
 
     selectCells(editor, 0, 2) // the full header row
@@ -251,10 +259,42 @@ describe("TableBubbleMenu", () => {
     expect(await findByText("Add row above")).toBeTruthy()
     expect(await findByText("Add row below")).toBeTruthy()
     expect(await findByText("Move down")).toBeTruthy()
-    // The refined content matrix (issue 06) explicitly drops Delete row for
-    // the header row, to avoid leaving the table with no header.
+    // Header axes withhold Delete — unset the header first, then delete as a
+    // body row/column — including when the selection also spans body rows.
     expect(queryByText("Delete row")).toBeNull()
     expect(queryByText("Move up")).toBeNull()
+
+    // Header row + first body row: still withhold Delete, but the Header
+    // switch is only for the exact top row.
+    selectCells(editor, 0, 5)
+    expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
+    expect(queryByText("Delete row")).toBeNull()
+  })
+
+  it("excludes Delete column when the selection includes a header column", async () => {
+    const { editor, findByText, findByRole, queryByText, queryByRole } =
+      await renderHarness()
+
+    // Seed table has a header row only — leftmost column is still deletable.
+    selectCells(editor, 0, 6)
+    expect(
+      await findByRole("checkbox", { name: "Header column" }),
+    ).not.toBeChecked()
+    expect(await findByText("Delete column")).toBeTruthy()
+
+    act(() => {
+      editor.chain().focus().toggleHeaderColumn().run()
+    })
+
+    selectCells(editor, 0, 6) // header column alone
+    expect(await findByRole("checkbox", { name: "Header column" })).toBeChecked()
+    expect(queryByText("Delete column")).toBeNull()
+
+    // Header column + next column: still withhold Delete; Header switch only
+    // for the exact leftmost column.
+    selectCells(editor, 0, 7)
+    expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()
+    expect(queryByText("Delete column")).toBeNull()
   })
 
   it("shows only Merge cells for an irregular multi-cell selection", async () => {

@@ -1,3 +1,6 @@
+import type { Node } from "@tiptap/pm/model"
+import type { TableMap } from "@tiptap/pm/tables"
+
 export type SelectionKind =
   | "none"
   | "single-cell"
@@ -9,12 +12,62 @@ export type SelectionKind =
   | "table"
   | "multi-cell"
 
+// Slice of selectedRect() needed to tell whether a selection overlaps a
+// TipTap header row/column. Kept structural so unit tests don't need a live
+// EditorView.
+export interface TableHeaderOverlapRect {
+  top: number
+  left: number
+  map: Pick<TableMap, "width" | "height" | "map">
+  table: Node
+}
+
+const cellTypeAt = (
+  rect: TableHeaderOverlapRect,
+  row: number,
+  col: number,
+): string | null => {
+  const cellPos = rect.map.map[row * rect.map.width + col]
+  if (cellPos === undefined) return null
+  return rect.table.nodeAt(cellPos)?.type.name ?? null
+}
+
+const isHeaderRowAtTop = (rect: TableHeaderOverlapRect): boolean => {
+  for (let col = 0; col < rect.map.width; col++) {
+    if (cellTypeAt(rect, 0, col) !== "tableHeader") return false
+  }
+  return rect.map.width > 0
+}
+
+const isHeaderColumnAtLeft = (rect: TableHeaderOverlapRect): boolean => {
+  for (let row = 0; row < rect.map.height; row++) {
+    if (cellTypeAt(rect, row, 0) !== "tableHeader") return false
+  }
+  return rect.map.height > 0
+}
+
+// Delete is withheld whenever the selection overlaps a header axis — not only
+// when the selection is exclusively that header — so users unset the header
+// first rather than accidentally leaving the table headerless.
+export const selectionIncludesHeaderRow = (
+  rect: TableHeaderOverlapRect,
+): boolean => rect.top === 0 && isHeaderRowAtTop(rect)
+
+export const selectionIncludesHeaderColumn = (
+  rect: TableHeaderOverlapRect,
+): boolean => rect.left === 0 && isHeaderColumnAtLeft(rect)
+
 // ProseMirror-specific selection details are normalized into these facts so
 // the menu's classification rules can stay independent of editor state.
 export interface TableSelectionFacts {
   spansEntireTableWidth: boolean
   spansEntireTableHeight: boolean
   allCellsAreHeaders: boolean
+  // True when the selection is exactly the table's first row / first column
+  // (half-open rect starting at 0 with span 1). TipTap header toggles only
+  // rewrite that edge, so "header-*" kinds match the same scope.
+  isTopRow: boolean
+  isLeftmostColumn: boolean
   selectsSingleCellNode: boolean
   selectedCellIsMerged: boolean
 }
@@ -25,15 +78,17 @@ export const getTableSelectionKind = ({
   spansEntireTableWidth,
   spansEntireTableHeight,
   allCellsAreHeaders,
+  isTopRow,
+  isLeftmostColumn,
   selectsSingleCellNode,
   selectedCellIsMerged,
 }: TableSelectionFacts): Exclude<SelectionKind, "none"> => {
   if (spansEntireTableWidth && spansEntireTableHeight) return "table"
   if (spansEntireTableWidth) {
-    return allCellsAreHeaders ? "header-row" : "row"
+    return allCellsAreHeaders && isTopRow ? "header-row" : "row"
   }
   if (spansEntireTableHeight) {
-    return allCellsAreHeaders ? "header-column" : "column"
+    return allCellsAreHeaders && isLeftmostColumn ? "header-column" : "column"
   }
   if (selectsSingleCellNode) {
     return selectedCellIsMerged ? "merged-cell" : "single-cell"
