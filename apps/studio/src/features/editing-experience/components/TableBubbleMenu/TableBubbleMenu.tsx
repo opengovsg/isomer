@@ -269,9 +269,7 @@ const ColourSwatch = ({
     aria-label={label}
     backgroundColor={backgroundColor}
     border="2px solid"
-    borderColor={
-      isActive ? "interaction.main.default" : "base.divider.medium"
-    }
+    borderColor={isActive ? "interaction.main.default" : "base.divider.medium"}
     onMouseDown={(event) => event.preventDefault()}
     onClick={onClick}
   />
