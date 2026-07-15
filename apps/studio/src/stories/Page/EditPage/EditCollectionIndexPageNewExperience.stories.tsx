@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { expect, userEvent, waitFor, within } from "storybook/test"
+import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -29,6 +30,7 @@ const COMMON_HANDLERS = [
   pageHandlers.readPageAndBlob.collection(),
   pageHandlers.readPage.index(),
   pageHandlers.getFullPermalink.collection(),
+  collectionHandlers.countTagOptionsUsage.default(),
 ]
 
 const meta: Meta<typeof EditPage> = {
@@ -351,7 +353,8 @@ export const FiltersDeleteFilterModalDisabledCta: Story = {
     await userEvent.click(
       await portals.findByRole("menuitem", { name: /Delete filter/i }),
     )
-    await portals.findByText(/Delete filter "Test filter"\?/i)
+    await portals.findByText(/You are deleting an entire filter\./i)
+    await portals.findByText(/It’s being used on/i)
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).toBeDisabled()
@@ -365,12 +368,41 @@ export const FiltersDeleteFilterModalEnabledCta: Story = {
     const portals = withinPortals(context.canvasElement)
     await userEvent.click(
       portals.getByRole("checkbox", {
-        name: /Yes, delete this filter permanently/i,
+        name: /Yes, delete the entire filter permanently/i,
       }),
     )
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).not.toBeDisabled()
+  },
+}
+
+export const FiltersDeleteFilterModalManyOptions: Story = {
+  parameters: {
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
+    msw: {
+      handlers: [
+        pageHandlers.readPageAndBlob.collectionWithManyFilterOptions(),
+        userHandlers.isIsomerAdmin.admin(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    await playOpenManageFilters(canvasElement)
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /Filter 1 actions/i }),
+    )
+    const portals = withinPortals(canvasElement)
+    await userEvent.click(
+      await portals.findByRole("menuitem", { name: /Delete filter/i }),
+    )
+    await portals.findByText(/You are deleting an entire filter\./i)
+    // A filter with 100+ options skips the usage-count query entirely (see
+    // MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) rather than showing a misleading
+    // capped number.
+    await portals.findByText(/a large number of results/i)
   },
 }
 
