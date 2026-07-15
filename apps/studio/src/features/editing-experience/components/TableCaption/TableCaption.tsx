@@ -146,7 +146,7 @@ const SingleTableCaption = ({
         _focus={{ bg: "interaction.muted.main.hover" }}
       />
       {isFocused && (
-        <Box textAlign="right" mt="0.25rem">
+        <Box textAlign="left" mt="0.25rem">
           <CounterText length={draft.length} />
         </Box>
       )}
