@@ -309,20 +309,15 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete column")).toBeNull()
   })
 
-  it("applies a background colour from the multi-cell submenu", async () => {
+  it("applies a background colour from the inline swatches", async () => {
     // Arrange
-    const { editor, findByRole, container } = await renderHarness()
+    const { editor, findByRole, findByText, container } = await renderHarness()
     selectCells(editor, 3, 7)
 
-    // Act
-    const backgroundColour = await findByRole("button", {
-      name: "Background colour",
-    })
-    act(() => {
-      backgroundColour.click()
-    })
-
-    expect(await findByRole("button", { name: "Back" })).toBeTruthy()
+    // Act — label is plain text; swatches sit underneath and are immediately
+    // available (no navigate-away submenu).
+    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByText("Merge cells")).toBeTruthy()
     const blueSwatch = await findByRole("button", { name: "Blue" })
     act(() => {
       blueSwatch.click()
@@ -341,62 +336,44 @@ describe("TableBubbleMenu", () => {
 
   it("hides Background colour for a header row selection", async () => {
     // Arrange
-    const { editor, findByText, queryByRole } = await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
 
     // Act
     selectCells(editor, 0, 2)
     await findByText("Add row above")
 
     // Assert
-    expect(queryByRole("button", { name: "Background colour" })).toBeNull()
+    expect(queryByText("Background colour")).toBeNull()
   })
 
   it("shows Background colour for a body row selection", async () => {
     // Arrange
-    const { editor, findByRole } = await renderHarness()
+    const { editor, findByText } = await renderHarness()
 
     // Act
     selectCells(editor, 3, 5)
 
     // Assert
-    expect(
-      await findByRole("button", { name: "Background colour" }),
-    ).toBeTruthy()
+    expect(await findByText("Background colour")).toBeTruthy()
   })
 
-  it("returns to actions when the selection kind changes", async () => {
+  it("keeps action buttons and colour swatches visible together", async () => {
     // Arrange
-    const { editor, findByRole, findByText, queryByRole } =
-      await renderHarness()
+    const { editor, findByText, findByRole } = await renderHarness()
     selectCells(editor, 3, 7)
-    const backgroundColour = await findByRole("button", {
-      name: "Background colour",
-    })
-    act(() => {
-      backgroundColour.click()
-    })
-    expect(await findByRole("button", { name: "Back" })).toBeTruthy()
 
-    // Act
-    selectCells(editor, 3, 5)
-
-    // Assert
-    expect(await findByText("Add row above")).toBeTruthy()
-    expect(queryByRole("button", { name: "Back" })).toBeNull()
+    // Assert — colour section is inline; row/merge actions stay visible
+    expect(await findByText("Merge cells")).toBeTruthy()
+    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
   })
 
-  it("returns to actions after the menu hides during cell drag", async () => {
+  it("shows actions again after the menu hides during cell drag", async () => {
     // Arrange
-    const { editor, findByRole, findByText, queryByRole } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
     selectCells(editor, 3, 7)
-    const backgroundColour = await findByRole("button", {
-      name: "Background colour",
-    })
-    act(() => {
-      backgroundColour.click()
-    })
-    expect(await findByRole("button", { name: "Back" })).toBeTruthy()
+    expect(await findByText("Merge cells")).toBeTruthy()
+    expect(await findByText("Background colour")).toBeTruthy()
 
     // Act
     act(() => {
@@ -405,7 +382,7 @@ describe("TableBubbleMenu", () => {
       )
     })
     await waitFor(() => {
-      expect(queryByRole("button", { name: "Back" })).toBeNull()
+      expect(queryByText("Merge cells")).toBeNull()
     })
     act(() => {
       editor.view.dispatch(editor.state.tr.setMeta(tableEditingKey, -1))
@@ -413,7 +390,7 @@ describe("TableBubbleMenu", () => {
 
     // Assert
     expect(await findByText("Merge cells")).toBeTruthy()
-    expect(queryByRole("button", { name: "Back" })).toBeNull()
+    expect(await findByText("Background colour")).toBeTruthy()
   })
 
   it("shows no menu content for a plain cursor outside any selection", async () => {
@@ -425,8 +402,7 @@ describe("TableBubbleMenu", () => {
   })
 
   it("shows Split cell for a merged cell, and Background colour for an ordinary body cell", async () => {
-    const { editor, findByText, findByRole, queryByText, queryByRole } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
 
     // Merge two adjacent body cells into one, then re-select just that
     // resulting cell — structural action is Split; colour still applies.
@@ -438,21 +414,17 @@ describe("TableBubbleMenu", () => {
 
     expect(await findByText("Split cell")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
-    expect(
-      await findByRole("button", { name: "Background colour" }),
-    ).toBeTruthy()
+    expect(await findByText("Background colour")).toBeTruthy()
 
     // An ordinary (never-merged) body cell shows colour only.
     selectCells(editor, 6, 6)
-    expect(
-      await findByRole("button", { name: "Background colour" }),
-    ).toBeTruthy()
+    expect(await findByText("Background colour")).toBeTruthy()
     expect(queryByText("Split cell")).toBeNull()
     expect(queryByText("Merge cells")).toBeNull()
 
     // A single header cell has neither structural actions nor colour.
     selectCells(editor, 0, 0)
-    expect(queryByRole("button", { name: "Background colour" })).toBeNull()
+    expect(queryByText("Background colour")).toBeNull()
     expect(queryByText("Split cell")).toBeNull()
   })
 
