@@ -1,10 +1,22 @@
 import type { Node as ProseMirrorNode, NodeSpec } from "@tiptap/pm/model"
 import type { Editor } from "@tiptap/react"
+import { BulletList } from "@tiptap/extension-bullet-list"
+import { Document } from "@tiptap/extension-document"
+import { ListItem } from "@tiptap/extension-list-item"
+import { Paragraph } from "@tiptap/extension-paragraph"
+import { Text } from "@tiptap/extension-text"
 import { Schema } from "@tiptap/pm/model"
 import { EditorState, type Transaction } from "@tiptap/pm/state"
 import { CellSelection } from "@tiptap/pm/tables"
+import { getSchema } from "@tiptap/react"
 import { describe, expect, it } from "vitest"
 
+import {
+  IsomerTable,
+  IsomerTableCell,
+  IsomerTableHeader,
+  TableRow,
+} from "../../hooks/useTextEditor/constants"
 import {
   getUniformBodyCellBackgroundColor,
   selectionHasBodyCell,
@@ -113,6 +125,31 @@ const readCellColors = (doc: ProseMirrorNode) => {
   })
   return colors
 }
+
+describe("IsomerTableCell", () => {
+  it("preserves TipTap table cell span attributes when extended", () => {
+    // Arrange / Act
+    const tableSchema = getSchema([
+      Document,
+      Text,
+      Paragraph,
+      BulletList,
+      ListItem,
+      IsomerTable,
+      TableRow,
+      IsomerTableCell,
+      IsomerTableHeader,
+    ])
+    const attributes = tableSchema.nodes.tableCell?.spec.attrs
+
+    // Assert
+    expect(attributes).toMatchObject({
+      colspan: { default: 1 },
+      rowspan: { default: 1 },
+      backgroundColor: { default: null },
+    })
+  })
+})
 
 describe("selectionHasBodyCell", () => {
   it("returns true for a body-only selection", () => {
