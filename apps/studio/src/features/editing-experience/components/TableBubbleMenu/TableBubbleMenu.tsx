@@ -15,6 +15,7 @@ import { useEditorState } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
 import { memo, useCallback, useEffect, useState } from "react"
 import {
+  BiCopy,
   BiDownArrowAlt,
   BiLeftArrowAlt,
   BiPencil,
@@ -33,6 +34,10 @@ import {
   IconSplitCell,
 } from "~/components/icons"
 
+import {
+  duplicateSelectedColumns,
+  duplicateSelectedRows,
+} from "./TableBubbleMenu.duplicate"
 import {
   getColumnMovePlan,
   getRowMovePlan,
@@ -302,6 +307,11 @@ const RowSelectionActions = ({
           icon={<IconAddRowBelow boxSize="1rem" />}
           onClick={() => editor.chain().focus().addRowAfter().run()}
         />
+        <ActionButton
+          label="Duplicate row"
+          icon={<BiCopy fontSize="1rem" />}
+          onClick={() => duplicateSelectedRows(editor)}
+        />
         {canMoveUp && (
           <ActionButton
             label="Move up"
@@ -364,6 +374,11 @@ const ColumnSelectionActions = ({
           label="Add column right"
           icon={<IconAddColRight boxSize="1rem" />}
           onClick={() => editor.chain().focus().addColumnAfter().run()}
+        />
+        <ActionButton
+          label="Duplicate column"
+          icon={<BiCopy fontSize="1rem" />}
+          onClick={() => duplicateSelectedColumns(editor)}
         />
         {canMoveLeft && (
           <ActionButton
