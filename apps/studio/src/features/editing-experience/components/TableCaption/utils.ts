@@ -1,4 +1,5 @@
 import type { Editor as TiptapEditor } from "@tiptap/react"
+import { viewportPointToContainerPoint } from "~/features/editing-experience/utils/tableEditorGeometry"
 
 export const CAPTION_MAX_LENGTH = 200
 export const CAPTION_TABLE_GAP_PX = 8
@@ -136,13 +137,18 @@ export const computeCaptionLayout = ({
   gapPx = CAPTION_TABLE_GAP_PX,
 }: ComputeCaptionLayoutParams): CaptionLayout => {
   const marginTop = captionHeight + gapPx
-  const marginEdgeTop =
-    tableRect.top - containerRect.top + scrollTop - currentMarginTop
+  const tableOrigin = viewportPointToContainerPoint({
+    clientX: tableRect.left,
+    clientY: tableRect.top,
+    containerRect,
+    scrollTop,
+    scrollLeft,
+  })
   return {
     marginTop,
     rect: {
-      top: marginEdgeTop,
-      left: tableRect.left - containerRect.left + scrollLeft,
+      top: tableOrigin.y - currentMarginTop,
+      left: tableOrigin.x,
       width: tableRect.width,
     },
   }

@@ -203,16 +203,21 @@ const TableCaptionSlot = ({
   const captionRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
-    const tableDom = editor.view.nodeDOM(pos)
-    if (!(tableDom instanceof HTMLElement)) return
-
-    const previousMarginTop = tableDom.style.marginTop
+    let tableDom: HTMLElement | null = null
+    let previousMarginTop = ""
 
     const measure = () => {
       const container = containerRef.current
-      if (!(tableDom instanceof HTMLElement) || !container) {
+      const nextTableDom = editor.view.nodeDOM(pos)
+      if (!(nextTableDom instanceof HTMLElement) || !container) {
         setRect(null)
         return
+      }
+
+      if (tableDom !== nextTableDom) {
+        if (tableDom) tableDom.style.marginTop = previousMarginTop
+        tableDom = nextTableDom
+        previousMarginTop = tableDom.style.marginTop
       }
 
       // Caption box is always mounted (just hidden until positioned), so it
@@ -240,6 +245,9 @@ const TableCaptionSlot = ({
     }
 
     measure()
+    // EditorContent mounts ProseMirror in its own effect, which can run after
+    // this layout effect. Retry once after paint so nodeDOM(pos) is available.
+    const raf = requestAnimationFrame(measure)
     editor.on("transaction", measure)
 
     // Re-measure when the caption box grows/shrinks (e.g. counter
@@ -250,9 +258,10 @@ const TableCaptionSlot = ({
     }
 
     return () => {
+      cancelAnimationFrame(raf)
       editor.off("transaction", measure)
       resizeObserver.disconnect()
-      tableDom.style.marginTop = previousMarginTop
+      if (tableDom) tableDom.style.marginTop = previousMarginTop
     }
   }, [editor, pos, containerRef])
 

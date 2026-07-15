@@ -13,7 +13,7 @@ import {
 } from "@tiptap/pm/tables"
 import { useEditorState } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
-import { memo, useEffect } from "react"
+import { memo, useCallback, useEffect } from "react"
 import {
   BiDownArrowAlt,
   BiLeftArrowAlt,
@@ -32,6 +32,7 @@ import {
   IconSplitCell,
 } from "~/components/icons"
 
+import type { TableBubbleMenuAnchor } from "./TableBubbleMenu.types"
 import {
   getColumnMovePlan,
   getRowMovePlan,
@@ -41,6 +42,7 @@ import {
 
 export interface TableBubbleMenuProps {
   editor: Editor
+  anchor?: TableBubbleMenuAnchor
 }
 
 // A single selected cell that came from a previous merge (colspan/rowspan >
@@ -473,15 +475,23 @@ const shouldShowTableBubbleMenu = ({
   editor,
   view,
   element,
+  anchor,
 }: {
   editor: Editor
   view: Editor["view"]
   element: HTMLElement
+  anchor?: TableBubbleMenuAnchor
 }) => {
   if (tableEditingKey.getState(view.state) != null) return false
 
   const kind = detectSelectionType(editor)
   if (kind === "none" || kind === "single-cell") return false
+
+  // An optional anchor can defer showing until its reference is mounted,
+  // avoiding a one-frame jump from the default selection-box position.
+  if (anchor?.shouldWaitForReference()) {
+    return false
+  }
 
   const isChildOfMenu = element.contains(document.activeElement)
   return view.hasFocus() || isChildOfMenu
@@ -496,16 +506,25 @@ const TABLE_BUBBLE_MENU_UPDATE_DELAY = 0
 // anchors inside EditorContent and the menu gets clipped above the selection).
 // Do NOT appendTo document.body — TipTap's blur handler treats any body focus
 // target as "inside the menu" via parentNode.contains and hangs FocusLock.
+//
+// `bottom-start` keeps an optional custom reference visible above the menu;
+// `flip: false` prevents Floating UI from changing sides between position
+// passes while that reference mounts.
 const TABLE_BUBBLE_MENU_OPTIONS = {
   strategy: "fixed" as const,
-  placement: "top" as const,
+  placement: "bottom-start" as const,
   offset: 8,
+  flip: false,
 }
 
-// TipTap/Floating UI `options` have no zIndex — style the portal root so it
-// stacks above TableCaption (`z-index: 1`) and `.selectedCell::after` (`2`).
-// 1000 === Chakra theme token `zIndices.dropdown`.
+// Applied to TipTap's floating root (`menuEl`), not just the inner surface.
+// It must stack above sibling table overlays and `.selectedCell::after`.
+// 1000 matches Chakra's `dropdown` token.
 export const TABLE_BUBBLE_MENU_Z_INDEX = 1000
+
+const TABLE_BUBBLE_MENU_STYLE = {
+  zIndex: TABLE_BUBBLE_MENU_Z_INDEX,
+} as const
 
 // Stable explicit plugin key so we can nudge TipTap's show/hide when
 // `tableEditingKey` flips without a selection/doc change (mouseup only clears
@@ -513,21 +532,30 @@ export const TABLE_BUBBLE_MENU_Z_INDEX = 1000
 // would otherwise never re-run `shouldShow`).
 const TABLE_BUBBLE_MENU_PLUGIN_KEY = new PluginKey("tableBubbleMenu")
 
+/** Hide the table bubble menu while an external interaction is in flight. */
+export const hideTableBubbleMenu = (editor: Editor) => {
+  editor.view.dispatch(
+    editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
+  )
+}
+
 // TipTap's `show` meta runs `updatePosition()` *before* `show()`, and
 // `updatePosition` no-ops while `!isVisible` — so a bare `show` meta leaves
 // the menu unpositioned (often effectively invisible). Show first, then
 // position.
-const revealTableBubbleMenu = (editor: Editor) => {
+export const revealTableBubbleMenu = (
+  editor: Editor,
+  anchor?: TableBubbleMenuAnchor,
+) => {
   if (
     !shouldShowTableBubbleMenu({
       editor,
       view: editor.view,
       element: editor.view.dom,
+      anchor,
     })
   ) {
-    editor.view.dispatch(
-      editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
-    )
+    hideTableBubbleMenu(editor)
     return
   }
   editor.view.dispatch(
@@ -538,7 +566,129 @@ const revealTableBubbleMenu = (editor: Editor) => {
   )
 }
 
-const useTableBubbleMenuDragSync = (editor: Editor) => {
+const dispatchUpdatePosition = (editor: Editor) => {
+  editor.view.dispatch(
+    editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "updatePosition"),
+  )
+}
+
+const TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR = "data-table-bubble-menu-staging"
+const TABLE_BUBBLE_MENU_INSTANCE_ATTR = "data-table-bubble-menu-instance"
+const tableBubbleMenuInstanceIds = new WeakMap<Editor, string>()
+let nextTableBubbleMenuInstanceId = 0
+
+const getTableBubbleMenuInstanceId = (editor: Editor): string => {
+  const existing = tableBubbleMenuInstanceIds.get(editor)
+  if (existing) return existing
+  const id = `table-bubble-menu-${nextTableBubbleMenuInstanceId++}`
+  tableBubbleMenuInstanceIds.set(editor, id)
+  return id
+}
+
+/** Force the floating root hidden while we wait for a correct anchor/layout. */
+const beginBubbleMenuStagingHidden = (editor: Editor) => {
+  const instanceId = getTableBubbleMenuInstanceId(editor)
+  if (
+    document.querySelector(
+      `style[${TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR}="${instanceId}"]`,
+    )
+  ) {
+    return
+  }
+  const style = document.createElement("style")
+  style.setAttribute(TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR, instanceId)
+  // Beat TipTap's inline `visibility: visible` from `updatePosition`.
+  style.textContent = `[${TABLE_BUBBLE_MENU_INSTANCE_ATTR}="${instanceId}"]{visibility:hidden!important}`
+  document.head.appendChild(style)
+}
+
+const endBubbleMenuStagingHidden = (editor: Editor) => {
+  const instanceId = getTableBubbleMenuInstanceId(editor)
+  document
+    .querySelector(
+      `style[${TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR}="${instanceId}"]`,
+    )
+    ?.remove()
+}
+
+const afterNextPaint = (fn: () => void) => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(fn)
+  })
+}
+
+/**
+ * Reveal once an optional custom reference is laid out, while keeping the
+ * menu forced-hidden until Floating UI has a real size and a second position
+ * pass. Returns a cancel function for the in-flight rAF chain.
+ */
+const revealTableBubbleMenuWhenReferenced = (
+  editor: Editor,
+  anchor?: TableBubbleMenuAnchor,
+): (() => void) => {
+  let cancelled = false
+  const maxAttempts = 12
+
+  const unveil = () => {
+    if (cancelled) return
+    endBubbleMenuStagingHidden(editor)
+  }
+
+  const tryReveal = (attemptsLeft: number) => {
+    if (cancelled || editor.isDestroyed) {
+      endBubbleMenuStagingHidden(editor)
+      return
+    }
+    const kind = detectSelectionType(editor)
+    if (kind === "none") {
+      endBubbleMenuStagingHidden(editor)
+      return
+    }
+
+    if (anchor?.shouldWaitForReference()) {
+      if (attemptsLeft > 0) {
+        requestAnimationFrame(() => tryReveal(attemptsLeft - 1))
+        return
+      }
+      endBubbleMenuStagingHidden(editor)
+      return
+    }
+
+    // Keep hidden while TipTap shows + positions (possibly with 0 menu size).
+    beginBubbleMenuStagingHidden(editor)
+    revealTableBubbleMenu(editor, anchor)
+    afterNextPaint(() => {
+      if (cancelled || editor.isDestroyed) {
+        endBubbleMenuStagingHidden(editor)
+        return
+      }
+      // Second pass once content has a measurable size, still staged-hidden.
+      dispatchUpdatePosition(editor)
+      afterNextPaint(() => {
+        if (cancelled || editor.isDestroyed) {
+          endBubbleMenuStagingHidden(editor)
+          return
+        }
+        dispatchUpdatePosition(editor)
+        // TipTap's computePosition is async — wait one more frame after the
+        // last updatePosition dispatch before unveiling.
+        afterNextPaint(unveil)
+      })
+    })
+  }
+
+  beginBubbleMenuStagingHidden(editor)
+  requestAnimationFrame(() => tryReveal(maxAttempts))
+  return () => {
+    cancelled = true
+    endBubbleMenuStagingHidden(editor)
+  }
+}
+
+const useTableBubbleMenuDragSync = (
+  editor: Editor,
+  anchor?: TableBubbleMenuAnchor,
+) => {
   useEffect(() => {
     const onTransaction = ({
       transaction,
@@ -555,14 +705,14 @@ const useTableBubbleMenuDragSync = (editor: Editor) => {
           )
           return
         }
-        revealTableBubbleMenu(editor)
+        revealTableBubbleMenu(editor, anchor)
       })
     }
     editor.on("transaction", onTransaction)
     return () => {
       editor.off("transaction", onTransaction)
     }
-  }, [editor])
+  }, [anchor, editor])
 }
 
 // memo: parent Editor re-renders on every TipTap transaction, including the
@@ -575,16 +725,27 @@ const useTableBubbleMenuDragSync = (editor: Editor) => {
 // move-edge affordances stay correct without FocusLock thrash.
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
+  anchor,
 }: TableBubbleMenuProps) {
+  const shouldShow = useCallback(
+    (props: Parameters<typeof shouldShowTableBubbleMenu>[0]) =>
+      shouldShowTableBubbleMenu({ ...props, anchor }),
+    [anchor],
+  )
+
   // TipTap's selector replaces manual event subscriptions. Document identity
   // represents `update`; Selection.eq represents `selectionUpdate`. Meta-only
   // blur/focus transactions compare equal and therefore do not re-render.
-  const { kind } = useEditorState({
+  const { kind, selectionAnchor, selectionHead } = useEditorState({
     editor,
     selector: ({ editor: currentEditor }) => ({
       kind: detectSelectionType(currentEditor),
       doc: currentEditor.state.doc,
       selection: currentEditor.state.selection,
+      // Primitives ensure a custom reference can update when the selection
+      // changes without changing `kind`.
+      selectionAnchor: currentEditor.state.selection.anchor,
+      selectionHead: currentEditor.state.selection.head,
     }),
     equalityFn: (previous, next) =>
       next !== null &&
@@ -595,16 +756,27 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // TipTap early-returns when selection/doc are unchanged, so mouseup's
   // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
   // (or an explicit hide while selecting) force hide/reveal.
-  useTableBubbleMenuDragSync(editor)
+  useTableBubbleMenuDragSync(editor, anchor)
+
+  // Wait for an optional reference (and a post-show layout pass) before
+  // locking Floating UI's position. selectionAnchor/Head re-run when the
+  // reference changes even if `kind` is unchanged.
+  useEffect(() => {
+    if (kind === "none") return
+    return revealTableBubbleMenuWhenReferenced(editor, anchor)
+  }, [anchor, editor, kind, selectionAnchor, selectionHead])
 
   return (
     <BubbleMenu
       editor={editor}
       pluginKey={TABLE_BUBBLE_MENU_PLUGIN_KEY}
-      shouldShow={shouldShowTableBubbleMenu}
+      shouldShow={shouldShow}
       updateDelay={TABLE_BUBBLE_MENU_UPDATE_DELAY}
       options={TABLE_BUBBLE_MENU_OPTIONS}
-      style={{ zIndex: TABLE_BUBBLE_MENU_Z_INDEX }}
+      getReferencedVirtualElement={anchor?.getReferencedVirtualElement}
+      style={TABLE_BUBBLE_MENU_STYLE}
+      data-table-bubble-menu=""
+      data-table-bubble-menu-instance={getTableBubbleMenuInstanceId(editor)}
     >
       <VStack
         align="stretch"

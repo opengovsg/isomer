@@ -125,14 +125,14 @@ const firstRowTexts = (editor: Editor): string[] => {
 }
 
 describe("TableBubbleMenu", () => {
-  it("stacks the menu above the selected-cell highlight and table caption", async () => {
+  it("stacks the menu above the table caption, selection, and drag handles", async () => {
     const { editor, findByText, container } = await renderHarness()
 
     selectCells(editor, 3, 5)
 
     const action = await findByText("Add row above")
     // Button → ActionGroup → menu VStack → TipTap floating root (where z-index
-    // must live so the portal stacks above TableCaption / cell highlight).
+    // must live so the portal stacks above all sibling table overlays).
     const menuRoot =
       action.closest("button")?.parentElement?.parentElement?.parentElement
     const selectedCell = container.querySelector(".selectedCell")
@@ -141,9 +141,9 @@ describe("TableBubbleMenu", () => {
     expect(selectedCell).not.toBeNull()
 
     const menuZIndex = Number(getComputedStyle(menuRoot!).zIndex)
-    // `.selectedCell::after` is z-index: 2; TableCaption overlay is z-index: 1.
+    // TableCaption is z-index 1; selection/drag overlays reach z-index 3.
     expect(menuZIndex).toBe(TABLE_BUBBLE_MENU_Z_INDEX)
-    expect(menuZIndex).toBeGreaterThan(2)
+    expect(menuZIndex).toBeGreaterThan(3)
   })
 
   it("shows row actions (including Delete row) when a body row is selected", async () => {
