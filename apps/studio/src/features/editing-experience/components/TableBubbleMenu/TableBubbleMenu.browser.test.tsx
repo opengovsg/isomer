@@ -124,6 +124,43 @@ const firstRowTexts = (editor: Editor): string[] => {
   return texts
 }
 
+// Cell text contents for the nth table row (0-indexed), left-to-right.
+const rowTextsAt = (editor: Editor, rowIndex: number): string[] => {
+  const texts: string[] = []
+  let foundTable = false
+  editor.state.doc.descendants((node) => {
+    if (foundTable) return false
+    if (node.type.name !== "table") return true
+    foundTable = true
+    const row = node.child(rowIndex)
+    row.forEach((cell) => {
+      texts.push(cell.textContent)
+    })
+    return false
+  })
+  return texts
+}
+
+const tableRowCount = (editor: Editor): number => {
+  let count = 0
+  editor.state.doc.descendants((node) => {
+    if (node.type.name !== "table") return true
+    count = node.childCount
+    return false
+  })
+  return count
+}
+
+const tableColumnCount = (editor: Editor): number => {
+  let count = 0
+  editor.state.doc.descendants((node) => {
+    if (node.type.name !== "table") return true
+    count = node.child(0).childCount
+    return false
+  })
+  return count
+}
+
 describe("TableBubbleMenu", () => {
   it("stacks the menu above the selected-cell highlight", async () => {
     const { editor, findByText, container } = await renderHarness()
@@ -149,6 +186,7 @@ describe("TableBubbleMenu", () => {
 
     expect(queryByText("Header row")).toBeNull()
     expect(await findByText("Add row above")).toBeTruthy()
+    expect(await findByText("Duplicate row")).toBeTruthy()
     expect(await findByText("Move up")).toBeTruthy()
     expect(await findByText("Move down")).toBeTruthy()
     expect(await findByText("Delete row")).toBeTruthy()
@@ -246,6 +284,97 @@ describe("TableBubbleMenu", () => {
     })
 
     expect(firstRowTexts(editor)).toEqual(["Column C", "Column A", "Column B"])
+  })
+
+  it("duplicates a body row immediately below with the same cell content", async () => {
+    const { editor, findByText } = await renderHarness()
+
+    // First body row: cells 3–5 ("Row 1, A/B/C")
+    selectCells(editor, 3, 5)
+    expect(tableRowCount(editor)).toBe(3)
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+
+    const duplicate = await findByText("Duplicate row")
+    act(() => {
+      duplicate.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(4)
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    expect(rowTextsAt(editor, 3)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+    // Menu stays on the duplicated block
+    expect(await findByText("Duplicate row")).toBeTruthy()
+  })
+
+  it("duplicates a multi-row selection as a contiguous block", async () => {
+    const { editor, findByText } = await renderHarness()
+
+    // Both body rows: cells 3–8
+    selectCells(editor, 3, 8)
+    expect(tableRowCount(editor)).toBe(3)
+
+    const duplicate = await findByText("Duplicate row")
+    act(() => {
+      duplicate.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(5)
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+    expect(rowTextsAt(editor, 3)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    expect(rowTextsAt(editor, 4)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+  })
+
+  it("duplicates a column immediately to the right with the same cell content", async () => {
+    const { editor, findByText } = await renderHarness()
+
+    // Column B: header cell 1 + body cells 4 and 7
+    selectCells(editor, 1, 7)
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
+
+    const duplicate = await findByText("Duplicate column")
+    act(() => {
+      duplicate.click()
+    })
+
+    expect(tableColumnCount(editor)).toBe(4)
+    expect(firstRowTexts(editor)).toEqual([
+      "Column A",
+      "Column B",
+      "Column B",
+      "Column C",
+    ])
+    expect(rowTextsAt(editor, 1)).toEqual([
+      "Row 1, A",
+      "Row 1, B",
+      "Row 1, B",
+      "Row 1, C",
+    ])
+    expect(await findByText("Duplicate column")).toBeTruthy()
+  })
+
+  it("duplicates a multi-column selection as a contiguous block", async () => {
+    const { editor, findByText } = await renderHarness()
+
+    // Columns A+B
+    selectCells(editor, 0, 7)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
+
+    const duplicate = await findByText("Duplicate column")
+    act(() => {
+      duplicate.click()
+    })
+
+    expect(tableColumnCount(editor)).toBe(5)
+    expect(firstRowTexts(editor)).toEqual([
+      "Column A",
+      "Column B",
+      "Column A",
+      "Column B",
+      "Column C",
+    ])
   })
 
   it("excludes Delete row when the selection includes the header row", async () => {
