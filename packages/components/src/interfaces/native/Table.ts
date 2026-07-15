@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
+import { TABLE_CELL_BACKGROUND_COLOR_TOKENS } from "~/constants/tableCellBackgroundColor"
 
 import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
@@ -27,13 +28,7 @@ const TableBaseCellSchema = Type.Object({
   ),
   backgroundColor: Type.Optional(
     Type.Union(
-      [
-        Type.Literal("grey"),
-        Type.Literal("blue"),
-        Type.Literal("purple"),
-        Type.Literal("red"),
-        Type.Literal("green"),
-      ],
+      TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((token) => Type.Literal(token)),
       {
         title: "Table cell background colour",
         description:
