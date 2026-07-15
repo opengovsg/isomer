@@ -831,8 +831,8 @@ const TableBubbleMenuTrigger = ({
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
 }: TableBubbleMenuProps) {
-  const [panel, setPanel] = useState<"actions" | "colour">("actions")
-  const resetPanel = useCallback(() => setPanel("actions"), [])
+  const [showColourPanel, setShowColourPanel] = useState(false)
+  const resetPanel = useCallback(() => setShowColourPanel(false), [])
 
   // TipTap's selector replaces manual event subscriptions. Document identity
   // represents `update`; Selection.eq represents `selectionUpdate`. Include
