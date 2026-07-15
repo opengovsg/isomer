@@ -15,6 +15,7 @@ import {
   createOrUpdateIndirectionRecord,
   createAndMergeIndirectionPR,
 } from "../utils/github";
+import { triggerCodeBuildBuilds } from "../utils/codebuild";
 import type { SiteLaunchSite } from "../types";
 
 const conductPreflightChecks = async (siteLaunchSites: SiteLaunchSite[]) => {
@@ -155,7 +156,10 @@ export const siteLaunchFirstWindow = async () => {
     );
   }
 
-  // Step 5: Update the Isomer Next infra to set the sites to the `PRELAUNCH`
+  // Step 5: Trigger CodeBuild builds for each successful site
+  await triggerCodeBuildBuilds(successfulSites.map((site) => site.siteName));
+
+  // Step 6: Update the Isomer Next infra to set the sites to the `PRELAUNCH`
   // state
   await updateSitesProductionCSV(
     successfulSites.map((site) => ({
