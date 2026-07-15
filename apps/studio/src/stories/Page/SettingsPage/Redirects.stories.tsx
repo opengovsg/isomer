@@ -5,7 +5,10 @@ import { redirectHandlers } from "tests/msw/handlers/redirect"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import RedirectsSettingsPage from "~/pages/sites/[siteId]/settings/redirects"
 import { ADMIN_HANDLERS } from "~/stories/handlers"
-import { createRedirectionsEnabledGbParameters } from "~/stories/utils/growthbook"
+import {
+  createAdvancedRedirectsEnabledGbParameters,
+  createRedirectionsEnabledGbParameters,
+} from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   ...ADMIN_HANDLERS,
@@ -102,6 +105,116 @@ export const AlreadyExistsError: Story = {
     const screen = await submitNewRedirect(canvasElement)
     await expect(
       await screen.findByText("This page is already being redirected."),
+    ).toBeVisible()
+  },
+}
+
+// Opens the bulk-upload modal, uploads a valid CSV, and clicks "Process
+// redirects" so the mocked validation drives the next screen.
+const VALID_CSV =
+  "When someone visits,Redirect them to\n/old-one,/new-one\n/old-two,https://www.example.gov.sg"
+
+const openModalAndUpload = async (canvasElement: HTMLElement) => {
+  const body = canvasElement.ownerDocument.body
+  const screen = within(body)
+  await userEvent.click(
+    await screen.findByRole("button", { name: "Bulk upload redirects" }),
+  )
+  // The dropzone's file input has no stable accessible label, so grab it
+  // directly once the modal has mounted.
+  const fileInput = await waitFor(() => {
+    const input = body.querySelector<HTMLInputElement>("input[type='file']")
+    if (!input) throw new Error("file input not found")
+    return input
+  })
+  await userEvent.upload(
+    fileInput,
+    new File([VALID_CSV], "redirects.csv", { type: "text/csv" }),
+  )
+  const processButton = await screen.findByRole("button", {
+    name: "Process redirects",
+  })
+  await waitFor(() => expect(processButton).toBeEnabled())
+  await userEvent.click(processButton, { pointerEventsCheck: 0 })
+  return screen
+}
+
+// Clicking the top-right button opens the modal at its initial upload state.
+export const BulkUploadModal: Story = {
+  parameters: {
+    growthbook: [
+      createRedirectionsEnabledGbParameters(true),
+      createAdvancedRedirectsEnabledGbParameters(true),
+    ],
+    msw: {
+      handlers: [
+        redirectHandlers.list.default(),
+        redirectHandlers.count.default(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body)
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Bulk upload redirects" }),
+    )
+    // Finding the template download confirms the modal opened. Presence (not a
+    // one-shot toBeVisible) is used deliberately: asserting visibility during
+    // the modal's enter animation is flaky.
+    await screen.findByText("Download redirects template (.csv)")
+  },
+}
+
+// A fully valid file lands on the ready-to-publish screen.
+export const BulkUploadReadyToPublish: Story = {
+  parameters: {
+    growthbook: [
+      createRedirectionsEnabledGbParameters(true),
+      createAdvancedRedirectsEnabledGbParameters(true),
+    ],
+    msw: {
+      handlers: [
+        redirectHandlers.list.default(),
+        redirectHandlers.count.default(),
+        redirectHandlers.bulkValidate.allValid(),
+        redirectHandlers.bulkCreate.success(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = await openModalAndUpload(canvasElement)
+    await expect(
+      await screen.findByText("All 2 redirects are good to go."),
+    ).toBeVisible()
+    await expect(
+      screen.getByRole("button", { name: "Publish 2 redirects" }),
+    ).toBeVisible()
+  },
+}
+
+// A file with a bad row lands on the errors screen with the download affordance.
+export const BulkUploadWithErrors: Story = {
+  parameters: {
+    growthbook: [
+      createRedirectionsEnabledGbParameters(true),
+      createAdvancedRedirectsEnabledGbParameters(true),
+    ],
+    msw: {
+      handlers: [
+        redirectHandlers.list.default(),
+        redirectHandlers.count.default(),
+        redirectHandlers.bulkValidate.withErrors(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = await openModalAndUpload(canvasElement)
+    await expect(await screen.findByText(/1 redirect has errors/)).toBeVisible()
+    await expect(
+      screen.getByRole("button", { name: "Download errors file (.csv)" }),
     ).toBeVisible()
   },
 }

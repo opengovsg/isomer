@@ -12,7 +12,7 @@ export const RedirectsSettings = ({
   siteId,
 }: RedirectsSettingsProps): JSX.Element => (
   <Stack spacing="1.5rem" px="2rem" py="1.5rem" w="full">
-    <RedirectsHeader />
+    <RedirectsHeader siteId={siteId} />
 
     <Stack spacing="1.25rem">
       <AddRedirectCard siteId={siteId} />
