@@ -143,24 +143,7 @@ export const siteLaunchFirstWindow = async () => {
     await createMaintenanceWindow(monitorIds);
   }
 
-  // Step 4: Optionally create the indirection PR on isomer-indirection
-  const shouldCreatePR = await confirm({
-    message:
-      "Do you want to create the indirection PR on isomer-indirection (staging → main)?",
-    default: true,
-  });
-
-  if (shouldCreatePR) {
-    const prUrl = await createIndirectionPR(
-      successfulSites.map((site) => site.isomerDomain)
-    );
-    await confirm({
-      message: `Please merge the indirection PR on GitHub (${prUrl}), then press Enter to continue.`,
-      default: true,
-    });
-  }
-
-  // Step 5: Update the Isomer Next infra to set the sites to the `PRELAUNCH`
+  // Step 4: Update the Isomer Next infra to set the sites to the `PRELAUNCH`
   // state
   await updateSitesProductionCSV(
     successfulSites.map((site) => ({
@@ -179,6 +162,23 @@ export const siteLaunchFirstWindow = async () => {
       "Have you run `pulumi up` inside isomer-next-infra to apply the changes?",
     default: true,
   });
+
+  // Step 5: Optionally create the indirection PR on isomer-indirection
+  const shouldCreatePR = await confirm({
+    message:
+      "Do you want to create the indirection PR on isomer-indirection (staging → main)?",
+    default: true,
+  });
+
+  if (shouldCreatePR) {
+    const prUrl = await createIndirectionPR(
+      successfulSites.map((site) => site.isomerDomain)
+    );
+    await confirm({
+      message: `Please merge the indirection PR on GitHub (${prUrl}), then press Enter to continue.`,
+      default: true,
+    });
+  }
 
   // Step 6: Trigger CodeBuild builds for each successful site
   await triggerCodeBuildBuilds(successfulSites.map((site) => site.siteName));
