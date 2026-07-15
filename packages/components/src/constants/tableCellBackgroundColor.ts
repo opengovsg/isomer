@@ -1,5 +1,4 @@
 export const TABLE_CELL_BACKGROUND_COLOR_TOKENS = [
-  "grey",
   "blue",
   "purple",
   "red",
@@ -15,7 +14,6 @@ export const TABLE_CELL_BACKGROUND_COLORS: Record<
   TableCellBackgroundColorToken,
   string
 > = {
-  grey: "#F8F9F9",
   blue: "#E6EFFE",
   purple: "#EFE7FF",
   red: "#FBE9E9",
