@@ -203,6 +203,7 @@ echo "Uploading redirect files to S3..."
     S3_BUCKET_NAME="$S3_BUCKET_NAME" \
     SITE_NAME="$SITE_NAME" \
     CODEBUILD_BUILD_NUMBER="$CODEBUILD_BUILD_NUMBER" \
+    S3_SYNC_CONCURRENCY="$S3_SYNC_CONCURRENCY" \
     npm run upload-redirects
 ) || echo "Warning: some redirects failed to upload, continuing..."
 
