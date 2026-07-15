@@ -203,6 +203,57 @@ export const createRedirectSchema = createRedirectObjectSchema.superRefine(
 )
 export type CreateRedirectInput = z.infer<typeof createRedirectSchema>
 
+// Convenience applied just before the destination rules so users don't have to
+// type the scheme the published site serves over:
+//   - an "http://" destination is upgraded to "https://"
+//   - a leading "www." host gets "https://" prefixed
+// A "www." prefix unambiguously signals an external host (an internal path
+// starts with "/"), so it's safe to infer. A schemeless host WITHOUT "www."
+// ("google.com") is left untouched — it's ambiguous against an internal path
+// ("test.zip" vs "/test.zip") — and fails validation as an invalid URL. Shared
+// by the add-redirect form and the bulk-upload row schema below.
+export const normalizeDestinationScheme = (value: string): string => {
+  if (value.startsWith("http://")) {
+    return `https://${value.slice("http://".length)}`
+  }
+  if (value.startsWith("www.")) {
+    return `https://${value}`
+  }
+  return value
+}
+
+// One redirect as entered in the add form or a bulk-upload CSV row: every rule
+// the create schema applies except siteId (the server supplies it), with the
+// destination first passed through the scheme fix-up. Shared so a typed-in
+// redirect and a CSV row are validated by exactly the same rules.
+export const redirectRowSchema = z
+  .object({
+    source: createRedirectObjectSchema.shape.source,
+    destination: z
+      .string()
+      .trim()
+      .transform(normalizeDestinationScheme)
+      .pipe(createRedirectObjectSchema.shape.destination),
+  })
+  .superRefine(refineSourceDestinationDiffer)
+export type RedirectRowInput = z.infer<typeof redirectRowSchema>
+
+// Caps the raw CSV text a bulk upload may send. Redirect rows are short ASCII,
+// so ~1MB already covers thousands of them; the client enforces the same limit
+// on the picked file's byte size, and this is the matching server-side trust
+// boundary. Counted in UTF-16 code units, close enough to bytes for the ASCII
+// the source whitelist enforces.
+export const MAX_BULK_REDIRECT_CSV_BYTES = 1_000_000
+
+export const bulkRedirectsCsvSchema = z.object({
+  siteId: z.number().min(1),
+  csv: z
+    .string()
+    .min(1, { message: "Upload a .csv file to continue" })
+    .max(MAX_BULK_REDIRECT_CSV_BYTES, { message: "File is too big" }),
+})
+export type BulkRedirectsCsvInput = z.infer<typeof bulkRedirectsCsvSchema>
+
 export const deleteRedirectSchema = z.object({
   siteId: z.number().min(1),
   // Redirect.id is a bigint in the DB, surfaced as a string by kysely — reject
