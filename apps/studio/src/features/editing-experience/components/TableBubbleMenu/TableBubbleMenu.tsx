@@ -1,7 +1,12 @@
+import type { TableCellBackgroundColorToken } from "@opengovsg/isomer-components"
 import type { Editor } from "@tiptap/react"
 import type { MutableRefObject, ReactElement, ReactNode } from "react"
-import { Flex, Icon, Portal, Text, VStack } from "@chakra-ui/react"
+import { Divider, Flex, Icon, Portal, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
+import {
+  TABLE_CELL_BACKGROUND_COLORS,
+  TABLE_CELL_BACKGROUND_COLOR_TOKENS,
+} from "@opengovsg/isomer-components"
 import { PluginKey } from "@tiptap/pm/state"
 import {
   CellSelection,
@@ -18,6 +23,7 @@ import {
   BiCopy,
   BiDownArrowAlt,
   BiLeftArrowAlt,
+  BiPalette,
   BiPencil,
   BiRightArrowAlt,
   BiTrash,
@@ -48,6 +54,11 @@ import {
   selectionIncludesHeaderRow,
   type SelectionKind,
 } from "./TableBubbleMenu.utils"
+import {
+  getUniformBodyCellBackgroundColor,
+  selectionHasBodyCell,
+  setSelectedBodyCellsBackgroundColor,
+} from "./tableCellBackgroundColor"
 import { useTableBubbleMenuTriggerCorner } from "./useTableBubbleMenuTriggerCorner"
 
 export interface TableBubbleMenuProps {
@@ -215,6 +226,7 @@ const ActionButton = ({
     size="xs"
     variant="clear"
     colorScheme="neutral"
+    onMouseDown={(event) => event.preventDefault()}
     onClick={onClick}
     // TipTap toolbar pattern: preventDefault on mousedown so the click does
     // not steal focus (and thus CellSelection) from the editor.
@@ -244,6 +256,86 @@ const ActionGroup = ({ children }: { children: ReactNode }) => (
     {children}
   </VStack>
 )
+
+const ActionDivider = () => (
+  <Divider borderColor="base.divider.medium" my="0.25rem" opacity={1} />
+)
+
+const COLOR_LABELS = {
+  grey: "Grey",
+  blue: "Blue",
+  purple: "Purple",
+  red: "Red",
+  green: "Green",
+} as const
+
+const BackgroundColourPanel = ({
+  editor,
+  onBack,
+  onSetColor,
+}: {
+  editor: Editor
+  onBack: () => void
+  onSetColor: (color: TableCellBackgroundColorToken | null) => void
+}) => {
+  const selection = editor.state.selection
+  const activeColor =
+    selection instanceof CellSelection
+      ? getUniformBodyCellBackgroundColor(selection)
+      : null
+
+  return (
+    <>
+      <ActionGroup>
+        <ActionButton
+          label="Back"
+          icon={<BiLeftArrowAlt fontSize="1rem" />}
+          onClick={onBack}
+        />
+      </ActionGroup>
+      <ActionDivider />
+      <Flex gap="0.375rem" p="0.375rem" align="center" wrap="wrap">
+        <Button
+          size="xs"
+          variant="outline"
+          colorScheme="neutral"
+          aria-label="None"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => onSetColor(null)}
+          borderColor={
+            activeColor === null ? "interaction.main.default" : undefined
+          }
+        >
+          None
+        </Button>
+        {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
+          <Button
+            key={color}
+            size="xs"
+            minW="1.75rem"
+            w="1.75rem"
+            h="1.75rem"
+            p="0"
+            borderRadius="full"
+            aria-label={COLOR_LABELS[color]}
+            backgroundColor={TABLE_CELL_BACKGROUND_COLORS[color]}
+            border="2px solid"
+            borderColor={
+              activeColor === color
+                ? "interaction.main.default"
+                : "base.divider.medium"
+            }
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => onSetColor(color)}
+            _hover={{
+              backgroundColor: TABLE_CELL_BACKGROUND_COLORS[color],
+            }}
+          />
+        ))}
+      </Flex>
+    </>
+  )
+}
 
 // Label + switch — one control for set/unset instead of separate action
 // buttons. TipTap toolbar pattern: preventDefault on mousedown so the click
@@ -608,6 +700,7 @@ const revealTableBubbleMenuActions = (editor: Editor, isActivated: boolean) => {
 const useTableBubbleMenuDragSync = (
   editor: Editor,
   isActivatedRef: MutableRefObject<boolean>,
+  resetPanel: () => void,
 ) => {
   useEffect(() => {
     const onTransaction = ({
@@ -620,6 +713,7 @@ const useTableBubbleMenuDragSync = (
       queueMicrotask(() => {
         if (editor.isDestroyed) return
         if (tableEditingKey.getState(editor.state) != null) {
+          resetPanel()
           editor.view.dispatch(
             editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
           )
@@ -632,7 +726,7 @@ const useTableBubbleMenuDragSync = (
     return () => {
       editor.off("transaction", onTransaction)
     }
-  }, [editor, isActivatedRef])
+  }, [editor, isActivatedRef, resetPanel])
 }
 
 const TableBubbleMenuTrigger = ({
@@ -693,6 +787,9 @@ const TableBubbleMenuTrigger = ({
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
 }: TableBubbleMenuProps) {
+  const [panel, setPanel] = useState<"actions" | "colour">("actions")
+  const resetPanel = useCallback(() => setPanel("actions"), [])
+
   // TipTap's selector replaces manual event subscriptions. Document identity
   // represents `update`; Selection.eq represents `selectionUpdate`. Include
   // `isFocused` so the pencil trigger reappears when focus returns without a
@@ -737,8 +834,17 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   }, [setActivated])
 
   // A new CellSelection deactivates the menu so the pencil trigger reappears
-  // without the action list until the user clicks again.
+  // without the action list until the user clicks again. Setting a
+  // background colour mutates the doc under the same selection (so this
+  // effect would otherwise fire and close the swatch panel on every click) —
+  // skipNextSelectionResetRef lets that one action opt out.
+  const skipNextSelectionResetRef = useRef(false)
   useEffect(() => {
+    if (skipNextSelectionResetRef.current) {
+      skipNextSelectionResetRef.current = false
+      return
+    }
+
     resetActivation()
     editor.view.dispatch(
       editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
@@ -804,7 +910,25 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // TipTap early-returns when selection/doc are unchanged, so mouseup's
   // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
   // (or an explicit hide while selecting) force hide/reveal.
-  useTableBubbleMenuDragSync(editor, isActivatedRef)
+  useTableBubbleMenuDragSync(editor, isActivatedRef, resetPanel)
+
+  useEffect(() => {
+    resetPanel()
+  }, [kind, resetPanel])
+
+  useEffect(() => {
+    editor.on("blur", resetPanel)
+    return () => {
+      editor.off("blur", resetPanel)
+    }
+  }, [editor, resetPanel])
+
+  const supportsBackgroundColour =
+    kind === "multi-cell" || kind === "row" || kind === "column"
+  const canSetBackgroundColour =
+    supportsBackgroundColour &&
+    selection instanceof CellSelection &&
+    selectionHasBodyCell(selection)
 
   return (
     <>
@@ -840,7 +964,32 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
           py="0.5rem"
           gap="0"
         >
-          <TableSelectionActions editor={editor} kind={kind} />
+          {panel === "colour" && canSetBackgroundColour ? (
+            <BackgroundColourPanel
+              editor={editor}
+              onBack={() => setPanel("actions")}
+              onSetColor={(color) => {
+                skipNextSelectionResetRef.current = true
+                setSelectedBodyCellsBackgroundColor(editor, color)
+              }}
+            />
+          ) : (
+            <>
+              <TableSelectionActions editor={editor} kind={kind} />
+              {canSetBackgroundColour && (
+                <>
+                  <ActionDivider />
+                  <ActionGroup>
+                    <ActionButton
+                      label="Background colour"
+                      icon={<BiPalette fontSize="1rem" />}
+                      onClick={() => setPanel("colour")}
+                    />
+                  </ActionGroup>
+                </>
+              )}
+            </>
+          )}
         </VStack>
       </BubbleMenu>
     </>
