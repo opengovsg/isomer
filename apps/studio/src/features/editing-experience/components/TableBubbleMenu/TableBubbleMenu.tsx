@@ -244,6 +244,39 @@ const ActionDivider = () => (
 const colourSwatchLabel = (color: string) =>
   `${color.charAt(0).toUpperCase()}${color.slice(1)}`
 
+const ColourSwatch = ({
+  label,
+  backgroundColor,
+  isActive,
+  onClick,
+}: {
+  label: string
+  backgroundColor: string
+  isActive: boolean
+  onClick: () => void
+}) => (
+  <Button
+    variant="unstyled"
+    display="inline-flex"
+    alignItems="center"
+    justifyContent="center"
+    boxSize="1.75rem"
+    minW="1.75rem"
+    minH="1.75rem"
+    p="0"
+    flexShrink={0}
+    borderRadius="full"
+    aria-label={label}
+    backgroundColor={backgroundColor}
+    border="2px solid"
+    borderColor={
+      isActive ? "interaction.main.default" : "base.divider.medium"
+    }
+    onMouseDown={(event) => event.preventDefault()}
+    onClick={onClick}
+  />
+)
+
 const BackgroundColourPanel = ({
   editor,
   selection,
@@ -266,41 +299,18 @@ const BackgroundColourPanel = ({
       </ActionGroup>
       <ActionDivider />
       <Flex gap="0.375rem" p="0.375rem" align="center" wrap="wrap">
-        <Button
-          size="xs"
-          variant="outline"
-          colorScheme="neutral"
-          aria-label="None"
-          onMouseDown={(event) => event.preventDefault()}
+        <ColourSwatch
+          label="None"
+          backgroundColor="base.canvas.default"
+          isActive={activeColor === null}
           onClick={() => setSelectedBodyCellsBackgroundColor(editor, null)}
-          borderColor={
-            activeColor === null ? "interaction.main.default" : undefined
-          }
-        >
-          None
-        </Button>
+        />
         {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
-          <Button
+          <ColourSwatch
             key={color}
-            variant="unstyled"
-            display="inline-flex"
-            alignItems="center"
-            justifyContent="center"
-            boxSize="1.75rem"
-            minW="1.75rem"
-            minH="1.75rem"
-            p="0"
-            flexShrink={0}
-            borderRadius="full"
-            aria-label={colourSwatchLabel(color)}
+            label={colourSwatchLabel(color)}
             backgroundColor={TABLE_CELL_BACKGROUND_COLORS[color]}
-            border="2px solid"
-            borderColor={
-              activeColor === color
-                ? "interaction.main.default"
-                : "base.divider.medium"
-            }
-            onMouseDown={(event) => event.preventDefault()}
+            isActive={activeColor === color}
             onClick={() => setSelectedBodyCellsBackgroundColor(editor, color)}
           />
         ))}
