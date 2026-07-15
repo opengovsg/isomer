@@ -309,6 +309,113 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete column")).toBeNull()
   })
 
+  it("applies a background colour from the multi-cell submenu", async () => {
+    // Arrange
+    const { editor, findByRole, container } = await renderHarness()
+    selectCells(editor, 3, 7)
+
+    // Act
+    const backgroundColour = await findByRole("button", {
+      name: "Background colour",
+    })
+    act(() => {
+      backgroundColour.click()
+    })
+
+    expect(await findByRole("button", { name: "Back" })).toBeTruthy()
+    const blueSwatch = await findByRole("button", { name: "Blue" })
+    act(() => {
+      blueSwatch.click()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(
+        container.querySelector(
+          "td.selectedCell[data-background-color='blue']",
+        ),
+      ).not.toBeNull()
+    })
+    expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
+  })
+
+  it("hides Background colour for a header row selection", async () => {
+    // Arrange
+    const { editor, findByText, queryByRole } = await renderHarness()
+
+    // Act
+    selectCells(editor, 0, 2)
+    await findByText("Add row above")
+
+    // Assert
+    expect(queryByRole("button", { name: "Background colour" })).toBeNull()
+  })
+
+  it("shows Background colour for a body row selection", async () => {
+    // Arrange
+    const { editor, findByRole } = await renderHarness()
+
+    // Act
+    selectCells(editor, 3, 5)
+
+    // Assert
+    expect(
+      await findByRole("button", { name: "Background colour" }),
+    ).toBeTruthy()
+  })
+
+  it("returns to actions when the selection kind changes", async () => {
+    // Arrange
+    const { editor, findByRole, findByText, queryByRole } =
+      await renderHarness()
+    selectCells(editor, 3, 7)
+    const backgroundColour = await findByRole("button", {
+      name: "Background colour",
+    })
+    act(() => {
+      backgroundColour.click()
+    })
+    expect(await findByRole("button", { name: "Back" })).toBeTruthy()
+
+    // Act
+    selectCells(editor, 3, 5)
+
+    // Assert
+    expect(await findByText("Add row above")).toBeTruthy()
+    expect(queryByRole("button", { name: "Back" })).toBeNull()
+  })
+
+  it("returns to actions after the menu hides during cell drag", async () => {
+    // Arrange
+    const { editor, findByRole, findByText, queryByRole } =
+      await renderHarness()
+    selectCells(editor, 3, 7)
+    const backgroundColour = await findByRole("button", {
+      name: "Background colour",
+    })
+    act(() => {
+      backgroundColour.click()
+    })
+    expect(await findByRole("button", { name: "Back" })).toBeTruthy()
+
+    // Act
+    act(() => {
+      editor.view.dispatch(
+        editor.state.tr.setMeta(tableEditingKey, nthCellPos(editor, 3)),
+      )
+    })
+    await waitFor(() => {
+      expect(queryByRole("button", { name: "Back" })).toBeNull()
+    })
+    act(() => {
+      editor.view.dispatch(editor.state.tr.setMeta(tableEditingKey, -1))
+    })
+
+    // Assert
+    expect(await findByText("Merge cells")).toBeTruthy()
+    expect(queryByRole("button", { name: "Back" })).toBeNull()
+  })
+
   it("shows no menu content for a plain cursor outside any selection", async () => {
     const { queryByText } = await renderHarness()
 
