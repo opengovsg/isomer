@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/react"
 import type { ReactElement, ReactNode } from "react"
-import { Divider, Flex, Text, VStack } from "@chakra-ui/react"
+import { Box, Divider, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
 import {
   TABLE_CELL_BACKGROUND_COLORS,
@@ -249,14 +249,17 @@ const ColourSwatch = ({
   backgroundColor,
   isActive,
   onClick,
+  hasSlash = false,
 }: {
   label: string
   backgroundColor: string
   isActive: boolean
   onClick: () => void
+  hasSlash?: boolean
 }) => (
   <Button
     variant="unstyled"
+    position="relative"
     display="inline-flex"
     alignItems="center"
     justifyContent="center"
@@ -266,13 +269,26 @@ const ColourSwatch = ({
     p="0"
     flexShrink={0}
     borderRadius="full"
+    overflow="hidden"
     aria-label={label}
     backgroundColor={backgroundColor}
     border="2px solid"
     borderColor={isActive ? "interaction.main.default" : "base.divider.medium"}
     onMouseDown={(event) => event.preventDefault()}
     onClick={onClick}
-  />
+  >
+    {hasSlash && (
+      <Box
+        as="span"
+        aria-hidden
+        position="absolute"
+        w="140%"
+        h="1.5px"
+        bg="base.divider.strong"
+        transform="rotate(-45deg)"
+      />
+    )}
+  </Button>
 )
 
 const BackgroundColourPanel = ({
@@ -301,6 +317,7 @@ const BackgroundColourPanel = ({
           label="None"
           backgroundColor="base.canvas.default"
           isActive={activeColor === null}
+          hasSlash
           onClick={() => setSelectedBodyCellsBackgroundColor(editor, null)}
         />
         {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
