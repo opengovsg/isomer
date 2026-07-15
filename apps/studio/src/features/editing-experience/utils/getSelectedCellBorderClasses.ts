@@ -1,4 +1,4 @@
-export type SelectionBorderRect = {
+export interface SelectionBorderRect {
   left: number
   top: number
   right: number
