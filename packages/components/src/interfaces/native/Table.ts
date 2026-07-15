@@ -25,6 +25,22 @@ const TableBaseCellSchema = Type.Object({
       minimum: 1,
     }),
   ),
+  backgroundColor: Type.Optional(
+    Type.Union(
+      [
+        Type.Literal("grey"),
+        Type.Literal("blue"),
+        Type.Literal("purple"),
+        Type.Literal("red"),
+        Type.Literal("green"),
+      ],
+      {
+        title: "Table cell background colour",
+        description:
+          "Semantic background colour token for a body cell. Header cells should not use this.",
+      },
+    ),
+  ),
 })
 
 // Disable rule so typescript inference can work properly
