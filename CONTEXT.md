@@ -6,8 +6,8 @@ A government CMS and site builder for Singapore public agencies. Editors create 
 
 ### Collection structure
 
-**Collection Item**: An article (CollectionPage) or link (CollectionLink) that lives inside a collection. Both support category assignment and tag assignment.
-_Avoid_: article (when referring to both types), page (ambiguous)
+**Collection Item**: An article (CollectionPage) or link (CollectionLink) that lives inside a collection. A link may target an external URL or an uploaded file — a "file item" is a CollectionLink variant, not a separate resource type. Both articles and links support category assignment and tag assignment.
+_Avoid_: article (when referring to both types), page (ambiguous), file (as a distinct item type — it is a link variant)
 
 **Collection Index**: The parent page of a collection. Stores the admin-defined taxonomy — Category Options and Tag Categories — in its blob.
 _Avoid_: collection page, index page (ambiguous across layouts)
