@@ -1,8 +1,8 @@
 import type { Level } from "@tiptap/extension-heading"
 import type { Extensions } from "@tiptap/react"
 import {
-  TABLE_CELL_BACKGROUND_COLORS,
-  type TableCellBackgroundColorToken,
+  getTableCellBackgroundColorHex,
+  isTableCellBackgroundColorToken,
 } from "@opengovsg/isomer-components"
 import { Bold } from "@tiptap/extension-bold"
 import { BulletList } from "@tiptap/extension-bullet-list"
@@ -127,16 +127,18 @@ export const IsomerTableCell = TableCell.extend({
       ...this.parent?.(),
       backgroundColor: {
         default: null,
-        parseHTML: (element) =>
-          element.getAttribute("data-background-color") || null,
+        parseHTML: (element) => {
+          const value = element.getAttribute("data-background-color")
+          return isTableCellBackgroundColorToken(value) ? value : null
+        },
         renderHTML: (attributes) => {
-          if (!attributes.backgroundColor) return {}
-          const token =
-            attributes.backgroundColor as TableCellBackgroundColorToken
-          const hex = TABLE_CELL_BACKGROUND_COLORS[token]
+          if (!isTableCellBackgroundColorToken(attributes.backgroundColor)) {
+            return {}
+          }
+          const hex = getTableCellBackgroundColorHex(attributes.backgroundColor)
           if (!hex) return {}
           return {
-            "data-background-color": token,
+            "data-background-color": attributes.backgroundColor,
             style: `background-color: ${hex}`,
           }
         },

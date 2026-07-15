@@ -47,7 +47,6 @@ import {
 } from "./TableBubbleMenu.utils"
 import {
   getUniformBodyCellBackgroundColor,
-  selectionHasBodyCell,
   setSelectedBodyCellsBackgroundColor,
 } from "./tableCellBackgroundColor"
 
@@ -82,9 +81,16 @@ const isMergedCell = (rect: ReturnType<typeof selectedRect>): boolean => {
 // (apps/studio/src/pages/prototype/rte-table-bubble-menu.tsx) — see
 // .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md for
 // the content matrix this drives.
-const detectSelectionType = (editor: Editor): SelectionKind => {
+//
+// `hasBodyCell` is the inverse of `allCellsAreHeaders` from the same walk, so
+// colour affordances do not need a second `forEachCell` pass.
+const detectSelectionType = (
+  editor: Editor,
+): { kind: SelectionKind; hasBodyCell: boolean } => {
   const { selection } = editor.state
-  if (!(selection instanceof CellSelection)) return "none"
+  if (!(selection instanceof CellSelection)) {
+    return { kind: "none", hasBodyCell: false }
+  }
 
   const rect = selectedRect(editor.state)
 
@@ -94,17 +100,20 @@ const detectSelectionType = (editor: Editor): SelectionKind => {
   })
 
   const selectsSingleCellNode = isSingleCellSelection(selection)
-  return getTableSelectionKind({
-    spansEntireTableWidth: rect.left === 0 && rect.right === rect.map.width,
-    spansEntireTableHeight: rect.top === 0 && rect.bottom === rect.map.height,
-    allCellsAreHeaders: allHeader,
-    // Exactly the first row/column (half-open span of 1). Broader selections
-    // that merely overlap that edge stay ordinary row/column kinds.
-    isTopRow: rect.top === 0 && rect.bottom === 1,
-    isLeftmostColumn: rect.left === 0 && rect.right === 1,
-    selectsSingleCellNode,
-    selectedCellIsMerged: selectsSingleCellNode && isMergedCell(rect),
-  })
+  return {
+    kind: getTableSelectionKind({
+      spansEntireTableWidth: rect.left === 0 && rect.right === rect.map.width,
+      spansEntireTableHeight: rect.top === 0 && rect.bottom === rect.map.height,
+      allCellsAreHeaders: allHeader,
+      // Exactly the first row/column (half-open span of 1). Broader selections
+      // that merely overlap that edge stay ordinary row/column kinds.
+      isTopRow: rect.top === 0 && rect.bottom === 1,
+      isLeftmostColumn: rect.left === 0 && rect.right === 1,
+      selectsSingleCellNode,
+      selectedCellIsMerged: selectsSingleCellNode && isMergedCell(rect),
+    }),
+    hasBodyCell: !allHeader,
+  }
 }
 
 // Move a selected block of rows/columns by swapping the adjacent neighbour
@@ -232,26 +241,19 @@ const ActionDivider = () => (
   <Divider borderColor="base.divider.medium" my="0.25rem" opacity={1} />
 )
 
-const COLOR_LABELS = {
-  grey: "Grey",
-  blue: "Blue",
-  purple: "Purple",
-  red: "Red",
-  green: "Green",
-} as const
+const colourSwatchLabel = (color: string) =>
+  `${color.charAt(0).toUpperCase()}${color.slice(1)}`
 
 const BackgroundColourPanel = ({
   editor,
+  selection,
   onBack,
 }: {
   editor: Editor
+  selection: CellSelection
   onBack: () => void
 }) => {
-  const selection = editor.state.selection
-  const activeColor =
-    selection instanceof CellSelection
-      ? getUniformBodyCellBackgroundColor(selection)
-      : null
+  const activeColor = getUniformBodyCellBackgroundColor(selection)
 
   return (
     <>
@@ -286,7 +288,7 @@ const BackgroundColourPanel = ({
             h="1.75rem"
             p="0"
             borderRadius="full"
-            aria-label={COLOR_LABELS[color]}
+            aria-label={colourSwatchLabel(color)}
             backgroundColor={TABLE_CELL_BACKGROUND_COLORS[color]}
             border="2px solid"
             borderColor={
@@ -296,9 +298,6 @@ const BackgroundColourPanel = ({
             }
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => setSelectedBodyCellsBackgroundColor(editor, color)}
-            _hover={{
-              backgroundColor: TABLE_CELL_BACKGROUND_COLORS[color],
-            }}
           />
         ))}
       </Flex>
@@ -577,7 +576,7 @@ const shouldShowTableBubbleMenu = ({
 }) => {
   if (tableEditingKey.getState(view.state) != null) return false
 
-  const kind = detectSelectionType(editor)
+  const kind = detectSelectionType(editor).kind
   if (kind === "none" || kind === "single-cell") return false
 
   const isChildOfMenu = element.contains(document.activeElement)
@@ -669,19 +668,23 @@ const useTableBubbleMenuDragSync = (editor: Editor, resetPanel: () => void) => {
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
 }: TableBubbleMenuProps) {
-  const [panel, setPanel] = useState<"actions" | "colour">("actions")
-  const resetPanel = useCallback(() => setPanel("actions"), [])
+  const [showColourPanel, setShowColourPanel] = useState(false)
+  const resetPanel = useCallback(() => setShowColourPanel(false), [])
 
   // TipTap's selector replaces manual event subscriptions. Document identity
   // represents `update`; Selection.eq represents `selectionUpdate`. Meta-only
   // blur/focus transactions compare equal and therefore do not re-render.
-  const { kind } = useEditorState({
+  const { kind, hasBodyCell } = useEditorState({
     editor,
-    selector: ({ editor: currentEditor }) => ({
-      kind: detectSelectionType(currentEditor),
-      doc: currentEditor.state.doc,
-      selection: currentEditor.state.selection,
-    }),
+    selector: ({ editor: currentEditor }) => {
+      const detection = detectSelectionType(currentEditor)
+      return {
+        kind: detection.kind,
+        hasBodyCell: detection.hasBodyCell,
+        doc: currentEditor.state.doc,
+        selection: currentEditor.state.selection,
+      }
+    },
     equalityFn: (previous, next) =>
       next !== null &&
       previous.doc === next.doc &&
@@ -705,12 +708,10 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   }, [editor, resetPanel])
 
   const selection = editor.state.selection
-  const supportsBackgroundColour =
-    kind === "multi-cell" || kind === "row" || kind === "column"
   const canSetBackgroundColour =
-    supportsBackgroundColour &&
-    selection instanceof CellSelection &&
-    selectionHasBodyCell(selection)
+    (kind === "multi-cell" || kind === "row" || kind === "column") &&
+    hasBodyCell &&
+    selection instanceof CellSelection
 
   return (
     <BubbleMenu
@@ -733,10 +734,11 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
         p="0.375rem"
         gap="0"
       >
-        {panel === "colour" && canSetBackgroundColour ? (
+        {showColourPanel && canSetBackgroundColour ? (
           <BackgroundColourPanel
             editor={editor}
-            onBack={() => setPanel("actions")}
+            selection={selection}
+            onBack={resetPanel}
           />
         ) : (
           <>
@@ -748,7 +750,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
                   <ActionButton
                     label="Background colour"
                     icon={<BiPalette fontSize="1rem" />}
-                    onClick={() => setPanel("colour")}
+                    onClick={() => setShowColourPanel(true)}
                   />
                 </ActionGroup>
               </>

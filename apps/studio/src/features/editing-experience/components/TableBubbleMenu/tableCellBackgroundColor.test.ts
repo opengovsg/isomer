@@ -209,7 +209,7 @@ describe("getUniformBodyCellBackgroundColor", () => {
     expect(result).toBeNull()
   })
 
-  it("returns mixed when selected body cells disagree", () => {
+  it("returns null when selected body cells disagree", () => {
     // Arrange
     const doc = createTableDoc([
       [
@@ -223,7 +223,7 @@ describe("getUniformBodyCellBackgroundColor", () => {
     const result = getUniformBodyCellBackgroundColor(selection)
 
     // Assert
-    expect(result).toBe("mixed")
+    expect(result).toBeNull()
   })
 })
 
