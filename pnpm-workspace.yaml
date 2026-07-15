@@ -103,7 +103,7 @@ catalog:
   testcontainers: ^12.0.3
   tsc-alias: ^1.8.17
   "@typescript/native-preview": 7.0.0-dev.20260703.1
-  type-fest: ^5.7.0
+  type-fest: ^5.8.0
   tsx: ^4.22.5
   turbo: ^2.10.3
   typescript: ^6.0.3
