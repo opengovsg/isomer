@@ -1,18 +1,21 @@
 import type { UseRadioProps } from "@chakra-ui/react"
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import {
-  Box,
-  FormControl,
-  Image,
-  useRadio,
-  useRadioGroup,
-} from "@chakra-ui/react"
+import { Box, FormControl, useRadio, useRadioGroup } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
+import {
+  IconTagCategoryPills,
+  IconTagCategoryPlaintext,
+} from "~/components/icons"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ImageRadioIndicator } from "./ImageRadioIndicator"
+
+const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
+  "tagcategory/pills": IconTagCategoryPills,
+  "tagcategory/plaintext": IconTagCategoryPlaintext,
+}
 
 interface ImageRadioSchema {
   oneOf?: {
@@ -32,6 +35,7 @@ const ImageRadioOption = ({
   ...rest
 }: ImageRadioOptionProps) => {
   const { getInputProps, getRadioProps } = useRadio(rest)
+  const ImageRadioIcon = IMAGE_RADIO_ICONS[image]
 
   return (
     <Box as="label" cursor="pointer" width="100%" lineHeight={0}>
@@ -52,20 +56,17 @@ const ImageRadioOption = ({
         }
         overflow="hidden"
       >
-        <Image
-          src={`/assets/form-builder/image-radio/${image}.svg`}
-          width="100%"
-          display="block"
-          aria-hidden
-        />
-        <Box
+        {ImageRadioIcon && (
+          <ImageRadioIcon width="100%" display="block" aria-hidden />
+        )}
+        <ImageRadioIndicator
+          isSelected={isSelected}
           position="absolute"
           top="0.5rem"
           left="0.5rem"
           pointerEvents="none"
-        >
-          <ImageRadioIndicator isSelected={isSelected} aria-hidden />
-        </Box>
+          aria-hidden
+        />
       </Box>
     </Box>
   )

@@ -115,9 +115,11 @@ export const findCollectionLinkWithFilename = async ({
 // we want to isolate gazette stuff as much as possible
 export const getPresignedPutUrl = async ({
   key,
+  fileSize,
   tags,
 }: {
   key: string
+  fileSize: number
   tags?: { key: string; value: string }[]
 }): Promise<{
   presignedPutUrl: string
@@ -133,6 +135,7 @@ export const getPresignedPutUrl = async ({
     Key: key,
     ContentType: contentType,
     ContentDisposition: contentDisposition,
+    ContentLength: fileSize,
     Tagging: tags && stringifiedTags,
   })
   return { presignedPutUrl, contentType, contentDisposition }

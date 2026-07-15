@@ -147,6 +147,10 @@ const MoveResourceContent = withSuspense(
       isRedirectableType &&
       isDestinationResolved &&
       oldFullPermalink !== newFullPermalink
+    // The URL-change notice shows for any resource once a picked destination
+    // actually changes its URL; the redirect checkbox is the published subset.
+    const showUrlChangeNotice =
+      isDestinationResolved && oldFullPermalink !== newFullPermalink
     const { data: existingRedirect } = trpc.redirect.getBySource.useQuery(
       { siteId: Number(siteId), source: newFullPermalink },
       { enabled: showRedirectOption },
@@ -158,53 +162,55 @@ const MoveResourceContent = withSuspense(
         <ModalCloseButton size="lg" />
         <ModalBody>
           <VStack alignItems="flex-start" spacing="1.25rem">
-            <Infobox size="sm" w="full">
-              Moving a page, folder, or collection changes its URL, effective
-              immediately
-            </Infobox>
             <ResourceSelector
               interactionType="move"
               siteId={siteId}
               onlyShowFolders
+              showSelectedResourcePreview={false}
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
-            {showRedirectOption && (
-              <VStack alignItems="flex-start" spacing="0.5rem" w="full">
-                {/* Suppressed when the redirect points back at this page —
-                    the move auto-clears it, so it won't actually shadow. */}
-                {existingRedirect &&
-                  existingRedirect.destinationResourceId !==
-                    Number(resourceId) && (
-                    <Infobox variant="warning" size="sm" w="full">
-                      This URL already redirects to{" "}
-                      {existingRedirect.destination}. Visitors will end up there
-                      instead.
-                    </Infobox>
-                  )}
+            {showUrlChangeNotice && (
+              <VStack alignItems="flex-start" spacing="0.75rem" w="full">
                 <Box
                   w="full"
                   bg="utility.feedback.info-subtle"
                   borderRadius="0.5rem"
                   p="1rem"
                 >
-                  <Checkbox
-                    alignItems="flex-start"
-                    size="1.25rem"
-                    isChecked={shouldCreateRedirect}
-                    onChange={(e) => setShouldCreateRedirect(e.target.checked)}
-                  >
-                    <VStack align="flex-start" spacing="0.25rem">
-                      <Text textStyle="subhead-2">
-                        Redirect page automatically
-                      </Text>
-                      <Text textStyle="body-2" color="base.content.medium">
-                        Check this box to redirect visitors from{" "}
-                        {oldFullPermalink} to {newFullPermalink}.
-                      </Text>
-                    </VStack>
-                  </Checkbox>
+                  <Text textStyle="body-2" color="base.content.strong">
+                    The page URL will change to {newFullPermalink}.
+                  </Text>
                 </Box>
+                {showRedirectOption && (
+                  <>
+                    {/* Suppressed when the redirect points back at this page —
+                        the move auto-clears it, so it won't actually shadow. */}
+                    {existingRedirect &&
+                      existingRedirect.destinationResourceId !==
+                        Number(resourceId) && (
+                        <Infobox variant="warning" size="sm" w="full">
+                          This URL already redirects to{" "}
+                          {existingRedirect.destination}. Visitors will end up
+                          there instead.
+                        </Infobox>
+                      )}
+                    <Checkbox
+                      alignItems="flex-start"
+                      size="sm"
+                      px="0.25rem"
+                      isChecked={shouldCreateRedirect}
+                      onChange={(e) =>
+                        setShouldCreateRedirect(e.target.checked)
+                      }
+                    >
+                      <Text textStyle="body-2" color="base.content.strong">
+                        Check this box to automatically redirect visitors from{" "}
+                        {oldFullPermalink} to this new URL.
+                      </Text>
+                    </Checkbox>
+                  </>
+                )}
               </VStack>
             )}
           </VStack>

@@ -4,20 +4,22 @@ import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
+import { useMemo } from "react"
 import { BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
+import { useQueryParse } from "~/hooks/useQueryParse"
 
 import { AddItemButton } from "../../components/AddItemButton"
-import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
+import { DeleteFilterModal } from "../../components/DeleteFilterModal"
 import { DraggableTagButton } from "../../components/DraggableTagButton"
-import { DuplicateLabelError } from "../../components/DuplicateLabelError"
 import { EmptyCategory } from "../../components/EmptyCategory"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { TagRowActionsMenu } from "../../components/TagRowActionsMenu"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
-import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultTagCategory } from "./constants"
 
 function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
@@ -39,8 +41,9 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
   } = props
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
+  const { pageId, siteId } = useQueryParse(pageSchema)
   const page = core?.data as CollectionPagePageProps | undefined
-  const duplicateFilterIndices = useDuplicateLabels(path)
+  const { duplicate: duplicateFilterIndices } = useLiveLabelIssues({ path })
 
   const arrayResult = useArray({
     data,
@@ -63,8 +66,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
     onDragEnd,
   } = arrayResult
 
-  const hasDuplicateFilterNameError = duplicateFilterIndices.size > 0
-
   const {
     target: deleteTarget,
     openDeleteModal,
@@ -78,6 +79,15 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
       label: page?.tagCategories?.[index]?.label?.trim() ?? "",
     }),
   })
+
+  const deleteTargetTagOptionIds = useMemo(() => {
+    if (!deleteTarget) return []
+    return (
+      page?.tagCategories?.[deleteTarget.index]?.options
+        ?.map((option) => option.id)
+        .filter((id): id is string => Boolean(id)) ?? []
+    )
+  }, [deleteTarget, page?.tagCategories])
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>
@@ -99,7 +109,6 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
               {description}
             </Text>
           )}
-          {hasDuplicateFilterNameError && <DuplicateLabelError noun="filter" />}
         </VStack>
         <Box w="full" mt={description ? "0.75rem" : "0.25rem"}>
           <DragDropContext onDragEnd={onDragEnd}>
@@ -192,17 +201,11 @@ function JsonFormsTagCategoriesArrayLayoutInner(props: ArrayLayoutProps) {
         </Box>
       </VStack>
       {deleteTarget && (
-        <DeleteConfirmModal
+        <DeleteFilterModal
           isOpen
-          label={deleteTarget.label}
-          noun="filter"
-          warningBody={
-            <Text textStyle="body-1" color="base.content.strong">
-              This removes the filter and its options from the collection.
-              Collection items that use these options may need to be updated
-              manually.
-            </Text>
-          }
+          siteId={siteId}
+          pageId={pageId}
+          tagOptionIds={deleteTargetTagOptionIds}
           onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
         />

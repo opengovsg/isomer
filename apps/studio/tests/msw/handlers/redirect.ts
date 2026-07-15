@@ -44,21 +44,6 @@ export const redirectHandlers = {
         throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
       }),
   },
-  validate: {
-    noIssues: () =>
-      trpcMsw.redirect.validate.query(() => ({ errors: [], warnings: [] })),
-    destinationNotFound: () =>
-      trpcMsw.redirect.validate.query(() => ({
-        errors: [],
-        warnings: [
-          {
-            code: "DESTINATION_NOT_FOUND",
-            message:
-              "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
-          },
-        ],
-      })),
-  },
   getBySource: {
     // The URL is not a redirect source — no settings warning shown.
     none: () => trpcMsw.redirect.getBySource.query(() => null),

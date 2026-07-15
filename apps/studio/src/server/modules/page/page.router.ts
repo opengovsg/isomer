@@ -19,7 +19,7 @@ import {
 } from "~/features/mail/service"
 import {
   ENABLE_CODEBUILD_JOBS,
-  IS_SINGPASS_ENABLED_FEATURE_KEY,
+  getIsSingpassDisabledInNonPreview,
 } from "~/lib/growthbook"
 import {
   basePageSchema,
@@ -659,7 +659,7 @@ export const pageRouter = router({
           },
         })
         // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
-        if (!gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)) {
+        if (getIsSingpassDisabledInNonPreview({ gb })) {
           await alertPublishWhenSingpassDisabled({
             siteId,
             resourceId: String(pageId),

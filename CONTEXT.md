@@ -34,6 +34,17 @@ _Avoid_: tag, filter option, tag value
 **Tagged** (`tagged`): The array of Tag Option UUIDs stored on a Collection Item representing the editor's selections across all Tag Categories.
 _Avoid_: tags (the legacy resolved format using string labels), selected tags
 
+### Page editing survey
+
+**Content Edit**: Any change an editor makes to a page's content blocks in the page editor — adding, deleting, reordering, or modifying a block (including hero and prose). Counts the moment the change is made, whether or not it is later saved or discarded. Excludes changes made via raw JSON mode, and excludes page metadata, siderail ordering, database configuration, and collection settings — those edit page properties, not content blocks.
+_Avoid_: edit (ambiguous — could mean any interaction), saved edit (a Content Edit need not be saved)
+
+**Measuring Point**: The moment a user who has made at least one Content Edit ends that editing burst by either (a) successfully publishing or scheduling the page for publication, or (b) navigating anywhere else within Studio. Each burst of Content Edits produces exactly one Measuring Point — reaching one re-arms only after a fresh Content Edit. Closing the window or tab is not a Measuring Point.
+_Avoid_: trigger point (overloaded), exit (window close is not a Measuring Point)
+
+**Measuring Period**: The recurrence window within which a given user is shown the editing survey at most once. Defined and enforced in the survey tool's frequency settings, not by Studio.
+_Avoid_: survey cooldown, quarter (the period is configurable, not fixed)
+
 ### Roles and surfaces
 
 **Isomer Admin**: A user with the Core or Migrator role. The only role that can manage taxonomy (create, edit, delete Tag Categories, Tag Options, and Category Options) via the Manage Filters panel.

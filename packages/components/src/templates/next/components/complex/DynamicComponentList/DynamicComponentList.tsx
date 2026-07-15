@@ -20,13 +20,12 @@ export const DynamicComponentList = ({
     () => ({
       resourceId,
       sort,
-      filters: filters?.reduce(
-        (acc, filter) => {
-          acc[filter.fieldKey] = filter.fieldValue
-          return acc
-        },
-        {} as NonNullable<DgsApiDatasetSearchParams["filters"]>,
-      ),
+      filters: filters?.reduce<
+        NonNullable<DgsApiDatasetSearchParams["filters"]>
+      >((acc, filter) => {
+        acc[filter.fieldKey] = filter.fieldValue
+        return acc
+      }, {}),
     }),
     [resourceId, sort, filters],
   )
