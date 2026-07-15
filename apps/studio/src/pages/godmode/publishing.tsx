@@ -36,24 +36,21 @@ const GodModePublishingPage: NextPageWithLayout = () => {
   const { data: sites = [] } = trpc.site.listAllSites.useQuery()
 
   const { mutate: publishOneSite } = trpc.site.publish.useMutation({
-    onSuccess: (_, { siteId }) => {
+    onSettled: (_, __, { siteId }) => {
       setPublishingSiteIds((prev) => {
         const next = new Set(prev)
         next.delete(siteId)
         return next
       })
+    },
+    onSuccess: () => {
       toast({
         title: "Site published successfully",
         status: "success",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
-    onError: (error, { siteId }) => {
-      setPublishingSiteIds((prev) => {
-        const next = new Set(prev)
-        next.delete(siteId)
-        return next
-      })
+    onError: (error) => {
       toast({
         title: "Failed to publish site",
         description: error.message,
@@ -123,6 +120,7 @@ const GodModePublishingPage: NextPageWithLayout = () => {
                         publishOneSite({ siteId: site.id })
                       }}
                       isLoading={publishingSiteIds.has(site.id)}
+                      isDisabled={publishingSiteIds.has(site.id)}
                     >
                       Publish
                     </Button>
