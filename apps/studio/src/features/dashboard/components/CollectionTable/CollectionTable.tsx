@@ -16,9 +16,9 @@ import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { CollectionTableData, CollectionTableSortOptions } from "./types"
+import { RESOURCE_TABLE_SORT_OPTIONS } from "../ResourceTable/constants"
 import { TitleCell } from "../ResourceTable/TitleCell"
 import { CollectionTableMenu } from "./CollectionTableMenu"
-import { COLLECTION_TABLE_SORT_OPTIONS } from "./constants"
 
 const columnsHelper = createColumnHelper<CollectionTableData>()
 
@@ -143,10 +143,10 @@ export const CollectionTable = ({
                   fontSize="0.75rem"
                   isOpen={isOpen}
                 >
-                  {COLLECTION_TABLE_SORT_OPTIONS[sortOption]}
+                  {RESOURCE_TABLE_SORT_OPTIONS[sortOption]}
                 </Menu.Button>
                 <Menu.List pt="0.75rem" pb="0.5rem">
-                  {Object.entries(COLLECTION_TABLE_SORT_OPTIONS).map(
+                  {Object.entries(RESOURCE_TABLE_SORT_OPTIONS).map(
                     ([option, label]) => (
                       <Menu.Item
                         key={option}

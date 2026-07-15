@@ -1,6 +1,9 @@
-import type { SelectExpression } from "kysely"
+import type { SelectExpression, SelectQueryBuilder } from "kysely"
 import type { UnwrapTagged } from "type-fest"
-import type { ResourceItemContent } from "~/schemas/resource"
+import type {
+  resourceOrderByOptions,
+  ResourceItemContent,
+} from "~/schemas/resource"
 import {
   createChildrenPagesComparator,
   type IsomerSitemap,
@@ -59,6 +62,31 @@ export const defaultResourceSelect = [
   "Resource.scheduledAt",
   "Resource.scheduledBy",
 ] satisfies SelectExpression<DB, "Resource">[]
+
+export type ResourceOrderByOption = (typeof resourceOrderByOptions)[number]
+
+// Shared by any query listing rows from the `Resource` table (e.g. folder/root
+// listings, collection item listings) so they sort identically and paginate
+// deterministically. `id` is used as the final tie-breaker (rather than
+// `title`, which isn't unique) to avoid non-deterministic ordering across
+// pages when rows share the same `updatedAt`/`title` - see #1824 for the bug
+// this pattern was introduced to fix.
+export const applyResourceOrderBy = <O>(
+  query: SelectQueryBuilder<DB, "Resource", O>,
+  orderBy: ResourceOrderByOption,
+): SelectQueryBuilder<DB, "Resource", O> => {
+  switch (orderBy) {
+    case "title-asc":
+      return query
+        .orderBy("Resource.title", "asc")
+        .orderBy("Resource.id", "asc")
+    case "updated-desc":
+    default:
+      return query
+        .orderBy("Resource.updatedAt", "desc")
+        .orderBy("Resource.id", "asc")
+  }
+}
 
 const defaultResourceWithBlobSelect = [
   ...defaultResourceSelect,

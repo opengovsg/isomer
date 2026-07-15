@@ -1,4 +1,5 @@
-import type { RouterOutput } from "~/utils/trpc"
+import { HStack, Text } from "@chakra-ui/react"
+import { Menu } from "@opengovsg/design-system-react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
@@ -6,17 +7,17 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { TableHeader } from "~/components/Datatable"
 import { Datatable } from "~/components/Datatable/Datatable"
 import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlaceholder"
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 
+import type { ResourceSortOption, ResourceTableData } from "./types"
+import { RESOURCE_TABLE_SORT_OPTIONS } from "./constants"
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { TitleCell } from "./TitleCell"
-
-type ResourceTableData = RouterOutput["resource"]["listWithoutRoot"][number]
 
 const columnsHelper = createColumnHelper<ResourceTableData>()
 
@@ -61,6 +62,9 @@ export const ResourceTable = ({
   siteId,
   resourceId,
 }: ResourceTableProps): JSX.Element => {
+  const [sortOption, setSortOption] =
+    useState<ResourceSortOption>("updated-desc")
+
   const columns = useMemo(
     () => getColumns({ siteId, resourceId }),
     [siteId, resourceId],
@@ -84,6 +88,7 @@ export const ResourceTable = ({
       {
         siteId,
         resourceId,
+        orderBy: sortOption,
         limit,
         offset: skip,
       },
@@ -108,22 +113,76 @@ export const ResourceTable = ({
   })
 
   return (
-    <Datatable
-      pagination
-      emptyPlaceholder={
-        <EmptyTablePlaceholder
-          entityName="page"
-          groupLabel="folder"
-          hasSearchTerm={false}
-        />
-      }
-      isFetching={isFetching || isCountLoading}
-      instance={tableInstance}
-      sx={{
-        tableLayout: "auto",
-        overflowX: "auto",
-      }}
-      totalRowCount={totalCount}
-    />
+    <>
+      <HStack
+        px="0.75rem"
+        mb="-0.25rem"
+        w="full"
+        justifyContent="space-between"
+      >
+        <Text textStyle="caption-1" color="base.content.default">
+          {totalCount} {totalCount === 1 ? "item" : "items"}
+        </Text>
+
+        <HStack>
+          <Text textStyle="caption-1" color="base.content.default">
+            Sort by:
+          </Text>
+          <Menu size="sm" variant="clear">
+            {({ isOpen }) => (
+              <>
+                <Menu.Button
+                  variant="clear"
+                  size="sm"
+                  p="0"
+                  minH="auto"
+                  colorScheme="sub"
+                  fontSize="0.75rem"
+                  isOpen={isOpen}
+                >
+                  {RESOURCE_TABLE_SORT_OPTIONS[sortOption]}
+                </Menu.Button>
+                <Menu.List pt="0.75rem" pb="0.5rem">
+                  {Object.entries(RESOURCE_TABLE_SORT_OPTIONS).map(
+                    ([option, label]) => (
+                      <Menu.Item
+                        key={option}
+                        onClick={() => {
+                          setSortOption(option as ResourceSortOption)
+                          onPaginationChange((old) => ({
+                            ...old,
+                            pageIndex: 0,
+                          }))
+                        }}
+                      >
+                        {label}
+                      </Menu.Item>
+                    ),
+                  )}
+                </Menu.List>
+              </>
+            )}
+          </Menu>
+        </HStack>
+      </HStack>
+
+      <Datatable
+        pagination
+        emptyPlaceholder={
+          <EmptyTablePlaceholder
+            entityName="page"
+            groupLabel="folder"
+            hasSearchTerm={false}
+          />
+        }
+        isFetching={isFetching || isCountLoading}
+        instance={tableInstance}
+        sx={{
+          tableLayout: "auto",
+          overflowX: "auto",
+        }}
+        totalRowCount={totalCount}
+      />
+    </>
   )
 }

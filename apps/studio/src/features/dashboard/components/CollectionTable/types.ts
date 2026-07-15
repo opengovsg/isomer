@@ -1,7 +1,7 @@
-import type { readCollectionOrderByOptions } from "~/schemas/collection"
 import type { RouterOutput } from "~/utils/trpc"
+
+import type { ResourceSortOption } from "../ResourceTable/types"
 
 export type CollectionTableData = RouterOutput["collection"]["list"][number]
 
-export type CollectionTableSortOptions =
-  (typeof readCollectionOrderByOptions)[number]
+export type CollectionTableSortOptions = ResourceSortOption

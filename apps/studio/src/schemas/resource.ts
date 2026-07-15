@@ -62,10 +62,13 @@ export const getParentSchema = z.object({
   resourceId: bigIntSchema,
 })
 
+export const resourceOrderByOptions = ["updated-desc", "title-asc"] as const
+
 export const listResourceSchema = z
   .object({
     siteId: z.number(),
     resourceId: z.number().optional(),
+    orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
   })
   .merge(offsetPaginationSchema)
 
