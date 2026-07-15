@@ -54,6 +54,10 @@ import {
   duplicateSelectedRows,
 } from "./TableBubbleMenu.duplicate"
 import {
+  duplicateSelectedColumns,
+  duplicateSelectedRows,
+} from "./TableBubbleMenu.duplicate"
+import {
   getColumnMovePlan,
   getRowMovePlan,
   getTableSelectionKind,
