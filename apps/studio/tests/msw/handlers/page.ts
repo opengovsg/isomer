@@ -1126,6 +1126,56 @@ export const pageHandlers = {
         }
       })
     },
+    collectionWithManyFilterOptions: () => {
+      // @ts-expect-error incomplete types
+      return trpcMsw.page.readPageAndBlob.query(() => {
+        return {
+          title: "Index page",
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+          permalink: "_index",
+          navbar: { id: 1, siteId: 1, content: [] },
+          footer: {
+            id: 1,
+            siteId: 1,
+            content: {
+              siteNavItems: [],
+              contactUsLink: "/contact-us",
+              termsOfUseLink: "/terms-of-use",
+              feedbackFormLink: "https://www.form.gov.sg",
+              privacyStatementLink: "/privacy",
+            },
+          },
+          content: {
+            page: {
+              date: "11-09-2024",
+              title: "article layout",
+              category: "Feature Articles",
+              subtitle: "This is a subtitle for the collection page",
+              tagCategories: [
+                {
+                  id: "a1b2c3d4-0000-4000-8000-000000000001",
+                  label: "Test filter",
+                  isRequired: false,
+                  options: Array.from({ length: 101 }, (_, i) => ({
+                    id: `a1b2c3d4-0001-4000-8000-${String(i + 1).padStart(12, "0")}`,
+                    label: `Option ${i + 1}`,
+                  })),
+                },
+              ],
+            },
+            layout: "collection",
+            content: [],
+            version: "0.1.0",
+          },
+          type: "IndexPage",
+          theme: "isomer-next",
+          url: "https://www.isomer.gov.sg",
+          logoUrl: "",
+          siteName: "MTI",
+          isGovernment: true,
+        }
+      })
+    },
     customIndex: () => {
       // @ts-expect-error incomplete types
       return trpcMsw.page.readPageAndBlob.query(() => {

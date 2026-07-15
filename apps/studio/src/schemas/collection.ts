@@ -108,15 +108,17 @@ export const readCollectionSchema = z
   })
   .merge(offsetPaginationSchema)
 
+// Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
+// Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
+export const MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT = 100
+
 /** Counts child collection pages/links whose `tagged` includes any of these option ids. */
 export const countTagOptionsUsageSchema = z.object({
   siteId: z.number().min(1),
   pageId: z.number().min(1), // pageId is the collection index page resource id
   tagOptionIds: z
     .array(z.string().uuid())
-    // Upper bound to limit request parsing and SQL cost (ANY(...) on text[]).
-    // Arbitrary limit to prevent abuse; adjust if legitimate collections exceed this.
-    .max(100, {
-      message: `At most 100 tag options can be queried at once`,
+    .max(MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT, {
+      message: `At most ${MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT} tag options can be queried at once`,
     }),
 })
