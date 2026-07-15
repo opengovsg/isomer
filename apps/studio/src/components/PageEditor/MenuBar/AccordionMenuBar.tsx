@@ -9,7 +9,6 @@ import {
   BiListOl,
   BiListUl,
   BiStrikethrough,
-  BiTable,
   BiUnderline,
   BiWrench,
 } from "react-icons/bi"
@@ -24,6 +23,7 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
+import { TableSizePicker } from "~/features/editing-experience/components/TableSizePicker/TableSizePicker"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { TableSettingsModal } from "../TableSettingsModal"
@@ -111,16 +111,10 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
         type: "divider",
       },
       {
-        type: "item",
-        icon: BiTable,
-        title: "Table",
-        action: () => {
-          if (editor.isActive("table")) {
-            return editor.chain().focus().deleteTable().run()
-          }
-          return editor.chain().focus().insertTable().run()
-        },
-        isActive: () => editor.isActive("table"),
+        // A grid-based size picker when not in a table (insert), or a plain
+        // delete button when a table is selected — see TableSizePicker.
+        type: "custom",
+        render: () => <TableSizePicker editor={editor} />,
       },
       {
         type: "horizontal-list",
