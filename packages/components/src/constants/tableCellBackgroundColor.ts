@@ -9,6 +9,8 @@ export const TABLE_CELL_BACKGROUND_COLOR_TOKENS = [
 export type TableCellBackgroundColorToken =
   (typeof TABLE_CELL_BACKGROUND_COLOR_TOKENS)[number]
 
+// Placeholder colors for table cell backgrounds.
+// TODO: Update these once design decides on final colors.
 export const TABLE_CELL_BACKGROUND_COLORS: Record<
   TableCellBackgroundColorToken,
   string
