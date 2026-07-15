@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
 
-import { TableBubbleMenu } from "./TableBubbleMenu"
+import { TABLE_BUBBLE_MENU_Z_INDEX, TableBubbleMenu } from "./TableBubbleMenu"
 
 const SEED_CONTENT: JSONContent = {
   type: "prose",
@@ -125,28 +125,25 @@ const firstRowTexts = (editor: Editor): string[] => {
 }
 
 describe("TableBubbleMenu", () => {
-  it("stacks the menu above the selected-cell highlight and drag handles", async () => {
+  it("stacks the menu above the table caption, selection, and drag handles", async () => {
     const { editor, findByText, container } = await renderHarness()
 
     selectCells(editor, 3, 5)
 
     const action = await findByText("Add row above")
-    const menuSurface = action.closest("button")?.parentElement?.parentElement
-    // TipTap hosts the menu in its own floating root (`menuEl`); that root
-    // (not only the inner Chakra surface) must carry the z-index, otherwise
-    // later siblings like TableDragHandles paint on top.
-    const floatingRoot = menuSurface?.parentElement
+    // Button → ActionGroup → menu VStack → TipTap floating root (where z-index
+    // must live so the portal stacks above all sibling table overlays).
+    const menuRoot =
+      action.closest("button")?.parentElement?.parentElement?.parentElement
     const selectedCell = container.querySelector(".selectedCell")
 
-    expect(menuSurface).not.toBeNull()
-    expect(floatingRoot).not.toBeNull()
+    expect(menuRoot).not.toBeNull()
     expect(selectedCell).not.toBeNull()
 
-    const menuZIndex = Number(getComputedStyle(menuSurface!).zIndex)
-    const floatingRootZIndex = Number(getComputedStyle(floatingRoot!).zIndex)
-    // `.selectedCell::after` and TableDragHandles use z-index 2–3.
+    const menuZIndex = Number(getComputedStyle(menuRoot!).zIndex)
+    // TableCaption is z-index 1; selection/drag overlays reach z-index 3.
+    expect(menuZIndex).toBe(TABLE_BUBBLE_MENU_Z_INDEX)
     expect(menuZIndex).toBeGreaterThan(3)
-    expect(floatingRootZIndex).toBeGreaterThan(3)
   })
 
   it("shows row actions (including Delete row) when a body row is selected", async () => {

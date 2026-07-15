@@ -535,12 +535,9 @@ const TABLE_BUBBLE_MENU_OPTIONS = {
 }
 
 // Applied to TipTap's floating root (`menuEl`), not just the inner surface.
-// Sibling `TableDragHandles` live later in the DOM inside a `position:
-// relative` editor wrapper; without a z-index on this root, those handles
-// (z-index 2–3) paint above the menu even when the inner surface uses
-// Chakra's `dropdown` token (1000). Match that token so the whole floating
-// tree stacks above handles and `.selectedCell::after` (z-index 2).
-const TABLE_BUBBLE_MENU_Z_INDEX = 1000
+// It must stack above TableCaption (z-index 1), `.selectedCell::after` (2),
+// and sibling TableDragHandles (2–3). 1000 matches Chakra's `dropdown` token.
+export const TABLE_BUBBLE_MENU_Z_INDEX = 1000
 
 const TABLE_BUBBLE_MENU_STYLE = {
   zIndex: TABLE_BUBBLE_MENU_Z_INDEX,
@@ -793,7 +790,6 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
         align="stretch"
         textAlign="left"
         position="relative"
-        zIndex="dropdown"
         bg="base.canvas.default"
         boxShadow="md"
         borderRadius="md"
