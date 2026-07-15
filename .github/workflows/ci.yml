@@ -247,6 +247,33 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
 
+  rss-script-tests:
+    name: RSS script tests
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@d6d648d87563e713b3d396bb3bfebb5e3cc93707 # v3.0.0
+        with:
+          languages: js
+          service: isomer-rss
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - name: Test RSS script
+        # Loose env mode required for env vars to be passed to the run
+        run: pnpm exec turbo test-ci:unit --filter=rss --env-mode=loose
+        env:
+          # Required to allow Datadog to trace Vitest tests
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+          # Unlike the other suites, this one runs east of Singapore on purpose:
+          # feeds must render the same article date wherever the publish runs,
+          # and a build server behind SGT is the only case that catches a
+          # regression there.
+          TZ: Asia/Tokyo
+
   end-to-end-tests:
     name: End-to-end tests
     needs: optimize_ci
