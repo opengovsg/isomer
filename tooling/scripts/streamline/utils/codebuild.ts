@@ -19,7 +19,8 @@ export const triggerCodeBuildBuilds = async (siteNames: string[]) => {
     }),
   });
 
-  for (const siteName of siteNames) {
+  for (let i = 0; i < siteNames.length; i++) {
+    const siteName = siteNames[i]!;
     try {
       const response = await client.send(
         new StartBuildCommand({ projectName: siteName })
@@ -32,6 +33,10 @@ export const triggerCodeBuildBuilds = async (siteNames: string[]) => {
         `Error: Failed to trigger CodeBuild build for ${siteName}:`,
         error
       );
+    }
+
+    if (i < siteNames.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
     }
   }
 };
