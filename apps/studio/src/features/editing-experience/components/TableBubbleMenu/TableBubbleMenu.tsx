@@ -31,7 +31,6 @@ import {
   BiCopy,
   BiDownArrowAlt,
   BiLeftArrowAlt,
-  BiPalette,
   BiPencil,
   BiRightArrowAlt,
   BiTrash,
@@ -329,30 +328,23 @@ const ColourSwatch = ({
   </Button>
 )
 
-const BackgroundColourPanel = ({
+// Label + swatches inline — no navigate-away submenu. Text sizing matches
+// ActionButton (subhead-2); padding aligns with HeaderToggle / ActionButton.
+const BackgroundColourSection = ({
   editor,
   selection,
-  onBack,
   onSetColor,
 }: {
   editor: Editor
   selection: CellSelection
-  onBack: () => void
   onSetColor: (color: TableCellBackgroundColorToken | null) => void
 }) => {
   const activeColor = getUniformBodyCellBackgroundColor(selection)
 
   return (
-    <>
-      <ActionGroup>
-        <ActionButton
-          label="Back"
-          icon={<BiLeftArrowAlt fontSize="1rem" />}
-          onClick={onBack}
-        />
-      </ActionGroup>
-      <ActionDivider />
-      <Flex gap="0.375rem" p="0.375rem" align="center" wrap="wrap">
+    <VStack align="stretch" gap="0.375rem" px="15px" py="0.375rem">
+      <Text textStyle="subhead-2">Background colour</Text>
+      <Flex gap="0.375rem" align="center" wrap="wrap">
         <ColourSwatch
           label="None"
           backgroundColor="base.canvas.default"
@@ -370,7 +362,7 @@ const BackgroundColourPanel = ({
           />
         ))}
       </Flex>
-    </>
+    </VStack>
   )
 }
 
@@ -741,7 +733,6 @@ const revealTableBubbleMenuActions = (editor: Editor, isActivated: boolean) => {
 const useTableBubbleMenuDragSync = (
   editor: Editor,
   isActivatedRef: MutableRefObject<boolean>,
-  resetPanel: () => void,
 ) => {
   useEffect(() => {
     const onTransaction = ({
@@ -754,7 +745,6 @@ const useTableBubbleMenuDragSync = (
       queueMicrotask(() => {
         if (editor.isDestroyed) return
         if (tableEditingKey.getState(editor.state) != null) {
-          resetPanel()
           editor.view.dispatch(
             editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
           )
@@ -767,7 +757,7 @@ const useTableBubbleMenuDragSync = (
     return () => {
       editor.off("transaction", onTransaction)
     }
-  }, [editor, isActivatedRef, resetPanel])
+  }, [editor, isActivatedRef])
 }
 
 const TableBubbleMenuTrigger = ({
@@ -828,9 +818,6 @@ const TableBubbleMenuTrigger = ({
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
 }: TableBubbleMenuProps) {
-  const [showColourPanel, setShowColourPanel] = useState(false)
-  const resetPanel = useCallback(() => setShowColourPanel(false), [])
-
   // TipTap's selector replaces manual event subscriptions. Document identity
   // represents `update`; Selection.eq represents `selectionUpdate`. Include
   // `isFocused` so the pencil trigger reappears when focus returns without a
@@ -956,18 +943,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // TipTap early-returns when selection/doc are unchanged, so mouseup's
   // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
   // (or an explicit hide while selecting) force hide/reveal.
-  useTableBubbleMenuDragSync(editor, isActivatedRef, resetPanel)
-
-  useEffect(() => {
-    resetPanel()
-  }, [kind, resetPanel])
-
-  useEffect(() => {
-    editor.on("blur", resetPanel)
-    return () => {
-      editor.off("blur", resetPanel)
-    }
-  }, [editor, resetPanel])
+  useTableBubbleMenuDragSync(editor, isActivatedRef)
 
   const canSetBackgroundColour =
     (kind === "multi-cell" ||
@@ -1014,31 +990,18 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
           py="0.5rem"
           gap="0"
         >
-          {showColourPanel && canSetBackgroundColour ? (
-            <BackgroundColourPanel
-              editor={editor}
-              selection={selection}
-              onBack={resetPanel}
-              onSetColor={(color) => {
-                skipNextSelectionResetRef.current = true
-                setSelectedBodyCellsBackgroundColor(editor, color)
-              }}
-            />
-          ) : (
+          <TableSelectionActions editor={editor} kind={kind} />
+          {canSetBackgroundColour && (
             <>
-              <TableSelectionActions editor={editor} kind={kind} />
-              {canSetBackgroundColour && (
-                <>
-                  {hasSelectionActions && <ActionDivider />}
-                  <ActionGroup>
-                    <ActionButton
-                      label="Background colour"
-                      icon={<BiPalette fontSize="1rem" />}
-                      onClick={() => setShowColourPanel(true)}
-                    />
-                  </ActionGroup>
-                </>
-              )}
+              {hasSelectionActions && <ActionDivider />}
+              <BackgroundColourSection
+                editor={editor}
+                selection={selection}
+                onSetColor={(color) => {
+                  skipNextSelectionResetRef.current = true
+                  setSelectedBodyCellsBackgroundColor(editor, color)
+                }}
+              />
             </>
           )}
         </VStack>
