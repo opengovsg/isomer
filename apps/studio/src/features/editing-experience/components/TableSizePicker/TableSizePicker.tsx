@@ -40,9 +40,17 @@ const TABLE_BUTTON_PROPS = {
 // action, including delete, is also reachable from TableBubbleMenu once
 // that ships from a separate branch; this fallback just means the
 // capability isn't stranded if this one merges first.)
+//
+// This is only ever rendered while a table is active, so it's always in
+// the "active" visual state — matching the old single Table button, which
+// stayed highlighted for as long as the cursor was inside a table.
 const DeleteTableButton = ({ editor }: { editor: Editor }) => (
   <IconButton
     {...TABLE_BUTTON_PROPS}
+    isActive
+    _active={{
+      bg: "interaction.muted.main.active",
+    }}
     aria-label="Delete table"
     onClick={() => editor.chain().focus().deleteTable().run()}
   >

@@ -151,4 +151,26 @@ describe("TableSizePicker", () => {
       await screen.findByRole("button", { name: "Table" }),
     ).toBeInTheDocument()
   })
+
+  it("shows the delete-table button in its active (highlighted) state, matching the old Table button's behaviour while inside a table", async () => {
+    renderHarness()
+
+    // Neutral baseline: the button's own background before a table exists.
+    const neutralBackground = getComputedStyle(
+      screen.getByRole("button", { name: "Table" }),
+    ).backgroundColor
+
+    fireEvent.click(screen.getByRole("button", { name: "Table" }))
+    const targetCell = await screen.findByRole("button", {
+      name: "2 by 2 table",
+    })
+    fireEvent.click(targetCell)
+
+    const deleteButton = await screen.findByRole("button", {
+      name: "Delete table",
+    })
+    expect(getComputedStyle(deleteButton).backgroundColor).not.toBe(
+      neutralBackground,
+    )
+  })
 })
