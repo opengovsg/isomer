@@ -118,6 +118,7 @@ $max-depth: 13;
 
     .selectedCell:after {
       background: rgba(200, 200, 255, 0.2);
+      box-shadow: inset 0 0 0 2px var(--chakra-colors-interaction-main-default);
       content: "";
       left: 0;
       right: 0;
