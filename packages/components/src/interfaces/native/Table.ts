@@ -11,7 +11,7 @@ import { OrderedListSchema } from "./OrderedList"
 import { ParagraphSchema } from "./Paragraph"
 import { UnorderedListSchema } from "./UnorderedList"
 
-const TableBaseCellSchema = Type.Object({
+export const TableBaseCellSchema = Type.Object({
   colspan: Type.Optional(
     Type.Integer({
       title: "Table cell column span",
@@ -28,7 +28,13 @@ const TableBaseCellSchema = Type.Object({
   ),
   backgroundColor: Type.Optional(
     Type.Union(
-      TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((token) => Type.Literal(token)),
+      [
+        ...TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((token) =>
+          Type.Literal(token),
+        ),
+        // TipTap persists the unset default as null on every cell in getJSON()
+        Type.Null(),
+      ],
       {
         title: "Table cell background colour",
         description:
