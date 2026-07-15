@@ -85,6 +85,32 @@ const findByCellText = (container: HTMLElement, text: string): HTMLElement => {
   throw new Error(`Could not find cell with text "${text}"`)
 }
 
+const nthCellPos = (editor: Editor, index: number): number => {
+  let seen = 0
+  let found: number | null = null
+  editor.state.doc.descendants((node, pos) => {
+    if (found !== null) return false
+    if (node.type.name === "tableCell" || node.type.name === "tableHeader") {
+      if (seen === index) {
+        found = pos
+        return false
+      }
+      seen += 1
+    }
+    return true
+  })
+  if (found === null) throw new Error(`Could not find cell at index ${index}`)
+  return found
+}
+
+const selectCells = (editor: Editor, startIndex: number, endIndex: number) => {
+  const anchorCell = nthCellPos(editor, startIndex)
+  const headCell = nthCellPos(editor, endIndex)
+  act(() => {
+    editor.chain().focus().setCellSelection({ anchorCell, headCell }).run()
+  })
+}
+
 const centreOf = (el: Element) => {
   const rect = el.getBoundingClientRect()
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
@@ -334,6 +360,36 @@ describe("TableDragHandles", () => {
         getByLabelText("Drag to reorder column").getAttribute("data-state"),
       ).toBe("selected")
     })
+  })
+
+  it("keeps handles passive when multiple rows are selected", async () => {
+    // Arrange
+    const { editor, findAllByLabelText } = await renderHarness()
+
+    // Act
+    selectCells(editor, 3, 8)
+
+    // Assert
+    const handles = await findAllByLabelText("Drag to reorder row")
+    expect(handles).toHaveLength(2)
+    expect(handles.every((handle) => handle.dataset.state === "passive")).toBe(
+      true,
+    )
+  })
+
+  it("keeps handles passive when multiple columns are selected", async () => {
+    // Arrange
+    const { editor, findAllByLabelText } = await renderHarness()
+
+    // Act
+    selectCells(editor, 0, 10)
+
+    // Assert
+    const handles = await findAllByLabelText("Drag to reorder column")
+    expect(handles).toHaveLength(2)
+    expect(handles.every((handle) => handle.dataset.state === "passive")).toBe(
+      true,
+    )
   })
 
   it("drags a data row to a new position and reorders the document", async () => {

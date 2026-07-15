@@ -950,12 +950,13 @@ export const TableDragHandles = ({
             {geometry.rowRects.map((rect, i) => {
               if (!rect) return null
               const isHovered = isHoverTable && hoverRow === i
-              const isSelected = selectionRows.includes(i)
+              const isInSelection = selectionRows.includes(i)
+              const isSelected = selectionRows.length === 1 && isInSelection
               const isDragging =
                 drag?.axis === "row" &&
                 drag.tablePos === geometry.pos &&
                 drag.from === i
-              if (!isHovered && !isSelected && !isDragging) return null
+              if (!isHovered && !isInSelection && !isDragging) return null
               const state = resolveHandleState({
                 isSelected,
                 isDragging,
@@ -982,12 +983,13 @@ export const TableDragHandles = ({
             {geometry.colRects.map((rect, i) => {
               if (!rect) return null
               const isHovered = isHoverTable && hoverCol === i
-              const isSelected = selectionCols.includes(i)
+              const isInSelection = selectionCols.includes(i)
+              const isSelected = selectionCols.length === 1 && isInSelection
               const isDragging =
                 drag?.axis === "column" &&
                 drag.tablePos === geometry.pos &&
                 drag.from === i
-              if (!isHovered && !isSelected && !isDragging) return null
+              if (!isHovered && !isInSelection && !isDragging) return null
               const state = resolveHandleState({
                 isSelected,
                 isDragging,

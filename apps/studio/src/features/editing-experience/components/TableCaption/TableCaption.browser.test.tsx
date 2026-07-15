@@ -114,18 +114,6 @@ describe("TableCaption", () => {
     })
 
     const input = await getCaptionInput()
-    const slot = input.parentElement?.parentElement
-    const container = slot?.parentElement
-    const table = container?.querySelector("table")
-    console.info("caption-layout", {
-      input: input.getBoundingClientRect().toJSON(),
-      slot: slot?.getBoundingClientRect().toJSON(),
-      container: container?.getBoundingClientRect().toJSON(),
-      table: table?.getBoundingClientRect().toJSON(),
-      slotTop: slot?.style.top,
-      tableMarginTop: table?.style.marginTop,
-      viewport: { width: window.innerWidth, height: window.innerHeight },
-    })
     await userEvent.click(input)
     await userEvent.type(input, "Live")
 
