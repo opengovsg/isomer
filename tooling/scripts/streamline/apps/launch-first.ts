@@ -11,7 +11,10 @@ import {
   createMaintenanceWindow,
   getUptimeRobotMonitors,
 } from "../utils/uptimerobot";
-import { createOrUpdateIndirectionRecord } from "../utils/github";
+import {
+  createOrUpdateIndirectionRecord,
+  createAndMergeIndirectionPR,
+} from "../utils/github";
 import type { SiteLaunchSite } from "../types";
 
 const conductPreflightChecks = async (siteLaunchSites: SiteLaunchSite[]) => {
@@ -139,7 +142,20 @@ export const siteLaunchFirstWindow = async () => {
     await createMaintenanceWindow(monitorIds);
   }
 
-  // Step 4: Update the Isomer Next infra to set the sites to the `PRELAUNCH`
+  // Step 4: Optionally create and merge the indirection PR on isomer-indirection
+  const shouldCreatePR = await confirm({
+    message:
+      "Do you want to create and merge the indirection PR on isomer-indirection (staging → main)?",
+    default: true,
+  });
+
+  if (shouldCreatePR) {
+    await createAndMergeIndirectionPR(
+      successfulSites.map((site) => site.isomerDomain)
+    );
+  }
+
+  // Step 5: Update the Isomer Next infra to set the sites to the `PRELAUNCH`
   // state
   await updateSitesProductionCSV(
     successfulSites.map((site) => ({

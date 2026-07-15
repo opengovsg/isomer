@@ -81,6 +81,35 @@ export const createRecords = (zoneId: string): Record[] => {
   });
 };
 
+export const createAndMergeIndirectionPR = async (domains: string[]) => {
+  const octokit = new Octokit({
+    auth: process.env.GITHUB_TOKEN,
+  });
+
+  const domainList = domains.map((d) => `- ${d}`).join("\n");
+  const body = `## Streamline site launch\n\nThis PR updates the indirection layer for the following domains:\n\n${domainList}`;
+
+  const pr = await octokit.rest.pulls.create({
+    owner: "isomerpages",
+    repo: "isomer-indirection",
+    title: "chore: streamline site launch indirection update",
+    body,
+    head: "staging",
+    base: "main",
+  });
+
+  console.log(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
+
+  await octokit.rest.pulls.merge({
+    owner: "isomerpages",
+    repo: "isomer-indirection",
+    pull_number: pr.data.number,
+    merge_method: "merge",
+  });
+
+  console.log(`Merged PR #${pr.data.number}`);
+};
+
 export const archiveGitHubRepo = async (repoName: string) => {
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
