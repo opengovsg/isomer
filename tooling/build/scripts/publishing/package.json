@@ -16,6 +16,7 @@
     "upload-redirects": "tsx uploadRedirects.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "catalog:aws-sdk",
     "dotenv": "catalog:",
     "pg": "catalog:",
     "tsx": "catalog:"
