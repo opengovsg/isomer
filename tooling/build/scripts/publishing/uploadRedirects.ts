@@ -67,7 +67,10 @@ async function uploadOne(
     new PutObjectCommand({
       Bucket: S3_BUCKET,
       Key: `${SITE_NAME}/${BUILD_NUMBER}/latest/${key}`,
-      Body: "",
+      // Empty Buffer (not "") so the SDK knows Content-Length upfront and
+      // does not warn about a stream of unknown length.
+      Body: Buffer.alloc(0),
+      ContentLength: 0,
       ContentType: "text/html",
       CacheControl: "max-age=600",
       // Becomes x-amz-meta-redirect-destination on the object.
