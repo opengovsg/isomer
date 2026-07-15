@@ -514,6 +514,11 @@ const TABLE_BUBBLE_MENU_OPTIONS = {
   offset: 8,
 }
 
+// TipTap/Floating UI `options` have no zIndex — style the portal root so it
+// stacks above TableCaption (`z-index: 1`) and `.selectedCell::after` (`2`).
+// 1000 === Chakra theme token `zIndices.dropdown`.
+export const TABLE_BUBBLE_MENU_Z_INDEX = 1000
+
 // Stable explicit plugin key so we can nudge TipTap's show/hide when
 // `tableEditingKey` flips without a selection/doc change (mouseup only clears
 // the selectingCells meta — TipTap's BubbleMenu early-returns on those and
@@ -611,12 +616,12 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       shouldShow={shouldShowTableBubbleMenu}
       updateDelay={TABLE_BUBBLE_MENU_UPDATE_DELAY}
       options={TABLE_BUBBLE_MENU_OPTIONS}
+      style={{ zIndex: TABLE_BUBBLE_MENU_Z_INDEX }}
     >
       <VStack
         align="stretch"
         textAlign="left"
         position="relative"
-        zIndex="dropdown"
         bg="base.canvas.default"
         boxShadow="md"
         borderRadius="md"

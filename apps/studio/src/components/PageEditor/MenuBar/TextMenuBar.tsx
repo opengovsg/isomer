@@ -3,7 +3,6 @@ import { useDisclosure } from "@chakra-ui/react"
 import { useMemo } from "react"
 import {
   BiBold,
-  BiCog,
   BiItalic,
   BiLink,
   BiListOl,
@@ -15,16 +14,10 @@ import {
 import { MdHorizontalRule, MdSubscript, MdSuperscript } from "react-icons/md"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
-import { TableSettingsModal } from "../TableSettingsModal"
 import { MenuBar } from "./MenuBar"
 import { TiptapLinkEditorModal } from "./TiptapLinkEditorModal"
 
 export const TextMenuBar = ({ editor }: { editor: Editor }) => {
-  const {
-    isOpen: isTableSettingsModalOpen,
-    onOpen: onTableSettingsModalOpen,
-    onClose: onTableSettingsModalClose,
-  } = useDisclosure()
   const {
     isOpen: isLinkModalOpen,
     onOpen: onLinkModalOpen,
@@ -164,17 +157,6 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         },
         isActive: () => editor.isActive("table"),
       },
-      // "Table settings" (the caption editor) is the one item from the old
-      // table toolbar group not yet covered by TableBubbleMenu — every other
-      // action (add/delete row/column, merge, split) moved there already.
-      // This stays until the inline TableCaption component replaces it.
-      {
-        type: "item",
-        icon: BiCog,
-        title: "Table settings",
-        isHidden: () => !editor.isActive("table"),
-        action: onTableSettingsModalOpen,
-      },
       // Lesser-used commands are kept inside the overflow items list
       {
         type: "overflow-list",
@@ -205,16 +187,10 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         ],
       },
     ],
-    [editor, onLinkModalOpen, onTableSettingsModalOpen],
+    [editor, onLinkModalOpen],
   )
   return (
     <>
-      <TableSettingsModal
-        editor={editor}
-        isOpen={isTableSettingsModalOpen}
-        onClose={onTableSettingsModalClose}
-      />
-
       <TiptapLinkEditorModal
         editor={editor}
         isOpen={isLinkModalOpen}
