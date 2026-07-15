@@ -412,7 +412,6 @@ const convertFromTiptap = async (
               imageAlt,
               title,
               description,
-              linkText,
               linkHref,
             },
           } = card;
@@ -421,9 +420,6 @@ const convertFromTiptap = async (
             title: title || "Card missing a title",
             description: description || undefined,
             url: linkHref || undefined,
-            label: linkHref
-              ? linkText || PLACEHOLDER_CARD_LINK_TEXT
-              : undefined,
             imageUrl: imageSrc || undefined,
             imageAlt: imageSrc ? imageAlt || PLACEHOLDER_ALT_TEXT : undefined,
             imageFit: imageSrc ? "cover" : undefined,

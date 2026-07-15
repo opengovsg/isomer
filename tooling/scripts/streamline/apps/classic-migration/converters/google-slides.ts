@@ -48,11 +48,13 @@ const fetchSlideThumbnailUrls = async (info: SlideInfo): Promise<string[]> => {
   // Each slide appears in the embed's docData JS literal as an entry of shape
   //   ["<slideId>",<index>,"<title>",[],[],[],[],[[],false,<n>],[],"",["<thumbUrl>"],...]
   // The entry prefix is distinctive enough to avoid false positives; once
-  // matched we take the first /slidesz/ URL that follows. URLs contain JS
-  // string escapes (= encoded as =), so we JSON.parse to decode.
+  // matched we take the first thumbnail URL that follows. Google has used both
+  // /slidesz/ and /slides-images-rt/ as the thumbnail path across embed
+  // variants, so we accept either. URLs contain JS string escapes (= encoded
+  // as =), so we JSON.parse to decode.
   const entryRe =
     /\["[^"]+",(\d+),"[^"]*",\[\],\[\],\[\],\[\],\[\[\],false,\d+\]/g;
-  const urlRe = /"(https:[^"]*\/slidesz\/[^"]+)"/;
+  const urlRe = /"(https:[^"]*\/(?:slidesz|slides-images-rt)\/[^"]+)"/;
 
   const entries: { index: number; url: string }[] = [];
   for (const m of html.matchAll(entryRe)) {
