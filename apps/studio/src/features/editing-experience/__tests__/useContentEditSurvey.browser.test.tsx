@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { PropsWithChildren } from "react"
 import { act, render, renderHook } from "@testing-library/react"
@@ -24,8 +23,10 @@ import {
 const trackEventMock = vi.hoisted(() => vi.fn())
 vi.mock("@intercom/messenger-js-sdk", () => ({ trackEvent: trackEventMock }))
 
-const mockEnv = vi.hoisted(() => ({
-  env: { NEXT_PUBLIC_INTERCOM_APP_ID: "test-app-id" as string | undefined },
+const mockEnv = vi.hoisted<{
+  env: { NEXT_PUBLIC_INTERCOM_APP_ID: string | undefined }
+}>(() => ({
+  env: { NEXT_PUBLIC_INTERCOM_APP_ID: "test-app-id" },
 }))
 vi.mock("~/env.mjs", () => mockEnv)
 

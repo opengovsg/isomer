@@ -2,6 +2,8 @@ import { spawn } from "child_process"
 import * as fs from "fs"
 import * as os from "os"
 import * as path from "path"
+import { argv } from "process"
+import { pathToFileURL } from "url"
 
 const REDIRECTS_JSON = process.env.REDIRECTS_JSON
 const S3_BUCKET = process.env.S3_BUCKET_NAME
@@ -15,11 +17,24 @@ interface Redirect {
 }
 
 // Returns the normalised S3 key segment, or null if the source is unsafe/empty.
-function normalizeSource(source: string): string | null {
+export function normalizeSource(source: string): string | null {
   if (typeof source !== "string") return null
+  // A stored source keeps its percent-encoding (the source schema forbids a raw
+  // space, so a space is persisted as "%20"). CloudFront percent-decodes the
+  // request path before it fetches from S3, so the object must be keyed by the
+  // DECODED path — otherwise it sits at a "%20" key that no request ever reaches.
+  // Decode first, then run the safety checks below on the decoded value so an
+  // encoded "%2e%2e" or "%00" can't smuggle a traversal / control char past them.
+  let decoded: string
+  try {
+    decoded = decodeURIComponent(source)
+  } catch {
+    // Malformed percent-encoding (e.g. a lone "%") can't be keyed correctly.
+    return null
+  }
   // Reject control chars and backslashes
-  if (/[\x00-\x1f\\]/.test(source)) return null
-  const trimmed = source
+  if (/[\x00-\x1f\x7f\\]/.test(decoded)) return null
+  const trimmed = decoded
     .replace(/^\/+/, "")
     .replace(/\/+$/, "")
     .replace(/\/+/g, "/")
@@ -33,12 +48,18 @@ const EMPTY_FILE = path.join(os.tmpdir(), "isomer-redirect-empty")
 
 function uploadOne(source: string, destination: string): Promise<void> {
   return new Promise((resolve, reject) => {
+    // Mirror the CloudFront redirect function's assumption (see
+    // generateRedirectFnCode in isomer-next-infra): if the last 5 characters
+    // contain a ".", the source is treated as a file path and used as-is.
+    // Otherwise it is a directory path and resolves to its "/index.html" object.
+    const isPotentialFilePath = source.slice(-5).includes(".")
+    const key = isPotentialFilePath ? source : `${source}/index.html`
     const proc = spawn("aws", [
       "s3",
       "cp",
       "--only-show-errors",
       EMPTY_FILE,
-      `s3://${S3_BUCKET}/${SITE_NAME}/${BUILD_NUMBER}/latest/${source}/index.html`,
+      `s3://${S3_BUCKET}/${SITE_NAME}/${BUILD_NUMBER}/latest/${key}`,
       "--content-type",
       "text/html",
       "--cache-control",
@@ -135,7 +156,11 @@ async function main(): Promise<void> {
   if (failed > 0) process.exit(1)
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+// Run only when executed directly (`tsx uploadRedirects.ts`), not when the file
+// is imported — e.g. by the unit tests for normalizeSource.
+if (argv[1] && import.meta.url === pathToFileURL(argv[1]).href) {
+  main().catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
+}

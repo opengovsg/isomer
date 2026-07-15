@@ -9,8 +9,8 @@ import { FileAttachment } from "~/components/PageEditor/FileAttachment"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageOrLinkSchema } from "~/features/editing-experience/schema"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { MAX_IMG_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
-import { MAX_IMG_FILE_SIZE_BYTES } from "./constants"
 import { getCustomErrorMessage } from "./utils"
 
 export const jsonFormsImageControlTester: RankedTester = rankWith(
