@@ -86,7 +86,7 @@ export const emailSessionRouter = router({
           isStaticOtp
             ? Promise.resolve()
             : sendMail({
-                subject: `Sign in to ${url.host}`,
+                subject: `Sign in to ${url.host} - ${otpPrefix}-${token}`,
                 body: `Your OTP is ${otpPrefix}-<b>${token}</b>. It expires in ${expiryMinutes} minutes.
       Please use this to login to your account.
       <p>If your OTP does not work, please request for a new one.</p>`,
