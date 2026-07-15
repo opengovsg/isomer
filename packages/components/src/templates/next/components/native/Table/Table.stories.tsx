@@ -2073,16 +2073,6 @@ export const WithBackgroundColours: Story = {
         content: [
           {
             type: "tableCell",
-            attrs: { backgroundColor: "grey" },
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "grey" }],
-              },
-            ],
-          },
-          {
-            type: "tableCell",
             attrs: { backgroundColor: "blue" },
             content: [
               {
