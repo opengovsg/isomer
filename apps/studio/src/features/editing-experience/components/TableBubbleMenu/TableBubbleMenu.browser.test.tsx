@@ -424,11 +424,12 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Add row above")).toBeNull()
   })
 
-  it("shows Split cell for a single cell that came from a merge, and nothing for an ordinary single cell", async () => {
-    const { editor, findByText, queryByText } = await renderHarness()
+  it("shows Split cell for a merged cell, and Background colour for an ordinary body cell", async () => {
+    const { editor, findByText, findByRole, queryByText, queryByRole } =
+      await renderHarness()
 
     // Merge two adjacent body cells into one, then re-select just that
-    // resulting cell — the only single-cell case with a bubble menu.
+    // resulting cell — structural action is Split; colour still applies.
     selectCells(editor, 3, 4)
     act(() => {
       editor.chain().focus().mergeCells().run()
@@ -437,11 +438,22 @@ describe("TableBubbleMenu", () => {
 
     expect(await findByText("Split cell")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
+    expect(
+      await findByRole("button", { name: "Background colour" }),
+    ).toBeTruthy()
 
-    // An ordinary (never-merged) single cell still shows no menu at all.
+    // An ordinary (never-merged) body cell shows colour only.
     selectCells(editor, 6, 6)
+    expect(
+      await findByRole("button", { name: "Background colour" }),
+    ).toBeTruthy()
     expect(queryByText("Split cell")).toBeNull()
     expect(queryByText("Merge cells")).toBeNull()
+
+    // A single header cell has neither structural actions nor colour.
+    selectCells(editor, 0, 0)
+    expect(queryByRole("button", { name: "Background colour" })).toBeNull()
+    expect(queryByText("Split cell")).toBeNull()
   })
 
   it("does not show Superscript/Subscript when the text cursor is inside a cell", async () => {

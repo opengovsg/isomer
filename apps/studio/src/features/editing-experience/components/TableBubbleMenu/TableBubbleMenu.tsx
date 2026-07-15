@@ -54,9 +54,9 @@ export interface TableBubbleMenuProps {
   editor: Editor
 }
 
-// A single selected cell that came from a previous merge (colspan/rowspan >
-// 1) is the only single-cell case that shows a bubble menu — "Split cell" is
-// its sole way back. Ordinary single cells stay menu-less.
+// Single-cell selections: an ordinary body cell shows the menu for background
+// colour; a merged cell (colspan/rowspan > 1) also gets "Split cell"; a plain
+// header cell stays menu-less (no colour, no structural action).
 //
 // NOTE: this can't be driven off `selectedRect`'s width/height — those are in
 // TableMap grid units, which count a colspan-2 cell as spanning 2 columns
@@ -587,8 +587,8 @@ const TableSelectionActions = ({
 // across renders is what breaks that loop. See
 // .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
 //
-// Only CellSelections that have table actions (row/column/table/merge/split)
-// show the menu. A plain text cursor inside a cell must not.
+// CellSelections with table actions (row/column/table/merge/split) or body-cell
+// colour show the menu. A plain text cursor inside a cell must not.
 // Require editor (or menu) focus — TipTap's default shouldShow does this.
 //
 // Also stay hidden while prosemirror-tables is mid cell-drag
@@ -605,8 +605,10 @@ const shouldShowTableBubbleMenu = ({
 }) => {
   if (tableEditingKey.getState(view.state) != null) return false
 
-  const kind = detectSelectionType(editor).kind
-  if (kind === "none" || kind === "single-cell") return false
+  const { kind, hasBodyCell } = detectSelectionType(editor)
+  if (kind === "none") return false
+  // Ordinary single cells only surface when colour can apply (body cells).
+  if (kind === "single-cell" && !hasBodyCell) return false
 
   const isChildOfMenu = element.contains(document.activeElement)
   return view.hasFocus() || isChildOfMenu
@@ -738,9 +740,15 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
 
   const selection = editor.state.selection
   const canSetBackgroundColour =
-    (kind === "multi-cell" || kind === "row" || kind === "column") &&
+    (kind === "multi-cell" ||
+      kind === "row" ||
+      kind === "column" ||
+      kind === "single-cell" ||
+      kind === "merged-cell") &&
     hasBodyCell &&
     selection instanceof CellSelection
+  // Single-cell body selections only expose colour — skip the leading divider.
+  const hasSelectionActions = kind !== "none" && kind !== "single-cell"
 
   return (
     <BubbleMenu
@@ -774,7 +782,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
             <TableSelectionActions editor={editor} kind={kind} />
             {canSetBackgroundColour && (
               <>
-                <ActionDivider />
+                {hasSelectionActions && <ActionDivider />}
                 <ActionGroup>
                   <ActionButton
                     label="Background colour"
