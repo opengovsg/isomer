@@ -153,6 +153,7 @@ export const IsomerTableCell = TableCell.extend({
   content: "(paragraph|list)+",
   addAttributes() {
     return {
+      ...this.parent?.(),
       backgroundColor: {
         default: null,
         parseHTML: (element) =>
