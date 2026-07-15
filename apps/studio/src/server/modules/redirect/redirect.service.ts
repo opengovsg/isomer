@@ -3,6 +3,7 @@ import type {
   RedirectValidationResult,
 } from "~/constants/redirect"
 import type {
+  BulkRedirectsCsvInput,
   CountRedirectsByDestinationInput,
   CountRedirectsInput,
   CreateRedirectInput,
@@ -20,10 +21,12 @@ import {
 import { TRPCError } from "@trpc/server"
 import { sql } from "kysely"
 import { REDIRECT_MESSAGES, RedirectValidationCode } from "~/constants/redirect"
+import { parseRedirectCsv } from "~/lib/redirectCsv"
 import {
   isValidExternalDestination,
   normalizeRedirectPath,
   normalizeRedirectSource,
+  redirectRowSchema,
 } from "~/schemas/redirect"
 import { getReferenceLink } from "~/utils/link"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -566,6 +569,510 @@ export const createRedirect = async ({
   await publishSite(logger, { siteId })
 
   return created
+}
+
+// ---------------------------------------------------------------------------
+// Bulk upload (CSV)
+// ---------------------------------------------------------------------------
+
+// Rows are inserted in chunks so a large upload doesn't build one enormous
+// INSERT (mirrors the migration script's chunking).
+const BULK_REDIRECT_INSERT_CHUNK_SIZE = 500
+
+// Shown when a row is split by an unquoted comma into extra columns.
+const BULK_MALFORMED_ROW_MESSAGE =
+  "This row has extra columns. Put double quotes around any value that contains a comma."
+
+// Thrown inside the bulk insert when a source went live between validation and
+// the insert (the upsert skipped it). bulkCreate catches it to re-validate and
+// return fresh row verdicts rather than surface a generic failure.
+class BulkRedirectRaceError extends Error {}
+
+// Cross-file duplicate copy. The other row errors reuse the shared Studio
+// messages (REDIRECT_MESSAGES) so the errors file reads the same as the inline
+// form errors, per the design.
+const BULK_DUPLICATE_SOURCE_MESSAGE =
+  "This source is listed more than once in your file."
+
+// One row after evaluation: the values as the editor typed them (for the errors
+// file + preview), the normalized values (for the DB checks + insert), and the
+// single chosen error (null when the row passed).
+interface EvaluatedRedirectRow {
+  rowNumber: number
+  source: string
+  destination: string
+  normalizedSource: string | null
+  normalizedDestination: string | null
+  error: string | null
+}
+
+// Public per-row verdict returned to the client (drops the internal normalized
+// values). Ordered as parsed; the client sorts errors first for the errors file.
+export interface BulkRedirectRowResult {
+  rowNumber: number
+  source: string
+  destination: string
+  error: string | null
+}
+
+export interface BulkRedirectValidationResult {
+  // A file-level problem (empty / missing column / unreadable / too big) that
+  // stops evaluation before any row is checked; null when the file parsed.
+  fileError: string | null
+  rows: BulkRedirectRowResult[]
+  validCount: number
+  errorCount: number
+}
+
+// Resolves stored redirect destinations to the source-comparable path they
+// point at (for loop detection): an internal path normalized as a source, a
+// [resource:...] reference resolved to the page's current permalink, everything
+// else (external URL, missing/cross-site reference) to null (never chains).
+// References are resolved in one batch rather than a query each.
+const resolveStoredDestinationsToSources = async (
+  siteId: number,
+  storedDestinations: string[],
+): Promise<Map<string, string | null>> => {
+  const result = new Map<string, string | null>()
+  const referenceIdByDestination = new Map<string, number>()
+  for (const destination of new Set(storedDestinations)) {
+    if (destination.startsWith("/")) {
+      result.set(destination, normalizeRedirectSource(destination))
+      continue
+    }
+    const match = REFERENCE_DESTINATION_REGEX.exec(destination)
+    if (match && Number(match[1]) === siteId) {
+      referenceIdByDestination.set(destination, Number(match[2]))
+      continue
+    }
+    result.set(destination, null)
+  }
+
+  const referenceIds = [...referenceIdByDestination.values()]
+  const permalinks = referenceIds.length
+    ? await getResourceFullPermalinks(siteId, referenceIds)
+    : new Map<number, string>()
+  for (const [destination, resourceId] of referenceIdByDestination) {
+    const permalink = permalinks.get(resourceId)
+    result.set(
+      destination,
+      permalink ? normalizeRedirectSource(permalink) : null,
+    )
+  }
+  return result
+}
+
+// Batched form of resolveDestinationForStorage: an internal path that maps to a
+// resource becomes a [resource:...] reference; a query/fragment path or a path
+// with no matching resource stays literal; references and external URLs are
+// stored verbatim. Resolves every internal path in one query rather than one per
+// row, at the cost of matching getResourceIdsByPermalinks' structural resolution
+// (the container id itself, not via its index page — the canonical id the build
+// remaps to anyway).
+const resolveDestinationsForStorage = async (
+  siteId: number,
+  destinations: string[],
+): Promise<Map<string, string>> => {
+  const result = new Map<string, string>()
+  const internalPaths: string[] = []
+  for (const destination of new Set(destinations)) {
+    const parsed = parseDestination(destination)
+    if (
+      parsed.type !== "internalPath" ||
+      parsed.value.includes("?") ||
+      parsed.value.includes("#")
+    ) {
+      result.set(destination, destination)
+      continue
+    }
+    internalPaths.push(parsed.value)
+  }
+
+  const idByPath = internalPaths.length
+    ? await getResourceIdsByPermalinks(siteId, internalPaths)
+    : new Map<string, number | null>()
+  for (const destination of new Set(destinations)) {
+    if (result.has(destination)) {
+      continue
+    }
+    const resourceId = idByPath.get(destination) ?? null
+    result.set(
+      destination,
+      resourceId === null
+        ? destination
+        : getReferenceLink({
+            siteId: String(siteId),
+            resourceId: String(resourceId),
+          }),
+    )
+  }
+  return result
+}
+
+// Walks the redirect chain from `start`, following each source to the source it
+// redirects to, and reports whether it returns to `start` — a loop. The chain is
+// followed to its end or until it repeats a node (tracked in `visited`), so a
+// batch cycle of ANY length is caught; `visited` also stops an unrelated
+// downstream cycle (one that never passes through `start`) from spinning forever.
+const formsLoop = (
+  edges: Map<string, string | null>,
+  start: string,
+): boolean => {
+  const visited = new Set<string>()
+  let current = edges.get(start) ?? null
+  while (current !== null) {
+    if (current === start) {
+      return true
+    }
+    if (visited.has(current)) {
+      return false
+    }
+    visited.add(current)
+    current = edges.get(current) ?? null
+  }
+  return false
+}
+
+// Evaluates every CSV row against the same rules as a single create, plus the
+// two cross-file checks the design calls for (duplicate source in the file, loop
+// formed within the batch). Each row keeps at most one error, chosen in
+// precedence order: format → duplicate-in-file → already-on-table → shadows a
+// page → loop. Returns the internal rows (with normalized values) so the caller
+// can both build the public verdict and insert the surviving rows.
+const runBulkValidation = async (
+  siteId: number,
+  csv: string,
+): Promise<{ fileError: string | null; rows: EvaluatedRedirectRow[] }> => {
+  const parsed = parseRedirectCsv(csv)
+  if (parsed.fileError !== undefined) {
+    return { fileError: parsed.fileError, rows: [] }
+  }
+
+  // 1) Per-row format validation via the shared row schema (same rules, and the
+  // same messages, as the inline add form). A row split by an unquoted comma is
+  // rejected first — its parsed destination is truncated, so it can't be trusted.
+  const rows: EvaluatedRedirectRow[] = parsed.rows.map(
+    ({ rowNumber, source, destination, malformed }) => {
+      const base = { rowNumber, source, destination }
+      if (malformed) {
+        return {
+          ...base,
+          normalizedSource: null,
+          normalizedDestination: null,
+          error: BULK_MALFORMED_ROW_MESSAGE,
+        }
+      }
+      const result = redirectRowSchema.safeParse({ source, destination })
+      if (!result.success) {
+        return {
+          ...base,
+          normalizedSource: null,
+          normalizedDestination: null,
+          error:
+            result.error.issues[0]?.message ?? "This redirect isn't valid.",
+        }
+      }
+      return {
+        ...base,
+        normalizedSource: result.data.source,
+        normalizedDestination: result.data.destination,
+        error: null,
+      }
+    },
+  )
+
+  // 2) Duplicate source within the uploaded file.
+  const sourceCounts = new Map<string, number>()
+  for (const row of rows) {
+    if (row.error === null && row.normalizedSource !== null) {
+      sourceCounts.set(
+        row.normalizedSource,
+        (sourceCounts.get(row.normalizedSource) ?? 0) + 1,
+      )
+    }
+  }
+  for (const row of rows) {
+    if (
+      row.error === null &&
+      row.normalizedSource !== null &&
+      (sourceCounts.get(row.normalizedSource) ?? 0) > 1
+    ) {
+      row.error = BULK_DUPLICATE_SOURCE_MESSAGE
+    }
+  }
+
+  // Load every live redirect once; reused for the on-table check and the loop
+  // graph so the whole batch is validated against the DB in memory.
+  const liveRedirects = await db
+    .selectFrom("Redirect")
+    .select(["source", "destination"])
+    .where("siteId", "=", siteId)
+    .where("deletedAt", "is", null)
+    .execute()
+
+  // 3) Source already redirected on the table.
+  const liveSources = new Set(liveRedirects.map((redirect) => redirect.source))
+  for (const row of rows) {
+    if (
+      row.error === null &&
+      row.normalizedSource !== null &&
+      liveSources.has(row.normalizedSource)
+    ) {
+      row.error = REDIRECT_MESSAGES.alreadyExists
+    }
+  }
+
+  // 4) Source shadows a live published page or container.
+  const sourcesToCheck = [
+    ...new Set(
+      rows.flatMap((row) =>
+        row.error === null && row.normalizedSource !== null
+          ? [row.normalizedSource]
+          : [],
+      ),
+    ),
+  ]
+  if (sourcesToCheck.length > 0) {
+    const idByPermalink = await getResourceIdsByPermalinks(
+      siteId,
+      sourcesToCheck,
+    )
+    const resourceIds = [...idByPermalink.values()].filter(
+      (id): id is number => id !== null,
+    )
+    const publishedState = await getPublishedStateByResourceIds(
+      siteId,
+      resourceIds,
+    )
+    for (const row of rows) {
+      if (row.error !== null || row.normalizedSource === null) {
+        continue
+      }
+      const resourceId = idByPermalink.get(row.normalizedSource) ?? null
+      if (resourceId !== null && publishedState.get(resourceId)) {
+        row.error = REDIRECT_MESSAGES.sourceIsExistingPage
+      }
+    }
+  }
+
+  // 5) Loops in the combined graph. Only rows that survived the checks above
+  // (and so would actually be created) contribute an edge, alongside every
+  // existing live redirect.
+  const resolvedExisting = await resolveStoredDestinationsToSources(
+    siteId,
+    liveRedirects.map((redirect) => redirect.destination),
+  )
+  const edges = new Map<string, string | null>()
+  for (const redirect of liveRedirects) {
+    edges.set(
+      redirect.source,
+      resolvedExisting.get(redirect.destination) ?? null,
+    )
+  }
+  for (const row of rows) {
+    if (row.error !== null || row.normalizedSource === null) {
+      continue
+    }
+    const destination = row.normalizedDestination
+    const nextSource =
+      destination !== null && destination.startsWith("/")
+        ? normalizeRedirectSource(destination)
+        : null
+    // A surviving row has a unique source and never collides with an existing
+    // redirect's source (both were flagged above), so this never clobbers an
+    // existing edge.
+    edges.set(row.normalizedSource, nextSource)
+  }
+  for (const row of rows) {
+    if (row.error !== null || row.normalizedSource === null) {
+      continue
+    }
+    if (formsLoop(edges, row.normalizedSource)) {
+      row.error = REDIRECT_MESSAGES.loop
+    }
+  }
+
+  return { fileError: null, rows }
+}
+
+const toValidationResult = (
+  fileError: string | null,
+  rows: EvaluatedRedirectRow[],
+): BulkRedirectValidationResult => {
+  const publicRows: BulkRedirectRowResult[] = rows.map(
+    ({ rowNumber, source, destination, error }) => ({
+      rowNumber,
+      source,
+      destination,
+      error,
+    }),
+  )
+  return {
+    fileError,
+    rows: publicRows,
+    validCount: publicRows.filter((row) => row.error === null).length,
+    errorCount: publicRows.filter((row) => row.error !== null).length,
+  }
+}
+
+// Validates an uploaded CSV without writing anything. Powers the modal's
+// "Process redirects" step: drives the errors screen or the ready-to-publish
+// preview.
+export const bulkValidateRedirects = async ({
+  siteId,
+  csv,
+}: BulkRedirectsCsvInput): Promise<BulkRedirectValidationResult> => {
+  const { fileError, rows } = await runBulkValidation(siteId, csv)
+  return toValidationResult(fileError, rows)
+}
+
+// Result of committing a bulk upload: a published count on success, or the fresh
+// validation to re-render the errors screen when re-validation now fails (a race
+// since the preview) — never a partial publish.
+export type BulkCreateRedirectsResult =
+  | { ok: true; publishedCount: number }
+  | { ok: false; validation: BulkRedirectValidationResult }
+
+// Publishes a whole validated batch: re-validates server-side (trust boundary +
+// race guard), inserts every row in one transaction (chunked, reviving any
+// soft-deleted row like a single create), audits one RedirectCreate per row plus
+// one Publish, then rebuilds the site once.
+export const bulkCreateRedirects = async ({
+  siteId,
+  csv,
+  byUserId,
+  logger,
+}: BulkRedirectsCsvInput & {
+  byUserId: string
+  logger: Logger<string>
+}): Promise<BulkCreateRedirectsResult> => {
+  const byUser = await getByUser(byUserId)
+
+  const { fileError, rows } = await runBulkValidation(siteId, csv)
+  if (fileError !== null || rows.some((row) => row.error !== null)) {
+    return { ok: false, validation: toValidationResult(fileError, rows) }
+  }
+
+  // Every surviving row has normalized values (error === null implies both were
+  // set). The guard narrows the types without an assertion; it never drops a row
+  // here since we returned early above on any error.
+  const validRows = rows.flatMap((row) =>
+    row.normalizedSource !== null && row.normalizedDestination !== null
+      ? [
+          {
+            source: row.normalizedSource,
+            destination: row.normalizedDestination,
+          },
+        ]
+      : [],
+  )
+  const storedByDestination = await resolveDestinationsForStorage(
+    siteId,
+    validRows.map((row) => row.destination),
+  )
+  const valuesToInsert = validRows.map((row) => ({
+    siteId,
+    source: row.source,
+    destination: storedByDestination.get(row.destination) ?? row.destination,
+  }))
+  const sources = valuesToInsert.map((value) => value.source)
+
+  try {
+    const created = await db.transaction().execute(async (tx) => {
+      // Re-read every existing row (live or soft-deleted) for these sources
+      // first, so each audit entry's `before` is the real committed row.
+      const existingRows = sources.length
+        ? await tx
+            .selectFrom("Redirect")
+            .selectAll()
+            .where("siteId", "=", siteId)
+            .where("source", "in", sources)
+            .execute()
+        : []
+      const existingBySource = new Map(
+        existingRows.map((row) => [row.source, row]),
+      )
+
+      const insertedRows: typeof existingRows = []
+      for (
+        let i = 0;
+        i < valuesToInsert.length;
+        i += BULK_REDIRECT_INSERT_CHUNK_SIZE
+      ) {
+        const chunk = valuesToInsert.slice(
+          i,
+          i + BULK_REDIRECT_INSERT_CHUNK_SIZE,
+        )
+        const inserted = await tx
+          .insertInto("Redirect")
+          .values(chunk)
+          .onConflict((oc) =>
+            oc
+              .columns(["siteId", "source"])
+              .doUpdateSet((eb) => ({
+                destination: eb.ref("excluded.destination"),
+                deletedAt: null,
+                // Revived rows republish now, so refresh createdAt (the publish
+                // time shown to users).
+                createdAt: dbNow,
+              }))
+              // Only soft-deleted rows may be revived; a live one must not be
+              // silently overwritten.
+              .where("Redirect.deletedAt", "is not", null),
+          )
+          .returningAll()
+          .execute()
+        insertedRows.push(...inserted)
+      }
+
+      // One returned row per input is expected (new rows insert, soft-deleted rows
+      // revive). A shortfall means a source went live between validation and the
+      // insert (the upsert skipped it) — abort the txn so a partial batch never
+      // publishes; bulkCreate catches this and re-validates for fresh row errors.
+      if (insertedRows.length !== valuesToInsert.length) {
+        throw new BulkRedirectRaceError()
+      }
+
+      // One RedirectCreate per redirect, pairing each committed row with its real
+      // before-row (matching how the delete cascade audits per row).
+      for (const row of insertedRows) {
+        await logRedirectEvent(tx, {
+          siteId,
+          by: byUser,
+          eventType: AuditLogEvent.RedirectCreate,
+          delta: {
+            before: existingBySource.get(row.source) ?? null,
+            after: row,
+          },
+        })
+      }
+
+      // The whole batch republishes once, audited as a single Publish event.
+      await logPublishEvent(tx, {
+        siteId,
+        by: byUser,
+        delta: { before: null, after: null },
+        eventType: AuditLogEvent.Publish,
+        metadata: { redirects: { created: insertedRows } },
+      })
+
+      return insertedRows
+    })
+
+    // Publish once after commit (see createRedirect's two-step publish).
+    await publishSite(logger, { siteId })
+
+    return { ok: true, publishedCount: created.length }
+  } catch (error) {
+    if (error instanceof BulkRedirectRaceError) {
+      // A source went live between validation and the insert. Re-validate
+      // against the now-current table so the modal shows the offending row(s)
+      // rather than a generic failure — this keeps the ok:false contract.
+      const { fileError, rows } = await runBulkValidation(siteId, csv)
+      return { ok: false, validation: toValidationResult(fileError, rows) }
+    }
+    throw error
+  }
 }
 
 // Redirects driven by a permalink change (move / rename). Both run inside the
