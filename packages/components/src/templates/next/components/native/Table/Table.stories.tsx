@@ -2003,6 +2003,139 @@ export const NestedColumns: Story = {
   },
 }
 
+export const WithBackgroundColours: Story = {
+  args: {
+    attrs: {
+      caption: "Table cell background colour tokens",
+    },
+    content: [
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Grey" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Blue" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Purple" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Red" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Green" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Default" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "grey" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "grey" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "blue" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "blue" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "purple" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "purple" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "red" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "red" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "green" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "green" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "uncoloured" }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
 export const ListInTable: Story = {
   args: {
     attrs: {
