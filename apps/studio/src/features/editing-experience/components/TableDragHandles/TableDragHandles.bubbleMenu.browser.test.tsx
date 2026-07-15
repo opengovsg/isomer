@@ -17,14 +17,28 @@ const CONTENT: JSONContent = {
       content: [
         {
           type: "tableRow",
-          content: ["A", "B"].map((text) => ({
+          content: ["A", "B", "C"].map((text) => ({
             type: "tableHeader",
             content: [{ type: "paragraph", content: [{ type: "text", text }] }],
           })),
         },
         {
           type: "tableRow",
-          content: ["1", "2"].map((text) => ({
+          content: ["1", "2", "3"].map((text) => ({
+            type: "tableCell",
+            content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+          })),
+        },
+        {
+          type: "tableRow",
+          content: ["4", "5", "6"].map((text) => ({
+            type: "tableCell",
+            content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+          })),
+        },
+        {
+          type: "tableRow",
+          content: ["7", "8", "9"].map((text) => ({
             type: "tableCell",
             content: [{ type: "paragraph", content: [{ type: "text", text }] }],
           })),
@@ -94,8 +108,8 @@ describe("TableDragHandles BubbleMenu anchor", () => {
 
     const secondEditor = editors[1]!
     act(() => {
-      const anchorCell = nthCellPos(secondEditor, 2)
-      const headCell = nthCellPos(secondEditor, 3)
+      const anchorCell = nthCellPos(secondEditor, 3)
+      const headCell = nthCellPos(secondEditor, 5)
       secondEditor
         .chain()
         .focus()
@@ -117,4 +131,29 @@ describe("TableDragHandles BubbleMenu anchor", () => {
     expect(anchor.shouldWaitForReference()).toBe(false)
     expect(virtualElement?.getBoundingClientRect()).toEqual(secondRect)
   })
+
+  it.each([
+    { axis: "row", anchorIndex: 3, headIndex: 8 },
+    { axis: "column", anchorIndex: 0, headIndex: 10 },
+  ])(
+    "uses the default selection anchor for multiple $axis selections",
+    async ({ anchorIndex, headIndex }) => {
+      // Arrange
+      const editors: Editor[] = []
+      render(<Harness onReady={(editor) => (editors[0] = editor)} />)
+      await waitFor(() => expect(editors).toHaveLength(1))
+
+      const editor = editors[0]!
+      act(() => {
+        const anchorCell = nthCellPos(editor, anchorIndex)
+        const headCell = nthCellPos(editor, headIndex)
+        editor.chain().focus().setCellSelection({ anchorCell, headCell }).run()
+      })
+      const anchor = createTableDragHandlesBubbleMenuAnchor(editor)
+
+      // Act / Assert
+      expect(anchor.shouldWaitForReference()).toBe(false)
+      expect(anchor.getReferencedVirtualElement()).toBeNull()
+    },
+  )
 })

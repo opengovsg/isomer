@@ -7,15 +7,25 @@ export const TABLE_EDITOR_OVERLAYS_ATTR = "data-table-editor-overlays"
 const getTableEditorOverlays = (editor: Editor): HTMLElement | null =>
   editor.view.dom.closest(`[${TABLE_EDITOR_OVERLAYS_ATTR}]`)
 
-const hasHandleAnchorSelection = (editor: Editor): boolean => {
+const hasSingleHandleAnchorSelection = (editor: Editor): boolean => {
   const { selection } = editor.state
-  return (
-    selection instanceof CellSelection &&
-    selection.isRowSelection() !== selection.isColSelection()
-  )
+  if (!(selection instanceof CellSelection)) return false
+
+  const rect = selectedRect(editor.state)
+  const isSingleRow =
+    selection.isRowSelection() &&
+    !selection.isColSelection() &&
+    rect.bottom - rect.top === 1
+  const isSingleCol =
+    selection.isColSelection() &&
+    !selection.isRowSelection() &&
+    rect.right - rect.left === 1
+  return isSingleRow || isSingleCol
 }
 
 const getSelectedDragHandleVirtualElement = (editor: Editor) => {
+  if (!hasSingleHandleAnchorSelection(editor)) return null
+
   const { selection } = editor.state
   if (!(selection instanceof CellSelection)) return null
 
@@ -44,7 +54,7 @@ export const createTableDragHandlesBubbleMenuAnchor = (
   editor: Editor,
 ): TableBubbleMenuAnchor => ({
   shouldWaitForReference: () =>
-    hasHandleAnchorSelection(editor) &&
+    hasSingleHandleAnchorSelection(editor) &&
     getSelectedDragHandleVirtualElement(editor) === null,
   getReferencedVirtualElement: () =>
     getSelectedDragHandleVirtualElement(editor),
