@@ -1,9 +1,10 @@
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
-import { Box } from "@chakra-ui/react"
+import { Box, Icon } from "@chakra-ui/react"
 import { moveTableColumn, moveTableRow, TableMap } from "@tiptap/pm/tables"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { BiGridVertical } from "react-icons/bi"
 
 export interface TableDragHandlesProps {
   editor: TiptapEditor | null
@@ -167,14 +168,24 @@ const boundaryToTargetIndex = (boundaryIndex: number, from: number) => {
   return boundaryIndex
 }
 
-const GRIP = "⣏⣏" // stacked braille-pattern grip glyph
-
 const HANDLE_MARGIN_PX = 28
-/** Outer size of the compact grip chip (square). */
-const HANDLE_SIZE_PX = 20
-/** Distance from the table border to the handle's outer edge; half the
- *  handle size so the chip is centered on the border. */
-const HANDLE_OFFSET_PX = HANDLE_SIZE_PX / 2
+/** Equal padding on every side between the grip icon and the chip border. */
+const HANDLE_PADDING_PX = 2
+const HANDLE_BORDER_PX = 1
+/**
+ * `BiGridVertical` is a square SVG, but its 2×3 dots read taller than
+ * wide. Paint the icon into that visual aspect so padding looks even
+ * around the dots (not around empty SVG letterboxing).
+ */
+const GRIP_SHORT_PX = 8
+const GRIP_LONG_PX = 12
+/** Outer size = icon + equal padding + border on each side. */
+const outerSize = (contentW: number, contentH: number) => ({
+  w: contentW + HANDLE_PADDING_PX * 2 + HANDLE_BORDER_PX * 2,
+  h: contentH + HANDLE_PADDING_PX * 2 + HANDLE_BORDER_PX * 2,
+})
+const ROW_HANDLE = outerSize(GRIP_SHORT_PX, GRIP_LONG_PX)
+const COL_HANDLE = outerSize(GRIP_LONG_PX, GRIP_SHORT_PX)
 /** Stable empty rect list — avoids a fresh `[]` each render breaking useMemo deps. */
 const EMPTY_RECTS: (Rect | null)[] = []
 
@@ -185,16 +196,58 @@ const handleStyle = {
   cursor: "grab",
   color: "base.content.medium",
   bg: "base.canvas.default",
-  border: "1px solid",
+  border: `${HANDLE_BORDER_PX}px solid`,
   borderColor: "interaction.main.default",
   borderRadius: "0.25rem",
-  fontSize: "0.7rem",
-  lineHeight: 1,
   userSelect: "none",
   zIndex: "2",
-  w: `${HANDLE_SIZE_PX}px`,
-  h: `${HANDLE_SIZE_PX}px`,
+  // `content-box` so the declared w/h are the icon's paint box; equal
+  // padding and the border sit outside that, keeping breathing room even.
+  boxSizing: "content-box",
+  p: `${HANDLE_PADDING_PX}px`,
+  lineHeight: 0,
 } as const
+
+/**
+ * Same 6-dot grip used by block/nav drag handles (`BiGridVertical`).
+ * Painted into a non-square box matching the 2×3 (or rotated 3×2) aspect
+ * so equal CSS padding around the chip reads as equal padding around the
+ * dots.
+ */
+const GripIcon = ({ rotate }: { rotate?: boolean }) => {
+  const icon = (
+    <Icon
+      as={BiGridVertical}
+      w={`${GRIP_SHORT_PX}px`}
+      h={`${GRIP_LONG_PX}px`}
+      // Stretch the square viewBox into the rectangular paint box so we
+      // don't reintroduce letterboxed empty space inside the icon itself.
+      preserveAspectRatio="none"
+      transform={rotate ? "rotate(90deg)" : undefined}
+      aria-hidden
+    />
+  )
+
+  if (!rotate) return icon
+
+  // `transform: rotate` doesn't change layout size, so wrap in a landscape
+  // box matching the post-rotation visual — otherwise the chip's flex
+  // centering still lays out the tall pre-rotation footprint.
+  return (
+    <Box
+      as="span"
+      display="inline-flex"
+      alignItems="center"
+      justifyContent="center"
+      w={`${GRIP_LONG_PX}px`}
+      h={`${GRIP_SHORT_PX}px`}
+      flexShrink={0}
+      lineHeight={0}
+    >
+      {icon}
+    </Box>
+  )
+}
 
 const RowHandle = ({
   rect,
@@ -205,15 +258,17 @@ const RowHandle = ({
 }) => (
   <Box
     position="absolute"
-    left={`${rect.left - HANDLE_OFFSET_PX}px`}
-    top={`${rect.top + (rect.height - HANDLE_SIZE_PX) / 2}px`}
+    left={`${rect.left - ROW_HANDLE.w / 2}px`}
+    top={`${rect.top + (rect.height - ROW_HANDLE.h) / 2}px`}
+    w={`${GRIP_SHORT_PX}px`}
+    h={`${GRIP_LONG_PX}px`}
     {...handleStyle}
     onMouseDown={onMouseDown}
     title="Drag to reorder row"
     aria-label="Drag to reorder row"
     role="button"
   >
-    {GRIP}
+    <GripIcon />
   </Box>
 )
 
@@ -226,15 +281,17 @@ const ColumnHandle = ({
 }) => (
   <Box
     position="absolute"
-    top={`${rect.top - HANDLE_OFFSET_PX}px`}
-    left={`${rect.left + (rect.width - HANDLE_SIZE_PX) / 2}px`}
+    top={`${rect.top - COL_HANDLE.h / 2}px`}
+    left={`${rect.left + (rect.width - COL_HANDLE.w) / 2}px`}
+    w={`${GRIP_LONG_PX}px`}
+    h={`${GRIP_SHORT_PX}px`}
     {...handleStyle}
     onMouseDown={onMouseDown}
     title="Drag to reorder column"
     aria-label="Drag to reorder column"
     role="button"
   >
-    {GRIP}
+    <GripIcon rotate />
   </Box>
 )
 
@@ -249,9 +306,8 @@ const ColumnHandle = ({
  *
  * Locked design (see the ticket's `## Answer`): grip handles appear only on
  * hover (not always-visible); a drop-indicator line renders at the nearest
- * row/column boundary while dragging; the header row itself is NOT
- * draggable (no handle for row index 0), but header columns remain
- * draggable like any other column.
+ * row/column boundary while dragging. The header row is draggable like any
+ * other row, and header columns are draggable like any other column.
  *
  * Three bugs found and fixed while verifying the prototype (still apply
  * here):
@@ -348,7 +404,6 @@ export const TableDragHandles = ({
         let rowHit: number | null = null
         geometry.rowRects.forEach((rect, i) => {
           if (!rect) return
-          if (i === 0) return // header row is not draggable — no hover handle either
           const top = rect.top + containerRect.top
           const bottom = top + rect.height
           const left = rect.left + containerRect.left
@@ -367,7 +422,15 @@ export const TableDragHandles = ({
         const headerRowRect = geometry.rowRects[0]
         if (headerRowRect) {
           const headerTop = headerRowRect.top + containerRect.top
-          const headerBottom = headerTop + headerRowRect.height
+          // The column handle always renders above the header row, but it
+          // should stay visible while hovering ANY row of the table (not
+          // just the header row) — so the hit band spans the full table
+          // height, not just the header row's own height.
+          const tableRects = geometry.rowRects.filter((r): r is Rect => !!r)
+          const lastRowRect = tableRects[tableRects.length - 1]
+          const tableBottom = lastRowRect
+            ? lastRowRect.top + lastRowRect.height + containerRect.top
+            : headerTop + headerRowRect.height
           geometry.colRects.forEach((rect, i) => {
             if (!rect) return
             const left = rect.left + containerRect.left
@@ -376,7 +439,7 @@ export const TableDragHandles = ({
               clientX >= left &&
               clientX <= right &&
               clientY >= headerTop - HANDLE_MARGIN_PX &&
-              clientY <= headerBottom
+              clientY <= tableBottom
             ) {
               colHit = i
             }
@@ -534,7 +597,6 @@ export const TableDragHandles = ({
     <>
       {rowRects.map((rect, i) => {
         if (!rect) return null
-        if (i === 0) return null // header row not draggable
         const isHovered = hoverRow === i
         const isDragging = drag?.axis === "row" && drag.from === i
         if (!isHovered && !isDragging) return null

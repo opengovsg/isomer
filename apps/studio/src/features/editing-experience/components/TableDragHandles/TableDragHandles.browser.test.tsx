@@ -127,19 +127,12 @@ describe("TableDragHandles", () => {
     expect(getCellText(editor)[3]).toBe("Row 1, A")
   })
 
-  it("does not reveal a row handle when hovering the header row", async () => {
-    const { container, queryByLabelText } = await renderHarness()
+  it("reveals a row handle when hovering the header row", async () => {
+    const { container, getByLabelText } = await renderHarness()
 
     const headerCell = findByCellText(container, "Column A")
     const { x, y } = centreOf(headerCell)
-    hoverAt(x, y)
-    // Give the (initially all-zero) rect measurement time to settle and any
-    // (incorrect) handle a chance to mount before asserting its absence.
-    await new Promise((resolve) => setTimeout(resolve, 100))
-    hoverAt(x, y)
-    await new Promise((resolve) => setTimeout(resolve, 50))
-
-    expect(queryByLabelText("Drag to reorder row")).toBeNull()
+    await hoverUntil(x, y, () => getByLabelText("Drag to reorder row"))
   })
 
   it("reveals a column handle when hovering a column header", async () => {
