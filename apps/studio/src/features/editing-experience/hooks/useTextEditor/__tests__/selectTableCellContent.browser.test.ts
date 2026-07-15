@@ -1,6 +1,3 @@
-/**
- * @vitest-environment jsdom
- */
 import type { JSONContent } from "@tiptap/react"
 import { Editor } from "@tiptap/react"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
