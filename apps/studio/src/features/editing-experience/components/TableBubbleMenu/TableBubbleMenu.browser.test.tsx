@@ -309,6 +309,90 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete column")).toBeNull()
   })
 
+  it("applies a background colour from the inline swatches", async () => {
+    // Arrange
+    const { editor, findByRole, findByText, container } = await renderHarness()
+    selectCells(editor, 3, 7)
+
+    // Act — label is plain text; swatches sit underneath and are immediately
+    // available (no navigate-away submenu).
+    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByText("Merge cells")).toBeTruthy()
+    const blueSwatch = await findByRole("button", { name: "Blue" })
+    act(() => {
+      blueSwatch.click()
+    })
+
+    // Assert
+    await waitFor(() => {
+      expect(
+        container.querySelector(
+          "td.selectedCell[data-background-color='blue']",
+        ),
+      ).not.toBeNull()
+    })
+    expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
+  })
+
+  it("hides Background colour for a header row selection", async () => {
+    // Arrange
+    const { editor, findByText, queryByText } = await renderHarness()
+
+    // Act
+    selectCells(editor, 0, 2)
+    await findByText("Add row above")
+
+    // Assert
+    expect(queryByText("Background colour")).toBeNull()
+  })
+
+  it("shows Background colour for a body row selection", async () => {
+    // Arrange
+    const { editor, findByText } = await renderHarness()
+
+    // Act
+    selectCells(editor, 3, 5)
+
+    // Assert
+    expect(await findByText("Background colour")).toBeTruthy()
+  })
+
+  it("keeps action buttons and colour swatches visible together", async () => {
+    // Arrange
+    const { editor, findByText, findByRole } = await renderHarness()
+    selectCells(editor, 3, 7)
+
+    // Assert — colour section is inline; row/merge actions stay visible
+    expect(await findByText("Merge cells")).toBeTruthy()
+    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
+  })
+
+  it("shows actions again after the menu hides during cell drag", async () => {
+    // Arrange
+    const { editor, findByText, queryByText } = await renderHarness()
+    selectCells(editor, 3, 7)
+    expect(await findByText("Merge cells")).toBeTruthy()
+    expect(await findByText("Background colour")).toBeTruthy()
+
+    // Act
+    act(() => {
+      editor.view.dispatch(
+        editor.state.tr.setMeta(tableEditingKey, nthCellPos(editor, 3)),
+      )
+    })
+    await waitFor(() => {
+      expect(queryByText("Merge cells")).toBeNull()
+    })
+    act(() => {
+      editor.view.dispatch(editor.state.tr.setMeta(tableEditingKey, -1))
+    })
+
+    // Assert
+    expect(await findByText("Merge cells")).toBeTruthy()
+    expect(await findByText("Background colour")).toBeTruthy()
+  })
+
   it("shows no menu content for a plain cursor outside any selection", async () => {
     const { queryByText } = await renderHarness()
 
@@ -317,11 +401,11 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Add row above")).toBeNull()
   })
 
-  it("shows Split cell for a single cell that came from a merge, and nothing for an ordinary single cell", async () => {
+  it("shows Split cell for a merged cell, and Background colour for an ordinary body cell", async () => {
     const { editor, findByText, queryByText } = await renderHarness()
 
     // Merge two adjacent body cells into one, then re-select just that
-    // resulting cell — the only single-cell case with a bubble menu.
+    // resulting cell — structural action is Split; colour still applies.
     selectCells(editor, 3, 4)
     act(() => {
       editor.chain().focus().mergeCells().run()
@@ -330,11 +414,18 @@ describe("TableBubbleMenu", () => {
 
     expect(await findByText("Split cell")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
+    expect(await findByText("Background colour")).toBeTruthy()
 
-    // An ordinary (never-merged) single cell still shows no menu at all.
+    // An ordinary (never-merged) body cell shows colour only.
     selectCells(editor, 6, 6)
+    expect(await findByText("Background colour")).toBeTruthy()
     expect(queryByText("Split cell")).toBeNull()
     expect(queryByText("Merge cells")).toBeNull()
+
+    // A single header cell has neither structural actions nor colour.
+    selectCells(editor, 0, 0)
+    expect(queryByText("Background colour")).toBeNull()
+    expect(queryByText("Split cell")).toBeNull()
   })
 
   it("does not show Superscript/Subscript when the text cursor is inside a cell", async () => {

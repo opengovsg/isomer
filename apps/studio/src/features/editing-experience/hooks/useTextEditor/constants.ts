@@ -1,5 +1,9 @@
 import type { Level } from "@tiptap/extension-heading"
 import type { Extensions } from "@tiptap/react"
+import {
+  getTableCellBackgroundColorHex,
+  isTableCellBackgroundColorToken,
+} from "@opengovsg/isomer-components"
 import { Bold } from "@tiptap/extension-bold"
 import { BulletList } from "@tiptap/extension-bullet-list"
 import { Document } from "@tiptap/extension-document"
@@ -118,6 +122,29 @@ export const IsomerTable = Table.extend({
 
 export const IsomerTableCell = TableCell.extend({
   content: "(paragraph|list)+",
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      backgroundColor: {
+        default: null,
+        parseHTML: (element) => {
+          const value = element.getAttribute("data-background-color")
+          return isTableCellBackgroundColorToken(value) ? value : null
+        },
+        renderHTML: (attributes) => {
+          if (!isTableCellBackgroundColorToken(attributes.backgroundColor)) {
+            return {}
+          }
+          const hex = getTableCellBackgroundColorHex(attributes.backgroundColor)
+          if (!hex) return {}
+          return {
+            "data-background-color": attributes.backgroundColor,
+            style: `background-color: ${hex}`,
+          }
+        },
+      },
+    }
+  },
 })
 
 export const IsomerTableHeader = TableHeader.extend({

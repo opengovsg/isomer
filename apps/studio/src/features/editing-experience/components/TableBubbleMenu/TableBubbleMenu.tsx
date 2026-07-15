@@ -1,7 +1,11 @@
 import type { Editor } from "@tiptap/react"
 import type { ReactElement, ReactNode } from "react"
-import { Divider, Flex, Text, VStack } from "@chakra-ui/react"
+import { Box, Divider, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
+import {
+  TABLE_CELL_BACKGROUND_COLORS,
+  TABLE_CELL_BACKGROUND_COLOR_TOKENS,
+} from "@opengovsg/isomer-components"
 import { PluginKey } from "@tiptap/pm/state"
 import {
   CellSelection,
@@ -40,14 +44,18 @@ import {
   selectionIncludesHeaderRow,
   type SelectionKind,
 } from "./TableBubbleMenu.utils"
+import {
+  getUniformBodyCellBackgroundColor,
+  setSelectedBodyCellsBackgroundColor,
+} from "./tableCellBackgroundColor"
 
 export interface TableBubbleMenuProps {
   editor: Editor
 }
 
-// A single selected cell that came from a previous merge (colspan/rowspan >
-// 1) is the only single-cell case that shows a bubble menu — "Split cell" is
-// its sole way back. Ordinary single cells stay menu-less.
+// Single-cell selections: an ordinary body cell shows the menu for background
+// colour; a merged cell (colspan/rowspan > 1) also gets "Split cell"; a plain
+// header cell stays menu-less (no colour, no structural action).
 //
 // NOTE: this can't be driven off `selectedRect`'s width/height — those are in
 // TableMap grid units, which count a colspan-2 cell as spanning 2 columns
@@ -72,9 +80,16 @@ const isMergedCell = (rect: ReturnType<typeof selectedRect>): boolean => {
 // (apps/studio/src/pages/prototype/rte-table-bubble-menu.tsx) — see
 // .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md for
 // the content matrix this drives.
-const detectSelectionType = (editor: Editor): SelectionKind => {
+//
+// `hasBodyCell` is the inverse of `allCellsAreHeaders` from the same walk, so
+// colour affordances do not need a second `forEachCell` pass.
+const detectSelectionType = (
+  editor: Editor,
+): { kind: SelectionKind; hasBodyCell: boolean } => {
   const { selection } = editor.state
-  if (!(selection instanceof CellSelection)) return "none"
+  if (!(selection instanceof CellSelection)) {
+    return { kind: "none", hasBodyCell: false }
+  }
 
   const rect = selectedRect(editor.state)
 
@@ -84,17 +99,20 @@ const detectSelectionType = (editor: Editor): SelectionKind => {
   })
 
   const selectsSingleCellNode = isSingleCellSelection(selection)
-  return getTableSelectionKind({
-    spansEntireTableWidth: rect.left === 0 && rect.right === rect.map.width,
-    spansEntireTableHeight: rect.top === 0 && rect.bottom === rect.map.height,
-    allCellsAreHeaders: allHeader,
-    // Exactly the first row/column (half-open span of 1). Broader selections
-    // that merely overlap that edge stay ordinary row/column kinds.
-    isTopRow: rect.top === 0 && rect.bottom === 1,
-    isLeftmostColumn: rect.left === 0 && rect.right === 1,
-    selectsSingleCellNode,
-    selectedCellIsMerged: selectsSingleCellNode && isMergedCell(rect),
-  })
+  return {
+    kind: getTableSelectionKind({
+      spansEntireTableWidth: rect.left === 0 && rect.right === rect.map.width,
+      spansEntireTableHeight: rect.top === 0 && rect.bottom === rect.map.height,
+      allCellsAreHeaders: allHeader,
+      // Exactly the first row/column (half-open span of 1). Broader selections
+      // that merely overlap that edge stay ordinary row/column kinds.
+      isTopRow: rect.top === 0 && rect.bottom === 1,
+      isLeftmostColumn: rect.left === 0 && rect.right === 1,
+      selectsSingleCellNode,
+      selectedCellIsMerged: selectsSingleCellNode && isMergedCell(rect),
+    }),
+    hasBodyCell: !allHeader,
+  }
 }
 
 // Move a selected block of rows/columns by swapping the adjacent neighbour
@@ -199,6 +217,7 @@ const ActionButton = ({
     size="xs"
     variant="clear"
     colorScheme="neutral"
+    onMouseDown={(event) => event.preventDefault()}
     onClick={onClick}
     leftIcon={icon}
     w="100%"
@@ -220,6 +239,92 @@ const ActionGroup = ({ children }: { children: ReactNode }) => (
 const ActionDivider = () => (
   <Divider borderColor="base.divider.medium" my="0.25rem" opacity={1} />
 )
+
+const colourSwatchLabel = (color: string) =>
+  `${color.charAt(0).toUpperCase()}${color.slice(1)}`
+
+const ColourSwatch = ({
+  label,
+  backgroundColor,
+  isActive,
+  onClick,
+  hasSlash = false,
+}: {
+  label: string
+  backgroundColor: string
+  isActive: boolean
+  onClick: () => void
+  hasSlash?: boolean
+}) => (
+  <Button
+    variant="unstyled"
+    position="relative"
+    display="inline-flex"
+    alignItems="center"
+    justifyContent="center"
+    boxSize="1.75rem"
+    minW="1.75rem"
+    minH="1.75rem"
+    p="0"
+    flexShrink={0}
+    borderRadius="full"
+    overflow="hidden"
+    aria-label={label}
+    backgroundColor={backgroundColor}
+    border="2px solid"
+    borderColor={isActive ? "interaction.main.default" : "base.divider.medium"}
+    onMouseDown={(event) => event.preventDefault()}
+    onClick={onClick}
+  >
+    {hasSlash && (
+      <Box
+        as="span"
+        aria-hidden
+        position="absolute"
+        w="140%"
+        h="1.5px"
+        bg="base.divider.strong"
+        transform="rotate(-45deg)"
+      />
+    )}
+  </Button>
+)
+
+// Label + swatches inline — no navigate-away submenu. Text sizing matches
+// ActionButton (subhead-2); padding aligns with HeaderToggle / ActionButton.
+const BackgroundColourSection = ({
+  editor,
+  selection,
+}: {
+  editor: Editor
+  selection: CellSelection
+}) => {
+  const activeColor = getUniformBodyCellBackgroundColor(selection)
+
+  return (
+    <VStack align="stretch" gap="0.375rem" px="15px" py="0.375rem">
+      <Text textStyle="subhead-2">Background colour</Text>
+      <Flex gap="0.375rem" align="center" wrap="wrap">
+        <ColourSwatch
+          label="None"
+          backgroundColor="base.canvas.default"
+          isActive={activeColor === null}
+          hasSlash
+          onClick={() => setSelectedBodyCellsBackgroundColor(editor, null)}
+        />
+        {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
+          <ColourSwatch
+            key={color}
+            label={colourSwatchLabel(color)}
+            backgroundColor={TABLE_CELL_BACKGROUND_COLORS[color]}
+            isActive={activeColor === color}
+            onClick={() => setSelectedBodyCellsBackgroundColor(editor, color)}
+          />
+        ))}
+      </Flex>
+    </VStack>
+  )
+}
 
 // Label + switch — one control for set/unset instead of separate action
 // buttons. TipTap toolbar pattern: preventDefault on mousedown so the click
@@ -474,8 +579,8 @@ const TableSelectionActions = ({
 // across renders is what breaks that loop. See
 // .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
 //
-// Only CellSelections that have table actions (row/column/table/merge/split)
-// show the menu. A plain text cursor inside a cell must not.
+// CellSelections with table actions (row/column/table/merge/split) or body-cell
+// colour show the menu. A plain text cursor inside a cell must not.
 // Require editor (or menu) focus — TipTap's default shouldShow does this.
 //
 // Also stay hidden while prosemirror-tables is mid cell-drag
@@ -492,8 +597,10 @@ const shouldShowTableBubbleMenu = ({
 }) => {
   if (tableEditingKey.getState(view.state) != null) return false
 
-  const kind = detectSelectionType(editor)
-  if (kind === "none" || kind === "single-cell") return false
+  const { kind, hasBodyCell } = detectSelectionType(editor)
+  if (kind === "none") return false
+  // Ordinary single cells only surface when colour can apply (body cells).
+  if (kind === "single-cell" && !hasBodyCell) return false
 
   const isChildOfMenu = element.contains(document.activeElement)
   return view.hasFocus() || isChildOfMenu
@@ -586,13 +693,17 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // TipTap's selector replaces manual event subscriptions. Document identity
   // represents `update`; Selection.eq represents `selectionUpdate`. Meta-only
   // blur/focus transactions compare equal and therefore do not re-render.
-  const { kind } = useEditorState({
+  const { kind, hasBodyCell } = useEditorState({
     editor,
-    selector: ({ editor: currentEditor }) => ({
-      kind: detectSelectionType(currentEditor),
-      doc: currentEditor.state.doc,
-      selection: currentEditor.state.selection,
-    }),
+    selector: ({ editor: currentEditor }) => {
+      const detection = detectSelectionType(currentEditor)
+      return {
+        kind: detection.kind,
+        hasBodyCell: detection.hasBodyCell,
+        doc: currentEditor.state.doc,
+        selection: currentEditor.state.selection,
+      }
+    },
     equalityFn: (previous, next) =>
       next !== null &&
       previous.doc === next.doc &&
@@ -603,6 +714,18 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
   // (or an explicit hide while selecting) force hide/reveal.
   useTableBubbleMenuDragSync(editor)
+
+  const selection = editor.state.selection
+  const canSetBackgroundColour =
+    (kind === "multi-cell" ||
+      kind === "row" ||
+      kind === "column" ||
+      kind === "single-cell" ||
+      kind === "merged-cell") &&
+    hasBodyCell &&
+    selection instanceof CellSelection
+  // Single-cell body selections only expose colour — skip the leading divider.
+  const hasSelectionActions = kind !== "none" && kind !== "single-cell"
 
   return (
     <BubbleMenu
@@ -626,6 +749,12 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
         gap="0"
       >
         <TableSelectionActions editor={editor} kind={kind} />
+        {canSetBackgroundColour && (
+          <>
+            {hasSelectionActions && <ActionDivider />}
+            <BackgroundColourSection editor={editor} selection={selection} />
+          </>
+        )}
       </VStack>
     </BubbleMenu>
   )

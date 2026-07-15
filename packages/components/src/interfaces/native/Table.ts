@@ -1,6 +1,7 @@
 import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
+import { TABLE_CELL_BACKGROUND_COLOR_TOKENS } from "~/constants/tableCellBackgroundColor"
 
 import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
@@ -10,7 +11,7 @@ import { OrderedListSchema } from "./OrderedList"
 import { ParagraphSchema } from "./Paragraph"
 import { UnorderedListSchema } from "./UnorderedList"
 
-const TableBaseCellSchema = Type.Object({
+export const TableBaseCellSchema = Type.Object({
   colspan: Type.Optional(
     Type.Integer({
       title: "Table cell column span",
@@ -24,6 +25,22 @@ const TableBaseCellSchema = Type.Object({
       description: "The number of rows the cell spans",
       minimum: 1,
     }),
+  ),
+  backgroundColor: Type.Optional(
+    Type.Union(
+      [
+        ...TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((token) =>
+          Type.Literal(token),
+        ),
+        // TipTap persists the unset default as null on every cell in getJSON()
+        Type.Null(),
+      ],
+      {
+        title: "Table cell background colour",
+        description:
+          "Semantic background colour token for a body cell. Header cells should not use this.",
+      },
+    ),
   ),
 })
 
