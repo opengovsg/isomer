@@ -2,9 +2,20 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
 import { Box, Icon } from "@chakra-ui/react"
-import { moveTableColumn, moveTableRow, TableMap } from "@tiptap/pm/tables"
+import {
+  CellSelection,
+  moveTableColumn,
+  moveTableRow,
+  selectedRect,
+  TableMap,
+} from "@tiptap/pm/tables"
+import { useEditorState } from "@tiptap/react"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { BiGridVertical } from "react-icons/bi"
+import {
+  hideTableBubbleMenu,
+  revealTableBubbleMenu,
+} from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 
 export interface TableDragHandlesProps {
   editor: TiptapEditor | null
@@ -147,6 +158,55 @@ interface DragState {
   boundaries: number[]
 }
 
+/**
+ * Pointer-down on a handle that has not yet crossed the drag threshold. A
+ * release without crossing selects the whole row/column; crossing promotes
+ * this into a real `DragState` for reorder.
+ */
+interface PendingGesture {
+  axis: "row" | "column"
+  from: number
+  tablePos: number
+  startClientX: number
+  startClientY: number
+  boundaries: number[]
+}
+
+/** Movement past this (in CSS px) turns a handle click into a drag-reorder. */
+const DRAG_THRESHOLD_PX = 4
+
+const selectWholeRow = (
+  editor: TiptapEditor,
+  tablePos: number,
+  rowIndex: number,
+) => {
+  const table = editor.state.doc.nodeAt(tablePos)
+  if (!table || table.type.name !== "table") return
+  const map = TableMap.get(table)
+  const cellPos = tablePos + 1 + map.positionAt(rowIndex, 0, table)
+  const selection = CellSelection.rowSelection(
+    editor.state.doc.resolve(cellPos),
+  )
+  editor.view.dispatch(editor.state.tr.setSelection(selection))
+  editor.view.focus()
+}
+
+const selectWholeColumn = (
+  editor: TiptapEditor,
+  tablePos: number,
+  colIndex: number,
+) => {
+  const table = editor.state.doc.nodeAt(tablePos)
+  if (!table || table.type.name !== "table") return
+  const map = TableMap.get(table)
+  const cellPos = tablePos + 1 + map.positionAt(0, colIndex, table)
+  const selection = CellSelection.colSelection(
+    editor.state.doc.resolve(cellPos),
+  )
+  editor.view.dispatch(editor.state.tr.setSelection(selection))
+  editor.view.focus()
+}
+
 const nearestBoundaryIndex = (pointer: number, boundaries: number[]) => {
   let closest = 0
   let closestDist = Infinity
@@ -179,6 +239,9 @@ const HANDLE_BORDER_PX = 1
  */
 const GRIP_SHORT_PX = 8
 const GRIP_LONG_PX = 12
+/** Passive rail — shorter/thinner than the grip chip so it reads as quiet. */
+const PASSIVE_ROW_PX = { w: 3, h: 10 }
+const PASSIVE_COL_PX = { w: 10, h: 3 }
 /** Outer size = icon + equal padding + border on each side. */
 const outerSize = (contentW: number, contentH: number) => ({
   w: contentW + HANDLE_PADDING_PX * 2 + HANDLE_BORDER_PX * 2,
@@ -186,23 +249,102 @@ const outerSize = (contentW: number, contentH: number) => ({
 })
 const ROW_HANDLE = outerSize(GRIP_SHORT_PX, GRIP_LONG_PX)
 const COL_HANDLE = outerSize(GRIP_LONG_PX, GRIP_SHORT_PX)
-/** Stable empty rect list — avoids a fresh `[]` each render breaking useMemo deps. */
+/** Stable empty lists — avoids a fresh `[]` each render breaking useMemo deps. */
 const EMPTY_RECTS: (Rect | null)[] = []
+const EMPTY_INDEXES: number[] = []
+const EMPTY_GEOMETRIES: TableGeometry[] = []
 
-const handleStyle = {
+type HandleVisualState = "passive" | "hover" | "selected" | "dragging"
+
+/**
+ * Which row/column handles should stay in the selected visual from the
+ * current `CellSelection`. Whole-table selections are ignored — those don't
+ * map to a single row/column handle.
+ */
+const getSelectionHandleTarget = (
+  editor: TiptapEditor,
+): { tablePos: number; rows: number[]; cols: number[] } | null => {
+  const { selection } = editor.state
+  if (!(selection instanceof CellSelection)) return null
+
+  const isRow = selection.isRowSelection()
+  const isCol = selection.isColSelection()
+  if ((isRow && isCol) || (!isRow && !isCol)) return null
+
+  const rect = selectedRect(editor.state)
+  const tablePos = rect.tableStart - 1
+  if (isRow) {
+    const rows: number[] = []
+    for (let r = rect.top; r < rect.bottom; r++) rows.push(r)
+    return { tablePos, rows, cols: EMPTY_INDEXES }
+  }
+  const cols: number[] = []
+  for (let c = rect.left; c < rect.right; c++) cols.push(c)
+  return { tablePos, rows: EMPTY_INDEXES, cols }
+}
+
+const resolveHandleState = ({
+  isSelected,
+  isDragging,
+  pointerOnHandle,
+}: {
+  isSelected: boolean
+  isDragging: boolean
+  pointerOnHandle: boolean
+}): HandleVisualState => {
+  if (isDragging) return "dragging"
+  if (isSelected) return "selected"
+  if (pointerOnHandle) return "hover"
+  return "passive"
+}
+
+const selectedChrome = {
+  bg: "interaction.main.default",
+  borderColor: "interaction.main.default",
+  color: "base.content.inverse",
+} as const
+
+const handleChromeByState = (state: HandleVisualState) => {
+  switch (state) {
+    case "passive":
+      return {
+        bg: "transparent",
+        borderColor: "transparent",
+        color: "base.content.medium",
+        cursor: "pointer",
+      }
+    case "hover":
+      return {
+        bg: "base.canvas.default",
+        borderColor: "base.divider.strong",
+        color: "base.content.medium",
+        cursor: "grab",
+      }
+    case "selected":
+      return {
+        ...selectedChrome,
+        cursor: "grab",
+      }
+    case "dragging":
+      return {
+        ...selectedChrome,
+        cursor: "grabbing",
+      }
+  }
+}
+
+const handleBaseStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  cursor: "grab",
-  color: "base.content.medium",
-  bg: "base.canvas.default",
   border: `${HANDLE_BORDER_PX}px solid`,
-  borderColor: "interaction.main.default",
   borderRadius: "0.25rem",
   userSelect: "none",
   zIndex: "2",
   // `content-box` so the declared w/h are the icon's paint box; equal
   // padding and the border sit outside that, keeping breathing room even.
+  // Hit box size is identical across states so the target doesn't jump
+  // under the cursor when the chrome changes.
   boxSizing: "content-box",
   p: `${HANDLE_PADDING_PX}px`,
   lineHeight: 0,
@@ -249,12 +391,36 @@ const GripIcon = ({ rotate }: { rotate?: boolean }) => {
   )
 }
 
+const PassiveRail = ({ axis }: { axis: "row" | "column" }) => {
+  const size = axis === "row" ? PASSIVE_ROW_PX : PASSIVE_COL_PX
+  return (
+    <Box
+      w={`${size.w}px`}
+      h={`${size.h}px`}
+      bg="base.content.medium"
+      borderRadius="1px"
+      opacity={0.55}
+      aria-hidden
+    />
+  )
+}
+
 const RowHandle = ({
   rect,
+  state,
+  tablePos,
+  index,
   onMouseDown,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   rect: Rect
+  state: HandleVisualState
+  tablePos: number
+  index: number
   onMouseDown: (e: React.MouseEvent) => void
+  onMouseEnter: () => void
+  onMouseLeave: () => void
 }) => (
   <Box
     position="absolute"
@@ -262,22 +428,39 @@ const RowHandle = ({
     top={`${rect.top + (rect.height - ROW_HANDLE.h) / 2}px`}
     w={`${GRIP_SHORT_PX}px`}
     h={`${GRIP_LONG_PX}px`}
-    {...handleStyle}
+    {...handleBaseStyle}
+    {...handleChromeByState(state)}
     onMouseDown={onMouseDown}
-    title="Drag to reorder row"
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
+    title="Select or drag to reorder row"
     aria-label="Drag to reorder row"
     role="button"
+    data-state={state}
+    data-table-drag-handle="row"
+    data-table-pos={tablePos}
+    data-index={index}
   >
-    <GripIcon />
+    {state === "passive" ? <PassiveRail axis="row" /> : <GripIcon />}
   </Box>
 )
 
 const ColumnHandle = ({
   rect,
+  state,
+  tablePos,
+  index,
   onMouseDown,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   rect: Rect
+  state: HandleVisualState
+  tablePos: number
+  index: number
   onMouseDown: (e: React.MouseEvent) => void
+  onMouseEnter: () => void
+  onMouseLeave: () => void
 }) => (
   <Box
     position="absolute"
@@ -285,13 +468,20 @@ const ColumnHandle = ({
     left={`${rect.left + (rect.width - COL_HANDLE.w) / 2}px`}
     w={`${GRIP_LONG_PX}px`}
     h={`${GRIP_SHORT_PX}px`}
-    {...handleStyle}
+    {...handleBaseStyle}
+    {...handleChromeByState(state)}
     onMouseDown={onMouseDown}
-    title="Drag to reorder column"
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
+    title="Select or drag to reorder column"
     aria-label="Drag to reorder column"
     role="button"
+    data-state={state}
+    data-table-drag-handle="column"
+    data-table-pos={tablePos}
+    data-index={index}
   >
-    <GripIcon rotate />
+    {state === "passive" ? <PassiveRail axis="column" /> : <GripIcon rotate />}
   </Box>
 )
 
@@ -304,10 +494,17 @@ const ColumnHandle = ({
  * `TableCaption`) instead of the prototype's `position: fixed` viewport
  * coordinates.
  *
- * Locked design (see the ticket's `## Answer`): grip handles appear only on
- * hover (not always-visible); a drop-indicator line renders at the nearest
- * row/column boundary while dragging. The header row is draggable like any
- * other row, and header columns are draggable like any other column.
+ * Handle chrome has four visual states:
+ * - `passive` — pointer over a cell (not the handle): short grey rail
+ * - `hover` — pointer over the handle before selecting: grip chip with grey border
+ * - `selected` — clicked: blue filled chip + white grip; whole row/column is
+ *   a `CellSelection` (bubble menu can show)
+ * - `dragging` — pointer past the drag threshold: same chrome as selected
+ *   with a closed-hand cursor; bubble menu stays hidden
+ *
+ * A click (pointer-up without crossing the drag threshold) selects the whole
+ * row/column; a real drag still reorders. Drop-indicator line at the nearest
+ * boundary while dragging. Header row/columns are draggable like any other.
  *
  * Three bugs found and fixed while verifying the prototype (still apply
  * here):
@@ -333,10 +530,42 @@ export const TableDragHandles = ({
   const [hoverTablePos, setHoverTablePos] = useState<number | null>(null)
   const [hoverRow, setHoverRow] = useState<number | null>(null)
   const [hoverCol, setHoverCol] = useState<number | null>(null)
+  const [pointerOnRowHandle, setPointerOnRowHandle] = useState(false)
+  const [pointerOnColHandle, setPointerOnColHandle] = useState(false)
   const [drag, setDrag] = useState<DragState | null>(null)
   const dragRef = useRef<DragState | null>(null)
+  const pendingRef = useRef<PendingGesture | null>(null)
 
   const [geometries, setGeometries] = useState<TableGeometry[]>([])
+
+  // Selection-driven selected chrome must survive the pointer leaving the
+  // handle (the bubble menu may cover it). Document + selection identity
+  // keeps meta-only blur/focus traffic from forcing a re-render.
+  const selectionTarget = useEditorState({
+    editor,
+    selector: ({ editor: current }) =>
+      current ? getSelectionHandleTarget(current) : null,
+    equalityFn: (previous, next) => {
+      if (previous === next) return true
+      if (!previous || !next) return false
+      if (previous.tablePos !== next.tablePos) return false
+      if (previous.rows.length !== next.rows.length) return false
+      if (previous.cols.length !== next.cols.length) return false
+      return (
+        previous.rows.every((r, i) => r === next.rows[i]) &&
+        previous.cols.every((c, i) => c === next.cols[i])
+      )
+    },
+  })
+
+  // Moving to a different hovered row/col remounts a different handle —
+  // clear "pointer on handle" so the new one starts in passive, not hover.
+  useEffect(() => {
+    setPointerOnRowHandle(false)
+  }, [hoverRow, hoverTablePos])
+  useEffect(() => {
+    setPointerOnColHandle(false)
+  }, [hoverCol, hoverTablePos])
 
   // Bug 1 fix: measure in useLayoutEffect (after DOM update, before paint),
   // not during render, and re-measure on every editor transaction so
@@ -390,7 +619,10 @@ export const TableDragHandles = ({
   // dead-zone margin, hiding the handle before the cursor can reach it.
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
-      if (dragRef.current) return
+      // Freeze hover while a handle gesture (pending click or active drag) is
+      // in flight — otherwise a tiny pointer wobble can clear the handle
+      // mid-click before mouseup selects the row/column.
+      if (dragRef.current || pendingRef.current) return
       const container = containerRef.current
       if (!container) return
       const containerRect = container.getBoundingClientRect()
@@ -463,61 +695,127 @@ export const TableDragHandles = ({
     return () => window.removeEventListener("mousemove", onMove)
   }, [geometries, containerRef])
 
-  const activeTablePos = drag?.tablePos ?? hoverTablePos
-  const activeGeometry =
-    geometries.find((g) => g.pos === activeTablePos) ?? null
-  const rowRects = activeGeometry?.rowRects ?? EMPTY_RECTS
-  const colRects = activeGeometry?.colRects ?? EMPTY_RECTS
+  const visibleGeometries = useMemo(() => {
+    const positions = new Set<number>()
+    if (drag) positions.add(drag.tablePos)
+    if (hoverTablePos !== null) positions.add(hoverTablePos)
+    if (selectionTarget) positions.add(selectionTarget.tablePos)
+    if (positions.size === 0) return EMPTY_GEOMETRIES
+    return geometries.filter((g) => positions.has(g.pos))
+  }, [drag, hoverTablePos, selectionTarget, geometries])
 
-  const startRowDrag = (rowIndex: number) => (e: React.MouseEvent) => {
-    e.preventDefault()
-    if (activeTablePos === null) return
-    const boundaries: number[] = []
-    rowRects.forEach((rect, i) => {
-      if (!rect) return
-      if (i === 0) boundaries.push(rect.top)
-      boundaries.push(rect.top + rect.height)
-    })
-    const container = containerRef.current
-    const containerTop = container?.getBoundingClientRect().top ?? 0
-    const state: DragState = {
-      axis: "row",
-      from: rowIndex,
-      tablePos: activeTablePos,
-      pointer: e.clientY - containerTop,
-      boundaries,
-    }
-    dragRef.current = state
-    setDrag(state)
-  }
+  // Boundaries / gesture start use the geometry of the table being
+  // interacted with (hover or selection), not an ambiguous "first visible".
+  const gestureTablePos =
+    drag?.tablePos ?? hoverTablePos ?? selectionTarget?.tablePos ?? null
+  const gestureGeometry =
+    geometries.find((g) => g.pos === gestureTablePos) ?? null
+  const gestureRowRects = gestureGeometry?.rowRects ?? EMPTY_RECTS
 
-  const startColDrag = (colIndex: number) => (e: React.MouseEvent) => {
-    e.preventDefault()
-    if (activeTablePos === null) return
-    const boundaries: number[] = []
-    colRects.forEach((rect, i) => {
-      if (!rect) return
-      if (i === 0) boundaries.push(rect.left)
-      boundaries.push(rect.left + rect.width)
-    })
-    const container = containerRef.current
-    const containerLeft = container?.getBoundingClientRect().left ?? 0
-    const state: DragState = {
-      axis: "column",
-      from: colIndex,
-      tablePos: activeTablePos,
-      pointer: e.clientX - containerLeft,
-      boundaries,
+  const beginRowGesture =
+    (tablePos: number, rowIndex: number, rowRects: (Rect | null)[]) =>
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      const boundaries: number[] = []
+      rowRects.forEach((rect, i) => {
+        if (!rect) return
+        if (i === 0) boundaries.push(rect.top)
+        boundaries.push(rect.top + rect.height)
+      })
+      pendingRef.current = {
+        axis: "row",
+        from: rowIndex,
+        tablePos,
+        startClientX: e.clientX,
+        startClientY: e.clientY,
+        boundaries,
+      }
     }
-    dragRef.current = state
-    setDrag(state)
-  }
+
+  const beginColGesture =
+    (tablePos: number, colIndex: number, colRects: (Rect | null)[]) =>
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      const boundaries: number[] = []
+      colRects.forEach((rect, i) => {
+        if (!rect) return
+        if (i === 0) boundaries.push(rect.left)
+        boundaries.push(rect.left + rect.width)
+      })
+      pendingRef.current = {
+        axis: "column",
+        from: colIndex,
+        tablePos,
+        startClientX: e.clientX,
+        startClientY: e.clientY,
+        boundaries,
+      }
+    }
+
+  // The handle's own `cursor: grabbing` only applies while the pointer is
+  // over that element. Once the drag leaves the hit box (or the editor
+  // container), elements underneath (cells, caption, etc.) reclaim their
+  // own cursor. Force grabbing on every node for the drag's duration.
+  useEffect(() => {
+    if (!drag) return
+    const style = document.createElement("style")
+    style.setAttribute("data-table-drag-handles-cursor", "")
+    style.textContent =
+      "*, *::before, *::after { cursor: grabbing !important; }"
+    document.head.appendChild(style)
+    return () => {
+      style.remove()
+    }
+  }, [drag])
+
+  // Hide the bubble menu while dragging; after drop the mouseup handler
+  // reselects the landed row/column and we reveal again (click-without-drag
+  // never sets `drag`, so a plain handle click still shows via selection).
+  const wasDraggingRef = useRef(false)
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return
+    if (drag) {
+      wasDraggingRef.current = true
+      hideTableBubbleMenu(editor)
+      return
+    }
+    if (!wasDraggingRef.current) return
+    wasDraggingRef.current = false
+    queueMicrotask(() => {
+      if (!editor.isDestroyed) revealTableBubbleMenu(editor)
+    })
+  }, [drag, editor])
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
-      const current = dragRef.current
       const container = containerRef.current
-      if (!current || !container) return
+      if (!container) return
+
+      const pending = pendingRef.current
+      if (pending && !dragRef.current) {
+        const dx = e.clientX - pending.startClientX
+        const dy = e.clientY - pending.startClientY
+        if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return
+
+        const containerRect = container.getBoundingClientRect()
+        const state: DragState = {
+          axis: pending.axis,
+          from: pending.from,
+          tablePos: pending.tablePos,
+          pointer:
+            pending.axis === "row"
+              ? e.clientY - containerRect.top
+              : e.clientX - containerRect.left,
+          boundaries: pending.boundaries,
+        }
+        pendingRef.current = null
+        dragRef.current = state
+        setDrag(state)
+        return
+      }
+
+      const current = dragRef.current
+      if (!current) return
       const containerRect = container.getBoundingClientRect()
       const pointer =
         current.axis === "row"
@@ -529,9 +827,22 @@ export const TableDragHandles = ({
     }
 
     const onMouseUp = () => {
+      const pending = pendingRef.current
+      pendingRef.current = null
       const current = dragRef.current
       dragRef.current = null
       setDrag(null)
+
+      // Click (no drag threshold crossed): highlight the whole row/column.
+      if (pending && editor) {
+        if (pending.axis === "row") {
+          selectWholeRow(editor, pending.tablePos, pending.from)
+        } else {
+          selectWholeColumn(editor, pending.tablePos, pending.from)
+        }
+        return
+      }
+
       if (!current || !editor) return
 
       const boundaryIndex = nearestBoundaryIndex(
@@ -539,26 +850,36 @@ export const TableDragHandles = ({
         current.boundaries,
       )
       const to = boundaryToTargetIndex(boundaryIndex, current.from)
-      if (to === current.from) return
-
-      // Bug 3 fix: `pos` must resolve to a position INSIDE the table
-      // (prosemirror-tables' `findTable` walks the resolved position's
-      // ancestor chain) — `table.pos` alone is the table's own opening
-      // boundary, one level too shallow, and the command silently returns
-      // `false`. `table.pos + 1` resolves just inside the table.
-      // Use the table captured at drag start — never re-resolve to the
-      // first table in the document.
-      if (current.axis === "row") {
-        moveTableRow({ from: current.from, to, pos: current.tablePos + 1 })(
-          editor.state,
-          editor.view.dispatch,
-        )
-        return
+      if (to !== current.from) {
+        // Bug 3 fix: `pos` must resolve to a position INSIDE the table
+        // (prosemirror-tables' `findTable` walks the resolved position's
+        // ancestor chain) — `table.pos` alone is the table's own opening
+        // boundary, one level too shallow, and the command silently returns
+        // `false`. `table.pos + 1` resolves just inside the table.
+        // Use the table captured at drag start — never re-resolve to the
+        // first table in the document.
+        if (current.axis === "row") {
+          moveTableRow({
+            from: current.from,
+            to,
+            pos: current.tablePos + 1,
+          })(editor.state, editor.view.dispatch)
+        } else {
+          moveTableColumn({
+            from: current.from,
+            to,
+            pos: current.tablePos + 1,
+          })(editor.state, editor.view.dispatch)
+        }
       }
-      moveTableColumn({ from: current.from, to, pos: current.tablePos + 1 })(
-        editor.state,
-        editor.view.dispatch,
-      )
+
+      // Reselect the landed row/column so the handle stays selected and the
+      // bubble menu can show after drop (same as a click-select).
+      if (current.axis === "row") {
+        selectWholeRow(editor, current.tablePos, to)
+      } else {
+        selectWholeColumn(editor, current.tablePos, to)
+      }
     }
 
     window.addEventListener("mousemove", onMouseMove)
@@ -576,50 +897,102 @@ export const TableDragHandles = ({
   }, [drag])
 
   const tableSpanX = useMemo(() => {
-    const first = rowRects.find((r) => r)
+    const first = gestureRowRects.find((r) => r)
     if (!first) return null
     return { left: first.left, width: first.width }
-  }, [rowRects])
+  }, [gestureRowRects])
 
   const tableSpanY = useMemo(() => {
-    const firstRow = rowRects.find((r) => r)
-    const lastRow = [...rowRects].reverse().find((r) => r)
+    const firstRow = gestureRowRects.find((r) => r)
+    const lastRow = [...gestureRowRects].reverse().find((r) => r)
     if (!firstRow || !lastRow) return null
     return {
       top: firstRow.top,
       height: lastRow.top + lastRow.height - firstRow.top,
     }
-  }, [rowRects])
+  }, [gestureRowRects])
 
   if (!editor) return null
 
   return (
     <>
-      {rowRects.map((rect, i) => {
-        if (!rect) return null
-        const isHovered = hoverRow === i
-        const isDragging = drag?.axis === "row" && drag.from === i
-        if (!isHovered && !isDragging) return null
-        return (
-          <RowHandle
-            key={`row-${activeTablePos}-${i}`}
-            rect={rect}
-            onMouseDown={startRowDrag(i)}
-          />
-        )
-      })}
+      {visibleGeometries.map((geometry) => {
+        const isHoverTable = hoverTablePos === geometry.pos
+        const selectionRows =
+          selectionTarget?.tablePos === geometry.pos
+            ? selectionTarget.rows
+            : EMPTY_INDEXES
+        const selectionCols =
+          selectionTarget?.tablePos === geometry.pos
+            ? selectionTarget.cols
+            : EMPTY_INDEXES
 
-      {colRects.map((rect, i) => {
-        if (!rect) return null
-        const isHovered = hoverCol === i
-        const isDragging = drag?.axis === "column" && drag.from === i
-        if (!isHovered && !isDragging) return null
         return (
-          <ColumnHandle
-            key={`col-${activeTablePos}-${i}`}
-            rect={rect}
-            onMouseDown={startColDrag(i)}
-          />
+          <Box key={`table-${geometry.pos}`} as="span" display="contents">
+            {geometry.rowRects.map((rect, i) => {
+              if (!rect) return null
+              const isHovered = isHoverTable && hoverRow === i
+              const isSelected = selectionRows.includes(i)
+              const isDragging =
+                drag?.axis === "row" &&
+                drag.tablePos === geometry.pos &&
+                drag.from === i
+              if (!isHovered && !isSelected && !isDragging) return null
+              const state = resolveHandleState({
+                isSelected,
+                isDragging,
+                pointerOnHandle: isHovered && pointerOnRowHandle,
+              })
+              return (
+                <RowHandle
+                  key={`row-${geometry.pos}-${i}`}
+                  rect={rect}
+                  state={state}
+                  tablePos={geometry.pos}
+                  index={i}
+                  onMouseDown={beginRowGesture(
+                    geometry.pos,
+                    i,
+                    geometry.rowRects,
+                  )}
+                  onMouseEnter={() => setPointerOnRowHandle(true)}
+                  onMouseLeave={() => setPointerOnRowHandle(false)}
+                />
+              )
+            })}
+
+            {geometry.colRects.map((rect, i) => {
+              if (!rect) return null
+              const isHovered = isHoverTable && hoverCol === i
+              const isSelected = selectionCols.includes(i)
+              const isDragging =
+                drag?.axis === "column" &&
+                drag.tablePos === geometry.pos &&
+                drag.from === i
+              if (!isHovered && !isSelected && !isDragging) return null
+              const state = resolveHandleState({
+                isSelected,
+                isDragging,
+                pointerOnHandle: isHovered && pointerOnColHandle,
+              })
+              return (
+                <ColumnHandle
+                  key={`col-${geometry.pos}-${i}`}
+                  rect={rect}
+                  state={state}
+                  tablePos={geometry.pos}
+                  index={i}
+                  onMouseDown={beginColGesture(
+                    geometry.pos,
+                    i,
+                    geometry.colRects,
+                  )}
+                  onMouseEnter={() => setPointerOnColHandle(true)}
+                  onMouseLeave={() => setPointerOnColHandle(false)}
+                />
+              )
+            })}
+          </Box>
         )
       })}
 

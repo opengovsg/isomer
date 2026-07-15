@@ -3,6 +3,7 @@
 // the `*.browser.test.{ts,tsx}` convention in apps/studio/vitest.config.ts.
 import type { Editor, JSONContent } from "@tiptap/react"
 import { act, fireEvent, render, waitFor } from "@testing-library/react"
+import { CellSelection } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { useRef } from "react"
 import { describe, expect, it } from "vitest"
@@ -113,7 +114,7 @@ const hoverUntil = async (
   })
 
 describe("TableDragHandles", () => {
-  it("reveals a row handle when hovering a data row", async () => {
+  it("reveals a passive row handle when hovering a data row", async () => {
     const { editor, container, queryByLabelText, getByLabelText } =
       await renderHarness()
 
@@ -121,10 +122,28 @@ describe("TableDragHandles", () => {
 
     const cell = findByCellText(container, "Row 1, A")
     const { x, y } = centreOf(cell)
-    await hoverUntil(x, y, () => getByLabelText("Drag to reorder row"))
+    const handle = await hoverUntil(x, y, () =>
+      getByLabelText("Drag to reorder row"),
+    )
+    expect(handle.getAttribute("data-state")).toBe("passive")
 
     // Sanity: hovering alone doesn't mutate the document.
     expect(getCellText(editor)[3]).toBe("Row 1, A")
+  })
+
+  it("promotes a row handle to hover when the pointer enters the handle", async () => {
+    const { container, getByLabelText } = await renderHarness()
+
+    const cell = findByCellText(container, "Row 1, A")
+    const { x, y } = centreOf(cell)
+    const handle = await hoverUntil(x, y, () =>
+      getByLabelText("Drag to reorder row"),
+    )
+
+    act(() => {
+      fireEvent.mouseEnter(handle)
+    })
+    expect(handle.getAttribute("data-state")).toBe("hover")
   })
 
   it("reveals a row handle when hovering the header row", async () => {
@@ -211,6 +230,110 @@ describe("TableDragHandles", () => {
     const cell = findByCellText(container, "Second-1-A")
     const { x, y } = centreOf(cell)
     await hoverUntil(x, y, () => getByLabelText("Drag to reorder row"))
+  })
+
+  it("clicking a row handle selects the entire row and becomes selected", async () => {
+    const { editor, container, getByLabelText } = await renderHarness()
+
+    const firstBodyCell = findByCellText(container, "Row 1, A")
+    const { x, y } = centreOf(firstBodyCell)
+    const handle = await hoverUntil(x, y, () =>
+      getByLabelText("Drag to reorder row"),
+    )
+    act(() => {
+      fireEvent.mouseEnter(handle)
+    })
+    expect(handle.getAttribute("data-state")).toBe("hover")
+
+    const handleCentre = centreOf(handle)
+
+    act(() => {
+      fireEvent.mouseDown(handle, {
+        clientX: handleCentre.x,
+        clientY: handleCentre.y,
+      })
+      fireEvent.mouseUp(document, {
+        clientX: handleCentre.x,
+        clientY: handleCentre.y,
+      })
+    })
+
+    const selection = editor.state.selection
+    expect(selection).toBeInstanceOf(CellSelection)
+    expect((selection as CellSelection).isRowSelection()).toBe(true)
+    expect((selection as CellSelection).isColSelection()).toBe(false)
+
+    const selectedTexts: string[] = []
+    ;(selection as CellSelection).forEachCell((node) => {
+      selectedTexts.push(node.textContent)
+    })
+    expect(selectedTexts).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    // A click must not reorder.
+    expect(getCellText(editor).slice(3, 6)).toEqual([
+      "Row 1, A",
+      "Row 1, B",
+      "Row 1, C",
+    ])
+
+    await waitFor(() => {
+      expect(
+        getByLabelText("Drag to reorder row").getAttribute("data-state"),
+      ).toBe("selected")
+    })
+  })
+
+  it("clicking a column handle selects the entire column and becomes selected", async () => {
+    const { editor, container, getByLabelText } = await renderHarness()
+
+    const headerCell = findByCellText(container, "Column B")
+    const { x, y } = centreOf(headerCell)
+    const handle = await hoverUntil(x, y - 20, () =>
+      getByLabelText("Drag to reorder column"),
+    )
+    act(() => {
+      fireEvent.mouseEnter(handle)
+    })
+    expect(handle.getAttribute("data-state")).toBe("hover")
+
+    const handleCentre = centreOf(handle)
+
+    act(() => {
+      fireEvent.mouseDown(handle, {
+        clientX: handleCentre.x,
+        clientY: handleCentre.y,
+      })
+      fireEvent.mouseUp(document, {
+        clientX: handleCentre.x,
+        clientY: handleCentre.y,
+      })
+    })
+
+    const selection = editor.state.selection
+    expect(selection).toBeInstanceOf(CellSelection)
+    expect((selection as CellSelection).isColSelection()).toBe(true)
+    expect((selection as CellSelection).isRowSelection()).toBe(false)
+
+    const selectedTexts: string[] = []
+    ;(selection as CellSelection).forEachCell((node) => {
+      selectedTexts.push(node.textContent)
+    })
+    expect(selectedTexts).toEqual([
+      "Column B",
+      "Row 1, B",
+      "Row 2, B",
+      "Row 3, B",
+    ])
+    expect(getCellText(editor).slice(0, 3)).toEqual([
+      "Column A",
+      "Column B",
+      "Column C",
+    ])
+
+    await waitFor(() => {
+      expect(
+        getByLabelText("Drag to reorder column").getAttribute("data-state"),
+      ).toBe("selected")
+    })
   })
 
   it("drags a data row to a new position and reorders the document", async () => {

@@ -469,6 +469,14 @@ const TableSelectionActions = ({
 // Also stay hidden while prosemirror-tables is mid cell-drag
 // (`tableEditingKey` is set in mousemove, cleared to null on mouseup) so the
 // menu only settles after the drag commits — not for every intermediate rect.
+const isDragHandleAnchoredKind = (
+  kind: SelectionKind,
+): kind is "row" | "header-row" | "column" | "header-column" =>
+  kind === "row" ||
+  kind === "header-row" ||
+  kind === "column" ||
+  kind === "header-column"
+
 const shouldShowTableBubbleMenu = ({
   editor,
   view,
@@ -483,6 +491,20 @@ const shouldShowTableBubbleMenu = ({
   const kind = detectSelectionType(editor)
   if (kind === "none" || kind === "single-cell") return false
 
+  // Row/column menus anchor to the selected drag handle when handles are
+  // mounted. TipTap's synchronous `shouldShow` runs before React paints
+  // `data-state="selected"`, which would briefly position against the
+  // selection box and then jump — stay hidden until that handle exists.
+  // If drag handles aren't mounted at all (e.g. some test harnesses), fall
+  // through and use TipTap's selection-box reference as before.
+  if (
+    isDragHandleAnchoredKind(kind) &&
+    document.querySelector("[data-table-drag-handle]") &&
+    !getSelectedDragHandleVirtualElement(editor)
+  ) {
+    return false
+  }
+
   const isChildOfMenu = element.contains(document.activeElement)
   return view.hasFocus() || isChildOfMenu
 }
@@ -496,11 +518,69 @@ const TABLE_BUBBLE_MENU_UPDATE_DELAY = 0
 // anchors inside EditorContent and the menu gets clipped above the selection).
 // Do NOT appendTo document.body — TipTap's blur handler treats any body focus
 // target as "inside the menu" via parentNode.contains and hangs FocusLock.
+//
+// When a drag handle is selected the menu anchors to that handle (see
+// `getSelectedDragHandleVirtualElement`). `bottom-start` puts it below with
+// the menu's left edge on the handle's left edge; `flip: false` stops
+// Floating UI from jumping it above the handle.
 const TABLE_BUBBLE_MENU_OPTIONS = {
   strategy: "fixed" as const,
-  placement: "top" as const,
+  placement: "bottom-start" as const,
   offset: 8,
+  flip: false,
 }
+
+/**
+ * Prefer the selected table drag handle as the floating reference so the menu
+ * sits under that grip instead of the full row/column selection box (which
+ * for a column selection spans the whole table height and parks the menu at
+ * the bottom of the table — or, with placement-top, on top of the handle).
+ * Falls back to TipTap's selection-based virtual element when no handle is
+ * in the selected visual state. Mid-drag (`data-state="dragging"`) is ignored
+ * so the menu does not re-anchor during reorder.
+ *
+ * Matches the handle for the *current* CellSelection (table + row/col index),
+ * not merely the first selected handle in the DOM — switching from one handle
+ * to another can briefly leave the previous handle still painted selected
+ * when TipTap's synchronous `updatePosition` runs.
+ */
+const getSelectedDragHandleVirtualElement = (editor: Editor) => {
+  const { selection } = editor.state
+  if (!(selection instanceof CellSelection)) return null
+
+  const isRow = selection.isRowSelection() && !selection.isColSelection()
+  const isCol = selection.isColSelection() && !selection.isRowSelection()
+  if (!isRow && !isCol) return null
+
+  const rect = selectedRect(editor.state)
+  const tablePos = rect.tableStart - 1
+  const axis = isRow ? "row" : "column"
+  const index = isRow ? rect.top : rect.left
+  const handle = document.querySelector(
+    `[data-table-drag-handle="${axis}"][data-table-pos="${tablePos}"][data-index="${index}"][data-state="selected"]`,
+  )
+  if (!(handle instanceof HTMLElement)) return null
+  // Freshly inserted tables can paint a handle with an all-zero rect for a
+  // frame — Floating UI would then anchor against the selection box fallback
+  // or a point at (0,0). Treat as "not ready" so callers can wait.
+  const handleRect = handle.getBoundingClientRect()
+  if (handleRect.width === 0 || handleRect.height === 0) return null
+  return {
+    getBoundingClientRect: () => handle.getBoundingClientRect(),
+  }
+}
+
+// Applied to TipTap's floating root (`menuEl`), not just the inner surface.
+// Sibling `TableDragHandles` live later in the DOM inside a `position:
+// relative` editor wrapper; without a z-index on this root, those handles
+// (z-index 2–3) paint above the menu even when the inner surface uses
+// Chakra's `dropdown` token (1000). Match that token so the whole floating
+// tree stacks above handles and `.selectedCell::after` (z-index 2).
+const TABLE_BUBBLE_MENU_Z_INDEX = 1000
+
+const TABLE_BUBBLE_MENU_STYLE = {
+  zIndex: TABLE_BUBBLE_MENU_Z_INDEX,
+} as const
 
 // Stable explicit plugin key so we can nudge TipTap's show/hide when
 // `tableEditingKey` flips without a selection/doc change (mouseup only clears
@@ -508,11 +588,18 @@ const TABLE_BUBBLE_MENU_OPTIONS = {
 // would otherwise never re-run `shouldShow`).
 const TABLE_BUBBLE_MENU_PLUGIN_KEY = new PluginKey("tableBubbleMenu")
 
+/** Hide the table bubble menu (e.g. while a row/column drag-handle drag is in flight). */
+export const hideTableBubbleMenu = (editor: Editor) => {
+  editor.view.dispatch(
+    editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
+  )
+}
+
 // TipTap's `show` meta runs `updatePosition()` *before* `show()`, and
 // `updatePosition` no-ops while `!isVisible` — so a bare `show` meta leaves
 // the menu unpositioned (often effectively invisible). Show first, then
 // position.
-const revealTableBubbleMenu = (editor: Editor) => {
+export const revealTableBubbleMenu = (editor: Editor) => {
   if (
     !shouldShowTableBubbleMenu({
       editor,
@@ -520,9 +607,7 @@ const revealTableBubbleMenu = (editor: Editor) => {
       element: editor.view.dom,
     })
   ) {
-    editor.view.dispatch(
-      editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
-    )
+    hideTableBubbleMenu(editor)
     return
   }
   editor.view.dispatch(
@@ -531,6 +616,111 @@ const revealTableBubbleMenu = (editor: Editor) => {
   editor.view.dispatch(
     editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "updatePosition"),
   )
+}
+
+const dispatchUpdatePosition = (editor: Editor) => {
+  editor.view.dispatch(
+    editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "updatePosition"),
+  )
+}
+
+const TABLE_BUBBLE_MENU_DOM_ATTR = "data-table-bubble-menu"
+const TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR = "data-table-bubble-menu-staging"
+
+/** Force the floating root hidden while we wait for a correct anchor/layout. */
+const beginBubbleMenuStagingHidden = () => {
+  if (
+    document.querySelector(`style[${TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR}]`)
+  ) {
+    return
+  }
+  const style = document.createElement("style")
+  style.setAttribute(TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR, "")
+  // Beat TipTap's inline `visibility: visible` from `updatePosition`.
+  style.textContent = `[${TABLE_BUBBLE_MENU_DOM_ATTR}]{visibility:hidden!important}`
+  document.head.appendChild(style)
+}
+
+const endBubbleMenuStagingHidden = () => {
+  document
+    .querySelector(`style[${TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR}]`)
+    ?.remove()
+}
+
+const afterNextPaint = (fn: () => void) => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(fn)
+  })
+}
+
+/**
+ * Reveal once the selected drag handle is laid out, while keeping the menu
+ * forced-hidden until Floating UI has a real size and a second position
+ * pass. Avoids a flash at the wrong spot (common on the first click after
+ * inserting a table). Returns a cancel function for the in-flight rAF chain.
+ */
+const revealTableBubbleMenuWhenAnchored = (editor: Editor): (() => void) => {
+  let cancelled = false
+  const maxAttempts = 12
+
+  const unveil = () => {
+    if (cancelled) return
+    endBubbleMenuStagingHidden()
+  }
+
+  const tryReveal = (attemptsLeft: number) => {
+    if (cancelled || editor.isDestroyed) {
+      endBubbleMenuStagingHidden()
+      return
+    }
+    const kind = detectSelectionType(editor)
+    if (kind === "none") {
+      endBubbleMenuStagingHidden()
+      return
+    }
+
+    if (
+      isDragHandleAnchoredKind(kind) &&
+      document.querySelector("[data-table-drag-handle]") &&
+      !getSelectedDragHandleVirtualElement(editor)
+    ) {
+      if (attemptsLeft > 0) {
+        requestAnimationFrame(() => tryReveal(attemptsLeft - 1))
+        return
+      }
+      endBubbleMenuStagingHidden()
+      return
+    }
+
+    // Keep hidden while TipTap shows + positions (possibly with 0 menu size).
+    beginBubbleMenuStagingHidden()
+    revealTableBubbleMenu(editor)
+    afterNextPaint(() => {
+      if (cancelled || editor.isDestroyed) {
+        endBubbleMenuStagingHidden()
+        return
+      }
+      // Second pass once content has a measurable size, still staged-hidden.
+      dispatchUpdatePosition(editor)
+      afterNextPaint(() => {
+        if (cancelled || editor.isDestroyed) {
+          endBubbleMenuStagingHidden()
+          return
+        }
+        dispatchUpdatePosition(editor)
+        // TipTap's computePosition is async — wait one more frame after the
+        // last updatePosition dispatch before unveiling.
+        afterNextPaint(unveil)
+      })
+    })
+  }
+
+  beginBubbleMenuStagingHidden()
+  requestAnimationFrame(() => tryReveal(maxAttempts))
+  return () => {
+    cancelled = true
+    endBubbleMenuStagingHidden()
+  }
 }
 
 const useTableBubbleMenuDragSync = (editor: Editor) => {
@@ -574,12 +764,16 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // TipTap's selector replaces manual event subscriptions. Document identity
   // represents `update`; Selection.eq represents `selectionUpdate`. Meta-only
   // blur/focus transactions compare equal and therefore do not re-render.
-  const { kind } = useEditorState({
+  const { kind, selectionAnchor, selectionHead } = useEditorState({
     editor,
     selector: ({ editor: currentEditor }) => ({
       kind: detectSelectionType(currentEditor),
       doc: currentEditor.state.doc,
       selection: currentEditor.state.selection,
+      // Primitives so switching row↔row / col↔col (same `kind`) still
+      // re-anchors the menu under the newly active drag handle.
+      selectionAnchor: currentEditor.state.selection.anchor,
+      selectionHead: currentEditor.state.selection.head,
     }),
     equalityFn: (previous, next) =>
       next !== null &&
@@ -592,6 +786,15 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // (or an explicit hide while selecting) force hide/reveal.
   useTableBubbleMenuDragSync(editor)
 
+  // Wait for the selected drag handle (and a post-show layout pass) before
+  // locking Floating UI's position — needed especially on the first click
+  // after inserting a table. selectionAnchor/Head re-run when switching
+  // handles even if `kind` is unchanged.
+  useEffect(() => {
+    if (kind === "none") return
+    return revealTableBubbleMenuWhenAnchored(editor)
+  }, [editor, kind, selectionAnchor, selectionHead])
+
   return (
     <BubbleMenu
       editor={editor}
@@ -599,6 +802,11 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       shouldShow={shouldShowTableBubbleMenu}
       updateDelay={TABLE_BUBBLE_MENU_UPDATE_DELAY}
       options={TABLE_BUBBLE_MENU_OPTIONS}
+      getReferencedVirtualElement={() =>
+        getSelectedDragHandleVirtualElement(editor)
+      }
+      style={TABLE_BUBBLE_MENU_STYLE}
+      data-table-bubble-menu=""
     >
       <VStack
         align="stretch"
