@@ -13,7 +13,7 @@ import {
 } from "../utils/uptimerobot";
 import {
   createOrUpdateIndirectionRecord,
-  createAndMergeIndirectionPR,
+  createIndirectionPR,
 } from "../utils/github";
 import { triggerCodeBuildBuilds } from "../utils/codebuild";
 import type { SiteLaunchSite } from "../types";
@@ -143,17 +143,21 @@ export const siteLaunchFirstWindow = async () => {
     await createMaintenanceWindow(monitorIds);
   }
 
-  // Step 4: Optionally create and merge the indirection PR on isomer-indirection
+  // Step 4: Optionally create the indirection PR on isomer-indirection
   const shouldCreatePR = await confirm({
     message:
-      "Do you want to create and merge the indirection PR on isomer-indirection (staging → main)?",
+      "Do you want to create the indirection PR on isomer-indirection (staging → main)?",
     default: true,
   });
 
   if (shouldCreatePR) {
-    await createAndMergeIndirectionPR(
+    const prUrl = await createIndirectionPR(
       successfulSites.map((site) => site.isomerDomain)
     );
+    await confirm({
+      message: `Please merge the indirection PR on GitHub (${prUrl}), then press Enter to continue.`,
+      default: true,
+    });
   }
 
   // Step 5: Trigger CodeBuild builds for each successful site

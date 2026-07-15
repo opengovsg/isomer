@@ -81,7 +81,7 @@ export const createRecords = (zoneId: string): Record[] => {
   });
 };
 
-export const createAndMergeIndirectionPR = async (domains: string[]) => {
+export const createIndirectionPR = async (domains: string[]) => {
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
   });
@@ -100,14 +100,7 @@ export const createAndMergeIndirectionPR = async (domains: string[]) => {
 
   console.log(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
 
-  await octokit.rest.pulls.merge({
-    owner: "isomerpages",
-    repo: "isomer-indirection",
-    pull_number: pr.data.number,
-    merge_method: "merge",
-  });
-
-  console.log(`Merged PR #${pr.data.number}`);
+  return pr.data.html_url;
 };
 
 export const archiveGitHubRepo = async (repoName: string) => {
