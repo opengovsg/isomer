@@ -3,12 +3,11 @@ import { act, render, waitFor } from "@testing-library/react"
 import { selectedRect } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { describe, expect, it } from "vitest"
-import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
-
 import {
-  getSelectedDragHandleVirtualElement,
+  createTableDragHandlesBubbleMenuAnchor,
   TABLE_EDITOR_OVERLAYS_ATTR,
-} from "./TableBubbleMenu.dom"
+} from "~/features/editing-experience/components/TableDragHandles/TableDragHandles.bubbleMenu"
+import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 
 const CONTENT: JSONContent = {
   type: "prose",
@@ -81,8 +80,8 @@ const appendSelectedRowHandle = (
   return handle
 }
 
-describe("TableBubbleMenu DOM scoping", () => {
-  it("finds the selected drag handle belonging to the same editor", async () => {
+describe("TableDragHandles BubbleMenu anchor", () => {
+  it("waits for and returns the selected handle from the same editor", async () => {
     // Arrange
     const editors: Editor[] = []
     render(
@@ -107,12 +106,15 @@ describe("TableBubbleMenu DOM scoping", () => {
     const firstRect = new DOMRect(10, 10, 10, 10)
     const secondRect = new DOMRect(100, 100, 10, 10)
     appendSelectedRowHandle(editors[0]!, firstRect)
+    const anchor = createTableDragHandlesBubbleMenuAnchor(secondEditor)
+
+    // Act / Assert
+    expect(anchor.shouldWaitForReference()).toBe(true)
+
     appendSelectedRowHandle(secondEditor, secondRect)
+    const virtualElement = anchor.getReferencedVirtualElement()
 
-    // Act
-    const virtualElement = getSelectedDragHandleVirtualElement(secondEditor)
-
-    // Assert
+    expect(anchor.shouldWaitForReference()).toBe(false)
     expect(virtualElement?.getBoundingClientRect()).toEqual(secondRect)
   })
 })

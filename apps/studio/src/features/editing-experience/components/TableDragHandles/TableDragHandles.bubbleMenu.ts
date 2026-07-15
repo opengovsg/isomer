@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/react"
+import type { TableBubbleMenuAnchor } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.types"
 import { CellSelection, selectedRect } from "@tiptap/pm/tables"
 
 export const TABLE_EDITOR_OVERLAYS_ATTR = "data-table-editor-overlays"
@@ -6,10 +7,15 @@ export const TABLE_EDITOR_OVERLAYS_ATTR = "data-table-editor-overlays"
 const getTableEditorOverlays = (editor: Editor): HTMLElement | null =>
   editor.view.dom.closest(`[${TABLE_EDITOR_OVERLAYS_ATTR}]`)
 
-export const hasTableDragHandles = (editor: Editor): boolean =>
-  !!getTableEditorOverlays(editor)?.querySelector("[data-table-drag-handle]")
+const hasHandleAnchorSelection = (editor: Editor): boolean => {
+  const { selection } = editor.state
+  return (
+    selection instanceof CellSelection &&
+    selection.isRowSelection() !== selection.isColSelection()
+  )
+}
 
-export const getSelectedDragHandleVirtualElement = (editor: Editor) => {
+const getSelectedDragHandleVirtualElement = (editor: Editor) => {
   const { selection } = editor.state
   if (!(selection instanceof CellSelection)) return null
 
@@ -33,3 +39,13 @@ export const getSelectedDragHandleVirtualElement = (editor: Editor) => {
     getBoundingClientRect: () => handle.getBoundingClientRect(),
   }
 }
+
+export const createTableDragHandlesBubbleMenuAnchor = (
+  editor: Editor,
+): TableBubbleMenuAnchor => ({
+  shouldWaitForReference: () =>
+    hasHandleAnchorSelection(editor) &&
+    getSelectedDragHandleVirtualElement(editor) === null,
+  getReferencedVirtualElement: () =>
+    getSelectedDragHandleVirtualElement(editor),
+})

@@ -13,7 +13,7 @@ import {
 } from "@tiptap/pm/tables"
 import { useEditorState } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
-import { memo, useEffect } from "react"
+import { memo, useCallback, useEffect } from "react"
 import {
   BiDownArrowAlt,
   BiLeftArrowAlt,
@@ -32,10 +32,7 @@ import {
   IconSplitCell,
 } from "~/components/icons"
 
-import {
-  getSelectedDragHandleVirtualElement,
-  hasTableDragHandles,
-} from "./TableBubbleMenu.dom"
+import type { TableBubbleMenuAnchor } from "./TableBubbleMenu.types"
 import {
   getColumnMovePlan,
   getRowMovePlan,
@@ -45,6 +42,7 @@ import {
 
 export interface TableBubbleMenuProps {
   editor: Editor
+  anchor?: TableBubbleMenuAnchor
 }
 
 // A single selected cell that came from a previous merge (colspan/rowspan >
@@ -473,39 +471,25 @@ const TableSelectionActions = ({
 // Also stay hidden while prosemirror-tables is mid cell-drag
 // (`tableEditingKey` is set in mousemove, cleared to null on mouseup) so the
 // menu only settles after the drag commits — not for every intermediate rect.
-const isDragHandleAnchoredKind = (
-  kind: SelectionKind,
-): kind is "row" | "header-row" | "column" | "header-column" =>
-  kind === "row" ||
-  kind === "header-row" ||
-  kind === "column" ||
-  kind === "header-column"
-
 const shouldShowTableBubbleMenu = ({
   editor,
   view,
   element,
+  anchor,
 }: {
   editor: Editor
   view: Editor["view"]
   element: HTMLElement
+  anchor?: TableBubbleMenuAnchor
 }) => {
   if (tableEditingKey.getState(view.state) != null) return false
 
   const kind = detectSelectionType(editor)
   if (kind === "none" || kind === "single-cell") return false
 
-  // Row/column menus anchor to the selected drag handle when handles are
-  // mounted. TipTap's synchronous `shouldShow` runs before React paints
-  // `data-state="selected"`, which would briefly position against the
-  // selection box and then jump — stay hidden until that handle exists.
-  // If drag handles aren't mounted at all (e.g. some test harnesses), fall
-  // through and use TipTap's selection-box reference as before.
-  if (
-    isDragHandleAnchoredKind(kind) &&
-    hasTableDragHandles(editor) &&
-    !getSelectedDragHandleVirtualElement(editor)
-  ) {
+  // An optional anchor can defer showing until its reference is mounted,
+  // avoiding a one-frame jump from the default selection-box position.
+  if (anchor?.shouldWaitForReference()) {
     return false
   }
 
@@ -523,10 +507,9 @@ const TABLE_BUBBLE_MENU_UPDATE_DELAY = 0
 // Do NOT appendTo document.body — TipTap's blur handler treats any body focus
 // target as "inside the menu" via parentNode.contains and hangs FocusLock.
 //
-// When a drag handle is selected the menu anchors to that handle (see
-// `getSelectedDragHandleVirtualElement`). `bottom-start` puts it below with
-// the menu's left edge on the handle's left edge; `flip: false` stops
-// Floating UI from jumping it above the handle.
+// `bottom-start` keeps an optional custom reference visible above the menu;
+// `flip: false` prevents Floating UI from changing sides between position
+// passes while that reference mounts.
 const TABLE_BUBBLE_MENU_OPTIONS = {
   strategy: "fixed" as const,
   placement: "bottom-start" as const,
@@ -535,8 +518,8 @@ const TABLE_BUBBLE_MENU_OPTIONS = {
 }
 
 // Applied to TipTap's floating root (`menuEl`), not just the inner surface.
-// It must stack above TableCaption (z-index 1), `.selectedCell::after` (2),
-// and sibling TableDragHandles (2–3). 1000 matches Chakra's `dropdown` token.
+// It must stack above sibling table overlays and `.selectedCell::after`.
+// 1000 matches Chakra's `dropdown` token.
 export const TABLE_BUBBLE_MENU_Z_INDEX = 1000
 
 const TABLE_BUBBLE_MENU_STYLE = {
@@ -549,7 +532,7 @@ const TABLE_BUBBLE_MENU_STYLE = {
 // would otherwise never re-run `shouldShow`).
 const TABLE_BUBBLE_MENU_PLUGIN_KEY = new PluginKey("tableBubbleMenu")
 
-/** Hide the table bubble menu (e.g. while a row/column drag-handle drag is in flight). */
+/** Hide the table bubble menu while an external interaction is in flight. */
 export const hideTableBubbleMenu = (editor: Editor) => {
   editor.view.dispatch(
     editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
@@ -560,12 +543,16 @@ export const hideTableBubbleMenu = (editor: Editor) => {
 // `updatePosition` no-ops while `!isVisible` — so a bare `show` meta leaves
 // the menu unpositioned (often effectively invisible). Show first, then
 // position.
-export const revealTableBubbleMenu = (editor: Editor) => {
+export const revealTableBubbleMenu = (
+  editor: Editor,
+  anchor?: TableBubbleMenuAnchor,
+) => {
   if (
     !shouldShowTableBubbleMenu({
       editor,
       view: editor.view,
       element: editor.view.dom,
+      anchor,
     })
   ) {
     hideTableBubbleMenu(editor)
@@ -631,12 +618,14 @@ const afterNextPaint = (fn: () => void) => {
 }
 
 /**
- * Reveal once the selected drag handle is laid out, while keeping the menu
- * forced-hidden until Floating UI has a real size and a second position
- * pass. Avoids a flash at the wrong spot (common on the first click after
- * inserting a table). Returns a cancel function for the in-flight rAF chain.
+ * Reveal once an optional custom reference is laid out, while keeping the
+ * menu forced-hidden until Floating UI has a real size and a second position
+ * pass. Returns a cancel function for the in-flight rAF chain.
  */
-const revealTableBubbleMenuWhenAnchored = (editor: Editor): (() => void) => {
+const revealTableBubbleMenuWhenReferenced = (
+  editor: Editor,
+  anchor?: TableBubbleMenuAnchor,
+): (() => void) => {
   let cancelled = false
   const maxAttempts = 12
 
@@ -656,11 +645,7 @@ const revealTableBubbleMenuWhenAnchored = (editor: Editor): (() => void) => {
       return
     }
 
-    if (
-      isDragHandleAnchoredKind(kind) &&
-      hasTableDragHandles(editor) &&
-      !getSelectedDragHandleVirtualElement(editor)
-    ) {
+    if (anchor?.shouldWaitForReference()) {
       if (attemptsLeft > 0) {
         requestAnimationFrame(() => tryReveal(attemptsLeft - 1))
         return
@@ -671,7 +656,7 @@ const revealTableBubbleMenuWhenAnchored = (editor: Editor): (() => void) => {
 
     // Keep hidden while TipTap shows + positions (possibly with 0 menu size).
     beginBubbleMenuStagingHidden(editor)
-    revealTableBubbleMenu(editor)
+    revealTableBubbleMenu(editor, anchor)
     afterNextPaint(() => {
       if (cancelled || editor.isDestroyed) {
         endBubbleMenuStagingHidden(editor)
@@ -700,7 +685,10 @@ const revealTableBubbleMenuWhenAnchored = (editor: Editor): (() => void) => {
   }
 }
 
-const useTableBubbleMenuDragSync = (editor: Editor) => {
+const useTableBubbleMenuDragSync = (
+  editor: Editor,
+  anchor?: TableBubbleMenuAnchor,
+) => {
   useEffect(() => {
     const onTransaction = ({
       transaction,
@@ -717,14 +705,14 @@ const useTableBubbleMenuDragSync = (editor: Editor) => {
           )
           return
         }
-        revealTableBubbleMenu(editor)
+        revealTableBubbleMenu(editor, anchor)
       })
     }
     editor.on("transaction", onTransaction)
     return () => {
       editor.off("transaction", onTransaction)
     }
-  }, [editor])
+  }, [anchor, editor])
 }
 
 // memo: parent Editor re-renders on every TipTap transaction, including the
@@ -737,7 +725,14 @@ const useTableBubbleMenuDragSync = (editor: Editor) => {
 // move-edge affordances stay correct without FocusLock thrash.
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
+  anchor,
 }: TableBubbleMenuProps) {
+  const shouldShow = useCallback(
+    (props: Parameters<typeof shouldShowTableBubbleMenu>[0]) =>
+      shouldShowTableBubbleMenu({ ...props, anchor }),
+    [anchor],
+  )
+
   // TipTap's selector replaces manual event subscriptions. Document identity
   // represents `update`; Selection.eq represents `selectionUpdate`. Meta-only
   // blur/focus transactions compare equal and therefore do not re-render.
@@ -747,8 +742,8 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       kind: detectSelectionType(currentEditor),
       doc: currentEditor.state.doc,
       selection: currentEditor.state.selection,
-      // Primitives so switching row↔row / col↔col (same `kind`) still
-      // re-anchors the menu under the newly active drag handle.
+      // Primitives ensure a custom reference can update when the selection
+      // changes without changing `kind`.
       selectionAnchor: currentEditor.state.selection.anchor,
       selectionHead: currentEditor.state.selection.head,
     }),
@@ -761,27 +756,24 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // TipTap early-returns when selection/doc are unchanged, so mouseup's
   // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
   // (or an explicit hide while selecting) force hide/reveal.
-  useTableBubbleMenuDragSync(editor)
+  useTableBubbleMenuDragSync(editor, anchor)
 
-  // Wait for the selected drag handle (and a post-show layout pass) before
-  // locking Floating UI's position — needed especially on the first click
-  // after inserting a table. selectionAnchor/Head re-run when switching
-  // handles even if `kind` is unchanged.
+  // Wait for an optional reference (and a post-show layout pass) before
+  // locking Floating UI's position. selectionAnchor/Head re-run when the
+  // reference changes even if `kind` is unchanged.
   useEffect(() => {
     if (kind === "none") return
-    return revealTableBubbleMenuWhenAnchored(editor)
-  }, [editor, kind, selectionAnchor, selectionHead])
+    return revealTableBubbleMenuWhenReferenced(editor, anchor)
+  }, [anchor, editor, kind, selectionAnchor, selectionHead])
 
   return (
     <BubbleMenu
       editor={editor}
       pluginKey={TABLE_BUBBLE_MENU_PLUGIN_KEY}
-      shouldShow={shouldShowTableBubbleMenu}
+      shouldShow={shouldShow}
       updateDelay={TABLE_BUBBLE_MENU_UPDATE_DELAY}
       options={TABLE_BUBBLE_MENU_OPTIONS}
-      getReferencedVirtualElement={() =>
-        getSelectedDragHandleVirtualElement(editor)
-      }
+      getReferencedVirtualElement={anchor?.getReferencedVirtualElement}
       style={TABLE_BUBBLE_MENU_STYLE}
       data-table-bubble-menu=""
       data-table-bubble-menu-instance={getTableBubbleMenuInstanceId(editor)}

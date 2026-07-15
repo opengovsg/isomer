@@ -2,6 +2,7 @@ import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
 import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
+import type { TableBubbleMenuAnchor } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.types"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 import { useCallback, useMemo, useRef } from "react"
@@ -10,9 +11,12 @@ import {
   revealTableBubbleMenu,
   TableBubbleMenu,
 } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
-import { TABLE_EDITOR_OVERLAYS_ATTR } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.dom"
 import { TableCaption } from "~/features/editing-experience/components/TableCaption/TableCaption"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
+import {
+  createTableDragHandlesBubbleMenuAnchor,
+  TABLE_EDITOR_OVERLAYS_ATTR,
+} from "~/features/editing-experience/components/TableDragHandles/TableDragHandles.bubbleMenu"
 
 const EditorContainer = ({
   children,
@@ -54,9 +58,11 @@ const EditorContentWrapper = ({
   editor,
   containerRef,
   showTableExtras,
+  tableBubbleMenuAnchor,
 }: Pick<EditorContentProps, "editor"> & {
   containerRef: RefObject<HTMLDivElement>
   showTableExtras?: boolean
+  tableBubbleMenuAnchor?: TableBubbleMenuAnchor
 }) => {
   const handleTableDragStateChange = useCallback(
     (isDragging: boolean) => {
@@ -65,9 +71,9 @@ const EditorContentWrapper = ({
         hideTableBubbleMenu(editor)
         return
       }
-      revealTableBubbleMenu(editor)
+      revealTableBubbleMenu(editor, tableBubbleMenuAnchor)
     },
-    [editor],
+    [editor, tableBubbleMenuAnchor],
   )
 
   return (
@@ -134,15 +140,25 @@ export const Editor = ({
   showTableExtras,
 }: EditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const tableBubbleMenuAnchor = useMemo(
+    () =>
+      showTableExtras
+        ? createTableDragHandlesBubbleMenuAnchor(editor)
+        : undefined,
+    [editor, showTableExtras],
+  )
 
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
-      {showTableExtras && <TableBubbleMenu editor={editor} />}
+      {showTableExtras && (
+        <TableBubbleMenu editor={editor} anchor={tableBubbleMenuAnchor} />
+      )}
       <EditorContentWrapper
         editor={editor}
         containerRef={containerRef}
         showTableExtras={showTableExtras}
+        tableBubbleMenuAnchor={tableBubbleMenuAnchor}
       />
     </EditorContainer>
   )
