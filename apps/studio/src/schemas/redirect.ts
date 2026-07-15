@@ -241,16 +241,26 @@ export type RedirectRowInput = z.infer<typeof redirectRowSchema>
 // Caps the raw CSV text a bulk upload may send. Redirect rows are short ASCII,
 // so ~1MB already covers thousands of them; the client enforces the same limit
 // on the picked file's byte size, and this is the matching server-side trust
-// boundary. Counted in UTF-16 code units, close enough to bytes for the ASCII
-// the source whitelist enforces.
+// boundary.
 export const MAX_BULK_REDIRECT_CSV_BYTES = 1_000_000
+
+// `string().max()` counts UTF-16 code units, which undercounts multi-byte
+// characters — a code-unit cap would let a non-ASCII file exceed the byte budget
+// (and diverge from the client's byte-size check). Measure the encoded UTF-8
+// bytes so the limit matches its name and the client.
+const utf8ByteLength = (value: string) => new TextEncoder().encode(value).length
 
 export const bulkRedirectsCsvSchema = z.object({
   siteId: z.number().min(1),
   csv: z
     .string()
     .min(1, { message: "Upload a .csv file to continue" })
-    .max(MAX_BULK_REDIRECT_CSV_BYTES, { message: "File is too big" }),
+    // Cheap code-unit ceiling first (code units <= bytes), so the byte check
+    // below never has to encode a pathologically large string.
+    .max(MAX_BULK_REDIRECT_CSV_BYTES, { message: "File is too big" })
+    .refine((csv) => utf8ByteLength(csv) <= MAX_BULK_REDIRECT_CSV_BYTES, {
+      message: "File is too big",
+    }),
 })
 export type BulkRedirectsCsvInput = z.infer<typeof bulkRedirectsCsvSchema>
 

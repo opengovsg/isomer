@@ -52,8 +52,9 @@ const normalizeHeader = (value: string) => value.trim().toLowerCase()
 // required columns may appear in any order.
 export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
   // Strip a leading UTF-8 BOM (spreadsheet exports add one) so it doesn't become
-  // part of the first header cell.
-  const cleaned = csv.replace(/^﻿/, "")
+  // part of the first header cell. `\uFEFF` rather than a literal BOM so the
+  // intent is visible and editors/formatters can't silently drop it.
+  const cleaned = csv.replace(/^\uFEFF/, "")
   // Catch an empty (or whitespace-only) file up front — papaparse reports it as
   // a parse error rather than empty data, and we want the clearer "empty" copy.
   if (cleaned.trim().length === 0) {
@@ -62,20 +63,28 @@ export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
     }
   }
 
+  // Keep blank lines (no "greedy" skip) so every row keeps its physical file
+  // line for `rowNumber`; blank rows are dropped below, after numbering. (A
+  // quoted field spanning newlines is still one row, so "line" means CSV record.)
   const { data } = Papa.parse<string[]>(cleaned, {
-    skipEmptyLines: "greedy",
+    skipEmptyLines: false,
   })
-  // papaparse is lenient and still returns rows for messy input, so we don't
-  // treat a parse `errors` list as fatal for the whole file — a genuinely
-  // unreadable file falls through to the header check and is flagged as a
-  // missing column. Field-count problems are handled per row (see `malformed`).
-  if (data.length === 0) {
+  // A blank line: no cells, or only empty/whitespace cells. papaparse is lenient
+  // and still returns rows for messy input, so a genuinely unreadable file falls
+  // through to the header check and is flagged as a missing column. Field-count
+  // problems are handled per row (see `malformed`).
+  const isBlankRow = (row: string[]) => row.every((cell) => cell.trim() === "")
+
+  // The header is the first non-blank line (tolerating leading blank lines some
+  // spreadsheet exports add). Its position anchors the physical line numbers.
+  const headerIndex = data.findIndex((row) => !isBlankRow(row))
+  if (headerIndex === -1) {
     return {
       fileError: "This file is empty. Add your redirects and try again.",
     }
   }
 
-  const header = data[0] ?? []
+  const header = data[headerIndex] ?? []
   const sourceIndex = header.findIndex(
     (cell) =>
       normalizeHeader(cell) ===
@@ -92,27 +101,30 @@ export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
     }
   }
 
-  const dataRows = data.slice(1)
-  if (dataRows.length === 0) {
+  const expectedColumns = header.length
+  const rows = data
+    // Number every line (1-based) BEFORE dropping blanks, so a blank line still
+    // advances the count and rowNumber stays the true line in the uploaded file.
+    .map((row, index) => ({ row, rowNumber: index + 1 }))
+    .slice(headerIndex + 1)
+    .filter(({ row }) => !isBlankRow(row))
+    .map(({ row, rowNumber }) => ({
+      rowNumber,
+      source: (row[sourceIndex] ?? "").trim(),
+      destination: (row[destinationIndex] ?? "").trim(),
+      // Non-empty columns beyond the header mean a value contained an unquoted
+      // comma and got split into stray fields — papaparse keeps the pieces
+      // silently, so the destination read from its column would be truncated.
+      malformed:
+        row.length > expectedColumns &&
+        row.slice(expectedColumns).some((cell) => cell.trim() !== ""),
+    }))
+  if (rows.length === 0) {
     return {
       fileError:
         "This file has no redirects. Add at least one row and try again.",
     }
   }
-
-  const expectedColumns = header.length
-  const rows = dataRows.map((row, index) => ({
-    // +2: skip the header (line 1) and shift from 0-based to 1-based.
-    rowNumber: index + 2,
-    source: (row[sourceIndex] ?? "").trim(),
-    destination: (row[destinationIndex] ?? "").trim(),
-    // Non-empty columns beyond the header mean a value contained an unquoted
-    // comma and got split into stray fields — papaparse keeps the pieces
-    // silently, so the destination read from its column would be truncated.
-    malformed:
-      row.length > expectedColumns &&
-      row.slice(expectedColumns).some((cell) => cell.trim() !== ""),
-  }))
   return { rows }
 }
 

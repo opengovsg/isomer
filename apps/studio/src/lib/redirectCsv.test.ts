@@ -35,6 +35,20 @@ describe("parseRedirectCsv", () => {
     ])
   })
 
+  it("keeps physical line numbers when the file has blank lines", () => {
+    // Arrange: a blank line sits between the header and the row. Skipping blanks
+    // before numbering would report the row as line 2, but its true line is 3.
+    const csv = `${header}\n\n/old,/new`
+
+    // Act
+    const result = parseRedirectCsv(csv)
+
+    // Assert
+    expect(result.rows).toEqual([
+      { rowNumber: 3, source: "/old", destination: "/new", malformed: false },
+    ])
+  })
+
   it("flags a row split by an unquoted comma as malformed", () => {
     // Arrange: the destination contains an unquoted comma, so it splits into a
     // stray third field that would otherwise silently truncate the destination.
@@ -77,7 +91,7 @@ describe("parseRedirectCsv", () => {
 
   it("strips a leading BOM before reading the header", () => {
     // Arrange
-    const csv = `﻿${header}\n/old,/new`
+    const csv = `\uFEFF${header}\n/old,/new`
 
     // Act
     const result = parseRedirectCsv(csv)
@@ -154,7 +168,7 @@ describe("redirects template file", () => {
 
     // Act
     const contents = readFileSync(templatePath, "utf8")
-    const firstLine = contents.replace(/^﻿/, "").split(/\r?\n/)[0]
+    const firstLine = contents.replace(/^\uFEFF/, "").split(/\r?\n/)[0]
 
     // Assert
     expect(firstLine).toBe(`${SOURCE_HEADER},${DESTINATION_HEADER}`)
