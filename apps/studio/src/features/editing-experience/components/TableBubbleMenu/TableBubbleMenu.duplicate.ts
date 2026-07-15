@@ -26,6 +26,44 @@ const tableInfoAt = (tr: Transaction, tablePos: number): TableInfo | null => {
   }
 }
 
+// Look up the cell node at a TableMap index, returning both the node and its
+// position so callers don't repeat the "undefined map slot" / "missing node"
+// guard at every call site.
+const resolveCell = (
+  table: Node,
+  map: TableMap,
+  index: number,
+): { pos: number; node: Node } | null => {
+  const pos = map.map[index]
+  if (pos === undefined) return null
+  const node = table.nodeAt(pos)
+  if (!node) return null
+  return { pos, node }
+}
+
+// Dispatch `tr` after reselecting the block described by `corners`, resolved
+// against the table's post-mutation TableInfo. Shared by
+// duplicateSelectedRows/Columns, which differ only in which corners to select.
+const selectBlockAndDispatch = (
+  editor: Editor,
+  tr: Transaction,
+  tablePos: number,
+  corners: (info: TableInfo) => { anchor: number; head: number },
+): void => {
+  const info = tableInfoAt(tr, tablePos)
+  if (info) {
+    const { anchor, head } = corners(info)
+    tr.setSelection(
+      CellSelection.create(
+        tr.doc,
+        info.tableStart + anchor,
+        info.tableStart + head,
+      ),
+    )
+  }
+  editor.view.dispatch(tr)
+}
+
 // Insert a copy of `sourceRow` at row index `insertAt`. Cells that span into
 // the insert slot from above expand their rowspan (same as addRow); every other
 // column gets a rowspan-1 clone of the source cell's type and content.
@@ -51,35 +89,26 @@ const insertDuplicateRow = (
       insertAt < map.height &&
       map.map[insertIndex] === map.map[insertIndex - map.width]
     ) {
-      const pos = map.map[insertIndex]
-      if (pos === undefined) {
+      const resolved = resolveCell(table, map, insertIndex)
+      if (!resolved) {
         col += 1
         continue
       }
-      const node = table.nodeAt(pos)
-      if (!node) {
-        col += 1
-        continue
-      }
-      tr.setNodeMarkup(tableStart + pos, null, {
-        ...node.attrs,
-        rowspan: (node.attrs.rowspan as number) + 1,
+      tr.setNodeMarkup(tableStart + resolved.pos, null, {
+        ...resolved.node.attrs,
+        rowspan: (resolved.node.attrs.rowspan as number) + 1,
       })
-      col += node.attrs.colspan as number
+      col += resolved.node.attrs.colspan as number
       continue
     }
 
     const sourceIndex = sourceRow * map.width + col
-    const sourcePos = map.map[sourceIndex]
-    if (sourcePos === undefined) {
+    const resolvedSource = resolveCell(table, map, sourceIndex)
+    if (!resolvedSource) {
       col += 1
       continue
     }
-    const sourceCell = table.nodeAt(sourcePos)
-    if (!sourceCell) {
-      col += 1
-      continue
-    }
+    const { node: sourceCell, pos: sourcePos } = resolvedSource
 
     const sourceCellRect = map.findCell(sourcePos)
     if (sourceCellRect.top !== sourceRow) {
@@ -131,39 +160,30 @@ const insertDuplicateColumn = (
       insertAt < map.width &&
       map.map[insertIndex - 1] === map.map[insertIndex]
     ) {
-      const pos = map.map[insertIndex]
-      if (pos === undefined) {
-        row += 1
-        continue
-      }
-      const cell = table.nodeAt(pos)
-      if (!cell) {
+      const resolved = resolveCell(table, map, insertIndex)
+      if (!resolved) {
         row += 1
         continue
       }
       tr.setNodeMarkup(
-        tableStart + pos,
+        tableStart + resolved.pos,
         null,
         addColSpan(
-          cell.attrs as Parameters<typeof addColSpan>[0],
-          insertAt - map.colCount(pos),
+          resolved.node.attrs as Parameters<typeof addColSpan>[0],
+          insertAt - map.colCount(resolved.pos),
         ),
       )
-      row += cell.attrs.rowspan as number
+      row += resolved.node.attrs.rowspan as number
       continue
     }
 
     const sourceIndex = row * map.width + sourceCol
-    const sourcePos = map.map[sourceIndex]
-    if (sourcePos === undefined) {
+    const resolvedSource = resolveCell(table, map, sourceIndex)
+    if (!resolvedSource) {
       row += 1
       continue
     }
-    const sourceCell = table.nodeAt(sourcePos)
-    if (!sourceCell) {
-      row += 1
-      continue
-    }
+    const { node: sourceCell, pos: sourcePos } = resolvedSource
 
     const sourceCellRect = map.findCell(sourcePos)
     const insertPos = map.positionAt(row, insertAt, table)
@@ -200,7 +220,7 @@ const insertDuplicateColumn = (
 
 // Duplicate the selected row block immediately below it, preserving order.
 export const duplicateSelectedRows = (editor: Editor): void => {
-  const { state, view } = editor
+  const { state } = editor
   if (!isInTable(state)) return
 
   const rect = selectedRect(state)
@@ -218,33 +238,19 @@ export const duplicateSelectedRows = (editor: Editor): void => {
     tr = insertDuplicateRow(tr, info, sourceRow, rect.bottom)
   }
 
-  const info = tableInfoAt(tr, tablePos)
-  if (!info) {
-    view.dispatch(tr)
-    return
-  }
-
-  const newTop = rect.bottom
-  const newBottom = rect.bottom + span
-  const anchor = info.map.positionAt(newTop, 0, info.table)
-  const head = info.map.positionAt(
-    newBottom - 1,
-    info.map.width - 1,
-    info.table,
-  )
-  tr.setSelection(
-    CellSelection.create(
-      tr.doc,
-      info.tableStart + anchor,
-      info.tableStart + head,
+  selectBlockAndDispatch(editor, tr, tablePos, (info) => ({
+    anchor: info.map.positionAt(rect.bottom, 0, info.table),
+    head: info.map.positionAt(
+      rect.bottom + span - 1,
+      info.map.width - 1,
+      info.table,
     ),
-  )
-  view.dispatch(tr)
+  }))
 }
 
 // Duplicate the selected column block immediately to its right, preserving order.
 export const duplicateSelectedColumns = (editor: Editor): void => {
-  const { state, view } = editor
+  const { state } = editor
   if (!isInTable(state)) return
 
   const rect = selectedRect(state)
@@ -262,23 +268,9 @@ export const duplicateSelectedColumns = (editor: Editor): void => {
     }
   }
 
-  const info = tableInfoAt(tr, tablePos)
-  if (!info) {
-    view.dispatch(tr)
-    return
-  }
-
-  const newLeft = rect.right
-  const newRight = rect.right + span
   // Bottom-left → top-right matches TipTap's full-column selection orientation.
-  const anchor = info.map.positionAt(info.map.height - 1, newLeft, info.table)
-  const head = info.map.positionAt(0, newRight - 1, info.table)
-  tr.setSelection(
-    CellSelection.create(
-      tr.doc,
-      info.tableStart + anchor,
-      info.tableStart + head,
-    ),
-  )
-  view.dispatch(tr)
+  selectBlockAndDispatch(editor, tr, tablePos, (info) => ({
+    anchor: info.map.positionAt(info.map.height - 1, rect.right, info.table),
+    head: info.map.positionAt(0, rect.right + span - 1, info.table),
+  }))
 }
