@@ -13,9 +13,11 @@ import { useEditorState } from "@tiptap/react"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { BiGridVertical } from "react-icons/bi"
 import {
-  hideTableBubbleMenu,
-  revealTableBubbleMenu,
-} from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
+  containerRectToViewportRect,
+  type Rect,
+  viewportPointToContainerPoint,
+  viewportRectToContainerRect,
+} from "~/features/editing-experience/utils/tableEditorGeometry"
 
 export interface TableDragHandlesProps {
   editor: TiptapEditor | null
@@ -27,6 +29,7 @@ export interface TableDragHandlesProps {
    * `EditorContent`.
    */
   containerRef: RefObject<HTMLElement>
+  onDragStateChange?: (isDragging: boolean) => void
 }
 
 interface TableLocation {
@@ -67,11 +70,12 @@ const measureTableGeometry = (
     const dom = getRowDom(editor, table.pos, map, r)
     rowRects.push(
       dom
-        ? domRectToContainerRelative(
-            dom.getBoundingClientRect(),
+        ? viewportRectToContainerRect({
+            rect: dom.getBoundingClientRect(),
             containerRect,
-            container,
-          )
+            scrollTop: container.scrollTop,
+            scrollLeft: container.scrollLeft,
+          })
         : null,
     )
   }
@@ -80,11 +84,12 @@ const measureTableGeometry = (
     const dom = getCellDom(editor, table.pos, map, 0, c)
     colRects.push(
       dom
-        ? domRectToContainerRelative(
-            dom.getBoundingClientRect(),
+        ? viewportRectToContainerRect({
+            rect: dom.getBoundingClientRect(),
             containerRect,
-            container,
-          )
+            scrollTop: container.scrollTop,
+            scrollLeft: container.scrollLeft,
+          })
         : null,
     )
   }
@@ -118,24 +123,6 @@ const getCellDom = (
   const dom = editor.view.nodeDOM(cellPos)
   return dom instanceof HTMLElement ? dom : null
 }
-
-interface Rect {
-  top: number
-  left: number
-  width: number
-  height: number
-}
-
-const domRectToContainerRelative = (
-  domRect: DOMRect,
-  containerRect: DOMRect,
-  container: HTMLElement,
-): Rect => ({
-  top: domRect.top - containerRect.top + container.scrollTop,
-  left: domRect.left - containerRect.left + container.scrollLeft,
-  width: domRect.width,
-  height: domRect.height,
-})
 
 interface TableGeometry {
   /** ProseMirror document position of this table's opening boundary. */
@@ -526,6 +513,7 @@ const ColumnHandle = ({
 export const TableDragHandles = ({
   editor,
   containerRef,
+  onDragStateChange,
 }: TableDragHandlesProps) => {
   const [hoverTablePos, setHoverTablePos] = useState<number | null>(null)
   const [hoverRow, setHoverRow] = useState<number | null>(null)
@@ -636,9 +624,15 @@ export const TableDragHandles = ({
         let rowHit: number | null = null
         geometry.rowRects.forEach((rect, i) => {
           if (!rect) return
-          const top = rect.top + containerRect.top
+          const viewportRect = containerRectToViewportRect({
+            rect,
+            containerRect,
+            scrollTop: container.scrollTop,
+            scrollLeft: container.scrollLeft,
+          })
+          const top = viewportRect.top
           const bottom = top + rect.height
-          const left = rect.left + containerRect.left
+          const left = viewportRect.left
           const right = left + rect.width
           if (
             clientY >= top &&
@@ -653,7 +647,12 @@ export const TableDragHandles = ({
         let colHit: number | null = null
         const headerRowRect = geometry.rowRects[0]
         if (headerRowRect) {
-          const headerTop = headerRowRect.top + containerRect.top
+          const headerTop = containerRectToViewportRect({
+            rect: headerRowRect,
+            containerRect,
+            scrollTop: container.scrollTop,
+            scrollLeft: container.scrollLeft,
+          }).top
           // The column handle always renders above the header row, but it
           // should stay visible while hovering ANY row of the table (not
           // just the header row) — so the hit band spans the full table
@@ -661,11 +660,21 @@ export const TableDragHandles = ({
           const tableRects = geometry.rowRects.filter((r): r is Rect => !!r)
           const lastRowRect = tableRects[tableRects.length - 1]
           const tableBottom = lastRowRect
-            ? lastRowRect.top + lastRowRect.height + containerRect.top
+            ? containerRectToViewportRect({
+                rect: lastRowRect,
+                containerRect,
+                scrollTop: container.scrollTop,
+                scrollLeft: container.scrollLeft,
+              }).top + lastRowRect.height
             : headerTop + headerRowRect.height
           geometry.colRects.forEach((rect, i) => {
             if (!rect) return
-            const left = rect.left + containerRect.left
+            const left = containerRectToViewportRect({
+              rect,
+              containerRect,
+              scrollTop: container.scrollTop,
+              scrollLeft: container.scrollLeft,
+            }).left
             const right = left + rect.width
             if (
               clientX >= left &&
@@ -776,15 +785,15 @@ export const TableDragHandles = ({
     if (!editor || editor.isDestroyed) return
     if (drag) {
       wasDraggingRef.current = true
-      hideTableBubbleMenu(editor)
+      onDragStateChange?.(true)
       return
     }
     if (!wasDraggingRef.current) return
     wasDraggingRef.current = false
     queueMicrotask(() => {
-      if (!editor.isDestroyed) revealTableBubbleMenu(editor)
+      if (!editor.isDestroyed) onDragStateChange?.(false)
     })
-  }, [drag, editor])
+  }, [drag, editor, onDragStateChange])
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -798,14 +807,18 @@ export const TableDragHandles = ({
         if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return
 
         const containerRect = container.getBoundingClientRect()
+        const pointer = viewportPointToContainerPoint({
+          clientX: e.clientX,
+          clientY: e.clientY,
+          containerRect,
+          scrollTop: container.scrollTop,
+          scrollLeft: container.scrollLeft,
+        })
         const state: DragState = {
           axis: pending.axis,
           from: pending.from,
           tablePos: pending.tablePos,
-          pointer:
-            pending.axis === "row"
-              ? e.clientY - containerRect.top
-              : e.clientX - containerRect.left,
+          pointer: pending.axis === "row" ? pointer.y : pointer.x,
           boundaries: pending.boundaries,
         }
         pendingRef.current = null
@@ -817,10 +830,15 @@ export const TableDragHandles = ({
       const current = dragRef.current
       if (!current) return
       const containerRect = container.getBoundingClientRect()
+      const containerPoint = viewportPointToContainerPoint({
+        clientX: e.clientX,
+        clientY: e.clientY,
+        containerRect,
+        scrollTop: container.scrollTop,
+        scrollLeft: container.scrollLeft,
+      })
       const pointer =
-        current.axis === "row"
-          ? e.clientY - containerRect.top
-          : e.clientX - containerRect.left
+        current.axis === "row" ? containerPoint.y : containerPoint.x
       const next = { ...current, pointer }
       dragRef.current = next
       setDrag(next)

@@ -4,8 +4,13 @@ import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
-import { useMemo, useRef } from "react"
-import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
+import { useCallback, useMemo, useRef } from "react"
+import {
+  hideTableBubbleMenu,
+  revealTableBubbleMenu,
+  TableBubbleMenu,
+} from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
+import { TABLE_EDITOR_OVERLAYS_ATTR } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.dom"
 import { TableCaption } from "~/features/editing-experience/components/TableCaption/TableCaption"
 import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
 
@@ -53,6 +58,18 @@ const EditorContentWrapper = ({
   containerRef: RefObject<HTMLDivElement>
   showTableExtras?: boolean
 }) => {
+  const handleTableDragStateChange = useCallback(
+    (isDragging: boolean) => {
+      if (!editor || editor.isDestroyed) return
+      if (isDragging) {
+        hideTableBubbleMenu(editor)
+        return
+      }
+      revealTableBubbleMenu(editor)
+    },
+    [editor],
+  )
+
   return (
     // `TableCaption`'s captions are absolutely positioned relative to
     // whichever element `containerRef` points to, computed from that
@@ -69,6 +86,7 @@ const EditorContentWrapper = ({
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
+      {...{ [TABLE_EDITOR_OVERLAYS_ATTR]: "" }}
     >
       <Box
         as={EditorContent}
@@ -82,7 +100,11 @@ const EditorContentWrapper = ({
       {showTableExtras && (
         <>
           <TableCaption editor={editor} containerRef={containerRef} />
-          <TableDragHandles editor={editor} containerRef={containerRef} />
+          <TableDragHandles
+            editor={editor}
+            containerRef={containerRef}
+            onDragStateChange={handleTableDragStateChange}
+          />
         </>
       )}
     </Box>
