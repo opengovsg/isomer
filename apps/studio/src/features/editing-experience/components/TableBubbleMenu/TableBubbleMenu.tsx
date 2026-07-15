@@ -31,6 +31,7 @@ import {
   BiCopy,
   BiDownArrowAlt,
   BiLeftArrowAlt,
+  BiPalette,
   BiPencil,
   BiRightArrowAlt,
   BiTrash,
@@ -49,10 +50,6 @@ import {
 } from "~/components/icons"
 
 import { clearSelectedCells } from "./TableBubbleMenu.clear"
-import {
-  duplicateSelectedColumns,
-  duplicateSelectedRows,
-} from "./TableBubbleMenu.duplicate"
 import {
   duplicateSelectedColumns,
   duplicateSelectedRows,
@@ -747,6 +744,7 @@ const revealTableBubbleMenuActions = (editor: Editor, isActivated: boolean) => {
 const useTableBubbleMenuDragSync = (
   editor: Editor,
   isActivatedRef: MutableRefObject<boolean>,
+  resetPanel: () => void,
 ) => {
   useEffect(() => {
     const onTransaction = ({
@@ -759,6 +757,7 @@ const useTableBubbleMenuDragSync = (
       queueMicrotask(() => {
         if (editor.isDestroyed) return
         if (tableEditingKey.getState(editor.state) != null) {
+          resetPanel()
           editor.view.dispatch(
             editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
           )
@@ -771,7 +770,7 @@ const useTableBubbleMenuDragSync = (
     return () => {
       editor.off("transaction", onTransaction)
     }
-  }, [editor, isActivatedRef])
+  }, [editor, isActivatedRef, resetPanel])
 }
 
 const TableBubbleMenuTrigger = ({
@@ -832,6 +831,9 @@ const TableBubbleMenuTrigger = ({
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
 }: TableBubbleMenuProps) {
+  const [panel, setPanel] = useState<"actions" | "colour">("actions")
+  const resetPanel = useCallback(() => setPanel("actions"), [])
+
   // TipTap's selector replaces manual event subscriptions. Document identity
   // represents `update`; Selection.eq represents `selectionUpdate`. Include
   // `isFocused` so the pencil trigger reappears when focus returns without a
@@ -957,7 +959,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // TipTap early-returns when selection/doc are unchanged, so mouseup's
   // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
   // (or an explicit hide while selecting) force hide/reveal.
-  useTableBubbleMenuDragSync(editor, isActivatedRef)
+  useTableBubbleMenuDragSync(editor, isActivatedRef, resetPanel)
 
   const canSetBackgroundColour =
     (kind === "multi-cell" ||
