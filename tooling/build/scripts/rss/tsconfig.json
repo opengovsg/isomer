@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "noEmit": true,
+    // Resolve the components package from source (like scripts/publishing's
+    // ~schema alias) so type-aware lint and tsx work without a built dist. The
+    // `~/*` alias lets the imported source files resolve their own internal
+    // `~/` imports.
+    "paths": {
+      "@opengovsg/isomer-components/build-utils": [
+        "../../../../packages/components/src/build-utils/index.ts"
+      ],
+      "@opengovsg/isomer-components": [
+        "../../../../packages/components/src/index.ts"
+      ],
+      "~/*": ["../../../../packages/components/src/*"]
+    }
+  }
+}

@@ -168,6 +168,23 @@ fi
 ls -al
 find ./out -type f | wc -l
 
+# Generate RSS feeds for collections into out/<permalink>/rss.xml so they ride
+# the S3 sync below. Non-fatal: a feed failure must not block the publish.
+echo "Generating RSS feeds..."
+start_time=$(date +%s)
+RSS_SITEMAP_JSON="$(realpath sitemap.json)"
+RSS_CONFIG_JSON="$(realpath data/config.json)"
+RSS_OUT_DIR="$(realpath out)"
+(
+  cd ../build/scripts/rss
+  pnpm install --frozen-lockfile
+  SITEMAP_JSON="$RSS_SITEMAP_JSON" \
+    CONFIG_JSON="$RSS_CONFIG_JSON" \
+    OUT_DIR="$RSS_OUT_DIR" \
+    pnpm run start
+) || echo "Warning: RSS feed generation failed, continuing..."
+calculate_duration $start_time
+
 cd out/
 echo $(pwd)
 ls -al
