@@ -2184,6 +2184,7 @@ export const ColumnWidths: Story = {
   args: {
     attrs: {
       caption: "A table with explicit column widths",
+      colwidths: [50, 30, 20],
     },
     content: [
       {
@@ -2191,7 +2192,6 @@ export const ColumnWidths: Story = {
         content: [
           {
             type: "tableHeader",
-            attrs: { colwidth: 50 },
             content: [
               {
                 type: "paragraph",
@@ -2201,7 +2201,6 @@ export const ColumnWidths: Story = {
           },
           {
             type: "tableHeader",
-            attrs: { colwidth: 30 },
             content: [
               {
                 type: "paragraph",
@@ -2211,7 +2210,6 @@ export const ColumnWidths: Story = {
           },
           {
             type: "tableHeader",
-            attrs: { colwidth: 20 },
             content: [
               {
                 type: "paragraph",
@@ -2226,7 +2224,6 @@ export const ColumnWidths: Story = {
         content: [
           {
             type: "tableCell",
-            attrs: { colwidth: 50 },
             content: [
               {
                 type: "paragraph",
@@ -2241,14 +2238,12 @@ export const ColumnWidths: Story = {
           },
           {
             type: "tableCell",
-            attrs: { colwidth: 30 },
             content: [
               { type: "paragraph", content: [{ type: "text", text: "30%" }] },
             ],
           },
           {
             type: "tableCell",
-            attrs: { colwidth: 20 },
             content: [
               { type: "paragraph", content: [{ type: "text", text: "20%" }] },
             ],

@@ -5,26 +5,26 @@ export const MIN_COLUMN_WIDTH_PX = 25
 export const getEqualColumnWidths = (columnCount: number): number[] =>
   Array.from({ length: columnCount }, () => 100 / columnCount)
 
-interface RowCellInfo {
-  colspan: number
-  colwidth: number | null
-}
-
-// Column widths are only ever tracked against an unspanned first row (see
-// IsomerTableCell/IsomerTableHeader's colwidth override in constants.ts for
-// why): a colspan'd first row can't be mapped 1 cell to 1 column, and a row
-// where some but not all cells carry a width means a column was just added
-// or removed, so the whole row falls back to an equal split.
-export const getColumnWidthsFromRow = (
-  cells: RowCellInfo[],
-): number[] | null => {
-  if (cells.length === 0 || cells.some((cell) => cell.colspan !== 1)) {
-    return null
+// `colwidths` is a table-level attribute (one entry per column, by index),
+// not a per-cell one -- ProseMirror's table model has no "column" node to
+// hang it on, but there's no reason to fake one out of row-0's cells either
+// when the table node itself can just own the whole array directly. Falls
+// back to an equal split whenever the stored array is missing, contains a
+// null (not yet resized), or its length doesn't match the table's actual
+// column count (e.g. right after a column was added/removed, before the
+// normalizer plugin has rewritten it).
+export const resolveColumnWidths = (
+  colwidths: unknown,
+  columnCount: number,
+): number[] => {
+  if (
+    !Array.isArray(colwidths) ||
+    colwidths.length !== columnCount ||
+    colwidths.some((width) => typeof width !== "number")
+  ) {
+    return getEqualColumnWidths(columnCount)
   }
-  if (cells.some((cell) => cell.colwidth == null)) {
-    return getEqualColumnWidths(cells.length)
-  }
-  return cells.map((cell) => cell.colwidth ?? 0)
+  return colwidths as number[]
 }
 
 const clamp = (value: number, min: number, max: number) =>
