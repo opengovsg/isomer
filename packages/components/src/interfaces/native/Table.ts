@@ -25,14 +25,21 @@ const TableBaseCellSchema = Type.Object({
       minimum: 1,
     }),
   ),
+  // Optional (older content predates this field and omits the key entirely)
+  // AND nullable: TipTap always serializes every declared node attribute, so
+  // once a cell is created by the editor, `colwidth` is always present as
+  // either a number or `null` ("not yet resized") -- it's never omitted.
   colwidth: Type.Optional(
-    Type.Number({
-      title: "Table cell column width",
-      description:
-        "The width of the cell's column, as a percentage of the table's total width",
-      minimum: 0,
-      maximum: 100,
-    }),
+    Type.Union([
+      Type.Number({
+        title: "Table cell column width",
+        description:
+          "The width of the cell's column, as a percentage of the table's total width",
+        minimum: 0,
+        maximum: 100,
+      }),
+      Type.Null(),
+    ]),
   ),
 })
 
