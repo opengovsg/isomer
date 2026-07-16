@@ -583,9 +583,11 @@ const BULK_REDIRECT_INSERT_CHUNK_SIZE = 500
 const BULK_MALFORMED_ROW_MESSAGE =
   "This row has extra columns. Put double quotes around any value that contains a comma."
 
-// Thrown inside the bulk insert when a source went live between validation and
-// the insert (the upsert skipped it). bulkCreate catches it to re-validate and
-// return fresh row verdicts rather than surface a generic failure.
+// Thrown inside the bulk insert when a source stopped being publishable between
+// validation and the insert — either it gained a live redirect (the upsert
+// skipped it, a shortfall) or a page was published at it (the in-txn recheck).
+// bulkCreate catches it to re-validate and return fresh row verdicts rather than
+// surface a generic failure.
 class BulkRedirectRaceError extends Error {}
 
 // Cross-file duplicate copy. The other row errors reuse the shared Studio
@@ -993,6 +995,31 @@ export const bulkCreateRedirects = async ({
         existingRows.map((row) => [row.source, row]),
       )
 
+      // Re-enforce the source-vs-published-page guard here, close to the insert.
+      // A page could have gone live at one of these sources since validation, and
+      // the upsert only guards against a concurrent live redirect (the shortfall
+      // check below) — so a redirect shadowing the now-live page would otherwise
+      // publish. Mirrors createRedirect's in-transaction recheck. On a hit, abort
+      // so the catch re-validates and returns fresh per-row errors (keeping the
+      // ok:false contract) rather than committing a shadowing redirect.
+      if (sources.length > 0) {
+        const idByPermalink = await getResourceIdsByPermalinks(siteId, sources)
+        const pageResourceIds = [...idByPermalink.values()].filter(
+          (id): id is number => id !== null,
+        )
+        const publishedState = await getPublishedStateByResourceIds(
+          siteId,
+          pageResourceIds,
+        )
+        const shadowsLivePage = sources.some((source) => {
+          const resourceId = idByPermalink.get(source) ?? null
+          return resourceId !== null && publishedState.get(resourceId) === true
+        })
+        if (shadowsLivePage) {
+          throw new BulkRedirectRaceError()
+        }
+      }
+
       const insertedRows: typeof existingRows = []
       for (
         let i = 0;
@@ -1065,9 +1092,10 @@ export const bulkCreateRedirects = async ({
     return { ok: true, publishedCount: created.length }
   } catch (error) {
     if (error instanceof BulkRedirectRaceError) {
-      // A source went live between validation and the insert. Re-validate
-      // against the now-current table so the modal shows the offending row(s)
-      // rather than a generic failure — this keeps the ok:false contract.
+      // A source gained a live redirect or a published page between validation
+      // and the insert. Re-validate against the now-current table so the modal
+      // shows the offending row(s) rather than a generic failure — this keeps
+      // the ok:false contract.
       const { fileError, rows } = await runBulkValidation(siteId, csv)
       return { ok: false, validation: toValidationResult(fileError, rows) }
     }

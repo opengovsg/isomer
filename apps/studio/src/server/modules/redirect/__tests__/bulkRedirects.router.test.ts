@@ -16,6 +16,7 @@ import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import * as codebuildService from "../../aws/codebuild.service"
 import { db } from "../../database"
+import * as resourceService from "../../resource/resource.service"
 import { redirectRouter } from "../redirect.router"
 
 const createCaller = createCallerFactory(redirectRouter)
@@ -362,6 +363,43 @@ describe("redirect.router bulk upload", async () => {
       const published = events.filter((e) => e.eventType === "Publish")
       expect(created).toHaveLength(2)
       expect(published).toHaveLength(1)
+    })
+
+    it("does not publish a redirect shadowing a page that goes live mid-publish", async () => {
+      // Arrange: a published page really exists at /shadowed, but the initial
+      // validation is made to miss it — the first permalink lookup (validation's
+      // shadow check) returns nothing, simulating a page that only goes live
+      // after validation but before the insert. The in-transaction recheck and
+      // the re-validation then see the real page.
+      const publishSpy = vi.spyOn(codebuildService, "publishSite")
+      await seedPublishedPageAtRoot("shadowed")
+      vi.spyOn(
+        resourceService,
+        "getResourceIdsByPermalinks",
+      ).mockImplementationOnce(() =>
+        Promise.resolve(new Map<string, number | null>()),
+      )
+
+      // Act
+      const result = await caller.bulkCreate({
+        siteId,
+        csv: csvOf([["/shadowed", "/somewhere"]]),
+      })
+
+      // Assert: the batch aborts instead of committing a shadowing redirect, and
+      // the offending row comes back flagged so the modal can show it.
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(errorFor(result.validation, "/shadowed")).toBeTruthy()
+      }
+      expect(publishSpy).not.toHaveBeenCalled()
+      const live = await db
+        .selectFrom("Redirect")
+        .select("source")
+        .where("siteId", "=", siteId)
+        .where("deletedAt", "is", null)
+        .execute()
+      expect(live).toHaveLength(0)
     })
   })
 })
