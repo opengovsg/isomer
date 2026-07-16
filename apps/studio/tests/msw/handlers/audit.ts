@@ -1,5 +1,3 @@
-import { TRPCError } from "@trpc/server"
-
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
@@ -40,18 +38,12 @@ export const auditHandlers = {
       ),
     // Never resolves, so the submit button stays in its loading state — used
     // to demonstrate the in-flight UI.
+    // NOTE: there is deliberately no failure handler for a duplicate request:
+    // asking twice can no longer fail — the service accepts duplicates
+    // idempotently (ADR docs/adr/0005).
     pending: () =>
       trpcMsw.audit.createExportRequest.mutation(
         () => new Promise(() => undefined),
       ),
-    // An export for the same period + report type is already in flight.
-    conflict: () =>
-      trpcMsw.audit.createExportRequest.mutation(() => {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message:
-            "An export for this period and report type is already being generated",
-        })
-      }),
   },
 }
