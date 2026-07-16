@@ -30,6 +30,7 @@ import { protectedProcedure, router } from "~/server/trpc"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { PermissionsProps } from "../permissions/permissions.type"
+import { softDeleteSiteFiles } from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
 import { db, ResourceType } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -46,6 +47,7 @@ import { validateUserPermissionsForSite } from "../site/site.service"
 import {
   applyResourceOrderBy,
   defaultResourceSelect,
+  getAssetFileKeysInResourceSubtree,
   getBatchAncestryWithSelfQuery,
   getResourceFullPermalink,
   getSearchRecentlyEdited,
@@ -699,64 +701,85 @@ export const resourceRouter = router({
             }),
         )
 
-      const result = await db.transaction().execute(async (tx) => {
-        const before = await tx
-          .selectFrom("Resource")
-          .where("siteId", "=", Number(siteId))
-          .where("id", "=", resourceId)
-          .select(defaultResourceSelect)
-          .executeTakeFirst()
+      const { result, fileKeysToDelete } = await db
+        .transaction()
+        .execute(async (tx) => {
+          const before = await tx
+            .selectFrom("Resource")
+            .where("siteId", "=", Number(siteId))
+            .where("id", "=", resourceId)
+            .select(defaultResourceSelect)
+            .executeTakeFirst()
 
-        if (!before) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "The resource to be deleted could not be found",
+          if (!before) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "The resource to be deleted could not be found",
+            })
+          }
+
+          // Prevent users from deleting the search page (permalink /search, no parent)
+          // This is a special page that is used to display the SearchSG results
+          if (before.permalink === "search" && before.parentId === null) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "The search page cannot be deleted",
+            })
+          }
+
+          // Collect the asset keys for this resource and its whole subtree
+          // BEFORE the cascading delete removes their blobs, so they can be
+          // purged from S3 once the delete commits.
+          const fileKeysToDelete = await getAssetFileKeysInResourceSubtree(tx, {
+            siteId: Number(siteId),
+            resourceId: String(resourceId),
           })
-        }
 
-        // Prevent users from deleting the search page (permalink /search, no parent)
-        // This is a special page that is used to display the SearchSG results
-        if (before.permalink === "search" && before.parentId === null) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "The search page cannot be deleted",
+          await logResourceEvent(tx, {
+            siteId,
+            delta: {
+              after: null,
+              before,
+            },
+            by: user,
+            eventType: AuditLogEvent.ResourceDelete,
           })
-        }
 
-        await logResourceEvent(tx, {
-          siteId,
-          delta: {
-            after: null,
-            before,
-          },
-          by: user,
-          eventType: AuditLogEvent.ResourceDelete,
+          // Soft-delete redirects pointing at this resource (or any descendant)
+          // in the same transaction — once the page is gone they resolve to
+          // nothing. Run before the delete while the subtree is still resolvable;
+          // the delete's site publish covers the removal.
+          await softDeleteRedirectsPointingToResource(tx, {
+            siteId: Number(siteId),
+            resourceId: String(resourceId),
+            byUserId: user.id,
+          })
+
+          const result = await tx
+            .deleteFrom("Resource")
+            .where("Resource.id", "=", String(resourceId))
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.type", "!=", ResourceType.RootPage)
+            .returningAll()
+            .executeTakeFirst()
+
+          return { result, fileKeysToDelete }
         })
-
-        // Soft-delete redirects pointing at this resource (or any descendant)
-        // in the same transaction — once the page is gone they resolve to
-        // nothing. Run before the delete while the subtree is still resolvable;
-        // the delete's site publish covers the removal.
-        await softDeleteRedirectsPointingToResource(tx, {
-          siteId: Number(siteId),
-          resourceId: String(resourceId),
-          byUserId: user.id,
-        })
-
-        return tx
-          .deleteFrom("Resource")
-          .where("Resource.id", "=", String(resourceId))
-          .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "!=", ResourceType.RootPage)
-          .returningAll()
-          .executeTakeFirst()
-      })
 
       if (!result) {
         throw new TRPCError({ code: "BAD_REQUEST" })
       }
 
       await publishResource(user.id, result, ctx.logger)
+
+      // Purge the deleted resources' uploaded files from S3 after the delete
+      // commits. Best-effort: a storage failure is logged but must not fail the
+      // already-committed delete.
+      await softDeleteSiteFiles({
+        fileKeys: fileKeysToDelete,
+        siteId: Number(siteId),
+        logger: ctx.logger,
+      })
 
       // NOTE: We need to do this cast as the property is a `bigint`
       // and trpc cannot serialise it, which leads to errors

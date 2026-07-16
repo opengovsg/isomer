@@ -6,8 +6,17 @@ import {
   getContentDispositionForKey,
   getContentTypeFromKey,
   getFileKey,
+  getFileKeysFromBlobContent,
+  getRemovedFileKeys,
   sanitizeSvg,
 } from "../asset.service"
+
+const SITE_ID = 42
+// A valid uploaded-asset folder is a v4 UUID (see getFileKey).
+const UUID_1 = "11111111-1111-4111-8111-111111111111"
+const UUID_2 = "22222222-2222-4222-8222-222222222222"
+const assetPath = (uuid: string, fileName: string) =>
+  `/${SITE_ID}/${uuid}/${fileName}`
 
 describe("asset.service", () => {
   describe("getContentTypeFromKey", () => {
@@ -275,6 +284,192 @@ describe("asset.service", () => {
           fileKeys: ["2/uuid/file.png"],
         }),
       ).toBe(true)
+    })
+  })
+
+  describe("getFileKeysFromBlobContent", () => {
+    it("should return an empty array when there are no asset references", () => {
+      const content = {
+        layout: "content",
+        page: { title: "No assets here" },
+        content: [
+          {
+            type: "prose",
+            content: [{ type: "paragraph", content: [{ text: "Hello" }] }],
+          },
+        ],
+      }
+
+      expect(getFileKeysFromBlobContent({ content, siteId: SITE_ID })).toEqual(
+        [],
+      )
+    })
+
+    it("should extract asset keys (without leading slash) from nested strings", () => {
+      const content = {
+        layout: "content",
+        page: {
+          image: { src: assetPath(UUID_1, "cover.png") },
+        },
+        content: [
+          {
+            type: "image",
+            src: assetPath(UUID_2, "diagram.jpg"),
+            alt: "Diagram",
+          },
+        ],
+      }
+
+      const result = getFileKeysFromBlobContent({ content, siteId: SITE_ID })
+
+      expect(result).toHaveLength(2)
+      expect(result).toEqual(
+        expect.arrayContaining([
+          `${SITE_ID}/${UUID_1}/cover.png`,
+          `${SITE_ID}/${UUID_2}/diagram.jpg`,
+        ]),
+      )
+    })
+
+    it("should extract asset keys referenced from file-download links", () => {
+      const content = {
+        content: [
+          {
+            type: "prose",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    marks: [
+                      {
+                        type: "link",
+                        attrs: { href: assetPath(UUID_1, "report.pdf") },
+                      },
+                    ],
+                    text: "Download report [PDF, 1.00 MB]",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }
+
+      expect(getFileKeysFromBlobContent({ content, siteId: SITE_ID })).toEqual([
+        `${SITE_ID}/${UUID_1}/report.pdf`,
+      ])
+    })
+
+    it("should de-duplicate a key referenced in multiple places", () => {
+      const src = assetPath(UUID_1, "shared.png")
+      const content = {
+        content: [
+          { type: "image", src },
+          { type: "infopic", imageSrc: src },
+        ],
+      }
+
+      expect(getFileKeysFromBlobContent({ content, siteId: SITE_ID })).toEqual([
+        `${SITE_ID}/${UUID_1}/shared.png`,
+      ])
+    })
+
+    it("should ignore assets that belong to a different site", () => {
+      const content = {
+        content: [
+          { type: "image", src: assetPath(UUID_1, "mine.png") },
+          { type: "image", src: `/999/${UUID_2}/theirs.png` },
+        ],
+      }
+
+      expect(getFileKeysFromBlobContent({ content, siteId: SITE_ID })).toEqual([
+        `${SITE_ID}/${UUID_1}/mine.png`,
+      ])
+    })
+
+    it("should ignore internal links, external URLs, and legacy (non-UUID) paths", () => {
+      const content = {
+        content: [
+          { type: "link", href: "[resource:42:123]" },
+          { type: "link", href: "https://example.com/file.pdf" },
+          { type: "link", href: "/about-us/contact" },
+          // Legacy GitHub-hosted asset (no UUID folder) — not in our S3 bucket.
+          { type: "link", href: `/${SITE_ID}/files/legacy.pdf` },
+        ],
+      }
+
+      expect(getFileKeysFromBlobContent({ content, siteId: SITE_ID })).toEqual(
+        [],
+      )
+    })
+
+    it("should handle null, undefined, and non-object content safely", () => {
+      expect(
+        getFileKeysFromBlobContent({ content: null, siteId: SITE_ID }),
+      ).toEqual([])
+      expect(
+        getFileKeysFromBlobContent({ content: undefined, siteId: SITE_ID }),
+      ).toEqual([])
+      expect(
+        getFileKeysFromBlobContent({
+          content: "just a string",
+          siteId: SITE_ID,
+        }),
+      ).toEqual([])
+    })
+  })
+
+  describe("getRemovedFileKeys", () => {
+    it("should return keys present in before but absent in after", () => {
+      const before = {
+        content: [
+          { type: "image", src: assetPath(UUID_1, "keep.png") },
+          { type: "image", src: assetPath(UUID_2, "remove.png") },
+        ],
+      }
+      const after = {
+        content: [{ type: "image", src: assetPath(UUID_1, "keep.png") }],
+      }
+
+      expect(getRemovedFileKeys({ before, after, siteId: SITE_ID })).toEqual([
+        `${SITE_ID}/${UUID_2}/remove.png`,
+      ])
+    })
+
+    it("should return an empty array when no keys were removed", () => {
+      const before = {
+        content: [{ type: "image", src: assetPath(UUID_1, "keep.png") }],
+      }
+      const after = {
+        content: [
+          { type: "image", src: assetPath(UUID_1, "keep.png") },
+          { type: "image", src: assetPath(UUID_2, "added.png") },
+        ],
+      }
+
+      expect(getRemovedFileKeys({ before, after, siteId: SITE_ID })).toEqual([])
+    })
+
+    it("should treat all keys as removed when after has no assets", () => {
+      const before = {
+        content: [
+          { type: "image", src: assetPath(UUID_1, "one.png") },
+          { type: "image", src: assetPath(UUID_2, "two.png") },
+        ],
+      }
+      const after = { content: [] }
+
+      const result = getRemovedFileKeys({ before, after, siteId: SITE_ID })
+
+      expect(result).toHaveLength(2)
+      expect(result).toEqual(
+        expect.arrayContaining([
+          `${SITE_ID}/${UUID_1}/one.png`,
+          `${SITE_ID}/${UUID_2}/two.png`,
+        ]),
+      )
     })
   })
 

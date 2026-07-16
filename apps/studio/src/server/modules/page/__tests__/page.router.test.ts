@@ -22,6 +22,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { deleteFile } from "~/lib/s3"
 import { normalizeRedirectPath } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import {
@@ -40,6 +41,16 @@ import {
 } from "../../resource/resource.service"
 import { pageRouter } from "../page.router"
 import { createDefaultPage } from "../page.service"
+
+// Stub only the S3 delete call so blob updates that orphan files can be
+// asserted without hitting AWS. Everything else in ~/lib/s3 stays real.
+vi.mock("~/lib/s3", async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>
+  return {
+    ...actual,
+    deleteFile: vi.fn().mockResolvedValue(undefined),
+  }
+})
 
 const createCaller = createCallerFactory(pageRouter)
 
@@ -1725,6 +1736,68 @@ describe("page.router", async () => {
           },
         },
       })
+    })
+
+    it("should soft-delete files orphaned by the update while keeping still-referenced ones", async () => {
+      // Arrange — the current draft references two uploaded assets
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToUpdate.siteId,
+      })
+      const removedKey = `${pageToUpdate.siteId}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/old.png`
+      const keptKey = `${pageToUpdate.siteId}/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/keep.png`
+      await db
+        .updateTable("Blob")
+        .set({
+          content: jsonb({
+            layout: "content",
+            page: pick(pageToUpdate, ["title", "permalink"]),
+            content: [
+              { type: "image", src: `/${removedKey}`, alt: "Old asset" },
+              { type: "image", src: `/${keptKey}`, alt: "Kept asset" },
+            ],
+            version: "0.1.0",
+            // The draft is seeded directly, bypassing the schema validator that
+            // the update path enforces.
+          } as unknown as PrismaJson.BlobJsonContent),
+        })
+        .where("id", "=", pageToUpdate.draftBlobId)
+        .execute()
+      vi.mocked(deleteFile).mockClear()
+
+      // Act — save content that drops the block referencing `removedKey`
+      await caller.updatePageBlob({
+        pageId: Number(pageToUpdate.id),
+        siteId: pageToUpdate.siteId,
+        content: JSON.stringify({
+          layout: "content",
+          page: pick(pageToUpdate, ["title", "permalink"]),
+          content: [{ type: "image", src: `/${keptKey}`, alt: "Kept asset" }],
+          version: "0.1.0",
+        } satisfies UpdatePageOutput["content"]),
+      })
+
+      // Assert — only the orphaned asset is soft-deleted
+      expect(deleteFile).toHaveBeenCalledTimes(1)
+      expect(deleteFile).toHaveBeenCalledWith({
+        Key: removedKey,
+        Bucket: expect.any(String),
+      })
+    })
+
+    it("should not attempt any file deletion when the update orphans no files", async () => {
+      // Arrange — default draft blob has no uploaded assets
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: pageToUpdate.siteId,
+      })
+      vi.mocked(deleteFile).mockClear()
+
+      // Act
+      await caller.updatePageBlob(createPageUpdateArgs(pageToUpdate))
+
+      // Assert
+      expect(deleteFile).not.toHaveBeenCalled()
     })
   })
 

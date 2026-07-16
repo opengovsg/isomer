@@ -15,6 +15,8 @@ import {
 } from "~/lib/s3"
 import { getServerDomPurify } from "~/lib/server-dom-purify"
 
+import type { Logger } from "@isomer/logging"
+
 import type { AssetPermissionsProps } from "../permissions/permissions.type"
 import { db } from "../database"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
@@ -151,6 +153,125 @@ export const getPresignedPutUrl = async ({
 
 export const markFileAsDeleted = async ({ key }: { key: string }) => {
   await deleteFile({ Key: key, Bucket: bucket })
+}
+
+// Matches an uploaded asset reference for the given site as it is stored inside
+// a page blob, e.g. "/1/<uuid>/report.pdf". Uploaded assets always live under a
+// random UUID folder (see getFileKey), so keying off that shape avoids matching
+// internal page links (e.g. "/about-us") or legacy GitHub-hosted assets that are
+// not in our S3 bucket. Kept in sync with the `files` pattern in
+// `@opengovsg/isomer-components` (convertAssetLinks).
+const buildSiteAssetPathRegex = (siteId: number): RegExp =>
+  new RegExp(
+    `^/${siteId}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`,
+  )
+
+/**
+ * Recursively walks a page blob's content and returns the S3 object keys of
+ * every uploaded asset it references for the given site. Keys are returned
+ * without the leading slash (i.e. the exact S3 object key), de-duplicated.
+ */
+export const getFileKeysFromBlobContent = ({
+  content,
+  siteId,
+}: {
+  content: unknown
+  siteId: number
+}): string[] => {
+  const assetPathRegex = buildSiteAssetPathRegex(siteId)
+  const fileKeys = new Set<string>()
+
+  const walk = (value: unknown): void => {
+    if (typeof value === "string") {
+      // Asset references are stored with a leading slash; the S3 object key is
+      // the same value without it.
+      if (assetPathRegex.test(value)) {
+        fileKeys.add(value.slice(1))
+      }
+      return
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        walk(item)
+      }
+      return
+    }
+
+    if (value !== null && typeof value === "object") {
+      for (const item of Object.values(value)) {
+        walk(item)
+      }
+    }
+  }
+
+  walk(content)
+  return Array.from(fileKeys)
+}
+
+/**
+ * Returns the S3 object keys of assets that were referenced in `before` but are
+ * no longer referenced in `after` — i.e. the files a page edit orphaned (for
+ * example by deleting a block). Keys still present in `after` are preserved.
+ */
+export const getRemovedFileKeys = ({
+  before,
+  after,
+  siteId,
+}: {
+  before: unknown
+  after: unknown
+  siteId: number
+}): string[] => {
+  const remainingKeys = new Set(
+    getFileKeysFromBlobContent({ content: after, siteId }),
+  )
+  return getFileKeysFromBlobContent({ content: before, siteId }).filter(
+    (key) => !remainingKeys.has(key),
+  )
+}
+
+/**
+ * Best-effort soft-delete of many file keys belonging to a site. Keys that do
+ * not belong to the site are skipped as a defensive guard. Never throws:
+ * callers treat file cleanup as best-effort so a storage failure cannot undo an
+ * already-committed database change; failures are logged instead.
+ */
+export const softDeleteSiteFiles = async ({
+  fileKeys,
+  siteId,
+  logger: requestLogger = logger,
+}: {
+  fileKeys: string[]
+  siteId: number
+  logger?: Logger<string>
+}): Promise<void> => {
+  const siteFileKeys = fileKeys.filter((key) =>
+    doAllFileKeysBelongToSite({ fileKeys: [key], siteId }),
+  )
+
+  if (siteFileKeys.length === 0) {
+    return
+  }
+
+  const results = await Promise.allSettled(
+    siteFileKeys.map((key) => markFileAsDeleted({ key })),
+  )
+
+  const failedCount = results.filter(
+    (result) => result.status === "rejected",
+  ).length
+
+  if (failedCount > 0) {
+    requestLogger.error(
+      {
+        siteId,
+        failedCount,
+        totalCount: siteFileKeys.length,
+      },
+      "Failed to soft-delete some associated files from S3",
+    )
+  }
 }
 
 export const getPresignedGetUrl = async ({

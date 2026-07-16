@@ -45,6 +45,7 @@ import {
   ResourceType,
 } from "~prisma/generated/generatedEnums"
 
+import { getRemovedFileKeys, softDeleteSiteFiles } from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
 import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { db, jsonb, sql } from "../database"
@@ -535,7 +536,7 @@ export const pageRouter = router({
             }),
         )
 
-      await db.transaction().execute(async (tx) => {
+      const { before, after } = await db.transaction().execute(async (tx) => {
         const oldBlob = await getBlobOfResource({
           db: tx,
           resourceId: String(input.pageId),
@@ -551,7 +552,16 @@ export const pageRouter = router({
           },
           eventType: AuditLogEvent.ResourceUpdate,
         })
-        return updatedBlob
+        return { before: oldBlob.content, after: updatedBlob.content }
+      })
+
+      // Purge files this edit orphaned (e.g. by deleting a block that held an
+      // uploaded asset) from S3. Best-effort and idempotent — runs after the
+      // write commits so a storage failure cannot roll back the save.
+      await softDeleteSiteFiles({
+        fileKeys: getRemovedFileKeys({ before, after, siteId: input.siteId }),
+        siteId: input.siteId,
+        logger: ctx.logger,
       })
 
       return input

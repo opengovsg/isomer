@@ -23,19 +23,54 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { deleteFile } from "~/lib/s3"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
-import { db } from "../../database"
+import { db, jsonb } from "../../database"
 import { resourceRouter } from "../resource.router"
 import { getFullPageById } from "../resource.service"
+
+// Stub only the S3 delete call so resource deletion can be asserted without
+// hitting AWS. Everything else in ~/lib/s3 keeps its real implementation.
+vi.mock("~/lib/s3", async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>
+  return {
+    ...actual,
+    deleteFile: vi.fn().mockResolvedValue(undefined),
+  }
+})
 
 const createCaller = createCallerFactory(resourceRouter)
 
 const makeResourceIds = (count: number): string[] =>
   Array.from({ length: count }, (_, index) => `${index + 1}`)
+
+// Overwrites a blob's content with a minimal page that references the given
+// uploaded asset keys (stored with a leading slash, as they appear in a blob).
+const setBlobContentWithAssets = async (
+  blobId: string | null,
+  fileKeys: string[],
+) => {
+  const content = {
+    layout: "content",
+    page: { title: "Test page" },
+    content: fileKeys.map((key) => ({
+      type: "image",
+      src: `/${key}`,
+      alt: "asset",
+    })),
+    version: "0.1.0",
+  } as unknown as PrismaJson.BlobJsonContent
+
+  await db
+    .updateTable("Blob")
+    .set({ content: jsonb(content) })
+    .where("id", "=", blobId)
+    .execute()
+}
 
 describe("resource.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -2951,6 +2986,67 @@ describe("resource.router", async () => {
         omit(folderToUse, ["createdAt", "updatedAt"]),
       )
       expect(auditEntry.userId).toBe(session.userId)
+    })
+
+    it("should soft-delete associated uploaded files when a page is deleted", async () => {
+      // Arrange — a page whose draft blob references two uploaded assets
+      const { page, site } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const imageKey = `${site.id}/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/photo.png`
+      const fileKey = `${site.id}/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/report.pdf`
+      await setBlobContentWithAssets(page.draftBlobId, [imageKey, fileKey])
+      vi.mocked(deleteFile).mockClear()
+
+      // Act
+      await caller.delete({ resourceId: page.id, siteId: site.id })
+
+      // Assert — both assets are soft-deleted from the assets bucket
+      expect(deleteFile).toHaveBeenCalledTimes(2)
+      expect(deleteFile).toHaveBeenCalledWith({
+        Key: imageKey,
+        Bucket: expect.any(String),
+      })
+      expect(deleteFile).toHaveBeenCalledWith({
+        Key: fileKey,
+        Bucket: expect.any(String),
+      })
+    })
+
+    it("should soft-delete files of descendant pages when a folder is deleted", async () => {
+      // Arrange — a nested page inside the folder references an uploaded asset
+      const { folder, site } = await setupFolder()
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        permalink: "leaf",
+        resourceType: "Page",
+      })
+      const fileKey = `${site.id}/cccccccc-cccc-4ccc-8ccc-cccccccccccc/nested.pdf`
+      await setBlobContentWithAssets(page.draftBlobId, [fileKey])
+      vi.mocked(deleteFile).mockClear()
+
+      // Act
+      await caller.delete({ resourceId: folder.id, siteId: site.id })
+
+      // Assert
+      expect(deleteFile).toHaveBeenCalledWith({
+        Key: fileKey,
+        Bucket: expect.any(String),
+      })
+    })
+
+    it("should not attempt any file deletion when the deleted page has no uploaded assets", async () => {
+      // Arrange — default blob content has no asset references
+      const { page, site } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+      vi.mocked(deleteFile).mockClear()
+
+      // Act
+      await caller.delete({ resourceId: page.id, siteId: site.id })
+
+      // Assert
+      expect(deleteFile).not.toHaveBeenCalled()
     })
 
     it("should return 400 if resource to delete is a root page", async () => {

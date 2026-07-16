@@ -37,6 +37,7 @@ import type {
   User,
 } from "../database"
 import type { SearchResultResource } from "./resource.types"
+import { getFileKeysFromBlobContent } from "../asset/asset.service"
 import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
@@ -805,6 +806,53 @@ export const getDescendantResourceIds = async (
     .select("id")
     .execute()
   return rows.map((row) => String(row.id))
+}
+
+// Collects the S3 object keys of every uploaded asset referenced by a resource
+// and all of its descendants, across both draft and published blobs. Used to
+// purge files from S3 when a resource is deleted: Resource.parentId cascades the
+// delete across the whole subtree, so this must run before the delete removes
+// the blobs. Accepts a tx so it resolves the same subtree as the delete.
+export const getAssetFileKeysInResourceSubtree = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<string[]> => {
+  const resourceIds = await getDescendantResourceIds(trx, {
+    siteId,
+    resourceId,
+  })
+
+  if (resourceIds.length === 0) {
+    return []
+  }
+
+  const blobs = await trx
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.id", "in", resourceIds)
+    .leftJoin("Blob as draftBlob", "Resource.draftBlobId", "draftBlob.id")
+    .leftJoin("Version", "Resource.publishedVersionId", "Version.id")
+    .leftJoin("Blob as publishedBlob", "Version.blobId", "publishedBlob.id")
+    .select([
+      "draftBlob.content as draftContent",
+      "publishedBlob.content as publishedContent",
+    ])
+    .execute()
+
+  const fileKeys = new Set<string>()
+  for (const { draftContent, publishedContent } of blobs) {
+    for (const blobContent of [draftContent, publishedContent]) {
+      if (!blobContent) continue
+      for (const key of getFileKeysFromBlobContent({
+        content: blobContent,
+        siteId,
+      })) {
+        fileKeys.add(key)
+      }
+    }
+  }
+
+  return Array.from(fileKeys)
 }
 
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
