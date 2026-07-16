@@ -242,6 +242,64 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(container.textContent).not.toContain("Alternate text")
   })
 
+  it("removes the open block and returns to the list when Remove item is clicked", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          BLOCKQUOTE_BLOCK,
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+
+    const removeButton = container.querySelector(
+      'button[aria-label="Remove item"]',
+    )
+    expect(removeButton).toBeDefined()
+    click(removeButton!)
+
+    // The drawer closes back to the list, which now holds only the second
+    // block (shifted up into the Item 1 slot)
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Item 1")
+    expect(container.textContent).not.toContain("Item 2")
+
+    // The removal propagates through JsonForms validation to handleChange
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(lastChange?.blocks).toHaveLength(1)
+    expect(lastChange?.blocks?.[0]?.quote).toBe("The second quote")
+  })
+
+  it("shows the empty state after removing the only block", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm({ type: "canvas", blocks: [BLOCKQUOTE_BLOCK] }, (data) =>
+      changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+    click(container.querySelector('button[aria-label="Remove item"]')!)
+
+    expect(container.textContent).toContain("Items you add will appear here")
+    expect(container.textContent).not.toContain("Item 1")
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as { blocks?: unknown[] } | undefined
+    expect(lastChange?.blocks).toHaveLength(0)
+  })
+
   it("shows the saved width and height when editing an existing canvas", async () => {
     const changes: IsomerComponent[] = []
     renderCanvasForm(
