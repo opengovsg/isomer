@@ -2077,6 +2077,84 @@ export const ColumnWidths: Story = {
   },
 }
 
+// Demonstrates the equal-split fallback in resolveColumnWidths: when
+// colwidths doesn't match the table's actual column count (e.g. stale data
+// left over from before a column was added/removed and rebalanced), the
+// widths are ignored and columns are rendered with an equal split instead.
+export const ColumnWidthsFallback: Story = {
+  args: {
+    attrs: {
+      caption: "A table with stale column widths that no longer match",
+      colwidths: [50, 30],
+    },
+    content: [
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Column one" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Column two" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Column three" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "colwidths only has 2 entries for 3 columns, so it falls back to an equal split.",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: "33%" }] },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: "33%" }] },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
 export const ListInTable: Story = {
   args: {
     attrs: {
