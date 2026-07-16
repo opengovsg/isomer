@@ -313,7 +313,7 @@ describe("auth.singpass", () => {
           verificationToken: {} as never,
           codeVerifier: "code-verifier",
           nonce: "nonce",
-          landingUrl: "http://localhost/sites/1?foo=bar",
+          landingUrl: "http://localhost:3000/sites/1?foo=bar",
         },
       }
       await session.save()
@@ -329,7 +329,7 @@ describe("auth.singpass", () => {
       })
 
       // Assert
-      expect(result.redirectUrl).toBe("http://localhost/sites/1?foo=bar")
+      expect(result.redirectUrl).toBe("http://localhost:3000/sites/1?foo=bar")
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(1)
       expect(auditLogs).toEqual([
