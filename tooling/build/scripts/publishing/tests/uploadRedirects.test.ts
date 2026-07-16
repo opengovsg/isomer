@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  flagFromArgv,
   normalizeSource,
+  parseUploadCliArgs,
   resolveConcurrency,
   resolveUploadConfig,
 } from "../uploadRedirects"
@@ -22,27 +22,25 @@ const baseArgs = [
   "100",
 ] as const
 
-describe("flagFromArgv", () => {
-  it("reads a named flag from argv", () => {
-    expect(flagFromArgv("--concurrency", [...baseArgs])).toBe("100")
+describe("parseUploadCliArgs", () => {
+  it("parses publisher flags from argv", () => {
+    expect(parseUploadCliArgs([...baseArgs])).toEqual({
+      "redirects-json": "/tmp/redirects.json",
+      "s3-bucket-name": "my-bucket",
+      "site-name": "my-site",
+      "build-number": "42",
+      concurrency: "100",
+    })
   })
 
-  it("returns undefined when the flag is absent", () => {
-    expect(
-      flagFromArgv("--concurrency", ["node", "uploadRedirects.ts"]),
-    ).toBeUndefined()
+  it("returns empty values when flags are absent", () => {
+    expect(parseUploadCliArgs(["node", "uploadRedirects.ts"])).toEqual({})
   })
 })
 
 describe("resolveConcurrency", () => {
   it("uses S3_SYNC_CONCURRENCY when it is a positive integer", () => {
     expect(resolveConcurrency("47")).toBe(47)
-  })
-
-  it("prefers --concurrency when argv supplies it", () => {
-    expect(
-      resolveConcurrency(flagFromArgv("--concurrency", [...baseArgs])),
-    ).toBe(100)
   })
 
   it("falls back to 20 when unset or invalid", () => {

@@ -1,9 +1,18 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import * as fs from "fs"
+import { parseArgs } from "node:util"
 import { argv } from "process"
 import { pathToFileURL } from "url"
 
 const DEFAULT_CONCURRENCY = 20
+
+const uploadCliOptions = {
+  "redirects-json": { type: "string" },
+  "s3-bucket-name": { type: "string" },
+  "site-name": { type: "string" },
+  "build-number": { type: "string" },
+  concurrency: { type: "string" },
+} as const
 
 interface Redirect {
   source: string
@@ -18,19 +27,17 @@ export interface UploadConfig {
   concurrency: number
 }
 
-/** Read a `--flag value` pair from argv; used by publisher.sh for explicit inputs. */
-export function flagFromArgv(
-  flag: string,
-  args: readonly string[] = argv,
-): string | undefined {
-  const i = args.indexOf(flag)
-  return i >= 0 ? args[i + 1] : undefined
+export function parseUploadCliArgs(args: readonly string[] = argv) {
+  return parseArgs({
+    args: args.slice(2),
+    options: uploadCliOptions,
+    strict: false,
+  }).values
 }
 
-/** Prefer --concurrency / S3_SYNC_CONCURRENCY from publisher.sh; fall back if unset/invalid. */
+/** Prefer CLI / S3_SYNC_CONCURRENCY from publisher.sh; fall back if unset/invalid. */
 export function resolveConcurrency(
-  raw: string | undefined = flagFromArgv("--concurrency") ??
-    process.env.S3_SYNC_CONCURRENCY,
+  raw: string | undefined = process.env.S3_SYNC_CONCURRENCY,
 ): number {
   const parsed = raw === undefined ? NaN : Number.parseInt(raw, 10)
   if (!Number.isFinite(parsed) || parsed < 1) return DEFAULT_CONCURRENCY
@@ -41,13 +48,13 @@ export function resolveConcurrency(
 export function resolveUploadConfig(
   args: readonly string[] = argv,
 ): UploadConfig | null {
-  const redirectsJson =
-    flagFromArgv("--redirects-json", args) ?? process.env.REDIRECTS_JSON
-  const s3BucketName =
-    flagFromArgv("--s3-bucket-name", args) ?? process.env.S3_BUCKET_NAME
-  const siteName = flagFromArgv("--site-name", args) ?? process.env.SITE_NAME
+  const values = parseUploadCliArgs(args)
+
+  const redirectsJson = values["redirects-json"] ?? process.env.REDIRECTS_JSON
+  const s3BucketName = values["s3-bucket-name"] ?? process.env.S3_BUCKET_NAME
+  const siteName = values["site-name"] ?? process.env.SITE_NAME
   const buildNumber =
-    flagFromArgv("--build-number", args) ?? process.env.CODEBUILD_BUILD_NUMBER
+    values["build-number"] ?? process.env.CODEBUILD_BUILD_NUMBER
 
   if (!redirectsJson || !s3BucketName || !siteName || !buildNumber) {
     return null
@@ -59,7 +66,7 @@ export function resolveUploadConfig(
     siteName,
     buildNumber,
     concurrency: resolveConcurrency(
-      flagFromArgv("--concurrency", args) ?? process.env.S3_SYNC_CONCURRENCY,
+      values.concurrency ?? process.env.S3_SYNC_CONCURRENCY,
     ),
   }
 }
