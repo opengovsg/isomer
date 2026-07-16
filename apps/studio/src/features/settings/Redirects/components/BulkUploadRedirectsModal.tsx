@@ -21,7 +21,7 @@ import {
   Text,
 } from "@chakra-ui/react"
 import { Attachment, Button, useToast } from "@opengovsg/design-system-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   BiDownload,
   BiRightArrowAlt,
@@ -96,6 +96,12 @@ export const BulkUploadRedirectsModal = ({
     AttachmentProps<false>["rejections"]
   >([])
 
+  // Tracks the most recently picked file. `file.text()` is async, so if the user
+  // picks A then B before A finishes reading, A could resolve last — this lets
+  // the handler drop the stale read instead of committing A's contents while the
+  // chip shows B.
+  const latestFileRef = useRef<File | null>(null)
+
   const resetState = () => {
     setStage("upload")
     setFile(null)
@@ -104,6 +110,7 @@ export const BulkUploadRedirectsModal = ({
     setValidation(null)
     setShowSlowMessage(false)
     setRejections([])
+    latestFileRef.current = null
   }
 
   // Start fresh every time the modal opens, so a previous run's file or errors
@@ -130,18 +137,23 @@ export const BulkUploadRedirectsModal = ({
 
   const handleFileChange = async (selected: File | undefined) => {
     if (!selected) {
+      latestFileRef.current = null
       setFile(null)
       setCsv(null)
       setFileError(null)
       return
     }
+    latestFileRef.current = selected
     setFile(selected)
     try {
       const text = await selected.text()
+      // A newer file was picked while this one was being read — drop the stale
+      // result so the parsed csv can't disagree with the chip.
+      if (latestFileRef.current !== selected) return
       setCsv(text)
-      const parsed = parseRedirectCsv(text)
-      setFileError(parsed.fileError ?? null)
+      setFileError(parseRedirectCsv(text).fileError ?? null)
     } catch {
+      if (latestFileRef.current !== selected) return
       setCsv(null)
       setFileError("We couldn't read this file. Upload a valid .csv file.")
     }
