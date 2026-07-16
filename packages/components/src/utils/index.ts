@@ -40,3 +40,7 @@ export {
 } from "./validation"
 
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"
+export {
+  getEqualColumnWidths,
+  resolveColumnWidths,
+} from "./getTableColumnWidths"
