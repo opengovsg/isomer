@@ -2,15 +2,15 @@ import type { ArticlePageHeaderProps } from "~/interfaces"
 import { getFormattedDate } from "~/utils/getFormattedDate"
 
 import { Breadcrumb } from "../Breadcrumb"
-import { Tag } from "../Tag"
+import { PillTags, PlaintextTags } from "../Tags"
 
 export const ArticlePageHeader = ({
   breadcrumb,
-  category,
+  plaintextTags,
   title,
   date,
   summary,
-  tags = [],
+  pillTags,
 }: ArticlePageHeaderProps) => {
   return (
     <div className="mx-auto w-full">
@@ -18,24 +18,20 @@ export const ArticlePageHeader = ({
         <Breadcrumb links={breadcrumb.links} />
       </div>
 
-      <div className="prose-body-base mb-3 text-base-content">{category}</div>
+      <PlaintextTags
+        tags={plaintextTags}
+        className="prose-body-base mb-3 text-base-content"
+      />
 
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
           <h1 className="prose-display-md break-words text-base-content-strong">
             {title}
           </h1>
-          {tags.length > 0 &&
-            tags.flatMap(({ category, selected: labels }) => {
-              return (
-                <div className="prose-label-sm flex flex-wrap items-center gap-2">
-                  {category}
-                  {labels.map((label) => {
-                    return <Tag key={label}>{label}</Tag>
-                  })}
-                </div>
-              )
-            })}
+          <PillTags
+            tags={pillTags}
+            className="flex flex-wrap items-center gap-2"
+          />
         </div>
 
         {date && (

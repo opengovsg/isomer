@@ -13,6 +13,7 @@ import { ComponentContent } from "../../internal/customCssClass"
 import { ImageClient } from "../../internal/ImageClient"
 import { Link } from "../../internal/Link"
 import { LinkButton } from "../../internal/LinkButton"
+import { PlaintextTags } from "../../internal/Tags"
 import {
   getCollectionPages,
   getCollectionParent,
@@ -78,7 +79,7 @@ const SingleCard = ({
   title,
   image,
   isContainNeeded,
-  category,
+  plaintextTags,
   referenceLinkHref,
   displayThumbnail,
   displayCategory,
@@ -132,8 +133,11 @@ const SingleCard = ({
           />
         </h3>
 
-        {displayCategory && category && (
-          <p className={compoundStyles.cardCategory()}>{category}</p>
+        {displayCategory && (
+          <PlaintextTags
+            tags={plaintextTags}
+            className={compoundStyles.cardCategory()}
+          />
         )}
       </div>
     </Link>

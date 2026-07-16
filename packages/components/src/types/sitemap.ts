@@ -1,6 +1,6 @@
 import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
-import type { CollectionPagePageProps } from "~/types"
+import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
 
 import type { IsomerPageLayoutType } from "./schema"
 
@@ -18,8 +18,10 @@ interface IsomerBaseSitemap {
   firstImage?: CollectionCardProps["image"]
   date?: string
   children?: IsomerSitemap[]
-  tags?: CollectionCardProps["tags"]
-  tagged?: CollectionCardProps["tagged"]
+  // NOTE: the raw selections an editor made; combined with the parent Collection's
+  // `tagCategories` (see getPillAndPlaintextTags/getTagsFromTagged) to derive what's
+  // actually rendered. The legacy resolved `tags` field is no longer supported.
+  tagged?: ArticlePagePageProps["tagged"]
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
