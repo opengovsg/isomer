@@ -459,6 +459,14 @@ export const createRedirect = async ({
   const byUser = await getByUser(byUserId)
 
   const created = await db.transaction().execute(async (tx) => {
+    // Serialise redirect writes for this site (the same lock bulkCreateRedirects
+    // takes), so a single create and a concurrent bulk create can't each miss
+    // the other's uncommitted row in the loop/shadow guards below and both
+    // publish a loop. Released automatically at commit/rollback.
+    await sql`SELECT pg_advisory_xact_lock(${REDIRECT_WRITE_LOCK_NAMESPACE}, ${siteId})`.execute(
+      tx,
+    )
+
     // Reject creating over a live redirect. A soft-deleted row for the same
     // source still holds the (siteId, source) unique constraint and is revived
     // by the upsert below.
@@ -581,10 +589,11 @@ export const createRedirect = async ({
 // (redirects and their audit rows) well under that.
 const BULK_REDIRECT_INSERT_CHUNK_SIZE = 500
 
-// Arbitrary namespace for the per-site advisory lock that serialises bulk
-// redirect writes (there is no other advisory-lock user, but the two-key form
-// keeps this from ever colliding with a future one). pg_advisory_xact_lock
-// releases automatically when the transaction ends.
+// Arbitrary namespace for the per-site advisory lock that serialises redirect
+// writes (single create + bulk create) so their loop/shadow rechecks can't race
+// each other. There is no other advisory-lock user, but the two-key form keeps
+// this from ever colliding with a future one; pg_advisory_xact_lock releases
+// automatically when the transaction ends.
 const REDIRECT_WRITE_LOCK_NAMESPACE = 0x5244 // "RD"
 
 // Shown when a row is split by an unquoted comma into extra columns.
