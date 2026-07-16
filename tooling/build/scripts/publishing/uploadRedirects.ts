@@ -14,9 +14,18 @@ interface Redirect {
   destination: string
 }
 
-/** Prefer S3_SYNC_CONCURRENCY from publisher.sh; fall back if unset/invalid. */
+/** CLI flag from publisher.sh; takes precedence over env when set. */
+export function concurrencyFromArgv(
+  args: readonly string[] = argv,
+): string | undefined {
+  const i = args.indexOf("--concurrency")
+  return i >= 0 ? args[i + 1] : undefined
+}
+
+/** Prefer --concurrency / S3_SYNC_CONCURRENCY from publisher.sh; fall back if unset/invalid. */
 export function resolveConcurrency(
-  raw: string | undefined = process.env.S3_SYNC_CONCURRENCY,
+  raw: string | undefined = concurrencyFromArgv() ??
+    process.env.S3_SYNC_CONCURRENCY,
 ): number {
   const parsed = raw === undefined ? NaN : Number.parseInt(raw, 10)
   if (!Number.isFinite(parsed) || parsed < 1) return DEFAULT_CONCURRENCY

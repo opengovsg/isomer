@@ -183,6 +183,7 @@ echo "Number of cores: $NUMBER_OF_CORES"
 S3_SYNC_CONCURRENCY=$((4 * NUMBER_OF_CORES))                                   # 4x is an arbitrary number that should work well for most cases
 S3_SYNC_CONCURRENCY=$((S3_SYNC_CONCURRENCY < 20 ? 10 : S3_SYNC_CONCURRENCY))   # Minimum of 20
 S3_SYNC_CONCURRENCY=$((S3_SYNC_CONCURRENCY > 100 ? 100 : S3_SYNC_CONCURRENCY)) # Maximum of 100 (to prevent AWS from throttling us)
+export S3_SYNC_CONCURRENCY
 echo "S3 sync concurrency: $S3_SYNC_CONCURRENCY"
 aws configure set default.s3.max_concurrent_requests $S3_SYNC_CONCURRENCY
 
@@ -206,8 +207,7 @@ echo "Uploading redirect files to S3..."
     S3_BUCKET_NAME="$S3_BUCKET_NAME" \
     SITE_NAME="$SITE_NAME" \
     CODEBUILD_BUILD_NUMBER="$CODEBUILD_BUILD_NUMBER" \
-    S3_SYNC_CONCURRENCY="$S3_SYNC_CONCURRENCY" \
-    npm run upload-redirects
+    pnpm exec tsx uploadRedirects.ts --concurrency "$S3_SYNC_CONCURRENCY"
 ) || echo "Warning: some redirects failed to upload, continuing..."
 
 calculate_duration $start_time

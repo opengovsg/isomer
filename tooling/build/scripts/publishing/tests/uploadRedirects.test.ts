@@ -1,10 +1,44 @@
 import { describe, expect, it } from "vitest"
 
-import { normalizeSource, resolveConcurrency } from "../uploadRedirects"
+import {
+  concurrencyFromArgv,
+  normalizeSource,
+  resolveConcurrency,
+} from "../uploadRedirects"
+
+describe("concurrencyFromArgv", () => {
+  it("reads --concurrency from argv", () => {
+    expect(
+      concurrencyFromArgv([
+        "node",
+        "uploadRedirects.ts",
+        "--concurrency",
+        "100",
+      ]),
+    ).toBe("100")
+  })
+
+  it("returns undefined when the flag is absent", () => {
+    expect(concurrencyFromArgv(["node", "uploadRedirects.ts"])).toBeUndefined()
+  })
+})
 
 describe("resolveConcurrency", () => {
   it("uses S3_SYNC_CONCURRENCY when it is a positive integer", () => {
     expect(resolveConcurrency("47")).toBe(47)
+  })
+
+  it("prefers --concurrency over S3_SYNC_CONCURRENCY when argv supplies it", () => {
+    expect(
+      resolveConcurrency(
+        concurrencyFromArgv([
+          "node",
+          "uploadRedirects.ts",
+          "--concurrency",
+          "100",
+        ]),
+      ),
+    ).toBe(100)
   })
 
   it("falls back to 20 when unset or invalid", () => {
