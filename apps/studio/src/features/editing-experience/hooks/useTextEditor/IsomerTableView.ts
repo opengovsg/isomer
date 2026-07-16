@@ -136,6 +136,9 @@ export class IsomerTableView implements NodeView {
   }
 
   private startDrag(event: PointerEvent, columnIndex: number) {
+    // this.stopDrag is only non-null while a drag is in flight, so this also
+    // blocks a second pointerdown (e.g. on another handle) from starting an
+    // overlapping drag before the first one's pointerup/destroy clears it.
     if (!this.view.editable || this.stopDrag) {
       return
     }
@@ -217,6 +220,9 @@ export class IsomerTableView implements NodeView {
     options: { addToHistory?: boolean } = {},
   ) {
     const tablePos = this.getPos()
+    // undefined if this table node was removed from the doc (undo, concurrent
+    // edit, etc.) before this fires -- commits can arrive async via the
+    // requestAnimationFrame callback in onPointerMove.
     if (tablePos == null) {
       return
     }
