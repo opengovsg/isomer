@@ -65,12 +65,7 @@ export const defaultResourceSelect = [
 
 // Shared by any query listing rows from the `Resource` table (e.g. folder/root
 // listings, collection item listings) so they sort identically and paginate
-// deterministically. `id` is used as the final tie-breaker (rather than
-// `title`, which isn't unique) to avoid non-deterministic ordering across
-// pages when rows share the same `updatedAt`/`title` - see #1824 for the bug
-// this pattern was introduced to fix. Sorting by `lower(title)` (rather than
-// `title`) makes "Alphabetical" case-insensitive - plain `title asc` sorts by
-// byte value under most collations, so e.g. "Zebra" would sort before "apple".
+// deterministically. `id` is used as the final tie-breaker
 export const applyResourceOrderBy = <O>(
   query: SelectQueryBuilder<DB, "Resource", O>,
   orderBy: ResourceOrderByOption,

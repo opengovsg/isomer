@@ -1,6 +1,5 @@
 import type { ResourceOrderByOption } from "~/schemas/resource"
 import { HStack, Text } from "@chakra-ui/react"
-import { Menu } from "@opengovsg/design-system-react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   createColumnHelper,
@@ -17,7 +16,7 @@ import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import type { CollectionTableData } from "./types"
-import { RESOURCE_TABLE_SORT_OPTIONS } from "../ResourceTable/constants"
+import { ResourceSortMenu } from "../ResourceTable/ResourceSortMenu"
 import { TitleCell } from "../ResourceTable/TitleCell"
 import { CollectionTableMenu } from "./CollectionTableMenu"
 
@@ -128,46 +127,13 @@ export const CollectionTable = ({
           {totalRowCount} {totalRowCount === 1 ? "item" : "items"}
         </Text>
 
-        <HStack>
-          <Text textStyle="caption-1" color="base.content.default">
-            Sort by:
-          </Text>
-          <Menu size="sm" variant="clear">
-            {({ isOpen }) => (
-              <>
-                <Menu.Button
-                  variant="clear"
-                  size="sm"
-                  p="0"
-                  minH="auto"
-                  colorScheme="sub"
-                  fontSize="0.75rem"
-                  isOpen={isOpen}
-                >
-                  {RESOURCE_TABLE_SORT_OPTIONS[sortOption]}
-                </Menu.Button>
-                <Menu.List pt="0.75rem" pb="0.5rem">
-                  {Object.entries(RESOURCE_TABLE_SORT_OPTIONS).map(
-                    ([option, label]) => (
-                      <Menu.Item
-                        key={option}
-                        onClick={() => {
-                          setSortOption(option as ResourceOrderByOption)
-                          onPaginationChange((old) => ({
-                            ...old,
-                            pageIndex: 0,
-                          }))
-                        }}
-                      >
-                        {label}
-                      </Menu.Item>
-                    ),
-                  )}
-                </Menu.List>
-              </>
-            )}
-          </Menu>
-        </HStack>
+        <ResourceSortMenu
+          value={sortOption}
+          onChange={(option) => {
+            setSortOption(option)
+            onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
+          }}
+        />
       </HStack>
 
       <Datatable
