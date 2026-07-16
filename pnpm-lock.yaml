@@ -78,8 +78,8 @@ catalogs:
       specifier: ^0.4.0
       version: 0.4.0
     '@datadog/browser-rum':
-      specifier: ^7.4.0
-      version: 7.4.0
+      specifier: ^7.5.0
+      version: 7.5.0
     '@fontsource/ibm-plex-mono':
       specifier: ^5.1.1
       version: 5.2.7
@@ -267,8 +267,8 @@ catalogs:
       specifier: 16.2.6
       version: 16.2.6
     node-mocks-http:
-      specifier: ^1.16.2
-      version: 1.17.2
+      specifier: ^1.18.0
+      version: 1.18.0
     npm-run-all2:
       specifier: ^9.0.2
       version: 9.0.2
@@ -378,8 +378,8 @@ catalogs:
       specifier: ^2.10.3
       version: 2.10.4
     type-fest:
-      specifier: ^5.7.0
-      version: 5.7.0
+      specifier: ^5.8.0
+      version: 5.8.0
     typescript:
       specifier: ^6.0.3
       version: 6.0.3
@@ -695,7 +695,7 @@ importers:
         version: 2.2.2(react@18.3.1)
       '@datadog/browser-rum':
         specifier: 'catalog:'
-        version: 7.4.0
+        version: 7.5.0
       '@fontsource/ibm-plex-mono':
         specifier: 'catalog:'
         version: 5.2.7
@@ -968,7 +968,7 @@ importers:
         version: 2.6.1
       type-fest:
         specifier: 'catalog:'
-        version: 5.7.0
+        version: 5.8.0
       usehooks-ts:
         specifier: 'catalog:'
         version: 3.1.1(react@18.3.1)
@@ -1026,7 +1026,7 @@ importers:
         version: 10.4.6(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/nextjs':
         specifier: catalog:storybook
-        version: 10.4.6(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(esbuild@0.28.0)(next@16.2.6(patch_hash=96c056d3c2fe2195b5487aa4adf46a46a96f6dc0e872c060e5563e3c74b51409)(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(type-fest@5.7.0)(typescript@6.0.3)(webpack-cli@7.1.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)
+        version: 10.4.6(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(esbuild@0.28.0)(next@16.2.6(patch_hash=96c056d3c2fe2195b5487aa4adf46a46a96f6dc0e872c060e5563e3c74b51409)(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(type-fest@5.8.0)(typescript@6.0.3)(webpack-cli@7.1.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)
       '@testing-library/react':
         specifier: 'catalog:'
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1092,7 +1092,7 @@ importers:
         version: 2.0.1(@trpc/server@11.18.0(typescript@6.0.3))(msw@2.14.6(@types/node@26.1.1)(typescript@6.0.3))(typescript@6.0.3)
       node-mocks-http:
         specifier: 'catalog:'
-        version: 1.17.2(@types/node@26.1.1)
+        version: 1.18.0(@types/node@26.1.1)
       npm-run-all2:
         specifier: 'catalog:'
         version: 9.0.2
@@ -1212,7 +1212,7 @@ importers:
         version: 1.2.0(tailwindcss@3.4.19(tsx@4.23.0)(yaml@2.8.3))
       type-fest:
         specifier: 'catalog:'
-        version: 5.7.0
+        version: 5.8.0
       usehooks-ts:
         specifier: 'catalog:'
         version: 3.1.1(react@18.3.1)
@@ -1514,6 +1514,9 @@ importers:
 
   tooling/build/scripts/publishing:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: catalog:aws-sdk
+        version: 3.1085.0
       dotenv:
         specifier: 'catalog:'
         version: 16.6.1
@@ -3561,16 +3564,16 @@ packages:
     peerDependencies:
       postcss: ^8.4
 
-  '@datadog/browser-core@7.4.0':
-    resolution: {integrity: sha512-SwBlEX53yhLhDnOgBk0q7YhvEAQ+qj2yQiQky5FcQ3BaU/NITqJxPn0Jbt7WAMjBr6UsHJbEIGHNb9t3gQeqxQ==}
+  '@datadog/browser-core@7.5.0':
+    resolution: {integrity: sha512-qvjv0Ox55+x/wxFT8cjIAse1voLVorJd3lg2Q53nJ0CREZ1bqqjo2gDz/Lm4t0fqQnqyqrOncc3X2pg4LxCFzg==}
 
-  '@datadog/browser-rum-core@7.4.0':
-    resolution: {integrity: sha512-mB23lchR5XbhXzEU+7GS0+X1PJn9BQQleXGrOF5y4XGRTTUClXPfyc2dza82lJnUsvENFGKNNPXiihVEoEfYPQ==}
+  '@datadog/browser-rum-core@7.5.0':
+    resolution: {integrity: sha512-Okyq2+y3Dtw5AL4xpw/fT1Dkmyr/Q4na3Wa+D9FU+i1g5i3BGyr6HNUv6L7vCrF6CyDVfCi3Nv90lgdprRCkyQ==}
 
-  '@datadog/browser-rum@7.4.0':
-    resolution: {integrity: sha512-hihyYswLtij1IF+9jIoMew9ODOmZaejvNuzP4DfTX3iN/KAwGWtbnIPI+dm3X2Vl+/ibVuUU6b83mBeBmZChBg==}
+  '@datadog/browser-rum@7.5.0':
+    resolution: {integrity: sha512-w7T0sAu9wx0zIdAmHM4avwdJW/gu+llCUCyeo5mQO5Qbf7VcA8K9Y+R4ZsNizRC14K5beAAkj5MqdaBC2x+yZg==}
     peerDependencies:
-      '@datadog/browser-logs': 7.4.0
+      '@datadog/browser-logs': 7.5.0
     peerDependenciesMeta:
       '@datadog/browser-logs':
         optional: true
@@ -3578,8 +3581,8 @@ packages:
   '@datadog/flagging-core@1.2.1':
     resolution: {integrity: sha512-qeDkki9fFlqyoZBrn7tneT6pZ04EKKvf3xxisYw1a74zbJihvQui/ARUsjXCurRpzpFqGGTJw/oz+HnXaKhcdw==}
 
-  '@datadog/js-core@0.0.4':
-    resolution: {integrity: sha512-igckHli6HrqETON4cT79uDY6YtlDPfY2ecymlBfo6ruD65VGNGw3BfhEP2GIej50IE01gxF+iYXQ4nIGzfRsXg==}
+  '@datadog/js-core@0.0.5':
+    resolution: {integrity: sha512-9cGazfbindLRCcHh7Pgle68SZrSKMr6ScIvtT7XwxTGp38RaskXA/CG4nUojb46nWnsmV+KyH3C8WymkXdgMJg==}
 
   '@datadog/libdatadog@0.9.4':
     resolution: {integrity: sha512-55wHHAuhHOOrBGoWV+fRuEDypN6PMJZq4LTOwExnhoDMvVcZKtqYT05xea/toRs0o75+A1IeNAQHsRLbJMf5oA==}
@@ -9875,8 +9878,8 @@ packages:
     resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
     hasBin: true
 
-  node-mocks-http@1.17.2:
-    resolution: {integrity: sha512-HVxSnjNzE9NzoWMx9T9z4MLqwMpLwVvA0oVZ+L+gXskYXEJ6tFn3Kx4LargoB6ie7ZlCLplv7QbWO6N+MysWGA==}
+  node-mocks-http@1.18.0:
+    resolution: {integrity: sha512-arItRIarSUnpHAagCV5SB0DARvPXTA2ur+cVPCMm8d/KT2sqr9AF/QuHOoT3/PZ5cYFaQrpVkmoDUmMxuGW1Cw==}
     engines: {node: '>=14'}
     peerDependencies:
       '@types/express': ^4.17.21 || ^5.0.0
@@ -10144,10 +10147,6 @@ packages:
 
   parse5@8.0.1:
     resolution: {integrity: sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==}
-
-  parseurl@1.3.3:
-    resolution: {integrity: sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==}
-    engines: {node: '>= 0.8'}
 
   parsimmon@0.7.2:
     resolution: {integrity: sha512-vKcCxdVqkWH5vDUlPGKBhNJrsmP5EBXAFEDal4Qe1cNlBRPwOedAQ8Fj8BGyddHCGI+Zw58dztJc15VXHfwYRg==}
@@ -11896,6 +11895,10 @@ packages:
 
   type-fest@5.7.0:
     resolution: {integrity: sha512-1URUxUqfHFM1c+zfSPsa3gnkO7Aq21qyH75SIduNYz4SzY964rn1X2vCMQaHSHhktiw+0kPa2iyb6PUpXqB6Vg==}
+    engines: {node: '>=20'}
+
+  type-fest@5.8.0:
+    resolution: {integrity: sha512-YGYEVz3Fm5iy/AybuA0oyNFq7H4CgQNfRp/qfe8nurE1kuCeNm3/vfm9X4Mtl+qLyaKJUh5xrFZwogr41SMjYA==}
     engines: {node: '>=20'}
 
   type-is@1.6.18:
@@ -14611,27 +14614,27 @@ snapshots:
     dependencies:
       postcss: 8.5.16
 
-  '@datadog/browser-core@7.4.0':
+  '@datadog/browser-core@7.5.0':
     dependencies:
-      '@datadog/js-core': 0.0.4
+      '@datadog/js-core': 0.0.5
 
-  '@datadog/browser-rum-core@7.4.0':
+  '@datadog/browser-rum-core@7.5.0':
     dependencies:
-      '@datadog/browser-core': 7.4.0
-      '@datadog/js-core': 0.0.4
+      '@datadog/browser-core': 7.5.0
+      '@datadog/js-core': 0.0.5
 
-  '@datadog/browser-rum@7.4.0':
+  '@datadog/browser-rum@7.5.0':
     dependencies:
-      '@datadog/browser-core': 7.4.0
-      '@datadog/browser-rum-core': 7.4.0
-      '@datadog/js-core': 0.0.4
+      '@datadog/browser-core': 7.5.0
+      '@datadog/browser-rum-core': 7.5.0
+      '@datadog/js-core': 0.0.5
 
   '@datadog/flagging-core@1.2.1':
     dependencies:
       spark-md5: 3.0.2
     optional: true
 
-  '@datadog/js-core@0.0.4': {}
+  '@datadog/js-core@0.0.5': {}
 
   '@datadog/libdatadog@0.9.4':
     optional: true
@@ -16055,7 +16058,7 @@ snapshots:
     dependencies:
       playwright: 1.61.1
 
-  '@pmmmwh/react-refresh-webpack-plugin@0.5.17(react-refresh@0.14.2)(type-fest@5.7.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)':
+  '@pmmmwh/react-refresh-webpack-plugin@0.5.17(react-refresh@0.14.2)(type-fest@5.8.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)':
     dependencies:
       ansi-html: 0.0.9
       core-js-pure: 3.49.0
@@ -16067,7 +16070,7 @@ snapshots:
       source-map: 0.7.6
       webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
     optionalDependencies:
-      type-fest: 5.7.0
+      type-fest: 5.8.0
       webpack-hot-middleware: 2.26.1
 
   '@pnpm/config.env-replace@1.1.0': {}
@@ -16678,7 +16681,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@storybook/nextjs@10.4.6(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(esbuild@0.28.0)(next@16.2.6(patch_hash=96c056d3c2fe2195b5487aa4adf46a46a96f6dc0e872c060e5563e3c74b51409)(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(type-fest@5.7.0)(typescript@6.0.3)(webpack-cli@7.1.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)':
+  '@storybook/nextjs@10.4.6(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(esbuild@0.28.0)(next@16.2.6(patch_hash=96c056d3c2fe2195b5487aa4adf46a46a96f6dc0e872c060e5563e3c74b51409)(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.101.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(type-fest@5.8.0)(typescript@6.0.3)(webpack-cli@7.1.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@7.29.0)
@@ -16693,7 +16696,7 @@ snapshots:
       '@babel/preset-react': 7.28.5(@babel/core@7.29.0)
       '@babel/preset-typescript': 7.29.7(@babel/core@7.29.0)
       '@babel/runtime': 7.29.7
-      '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(react-refresh@0.14.2)(type-fest@5.7.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)
+      '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(react-refresh@0.14.2)(type-fest@5.8.0)(webpack-hot-middleware@2.26.1)(webpack@5.105.4)
       '@storybook/builder-webpack5': 10.4.6(esbuild@0.28.0)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)(webpack-cli@7.1.0)
       '@storybook/preset-react-webpack': 10.4.6(esbuild@0.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)(webpack-cli@7.1.0)
       '@storybook/react': 10.4.6(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.4.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@testing-library/dom@10.4.1)(@types/react@18.3.28)(prettier@3.8.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@6.0.3)
@@ -20876,7 +20879,7 @@ snapshots:
   node-gyp-build@4.8.4:
     optional: true
 
-  node-mocks-http@1.17.2(@types/node@26.1.1):
+  node-mocks-http@1.18.0(@types/node@26.1.1):
     dependencies:
       accepts: 1.3.8
       content-disposition: 0.5.4
@@ -20885,7 +20888,6 @@ snapshots:
       merge-descriptors: 1.0.3
       methods: 1.1.2
       mime: 1.6.0
-      parseurl: 1.3.3
       range-parser: 1.2.1
       type-is: 1.6.18
     optionalDependencies:
@@ -21281,8 +21283,6 @@ snapshots:
   parse5@8.0.1:
     dependencies:
       entities: 8.0.0
-
-  parseurl@1.3.3: {}
 
   parsimmon@0.7.2: {}
 
@@ -23323,6 +23323,10 @@ snapshots:
   type-fest@2.19.0: {}
 
   type-fest@5.7.0:
+    dependencies:
+      tagged-tag: 1.0.0
+
+  type-fest@5.8.0:
     dependencies:
       tagged-tag: 1.0.0
 

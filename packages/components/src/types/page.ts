@@ -228,7 +228,6 @@ export const COLLECTION_VARIANT_OPTIONS = {
 const COLLECTION_PAGE_SORT_BY = {
   date: "date",
   title: "title",
-  category: "category",
 } as const
 
 const COLLECTION_PAGE_SORT_DIRECTION = {
@@ -270,8 +269,6 @@ export const CollectionPagePageSchema = Type.Intersect([
           }),
           Type.Literal("title-asc", { title: "By title, A → Z" }),
           Type.Literal("title-desc", { title: "By title, Z → A" }),
-          Type.Literal("category-asc", { title: "By category, A → Z" }),
-          Type.Literal("category-desc", { title: "By category, Z → A" }),
         ],
         {
           title: "Sort items by",
@@ -287,7 +284,6 @@ export const CollectionPagePageSchema = Type.Intersect([
         [
           Type.Literal(COLLECTION_PAGE_SORT_BY.date, { title: "Date" }),
           Type.Literal(COLLECTION_PAGE_SORT_BY.title, { title: "Title" }),
-          Type.Literal(COLLECTION_PAGE_SORT_BY.category, { title: "Category" }),
         ],
         {
           title: "Default sort by",
