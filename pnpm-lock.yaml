@@ -996,7 +996,7 @@ importers:
         version: 8.0.1(@babel/core@7.29.0)
       '@chakra-ui/cli':
         specifier: catalog:chakra
-        version: 2.5.8(react@18.3.1)(ws@8.21.0)
+        version: 2.5.8(react@18.3.1)(ws@8.21.1)
       '@inquirer/prompts':
         specifier: 'catalog:'
         version: 8.5.2(@types/node@26.1.1)
@@ -12366,6 +12366,18 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.21.1:
+    resolution: {integrity: sha512-+0NTnW77fFN/DjQi6k/Sq/Yvk4Sgajw7urW8V+asjXnRgDs9gyGkdb7EzgfhA4goXsRIZKE28fzIXBHEzhuiWw==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   wsl-utils@0.1.0:
     resolution: {integrity: sha512-h3Fbisa2nKGPxCpm89Hk33lBLsnaGBvctQopaBSOW/uIs6FTe1ATyAnKFJrzVs9vpGdsTe73WF3V4lIsk4Gacw==}
     engines: {node: '>=18'}
@@ -14164,11 +14176,11 @@ snapshots:
 
   '@chakra-ui/anatomy@2.3.6': {}
 
-  '@chakra-ui/cli@2.5.8(react@18.3.1)(ws@8.21.0)':
+  '@chakra-ui/cli@2.5.8(react@18.3.1)(ws@8.21.1)':
     dependencies:
       bundle-n-require: 1.1.2
       chokidar: 3.6.0
-      cli-welcome: 2.2.3(react@18.3.1)(ws@8.21.0)
+      cli-welcome: 2.2.3(react@18.3.1)(ws@8.21.1)
       commander: 11.1.0
       ora: 7.0.1
       prettier: 3.8.1
@@ -18396,9 +18408,9 @@ snapshots:
       del: 4.1.1
       webpack: 5.105.4(esbuild@0.28.0)(webpack-cli@7.1.0)
 
-  clear-any-console@1.16.3(react@18.3.1)(ws@8.21.0):
+  clear-any-console@1.16.3(react@18.3.1)(ws@8.21.1):
     dependencies:
-      langbase: 1.2.4(react@18.3.1)(ws@8.21.0)
+      langbase: 1.2.4(react@18.3.1)(ws@8.21.1)
     transitivePeerDependencies:
       - encoding
       - react
@@ -18412,10 +18424,10 @@ snapshots:
 
   cli-spinners@2.9.2: {}
 
-  cli-welcome@2.2.3(react@18.3.1)(ws@8.21.0):
+  cli-welcome@2.2.3(react@18.3.1)(ws@8.21.1):
     dependencies:
       chalk: 2.4.2
-      clear-any-console: 1.16.3(react@18.3.1)(ws@8.21.0)
+      clear-any-console: 1.16.3(react@18.3.1)(ws@8.21.1)
     transitivePeerDependencies:
       - encoding
       - react
@@ -19699,7 +19711,7 @@ snapshots:
       buffer-image-size: 0.6.4
       entities: 7.0.1
       whatwg-mimetype: 3.0.0
-      ws: 8.21.0
+      ws: 8.21.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -20238,10 +20250,10 @@ snapshots:
 
   kysely@0.29.3: {}
 
-  langbase@1.2.4(react@18.3.1)(ws@8.21.0):
+  langbase@1.2.4(react@18.3.1)(ws@8.21.1):
     dependencies:
       dotenv: 16.6.1
-      openai: 4.104.0(ws@8.21.0)(zod@3.25.76)
+      openai: 4.104.0(ws@8.21.1)(zod@3.25.76)
       zod: 3.25.76
       zod-validation-error: 3.5.4(zod@3.25.76)
     optionalDependencies:
@@ -21004,7 +21016,7 @@ snapshots:
       is-inside-container: 1.0.0
       wsl-utils: 0.1.0
 
-  openai@4.104.0(ws@8.21.0)(zod@3.25.76):
+  openai@4.104.0(ws@8.21.1)(zod@3.25.76):
     dependencies:
       '@types/node': 18.19.130
       '@types/node-fetch': 2.6.13
@@ -21014,7 +21026,7 @@ snapshots:
       formdata-node: 4.4.1
       node-fetch: 2.7.0
     optionalDependencies:
-      ws: 8.21.0
+      ws: 8.21.1
       zod: 3.25.76
     transitivePeerDependencies:
       - encoding
@@ -23856,6 +23868,8 @@ snapshots:
       typedarray-to-buffer: 3.1.5
 
   ws@8.21.0: {}
+
+  ws@8.21.1: {}
 
   wsl-utils@0.1.0:
     dependencies:
