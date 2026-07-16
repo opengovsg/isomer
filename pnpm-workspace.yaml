@@ -106,7 +106,7 @@ catalog:
   type-fest: ^5.8.0
   tsx: ^4.22.5
   turbo: ^2.10.3
-  typescript: ^6.0.3
+  typescript: ^7.0.2
   usehooks-ts: ^3.1.1
   webpack-cli: ^7.1.0
   webpack-glob-entries: ^1.0.1
