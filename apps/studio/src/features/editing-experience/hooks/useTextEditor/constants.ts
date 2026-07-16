@@ -28,8 +28,7 @@ import { TableHeader } from "@tiptap/extension-table-header"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
-import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
-import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
+import { textblockTypeInputRule } from "@tiptap/react"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 
 import {
@@ -44,7 +43,9 @@ import {
   wrapHeaderToggleCommand,
   type HeaderToggleCommand,
 } from "./clearTableCellBackgroundOnKindChange"
+import { IsomerTableView } from "./IsomerTableView"
 import { selectTableCellContent } from "./selectTableCellContent"
+import { tableColumnWidthNormalizerPlugin } from "./tableColumnWidthNormalizerPlugin"
 
 export { TableRow } from "@tiptap/extension-table-row"
 
@@ -154,12 +155,6 @@ export const IsomerTable = Table.extend({
       },
     }
   },
-  // Custom node view renders the caption above the table.
-  addNodeView() {
-    return ReactNodeViewRenderer(TableNodeView, {
-      contentDOMElementTag: "tbody",
-    })
-  },
   addKeyboardShortcuts() {
     const parentShortcuts = this.parent?.() ?? {}
     return {
@@ -175,7 +170,18 @@ export const IsomerTable = Table.extend({
     }
   },
   addProseMirrorPlugins() {
-    return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
+    return [
+      tableColumnWidthNormalizerPlugin(),
+      ...(this.parent?.() ?? []),
+      createTableSelectionBorderPlugin(),
+    ]
+  },
+  // Replaces TipTap's stock TableView node view (see IsomerTableView.ts for
+  // why: its colgroup rendering can only ever express px, not this
+  // feature's percentage-of-table-width model).
+  addNodeView() {
+    return ({ node, view, getPos, HTMLAttributes }) =>
+      new IsomerTableView(node, view, getPos, HTMLAttributes)
   },
 })
 
@@ -198,12 +204,36 @@ const tableCellBackgroundColorAttribute = {
   },
 }
 
+// Overrides the inherited `colwidth` attribute (an array of px, prosemirror-tables'
+// own convention) with a single percentage-of-table-width number, since resizing
+// here is a custom proportional/percentage model, not the library's native one.
+const colwidthAttribute = {
+  colwidth: {
+    default: null,
+    parseHTML: (element: HTMLElement) => {
+      const width = element.style.width
+      if (!width.endsWith("%")) {
+        return null
+      }
+      const parsed = parseFloat(width)
+      return Number.isNaN(parsed) ? null : parsed
+    },
+    renderHTML: (attributes: { colwidth: number | null }) => {
+      if (attributes.colwidth == null) {
+        return {}
+      }
+      return { style: `width: ${attributes.colwidth}%` }
+    },
+  },
+}
+
 export const IsomerTableCell = TableCell.extend({
   content: "(paragraph|list)+",
   addAttributes() {
     return {
       ...this.parent?.(),
       backgroundColor: tableCellBackgroundColorAttribute,
+      ...colwidthAttribute,
     }
   },
 })
@@ -214,6 +244,7 @@ export const IsomerTableHeader = TableHeader.extend({
     return {
       ...this.parent?.(),
       backgroundColor: tableCellBackgroundColorAttribute,
+      ...colwidthAttribute,
     }
   },
 })
