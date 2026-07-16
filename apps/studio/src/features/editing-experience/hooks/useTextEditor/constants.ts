@@ -26,6 +26,8 @@ import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule } from "@tiptap/react"
 
 import { getHtmlWithRelativeReferenceLinks } from "../../utils"
+import { IsomerTableView } from "./IsomerTableView"
+import { tableColumnWidthNormalizerPlugin } from "./tableColumnWidthNormalizerPlugin"
 
 export { TableRow } from "@tiptap/extension-table-row"
 
@@ -114,14 +116,59 @@ export const IsomerTable = Table.extend({
       },
     }
   },
+  addProseMirrorPlugins() {
+    return [tableColumnWidthNormalizerPlugin(), ...(this.parent?.() ?? [])]
+  },
+  // Replaces TipTap's stock TableView node view (see IsomerTableView.ts for
+  // why: its colgroup rendering can only ever express px, not this
+  // feature's percentage-of-table-width model).
+  addNodeView() {
+    return ({ node, view, getPos, HTMLAttributes }) =>
+      new IsomerTableView(node, view, getPos, HTMLAttributes)
+  },
 })
+
+// Overrides the inherited `colwidth` attribute (an array of px, prosemirror-tables'
+// own convention) with a single percentage-of-table-width number, since resizing
+// here is a custom proportional/percentage model, not the library's native one.
+const colwidthAttribute = {
+  colwidth: {
+    default: null,
+    parseHTML: (element: HTMLElement) => {
+      const width = element.style.width
+      if (!width.endsWith("%")) {
+        return null
+      }
+      const parsed = parseFloat(width)
+      return Number.isNaN(parsed) ? null : parsed
+    },
+    renderHTML: (attributes: { colwidth: number | null }) => {
+      if (attributes.colwidth == null) {
+        return {}
+      }
+      return { style: `width: ${attributes.colwidth}%` }
+    },
+  },
+}
 
 export const IsomerTableCell = TableCell.extend({
   content: "(paragraph|list)+",
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      ...colwidthAttribute,
+    }
+  },
 })
 
 export const IsomerTableHeader = TableHeader.extend({
   content: "paragraph+",
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      ...colwidthAttribute,
+    }
+  },
 })
 
 export const IsomerHeading = Heading.extend({
