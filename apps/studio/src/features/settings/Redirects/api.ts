@@ -66,11 +66,15 @@ export function useDeleteRedirect() {
 // Validates an uploaded CSV without writing. Uses the mutation (not a query) so
 // the large CSV travels in the POST body — a query serialises its input into the
 // request URL, which the server rejects near the size cap (connection reset).
-// Read-only server-side; mutateAsync just gives us a one-shot call returning the
-// verdicts.
+// Read-only server-side; `validate` is a one-shot call returning the verdicts,
+// and `isPending` drives the Process button's inline spinner (validation is
+// quick, so it does not warrant a full-screen loading state).
 export function useBulkValidateRedirects(siteId: number) {
-  const { mutateAsync } = trpc.redirect.bulkValidate.useMutation()
-  return (csv: string) => mutateAsync({ siteId, csv })
+  const { mutateAsync, isPending } = trpc.redirect.bulkValidate.useMutation()
+  return {
+    validate: (csv: string) => mutateAsync({ siteId, csv }),
+    isPending,
+  }
 }
 
 // Publishes a validated batch. Invalidates the router only when a publish

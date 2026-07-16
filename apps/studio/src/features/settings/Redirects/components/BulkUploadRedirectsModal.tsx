@@ -50,7 +50,9 @@ interface BulkUploadRedirectsModalProps {
 // The modal walks through: pick a file → process (validate) → either fix errors
 // and re-upload, or review and publish the whole batch. `stage` tracks which of
 // those the user is on; validation holds the server's per-row verdicts.
-type Stage = "upload" | "processing" | "errors" | "success"
+// Validation is quick, so its spinner rides on the Process button; publishing
+// the batch is the slow step, so it gets the full-screen "publishing" stage.
+type Stage = "upload" | "publishing" | "errors" | "success"
 
 const triggerCsvDownload = (filename: string, contents: string) => {
   const blob = new Blob([contents], { type: "text/csv;charset=utf-8;" })
@@ -76,9 +78,8 @@ export const BulkUploadRedirectsModal = ({
   onClose,
 }: BulkUploadRedirectsModalProps): JSX.Element => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const validate = useBulkValidateRedirects(siteId)
-  const { mutateAsync: publish, isPending: isPublishing } =
-    useBulkCreateRedirects()
+  const { validate, isPending: isValidating } = useBulkValidateRedirects(siteId)
+  const { mutateAsync: publish } = useBulkCreateRedirects()
   // Site display name (Site config `siteName`), used to name the errors file.
   const { data: site } = trpc.site.getSiteName.useQuery({ siteId })
 
@@ -111,10 +112,10 @@ export const BulkUploadRedirectsModal = ({
     if (isOpen) resetState()
   }, [isOpen])
 
-  // Only show the "this might take a while" line once processing runs long, per
-  // the design ("if processing time is short, don't show the second message").
+  // Only show the "this might take a while" line once publishing runs long, per
+  // the design ("if it's quick, don't show the second message").
   useEffect(() => {
-    if (stage !== "processing") {
+    if (stage !== "publishing") {
       setShowSlowMessage(false)
       return
     }
@@ -159,7 +160,8 @@ export const BulkUploadRedirectsModal = ({
 
   const handleProcess = async () => {
     if (!csv) return
-    setStage("processing")
+    // Validation is quick, so the Process button's inline spinner (isValidating)
+    // is enough — no full-screen stage. Stay put so a failure keeps the file.
     try {
       const result = await validate(csv)
       if (result.fileError !== null || result.errorCount > 0) {
@@ -174,12 +176,14 @@ export const BulkUploadRedirectsModal = ({
         description: "Please try again.",
         status: "error",
       })
-      setStage("upload")
     }
   }
 
   const handlePublish = async () => {
     if (!csv) return
+    // Creating the batch and republishing the site is the slow step, so switch
+    // to the full-screen spinner once the user commits.
+    setStage("publishing")
     try {
       const result = await publish({ siteId, csv })
       if (result.ok) {
@@ -199,6 +203,8 @@ export const BulkUploadRedirectsModal = ({
         description: "Please try again.",
         status: "error",
       })
+      // Back to the review screen so the user can retry the publish.
+      setStage("success")
     }
   }
 
@@ -235,13 +241,10 @@ export const BulkUploadRedirectsModal = ({
           />
         </ModalBody>
 
-        {stage !== "processing" && (
+        {stage !== "publishing" && (
           <ModalFooter>
             {stage === "success" ? (
-              <Button
-                onClick={() => void handlePublish()}
-                isLoading={isPublishing}
-              >
+              <Button onClick={() => void handlePublish()}>
                 Publish {validRows.length} redirect
                 {validRows.length === 1 ? "" : "s"}
               </Button>
@@ -249,6 +252,7 @@ export const BulkUploadRedirectsModal = ({
               <Button
                 onClick={() => void handleProcess()}
                 isDisabled={isProcessDisabled}
+                isLoading={isValidating}
               >
                 {isProcessDisabled
                   ? "Upload file to continue"
@@ -290,14 +294,13 @@ const BulkUploadModalBody = ({
   onDownloadErrors,
 }: BulkUploadModalBodyProps): JSX.Element => {
   switch (stage) {
-    case "processing":
+    case "publishing":
       return (
         <Center flexDir="column" py="2.5rem" gap="1rem">
           <Spinner />
           <Stack spacing="0.25rem" textAlign="center">
             <Text textStyle="body-2">
-              Checking your redirects for loops, errors, or any missing
-              pieces...
+              Publishing your redirects to your site...
             </Text>
             {showSlowMessage && (
               <Text textStyle="body-2" color="base.content.medium">
@@ -446,8 +449,8 @@ const BulkUploadModalBody = ({
 
 const modalTitle = (stage: Stage): string => {
   switch (stage) {
-    case "processing":
-      return "Processing your redirects"
+    case "publishing":
+      return "Publishing your redirects"
     case "errors":
       return "There are errors in your redirects"
     case "success":
