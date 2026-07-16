@@ -31,7 +31,11 @@ const getColumnWidths = (content: TableProps["content"]): number[] | null => {
   }
 
   const widths = firstRow.content.map((cell) => cell.attrs?.colwidth)
-  if (widths.some((width) => width === undefined)) {
+  // `null` means "not yet resized" (TipTap always serializes the attribute
+  // once a cell exists), same as a pre-feature cell that omits the key
+  // entirely: neither is a usable width, so fall back to the browser's
+  // default table layout rather than rendering a colgroup with a `null`.
+  if (widths.some((width) => width == null)) {
     return null
   }
 
