@@ -1,4 +1,4 @@
-import type { Static } from "@sinclair/typebox"
+import type { Static, TComposite, TUnion } from "@sinclair/typebox"
 import type { SimplifyDeep } from "type-fest"
 import type {
   ArticlePagePageProps,
@@ -220,7 +220,26 @@ export const LinkRefSchema = Type.Object(
   },
 )
 
-export const IsomerPageSchema = Type.Composite([
+// The explicit annotation keeps the emitted declaration as alias references;
+// the inferred type is too large for the compiler to serialize (TS7056)
+export const IsomerPageSchema: TComposite<
+  [
+    typeof BaseItemSchema,
+    TUnion<
+      [
+        typeof ArticlePageSchema,
+        typeof CollectionPageSchema,
+        typeof ContentPageSchema,
+        typeof DatabasePageSchema,
+        typeof HomePageSchema,
+        typeof SearchPageSchema,
+        typeof IndexPageSchema,
+        typeof FileRefSchema,
+        typeof LinkRefSchema,
+      ]
+    >,
+  ]
+> = Type.Composite([
   BaseItemSchema,
   Type.Union([
     ArticlePageSchema,

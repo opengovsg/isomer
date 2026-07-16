@@ -6,9 +6,17 @@ import type {
   IsomerSiteProps,
   LinkComponentType,
 } from "~/types"
+import { CanvasProseSchema } from "../native/Prose"
 import { AccordionSchema } from "./Accordion"
+import { BlockquoteSchema } from "./Blockquote"
 import { CalloutSchema } from "./Callout"
+import { ContentpicSchema } from "./Contentpic"
 import { ImageSchema } from "./Image"
+import { ImageGallerySchema } from "./ImageGallery"
+import { InfoColsSchema } from "./InfoCols"
+import { KeyStatisticsSchema } from "./KeyStatistics"
+import { MapSchema } from "./Map"
+import { VideoSchema } from "./Video"
 
 export const CanvasSchema = Type.Object(
   {
@@ -33,7 +41,21 @@ export const CanvasSchema = Type.Object(
       }),
     ),
     blocks: Type.Array(
-      Type.Union([ImageSchema, CalloutSchema, AccordionSchema]),
+      // ImageSchema stays first: Studio's Add item uses the first member's
+      // defaults for new blocks
+      Type.Union([
+        ImageSchema,
+        CanvasProseSchema,
+        CalloutSchema,
+        AccordionSchema,
+        BlockquoteSchema,
+        ContentpicSchema,
+        InfoColsSchema,
+        KeyStatisticsSchema,
+        ImageGallerySchema,
+        MapSchema,
+        VideoSchema,
+      ]),
       {
         title: "Canvas blocks",
         description: "Components to display inside the canvas",

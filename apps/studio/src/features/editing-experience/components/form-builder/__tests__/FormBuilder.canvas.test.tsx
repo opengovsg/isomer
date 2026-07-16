@@ -72,4 +72,96 @@ describe("FormBuilder with the canvas schema", () => {
     expect(markup).toContain("Item 2")
     expect(markup).not.toContain("Items you add will appear here")
   })
+
+  it("should render list entries for the widened set of child block types", () => {
+    const markup = renderCanvasForm({
+      type: "canvas",
+      blocks: [
+        {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Text inside the canvas" }],
+            },
+          ],
+        },
+        { type: "blockquote", quote: "A quote", source: "A source" },
+        {
+          type: "keystatistics",
+          title: "Stats",
+          statistics: [{ label: "A label", value: "42" }],
+        },
+        { type: "video", url: "https://www.youtube.com/embed/x", title: "V" },
+      ],
+    })
+
+    expect(markup).toContain("Item 1")
+    expect(markup).toContain("Item 4")
+    expect(markup).not.toContain("Items you add will appear here")
+  })
+
+  it("accepts every widened child type as valid canvas block data", () => {
+    const validated = validateFn({
+      type: "canvas",
+      blocks: [
+        { type: "image", src: "/images/1.png", alt: "A test image" },
+        {
+          type: "prose",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Text inside the canvas" }],
+            },
+          ],
+        },
+        { type: "blockquote", quote: "A quote", source: "A source" },
+        {
+          type: "contentpic",
+          imageSrc: "/images/1.png",
+          imageAlt: "An image",
+          content: {
+            type: "prose",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Side text" }],
+              },
+            ],
+          },
+        },
+        {
+          type: "infocols",
+          title: "Columns",
+          infoBoxes: [{ title: "Box", description: "Desc" }],
+        },
+        {
+          type: "keystatistics",
+          title: "Stats",
+          statistics: [{ label: "A label", value: "42" }],
+        },
+        {
+          type: "imagegallery",
+          // the gallery requires at least 2 images
+          images: [
+            { src: "/images/1.png", alt: "First image", caption: "One" },
+            { src: "/images/2.png", alt: "Second image", caption: "Two" },
+          ],
+        },
+        {
+          type: "map",
+          url: "https://www.google.com/maps/embed?pb=!1m2",
+          title: "Map",
+        },
+        {
+          type: "video",
+          url: "https://www.youtube.com/embed/x",
+          title: "Video",
+        },
+      ],
+    })
+
+    expect(validateFn.errors ?? []).toEqual([])
+    expect(validated).toBe(true)
+  })
 })
