@@ -165,3 +165,13 @@ export const MobileFilterDrawerClearAll: Story = {
     )
   },
 }
+
+export const NoFilters: Story = {
+  parameters: {
+    chromatic: withChromaticModes(["desktop"]),
+  },
+  args: {
+    filters: [],
+    appliedFilters: [],
+  },
+}
