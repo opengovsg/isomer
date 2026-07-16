@@ -396,6 +396,16 @@ export type TagGroup = Pick<
   selected: Static<typeof TagCategorySchema>["options"][number]["label"][]
 }
 
+// NOTE: derived from `tagCategories` + `tagged` at render time (see
+// `getPillAndPlaintextTags`), not a JSON schema field itself. `id` is the tag
+// category's uuid, used as a stable React key — optional since the legacy
+// `tags` fallback predates tag category uuids.
+export interface TagGroup {
+  id?: string
+  category: string
+  selected: string[]
+}
+
 export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
   BasePageAdditionalProps
 export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
