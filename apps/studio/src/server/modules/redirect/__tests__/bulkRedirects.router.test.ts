@@ -222,6 +222,29 @@ describe("redirect.router bulk upload", async () => {
       expect(errorFor(result, "/n11")).toBeTruthy()
     })
 
+    it("flags only the cycle, not a source that merely points into a loop", async () => {
+      // Arrange: /a is a tail into the /b -> /c -> /d -> /b cycle. Walking from
+      // /a never returns to /a, so /a is a valid redirect and must stay unflagged;
+      // /b, /c, /d are on the cycle and must be flagged. This guards that the
+      // single-pass cycle detection matches the old per-row "returns to start".
+      const result = await caller.bulkValidate({
+        siteId,
+        csv: csvOf([
+          ["/a", "/b"],
+          ["/b", "/c"],
+          ["/c", "/d"],
+          ["/d", "/b"],
+        ]),
+      })
+
+      // Assert
+      expect(errorFor(result, "/a")).toBeNull()
+      expect(errorFor(result, "/b")).toBeTruthy()
+      expect(errorFor(result, "/c")).toBeTruthy()
+      expect(errorFor(result, "/d")).toBeTruthy()
+      expect(result.errorCount).toBe(3)
+    })
+
     it("flags a row split by an unquoted comma in the destination", async () => {
       // Arrange: an unquoted comma splits the destination into a stray column,
       // which would otherwise silently truncate it and publish a wrong redirect.

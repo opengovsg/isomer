@@ -711,28 +711,43 @@ const resolveDestinationsForStorage = async (
   return result
 }
 
-// Walks the redirect chain from `start`, following each source to the source it
-// redirects to, and reports whether it returns to `start` — a loop. The chain is
-// followed to its end or until it repeats a node (tracked in `visited`), so a
-// batch cycle of ANY length is caught; `visited` also stops an unrelated
-// downstream cycle (one that never passes through `start`) from spinning forever.
-const formsLoop = (
-  edges: Map<string, string | null>,
-  start: string,
-): boolean => {
-  const visited = new Set<string>()
-  let current = edges.get(start) ?? null
-  while (current !== null) {
-    if (current === start) {
-      return true
+// Finds every node that lies on a cycle in the functional redirect graph `edges`
+// (each source maps to at most one next source). One traversal over the whole
+// graph — O(total edges) — instead of re-walking the chain from each row, which
+// is O(N^2) and lets a long uploaded chain (up to ~100k rows within the 1MB cap)
+// block the single-threaded event loop. A node is on a cycle iff following its
+// chain returns to it, so membership in the returned set is exactly the old
+// per-row "chain from `start` returns to `start`" check — a source on the tail
+// leading INTO a cycle is (correctly) not included.
+const findCycleNodes = (edges: Map<string, string | null>): Set<string> => {
+  const cycleNodes = new Set<string>()
+  // 0 = on the path currently being walked, 1 = fully explored.
+  const state = new Map<string, 0 | 1>()
+  for (const start of edges.keys()) {
+    if (state.has(start)) {
+      continue
     }
-    if (visited.has(current)) {
-      return false
+    // Walk forward, recording the path, until the chain ends (null), reaches an
+    // already-explored node, or revisits a node still on the current path.
+    const path: string[] = []
+    let current: string | null = start
+    while (current !== null && !state.has(current)) {
+      state.set(current, 0)
+      path.push(current)
+      current = edges.get(current) ?? null
     }
-    visited.add(current)
-    current = edges.get(current) ?? null
+    // Stopping on a node still marked "on the current path" closed a cycle; every
+    // node from it to the end of the path lies on that cycle.
+    if (current !== null && state.get(current) === 0) {
+      for (const node of path.slice(path.indexOf(current))) {
+        cycleNodes.add(node)
+      }
+    }
+    for (const node of path) {
+      state.set(node, 1)
+    }
   }
-  return false
+  return cycleNodes
 }
 
 // Evaluates every CSV row against the same rules as a single create, plus the
@@ -885,11 +900,12 @@ const runBulkValidation = async (
     // existing edge.
     edges.set(row.normalizedSource, nextSource)
   }
+  const cycleNodes = findCycleNodes(edges)
   for (const row of rows) {
     if (row.error !== null || row.normalizedSource === null) {
       continue
     }
-    if (formsLoop(edges, row.normalizedSource)) {
+    if (cycleNodes.has(row.normalizedSource)) {
       row.error = REDIRECT_MESSAGES.loop
     }
   }
