@@ -41,6 +41,7 @@ export const jsonFormsIntegerControlTester: RankedTester = rankWith(
 )
 
 function JsonFormsIntegerControl({
+  data,
   label,
   schema,
   handleChange,
@@ -73,8 +74,11 @@ function JsonFormsIntegerControl({
       <FormControl isRequired={required} isInvalid={!!errors}>
         <FormLabel description={description}>{label}</FormLabel>
         <NumberInput
-          // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          defaultValue={defaultValue ?? min}
+          // The input is uncontrolled, so remount it when the path changes to
+          // avoid carrying a previous item's value over to another item
+          key={path}
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          defaultValue={typeof data === "number" ? data : defaultValue || min}
           min={min}
           max={max}
           onChange={onChange}

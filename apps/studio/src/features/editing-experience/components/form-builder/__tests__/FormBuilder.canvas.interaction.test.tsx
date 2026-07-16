@@ -242,6 +242,40 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(container.textContent).not.toContain("Alternate text")
   })
 
+  it("shows the saved width and height when editing an existing canvas", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      { type: "canvas", blocks: [], width: 50, height: 400 },
+      (data) => changes.push(data),
+    )
+
+    const inputByLabel = (labelText: string) => {
+      const label = Array.from(container.querySelectorAll("label")).find(
+        (candidate) => candidate.textContent.includes(labelText),
+      )
+      return label?.closest(".chakra-form-control")?.querySelector("input")
+    }
+
+    // The integer control must render the stored data, not the schema
+    // minimum, or every reopened canvas would appear to have width 10
+    const widthInput = inputByLabel("Width (%)")
+    const heightInput = inputByLabel("Height (px)")
+    expect(widthInput?.value).toBe("50")
+    expect(heightInput?.value).toBe("400")
+
+    // Edits increment from the saved value rather than the minimum
+    act(() => {
+      widthInput?.focus()
+    })
+    pressKey(widthInput!, "ArrowUp")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(widthInput!.value).toBe("51")
+    const lastChange = changes.at(-1) as { width?: number } | undefined
+    expect(lastChange?.width).toBe(51)
+  })
+
   it("propagates width edits to handleChange as valid canvas data", async () => {
     const changes: IsomerComponent[] = []
     renderCanvasForm({ type: "canvas", blocks: [] }, (data) =>
