@@ -92,7 +92,7 @@ describe("table column-width resize", () => {
     expect(handles.length).toBe(2) // 3 columns -> 2 interior boundaries
   })
 
-  it("redistributes width proportionally during a live drag, and persists on release", async () => {
+  it("only changes the dragged column and its direct neighbour during a live drag, and persists on release", async () => {
     // Arrange
     const consoleErrorSpy = vi.spyOn(console, "error")
     const editor = await renderEditor()
@@ -124,12 +124,13 @@ describe("table column-width resize", () => {
       dispatchPointer(window, "pointermove", 140)
     })
 
-    // Assert: live preview shows column 0 grown, columns 1 & 2 shrunk, and
-    // the table's total width hasn't silently drifted off 100%.
+    // Assert: live preview shows column 0 grown and column 1 (its direct
+    // neighbour) shrunk by the same amount, column 2 untouched, and the
+    // table's total width hasn't silently drifted off 100%.
     const duringDragWidths = getColWidths(tableEl)
     expect(duringDragWidths[0]).toBeGreaterThan(initialWidths[0] ?? 0)
     expect(duringDragWidths[1]).toBeLessThan(initialWidths[1] ?? 0)
-    expect(duringDragWidths[2]).toBeLessThan(initialWidths[2] ?? 0)
+    expect(duringDragWidths[2]).toBeCloseTo(initialWidths[2] ?? 0, 3)
     expect(duringDragWidths.reduce((sum, width) => sum + width, 0)).toBeCloseTo(
       100,
       5,

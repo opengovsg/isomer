@@ -72,7 +72,7 @@ describe("resolveColumnWidths", () => {
 })
 
 describe("redistributeOnResize", () => {
-  it("should redistribute a grow proportionally among the other columns", () => {
+  it("should grow the dragged column and shrink its direct neighbour by the same amount", () => {
     // Arrange
     const widths = [25, 25, 25, 25]
 
@@ -86,15 +86,15 @@ describe("redistributeOnResize", () => {
 
     // Assert
     expect(result[0]).toBeCloseTo(37, 5)
-    // The other three columns each lose an equal share of the 12-point delta,
-    // since they started with equal widths.
-    expect(result[1]).toBeCloseTo(21, 5)
-    expect(result[2]).toBeCloseTo(21, 5)
-    expect(result[3]).toBeCloseTo(21, 5)
+    expect(result[1]).toBeCloseTo(13, 5)
+    // Columns 2 and 3 are untouched -- only the dragged column and its
+    // direct neighbour ever change.
+    expect(result[2]).toBe(25)
+    expect(result[3]).toBe(25)
     expect(result.reduce((sum, width) => sum + width, 0)).toBeCloseTo(100, 6)
   })
 
-  it("should redistribute a shrink proportionally among the other columns", () => {
+  it("should shrink the dragged column and grow its direct neighbour by the same amount", () => {
     // Arrange
     const widths = [50, 30, 20]
 
@@ -108,11 +108,28 @@ describe("redistributeOnResize", () => {
 
     // Assert
     expect(result[0]).toBeCloseTo(40, 5)
-    // Columns 1 and 2 split the freed-up 10 points proportional to their
-    // 30:20 (i.e. 3:2) share of the combined "other columns" width.
-    expect(result[1]).toBeCloseTo(36, 5)
-    expect(result[2]).toBeCloseTo(24, 5)
+    expect(result[1]).toBeCloseTo(40, 5)
+    // Column 2 is not the dragged column's neighbour, so it's untouched.
+    expect(result[2]).toBe(20)
     expect(result.reduce((sum, width) => sum + width, 0)).toBeCloseTo(100, 6)
+  })
+
+  it("should affect the neighbour to the right of the dragged handle, not column 0", () => {
+    // Arrange: dragging the boundary between columns 1 and 2.
+    const widths = [50, 30, 20]
+
+    // Act
+    const result = redistributeOnResize({
+      widths,
+      columnIndex: 1,
+      deltaPercent: 10,
+      minPercent: 5,
+    })
+
+    // Assert
+    expect(result[0]).toBe(50)
+    expect(result[1]).toBeCloseTo(40, 5)
+    expect(result[2]).toBeCloseTo(10, 5)
   })
 
   it("should clamp the dragged column at the minimum width", () => {
@@ -129,30 +146,11 @@ describe("redistributeOnResize", () => {
 
     // Assert
     expect(result[0]).toBeCloseTo(10, 5)
+    expect(result[1]).toBeCloseTo(40, 5)
     expect(result.reduce((sum, width) => sum + width, 0)).toBeCloseTo(100, 6)
   })
 
-  it("should clamp a neighbour at the floor and redistribute its shortfall to the rest", () => {
-    // Arrange: column 1 starts right at the floor already, so any shrink on
-    // it must be absorbed by column 2 instead.
-    const widths = [40, 10, 50]
-
-    // Act
-    const result = redistributeOnResize({
-      widths,
-      columnIndex: 0,
-      deltaPercent: 20,
-      minPercent: 10,
-    })
-
-    // Assert
-    expect(result[0]).toBeCloseTo(60, 5)
-    expect(result[1]).toBeCloseTo(10, 5)
-    expect(result[2]).toBeCloseTo(30, 5)
-    expect(result.reduce((sum, width) => sum + width, 0)).toBeCloseTo(100, 6)
-  })
-
-  it("should never let the dragged column exceed the space left after everyone else is at the floor", () => {
+  it("should clamp the neighbour at the minimum width when growing the dragged column", () => {
     // Arrange
     const widths = [25, 25, 25, 25]
 
@@ -164,10 +162,11 @@ describe("redistributeOnResize", () => {
       minPercent: 10,
     })
 
-    // Assert: 3 other columns at the 10% floor leaves at most 70% for column 0.
-    expect(result[0]).toBeCloseTo(70, 5)
+    // Assert: the pair combines for 50, so column 0 can grow to at most 40
+    // before column 1 hits the 10% floor. Columns 2 and 3 are untouched.
+    expect(result[0]).toBeCloseTo(40, 5)
     expect(result[1]).toBeCloseTo(10, 5)
-    expect(result[2]).toBeCloseTo(10, 5)
-    expect(result[3]).toBeCloseTo(10, 5)
+    expect(result[2]).toBe(25)
+    expect(result[3]).toBe(25)
   })
 })
