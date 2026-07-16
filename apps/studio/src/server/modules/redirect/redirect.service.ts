@@ -576,8 +576,16 @@ export const createRedirect = async ({
 // ---------------------------------------------------------------------------
 
 // Rows are inserted in chunks so a large upload doesn't build one enormous
-// INSERT (mirrors the migration script's chunking).
+// INSERT (mirrors the migration script's chunking). Postgres also caps a
+// statement at 65535 bind parameters, so the chunk keeps every batched insert
+// (redirects and their audit rows) well under that.
 const BULK_REDIRECT_INSERT_CHUNK_SIZE = 500
+
+// Arbitrary namespace for the per-site advisory lock that serialises bulk
+// redirect writes (there is no other advisory-lock user, but the two-key form
+// keeps this from ever colliding with a future one). pg_advisory_xact_lock
+// releases automatically when the transaction ends.
+const REDIRECT_WRITE_LOCK_NAMESPACE = 0x5244 // "RD"
 
 // Shown when a row is split by an unquoted comma into extra columns.
 const BULK_MALFORMED_ROW_MESSAGE =
@@ -1009,6 +1017,16 @@ export const bulkCreateRedirects = async ({
 
   try {
     const created = await db.transaction().execute(async (tx) => {
+      // Serialise redirect writes for this site: two concurrent bulk creates
+      // could otherwise each miss the other's uncommitted rows in the rechecks
+      // below (READ COMMITTED doesn't see them) and both publish — e.g. one
+      // inserting /a -> /b while the other inserts /b -> /a, forming a loop. The
+      // xact lock makes the later transaction wait, so its recheck sees the
+      // committed rows and aborts. Released automatically at commit/rollback.
+      await sql`SELECT pg_advisory_xact_lock(${REDIRECT_WRITE_LOCK_NAMESPACE}, ${siteId})`.execute(
+        tx,
+      )
+
       // Re-read every existing row (live or soft-deleted) for these sources
       // first, so each audit entry's `before` is the real committed row.
       const existingRows = sources.length
@@ -1119,17 +1137,29 @@ export const bulkCreateRedirects = async ({
       }
 
       // One RedirectCreate per redirect, pairing each committed row with its real
-      // before-row (matching how the delete cascade audits per row).
-      for (const row of insertedRows) {
-        await logRedirectEvent(tx, {
-          siteId,
-          by: byUser,
-          eventType: AuditLogEvent.RedirectCreate,
-          delta: {
-            before: existingBySource.get(row.source) ?? null,
-            after: row,
-          },
-        })
+      // before-row. Inserted in the same chunks as the redirects rather than one
+      // round-trip per row (via logRedirectEvent) — a large upload would
+      // otherwise run thousands of sequential inserts inside the transaction,
+      // holding locks and a connection far longer than needed.
+      const auditValues = insertedRows.map((row) => ({
+        siteId,
+        eventType: AuditLogEvent.RedirectCreate,
+        delta: {
+          before: existingBySource.get(row.source) ?? null,
+          after: row,
+        },
+        userId: byUser.id,
+        metadata: {},
+      }))
+      for (
+        let i = 0;
+        i < auditValues.length;
+        i += BULK_REDIRECT_INSERT_CHUNK_SIZE
+      ) {
+        await tx
+          .insertInto("AuditLog")
+          .values(auditValues.slice(i, i + BULK_REDIRECT_INSERT_CHUNK_SIZE))
+          .execute()
       }
 
       // The whole batch republishes once, audited as a single Publish event.
