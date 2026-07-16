@@ -259,11 +259,10 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should throw 403 if assigning a whitelisted non-gov.sg email with admin role", async () => {
+    it("should throw 403 if assigning a non-whitelisted non-gov.sg email with admin role", async () => {
       // Arrange
       const nonGovSgEmail = "test@coolvendor.com"
       await setupAdminPermissions({ userId: session.userId, siteId })
-      await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
       const result = caller.create({
@@ -283,6 +282,22 @@ describe("user.router", () => {
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(0)
+    })
+
+    it("should create a whitelisted non-gov.sg email with admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test@coolvendor.com"
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setUpWhitelist({ email: nonGovSgEmail })
+
+      // Act
+      const result = await caller.create({
+        siteId,
+        users: [{ email: nonGovSgEmail, role: RoleType.Admin }],
+      })
+
+      // Assert
+      expect(result).toEqual(expect.anything())
     })
 
     it("should create a whitelisted non-gov.sg email with non-admin role", async () => {
@@ -1542,12 +1557,12 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should throw 403 if assigning a non-gov.sg email with admin role", async () => {
+    it("should throw 403 if assigning a non-whitelisted non-gov.sg email with admin role", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
       const userToUpdate = await setupUser({
-        email: "test@coolvendor.com",
+        email: "test-not-whitelisted@coolvendor.com",
         isDeleted: false,
       })
       await setupEditorPermissions({ userId: userToUpdate.id, siteId })
@@ -1571,6 +1586,34 @@ describe("user.router", () => {
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(0)
+    })
+
+    it("should update a whitelisted non-gov.sg email to admin role successfully", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: "test@coolvendor.com",
+        isDeleted: false,
+      })
+      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      await setUpWhitelist({ email: userToUpdate.email })
+
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: RoleType.Admin,
+      })
+
+      // Assert
+      expect(result).toEqual(
+        expect.objectContaining({
+          siteId,
+          userId: userToUpdate.id,
+          role: RoleType.Admin,
+        }),
+      )
     })
 
     it("should update a non-gov.sg email with non-admin role successfully", async () => {

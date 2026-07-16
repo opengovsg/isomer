@@ -263,10 +263,9 @@ describe("user.service", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should throw 403 if assigning a non-gov.sg email with admin role", async () => {
+    it("should throw 403 if assigning a non-whitelisted non-gov.sg email with admin role", async () => {
       // Arrange
       const nonGovSgEmail = "test@coolvendor.com"
-      await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
       const result = db.transaction().execute((tx) => {
@@ -291,6 +290,26 @@ describe("user.service", () => {
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(0)
+    })
+
+    it("should create a whitelisted non-gov.sg email with admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test@coolvendor.com"
+      await setUpWhitelist({ email: nonGovSgEmail })
+
+      // Act
+      const result = await db.transaction().execute((tx) => {
+        return createUserWithPermission({
+          byUserId: creatorUserId,
+          email: nonGovSgEmail,
+          role: RoleType.Admin,
+          siteId,
+          tx,
+        })
+      })
+
+      // Assert
+      expect(result).toEqual(expect.anything())
     })
 
     it("should create a non-gov.sg email with non-admin role", async () => {

@@ -26,11 +26,13 @@ export const isUserDeleted = async (email: string) => {
 export const validateEmailRoleCombination = ({
   email,
   role,
+  isWhitelisted,
 }: {
   email: string
   role: ResourcePermission["role"]
+  isWhitelisted: boolean
 }) => {
-  if (!isGovEmail(email) && role === RoleType.Admin) {
+  if (role === RoleType.Admin && !isGovEmail(email) && !isWhitelisted) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message:
@@ -65,9 +67,9 @@ export const createUserWithPermission = async ({
     })
   }
 
-  validateEmailRoleCombination({ email, role })
-
   const isWhitelisted = await isEmailWhitelisted(email)
+  validateEmailRoleCombination({ email, role, isWhitelisted })
+
   if (!isWhitelisted) {
     throw new TRPCError({
       code: "FORBIDDEN",
