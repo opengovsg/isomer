@@ -18,6 +18,16 @@ const tableCellStyles = tv({
   },
 })
 
+const tableStyles = tv({
+  base: "w-full border-collapse border-spacing-0 border border-base-divider-medium",
+  variants: {
+    hasColumnWidths: {
+      true: "table-fixed",
+      false: "table-auto",
+    },
+  },
+})
+
 const getColumnCount = (content: TableProps["content"]): number =>
   Math.max(
     ...content.map((row) =>
@@ -61,7 +71,7 @@ export const Table = ({
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
-          className="w-full border-collapse border-spacing-0 border border-base-divider-medium"
+          className={tableStyles({ hasColumnWidths: !!columnWidths })}
           aria-describedby={tableDescriptionId}
         >
           {columnWidths && (
