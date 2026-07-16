@@ -30,17 +30,11 @@ export const resolveColumnWidths = (
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max)
 
-// Fixes up floating-point drift so the "always sums to exactly 100" invariant
-// holds, by absorbing the residual into the single largest column.
-const normalizeToTotal = (widths: number[]): number[] => {
-  const total = widths.reduce((sum, width) => sum + width, 0)
-  const drift = 100 - total
-  const largestIndex = widths.indexOf(Math.max(...widths))
-  return widths.map((width, index) =>
-    index === largestIndex ? width + drift : width,
-  )
-}
-
+// A resize handle sits at the boundary right after `columnIndex`, so it only
+// ever transfers width between that column and its direct neighbour -- every
+// other column is untouched. This is a simple zero-sum swap between the
+// pair (their combined width never changes), unlike a model that
+// redistributes the delta proportionally across every other column.
 export const redistributeOnResize = ({
   widths,
   columnIndex,
@@ -52,62 +46,19 @@ export const redistributeOnResize = ({
   deltaPercent: number
   minPercent: number
 }): number[] => {
-  const otherIndices = widths
-    .map((_, index) => index)
-    .filter((index) => index !== columnIndex)
-
+  const neighborIndex = columnIndex + 1
   const currentWidth = widths[columnIndex] ?? 0
-  const maxWidth = 100 - minPercent * otherIndices.length
-  const targetWidth = clamp(currentWidth + deltaPercent, minPercent, maxWidth)
-  const delta = targetWidth - currentWidth
+  const neighborWidth = widths[neighborIndex] ?? 0
+  const combinedWidth = currentWidth + neighborWidth
+
+  const targetWidth = clamp(
+    currentWidth + deltaPercent,
+    minPercent,
+    combinedWidth - minPercent,
+  )
 
   const result = [...widths]
   result[columnIndex] = targetWidth
-
-  const sumOthers = otherIndices.reduce(
-    (sum, index) => sum + (widths[index] ?? 0),
-    0,
-  )
-  if (sumOthers <= 0) {
-    return normalizeToTotal(result)
-  }
-
-  // Shrink/grow every other column proportional to its current share of the
-  // combined "other columns" width.
-  otherIndices.forEach((index) => {
-    const width = widths[index] ?? 0
-    result[index] = width - delta * (width / sumOthers)
-  })
-
-  // Any column pushed below the floor gets clamped there; its shortfall is
-  // redistributed proportionally among the columns that still have room.
-  // (Single pass: a column clamped here cascading a second column below the
-  // floor is a pathologically narrow-table/many-columns case, not handled.)
-  const belowFloor = otherIndices.filter(
-    (index) => (result[index] ?? 0) < minPercent,
-  )
-  if (belowFloor.length > 0 && belowFloor.length < otherIndices.length) {
-    const shortfall = belowFloor.reduce(
-      (sum, index) => sum + (minPercent - (result[index] ?? 0)),
-      0,
-    )
-    belowFloor.forEach((index) => {
-      result[index] = minPercent
-    })
-    const stillFlexible = otherIndices.filter(
-      (index) => !belowFloor.includes(index),
-    )
-    const sumFlexible = stillFlexible.reduce(
-      (sum, index) => sum + (result[index] ?? 0),
-      0,
-    )
-    if (sumFlexible > 0) {
-      stillFlexible.forEach((index) => {
-        const width = result[index] ?? 0
-        result[index] = width - shortfall * (width / sumFlexible)
-      })
-    }
-  }
-
-  return normalizeToTotal(result)
+  result[neighborIndex] = combinedWidth - targetWidth
+  return result
 }
