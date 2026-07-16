@@ -80,6 +80,19 @@ const pressKey = (element: Element, key: string) => {
   })
 }
 
+// @hello-pangea/dnd's keyboard sensor reads the legacy event.keyCode, which
+// jsdom's KeyboardEvent constructor does not populate from `key`
+const pressDndKey = (element: Element, keyCode: number) => {
+  act(() => {
+    const event = new KeyboardEvent("keydown", {
+      bubbles: true,
+      cancelable: true,
+    })
+    Object.defineProperty(event, "keyCode", { value: keyCode })
+    element.dispatchEvent(event)
+  })
+}
+
 beforeAll(() => {
   ;(
     globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -298,6 +311,44 @@ describe("FormBuilder canvas editing interactions", () => {
     })
     const lastChange = changes.at(-1) as { blocks?: unknown[] } | undefined
     expect(lastChange?.blocks).toHaveLength(0)
+  })
+
+  it("reorders blocks via a keyboard drag and propagates the new order", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          BLOCKQUOTE_BLOCK,
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    const dragHandles = container.querySelectorAll(
+      "[data-rfd-drag-handle-draggable-id]",
+    )
+    expect(dragHandles).toHaveLength(2)
+    const firstHandle = dragHandles[0]!
+
+    // Space lifts the first block, ArrowDown moves it below the second,
+    // Space drops it (keyCodes 32/40 per the dnd keyboard sensor)
+    pressDndKey(firstHandle, 32)
+    pressDndKey(firstHandle, 40)
+    pressDndKey(firstHandle, 32)
+
+    // onDragEnd walks the move through JsonForms' moveDown into a data
+    // update, which reaches handleChange from an effect on a later tick
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(lastChange?.blocks).toHaveLength(2)
+    expect(lastChange?.blocks?.[0]?.quote).toBe("The second quote")
+    expect(lastChange?.blocks?.[1]?.quote).toBe("A quote inside the canvas")
   })
 
   it("shows the saved width and height when editing an existing canvas", async () => {
