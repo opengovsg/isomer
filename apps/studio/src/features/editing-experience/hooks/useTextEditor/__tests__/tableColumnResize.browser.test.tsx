@@ -1,10 +1,19 @@
+import type { ProseProps } from "@opengovsg/isomer-components"
 import type { Editor, JSONContent } from "@tiptap/react"
+import { getComponentSchema } from "@opengovsg/isomer-components"
 import { render, waitFor } from "@testing-library/react"
 import { EditorContent } from "@tiptap/react"
 import { act } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { ajv } from "~/utils/ajv"
 
 import { useTextEditor } from "../useTextEditor"
+
+// Same schema + validator EditPageDrawer.tsx uses to decide whether the
+// editor's content can be handed to the prose editor at all.
+const validateProse = ajv.compile<ProseProps>(
+  getComponentSchema({ component: "prose" }),
+)
 
 // `useTextEditor` is wired through `~/utils/trpc` transitively via other
 // editing-experience modules; this test never calls a trpc procedure, but
@@ -46,6 +55,25 @@ const dispatchPointer = (
 describe("table column-width resize", () => {
   afterEach(() => {
     vi.restoreAllMocks()
+  })
+
+  it("produces a schema-valid document for a freshly inserted, unresized table", async () => {
+    // Arrange: a table that has never been dragged -- every cell's colwidth
+    // is TipTap's declared default (null), not an absent key. This is the
+    // exact shape EditPageDrawer.tsx re-validates on every subsequent
+    // transaction (e.g. clicking Bold), so it must pass on its own, with no
+    // resize interaction involved at all.
+    const editor = await renderEditor()
+
+    // Act
+    act(() => {
+      editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
+    })
+
+    // Assert
+    const json = editor.getJSON()
+    const isValid = validateProse(json)
+    expect(isValid, JSON.stringify(validateProse.errors)).toBe(true)
   })
 
   it("renders one resize handle per interior column boundary", async () => {
