@@ -14,9 +14,9 @@ export const ArticlePageHeaderSchema = Type.Object({
 })
 
 export type ArticlePageHeaderProps = Static<typeof ArticlePageHeaderSchema> & {
-  tags?: CollectionCardProps["tags"]
+  pillTags?: CollectionCardProps["pillTags"]
   breadcrumb: BreadcrumbProps
   title: string
-  category: CollectionCardProps["category"]
+  plaintextTags?: CollectionCardProps["plaintextTags"]
   date?: string
 }

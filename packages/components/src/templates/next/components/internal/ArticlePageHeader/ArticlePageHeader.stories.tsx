@@ -34,7 +34,7 @@ const ARTICLE = {
       },
     ],
   },
-  category: "NParks Happenings",
+  plaintextTags: [{ category: "Category", selected: ["NParks Happenings"] }],
   title:
     "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
   date: "1 May 2024",
@@ -46,10 +46,30 @@ export const SingleSummaryItem: Story = {
   args: ARTICLE,
 }
 
+export const WithoutCategory: Story = {
+  args: {
+    ...ARTICLE,
+    plaintextTags: [],
+  },
+}
+
+export const MultiplePlaintextGroups: Story = {
+  args: {
+    ...ARTICLE,
+    plaintextTags: [
+      { category: "Category", selected: ["NParks Happenings"] },
+      { category: "Region", selected: ["Wildlife"] },
+    ],
+  },
+}
+
 export const ArticleWithTags: Story = {
   args: {
     ...ARTICLE,
-    tags: [
+    // NOTE: `pillTags` here is expected to already exclude any
+    // `display: "plaintext"` groups (see Article.tsx's `pillTags`), so
+    // that they aren't duplicated as a pill.
+    pillTags: [
       {
         category: "Tags",
         selected: ["NParks Happenings", "Wild dinosaur"],

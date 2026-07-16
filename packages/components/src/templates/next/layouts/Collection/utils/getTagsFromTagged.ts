@@ -1,12 +1,17 @@
-import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
+import type {
+  ArticlePagePageProps,
+  CollectionPagePageProps,
+  TagGroup,
+} from "~/types"
 
 export const getTagsFromTagged = (
   tagged: NonNullable<ArticlePagePageProps["tagged"]>,
   tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]>,
-): NonNullable<ArticlePagePageProps["tags"]> => {
+): TagGroup[] => {
   return tagCategories
-    .map(({ options, label }) => {
+    .map(({ id, options, label }) => {
       return {
+        id,
         category: label,
         selected: options
           .filter(({ id: optionId }) => tagged.includes(optionId))
