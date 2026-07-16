@@ -14,6 +14,8 @@ export const Canvas = ({
   return (
     <div
       className="resize overflow-auto rounded-lg border border-divider-medium p-5 [&:not(:first-child)]:mt-7"
+      // Scrollable region must be keyboard-focusable (same as Table.tsx)
+      tabIndex={0}
       style={{
         width: width !== undefined ? `${width}%` : undefined,
         height: height !== undefined ? `${height}px` : undefined,

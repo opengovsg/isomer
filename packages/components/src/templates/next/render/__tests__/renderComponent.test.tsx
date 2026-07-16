@@ -144,6 +144,19 @@ describe("renderComponent", () => {
     expect(secondImage).toContain('loading="lazy"')
   })
 
+  it("renders the canvas scroll container as keyboard-focusable", () => {
+    const html = renderToStaticMarkup(
+      renderComponent({
+        component: { type: "canvas", height: 200, blocks: [] },
+        layout: "content",
+        site: generateSiteConfig(),
+        permalink: "/",
+      }),
+    )
+
+    expect(html).toContain('tabindex="0"')
+  })
+
   it("renders a canvas without explicit dimensions", () => {
     const html = renderToStaticMarkup(
       renderComponent({
