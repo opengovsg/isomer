@@ -29,6 +29,7 @@ export class IsomerTableView implements NodeView {
   contentDOM: HTMLTableSectionElement
   handleContainer: HTMLDivElement
   private stopDrag: (() => void) | null = null
+  private pendingCommitFrame: number | null = null
 
   constructor(
     node: ProseMirrorNode,
@@ -167,16 +168,41 @@ export class IsomerTableView implements NodeView {
         minPercent,
       })
 
+    const cancelPendingCommit = () => {
+      if (this.pendingCommitFrame != null) {
+        win.cancelAnimationFrame(this.pendingCommitFrame)
+        this.pendingCommitFrame = null
+      }
+    }
+
     const onPointerMove = (moveEvent: PointerEvent) => {
       const widths = computeWidths(moveEvent)
+      // Update this view's own DOM immediately so the drag itself feels
+      // responsive, independent of the throttled commit below.
       this.renderColgroup(widths)
       this.renderHandles(widths)
+
+      // Also dispatch into the document -- not just this NodeView's own DOM
+      // -- so consumers that only react to committed transactions (e.g. the
+      // page editor's side-by-side preview, which re-renders off
+      // `editor.onUpdate` -> `previewPageState`, see TipTapProseComponent.tsx)
+      // track the drag live instead of jumping only on release. Throttled to
+      // one dispatch per animation frame, since that preview's re-render is
+      // wrapped in `flushSync` and would otherwise run once per raw
+      // pointermove. `addToHistory: false` keeps every intermediate frame out
+      // of the undo stack -- only the pointerup commit is undoable.
+      cancelPendingCommit()
+      this.pendingCommitFrame = win.requestAnimationFrame(() => {
+        this.pendingCommitFrame = null
+        this.commitWidths(widths, { addToHistory: false })
+      })
     }
 
     const onPointerUp = (upEvent: PointerEvent) => {
       win.removeEventListener("pointermove", onPointerMove)
       win.removeEventListener("pointerup", onPointerUp)
       this.stopDrag = null
+      cancelPendingCommit()
       this.commitWidths(computeWidths(upEvent))
     }
 
@@ -185,10 +211,14 @@ export class IsomerTableView implements NodeView {
     this.stopDrag = () => {
       win.removeEventListener("pointermove", onPointerMove)
       win.removeEventListener("pointerup", onPointerUp)
+      cancelPendingCommit()
     }
   }
 
-  private commitWidths(widths: number[]) {
+  private commitWidths(
+    widths: number[],
+    options: { addToHistory?: boolean } = {},
+  ) {
     const tablePos = this.getPos()
     if (tablePos == null) {
       return
@@ -197,6 +227,9 @@ export class IsomerTableView implements NodeView {
       ...this.node.attrs,
       colwidths: widths,
     })
+    if (options.addToHistory === false) {
+      tr.setMeta("addToHistory", false)
+    }
     this.view.dispatch(tr)
   }
 }

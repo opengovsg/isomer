@@ -2,6 +2,7 @@ import type { ProseProps } from "@opengovsg/isomer-components"
 import type { Editor, JSONContent } from "@tiptap/react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { render, waitFor } from "@testing-library/react"
+import { closeHistory, undoDepth } from "@tiptap/pm/history"
 import { EditorContent } from "@tiptap/react"
 import { act } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -161,5 +162,70 @@ describe("table column-width resize", () => {
 
     // Assert: no unexpected errors were logged during the whole interaction.
     expect(consoleErrorSpy).not.toHaveBeenCalled()
+  })
+
+  it("commits mid-drag widths into the document (not just the DOM) so a live preview can track the drag", async () => {
+    // Arrange: this is the regression test for the "preview only updates on
+    // release" gap -- consumers like the page editor's side-by-side preview
+    // only re-render off committed transactions (`editor.onUpdate`), not off
+    // this NodeView's own DOM. Mid-drag widths are dispatched throttled to
+    // one commit per animation frame, so this test waits a frame before
+    // asserting.
+    const editor = await renderEditor()
+    act(() => {
+      editor.commands.insertTable({ rows: 2, cols: 3, withHeaderRow: true })
+    })
+
+    const initialWidths: number[] =
+      (editor.getJSON().content?.[0]?.attrs?.colwidths as
+        | number[]
+        | undefined) ?? []
+    // Force a history-group boundary so the drag's own undo step can be
+    // measured in isolation from `insertTable`'s -- without this, both
+    // happen within the history plugin's default 500ms grouping window and
+    // would otherwise be merged into a single undoable event.
+    act(() => {
+      editor.view.dispatch(closeHistory(editor.state.tr))
+    })
+    const depthBeforeDrag = undoDepth(editor.state)
+
+    const firstHandle = document.querySelector(
+      '[data-testid="isomer-table-resize-handle"][data-column-index="0"]',
+    )
+    expect(firstHandle).not.toBeNull()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const handle = firstHandle!
+
+    // Act: press down and move, but do not release.
+    act(() => {
+      dispatchPointer(handle, "pointerdown", 100)
+    })
+    act(() => {
+      dispatchPointer(window, "pointermove", 140)
+    })
+    await act(async () => {
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      )
+    })
+
+    // Assert: the document already reflects the mid-drag widths, before any
+    // pointerup has fired.
+    const midDragWidths: number[] =
+      (editor.getJSON().content?.[0]?.attrs?.colwidths as
+        | number[]
+        | undefined) ?? []
+    expect(midDragWidths[0]).toBeGreaterThan(initialWidths[0] ?? 0)
+    // The mid-drag commit was dispatched with `addToHistory: false`, so it
+    // must not have added a new undo step on top of `insertTable`'s.
+    expect(undoDepth(editor.state)).toBe(depthBeforeDrag)
+
+    // Act: release the drag.
+    act(() => {
+      dispatchPointer(window, "pointerup", 140)
+    })
+
+    // Assert: the whole drag collapses into exactly one undoable step.
+    expect(undoDepth(editor.state)).toBe(depthBeforeDrag + 1)
   })
 })
