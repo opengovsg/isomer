@@ -18,24 +18,19 @@ const tableCellStyles = tv({
   },
 })
 
-// Only a row with no colspan on any cell unambiguously maps 1 cell to 1
-// column, so that's the only shape we can read explicit widths back out of.
+// The editor only ever records colwidth against the table's first row, and
+// only when that row has no colspan (a colspan'd first row can't be mapped
+// 1 cell to 1 column, so its cells never carry a colwidth to read back).
 const getColumnWidths = (content: TableProps["content"]): number[] | null => {
-  const columnCounts = content.map((row) =>
-    row.content.reduce((sum, cell) => sum + (cell.attrs?.colspan ?? 1), 0),
-  )
-  const columnCount = Math.max(...columnCounts)
-
-  const widthsRow = content.find(
-    (row, index) =>
-      columnCounts[index] === columnCount &&
-      row.content.every((cell) => (cell.attrs?.colspan ?? 1) === 1),
-  )
-  if (!widthsRow) {
+  const firstRow = content[0]
+  if (
+    !firstRow ||
+    firstRow.content.some((cell) => (cell.attrs?.colspan ?? 1) !== 1)
+  ) {
     return null
   }
 
-  const widths = widthsRow.content.map((cell) => cell.attrs?.colwidth)
+  const widths = firstRow.content.map((cell) => cell.attrs?.colwidth)
   if (widths.some((width) => width === undefined)) {
     return null
   }
