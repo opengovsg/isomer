@@ -48,6 +48,19 @@ const getRequestRows = async ({
     .execute()
 }
 
+// Every accepted ask — including an idempotent-accepted duplicate — must be
+// recorded as an AuditLogExportCreate event (one per ask, not per fanned-out
+// row). Rejected asks (FORBIDDEN/BAD_REQUEST) must leave no event behind.
+const getExportCreateEvents = async ({ siteId }: { siteId: number }) => {
+  return db
+    .selectFrom("AuditLog")
+    .where("siteId", "=", siteId)
+    .where("eventType", "=", "AuditLogExportCreate")
+    .orderBy("id", "asc")
+    .selectAll()
+    .execute()
+}
+
 describe("audit.router", async () => {
   let caller: ReturnType<typeof createCaller>
   const session = await applyAuthedSession()
@@ -60,6 +73,7 @@ describe("audit.router", async () => {
   beforeEach(async () => {
     await resetTables(
       "AuditLogExportRequest",
+      "AuditLog",
       "ResourcePermission",
       "Site",
       "User",
@@ -126,6 +140,19 @@ describe("audit.router", async () => {
         userId: session.userId!,
       })
       expect(rows).toHaveLength(1)
+
+      // The ask itself is audit-logged: one AuditLogExportCreate event whose
+      // delta records what was asked for (the requested type, verbatim).
+      const events = await getExportCreateEvents({ siteId: site.id })
+      expect(events).toHaveLength(1)
+      expect(events[0]).toMatchObject({
+        userId: session.userId,
+        siteId: site.id,
+        delta: {
+          before: null,
+          after: { auditLogDateRange, reportType: "Access" },
+        },
+      })
     })
 
     it("should fan a Both request out into two Pending rows (Access + Activity)", async () => {
@@ -166,6 +193,14 @@ describe("audit.router", async () => {
         userId: session.userId!,
       })
       expect(rows).toHaveLength(2)
+
+      // ONE event per ask — not one per fanned-out half — and the delta keeps
+      // the user's vocabulary ("Both"), not the storage fan-out.
+      const events = await getExportCreateEvents({ siteId: site.id })
+      expect(events).toHaveLength(1)
+      expect(events[0]).toMatchObject({
+        delta: { before: null, after: { reportType: "Both" } },
+      })
     })
 
     it("should throw FORBIDDEN when the caller is only an Editor", async () => {
@@ -212,7 +247,7 @@ describe("audit.router", async () => {
       expect(rows).toHaveLength(0)
     })
 
-    it("should throw CONFLICT and not create a duplicate for an in-flight request", async () => {
+    it("should accept a duplicate ask idempotently, returning the in-flight row and recording a second event", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -220,30 +255,36 @@ describe("audit.router", async () => {
         siteId: site.id,
       })
 
-      // Act — first request succeeds
-      await caller.createExportRequest({
+      // Act — first request queues a row
+      const first = await caller.createExportRequest({
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
       })
 
-      // Act — second identical request is rejected
-      const result = caller.createExportRequest({
+      // Act — second identical request succeeds instead of erroring
+      const second = await caller.createExportRequest({
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
       })
 
-      // Assert
-      await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+      // Assert: the duplicate resolves to the SAME in-flight row (no second
+      // row is queued)...
+      expect(second).toHaveLength(1)
+      expect(second[0]?.id).toBe(first[0]?.id)
       const rows = await getRequestRows({
         siteId: site.id,
         userId: session.userId!,
       })
       expect(rows).toHaveLength(1)
+
+      // ...but the duplicate ASK is still recorded: one event per ask.
+      const events = await getExportCreateEvents({ siteId: site.id })
+      expect(events).toHaveLength(2)
     })
 
-    it("should throw CONFLICT for a Both request when one of its report types is already in flight, committing nothing", async () => {
+    it("should accept a Both request when one of its report types is already in flight, inserting only the missing half", async () => {
       // Arrange
       const { site } = await setupSite()
       await setupAdminPermissions({
@@ -252,27 +293,35 @@ describe("audit.router", async () => {
       })
 
       // Act — an Access request is already in flight
-      await caller.createExportRequest({
+      const first = await caller.createExportRequest({
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Access",
       })
 
       // Act — a Both request for the same range overlaps it on Access
-      const result = caller.createExportRequest({
+      const result = await caller.createExportRequest({
         siteId: site.id,
         month: VALID_MONTH,
         reportType: "Both",
       })
 
-      // Assert: all-or-nothing — the Activity half is NOT committed either.
-      await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+      // Assert: the Access half resolves to the existing in-flight row and
+      // only the Activity half inserts a new one — two rows total, never
+      // three, and no error anywhere.
+      expect(result).toHaveLength(2)
+      expect(result.map((row) => row.reportType).sort()).toEqual([
+        "Access",
+        "Activity",
+      ])
+      expect(result.find((row) => row.reportType === "Access")?.id).toBe(
+        first[0]?.id,
+      )
       const rows = await getRequestRows({
         siteId: site.id,
         userId: session.userId!,
       })
-      expect(rows).toHaveLength(1)
-      expect(rows[0]?.reportType).toBe("Access")
+      expect(rows).toHaveLength(2)
     })
 
     it("should throw BAD_REQUEST when the month is in the future", async () => {

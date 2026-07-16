@@ -1,22 +1,25 @@
-import { TRPCError } from "@trpc/server"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { getCurrentSingaporeMonth } from "~/schemas/audit"
 
 // This file deliberately mocks the DB (unlike the sibling integration tests) so
 // it can drive the ONE code path that a real-Postgres test cannot deterministic-
-// ally reach: the race-loser. The in-flight dedupe SELECT and the partial unique
-// index share the same predicate, so any row that would trip the index would
-// also be seen by the SELECT — meaning the INSERT's unique-violation catch is
-// only exercised when a concurrent request slips in between our SELECT and
-// INSERT. We simulate exactly that: SELECT returns "no in-flight row", then an
-// INSERT throws a Postgres unique-violation (23505), as the DB would under a
-// true race. Vitest isolates module mocks per test file, so mocking `../database`
-// here does not affect the real-DB integration tests in audit.router.test.ts.
+// ally reach: the race-loser. The in-flight fast-path SELECT and the partial
+// unique index share the same predicate, so any row that would trip the index
+// would also be seen by the SELECT — meaning the race-loser branch only runs
+// when a concurrent ask slips in between our SELECT and INSERT. Duplicate asks
+// are accepted IDEMPOTENTLY (ADR docs/adr/0005): losing that race must resolve
+// to the winner's in-flight row, never to an error. The INSERT targets the
+// partial unique index with ON CONFLICT DO NOTHING — a raised unique-violation
+// would abort the whole Postgres transaction and roll back the other fan-out
+// half, so the losing insert instead returns NO ROW and the service selects
+// the winner's row. Vitest isolates module mocks per test file, so mocking
+// `../database` here does not affect the real-DB integration tests in
+// audit.router.test.ts.
 //
-// It also pins the `Both` fan-out contract: TWO inserts (Access + Activity)
-// issued through the SAME transaction, and a rethrow out of the transaction
-// callback when any of them loses the race (kysely rolls the transaction back
-// on a rejected callback, so nothing is committed — all-or-nothing).
+// It also pins the `Both` fan-out contract (TWO inserts — Access + Activity —
+// through the SAME transaction) and the audit trail contract: EVERY ask
+// records exactly one AuditLogExportCreate event in that transaction, even
+// when all halves were idempotent-accepted and nothing was inserted.
 
 const { mockDb, mockValidatePermissions } = vi.hoisted(() => ({
   mockDb: { transaction: vi.fn() },
@@ -48,63 +51,110 @@ vi.mock("../../permissions/permissions.service", () => ({
 const { createAuditLogExportRequest } =
   await import("../auditLogExport.service")
 
-// A Postgres unique_violation, shaped like the `pg` driver's error (Error with a
-// string `code`), which is what the partial unique index raises on the losing
-// INSERT of a race.
-const makeUniqueViolation = () => {
-  const error = new Error(
-    'duplicate key value violates unique constraint "AuditLogExportRequest_siteId_userId_dateRange_reportType_idx"',
-  )
-  ;(error as Error & { code: string }).code = "23505"
-  return error
-}
-
 const VALID_MONTH = getCurrentSingaporeMonth()
 
-const EXPECTED_CONFLICT = {
-  code: "CONFLICT",
-  message:
-    "An export for this period and report type is already being generated",
-}
+// The requesting user, as the service's in-transaction `User` lookup returns
+// it (the actor of the AuditLogExportCreate event).
+const FAKE_USER = { id: "user-1", email: "admin@vendor.com.sg" }
 
-// One scripted outcome per INSERT the service issues, in order.
-type InsertStep = { ok: true } | { ok: false; error: Error }
+// One scripted outcome per AuditLogExportRequest INSERT the service issues,
+// in order:
+// - "inserted": the row is inserted and returned.
+// - "conflict": the race was lost — ON CONFLICT DO NOTHING swallowed the
+//   insert, so no row comes back (what Postgres does when a concurrent ask's
+//   in-flight row already occupies the partial unique index).
+// - "error": the insert rejects (any non-conflict DB failure).
+type InsertStep =
+  | { outcome: "inserted" }
+  | { outcome: "conflict" }
+  | { outcome: "error"; error: Error }
 
 interface TxScript {
-  // What the in-flight fast-path SELECT resolves with (default: no row).
-  existing?: { id: string }
+  // What each AuditLogExportRequest SELECT resolves with, in call order. The
+  // service issues one fast-path SELECT per half, plus one winner SELECT per
+  // race-losing insert — they consume this queue in sequence.
+  selects?: (Record<string, unknown> | undefined)[]
   inserts?: InsertStep[]
 }
 
-// Build a fake Kysely transaction. The fast-path SELECT resolves with
-// `script.existing`; each INSERT consumes the next entry of `script.inserts`
-// and either resolves with a fake row (recording the `values` payload in
-// `insertedValues`) or rejects with the scripted error.
+// Build a fake Kysely transaction. AuditLogExportRequest SELECTs consume
+// `script.selects`; AuditLogExportRequest INSERTs consume `script.inserts`
+// (recording the `values` payload of successful inserts in `insertedValues`);
+// the `User` SELECT always resolves with FAKE_USER; AuditLog INSERTs always
+// succeed and record their payload in `auditLogValues`.
 const makeTx = (script: TxScript) => {
   const insertedValues: Record<string, unknown>[] = []
+  const auditLogValues: Record<string, unknown>[] = []
+  let selectCall = 0
   let insertCall = 0
+
   const tx = {
     insertedValues,
-    selectFrom: () => ({
+    auditLogValues,
+    selectFrom: (table: string) => ({
       where: function () {
         return this
       },
       select: function () {
         return this
       },
-      executeTakeFirst: () => Promise.resolve(script.existing),
+      selectAll: function () {
+        return this
+      },
+      orderBy: function () {
+        return this
+      },
+      executeTakeFirst: () => {
+        if (table === "User") {
+          return Promise.resolve(FAKE_USER)
+        }
+        const result = script.selects?.[selectCall]
+        selectCall += 1
+        return Promise.resolve(result)
+      },
+      executeTakeFirstOrThrow: async function () {
+        const row: unknown = await this.executeTakeFirst()
+        if (!row) {
+          throw new Error(`No row returned from SELECT on ${table}`)
+        }
+        return row
+      },
     }),
-    insertInto: () => {
+    insertInto: (table: string) => {
       let values: Record<string, unknown> = {}
       return {
         values: function (v: Record<string, unknown>) {
           values = v
           return this
         },
+        onConflict: function (cb: (oc: Record<string, unknown>) => unknown) {
+          // Exercise the conflict-target builder so a broken callback fails
+          // loudly, without modelling the SQL it produces.
+          const oc = {
+            columns: function () {
+              return this
+            },
+            where: function () {
+              return this
+            },
+            doNothing: function () {
+              return this
+            },
+          }
+          cb(oc)
+          return this
+        },
         returningAll: function () {
           return this
         },
-        executeTakeFirstOrThrow: () => {
+        // AuditLogExportRequest inserts end with executeTakeFirst (no row on
+        // a DO NOTHING conflict).
+        executeTakeFirst: () => {
+          if (table !== "AuditLogExportRequest") {
+            return Promise.reject(
+              new Error(`Unexpected executeTakeFirst INSERT into ${table}`),
+            )
+          }
           const step = script.inserts?.[insertCall]
           insertCall += 1
           if (!step) {
@@ -112,11 +162,24 @@ const makeTx = (script: TxScript) => {
               new Error(`Unexpected INSERT #${insertCall} (not scripted)`),
             )
           }
-          if (!step.ok) {
+          if (step.outcome === "error") {
             return Promise.reject(step.error)
+          }
+          if (step.outcome === "conflict") {
+            return Promise.resolve(undefined)
           }
           insertedValues.push(values)
           return Promise.resolve({ id: `row-${insertCall}`, ...values })
+        },
+        // AuditLog inserts end with execute().
+        execute: () => {
+          if (table !== "AuditLog") {
+            return Promise.reject(
+              new Error(`Unexpected execute() INSERT into ${table}`),
+            )
+          }
+          auditLogValues.push(values)
+          return Promise.resolve([])
         },
       }
     },
@@ -134,34 +197,71 @@ const useTx = (tx: ReturnType<typeof makeTx>) => {
   })
 }
 
-describe("createAuditLogExportRequest — atomic dedupe + fan-out", () => {
+// The one AuditLogExportCreate event every ask must record, shaped per the
+// audit.service.ts pattern: actor = requesting user, delta.after carries the
+// REQUESTED report type (possibly "Both").
+const expectExportCreateEvent = (
+  tx: ReturnType<typeof makeTx>,
+  requestedReportType: string,
+) => {
+  expect(tx.auditLogValues).toHaveLength(1)
+  expect(tx.auditLogValues[0]).toMatchObject({
+    eventType: "AuditLogExportCreate",
+    userId: FAKE_USER.id,
+    siteId: 1,
+    delta: {
+      before: null,
+      after: { reportType: requestedReportType },
+    },
+  })
+  const delta = tx.auditLogValues[0]?.delta as {
+    after: { auditLogDateRange: string }
+  }
+  expect(delta.after.auditLogDateRange).toMatch(
+    /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
+  )
+}
+
+describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockValidatePermissions.mockResolvedValue(undefined)
   })
 
-  it("re-throws a Postgres unique-violation from the INSERT as CONFLICT (not a 500)", async () => {
-    // Arrange: SELECT sees no in-flight row, but the INSERT loses the race and
-    // the partial unique index rejects it with 23505.
-    useTx(makeTx({ inserts: [{ ok: false, error: makeUniqueViolation() }] }))
+  it("resolves a race-losing insert to the winner's in-flight row (returned, not thrown)", async () => {
+    // Arrange: the fast-path SELECT sees no in-flight row, the INSERT loses
+    // the race (ON CONFLICT DO NOTHING → no row), and the follow-up SELECT
+    // finds the winner's now-visible in-flight row.
+    const winnerRow = { id: "winner-row", reportType: "Access" }
+    const tx = makeTx({
+      selects: [undefined, winnerRow],
+      inserts: [{ outcome: "conflict" }],
+    })
+    useTx(tx)
 
     // Act
-    const result = createAuditLogExportRequest({
+    const result = await createAuditLogExportRequest({
       siteId: 1,
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Access",
     })
 
-    // Assert: the caller gets the friendly CONFLICT, identical to the fast-path.
-    await expect(result).rejects.toMatchObject(EXPECTED_CONFLICT)
-    await expect(result).rejects.toBeInstanceOf(TRPCError)
+    // Assert: the caller gets the winner's row as a plain success; nothing of
+    // ours was inserted, and the ask is still recorded as an event.
+    expect(result).toEqual([winnerRow])
+    expect(tx.insertedValues).toHaveLength(0)
+    expectExportCreateEvent(tx, "Access")
   })
 
-  it("re-throws a non-unique-violation INSERT error unchanged", async () => {
-    // Arrange: a different DB error must not be masked as CONFLICT.
+  it("re-throws a non-conflict INSERT error unchanged", async () => {
+    // Arrange: a genuine DB error must not be masked as an idempotent accept.
     const otherError = new Error("connection reset")
-    useTx(makeTx({ inserts: [{ ok: false, error: otherError }] }))
+    const tx = makeTx({
+      selects: [undefined],
+      inserts: [{ outcome: "error", error: otherError }],
+    })
+    useTx(tx)
 
     // Act
     const result = createAuditLogExportRequest({
@@ -171,13 +271,17 @@ describe("createAuditLogExportRequest — atomic dedupe + fan-out", () => {
       reportType: "Access",
     })
 
-    // Assert: surfaced as-is, not swallowed by the unique-violation catch.
+    // Assert: surfaced as-is; the rejected transaction callback rolls the
+    // whole transaction back, so no event insert survives either.
     await expect(result).rejects.toBe(otherError)
   })
 
   it("fans a Both request out into exactly two inserts (Access + Activity) in one transaction", async () => {
-    // Arrange: both inserts succeed.
-    const tx = makeTx({ inserts: [{ ok: true }, { ok: true }] })
+    // Arrange: no in-flight rows; both inserts succeed.
+    const tx = makeTx({
+      selects: [undefined, undefined],
+      inserts: [{ outcome: "inserted" }, { outcome: "inserted" }],
+    })
     useTx(tx)
 
     // Act
@@ -207,52 +311,59 @@ describe("createAuditLogExportRequest — atomic dedupe + fan-out", () => {
         /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
       )
     }
-    // The service returns every inserted row.
+    // The service returns every row backing the ask, and the event records
+    // the REQUESTED type ("Both"), not the fanned-out halves.
     expect(result).toHaveLength(2)
+    expectExportCreateEvent(tx, "Both")
   })
 
-  it("throws CONFLICT when the SECOND insert of a Both request hits 23505, rethrowing out of the transaction so nothing commits", async () => {
-    // Arrange: the Access insert wins but the Activity insert loses a race
-    // against a concurrent in-flight Activity request.
+  it("accepts a Both request whose second half loses its race, committing the first half AND the winner's half", async () => {
+    // Arrange: the Access insert wins; the Activity insert loses a race
+    // against a concurrent in-flight Activity request, whose row the
+    // follow-up SELECT then returns.
+    const winnerRow = { id: "winner-activity", reportType: "Activity" }
     const tx = makeTx({
-      inserts: [{ ok: true }, { ok: false, error: makeUniqueViolation() }],
+      selects: [undefined, undefined, winnerRow],
+      inserts: [{ outcome: "inserted" }, { outcome: "conflict" }],
     })
     useTx(tx)
 
     // Act
-    const result = createAuditLogExportRequest({
+    const result = await createAuditLogExportRequest({
       siteId: 1,
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Both",
     })
 
-    // Assert: the CONFLICT propagates out of the transaction callback — that
-    // rethrow is what makes kysely roll back the already-issued Access insert
-    // (all-or-nothing). Only the first insert ever succeeded in-transaction.
-    await expect(result).rejects.toMatchObject(EXPECTED_CONFLICT)
-    await expect(result).rejects.toBeInstanceOf(TRPCError)
+    // Assert: no all-or-nothing rollback any more — the ask resolves with our
+    // freshly inserted Access row plus the winner's Activity row.
+    expect(result).toHaveLength(2)
+    expect(result[1]).toEqual(winnerRow)
     expect(tx.insertedValues).toHaveLength(1)
     expect(tx.insertedValues[0]).toMatchObject({ reportType: "Access" })
+    expectExportCreateEvent(tx, "Both")
   })
 
-  it("throws CONFLICT from the fast-path SELECT for a single report type without attempting any insert", async () => {
+  it("idempotent-accepts an in-flight duplicate from the fast-path SELECT without attempting any insert", async () => {
     // Arrange: the SELECT already sees an in-flight row for the same
     // (siteId, userId, range, reportType).
-    const tx = makeTx({ existing: { id: "existing-row" }, inserts: [] })
+    const existingRow = { id: "existing-row", reportType: "Activity" }
+    const tx = makeTx({ selects: [existingRow], inserts: [] })
     useTx(tx)
 
     // Act
-    const result = createAuditLogExportRequest({
+    const result = await createAuditLogExportRequest({
       siteId: 1,
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Activity",
     })
 
-    // Assert: friendly CONFLICT, and no INSERT was ever issued.
-    await expect(result).rejects.toMatchObject(EXPECTED_CONFLICT)
-    await expect(result).rejects.toBeInstanceOf(TRPCError)
+    // Assert: the existing row is returned, no INSERT was ever issued, and —
+    // crucially — the pure idempotent-accept still records the ask's event.
+    expect(result).toEqual([existingRow])
     expect(tx.insertedValues).toHaveLength(0)
+    expectExportCreateEvent(tx, "Activity")
   })
 })

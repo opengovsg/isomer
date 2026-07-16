@@ -16,6 +16,7 @@ import { createBaseLogger } from "~/lib/logger"
 import {
   AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS,
   generateSignedGetUrl,
+  getFileSize,
   getStudioAssetsBucketName,
   uploadAuditLogExport,
 } from "~/lib/s3"
@@ -30,11 +31,12 @@ import type { BaseLogger } from "@isomer/logging"
 
 import type { AuditLogExportReportType } from "../database"
 import { db } from "../database"
-import { PG_ERROR_CODES } from "../database/constants"
 import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
+import { logAuditLogExportEvent } from "./audit.service"
 import {
   getAccessReportRows,
   getActivityReportRows,
+  getExportRange,
   getMonthDateRange,
   parseAuditLogDateRange,
   toCsv,
@@ -45,8 +47,8 @@ type CreateAuditLogExportRequestProps = CreateAuditLogExportRequestInput & {
 }
 
 // Statuses that represent an export that is still in-flight; a duplicate
-// request for the same (site, user, range, report type) should be rejected
-// while one of these exists.
+// request for the same (site, user, range, report type) is accepted
+// idempotently (the existing row is returned) while one of these exists.
 const IN_FLIGHT_STATUSES = ["Pending", "Processing"] as const
 
 // Fan-out from the requested (input) report type to the DB rows to insert.
@@ -118,79 +120,100 @@ export const createAuditLogExportRequest = async ({
   // Access/Activity, two rows for Both.
   const reportTypes = REPORT_TYPES_BY_REQUESTED_TYPE[reportType]
 
-  // In-flight dedupe is atomic. The real guard is a PARTIAL UNIQUE INDEX on
-  // (siteId, userId, auditLogDateRange, reportType) WHERE status IN
-  // ('Pending','Processing') (defined in the PR #2603 migration): the database
-  // physically refuses a second in-flight row for the same range+report type,
-  // so two concurrent identical requests cannot both insert. The SELECT below
-  // is only a fast-path so the common (non-racing) duplicate returns a friendly
-  // CONFLICT without relying on an exception; the losing side of an actual race
-  // is caught from the INSERT's unique-violation and surfaced as the SAME
-  // CONFLICT rather than a raw 500. All inserts for one request run inside ONE
-  // transaction, all-or-nothing: if any insert of a `Both` fan-out loses the
-  // race, the thrown CONFLICT rolls back the whole transaction and neither row
-  // is committed.
+  // Asking is ALWAYS safe (ADR docs/adr/0005): a duplicate ask is accepted
+  // idempotently, never rejected. The PARTIAL UNIQUE INDEX on (siteId, userId,
+  // auditLogDateRange, reportType) WHERE status IN ('Pending','Processing')
+  // (defined in the PR #2603 migration) is now purely a RACE GUARD — it is
+  // what lets two concurrent identical asks resolve to ONE in-flight row
+  // instead of two, not a reason to error. Per fanned-out report type:
+  //
+  //   1. Fast path: an in-flight row for the same (site, user, range, type)
+  //      already exists → use it, insert nothing.
+  //   2. Otherwise INSERT ... ON CONFLICT DO NOTHING targeting that partial
+  //      index. Losing the race between the SELECT and the INSERT therefore
+  //      cannot raise a unique-violation (which would abort the whole
+  //      Postgres transaction and roll back the other fan-out half); the
+  //      insert simply returns no row, and we SELECT the winner's in-flight
+  //      row and use that instead. Any other insert error still rethrows.
+  //
+  // Every ask — including one where all halves were idempotent-accepted — is
+  // recorded as ONE AuditLogExportCreate audit event in the same transaction,
+  // so agencies can always see who asked to export their logs.
   return db.transaction().execute(async (tx) => {
-    const existing = await tx
-      .selectFrom("AuditLogExportRequest")
-      .where("siteId", "=", siteId)
-      .where("userId", "=", userId)
-      .where("auditLogDateRange", "=", auditLogDateRange)
-      .where("reportType", "in", [...reportTypes])
-      .where("status", "in", IN_FLIGHT_STATUSES)
-      .select("id")
-      .executeTakeFirst()
+    const rows = []
+    for (const dbReportType of reportTypes) {
+      const inFlightRowQuery = tx
+        .selectFrom("AuditLogExportRequest")
+        .where("siteId", "=", siteId)
+        .where("userId", "=", userId)
+        .where("auditLogDateRange", "=", auditLogDateRange)
+        .where("reportType", "=", dbReportType)
+        .where("status", "in", IN_FLIGHT_STATUSES)
+        .selectAll()
 
-    if (existing) {
-      throw new TRPCError({
-        code: "CONFLICT",
-        message:
-          "An export for this period and report type is already being generated",
-      })
-    }
-
-    try {
-      const inserted = []
-      for (const dbReportType of reportTypes) {
-        inserted.push(
-          await tx
-            .insertInto("AuditLogExportRequest")
-            .values({
-              siteId,
-              userId,
-              auditLogDateRange,
-              reportType: dbReportType,
-              status: "Pending",
-              attempts: 0,
-            })
-            .returningAll()
-            .executeTakeFirstOrThrow(),
-        )
+      // Fast path: idempotent-accept the common (non-racing) duplicate.
+      const existing = await inFlightRowQuery.executeTakeFirst()
+      if (existing) {
+        rows.push(existing)
+        continue
       }
-      // Return every inserted row (one for Access/Activity, two for Both).
-      // The UI ignores the payload, so the array shape is chosen purely to
-      // reflect the fan-out honestly.
-      return inserted
-    } catch (error) {
-      // Race-loser path: a concurrent request inserted an in-flight row
-      // between our SELECT and INSERT, so the partial unique index rejected
-      // ours. Translate that into the same friendly CONFLICT as the fast-path;
-      // throwing aborts the transaction, so earlier fan-out inserts roll back
-      // too (all-or-nothing). Any other error (and any TRPCError thrown above)
-      // is re-thrown as-is.
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        error.code === PG_ERROR_CODES.uniqueViolation
-      ) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message:
-            "An export for this period and report type is already being generated",
+
+      const inserted = await tx
+        .insertInto("AuditLogExportRequest")
+        .values({
+          siteId,
+          userId,
+          auditLogDateRange,
+          reportType: dbReportType,
+          status: "Pending",
+          attempts: 0,
         })
+        // Target the partial unique index so a race-losing insert is a no-op
+        // rather than a transaction-aborting unique-violation.
+        .onConflict((oc) =>
+          oc
+            .columns(["siteId", "userId", "auditLogDateRange", "reportType"])
+            .where("status", "in", [...IN_FLIGHT_STATUSES])
+            .doNothing(),
+        )
+        .returningAll()
+        .executeTakeFirst()
+
+      if (inserted) {
+        rows.push(inserted)
+        continue
       }
-      throw error
+
+      // Race-loser path: a concurrent identical ask inserted its in-flight
+      // row between our SELECT and INSERT, so DO NOTHING swallowed ours.
+      // The winner's row is committed and visible by now — use it.
+      rows.push(await inFlightRowQuery.executeTakeFirstOrThrow())
     }
+
+    // Exactly ONE event per ask (not per fanned-out half), recorded even when
+    // every half was idempotent-accepted: the ask itself is the auditable act.
+    // The delta stores the REQUESTED report type — possibly "Both" — because
+    // that is what the user asked for; the fan-out is an implementation detail.
+    const requestedBy = await tx
+      .selectFrom("User")
+      .where("id", "=", userId)
+      .selectAll()
+      .executeTakeFirstOrThrow()
+    await logAuditLogExportEvent(tx, {
+      eventType: "AuditLogExportCreate",
+      by: requestedBy,
+      siteId,
+      delta: {
+        before: null,
+        after: { auditLogDateRange, reportType },
+      },
+    })
+
+    // Return every row backing this ask (one for Access/Activity, two for
+    // Both) — existing in-flight rows and fresh inserts alike. The UI ignores
+    // the payload, so the array shape is chosen purely to reflect the fan-out
+    // honestly.
+    return rows
   })
 }
 
@@ -274,8 +297,9 @@ const getRangeSlug = (auditLogDateRange: string): string => {
  * a repeatedly-crashing row still exhausts MAX_ATTEMPTS instead of looping
  * forever, and a stale re-claim that fails is never double-charged.
  *
- * Steps 2–6 (load site/user, generate CSVs, upload to S3, sign URLs, send the
- * ready email, mark Done) are wrapped in a try/catch: on any failure we
+ * Steps 2–6 (load site/user, reuse a Complete Artifact or generate + upload
+ * the CSV, sign a URL, send the ready email, mark Done with `completedAt`)
+ * are wrapped in a try/catch: on any failure we
  * either re-queue the row (Pending) for the next sweep or, once the
  * already-charged `attempts >= MAX_ATTEMPTS`, mark it Failed and best-effort
  * email the requester. Raw errors are only ever logged, never surfaced to the
@@ -338,30 +362,70 @@ export const processAuditLogExportRequest = async (
     const siteName = siteConfig?.siteName || site.name
     const recipientEmail = user.email
 
-    // Step 3 + 4: run the row's single report query, serialise to CSV
-    // (always — header-only CSV for zero rows), upload, and sign a download
-    // URL. `Both` requests were fanned out into two rows at request time, so
-    // one row is always exactly one report.
     const report = REPORT_BY_TYPE[request.reportType]
     const bucket = getStudioAssetsBucketName()
 
-    const rows =
-      report.kind === "Access"
-        ? await getAccessReportRows({
-            siteId: request.siteId,
-            auditLogDateRange: request.auditLogDateRange,
-          })
-        : await getActivityReportRows({
-            siteId: request.siteId,
-            auditLogDateRange: request.auditLogDateRange,
-          })
+    // Step 3: Complete-Artifact reuse (ADR docs/adr/0005). A Done row for the
+    // same (site, range, report type) whose `completedAt` is at or after the
+    // range's exclusive end instant was generated AFTER the range had fully
+    // elapsed; audit records are append-only, so its artifact can never go
+    // stale and re-delivering it is safe. A Done row completed BEFORE the
+    // range end (an in-progress-month snapshot, whose clamped range carries a
+    // future end) is a point-in-time snapshot and never reused. Reuse is
+    // PER-SITE — the artifact is a function of (site, range, type) only, so a
+    // different requester's artifact qualifies. Failed rows never qualify
+    // (status must be Done) and the latest qualifying artifact wins.
+    const { rangeEnd } = getExportRange(request.auditLogDateRange)
+    const completeArtifact = await db
+      .selectFrom("AuditLogExportRequest")
+      .where("id", "!=", requestId)
+      .where("siteId", "=", request.siteId)
+      .where("auditLogDateRange", "=", request.auditLogDateRange)
+      .where("reportType", "=", request.reportType)
+      .where("status", "=", "Done")
+      .where("objectKey", "is not", null)
+      .where("completedAt", ">=", rangeEnd)
+      .orderBy("completedAt", "desc")
+      .select("objectKey")
+      .limit(1)
+      .executeTakeFirst()
 
-    const csv = toCsv(rows)
-    const rangeSlug = getRangeSlug(request.auditLogDateRange)
-    const objectKey = `audit-log-exports/${request.siteId}/${requestId}/${report.kind.toLowerCase()}-${rangeSlug}.csv`
+    let objectKey = completeArtifact?.objectKey ?? null
+    if (objectKey !== null) {
+      // The artifact row may outlive the S3 object (e.g. a future lifecycle
+      // policy): verify the object still exists before promising it. A gone
+      // object simply falls through to regeneration.
+      const artifactSize = await getFileSize({ Bucket: bucket, Key: objectKey })
+      if (artifactSize === null) {
+        objectKey = null
+      }
+    }
 
-    await uploadAuditLogExport({ key: objectKey, body: csv })
+    // Step 4: no reusable artifact — run the row's single report query,
+    // serialise to CSV (always — header-only CSV for zero rows), and upload.
+    // `Both` requests were fanned out into two rows at request time, so one
+    // row is always exactly one report.
+    if (objectKey === null) {
+      const rows =
+        report.kind === "Access"
+          ? await getAccessReportRows({
+              siteId: request.siteId,
+              auditLogDateRange: request.auditLogDateRange,
+            })
+          : await getActivityReportRows({
+              siteId: request.siteId,
+              auditLogDateRange: request.auditLogDateRange,
+            })
 
+      const csv = toCsv(rows)
+      const rangeSlug = getRangeSlug(request.auditLogDateRange)
+      objectKey = `audit-log-exports/${request.siteId}/${requestId}/${report.kind.toLowerCase()}-${rangeSlug}.csv`
+
+      await uploadAuditLogExport({ key: objectKey, body: csv })
+    }
+
+    // Both paths converge here: sign a fresh URL against whichever object
+    // (reused or freshly generated) fulfils this request.
     const url = await generateSignedGetUrl(
       { Bucket: bucket, Key: objectKey },
       AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS,
@@ -377,12 +441,15 @@ export const processAuditLogExportRequest = async (
       link: { label: report.label, url },
     })
 
-    // Step 6: mark Done.
+    // Step 6: mark Done. `completedAt` is set on BOTH paths (reuse and
+    // generate): it is what a later request compares against `rangeEnd` to
+    // decide whether THIS row holds a Complete Artifact.
     await db
       .updateTable("AuditLogExportRequest")
       .set({
         status: "Done",
         objectKey,
+        completedAt: new Date(),
         errorMessage: null,
         updatedAt: new Date(),
       })

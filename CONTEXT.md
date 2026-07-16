@@ -61,6 +61,18 @@ _Avoid_: access log (a derived view, not the raw record), history
 **Audit Log Export**: The Site-Admin-initiated, asynchronous workflow that produces a downloadable report of a site's audit/access data for a selected month and emails the requester a link. Comprises one or both report types below.
 _Avoid_: audit log (the underlying record, not the export), download
 
+**Export Request** (`AuditLogExportRequest`): A Site Admin's recorded ask for an Audit Log Export — who asked, for which Export Range and report type, and its fulfilment status. Every ask is recorded both as an Export Request and as an Audit Log event; a request may be fulfilled by generating a new Export Artifact or by delivering an existing one.
+_Avoid_: audit log request (ambiguous with the Audit Log itself), job (the queue mechanics, not the domain ask)
+
+**Export Artifact**: The generated CSV file for one report type over one Export Range of a site, stored durably and delivered by emailed link. Identified by site, Export Range, and report type — never by who requested it; identical asks reuse the same Artifact.
+_Avoid_: the export (ambiguous with the request or the workflow), file, link (the delivery mechanism, not the artifact)
+
+**Export Range**: The half-open span of SGT calendar days an Export covers. A full past month, or — for the in-progress month — the month's start through the day of the request (inclusive).
+_Avoid_: month (the picker's input, not the stored span), start/duration
+
+**Complete Artifact**: An Export Artifact generated after its Export Range had fully elapsed. Its content is final — audit records are append-only, so no later event can fall inside the range. Only Complete Artifacts may be reused to fulfil later Export Requests; an artifact generated mid-range (any in-progress-month export) is a point-in-time snapshot and is never reused.
+_Avoid_: cached export (reuse is a correctness rule, not a cache), stale/fresh (snapshots aren't stale — they're complete-as-of-generation)
+
 **Access report** (`type: "users"`): The export view answering *who has access* to a site — derived from `ResourcePermission` joined with `User` (email, role, date added, last login).
 _Avoid_: user list, access log
 

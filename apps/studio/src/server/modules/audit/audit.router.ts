@@ -20,8 +20,9 @@ export const auditRouter = router({
           reportType,
         })
       } catch (error) {
-        // Permission / validation / dedupe failures are already typed
-        // TRPCErrors with safe, user-facing messages — let them through.
+        // Permission / validation failures are already typed TRPCErrors with
+        // safe, user-facing messages — let them through. (Duplicate asks no
+        // longer error: they are accepted idempotently by the service.)
         if (error instanceof TRPCError) {
           throw error
         }
