@@ -1106,6 +1106,21 @@ export const getResourceIdsByPermalinks = async (
       : Promise.resolve([]),
   ])
 
+  // Index candidates by (parentId, permalink) so each segment step is an O(1)
+  // lookup. A linear `candidates.find` per segment is O(segments * candidates),
+  // which a large bulk upload against a resource-heavy site pushes into hundreds
+  // of millions of comparisons — enough to block the event loop. The " "
+  // separator is safe: a parentId is only digits, so the concatenation is
+  // injective (the first space always delimits parentId from permalink).
+  const idByParentAndPermalink = new Map<string, string>()
+  for (const candidate of candidates) {
+    const key = `${candidate.parentId ?? ""} ${candidate.permalink}`
+    // Keep the first match, mirroring the previous `Array.find` semantics.
+    if (!idByParentAndPermalink.has(key)) {
+      idByParentAndPermalink.set(key, String(candidate.id))
+    }
+  }
+
   for (const [path, segments] of segmentsByPath) {
     if (segments.length === 0) {
       result.set(path, root ? Number(root.id) : null)
@@ -1117,16 +1132,13 @@ export const getResourceIdsByPermalinks = async (
     let leafId: number | null = null
     let resolved = true
     for (const segment of segments) {
-      const match = candidates.find(
-        (candidate) =>
-          candidate.permalink === segment && candidate.parentId === parentId,
-      )
-      if (!match) {
+      const matchId = idByParentAndPermalink.get(`${parentId ?? ""} ${segment}`)
+      if (matchId === undefined) {
         resolved = false
         break
       }
-      leafId = Number(match.id)
-      parentId = String(match.id)
+      leafId = Number(matchId)
+      parentId = matchId
     }
     result.set(path, resolved ? leafId : null)
   }
