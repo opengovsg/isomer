@@ -874,31 +874,43 @@ const runBulkValidation = async (
 
   // 5) Loops in the combined graph. Only rows that survived the checks above
   // (and so would actually be created) contribute an edge, alongside every
-  // existing live redirect.
-  const resolvedExisting = await resolveStoredDestinationsToSources(
+  // existing live redirect. Batch destinations are resolved to their target
+  // source the same way as stored ones — a `[resource:...]` reference must
+  // contribute the right edge. A path-only check would drop a reference to a
+  // null edge, letting a reference-formed loop slip past validation while the
+  // in-transaction recheck (which resolves references) catches it, so the two
+  // must agree.
+  const resolvedDestinations = await resolveStoredDestinationsToSources(
     siteId,
-    liveRedirects.map((redirect) => redirect.destination),
+    [
+      ...liveRedirects.map((redirect) => redirect.destination),
+      ...rows.flatMap((row) =>
+        row.error === null && row.normalizedDestination !== null
+          ? [row.normalizedDestination]
+          : [],
+      ),
+    ],
   )
   const edges = new Map<string, string | null>()
   for (const redirect of liveRedirects) {
     edges.set(
       redirect.source,
-      resolvedExisting.get(redirect.destination) ?? null,
+      resolvedDestinations.get(redirect.destination) ?? null,
     )
   }
   for (const row of rows) {
     if (row.error !== null || row.normalizedSource === null) {
       continue
     }
-    const destination = row.normalizedDestination
-    const nextSource =
-      destination !== null && destination.startsWith("/")
-        ? normalizeRedirectSource(destination)
-        : null
     // A surviving row has a unique source and never collides with an existing
     // redirect's source (both were flagged above), so this never clobbers an
     // existing edge.
-    edges.set(row.normalizedSource, nextSource)
+    edges.set(
+      row.normalizedSource,
+      row.normalizedDestination !== null
+        ? (resolvedDestinations.get(row.normalizedDestination) ?? null)
+        : null,
+    )
   }
   const cycleNodes = findCycleNodes(edges)
   for (const row of rows) {

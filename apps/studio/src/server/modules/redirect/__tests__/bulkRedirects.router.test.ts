@@ -245,6 +245,33 @@ describe("redirect.router bulk upload", async () => {
       expect(result.errorCount).toBe(3)
     })
 
+    it("resolves a [resource:...] destination when checking for loops", async () => {
+      // Arrange: a page at /b, referenced by a batch row /a -> [resource:site:b].
+      // With a batch /b -> /a, the reference resolves to /b, closing the loop
+      // /a -> /b -> /a. The reference must be resolved when building the loop
+      // graph — a path-only check would miss it and report the file clean.
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: null,
+        permalink: "b",
+      })
+      const reference = `[resource:${siteId}:${page.id}]`
+
+      // Act
+      const result = await caller.bulkValidate({
+        siteId,
+        csv: csvOf([
+          ["/a", reference],
+          ["/b", "/a"],
+        ]),
+      })
+
+      // Assert
+      expect(errorFor(result, "/a")).toBeTruthy()
+      expect(errorFor(result, "/b")).toBeTruthy()
+    })
+
     it("flags a row split by an unquoted comma in the destination", async () => {
       // Arrange: an unquoted comma splits the destination into a stray column,
       // which would otherwise silently truncate it and publish a wrong redirect.
