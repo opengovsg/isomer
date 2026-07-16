@@ -16,6 +16,7 @@ import {
   BiPhoneCall,
   BiError,
   BiPointer,
+  BiRectangle,
   BiSolidQuoteAltLeft,
   BiText,
 } from "react-icons/bi"
@@ -39,6 +40,7 @@ export const TYPE_TO_ICON: Record<
   keystatistics: BiHash,
   contentpic: ContentpicIcon,
   callout: BiSolidQuoteAltLeft,
+  canvas: BiRectangle,
   infocards: InfocardsIcon,
   infobar: BiPointer,
   infocols: InfocolsIcon,

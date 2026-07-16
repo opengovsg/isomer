@@ -9,6 +9,7 @@ import { AntiScamDisclaimerBanner } from "../components/complex/AntiScamDisclaim
 import { Audio } from "../components/complex/Audio"
 import { Blockquote } from "../components/complex/Blockquote"
 import { Callout } from "../components/complex/Callout"
+import { Canvas } from "../components/complex/Canvas"
 import { ChildrenPages } from "../components/complex/ChildrenPages"
 import { CollectionBlock } from "../components/complex/CollectionBlock"
 import { ContactInformation } from "../components/complex/ContactInformation"
@@ -57,6 +58,8 @@ export const renderComponent = ({
       return <Blockquote key={elementKey} {...component} {...rest} />
     case "callout":
       return <Callout key={elementKey} {...component} {...rest} />
+    case "canvas":
+      return <Canvas key={elementKey} {...component} {...rest} />
     case "contentpic":
       return <Contentpic key={elementKey} {...component} {...rest} />
     case "formsg":

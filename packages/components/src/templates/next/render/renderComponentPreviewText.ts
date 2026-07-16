@@ -71,6 +71,8 @@ export function renderComponentPreviewText({
       return component.quote
     case "callout":
       return getTextContentOfProse(component.content.content)
+    case "canvas":
+      return "Canvas"
     case "formsg":
       return component.title || "FormSG form"
     case "hero":

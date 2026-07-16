@@ -49,6 +49,10 @@ export const DEFAULT_BLOCKS = {
       ],
     },
   },
+  canvas: {
+    type: "canvas",
+    blocks: [],
+  },
   formsg: {
     type: "formsg",
     url: "https://form.gov.sg/686e73c1a1f7bf391ee2b3af",
@@ -334,6 +338,11 @@ export const BLOCK_TO_META: Record<
       "Highlight information that is out of the ordinary, like changes or updates.",
     imageSrc: "/assets/block-images/Callout.png",
   },
+  canvas: {
+    label: "Canvas",
+    description: "A resizable container that holds other blocks.",
+    usageText: "Group related blocks together in an area that can be resized.",
+  },
   keystatistics: {
     label: "Statistics",
     description: "Display metrics that represent your agency.",
@@ -486,6 +495,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "image",
       "accordion",
       "callout",
+      "canvas",
       "blockquote",
       "contentpic",
       "infobar",
