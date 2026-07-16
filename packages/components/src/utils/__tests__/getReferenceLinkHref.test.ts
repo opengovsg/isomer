@@ -81,4 +81,16 @@ describe("getReferenceLinkHref", () => {
       "https://assets.example.com/1/dc2b609a-355e-406c-af6c-003683731e7e/RFP%20Template.docx",
     )
   })
+
+  it("should be able to handle unescaped quotes in reference link", () => {
+    const unescapedLink = 'https://example.com/unescaped""quotes'
+
+    const result = getReferenceLinkHref(
+      unescapedLink,
+      EXAMPLE_SITEMAP_ARRAY,
+      "https://assets.example.com",
+    )
+
+    expect(result).toBe(unescapedLink)
+  })
 })
