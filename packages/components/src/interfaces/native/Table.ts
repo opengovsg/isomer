@@ -108,20 +108,17 @@ export const TableSchema = Type.Object(
       }),
       // One entry per column, by index -- not a per-cell field, since a
       // column's width belongs to the table, not to any particular cell.
-      // Optional (older content predates this field) AND nullable per
-      // entry: TipTap always serializes every declared node attribute, so
-      // once a table has been resized at least once, every entry is either
-      // a number or `null` ("not yet resized") -- never omitted.
+      // Optional (older content predates this field) and nullable as a
+      // whole (not yet resized) -- but once populated, every entry is a
+      // number: the editor only ever writes a full array or `null`, never a
+      // partial one.
       colwidths: Type.Optional(
         Type.Union([
           Type.Array(
-            Type.Union([
-              Type.Number({
-                minimum: 0,
-                maximum: 100,
-              }),
-              Type.Null(),
-            ]),
+            Type.Number({
+              minimum: 0,
+              maximum: 100,
+            }),
             {
               title: "Table column widths",
               description:
