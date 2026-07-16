@@ -6,6 +6,7 @@ import {
   MAX_BULK_REDIRECT_CSV_BYTES,
   MAX_REDIRECT_DESTINATION_LENGTH,
   MAX_REDIRECT_SOURCE_LENGTH,
+  redirectKind,
 } from "../redirect"
 
 const VALID_REDIRECT = {
@@ -232,11 +233,11 @@ describe("createRedirectSchema", () => {
       expect(result.source).toBe("/old-page")
     })
 
-    it("should reject sources containing a wildcard with the unsupported-wildcard message", () => {
+    it("should reject mid-string and double wildcards", () => {
       // Arrange
-      const wildcardSources = ["/promo/*", "/promo/**", "/pro*mo"]
+      const invalidWildcardSources = ["/promo/**", "/pro*mo"]
 
-      wildcardSources.forEach((source) => {
+      invalidWildcardSources.forEach((source) => {
         // Act
         const result = createRedirectSchema.safeParse({
           ...VALID_REDIRECT,
@@ -247,10 +248,56 @@ describe("createRedirectSchema", () => {
         expect(result.success).toBe(false)
         if (!result.success) {
           expect(result.error.issues.map((issue) => issue.message)).toContain(
-            "Wildcards aren't supported yet — enter the full path",
+            "Use a wildcard only as a trailing /* on a path, e.g. /news/*",
           )
         }
       })
+    })
+  })
+
+  describe("wildcard sources", () => {
+    const parseSource = (source: string) =>
+      createRedirectSchema.safeParse({ siteId: 1, source, destination: "/x" })
+
+    it("accepts a single trailing /*", () => {
+      const r = parseSource("/news/*")
+      expect(r.success).toBe(true)
+      if (r.success) expect(r.data.source).toBe("/news/*")
+    })
+
+    it("lowercases the path but keeps the /*", () => {
+      const r = parseSource("/News/Press/*")
+      expect(r.success && r.data.source).toBe("/news/press/*")
+    })
+
+    it("rejects a mid-string *", () => {
+      expect(parseSource("/news/*/2020").success).toBe(false)
+    })
+
+    it("rejects a bare /* with no prefix", () => {
+      expect(parseSource("/*").success).toBe(false)
+    })
+  })
+
+  describe("query sources", () => {
+    const parseSource = (source: string) =>
+      createRedirectSchema.safeParse({ siteId: 1, source, destination: "/x" })
+
+    it("accepts a query and sorts params, lowercasing the path only", () => {
+      const r = parseSource("/Gallery?b=2&a=1")
+      expect(r.success && r.data.source).toBe("/gallery?a=1&b=2")
+    })
+
+    it("rejects a query on a wildcard", () => {
+      expect(parseSource("/news/*?a=1").success).toBe(false)
+    })
+  })
+
+  describe("redirectKind", () => {
+    it("classifies by the stored source string", () => {
+      expect(redirectKind("/news/*")).toBe("wildcard")
+      expect(redirectKind("/gallery?a=1")).toBe("query")
+      expect(redirectKind("/faq")).toBe("exact")
     })
   })
 

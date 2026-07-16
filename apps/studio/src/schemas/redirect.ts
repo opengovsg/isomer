@@ -32,10 +32,11 @@ export const MAX_REDIRECT_REFERENCES = 100
 // and this input is the trust boundary. The UI requests 25.
 export const MAX_REDIRECT_PAGE_SIZE = 100
 
-// Whitelist of characters allowed in a source path: RFC 3986 `pchar` plus "/"
-// and "%". Whitelisting keeps anything that could corrupt the published rules
-// (spaces, control chars, "?", "#", "\\", non-ASCII) out up front.
-const SOURCE_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9\-._~!$&'()*+,;=:@%/]+$/
+// Whitelist of characters allowed in a source path: RFC 3986 `pchar` plus "/",
+// "%", and "?" (a query is now a valid source; query canonicalisation happens
+// in normalizeRedirectSource). Whitelisting keeps spaces, control chars, "#",
+// "\\", and non-ASCII out up front.
+const SOURCE_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9\-._~!$&'()*+,;=:@%/?]+$/
 
 // ASCII control characters (0x00-0x1f, 0x7f). A destination is persisted verbatim
 // and later emitted into the published site's redirect rules (S3 object metadata
@@ -67,6 +68,22 @@ export const isValidExternalDestination = (value: string) => {
   }
 }
 
+export type RedirectKind = "exact" | "wildcard" | "query"
+
+// Classifies a stored (already-normalised) source by its shape. The build and
+// the edge resolver both branch on this.
+export const redirectKind = (source: string): RedirectKind =>
+  source.endsWith("/*") ? "wildcard" : source.includes("?") ? "query" : "exact"
+
+// Sorts query params by "key=value" and "&"-joins them; values stay
+// case-sensitive. This must produce the same result as the edge resolver.
+const canonicaliseQuery = (query: string): string =>
+  query
+    .split("&")
+    .filter((p) => p.length > 0)
+    .sort()
+    .join("&")
+
 // Strips slashes from both ends of a path so "/foo/", "foo" and "foo//"
 // all normalise to the same inner segments before validation.
 const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, "")
@@ -79,9 +96,22 @@ export const normalizeRedirectPath = (value: string) =>
 
 // Sources are additionally lowercased — page permalinks are lowercase-only, so
 // a source must lowercase to compare against (and not shadow) a real page.
-// Exported so the server's source/loop guards compare in the same form.
-export const normalizeRedirectSource = (value: string) =>
-  normalizeRedirectPath(value).toLowerCase()
+// For wildcards, the trailing "/*" is preserved. For query sources, the path
+// is lowercased and query params are sorted (canonicalised). Exported so the
+// server's source/loop guards and the build's manifest key compare the same way.
+export const normalizeRedirectSource = (value: string): string => {
+  const qIdx = value.indexOf("?")
+  if (qIdx !== -1) {
+    const rawPath = value.slice(0, qIdx)
+    const query = value.slice(qIdx + 1)
+    return `${normalizeRedirectPath(rawPath).toLowerCase()}?${canonicaliseQuery(query)}`
+  }
+  const isWildcard = value.endsWith("/*")
+  const pathCore = isWildcard ? value.slice(0, -2) : value
+  return (
+    normalizeRedirectPath(pathCore).toLowerCase() + (isWildcard ? "/*" : "")
+  )
+}
 
 // True when the (normalised) source falls under a reserved prefix — the prefix
 // itself or anything nested beneath it.
@@ -101,11 +131,26 @@ const sourceSchema = z
     message:
       "Source can only contain letters, numbers, and URL path characters",
   })
-  // Wildcard redirects aren't supported yet. A "*" would be stored as a literal
-  // path character that can never match an incoming request, so reject it with a
-  // clear message instead of silently creating a dead redirect.
-  .refine((value) => !value.includes("*"), {
-    message: "Wildcards aren't supported yet — enter the full path",
+  // A "*" is only allowed as a single trailing "/*" (the sole form the
+  // prefix-walk resolver supports). Reject a bare "/*", a mid-string "*", or
+  // multiple "*".
+  .refine(
+    (value) => {
+      if (!value.includes("*")) return true
+      const [path] = value.split("?")
+      return (
+        path !== undefined &&
+        path.endsWith("/*") &&
+        !path.slice(0, -2).includes("*") &&
+        path.length > 2
+      )
+    },
+    { message: "Use a wildcard only as a trailing /* on a path, e.g. /news/*" },
+  )
+  // A wildcard matches a whole subtree; a query narrows one exact URL —
+  // combining them is ambiguous.
+  .refine((value) => !(value.includes("*") && value.includes("?")), {
+    message: "A wildcard redirect can't also have a query string",
   })
   // The source is a path on this site, never a full URL — a scheme like
   // "https://" can never match an incoming request path, so reject it instead
