@@ -7,7 +7,9 @@ name: Deploy publisher script
 # so the S3 copy never drifts from the released source.
 #
 # The upload is idempotent: the script is only re-uploaded when its contents
-# differ from the object currently in S3.
+# differ from the object currently in S3. It is uploaded with a no-store
+# Cache-Control header so CloudFront (or any cache in front of the bucket)
+# always serves the latest version to CodeBuild.
 #
 # Required configuration on the `production` GitHub Environment:
 #   Variables:
@@ -87,6 +89,11 @@ jobs:
             exit 0
           fi
 
+          # Upload with no-store so CloudFront (and any HTTP cache in front of the
+          # bucket) never serves a stale copy to CodeBuild: consumers always get
+          # the version that was just uploaded.
           echo "Uploading publisher.sh to $DEST ..."
-          aws s3 cp "$PUBLISHER_SCRIPT_PATH" "$DEST" --only-show-errors
+          aws s3 cp "$PUBLISHER_SCRIPT_PATH" "$DEST" \
+            --only-show-errors \
+            --cache-control "no-cache, no-store, must-revalidate"
           echo "Uploaded publisher.sh to $DEST"
