@@ -73,5 +73,6 @@ export type CanvasProps = Static<typeof CanvasSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
   LinkComponent?: LinkComponentType
+  shouldLazyLoad?: boolean
   permalink: string
 }

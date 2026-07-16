@@ -1,8 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
+import type { IsomerComponent } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
 import { renderComponent } from "../renderComponent"
+import { renderPageContent } from "../renderPageContent"
 
 describe("renderComponent", () => {
   it("renders a canvas component with its child components", () => {
@@ -76,6 +78,70 @@ describe("renderComponent", () => {
     expect(html).toContain("A quote inside the canvas")
     expect(html).toContain("Stats inside the canvas")
     expect(html).toContain("42")
+  })
+
+  it("forwards shouldLazyLoad to child components inside a canvas", () => {
+    const canvasWithImage: IsomerComponent = {
+      type: "canvas",
+      blocks: [{ type: "image", src: "https://example.com/a.png", alt: "a" }],
+    }
+
+    const eagerHtml = renderToStaticMarkup(
+      renderComponent({
+        component: canvasWithImage,
+        shouldLazyLoad: false,
+        layout: "content",
+        site: generateSiteConfig(),
+        permalink: "/",
+      }),
+    )
+    const lazyHtml = renderToStaticMarkup(
+      renderComponent({
+        component: canvasWithImage,
+        shouldLazyLoad: true,
+        layout: "content",
+        site: generateSiteConfig(),
+        permalink: "/",
+      }),
+    )
+
+    expect(eagerHtml).toContain('loading="eager"')
+    expect(lazyHtml).toContain('loading="lazy"')
+  })
+
+  it("eagerly loads the image of a canvas that is the page's first image-bearing component", () => {
+    const html = renderToStaticMarkup(
+      <>
+        {renderPageContent({
+          content: [
+            {
+              type: "canvas",
+              blocks: [
+                {
+                  type: "image",
+                  src: "https://example.com/first.png",
+                  alt: "first",
+                },
+              ],
+            },
+            {
+              type: "image",
+              src: "https://example.com/second.png",
+              alt: "second",
+            },
+          ],
+          layout: "content",
+          site: generateSiteConfig(),
+          LinkComponent: "a",
+          permalink: "/",
+        })}
+      </>,
+    )
+
+    const firstImage = html.slice(0, html.indexOf("second.png"))
+    const secondImage = html.slice(html.indexOf("second.png"))
+    expect(firstImage).toContain('loading="eager"')
+    expect(secondImage).toContain('loading="lazy"')
   })
 
   it("renders a canvas without explicit dimensions", () => {

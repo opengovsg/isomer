@@ -8,6 +8,7 @@ export const Canvas = ({
   layout,
   site,
   LinkComponent,
+  shouldLazyLoad,
   permalink,
 }: CanvasProps) => {
   return (
@@ -25,6 +26,7 @@ export const Canvas = ({
           layout,
           site,
           LinkComponent,
+          shouldLazyLoad,
           permalink,
         }),
       )}
