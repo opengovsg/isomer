@@ -1,25 +1,36 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  concurrencyFromArgv,
+  flagFromArgv,
   normalizeSource,
   resolveConcurrency,
+  resolveUploadConfig,
 } from "../uploadRedirects"
 
-describe("concurrencyFromArgv", () => {
-  it("reads --concurrency from argv", () => {
-    expect(
-      concurrencyFromArgv([
-        "node",
-        "uploadRedirects.ts",
-        "--concurrency",
-        "100",
-      ]),
-    ).toBe("100")
+const baseArgs = [
+  "node",
+  "uploadRedirects.ts",
+  "--redirects-json",
+  "/tmp/redirects.json",
+  "--s3-bucket-name",
+  "my-bucket",
+  "--site-name",
+  "my-site",
+  "--build-number",
+  "42",
+  "--concurrency",
+  "100",
+] as const
+
+describe("flagFromArgv", () => {
+  it("reads a named flag from argv", () => {
+    expect(flagFromArgv("--concurrency", [...baseArgs])).toBe("100")
   })
 
   it("returns undefined when the flag is absent", () => {
-    expect(concurrencyFromArgv(["node", "uploadRedirects.ts"])).toBeUndefined()
+    expect(
+      flagFromArgv("--concurrency", ["node", "uploadRedirects.ts"]),
+    ).toBeUndefined()
   })
 })
 
@@ -28,16 +39,9 @@ describe("resolveConcurrency", () => {
     expect(resolveConcurrency("47")).toBe(47)
   })
 
-  it("prefers --concurrency over S3_SYNC_CONCURRENCY when argv supplies it", () => {
+  it("prefers --concurrency when argv supplies it", () => {
     expect(
-      resolveConcurrency(
-        concurrencyFromArgv([
-          "node",
-          "uploadRedirects.ts",
-          "--concurrency",
-          "100",
-        ]),
-      ),
+      resolveConcurrency(flagFromArgv("--concurrency", [...baseArgs])),
     ).toBe(100)
   })
 
@@ -47,6 +51,22 @@ describe("resolveConcurrency", () => {
     expect(resolveConcurrency("0")).toBe(20)
     expect(resolveConcurrency("-1")).toBe(20)
     expect(resolveConcurrency("nope")).toBe(20)
+  })
+})
+
+describe("resolveUploadConfig", () => {
+  it("reads all publisher inputs from argv", () => {
+    expect(resolveUploadConfig([...baseArgs])).toEqual({
+      redirectsJson: "/tmp/redirects.json",
+      s3BucketName: "my-bucket",
+      siteName: "my-site",
+      buildNumber: "42",
+      concurrency: 100,
+    })
+  })
+
+  it("returns null when required inputs are missing", () => {
+    expect(resolveUploadConfig(["node", "uploadRedirects.ts"])).toBeNull()
   })
 })
 

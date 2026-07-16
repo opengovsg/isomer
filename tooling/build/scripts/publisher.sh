@@ -203,11 +203,12 @@ start_time=$(date +%s)
 echo "Uploading redirect files to S3..."
 (
   cd ../../build/scripts/publishing
-  REDIRECTS_JSON="$REDIRECTS_JSON" \
-    S3_BUCKET_NAME="$S3_BUCKET_NAME" \
-    SITE_NAME="$SITE_NAME" \
-    CODEBUILD_BUILD_NUMBER="$CODEBUILD_BUILD_NUMBER" \
-    pnpm exec tsx uploadRedirects.ts --concurrency "$S3_SYNC_CONCURRENCY"
+  pnpm exec tsx uploadRedirects.ts \
+    --redirects-json "$REDIRECTS_JSON" \
+    --s3-bucket-name "$S3_BUCKET_NAME" \
+    --site-name "$SITE_NAME" \
+    --build-number "$CODEBUILD_BUILD_NUMBER" \
+    --concurrency "$S3_SYNC_CONCURRENCY"
 ) || echo "Warning: some redirects failed to upload, continuing..."
 
 calculate_duration $start_time
