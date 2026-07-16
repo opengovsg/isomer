@@ -1,7 +1,6 @@
 import { Plugin, PluginKey } from "@tiptap/pm/state"
-import { TableMap } from "@tiptap/pm/tables"
 
-import { getEqualColumnWidths } from "./tableColumnWidths"
+import { getColumnCount, getEqualColumnWidths } from "./tableColumnWidths"
 
 const tableColumnWidthNormalizerPluginKey = new PluginKey(
   "isomerTableColumnWidthNormalizer",
@@ -31,16 +30,13 @@ export const tableColumnWidthNormalizerPlugin = () =>
         if (node.type.name !== "table") {
           return true
         }
-        if (!node.firstChild) {
-          return false
-        }
 
         const colwidths = node.attrs.colwidths as number[] | null
         if (!colwidths) {
           return false
         }
 
-        const columnCount = TableMap.get(node).width
+        const columnCount = getColumnCount(node)
         if (colwidths.length !== columnCount) {
           tr = tr.setNodeMarkup(pos, null, {
             ...node.attrs,

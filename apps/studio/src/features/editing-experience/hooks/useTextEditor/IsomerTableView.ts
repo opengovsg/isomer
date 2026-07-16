@@ -1,15 +1,12 @@
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { EditorView, NodeView } from "@tiptap/pm/view"
-import { TableMap } from "@tiptap/pm/tables"
 
 import {
+  getColumnCount,
   MIN_COLUMN_WIDTH_PX,
   redistributeOnResize,
   resolveColumnWidths,
 } from "./tableColumnWidths"
-
-const getColumnCount = (node: ProseMirrorNode): number =>
-  node.firstChild ? TableMap.get(node).width : 0
 
 // Replaces TipTap's stock TableView (see @tiptap/extension-table/src/table/TableView.ts)
 // because that view's colgroup rendering hardcodes every column width as `${px}px` with

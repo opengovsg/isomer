@@ -1,6 +1,7 @@
 import type { TableProps } from "~/interfaces"
 import { useId } from "react"
 import { tv } from "~/lib/tv"
+import { resolveColumnWidths } from "~/utils/getTableColumnWidths"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { Divider } from "../Divider"
@@ -25,38 +26,20 @@ const getColumnCount = (content: TableProps["content"]): number =>
     ),
   )
 
-const getEqualColumnWidths = (columnCount: number): number[] =>
-  Array.from({ length: columnCount }, () => 100 / columnCount)
-
-// `colwidths` is missing entirely (pre-feature content), `null` (never
-// resized), or the wrong length (stale, from before a column add/remove was
-// normalized) -- none of those are a usable set of widths, so fall back to
-// an equal split, same as the editor does (see `resolveColumnWidths` in
-// apps/studio's tableColumnWidths.ts). A column's width should only ever
-// change because of an explicit resize drag, never because of how much text
-// happens to be typed into a cell -- which an equal split, rendered under
-// `table-layout: fixed`, guarantees regardless of content.
-const getColumnWidths = (
-  colwidths: TableProps["attrs"]["colwidths"],
-  columnCount: number,
-): number[] => {
-  if (
-    !colwidths ||
-    colwidths.length !== columnCount ||
-    colwidths.some((width) => width == null)
-  ) {
-    return getEqualColumnWidths(columnCount)
-  }
-  return colwidths as number[]
-}
-
 export const Table = ({
   attrs: { caption, colwidths },
   content,
   site,
 }: TableProps) => {
   const tableDescriptionId = useId()
-  const columnWidths = getColumnWidths(colwidths, getColumnCount(content))
+  // A column's width should only ever change because of an explicit resize
+  // drag, never because of how much text happens to be typed into a cell --
+  // which an equal split, rendered under `table-layout: fixed`, guarantees
+  // regardless of content. `resolveColumnWidths` falls back to that split
+  // whenever `colwidths` is missing (pre-feature content), `null` (never
+  // resized), or the wrong length (stale, from before a column add/remove
+  // was normalized) -- the same fallback the editor applies.
+  const columnWidths = resolveColumnWidths(colwidths, getColumnCount(content))
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
