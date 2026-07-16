@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  getColumnWidthsFromRow,
   getEqualColumnWidths,
   redistributeOnResize,
+  resolveColumnWidths,
 } from "../tableColumnWidths"
 
 describe("getEqualColumnWidths", () => {
@@ -20,57 +20,54 @@ describe("getEqualColumnWidths", () => {
   })
 })
 
-describe("getColumnWidthsFromRow", () => {
-  it("should return null when any cell has a colspan other than 1", () => {
-    // Arrange
-    const cells = [
-      { colspan: 2, colwidth: null },
-      { colspan: 1, colwidth: null },
-    ]
-
+describe("resolveColumnWidths", () => {
+  it("should fall back to an equal split when colwidths is null", () => {
     // Act
-    const result = getColumnWidthsFromRow(cells)
-
-    // Assert
-    expect(result).toBeNull()
-  })
-
-  it("should fall back to an equal split when some cells are missing a colwidth", () => {
-    // Arrange
-    const cells = [
-      { colspan: 1, colwidth: 60 },
-      { colspan: 1, colwidth: null },
-      { colspan: 1, colwidth: 20 },
-    ]
-
-    // Act
-    const result = getColumnWidthsFromRow(cells)
+    const result = resolveColumnWidths(null, 3)
 
     // Assert
     expect(result).toEqual(getEqualColumnWidths(3))
   })
 
-  it("should return the explicit widths when every cell has one", () => {
-    // Arrange
-    const cells = [
-      { colspan: 1, colwidth: 50 },
-      { colspan: 1, colwidth: 30 },
-      { colspan: 1, colwidth: 20 },
-    ]
+  it("should fall back to an equal split when colwidths is not an array", () => {
+    // Act
+    const result = resolveColumnWidths("not-an-array", 3)
+
+    // Assert
+    expect(result).toEqual(getEqualColumnWidths(3))
+  })
+
+  it("should fall back to an equal split when the length doesn't match the column count", () => {
+    // Arrange: stale from before a column was added, not yet normalized.
+    const colwidths = [50, 30, 20]
 
     // Act
-    const result = getColumnWidthsFromRow(cells)
+    const result = resolveColumnWidths(colwidths, 4)
+
+    // Assert
+    expect(result).toEqual(getEqualColumnWidths(4))
+  })
+
+  it("should fall back to an equal split when any entry is null", () => {
+    // Arrange
+    const colwidths = [50, null, 20]
+
+    // Act
+    const result = resolveColumnWidths(colwidths, 3)
+
+    // Assert
+    expect(result).toEqual(getEqualColumnWidths(3))
+  })
+
+  it("should return the explicit widths when the array is complete and the right length", () => {
+    // Arrange
+    const colwidths = [50, 30, 20]
+
+    // Act
+    const result = resolveColumnWidths(colwidths, 3)
 
     // Assert
     expect(result).toEqual([50, 30, 20])
-  })
-
-  it("should return null for an empty row", () => {
-    // Act
-    const result = getColumnWidthsFromRow([])
-
-    // Assert
-    expect(result).toBeNull()
   })
 })
 
