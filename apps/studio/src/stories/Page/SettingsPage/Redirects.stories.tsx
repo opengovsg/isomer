@@ -5,7 +5,10 @@ import { redirectHandlers } from "tests/msw/handlers/redirect"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import RedirectsSettingsPage from "~/pages/sites/[siteId]/settings/redirects"
 import { ADMIN_HANDLERS } from "~/stories/handlers"
-import { createRedirectionsEnabledGbParameters } from "~/stories/utils/growthbook"
+import {
+  createAdvancedRedirectsEnabledGbParameters,
+  createRedirectionsEnabledGbParameters,
+} from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   ...ADMIN_HANDLERS,
@@ -102,6 +105,66 @@ export const AlreadyExistsError: Story = {
     const screen = await submitNewRedirect(canvasElement)
     await expect(
       await screen.findByText("This page is already being redirected."),
+    ).toBeVisible()
+  },
+}
+
+// Advanced flag on: wildcard source typed — shows the live preview help text.
+export const AdvancedWildcardPreview: Story = {
+  parameters: {
+    growthbook: [
+      createRedirectionsEnabledGbParameters(true),
+      createAdvancedRedirectsEnabledGbParameters(true),
+    ],
+    msw: {
+      handlers: [
+        redirectHandlers.list.default(),
+        redirectHandlers.count.default(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body)
+    const sourceInput = await screen.findByPlaceholderText(
+      "redirect-from or path/*",
+    )
+    await userEvent.type(sourceInput, "old-news/*")
+    await userEvent.type(
+      screen.getByPlaceholderText("/path-to-page or https://www.google.com"),
+      "/newsroom",
+    )
+    await expect(
+      await screen.findByText(/old-news\/example → \/newsroom\/example/),
+    ).toBeVisible()
+  },
+}
+
+// Advanced flag on: query source typed — shows the query help text.
+export const AdvancedQueryHelpText: Story = {
+  parameters: {
+    growthbook: [
+      createRedirectionsEnabledGbParameters(true),
+      createAdvancedRedirectsEnabledGbParameters(true),
+    ],
+    msw: {
+      handlers: [
+        redirectHandlers.list.default(),
+        redirectHandlers.count.default(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body)
+    const sourceInput = await screen.findByPlaceholderText(
+      "redirect-from or path/*",
+    )
+    await userEvent.type(sourceInput, "gallery.html?artwork=401")
+    await expect(
+      await screen.findByText(
+        "Query redirect: matches this exact URL including the query string.",
+      ),
     ).toBeVisible()
   },
 }
