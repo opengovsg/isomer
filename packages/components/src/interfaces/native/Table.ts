@@ -25,22 +25,6 @@ const TableBaseCellSchema = Type.Object({
       minimum: 1,
     }),
   ),
-  // Optional (older content predates this field and omits the key entirely)
-  // AND nullable: TipTap always serializes every declared node attribute, so
-  // once a cell is created by the editor, `colwidth` is always present as
-  // either a number or `null` ("not yet resized") -- it's never omitted.
-  colwidth: Type.Optional(
-    Type.Union([
-      Type.Number({
-        title: "Table cell column width",
-        description:
-          "The width of the cell's column, as a percentage of the table's total width",
-        minimum: 0,
-        maximum: 100,
-      }),
-      Type.Null(),
-    ]),
-  ),
 })
 
 // Disable rule so typescript inference can work properly
@@ -122,6 +106,31 @@ export const TableSchema = Type.Object(
         title: "Table caption",
         description: "The caption of the table",
       }),
+      // One entry per column, by index -- not a per-cell field, since a
+      // column's width belongs to the table, not to any particular cell.
+      // Optional (older content predates this field) AND nullable per
+      // entry: TipTap always serializes every declared node attribute, so
+      // once a table has been resized at least once, every entry is either
+      // a number or `null` ("not yet resized") -- never omitted.
+      colwidths: Type.Optional(
+        Type.Union([
+          Type.Array(
+            Type.Union([
+              Type.Number({
+                minimum: 0,
+                maximum: 100,
+              }),
+              Type.Null(),
+            ]),
+            {
+              title: "Table column widths",
+              description:
+                "The width of each column, as a percentage of the table's total width",
+            },
+          ),
+          Type.Null(),
+        ]),
+      ),
     }),
     content: Type.Array(
       Type.Union([TableHeaderRowSchema, TableContentRowSchema]),

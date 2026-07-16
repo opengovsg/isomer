@@ -140,14 +140,12 @@ describe("table column-width resize", () => {
       dispatchPointer(window, "pointerup", 140)
     })
 
-    // Assert: the commit persisted into the actual doc attrs, matching what
-    // was shown live, and the doc still sums to 100.
+    // Assert: the commit persisted into the table node's own attrs, matching
+    // what was shown live, and the doc still sums to 100.
     const json = editor.getJSON()
-    const firstRow: JSONContent | undefined = json.content?.[0]?.content?.[0]
+    const tableJson: JSONContent | undefined = json.content?.[0]
     const persistedWidths: number[] =
-      firstRow?.content?.map(
-        (cell: JSONContent) => cell.attrs?.colwidth as number,
-      ) ?? []
+      (tableJson?.attrs?.colwidths as number[] | undefined) ?? []
     expect(persistedWidths).toHaveLength(3)
     expect(persistedWidths.reduce((sum, width) => sum + width, 0)).toBeCloseTo(
       100,

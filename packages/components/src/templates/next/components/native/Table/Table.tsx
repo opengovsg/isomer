@@ -18,33 +18,39 @@ const tableCellStyles = tv({
   },
 })
 
-// The editor only ever records colwidth against the table's first row, and
-// only when that row has no colspan (a colspan'd first row can't be mapped
-// 1 cell to 1 column, so its cells never carry a colwidth to read back).
-const getColumnWidths = (content: TableProps["content"]): number[] | null => {
-  const firstRow = content[0]
+const getColumnCount = (content: TableProps["content"]): number =>
+  Math.max(
+    ...content.map((row) =>
+      row.content.reduce((sum, cell) => sum + (cell.attrs?.colspan ?? 1), 0),
+    ),
+  )
+
+// `colwidths` is missing entirely (pre-feature content), `null` (never
+// resized), or the wrong length (stale, from before a column add/remove was
+// normalized) -- none of those are a usable set of widths, so fall back to
+// the browser's default table layout rather than rendering a colgroup with
+// a `null` in it.
+const getColumnWidths = (
+  colwidths: TableProps["attrs"]["colwidths"],
+  columnCount: number,
+): number[] | null => {
   if (
-    !firstRow ||
-    firstRow.content.some((cell) => (cell.attrs?.colspan ?? 1) !== 1)
+    !colwidths ||
+    colwidths.length !== columnCount ||
+    colwidths.some((width) => width == null)
   ) {
     return null
   }
-
-  const widths = firstRow.content.map((cell) => cell.attrs?.colwidth)
-  // `null` means "not yet resized" (TipTap always serializes the attribute
-  // once a cell exists), same as a pre-feature cell that omits the key
-  // entirely: neither is a usable width, so fall back to the browser's
-  // default table layout rather than rendering a colgroup with a `null`.
-  if (widths.some((width) => width == null)) {
-    return null
-  }
-
-  return widths as number[]
+  return colwidths as number[]
 }
 
-export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
+export const Table = ({
+  attrs: { caption, colwidths },
+  content,
+  site,
+}: TableProps) => {
   const tableDescriptionId = useId()
-  const columnWidths = getColumnWidths(content)
+  const columnWidths = getColumnWidths(colwidths, getColumnCount(content))
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">

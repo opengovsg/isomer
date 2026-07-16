@@ -1,37 +1,22 @@
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import type { EditorView, NodeView } from "@tiptap/pm/view"
+import { TableMap } from "@tiptap/pm/tables"
 
 import {
-  getColumnWidthsFromRow,
   MIN_COLUMN_WIDTH_PX,
   redistributeOnResize,
+  resolveColumnWidths,
 } from "./tableColumnWidths"
 
-interface RowCellInfo {
-  colspan: number
-  colwidth: number | null
-}
-
-const getFirstRowCells = (node: ProseMirrorNode): RowCellInfo[] => {
-  const firstRow = node.firstChild
-  if (!firstRow) {
-    return []
-  }
-  const cells: RowCellInfo[] = []
-  firstRow.forEach((cell) => {
-    cells.push({
-      colspan: cell.attrs.colspan as number,
-      colwidth: cell.attrs.colwidth as number | null,
-    })
-  })
-  return cells
-}
+const getColumnCount = (node: ProseMirrorNode): number =>
+  node.firstChild ? TableMap.get(node).width : 0
 
 // Replaces TipTap's stock TableView (see @tiptap/extension-table/src/table/TableView.ts)
 // because that view's colgroup rendering hardcodes every column width as `${px}px` with
 // no unit override hook, which can't represent this feature's percentage-of-table model
 // at all. This view renders the same colgroup/tbody DOM shape, but computes widths as
-// percentages and owns the resize-drag interaction directly, rather than reusing
+// percentages (stored on the table node's own `colwidths` attribute, one entry per
+// column) and owns the resize-drag interaction directly, rather than reusing
 // prosemirror-tables' own columnResizing plugin (whose live-drag preview is DOM-only,
 // per-column, and grows/shrinks the table -- not what's needed here either).
 export class IsomerTableView implements NodeView {
@@ -111,26 +96,24 @@ export class IsomerTableView implements NodeView {
   }
 
   private render() {
-    const cells = getFirstRowCells(this.node)
-    const widths = getColumnWidthsFromRow(cells)
-    this.renderColgroup(cells.length, widths)
+    const columnCount = getColumnCount(this.node)
+    const widths = resolveColumnWidths(this.node.attrs.colwidths, columnCount)
+    this.renderColgroup(widths)
     this.renderHandles(widths)
   }
 
-  private renderColgroup(columnCount: number, widths: number[] | null) {
+  private renderColgroup(widths: number[]) {
     this.colgroup.innerHTML = ""
-    for (let i = 0; i < columnCount; i++) {
+    widths.forEach((width) => {
       const col = document.createElement("col")
-      if (widths) {
-        col.style.width = `${widths[i]}%`
-      }
+      col.style.width = `${width}%`
       this.colgroup.appendChild(col)
-    }
+    })
   }
 
-  private renderHandles(widths: number[] | null) {
+  private renderHandles(widths: number[]) {
     this.handleContainer.innerHTML = ""
-    if (!widths || widths.length < 2) {
+    if (widths.length < 2) {
       return
     }
 
@@ -159,10 +142,11 @@ export class IsomerTableView implements NodeView {
       return
     }
 
-    const startWidths = getColumnWidthsFromRow(getFirstRowCells(this.node))
-    if (!startWidths) {
-      return
-    }
+    const columnCount = getColumnCount(this.node)
+    const startWidths = resolveColumnWidths(
+      this.node.attrs.colwidths,
+      columnCount,
+    )
 
     const tableWidthPx = this.table.getBoundingClientRect().width
     if (tableWidthPx <= 0) {
@@ -185,7 +169,7 @@ export class IsomerTableView implements NodeView {
 
     const onPointerMove = (moveEvent: PointerEvent) => {
       const widths = computeWidths(moveEvent)
-      this.renderColgroup(widths.length, widths)
+      this.renderColgroup(widths)
       this.renderHandles(widths)
     }
 
@@ -209,21 +193,9 @@ export class IsomerTableView implements NodeView {
     if (tablePos == null) {
       return
     }
-    const row = this.node.firstChild
-    if (!row) {
-      return
-    }
-
-    const tr = this.view.state.tr
-    let cellPos = tablePos + 2 // +1 into table content (row start), +1 into row content (first cell)
-    let index = 0
-    row.forEach((cell) => {
-      tr.setNodeMarkup(cellPos, null, {
-        ...cell.attrs,
-        colwidth: widths[index] ?? null,
-      })
-      cellPos += cell.nodeSize
-      index += 1
+    const tr = this.view.state.tr.setNodeMarkup(tablePos, null, {
+      ...this.node.attrs,
+      colwidths: widths,
     })
     this.view.dispatch(tr)
   }

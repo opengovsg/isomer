@@ -114,6 +114,14 @@ export const IsomerTable = Table.extend({
       caption: {
         default: "Table caption",
       },
+      // One percent width per column, by index -- not a per-cell attribute,
+      // since the table itself (not any particular cell) owns its columns'
+      // widths. Never round-tripped through HTML (Studio only ever loads/
+      // saves via editor.getJSON(), never HTML parsing), so no custom
+      // parseHTML/renderHTML is needed, same as `caption` above.
+      colwidths: {
+        default: null,
+      },
     }
   },
   addProseMirrorPlugins() {
@@ -128,47 +136,12 @@ export const IsomerTable = Table.extend({
   },
 })
 
-// Overrides the inherited `colwidth` attribute (an array of px, prosemirror-tables'
-// own convention) with a single percentage-of-table-width number, since resizing
-// here is a custom proportional/percentage model, not the library's native one.
-const colwidthAttribute = {
-  colwidth: {
-    default: null,
-    parseHTML: (element: HTMLElement) => {
-      const width = element.style.width
-      if (!width.endsWith("%")) {
-        return null
-      }
-      const parsed = parseFloat(width)
-      return Number.isNaN(parsed) ? null : parsed
-    },
-    renderHTML: (attributes: { colwidth: number | null }) => {
-      if (attributes.colwidth == null) {
-        return {}
-      }
-      return { style: `width: ${attributes.colwidth}%` }
-    },
-  },
-}
-
 export const IsomerTableCell = TableCell.extend({
   content: "(paragraph|list)+",
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      ...colwidthAttribute,
-    }
-  },
 })
 
 export const IsomerTableHeader = TableHeader.extend({
   content: "paragraph+",
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      ...colwidthAttribute,
-    }
-  },
 })
 
 export const IsomerHeading = Heading.extend({

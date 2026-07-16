@@ -1,5 +1,5 @@
-import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
+import { TableMap } from "@tiptap/pm/tables"
 
 import { getEqualColumnWidths } from "./tableColumnWidths"
 
@@ -7,29 +7,15 @@ const tableColumnWidthNormalizerPluginKey = new PluginKey(
   "isomerTableColumnWidthNormalizer",
 )
 
-interface RowCell {
-  colspan: number
-  colwidth: number | null
-}
-
-const getRowCells = (row: ProseMirrorNode): RowCell[] => {
-  const cells: RowCell[] = []
-  row.forEach((cell) => {
-    cells.push({
-      colspan: cell.attrs.colspan as number,
-      colwidth: cell.attrs.colwidth as number | null,
-    })
-  })
-  return cells
-}
-
-// Whenever a column is added or removed (via any command that changes the
-// first row's cell count), the new/shifted cells won't have a colwidth yet,
-// breaking the "always sums to 100%" invariant. This rebalances the whole
-// row back to an equal split whenever that happens, keeping the editor's
-// doc state and the published schema in agreement -- IsomerTableView's own
-// getColumnWidthsFromRow fallback shows the same equal split immediately,
-// but only this transaction actually persists it.
+// Whenever a column is added or removed on a table that's already been
+// resized at least once, the stored `colwidths` array no longer matches the
+// table's actual column count, breaking the "always sums to 100%"
+// invariant. This rebalances it back to an equal split whenever that
+// happens, keeping the editor's doc state and the published schema in
+// agreement -- IsomerTableView's own resolveColumnWidths fallback shows the
+// same equal split immediately, but only this transaction actually persists
+// it. Tables that have never been resized (colwidths still null) are left
+// alone; there's nothing to keep in sync yet.
 export const tableColumnWidthNormalizerPlugin = () =>
   new Plugin({
     key: tableColumnWidthNormalizerPluginKey,
@@ -45,26 +31,20 @@ export const tableColumnWidthNormalizerPlugin = () =>
         if (node.type.name !== "table") {
           return true
         }
-
-        const row = node.firstChild
-        if (!row) {
+        if (!node.firstChild) {
           return false
         }
 
-        const cells = getRowCells(row)
-        const isSimpleRow = cells.every((cell) => cell.colspan === 1)
-        const hasSomeWidths = cells.some((cell) => cell.colwidth != null)
-        const hasAllWidths = cells.every((cell) => cell.colwidth != null)
+        const colwidths = node.attrs.colwidths as number[] | null
+        if (!colwidths) {
+          return false
+        }
 
-        if (isSimpleRow && hasSomeWidths && !hasAllWidths) {
-          const widths = getEqualColumnWidths(cells.length)
-          let cellPos = pos + 2
-          row.forEach((cell, _offset, index) => {
-            tr = tr.setNodeMarkup(cellPos, null, {
-              ...cell.attrs,
-              colwidth: widths[index] ?? null,
-            })
-            cellPos += cell.nodeSize
+        const columnCount = TableMap.get(node).width
+        if (colwidths.length !== columnCount) {
+          tr = tr.setNodeMarkup(pos, null, {
+            ...node.attrs,
+            colwidths: getEqualColumnWidths(columnCount),
           })
           changed = true
         }
