@@ -29,9 +29,34 @@ const tableCellStyles = tv({
   },
 })
 
+// Only a row with no colspan on any cell unambiguously maps 1 cell to 1
+// column, so that's the only shape we can read explicit widths back out of.
+const getColumnWidths = (content: TableProps["content"]): number[] | null => {
+  const columnCounts = content.map((row) =>
+    row.content.reduce((sum, cell) => sum + (cell.attrs?.colspan ?? 1), 0),
+  )
+  const columnCount = Math.max(...columnCounts)
+
+  const widthsRow = content.find(
+    (row, index) =>
+      columnCounts[index] === columnCount &&
+      row.content.every((cell) => (cell.attrs?.colspan ?? 1) === 1),
+  )
+  if (!widthsRow) {
+    return null
+  }
+
+  const widths = widthsRow.content.map((cell) => cell.attrs?.colwidth)
+  if (widths.some((width) => width === undefined)) {
+    return null
+  }
+
+  return widths as number[]
+}
+
 export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
   const tableDescriptionId = useId()
-  const layout = resolveTableLayout(content)
+  const columnWidths = getColumnWidths(content)
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
@@ -45,10 +70,10 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
           className={tableStyles({ isFixedLayout: layout.kind === "fixed" })}
           aria-describedby={tableDescriptionId}
         >
-          {layout.kind === "fixed" && (
+          {columnWidths && (
             <colgroup>
-              {layout.columnWidths.map((width, index) => (
-                <col key={index} style={{ width }} />
+              {columnWidths.map((width, index) => (
+                <col key={index} style={{ width: `${width}%` }} />
               ))}
             </colgroup>
           )}
