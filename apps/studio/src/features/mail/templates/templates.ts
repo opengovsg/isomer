@@ -26,13 +26,11 @@ import type {
 } from "./types"
 import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
 
-const getDownloadLinkLabel = (label: AuditLogExportDownloadLink["label"]) => {
-  switch (label) {
-    case "access":
-      return "Download access review [.csv]"
-    case "audit":
-      return "Download audit logs [.csv]"
-  }
+const getDownloadLinkLabel = (
+  label: AuditLogExportDownloadLink["label"],
+  longMonth: string,
+) => {
+  return `Download ${label} review logs for ${longMonth} [.csv]`
 }
 
 const constructStudioRedirect = () =>
@@ -288,20 +286,20 @@ const auditLogExportReadyTemplate = (
 ): EmailTemplate => {
   const { recipientEmail, siteName, month, link } = data
   const escapedRecipientEmail = escapeHtml(recipientEmail)
-  const escapedSiteName = escapeHtml(siteName)
   const escapedMonth = escapeHtml(month)
+  const escapedSiteName = escapeHtml(siteName)
 
   const logName = link.label === "access" ? "Access" : "Audit"
 
   // The href is escaped since it is interpolated into HTML. Escaping the URL
   // prevents a stray quote from breaking out of the href attribute and
   // injecting markup.
-  const downloadLink = `<a href="${escapeHtml(link.url)}">${getDownloadLinkLabel(link.label)}</a>`
+  const downloadLink = `<a href="${escapeHtml(link.url)}">${getDownloadLinkLabel(link.label, escapedMonth)}</a>`
 
   return {
-    subject: `[Isomer] ${logName} logs for ${escapedSiteName} (${escapedMonth}) is ready`,
+    subject: `[Isomer] ${logName} logs for ${escapedMonth} for your site (${escapedSiteName}) is ready`,
     body: `<p>Hi ${escapedRecipientEmail},</p>
-<p>The ${logName.toLowerCase()} logs you requested for your site (${escapedMonth}) are ready to download. This link will expire after 3 days.</p>
+<p>You requested for audit logs for your site(s) for (${escapedMonth}). This link will expire after 3 days.</p>
 <br/>
 <p>${downloadLink}</p>
 <p>Best,</p>
