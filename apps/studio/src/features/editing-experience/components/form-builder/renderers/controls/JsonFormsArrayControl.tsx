@@ -2,12 +2,18 @@ import type { ArrayLayoutProps, RankedTester } from "@jsonforms/core"
 import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
 import {
+  and,
   composePaths,
   createDefaultValue,
+  findUISchema,
+  hasType,
   isObjectArrayControl,
   isPrimitiveArrayControl,
   or,
   rankWith,
+  schemaMatches,
+  schemaSubPathMatches,
+  uiTypeIs,
 } from "@jsonforms/core"
 import { withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -19,9 +25,27 @@ import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 
+// The built-in isObjectArrayControl only accepts items with type "object",
+// so arrays of a union of components (e.g. canvas blocks) need this variant.
+// Items must be inline object schemas — unions of $refs (e.g. prose content)
+// are excluded so they keep falling through to their dedicated controls.
+const isAnyOfObjectArrayControl = and(
+  uiTypeIs("Control"),
+  schemaMatches(
+    (schema) => hasType(schema, "array") && !Array.isArray(schema.items),
+  ),
+  schemaSubPathMatches(
+    "items",
+    (schema) =>
+      !!schema.anyOf &&
+      schema.anyOf.length > 0 &&
+      schema.anyOf.every((subschema) => hasType(subschema, "object")),
+  ),
+)
+
 export const jsonFormsArrayControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ArrayControl,
-  or(isObjectArrayControl, isPrimitiveArrayControl),
+  or(isObjectArrayControl, isPrimitiveArrayControl, isAnyOfObjectArrayControl),
 )
 
 function JsonFormsArrayControl(props: ArrayLayoutProps) {
