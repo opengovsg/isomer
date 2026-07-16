@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { normalizeSource, resolveConcurrency } from "../uploadRedirects"
+import {
+  buildManifest,
+  normalizeSource,
+  partitionRedirects,
+  resolveConcurrency,
+} from "../uploadRedirects"
 
 describe("resolveConcurrency", () => {
   it("uses S3_SYNC_CONCURRENCY when it is a positive integer", () => {
@@ -62,5 +67,55 @@ describe("normalizeSource", () => {
   it("rejects malformed percent-encoding", () => {
     // Arrange / Act / Assert — a lone "%" is not a valid escape sequence
     expect(normalizeSource("/foo%bar")).toBeNull()
+  })
+})
+
+describe("partitionRedirects", () => {
+  it("splits exact from wildcard/query by source shape", () => {
+    const { exact, manifestEntries } = partitionRedirects([
+      { source: "/faq", destination: "/faqs" },
+      { source: "/news/*", destination: "/newsroom" },
+      { source: "/gallery?a=1", destination: "https://x.gov.sg/g" },
+    ])
+    expect(exact.map((r) => r.source)).toEqual(["/faq"])
+    expect(manifestEntries.map((r) => r.source)).toEqual([
+      "/news/*",
+      "/gallery?a=1",
+    ])
+  })
+
+  it("returns empty arrays when all rows are exact", () => {
+    const { exact, manifestEntries } = partitionRedirects([
+      { source: "/a", destination: "/b" },
+    ])
+    expect(exact).toHaveLength(1)
+    expect(manifestEntries).toHaveLength(0)
+  })
+
+  it("returns empty arrays when input is empty", () => {
+    const { exact, manifestEntries } = partitionRedirects([])
+    expect(exact).toHaveLength(0)
+    expect(manifestEntries).toHaveLength(0)
+  })
+})
+
+describe("buildManifest", () => {
+  it("produces a versioned flat map keyed by source", () => {
+    expect(
+      buildManifest([
+        { source: "/news/*", destination: "/newsroom" },
+        { source: "/gallery?a=1", destination: "https://x.gov.sg/g" },
+      ]),
+    ).toEqual({
+      version: 1,
+      redirects: {
+        "/news/*": "/newsroom",
+        "/gallery?a=1": "https://x.gov.sg/g",
+      },
+    })
+  })
+
+  it("returns an empty redirects map for an empty input", () => {
+    expect(buildManifest([])).toEqual({ version: 1, redirects: {} })
   })
 })
