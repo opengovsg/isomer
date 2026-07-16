@@ -796,6 +796,48 @@ describe("collection.router", async () => {
       expect(titles).toEqual(["Alpha", "Bravo", "Charlie"])
     })
 
+    it("should sort case-insensitively when orderBy is title-asc", async () => {
+      // Arrange: titles chosen so a case-sensitive (byte-order) sort would
+      // put "Banana" before "apple" - a naive `title asc` would return
+      // ["Banana", "apple", "cherry"], which isn't what a user means by
+      // "Alphabetical".
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "cherry",
+        permalink: "cherry",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "apple",
+        permalink: "apple",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Banana",
+        permalink: "banana",
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        orderBy: "title-asc",
+      })
+
+      // Assert
+      const titles = result.map((r) => r.title)
+      expect(titles).toEqual(["apple", "Banana", "cherry"])
+    })
+
     it("should sort by updatedAt descending when orderBy is updated-desc", async () => {
       // Arrange
       const { collection, site } = await setupCollection()

@@ -64,6 +64,8 @@ export const getParentSchema = z.object({
 
 export const resourceOrderByOptions = ["updated-desc", "title-asc"] as const
 
+export type ResourceOrderByOption = (typeof resourceOrderByOptions)[number]
+
 export const listResourceSchema = z
   .object({
     siteId: z.number(),

@@ -1,3 +1,4 @@
+import type { ResourceOrderByOption } from "~/schemas/resource"
 import { HStack, Text } from "@chakra-ui/react"
 import { Menu } from "@opengovsg/design-system-react"
 import { keepPreviousData } from "@tanstack/react-query"
@@ -15,7 +16,7 @@ import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-import type { CollectionTableData, CollectionTableSortOptions } from "./types"
+import type { CollectionTableData } from "./types"
 import { RESOURCE_TABLE_SORT_OPTIONS } from "../ResourceTable/constants"
 import { TitleCell } from "../ResourceTable/TitleCell"
 import { CollectionTableMenu } from "./CollectionTableMenu"
@@ -67,7 +68,7 @@ export const CollectionTable = ({
   resourceId,
 }: CollectionTableProps): JSX.Element => {
   const [sortOption, setSortOption] =
-    useState<CollectionTableSortOptions>("updated-desc")
+    useState<ResourceOrderByOption>("updated-desc")
 
   const columns = useMemo(
     () => getColumns({ siteId, resourceId }),
@@ -151,7 +152,7 @@ export const CollectionTable = ({
                       <Menu.Item
                         key={option}
                         onClick={() => {
-                          setSortOption(option as CollectionTableSortOptions)
+                          setSortOption(option as ResourceOrderByOption)
                           onPaginationChange((old) => ({
                             ...old,
                             pageIndex: 0,

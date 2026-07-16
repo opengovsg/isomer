@@ -2634,6 +2634,46 @@ describe("resource.router", async () => {
       expect(allIds).toEqual(expectedIds)
     })
 
+    it("should sort case-insensitively when orderBy is title-asc", async () => {
+      // Arrange: titles chosen so a case-sensitive (byte-order) sort would
+      // put "Banana" before "apple" - a naive `title asc` would return
+      // ["Banana", "apple", "cherry"], which isn't what a user means by
+      // "Alphabetical".
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "cherry",
+        permalink: "cherry",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "apple",
+        permalink: "apple",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Banana",
+        permalink: "banana",
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        orderBy: "title-asc",
+      })
+
+      // Assert
+      expect(result.map((r) => r.title)).toEqual(["apple", "Banana", "cherry"])
+    })
+
     it("should throw 403 if user does not have read access to site", async () => {
       // Arrange
       const { site } = await setupSite()

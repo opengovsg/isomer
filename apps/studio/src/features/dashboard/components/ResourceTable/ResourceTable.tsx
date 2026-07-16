@@ -1,3 +1,4 @@
+import type { ResourceOrderByOption } from "~/schemas/resource"
 import { HStack, Text } from "@chakra-ui/react"
 import { Menu } from "@opengovsg/design-system-react"
 import { keepPreviousData } from "@tanstack/react-query"
@@ -14,7 +15,7 @@ import { EmptyTablePlaceholder } from "~/components/Datatable/EmptyTablePlacehol
 import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 
-import type { ResourceSortOption, ResourceTableData } from "./types"
+import type { ResourceTableData } from "./types"
 import { RESOURCE_TABLE_SORT_OPTIONS } from "./constants"
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { TitleCell } from "./TitleCell"
@@ -63,7 +64,7 @@ export const ResourceTable = ({
   resourceId,
 }: ResourceTableProps): JSX.Element => {
   const [sortOption, setSortOption] =
-    useState<ResourceSortOption>("updated-desc")
+    useState<ResourceOrderByOption>("updated-desc")
 
   const columns = useMemo(
     () => getColumns({ siteId, resourceId }),
@@ -112,6 +113,9 @@ export const ResourceTable = ({
     pageCount,
   })
 
+  // TODO: this sort header + Datatable wiring is now a near-exact duplicate
+  // of CollectionTable.tsx - consider extracting a shared component (raised
+  // as non-blocking in PR #2811 review: github.com/opengovsg/isomer/pull/2811)
   return (
     <>
       <HStack
@@ -148,7 +152,7 @@ export const ResourceTable = ({
                       <Menu.Item
                         key={option}
                         onClick={() => {
-                          setSortOption(option as ResourceSortOption)
+                          setSortOption(option as ResourceOrderByOption)
                           onPaginationChange((old) => ({
                             ...old,
                             pageIndex: 0,
