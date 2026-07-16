@@ -21,6 +21,10 @@ const clamp = (value: number, min: number, max: number) =>
 // other column is untouched. This is a simple zero-sum swap between the
 // pair (their combined width never changes), unlike a model that
 // redistributes the delta proportionally across every other column.
+// Precondition: `columnIndex` must have a right neighbour, i.e.
+// `columnIndex + 1 < widths.length`. This isn't checked at runtime -- if
+// called on the last column, `neighborWidth` silently falls back to `0` and
+// the result is degenerate rather than an error.
 export const redistributeOnResize = ({
   widths,
   columnIndex,

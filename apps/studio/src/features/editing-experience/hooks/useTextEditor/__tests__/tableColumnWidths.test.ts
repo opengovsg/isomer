@@ -18,6 +18,17 @@ describe("getEqualColumnWidths", () => {
     expect(widths).toEqual([25, 25, 25, 25])
     expect(widths.reduce((sum, width) => sum + width, 0)).toBe(100)
   })
+
+  it("should return an empty array without throwing when columnCount is 0", () => {
+    // Arrange: the table's last column was just deleted, leaving no columns.
+    const columnCount = 0
+
+    // Act
+    const widths = getEqualColumnWidths(columnCount)
+
+    // Assert
+    expect(widths).toEqual([])
+  })
 })
 
 describe("resolveColumnWidths", () => {
