@@ -105,6 +105,26 @@ function JsonFormsCombinatorControl({
       return
     }
 
+    // JsonForms cannot compute indexOfFittingSchema for subschemas that are
+    // not self-contained (e.g. ones referencing shared $defs), so fall back
+    // to matching the discriminating type const in the data
+    const dataType =
+      typeof data === "object" && data !== null && "type" in data
+        ? (data as { type?: unknown }).type
+        : undefined
+    if (typeof dataType === "string") {
+      const fittingInfo = renderInfos.find(
+        (renderInfo) =>
+          renderInfo.schema.format !== "hidden" &&
+          renderInfo.schema.properties?.type?.const === dataType,
+      )
+      if (fittingInfo) {
+        const option = String(fittingInfo.label || fittingInfo.schema.const)
+        setVariant(option.charAt(0).toUpperCase() + option.slice(1))
+        return
+      }
+    }
+
     // Fallback to first option
     if (options[0]) {
       setVariant(options[0].label)
