@@ -2003,6 +2003,85 @@ export const NestedColumns: Story = {
   },
 }
 
+export const ColumnWidths: Story = {
+  args: {
+    attrs: {
+      caption: "A table with explicit column widths",
+    },
+    content: [
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            attrs: { colwidth: 50 },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "A wide column" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            attrs: { colwidth: 30 },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "A medium column" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            attrs: { colwidth: 20 },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "A narrow column" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            attrs: { colwidth: 50 },
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "text",
+                    text: "This column takes up half the table's width, regardless of how much text is in it.",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { colwidth: 30 },
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: "30%" }] },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { colwidth: 20 },
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: "20%" }] },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
 export const ListInTable: Story = {
   args: {
     attrs: {

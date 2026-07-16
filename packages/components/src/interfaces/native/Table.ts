@@ -25,6 +25,15 @@ const TableBaseCellSchema = Type.Object({
       minimum: 1,
     }),
   ),
+  colwidth: Type.Optional(
+    Type.Number({
+      title: "Table cell column width",
+      description:
+        "The width of the cell's column, as a percentage of the table's total width",
+      minimum: 0,
+      maximum: 100,
+    }),
+  ),
 })
 
 // Disable rule so typescript inference can work properly
