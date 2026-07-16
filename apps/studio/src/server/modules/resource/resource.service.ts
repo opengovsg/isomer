@@ -1,6 +1,9 @@
-import type { SelectExpression } from "kysely"
+import type { SelectExpression, SelectQueryBuilder } from "kysely"
 import type { UnwrapTagged } from "type-fest"
-import type { ResourceItemContent } from "~/schemas/resource"
+import type {
+  ResourceItemContent,
+  ResourceOrderByOption,
+} from "~/schemas/resource"
 import {
   createChildrenPagesComparator,
   type IsomerSitemap,
@@ -59,6 +62,26 @@ export const defaultResourceSelect = [
   "Resource.scheduledAt",
   "Resource.scheduledBy",
 ] satisfies SelectExpression<DB, "Resource">[]
+
+// Shared by any query listing rows from the `Resource` table (e.g. folder/root
+// listings, collection item listings) so they sort identically and paginate
+// deterministically. `id` is used as the final tie-breaker
+export const applyResourceOrderBy = <O>(
+  query: SelectQueryBuilder<DB, "Resource", O>,
+  orderBy: ResourceOrderByOption,
+): SelectQueryBuilder<DB, "Resource", O> => {
+  switch (orderBy) {
+    case "title-asc":
+      return query
+        .orderBy(sql`lower("Resource"."title")`, "asc")
+        .orderBy("Resource.id", "asc")
+    case "updated-desc":
+    default:
+      return query
+        .orderBy("Resource.updatedAt", "desc")
+        .orderBy("Resource.id", "asc")
+  }
+}
 
 const defaultResourceWithBlobSelect = [
   ...defaultResourceSelect,

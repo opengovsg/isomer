@@ -70,34 +70,6 @@ const compareTitles = (
   }
 }
 
-// Flattens every selected option across all `plaintextTags` groups into one
-// comma-joined string, so items can be compared/sorted by a single key
-const getPlaintextTagsSortKey = (item: AllCardProps): string =>
-  (item.plaintextTags ?? []).flatMap(({ selected }) => selected).join(", ")
-
-const compareCategories = (
-  a: AllCardProps,
-  b: AllCardProps,
-  sortDirection: NonNullable<SortCollectionItemsProps["sortDirection"]>,
-): number => {
-  const aCategory = getPlaintextTagsSortKey(a)
-  const bCategory = getPlaintextTagsSortKey(b)
-
-  switch (sortDirection) {
-    case "asc":
-      return aCategory.localeCompare(bCategory, undefined, {
-        numeric: true,
-      })
-    case "desc":
-      return bCategory.localeCompare(aCategory, undefined, {
-        numeric: true,
-      })
-    default:
-      const _: never = sortDirection
-      return 1
-  }
-}
-
 const compareLastModified = (
   a: AllCardProps,
   b: AllCardProps,
@@ -227,61 +199,6 @@ const sortCollectionItemsByTitle = ({
   })
 }
 
-// Sort by category, followed by title, followed by published date, tiebreaker
-// by last modified date
-const sortCollectionItemsByCategory = ({
-  items,
-  sortDirection = "asc",
-}: Omit<SortCollectionItemsProps, "sortBy">) => {
-  return items.sort((a, b) => {
-    const bothSameCategory =
-      getPlaintextTagsSortKey(a) === getPlaintextTagsSortKey(b)
-    const bothSameTitle = a.title === b.title
-    const bothHaveDates = a.date instanceof Date && b.date instanceof Date
-    const bothSameDates = a.date?.getTime() === b.date?.getTime()
-    const aNoDate = a.date === undefined
-    const bNoDate = b.date === undefined
-
-    // Sort by first priority: Category
-    if (!bothSameCategory) {
-      return compareCategories(a, b, sortDirection)
-    }
-
-    // Sort by second priority: Title
-    if (!bothSameTitle) {
-      return compareTitles(a, b, sortDirection)
-    }
-
-    // ===== Scenario 1: Both items have published dates =====
-    // Sort by third priority: Published date
-    if (bothHaveDates && !bothSameDates) {
-      return compareDates(a, b, sortDirection)
-    }
-
-    // Sort by fourth priority: Last modified date
-    if (bothHaveDates && bothSameDates) {
-      return compareLastModified(a, b, sortDirection)
-    }
-
-    // ===== Scenario 2: Both items do not have published dates =====
-    // Sort by third priority: Last modified date
-    if (aNoDate && bNoDate) {
-      return compareLastModified(a, b, sortDirection)
-    }
-
-    // ===== Scenario 3: One item has a published date, the other does not =====
-    // If one has a date and the other does not, place the one with a date first
-    if (aNoDate && !bNoDate) {
-      return 1 // Place items without dates at the end
-    } else if (!aNoDate && bNoDate) {
-      return -1 // Place items without dates at the end
-    }
-
-    // This should never be reached
-    return a.date instanceof Date ? -1 : 1
-  })
-}
-
 export const sortCollectionItems = ({
   items,
   sortOrder,
@@ -302,11 +219,6 @@ export const sortCollectionItems = ({
       })
     case "title":
       return sortCollectionItemsByTitle({
-        items,
-        sortDirection: derivedSortDirection,
-      })
-    case "category":
-      return sortCollectionItemsByCategory({
         items,
         sortDirection: derivedSortDirection,
       })
