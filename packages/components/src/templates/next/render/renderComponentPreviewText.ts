@@ -71,8 +71,19 @@ export function renderComponentPreviewText({
       return component.quote
     case "callout":
       return getTextContentOfProse(component.content.content)
-    case "canvas":
-      return "Canvas"
+    case "canvas": {
+      // Preview the first child with meaningful text so multiple canvases on
+      // a page are distinguishable; an empty result surfaces as "Empty canvas"
+      for (const block of component.blocks) {
+        const childPreviewText = renderComponentPreviewText({
+          component: block,
+        })
+        if (childPreviewText !== "") {
+          return childPreviewText
+        }
+      }
+      return ""
+    }
     case "formsg":
       return component.title || "FormSG form"
     case "hero":
