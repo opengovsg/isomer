@@ -336,6 +336,27 @@ describe("redirect.router bulk upload", async () => {
       ])
     })
 
+    it("publishes when the batch chains onto an existing redirect without looping", async () => {
+      // Arrange: an existing /b -> /c; the batch adds /a -> /b, forming the chain
+      // /a -> /b -> /c with no loop. The in-transaction loop recheck must not
+      // spuriously abort on a legitimate chain spanning existing and batch rows.
+      const publishSpy = vi.spyOn(codebuildService, "publishSite")
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/b", destination: "/c" })
+        .execute()
+
+      // Act
+      const result = await caller.bulkCreate({
+        siteId,
+        csv: csvOf([["/a", "/b"]]),
+      })
+
+      // Assert
+      expect(result).toEqual({ ok: true, publishedCount: 1 })
+      expect(publishSpy).toHaveBeenCalledTimes(1)
+    })
+
     it("revives a soft-deleted redirect for a source in the batch", async () => {
       // Arrange: a previously-deleted redirect for /old-one.
       await db

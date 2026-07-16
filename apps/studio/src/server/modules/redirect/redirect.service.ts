@@ -1076,6 +1076,36 @@ export const bulkCreateRedirects = async ({
         throw new BulkRedirectRaceError()
       }
 
+      // Re-check for loops against the just-inserted batch plus any redirect
+      // created concurrently. Validation ruled out loops as of its read, but a
+      // redirect completing one (e.g. /b -> /a landing after a batch /a -> /b was
+      // validated) could have been created since — the shortfall and
+      // published-page rechecks don't catch that. Read the table via tx (so it
+      // sees this batch and any committed concurrent redirect), rebuild the
+      // combined graph, and abort if a batch source now lies on a cycle (mirrors
+      // createRedirect's in-transaction loop guard).
+      const liveAfterInsert = await tx
+        .selectFrom("Redirect")
+        .select(["source", "destination"])
+        .where("siteId", "=", siteId)
+        .where("deletedAt", "is", null)
+        .execute()
+      const resolvedAfter = await resolveStoredDestinationsToSources(
+        siteId,
+        liveAfterInsert.map((redirect) => redirect.destination),
+      )
+      const graphAfter = new Map<string, string | null>()
+      for (const redirect of liveAfterInsert) {
+        graphAfter.set(
+          redirect.source,
+          resolvedAfter.get(redirect.destination) ?? null,
+        )
+      }
+      const cycleNodes = findCycleNodes(graphAfter)
+      if (sources.some((source) => cycleNodes.has(source))) {
+        throw new BulkRedirectRaceError()
+      }
+
       // One RedirectCreate per redirect, pairing each committed row with its real
       // before-row (matching how the delete cascade audits per row).
       for (const row of insertedRows) {
