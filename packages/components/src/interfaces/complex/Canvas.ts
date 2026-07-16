@@ -26,7 +26,10 @@ export const CanvasSchema = Type.Object(
         title: "Height (px)",
         description:
           "Fixed height of the canvas in pixels. Leave empty to fit the content.",
+        // Studio's number control only renders fully bounded fields, so an
+        // unbounded height would not be editable in the form builder
         minimum: 80,
+        maximum: 2000,
       }),
     ),
     blocks: Type.Array(
