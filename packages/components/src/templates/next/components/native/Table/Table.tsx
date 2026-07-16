@@ -16,6 +16,7 @@ const tableStyles = tv({
   variants: {
     isFixedLayout: {
       true: "table-fixed",
+      false: "table-auto",
     },
   },
 })
