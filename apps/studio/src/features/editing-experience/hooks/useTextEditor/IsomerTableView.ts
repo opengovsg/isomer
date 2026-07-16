@@ -145,6 +145,8 @@ export class IsomerTableView implements NodeView {
       handle.style.left = `calc(${cumulative}% - 4px)`
       handle.style.cursor = "col-resize"
       handle.style.pointerEvents = "auto"
+      handle.dataset.testid = "isomer-table-resize-handle"
+      handle.dataset.columnIndex = String(i)
       handle.addEventListener("pointerdown", (event) => {
         this.startDrag(event, i)
       })
