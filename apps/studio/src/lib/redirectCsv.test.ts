@@ -128,6 +128,21 @@ describe("parseRedirectCsv", () => {
     // Assert
     expect(result.fileError).toContain("no redirects")
   })
+
+  it("rejects a file with an unterminated quote as a file error", () => {
+    // Arrange: the unterminated quote on the first row makes papaparse merge the
+    // rest of the file into one field, swallowing the second redirect. That must
+    // be rejected outright rather than validated row-by-row (which would silently
+    // drop /keep -> /somewhere).
+    const csv = `${header}\n/old,"https://example.gov.sg/a\n/keep,/somewhere`
+
+    // Act
+    const result = parseRedirectCsv(csv)
+
+    // Assert
+    expect(result.rows).toBeUndefined()
+    expect(result.fileError).toContain("quote")
+  })
 })
 
 describe("buildRedirectErrorsCsv", () => {

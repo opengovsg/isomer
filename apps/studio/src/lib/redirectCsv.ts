@@ -66,13 +66,23 @@ export const parseRedirectCsv = (csv: string): ParseRedirectCsvResult => {
   // Keep blank lines (no "greedy" skip) so every row keeps its physical file
   // line for `rowNumber`; blank rows are dropped below, after numbering. (A
   // quoted field spanning newlines is still one row, so "line" means CSV record.)
-  const { data } = Papa.parse<string[]>(cleaned, {
+  const { data, errors } = Papa.parse<string[]>(cleaned, {
     skipEmptyLines: false,
   })
+  // A stray or unterminated quote makes papaparse merge fields and swallow the
+  // following rows (it still returns partial `data`), so those redirects would
+  // silently vanish from the batch. Reject the whole file. Field-count mismatches
+  // are deliberately NOT treated as fatal here — an unquoted comma is a per-row
+  // problem surfaced via `malformed`, not a broken file.
+  if (errors.some((error) => error.type === "Quotes")) {
+    return {
+      fileError:
+        "We couldn't read this file. Check that every quote (\") is matched, then try again.",
+    }
+  }
   // A blank line: no cells, or only empty/whitespace cells. papaparse is lenient
   // and still returns rows for messy input, so a genuinely unreadable file falls
-  // through to the header check and is flagged as a missing column. Field-count
-  // problems are handled per row (see `malformed`).
+  // through to the header check and is flagged as a missing column.
   const isBlankRow = (row: string[]) => row.every((cell) => cell.trim() === "")
 
   // The header is the first non-blank line (tolerating leading blank lines some
