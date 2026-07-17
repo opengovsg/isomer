@@ -72,6 +72,39 @@ const click = (element: Element) => {
   })
 }
 
+const placementCellAt = (row: number, col: number) => {
+  const cell = container.querySelector(
+    `button[aria-label="Row ${row}, column ${col}"]`,
+  )
+  expect(cell).not.toBeNull()
+  return cell!
+}
+
+// Press on one placement grid cell, sweep to another, then release
+const dragBetweenPlacementCells = (
+  from: { row: number; col: number },
+  to: { row: number; col: number },
+) => {
+  act(() => {
+    placementCellAt(from.row, from.col).dispatchEvent(
+      new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+    )
+  })
+  act(() => {
+    // React synthesises mouseenter from bubbling mouseover events
+    placementCellAt(to.row, to.col).dispatchEvent(
+      new MouseEvent("mouseover", {
+        bubbles: true,
+        cancelable: true,
+        relatedTarget: document.body,
+      }),
+    )
+  })
+  act(() => {
+    window.dispatchEvent(new MouseEvent("mouseup"))
+  })
+}
+
 const pressKey = (element: Element, key: string) => {
   act(() => {
     element.dispatchEvent(
@@ -357,6 +390,121 @@ describe("FormBuilder canvas editing interactions", () => {
       | undefined
     expect(lastChange?.blocks).toHaveLength(1)
     expect(lastChange?.blocks?.[0]?.placement).toBeUndefined()
+  })
+
+  it("moves a placed block by dragging inside its selection", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 3, colSpan: 4, rowStart: 2, rowSpan: 2 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Cell (2, 4) is inside the selection but not one of its corners, so
+    // the drag translates the whole rectangle by the delta (+2 rows, +1 col)
+    dragBetweenPlacementCells({ row: 2, col: 4 }, { row: 4, col: 5 })
+
+    expect(container.textContent).toContain("Columns 4–7, rows 4–5")
+    expect(placementCellAt(4, 4).getAttribute("aria-pressed")).toBe("true")
+    expect(placementCellAt(2, 3).getAttribute("aria-pressed")).toBe("false")
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 4,
+      colSpan: 4,
+      rowStart: 4,
+      rowSpan: 2,
+    })
+  })
+
+  it("resizes a placed block by dragging one of its corners", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 3, colSpan: 4, rowStart: 2, rowSpan: 2 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Cell (3, 6) is the bottom-right corner, so the drag resizes the
+    // rectangle while its top-left corner (2, 3) stays anchored
+    dragBetweenPlacementCells({ row: 3, col: 6 }, { row: 5, col: 9 })
+
+    expect(container.textContent).toContain("Columns 3–9, rows 2–5")
+    expect(placementCellAt(2, 3).getAttribute("aria-pressed")).toBe("true")
+    expect(placementCellAt(5, 9).getAttribute("aria-pressed")).toBe("true")
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 3,
+      colSpan: 7,
+      rowStart: 2,
+      rowSpan: 4,
+    })
+  })
+
+  it("clamps a moved block to the grid edge", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 2, rowSpan: 2 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Dragging the body two columns left would push the block past column 1;
+    // the move clamps at the grid edge and keeps the block's size
+    dragBetweenPlacementCells({ row: 2, col: 3 }, { row: 2, col: 1 })
+
+    expect(container.textContent).toContain("Columns 1–4, rows 2–3")
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 1,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
   })
 
   it("shades cells occupied by sibling blocks on the placement grid", () => {

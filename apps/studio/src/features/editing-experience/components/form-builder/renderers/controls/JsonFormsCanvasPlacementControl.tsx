@@ -31,22 +31,72 @@ interface GridCell {
   col: number
 }
 
-const toPlacement = (
-  anchor: GridCell,
-  current: GridCell,
-): CanvasBlockPlacementProps => ({
-  colStart: Math.min(anchor.col, current.col),
-  colSpan: Math.abs(anchor.col - current.col) + 1,
-  rowStart: Math.min(anchor.row, current.row),
-  rowSpan: Math.abs(anchor.row - current.row) + 1,
-})
-
 interface NormalisedPlacement {
   colStart: number
   colEnd: number
   rowStart: number
   rowEnd: number
 }
+
+// Drawing (and corner-resizing, which is drawing anchored at the opposite
+// corner) sweeps a rectangle between two cells; moving shifts the whole
+// saved rectangle by the drag delta
+type DragState =
+  | { mode: "draw"; anchor: GridCell; current: GridCell }
+  | {
+      mode: "move"
+      origin: NormalisedPlacement
+      grab: GridCell
+      current: GridCell
+    }
+
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(Math.max(value, min), max)
+
+const sweepSelection = (
+  anchor: GridCell,
+  current: GridCell,
+): NormalisedPlacement => ({
+  colStart: Math.min(anchor.col, current.col),
+  colEnd: Math.max(anchor.col, current.col),
+  rowStart: Math.min(anchor.row, current.row),
+  rowEnd: Math.max(anchor.row, current.row),
+})
+
+const shiftSelection = (
+  origin: NormalisedPlacement,
+  grab: GridCell,
+  current: GridCell,
+): NormalisedPlacement => {
+  const width = origin.colEnd - origin.colStart
+  const height = origin.rowEnd - origin.rowStart
+  const colStart = clamp(
+    origin.colStart + current.col - grab.col,
+    1,
+    CANVAS_GRID_COLUMNS - width,
+  )
+  const rowStart = Math.max(1, origin.rowStart + current.row - grab.row)
+  return {
+    colStart,
+    colEnd: colStart + width,
+    rowStart,
+    rowEnd: rowStart + height,
+  }
+}
+
+const resolveDragSelection = (drag: DragState): NormalisedPlacement =>
+  drag.mode === "draw"
+    ? sweepSelection(drag.anchor, drag.current)
+    : shiftSelection(drag.origin, drag.grab, drag.current)
+
+const toPlacement = (
+  selection: NormalisedPlacement,
+): CanvasBlockPlacementProps => ({
+  colStart: selection.colStart,
+  colSpan: selection.colEnd - selection.colStart + 1,
+  rowStart: selection.rowStart,
+  rowSpan: selection.rowEnd - selection.rowStart + 1,
+})
 
 // A partial placement (possible in hand-authored content) renders with the
 // same defaults the canvas renderer applies: start at the first cell, span
@@ -102,34 +152,28 @@ function JsonFormsCanvasPlacementControl({
 }: ControlProps) {
   const placement = data as CanvasBlockPlacementProps | undefined
   const siblingPlacements = useSiblingPlacements(path)
-  const [dragAnchor, setDragAnchor] = useState<GridCell | null>(null)
-  const [dragCurrent, setDragCurrent] = useState<GridCell | null>(null)
+  const [drag, setDrag] = useState<DragState | null>(null)
 
   // Committing on window mouseup lets a drag end anywhere (even outside the
   // grid) and still apply the last cell the pointer covered
   useEffect(() => {
-    if (!dragAnchor || !dragCurrent) {
+    if (!drag) {
       return
     }
     const commitDrag = () => {
-      handleChange(path, toPlacement(dragAnchor, dragCurrent))
-      setDragAnchor(null)
-      setDragCurrent(null)
+      handleChange(path, toPlacement(resolveDragSelection(drag)))
+      setDrag(null)
     }
     window.addEventListener("mouseup", commitDrag)
     return () => window.removeEventListener("mouseup", commitDrag)
-  }, [dragAnchor, dragCurrent, handleChange, path])
+  }, [drag, handleChange, path])
 
   if (!visible) {
     return null
   }
 
-  const selection =
-    dragAnchor && dragCurrent
-      ? normalise(toPlacement(dragAnchor, dragCurrent))
-      : placement
-        ? normalise(placement)
-        : undefined
+  const savedSelection = placement ? normalise(placement) : undefined
+  const selection = drag ? resolveDragSelection(drag) : savedSelection
 
   const displayedRows = Math.max(
     MIN_DISPLAYED_ROWS,
@@ -152,6 +196,60 @@ function JsonFormsCanvasPlacementControl({
 
   const isCellOccupied = (row: number, col: number): boolean =>
     siblingPlacements.some((sibling) => coversCell(sibling, row, col))
+
+  const isCorner = (
+    area: NormalisedPlacement,
+    row: number,
+    col: number,
+  ): boolean =>
+    (row === area.rowStart || row === area.rowEnd) &&
+    (col === area.colStart || col === area.colEnd)
+
+  // Corners of the saved selection read as resize handles, its body as a
+  // move handle, and everything else as a fresh draw
+  const cursorFor = (row: number, col: number): string => {
+    if (!savedSelection || !coversCell(savedSelection, row, col)) {
+      return "crosshair"
+    }
+    if (isCorner(savedSelection, row, col)) {
+      return (row === savedSelection.rowStart) ===
+        (col === savedSelection.colStart)
+        ? "nwse-resize"
+        : "nesw-resize"
+    }
+    return "move"
+  }
+
+  const startDrag = (row: number, col: number): void => {
+    if (savedSelection && coversCell(savedSelection, row, col)) {
+      if (isCorner(savedSelection, row, col)) {
+        // Resize: sweep anchored at the opposite corner of the selection
+        setDrag({
+          mode: "draw",
+          anchor: {
+            row:
+              row === savedSelection.rowStart
+                ? savedSelection.rowEnd
+                : savedSelection.rowStart,
+            col:
+              col === savedSelection.colStart
+                ? savedSelection.colEnd
+                : savedSelection.colStart,
+          },
+          current: { row, col },
+        })
+        return
+      }
+      setDrag({
+        mode: "move",
+        origin: savedSelection,
+        grab: { row, col },
+        current: { row, col },
+      })
+      return
+    }
+    setDrag({ mode: "draw", anchor: { row, col }, current: { row, col } })
+  }
 
   return (
     <Box>
@@ -206,16 +304,20 @@ function JsonFormsCanvasPlacementControl({
                   _hover={
                     isSelected ? {} : { bg: "interaction.muted.main.hover" }
                   }
+                  cursor={cursorFor(row, col)}
                   onMouseDown={(event: React.MouseEvent) => {
                     // Native drag/text selection would swallow the mousemove
                     event.preventDefault()
-                    setDragAnchor({ row, col })
-                    setDragCurrent({ row, col })
+                    startDrag(row, col)
                   }}
                   onMouseEnter={() => {
-                    if (dragAnchor) {
-                      setDragCurrent({ row, col })
-                    }
+                    setDrag(
+                      (currentDrag) =>
+                        currentDrag && {
+                          ...currentDrag,
+                          current: { row, col },
+                        },
+                    )
                   }}
                 />
               )
@@ -228,6 +330,11 @@ function JsonFormsCanvasPlacementControl({
             ? `Columns ${selection.colStart}–${selection.colEnd}, rows ${selection.rowStart}–${selection.rowEnd}`
             : "Not placed: this block stacks across the full canvas width. Drag on the grid to place and size it."}
         </Text>
+        {selection && (
+          <Text textStyle="body-2" textColor="base.content.medium">
+            Drag the highlighted area to move it, or drag a corner to resize it.
+          </Text>
+        )}
         {siblingPlacements.length > 0 && (
           <Text textStyle="body-2" textColor="base.content.medium">
             Shaded cells are occupied by other blocks in this canvas.
