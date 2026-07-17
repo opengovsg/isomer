@@ -2,7 +2,10 @@ import { CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE } from "@opengovsg/isomer-components"
 import { useEffect, useMemo } from "react"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
-import { findCanvasPreviewContainer } from "../../../utils/canvasPreviewBlock"
+import {
+  findCanvasPreviewContainer,
+  isEditableTarget,
+} from "../../../utils/canvasPreviewBlock"
 import { setCanvasPreviewGrabHandoff } from "../../../utils/canvasPreviewGrabHandoff"
 
 // The canvas form binds its child blocks array at this root-level path; nested
@@ -13,6 +16,7 @@ interface UseCanvasPreviewClickToEditArgs {
   path: string
   selectedIndex: number | undefined
   setSelectedIndex: (selectedIndex?: number) => void
+  removeSelectedItem: (path: string, index: number) => () => void
 }
 
 // While the canvas editor is open, the blocks rendered in the live preview
@@ -21,10 +25,12 @@ interface UseCanvasPreviewClickToEditArgs {
 // block list, mirroring Wix's select-on-canvas interaction. The currently
 // edited block is excluded — the placement control owns its preview
 // interactions — and the hook is a no-op for every non-canvas array control.
+// While a block is selected, Delete/Backspace removes it from the canvas.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
   setSelectedIndex,
+  removeSelectedItem,
 }: UseCanvasPreviewClickToEditArgs): void => {
   const editorContext = useOptionalEditorDrawerContext()
   const content = editorContext?.previewPageState.content
@@ -148,4 +154,43 @@ export const useCanvasPreviewClickToEdit = ({
       })
     }
   }, [canvasOrdinal, content, path, selectedIndex, setSelectedIndex])
+
+  // Wix-style keyboard removal: while a block's nested editor is open, Delete
+  // or Backspace removes the block from the canvas and returns to the block
+  // list (keystrokes aimed at a form field keep their editing meaning).
+  // Registered on both windows so it works whether focus sits in the drawer
+  // or in the preview iframe.
+  useEffect(() => {
+    if (
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH ||
+      selectedIndex === undefined
+    ) {
+      return
+    }
+    const removeOnDeleteKey = (event: KeyboardEvent) => {
+      if (
+        (event.key !== "Delete" && event.key !== "Backspace") ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        isEditableTarget(event.target)
+      ) {
+        return
+      }
+      event.preventDefault()
+      removeSelectedItem(path, selectedIndex)()
+    }
+    window.addEventListener("keydown", removeOnDeleteKey)
+    const previewWindow =
+      findCanvasPreviewContainer(document, canvasOrdinal)?.ownerDocument
+        .defaultView ?? null
+    const foreignPreviewWindow = previewWindow === window ? null : previewWindow
+    foreignPreviewWindow?.addEventListener("keydown", removeOnDeleteKey)
+    return () => {
+      window.removeEventListener("keydown", removeOnDeleteKey)
+      foreignPreviewWindow?.removeEventListener("keydown", removeOnDeleteKey)
+    }
+  }, [canvasOrdinal, path, selectedIndex, removeSelectedItem])
 }

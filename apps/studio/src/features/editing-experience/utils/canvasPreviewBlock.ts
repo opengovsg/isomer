@@ -34,6 +34,17 @@ export const findCanvasBlockPreviewElement = (
     `[${CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE}="${blockIndex}"]`,
   ) ?? null
 
+// Keystrokes aimed at a form field keep their editing meaning; the target may
+// live in the preview iframe's realm, so duck-type instead of instanceof
+export const isEditableTarget = (target: EventTarget | null): boolean => {
+  const element = target as Partial<Element> | null
+  return (
+    typeof element?.closest === "function" &&
+    element.closest('input, textarea, select, [contenteditable="true"]') !==
+      null
+  )
+}
+
 export interface CanvasGridCell {
   row: number
   col: number

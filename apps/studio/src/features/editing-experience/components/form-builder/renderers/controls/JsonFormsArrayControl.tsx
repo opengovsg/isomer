@@ -87,9 +87,14 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
     onDragEnd,
   } = arrayResult
 
-  // Canvas blocks can be selected by clicking them on the live preview; for
-  // every other array this is a no-op
-  useCanvasPreviewClickToEdit({ path, selectedIndex, setSelectedIndex })
+  // Canvas blocks can be selected by clicking them on the live preview and
+  // removed with the Delete key; for every other array this is a no-op
+  useCanvasPreviewClickToEdit({
+    path,
+    selectedIndex,
+    setSelectedIndex,
+    removeSelectedItem: handleRemoveSelectedItem,
+  })
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>

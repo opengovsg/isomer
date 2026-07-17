@@ -1106,6 +1106,70 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(lastChange?.blocks).toHaveLength(0)
   })
 
+  it("removes the selected block with the Delete and Backspace keys, ignoring keystrokes in form fields", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          BLOCKQUOTE_BLOCK,
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    // Delete in the list view (no block selected) removes nothing
+    pressKey(document.body, "Delete")
+    expect(container.textContent).toContain("Item 1")
+    expect(container.textContent).toContain("Item 2")
+
+    click(findButtonByText("Item 1")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+
+    // JsonForms emits an initial change on a later tick; flush it so the
+    // assertions below compare against a settled baseline
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    // Delete pressed while typing in a form field keeps its editing meaning
+    // and never removes the block
+    const quoteInput = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input, textarea",
+      ),
+    ).find((field) => field.value === BLOCKQUOTE_BLOCK.quote)
+    expect(quoteInput).not.toBeUndefined()
+    pressKey(quoteInput!, "Delete")
+    expect(container.textContent).toContain("Edit Canvas blocks")
+
+    // Delete with focus outside any field removes the block and returns to
+    // the list, which now holds only the second block
+    pressKey(document.body, "Delete")
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Item 1")
+    expect(container.textContent).not.toContain("Item 2")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const afterDelete = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(afterDelete?.blocks).toHaveLength(1)
+    expect(afterDelete?.blocks?.[0]?.quote).toBe("The second quote")
+
+    // Backspace (the Mac delete key) removes the remaining block the same way
+    click(findButtonByText("Item 1")!)
+    pressKey(document.body, "Backspace")
+    expect(container.textContent).toContain("Items you add will appear here")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const afterBackspace = changes.at(-1) as { blocks?: unknown[] } | undefined
+    expect(afterBackspace?.blocks).toHaveLength(0)
+  })
+
   it("reorders blocks via a keyboard drag and propagates the new order", async () => {
     const changes: IsomerComponent[] = []
     renderCanvasForm(

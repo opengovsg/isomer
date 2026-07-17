@@ -31,6 +31,7 @@ import {
   CANVAS_SELECTION_EDGE_HANDLES,
   CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
+  isEditableTarget,
   resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
   showCanvasDragBadge,
@@ -198,17 +199,6 @@ const ARROW_KEY_DELTAS: Record<string, GridCell> = {
   ArrowDown: { row: 1, col: 0 },
   ArrowLeft: { row: 0, col: -1 },
   ArrowRight: { row: 0, col: 1 },
-}
-
-// Arrow keys pressed while typing keep their editing meaning; the target may
-// live in the preview iframe's realm, so duck-type instead of instanceof
-const isEditableTarget = (target: EventTarget | null): boolean => {
-  const element = target as Partial<Element> | null
-  return (
-    typeof element?.closest === "function" &&
-    element.closest('input, textarea, select, [contenteditable="true"]') !==
-      null
-  )
 }
 
 const toPlacement = (
@@ -1001,7 +991,7 @@ function JsonFormsCanvasPlacementControl({
         <Text mt="0.5rem" textStyle="body-2" textColor="base.content.medium">
           {selection
             ? `Columns ${selection.colStart}–${selection.colEnd}, rows ${selection.rowStart}–${selection.rowEnd}`
-            : "Not placed: this block stacks across the full canvas width. Drag on the grid (or drag the block itself in the page preview) to place and size it, or press Enter on a starting cell and again on an ending cell."}
+            : "Not placed: this block stacks across the full canvas width. Drag on the grid (or drag the block itself in the page preview) to place and size it, or press Enter on a starting cell and again on an ending cell. Press Delete to remove the block from the canvas."}
         </Text>
         {selection && (
           <Text textStyle="body-2" textColor="base.content.medium">
@@ -1010,7 +1000,8 @@ function JsonFormsCanvasPlacementControl({
             handles resize in one direction only. With the keyboard, use the
             arrow keys to nudge the block one cell at a time (hold Shift to
             resize instead), or press Enter on a cell to start a selection,
-            Enter on another cell to finish, and Escape to cancel.
+            Enter on another cell to finish, and Escape to cancel. Press Delete
+            to remove the block from the canvas.
           </Text>
         )}
         {siblingPlacements.length > 0 && (
