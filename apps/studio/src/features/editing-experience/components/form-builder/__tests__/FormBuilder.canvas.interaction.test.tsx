@@ -3758,4 +3758,148 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("opens a Wix-style right-click context menu on canvas blocks in the live preview", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    // One spare element (index 3) so a duplicated block's selection has a
+    // rendered wrapper
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          BLOCKQUOTE_BLOCK,
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+          { type: "blockquote", quote: "The third quote", source: "Third" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const menu = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (
+      element: Element,
+      coords: Pick<MouseEventInit, "clientX" | "clientY">,
+    ) => {
+      const event = new iframeRealm.MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        ...coords,
+      })
+      act(() => {
+        element.dispatchEvent(event)
+      })
+      return event
+    }
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    await flush()
+
+    // No menu while the block list is showing
+    expect(menu()).toBeNull()
+
+    // Right-clicking a block in list view selects it and opens the menu at
+    // the pointer, suppressing the browser's native menu
+    const secondBlock = previewDocument.querySelector(
+      '[data-canvas-block-index="1"] span',
+    )!
+    const openEvent = rightClick(secondBlock, { clientX: 140, clientY: 90 })
+    await flush()
+    expect(openEvent.defaultPrevented).toBe(true)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    const openedMenu = menu()!
+    expect(openedMenu.style.left).toBe("140px")
+    expect(openedMenu.style.top).toBe("90px")
+    // A mid-stack block can move both ways
+    expect(menuItem("Bring forward (⌘])").disabled).toBe(false)
+    expect(menuItem("Send backward (⌘[)").disabled).toBe(false)
+
+    // Choosing Duplicate closes the menu, appends a copy, and switches the
+    // editor to it
+    act(() => {
+      menuItem("Duplicate block (⌘D)").click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    const afterDuplicate = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(afterDuplicate?.blocks).toHaveLength(4)
+    expect(afterDuplicate?.blocks?.[3]?.quote).toBe("The second quote")
+
+    // Right-clicking the selected copy shows its stack position: front of
+    // the stack, so it cannot be brought further forward
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="3"] span')!,
+      { clientX: 60, clientY: 40 },
+    )
+    await flush()
+    expect(menu()).not.toBeNull()
+    expect(menuItem("Bring forward (⌘])").disabled).toBe(true)
+    expect(menuItem("Send backward (⌘[)").disabled).toBe(false)
+
+    // Escape closes only the menu — the block stays selected
+    pressKey(document.body, "Escape")
+    await flush()
+    expect(menu()).toBeNull()
+    expect(container.textContent).toContain("Edit Canvas blocks")
+
+    // A press outside the menu dismisses it without deselecting
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="3"] span')!,
+      { clientX: 60, clientY: 40 },
+    )
+    await flush()
+    expect(menu()).not.toBeNull()
+    act(() => {
+      previewDocument.querySelector("[data-canvas-container]")!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(container.textContent).toContain("Edit Canvas blocks")
+
+    // Right-clicking the empty canvas background keeps the native menu
+    const backgroundEvent = rightClick(
+      previewDocument.querySelector("[data-canvas-container]")!,
+      { clientX: 5, clientY: 5 },
+    )
+    await flush()
+    expect(backgroundEvent.defaultPrevented).toBe(false)
+    expect(menu()).toBeNull()
+
+    iframe.remove()
+  })
 })

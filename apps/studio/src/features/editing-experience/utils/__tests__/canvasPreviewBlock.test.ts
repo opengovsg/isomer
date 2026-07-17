@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import type { CanvasSelectionToolbarAction } from "../canvasPreviewBlock"
 import {
   CANVAS_ALIGNMENT_GUIDES_DATA_ATTRIBUTE,
+  CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE,
   CANVAS_DRAG_BADGE_DATA_ATTRIBUTE,
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
   CANVAS_HOVER_LABEL_DATA_ATTRIBUTE,
@@ -18,6 +19,7 @@ import {
   resolveCanvasGridCellFromPoint,
   resolveCanvasWidthPercent,
   showCanvasAlignmentGuides,
+  showCanvasContextMenu,
   showCanvasDragBadge,
   showCanvasGridOverlay,
   showCanvasHoverLabel,
@@ -882,6 +884,94 @@ describe("showCanvasSelectionToolbar", () => {
     )
     gatedCleanup()
     expect(block.style.position).toBe("relative")
+  })
+})
+
+describe("showCanvasContextMenu", () => {
+  const menuIn = (doc: Document) =>
+    doc.querySelector<HTMLElement>(`[${CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE}]`)
+
+  const ACTIONS = (
+    onDuplicate: () => void,
+    onDelete: () => void,
+  ): CanvasSelectionToolbarAction[] => [
+    {
+      name: "duplicate",
+      label: "Duplicate block (⌘D)",
+      glyph: "⧉",
+      onClick: onDuplicate,
+    },
+    {
+      name: "delete",
+      label: "Delete block (Delete)",
+      glyph: "✕",
+      disabled: true,
+      onClick: onDelete,
+    },
+  ]
+
+  it("opens a fixed-position menu at the pointer with labelled items that activate on click", () => {
+    const onDuplicate = vi.fn()
+    const onDelete = vi.fn()
+
+    showCanvasContextMenu(
+      document,
+      { clientX: 120, clientY: 84 },
+      ACTIONS(onDuplicate, onDelete),
+      "#1361F0",
+    )
+
+    const menu = menuIn(document)!
+    expect(menu.getAttribute("role")).toBe("menu")
+    expect(menu.style.position).toBe("fixed")
+    expect(menu.style.left).toBe("120px")
+    expect(menu.style.top).toBe("84px")
+    expect(menu.style.flexDirection).toBe("column")
+
+    const items = Array.from(menu.querySelectorAll("button"))
+    expect(items.map((item) => item.textContent)).toEqual([
+      "Duplicate block (⌘D)",
+      "Delete block (Delete)",
+    ])
+    expect(items.map((item) => item.getAttribute("role"))).toEqual([
+      "menuitem",
+      "menuitem",
+    ])
+    expect(
+      items.map((item) =>
+        item.getAttribute(CANVAS_TOOLBAR_ACTION_DATA_ATTRIBUTE),
+      ),
+    ).toEqual(["duplicate", "delete"])
+
+    items[0]!.click()
+    expect(onDuplicate).toHaveBeenCalledTimes(1)
+
+    // A disabled action renders visibly muted and never fires
+    expect(items[1]!.disabled).toBe(true)
+    items[1]!.click()
+    expect(onDelete).not.toHaveBeenCalled()
+  })
+
+  it("suppresses the native context menu on the menu itself and removes it on cleanup", () => {
+    const cleanup = showCanvasContextMenu(
+      document,
+      { clientX: 10, clientY: 20 },
+      ACTIONS(
+        () => undefined,
+        () => undefined,
+      ),
+      "#1361F0",
+    )
+    const menu = menuIn(document)!
+    const rightClick = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+    })
+    menu.dispatchEvent(rightClick)
+    expect(rightClick.defaultPrevented).toBe(true)
+
+    cleanup()
+    expect(menuIn(document)).toBeNull()
   })
 })
 

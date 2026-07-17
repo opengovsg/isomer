@@ -479,6 +479,68 @@ export const showCanvasSelectionToolbar = (
   }
 }
 
+export const CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE = "data-canvas-context-menu"
+
+// Wix-style right-click context menu: a vertical list of the selection
+// actions opened at the pointer, mirroring the floating toolbar and the
+// keyboard shortcuts. The menu lives in the preview document body with fixed
+// positioning (viewport coords match fixed coords inside the iframe) so it
+// is never clipped by the canvas's own overflow. Returns a cleanup that
+// removes it; dismissal (click-away, Escape) is the caller's concern.
+export const showCanvasContextMenu = (
+  doc: Document,
+  position: { clientX: number; clientY: number },
+  actions: CanvasSelectionToolbarAction[],
+  menuColor: string,
+): (() => void) => {
+  const menu = doc.createElement("div")
+  menu.setAttribute(CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE, "")
+  menu.setAttribute("role", "menu")
+  menu.setAttribute("aria-label", "Block actions")
+  Object.assign(menu.style, {
+    position: "fixed",
+    left: `${position.clientX}px`,
+    top: `${position.clientY}px`,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
+    backgroundColor: menuColor,
+    borderRadius: "4px",
+    padding: "2px",
+    zIndex: "3",
+  })
+  // Right-clicking the menu itself must not open the browser's native menu
+  // on top of it
+  menu.addEventListener("contextmenu", (event) => event.preventDefault())
+  actions.forEach((action) => {
+    const item = doc.createElement("button")
+    item.type = "button"
+    item.setAttribute(CANVAS_TOOLBAR_ACTION_DATA_ATTRIBUTE, action.name)
+    item.setAttribute("role", "menuitem")
+    item.textContent = action.label
+    item.disabled = action.disabled ?? false
+    Object.assign(item.style, {
+      backgroundColor: "transparent",
+      color: "#ffffff",
+      border: "none",
+      borderRadius: "2px",
+      padding: "4px 12px",
+      fontSize: "12px",
+      lineHeight: "1.4",
+      textAlign: "left",
+      whiteSpace: "nowrap",
+      cursor: item.disabled ? "default" : "pointer",
+      opacity: item.disabled ? "0.4" : "1",
+    })
+    item.addEventListener("click", action.onClick)
+    menu.appendChild(item)
+  })
+  doc.body.appendChild(menu)
+  return () => {
+    menu.remove()
+  }
+}
+
 export const CANVAS_ALIGNMENT_GUIDES_DATA_ATTRIBUTE =
   "data-canvas-alignment-guides"
 

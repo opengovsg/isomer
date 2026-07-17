@@ -2,16 +2,18 @@ import { useToken } from "@chakra-ui/react"
 import { Resolve } from "@jsonforms/core"
 import { useJsonForms } from "@jsonforms/react"
 import { CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE } from "@opengovsg/isomer-components"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BLOCK_TO_META } from "~/components/PageEditor/constants"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import {
+  CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE,
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
   CANVAS_MAX_ROW,
   findCanvasBlockPreviewElement,
   findCanvasPreviewContainer,
   isEditableTarget,
+  showCanvasContextMenu,
   showCanvasHoverLabel,
   showCanvasSelectionToolbar,
 } from "../../../utils/canvasPreviewBlock"
@@ -58,6 +60,11 @@ export const useCanvasPreviewClickToEdit = ({
 }: UseCanvasPreviewClickToEditArgs): void => {
   const jsonFormsCore = useJsonForms().core
   const [hoverColor] = useToken("colors", ["interaction.main.default"])
+  // Preview-viewport coordinates of an open right-click context menu
+  const [contextMenu, setContextMenu] = useState<{
+    clientX: number
+    clientY: number
+  } | null>(null)
   const editorContext = useOptionalEditorDrawerContext()
   const content = editorContext?.previewPageState.content
   const currActiveIdx = editorContext?.currActiveIdx
@@ -304,15 +311,38 @@ export const useCanvasPreviewClickToEdit = ({
       }
     }
 
+    // Right-clicking a block selects it and opens the context menu at the
+    // pointer, Wix-style; right-clicking the empty canvas background keeps
+    // the browser's native menu
+    const openContextMenu = (event: MouseEvent) => {
+      const block = resolveBlock(event)
+      if (!block) {
+        return
+      }
+      const index = Number(
+        block.getAttribute(CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE),
+      )
+      if (!Number.isInteger(index) || index < 0) {
+        return
+      }
+      event.preventDefault()
+      if (index !== selectedIndex) {
+        setSelectedIndex(index)
+      }
+      setContextMenu({ clientX: event.clientX, clientY: event.clientY })
+    }
+
     canvas.addEventListener("mousedown", armDeselect, true)
     canvas.addEventListener("mousedown", grabToSelect)
     canvas.addEventListener("click", openBlockEditor)
+    canvas.addEventListener("contextmenu", openContextMenu)
     canvas.addEventListener("mouseover", hoverBlock)
     canvas.addEventListener("mouseout", unhoverBlock)
     return () => {
       canvas.removeEventListener("mousedown", armDeselect, true)
       canvas.removeEventListener("mousedown", grabToSelect)
       canvas.removeEventListener("click", openBlockEditor)
+      canvas.removeEventListener("contextmenu", openContextMenu)
       canvas.removeEventListener("mouseover", hoverBlock)
       canvas.removeEventListener("mouseout", unhoverBlock)
       clearHover()
@@ -414,10 +444,17 @@ export const useCanvasPreviewClickToEdit = ({
       // the placement control's capture-phase listener usually intercepts
       // the event first, but a keydown targeting the preview window itself
       // reaches both listeners, so the drag's grid-guide overlay is the
-      // reliable in-progress marker
+      // reliable in-progress marker. Likewise, while the context menu is
+      // open Escape means "close the menu" (its own listener handles that),
+      // keeping the block selected.
       const previewCanvas = findCanvasPreviewContainer(document, canvasOrdinal)
       if (
-        previewCanvas?.querySelector(`[${CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE}]`)
+        previewCanvas?.querySelector(
+          `[${CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE}]`,
+        ) ??
+        previewCanvas?.ownerDocument.querySelector(
+          `[${CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE}]`,
+        )
       ) {
         return
       }
@@ -506,6 +543,123 @@ export const useCanvasPreviewClickToEdit = ({
       hoverColor,
     )
   }, [
+    canvasOrdinal,
+    path,
+    selectedIndex,
+    hoverColor,
+    duplicateSelectedBlock,
+    bringSelectedForward,
+    sendSelectedBackward,
+    removeSelectedBlock,
+  ])
+
+  // Wix-style right-click context menu: the same selection actions as the
+  // toolbar and the keyboard shortcuts, opened at the pointer by the
+  // contextmenu handler above. Dismissed by pressing anywhere outside the
+  // menu or by Escape — which closes only the menu, keeping the block
+  // selected — and invoking an action closes it before acting.
+  useEffect(() => {
+    if (contextMenu === null) {
+      return
+    }
+    if (
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH ||
+      selectedIndex === undefined
+    ) {
+      // The selection went away underneath an open menu (e.g. the block was
+      // deleted) — drop the stale menu state
+      setContextMenu(null)
+      return
+    }
+    const canvas = findCanvasPreviewContainer(document, canvasOrdinal)
+    if (!canvas) {
+      setContextMenu(null)
+      return
+    }
+    const closeMenu = () => setContextMenu(null)
+    const withClose = (action: () => void) => () => {
+      closeMenu()
+      action()
+    }
+    const removeMenu = showCanvasContextMenu(
+      canvas.ownerDocument,
+      contextMenu,
+      [
+        {
+          name: "duplicate",
+          label: "Duplicate block (⌘D)",
+          glyph: "⧉",
+          onClick: withClose(duplicateSelectedBlock),
+        },
+        {
+          name: "bring-forward",
+          label: "Bring forward (⌘])",
+          glyph: "▲",
+          disabled: selectedIndex >= blocksRef.current.length - 1,
+          onClick: withClose(bringSelectedForward),
+        },
+        {
+          name: "send-backward",
+          label: "Send backward (⌘[)",
+          glyph: "▼",
+          disabled: selectedIndex <= 0,
+          onClick: withClose(sendSelectedBackward),
+        },
+        {
+          name: "delete",
+          label: "Delete block (Delete)",
+          glyph: "✕",
+          onClick: withClose(removeSelectedBlock),
+        },
+      ],
+      hoverColor,
+    )
+
+    // Any press outside the menu dismisses it — capture phase on both
+    // windows, because presses on the preview canvas and its blocks stop
+    // propagation in the bubble phase
+    const dismissOnPress = (event: MouseEvent) => {
+      const target = event.target as Partial<Element> | null
+      const insideMenu =
+        typeof target?.closest === "function" &&
+        target.closest(`[${CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE}]`) !== null
+      if (!insideMenu) {
+        closeMenu()
+      }
+    }
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return
+      }
+      // Escape closes only the menu; the deselect handler defers to an open
+      // menu, so the block stays selected
+      event.preventDefault()
+      closeMenu()
+    }
+    const previewWindow = canvas.ownerDocument.defaultView
+    const foreignPreviewWindow = previewWindow === window ? null : previewWindow
+    window.addEventListener("mousedown", dismissOnPress, true)
+    foreignPreviewWindow?.addEventListener("mousedown", dismissOnPress, true)
+    window.addEventListener("keydown", dismissOnEscape, true)
+    foreignPreviewWindow?.addEventListener("keydown", dismissOnEscape, true)
+    return () => {
+      removeMenu()
+      window.removeEventListener("mousedown", dismissOnPress, true)
+      foreignPreviewWindow?.removeEventListener(
+        "mousedown",
+        dismissOnPress,
+        true,
+      )
+      window.removeEventListener("keydown", dismissOnEscape, true)
+      foreignPreviewWindow?.removeEventListener(
+        "keydown",
+        dismissOnEscape,
+        true,
+      )
+    }
+  }, [
+    contextMenu,
     canvasOrdinal,
     path,
     selectedIndex,
