@@ -4,9 +4,11 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
+  findCanvasPreviewContainer,
   findPreviewDocumentWithCanvas,
   resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
+  resolveCanvasWidthPercent,
   showCanvasGridOverlay,
 } from "../canvasPreviewBlock"
 
@@ -407,5 +409,74 @@ describe("findCanvasBlockPreviewElement", () => {
 
     expect(findCanvasBlockPreviewElement(document, 2, 0)).toBeNull()
     expect(findCanvasBlockPreviewElement(document, 1, 1)).toBeNull()
+  })
+})
+
+describe("findCanvasPreviewContainer", () => {
+  it("returns the nth rendered canvas in the preview document", () => {
+    appendIframe(CANVAS_MARKUP)
+
+    expect(findCanvasPreviewContainer(document, 1)?.textContent).toContain(
+      "second canvas, first block",
+    )
+  })
+
+  it("returns null when the ordinal is out of range", () => {
+    appendIframe(CANVAS_MARKUP)
+
+    expect(findCanvasPreviewContainer(document, 2)).toBeNull()
+  })
+})
+
+describe("resolveCanvasWidthPercent", () => {
+  const stubRectWidth = (element: HTMLElement, width: number) => {
+    element.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width,
+      height: 100,
+      right: width,
+      bottom: 100,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("resolves the canvas width against the parent's content box", () => {
+    const parent = document.createElement("div")
+    const canvas = document.createElement("div")
+    parent.appendChild(canvas)
+    document.body.appendChild(parent)
+    stubRectWidth(parent, 1000)
+    stubRectWidth(canvas, 450)
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({
+      paddingLeft: "50px",
+      paddingRight: "50px",
+      borderLeftWidth: "",
+      borderRightWidth: "",
+    } as CSSStyleDeclaration)
+
+    // 450px of the parent's 900px content box
+    expect(resolveCanvasWidthPercent(canvas)).toBe(50)
+  })
+
+  it("returns null when the parent has no measurable width", () => {
+    const parent = document.createElement("div")
+    const canvas = document.createElement("div")
+    parent.appendChild(canvas)
+    document.body.appendChild(parent)
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({
+      paddingLeft: "",
+      paddingRight: "",
+      borderLeftWidth: "",
+      borderRightWidth: "",
+    } as CSSStyleDeclaration)
+
+    expect(resolveCanvasWidthPercent(canvas)).toBeNull()
   })
 })

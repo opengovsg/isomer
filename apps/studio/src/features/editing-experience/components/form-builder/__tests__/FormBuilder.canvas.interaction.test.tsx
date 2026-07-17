@@ -1499,4 +1499,154 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("commits the canvas's size when its resize handle is dragged in the live preview", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div id="page">
+        <div data-canvas-container="">
+          <div data-canvas-block-index="0"></div>
+        </div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      MouseEvent: typeof MouseEvent
+    }
+
+    // The width percentage resolves against the canvas's parent (the iframe
+    // realm reports no padding or borders, so its content box is its rect)
+    const parent = previewDocument.querySelector<HTMLElement>("#page")!
+    parent.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 1000,
+      height: 800,
+      right: 1000,
+      bottom: 800,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    // Mutable canvas geometry standing in for the native CSS resize the
+    // browser performs between mousedown and mouseup
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    const canvasSize = { width: 1000, height: 300 }
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: canvasSize.width,
+      height: canvasSize.height,
+      right: canvasSize.width,
+      bottom: canvasSize.height,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      { type: "canvas", blocks: [BLOCKQUOTE_BLOCK] } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    // The size fields advertise the preview affordance
+    expect(container.textContent).toContain("resize the canvas freely")
+
+    // Let JsonForms' initial onChange (emitted from an effect on a later
+    // tick) land before counting the captured changes
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    // A drag that starts away from the bottom-right resize handle commits
+    // nothing, even if the canvas happens to change size before release
+    const changesBefore = changes.length
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 500,
+          clientY: 150,
+        }),
+      )
+    })
+    canvasSize.width = 900
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes).toHaveLength(changesBefore)
+    canvasSize.width = 1000
+
+    // Grab the handle (within 16px of the bottom-right corner) and release
+    // once the canvas has been resized: both dimensions commit, the width as
+    // a percentage of the parent's content box
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 995,
+          clientY: 295,
+        }),
+      )
+    })
+    canvasSize.width = 600
+    canvasSize.height = 500
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    let lastChange = changes.at(-1) as
+      | { width?: number; height?: number }
+      | undefined
+    expect(lastChange?.width).toBe(60)
+    expect(lastChange?.height).toBe(500)
+
+    // The numeric inputs are remounted to display the committed size
+    const inputByLabel = (labelText: string) => {
+      const label = Array.from(container.querySelectorAll("label")).find(
+        (candidate) => candidate.textContent.includes(labelText),
+      )
+      return label?.closest(".chakra-form-control")?.querySelector("input")
+    }
+    expect(inputByLabel("Width (%)")?.value).toBe("60")
+    expect(inputByLabel("Height (px)")?.value).toBe("500")
+
+    // A height-only drag must not freeze the untouched width dimension
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 595,
+          clientY: 495,
+        }),
+      )
+    })
+    canvasSize.height = 320
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    lastChange = changes.at(-1) as
+      | { width?: number; height?: number }
+      | undefined
+    expect(lastChange?.width).toBe(60)
+    expect(lastChange?.height).toBe(320)
+
+    iframe.remove()
+  })
 })

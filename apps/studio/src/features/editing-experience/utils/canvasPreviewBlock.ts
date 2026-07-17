@@ -17,21 +17,22 @@ export const findPreviewDocumentWithCanvas = (doc: Document): Document | null =>
 
 // Canvases render in content order, so the nth canvas block on the page is
 // the nth canvas container in the preview document
+export const findCanvasPreviewContainer = (
+  doc: Document,
+  canvasOrdinal: number,
+): HTMLElement | null =>
+  findPreviewDocumentWithCanvas(doc)
+    ?.querySelectorAll<HTMLElement>(`[${CANVAS_CONTAINER_DATA_ATTRIBUTE}]`)
+    .item(canvasOrdinal) ?? null
+
 export const findCanvasBlockPreviewElement = (
   doc: Document,
   canvasOrdinal: number,
   blockIndex: number,
-): HTMLElement | null => {
-  const previewDocument = findPreviewDocumentWithCanvas(doc)
-  const canvas = previewDocument
-    ?.querySelectorAll(`[${CANVAS_CONTAINER_DATA_ATTRIBUTE}]`)
-    .item(canvasOrdinal)
-  return (
-    canvas?.querySelector<HTMLElement>(
-      `[${CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE}="${blockIndex}"]`,
-    ) ?? null
-  )
-}
+): HTMLElement | null =>
+  findCanvasPreviewContainer(doc, canvasOrdinal)?.querySelector<HTMLElement>(
+    `[${CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE}="${blockIndex}"]`,
+  ) ?? null
 
 export interface CanvasGridCell {
   row: number
@@ -163,6 +164,30 @@ export const resolveCanvasBlockGridArea = (
     rowStart: Math.min(topLeft.row, bottomRight.row),
     rowEnd: Math.max(topLeft.row, bottomRight.row),
   }
+}
+
+// The canvas's width field is a percentage, resolved against its parent's
+// content box — a freely-resized canvas maps back to the schema through the
+// parent's width. Returns null when the parent has no measurable width.
+export const resolveCanvasWidthPercent = (
+  canvas: HTMLElement,
+): number | null => {
+  const view = canvas.ownerDocument.defaultView
+  const parent = canvas.parentElement
+  if (!view || !parent) {
+    return null
+  }
+  const style = view.getComputedStyle(parent)
+  const contentWidth =
+    parent.getBoundingClientRect().width -
+    parsePx(style.borderLeftWidth) -
+    parsePx(style.borderRightWidth) -
+    parsePx(style.paddingLeft) -
+    parsePx(style.paddingRight)
+  if (contentWidth <= 0) {
+    return null
+  }
+  return (canvas.getBoundingClientRect().width / contentWidth) * 100
 }
 
 export const CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE = "data-canvas-grid-overlay"

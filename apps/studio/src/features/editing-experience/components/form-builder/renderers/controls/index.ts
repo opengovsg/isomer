@@ -19,6 +19,10 @@ export {
   jsonFormsCanvasPlacementControlTester,
 } from "./JsonFormsCanvasPlacementControl"
 export {
+  default as JsonFormsCanvasSizeControl,
+  jsonFormsCanvasSizeControlTester,
+} from "./JsonFormsCanvasSizeControl"
+export {
   default as JsonFormsObjectControl,
   jsonFormsObjectControlTester,
 } from "./JsonFormsObjectControl"

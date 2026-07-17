@@ -23,6 +23,8 @@ export const JSON_FORMS_RANKING = {
   // NOTE: needs to have higher priority than ObjectControl and
   // BoxedGroupControl
   CanvasPlacementControl: 4,
+  // NOTE: needs to have higher priority than IntegerControl
+  CanvasSizeControl: 5,
   // NOTE: Needs to have higher priority than anyof
   // as we need to conditionally render this depending
   // on the parent variant

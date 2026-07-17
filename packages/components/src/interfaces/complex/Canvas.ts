@@ -101,6 +101,9 @@ export const CanvasSchema = Type.Object(
         description: "Width of the canvas as a percentage of the page width",
         minimum: 10,
         maximum: 100,
+        // Routes Studio to its canvas size control, which also commits
+        // free-resize drags on the canvas's handle in the live preview
+        format: "canvasSize",
       }),
     ),
     height: Type.Optional(
@@ -112,6 +115,7 @@ export const CanvasSchema = Type.Object(
         // unbounded height would not be editable in the form builder
         minimum: 80,
         maximum: 2000,
+        format: "canvasSize",
       }),
     ),
     blocks: Type.Array(

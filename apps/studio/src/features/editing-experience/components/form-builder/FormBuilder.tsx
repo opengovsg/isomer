@@ -61,6 +61,8 @@ import {
   jsonFormsNavbarControlTester,
   JsonFormsCanvasPlacementControl,
   jsonFormsCanvasPlacementControlTester,
+  JsonFormsCanvasSizeControl,
+  jsonFormsCanvasSizeControlTester,
   JsonFormsObjectControl,
   jsonFormsObjectControlTester,
   JsonFormsOneOfControl,
@@ -152,6 +154,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsCanvasPlacementControlTester,
     renderer: JsonFormsCanvasPlacementControl,
+  },
+  {
+    tester: jsonFormsCanvasSizeControlTester,
+    renderer: JsonFormsCanvasSizeControl,
   },
   { tester: jsonFormsObjectControlTester, renderer: JsonFormsObjectControl },
   { tester: jsonFormsArrayControlTester, renderer: JsonFormsArrayControl },

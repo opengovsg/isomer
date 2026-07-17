@@ -40,7 +40,9 @@ export const jsonFormsIntegerControlTester: RankedTester = rankWith(
   ),
 )
 
-function JsonFormsIntegerControl({
+// Also rendered (unwrapped) by JsonFormsCanvasSizeControl, which decorates it
+// with preview-resize behaviour for the canvas's width and height fields
+export function JsonFormsIntegerControl({
   data,
   label,
   schema,
