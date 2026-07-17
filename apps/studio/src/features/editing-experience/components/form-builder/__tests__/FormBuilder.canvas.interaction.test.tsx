@@ -2752,6 +2752,152 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("outlines a hovered block in the live preview, Wix-style", () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    renderCanvasFormInEditorDrawer({
+      type: "canvas",
+      blocks: [
+        BLOCKQUOTE_BLOCK,
+        { type: "blockquote", quote: "Second quote", source: "s" },
+      ],
+    } as IsomerComponent)
+
+    const firstBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    const secondBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="1"]',
+    )!
+
+    // No outline until a block is hovered
+    expect(firstBlock.style.outline).toBe("")
+    expect(secondBlock.style.outline).toBe("")
+
+    // Hovering a block (here through its nested span) outlines it
+    act(() => {
+      firstBlock.querySelector("span")!.dispatchEvent(
+        new iframeRealm.MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(firstBlock.style.outline).toContain("dashed")
+
+    // Moving to a sibling hands the outline over
+    act(() => {
+      secondBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(firstBlock.style.outline).toBe("")
+    expect(secondBlock.style.outline).toContain("dashed")
+
+    // Leaving the canvas clears it
+    act(() => {
+      secondBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mouseout", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: previewDocument.body,
+        }),
+      )
+    })
+    expect(secondBlock.style.outline).toBe("")
+
+    // Moving between elements inside the same block keeps the outline
+    act(() => {
+      firstBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+      firstBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mouseout", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: firstBlock.querySelector("span"),
+        }),
+      )
+    })
+    expect(firstBlock.style.outline).toContain("dashed")
+
+    // Selecting the hovered block hands its outline to the selection
+    // highlight (solid, owned by the placement control)
+    act(() => {
+      firstBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(container.textContent).toContain("A quote inside the canvas")
+    expect(firstBlock.style.outline).toContain("solid")
+    expect(firstBlock.style.outline).not.toContain("dashed")
+
+    // Hovering the selected block never shows the hover outline
+    act(() => {
+      firstBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(firstBlock.style.outline).toContain("solid")
+    expect(firstBlock.style.outline).not.toContain("dashed")
+
+    // Siblings still show the hover affordance while an editor is open, and
+    // a mid-drag pass over a sibling (button held) does not
+    act(() => {
+      secondBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          buttons: 1,
+        }),
+      )
+    })
+    expect(secondBlock.style.outline).toBe("")
+    act(() => {
+      secondBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(secondBlock.style.outline).toContain("dashed")
+
+    // Closing the editor mid-hover restores the outline
+    act(() => {
+      root?.unmount()
+    })
+    root = undefined
+    expect(secondBlock.style.outline).toBe("")
+
+    iframe.remove()
+  })
+
   it("selects a block and drags it with the same press, Wix-style", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)

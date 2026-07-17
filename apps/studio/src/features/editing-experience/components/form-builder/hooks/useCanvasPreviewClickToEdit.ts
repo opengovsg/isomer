@@ -1,3 +1,4 @@
+import { useToken } from "@chakra-ui/react"
 import { Resolve } from "@jsonforms/core"
 import { useJsonForms } from "@jsonforms/react"
 import { CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE } from "@opengovsg/isomer-components"
@@ -46,6 +47,7 @@ export const useCanvasPreviewClickToEdit = ({
   addItem,
 }: UseCanvasPreviewClickToEditArgs): void => {
   const jsonFormsCore = useJsonForms().core
+  const [hoverColor] = useToken("colors", ["interaction.main.default"])
   const editorContext = useOptionalEditorDrawerContext()
   const content = editorContext?.previewPageState.content
   const currActiveIdx = editorContext?.currActiveIdx
@@ -95,6 +97,61 @@ export const useCanvasPreviewClickToEdit = ({
       return typeof target?.closest === "function"
         ? target.closest(`[${CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE}]`)
         : null
+    }
+
+    // Hovering a click target previews its selectability with a dashed
+    // outline, Wix-style. The outline hands over to the placement control's
+    // solid selection highlight when the block is selected (React runs this
+    // effect's cleanup before the highlight effect's setup), and is skipped
+    // while a mouse button is held so a placement drag passing over a
+    // sibling does not flash outlines.
+    let hovered: HTMLElement | null = null
+    let hoveredOutline = ""
+    let hoveredOutlineOffset = ""
+    const clearHover = () => {
+      if (!hovered) {
+        return
+      }
+      hovered.style.outline = hoveredOutline
+      hovered.style.outlineOffset = hoveredOutlineOffset
+      hovered = null
+    }
+    const hoverBlock = (event: MouseEvent) => {
+      const block =
+        event.buttons === 0 ? (resolveBlock(event) as HTMLElement | null) : null
+      const index = block
+        ? Number(block.getAttribute(CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE))
+        : NaN
+      const target =
+        block && Number.isInteger(index) && index !== selectedIndex
+          ? block
+          : null
+      if (target === hovered) {
+        return
+      }
+      clearHover()
+      if (!target) {
+        return
+      }
+      hovered = target
+      hoveredOutline = target.style.outline
+      hoveredOutlineOffset = target.style.outlineOffset
+      target.style.outline = `2px dashed ${hoverColor}`
+      target.style.outlineOffset = "2px"
+    }
+    const unhoverBlock = (event: MouseEvent) => {
+      if (!hovered) {
+        return
+      }
+      // Cross-realm relatedTarget: duck-type instead of instanceof (the
+      // preview iframe has its own Element prototype)
+      const related = event.relatedTarget as Partial<Element> | null
+      const stillInside =
+        typeof related?.closest === "function" &&
+        related.closest(`[${CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE}]`) === hovered
+      if (!stillInside) {
+        clearHover()
+      }
     }
 
     // Deselect only when the press also started outside every block: a block
@@ -159,15 +216,27 @@ export const useCanvasPreviewClickToEdit = ({
     canvas.addEventListener("mousedown", armDeselect, true)
     canvas.addEventListener("mousedown", grabToSelect)
     canvas.addEventListener("click", openBlockEditor)
+    canvas.addEventListener("mouseover", hoverBlock)
+    canvas.addEventListener("mouseout", unhoverBlock)
     return () => {
       canvas.removeEventListener("mousedown", armDeselect, true)
       canvas.removeEventListener("mousedown", grabToSelect)
       canvas.removeEventListener("click", openBlockEditor)
+      canvas.removeEventListener("mouseover", hoverBlock)
+      canvas.removeEventListener("mouseout", unhoverBlock)
+      clearHover()
       clickTargets.forEach((element, index) => {
         element.style.cursor = previousCursors[index] ?? ""
       })
     }
-  }, [canvasOrdinal, content, path, selectedIndex, setSelectedIndex])
+  }, [
+    canvasOrdinal,
+    content,
+    hoverColor,
+    path,
+    selectedIndex,
+    setSelectedIndex,
+  ])
 
   // Wix-style keyboard shortcuts while a block's nested editor is open:
   // Delete or Backspace removes the block from the canvas and returns to the
