@@ -169,10 +169,19 @@ const dragBetweenPlacementCells = (
   })
 }
 
-const pressKey = (element: Element, key: string) => {
+const pressKey = (
+  element: Element,
+  key: string,
+  init?: Pick<KeyboardEventInit, "shiftKey">,
+) => {
   act(() => {
     element.dispatchEvent(
-      new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }),
+      new KeyboardEvent("keydown", {
+        key,
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      }),
     )
   })
 }
@@ -853,6 +862,99 @@ describe("FormBuilder canvas editing interactions", () => {
     })
     expect(changes.length).toBe(settledCount)
     expect(container.textContent).toContain("Columns 1–4, rows 2–3")
+  })
+
+  it("resizes a placed block with Shift+arrow keys, clamping at the grid edges and minimum size", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 9, colSpan: 3, rowStart: 1, rowSpan: 2 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // JsonForms emits an initial change on a later tick; flush it so the
+    // clamp assertions below compare against a settled baseline
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    const placementOf = (change: IsomerComponent | undefined) =>
+      (change as { blocks?: { placement?: unknown }[] } | undefined)
+        ?.blocks?.[0]?.placement
+
+    // Shift+arrow grows or shrinks the block's end edge one cell: right then
+    // down grows the rectangle to columns 9–12, rows 1–3
+    pressKey(document.body, "ArrowRight", { shiftKey: true })
+    expect(container.textContent).toContain("Columns 9–12, rows 1–2")
+    pressKey(document.body, "ArrowDown", { shiftKey: true })
+    expect(container.textContent).toContain("Columns 9–12, rows 1–3")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(placementOf(changes.at(-1))).toEqual({
+      colStart: 9,
+      colSpan: 4,
+      rowStart: 1,
+      rowSpan: 3,
+    })
+
+    // Growing past the last column clamps: the block already ends at column
+    // 12, so a further Shift+ArrowRight commits nothing
+    const grownCount = changes.length
+    pressKey(document.body, "ArrowRight", { shiftKey: true })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes.length).toBe(grownCount)
+    expect(container.textContent).toContain("Columns 9–12, rows 1–3")
+
+    // Shrinking works down to a single cell
+    pressKey(document.body, "ArrowUp", { shiftKey: true })
+    pressKey(document.body, "ArrowUp", { shiftKey: true })
+    expect(container.textContent).toContain("Columns 9–12, rows 1–1")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(placementOf(changes.at(-1))).toEqual({
+      colStart: 9,
+      colSpan: 4,
+      rowStart: 1,
+      rowSpan: 1,
+    })
+
+    // A single-cell-tall block cannot shrink further, so a further
+    // Shift+ArrowUp commits nothing
+    const shrunkCount = changes.length
+    pressKey(document.body, "ArrowUp", { shiftKey: true })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes.length).toBe(shrunkCount)
+    expect(container.textContent).toContain("Columns 9–12, rows 1–1")
+
+    // Shift+arrow while typing in a form field keeps its text-selection
+    // meaning and never resizes the block
+    const quoteInput = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input, textarea",
+      ),
+    ).find((field) => field.value === BLOCKQUOTE_BLOCK.quote)
+    expect(quoteInput).not.toBeUndefined()
+    pressKey(quoteInput!, "ArrowRight", { shiftKey: true })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes.length).toBe(shrunkCount)
+    expect(container.textContent).toContain("Columns 9–12, rows 1–1")
   })
 
   it("shades cells occupied by sibling blocks on the placement grid", () => {

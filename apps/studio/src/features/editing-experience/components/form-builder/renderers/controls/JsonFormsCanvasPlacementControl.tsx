@@ -791,9 +791,10 @@ function JsonFormsCanvasPlacementControl({
 
   // Wix-style keyboard nudging: while a placed block's editor is open and no
   // drag is in progress, an arrow key moves the block one grid cell in that
-  // direction, clamped to the grid. Registered on both windows so it works
-  // whether focus sits in the drawer or in the preview iframe; keystrokes
-  // aimed at a form field keep their editing meaning.
+  // direction, clamped to the grid; holding Shift resizes instead, growing or
+  // shrinking the block's end edge one cell. Registered on both windows so it
+  // works whether focus sits in the drawer or in the preview iframe;
+  // keystrokes aimed at a form field keep their editing meaning.
   useEffect(() => {
     if (!visible || !enabled || drag || pendingGrab || !savedSelection) {
       return
@@ -805,12 +806,27 @@ function JsonFormsCanvasPlacementControl({
         event.altKey ||
         event.ctrlKey ||
         event.metaKey ||
-        event.shiftKey ||
         isEditableTarget(event.target)
       ) {
         return
       }
       event.preventDefault()
+      if (event.shiftKey) {
+        commitSelection({
+          ...savedSelection,
+          colEnd: clamp(
+            savedSelection.colEnd + delta.col,
+            savedSelection.colStart,
+            CANVAS_GRID_COLUMNS,
+          ),
+          rowEnd: clamp(
+            savedSelection.rowEnd + delta.row,
+            savedSelection.rowStart,
+            CANVAS_MAX_ROW,
+          ),
+        })
+        return
+      }
       const width = savedSelection.colEnd - savedSelection.colStart
       const height = savedSelection.rowEnd - savedSelection.rowStart
       const colStart = clamp(
@@ -992,9 +1008,9 @@ function JsonFormsCanvasPlacementControl({
             Drag the highlighted area (or the block itself in the page preview)
             to move it, or drag a corner to resize it — in the preview, the edge
             handles resize in one direction only. With the keyboard, use the
-            arrow keys to nudge the block one cell at a time, or press Enter on
-            a cell to start a selection, Enter on another cell to finish, and
-            Escape to cancel.
+            arrow keys to nudge the block one cell at a time (hold Shift to
+            resize instead), or press Enter on a cell to start a selection,
+            Enter on another cell to finish, and Escape to cancel.
           </Text>
         )}
         {siblingPlacements.length > 0 && (
