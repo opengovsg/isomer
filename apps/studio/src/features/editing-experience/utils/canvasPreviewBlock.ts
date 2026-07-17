@@ -42,7 +42,7 @@ export interface CanvasGridCell {
 // Matches the Canvas renderer's auto-rows-[minmax(2rem,auto)] base row height
 const CANVAS_BASE_ROW_HEIGHT_PX = 32
 // The placement schema bounds row values at 100
-const CANVAS_MAX_ROW = 100
+export const CANVAS_MAX_ROW = 100
 
 const parsePx = (value: string): number => {
   const parsed = Number.parseFloat(value)

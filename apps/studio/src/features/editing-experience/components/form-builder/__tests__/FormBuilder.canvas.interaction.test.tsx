@@ -776,6 +776,85 @@ describe("FormBuilder canvas editing interactions", () => {
     })
   })
 
+  it("nudges a placed block with the arrow keys, clamping at the grid edges and ignoring keystrokes in form fields", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // JsonForms emits an initial change on a later tick; flush it so the
+    // clamp assertions below compare against a settled baseline
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    const placementOf = (change: IsomerComponent | undefined) =>
+      (change as { blocks?: { placement?: unknown }[] } | undefined)
+        ?.blocks?.[0]?.placement
+
+    // An arrow key pressed with focus outside any field nudges the block one
+    // cell: right then down moves the rectangle to columns 2–5, rows 2–3
+    pressKey(document.body, "ArrowRight")
+    expect(container.textContent).toContain("Columns 2–5, rows 1–2")
+    pressKey(document.body, "ArrowDown")
+    expect(container.textContent).toContain("Columns 2–5, rows 2–3")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(placementOf(changes.at(-1))).toEqual({
+      colStart: 2,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+
+    // Nudging into the grid edge clamps: the block is already back at
+    // column 1, so a further ArrowLeft commits nothing
+    pressKey(document.body, "ArrowLeft")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const settledCount = changes.length
+    expect(placementOf(changes.at(-1))).toEqual({
+      colStart: 1,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    pressKey(document.body, "ArrowLeft")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes.length).toBe(settledCount)
+    expect(container.textContent).toContain("Columns 1–4, rows 2–3")
+
+    // Arrow keys pressed while typing in a form field keep their editing
+    // meaning and never move the block
+    const quoteInput = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input, textarea",
+      ),
+    ).find((field) => field.value === BLOCKQUOTE_BLOCK.quote)
+    expect(quoteInput).not.toBeUndefined()
+    pressKey(quoteInput!, "ArrowLeft")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes.length).toBe(settledCount)
+    expect(container.textContent).toContain("Columns 1–4, rows 2–3")
+  })
+
   it("shades cells occupied by sibling blocks on the placement grid", () => {
     renderCanvasForm({
       type: "canvas",

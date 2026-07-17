@@ -27,6 +27,7 @@ import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import type { CanvasSelectionEdge } from "../../../../utils/canvasPreviewBlock"
 import {
+  CANVAS_MAX_ROW,
   CANVAS_SELECTION_EDGE_HANDLES,
   CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
@@ -190,6 +191,24 @@ const resolveGrabbedEdge = (
     ?.getAttribute(CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE)
   const edge = CANVAS_SELECTION_EDGE_HANDLES.find((value) => value === name)
   return edge ?? null
+}
+
+const ARROW_KEY_DELTAS: Record<string, GridCell> = {
+  ArrowUp: { row: -1, col: 0 },
+  ArrowDown: { row: 1, col: 0 },
+  ArrowLeft: { row: 0, col: -1 },
+  ArrowRight: { row: 0, col: 1 },
+}
+
+// Arrow keys pressed while typing keep their editing meaning; the target may
+// live in the preview iframe's realm, so duck-type instead of instanceof
+const isEditableTarget = (target: EventTarget | null): boolean => {
+  const element = target as Partial<Element> | null
+  return (
+    typeof element?.closest === "function" &&
+    element.closest('input, textarea, select, [contenteditable="true"]') !==
+      null
+  )
 }
 
 const toPlacement = (
@@ -770,6 +789,66 @@ function JsonFormsCanvasPlacementControl({
     }
   }, [pendingGrab, locatePreviewBlock, startDragWithin])
 
+  // Wix-style keyboard nudging: while a placed block's editor is open and no
+  // drag is in progress, an arrow key moves the block one grid cell in that
+  // direction, clamped to the grid. Registered on both windows so it works
+  // whether focus sits in the drawer or in the preview iframe; keystrokes
+  // aimed at a form field keep their editing meaning.
+  useEffect(() => {
+    if (!visible || !enabled || drag || pendingGrab || !savedSelection) {
+      return
+    }
+    const nudge = (event: KeyboardEvent) => {
+      const delta = ARROW_KEY_DELTAS[event.key]
+      if (
+        !delta ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        isEditableTarget(event.target)
+      ) {
+        return
+      }
+      event.preventDefault()
+      const width = savedSelection.colEnd - savedSelection.colStart
+      const height = savedSelection.rowEnd - savedSelection.rowStart
+      const colStart = clamp(
+        savedSelection.colStart + delta.col,
+        1,
+        CANVAS_GRID_COLUMNS - width,
+      )
+      const rowStart = clamp(
+        savedSelection.rowStart + delta.row,
+        1,
+        Math.max(1, CANVAS_MAX_ROW - height),
+      )
+      commitSelection({
+        colStart,
+        colEnd: colStart + width,
+        rowStart,
+        rowEnd: rowStart + height,
+      })
+    }
+    window.addEventListener("keydown", nudge)
+    const previewWindow =
+      locatePreviewBlock()?.ownerDocument.defaultView ?? null
+    const foreignPreviewWindow = previewWindow === window ? null : previewWindow
+    foreignPreviewWindow?.addEventListener("keydown", nudge)
+    return () => {
+      window.removeEventListener("keydown", nudge)
+      foreignPreviewWindow?.removeEventListener("keydown", nudge)
+    }
+  }, [
+    visible,
+    enabled,
+    drag,
+    pendingGrab,
+    savedSelection,
+    commitSelection,
+    locatePreviewBlock,
+  ])
+
   if (!visible) {
     return null
   }
@@ -912,9 +991,10 @@ function JsonFormsCanvasPlacementControl({
           <Text textStyle="body-2" textColor="base.content.medium">
             Drag the highlighted area (or the block itself in the page preview)
             to move it, or drag a corner to resize it — in the preview, the edge
-            handles resize in one direction only. With the keyboard, press Enter
-            on a cell to start, Enter on another cell to finish, or Escape to
-            cancel.
+            handles resize in one direction only. With the keyboard, use the
+            arrow keys to nudge the block one cell at a time, or press Enter on
+            a cell to start a selection, Enter on another cell to finish, and
+            Escape to cancel.
           </Text>
         )}
         {siblingPlacements.length > 0 && (
