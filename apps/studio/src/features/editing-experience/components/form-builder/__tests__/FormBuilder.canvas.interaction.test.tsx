@@ -1238,6 +1238,75 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("shows a live grid-area badge on the preview block while dragging", () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+
+    renderCanvasFormInEditorDrawer({
+      type: "canvas",
+      blocks: [BLOCKQUOTE_BLOCK],
+    } as IsomerComponent)
+
+    click(findButtonByText("Item 1")!)
+
+    const badge = () =>
+      previewBlock.querySelector<HTMLElement>("[data-canvas-drag-badge]")
+
+    // No badge until a drag starts
+    expect(badge()).toBeNull()
+
+    act(() => {
+      placementCellAt(2, 3).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    expect(badge()?.textContent).toBe("Columns 3–3, rows 2–2")
+
+    // The badge follows the sweep live
+    act(() => {
+      placementCellAt(4, 8).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(badge()?.textContent).toBe("Columns 3–8, rows 2–4")
+
+    // Cancelling the drag removes the badge
+    pressKey(placementCellAt(4, 8), "Escape")
+    expect(badge()).toBeNull()
+
+    // Committing a drag removes it too
+    act(() => {
+      placementCellAt(1, 2).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    expect(badge()).not.toBeNull()
+    act(() => {
+      window.dispatchEvent(new MouseEvent("mouseup"))
+    })
+    expect(badge()).toBeNull()
+
+    iframe.remove()
+  })
+
   it("moves and resizes a placed block by dragging it directly in the live preview", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)

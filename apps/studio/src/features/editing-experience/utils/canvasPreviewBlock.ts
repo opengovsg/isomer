@@ -257,6 +257,51 @@ export const showCanvasSelectionHandles = (
   }
 }
 
+export const CANVAS_DRAG_BADGE_DATA_ATTRIBUTE = "data-canvas-drag-badge"
+
+// Wix-style drag badge: while a placement drag is in progress, a small label
+// pinned above the block shows the grid area it will occupy on release, so
+// the user dragging on the preview sees the live position without looking
+// away at the picker's summary line. Returns a cleanup that removes the
+// badge; it only touches the block's positioning when nothing else (e.g. the
+// selection handles) has already made the block a containing block.
+export const showCanvasDragBadge = (
+  block: HTMLElement,
+  text: string,
+  badgeColor: string,
+): (() => void) => {
+  const appliedPosition = block.style.position === ""
+  if (appliedPosition) {
+    block.style.position = "relative"
+  }
+  const badge = block.ownerDocument.createElement("div")
+  badge.setAttribute(CANVAS_DRAG_BADGE_DATA_ATTRIBUTE, "")
+  badge.setAttribute("aria-hidden", "true")
+  badge.textContent = text
+  Object.assign(badge.style, {
+    position: "absolute",
+    bottom: "100%",
+    left: "50%",
+    transform: "translate(-50%, -6px)",
+    backgroundColor: badgeColor,
+    color: "#ffffff",
+    fontSize: "12px",
+    lineHeight: "1.4",
+    padding: "2px 8px",
+    borderRadius: "4px",
+    whiteSpace: "nowrap",
+    pointerEvents: "none",
+    zIndex: "2",
+  })
+  block.appendChild(badge)
+  return () => {
+    badge.remove()
+    if (appliedPosition) {
+      block.style.position = ""
+    }
+  }
+}
+
 export const CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE = "data-canvas-grid-overlay"
 
 // The grid is invisible on the rendered page, so while a placement drag is in

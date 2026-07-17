@@ -32,6 +32,7 @@ import {
   findCanvasBlockPreviewElement,
   resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
+  showCanvasDragBadge,
   showCanvasGridOverlay,
   showCanvasSelectionHandles,
 } from "../../../../utils/canvasPreviewBlock"
@@ -355,6 +356,31 @@ const usePreviewGridGuides = (
   }, [dragActive, guideColor, locatePreviewBlock])
 }
 
+// A user dragging on the preview is looking at the block, not at the picker's
+// summary line in the drawer — so while a drag is in progress the live grid
+// area is also pinned above the block as a small badge, Wix-style
+const usePreviewDragBadge = (
+  locatePreviewBlock: () => HTMLElement | null,
+  selection: NormalisedPlacement | null,
+): void => {
+  const [badgeColor] = useToken("colors", ["interaction.main.default"])
+  const text =
+    selection === null
+      ? null
+      : `Columns ${selection.colStart}–${selection.colEnd}, rows ${selection.rowStart}–${selection.rowEnd}`
+
+  useEffect(() => {
+    if (text === null) {
+      return
+    }
+    const element = locatePreviewBlock()
+    if (!element) {
+      return
+    }
+    return showCanvasDragBadge(element, text, badgeColor)
+  }, [text, badgeColor, locatePreviewBlock])
+}
+
 const restoreCustomProperty = (
   element: HTMLElement,
   name: string,
@@ -464,6 +490,7 @@ function JsonFormsCanvasPlacementControl({
     dragSelection,
   )
   usePreviewGridGuides(locatePreviewBlock, drag !== null)
+  usePreviewDragBadge(locatePreviewBlock, dragSelection)
 
   // Starts a drag relative to a base rectangle: its corners resize (a sweep
   // anchored at the opposite corner), its body moves, and anywhere else

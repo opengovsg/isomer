@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
+  CANVAS_DRAG_BADGE_DATA_ATTRIBUTE,
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
   CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
@@ -10,6 +11,7 @@ import {
   resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
   resolveCanvasWidthPercent,
+  showCanvasDragBadge,
   showCanvasGridOverlay,
   showCanvasSelectionHandles,
 } from "../canvasPreviewBlock"
@@ -445,6 +447,60 @@ describe("showCanvasSelectionHandles", () => {
     cleanup()
     expect(handlesIn(block)).toHaveLength(0)
     expect(block.style.position).toBe("static")
+  })
+})
+
+describe("showCanvasDragBadge", () => {
+  const badgeIn = (block: HTMLElement) =>
+    block.querySelector<HTMLElement>(`[${CANVAS_DRAG_BADGE_DATA_ATTRIBUTE}]`)
+
+  it("pins a badge with the grid-area text above the block", () => {
+    const block = document.createElement("div")
+    document.body.appendChild(block)
+
+    showCanvasDragBadge(block, "Columns 3–8, rows 2–4", "#1361F0")
+
+    expect(block.style.position).toBe("relative")
+    const badge = badgeIn(block)!
+    expect(badge.textContent).toBe("Columns 3–8, rows 2–4")
+    expect(badge.getAttribute("aria-hidden")).toBe("true")
+    expect(badge.style.position).toBe("absolute")
+    expect(badge.style.bottom).toBe("100%")
+    expect(badge.style.pointerEvents).toBe("none")
+  })
+
+  it("removes the badge and restores positioning on cleanup", () => {
+    const block = document.createElement("div")
+    document.body.appendChild(block)
+
+    const cleanup = showCanvasDragBadge(
+      block,
+      "Columns 1–1, rows 1–1",
+      "#1361F0",
+    )
+    expect(badgeIn(block)).not.toBeNull()
+
+    cleanup()
+    expect(badgeIn(block)).toBeNull()
+    expect(block.style.position).toBe("")
+  })
+
+  it("leaves positioning owned by another affordance untouched", () => {
+    // The selection handles already make the block a containing block while
+    // its editor is open; the badge must not clobber that on cleanup
+    const block = document.createElement("div")
+    block.style.position = "relative"
+    document.body.appendChild(block)
+
+    const cleanup = showCanvasDragBadge(
+      block,
+      "Columns 2–5, rows 1–2",
+      "#1361F0",
+    )
+    expect(block.style.position).toBe("relative")
+
+    cleanup()
+    expect(block.style.position).toBe("relative")
   })
 })
 
