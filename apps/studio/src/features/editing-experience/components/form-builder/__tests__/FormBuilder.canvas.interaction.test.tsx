@@ -1961,7 +1961,7 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
-  it("opens a block's editor by clicking it in the live preview", () => {
+  it("opens a block's editor by clicking it in the live preview and switches blocks by clicking siblings", () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
     const previewDocument = iframe.contentDocument!
@@ -2024,9 +2024,52 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(container.textContent).toContain("Second quote")
     expect(container.textContent).not.toContain("A quote inside the canvas")
 
-    // With the nested editor open the list-view click targets are gone: the
-    // placement control owns preview interactions for the edited block
-    expect(firstBlock.style.cursor).toBe("")
+    // With the nested editor open, sibling blocks remain click targets:
+    // clicking one switches the editor to it, Wix-style
+    expect(firstBlock.style.cursor).toBe("pointer")
+    act(() => {
+      firstBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(container.textContent).toContain("A quote inside the canvas")
+    expect(container.textContent).not.toContain("Second quote")
+
+    // The newly selected block hands its click affordance to the placement
+    // control (move cursor); its sibling becomes a click target again
+    const secondBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="1"]',
+    )!
+    expect(firstBlock.style.cursor).toBe("move")
+    expect(secondBlock.style.cursor).toBe("pointer")
+
+    // Clicking the already-selected block switches nothing
+    act(() => {
+      firstBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(container.textContent).toContain("A quote inside the canvas")
+
+    // A link inside a sibling still selects its block instead of navigating
+    // the preview
+    let switchBackClick: MouseEvent
+    act(() => {
+      switchBackClick = new iframeRealm.MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+      })
+      secondBlockLink.dispatchEvent(switchBackClick)
+    })
+    expect(switchBackClick!.defaultPrevented).toBe(true)
+    expect(container.textContent).toContain("Second quote")
+    expect(container.textContent).not.toContain("A quote inside the canvas")
 
     iframe.remove()
   })

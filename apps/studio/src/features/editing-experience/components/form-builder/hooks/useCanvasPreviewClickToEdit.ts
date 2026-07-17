@@ -14,11 +14,11 @@ interface UseCanvasPreviewClickToEditArgs {
   setSelectedIndex: (selectedIndex?: number) => void
 }
 
-// While the canvas editor shows its block list, the blocks rendered in the
-// live preview act as click targets: clicking one opens its nested item
-// editor, mirroring Wix's select-on-canvas interaction. Inactive while a
-// nested editor is open (the placement control owns preview interactions
-// then) and for every non-canvas array control.
+// While the canvas editor is open, the blocks rendered in the live preview
+// act as click targets: clicking one opens (or switches to) its nested item
+// editor, mirroring Wix's select-on-canvas interaction. The currently edited
+// block is excluded — the placement control owns its preview interactions —
+// and the hook is a no-op for every non-canvas array control.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -42,11 +42,7 @@ export const useCanvasPreviewClickToEdit = ({
   }, [content, currActiveIdx])
 
   useEffect(() => {
-    if (
-      canvasOrdinal === null ||
-      path !== CANVAS_BLOCKS_PATH ||
-      selectedIndex !== undefined
-    ) {
+    if (canvasOrdinal === null || path !== CANVAS_BLOCKS_PATH) {
       return
     }
     const canvas = findCanvasPreviewContainer(document, canvasOrdinal)
@@ -54,13 +50,19 @@ export const useCanvasPreviewClickToEdit = ({
       return
     }
 
-    const blockElements = Array.from(
+    // The edited block is not a click target: the placement control owns its
+    // cursor (move) and pointer interactions while its editor is open
+    const clickTargets = Array.from(
       canvas.querySelectorAll<HTMLElement>(
         `[${CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE}]`,
       ),
+    ).filter(
+      (element) =>
+        Number(element.getAttribute(CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE)) !==
+        selectedIndex,
     )
-    const previousCursors = blockElements.map((element) => element.style.cursor)
-    blockElements.forEach((element) => {
+    const previousCursors = clickTargets.map((element) => element.style.cursor)
+    clickTargets.forEach((element) => {
       element.style.cursor = "pointer"
     })
 
@@ -83,13 +85,15 @@ export const useCanvasPreviewClickToEdit = ({
       }
       // Links inside the block should open its editor, not navigate the preview
       event.preventDefault()
-      setSelectedIndex(index)
+      if (index !== selectedIndex) {
+        setSelectedIndex(index)
+      }
     }
 
     canvas.addEventListener("click", openBlockEditor)
     return () => {
       canvas.removeEventListener("click", openBlockEditor)
-      blockElements.forEach((element, index) => {
+      clickTargets.forEach((element, index) => {
         element.style.cursor = previousCursors[index] ?? ""
       })
     }
