@@ -1272,4 +1272,122 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("cancels a drag started in the live preview with Escape", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+      KeyboardEvent: typeof KeyboardEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    previewBlock.style.setProperty("--canvas-grid-column", "2 / span 4")
+    previewBlock.style.setProperty("--canvas-grid-row", "1 / span 2")
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Grab a body cell of the block and drag it two columns right and one
+    // row down: the preview follows live and the grid guides appear
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 85,
+          clientY: 16,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 165, clientY: 48 }),
+      )
+    })
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "4 / span 4",
+    )
+    expect(container.textContent).toContain("Columns 4–7, rows 2–3")
+    expect(
+      previewDocument.querySelector("[data-canvas-grid-overlay]"),
+    ).not.toBeNull()
+
+    // Escape pressed while focus sits in the preview iframe cancels the
+    // drag: the block snaps back, the guides disappear, and the picker
+    // shows the saved placement again
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "2 / span 4",
+    )
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-row")).toBe(
+      "1 / span 2",
+    )
+    expect(
+      previewDocument.querySelector("[data-canvas-grid-overlay]"),
+    ).toBeNull()
+    expect(container.textContent).toContain("Columns 2–5, rows 1–2")
+
+    // Releasing the mouse after the cancel must not commit the stale drag
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const movedCommitted = changes.some(
+      (change) =>
+        (change as { blocks?: { placement?: { colStart?: number } }[] })
+          .blocks?.[0]?.placement?.colStart === 4,
+    )
+    expect(movedCommitted).toBe(false)
+
+    iframe.remove()
+  })
 })

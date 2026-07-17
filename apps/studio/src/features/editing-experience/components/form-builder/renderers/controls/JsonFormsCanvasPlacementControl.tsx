@@ -405,6 +405,11 @@ function JsonFormsCanvasPlacementControl({
     setDrag(null)
   }
 
+  const cancelDrag = useCallback(() => {
+    releasePreviewDragFeedback({ restore: true })
+    setDrag(null)
+  }, [releasePreviewDragFeedback])
+
   // Committing on window mouseup lets a drag end anywhere (even outside the
   // grid) and still apply the last cell the pointer covered. A drag started
   // on (or wandering over) the preview iframe delivers its mouse events to
@@ -419,7 +424,20 @@ function JsonFormsCanvasPlacementControl({
       handleChange(path, toPlacement(resolveDragSelection(drag)))
       setDrag(null)
     }
+    // While a drag is active, Escape means "cancel the drag" wherever it is
+    // pressed — capture phase on both windows so it works for drags started
+    // on the preview block (focus sits in the iframe) and never reaches the
+    // drawer/modal close handlers
+    const cancelOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return
+      }
+      event.preventDefault()
+      event.stopPropagation()
+      cancelDrag()
+    }
     window.addEventListener("mouseup", commitDrag)
+    window.addEventListener("keydown", cancelOnEscape, true)
 
     const previewBlock = locatePreviewBlock()
     const previewCanvas =
@@ -443,12 +461,22 @@ function JsonFormsCanvasPlacementControl({
     }
     previewWindow?.addEventListener("mousemove", trackPreviewPointer)
     previewWindow?.addEventListener("mouseup", commitDrag)
+    previewWindow?.addEventListener("keydown", cancelOnEscape, true)
     return () => {
       window.removeEventListener("mouseup", commitDrag)
+      window.removeEventListener("keydown", cancelOnEscape, true)
       previewWindow?.removeEventListener("mousemove", trackPreviewPointer)
       previewWindow?.removeEventListener("mouseup", commitDrag)
+      previewWindow?.removeEventListener("keydown", cancelOnEscape, true)
     }
-  }, [drag, handleChange, path, releasePreviewDragFeedback, locatePreviewBlock])
+  }, [
+    drag,
+    handleChange,
+    path,
+    releasePreviewDragFeedback,
+    cancelDrag,
+    locatePreviewBlock,
+  ])
 
   // Wix-like direct manipulation: a placed block can be grabbed in the live
   // preview itself — its body moves it, a corner cell resizes it (the same
@@ -628,16 +656,9 @@ function JsonFormsCanvasPlacementControl({
                       } else {
                         startDrag(row, col)
                       }
-                      return
                     }
-                    if (event.key === "Escape" && drag) {
-                      // Cancel the selection without letting Escape bubble
-                      // into drawer/modal close handlers
-                      event.preventDefault()
-                      event.stopPropagation()
-                      releasePreviewDragFeedback({ restore: true })
-                      setDrag(null)
-                    }
+                    // Escape is handled by the window-level capture listener
+                    // that is registered while a drag is active
                   }}
                 />
               )
