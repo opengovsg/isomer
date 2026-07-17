@@ -23,6 +23,7 @@ import { EmptyArray } from "../../components/EmptyArray"
 import { NestedDrawerSwitch } from "../../components/NestedDrawerSwitch"
 import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
+import { useCanvasPreviewClickToEdit } from "../../hooks/useCanvasPreviewClickToEdit"
 
 // The built-in isObjectArrayControl only accepts items with type "object",
 // so arrays of a union of components (e.g. canvas blocks) need this variant.
@@ -78,12 +79,17 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
     moveDown,
   })
   const {
+    selectedIndex,
     setSelectedIndex,
     isAddItemDisabled,
     childUiSchema,
     handleRemoveSelectedItem,
     onDragEnd,
   } = arrayResult
+
+  // Canvas blocks can be selected by clicking them on the live preview; for
+  // every other array this is a no-op
+  useCanvasPreviewClickToEdit({ path, selectedIndex, setSelectedIndex })
 
   return (
     <NestedDrawerSwitch {...props} {...arrayResult}>

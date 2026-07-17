@@ -1960,4 +1960,74 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("opens a block's editor by clicking it in the live preview", () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><a href="/elsewhere">second</a></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    renderCanvasFormInEditorDrawer({
+      type: "canvas",
+      blocks: [
+        BLOCKQUOTE_BLOCK,
+        { type: "blockquote", quote: "Second quote", source: "s" },
+      ],
+    } as IsomerComponent)
+
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    const firstBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    const secondBlockLink = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="1"] a',
+    )!
+
+    // While the list view is showing, preview blocks advertise clickability
+    expect(firstBlock.style.cursor).toBe("pointer")
+
+    // Clicking the canvas background (outside every block) opens nothing
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+
+    // Clicking inside a block (here through its nested link) opens that
+    // block's editor instead of navigating the preview
+    let clickEvent: MouseEvent
+    act(() => {
+      clickEvent = new iframeRealm.MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+      })
+      secondBlockLink.dispatchEvent(clickEvent)
+    })
+    expect(clickEvent!.defaultPrevented).toBe(true)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Second quote")
+    expect(container.textContent).not.toContain("A quote inside the canvas")
+
+    // With the nested editor open the list-view click targets are gone: the
+    // placement control owns preview interactions for the edited block
+    expect(firstBlock.style.cursor).toBe("")
+
+    iframe.remove()
+  })
 })
