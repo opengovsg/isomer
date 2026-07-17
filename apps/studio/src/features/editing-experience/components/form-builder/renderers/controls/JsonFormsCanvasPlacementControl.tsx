@@ -18,7 +18,7 @@ import {
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { Button, FormLabel, Infobox } from "@opengovsg/design-system-react"
 import { CANVAS_GRID_COLUMNS } from "@opengovsg/isomer-components"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
@@ -160,14 +160,12 @@ const useSiblingPlacements = (path: string): NormalisedPlacement[] => {
     .map(normalise)
 }
 
-// While a block's placement editor is open, outline that block in the live
-// preview and scroll it into view, so it is clear which block on the page is
-// being placed. The canvas being edited is the page block at currActiveIdx;
-// its rendered container is found by counting the canvases before it. Outside
-// the editor drawer (or before the preview has rendered) this does nothing.
-const useHighlightPreviewBlock = (path: string): void => {
+// Resolves the edited block's rendered element in the live preview. The
+// canvas being edited is the page block at currActiveIdx; its rendered
+// container is found by counting the canvases before it. Outside the editor
+// drawer (or before the preview has rendered) this resolves to null.
+const usePreviewBlockLocator = (path: string): (() => HTMLElement | null) => {
   const editorContext = useOptionalEditorDrawerContext()
-  const [highlightColor] = useToken("colors", ["interaction.main.default"])
   const blockIndex = Number(path.split(".").at(-2))
   const content = editorContext?.previewPageState.content
   const currActiveIdx = editorContext?.currActiveIdx
@@ -185,15 +183,24 @@ const useHighlightPreviewBlock = (path: string): void => {
       .filter((block) => block.type === "canvas").length
   }, [content, currActiveIdx])
 
-  useEffect(() => {
+  return useCallback(() => {
     if (canvasOrdinal === null || !Number.isInteger(blockIndex)) {
-      return
+      return null
     }
-    const element = findCanvasBlockPreviewElement(
-      document,
-      canvasOrdinal,
-      blockIndex,
-    )
+    return findCanvasBlockPreviewElement(document, canvasOrdinal, blockIndex)
+  }, [blockIndex, canvasOrdinal])
+}
+
+// While a block's placement editor is open, outline that block in the live
+// preview and scroll it into view, so it is clear which block on the page is
+// being placed.
+const useHighlightPreviewBlock = (
+  locatePreviewBlock: () => HTMLElement | null,
+): void => {
+  const [highlightColor] = useToken("colors", ["interaction.main.default"])
+
+  useEffect(() => {
+    const element = locatePreviewBlock()
     if (!element) {
       return
     }
@@ -206,7 +213,80 @@ const useHighlightPreviewBlock = (path: string): void => {
       element.style.outline = previousOutline
       element.style.outlineOffset = previousOutlineOffset
     }
-  }, [blockIndex, canvasOrdinal, highlightColor])
+  }, [highlightColor, locatePreviewBlock])
+}
+
+const restoreCustomProperty = (
+  element: HTMLElement,
+  name: string,
+  value: string,
+): void => {
+  if (value) {
+    element.style.setProperty(name, value)
+  } else {
+    element.style.removeProperty(name)
+  }
+}
+
+// The preview only re-renders when a placement is committed, so during a drag
+// the edited block is repositioned live by writing the same CSS custom
+// properties the Canvas renderer emits. The returned release function ends the
+// feedback: a committed drag keeps the final values (the committed data
+// re-renders the preview and owns them from then on), a cancelled drag
+// restores what was there before. Closing the editor mid-drag also restores.
+const usePreviewDragFeedback = (
+  locatePreviewBlock: () => HTMLElement | null,
+  selection: NormalisedPlacement | null,
+): ((options: { restore: boolean }) => void) => {
+  const capturedRef = useRef<{
+    element: HTMLElement
+    column: string
+    row: string
+  } | null>(null)
+
+  const column =
+    selection === null
+      ? null
+      : `${selection.colStart} / span ${selection.colEnd - selection.colStart + 1}`
+  const row =
+    selection === null
+      ? null
+      : `${selection.rowStart} / span ${selection.rowEnd - selection.rowStart + 1}`
+
+  useEffect(() => {
+    if (column === null || row === null) {
+      return
+    }
+    const element = capturedRef.current?.element ?? locatePreviewBlock()
+    if (!element) {
+      return
+    }
+    capturedRef.current ??= {
+      element,
+      column: element.style.getPropertyValue("--canvas-grid-column"),
+      row: element.style.getPropertyValue("--canvas-grid-row"),
+    }
+    element.style.setProperty("--canvas-grid-column", column)
+    element.style.setProperty("--canvas-grid-row", row)
+  }, [column, locatePreviewBlock, row])
+
+  const release = useCallback((options: { restore: boolean }) => {
+    const captured = capturedRef.current
+    capturedRef.current = null
+    if (!captured || !options.restore) {
+      return
+    }
+    restoreCustomProperty(
+      captured.element,
+      "--canvas-grid-column",
+      captured.column,
+    )
+    restoreCustomProperty(captured.element, "--canvas-grid-row", captured.row)
+  }, [])
+
+  useEffect(() => () => release({ restore: true }), [release])
+
+  return release
 }
 
 function JsonFormsCanvasPlacementControl({
@@ -221,9 +301,17 @@ function JsonFormsCanvasPlacementControl({
   const placement = data as CanvasBlockPlacementProps | undefined
   const siblingPlacements = useSiblingPlacements(path)
   const [drag, setDrag] = useState<DragState | null>(null)
-  useHighlightPreviewBlock(path)
+  const locatePreviewBlock = usePreviewBlockLocator(path)
+  useHighlightPreviewBlock(locatePreviewBlock)
+
+  const dragSelection = drag ? resolveDragSelection(drag) : null
+  const releasePreviewDragFeedback = usePreviewDragFeedback(
+    locatePreviewBlock,
+    dragSelection,
+  )
 
   const commitSelection = (selection: NormalisedPlacement): void => {
+    releasePreviewDragFeedback({ restore: false })
     handleChange(path, toPlacement(selection))
     setDrag(null)
   }
@@ -235,19 +323,20 @@ function JsonFormsCanvasPlacementControl({
       return
     }
     const commitDrag = () => {
+      releasePreviewDragFeedback({ restore: false })
       handleChange(path, toPlacement(resolveDragSelection(drag)))
       setDrag(null)
     }
     window.addEventListener("mouseup", commitDrag)
     return () => window.removeEventListener("mouseup", commitDrag)
-  }, [drag, handleChange, path])
+  }, [drag, handleChange, path, releasePreviewDragFeedback])
 
   if (!visible) {
     return null
   }
 
   const savedSelection = placement ? normalise(placement) : undefined
-  const selection = drag ? resolveDragSelection(drag) : savedSelection
+  const selection = dragSelection ?? savedSelection
 
   const displayedRows = Math.max(
     MIN_DISPLAYED_ROWS,
@@ -431,6 +520,7 @@ function JsonFormsCanvasPlacementControl({
                       // into drawer/modal close handlers
                       event.preventDefault()
                       event.stopPropagation()
+                      releasePreviewDragFeedback({ restore: true })
                       setDrag(null)
                     }
                   }}

@@ -985,4 +985,72 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("moves the block in the live preview while dragging and restores it on cancel", () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    // The Canvas renderer emits this for an unplaced block
+    previewBlock.style.setProperty("--canvas-grid-column", "1 / -1")
+
+    renderCanvasFormInEditorDrawer({
+      type: "canvas",
+      blocks: [BLOCKQUOTE_BLOCK],
+    } as IsomerComponent)
+
+    click(findButtonByText("Item 1")!)
+
+    // Sweep a rectangle without releasing: the preview block follows live
+    act(() => {
+      placementCellAt(2, 3).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    act(() => {
+      placementCellAt(4, 8).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "3 / span 6",
+    )
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-row")).toBe(
+      "2 / span 3",
+    )
+
+    // Escape cancels the drag and puts the preview block back where it was
+    pressKey(placementCellAt(4, 8), "Escape")
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "1 / -1",
+    )
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-row")).toBe("")
+
+    // A completed drag leaves the preview block at the committed placement
+    dragBetweenPlacementCells({ row: 1, col: 2 }, { row: 2, col: 5 })
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "2 / span 4",
+    )
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-row")).toBe(
+      "1 / span 2",
+    )
+
+    iframe.remove()
+  })
 })
