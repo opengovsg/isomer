@@ -1,5 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import { Text } from "@chakra-ui/react"
+import { Text, useToken } from "@chakra-ui/react"
 import {
   and,
   or,
@@ -13,9 +13,11 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
+import type { CanvasSizeBadge } from "../../../../utils/canvasPreviewBlock"
 import {
   findCanvasPreviewContainer,
   resolveCanvasWidthPercent,
+  showCanvasSizeBadge,
 } from "../../../../utils/canvasPreviewBlock"
 import { JsonFormsIntegerControl } from "./JsonFormsIntegerControl"
 
@@ -113,6 +115,7 @@ const useCommitPreviewCanvasResize = ({
 }: ControlProps): number => {
   const locateCanvas = useCanvasPreviewLocator()
   const [resizeCount, setResizeCount] = useState(0)
+  const [badgeColor] = useToken("colors", ["interaction.main.default"])
   const dimension = path.split(".").at(-1) === "width" ? "width" : "height"
   const { minimum, maximum } = schema
   const savedValue: unknown = data
@@ -128,6 +131,30 @@ const useCommitPreviewCanvasResize = ({
     }
 
     let startSize: { width: number; height: number } | null = null
+    let badge: CanvasSizeBadge | null = null
+
+    const dropBadge = () => {
+      badge?.cleanup()
+      badge = null
+    }
+
+    // Wix-style live readout while the handle is being dragged: the badge
+    // shows the size the release would commit. Owned by the height instance
+    // alone (like the resize affordance) so the two size controls cannot
+    // pin duplicate badges.
+    const trackResize = () => {
+      if (!startSize) {
+        return
+      }
+      badge ??= showCanvasSizeBadge(canvas, badgeColor)
+      const rect = canvas.getBoundingClientRect()
+      const widthPercent = resolveCanvasWidthPercent(canvas)
+      const width =
+        widthPercent === null
+          ? `${Math.round(rect.width)}px`
+          : `${Math.round(widthPercent)}%`
+      badge.update(`${width} × ${Math.round(rect.height)}px`)
+    }
 
     const grabHandle = (event: MouseEvent) => {
       // The handle belongs to the canvas element itself; events from the
@@ -146,6 +173,7 @@ const useCommitPreviewCanvasResize = ({
     }
 
     const commitResize = () => {
+      dropBadge()
       if (!startSize) {
         return
       }
@@ -179,9 +207,14 @@ const useCommitPreviewCanvasResize = ({
 
     canvas.addEventListener("mousedown", grabHandle)
     previewWindow.addEventListener("mouseup", commitResize)
+    if (dimension === "height") {
+      previewWindow.addEventListener("mousemove", trackResize)
+    }
     return () => {
       canvas.removeEventListener("mousedown", grabHandle)
       previewWindow.removeEventListener("mouseup", commitResize)
+      previewWindow.removeEventListener("mousemove", trackResize)
+      dropBadge()
     }
   }, [
     visible,
@@ -193,6 +226,7 @@ const useCommitPreviewCanvasResize = ({
     savedValue,
     handleChange,
     locateCanvas,
+    badgeColor,
   ])
 
   return resizeCount

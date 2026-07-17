@@ -8,6 +8,7 @@ import {
   CANVAS_HOVER_LABEL_DATA_ATTRIBUTE,
   CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE,
   CANVAS_SELECTION_TOOLBAR_DATA_ATTRIBUTE,
+  CANVAS_SIZE_BADGE_DATA_ATTRIBUTE,
   CANVAS_TOOLBAR_ACTION_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
   findCanvasPreviewContainer,
@@ -20,6 +21,7 @@ import {
   showCanvasHoverLabel,
   showCanvasSelectionHandles,
   showCanvasSelectionToolbar,
+  showCanvasSizeBadge,
 } from "../canvasPreviewBlock"
 
 const appendIframe = (bodyHtml: string): HTMLIFrameElement => {
@@ -540,6 +542,78 @@ describe("showCanvasHoverLabel", () => {
     cleanup()
     expect(labelIn(block)).toBeNull()
     expect(block.style.position).toBe("")
+  })
+})
+
+describe("showCanvasSizeBadge", () => {
+  const stubRect = (
+    element: HTMLElement,
+    size: { right: number; bottom: number },
+  ) => {
+    element.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: size.right,
+      height: size.bottom,
+      right: size.right,
+      bottom: size.bottom,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+  }
+
+  const badgeIn = (doc: Document) =>
+    doc.querySelector<HTMLElement>(`[${CANVAS_SIZE_BADGE_DATA_ATTRIBUTE}]`)
+
+  it("pins a fixed chip in the document and positions it at the canvas's bottom-right corner on update", () => {
+    const canvas = document.createElement("div")
+    document.body.appendChild(canvas)
+    stubRect(canvas, { right: 600, bottom: 400 })
+
+    const sizeBadge = showCanvasSizeBadge(canvas, "#1361F0")
+    // Fixed positioning in the document body: a child of the canvas would
+    // scroll with the content and be clipped by the canvas's own overflow
+    const badge = badgeIn(document)!
+    expect(badge.parentElement).toBe(document.body)
+    expect(badge.style.position).toBe("fixed")
+    expect(badge.getAttribute("aria-hidden")).toBe("true")
+    expect(badge.style.pointerEvents).toBe("none")
+
+    sizeBadge.update("60% × 400px")
+    expect(badge.textContent).toBe("60% × 400px")
+    expect(badge.style.left).toBe("594px")
+    expect(badge.style.top).toBe("394px")
+  })
+
+  it("follows the moving corner across updates", () => {
+    const canvas = document.createElement("div")
+    document.body.appendChild(canvas)
+    const size = { right: 600, bottom: 400 }
+    stubRect(canvas, size)
+
+    const sizeBadge = showCanvasSizeBadge(canvas, "#1361F0")
+    sizeBadge.update("60% × 400px")
+
+    size.right = 800
+    size.bottom = 500
+    sizeBadge.update("80% × 500px")
+    const badge = badgeIn(document)!
+    expect(badge.textContent).toBe("80% × 500px")
+    expect(badge.style.left).toBe("794px")
+    expect(badge.style.top).toBe("494px")
+  })
+
+  it("removes the chip on cleanup", () => {
+    const canvas = document.createElement("div")
+    document.body.appendChild(canvas)
+    stubRect(canvas, { right: 600, bottom: 400 })
+
+    const sizeBadge = showCanvasSizeBadge(canvas, "#1361F0")
+    expect(badgeIn(document)).not.toBeNull()
+
+    sizeBadge.cleanup()
+    expect(badgeIn(document)).toBeNull()
   })
 })
 

@@ -2688,6 +2688,13 @@ describe("FormBuilder canvas editing interactions", () => {
       )
     })
     canvasSize.width = 900
+    // A press that never grabbed the handle also shows no live size badge
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove"),
+      )
+    })
+    expect(previewDocument.querySelector("[data-canvas-size-badge]")).toBeNull()
     act(() => {
       iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
     })
@@ -2710,11 +2717,32 @@ describe("FormBuilder canvas editing interactions", () => {
         }),
       )
     })
+    // While the handle is held, a Wix-style badge at the canvas's corner
+    // shows the live size the release would commit, following the drag
+    canvasSize.width = 800
+    canvasSize.height = 400
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove"),
+      )
+    })
+    const sizeBadge = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-size-badge]",
+    )
+    expect(sizeBadge?.textContent).toBe("80% × 400px")
     canvasSize.width = 600
     canvasSize.height = 500
     act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove"),
+      )
+    })
+    expect(sizeBadge?.textContent).toBe("60% × 500px")
+    act(() => {
       iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
     })
+    // The badge is a drag-only affordance, removed on release
+    expect(previewDocument.querySelector("[data-canvas-size-badge]")).toBeNull()
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 50))
     })

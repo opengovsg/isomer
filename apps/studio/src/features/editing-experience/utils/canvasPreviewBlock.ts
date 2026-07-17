@@ -350,6 +350,54 @@ export const showCanvasHoverLabel = (
     { left: "0", transform: "translateY(-6px)" },
   )
 
+export const CANVAS_SIZE_BADGE_DATA_ATTRIBUTE = "data-canvas-size-badge"
+
+export interface CanvasSizeBadge {
+  update: (text: string) => void
+  cleanup: () => void
+}
+
+// Wix-style live size readout: while the canvas's resize handle is being
+// dragged, a chip just inside the bottom-right corner (where the pointer is
+// holding the handle) shows the size the drag will commit on release. The
+// chip lives in the preview document body with fixed positioning — as a
+// child of the canvas it would scroll with the content and be clipped by
+// the canvas's own overflow — and is repositioned from the canvas's live
+// rect on every update because the resize moves the corner it is pinned to.
+export const showCanvasSizeBadge = (
+  canvas: HTMLElement,
+  badgeColor: string,
+): CanvasSizeBadge => {
+  const chip = canvas.ownerDocument.createElement("div")
+  chip.setAttribute(CANVAS_SIZE_BADGE_DATA_ATTRIBUTE, "")
+  chip.setAttribute("aria-hidden", "true")
+  Object.assign(chip.style, {
+    position: "fixed",
+    transform: "translate(-100%, -100%)",
+    backgroundColor: badgeColor,
+    color: "#ffffff",
+    fontSize: "12px",
+    lineHeight: "1.4",
+    padding: "2px 8px",
+    borderRadius: "4px",
+    whiteSpace: "nowrap",
+    pointerEvents: "none",
+    zIndex: "2",
+  })
+  canvas.ownerDocument.body.appendChild(chip)
+  return {
+    update: (text: string) => {
+      chip.textContent = text
+      const rect = canvas.getBoundingClientRect()
+      chip.style.left = `${rect.right - 6}px`
+      chip.style.top = `${rect.bottom - 6}px`
+    },
+    cleanup: () => {
+      chip.remove()
+    },
+  }
+}
+
 export const CANVAS_SELECTION_TOOLBAR_DATA_ATTRIBUTE =
   "data-canvas-selection-toolbar"
 export const CANVAS_TOOLBAR_ACTION_DATA_ATTRIBUTE = "data-canvas-toolbar-action"
