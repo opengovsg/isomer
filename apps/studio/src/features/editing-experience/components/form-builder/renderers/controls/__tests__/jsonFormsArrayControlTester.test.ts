@@ -1,8 +1,8 @@
 import type { ControlElement, JsonSchema, TesterContext } from "@jsonforms/core"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
-
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+
 import { jsonFormsArrayControlTester } from "../JsonFormsArrayControl"
 import { jsonFormsAnyOfControlTester } from "../JsonFormsCombinatorControl"
 

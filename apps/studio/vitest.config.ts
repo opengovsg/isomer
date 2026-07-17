@@ -7,10 +7,9 @@ import { configDefaults, defineConfig } from "vitest/config"
 const BROWSER_TEST_PATTERN = "src/**/*.browser.test.{ts,tsx}"
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
-  // Next's "jsx: preserve" does not apply here, so .tsx test files need the
-  // automatic runtime to avoid requiring explicit React imports
-  esbuild: { jsx: "automatic" },
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     coverage: {
       provider: "istanbul",

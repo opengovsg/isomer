@@ -1,20 +1,22 @@
 import { describe, expect, it } from "vitest"
-
 import { TYPE_TO_ICON } from "~/features/editing-experience/constants"
+
 import {
   ARTICLE_ALLOWED_BLOCKS,
   BLOCK_TO_META,
   CONTENT_ALLOWED_BLOCKS,
   DATABASE_ALLOWED_BLOCKS,
   DEFAULT_BLOCKS,
-  HOMEPAGE_ALLOWED_BLOCKS,
+  getHomepageAllowedBlocks,
 } from "../constants"
 
 const ALL_LISTS = {
   ARTICLE_ALLOWED_BLOCKS,
   CONTENT_ALLOWED_BLOCKS,
   DATABASE_ALLOWED_BLOCKS,
-  HOMEPAGE_ALLOWED_BLOCKS,
+  HOMEPAGE_ALLOWED_BLOCKS: getHomepageAllowedBlocks({
+    includeAntiScamBanner: true,
+  }),
 }
 
 describe("PageEditor allowed-blocks constants", () => {

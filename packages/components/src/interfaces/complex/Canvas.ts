@@ -1,11 +1,7 @@
 import type { Static } from "@sinclair/typebox"
+import type { IsomerPageLayoutType, IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import type {
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-  LinkComponentType,
-} from "~/types"
 import { CanvasProseSchema } from "../native/Prose"
 import { AccordionSchema } from "./Accordion"
 import { BlockquoteSchema } from "./Blockquote"
@@ -72,7 +68,6 @@ export const CanvasSchema = Type.Object(
 export type CanvasProps = Static<typeof CanvasSchema> & {
   layout: IsomerPageLayoutType
   site: IsomerSiteProps
-  LinkComponent?: LinkComponentType
   shouldLazyLoad?: boolean
   permalink: string
 }

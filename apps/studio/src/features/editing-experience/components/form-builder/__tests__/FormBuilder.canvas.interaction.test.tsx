@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import type { IsomerComponent } from "@opengovsg/isomer-components"
 import type { Root } from "react-dom/client"
-import { act } from "react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
+import { act } from "react"
 import { createRoot } from "react-dom/client"
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
-
 import { theme } from "~/theme"
 import { ajv } from "~/utils/ajv"
+
 import { ErrorProvider } from "../ErrorProvider"
 import FormBuilder from "../FormBuilder"
 

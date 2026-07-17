@@ -3,9 +3,9 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
-
 import { theme } from "~/theme"
 import { ajv } from "~/utils/ajv"
+
 import { ErrorProvider } from "../ErrorProvider"
 import FormBuilder from "../FormBuilder"
 

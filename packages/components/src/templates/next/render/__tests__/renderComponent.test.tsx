@@ -1,8 +1,8 @@
+import type { IsomerComponent } from "~/types"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vitest"
-
-import type { IsomerComponent } from "~/types"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { renderComponent } from "../renderComponent"
 import { renderPageContent } from "../renderPageContent"
 
@@ -132,7 +132,6 @@ describe("renderComponent", () => {
           ],
           layout: "content",
           site: generateSiteConfig(),
-          LinkComponent: "a",
           permalink: "/",
         })}
       </>,

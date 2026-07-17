@@ -1,7 +1,6 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { schema } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
-
 import { ajv } from "~/utils/ajv"
 
 // Mirrors the module-load compilation in page.router.ts: if the full page

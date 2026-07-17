@@ -1,4 +1,5 @@
 import type { CanvasProps } from "~/interfaces"
+
 import { renderComponent } from "../../../render/renderComponent"
 
 export const Canvas = ({
@@ -7,7 +8,6 @@ export const Canvas = ({
   height,
   layout,
   site,
-  LinkComponent,
   shouldLazyLoad,
   permalink,
 }: CanvasProps) => {
@@ -27,7 +27,6 @@ export const Canvas = ({
           component: block,
           layout,
           site,
-          LinkComponent,
           shouldLazyLoad,
           permalink,
         }),

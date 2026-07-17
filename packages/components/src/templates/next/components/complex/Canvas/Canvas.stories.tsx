@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-
 import type { CanvasProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
+
 import { Canvas } from "./Canvas"
 
 const meta: Meta<CanvasProps> = {

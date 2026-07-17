@@ -5,7 +5,6 @@ import {
   and,
   composePaths,
   createDefaultValue,
-  findUISchema,
   hasType,
   isObjectArrayControl,
   isPrimitiveArrayControl,
