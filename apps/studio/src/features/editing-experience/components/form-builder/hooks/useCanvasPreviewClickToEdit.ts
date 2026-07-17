@@ -3,6 +3,7 @@ import { useEffect, useMemo } from "react"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import { findCanvasPreviewContainer } from "../../../utils/canvasPreviewBlock"
+import { setCanvasPreviewGrabHandoff } from "../../../utils/canvasPreviewGrabHandoff"
 
 // The canvas form binds its child blocks array at this root-level path; nested
 // arrays inside child forms have dotted paths and must not become click targets
@@ -85,6 +86,34 @@ export const useCanvasPreviewClickToEdit = ({
       deselectArmed = resolveBlock(event) === null
     }
 
+    // Selecting on press (not on click) lets the same gesture continue as a
+    // placement drag, Wix-style: the in-flight press is handed to the newly
+    // mounted placement control, which resumes it as a grab. Presses on the
+    // already-selected block never arrive here — the placement control stops
+    // their propagation.
+    const grabToSelect = (event: MouseEvent) => {
+      if (event.button !== 0) {
+        return
+      }
+      const block = resolveBlock(event)
+      if (!block) {
+        return
+      }
+      const index = Number(
+        block.getAttribute(CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE),
+      )
+      if (!Number.isInteger(index) || index < 0 || index === selectedIndex) {
+        return
+      }
+      // Keep the preview content from starting native drags or text selection
+      event.preventDefault()
+      setCanvasPreviewGrabHandoff(
+        { blockIndex: index, clientX: event.clientX, clientY: event.clientY },
+        canvas.ownerDocument.defaultView ?? window,
+      )
+      setSelectedIndex(index)
+    }
+
     const openBlockEditor = (event: MouseEvent) => {
       const block = resolveBlock(event)
       if (!block) {
@@ -108,9 +137,11 @@ export const useCanvasPreviewClickToEdit = ({
     }
 
     canvas.addEventListener("mousedown", armDeselect, true)
+    canvas.addEventListener("mousedown", grabToSelect)
     canvas.addEventListener("click", openBlockEditor)
     return () => {
       canvas.removeEventListener("mousedown", armDeselect, true)
+      canvas.removeEventListener("mousedown", grabToSelect)
       canvas.removeEventListener("click", openBlockEditor)
       clickTargets.forEach((element, index) => {
         element.style.cursor = previousCursors[index] ?? ""

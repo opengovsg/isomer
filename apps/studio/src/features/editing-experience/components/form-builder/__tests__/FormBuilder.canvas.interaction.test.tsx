@@ -2357,4 +2357,159 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("selects a block and drags it with the same press, Wix-style", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows; the two
+    // unplaced blocks stack full-width, one above the other
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const firstBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    firstBlock.style.setProperty("--canvas-grid-column", "1 / -1")
+    firstBlock.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 64,
+      right: 480,
+      bottom: 64,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const secondBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="1"]',
+    )!
+    secondBlock.style.setProperty("--canvas-grid-column", "1 / -1")
+    secondBlock.getBoundingClientRect = () => ({
+      left: 0,
+      top: 64,
+      width: 480,
+      height: 64,
+      right: 480,
+      bottom: 128,
+      x: 0,
+      y: 64,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          BLOCKQUOTE_BLOCK,
+          { type: "blockquote", quote: "Second quote", source: "s" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    // Pressing a block in the list view selects it immediately — no release
+    // needed — so the same gesture can continue as a drag
+    act(() => {
+      firstBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 85,
+          clientY: 16,
+        }),
+      )
+    })
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("A quote inside the canvas")
+
+    // Releasing without crossing into another grid cell is a plain
+    // selection: no drag starts and no placement is committed
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(
+      previewDocument.querySelector("[data-canvas-grid-overlay]"),
+    ).toBeNull()
+    const selectOnlyChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(selectOnlyChange?.blocks?.[0]?.placement).toBeUndefined()
+
+    // Pressing a sibling switches the editor to it, and the press keeps
+    // going: crossing into another cell starts moving that block
+    act(() => {
+      secondBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 85,
+          clientY: 80,
+        }),
+      )
+    })
+    expect(container.textContent).toContain("Second quote")
+    expect(container.textContent).not.toContain("A quote inside the canvas")
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 165, clientY: 112 }),
+      )
+    })
+    expect(
+      previewDocument.querySelector("[data-canvas-grid-overlay]"),
+    ).not.toBeNull()
+    expect(secondBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "1 / span 12",
+    )
+    expect(secondBlock.style.getPropertyValue("--canvas-grid-row")).toBe(
+      "4 / span 2",
+    )
+
+    // Releasing commits the moved placement through the usual path
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[1]?.placement).toEqual({
+      colStart: 1,
+      colSpan: 12,
+      rowStart: 4,
+      rowSpan: 2,
+    })
+
+    iframe.remove()
+  })
 })

@@ -35,6 +35,7 @@ import {
   showCanvasGridOverlay,
   showCanvasSelectionHandles,
 } from "../../../../utils/canvasPreviewBlock"
+import { takeCanvasPreviewGrabHandoff } from "../../../../utils/canvasPreviewGrabHandoff"
 
 export const jsonFormsCanvasPlacementControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CanvasPlacementControl,
@@ -639,6 +640,54 @@ function JsonFormsCanvasPlacementControl({
       previewBlock.style.cursor = previousCursor
     }
   }, [visible, enabled, savedSelection, locatePreviewBlock])
+
+  // The press that selected this block in the live preview (see
+  // useCanvasPreviewClickToEdit) happened before this control mounted, so it
+  // is handed over rather than observed: resume it as a grab, and the same
+  // gesture that selected the block can keep going as a drag, Wix-style. The
+  // handoff is already invalidated if the press was released.
+  useEffect(() => {
+    if (!visible || !enabled) {
+      return
+    }
+    const blockIndex = Number(path.split(".").at(-2))
+    if (!Number.isInteger(blockIndex)) {
+      return
+    }
+    const grabHandoff = takeCanvasPreviewGrabHandoff(blockIndex)
+    if (!grabHandoff) {
+      return
+    }
+    const previewBlock = locatePreviewBlock()
+    const previewCanvas = previewBlock?.closest<HTMLElement>(
+      `[${CANVAS_CONTAINER_DATA_ATTRIBUTE}]`,
+    )
+    if (!previewBlock || !previewCanvas) {
+      return
+    }
+    const cell = resolveCanvasGridCellFromPoint(
+      previewCanvas,
+      grabHandoff.clientX,
+      grabHandoff.clientY,
+    )
+    const base =
+      savedSelection ??
+      resolveCanvasBlockGridArea(previewCanvas, previewBlock) ??
+      undefined
+    if (!cell || !base) {
+      return
+    }
+    setPendingGrab({
+      base,
+      grab: {
+        row: clamp(cell.row, base.rowStart, base.rowEnd),
+        col: clamp(cell.col, base.colStart, base.colEnd),
+      },
+      // The selection handles did not exist when the press landed, so a
+      // handed-over grab is always a body move or corner resize
+      edge: null,
+    })
+  }, [visible, enabled, path, savedSelection, locatePreviewBlock])
 
   // A pending grab turns into a real drag on the first pointer movement that
   // reaches a different grid cell; releasing the mouse first abandons it
