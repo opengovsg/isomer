@@ -1390,4 +1390,113 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("gives an unplaced block its first placement by dragging it in the live preview", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    // An unplaced block stacks full-width; this one renders across all 12
+    // columns and two base rows (the renderer emits 1 / -1 with no row)
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    previewBlock.style.setProperty("--canvas-grid-column", "1 / -1")
+    previewBlock.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 64,
+      right: 480,
+      bottom: 64,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [BLOCKQUOTE_BLOCK],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Even without a saved placement the block advertises grabbability
+    expect(previewBlock.style.cursor).toBe("move")
+
+    // Grab the footprint's top-left corner cell (row 1, col 1) and drag it
+    // to row 1, col 7: the block resizes anchored at its bottom-right
+    // footprint corner (row 2, col 12), becoming its first placement
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 5,
+          clientY: 5,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 245, clientY: 16 }),
+      )
+    })
+    // The preview follows live before the drag is released
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "7 / span 6",
+    )
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-row")).toBe(
+      "1 / span 2",
+    )
+    expect(container.textContent).toContain("Columns 7–12, rows 1–2")
+
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 7,
+      colSpan: 6,
+      rowStart: 1,
+      rowSpan: 2,
+    })
+
+    iframe.remove()
+  })
 })

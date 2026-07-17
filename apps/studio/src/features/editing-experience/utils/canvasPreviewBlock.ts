@@ -123,6 +123,48 @@ export const resolveCanvasGridCellFromPoint = (
   return { row: clamp(row, 1, CANVAS_MAX_ROW), col }
 }
 
+export interface CanvasGridArea {
+  colStart: number
+  colEnd: number
+  rowStart: number
+  rowEnd: number
+}
+
+// The grid cells a rendered block currently covers. An unplaced block has no
+// placement data to manipulate relative to, so its rendered footprint serves
+// as the starting rectangle when it is grabbed in the preview to receive its
+// first placement.
+export const resolveCanvasBlockGridArea = (
+  canvas: HTMLElement,
+  block: HTMLElement,
+): CanvasGridArea | null => {
+  const rect = block.getBoundingClientRect()
+  if (rect.width <= 0 || rect.height <= 0) {
+    return null
+  }
+  // Inset by a pixel so an edge sitting exactly on a cell boundary cannot
+  // round into the neighbouring cell
+  const topLeft = resolveCanvasGridCellFromPoint(
+    canvas,
+    rect.left + 1,
+    rect.top + 1,
+  )
+  const bottomRight = resolveCanvasGridCellFromPoint(
+    canvas,
+    rect.right - 1,
+    rect.bottom - 1,
+  )
+  if (!topLeft || !bottomRight) {
+    return null
+  }
+  return {
+    colStart: Math.min(topLeft.col, bottomRight.col),
+    colEnd: Math.max(topLeft.col, bottomRight.col),
+    rowStart: Math.min(topLeft.row, bottomRight.row),
+    rowEnd: Math.max(topLeft.row, bottomRight.row),
+  }
+}
+
 export const CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE = "data-canvas-grid-overlay"
 
 // The grid is invisible on the rendered page, so while a placement drag is in

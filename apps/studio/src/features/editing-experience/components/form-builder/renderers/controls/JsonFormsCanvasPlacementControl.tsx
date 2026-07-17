@@ -27,6 +27,7 @@ import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import {
   findCanvasBlockPreviewElement,
+  resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
   showCanvasGridOverlay,
 } from "../../../../utils/canvasPreviewBlock"
@@ -365,22 +366,19 @@ function JsonFormsCanvasPlacementControl({
   )
   usePreviewGridGuides(locatePreviewBlock, drag !== null)
 
-  const startDrag = useCallback(
-    (row: number, col: number): void => {
-      if (savedSelection && coversCell(savedSelection, row, col)) {
-        if (isCorner(savedSelection, row, col)) {
-          // Resize: sweep anchored at the opposite corner of the selection
+  // Starts a drag relative to a base rectangle: its corners resize (a sweep
+  // anchored at the opposite corner), its body moves, and anywhere else
+  // draws a fresh rectangle. The base is the saved placement for picker
+  // cells, or an unplaced block's rendered footprint for preview grabs.
+  const startDragWithin = useCallback(
+    (base: NormalisedPlacement | undefined, row: number, col: number): void => {
+      if (base && coversCell(base, row, col)) {
+        if (isCorner(base, row, col)) {
           setDrag({
             mode: "draw",
             anchor: {
-              row:
-                row === savedSelection.rowStart
-                  ? savedSelection.rowEnd
-                  : savedSelection.rowStart,
-              col:
-                col === savedSelection.colStart
-                  ? savedSelection.colEnd
-                  : savedSelection.colStart,
+              row: row === base.rowStart ? base.rowEnd : base.rowStart,
+              col: col === base.colStart ? base.colEnd : base.colStart,
             },
             current: { row, col },
           })
@@ -388,7 +386,7 @@ function JsonFormsCanvasPlacementControl({
         }
         setDrag({
           mode: "move",
-          origin: savedSelection,
+          origin: base,
           grab: { row, col },
           current: { row, col },
         })
@@ -396,7 +394,13 @@ function JsonFormsCanvasPlacementControl({
       }
       setDrag({ mode: "draw", anchor: { row, col }, current: { row, col } })
     },
-    [savedSelection],
+    [],
+  )
+
+  const startDrag = useCallback(
+    (row: number, col: number): void =>
+      startDragWithin(savedSelection, row, col),
+    [savedSelection, startDragWithin],
   )
 
   const commitSelection = (selection: NormalisedPlacement): void => {
@@ -478,11 +482,14 @@ function JsonFormsCanvasPlacementControl({
     locatePreviewBlock,
   ])
 
-  // Wix-like direct manipulation: a placed block can be grabbed in the live
+  // Wix-like direct manipulation: the block can be grabbed in the live
   // preview itself — its body moves it, a corner cell resizes it (the same
-  // semantics as the picker grid)
+  // semantics as the picker grid). An unplaced block has no saved placement
+  // to manipulate, so its rendered footprint (full width in flow order)
+  // stands in as the grabbed rectangle: dragging it commits the block's
+  // first placement.
   useEffect(() => {
-    if (!visible || !enabled || !savedSelection) {
+    if (!visible || !enabled) {
       return
     }
     const previewBlock = locatePreviewBlock()
@@ -501,18 +508,24 @@ function JsonFormsCanvasPlacementControl({
         event.clientX,
         event.clientY,
       )
-      if (!cell) {
+      const base =
+        savedSelection ??
+        resolveCanvasBlockGridArea(previewCanvas, previewBlock) ??
+        undefined
+      if (!cell || !base) {
         return
       }
       // Keep the preview content from starting native drags or text selection
       event.preventDefault()
       event.stopPropagation()
       // Geometry rounding at the block's edges could land just outside the
-      // saved area; clamping guarantees a grab is a move or a corner resize,
-      // never a fresh draw that would shrink the block to a single cell
-      startDrag(
-        clamp(cell.row, savedSelection.rowStart, savedSelection.rowEnd),
-        clamp(cell.col, savedSelection.colStart, savedSelection.colEnd),
+      // grabbed area; clamping guarantees a grab is a move or a corner
+      // resize, never a fresh draw that would shrink the block to a single
+      // cell
+      startDragWithin(
+        base,
+        clamp(cell.row, base.rowStart, base.rowEnd),
+        clamp(cell.col, base.colStart, base.colEnd),
       )
     }
     const previousCursor = previewBlock.style.cursor
@@ -522,7 +535,7 @@ function JsonFormsCanvasPlacementControl({
       previewBlock.removeEventListener("mousedown", grabBlock)
       previewBlock.style.cursor = previousCursor
     }
-  }, [visible, enabled, savedSelection, locatePreviewBlock, startDrag])
+  }, [visible, enabled, savedSelection, locatePreviewBlock, startDragWithin])
 
   if (!visible) {
     return null
@@ -669,7 +682,7 @@ function JsonFormsCanvasPlacementControl({
         <Text mt="0.5rem" textStyle="body-2" textColor="base.content.medium">
           {selection
             ? `Columns ${selection.colStart}–${selection.colEnd}, rows ${selection.rowStart}–${selection.rowEnd}`
-            : "Not placed: this block stacks across the full canvas width. Drag on the grid to place and size it, or press Enter on a starting cell and again on an ending cell."}
+            : "Not placed: this block stacks across the full canvas width. Drag on the grid (or drag the block itself in the page preview) to place and size it, or press Enter on a starting cell and again on an ending cell."}
         </Text>
         {selection && (
           <Text textStyle="body-2" textColor="base.content.medium">

@@ -5,6 +5,7 @@ import {
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
   findPreviewDocumentWithCanvas,
+  resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
   showCanvasGridOverlay,
 } from "../canvasPreviewBlock"
@@ -172,6 +173,105 @@ describe("resolveCanvasGridCellFromPoint", () => {
     const canvas = makeCanvas({}, { width: 0 })
 
     expect(resolveCanvasGridCellFromPoint(canvas, 10, 10)).toBeNull()
+  })
+})
+
+describe("resolveCanvasBlockGridArea", () => {
+  // The same 480px-wide, gapless canvas as above: 40px columns, 32px rows
+  const makeCanvas = (): HTMLElement => {
+    const canvas = document.createElement("div")
+    document.body.appendChild(canvas)
+    canvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({
+      columnGap: "",
+      rowGap: "",
+      paddingLeft: "",
+      paddingRight: "",
+      paddingTop: "",
+      borderLeftWidth: "",
+      borderRightWidth: "",
+      borderTopWidth: "",
+      gridTemplateRows: "none",
+    } as CSSStyleDeclaration)
+    return canvas
+  }
+
+  const makeBlock = (canvas: HTMLElement, rect: Partial<DOMRect>) => {
+    const block = document.createElement("div")
+    canvas.appendChild(block)
+    block.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+      right: 0,
+      bottom: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+      ...rect,
+    })
+    return block
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("maps a full-width stacked block's rect to the cells it covers", () => {
+    const canvas = makeCanvas()
+    const block = makeBlock(canvas, {
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 64,
+      right: 480,
+      bottom: 64,
+    })
+
+    expect(resolveCanvasBlockGridArea(canvas, block)).toEqual({
+      colStart: 1,
+      colEnd: 12,
+      rowStart: 1,
+      rowEnd: 2,
+    })
+  })
+
+  it("does not bleed into neighbouring cells when edges sit on boundaries", () => {
+    const canvas = makeCanvas()
+    // Exactly columns 2-3 (x 40-120) and row 2 (y 32-64)
+    const block = makeBlock(canvas, {
+      left: 40,
+      top: 32,
+      width: 80,
+      height: 32,
+      right: 120,
+      bottom: 64,
+    })
+
+    expect(resolveCanvasBlockGridArea(canvas, block)).toEqual({
+      colStart: 2,
+      colEnd: 3,
+      rowStart: 2,
+      rowEnd: 2,
+    })
+  })
+
+  it("returns null for a block with no measurable size", () => {
+    const canvas = makeCanvas()
+    const block = makeBlock(canvas, {})
+
+    expect(resolveCanvasBlockGridArea(canvas, block)).toBeNull()
   })
 })
 
