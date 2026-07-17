@@ -16,9 +16,10 @@ interface UseCanvasPreviewClickToEditArgs {
 
 // While the canvas editor is open, the blocks rendered in the live preview
 // act as click targets: clicking one opens (or switches to) its nested item
-// editor, mirroring Wix's select-on-canvas interaction. The currently edited
-// block is excluded — the placement control owns its preview interactions —
-// and the hook is a no-op for every non-canvas array control.
+// editor, and clicking the empty canvas background deselects back to the
+// block list, mirroring Wix's select-on-canvas interaction. The currently
+// edited block is excluded — the placement control owns its preview
+// interactions — and the hook is a no-op for every non-canvas array control.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -66,15 +67,31 @@ export const useCanvasPreviewClickToEdit = ({
       element.style.cursor = "pointer"
     })
 
-    const openBlockEditor = (event: MouseEvent) => {
+    const resolveBlock = (event: MouseEvent) => {
       // The preview lives in an iframe, so the target belongs to that realm
       // and cannot be narrowed with the editor window's instanceof checks
       const target = event.target as Partial<Element> | null
-      const block =
-        typeof target?.closest === "function"
-          ? target.closest(`[${CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE}]`)
-          : null
+      return typeof target?.closest === "function"
+        ? target.closest(`[${CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE}]`)
+        : null
+    }
+
+    // Deselect only when the press also started outside every block: a block
+    // drag released over the background fires its click at the canvas
+    // ancestor too, and must not close the editor. Capture phase, because the
+    // placement control stops propagation of presses on the edited block.
+    let deselectArmed = false
+    const armDeselect = (event: MouseEvent) => {
+      deselectArmed = resolveBlock(event) === null
+    }
+
+    const openBlockEditor = (event: MouseEvent) => {
+      const block = resolveBlock(event)
       if (!block) {
+        if (deselectArmed && selectedIndex !== undefined) {
+          setSelectedIndex(undefined)
+        }
+        deselectArmed = false
         return
       }
       const index = Number(
@@ -90,8 +107,10 @@ export const useCanvasPreviewClickToEdit = ({
       }
     }
 
+    canvas.addEventListener("mousedown", armDeselect, true)
     canvas.addEventListener("click", openBlockEditor)
     return () => {
+      canvas.removeEventListener("mousedown", armDeselect, true)
       canvas.removeEventListener("click", openBlockEditor)
       clickTargets.forEach((element, index) => {
         element.style.cursor = previousCursors[index] ?? ""

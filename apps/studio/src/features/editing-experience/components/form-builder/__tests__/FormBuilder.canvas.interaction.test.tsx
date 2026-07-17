@@ -2071,6 +2071,62 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(container.textContent).toContain("Second quote")
     expect(container.textContent).not.toContain("A quote inside the canvas")
 
+    // Clicking the empty canvas background while a nested editor is open
+    // deselects back to the block list, Wix-style; blocks regain their
+    // click affordance
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Add item")
+    expect(firstBlock.style.cursor).toBe("pointer")
+    expect(secondBlock.style.cursor).toBe("pointer")
+
+    // A drag that starts on the edited block and is released over the
+    // background must not deselect: the browser fires its click at the
+    // canvas ancestor, but the press did not start outside every block
+    act(() => {
+      firstBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(container.textContent).toContain("A quote inside the canvas")
+    act(() => {
+      firstBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mouseup", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(container.textContent).toContain("A quote inside the canvas")
+
     iframe.remove()
   })
 })
