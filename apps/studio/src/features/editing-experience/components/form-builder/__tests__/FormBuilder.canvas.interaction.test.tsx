@@ -3010,7 +3010,7 @@ describe("FormBuilder canvas editing interactions", () => {
       type: "canvas",
       blocks: [
         BLOCKQUOTE_BLOCK,
-        { type: "blockquote", quote: "Second quote", source: "s" },
+        { type: "image", src: "/an-image.png", alt: "An image" },
       ],
     } as IsomerComponent)
 
@@ -3020,12 +3020,17 @@ describe("FormBuilder canvas editing interactions", () => {
     const secondBlock = previewDocument.querySelector<HTMLElement>(
       '[data-canvas-block-index="1"]',
     )!
+    const hoverLabelIn = (block: HTMLElement) =>
+      block.querySelector<HTMLElement>("[data-canvas-hover-label]")
 
-    // No outline until a block is hovered
+    // No outline or name label until a block is hovered
     expect(firstBlock.style.outline).toBe("")
     expect(secondBlock.style.outline).toBe("")
+    expect(hoverLabelIn(firstBlock)).toBeNull()
+    expect(hoverLabelIn(secondBlock)).toBeNull()
 
-    // Hovering a block (here through its nested span) outlines it
+    // Hovering a block (here through its nested span) outlines it and names
+    // it with a label chip
     act(() => {
       firstBlock.querySelector("span")!.dispatchEvent(
         new iframeRealm.MouseEvent("mouseover", {
@@ -3035,8 +3040,10 @@ describe("FormBuilder canvas editing interactions", () => {
       )
     })
     expect(firstBlock.style.outline).toContain("dashed")
+    expect(hoverLabelIn(firstBlock)?.textContent).toBe("Quote")
 
-    // Moving to a sibling hands the outline over
+    // Moving to a sibling hands the outline and label over, and the label
+    // names the sibling's own block type
     act(() => {
       secondBlock.dispatchEvent(
         new iframeRealm.MouseEvent("mouseover", {
@@ -3046,7 +3053,9 @@ describe("FormBuilder canvas editing interactions", () => {
       )
     })
     expect(firstBlock.style.outline).toBe("")
+    expect(hoverLabelIn(firstBlock)).toBeNull()
     expect(secondBlock.style.outline).toContain("dashed")
+    expect(hoverLabelIn(secondBlock)?.textContent).toBe("Image")
 
     // Leaving the canvas clears it
     act(() => {
@@ -3059,6 +3068,7 @@ describe("FormBuilder canvas editing interactions", () => {
       )
     })
     expect(secondBlock.style.outline).toBe("")
+    expect(hoverLabelIn(secondBlock)).toBeNull()
 
     // Moving between elements inside the same block keeps the outline
     act(() => {
@@ -3077,9 +3087,10 @@ describe("FormBuilder canvas editing interactions", () => {
       )
     })
     expect(firstBlock.style.outline).toContain("dashed")
+    expect(hoverLabelIn(firstBlock)?.textContent).toBe("Quote")
 
     // Selecting the hovered block hands its outline to the selection
-    // highlight (solid, owned by the placement control)
+    // highlight (solid, owned by the placement control) and drops the label
     act(() => {
       firstBlock.dispatchEvent(
         new iframeRealm.MouseEvent("click", {
@@ -3091,8 +3102,9 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(container.textContent).toContain("A quote inside the canvas")
     expect(firstBlock.style.outline).toContain("solid")
     expect(firstBlock.style.outline).not.toContain("dashed")
+    expect(hoverLabelIn(firstBlock)).toBeNull()
 
-    // Hovering the selected block never shows the hover outline
+    // Hovering the selected block never shows the hover outline or label
     act(() => {
       firstBlock.dispatchEvent(
         new iframeRealm.MouseEvent("mouseover", {
@@ -3103,6 +3115,7 @@ describe("FormBuilder canvas editing interactions", () => {
     })
     expect(firstBlock.style.outline).toContain("solid")
     expect(firstBlock.style.outline).not.toContain("dashed")
+    expect(hoverLabelIn(firstBlock)).toBeNull()
 
     // Siblings still show the hover affordance while an editor is open, and
     // a mid-drag pass over a sibling (button held) does not
@@ -3116,6 +3129,7 @@ describe("FormBuilder canvas editing interactions", () => {
       )
     })
     expect(secondBlock.style.outline).toBe("")
+    expect(hoverLabelIn(secondBlock)).toBeNull()
     act(() => {
       secondBlock.dispatchEvent(
         new iframeRealm.MouseEvent("mouseover", {
@@ -3125,13 +3139,15 @@ describe("FormBuilder canvas editing interactions", () => {
       )
     })
     expect(secondBlock.style.outline).toContain("dashed")
+    expect(hoverLabelIn(secondBlock)?.textContent).toBe("Image")
 
-    // Closing the editor mid-hover restores the outline
+    // Closing the editor mid-hover restores the outline and removes the label
     act(() => {
       root?.unmount()
     })
     root = undefined
     expect(secondBlock.style.outline).toBe("")
+    expect(hoverLabelIn(secondBlock)).toBeNull()
 
     iframe.remove()
   })

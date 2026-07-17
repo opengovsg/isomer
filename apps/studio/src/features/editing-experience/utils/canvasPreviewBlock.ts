@@ -269,32 +269,33 @@ export const showCanvasSelectionHandles = (
 }
 
 export const CANVAS_DRAG_BADGE_DATA_ATTRIBUTE = "data-canvas-drag-badge"
+export const CANVAS_HOVER_LABEL_DATA_ATTRIBUTE = "data-canvas-hover-label"
 
-// Wix-style drag badge: while a placement drag is in progress, a small label
-// pinned above the block shows the grid area it will occupy on release, so
-// the user dragging on the preview sees the live position without looking
-// away at the picker's summary line. Returns a cleanup that removes the
-// badge; it only touches the block's positioning when nothing else (e.g. the
-// selection handles) has already made the block a containing block.
-export const showCanvasDragBadge = (
+// Pins a small text chip above a preview block. Returns a cleanup that
+// removes the chip; it only touches the block's positioning when nothing
+// else (e.g. the selection handles) has already made the block a containing
+// block.
+const pinCanvasBlockChip = (
   block: HTMLElement,
   text: string,
-  badgeColor: string,
+  chipColor: string,
+  attribute: string,
+  placement: { left: string; transform: string },
 ): (() => void) => {
   const appliedPosition = block.style.position === ""
   if (appliedPosition) {
     block.style.position = "relative"
   }
-  const badge = block.ownerDocument.createElement("div")
-  badge.setAttribute(CANVAS_DRAG_BADGE_DATA_ATTRIBUTE, "")
-  badge.setAttribute("aria-hidden", "true")
-  badge.textContent = text
-  Object.assign(badge.style, {
+  const chip = block.ownerDocument.createElement("div")
+  chip.setAttribute(attribute, "")
+  chip.setAttribute("aria-hidden", "true")
+  chip.textContent = text
+  Object.assign(chip.style, {
     position: "absolute",
     bottom: "100%",
-    left: "50%",
-    transform: "translate(-50%, -6px)",
-    backgroundColor: badgeColor,
+    left: placement.left,
+    transform: placement.transform,
+    backgroundColor: chipColor,
     color: "#ffffff",
     fontSize: "12px",
     lineHeight: "1.4",
@@ -304,14 +305,50 @@ export const showCanvasDragBadge = (
     pointerEvents: "none",
     zIndex: "2",
   })
-  block.appendChild(badge)
+  block.appendChild(chip)
   return () => {
-    badge.remove()
+    chip.remove()
     if (appliedPosition) {
       block.style.position = ""
     }
   }
 }
+
+// Wix-style drag badge: while a placement drag is in progress, a small label
+// pinned above the block shows the grid area it will occupy on release, so
+// the user dragging on the preview sees the live position without looking
+// away at the picker's summary line.
+export const showCanvasDragBadge = (
+  block: HTMLElement,
+  text: string,
+  badgeColor: string,
+): (() => void) =>
+  pinCanvasBlockChip(
+    block,
+    text,
+    badgeColor,
+    CANVAS_DRAG_BADGE_DATA_ATTRIBUTE,
+    {
+      left: "50%",
+      transform: "translate(-50%, -6px)",
+    },
+  )
+
+// Wix-style hover label: hovering a selectable block names it with a chip at
+// its top-left corner alongside the dashed hover outline, so blocks can be
+// identified before clicking one to edit it.
+export const showCanvasHoverLabel = (
+  block: HTMLElement,
+  text: string,
+  labelColor: string,
+): (() => void) =>
+  pinCanvasBlockChip(
+    block,
+    text,
+    labelColor,
+    CANVAS_HOVER_LABEL_DATA_ATTRIBUTE,
+    { left: "0", transform: "translateY(-6px)" },
+  )
 
 export const CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE = "data-canvas-grid-overlay"
 

@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   CANVAS_DRAG_BADGE_DATA_ATTRIBUTE,
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
+  CANVAS_HOVER_LABEL_DATA_ATTRIBUTE,
   CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
   findCanvasPreviewContainer,
@@ -13,6 +14,7 @@ import {
   resolveCanvasWidthPercent,
   showCanvasDragBadge,
   showCanvasGridOverlay,
+  showCanvasHoverLabel,
   showCanvasSelectionHandles,
 } from "../canvasPreviewBlock"
 
@@ -501,6 +503,39 @@ describe("showCanvasDragBadge", () => {
 
     cleanup()
     expect(block.style.position).toBe("relative")
+  })
+})
+
+describe("showCanvasHoverLabel", () => {
+  const labelIn = (block: HTMLElement) =>
+    block.querySelector<HTMLElement>(`[${CANVAS_HOVER_LABEL_DATA_ATTRIBUTE}]`)
+
+  it("pins a chip naming the block at its top-left corner", () => {
+    const block = document.createElement("div")
+    document.body.appendChild(block)
+
+    showCanvasHoverLabel(block, "Quote", "#1361F0")
+
+    expect(block.style.position).toBe("relative")
+    const label = labelIn(block)!
+    expect(label.textContent).toBe("Quote")
+    expect(label.getAttribute("aria-hidden")).toBe("true")
+    expect(label.style.position).toBe("absolute")
+    expect(label.style.bottom).toBe("100%")
+    expect(label.style.left).toBe("0px")
+    expect(label.style.pointerEvents).toBe("none")
+  })
+
+  it("removes the label and restores positioning on cleanup", () => {
+    const block = document.createElement("div")
+    document.body.appendChild(block)
+
+    const cleanup = showCanvasHoverLabel(block, "Image", "#1361F0")
+    expect(labelIn(block)).not.toBeNull()
+
+    cleanup()
+    expect(labelIn(block)).toBeNull()
+    expect(block.style.position).toBe("")
   })
 })
 

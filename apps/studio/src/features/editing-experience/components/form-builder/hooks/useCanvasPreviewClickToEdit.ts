@@ -3,6 +3,7 @@ import { Resolve } from "@jsonforms/core"
 import { useJsonForms } from "@jsonforms/react"
 import { CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE } from "@opengovsg/isomer-components"
 import { useEffect, useMemo } from "react"
+import { BLOCK_TO_META } from "~/components/PageEditor/constants"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import {
@@ -10,6 +11,7 @@ import {
   CANVAS_MAX_ROW,
   findCanvasPreviewContainer,
   isEditableTarget,
+  showCanvasHoverLabel,
 } from "../../../utils/canvasPreviewBlock"
 import { setCanvasPreviewGrabHandoff } from "../../../utils/canvasPreviewGrabHandoff"
 
@@ -106,14 +108,21 @@ export const useCanvasPreviewClickToEdit = ({
     }
 
     // Hovering a click target previews its selectability with a dashed
-    // outline, Wix-style. The outline hands over to the placement control's
-    // solid selection highlight when the block is selected (React runs this
-    // effect's cleanup before the highlight effect's setup), and is skipped
-    // while a mouse button is held so a placement drag passing over a
-    // sibling does not flash outlines.
+    // outline and a chip naming the block's type, Wix-style. The outline
+    // hands over to the placement control's solid selection highlight when
+    // the block is selected (React runs this effect's cleanup before the
+    // highlight effect's setup), and is skipped while a mouse button is held
+    // so a placement drag passing over a sibling does not flash outlines.
+    const canvasPageBlock =
+      content !== undefined && currActiveIdx !== undefined
+        ? content[currActiveIdx]
+        : undefined
+    const childBlocks =
+      canvasPageBlock?.type === "canvas" ? canvasPageBlock.blocks : []
     let hovered: HTMLElement | null = null
     let hoveredOutline = ""
     let hoveredOutlineOffset = ""
+    let removeHoverLabel: (() => void) | null = null
     const clearHover = () => {
       if (!hovered) {
         return
@@ -121,6 +130,8 @@ export const useCanvasPreviewClickToEdit = ({
       hovered.style.outline = hoveredOutline
       hovered.style.outlineOffset = hoveredOutlineOffset
       hovered = null
+      removeHoverLabel?.()
+      removeHoverLabel = null
     }
     const hoverBlock = (event: MouseEvent) => {
       const block =
@@ -144,6 +155,14 @@ export const useCanvasPreviewClickToEdit = ({
       hoveredOutlineOffset = target.style.outlineOffset
       target.style.outline = `2px dashed ${hoverColor}`
       target.style.outlineOffset = "2px"
+      const child = childBlocks[index]
+      if (child) {
+        removeHoverLabel = showCanvasHoverLabel(
+          target,
+          BLOCK_TO_META[child.type].label,
+          hoverColor,
+        )
+      }
     }
     const unhoverBlock = (event: MouseEvent) => {
       if (!hovered) {
@@ -238,6 +257,7 @@ export const useCanvasPreviewClickToEdit = ({
   }, [
     canvasOrdinal,
     content,
+    currActiveIdx,
     hoverColor,
     path,
     selectedIndex,
