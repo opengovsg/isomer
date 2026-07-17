@@ -1431,7 +1431,7 @@ describe("FormBuilder canvas editing interactions", () => {
       )
 
     // The list view shows no handles; opening the block's editor adds one
-    // resize handle on each corner, with resize cursors
+    // resize handle on each corner and edge midpoint, with resize cursors
     expect(handlesOnBlock()).toHaveLength(0)
     click(findButtonByText("Item 1")!)
     const handles = handlesOnBlock()
@@ -1439,18 +1439,31 @@ describe("FormBuilder canvas editing interactions", () => {
       handles.map((handle) =>
         handle.getAttribute("data-canvas-selection-handle"),
       ),
-    ).toEqual(["top-left", "top-right", "bottom-left", "bottom-right"])
+    ).toEqual([
+      "top-left",
+      "top-right",
+      "bottom-left",
+      "bottom-right",
+      "top",
+      "bottom",
+      "left",
+      "right",
+    ])
     expect(handles.map((handle) => handle.style.cursor)).toEqual([
       "nwse-resize",
       "nesw-resize",
       "nesw-resize",
       "nwse-resize",
+      "ns-resize",
+      "ns-resize",
+      "ew-resize",
+      "ew-resize",
     ])
 
     // The block covers columns 2–5 and rows 1–2, so its bottom-right corner
     // sits at (200, 64). Grabbing the bottom-right handle there and dragging
     // to row 3, column 7 resizes the block, anchored at its top-left corner
-    const bottomRightHandle = handles.at(-1)!
+    const bottomRightHandle = handles[3]!
     act(() => {
       bottomRightHandle.dispatchEvent(
         new iframeRealm.MouseEvent("mousedown", {
@@ -1489,6 +1502,100 @@ describe("FormBuilder canvas editing interactions", () => {
     })
     root = undefined
     expect(handlesOnBlock()).toHaveLength(0)
+
+    iframe.remove()
+  })
+
+  it("resizes along one axis only when an edge handle is dragged", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    previewBlock.style.setProperty("--canvas-grid-column", "2 / span 4")
+    previewBlock.style.setProperty("--canvas-grid-row", "1 / span 3")
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 3 },
+          },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    click(findButtonByText("Item 1")!)
+    const rightHandle = previewBlock.querySelector<HTMLElement>(
+      '[data-canvas-selection-handle="right"]',
+    )!
+
+    // The block covers columns 2–5 and rows 1–3, so the right edge handle
+    // sits mid-height at (200, 48) — a body cell, which without the edge
+    // lock would move the block instead of resizing it. Dragging the handle
+    // to column 7 while also wandering down to row 4 must widen the block to
+    // columns 2–7 and leave its rows 1–3 untouched.
+    act(() => {
+      rightHandle.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 195,
+          clientY: 48,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 265, clientY: 110 }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 6,
+      rowStart: 1,
+      rowSpan: 3,
+    })
 
     iframe.remove()
   })

@@ -25,7 +25,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
+import type { CanvasSelectionEdge } from "../../../../utils/canvasPreviewBlock"
 import {
+  CANVAS_SELECTION_EDGE_HANDLES,
+  CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
   resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
@@ -59,9 +62,11 @@ interface NormalisedPlacement {
 
 // Drawing (and corner-resizing, which is drawing anchored at the opposite
 // corner) sweeps a rectangle between two cells; moving shifts the whole
-// saved rectangle by the drag delta
+// saved rectangle by the drag delta. An edge-handle resize is a draw whose
+// `lock` axis never follows the pointer, so the block only grows or shrinks
+// in the handle's direction.
 type DragState =
-  | { mode: "draw"; anchor: GridCell; current: GridCell }
+  | { mode: "draw"; anchor: GridCell; current: GridCell; lock?: "row" | "col" }
   | {
       mode: "move"
       origin: NormalisedPlacement
@@ -134,6 +139,56 @@ const resolveDragSelection = (drag: DragState): NormalisedPlacement =>
   drag.mode === "draw"
     ? sweepSelection(drag.anchor, drag.current)
     : shiftSelection(drag.origin, drag.grab, drag.current)
+
+// Every pointer/focus update to a drag's current cell goes through here so a
+// locked axis is pinned in one place
+const withCurrent = (drag: DragState, cell: GridCell): DragState =>
+  drag.mode === "draw" && drag.lock !== undefined
+    ? {
+        ...drag,
+        current: {
+          row: drag.lock === "row" ? drag.current.row : cell.row,
+          col: drag.lock === "col" ? drag.current.col : cell.col,
+        },
+      }
+    : { ...drag, current: cell }
+
+// Grabbing a mid-edge handle resizes along that edge's axis only: the sweep
+// is anchored on the opposite edge and the perpendicular axis is locked to
+// the block's current extent
+const edgeResizeDrag = (
+  base: NormalisedPlacement,
+  edge: CanvasSelectionEdge,
+): DragState => ({
+  mode: "draw",
+  anchor: {
+    row: edge === "top" ? base.rowEnd : base.rowStart,
+    col: edge === "left" ? base.colEnd : base.colStart,
+  },
+  current: {
+    row: edge === "top" ? base.rowStart : base.rowEnd,
+    col: edge === "left" ? base.colStart : base.colEnd,
+  },
+  lock: edge === "left" || edge === "right" ? "row" : "col",
+})
+
+// The selection handles are DOM children of the preview block, so a handle
+// grab arrives at the block's mousedown listener; the handle's name says
+// whether an edge (axis-locked) resize was grabbed. The target lives in the
+// preview iframe's realm, so duck-type instead of instanceof Element.
+const resolveGrabbedEdge = (
+  target: EventTarget | null,
+): CanvasSelectionEdge | null => {
+  const element = target as Partial<Element> | null
+  if (typeof element?.closest !== "function") {
+    return null
+  }
+  const name = element
+    .closest(`[${CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE}]`)
+    ?.getAttribute(CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE)
+  const edge = CANVAS_SELECTION_EDGE_HANDLES.find((value) => value === name)
+  return edge ?? null
+}
 
 const toPlacement = (
   selection: NormalisedPlacement,
@@ -391,6 +446,7 @@ function JsonFormsCanvasPlacementControl({
   const [pendingGrab, setPendingGrab] = useState<{
     base: NormalisedPlacement
     grab: GridCell
+    edge: CanvasSelectionEdge | null
   } | null>(null)
   const locatePreviewBlock = usePreviewBlockLocator(path)
   useHighlightPreviewBlock(locatePreviewBlock)
@@ -512,7 +568,7 @@ function JsonFormsCanvasPlacementControl({
       if (!cell) {
         return
       }
-      setDrag((currentDrag) => currentDrag && { ...currentDrag, current: cell })
+      setDrag((currentDrag) => currentDrag && withCurrent(currentDrag, cell))
     }
     previewWindow?.addEventListener("mousemove", trackPreviewPointer)
     previewWindow?.addEventListener("mouseup", commitDrag)
@@ -572,6 +628,7 @@ function JsonFormsCanvasPlacementControl({
           row: clamp(cell.row, base.rowStart, base.rowEnd),
           col: clamp(cell.col, base.colStart, base.colEnd),
         },
+        edge: resolveGrabbedEdge(event.target),
       })
     }
     const previousCursor = previewBlock.style.cursor
@@ -611,6 +668,12 @@ function JsonFormsCanvasPlacementControl({
         return
       }
       setPendingGrab(null)
+      if (pendingGrab.edge) {
+        setDrag(
+          withCurrent(edgeResizeDrag(pendingGrab.base, pendingGrab.edge), cell),
+        )
+        return
+      }
       startDragWithin(
         pendingGrab.base,
         pendingGrab.grab.row,
@@ -618,7 +681,7 @@ function JsonFormsCanvasPlacementControl({
       )
       // Batched after startDragWithin's update, so the drag begins already
       // extended to the cell that crossed the threshold
-      setDrag((currentDrag) => currentDrag && { ...currentDrag, current: cell })
+      setDrag((currentDrag) => currentDrag && withCurrent(currentDrag, cell))
     }
     const abandonGrab = () => setPendingGrab(null)
     previewWindow?.addEventListener("mousemove", beginDragOnMove)
@@ -731,10 +794,7 @@ function JsonFormsCanvasPlacementControl({
                   onMouseEnter={() => {
                     setDrag(
                       (currentDrag) =>
-                        currentDrag && {
-                          ...currentDrag,
-                          current: { row, col },
-                        },
+                        currentDrag && withCurrent(currentDrag, { row, col }),
                     )
                   }}
                   // Tabbing between cells extends an in-progress keyboard
@@ -742,10 +802,7 @@ function JsonFormsCanvasPlacementControl({
                   onFocus={() => {
                     setDrag(
                       (currentDrag) =>
-                        currentDrag && {
-                          ...currentDrag,
-                          current: { row, col },
-                        },
+                        currentDrag && withCurrent(currentDrag, { row, col }),
                     )
                   }}
                   onKeyDown={(event: React.KeyboardEvent) => {
@@ -755,10 +812,7 @@ function JsonFormsCanvasPlacementControl({
                       event.preventDefault()
                       if (drag) {
                         commitSelection(
-                          resolveDragSelection({
-                            ...drag,
-                            current: { row, col },
-                          }),
+                          resolveDragSelection(withCurrent(drag, { row, col })),
                         )
                       } else {
                         startDrag(row, col)
@@ -781,9 +835,10 @@ function JsonFormsCanvasPlacementControl({
         {selection && (
           <Text textStyle="body-2" textColor="base.content.medium">
             Drag the highlighted area (or the block itself in the page preview)
-            to move it, or drag a corner to resize it. With the keyboard, press
-            Enter on a cell to start, Enter on another cell to finish, or Escape
-            to cancel.
+            to move it, or drag a corner to resize it — in the preview, the edge
+            handles resize in one direction only. With the keyboard, press Enter
+            on a cell to start, Enter on another cell to finish, or Escape to
+            cancel.
           </Text>
         )}
         {siblingPlacements.length > 0 && (

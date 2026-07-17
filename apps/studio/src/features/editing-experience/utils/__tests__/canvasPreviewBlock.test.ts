@@ -402,7 +402,7 @@ describe("showCanvasSelectionHandles", () => {
       ),
     )
 
-  it("draws a resize handle on each corner of the block", () => {
+  it("draws a resize handle on each corner and edge midpoint of the block", () => {
     const block = document.createElement("div")
     document.body.appendChild(block)
 
@@ -422,8 +422,12 @@ describe("showCanvasSelectionHandles", () => {
       ["top-right", "0%", "100%", "nesw-resize"],
       ["bottom-left", "100%", "0%", "nesw-resize"],
       ["bottom-right", "100%", "100%", "nwse-resize"],
+      ["top", "0%", "50%", "ns-resize"],
+      ["bottom", "100%", "50%", "ns-resize"],
+      ["left", "50%", "0%", "ew-resize"],
+      ["right", "50%", "100%", "ew-resize"],
     ])
-    // Centred on the corner and hidden from assistive tech
+    // Centred on the corner/edge and hidden from assistive tech
     handles.forEach((handle) => {
       expect(handle.style.transform).toBe("translate(-50%, -50%)")
       expect(handle.getAttribute("aria-hidden")).toBe("true")
@@ -436,7 +440,7 @@ describe("showCanvasSelectionHandles", () => {
     document.body.appendChild(block)
 
     const cleanup = showCanvasSelectionHandles(block, "#1361F0")
-    expect(handlesIn(block)).toHaveLength(4)
+    expect(handlesIn(block)).toHaveLength(8)
 
     cleanup()
     expect(handlesIn(block)).toHaveLength(0)
