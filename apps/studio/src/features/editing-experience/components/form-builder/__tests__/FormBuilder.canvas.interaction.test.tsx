@@ -1500,6 +1500,154 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("does not commit a placement when a preview block is merely clicked", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    // An unplaced block: a stray click must not pin it to its footprint
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    previewBlock.style.setProperty("--canvas-grid-column", "1 / -1")
+    previewBlock.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 64,
+      right: 480,
+      bottom: 64,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [BLOCKQUOTE_BLOCK],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+    // JsonForms emits an initial change on a later tick; flush it before
+    // capturing the baseline
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const baselineChangeCount = changes.length
+
+    // A plain click: mousedown and mouseup with no movement
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 85,
+          clientY: 16,
+        }),
+      )
+    })
+    // No drag starts, so no grid guides appear and no live feedback is shown
+    expect(
+      previewDocument.querySelector("[data-canvas-grid-overlay]"),
+    ).toBeNull()
+    expect(container.textContent).toContain("Not placed")
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+
+    // Pointer movement within the grabbed cell is still just a click
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 85,
+          clientY: 16,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 95, clientY: 20 }),
+      )
+    })
+    expect(
+      previewDocument.querySelector("[data-canvas-grid-overlay]"),
+    ).toBeNull()
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes.length).toBe(baselineChangeCount)
+    expect(container.textContent).toContain("Not placed")
+
+    // The abandoned grabs do not poison a real drag afterwards: crossing
+    // into another cell starts the drag and mouseup commits it
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 85,
+          clientY: 16,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 165, clientY: 48 }),
+      )
+    })
+    expect(
+      previewDocument.querySelector("[data-canvas-grid-overlay]"),
+    ).not.toBeNull()
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toBeDefined()
+
+    iframe.remove()
+  })
+
   it("commits the canvas's size when its resize handle is dragged in the live preview", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)

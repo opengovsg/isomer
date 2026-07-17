@@ -351,6 +351,14 @@ function JsonFormsCanvasPlacementControl({
   const placement = data as CanvasBlockPlacementProps | undefined
   const siblingPlacements = useSiblingPlacements(path)
   const [drag, setDrag] = useState<DragState | null>(null)
+  // A mousedown on the preview block is only a grab candidate: the drag (and
+  // its commit-on-mouseup) starts once the pointer reaches a different grid
+  // cell, so a plain click cannot commit a placement — which would silently
+  // pin an unplaced block to its current footprint
+  const [pendingGrab, setPendingGrab] = useState<{
+    base: NormalisedPlacement
+    grab: GridCell
+  } | null>(null)
   const locatePreviewBlock = usePreviewBlockLocator(path)
   useHighlightPreviewBlock(locatePreviewBlock)
 
@@ -522,11 +530,13 @@ function JsonFormsCanvasPlacementControl({
       // grabbed area; clamping guarantees a grab is a move or a corner
       // resize, never a fresh draw that would shrink the block to a single
       // cell
-      startDragWithin(
+      setPendingGrab({
         base,
-        clamp(cell.row, base.rowStart, base.rowEnd),
-        clamp(cell.col, base.colStart, base.colEnd),
-      )
+        grab: {
+          row: clamp(cell.row, base.rowStart, base.rowEnd),
+          col: clamp(cell.col, base.colStart, base.colEnd),
+        },
+      })
     }
     const previousCursor = previewBlock.style.cursor
     previewBlock.style.cursor = "move"
@@ -535,7 +545,55 @@ function JsonFormsCanvasPlacementControl({
       previewBlock.removeEventListener("mousedown", grabBlock)
       previewBlock.style.cursor = previousCursor
     }
-  }, [visible, enabled, savedSelection, locatePreviewBlock, startDragWithin])
+  }, [visible, enabled, savedSelection, locatePreviewBlock])
+
+  // A pending grab turns into a real drag on the first pointer movement that
+  // reaches a different grid cell; releasing the mouse first abandons it
+  // without committing anything
+  useEffect(() => {
+    if (!pendingGrab) {
+      return
+    }
+    const previewBlock = locatePreviewBlock()
+    const previewCanvas = previewBlock?.closest<HTMLElement>(
+      `[${CANVAS_CONTAINER_DATA_ATTRIBUTE}]`,
+    )
+    const previewWindow = previewBlock?.ownerDocument.defaultView ?? null
+    const beginDragOnMove = (event: MouseEvent) => {
+      if (!previewCanvas) {
+        return
+      }
+      const cell = resolveCanvasGridCellFromPoint(
+        previewCanvas,
+        event.clientX,
+        event.clientY,
+      )
+      if (
+        !cell ||
+        (cell.row === pendingGrab.grab.row && cell.col === pendingGrab.grab.col)
+      ) {
+        return
+      }
+      setPendingGrab(null)
+      startDragWithin(
+        pendingGrab.base,
+        pendingGrab.grab.row,
+        pendingGrab.grab.col,
+      )
+      // Batched after startDragWithin's update, so the drag begins already
+      // extended to the cell that crossed the threshold
+      setDrag((currentDrag) => currentDrag && { ...currentDrag, current: cell })
+    }
+    const abandonGrab = () => setPendingGrab(null)
+    previewWindow?.addEventListener("mousemove", beginDragOnMove)
+    previewWindow?.addEventListener("mouseup", abandonGrab)
+    window.addEventListener("mouseup", abandonGrab)
+    return () => {
+      previewWindow?.removeEventListener("mousemove", beginDragOnMove)
+      previewWindow?.removeEventListener("mouseup", abandonGrab)
+      window.removeEventListener("mouseup", abandonGrab)
+    }
+  }, [pendingGrab, locatePreviewBlock, startDragWithin])
 
   if (!visible) {
     return null
