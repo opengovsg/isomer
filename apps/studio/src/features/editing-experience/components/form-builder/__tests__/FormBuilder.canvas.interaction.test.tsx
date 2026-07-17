@@ -359,6 +359,48 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(lastChange?.blocks?.[0]?.placement).toBeUndefined()
   })
 
+  it("shades cells occupied by sibling blocks on the placement grid", () => {
+    renderCanvasForm({
+      type: "canvas",
+      blocks: [
+        {
+          ...BLOCKQUOTE_BLOCK,
+          placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+        },
+        {
+          type: "blockquote",
+          quote: "The second quote",
+          source: "Second",
+          placement: { colStart: 7, colSpan: 3, rowStart: 2, rowSpan: 1 },
+        },
+      ],
+    })
+
+    click(findButtonByText("Item 2")!)
+
+    // The sibling's area (columns 1-4, rows 1-2) is marked occupied, while
+    // this block's own saved placement is highlighted as selected instead
+    const occupiedCell = container.querySelector(
+      'button[aria-label="Row 1, column 1 (occupied by another block)"]',
+    )
+    expect(occupiedCell).not.toBeNull()
+    expect(occupiedCell?.getAttribute("aria-pressed")).toBe("false")
+
+    const ownCell = container.querySelector(
+      'button[aria-label="Row 2, column 7"]',
+    )
+    expect(ownCell?.getAttribute("aria-pressed")).toBe("true")
+
+    // Cells outside both areas are plain
+    expect(
+      container.querySelector('button[aria-label="Row 5, column 12"]'),
+    ).not.toBeNull()
+
+    expect(container.textContent).toContain(
+      "Shaded cells are occupied by other blocks in this canvas.",
+    )
+  })
+
   it("removes the open block and returns to the list when Remove item is clicked", async () => {
     const changes: IsomerComponent[] = []
     renderCanvasForm(

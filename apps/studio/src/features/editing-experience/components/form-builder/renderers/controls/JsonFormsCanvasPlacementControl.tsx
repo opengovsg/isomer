@@ -1,8 +1,14 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { CanvasBlockPlacementProps } from "@opengovsg/isomer-components"
 import { Box, FormControl, Grid, HStack, Text } from "@chakra-ui/react"
-import { and, isObjectControl, rankWith, schemaMatches } from "@jsonforms/core"
-import { withJsonFormsControlProps } from "@jsonforms/react"
+import {
+  and,
+  isObjectControl,
+  rankWith,
+  Resolve,
+  schemaMatches,
+} from "@jsonforms/core"
+import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { Button, FormLabel } from "@opengovsg/design-system-react"
 import { CANVAS_GRID_COLUMNS } from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
@@ -35,10 +41,19 @@ const toPlacement = (
   rowSpan: Math.abs(anchor.row - current.row) + 1,
 })
 
+interface NormalisedPlacement {
+  colStart: number
+  colEnd: number
+  rowStart: number
+  rowEnd: number
+}
+
 // A partial placement (possible in hand-authored content) renders with the
 // same defaults the canvas renderer applies: start at the first cell, span
 // the full width and a single row
-const normalise = (placement: CanvasBlockPlacementProps) => {
+const normalise = (
+  placement: CanvasBlockPlacementProps,
+): NormalisedPlacement => {
   const colStart = placement.colStart ?? 1
   const rowStart = placement.rowStart ?? 1
   return {
@@ -48,6 +63,32 @@ const normalise = (placement: CanvasBlockPlacementProps) => {
     rowStart,
     rowEnd: rowStart + (placement.rowSpan ?? 1) - 1,
   }
+}
+
+// The control is bound to one block's placement (path "blocks.<i>.placement"),
+// but placing a block only makes sense relative to its siblings — read the
+// other blocks' placements from the shared JsonForms root data
+const useSiblingPlacements = (path: string): NormalisedPlacement[] => {
+  const context = useJsonForms()
+  const segments = path.split(".")
+  const blockIndex = Number(segments.at(-2))
+  if (!Number.isInteger(blockIndex)) {
+    return []
+  }
+  const blocks: unknown = Resolve.data(
+    context.core?.data,
+    segments.slice(0, -2).join("."),
+  )
+  if (!Array.isArray(blocks)) {
+    return []
+  }
+  return blocks
+    .filter((_, index) => index !== blockIndex)
+    .map(
+      (block) => (block as { placement?: CanvasBlockPlacementProps }).placement,
+    )
+    .filter((placement) => placement !== undefined)
+    .map(normalise)
 }
 
 function JsonFormsCanvasPlacementControl({
@@ -60,6 +101,7 @@ function JsonFormsCanvasPlacementControl({
   enabled,
 }: ControlProps) {
   const placement = data as CanvasBlockPlacementProps | undefined
+  const siblingPlacements = useSiblingPlacements(path)
   const [dragAnchor, setDragAnchor] = useState<GridCell | null>(null)
   const [dragCurrent, setDragCurrent] = useState<GridCell | null>(null)
 
@@ -92,14 +134,24 @@ function JsonFormsCanvasPlacementControl({
   const displayedRows = Math.max(
     MIN_DISPLAYED_ROWS,
     (selection?.rowEnd ?? 0) + 1,
+    ...siblingPlacements.map((sibling) => sibling.rowEnd),
   )
 
+  const coversCell = (
+    area: NormalisedPlacement,
+    row: number,
+    col: number,
+  ): boolean =>
+    row >= area.rowStart &&
+    row <= area.rowEnd &&
+    col >= area.colStart &&
+    col <= area.colEnd
+
   const isCellSelected = (row: number, col: number): boolean =>
-    selection !== undefined &&
-    row >= selection.rowStart &&
-    row <= selection.rowEnd &&
-    col >= selection.colStart &&
-    col <= selection.colEnd
+    selection !== undefined && coversCell(selection, row, col)
+
+  const isCellOccupied = (row: number, col: number): boolean =>
+    siblingPlacements.some((sibling) => coversCell(sibling, row, col))
 
   return (
     <Box>
@@ -129,18 +181,27 @@ function JsonFormsCanvasPlacementControl({
               const row = rowIndex + 1
               const col = colIndex + 1
               const isSelected = isCellSelected(row, col)
+              const isOccupied = isCellOccupied(row, col)
               return (
                 <Box
                   key={`${row}-${col}`}
                   as="button"
                   type="button"
-                  aria-label={`Row ${row}, column ${col}`}
+                  aria-label={
+                    isOccupied
+                      ? `Row ${row}, column ${col} (occupied by another block)`
+                      : `Row ${row}, column ${col}`
+                  }
                   aria-pressed={isSelected}
                   disabled={!enabled}
                   h="1.25rem"
                   borderRadius="2px"
                   bg={
-                    isSelected ? "interaction.main.default" : "base.canvas.alt"
+                    isSelected
+                      ? "interaction.main.default"
+                      : isOccupied
+                        ? "interaction.support.disabled"
+                        : "base.canvas.alt"
                   }
                   _hover={
                     isSelected ? {} : { bg: "interaction.muted.main.hover" }
@@ -167,6 +228,11 @@ function JsonFormsCanvasPlacementControl({
             ? `Columns ${selection.colStart}–${selection.colEnd}, rows ${selection.rowStart}–${selection.rowEnd}`
             : "Not placed: this block stacks across the full canvas width. Drag on the grid to place and size it."}
         </Text>
+        {siblingPlacements.length > 0 && (
+          <Text textStyle="body-2" textColor="base.content.medium">
+            Shaded cells are occupied by other blocks in this canvas.
+          </Text>
+        )}
       </FormControl>
     </Box>
   )
