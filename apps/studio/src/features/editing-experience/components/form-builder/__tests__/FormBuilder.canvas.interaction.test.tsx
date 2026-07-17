@@ -1057,6 +1057,88 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("shows grid guides on the preview canvas while a placement drag is active", () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Measurable geometry so the guides have a content box to cover
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    renderCanvasFormInEditorDrawer({
+      type: "canvas",
+      blocks: [BLOCKQUOTE_BLOCK],
+    } as IsomerComponent)
+
+    click(findButtonByText("Item 1")!)
+
+    const overlay = () =>
+      previewDocument.querySelector("[data-canvas-grid-overlay]")
+
+    // No guides until a drag starts
+    expect(overlay()).toBeNull()
+
+    act(() => {
+      placementCellAt(2, 3).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    // 12 column guides plus the row guides
+    expect(overlay()).not.toBeNull()
+    expect(overlay()!.children.length).toBeGreaterThan(12)
+
+    act(() => {
+      placementCellAt(4, 8).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(overlay()).not.toBeNull()
+
+    // Cancelling the drag removes the guides
+    pressKey(placementCellAt(4, 8), "Escape")
+    expect(overlay()).toBeNull()
+
+    // Committing a drag removes them too
+    act(() => {
+      placementCellAt(1, 2).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    expect(overlay()).not.toBeNull()
+    act(() => {
+      window.dispatchEvent(new MouseEvent("mouseup"))
+    })
+    expect(overlay()).toBeNull()
+
+    iframe.remove()
+  })
+
   it("moves and resizes a placed block by dragging it directly in the live preview", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)

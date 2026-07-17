@@ -2,9 +2,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
+  CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
   findPreviewDocumentWithCanvas,
   resolveCanvasGridCellFromPoint,
+  showCanvasGridOverlay,
 } from "../canvasPreviewBlock"
 
 const appendIframe = (bodyHtml: string): HTMLIFrameElement => {
@@ -170,6 +172,121 @@ describe("resolveCanvasGridCellFromPoint", () => {
     const canvas = makeCanvas({}, { width: 0 })
 
     expect(resolveCanvasGridCellFromPoint(canvas, 10, 10)).toBeNull()
+  })
+})
+
+describe("showCanvasGridOverlay", () => {
+  // A canvas whose content box is 480px wide and 320px tall (12 × 40px
+  // columns and 10 × 32px base rows when there are no gaps)
+  const makeCanvas = (
+    style: Partial<CSSStyleDeclaration> = {},
+    rect: Partial<DOMRect> = {},
+  ): HTMLElement => {
+    const canvas = document.createElement("div")
+    document.body.appendChild(canvas)
+    canvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+      ...rect,
+    })
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({
+      columnGap: "",
+      rowGap: "",
+      paddingLeft: "",
+      paddingRight: "",
+      paddingTop: "",
+      paddingBottom: "",
+      borderLeftWidth: "",
+      borderRightWidth: "",
+      borderTopWidth: "",
+      borderBottomWidth: "",
+      gridTemplateRows: "none",
+      ...style,
+    } as CSSStyleDeclaration)
+    return canvas
+  }
+
+  const overlayIn = (canvas: HTMLElement) =>
+    canvas.querySelector<HTMLElement>(`[${CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE}]`)
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("draws 12 column guides and base-height row guides over the content box", () => {
+    const canvas = makeCanvas()
+
+    showCanvasGridOverlay(canvas, "#1361F0")
+
+    const overlay = overlayIn(canvas)
+    expect(overlay).not.toBeNull()
+    expect(overlay!.style.width).toBe("480px")
+    expect(overlay!.style.height).toBe("320px")
+    expect(overlay!.style.pointerEvents).toBe("none")
+
+    const children = Array.from(overlay!.children) as HTMLElement[]
+    const columnGuides = children.filter(
+      (child) => child.style.height === "100%",
+    )
+    const rowGuides = children.filter((child) => child.style.height !== "100%")
+    expect(columnGuides).toHaveLength(12)
+    expect(columnGuides[0]!.style.left).toBe("0px")
+    expect(columnGuides[1]!.style.left).toBe("40px")
+    expect(columnGuides[11]!.style.left).toBe("440px")
+    expect(columnGuides[0]!.style.width).toBe("40px")
+
+    // Row boundaries every 32px, up to (but excluding) the bottom edge
+    expect(rowGuides).toHaveLength(9)
+    expect(rowGuides[0]!.style.top).toBe("32px")
+    expect(rowGuides[8]!.style.top).toBe("288px")
+  })
+
+  it("places row guides through the used tracks, then extrapolates base rows", () => {
+    const canvas = makeCanvas({
+      gridTemplateRows: "48px 96px",
+      rowGap: "16px",
+    })
+
+    showCanvasGridOverlay(canvas, "#1361F0")
+
+    const rowGuides = (
+      Array.from(overlayIn(canvas)!.children) as HTMLElement[]
+    ).filter((child) => child.style.height !== "100%")
+    // Boundaries at 64 and 176 (mid-gap: -8px), then base 32+16 strides
+    expect(rowGuides.map((guide) => guide.style.top)).toEqual([
+      "56px",
+      "168px",
+      "216px",
+      "264px",
+    ])
+  })
+
+  it("restores the canvas positioning and removes the guides on cleanup", () => {
+    const canvas = makeCanvas()
+
+    const cleanup = showCanvasGridOverlay(canvas, "#1361F0")
+    expect(canvas.style.position).toBe("relative")
+    expect(overlayIn(canvas)).not.toBeNull()
+
+    cleanup()
+    expect(overlayIn(canvas)).toBeNull()
+    expect(canvas.style.position).toBe("")
+  })
+
+  it("does nothing when the canvas has no measurable size", () => {
+    const canvas = makeCanvas({}, { width: 0 })
+
+    const cleanup = showCanvasGridOverlay(canvas, "#1361F0")
+    expect(overlayIn(canvas)).toBeNull()
+    expect(canvas.style.position).toBe("")
+    cleanup()
   })
 })
 

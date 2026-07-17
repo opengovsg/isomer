@@ -28,6 +28,7 @@ import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import {
   findCanvasBlockPreviewElement,
   resolveCanvasGridCellFromPoint,
+  showCanvasGridOverlay,
 } from "../../../../utils/canvasPreviewBlock"
 
 export const jsonFormsCanvasPlacementControlTester: RankedTester = rankWith(
@@ -240,6 +241,30 @@ const useHighlightPreviewBlock = (
   }, [highlightColor, locatePreviewBlock])
 }
 
+// The rendered page gives no hint of where the grid cells are, so while a
+// placement drag is in progress (whether it started on the picker or on the
+// preview block itself) the grid's column and row guides are drawn on the
+// preview canvas, Wix-style, and removed when the drag ends
+const usePreviewGridGuides = (
+  locatePreviewBlock: () => HTMLElement | null,
+  dragActive: boolean,
+): void => {
+  const [guideColor] = useToken("colors", ["interaction.main.default"])
+
+  useEffect(() => {
+    if (!dragActive) {
+      return
+    }
+    const previewCanvas = locatePreviewBlock()?.closest<HTMLElement>(
+      `[${CANVAS_CONTAINER_DATA_ATTRIBUTE}]`,
+    )
+    if (!previewCanvas) {
+      return
+    }
+    return showCanvasGridOverlay(previewCanvas, guideColor)
+  }, [dragActive, guideColor, locatePreviewBlock])
+}
+
 const restoreCustomProperty = (
   element: HTMLElement,
   name: string,
@@ -338,6 +363,7 @@ function JsonFormsCanvasPlacementControl({
     locatePreviewBlock,
     dragSelection,
   )
+  usePreviewGridGuides(locatePreviewBlock, drag !== null)
 
   const startDrag = useCallback(
     (row: number, col: number): void => {
