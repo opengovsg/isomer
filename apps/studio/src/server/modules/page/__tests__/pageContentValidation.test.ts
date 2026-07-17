@@ -146,4 +146,53 @@ describe("page content validation (server-side save gate)", () => {
 
     expect(schemaValidator(page)).toBe(false)
   })
+
+  it("accepts canvas children carrying grid placement fields", () => {
+    const page = buildContentPage([
+      {
+        type: "canvas",
+        blocks: [
+          {
+            type: "image",
+            src: "/images/1.png",
+            alt: "A placed image",
+            colStart: 1,
+            colSpan: 6,
+            rowStart: 1,
+            rowSpan: 3,
+          },
+          {
+            type: "blockquote",
+            quote: "Placed beside the image",
+            source: "A source",
+            colStart: 7,
+            colSpan: 6,
+          },
+        ],
+      },
+    ])
+
+    const isValid = schemaValidator(page)
+
+    expect(schemaValidator.errors ?? []).toEqual([])
+    expect(isValid).toBe(true)
+  })
+
+  it("rejects grid placement values outside the 12-column grid", () => {
+    const page = buildContentPage([
+      {
+        type: "canvas",
+        blocks: [
+          {
+            type: "blockquote",
+            quote: "Too wide",
+            source: "A source",
+            colSpan: 13,
+          },
+        ],
+      },
+    ])
+
+    expect(schemaValidator(page)).toBe(false)
+  })
 })

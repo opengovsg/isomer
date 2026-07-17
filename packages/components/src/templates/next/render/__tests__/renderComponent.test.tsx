@@ -156,6 +156,94 @@ describe("renderComponent", () => {
     expect(html).toContain('tabindex="0"')
   })
 
+  it("places canvas blocks on the grid according to their placement fields", () => {
+    const html = renderToStaticMarkup(
+      renderComponent({
+        component: {
+          type: "canvas",
+          blocks: [
+            {
+              type: "blockquote",
+              quote: "Placed block",
+              source: "A source",
+              colStart: 3,
+              colSpan: 6,
+              rowStart: 2,
+              rowSpan: 4,
+            },
+          ],
+        },
+        layout: "content",
+        site: generateSiteConfig(),
+        permalink: "/",
+      }),
+    )
+
+    expect(html).toContain("grid-cols-12")
+    expect(html).toContain("grid-column:3 / span 6")
+    expect(html).toContain("grid-row:2 / span 4")
+  })
+
+  it("stacks placement-less canvas blocks across the full grid width", () => {
+    const html = renderToStaticMarkup(
+      renderComponent({
+        component: {
+          type: "canvas",
+          blocks: [{ type: "blockquote", quote: "Unplaced", source: "s" }],
+        },
+        layout: "content",
+        site: generateSiteConfig(),
+        permalink: "/",
+      }),
+    )
+
+    expect(html).toContain("grid-column:1 / -1")
+    expect(html).not.toContain("grid-row")
+  })
+
+  it("clamps and defaults partial grid placements", () => {
+    const html = renderToStaticMarkup(
+      renderComponent({
+        component: {
+          type: "canvas",
+          blocks: [
+            // colStart + colSpan overflowing the grid is clamped to the edge
+            {
+              type: "blockquote",
+              quote: "Clamped",
+              source: "s",
+              colStart: 10,
+              colSpan: 6,
+            },
+            // colStart alone extends to the last column
+            {
+              type: "blockquote",
+              quote: "To the end",
+              source: "s",
+              colStart: 4,
+            },
+            // colSpan alone auto-places with the given width
+            {
+              type: "blockquote",
+              quote: "Auto-placed",
+              source: "s",
+              colSpan: 5,
+              rowSpan: 2,
+            },
+          ],
+        },
+        layout: "content",
+        site: generateSiteConfig(),
+        permalink: "/",
+      }),
+    )
+
+    expect(html).toContain("grid-column:10 / span 3")
+    expect(html).toContain("grid-column:4 / -1")
+    expect(html).toContain("grid-column:span 5")
+    expect(html).toContain("grid-row:span 2")
+  })
+
   it("renders a canvas without explicit dimensions", () => {
     const html = renderToStaticMarkup(
       renderComponent({

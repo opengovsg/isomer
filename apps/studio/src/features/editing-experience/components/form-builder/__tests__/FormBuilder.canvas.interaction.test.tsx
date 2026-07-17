@@ -189,6 +189,13 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(container.textContent).toContain("Source")
     expect(container.textContent).not.toContain("Video to embed")
 
+    // Every child block exposes its grid placement controls so it can be
+    // positioned and sized on the canvas grid
+    expect(container.textContent).toContain("Column start")
+    expect(container.textContent).toContain("Column width")
+    expect(container.textContent).toContain("Row start")
+    expect(container.textContent).toContain("Row height")
+
     // Item navigation controls are present
     expect(findButtonByText("Previous")).toBeDefined()
     expect(findButtonByText("Next")).toBeDefined()
