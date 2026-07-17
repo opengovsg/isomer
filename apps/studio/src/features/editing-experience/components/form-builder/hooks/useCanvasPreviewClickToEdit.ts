@@ -1,8 +1,11 @@
+import { Resolve } from "@jsonforms/core"
+import { useJsonForms } from "@jsonforms/react"
 import { CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE } from "@opengovsg/isomer-components"
 import { useEffect, useMemo } from "react"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import {
+  CANVAS_MAX_ROW,
   findCanvasPreviewContainer,
   isEditableTarget,
 } from "../../../utils/canvasPreviewBlock"
@@ -17,6 +20,14 @@ interface UseCanvasPreviewClickToEditArgs {
   selectedIndex: number | undefined
   setSelectedIndex: (selectedIndex?: number) => void
   removeSelectedItem: (path: string, index: number) => () => void
+  addItem: (path: string, value: unknown) => () => void
+}
+
+interface CanvasBlockPlacement {
+  colStart?: number
+  colSpan?: number
+  rowStart?: number
+  rowSpan?: number
 }
 
 // While the canvas editor is open, the blocks rendered in the live preview
@@ -25,13 +36,16 @@ interface UseCanvasPreviewClickToEditArgs {
 // block list, mirroring Wix's select-on-canvas interaction. The currently
 // edited block is excluded — the placement control owns its preview
 // interactions — and the hook is a no-op for every non-canvas array control.
-// While a block is selected, Delete/Backspace removes it from the canvas.
+// While a block is selected, Delete/Backspace removes it from the canvas
+// and ⌘D/Ctrl+D duplicates it.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
   setSelectedIndex,
   removeSelectedItem,
+  addItem,
 }: UseCanvasPreviewClickToEditArgs): void => {
+  const jsonFormsCore = useJsonForms().core
   const editorContext = useOptionalEditorDrawerContext()
   const content = editorContext?.previewPageState.content
   const currActiveIdx = editorContext?.currActiveIdx
@@ -155,11 +169,13 @@ export const useCanvasPreviewClickToEdit = ({
     }
   }, [canvasOrdinal, content, path, selectedIndex, setSelectedIndex])
 
-  // Wix-style keyboard removal: while a block's nested editor is open, Delete
-  // or Backspace removes the block from the canvas and returns to the block
-  // list (keystrokes aimed at a form field keep their editing meaning).
-  // Registered on both windows so it works whether focus sits in the drawer
-  // or in the preview iframe.
+  // Wix-style keyboard shortcuts while a block's nested editor is open:
+  // Delete or Backspace removes the block from the canvas and returns to the
+  // block list, and ⌘D/Ctrl+D appends a copy of the block (its placement
+  // shifted one row down so the copy is visible) and switches the editor to
+  // it. Keystrokes aimed at a form field keep their editing meaning.
+  // Registered on both windows so shortcuts work whether focus sits in the
+  // drawer or in the preview iframe.
   useEffect(() => {
     if (
       canvasOrdinal === null ||
@@ -182,15 +198,61 @@ export const useCanvasPreviewClickToEdit = ({
       event.preventDefault()
       removeSelectedItem(path, selectedIndex)()
     }
-    window.addEventListener("keydown", removeOnDeleteKey)
+    const duplicateOnKey = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() !== "d" ||
+        !(event.metaKey || event.ctrlKey) ||
+        event.altKey ||
+        event.shiftKey ||
+        isEditableTarget(event.target)
+      ) {
+        return
+      }
+      const blocks: unknown = Resolve.data(jsonFormsCore?.data, path)
+      if (!Array.isArray(blocks)) {
+        return
+      }
+      const source: unknown = blocks[selectedIndex]
+      if (source === undefined || source === null) {
+        return
+      }
+      // Take over the keystroke even from the browser's bookmark shortcut
+      event.preventDefault()
+      const copy = structuredClone(source) as {
+        placement?: CanvasBlockPlacement
+      }
+      const placement = copy.placement
+      if (placement?.rowStart !== undefined) {
+        const rowSpan = placement.rowSpan ?? 1
+        placement.rowStart = Math.min(
+          placement.rowStart + 1,
+          CANVAS_MAX_ROW - rowSpan + 1,
+        )
+      }
+      addItem(path, copy)()
+      setSelectedIndex(blocks.length)
+    }
+    const handleShortcut = (event: KeyboardEvent) => {
+      removeOnDeleteKey(event)
+      duplicateOnKey(event)
+    }
+    window.addEventListener("keydown", handleShortcut)
     const previewWindow =
       findCanvasPreviewContainer(document, canvasOrdinal)?.ownerDocument
         .defaultView ?? null
     const foreignPreviewWindow = previewWindow === window ? null : previewWindow
-    foreignPreviewWindow?.addEventListener("keydown", removeOnDeleteKey)
+    foreignPreviewWindow?.addEventListener("keydown", handleShortcut)
     return () => {
-      window.removeEventListener("keydown", removeOnDeleteKey)
-      foreignPreviewWindow?.removeEventListener("keydown", removeOnDeleteKey)
+      window.removeEventListener("keydown", handleShortcut)
+      foreignPreviewWindow?.removeEventListener("keydown", handleShortcut)
     }
-  }, [canvasOrdinal, path, selectedIndex, removeSelectedItem])
+  }, [
+    canvasOrdinal,
+    path,
+    selectedIndex,
+    removeSelectedItem,
+    addItem,
+    setSelectedIndex,
+    jsonFormsCore,
+  ])
 }

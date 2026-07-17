@@ -172,7 +172,7 @@ const dragBetweenPlacementCells = (
 const pressKey = (
   element: Element,
   key: string,
-  init?: Pick<KeyboardEventInit, "shiftKey">,
+  init?: Pick<KeyboardEventInit, "shiftKey" | "metaKey" | "ctrlKey">,
 ) => {
   act(() => {
     element.dispatchEvent(
@@ -1168,6 +1168,86 @@ describe("FormBuilder canvas editing interactions", () => {
     })
     const afterBackspace = changes.at(-1) as { blocks?: unknown[] } | undefined
     expect(afterBackspace?.blocks).toHaveLength(0)
+  })
+
+  it("duplicates the selected block with ⌘D/Ctrl+D, offsetting its placement one row down", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    // ⌘D in the list view (no block selected) duplicates nothing
+    pressKey(document.body, "d", { metaKey: true })
+    expect(container.textContent).toContain("Item 2")
+    expect(container.textContent).not.toContain("Item 3")
+
+    click(findButtonByText("Item 1")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    // ⌘D while typing in a form field, or a plain "d", never duplicates
+    const quoteInput = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input, textarea",
+      ),
+    ).find((field) => field.value === BLOCKQUOTE_BLOCK.quote)
+    expect(quoteInput).not.toBeUndefined()
+    pressKey(quoteInput!, "d", { metaKey: true })
+    pressKey(document.body, "d")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const beforeDuplicate = changes.at(-1) as { blocks?: unknown[] } | undefined
+    expect(beforeDuplicate?.blocks ?? []).toHaveLength(2)
+
+    // ⌘D with focus outside any field appends a copy of the block with its
+    // placement shifted one row down, and the editor switches to the copy
+    pressKey(document.body, "d", { metaKey: true })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const afterDuplicate = changes.at(-1) as
+      | {
+          blocks?: {
+            quote?: string
+            placement?: { rowStart?: number; colStart?: number }
+          }[]
+        }
+      | undefined
+    expect(afterDuplicate?.blocks).toHaveLength(3)
+    expect(afterDuplicate?.blocks?.[2]?.quote).toBe(BLOCKQUOTE_BLOCK.quote)
+    expect(afterDuplicate?.blocks?.[2]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    // The copy's shifted placement shows in the picker summary, proving the
+    // nested editor now edits the duplicate
+    expect(container.textContent).toContain("Columns 2–5, rows 2–3")
+
+    // Ctrl+D duplicates the copy the same way, shifting one more row down
+    pressKey(document.body, "d", { ctrlKey: true })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const afterCtrlDuplicate = changes.at(-1) as
+      | { blocks?: { placement?: { rowStart?: number } }[] }
+      | undefined
+    expect(afterCtrlDuplicate?.blocks).toHaveLength(4)
+    expect(afterCtrlDuplicate?.blocks?.[3]?.placement?.rowStart).toBe(3)
   })
 
   it("reorders blocks via a keyboard drag and propagates the new order", async () => {
