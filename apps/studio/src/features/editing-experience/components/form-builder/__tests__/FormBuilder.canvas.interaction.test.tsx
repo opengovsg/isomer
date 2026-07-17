@@ -1898,6 +1898,59 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(lastChange?.width).toBe(60)
     expect(lastChange?.height).toBe(320)
 
+    // A handle drag that moves by whole pixels but resolves back to the
+    // saved size (604px is still 60% of the parent, 320.4px still rounds to
+    // 320) commits nothing, so it cannot spuriously dirty the page
+    canvasSize.width = 600
+    canvasSize.height = 318.8
+    const zeroDeltaBaseline = changes.length
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 595,
+          clientY: 310,
+        }),
+      )
+    })
+    canvasSize.width = 604
+    canvasSize.height = 320.4
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes).toHaveLength(zeroDeltaBaseline)
+    expect(inputByLabel("Width (%)")?.value).toBe("60")
+    expect(inputByLabel("Height (px)")?.value).toBe("320")
+
+    // The abandoned commit does not poison a genuine resize afterwards
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 595,
+          clientY: 312,
+        }),
+      )
+    })
+    canvasSize.width = 500
+    canvasSize.height = 400
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    lastChange = changes.at(-1) as
+      | { width?: number; height?: number }
+      | undefined
+    expect(lastChange?.width).toBe(50)
+    expect(lastChange?.height).toBe(400)
+
     // Closing the editor removes the editor-only resize affordance
     act(() => {
       root?.unmount()

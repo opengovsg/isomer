@@ -106,6 +106,7 @@ const usePreviewCanvasResizeAffordance = (
 const useCommitPreviewCanvasResize = ({
   path,
   schema,
+  data,
   handleChange,
   visible,
   enabled,
@@ -114,6 +115,7 @@ const useCommitPreviewCanvasResize = ({
   const [resizeCount, setResizeCount] = useState(0)
   const dimension = path.split(".").at(-1) === "width" ? "width" : "height"
   const { minimum, maximum } = schema
+  const savedValue: unknown = data
 
   useEffect(() => {
     if (!visible || !enabled) {
@@ -160,14 +162,18 @@ const useCommitPreviewCanvasResize = ({
       if (value === null) {
         return
       }
-      handleChange(
-        path,
-        clamp(
-          Math.round(value),
-          typeof minimum === "number" ? minimum : 1,
-          typeof maximum === "number" ? maximum : Number.MAX_SAFE_INTEGER,
-        ),
+      const committed = clamp(
+        Math.round(value),
+        typeof minimum === "number" ? minimum : 1,
+        typeof maximum === "number" ? maximum : Number.MAX_SAFE_INTEGER,
       )
+      // A drag can move by whole pixels yet resolve back to the saved value
+      // (width rounds to a percentage of the parent); dispatching that
+      // identical value would spuriously dirty the page
+      if (typeof savedValue === "number" && committed === savedValue) {
+        return
+      }
+      handleChange(path, committed)
       setResizeCount((count) => count + 1)
     }
 
@@ -184,6 +190,7 @@ const useCommitPreviewCanvasResize = ({
     minimum,
     maximum,
     path,
+    savedValue,
     handleChange,
     locateCanvas,
   ])
