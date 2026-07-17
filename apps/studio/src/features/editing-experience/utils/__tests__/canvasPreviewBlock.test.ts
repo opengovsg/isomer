@@ -1,11 +1,14 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import type { CanvasSelectionToolbarAction } from "../canvasPreviewBlock"
 import {
   CANVAS_DRAG_BADGE_DATA_ATTRIBUTE,
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
   CANVAS_HOVER_LABEL_DATA_ATTRIBUTE,
   CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE,
+  CANVAS_SELECTION_TOOLBAR_DATA_ATTRIBUTE,
+  CANVAS_TOOLBAR_ACTION_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
   findCanvasPreviewContainer,
   findPreviewDocumentWithCanvas,
@@ -16,6 +19,7 @@ import {
   showCanvasGridOverlay,
   showCanvasHoverLabel,
   showCanvasSelectionHandles,
+  showCanvasSelectionToolbar,
 } from "../canvasPreviewBlock"
 
 const appendIframe = (bodyHtml: string): HTMLIFrameElement => {
@@ -536,6 +540,125 @@ describe("showCanvasHoverLabel", () => {
     cleanup()
     expect(labelIn(block)).toBeNull()
     expect(block.style.position).toBe("")
+  })
+})
+
+describe("showCanvasSelectionToolbar", () => {
+  const toolbarIn = (block: HTMLElement) =>
+    block.querySelector<HTMLElement>(
+      `[${CANVAS_SELECTION_TOOLBAR_DATA_ATTRIBUTE}]`,
+    )
+
+  const ACTIONS = (
+    onDuplicate: () => void,
+    onDelete: () => void,
+  ): CanvasSelectionToolbarAction[] => [
+    {
+      name: "duplicate",
+      label: "Duplicate block (⌘D)",
+      glyph: "⧉",
+      onClick: onDuplicate,
+    },
+    {
+      name: "delete",
+      label: "Delete block (Delete)",
+      glyph: "✕",
+      disabled: true,
+      onClick: onDelete,
+    },
+  ]
+
+  it("pins labelled action buttons above the block and activates them on click", () => {
+    const block = document.createElement("div")
+    document.body.appendChild(block)
+    const onDuplicate = vi.fn()
+    const onDelete = vi.fn()
+
+    showCanvasSelectionToolbar(block, ACTIONS(onDuplicate, onDelete), "#1361F0")
+
+    expect(block.style.position).toBe("relative")
+    const toolbar = toolbarIn(block)!
+    expect(toolbar.getAttribute("role")).toBe("toolbar")
+    expect(toolbar.style.position).toBe("absolute")
+    expect(toolbar.style.bottom).toBe("100%")
+    expect(toolbar.style.pointerEvents).toBe("auto")
+
+    const buttons = Array.from(toolbar.querySelectorAll("button"))
+    expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual([
+      "Duplicate block (⌘D)",
+      "Delete block (Delete)",
+    ])
+    expect(
+      buttons.map((button) =>
+        button.getAttribute(CANVAS_TOOLBAR_ACTION_DATA_ATTRIBUTE),
+      ),
+    ).toEqual(["duplicate", "delete"])
+
+    buttons[0]!.click()
+    expect(onDuplicate).toHaveBeenCalledTimes(1)
+
+    // A disabled action renders visibly muted and never fires
+    expect(buttons[1]!.disabled).toBe(true)
+    buttons[1]!.click()
+    expect(onDelete).not.toHaveBeenCalled()
+  })
+
+  it("keeps toolbar presses away from the block's drag listeners", () => {
+    // The toolbar sits inside the selected block, whose mousedown starts a
+    // placement drag — pressing a button must not bubble into a grab
+    const block = document.createElement("div")
+    document.body.appendChild(block)
+    const onBlockMousedown = vi.fn()
+    const onBlockClick = vi.fn()
+    block.addEventListener("mousedown", onBlockMousedown)
+    block.addEventListener("click", onBlockClick)
+
+    showCanvasSelectionToolbar(
+      block,
+      ACTIONS(
+        () => undefined,
+        () => undefined,
+      ),
+      "#1361F0",
+    )
+    const button = toolbarIn(block)!.querySelector("button")!
+    button.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }))
+    button.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+
+    expect(onBlockMousedown).not.toHaveBeenCalled()
+    expect(onBlockClick).not.toHaveBeenCalled()
+  })
+
+  it("removes the toolbar and restores positioning on cleanup, leaving another affordance's positioning untouched", () => {
+    const block = document.createElement("div")
+    document.body.appendChild(block)
+
+    const cleanup = showCanvasSelectionToolbar(
+      block,
+      ACTIONS(
+        () => undefined,
+        () => undefined,
+      ),
+      "#1361F0",
+    )
+    expect(toolbarIn(block)).not.toBeNull()
+    cleanup()
+    expect(toolbarIn(block)).toBeNull()
+    expect(block.style.position).toBe("")
+
+    // The selection handles already made the block a containing block; the
+    // toolbar must not clobber that on cleanup
+    block.style.position = "relative"
+    const gatedCleanup = showCanvasSelectionToolbar(
+      block,
+      ACTIONS(
+        () => undefined,
+        () => undefined,
+      ),
+      "#1361F0",
+    )
+    gatedCleanup()
+    expect(block.style.position).toBe("relative")
   })
 })
 

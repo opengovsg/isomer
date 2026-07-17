@@ -350,6 +350,87 @@ export const showCanvasHoverLabel = (
     { left: "0", transform: "translateY(-6px)" },
   )
 
+export const CANVAS_SELECTION_TOOLBAR_DATA_ATTRIBUTE =
+  "data-canvas-selection-toolbar"
+export const CANVAS_TOOLBAR_ACTION_DATA_ATTRIBUTE = "data-canvas-toolbar-action"
+
+export interface CanvasSelectionToolbarAction {
+  name: string
+  label: string
+  glyph: string
+  disabled?: boolean
+  onClick: () => void
+}
+
+// Wix-style action toolbar: while a block's editor is open, a row of buttons
+// pinned above the block's top-right corner offers the selection actions
+// (duplicate, arrange, delete) to the mouse, mirroring the keyboard
+// shortcuts. Returns a cleanup that removes the toolbar; it only touches the
+// block's positioning when nothing else (e.g. the selection handles) has
+// already made the block a containing block.
+export const showCanvasSelectionToolbar = (
+  block: HTMLElement,
+  actions: CanvasSelectionToolbarAction[],
+  toolbarColor: string,
+): (() => void) => {
+  const appliedPosition = block.style.position === ""
+  if (appliedPosition) {
+    block.style.position = "relative"
+  }
+  const doc = block.ownerDocument
+  const toolbar = doc.createElement("div")
+  toolbar.setAttribute(CANVAS_SELECTION_TOOLBAR_DATA_ATTRIBUTE, "")
+  toolbar.setAttribute("role", "toolbar")
+  toolbar.setAttribute("aria-label", "Block actions")
+  Object.assign(toolbar.style, {
+    position: "absolute",
+    bottom: "100%",
+    right: "0",
+    transform: "translateY(-6px)",
+    display: "flex",
+    gap: "2px",
+    backgroundColor: toolbarColor,
+    borderRadius: "4px",
+    padding: "2px",
+    pointerEvents: "auto",
+    zIndex: "2",
+  })
+  // The toolbar sits inside the selected block, whose presses start a
+  // placement drag and whose clicks are canvas click-to-edit targets —
+  // presses on the toolbar are button activations, not grabs
+  toolbar.addEventListener("mousedown", (event) => event.stopPropagation())
+  toolbar.addEventListener("click", (event) => event.stopPropagation())
+  actions.forEach((action) => {
+    const button = doc.createElement("button")
+    button.type = "button"
+    button.setAttribute(CANVAS_TOOLBAR_ACTION_DATA_ATTRIBUTE, action.name)
+    button.setAttribute("aria-label", action.label)
+    button.title = action.label
+    button.textContent = action.glyph
+    button.disabled = action.disabled ?? false
+    Object.assign(button.style, {
+      backgroundColor: "transparent",
+      color: "#ffffff",
+      border: "none",
+      borderRadius: "2px",
+      padding: "2px 6px",
+      fontSize: "12px",
+      lineHeight: "1.4",
+      cursor: button.disabled ? "default" : "pointer",
+      opacity: button.disabled ? "0.4" : "1",
+    })
+    button.addEventListener("click", action.onClick)
+    toolbar.appendChild(button)
+  })
+  block.appendChild(toolbar)
+  return () => {
+    toolbar.remove()
+    if (appliedPosition) {
+      block.style.position = ""
+    }
+  }
+}
+
 export const CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE = "data-canvas-grid-overlay"
 
 // The grid is invisible on the rendered page, so while a placement drag is in

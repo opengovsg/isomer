@@ -2,16 +2,18 @@ import { useToken } from "@chakra-ui/react"
 import { Resolve } from "@jsonforms/core"
 import { useJsonForms } from "@jsonforms/react"
 import { CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE } from "@opengovsg/isomer-components"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { BLOCK_TO_META } from "~/components/PageEditor/constants"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import {
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
   CANVAS_MAX_ROW,
+  findCanvasBlockPreviewElement,
   findCanvasPreviewContainer,
   isEditableTarget,
   showCanvasHoverLabel,
+  showCanvasSelectionToolbar,
 } from "../../../utils/canvasPreviewBlock"
 import { setCanvasPreviewGrabHandoff } from "../../../utils/canvasPreviewGrabHandoff"
 
@@ -59,6 +61,70 @@ export const useCanvasPreviewClickToEdit = ({
   const editorContext = useOptionalEditorDrawerContext()
   const content = editorContext?.previewPageState.content
   const currActiveIdx = editorContext?.currActiveIdx
+
+  // Latest-ref of the canvas's child blocks, so the selection actions below
+  // keep stable identities (effects using them must not re-register on every
+  // form keystroke) while still acting on current data
+  const blocksRef = useRef<unknown[]>([])
+  const resolvedBlocks: unknown = Resolve.data(jsonFormsCore?.data, path)
+  blocksRef.current = Array.isArray(resolvedBlocks) ? resolvedBlocks : []
+
+  // The selection actions shared by the keyboard shortcuts and the preview
+  // toolbar: duplicate appends a deep copy (its placement shifted one row
+  // down so the copy is visible instead of stacking invisibly on the
+  // original) and switches the editor to it; the arrange actions move the
+  // block one step through the blocks array — overlapping blocks paint in
+  // source order, so this is the stacking-order control — with the editor
+  // following the moved block.
+  const duplicateSelectedBlock = useCallback(() => {
+    if (selectedIndex === undefined) {
+      return
+    }
+    const source: unknown = blocksRef.current[selectedIndex]
+    if (source === undefined || source === null) {
+      return
+    }
+    const copy = structuredClone(source) as {
+      placement?: CanvasBlockPlacement
+    }
+    const placement = copy.placement
+    if (placement?.rowStart !== undefined) {
+      const rowSpan = placement.rowSpan ?? 1
+      placement.rowStart = Math.min(
+        placement.rowStart + 1,
+        CANVAS_MAX_ROW - rowSpan + 1,
+      )
+    }
+    addItem(path, copy)()
+    setSelectedIndex(blocksRef.current.length)
+  }, [selectedIndex, path, addItem, setSelectedIndex])
+
+  const removeSelectedBlock = useCallback(() => {
+    if (selectedIndex === undefined) {
+      return
+    }
+    removeSelectedItem(path, selectedIndex)()
+  }, [selectedIndex, path, removeSelectedItem])
+
+  const bringSelectedForward = useCallback(() => {
+    if (
+      selectedIndex === undefined ||
+      !moveDown ||
+      selectedIndex >= blocksRef.current.length - 1
+    ) {
+      return
+    }
+    moveDown(path, selectedIndex)()
+    setSelectedIndex(selectedIndex + 1)
+  }, [selectedIndex, path, moveDown, setSelectedIndex])
+
+  const sendSelectedBackward = useCallback(() => {
+    if (selectedIndex === undefined || !moveUp || selectedIndex <= 0) {
+      return
+    }
+    moveUp(path, selectedIndex)()
+    setSelectedIndex(selectedIndex - 1)
+  }, [selectedIndex, path, moveUp, setSelectedIndex])
 
   const canvasOrdinal = useMemo(() => {
     if (
@@ -296,7 +362,7 @@ export const useCanvasPreviewClickToEdit = ({
         return
       }
       event.preventDefault()
-      removeSelectedItem(path, selectedIndex)()
+      removeSelectedBlock()
     }
     const duplicateOnKey = (event: KeyboardEvent) => {
       if (
@@ -308,29 +374,9 @@ export const useCanvasPreviewClickToEdit = ({
       ) {
         return
       }
-      const blocks: unknown = Resolve.data(jsonFormsCore?.data, path)
-      if (!Array.isArray(blocks)) {
-        return
-      }
-      const source: unknown = blocks[selectedIndex]
-      if (source === undefined || source === null) {
-        return
-      }
       // Take over the keystroke even from the browser's bookmark shortcut
       event.preventDefault()
-      const copy = structuredClone(source) as {
-        placement?: CanvasBlockPlacement
-      }
-      const placement = copy.placement
-      if (placement?.rowStart !== undefined) {
-        const rowSpan = placement.rowSpan ?? 1
-        placement.rowStart = Math.min(
-          placement.rowStart + 1,
-          CANVAS_MAX_ROW - rowSpan + 1,
-        )
-      }
-      addItem(path, copy)()
-      setSelectedIndex(blocks.length)
+      duplicateSelectedBlock()
     }
     const arrangeOnKey = (event: KeyboardEvent) => {
       if (
@@ -346,22 +392,10 @@ export const useCanvasPreviewClickToEdit = ({
       // stack: ⌘[/⌘] are browser history-navigation shortcuts, which must
       // never fire while a block is selected
       event.preventDefault()
-      const blocks: unknown = Resolve.data(jsonFormsCore?.data, path)
-      if (!Array.isArray(blocks)) {
-        return
-      }
       if (event.key === "]") {
-        if (!moveDown || selectedIndex >= blocks.length - 1) {
-          return
-        }
-        moveDown(path, selectedIndex)()
-        setSelectedIndex(selectedIndex + 1)
+        bringSelectedForward()
       } else {
-        if (!moveUp || selectedIndex <= 0) {
-          return
-        }
-        moveUp(path, selectedIndex)()
-        setSelectedIndex(selectedIndex - 1)
+        sendSelectedBackward()
       }
     }
     const deselectOnEscape = (event: KeyboardEvent) => {
@@ -410,11 +444,75 @@ export const useCanvasPreviewClickToEdit = ({
     canvasOrdinal,
     path,
     selectedIndex,
-    removeSelectedItem,
-    addItem,
-    moveUp,
-    moveDown,
+    removeSelectedBlock,
+    duplicateSelectedBlock,
+    bringSelectedForward,
+    sendSelectedBackward,
     setSelectedIndex,
-    jsonFormsCore,
+  ])
+
+  // Wix-style action toolbar pinned above the selected block in the live
+  // preview: mouse-discoverable buttons for the same selection actions as
+  // the keyboard shortcuts. The arrange buttons disable at the ends of the
+  // stack; the effect re-runs on selection changes, which every action that
+  // changes the block count also triggers, so the disabled states read a
+  // current count from the latest-ref.
+  useEffect(() => {
+    if (
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH ||
+      selectedIndex === undefined
+    ) {
+      return
+    }
+    const block = findCanvasBlockPreviewElement(
+      document,
+      canvasOrdinal,
+      selectedIndex,
+    )
+    if (!block) {
+      return
+    }
+    return showCanvasSelectionToolbar(
+      block,
+      [
+        {
+          name: "duplicate",
+          label: "Duplicate block (⌘D)",
+          glyph: "⧉",
+          onClick: duplicateSelectedBlock,
+        },
+        {
+          name: "bring-forward",
+          label: "Bring forward (⌘])",
+          glyph: "▲",
+          disabled: selectedIndex >= blocksRef.current.length - 1,
+          onClick: bringSelectedForward,
+        },
+        {
+          name: "send-backward",
+          label: "Send backward (⌘[)",
+          glyph: "▼",
+          disabled: selectedIndex <= 0,
+          onClick: sendSelectedBackward,
+        },
+        {
+          name: "delete",
+          label: "Delete block (Delete)",
+          glyph: "✕",
+          onClick: removeSelectedBlock,
+        },
+      ],
+      hoverColor,
+    )
+  }, [
+    canvasOrdinal,
+    path,
+    selectedIndex,
+    hoverColor,
+    duplicateSelectedBlock,
+    bringSelectedForward,
+    sendSelectedBackward,
+    removeSelectedBlock,
   ])
 }

@@ -3306,4 +3306,135 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("shows a Wix-style action toolbar on the selected block in the live preview", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    // One spare element (index 3) so a duplicated block's selection has a
+    // rendered wrapper to attach the toolbar to
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+          { type: "blockquote", quote: "The third quote", source: "Third" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const toolbar = () =>
+      previewDocument.querySelector<HTMLElement>(
+        "[data-canvas-selection-toolbar]",
+      )
+    const toolbarButton = (label: string) => {
+      const button = previewDocument.querySelector<HTMLButtonElement>(
+        `[data-canvas-selection-toolbar] button[aria-label="${label}"]`,
+      )
+      expect(button).not.toBeNull()
+      return button!
+    }
+    const clickToolbarButton = (label: string) => {
+      act(() => {
+        toolbarButton(label).click()
+      })
+    }
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const lastQuotes = () =>
+      (
+        changes.at(-1) as { blocks?: { quote?: string }[] } | undefined
+      )?.blocks?.map((block) => block.quote)
+
+    // No toolbar while the block list is showing
+    expect(toolbar()).toBeNull()
+
+    // Selecting a block pins the toolbar to its preview wrapper, with the
+    // stacking actions reflecting its place in the stack (a back-of-stack
+    // block cannot be sent further backward)
+    click(findButtonByText("Item 1")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await flush()
+    const firstBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    expect(
+      firstBlock.querySelector("[data-canvas-selection-toolbar]"),
+    ).not.toBeNull()
+    expect(toolbarButton("Duplicate block (⌘D)").disabled).toBe(false)
+    expect(toolbarButton("Delete block (Delete)").disabled).toBe(false)
+    expect(toolbarButton("Bring forward (⌘])").disabled).toBe(false)
+    expect(toolbarButton("Send backward (⌘[)").disabled).toBe(true)
+
+    // Bring forward reorders the blocks, the editor follows the moved block
+    // (its placement summary is unchanged), and the toolbar moves with it
+    clickToolbarButton("Bring forward (⌘])")
+    await flush()
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      BLOCKQUOTE_BLOCK.quote,
+      "The third quote",
+    ])
+    expect(container.textContent).toContain("Columns 2–5, rows 1–2")
+    const secondWrapper = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="1"]',
+    )!
+    expect(
+      secondWrapper.querySelector("[data-canvas-selection-toolbar]"),
+    ).not.toBeNull()
+    expect(toolbarButton("Send backward (⌘[)").disabled).toBe(false)
+    expect(toolbarButton("Bring forward (⌘])").disabled).toBe(false)
+
+    // Duplicate appends a copy with its placement shifted one row down and
+    // switches the editor to it; the copy is now at the front of the stack,
+    // so it cannot be brought further forward
+    clickToolbarButton("Duplicate block (⌘D)")
+    await flush()
+    const afterDuplicate = changes.at(-1) as
+      | {
+          blocks?: {
+            quote?: string
+            placement?: { rowStart?: number }
+          }[]
+        }
+      | undefined
+    expect(afterDuplicate?.blocks).toHaveLength(4)
+    expect(afterDuplicate?.blocks?.[3]?.quote).toBe(BLOCKQUOTE_BLOCK.quote)
+    expect(afterDuplicate?.blocks?.[3]?.placement?.rowStart).toBe(2)
+    expect(container.textContent).toContain("Columns 2–5, rows 2–3")
+    expect(toolbarButton("Bring forward (⌘])").disabled).toBe(true)
+    expect(toolbarButton("Send backward (⌘[)").disabled).toBe(false)
+
+    // Delete removes the copy and returns to the block list; the toolbar
+    // leaves the preview with it
+    clickToolbarButton("Delete block (Delete)")
+    await flush()
+    const afterDelete = changes.at(-1) as { blocks?: unknown[] } | undefined
+    expect(afterDelete?.blocks).toHaveLength(3)
+    expect(container.textContent).toContain("Add item")
+    expect(toolbar()).toBeNull()
+
+    iframe.remove()
+  })
 })
