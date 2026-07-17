@@ -76,7 +76,10 @@ const ActivateBlock = ({ index }: { index: number }) => {
   return null
 }
 
-const renderCanvasFormInEditorDrawer = (canvasBlock: IsomerComponent) => {
+const renderCanvasFormInEditorDrawer = (
+  canvasBlock: IsomerComponent,
+  handleChange: (data: IsomerComponent) => void = () => undefined,
+) => {
   container = document.createElement("div")
   document.body.appendChild(container)
   root = createRoot(container)
@@ -111,7 +114,7 @@ const renderCanvasFormInEditorDrawer = (canvasBlock: IsomerComponent) => {
               schema={canvasSchema}
               validateFn={validateFn}
               data={canvasBlock}
-              handleChange={() => undefined}
+              handleChange={handleChange}
             />
           </ErrorProvider>
         </EditorDrawerProvider>
@@ -1050,6 +1053,140 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(previewBlock.style.getPropertyValue("--canvas-grid-row")).toBe(
       "1 / span 2",
     )
+
+    iframe.remove()
+  })
+
+  it("moves and resizes a placed block by dragging it directly in the live preview", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows (the
+    // iframe realm reports no gaps, padding, borders or row tracks)
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    previewBlock.style.setProperty("--canvas-grid-column", "2 / span 4")
+    previewBlock.style.setProperty("--canvas-grid-row", "1 / span 2")
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // The edited block advertises that it can be grabbed
+    expect(previewBlock.style.cursor).toBe("move")
+
+    // Grab a body cell of the block (row 1, col 3) and drag two columns
+    // right and one row down (row 2, col 5): the whole block moves
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 85,
+          clientY: 16,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 165, clientY: 48 }),
+      )
+    })
+    // The preview follows live before the drag is released
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "4 / span 4",
+    )
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-row")).toBe(
+      "2 / span 2",
+    )
+
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    let lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 4,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+
+    // Grab the block's top-left corner cell (row 2, col 4) and drag it to
+    // row 1, col 2: the block resizes, anchored at its bottom-right corner
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 125,
+          clientY: 48,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 45, clientY: 5 }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 6,
+      rowStart: 1,
+      rowSpan: 3,
+    })
 
     iframe.remove()
   })

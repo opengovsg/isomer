@@ -17,12 +17,18 @@ import {
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { Button, FormLabel, Infobox } from "@opengovsg/design-system-react"
-import { CANVAS_GRID_COLUMNS } from "@opengovsg/isomer-components"
+import {
+  CANVAS_CONTAINER_DATA_ATTRIBUTE,
+  CANVAS_GRID_COLUMNS,
+} from "@opengovsg/isomer-components"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
-import { findCanvasBlockPreviewElement } from "../../../../utils/canvasPreviewBlock"
+import {
+  findCanvasBlockPreviewElement,
+  resolveCanvasGridCellFromPoint,
+} from "../../../../utils/canvasPreviewBlock"
 
 export const jsonFormsCanvasPlacementControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CanvasPlacementControl,
@@ -93,6 +99,24 @@ const shiftSelection = (
     rowEnd: rowStart + height,
   }
 }
+
+const coversCell = (
+  area: NormalisedPlacement,
+  row: number,
+  col: number,
+): boolean =>
+  row >= area.rowStart &&
+  row <= area.rowEnd &&
+  col >= area.colStart &&
+  col <= area.colEnd
+
+const isCorner = (
+  area: NormalisedPlacement,
+  row: number,
+  col: number,
+): boolean =>
+  (row === area.rowStart || row === area.rowEnd) &&
+  (col === area.colStart || col === area.colEnd)
 
 const rectanglesOverlap = (
   a: NormalisedPlacement,
@@ -304,10 +328,49 @@ function JsonFormsCanvasPlacementControl({
   const locatePreviewBlock = usePreviewBlockLocator(path)
   useHighlightPreviewBlock(locatePreviewBlock)
 
+  const savedSelection = useMemo(
+    () => (placement ? normalise(placement) : undefined),
+    [placement],
+  )
+
   const dragSelection = drag ? resolveDragSelection(drag) : null
   const releasePreviewDragFeedback = usePreviewDragFeedback(
     locatePreviewBlock,
     dragSelection,
+  )
+
+  const startDrag = useCallback(
+    (row: number, col: number): void => {
+      if (savedSelection && coversCell(savedSelection, row, col)) {
+        if (isCorner(savedSelection, row, col)) {
+          // Resize: sweep anchored at the opposite corner of the selection
+          setDrag({
+            mode: "draw",
+            anchor: {
+              row:
+                row === savedSelection.rowStart
+                  ? savedSelection.rowEnd
+                  : savedSelection.rowStart,
+              col:
+                col === savedSelection.colStart
+                  ? savedSelection.colEnd
+                  : savedSelection.colStart,
+            },
+            current: { row, col },
+          })
+          return
+        }
+        setDrag({
+          mode: "move",
+          origin: savedSelection,
+          grab: { row, col },
+          current: { row, col },
+        })
+        return
+      }
+      setDrag({ mode: "draw", anchor: { row, col }, current: { row, col } })
+    },
+    [savedSelection],
   )
 
   const commitSelection = (selection: NormalisedPlacement): void => {
@@ -317,7 +380,10 @@ function JsonFormsCanvasPlacementControl({
   }
 
   // Committing on window mouseup lets a drag end anywhere (even outside the
-  // grid) and still apply the last cell the pointer covered
+  // grid) and still apply the last cell the pointer covered. A drag started
+  // on (or wandering over) the preview iframe delivers its mouse events to
+  // the iframe's own window, so the pointer is tracked there too, mapped back
+  // to grid cells through the rendered canvas's geometry.
   useEffect(() => {
     if (!drag) {
       return
@@ -328,14 +394,86 @@ function JsonFormsCanvasPlacementControl({
       setDrag(null)
     }
     window.addEventListener("mouseup", commitDrag)
-    return () => window.removeEventListener("mouseup", commitDrag)
-  }, [drag, handleChange, path, releasePreviewDragFeedback])
+
+    const previewBlock = locatePreviewBlock()
+    const previewCanvas =
+      previewBlock?.closest<HTMLElement>(
+        `[${CANVAS_CONTAINER_DATA_ATTRIBUTE}]`,
+      ) ?? null
+    const previewWindow = previewBlock?.ownerDocument.defaultView ?? null
+    const trackPreviewPointer = (event: MouseEvent) => {
+      if (!previewCanvas) {
+        return
+      }
+      const cell = resolveCanvasGridCellFromPoint(
+        previewCanvas,
+        event.clientX,
+        event.clientY,
+      )
+      if (!cell) {
+        return
+      }
+      setDrag((currentDrag) => currentDrag && { ...currentDrag, current: cell })
+    }
+    previewWindow?.addEventListener("mousemove", trackPreviewPointer)
+    previewWindow?.addEventListener("mouseup", commitDrag)
+    return () => {
+      window.removeEventListener("mouseup", commitDrag)
+      previewWindow?.removeEventListener("mousemove", trackPreviewPointer)
+      previewWindow?.removeEventListener("mouseup", commitDrag)
+    }
+  }, [drag, handleChange, path, releasePreviewDragFeedback, locatePreviewBlock])
+
+  // Wix-like direct manipulation: a placed block can be grabbed in the live
+  // preview itself — its body moves it, a corner cell resizes it (the same
+  // semantics as the picker grid)
+  useEffect(() => {
+    if (!visible || !enabled || !savedSelection) {
+      return
+    }
+    const previewBlock = locatePreviewBlock()
+    const previewCanvas = previewBlock?.closest<HTMLElement>(
+      `[${CANVAS_CONTAINER_DATA_ATTRIBUTE}]`,
+    )
+    if (!previewBlock || !previewCanvas) {
+      return
+    }
+    const grabBlock = (event: MouseEvent) => {
+      if (event.button !== 0) {
+        return
+      }
+      const cell = resolveCanvasGridCellFromPoint(
+        previewCanvas,
+        event.clientX,
+        event.clientY,
+      )
+      if (!cell) {
+        return
+      }
+      // Keep the preview content from starting native drags or text selection
+      event.preventDefault()
+      event.stopPropagation()
+      // Geometry rounding at the block's edges could land just outside the
+      // saved area; clamping guarantees a grab is a move or a corner resize,
+      // never a fresh draw that would shrink the block to a single cell
+      startDrag(
+        clamp(cell.row, savedSelection.rowStart, savedSelection.rowEnd),
+        clamp(cell.col, savedSelection.colStart, savedSelection.colEnd),
+      )
+    }
+    const previousCursor = previewBlock.style.cursor
+    previewBlock.style.cursor = "move"
+    previewBlock.addEventListener("mousedown", grabBlock)
+    return () => {
+      previewBlock.removeEventListener("mousedown", grabBlock)
+      previewBlock.style.cursor = previousCursor
+    }
+  }, [visible, enabled, savedSelection, locatePreviewBlock, startDrag])
 
   if (!visible) {
     return null
   }
 
-  const savedSelection = placement ? normalise(placement) : undefined
   const selection = dragSelection ?? savedSelection
 
   const displayedRows = Math.max(
@@ -343,16 +481,6 @@ function JsonFormsCanvasPlacementControl({
     (selection?.rowEnd ?? 0) + 1,
     ...siblingPlacements.map((sibling) => sibling.rowEnd),
   )
-
-  const coversCell = (
-    area: NormalisedPlacement,
-    row: number,
-    col: number,
-  ): boolean =>
-    row >= area.rowStart &&
-    row <= area.rowEnd &&
-    col >= area.colStart &&
-    col <= area.colEnd
 
   const isCellSelected = (row: number, col: number): boolean =>
     selection !== undefined && coversCell(selection, row, col)
@@ -364,14 +492,6 @@ function JsonFormsCanvasPlacementControl({
   const overlapsSibling =
     selection !== undefined &&
     siblingPlacements.some((sibling) => rectanglesOverlap(selection, sibling))
-
-  const isCorner = (
-    area: NormalisedPlacement,
-    row: number,
-    col: number,
-  ): boolean =>
-    (row === area.rowStart || row === area.rowEnd) &&
-    (col === area.colStart || col === area.colEnd)
 
   // Corners of the saved selection read as resize handles, its body as a
   // move handle, and everything else as a fresh draw
@@ -386,37 +506,6 @@ function JsonFormsCanvasPlacementControl({
         : "nesw-resize"
     }
     return "move"
-  }
-
-  const startDrag = (row: number, col: number): void => {
-    if (savedSelection && coversCell(savedSelection, row, col)) {
-      if (isCorner(savedSelection, row, col)) {
-        // Resize: sweep anchored at the opposite corner of the selection
-        setDrag({
-          mode: "draw",
-          anchor: {
-            row:
-              row === savedSelection.rowStart
-                ? savedSelection.rowEnd
-                : savedSelection.rowStart,
-            col:
-              col === savedSelection.colStart
-                ? savedSelection.colEnd
-                : savedSelection.colStart,
-          },
-          current: { row, col },
-        })
-        return
-      }
-      setDrag({
-        mode: "move",
-        origin: savedSelection,
-        grab: { row, col },
-        current: { row, col },
-      })
-      return
-    }
-    setDrag({ mode: "draw", anchor: { row, col }, current: { row, col } })
   }
 
   return (
@@ -537,9 +626,10 @@ function JsonFormsCanvasPlacementControl({
         </Text>
         {selection && (
           <Text textStyle="body-2" textColor="base.content.medium">
-            Drag the highlighted area to move it, or drag a corner to resize it.
-            With the keyboard, press Enter on a cell to start, Enter on another
-            cell to finish, or Escape to cancel.
+            Drag the highlighted area (or the block itself in the page preview)
+            to move it, or drag a corner to resize it. With the keyboard, press
+            Enter on a cell to start, Enter on another cell to finish, or Escape
+            to cancel.
           </Text>
         )}
         {siblingPlacements.length > 0 && (
