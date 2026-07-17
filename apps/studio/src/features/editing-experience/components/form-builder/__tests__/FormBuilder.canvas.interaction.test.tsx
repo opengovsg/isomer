@@ -18,6 +18,7 @@ import { ajv } from "~/utils/ajv"
 
 import { ErrorProvider } from "../ErrorProvider"
 import FormBuilder from "../FormBuilder"
+import { resetCanvasBlockClipboard } from "../hooks/useCanvasPreviewClickToEdit"
 
 // Some child block forms (e.g. blockquote's optional image) mount controls
 // that read the page route; outside a Next app the router is not mounted
@@ -1294,6 +1295,131 @@ describe("FormBuilder canvas editing interactions", () => {
       | undefined
     expect(afterCtrlDuplicate?.blocks).toHaveLength(4)
     expect(afterCtrlDuplicate?.blocks?.[3]?.placement?.rowStart).toBe(3)
+  })
+
+  it("copies, cuts, and pastes canvas blocks with ⌘C/⌘X/⌘V", async () => {
+    resetCanvasBlockClipboard()
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const lastBlocks = () =>
+      (
+        changes.at(-1) as
+          | {
+              blocks?: {
+                quote?: string
+                placement?: { rowStart?: number }
+              }[]
+            }
+          | undefined
+      )?.blocks
+
+    // ⌘V with an empty block clipboard pastes nothing
+    pressKey(document.body, "v", { metaKey: true })
+    await flush()
+    expect(container.textContent).toContain("Item 2")
+    expect(container.textContent).not.toContain("Item 3")
+
+    click(findButtonByText("Item 1")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await flush()
+
+    // ⌘C while typing in a form field keeps its native copy meaning, so a
+    // following ⌘V still has nothing to paste
+    const quoteInput = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input, textarea",
+      ),
+    ).find((field) => field.value === BLOCKQUOTE_BLOCK.quote)
+    expect(quoteInput).not.toBeUndefined()
+    pressKey(quoteInput!, "c", { metaKey: true })
+    pressKey(document.body, "v", { metaKey: true })
+    await flush()
+    expect(lastBlocks() ?? []).toHaveLength(2)
+
+    // ⌘C then ⌘V appends a copy of the block with its placement shifted one
+    // row down, and the editor switches to the pasted copy
+    pressKey(document.body, "c", { metaKey: true })
+    pressKey(document.body, "v", { metaKey: true })
+    await flush()
+    expect(lastBlocks()).toHaveLength(3)
+    expect(lastBlocks()?.[2]?.quote).toBe(BLOCKQUOTE_BLOCK.quote)
+    expect(lastBlocks()?.[2]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    expect(container.textContent).toContain("Columns 2–5, rows 2–3")
+
+    // Pasting again cascades one more row down instead of stacking
+    pressKey(document.body, "v", { ctrlKey: true })
+    await flush()
+    expect(lastBlocks()).toHaveLength(4)
+    expect(lastBlocks()?.[3]?.placement?.rowStart).toBe(3)
+
+    // Paste needs no selection: after Escape back to the list, ⌘V still
+    // appends (and selects) the next cascaded copy
+    pressKey(document.body, "Escape")
+    await flush()
+    expect(container.textContent).toContain("Item 4")
+    pressKey(document.body, "v", { metaKey: true })
+    await flush()
+    expect(lastBlocks()).toHaveLength(5)
+    expect(container.textContent).toContain("Columns 2–5, rows 4–5")
+
+    // ⌘C over a live text selection defers to the native copy: the block
+    // clipboard still holds the first block, not the newly selected one
+    pressKey(document.body, "Escape")
+    await flush()
+    click(findButtonByText("Item 2")!)
+    await flush()
+    const selection = document.getSelection()!
+    const range = document.createRange()
+    range.selectNodeContents(container)
+    selection.removeAllRanges()
+    selection.addRange(range)
+    pressKey(document.body, "c", { metaKey: true })
+    selection.removeAllRanges()
+    pressKey(document.body, "v", { metaKey: true })
+    await flush()
+    expect(lastBlocks()).toHaveLength(6)
+    expect(lastBlocks()?.[5]?.quote).toBe(BLOCKQUOTE_BLOCK.quote)
+
+    // ⌘X cuts: the block leaves the canvas and the editor returns to the
+    // list, and ⌘V puts it back
+    pressKey(document.body, "Escape")
+    await flush()
+    click(findButtonByText("Item 2")!)
+    await flush()
+    pressKey(document.body, "x", { metaKey: true })
+    await flush()
+    expect(lastBlocks()).toHaveLength(5)
+    expect(
+      lastBlocks()?.some((block) => block.quote === "The second quote"),
+    ).toBe(false)
+    expect(container.textContent).toContain("Add item")
+    pressKey(document.body, "v", { metaKey: true })
+    await flush()
+    expect(lastBlocks()).toHaveLength(6)
+    expect(lastBlocks()?.[5]?.quote).toBe("The second quote")
+    expect(lastBlocks()?.[5]?.placement).toBeUndefined()
   })
 
   it("arranges the selected block forward and backward in stacking order with ⌘]/⌘[", async () => {

@@ -40,6 +40,42 @@ interface CanvasBlockPlacement {
   rowSpan?: number
 }
 
+// In-memory clipboard for canvas blocks, module-level so a copied block
+// survives selection changes, editor reopens, and pastes into other canvases
+// (every canvas shares the same child-block union). The OS clipboard is left
+// alone: block JSON there would clobber the text users expect ⌘C to own.
+let canvasBlockClipboard: unknown = null
+
+export const resetCanvasBlockClipboard = (): void => {
+  canvasBlockClipboard = null
+}
+
+// A copied or pasted block lands one row below its source so it is visible
+// instead of stacking invisibly on the original, clamped to stay on the grid
+const shiftPlacementOneRowDown = (block: {
+  placement?: CanvasBlockPlacement
+}): void => {
+  const placement = block.placement
+  if (placement?.rowStart !== undefined) {
+    const rowSpan = placement.rowSpan ?? 1
+    placement.rowStart = Math.min(
+      placement.rowStart + 1,
+      CANVAS_MAX_ROW - rowSpan + 1,
+    )
+  }
+}
+
+// A live (non-collapsed) text selection means ⌘C/⌘X should keep their native
+// copy meaning; the selection lives in whichever document the keystroke
+// targeted, which may be the preview iframe's realm, so duck-type throughout
+const hasTextSelection = (target: EventTarget | null): boolean => {
+  const node = target as Partial<Node> | null
+  const doc = (node?.ownerDocument ?? node) as Partial<Document> | null
+  const selection =
+    typeof doc?.getSelection === "function" ? doc.getSelection() : null
+  return selection !== null && !selection.isCollapsed
+}
+
 // While the canvas editor is open, the blocks rendered in the live preview
 // act as click targets: clicking one opens (or switches to) its nested item
 // editor, and clicking the empty canvas background deselects back to the
@@ -47,8 +83,10 @@ interface CanvasBlockPlacement {
 // edited block is excluded — the placement control owns its preview
 // interactions — and the hook is a no-op for every non-canvas array control.
 // While a block is selected, Delete/Backspace removes it from the canvas,
-// ⌘D/Ctrl+D duplicates it, ⌘]/⌘[ (or Ctrl) move it forward/backward in the
-// stacking order, and ⌘⇧]/⌘⇧[ jump it to the front/back of the stack.
+// ⌘D/Ctrl+D duplicates it, ⌘C/⌘X copy or cut it to an in-memory block
+// clipboard pasted back (with or without a selection) by ⌘V, ⌘]/⌘[ (or Ctrl)
+// move it forward/backward in the stacking order, and ⌘⇧]/⌘⇧[ jump it to the
+// front/back of the stack.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -94,17 +132,46 @@ export const useCanvasPreviewClickToEdit = ({
     const copy = structuredClone(source) as {
       placement?: CanvasBlockPlacement
     }
-    const placement = copy.placement
-    if (placement?.rowStart !== undefined) {
-      const rowSpan = placement.rowSpan ?? 1
-      placement.rowStart = Math.min(
-        placement.rowStart + 1,
-        CANVAS_MAX_ROW - rowSpan + 1,
-      )
-    }
+    shiftPlacementOneRowDown(copy)
     addItem(path, copy)()
     setSelectedIndex(blocksRef.current.length)
   }, [selectedIndex, path, addItem, setSelectedIndex])
+
+  // The clipboard actions behind ⌘C/⌘X/⌘V: copy snapshots the selected block
+  // into the module-level clipboard, cut also removes it, and paste appends a
+  // clone with its placement shifted one row down — re-snapshotting the
+  // shifted clone so successive pastes cascade down the grid instead of
+  // stacking on one spot — and switches the editor to the pasted block.
+  const copySelectedBlock = useCallback(() => {
+    if (selectedIndex === undefined) {
+      return false
+    }
+    const source: unknown = blocksRef.current[selectedIndex]
+    if (source === undefined || source === null) {
+      return false
+    }
+    canvasBlockClipboard = structuredClone(source)
+    return true
+  }, [selectedIndex])
+
+  const cutSelectedBlock = useCallback(() => {
+    if (selectedIndex !== undefined && copySelectedBlock()) {
+      removeSelectedItem(path, selectedIndex)()
+    }
+  }, [copySelectedBlock, removeSelectedItem, path, selectedIndex])
+
+  const pasteBlockFromClipboard = useCallback(() => {
+    if (canvasBlockClipboard === null) {
+      return
+    }
+    const copy = structuredClone(canvasBlockClipboard) as {
+      placement?: CanvasBlockPlacement
+    }
+    shiftPlacementOneRowDown(copy)
+    canvasBlockClipboard = structuredClone(copy)
+    addItem(path, copy)()
+    setSelectedIndex(blocksRef.current.length)
+  }, [path, addItem, setSelectedIndex])
 
   const removeSelectedBlock = useCallback(() => {
     if (selectedIndex === undefined) {
@@ -524,6 +591,65 @@ export const useCanvasPreviewClickToEdit = ({
     bringSelectedToFront,
     sendSelectedToBack,
     setSelectedIndex,
+  ])
+
+  // Wix-style clipboard shortcuts, active whenever the canvas editor is open
+  // (paste needs no selection, so this cannot live in the selection-gated
+  // effect above): ⌘C/Ctrl+C copies the selected block into the in-memory
+  // block clipboard, ⌘X cuts it, and ⌘V pastes the clipboard block one row
+  // below its source, switching the editor to the pasted copy. Keystrokes in
+  // form fields and copies of a live text selection keep their native
+  // clipboard meaning, and an empty block clipboard leaves ⌘V untouched.
+  useEffect(() => {
+    if (canvasOrdinal === null || path !== CANVAS_BLOCKS_PATH) {
+      return
+    }
+    const clipboardOnKey = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase()
+      if (
+        (key !== "c" && key !== "x" && key !== "v") ||
+        !(event.metaKey || event.ctrlKey) ||
+        event.altKey ||
+        event.shiftKey ||
+        isEditableTarget(event.target)
+      ) {
+        return
+      }
+      if (key === "v") {
+        if (canvasBlockClipboard === null) {
+          return
+        }
+        event.preventDefault()
+        pasteBlockFromClipboard()
+        return
+      }
+      if (selectedIndex === undefined || hasTextSelection(event.target)) {
+        return
+      }
+      event.preventDefault()
+      if (key === "c") {
+        copySelectedBlock()
+      } else {
+        cutSelectedBlock()
+      }
+    }
+    window.addEventListener("keydown", clipboardOnKey)
+    const previewWindow =
+      findCanvasPreviewContainer(document, canvasOrdinal)?.ownerDocument
+        .defaultView ?? null
+    const foreignPreviewWindow = previewWindow === window ? null : previewWindow
+    foreignPreviewWindow?.addEventListener("keydown", clipboardOnKey)
+    return () => {
+      window.removeEventListener("keydown", clipboardOnKey)
+      foreignPreviewWindow?.removeEventListener("keydown", clipboardOnKey)
+    }
+  }, [
+    canvasOrdinal,
+    path,
+    selectedIndex,
+    copySelectedBlock,
+    cutSelectedBlock,
+    pasteBlockFromClipboard,
   ])
 
   // Wix-style action toolbar pinned above the selected block in the live
