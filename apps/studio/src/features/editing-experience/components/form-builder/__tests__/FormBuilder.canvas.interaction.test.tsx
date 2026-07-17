@@ -1250,6 +1250,148 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(afterCtrlDuplicate?.blocks?.[3]?.placement?.rowStart).toBe(3)
   })
 
+  it("deselects the open block back to the list with Escape, unless a drag is active or focus is in a form field", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+      KeyboardEvent: typeof KeyboardEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    previewBlock.style.setProperty("--canvas-grid-column", "2 / span 4")
+    previewBlock.style.setProperty("--canvas-grid-row", "1 / span 2")
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    // Escape in the list view (no block selected) is a no-op
+    pressKey(document.body, "Escape")
+    expect(container.textContent).toContain("Item 1")
+
+    click(findButtonByText("Item 1")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    // Escape while typing in a form field keeps its editing meaning (e.g.
+    // closing a dropdown) and never deselects the block
+    const quoteInput = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input, textarea",
+      ),
+    ).find((field) => field.value === BLOCKQUOTE_BLOCK.quote)
+    expect(quoteInput).not.toBeUndefined()
+    pressKey(quoteInput!, "Escape")
+    expect(container.textContent).toContain("Edit Canvas blocks")
+
+    // Escape while a placement drag is in progress cancels the drag but
+    // keeps the block's editor open
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 85,
+          clientY: 16,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 165, clientY: 48 }),
+      )
+    })
+    expect(
+      previewDocument.querySelector("[data-canvas-grid-overlay]"),
+    ).not.toBeNull()
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(
+      previewDocument.querySelector("[data-canvas-grid-overlay]"),
+    ).toBeNull()
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Columns 2–5, rows 1–2")
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+
+    // With no drag active any more, Escape returns to the block list
+    // without committing any data change
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const baselineChangeCount = changes.length
+    pressKey(document.body, "Escape")
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Item 1")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // Escape also deselects when focus sits in the preview iframe
+    click(findButtonByText("Item 1")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Item 1")
+
+    iframe.remove()
+  })
+
   it("reorders blocks via a keyboard drag and propagates the new order", async () => {
     const changes: IsomerComponent[] = []
     renderCanvasForm(

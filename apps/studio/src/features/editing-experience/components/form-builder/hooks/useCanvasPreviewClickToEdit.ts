@@ -6,6 +6,7 @@ import { useEffect, useMemo } from "react"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import {
+  CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
   CANVAS_MAX_ROW,
   findCanvasPreviewContainer,
   isEditableTarget,
@@ -240,9 +241,11 @@ export const useCanvasPreviewClickToEdit = ({
 
   // Wix-style keyboard shortcuts while a block's nested editor is open:
   // Delete or Backspace removes the block from the canvas and returns to the
-  // block list, and ⌘D/Ctrl+D appends a copy of the block (its placement
+  // block list, ⌘D/Ctrl+D appends a copy of the block (its placement
   // shifted one row down so the copy is visible) and switches the editor to
-  // it. Keystrokes aimed at a form field keep their editing meaning.
+  // it, and Escape deselects back to the block list (unless a placement drag
+  // is in progress — the placement control owns Escape as its drag cancel).
+  // Keystrokes aimed at a form field keep their editing meaning.
   // Registered on both windows so shortcuts work whether focus sits in the
   // drawer or in the preview iframe.
   useEffect(() => {
@@ -301,9 +304,36 @@ export const useCanvasPreviewClickToEdit = ({
       addItem(path, copy)()
       setSelectedIndex(blocks.length)
     }
+    const deselectOnEscape = (event: KeyboardEvent) => {
+      if (
+        event.key !== "Escape" ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.defaultPrevented ||
+        isEditableTarget(event.target)
+      ) {
+        return
+      }
+      // While a placement drag is active, Escape means "cancel the drag";
+      // the placement control's capture-phase listener usually intercepts
+      // the event first, but a keydown targeting the preview window itself
+      // reaches both listeners, so the drag's grid-guide overlay is the
+      // reliable in-progress marker
+      const previewCanvas = findCanvasPreviewContainer(document, canvasOrdinal)
+      if (
+        previewCanvas?.querySelector(`[${CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE}]`)
+      ) {
+        return
+      }
+      event.preventDefault()
+      setSelectedIndex(undefined)
+    }
     const handleShortcut = (event: KeyboardEvent) => {
       removeOnDeleteKey(event)
       duplicateOnKey(event)
+      deselectOnEscape(event)
     }
     window.addEventListener("keydown", handleShortcut)
     const previewWindow =
