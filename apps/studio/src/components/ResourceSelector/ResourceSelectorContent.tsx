@@ -24,14 +24,14 @@ const NoItemsInFolderResult = () => {
 const ResourceItemsResults = ({
   resourceItemsWithAncestryStack,
   isResourceIdHighlighted,
-  isResourceItemDisabled,
+  getResourceItemDisabledReason,
   hasAdditionalLeftPadding,
   handleClickResourceItem,
 }: Pick<
   SuspendableContentProps,
   | "resourceItemsWithAncestryStack"
   | "isResourceIdHighlighted"
-  | "isResourceItemDisabled"
+  | "getResourceItemDisabledReason"
   | "hasAdditionalLeftPadding"
   | "handleClickResourceItem"
 >) => {
@@ -51,7 +51,7 @@ const ResourceItemsResults = ({
         <ResourceItem
           key={lastChild.id}
           item={lastChild}
-          isDisabled={isResourceItemDisabled(lastChild)}
+          disabledReason={getResourceItemDisabledReason(lastChild)}
           isHighlighted={isResourceIdHighlighted(lastChild.id)}
           handleOnClick={() =>
             handleClickResourceItem(resourceItemWithAncestryStack)
@@ -105,7 +105,9 @@ export const LoadingResourceItemsResults = () => {
 interface SuspendableContentProps {
   resourceItemsWithAncestryStack: ResourceItemContent[][] | undefined
   isResourceIdHighlighted: (resourceId: string) => boolean
-  isResourceItemDisabled: (resourceItem: ResourceItemContent) => boolean
+  getResourceItemDisabledReason: (
+    resourceItem: ResourceItemContent,
+  ) => string | undefined
   hasAdditionalLeftPadding: boolean
   handleClickResourceItem: (
     resourceItemWithAncestryStack: ResourceItemContent[],
@@ -118,7 +120,7 @@ interface SuspendableContentProps {
 export const SuspendableContent = ({
   resourceItemsWithAncestryStack,
   isResourceIdHighlighted,
-  isResourceItemDisabled,
+  getResourceItemDisabledReason,
   hasAdditionalLeftPadding,
   handleClickResourceItem,
   isSearchQueryEmpty,
@@ -145,7 +147,7 @@ export const SuspendableContent = ({
     <ResourceItemsResults
       resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
       isResourceIdHighlighted={isResourceIdHighlighted}
-      isResourceItemDisabled={isResourceItemDisabled}
+      getResourceItemDisabledReason={getResourceItemDisabledReason}
       hasAdditionalLeftPadding={hasAdditionalLeftPadding}
       handleClickResourceItem={handleClickResourceItem}
     />

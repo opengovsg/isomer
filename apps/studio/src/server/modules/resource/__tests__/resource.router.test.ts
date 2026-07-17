@@ -1348,6 +1348,38 @@ describe("resource.router", async () => {
       )
     })
 
+    it("should identify a collection when the destination is the same as the origin", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection({
+        permalink: "collection",
+      })
+      const { page } = await setupCollectionPage({
+        siteId: site.id,
+        parentId: collection.id,
+      })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.move({
+        siteId: site.id,
+        movedResourceId: page.id,
+        destinationResourceId: collection.id,
+      })
+
+      // Assert
+      expect(auditSpy).not.toHaveBeenCalled()
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot move a resource to the same collection",
+        }),
+      )
+    })
+
     it("should return 403 if destination is a root page but user is not an admin", async () => {
       // Arrange
       const { folder: originFolder, site } = await setupFolder({
