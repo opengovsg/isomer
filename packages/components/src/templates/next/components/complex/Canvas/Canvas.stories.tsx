@@ -94,8 +94,7 @@ export const GridLayout: Story = {
     blocks: [
       {
         type: "prose",
-        colStart: 1,
-        colSpan: 7,
+        placement: { colStart: 1, colSpan: 7 },
         content: [
           {
             type: "paragraph",
@@ -110,17 +109,13 @@ export const GridLayout: Story = {
       },
       {
         type: "image",
-        colStart: 8,
-        colSpan: 5,
+        placement: { colStart: 8, colSpan: 5 },
         src: "https://placehold.co/400x200",
         alt: "Image placed beside the text on the canvas grid",
       },
       {
         type: "blockquote",
-        colStart: 3,
-        colSpan: 8,
-        rowStart: 4,
-        rowSpan: 3,
+        placement: { colStart: 3, colSpan: 8, rowStart: 4, rowSpan: 3 },
         quote:
           "Row placement works too: this quote starts on row 4 and is three rows tall.",
         source: "Isomer Next",

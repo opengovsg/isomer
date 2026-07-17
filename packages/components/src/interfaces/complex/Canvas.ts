@@ -16,45 +16,60 @@ import { VideoSchema } from "./Video"
 
 export const CANVAS_GRID_COLUMNS = 12
 
-// Grid placement fields merged into every canvas child block so each block
-// can be positioned and sized on the canvas grid, Wix-style. All fields are
-// optional: a block without placement stacks full-width like before. Studio's
-// number control only renders fully bounded fields, so every field carries
-// both a minimum and a maximum.
+// Where and how large a block sits on the canvas grid, Wix-style. All fields
+// are optional so partial placements still render (the renderer fills in the
+// defaults). The format marker routes Studio to its visual grid placement
+// picker, the same way "prose" routes to the Tiptap control.
+const CanvasGridPlacementSchema = Type.Object(
+  {
+    colStart: Type.Optional(
+      Type.Integer({
+        title: "Column start",
+        description: `Which of the ${CANVAS_GRID_COLUMNS} grid columns this block starts in. Leave empty to place it after the previous block.`,
+        minimum: 1,
+        maximum: CANVAS_GRID_COLUMNS,
+      }),
+    ),
+    colSpan: Type.Optional(
+      Type.Integer({
+        title: "Column width",
+        description: `How many of the ${CANVAS_GRID_COLUMNS} grid columns this block spans. Leave empty for full width.`,
+        minimum: 1,
+        maximum: CANVAS_GRID_COLUMNS,
+      }),
+    ),
+    rowStart: Type.Optional(
+      Type.Integer({
+        title: "Row start",
+        description:
+          "Which grid row this block starts in. Leave empty to place it after the previous block.",
+        minimum: 1,
+        maximum: 100,
+      }),
+    ),
+    rowSpan: Type.Optional(
+      Type.Integer({
+        title: "Row height",
+        description: "How many grid rows this block spans vertically.",
+        minimum: 1,
+        maximum: 100,
+      }),
+    ),
+  },
+  {
+    title: "Placement on grid",
+    description:
+      "Drag on the grid to position and size this block on the canvas. Leave it unplaced to stack the block across the full width.",
+    format: "canvasPlacement",
+  },
+)
+
+export type CanvasBlockPlacementProps = Static<typeof CanvasGridPlacementSchema>
+
+// Merged into every canvas child block. A block without placement stacks
+// full-width like before.
 const CanvasBlockPlacementSchema = Type.Object({
-  colStart: Type.Optional(
-    Type.Integer({
-      title: "Column start",
-      description: `Which of the ${CANVAS_GRID_COLUMNS} grid columns this block starts in. Leave empty to place it after the previous block.`,
-      minimum: 1,
-      maximum: CANVAS_GRID_COLUMNS,
-    }),
-  ),
-  colSpan: Type.Optional(
-    Type.Integer({
-      title: "Column width",
-      description: `How many of the ${CANVAS_GRID_COLUMNS} grid columns this block spans. Leave empty for full width.`,
-      minimum: 1,
-      maximum: CANVAS_GRID_COLUMNS,
-    }),
-  ),
-  rowStart: Type.Optional(
-    Type.Integer({
-      title: "Row start",
-      description:
-        "Which grid row this block starts in. Leave empty to place it after the previous block.",
-      minimum: 1,
-      maximum: 100,
-    }),
-  ),
-  rowSpan: Type.Optional(
-    Type.Integer({
-      title: "Row height",
-      description: "How many grid rows this block spans vertically.",
-      minimum: 1,
-      maximum: 100,
-    }),
-  ),
+  placement: Type.Optional(CanvasGridPlacementSchema),
 })
 
 // Composite drops the member schema's own options, so the ones Studio relies

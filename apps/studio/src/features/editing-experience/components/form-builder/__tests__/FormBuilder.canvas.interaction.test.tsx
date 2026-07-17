@@ -189,12 +189,13 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(container.textContent).toContain("Source")
     expect(container.textContent).not.toContain("Video to embed")
 
-    // Every child block exposes its grid placement controls so it can be
-    // positioned and sized on the canvas grid
-    expect(container.textContent).toContain("Column start")
-    expect(container.textContent).toContain("Column width")
-    expect(container.textContent).toContain("Row start")
-    expect(container.textContent).toContain("Row height")
+    // Every child block exposes the visual grid placement picker so it can
+    // be positioned and sized on the canvas grid
+    expect(container.textContent).toContain("Placement on grid")
+    expect(
+      container.querySelector('button[aria-label="Row 1, column 1"]'),
+    ).not.toBeNull()
+    expect(container.textContent).toContain("Not placed")
 
     // Item navigation controls are present
     expect(findButtonByText("Previous")).toBeDefined()
@@ -260,6 +261,102 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(container.textContent).toContain("Callout")
     expect(container.textContent).toContain("Callout in canvas")
     expect(container.textContent).not.toContain("Alternate text")
+  })
+
+  it("places and sizes a block by dragging across the placement grid", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm({ type: "canvas", blocks: [BLOCKQUOTE_BLOCK] }, (data) =>
+      changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    const cellAt = (row: number, col: number) => {
+      const cell = container.querySelector(
+        `button[aria-label="Row ${row}, column ${col}"]`,
+      )
+      expect(cell).not.toBeNull()
+      return cell!
+    }
+
+    // Press on the top-left corner of the desired area, sweep to the
+    // bottom-right corner, then release — like drawing a box in Wix
+    act(() => {
+      cellAt(2, 3).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    act(() => {
+      // React synthesises mouseenter from bubbling mouseover events
+      cellAt(4, 8).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    act(() => {
+      window.dispatchEvent(new MouseEvent("mouseup"))
+    })
+
+    // The swept rectangle is highlighted and summarised
+    expect(cellAt(2, 3).getAttribute("aria-pressed")).toBe("true")
+    expect(cellAt(4, 8).getAttribute("aria-pressed")).toBe("true")
+    expect(cellAt(1, 1).getAttribute("aria-pressed")).toBe("false")
+    expect(container.textContent).toContain("Columns 3–8, rows 2–4")
+
+    // The placement propagates through JsonForms validation to handleChange
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 3,
+      colSpan: 6,
+      rowStart: 2,
+      rowSpan: 3,
+    })
+  })
+
+  it("shows a saved placement and removes it via Clear placement", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 1, colSpan: 6, rowStart: 1, rowSpan: 2 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // The saved placement is highlighted on the grid
+    const savedCell = container.querySelector(
+      'button[aria-label="Row 1, column 1"]',
+    )
+    expect(savedCell?.getAttribute("aria-pressed")).toBe("true")
+    expect(container.textContent).toContain("Columns 1–6, rows 1–2")
+
+    click(findButtonByText("Clear placement")!)
+
+    // The block returns to unplaced full-width stacking
+    expect(container.textContent).toContain("Not placed")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks).toHaveLength(1)
+    expect(lastChange?.blocks?.[0]?.placement).toBeUndefined()
   })
 
   it("removes the open block and returns to the list when Remove item is clicked", async () => {

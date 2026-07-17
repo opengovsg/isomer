@@ -15,6 +15,10 @@ export {
   jsonFormsIntegerControlTester,
 } from "./JsonFormsIntegerControl"
 export {
+  default as JsonFormsCanvasPlacementControl,
+  jsonFormsCanvasPlacementControlTester,
+} from "./JsonFormsCanvasPlacementControl"
+export {
   default as JsonFormsObjectControl,
   jsonFormsObjectControlTester,
 } from "./JsonFormsObjectControl"

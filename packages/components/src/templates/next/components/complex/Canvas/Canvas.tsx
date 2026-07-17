@@ -55,8 +55,14 @@ export const Canvas = ({
         <div
           key={index}
           style={{
-            gridColumn: getGridColumn(block.colStart, block.colSpan),
-            gridRow: getGridRow(block.rowStart, block.rowSpan),
+            gridColumn: getGridColumn(
+              block.placement?.colStart,
+              block.placement?.colSpan,
+            ),
+            gridRow: getGridRow(
+              block.placement?.rowStart,
+              block.placement?.rowSpan,
+            ),
           }}
         >
           {renderComponent({
