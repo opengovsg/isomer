@@ -28,8 +28,8 @@ export const jsonFormsCanvasSizeControlTester: RankedTester = rankWith(
   ),
 )
 
-// The rendered canvas's native resize handle occupies its bottom-right
-// corner; the canvas's own padding keeps this region clear of any block
+// The preview canvas's resize handle occupies its bottom-right corner;
+// the canvas's own padding keeps this region clear of any block
 const RESIZE_HANDLE_SIZE_PX = 16
 
 const clamp = (value: number, min: number, max: number): number =>
@@ -66,15 +66,43 @@ const useCanvasPreviewLocator = (): (() => HTMLElement | null) => {
   )
 }
 
-// The canvas renders with a native CSS resize handle, but in the editor a
-// handle drag on the live preview would snap back on the next re-render
-// because nothing wrote the new size to the block data. While the canvas
-// form is open, a drag that starts on the handle commits the resulting size
-// to this control's field on release (width as a percentage of the canvas's
-// parent, height in pixels), clamped to the schema bounds. Returns a counter
-// that increments per committed resize, so the numeric input can be
-// remounted to display the new value (it is uncontrolled and only reads its
-// data when mounting).
+// The published canvas renders without a native resize handle — site
+// visitors must not be able to resize the layout the editor designed — so
+// the editor applies the affordance itself while the canvas form is open.
+// Owned by the height instance alone so the two size controls cannot fight
+// over the same inline style.
+const usePreviewCanvasResizeAffordance = (
+  { visible, enabled }: ControlProps,
+  dimension: "width" | "height",
+): void => {
+  const locateCanvas = useCanvasPreviewLocator()
+
+  useEffect(() => {
+    if (!visible || !enabled || dimension !== "height") {
+      return
+    }
+    const canvas = locateCanvas()
+    if (!canvas) {
+      return
+    }
+    // React manages no inline resize on the canvas, so the mutation
+    // survives preview re-renders and only needs restoring on close
+    const originalResize = canvas.style.resize
+    canvas.style.resize = "both"
+    return () => {
+      canvas.style.resize = originalResize
+    }
+  }, [visible, enabled, dimension, locateCanvas])
+}
+
+// A resize-handle drag on the live preview would snap back on the next
+// re-render because nothing wrote the new size to the block data. While the
+// canvas form is open, a drag that starts on the handle commits the
+// resulting size to this control's field on release (width as a percentage
+// of the canvas's parent, height in pixels), clamped to the schema bounds.
+// Returns a counter that increments per committed resize, so the numeric
+// input can be remounted to display the new value (it is uncontrolled and
+// only reads its data when mounting).
 const useCommitPreviewCanvasResize = ({
   path,
   schema,
@@ -164,13 +192,16 @@ const useCommitPreviewCanvasResize = ({
 }
 
 function JsonFormsCanvasSizeControl(props: ControlProps) {
+  const dimension =
+    props.path.split(".").at(-1) === "width" ? "width" : "height"
+  usePreviewCanvasResizeAffordance(props, dimension)
   const previewResizeCount = useCommitPreviewCanvasResize(props)
 
   return (
     <>
       <JsonFormsIntegerControl key={previewResizeCount} {...props} />
       {/* One hint for both size fields, under the last of them */}
-      {props.path.split(".").at(-1) === "height" && (
+      {dimension === "height" && (
         <Text mt="0.5rem" textStyle="body-2" textColor="base.content.medium">
           You can also resize the canvas freely by dragging the handle at its
           bottom-right corner in the page preview.

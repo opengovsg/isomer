@@ -35,7 +35,9 @@ describe("renderComponent", () => {
       }),
     )
 
-    expect(html).toContain("resize")
+    // Site visitors must not get a native resize handle on the published
+    // page — free resizing is an editor-only affordance applied by Studio
+    expect(html).not.toContain("resize")
     expect(html).toContain("width:50%")
     expect(html).toContain("height:400px")
     expect(html).toContain("Inside the canvas")
@@ -303,7 +305,7 @@ describe("renderComponent", () => {
       }),
     )
 
-    expect(html).toContain("resize")
+    expect(html).not.toContain("resize")
     expect(html).not.toContain("width:")
   })
 })

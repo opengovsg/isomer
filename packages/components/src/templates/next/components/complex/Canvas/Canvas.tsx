@@ -48,7 +48,10 @@ export const Canvas = ({
 }: CanvasProps) => {
   return (
     <div
-      className="grid resize auto-rows-[minmax(2rem,auto)] grid-cols-12 gap-4 overflow-auto rounded-lg border border-divider-medium p-5 [&:not(:first-child)]:mt-7"
+      // No `resize` here: free resizing is a Studio editing affordance
+      // (applied to the preview by the canvas size control), not something
+      // site visitors can do to the published layout
+      className="grid auto-rows-[minmax(2rem,auto)] grid-cols-12 gap-4 overflow-auto rounded-lg border border-divider-medium p-5 [&:not(:first-child)]:mt-7"
       // Scrollable region must be keyboard-focusable (same as Table.tsx)
       tabIndex={0}
       style={{

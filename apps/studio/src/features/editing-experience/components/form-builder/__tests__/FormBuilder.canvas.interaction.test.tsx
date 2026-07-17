@@ -1557,6 +1557,10 @@ describe("FormBuilder canvas editing interactions", () => {
     // The size fields advertise the preview affordance
     expect(container.textContent).toContain("resize the canvas freely")
 
+    // The published canvas has no native resize handle; the editor applies
+    // it to the preview while the size editor is open
+    expect(previewCanvas.style.resize).toBe("both")
+
     // Let JsonForms' initial onChange (emitted from an effect on a later
     // tick) land before counting the captured changes
     await act(async () => {
@@ -1646,6 +1650,13 @@ describe("FormBuilder canvas editing interactions", () => {
       | undefined
     expect(lastChange?.width).toBe(60)
     expect(lastChange?.height).toBe(320)
+
+    // Closing the editor removes the editor-only resize affordance
+    act(() => {
+      root?.unmount()
+    })
+    root = undefined
+    expect(previewCanvas.style.resize).toBe("")
 
     iframe.remove()
   })

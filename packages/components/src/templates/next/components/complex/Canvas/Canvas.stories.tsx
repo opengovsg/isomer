@@ -33,7 +33,7 @@ export const Default: Story = {
             content: [
               {
                 type: "text",
-                text: "The canvas groups other components inside a resizable container. Drag the handle at the bottom-right corner to resize it.",
+                text: "The canvas groups other components inside a container whose size and grid layout are set in the Studio editor.",
               },
             ],
           },
