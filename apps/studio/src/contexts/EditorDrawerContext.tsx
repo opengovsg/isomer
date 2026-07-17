@@ -103,6 +103,11 @@ export function EditorDrawerProvider({
   )
 }
 
+// For components that behave differently when rendered inside the editor
+// drawer but must still work outside it (e.g. form controls under test)
+export const useOptionalEditorDrawerContext = () =>
+  useContext(EditorDrawerContext)
+
 export const useEditorDrawerContext = () => {
   const editorDrawerContext = useContext(EditorDrawerContext)
 

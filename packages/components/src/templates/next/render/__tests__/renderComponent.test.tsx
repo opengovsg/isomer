@@ -156,6 +156,29 @@ describe("renderComponent", () => {
     expect(html).toContain('tabindex="0"')
   })
 
+  it("marks the canvas container and each block wrapper with locator data attributes", () => {
+    const html = renderToStaticMarkup(
+      renderComponent({
+        component: {
+          type: "canvas",
+          blocks: [
+            { type: "blockquote", quote: "First", source: "s" },
+            { type: "blockquote", quote: "Second", source: "s" },
+          ],
+        },
+        layout: "content",
+        site: generateSiteConfig(),
+        permalink: "/",
+      }),
+    )
+
+    // Editors (e.g. Studio's preview highlight) locate blocks via these
+    // attributes, so they are part of the rendered contract
+    expect(html).toContain("data-canvas-container")
+    expect(html).toContain('data-canvas-block-index="0"')
+    expect(html).toContain('data-canvas-block-index="1"')
+  })
+
   it("places canvas blocks on the grid according to their placement fields", () => {
     const html = renderToStaticMarkup(
       renderComponent({

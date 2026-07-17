@@ -3,6 +3,8 @@ export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export { CalloutSchema, type CalloutProps } from "./Callout"
 export {
+  CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE,
+  CANVAS_CONTAINER_DATA_ATTRIBUTE,
   CANVAS_GRID_COLUMNS,
   CanvasSchema,
   type CanvasBlockPlacementProps,

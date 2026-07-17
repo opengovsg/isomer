@@ -1,6 +1,10 @@
 import type { CSSProperties } from "react"
 import type { CanvasProps } from "~/interfaces"
-import { CANVAS_GRID_COLUMNS } from "~/interfaces"
+import {
+  CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE,
+  CANVAS_CONTAINER_DATA_ATTRIBUTE,
+  CANVAS_GRID_COLUMNS,
+} from "~/interfaces"
 
 import { renderComponent } from "../../../render/renderComponent"
 
@@ -51,6 +55,7 @@ export const Canvas = ({
         width: width !== undefined ? `${width}%` : undefined,
         height: height !== undefined ? `${height}px` : undefined,
       }}
+      {...{ [CANVAS_CONTAINER_DATA_ATTRIBUTE]: "" }}
     >
       {blocks.map((block, index) => {
         const gridRow = getGridRow(
@@ -78,6 +83,7 @@ export const Canvas = ({
                 }),
               } as CSSProperties
             }
+            {...{ [CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE]: index }}
           >
             {renderComponent({
               elementKey: index,

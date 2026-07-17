@@ -1,6 +1,13 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { CanvasBlockPlacementProps } from "@opengovsg/isomer-components"
-import { Box, FormControl, Grid, HStack, Text } from "@chakra-ui/react"
+import {
+  Box,
+  FormControl,
+  Grid,
+  HStack,
+  Text,
+  useToken,
+} from "@chakra-ui/react"
 import {
   and,
   isObjectControl,
@@ -11,8 +18,11 @@ import {
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
 import { Button, FormLabel, Infobox } from "@opengovsg/design-system-react"
 import { CANVAS_GRID_COLUMNS } from "@opengovsg/isomer-components"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+
+import { findCanvasBlockPreviewElement } from "../../../../utils/canvasPreviewBlock"
 
 export const jsonFormsCanvasPlacementControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CanvasPlacementControl,
@@ -150,6 +160,55 @@ const useSiblingPlacements = (path: string): NormalisedPlacement[] => {
     .map(normalise)
 }
 
+// While a block's placement editor is open, outline that block in the live
+// preview and scroll it into view, so it is clear which block on the page is
+// being placed. The canvas being edited is the page block at currActiveIdx;
+// its rendered container is found by counting the canvases before it. Outside
+// the editor drawer (or before the preview has rendered) this does nothing.
+const useHighlightPreviewBlock = (path: string): void => {
+  const editorContext = useOptionalEditorDrawerContext()
+  const [highlightColor] = useToken("colors", ["interaction.main.default"])
+  const blockIndex = Number(path.split(".").at(-2))
+  const content = editorContext?.previewPageState.content
+  const currActiveIdx = editorContext?.currActiveIdx
+
+  const canvasOrdinal = useMemo(() => {
+    if (
+      content === undefined ||
+      currActiveIdx === undefined ||
+      content[currActiveIdx]?.type !== "canvas"
+    ) {
+      return null
+    }
+    return content
+      .slice(0, currActiveIdx)
+      .filter((block) => block.type === "canvas").length
+  }, [content, currActiveIdx])
+
+  useEffect(() => {
+    if (canvasOrdinal === null || !Number.isInteger(blockIndex)) {
+      return
+    }
+    const element = findCanvasBlockPreviewElement(
+      document,
+      canvasOrdinal,
+      blockIndex,
+    )
+    if (!element) {
+      return
+    }
+    const previousOutline = element.style.outline
+    const previousOutlineOffset = element.style.outlineOffset
+    element.style.outline = `2px solid ${highlightColor}`
+    element.style.outlineOffset = "2px"
+    element.scrollIntoView({ block: "nearest" })
+    return () => {
+      element.style.outline = previousOutline
+      element.style.outlineOffset = previousOutlineOffset
+    }
+  }, [blockIndex, canvasOrdinal, highlightColor])
+}
+
 function JsonFormsCanvasPlacementControl({
   data,
   label,
@@ -162,6 +221,7 @@ function JsonFormsCanvasPlacementControl({
   const placement = data as CanvasBlockPlacementProps | undefined
   const siblingPlacements = useSiblingPlacements(path)
   const [drag, setDrag] = useState<DragState | null>(null)
+  useHighlightPreviewBlock(path)
 
   const commitSelection = (selection: NormalisedPlacement): void => {
     handleChange(path, toPlacement(selection))

@@ -16,6 +16,12 @@ import { VideoSchema } from "./Video"
 
 export const CANVAS_GRID_COLUMNS = 12
 
+// DOM markers on the rendered canvas and its block wrappers so editors
+// (e.g. Studio's live preview) can locate a block's element without
+// depending on the markup structure
+export const CANVAS_CONTAINER_DATA_ATTRIBUTE = "data-canvas-container"
+export const CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE = "data-canvas-block-index"
+
 // Where and how large a block sits on the canvas grid, Wix-style. All fields
 // are optional so partial placements still render (the renderer fills in the
 // defaults). The format marker routes Studio to its visual grid placement

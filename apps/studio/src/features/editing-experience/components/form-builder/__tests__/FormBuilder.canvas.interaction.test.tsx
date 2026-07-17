@@ -1,11 +1,18 @@
 // @vitest-environment jsdom
-import type { IsomerComponent } from "@opengovsg/isomer-components"
+import type {
+  IsomerComponent,
+  IsomerSchema,
+} from "@opengovsg/isomer-components"
 import type { Root } from "react-dom/client"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
-import { act } from "react"
+import { act, useEffect } from "react"
 import { createRoot } from "react-dom/client"
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
+import {
+  EditorDrawerProvider,
+  useEditorDrawerContext,
+} from "~/contexts/EditorDrawerContext"
 import { theme } from "~/theme"
 import { ajv } from "~/utils/ajv"
 
@@ -54,6 +61,60 @@ const renderCanvasForm = (
             handleChange={handleChange}
           />
         </ErrorProvider>
+      </ThemeProvider>,
+    )
+  })
+}
+
+// The preview-highlight behaviour reads the edited block's page position from
+// the editor drawer context, so it needs the real provider around the form
+const ActivateBlock = ({ index }: { index: number }) => {
+  const { setCurrActiveIdx } = useEditorDrawerContext()
+  useEffect(() => {
+    setCurrActiveIdx(index)
+  }, [index, setCurrActiveIdx])
+  return null
+}
+
+const renderCanvasFormInEditorDrawer = (canvasBlock: IsomerComponent) => {
+  container = document.createElement("div")
+  document.body.appendChild(container)
+  root = createRoot(container)
+
+  const pageState = {
+    layout: "content",
+    page: {
+      title: "Canvas page",
+      permalink: "/canvas-page",
+      lastModified: new Date().toISOString(),
+      contentPageHeader: { summary: "A canvas page" },
+    },
+    content: [canvasBlock],
+    version: "0.1.0",
+  } as IsomerSchema
+
+  act(() => {
+    root?.render(
+      <ThemeProvider theme={theme}>
+        <EditorDrawerProvider
+          initialPageState={pageState}
+          type="Page"
+          permalink="/canvas-page"
+          siteId={1}
+          pageId={1}
+          updatedAt={new Date()}
+          title="Canvas page"
+        >
+          <ActivateBlock index={0} />
+          <ErrorProvider>
+            <FormBuilder<IsomerComponent>
+              schema={canvasSchema}
+              validateFn={validateFn}
+              data={canvasBlock}
+              handleChange={() => undefined}
+            />
+          </ErrorProvider>
+        </EditorDrawerProvider>
       </ThemeProvider>,
     )
   })
@@ -864,5 +925,64 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(widthInput!.value).toBe("11")
     const lastChange = changes.at(-1) as { width?: number } | undefined
     expect(lastChange?.width).toBe(11)
+  })
+
+  it("highlights the edited block in the live preview while its placement editor is open", () => {
+    // Stand-in for the preview pane: an iframe whose document contains the
+    // markup the Canvas renderer emits for a two-block canvas
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+        <div data-canvas-block-index="1"></div>
+      </div>
+    `
+    // The iframe realm has its own Element prototype, which jsdom leaves
+    // without scrollIntoView
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    renderCanvasFormInEditorDrawer({
+      type: "canvas",
+      blocks: [
+        BLOCKQUOTE_BLOCK,
+        { type: "blockquote", quote: "Second quote", source: "s" },
+      ],
+    } as IsomerComponent)
+
+    const firstBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )
+    const secondBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="1"]',
+    )
+    expect(firstBlock).not.toBeNull()
+    expect(secondBlock).not.toBeNull()
+
+    // Nothing is highlighted until a block's editor is open
+    expect(firstBlock!.style.outline).toBe("")
+    expect(secondBlock!.style.outline).toBe("")
+
+    click(findButtonByText("Item 2")!)
+
+    // The edited block (and only that block) is outlined in the preview
+    expect(secondBlock!.style.outline).toContain("2px solid")
+    expect(secondBlock!.style.outlineOffset).toBe("2px")
+    expect(firstBlock!.style.outline).toBe("")
+
+    // Closing the editor removes the highlight
+    const currentRoot = root!
+    act(() => {
+      currentRoot.unmount()
+    })
+    root = undefined
+    expect(secondBlock!.style.outline).toBe("")
+    expect(secondBlock!.style.outlineOffset).toBe("")
+
+    iframe.remove()
   })
 })
