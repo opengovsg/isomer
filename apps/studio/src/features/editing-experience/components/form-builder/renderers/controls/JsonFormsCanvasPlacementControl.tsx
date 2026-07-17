@@ -154,6 +154,11 @@ function JsonFormsCanvasPlacementControl({
   const siblingPlacements = useSiblingPlacements(path)
   const [drag, setDrag] = useState<DragState | null>(null)
 
+  const commitSelection = (selection: NormalisedPlacement): void => {
+    handleChange(path, toPlacement(selection))
+    setDrag(null)
+  }
+
   // Committing on window mouseup lets a drag end anywhere (even outside the
   // grid) and still apply the last cell the pointer covered
   useEffect(() => {
@@ -319,6 +324,42 @@ function JsonFormsCanvasPlacementControl({
                         },
                     )
                   }}
+                  // Tabbing between cells extends an in-progress keyboard
+                  // selection the same way sweeping the pointer does
+                  onFocus={() => {
+                    setDrag(
+                      (currentDrag) =>
+                        currentDrag && {
+                          ...currentDrag,
+                          current: { row, col },
+                        },
+                    )
+                  }}
+                  onKeyDown={(event: React.KeyboardEvent) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      // Stop the button's synthetic click so one activation
+                      // is not treated as both start and commit
+                      event.preventDefault()
+                      if (drag) {
+                        commitSelection(
+                          resolveDragSelection({
+                            ...drag,
+                            current: { row, col },
+                          }),
+                        )
+                      } else {
+                        startDrag(row, col)
+                      }
+                      return
+                    }
+                    if (event.key === "Escape" && drag) {
+                      // Cancel the selection without letting Escape bubble
+                      // into drawer/modal close handlers
+                      event.preventDefault()
+                      event.stopPropagation()
+                      setDrag(null)
+                    }
+                  }}
                 />
               )
             }),
@@ -328,11 +369,13 @@ function JsonFormsCanvasPlacementControl({
         <Text mt="0.5rem" textStyle="body-2" textColor="base.content.medium">
           {selection
             ? `Columns ${selection.colStart}–${selection.colEnd}, rows ${selection.rowStart}–${selection.rowEnd}`
-            : "Not placed: this block stacks across the full canvas width. Drag on the grid to place and size it."}
+            : "Not placed: this block stacks across the full canvas width. Drag on the grid to place and size it, or press Enter on a starting cell and again on an ending cell."}
         </Text>
         {selection && (
           <Text textStyle="body-2" textColor="base.content.medium">
             Drag the highlighted area to move it, or drag a corner to resize it.
+            With the keyboard, press Enter on a cell to start, Enter on another
+            cell to finish, or Escape to cancel.
           </Text>
         )}
         {siblingPlacements.length > 0 && (

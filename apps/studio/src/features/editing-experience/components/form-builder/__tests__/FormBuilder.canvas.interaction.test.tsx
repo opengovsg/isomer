@@ -507,6 +507,112 @@ describe("FormBuilder canvas editing interactions", () => {
     })
   })
 
+  it("places and sizes a block with the keyboard", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm({ type: "canvas", blocks: [BLOCKQUOTE_BLOCK] }, (data) =>
+      changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Enter on a cell starts the selection, moving focus sweeps it out, and
+    // Enter on the ending cell commits it — the keyboard equivalent of the
+    // mouse drag
+    pressKey(placementCellAt(2, 3), "Enter")
+    expect(placementCellAt(2, 3).getAttribute("aria-pressed")).toBe("true")
+
+    act(() => {
+      ;(placementCellAt(4, 8) as HTMLElement).focus()
+    })
+    expect(container.textContent).toContain("Columns 3–8, rows 2–4")
+    expect(placementCellAt(3, 5).getAttribute("aria-pressed")).toBe("true")
+
+    pressKey(placementCellAt(4, 8), "Enter")
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 3,
+      colSpan: 6,
+      rowStart: 2,
+      rowSpan: 3,
+    })
+  })
+
+  it("cancels an in-progress keyboard selection with Escape", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm({ type: "canvas", blocks: [BLOCKQUOTE_BLOCK] }, (data) =>
+      changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    pressKey(placementCellAt(2, 3), "Enter")
+    act(() => {
+      ;(placementCellAt(4, 8) as HTMLElement).focus()
+    })
+    expect(container.textContent).toContain("Columns 3–8, rows 2–4")
+
+    pressKey(placementCellAt(4, 8), "Escape")
+
+    // The selection is discarded, nothing is committed, and Escape does not
+    // bubble into the nested drawer's close handling
+    expect(container.textContent).toContain("Not placed")
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toBeUndefined()
+  })
+
+  it("moves a placed block with the keyboard", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 3, colSpan: 4, rowStart: 2, rowSpan: 2 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Enter on a body cell of the saved selection grabs the rectangle (same
+    // semantics as a mouse body-drag), focus shifts it, Enter drops it
+    pressKey(placementCellAt(2, 4), "Enter")
+    act(() => {
+      ;(placementCellAt(4, 5) as HTMLElement).focus()
+    })
+    expect(container.textContent).toContain("Columns 4–7, rows 4–5")
+
+    pressKey(placementCellAt(4, 5), "Enter")
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 4,
+      colSpan: 4,
+      rowStart: 4,
+      rowSpan: 2,
+    })
+  })
+
   it("shades cells occupied by sibling blocks on the placement grid", () => {
     renderCanvasForm({
       type: "canvas",
