@@ -571,6 +571,105 @@ describe("FormBuilder canvas editing interactions", () => {
     })
   })
 
+  it("does not commit a placement identical to the saved one", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 3, colSpan: 4, rowStart: 2, rowSpan: 2 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Flush JsonForms' initial onChange emission before taking the baseline
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const baselineChangeCount = changes.length
+
+    // A plain click on the selection's body (a zero-delta move)
+    act(() => {
+      placementCellAt(2, 4).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    act(() => {
+      window.dispatchEvent(new MouseEvent("mouseup"))
+    })
+
+    // A plain click on the selection's corner (a zero-delta resize)
+    act(() => {
+      placementCellAt(3, 6).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    act(() => {
+      window.dispatchEvent(new MouseEvent("mouseup"))
+    })
+
+    // A body drag that returns to its origin cell before release
+    act(() => {
+      placementCellAt(2, 4).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    act(() => {
+      placementCellAt(3, 5).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    act(() => {
+      placementCellAt(2, 4).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    act(() => {
+      window.dispatchEvent(new MouseEvent("mouseup"))
+    })
+
+    // Keyboard: Enter to grab a body cell, Enter again on the same cell
+    pressKey(placementCellAt(2, 4), "Enter")
+    pressKey(placementCellAt(2, 4), "Enter")
+
+    // None of these dirtied the page, and the saved placement is unchanged
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes.length).toBe(baselineChangeCount)
+    expect(container.textContent).toContain("Columns 3–6, rows 2–3")
+
+    // A genuine move afterwards still commits
+    dragBetweenPlacementCells({ row: 2, col: 4 }, { row: 4, col: 5 })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes.length).toBeGreaterThan(baselineChangeCount)
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 4,
+      colSpan: 4,
+      rowStart: 4,
+      rowSpan: 2,
+    })
+  })
+
   it("places and sizes a block with the keyboard", async () => {
     const changes: IsomerComponent[] = []
     renderCanvasForm({ type: "canvas", blocks: [BLOCKQUOTE_BLOCK] }, (data) =>

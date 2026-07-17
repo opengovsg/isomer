@@ -143,6 +143,16 @@ const toPlacement = (
   rowSpan: selection.rowEnd - selection.rowStart + 1,
 })
 
+const placementsEqual = (
+  a: CanvasBlockPlacementProps | undefined,
+  b: CanvasBlockPlacementProps,
+): boolean =>
+  a !== undefined &&
+  a.colStart === b.colStart &&
+  a.colSpan === b.colSpan &&
+  a.rowStart === b.rowStart &&
+  a.rowSpan === b.rowSpan
+
 // A partial placement (possible in hand-authored content) renders with the
 // same defaults the canvas renderer applies: start at the first cell, span
 // the full width and a single row
@@ -411,16 +421,27 @@ function JsonFormsCanvasPlacementControl({
     [savedSelection, startDragWithin],
   )
 
-  const commitSelection = (selection: NormalisedPlacement): void => {
-    releasePreviewDragFeedback({ restore: false })
-    handleChange(path, toPlacement(selection))
-    setDrag(null)
-  }
-
   const cancelDrag = useCallback(() => {
     releasePreviewDragFeedback({ restore: true })
     setDrag(null)
   }, [releasePreviewDragFeedback])
+
+  // A selection identical to the saved placement (a click on the selection's
+  // body or corner, or a drag released back at its origin) would only dirty
+  // the page, so it ends the drag without committing anything
+  const commitSelection = useCallback(
+    (selection: NormalisedPlacement): void => {
+      const next = toPlacement(selection)
+      if (placementsEqual(placement, next)) {
+        cancelDrag()
+        return
+      }
+      releasePreviewDragFeedback({ restore: false })
+      handleChange(path, next)
+      setDrag(null)
+    },
+    [placement, cancelDrag, releasePreviewDragFeedback, handleChange, path],
+  )
 
   // Committing on window mouseup lets a drag end anywhere (even outside the
   // grid) and still apply the last cell the pointer covered. A drag started
@@ -432,9 +453,7 @@ function JsonFormsCanvasPlacementControl({
       return
     }
     const commitDrag = () => {
-      releasePreviewDragFeedback({ restore: false })
-      handleChange(path, toPlacement(resolveDragSelection(drag)))
-      setDrag(null)
+      commitSelection(resolveDragSelection(drag))
     }
     // While a drag is active, Escape means "cancel the drag" wherever it is
     // pressed — capture phase on both windows so it works for drags started
@@ -481,14 +500,7 @@ function JsonFormsCanvasPlacementControl({
       previewWindow?.removeEventListener("mouseup", commitDrag)
       previewWindow?.removeEventListener("keydown", cancelOnEscape, true)
     }
-  }, [
-    drag,
-    handleChange,
-    path,
-    releasePreviewDragFeedback,
-    cancelDrag,
-    locatePreviewBlock,
-  ])
+  }, [drag, commitSelection, cancelDrag, locatePreviewBlock])
 
   // Wix-like direct manipulation: the block can be grabbed in the live
   // preview itself — its body moves it, a corner cell resizes it (the same
