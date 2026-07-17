@@ -88,14 +88,17 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
   } = arrayResult
 
   // Canvas blocks can be selected by clicking them on the live preview,
-  // removed with the Delete key, and duplicated with ⌘D/Ctrl+D; for every
-  // other array this is a no-op
+  // removed with the Delete key, duplicated with ⌘D/Ctrl+D, and moved
+  // forward/backward in the stacking order with ⌘]/⌘[; for every other
+  // array this is a no-op
   useCanvasPreviewClickToEdit({
     path,
     selectedIndex,
     setSelectedIndex,
     removeSelectedItem: handleRemoveSelectedItem,
     addItem,
+    moveUp,
+    moveDown,
   })
 
   return (

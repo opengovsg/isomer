@@ -23,6 +23,8 @@ interface UseCanvasPreviewClickToEditArgs {
   setSelectedIndex: (selectedIndex?: number) => void
   removeSelectedItem: (path: string, index: number) => () => void
   addItem: (path: string, value: unknown) => () => void
+  moveUp?: (path: string, index: number) => () => void
+  moveDown?: (path: string, index: number) => () => void
 }
 
 interface CanvasBlockPlacement {
@@ -38,14 +40,17 @@ interface CanvasBlockPlacement {
 // block list, mirroring Wix's select-on-canvas interaction. The currently
 // edited block is excluded — the placement control owns its preview
 // interactions — and the hook is a no-op for every non-canvas array control.
-// While a block is selected, Delete/Backspace removes it from the canvas
-// and ⌘D/Ctrl+D duplicates it.
+// While a block is selected, Delete/Backspace removes it from the canvas,
+// ⌘D/Ctrl+D duplicates it, and ⌘]/⌘[ (or Ctrl) move it forward/backward
+// in the stacking order.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
   setSelectedIndex,
   removeSelectedItem,
   addItem,
+  moveUp,
+  moveDown,
 }: UseCanvasPreviewClickToEditArgs): void => {
   const jsonFormsCore = useJsonForms().core
   const [hoverColor] = useToken("colors", ["interaction.main.default"])
@@ -243,8 +248,11 @@ export const useCanvasPreviewClickToEdit = ({
   // Delete or Backspace removes the block from the canvas and returns to the
   // block list, ⌘D/Ctrl+D appends a copy of the block (its placement
   // shifted one row down so the copy is visible) and switches the editor to
-  // it, and Escape deselects back to the block list (unless a placement drag
-  // is in progress — the placement control owns Escape as its drag cancel).
+  // it, ⌘]/⌘[ (or Ctrl) move the block one step forward/backward in the
+  // blocks array — overlapping blocks paint in source order, so this is the
+  // stacking-order control — and Escape deselects back to the block list
+  // (unless a placement drag is in progress — the placement control owns
+  // Escape as its drag cancel).
   // Keystrokes aimed at a form field keep their editing meaning.
   // Registered on both windows so shortcuts work whether focus sits in the
   // drawer or in the preview iframe.
@@ -304,6 +312,38 @@ export const useCanvasPreviewClickToEdit = ({
       addItem(path, copy)()
       setSelectedIndex(blocks.length)
     }
+    const arrangeOnKey = (event: KeyboardEvent) => {
+      if (
+        (event.key !== "]" && event.key !== "[") ||
+        !(event.metaKey || event.ctrlKey) ||
+        event.altKey ||
+        event.shiftKey ||
+        isEditableTarget(event.target)
+      ) {
+        return
+      }
+      // Take over the keystroke even when the move clamps at the end of the
+      // stack: ⌘[/⌘] are browser history-navigation shortcuts, which must
+      // never fire while a block is selected
+      event.preventDefault()
+      const blocks: unknown = Resolve.data(jsonFormsCore?.data, path)
+      if (!Array.isArray(blocks)) {
+        return
+      }
+      if (event.key === "]") {
+        if (!moveDown || selectedIndex >= blocks.length - 1) {
+          return
+        }
+        moveDown(path, selectedIndex)()
+        setSelectedIndex(selectedIndex + 1)
+      } else {
+        if (!moveUp || selectedIndex <= 0) {
+          return
+        }
+        moveUp(path, selectedIndex)()
+        setSelectedIndex(selectedIndex - 1)
+      }
+    }
     const deselectOnEscape = (event: KeyboardEvent) => {
       if (
         event.key !== "Escape" ||
@@ -333,6 +373,7 @@ export const useCanvasPreviewClickToEdit = ({
     const handleShortcut = (event: KeyboardEvent) => {
       removeOnDeleteKey(event)
       duplicateOnKey(event)
+      arrangeOnKey(event)
       deselectOnEscape(event)
     }
     window.addEventListener("keydown", handleShortcut)
@@ -351,6 +392,8 @@ export const useCanvasPreviewClickToEdit = ({
     selectedIndex,
     removeSelectedItem,
     addItem,
+    moveUp,
+    moveDown,
     setSelectedIndex,
     jsonFormsCore,
   ])

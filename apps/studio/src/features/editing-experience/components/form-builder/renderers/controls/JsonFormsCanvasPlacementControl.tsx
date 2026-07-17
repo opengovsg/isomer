@@ -991,7 +991,7 @@ function JsonFormsCanvasPlacementControl({
         <Text mt="0.5rem" textStyle="body-2" textColor="base.content.medium">
           {selection
             ? `Columns ${selection.colStart}–${selection.colEnd}, rows ${selection.rowStart}–${selection.rowEnd}`
-            : "Not placed: this block stacks across the full canvas width. Drag on the grid (or drag the block itself in the page preview) to place and size it, or press Enter on a starting cell and again on an ending cell. Press Delete to remove the block from the canvas, ⌘D/Ctrl+D to duplicate it, or Escape to go back to the block list."}
+            : "Not placed: this block stacks across the full canvas width. Drag on the grid (or drag the block itself in the page preview) to place and size it, or press Enter on a starting cell and again on an ending cell. Press Delete to remove the block from the canvas, ⌘D/Ctrl+D to duplicate it, ⌘]/⌘[ (or Ctrl) to bring it forward or send it backward, or Escape to go back to the block list."}
         </Text>
         {selection && (
           <Text textStyle="body-2" textColor="base.content.medium">
@@ -1001,8 +1001,9 @@ function JsonFormsCanvasPlacementControl({
             arrow keys to nudge the block one cell at a time (hold Shift to
             resize instead), or press Enter on a cell to start a selection,
             Enter on another cell to finish, and Escape to cancel. Press Delete
-            to remove the block from the canvas, ⌘D/Ctrl+D to duplicate it, or
-            Escape to go back to the block list.
+            to remove the block from the canvas, ⌘D/Ctrl+D to duplicate it,
+            ⌘]/⌘[ (or Ctrl) to bring it forward or send it backward, or Escape
+            to go back to the block list.
           </Text>
         )}
         {siblingPlacements.length > 0 && (
@@ -1013,7 +1014,8 @@ function JsonFormsCanvasPlacementControl({
         {overlapsSibling && (
           <Infobox variant="warning" size="sm" mt="0.5rem">
             This placement overlaps another block. Overlapping blocks are
-            stacked on top of each other on the page.
+            stacked on top of each other on the page — press ⌘]/⌘[ (or Ctrl) to
+            change which block is on top.
           </Infobox>
         )}
       </FormControl>

@@ -1250,6 +1250,102 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(afterCtrlDuplicate?.blocks?.[3]?.placement?.rowStart).toBe(3)
   })
 
+  it("arranges the selected block forward and backward in stacking order with ⌘]/⌘[", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+          { type: "blockquote", quote: "The third quote", source: "Third" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const lastQuotes = () =>
+      (
+        changes.at(-1) as { blocks?: { quote?: string }[] } | undefined
+      )?.blocks?.map((block) => block.quote)
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    // ⌘] in the list view (no block selected) reorders nothing
+    pressKey(document.body, "]", { metaKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      BLOCKQUOTE_BLOCK.quote,
+      "The second quote",
+      "The third quote",
+    ])
+
+    click(findButtonByText("Item 1")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await flush()
+
+    // ⌘[ with the block already at the back of the stack, and ⌘] while
+    // typing in a form field, reorder nothing
+    pressKey(document.body, "[", { metaKey: true })
+    const quoteInput = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input, textarea",
+      ),
+    ).find((field) => field.value === BLOCKQUOTE_BLOCK.quote)
+    expect(quoteInput).not.toBeUndefined()
+    pressKey(quoteInput!, "]", { metaKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      BLOCKQUOTE_BLOCK.quote,
+      "The second quote",
+      "The third quote",
+    ])
+
+    // ⌘] brings the block forward one step and the editor follows it: the
+    // picker summary still shows the moved block's placement
+    pressKey(document.body, "]", { metaKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      BLOCKQUOTE_BLOCK.quote,
+      "The third quote",
+    ])
+    expect(container.textContent).toContain("Columns 2–5, rows 1–2")
+
+    // Ctrl+] brings it forward again, to the front of the stack
+    pressKey(document.body, "]", { ctrlKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      "The third quote",
+      BLOCKQUOTE_BLOCK.quote,
+    ])
+
+    // ⌘] with the block already at the front clamps to a no-op
+    pressKey(document.body, "]", { metaKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      "The third quote",
+      BLOCKQUOTE_BLOCK.quote,
+    ])
+
+    // ⌘[ sends the block backward one step, the editor still following it
+    pressKey(document.body, "[", { ctrlKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      BLOCKQUOTE_BLOCK.quote,
+      "The third quote",
+    ])
+    expect(container.textContent).toContain("Columns 2–5, rows 1–2")
+  })
+
   it("deselects the open block back to the list with Escape, unless a drag is active or focus is in a form field", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
