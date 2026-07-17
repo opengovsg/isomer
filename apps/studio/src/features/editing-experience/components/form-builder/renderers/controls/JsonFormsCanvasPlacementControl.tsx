@@ -9,7 +9,7 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
-import { Button, FormLabel } from "@opengovsg/design-system-react"
+import { Button, FormLabel, Infobox } from "@opengovsg/design-system-react"
 import { CANVAS_GRID_COLUMNS } from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
@@ -83,6 +83,15 @@ const shiftSelection = (
     rowEnd: rowStart + height,
   }
 }
+
+const rectanglesOverlap = (
+  a: NormalisedPlacement,
+  b: NormalisedPlacement,
+): boolean =>
+  a.colStart <= b.colEnd &&
+  b.colStart <= a.colEnd &&
+  a.rowStart <= b.rowEnd &&
+  b.rowStart <= a.rowEnd
 
 const resolveDragSelection = (drag: DragState): NormalisedPlacement =>
   drag.mode === "draw"
@@ -201,6 +210,11 @@ function JsonFormsCanvasPlacementControl({
 
   const isCellOccupied = (row: number, col: number): boolean =>
     siblingPlacements.some((sibling) => coversCell(sibling, row, col))
+
+  // Overlap is legal (CSS grid stacks the blocks), so warn rather than block
+  const overlapsSibling =
+    selection !== undefined &&
+    siblingPlacements.some((sibling) => rectanglesOverlap(selection, sibling))
 
   const isCorner = (
     area: NormalisedPlacement,
@@ -382,6 +396,12 @@ function JsonFormsCanvasPlacementControl({
           <Text textStyle="body-2" textColor="base.content.medium">
             Shaded cells are occupied by other blocks in this canvas.
           </Text>
+        )}
+        {overlapsSibling && (
+          <Infobox variant="warning" size="sm" mt="0.5rem">
+            This placement overlaps another block. Overlapping blocks are
+            stacked on top of each other on the page.
+          </Infobox>
         )}
       </FormControl>
     </Box>

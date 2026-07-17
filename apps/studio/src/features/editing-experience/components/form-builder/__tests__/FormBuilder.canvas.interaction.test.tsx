@@ -655,6 +655,55 @@ describe("FormBuilder canvas editing interactions", () => {
     )
   })
 
+  it("warns when a placement overlaps a sibling block but still commits it", async () => {
+    const OVERLAP_WARNING = "This placement overlaps another block."
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "Second",
+            placement: { colStart: 7, colSpan: 3, rowStart: 2, rowSpan: 1 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 2")!)
+
+    // The saved placements (columns 7-9 vs columns 1-4) do not overlap
+    expect(container.textContent).not.toContain(OVERLAP_WARNING)
+
+    // Grab the block's body at (2, 8) and drop it next to the sibling: the
+    // move lands on columns 4-6, row 1, sharing column 4 with the sibling
+    dragBetweenPlacementCells({ row: 2, col: 8 }, { row: 1, col: 5 })
+
+    expect(container.textContent).toContain(OVERLAP_WARNING)
+
+    // Overlap is legal (blocks stack on the page), so the placement still
+    // propagates through JsonForms validation to handleChange
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[1]?.placement).toEqual({
+      colStart: 4,
+      colSpan: 3,
+      rowStart: 1,
+      rowSpan: 1,
+    })
+  })
+
   it("removes the open block and returns to the list when Remove item is clicked", async () => {
     const changes: IsomerComponent[] = []
     renderCanvasForm(
