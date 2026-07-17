@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react"
 import type { CanvasProps } from "~/interfaces"
 import { CANVAS_GRID_COLUMNS } from "~/interfaces"
 
@@ -51,30 +52,44 @@ export const Canvas = ({
         height: height !== undefined ? `${height}px` : undefined,
       }}
     >
-      {blocks.map((block, index) => (
-        <div
-          key={index}
-          style={{
-            gridColumn: getGridColumn(
-              block.placement?.colStart,
-              block.placement?.colSpan,
-            ),
-            gridRow: getGridRow(
-              block.placement?.rowStart,
-              block.placement?.rowSpan,
-            ),
-          }}
-        >
-          {renderComponent({
-            elementKey: index,
-            component: block,
-            layout,
-            site,
-            shouldLazyLoad,
-            permalink,
-          })}
-        </div>
-      ))}
+      {blocks.map((block, index) => {
+        const gridRow = getGridRow(
+          block.placement?.rowStart,
+          block.placement?.rowSpan,
+        )
+
+        return (
+          <div
+            key={index}
+            // Placement only applies from md up: on narrow screens every
+            // block stacks full-width in content order, since a 12-column
+            // layout is unusable at mobile widths. Inline styles cannot be
+            // responsive, so the placement travels via CSS custom properties
+            // that the md: classes consume.
+            className="col-span-full md:[grid-column:var(--canvas-grid-column)] md:[grid-row:var(--canvas-grid-row,auto)]"
+            style={
+              {
+                "--canvas-grid-column": getGridColumn(
+                  block.placement?.colStart,
+                  block.placement?.colSpan,
+                ),
+                ...(gridRow !== undefined && {
+                  "--canvas-grid-row": gridRow,
+                }),
+              } as CSSProperties
+            }
+          >
+            {renderComponent({
+              elementKey: index,
+              component: block,
+              layout,
+              site,
+              shouldLazyLoad,
+              permalink,
+            })}
+          </div>
+        )
+      })}
     </div>
   )
 }

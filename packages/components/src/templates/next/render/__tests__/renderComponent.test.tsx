@@ -177,8 +177,39 @@ describe("renderComponent", () => {
     )
 
     expect(html).toContain("grid-cols-12")
-    expect(html).toContain("grid-column:3 / span 6")
-    expect(html).toContain("grid-row:2 / span 4")
+    expect(html).toContain("--canvas-grid-column:3 / span 6")
+    expect(html).toContain("--canvas-grid-row:2 / span 4")
+  })
+
+  it("applies grid placement from the md breakpoint up and stacks blocks full-width below it", () => {
+    const html = renderToStaticMarkup(
+      renderComponent({
+        component: {
+          type: "canvas",
+          blocks: [
+            {
+              type: "blockquote",
+              quote: "Placed block",
+              source: "A source",
+              placement: { colStart: 3, colSpan: 6, rowStart: 2, rowSpan: 4 },
+            },
+          ],
+        },
+        layout: "content",
+        site: generateSiteConfig(),
+        permalink: "/",
+      }),
+    )
+
+    // Base (mobile) class stacks the block across the full width; the
+    // placement is only consumed by the md: responsive classes.
+    expect(html).toContain("col-span-full")
+    expect(html).toContain("md:[grid-column:var(--canvas-grid-column)]")
+    expect(html).toContain("md:[grid-row:var(--canvas-grid-row,auto)]")
+    // No non-responsive inline grid-column — that would place the block on
+    // the 12-column grid at every viewport (the [";] guard skips the
+    // --canvas-grid-column custom property, which also ends in that name)
+    expect(html).not.toMatch(/[";]grid-column:/)
   })
 
   it("stacks placement-less canvas blocks across the full grid width", () => {
@@ -194,8 +225,8 @@ describe("renderComponent", () => {
       }),
     )
 
-    expect(html).toContain("grid-column:1 / -1")
-    expect(html).not.toContain("grid-row")
+    expect(html).toContain("--canvas-grid-column:1 / -1")
+    expect(html).not.toContain("--canvas-grid-row:")
   })
 
   it("clamps and defaults partial grid placements", () => {
@@ -233,10 +264,10 @@ describe("renderComponent", () => {
       }),
     )
 
-    expect(html).toContain("grid-column:10 / span 3")
-    expect(html).toContain("grid-column:4 / -1")
-    expect(html).toContain("grid-column:span 5")
-    expect(html).toContain("grid-row:span 2")
+    expect(html).toContain("--canvas-grid-column:10 / span 3")
+    expect(html).toContain("--canvas-grid-column:4 / -1")
+    expect(html).toContain("--canvas-grid-column:span 5")
+    expect(html).toContain("--canvas-grid-row:span 2")
   })
 
   it("renders a canvas without explicit dimensions", () => {
