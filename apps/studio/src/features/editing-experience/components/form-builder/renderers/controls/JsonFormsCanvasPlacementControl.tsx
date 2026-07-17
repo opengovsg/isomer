@@ -30,6 +30,7 @@ import {
   resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
   showCanvasGridOverlay,
+  showCanvasSelectionHandles,
 } from "../../../../utils/canvasPreviewBlock"
 
 export const jsonFormsCanvasPlacementControlTester: RankedTester = rankWith(
@@ -252,6 +253,28 @@ const useHighlightPreviewBlock = (
   }, [highlightColor, locatePreviewBlock])
 }
 
+// Wix-style resize affordance: while the block can be grabbed in the live
+// preview, its corners show visible resize handles. Grabbing a handle bubbles
+// to the block's own grab listener, which resolves the corner cell into the
+// existing corner-resize drag — the handles only make the interaction visible.
+const usePreviewSelectionHandles = (
+  locatePreviewBlock: () => HTMLElement | null,
+  active: boolean,
+): void => {
+  const [handleColor] = useToken("colors", ["interaction.main.default"])
+
+  useEffect(() => {
+    if (!active) {
+      return
+    }
+    const element = locatePreviewBlock()
+    if (!element) {
+      return
+    }
+    return showCanvasSelectionHandles(element, handleColor)
+  }, [active, handleColor, locatePreviewBlock])
+}
+
 // The rendered page gives no hint of where the grid cells are, so while a
 // placement drag is in progress (whether it started on the picker or on the
 // preview block itself) the grid's column and row guides are drawn on the
@@ -371,6 +394,7 @@ function JsonFormsCanvasPlacementControl({
   } | null>(null)
   const locatePreviewBlock = usePreviewBlockLocator(path)
   useHighlightPreviewBlock(locatePreviewBlock)
+  usePreviewSelectionHandles(locatePreviewBlock, visible && enabled)
 
   const savedSelection = useMemo(
     () => (placement ? normalise(placement) : undefined),

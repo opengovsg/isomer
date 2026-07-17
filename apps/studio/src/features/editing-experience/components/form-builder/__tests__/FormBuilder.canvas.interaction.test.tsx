@@ -1372,6 +1372,127 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("shows corner resize handles on the edited block and resizes via a handle grab", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    previewBlock.style.setProperty("--canvas-grid-column", "2 / span 4")
+    previewBlock.style.setProperty("--canvas-grid-row", "1 / span 2")
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    const handlesOnBlock = () =>
+      Array.from(
+        previewBlock.querySelectorAll<HTMLElement>(
+          "[data-canvas-selection-handle]",
+        ),
+      )
+
+    // The list view shows no handles; opening the block's editor adds one
+    // resize handle on each corner, with resize cursors
+    expect(handlesOnBlock()).toHaveLength(0)
+    click(findButtonByText("Item 1")!)
+    const handles = handlesOnBlock()
+    expect(
+      handles.map((handle) =>
+        handle.getAttribute("data-canvas-selection-handle"),
+      ),
+    ).toEqual(["top-left", "top-right", "bottom-left", "bottom-right"])
+    expect(handles.map((handle) => handle.style.cursor)).toEqual([
+      "nwse-resize",
+      "nesw-resize",
+      "nesw-resize",
+      "nwse-resize",
+    ])
+
+    // The block covers columns 2–5 and rows 1–2, so its bottom-right corner
+    // sits at (200, 64). Grabbing the bottom-right handle there and dragging
+    // to row 3, column 7 resizes the block, anchored at its top-left corner
+    const bottomRightHandle = handles.at(-1)!
+    act(() => {
+      bottomRightHandle.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 195,
+          clientY: 60,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 265, clientY: 80 }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 6,
+      rowStart: 1,
+      rowSpan: 3,
+    })
+
+    // Closing the editor removes the handles again
+    const currentRoot = root!
+    act(() => {
+      currentRoot.unmount()
+    })
+    root = undefined
+    expect(handlesOnBlock()).toHaveLength(0)
+
+    iframe.remove()
+  })
+
   it("cancels a drag started in the live preview with Escape", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)

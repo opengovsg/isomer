@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
+  CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
   findCanvasPreviewContainer,
   findPreviewDocumentWithCanvas,
@@ -10,6 +11,7 @@ import {
   resolveCanvasGridCellFromPoint,
   resolveCanvasWidthPercent,
   showCanvasGridOverlay,
+  showCanvasSelectionHandles,
 } from "../canvasPreviewBlock"
 
 const appendIframe = (bodyHtml: string): HTMLIFrameElement => {
@@ -389,6 +391,56 @@ describe("showCanvasGridOverlay", () => {
     expect(overlayIn(canvas)).toBeNull()
     expect(canvas.style.position).toBe("")
     cleanup()
+  })
+})
+
+describe("showCanvasSelectionHandles", () => {
+  const handlesIn = (block: HTMLElement) =>
+    Array.from(
+      block.querySelectorAll<HTMLElement>(
+        `[${CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE}]`,
+      ),
+    )
+
+  it("draws a resize handle on each corner of the block", () => {
+    const block = document.createElement("div")
+    document.body.appendChild(block)
+
+    showCanvasSelectionHandles(block, "#1361F0")
+
+    expect(block.style.position).toBe("relative")
+    const handles = handlesIn(block)
+    expect(
+      handles.map((handle) => [
+        handle.getAttribute(CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE),
+        handle.style.top,
+        handle.style.left,
+        handle.style.cursor,
+      ]),
+    ).toEqual([
+      ["top-left", "0%", "0%", "nwse-resize"],
+      ["top-right", "0%", "100%", "nesw-resize"],
+      ["bottom-left", "100%", "0%", "nesw-resize"],
+      ["bottom-right", "100%", "100%", "nwse-resize"],
+    ])
+    // Centred on the corner and hidden from assistive tech
+    handles.forEach((handle) => {
+      expect(handle.style.transform).toBe("translate(-50%, -50%)")
+      expect(handle.getAttribute("aria-hidden")).toBe("true")
+    })
+  })
+
+  it("removes the handles and restores the block positioning on cleanup", () => {
+    const block = document.createElement("div")
+    block.style.position = "static"
+    document.body.appendChild(block)
+
+    const cleanup = showCanvasSelectionHandles(block, "#1361F0")
+    expect(handlesIn(block)).toHaveLength(4)
+
+    cleanup()
+    expect(handlesIn(block)).toHaveLength(0)
+    expect(block.style.position).toBe("static")
   })
 })
 

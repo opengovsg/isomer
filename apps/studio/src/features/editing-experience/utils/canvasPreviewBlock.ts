@@ -190,6 +190,60 @@ export const resolveCanvasWidthPercent = (
   return (canvas.getBoundingClientRect().width / contentWidth) * 100
 }
 
+export const CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE =
+  "data-canvas-selection-handle"
+
+const SELECTION_HANDLE_CORNERS = [
+  { corner: "top-left", top: "0%", left: "0%", cursor: "nwse-resize" },
+  { corner: "top-right", top: "0%", left: "100%", cursor: "nesw-resize" },
+  { corner: "bottom-left", top: "100%", left: "0%", cursor: "nesw-resize" },
+  { corner: "bottom-right", top: "100%", left: "100%", cursor: "nwse-resize" },
+] as const
+
+// Wix-style selection handles: while a block's editor is open, its corners
+// show visible resize handles in the live preview. The handles are an
+// affordance layer only — their mousedowns bubble to the block's grab
+// listener, which resolves the pressed corner into the existing corner-resize
+// drag. Returns a cleanup that removes the handles and restores the block's
+// positioning.
+export const showCanvasSelectionHandles = (
+  block: HTMLElement,
+  handleColor: string,
+): (() => void) => {
+  const doc = block.ownerDocument
+  // The handles sit on the block's corners, so it must be their containing
+  // block; the canvas renderer leaves block wrappers statically positioned
+  const previousPosition = block.style.position
+  block.style.position = "relative"
+  const handles = SELECTION_HANDLE_CORNERS.map(
+    ({ corner, top, left, cursor }) => {
+      const handle = doc.createElement("div")
+      handle.setAttribute(CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE, corner)
+      handle.setAttribute("aria-hidden", "true")
+      Object.assign(handle.style, {
+        position: "absolute",
+        top,
+        left,
+        width: "10px",
+        height: "10px",
+        transform: "translate(-50%, -50%)",
+        boxSizing: "border-box",
+        backgroundColor: "#ffffff",
+        border: `2px solid ${handleColor}`,
+        borderRadius: "50%",
+        cursor,
+        zIndex: "1",
+      })
+      block.appendChild(handle)
+      return handle
+    },
+  )
+  return () => {
+    handles.forEach((handle) => handle.remove())
+    block.style.position = previousPosition
+  }
+}
+
 export const CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE = "data-canvas-grid-overlay"
 
 // The grid is invisible on the rendered page, so while a placement drag is in
