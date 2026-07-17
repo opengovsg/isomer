@@ -1392,6 +1392,93 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(container.textContent).toContain("Columns 2–5, rows 1–2")
   })
 
+  it("moves the selected block to the front and back of the stack with ⌘⇧]/⌘⇧[", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+          { type: "blockquote", quote: "The third quote", source: "Third" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const lastQuotes = () =>
+      (
+        changes.at(-1) as { blocks?: { quote?: string }[] } | undefined
+      )?.blocks?.map((block) => block.quote)
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    click(findButtonByText("Item 1")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await flush()
+
+    // ⌘⇧] while typing in a form field keeps its editing meaning
+    const quoteInput = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input, textarea",
+      ),
+    ).find((field) => field.value === BLOCKQUOTE_BLOCK.quote)
+    expect(quoteInput).not.toBeUndefined()
+    pressKey(quoteInput!, "}", { metaKey: true, shiftKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      BLOCKQUOTE_BLOCK.quote,
+      "The second quote",
+      "The third quote",
+    ])
+
+    // ⌘⇧] (Shift+] arrives as "}" on US layouts) jumps the block from the
+    // back of the stack straight to the front, the editor following it: the
+    // picker summary still shows the moved block's placement
+    pressKey(document.body, "}", { metaKey: true, shiftKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      "The third quote",
+      BLOCKQUOTE_BLOCK.quote,
+    ])
+    expect(container.textContent).toContain("Columns 2–5, rows 1–2")
+
+    // ⌘⇧] with the block already at the front clamps to a no-op
+    pressKey(document.body, "}", { metaKey: true, shiftKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      "The third quote",
+      BLOCKQUOTE_BLOCK.quote,
+    ])
+
+    // Ctrl+Shift+[ (layouts that report the unshifted key) sends the block
+    // all the way to the back in one step, the editor still following it
+    pressKey(document.body, "[", { ctrlKey: true, shiftKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      BLOCKQUOTE_BLOCK.quote,
+      "The second quote",
+      "The third quote",
+    ])
+    expect(container.textContent).toContain("Columns 2–5, rows 1–2")
+
+    // ⌘⇧[ with the block already at the back clamps to a no-op
+    pressKey(document.body, "{", { metaKey: true, shiftKey: true })
+    await flush()
+    expect(lastQuotes()).toEqual([
+      BLOCKQUOTE_BLOCK.quote,
+      "The second quote",
+      "The third quote",
+    ])
+  })
+
   it("deselects the open block back to the list with Escape, unless a drag is active or focus is in a form field", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
@@ -3838,9 +3925,11 @@ describe("FormBuilder canvas editing interactions", () => {
     const openedMenu = menu()!
     expect(openedMenu.style.left).toBe("140px")
     expect(openedMenu.style.top).toBe("90px")
-    // A mid-stack block can move both ways
+    // A mid-stack block can move both ways, one step or to either end
     expect(menuItem("Bring forward (⌘])").disabled).toBe(false)
     expect(menuItem("Send backward (⌘[)").disabled).toBe(false)
+    expect(menuItem("Bring to front (⌘⇧])").disabled).toBe(false)
+    expect(menuItem("Send to back (⌘⇧[)").disabled).toBe(false)
 
     // Choosing Duplicate closes the menu, appends a copy, and switches the
     // editor to it
@@ -3865,6 +3954,8 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(menu()).not.toBeNull()
     expect(menuItem("Bring forward (⌘])").disabled).toBe(true)
     expect(menuItem("Send backward (⌘[)").disabled).toBe(false)
+    expect(menuItem("Bring to front (⌘⇧])").disabled).toBe(true)
+    expect(menuItem("Send to back (⌘⇧[)").disabled).toBe(false)
 
     // Escape closes only the menu — the block stays selected
     pressKey(document.body, "Escape")
@@ -3899,6 +3990,28 @@ describe("FormBuilder canvas editing interactions", () => {
     await flush()
     expect(backgroundEvent.defaultPrevented).toBe(false)
     expect(menu()).toBeNull()
+
+    // Choosing Send to back closes the menu and moves the front block behind
+    // every sibling in one step
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="3"] span')!,
+      { clientX: 60, clientY: 40 },
+    )
+    await flush()
+    act(() => {
+      menuItem("Send to back (⌘⇧[)").click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    const afterSendToBack = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(afterSendToBack?.blocks?.map((block) => block.quote)).toEqual([
+      "The second quote",
+      BLOCKQUOTE_BLOCK.quote,
+      "The second quote",
+      "The third quote",
+    ])
 
     iframe.remove()
   })

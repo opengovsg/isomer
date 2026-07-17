@@ -47,8 +47,8 @@ interface CanvasBlockPlacement {
 // edited block is excluded — the placement control owns its preview
 // interactions — and the hook is a no-op for every non-canvas array control.
 // While a block is selected, Delete/Backspace removes it from the canvas,
-// ⌘D/Ctrl+D duplicates it, and ⌘]/⌘[ (or Ctrl) move it forward/backward
-// in the stacking order.
+// ⌘D/Ctrl+D duplicates it, ⌘]/⌘[ (or Ctrl) move it forward/backward in the
+// stacking order, and ⌘⇧]/⌘⇧[ jump it to the front/back of the stack.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -131,6 +131,34 @@ export const useCanvasPreviewClickToEdit = ({
     }
     moveUp(path, selectedIndex)()
     setSelectedIndex(selectedIndex - 1)
+  }, [selectedIndex, path, moveUp, setSelectedIndex])
+
+  // The to-front/to-back variants step through the array one move per
+  // dispatch: each JsonForms update carries a function of the previous
+  // dispatch's data, so the chain composes within one React batch
+  const bringSelectedToFront = useCallback(() => {
+    const lastIndex = blocksRef.current.length - 1
+    if (
+      selectedIndex === undefined ||
+      !moveDown ||
+      selectedIndex >= lastIndex
+    ) {
+      return
+    }
+    for (let index = selectedIndex; index < lastIndex; index++) {
+      moveDown(path, index)()
+    }
+    setSelectedIndex(lastIndex)
+  }, [selectedIndex, path, moveDown, setSelectedIndex])
+
+  const sendSelectedToBack = useCallback(() => {
+    if (selectedIndex === undefined || !moveUp || selectedIndex <= 0) {
+      return
+    }
+    for (let index = selectedIndex; index > 0; index--) {
+      moveUp(path, index)()
+    }
+    setSelectedIndex(0)
   }, [selectedIndex, path, moveUp, setSelectedIndex])
 
   const canvasOrdinal = useMemo(() => {
@@ -366,7 +394,8 @@ export const useCanvasPreviewClickToEdit = ({
   // shifted one row down so the copy is visible) and switches the editor to
   // it, ⌘]/⌘[ (or Ctrl) move the block one step forward/backward in the
   // blocks array — overlapping blocks paint in source order, so this is the
-  // stacking-order control — and Escape deselects back to the block list
+  // stacking-order control — with Shift jumping it all the way to the
+  // front/back of the stack, and Escape deselects back to the block list
   // (unless a placement drag is in progress — the placement control owns
   // Escape as its drag cancel).
   // Keystrokes aimed at a form field keep their editing meaning.
@@ -409,11 +438,12 @@ export const useCanvasPreviewClickToEdit = ({
       duplicateSelectedBlock()
     }
     const arrangeOnKey = (event: KeyboardEvent) => {
+      // Shift+]/[ arrive as }/{ on US layouts
+      const key = event.key === "}" ? "]" : event.key === "{" ? "[" : event.key
       if (
-        (event.key !== "]" && event.key !== "[") ||
+        (key !== "]" && key !== "[") ||
         !(event.metaKey || event.ctrlKey) ||
         event.altKey ||
-        event.shiftKey ||
         isEditableTarget(event.target)
       ) {
         return
@@ -422,8 +452,14 @@ export const useCanvasPreviewClickToEdit = ({
       // stack: ⌘[/⌘] are browser history-navigation shortcuts, which must
       // never fire while a block is selected
       event.preventDefault()
-      if (event.key === "]") {
-        bringSelectedForward()
+      if (key === "]") {
+        if (event.shiftKey) {
+          bringSelectedToFront()
+        } else {
+          bringSelectedForward()
+        }
+      } else if (event.shiftKey) {
+        sendSelectedToBack()
       } else {
         sendSelectedBackward()
       }
@@ -485,6 +521,8 @@ export const useCanvasPreviewClickToEdit = ({
     duplicateSelectedBlock,
     bringSelectedForward,
     sendSelectedBackward,
+    bringSelectedToFront,
+    sendSelectedToBack,
     setSelectedIndex,
   ])
 
@@ -600,11 +638,25 @@ export const useCanvasPreviewClickToEdit = ({
           onClick: withClose(bringSelectedForward),
         },
         {
+          name: "bring-to-front",
+          label: "Bring to front (⌘⇧])",
+          glyph: "⤒",
+          disabled: selectedIndex >= blocksRef.current.length - 1,
+          onClick: withClose(bringSelectedToFront),
+        },
+        {
           name: "send-backward",
           label: "Send backward (⌘[)",
           glyph: "▼",
           disabled: selectedIndex <= 0,
           onClick: withClose(sendSelectedBackward),
+        },
+        {
+          name: "send-to-back",
+          label: "Send to back (⌘⇧[)",
+          glyph: "⤓",
+          disabled: selectedIndex <= 0,
+          onClick: withClose(sendSelectedToBack),
         },
         {
           name: "delete",
@@ -667,6 +719,8 @@ export const useCanvasPreviewClickToEdit = ({
     duplicateSelectedBlock,
     bringSelectedForward,
     sendSelectedBackward,
+    bringSelectedToFront,
+    sendSelectedToBack,
     removeSelectedBlock,
   ])
 }

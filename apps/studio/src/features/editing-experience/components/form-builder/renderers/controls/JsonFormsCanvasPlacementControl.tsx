@@ -1091,7 +1091,8 @@ function JsonFormsCanvasPlacementControl({
             Enter on a cell to start a selection, Enter on another cell to
             finish, and Escape to cancel. Press Delete to remove the block from
             the canvas, ⌘D/Ctrl+D to duplicate it, ⌘]/⌘[ (or Ctrl) to bring it
-            forward or send it backward, or Escape to go back to the block list.
+            forward or send it backward (add Shift to bring it to the front or
+            send it to the back), or Escape to go back to the block list.
           </Text>
         )}
         {siblingPlacements.length > 0 && (
@@ -1103,7 +1104,8 @@ function JsonFormsCanvasPlacementControl({
           <Infobox variant="warning" size="sm" mt="0.5rem">
             This placement overlaps another block. Overlapping blocks are
             stacked on top of each other on the page — press ⌘]/⌘[ (or Ctrl) to
-            change which block is on top.
+            change which block is on top, or add Shift to bring a block to the
+            front or send it to the back.
           </Infobox>
         )}
       </FormControl>
