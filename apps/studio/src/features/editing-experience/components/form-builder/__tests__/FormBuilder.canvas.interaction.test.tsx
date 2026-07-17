@@ -148,6 +148,7 @@ const placementCellAt = (row: number, col: number) => {
 const dragBetweenPlacementCells = (
   from: { row: number; col: number },
   to: { row: number; col: number },
+  init?: Pick<MouseEventInit, "shiftKey">,
 ) => {
   act(() => {
     placementCellAt(from.row, from.col).dispatchEvent(
@@ -161,6 +162,7 @@ const dragBetweenPlacementCells = (
         bubbles: true,
         cancelable: true,
         relatedTarget: document.body,
+        ...init,
       }),
     )
   })
@@ -498,6 +500,50 @@ describe("FormBuilder canvas editing interactions", () => {
       | undefined
     expect(lastChange?.blocks?.[0]?.placement).toEqual({
       colStart: 4,
+      colSpan: 4,
+      rowStart: 4,
+      rowSpan: 2,
+    })
+  })
+
+  it("constrains a Shift-drag move on the placement grid to a straight line", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 3, colSpan: 4, rowStart: 2, rowSpan: 2 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Grab a body cell (2, 4) and sweep to (4, 5) with Shift held: the sweep
+    // is 2 rows down but only 1 column right, so the move is constrained to
+    // the dominant (vertical) axis and the columns stay put
+    dragBetweenPlacementCells(
+      { row: 2, col: 4 },
+      { row: 4, col: 5 },
+      { shiftKey: true },
+    )
+
+    expect(container.textContent).toContain("Columns 3–6, rows 4–5")
+    expect(placementCellAt(4, 3).getAttribute("aria-pressed")).toBe("true")
+    expect(placementCellAt(4, 7).getAttribute("aria-pressed")).toBe("false")
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 3,
       colSpan: 4,
       rowStart: 4,
       rowSpan: 2,
@@ -1999,6 +2045,127 @@ describe("FormBuilder canvas editing interactions", () => {
       colSpan: 6,
       rowStart: 1,
       rowSpan: 3,
+    })
+
+    iframe.remove()
+  })
+
+  it("constrains a Shift-drag of the preview block to a straight line", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows (the
+    // iframe realm reports no gaps, padding, borders or row tracks)
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    previewBlock.style.setProperty("--canvas-grid-column", "2 / span 4")
+    previewBlock.style.setProperty("--canvas-grid-row", "1 / span 2")
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Grab a body cell of the block (row 1, col 3), then sweep with Shift
+    // held to row 2, col 5: the sweep is 2 columns right but only 1 row
+    // down, so the move is constrained to the dominant (horizontal) axis
+    // and the rows stay put
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 85,
+          clientY: 16,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", {
+          clientX: 165,
+          clientY: 48,
+          shiftKey: true,
+        }),
+      )
+    })
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "4 / span 4",
+    )
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-row")).toBe(
+      "1 / span 2",
+    )
+
+    // Keep sweeping (row 3, col 6) with Shift still held: still a straight
+    // horizontal move
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", {
+          clientX: 205,
+          clientY: 80,
+          shiftKey: true,
+        }),
+      )
+    })
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "5 / span 4",
+    )
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-row")).toBe(
+      "1 / span 2",
+    )
+
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const lastChange = changes.at(-1) as
+      | { blocks?: { placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 5,
+      colSpan: 4,
+      rowStart: 1,
+      rowSpan: 2,
     })
 
     iframe.remove()

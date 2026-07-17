@@ -145,17 +145,39 @@ const resolveDragSelection = (drag: DragState): NormalisedPlacement =>
     : shiftSelection(drag.origin, drag.grab, drag.current)
 
 // Every pointer/focus update to a drag's current cell goes through here so a
-// locked axis is pinned in one place
-const withCurrent = (drag: DragState, cell: GridCell): DragState =>
-  drag.mode === "draw" && drag.lock !== undefined
-    ? {
-        ...drag,
-        current: {
-          row: drag.lock === "row" ? drag.current.row : cell.row,
-          col: drag.lock === "col" ? drag.current.col : cell.col,
-        },
-      }
-    : { ...drag, current: cell }
+// locked axis is pinned in one place. Holding Shift while moving constrains
+// the move to a straight line along the dominant axis of the sweep so far,
+// Wix-style; the constraint only applies to moves — edge resizes carry their
+// own permanent lock, and corner resizes/fresh draws follow the pointer.
+const withCurrent = (
+  drag: DragState,
+  cell: GridCell,
+  constrainAxis = false,
+): DragState => {
+  if (drag.mode === "draw") {
+    return drag.lock !== undefined
+      ? {
+          ...drag,
+          current: {
+            row: drag.lock === "row" ? drag.current.row : cell.row,
+            col: drag.lock === "col" ? drag.current.col : cell.col,
+          },
+        }
+      : { ...drag, current: cell }
+  }
+  if (constrainAxis) {
+    const rowDelta = Math.abs(cell.row - drag.grab.row)
+    const colDelta = Math.abs(cell.col - drag.grab.col)
+    return {
+      ...drag,
+      current:
+        colDelta >= rowDelta
+          ? { row: drag.grab.row, col: cell.col }
+          : { row: cell.row, col: drag.grab.col },
+    }
+  }
+  return { ...drag, current: cell }
+}
 
 // Grabbing a mid-edge handle resizes along that edge's axis only: the sweep
 // is anchored on the opposite edge and the perpendicular axis is locked to
@@ -605,7 +627,10 @@ function JsonFormsCanvasPlacementControl({
       if (!cell) {
         return
       }
-      setDrag((currentDrag) => currentDrag && withCurrent(currentDrag, cell))
+      setDrag(
+        (currentDrag) =>
+          currentDrag && withCurrent(currentDrag, cell, event.shiftKey),
+      )
     }
     previewWindow?.addEventListener("mousemove", trackPreviewPointer)
     previewWindow?.addEventListener("mouseup", commitDrag)
@@ -766,7 +791,10 @@ function JsonFormsCanvasPlacementControl({
       )
       // Batched after startDragWithin's update, so the drag begins already
       // extended to the cell that crossed the threshold
-      setDrag((currentDrag) => currentDrag && withCurrent(currentDrag, cell))
+      setDrag(
+        (currentDrag) =>
+          currentDrag && withCurrent(currentDrag, cell, event.shiftKey),
+      )
     }
     const abandonGrab = () => setPendingGrab(null)
     previewWindow?.addEventListener("mousemove", beginDragOnMove)
@@ -952,10 +980,11 @@ function JsonFormsCanvasPlacementControl({
                     event.preventDefault()
                     startDrag(row, col)
                   }}
-                  onMouseEnter={() => {
+                  onMouseEnter={(event: React.MouseEvent) => {
                     setDrag(
                       (currentDrag) =>
-                        currentDrag && withCurrent(currentDrag, { row, col }),
+                        currentDrag &&
+                        withCurrent(currentDrag, { row, col }, event.shiftKey),
                     )
                   }}
                   // Tabbing between cells extends an in-progress keyboard
@@ -996,14 +1025,14 @@ function JsonFormsCanvasPlacementControl({
         {selection && (
           <Text textStyle="body-2" textColor="base.content.medium">
             Drag the highlighted area (or the block itself in the page preview)
-            to move it, or drag a corner to resize it — in the preview, the edge
-            handles resize in one direction only. With the keyboard, use the
-            arrow keys to nudge the block one cell at a time (hold Shift to
-            resize instead), or press Enter on a cell to start a selection,
-            Enter on another cell to finish, and Escape to cancel. Press Delete
-            to remove the block from the canvas, ⌘D/Ctrl+D to duplicate it,
-            ⌘]/⌘[ (or Ctrl) to bring it forward or send it backward, or Escape
-            to go back to the block list.
+            to move it — hold Shift to move it in a straight line — or drag a
+            corner to resize it; in the preview, the edge handles resize in one
+            direction only. With the keyboard, use the arrow keys to nudge the
+            block one cell at a time (hold Shift to resize instead), or press
+            Enter on a cell to start a selection, Enter on another cell to
+            finish, and Escape to cancel. Press Delete to remove the block from
+            the canvas, ⌘D/Ctrl+D to duplicate it, ⌘]/⌘[ (or Ctrl) to bring it
+            forward or send it backward, or Escape to go back to the block list.
           </Text>
         )}
         {siblingPlacements.length > 0 && (
