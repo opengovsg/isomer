@@ -479,6 +479,132 @@ export const showCanvasSelectionToolbar = (
   }
 }
 
+export const CANVAS_ALIGNMENT_GUIDES_DATA_ATTRIBUTE =
+  "data-canvas-alignment-guides"
+
+export interface CanvasAlignmentLines {
+  // 1-based grid line indices: column line n sits before column n, so the
+  // last line is CANVAS_GRID_COLUMNS + 1; row lines count the same way
+  cols: number[]
+  rows: number[]
+}
+
+// Wix-style alignment guides: while a placement drag is in progress, any
+// edge of the dragged selection that sits on the same grid line as a sibling
+// block's edge is drawn as a solid line through the preview canvas, so flush
+// alignment (and edge-to-edge adjacency) is visible the moment it happens.
+// Returns a cleanup that removes the guides; it only touches the canvas's
+// positioning when nothing else (e.g. the grid overlay, which is always up
+// during a drag) has already made it a containing block.
+export const showCanvasAlignmentGuides = (
+  canvas: HTMLElement,
+  lines: CanvasAlignmentLines,
+  guideColor: string,
+): (() => void) => {
+  const view = canvas.ownerDocument.defaultView
+  if (!view || (lines.cols.length === 0 && lines.rows.length === 0)) {
+    return () => undefined
+  }
+  const doc = canvas.ownerDocument
+  const style = view.getComputedStyle(canvas)
+  const rect = canvas.getBoundingClientRect()
+
+  const paddingLeft = parsePx(style.paddingLeft)
+  const paddingTop = parsePx(style.paddingTop)
+  const paddingBottom = parsePx(style.paddingBottom)
+  const columnGap = parsePx(style.columnGap)
+  const contentWidth =
+    rect.width -
+    parsePx(style.borderLeftWidth) -
+    parsePx(style.borderRightWidth) -
+    paddingLeft -
+    parsePx(style.paddingRight)
+  const columnWidth =
+    (contentWidth - columnGap * (CANVAS_GRID_COLUMNS - 1)) / CANVAS_GRID_COLUMNS
+  const contentHeight = Math.max(
+    canvas.scrollHeight - paddingTop - paddingBottom,
+    rect.height -
+      parsePx(style.borderTopWidth) -
+      parsePx(style.borderBottomWidth) -
+      paddingTop -
+      paddingBottom,
+  )
+  if (columnWidth <= 0 || contentHeight <= 0) {
+    return () => undefined
+  }
+
+  // Interior lines sit in the middle of the gap (exactly on the boundary for
+  // gapless grids); the first and last lines sit on the content box edges
+  const colLineOffset = (line: number): number =>
+    line <= 1
+      ? 0
+      : line > CANVAS_GRID_COLUMNS
+        ? contentWidth
+        : (line - 1) * (columnWidth + columnGap) - columnGap / 2
+  const rowGap = parsePx(style.rowGap)
+  const rowTracks = readRowTracks(style)
+  const rowLineOffset = (line: number): number => {
+    if (line <= 1) {
+      return 0
+    }
+    let offset = 0
+    for (let row = 0; row < line - 1; row++) {
+      offset += (rowTracks[row] ?? CANVAS_BASE_ROW_HEIGHT_PX) + rowGap
+    }
+    return Math.min(offset - rowGap / 2, contentHeight)
+  }
+
+  const appliedPosition = canvas.style.position === ""
+  if (appliedPosition) {
+    canvas.style.position = "relative"
+  }
+
+  const overlay = doc.createElement("div")
+  overlay.setAttribute(CANVAS_ALIGNMENT_GUIDES_DATA_ATTRIBUTE, "")
+  overlay.setAttribute("aria-hidden", "true")
+  Object.assign(overlay.style, {
+    position: "absolute",
+    left: `${paddingLeft}px`,
+    top: `${paddingTop}px`,
+    width: `${contentWidth}px`,
+    height: `${contentHeight}px`,
+    pointerEvents: "none",
+  })
+
+  lines.cols.forEach((line) => {
+    const guide = doc.createElement("div")
+    Object.assign(guide.style, {
+      position: "absolute",
+      left: `${colLineOffset(line) - 1}px`,
+      top: "0",
+      width: "2px",
+      height: "100%",
+      backgroundColor: guideColor,
+    })
+    overlay.appendChild(guide)
+  })
+  lines.rows.forEach((line) => {
+    const guide = doc.createElement("div")
+    Object.assign(guide.style, {
+      position: "absolute",
+      left: "0",
+      right: "0",
+      top: `${rowLineOffset(line) - 1}px`,
+      height: "2px",
+      backgroundColor: guideColor,
+    })
+    overlay.appendChild(guide)
+  })
+
+  canvas.appendChild(overlay)
+  return () => {
+    overlay.remove()
+    if (appliedPosition) {
+      canvas.style.position = ""
+    }
+  }
+}
+
 export const CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE = "data-canvas-grid-overlay"
 
 // The grid is invisible on the rendered page, so while a placement drag is in

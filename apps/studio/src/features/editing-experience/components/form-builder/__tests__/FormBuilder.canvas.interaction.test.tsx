@@ -1847,6 +1847,132 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("shows solid alignment guides when a dragged selection lines up with a sibling block", () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+        <div data-canvas-block-index="1"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Measurable geometry (480×320: 40px columns, 32px base rows) so the
+    // guides have positions to assert against
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    // The sibling occupies columns 3–6, rows 2–3: its edges sit on column
+    // lines 3 and 7 and row lines 2 and 4
+    renderCanvasFormInEditorDrawer({
+      type: "canvas",
+      blocks: [
+        BLOCKQUOTE_BLOCK,
+        {
+          type: "blockquote",
+          quote: "Second quote",
+          source: "s",
+          placement: { colStart: 3, colSpan: 4, rowStart: 2, rowSpan: 2 },
+        },
+      ],
+    } as IsomerComponent)
+
+    click(findButtonByText("Item 1")!)
+
+    const guides = () =>
+      previewDocument.querySelector("[data-canvas-alignment-guides]")
+    const guideLines = () => {
+      const lines = Array.from(guides()?.children ?? []) as HTMLElement[]
+      return {
+        vertical: lines.filter((line) => line.style.height === "100%"),
+        horizontal: lines.filter((line) => line.style.height !== "100%"),
+      }
+    }
+
+    expect(guides()).toBeNull()
+
+    // Start drawing at a cell sharing the sibling's left edge (column line 3)
+    act(() => {
+      placementCellAt(6, 3).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    expect(guides()).not.toBeNull()
+    expect(guideLines().vertical.map((line) => line.style.left)).toEqual([
+      "79px",
+    ])
+    expect(guideLines().horizontal).toHaveLength(0)
+
+    // Sweeping until the right edges also line up adds the second guide
+    act(() => {
+      placementCellAt(6, 6).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(guideLines().vertical.map((line) => line.style.left)).toEqual([
+      "79px",
+      "239px",
+    ])
+
+    // Cancelling the drag removes the guides
+    pressKey(placementCellAt(6, 6), "Escape")
+    expect(guides()).toBeNull()
+
+    // A cell adjacent to the sibling's right edge and flush with its top row
+    // shows one guide per axis
+    act(() => {
+      placementCellAt(2, 7).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    expect(guideLines().vertical.map((line) => line.style.left)).toEqual([
+      "239px",
+    ])
+    expect(guideLines().horizontal.map((line) => line.style.top)).toEqual([
+      "31px",
+    ])
+
+    // Committing the drag removes the guides
+    act(() => {
+      window.dispatchEvent(new MouseEvent("mouseup"))
+    })
+    expect(guides()).toBeNull()
+
+    // A drag sharing no grid line with the sibling never shows guides
+    act(() => {
+      placementCellAt(8, 9).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    expect(guides()).toBeNull()
+    act(() => {
+      window.dispatchEvent(new MouseEvent("mouseup"))
+    })
+
+    iframe.remove()
+  })
+
   it("shows a live grid-area badge on the preview block while dragging", () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)

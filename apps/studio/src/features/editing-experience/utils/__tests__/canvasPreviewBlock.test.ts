@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import type { CanvasSelectionToolbarAction } from "../canvasPreviewBlock"
 import {
+  CANVAS_ALIGNMENT_GUIDES_DATA_ATTRIBUTE,
   CANVAS_DRAG_BADGE_DATA_ATTRIBUTE,
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
   CANVAS_HOVER_LABEL_DATA_ATTRIBUTE,
@@ -16,6 +17,7 @@ import {
   resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
   resolveCanvasWidthPercent,
+  showCanvasAlignmentGuides,
   showCanvasDragBadge,
   showCanvasGridOverlay,
   showCanvasHoverLabel,
@@ -401,6 +403,153 @@ describe("showCanvasGridOverlay", () => {
     expect(overlayIn(canvas)).toBeNull()
     expect(canvas.style.position).toBe("")
     cleanup()
+  })
+})
+
+describe("showCanvasAlignmentGuides", () => {
+  // A canvas whose content box is 480px wide and 320px tall (12 × 40px
+  // columns and 10 × 32px base rows when there are no gaps)
+  const makeCanvas = (
+    style: Partial<CSSStyleDeclaration> = {},
+    rect: Partial<DOMRect> = {},
+  ): HTMLElement => {
+    const canvas = document.createElement("div")
+    document.body.appendChild(canvas)
+    canvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+      ...rect,
+    })
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({
+      columnGap: "",
+      rowGap: "",
+      paddingLeft: "",
+      paddingRight: "",
+      paddingTop: "",
+      paddingBottom: "",
+      borderLeftWidth: "",
+      borderRightWidth: "",
+      borderTopWidth: "",
+      borderBottomWidth: "",
+      gridTemplateRows: "none",
+      ...style,
+    } as CSSStyleDeclaration)
+    return canvas
+  }
+
+  const guidesIn = (canvas: HTMLElement) =>
+    canvas.querySelector<HTMLElement>(
+      `[${CANVAS_ALIGNMENT_GUIDES_DATA_ATTRIBUTE}]`,
+    )
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("draws solid lines at the given column and row grid lines", () => {
+    const canvas = makeCanvas()
+
+    showCanvasAlignmentGuides(
+      canvas,
+      { cols: [1, 3, 13], rows: [2] },
+      "#0F796F",
+    )
+
+    const overlay = guidesIn(canvas)
+    expect(overlay).not.toBeNull()
+    expect(overlay!.style.width).toBe("480px")
+    expect(overlay!.style.height).toBe("320px")
+    expect(overlay!.style.pointerEvents).toBe("none")
+
+    const children = Array.from(overlay!.children) as HTMLElement[]
+    const verticalLines = children.filter(
+      (child) => child.style.height === "100%",
+    )
+    const horizontalLines = children.filter(
+      (child) => child.style.height !== "100%",
+    )
+    // 40px columns: line 1 on the left edge, line 3 at 80px, line 13 on the
+    // right edge; each 2px line is centred on the boundary
+    expect(verticalLines.map((line) => line.style.left)).toEqual([
+      "-1px",
+      "79px",
+      "479px",
+    ])
+    verticalLines.forEach((line) => {
+      expect(line.style.width).toBe("2px")
+      expect(line.style.backgroundColor).toBe("rgb(15, 121, 111)")
+    })
+    // 32px base rows: line 2 sits on the first row boundary
+    expect(horizontalLines.map((line) => line.style.top)).toEqual(["31px"])
+    expect(horizontalLines[0]!.style.height).toBe("2px")
+  })
+
+  it("places row lines through the used tracks and mid-gap", () => {
+    const canvas = makeCanvas({
+      gridTemplateRows: "48px 96px",
+      rowGap: "16px",
+    })
+
+    showCanvasAlignmentGuides(canvas, { cols: [], rows: [2, 3, 4] }, "#0F796F")
+
+    const lines = Array.from(guidesIn(canvas)!.children) as HTMLElement[]
+    // Boundaries at 64 and 176 (mid-gap: -8px), then base 32+16 strides;
+    // each 2px line is centred on its boundary
+    expect(lines.map((line) => line.style.top)).toEqual([
+      "55px",
+      "167px",
+      "215px",
+    ])
+  })
+
+  it("removes the guides on cleanup without clobbering positioning it did not apply", () => {
+    const canvas = makeCanvas()
+    // e.g. the grid overlay is up for the whole drag and owns the positioning
+    canvas.style.position = "relative"
+
+    const cleanup = showCanvasAlignmentGuides(
+      canvas,
+      { cols: [3], rows: [] },
+      "#0F796F",
+    )
+    expect(guidesIn(canvas)).not.toBeNull()
+
+    cleanup()
+    expect(guidesIn(canvas)).toBeNull()
+    expect(canvas.style.position).toBe("relative")
+  })
+
+  it("applies and restores the canvas positioning when nothing else owns it", () => {
+    const canvas = makeCanvas()
+
+    const cleanup = showCanvasAlignmentGuides(
+      canvas,
+      { cols: [3], rows: [] },
+      "#0F796F",
+    )
+    expect(canvas.style.position).toBe("relative")
+
+    cleanup()
+    expect(canvas.style.position).toBe("")
+  })
+
+  it("does nothing when there are no lines or no measurable size", () => {
+    const canvas = makeCanvas()
+
+    showCanvasAlignmentGuides(canvas, { cols: [], rows: [] }, "#0F796F")
+    expect(guidesIn(canvas)).toBeNull()
+    expect(canvas.style.position).toBe("")
+
+    const zeroSized = makeCanvas({}, { width: 0 })
+    showCanvasAlignmentGuides(zeroSized, { cols: [3], rows: [] }, "#0F796F")
+    expect(guidesIn(zeroSized)).toBeNull()
   })
 })
 

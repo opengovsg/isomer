@@ -34,6 +34,7 @@ import {
   isEditableTarget,
   resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
+  showCanvasAlignmentGuides,
   showCanvasDragBadge,
   showCanvasGridOverlay,
   showCanvasSelectionHandles,
@@ -387,6 +388,59 @@ const usePreviewGridGuides = (
   }, [dragActive, guideColor, locatePreviewBlock])
 }
 
+// Wix-style alignment guides: while a drag is in progress, any edge of the
+// dragged selection that lands on the same grid line as a sibling block's
+// edge is drawn as a solid line through the preview canvas, so the user sees
+// flush alignment (or edge-to-edge adjacency) with the other blocks at the
+// moment it happens
+const usePreviewAlignmentGuides = (
+  locatePreviewBlock: () => HTMLElement | null,
+  selection: NormalisedPlacement | null,
+  siblings: NormalisedPlacement[],
+): void => {
+  const [guideColor] = useToken("colors", ["utility.feedback.success"])
+  const alignedCols = new Set<number>()
+  const alignedRows = new Set<number>()
+  if (selection) {
+    // An area's edges sit on grid lines colStart/colEnd+1 (rowStart/rowEnd+1)
+    const selectionCols = [selection.colStart, selection.colEnd + 1]
+    const selectionRows = [selection.rowStart, selection.rowEnd + 1]
+    siblings.forEach((sibling) => {
+      ;[sibling.colStart, sibling.colEnd + 1]
+        .filter((line) => selectionCols.includes(line))
+        .forEach((line) => alignedCols.add(line))
+      ;[sibling.rowStart, sibling.rowEnd + 1]
+        .filter((line) => selectionRows.includes(line))
+        .forEach((line) => alignedRows.add(line))
+    })
+  }
+  // Key the effect on the resolved lines so the guides only re-draw when the
+  // alignment changes, not on every cell the pointer crosses
+  const colsKey = [...alignedCols].sort((a, b) => a - b).join(",")
+  const rowsKey = [...alignedRows].sort((a, b) => a - b).join(",")
+  const active = selection !== null && colsKey + rowsKey !== ""
+
+  useEffect(() => {
+    if (!active) {
+      return
+    }
+    const previewCanvas = locatePreviewBlock()?.closest<HTMLElement>(
+      `[${CANVAS_CONTAINER_DATA_ATTRIBUTE}]`,
+    )
+    if (!previewCanvas) {
+      return
+    }
+    return showCanvasAlignmentGuides(
+      previewCanvas,
+      {
+        cols: colsKey === "" ? [] : colsKey.split(",").map(Number),
+        rows: rowsKey === "" ? [] : rowsKey.split(",").map(Number),
+      },
+      guideColor,
+    )
+  }, [active, colsKey, rowsKey, guideColor, locatePreviewBlock])
+}
+
 // A user dragging on the preview is looking at the block, not at the picker's
 // summary line in the drawer — so while a drag is in progress the live grid
 // area is also pinned above the block as a small badge, Wix-style
@@ -521,6 +575,11 @@ function JsonFormsCanvasPlacementControl({
     dragSelection,
   )
   usePreviewGridGuides(locatePreviewBlock, drag !== null)
+  usePreviewAlignmentGuides(
+    locatePreviewBlock,
+    dragSelection,
+    siblingPlacements,
+  )
   usePreviewDragBadge(locatePreviewBlock, dragSelection)
 
   // Starts a drag relative to a base rectangle: its corners resize (a sweep
