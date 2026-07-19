@@ -68,7 +68,11 @@ export const TableSettingsModal = ({
   }, [isOpen])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    // trapFocus=false: with TableBubbleMenu mounted, Chakra's FocusLock and
+    // TipTap's BubbleMenu (tabIndex=0 + blur/focus handlers) fight when the
+    // editor blurs into this modal — hanging the tab. Keep autoFocus so the
+    // textarea still receives focus; just don't run the focus trap.
+    <Modal isOpen={isOpen} onClose={onClose} trapFocus={false}>
       <ModalOverlay />
 
       <ModalContent>
