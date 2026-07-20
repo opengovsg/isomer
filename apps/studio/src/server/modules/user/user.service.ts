@@ -9,7 +9,10 @@ import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 import type { DB, Transaction } from "../database"
 import { logPermissionEvent, logUserEvent } from "../audit/audit.service"
 import { db, RoleType } from "../database"
-import { isEmailWhitelisted } from "../whitelist/whitelist.service"
+import {
+  isEmailWhitelisted,
+  isEmailWhitelistedAdmin,
+} from "../whitelist/whitelist.service"
 
 export const isUserDeleted = async (email: string) => {
   const lowercaseEmail = email.toLowerCase()
@@ -23,16 +26,18 @@ export const isUserDeleted = async (email: string) => {
   return user?.deletedAt ? true : false
 }
 
-export const validateEmailRoleCombination = ({
+export const validateEmailRoleCombination = async ({
   email,
   role,
-  isWhitelisted,
 }: {
   email: string
   role: ResourcePermission["role"]
-  isWhitelisted: boolean
 }) => {
-  if (role === RoleType.Admin && !isGovEmail(email) && !isWhitelisted) {
+  if (
+    role === RoleType.Admin &&
+    !isGovEmail(email) &&
+    !(await isEmailWhitelistedAdmin(email))
+  ) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message:
@@ -67,9 +72,9 @@ export const createUserWithPermission = async ({
     })
   }
 
-  const isWhitelisted = await isEmailWhitelisted(email)
-  validateEmailRoleCombination({ email, role, isWhitelisted })
+  await validateEmailRoleCombination({ email, role })
 
+  const isWhitelisted = await isEmailWhitelisted(email)
   if (!isWhitelisted) {
     throw new TRPCError({
       code: "FORBIDDEN",

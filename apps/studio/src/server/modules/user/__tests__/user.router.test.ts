@@ -284,6 +284,34 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
+    it("should throw 403 if assigning a temporarily (vendor) whitelisted non-gov.sg email with admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test-vendor-whitelisted@coolvendor.com"
+      const oneYearFromNow = new Date()
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setUpWhitelist({ email: nonGovSgEmail, expiry: oneYearFromNow })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        users: [{ email: nonGovSgEmail, role: RoleType.Admin }],
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Non-gov.sg emails cannot be added as admin. Select another role.",
+        }),
+      )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
+    })
+
     it("should create a whitelisted non-gov.sg email with admin role", async () => {
       // Arrange
       const nonGovSgEmail = "test@coolvendor.com"
@@ -1614,6 +1642,43 @@ describe("user.router", () => {
           role: RoleType.Admin,
         }),
       )
+    })
+
+    it("should throw 403 if updating a temporarily (vendor) whitelisted non-gov.sg email to admin role", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: "test-vendor-whitelisted@coolvendor.com",
+        isDeleted: false,
+      })
+      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      const oneYearFromNow = new Date()
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+      await setUpWhitelist({
+        email: userToUpdate.email,
+        expiry: oneYearFromNow,
+      })
+
+      // Act
+      const result = caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: RoleType.Admin,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Non-gov.sg emails cannot be added as admin. Select another role.",
+        }),
+      )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
     })
 
     it("should update a non-gov.sg email with non-admin role successfully", async () => {

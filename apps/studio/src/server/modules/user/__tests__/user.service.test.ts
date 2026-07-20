@@ -292,6 +292,38 @@ describe("user.service", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
+    it("should throw 403 if assigning a temporarily (vendor) whitelisted non-gov.sg email with admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test-vendor-whitelisted@coolvendor.com"
+      const oneYearFromNow = new Date()
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+      await setUpWhitelist({ email: nonGovSgEmail, expiry: oneYearFromNow })
+
+      // Act
+      const result = db.transaction().execute((tx) => {
+        return createUserWithPermission({
+          byUserId: creatorUserId,
+          email: nonGovSgEmail,
+          role: RoleType.Admin,
+          siteId,
+          tx,
+        })
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Non-gov.sg emails cannot be added as admin. Select another role.",
+        }),
+      )
+
+      // Assert DB - audit logs
+      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLogs).toHaveLength(0)
+    })
+
     it("should create a whitelisted non-gov.sg email with admin role", async () => {
       // Arrange
       const nonGovSgEmail = "test@coolvendor.com"

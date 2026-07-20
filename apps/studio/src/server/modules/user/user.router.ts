@@ -34,7 +34,6 @@ import {
   validatePermissionsForManagingUsers,
 } from "../permissions/permissions.service"
 import { getSiteNameAndCodeBuildId } from "../site/site.service"
-import { isEmailWhitelisted } from "../whitelist/whitelist.service"
 import {
   createUserWithPermission,
   deleteUserPermission,
@@ -307,8 +306,7 @@ export const userRouter = router({
         })
       }
 
-      const isWhitelisted = await isEmailWhitelisted(user.email)
-      validateEmailRoleCombination({ email: user.email, role, isWhitelisted })
+      await validateEmailRoleCombination({ email: user.email, role })
 
       const updatedUserPermission = await updateUserSitewidePermission({
         byUserId: ctx.user.id,

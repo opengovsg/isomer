@@ -1,8 +1,13 @@
+import type { Expression, ExpressionBuilder, SqlBool } from "kysely"
 import { TRPCError } from "@trpc/server"
 import { isValidEmail } from "~/utils/email"
 
 import type { DB, Transaction } from "../database"
 import { db } from "../database"
+
+type WhitelistExpiryFilter = (
+  eb: ExpressionBuilder<DB, "Whitelist">,
+) => Expression<SqlBool>
 
 const normalise = (email: string) => {
   return email.toLowerCase().trim()
@@ -85,7 +90,16 @@ export const whitelistEmails = async ({
   })
 }
 
-export const isEmailWhitelisted = async (email: string) => {
+// Walks the exact email -> domain -> domain suffix chain and returns the
+// first Whitelist row matching `matchExpiry` at each step. The expiry
+// condition must be applied per-step (not just on the final result): a
+// closer match (e.g. an expired/temporary exact email) can shadow a further,
+// still-valid match (e.g. a permanent domain grant) further down the chain,
+// so we can't just fetch "the" match once and inspect its expiry after.
+const findWhitelistMatch = async (
+  email: string,
+  matchExpiry: WhitelistExpiryFilter,
+) => {
   const lowercaseEmail = email.toLowerCase()
 
   // Extra guard even if Zod validation has already checked
@@ -100,14 +114,12 @@ export const isEmailWhitelisted = async (email: string) => {
   const exactMatch = await db
     .selectFrom("Whitelist")
     .where("email", "=", lowercaseEmail)
-    .where(({ eb }) =>
-      eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
-    )
-    .select(["id"])
+    .where(matchExpiry)
+    .select(["id", "expiry"])
     .executeTakeFirst()
 
   if (exactMatch) {
-    return true
+    return exactMatch
   }
 
   // Step 2: Check if the exact email domain is whitelisted
@@ -123,14 +135,12 @@ export const isEmailWhitelisted = async (email: string) => {
   const domainMatch = await db
     .selectFrom("Whitelist")
     .where("email", "=", emailDomain)
-    .where(({ eb }) =>
-      eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
-    )
-    .select(["id"])
+    .where(matchExpiry)
+    .select(["id", "expiry"])
     .executeTakeFirst()
 
   if (domainMatch) {
-    return true
+    return domainMatch
   }
 
   // Step 3: Check if the suffix of the email domain is whitelisted
@@ -142,16 +152,34 @@ export const isEmailWhitelisted = async (email: string) => {
     const suffixMatch = await db
       .selectFrom("Whitelist")
       .where("email", "=", suffix)
-      .where(({ eb }) =>
-        eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
-      )
-      .select(["id"])
+      .where(matchExpiry)
+      .select(["id", "expiry"])
       .executeTakeFirst()
 
     if (suffixMatch) {
-      return true
+      return suffixMatch
     }
   }
 
-  return false
+  return undefined
+}
+
+export const isEmailWhitelisted = async (email: string) => {
+  const match = await findWhitelistMatch(email, ({ eb }) =>
+    eb.or([eb("expiry", "is", null), eb("expiry", ">", new Date())]),
+  )
+
+  return !!match
+}
+
+// Whitelist entries with a NULL expiry are permanent grants (added via the
+// "admin" textarea in godmode/whitelist), as opposed to temporary vendor
+// grants which carry a 90-day expiry. Only permanent entries should count
+// towards site Admin-role eligibility.
+export const isEmailWhitelistedAdmin = async (email: string) => {
+  const match = await findWhitelistMatch(email, ({ eb }) =>
+    eb("expiry", "is", null),
+  )
+
+  return !!match
 }

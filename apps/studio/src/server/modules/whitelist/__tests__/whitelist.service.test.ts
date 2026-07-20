@@ -1,7 +1,10 @@
 import { resetTables } from "tests/integration/helpers/db"
 import { setUpWhitelist } from "tests/integration/helpers/seed"
 
-import { isEmailWhitelisted } from "../whitelist.service"
+import {
+  isEmailWhitelisted,
+  isEmailWhitelistedAdmin,
+} from "../whitelist.service"
 
 describe("whitelist.service", () => {
   beforeAll(async () => {
@@ -32,6 +35,10 @@ describe("whitelist.service", () => {
     await setUpWhitelist({
       email: "expired@whitelisted.com.sg",
       expiry: oneYearAgo,
+    })
+    await setUpWhitelist({
+      email: "temp-exact@vendor.com.sg",
+      expiry: oneYearFromNow,
     })
   })
 
@@ -121,5 +128,84 @@ describe("whitelist.service", () => {
 
     // Assert
     expect(result).toBe(true)
+  })
+
+  describe("isEmailWhitelistedAdmin", () => {
+    it("should return true if the exact email address is permanently whitelisted", async () => {
+      // Arrange
+      const email = "whitelisted@example.com"
+
+      // Act
+      const result = await isEmailWhitelistedAdmin(email)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it("should return false if the exact email address is only temporarily (vendor) whitelisted", async () => {
+      // Arrange
+      const email = "vendor-whitelisted@example.com"
+
+      // Act
+      const result = await isEmailWhitelistedAdmin(email)
+
+      // Assert
+      expect(result).toBe(false)
+    })
+
+    it("should return false if the email is not whitelisted at all", async () => {
+      // Arrange
+      const email = "vendor-expired@example.com"
+
+      // Act
+      const result = await isEmailWhitelistedAdmin(email)
+
+      // Assert
+      expect(result).toBe(false)
+    })
+
+    it("should return true if the exact email domain is permanently whitelisted", async () => {
+      // Arrange
+      const email = "user@vendor.com.sg"
+
+      // Act
+      const result = await isEmailWhitelistedAdmin(email)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it("should return false if the exact email domain is only temporarily (vendor) whitelisted", async () => {
+      // Arrange
+      const email = "user@whitelisted.com.sg"
+
+      // Act
+      const result = await isEmailWhitelistedAdmin(email)
+
+      // Assert
+      expect(result).toBe(false)
+    })
+
+    it("should return true if the suffix of the email domain is permanently whitelisted", async () => {
+      // Arrange
+      const email = "user@agency.gov.sg"
+
+      // Act
+      const result = await isEmailWhitelistedAdmin(email)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it("should return true if the exact email is only temporarily whitelisted but the domain is permanently whitelisted", async () => {
+      // Arrange
+      const email = "temp-exact@vendor.com.sg"
+
+      // Act
+      const result = await isEmailWhitelistedAdmin(email)
+
+      // Assert
+      expect(result).toBe(true)
+    })
   })
 })
