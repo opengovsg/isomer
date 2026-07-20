@@ -29,6 +29,14 @@
 
 1. Migrates each Collection's legacy `category` string values into a "Category" tagCategories group, and tags every Collection Item with the matching option UUID via `tagged`. The legacy `category` field is left untouched.
 2. The new "Category" group is written with `display: "plaintext"`. Every pre-existing tagCategories group on the same Index is stamped with an explicit `display: "pills"`.
-3. Idempotent — a Collection whose Index already has a "Category" group is skipped.
+3. Not idempotent — run once per site. Re-running will double-append a "Category" group.
 4. Invoke with `--site-id <id>` (required) and optionally `--dry-run` to preview without writing:
    `source .env && pnpm exec tsx prisma/scripts/migrateCategoryToTagCategories.ts --site-id 123 --dry-run`
+
+## Migrate tags to tag categories
+
+1. Migrates each Collection Item's legacy `tags` (`{ category, selected[] }`) into `tagCategories` groups on the Index, and appends the matching option UUIDs to each item's `tagged` array. The legacy `tags` field is left untouched.
+2. Newly created groups are written with `display: "pills"` and appended after any existing groups (so a prior "Category" group's order/`plaintext` display is preserved).
+3. Not idempotent — run once per site. Prefer running this **before** the category migration when both are needed.
+4. Invoke with `--site-id <id>` (required) and optionally `--dry-run` to preview without writing:
+   `source .env && pnpm exec tsx prisma/scripts/migrateTagsToTagCategories.ts --site-id 123 --dry-run`
