@@ -7,6 +7,9 @@ export const PAGE_BLOB: IsomerSchema = {
   page: {},
   content: [
     {
+      type: "antiscambanner",
+    },
+    {
       type: "hero",
       variant: "gradient",
       title: "Isomer",
