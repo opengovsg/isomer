@@ -182,6 +182,26 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
           },
         ],
       },
+      // Table-scoped: promoted onto the main toolbar instead of the overflow
+      // menu while editing inside a table, same as the "Table" group above.
+      {
+        type: "item",
+        icon: MdSuperscript,
+        title: "Superscript",
+        isHidden: () => !editor.isActive("table"),
+        action: () =>
+          editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+        isActive: () => editor.isActive("superscript"),
+      },
+      {
+        type: "item",
+        icon: MdSubscript,
+        title: "Subscript",
+        isHidden: () => !editor.isActive("table"),
+        action: () =>
+          editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+        isActive: () => editor.isActive("subscript"),
+      },
       // Lesser-used commands are kept inside the overflow items list
       {
         type: "overflow-list",
@@ -190,6 +210,7 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
             type: "item",
             icon: MdSuperscript,
             title: "Superscript",
+            isHidden: () => editor.isActive("table"),
             action: () =>
               editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
             isActive: () => editor.isActive("superscript"),
@@ -198,6 +219,7 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
             type: "item",
             icon: MdSubscript,
             title: "Subscript",
+            isHidden: () => editor.isActive("table"),
             action: () =>
               editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
             isActive: () => editor.isActive("subscript"),
@@ -206,6 +228,7 @@ export const AccordionMenuBar = ({ editor }: { editor: Editor }) => {
             type: "item",
             icon: MdHorizontalRule,
             title: "Divider",
+            isHidden: () => editor.isActive("table"),
             action: () => editor.chain().focus().setHorizontalRule().run(),
             isActive: () => editor.isActive("divider"),
           },
