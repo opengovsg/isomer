@@ -152,7 +152,7 @@ catalog:
   oxlint: ^1.72.0
   oxlint-tsgolint: ^0.24.0
   papaparse: ^5.5.4
-  pg-boss: ^12.24.1
+  pg-boss: ^12.26.0
   postcss-load-config: ^6.0.1
   rate-limiter-flexible: ^11.2.0
   react-error-boundary: ^6.1.2
