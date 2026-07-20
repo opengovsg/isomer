@@ -78,6 +78,65 @@ jobs:
             Each test has its own directory under the zip; play `video.webm` to watch the run.
             Workflow: [run #${{ github.event.workflow_run.id }}](${{ github.event.workflow_run.html_url }}) — artifact expires in 7 days.
 
+  update-pr-description:
+    # Same fork-PR restriction as post-e2e-comment above, but this job edits
+    # the PR *description* instead of posting a comment, so the breakdown
+    # always renders at the very top of the PR — above every comment,
+    # regardless of when CI finishes relative to human activity on the PR.
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Download PR breakdown metadata
+        id: download
+        # Absent if pr-breakdown was skipped (Graphite optimizer) or wasn't a
+        # pull_request run. continue-on-error lets later steps gate on
+        # steps.download.outcome instead of failing the whole job.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download ${{ github.event.workflow_run.id }} \
+            --name pr-breakdown-metadata \
+            --dir /tmp/pr-breakdown-metadata \
+            --repo ${{ github.repository }}
+
+      - name: Read metadata
+        if: steps.download.outcome == 'success'
+        id: metadata
+        run: |
+          echo "pr-number=$(cat /tmp/pr-breakdown-metadata/pr-number.txt)" >> $GITHUB_OUTPUT
+
+      - name: Fetch current PR description
+        if: steps.download.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr view ${{ steps.metadata.outputs.pr-number }} \
+            --repo ${{ github.repository }} \
+            --json body -q .body \
+            > /tmp/pr-breakdown-metadata/current-body.md
+
+      - name: Build updated PR description
+        if: steps.download.outcome == 'success'
+        run: |
+          node .github/scripts/update-pr-description.mjs \
+            /tmp/pr-breakdown-metadata/current-body.md \
+            /tmp/pr-breakdown-metadata/body.md \
+            > /tmp/pr-breakdown-metadata/new-body.md
+
+      - name: Update PR description
+        if: steps.download.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit ${{ steps.metadata.outputs.pr-number }} \
+            --repo ${{ github.repository }} \
+            --body-file /tmp/pr-breakdown-metadata/new-body.md
+
   post-bundle-size-comment:
     # Mirror of post-e2e-comment above — same fork-PR restriction applies.
     if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'

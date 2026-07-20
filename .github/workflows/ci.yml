@@ -294,6 +294,49 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
 
+  pr-breakdown:
+    name: PR diff breakdown
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && needs.optimize_ci.outputs.skip == 'false'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      # Shallow-fetch just the two commits being diffed — `git diff A B` only
+      # needs both commit objects, not shared history, so this is enough even
+      # though the default checkout only has the PR merge ref.
+      - name: Fetch PR base and head commits
+        run: |
+          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.sha }}
+          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.head.sha }}
+
+      - name: Classify changed files
+        run: node .github/scripts/classify-pr-diff.mjs > /tmp/pr-breakdown-body.md
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+      - name: Add to step summary
+        run: cat /tmp/pr-breakdown-body.md >> "$GITHUB_STEP_SUMMARY"
+
+      # Same fork-PR restriction as the e2e/bundle-size comments below: this
+      # job can't post to the PR directly, so it hands the body off as an
+      # artifact for post-pr-comment.yml to pick up in the base-repo context.
+      - name: Save PR breakdown metadata
+        run: |
+          mkdir -p /tmp/pr-breakdown-metadata
+          echo "${{ github.event.pull_request.number }}" > /tmp/pr-breakdown-metadata/pr-number.txt
+          cp /tmp/pr-breakdown-body.md /tmp/pr-breakdown-metadata/body.md
+
+      - name: Upload PR breakdown metadata
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pr-breakdown-metadata
+          path: /tmp/pr-breakdown-metadata/
+          retention-days: 1
+
   end-to-end-tests:
     name: End-to-end tests
     needs: optimize_ci
