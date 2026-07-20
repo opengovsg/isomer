@@ -17,6 +17,7 @@ export interface RootPageRow {
   publishedContent: BlobContent | null
 }
 
+/** How a RootPage is currently stored: published, draft, both, or neither. */
 export type Bucket =
   | "published-only"
   | "published-and-draft"
@@ -101,11 +102,7 @@ export const describeDraftStep = (step: DraftStep): string => {
   }
 }
 
-/**
- * Pure decision logic for a single RootPage row: given its bucket and
- * current content, decides what (if anything) should happen to its
- * published version and its draft blob. No I/O.
- */
+/** Decides published/draft actions for one RootPage. No I/O. */
 export const planResource = (row: RootPageRow): ResourcePlan => {
   const bucket = getBucket(row)
 
@@ -136,6 +133,7 @@ export const planResource = (row: RootPageRow): ResourcePlan => {
   return { bucket, publishedStep, draftStep }
 }
 
+/** Interactive admin script: append antiscambanner to selected RootPages. */
 export const insertAntiscamBanner = async () => {
   const rawEmail = await input({
     message: "Enter your email address (e.g. adriangoh@open.gov.sg)",
@@ -147,6 +145,7 @@ export const insertAntiscamBanner = async () => {
   }
 
   await withDbClient(async (client) => {
+    // Resolve publisher for Version.publishedBy
     const userResult = await client.query<{ id: string }>(
       `SELECT id FROM "User" WHERE email = $1 AND "deletedAt" IS NULL`,
       [publisherEmail],
@@ -158,6 +157,7 @@ export const insertAntiscamBanner = async () => {
     }
     const publisherUserId = user.id
 
+    // Load all RootPages with draft/published blob content
     const rootPages = await client.query<RootPageRow>(
       `SELECT "Resource".id, "Resource".title, "Resource"."siteId", "Site".name AS "siteName",
               "Resource"."draftBlobId", "Resource"."publishedVersionId",
@@ -203,6 +203,7 @@ export const insertAntiscamBanner = async () => {
       )
     }
 
+    // Scope: all / by site / by resource
     const scope = await select({
       message: "Apply to which resources?",
       choices: [
@@ -243,6 +244,7 @@ export const insertAntiscamBanner = async () => {
       return
     }
 
+    // Preview plan before applying
     const selectedPlans = selectedRows.map(({ row }) => ({
       row,
       plan: planResource(row),
@@ -290,6 +292,7 @@ export const insertAntiscamBanner = async () => {
 
     const results: { id: string; title: string; status: string }[] = []
 
+    // Apply in one transaction
     await client.query("BEGIN")
     try {
       for (const { row, plan } of selectedPlans) {
@@ -306,6 +309,7 @@ export const insertAntiscamBanner = async () => {
             status: "published: missing/invalid content, skipped",
           })
         } else if (plan.publishedStep.action === "create-version") {
+          // New blob + Version, then point Resource at it
           const currentVersion = await client.query<{ versionNum: number }>(
             `SELECT "versionNum" FROM "Version" WHERE id = $1`,
             [row.publishedVersionId],
@@ -356,6 +360,7 @@ export const insertAntiscamBanner = async () => {
             status: "draft: missing/invalid content, skipped",
           })
         } else if (plan.draftStep.action === "update-draft") {
+          // Draft is mutated in place (no new Version)
           await client.query(
             `UPDATE "Blob" SET content = $1, "updatedAt" = NOW() WHERE id = $2`,
             [JSON.stringify(plan.draftStep.newContent), row.draftBlobId],
