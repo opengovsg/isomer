@@ -20,7 +20,7 @@ on:
     types: [completed]
 
 permissions:
-  actions: read # needed by `gh run download` to access the Actions artifacts API
+  actions: read # needed by actions/download-artifact to access a different run's artifacts
   pull-requests: write
   issues: write # GitHub routes PR comments through the issues API endpoint
 
@@ -38,13 +38,12 @@ jobs:
         # lets subsequent steps gate on `steps.download.outcome` instead of
         # failing the whole job.
         continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh run download ${{ github.event.workflow_run.id }} \
-            --name e2e-comment-metadata \
-            --dir /tmp/e2e-metadata \
-            --repo ${{ github.repository }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: e2e-comment-metadata
+          path: /tmp/e2e-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Read metadata
         if: steps.download.outcome == 'success'
@@ -86,9 +85,9 @@ jobs:
     if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
     # Job-level permissions: REPLACE the workflow-level block above for this job,
-    # they don't merge — so this has to re-list actions: read (for `gh run
-    # download`) and pull-requests: write (for `gh pr edit`/`gh pr view`) on top
-    # of the contents: read this job newly needs for actions/checkout.
+    # they don't merge — so this has to re-list actions: read (for
+    # actions/download-artifact) and pull-requests: write (for the github-script
+    # steps below) on top of the contents: read this job needs for actions/checkout.
     permissions:
       contents: read
       actions: read
@@ -106,48 +105,54 @@ jobs:
       # rewriting that PR's description instead of its own. head_sha comes
       # from the workflow_run event payload itself, populated by GitHub's own
       # infrastructure, not by anything the PR's workflow run could forge —
-      # and the commits/{sha}/pulls lookup resolves it to a PR correctly even
-      # for fork-originated commits.
+      # and listPullRequestsAssociatedWithCommit resolves it to a PR correctly
+      # even for fork-originated commits.
       - name: Resolve PR number from trusted commit SHA
         id: pr
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          number=$(gh api "repos/${{ github.repository }}/commits/${{ github.event.workflow_run.head_sha }}/pulls" --jq '.[0].number // empty' 2>/dev/null || true)
-          if [ -z "$number" ]; then
-            echo "No PR associated with ${{ github.event.workflow_run.head_sha }}; skipping." >&2
-            exit 0
-          fi
-          echo "number=$number" >> "$GITHUB_OUTPUT"
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          result-encoding: string
+          script: |
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.payload.workflow_run.head_sha,
+            })
+            if (prs.length === 0) {
+              core.warning(`No PR associated with ${context.payload.workflow_run.head_sha}; skipping.`)
+              return ""
+            }
+            return String(prs[0].number)
 
       - name: Download PR breakdown metadata
         id: download
         # Absent if pr-breakdown was skipped (Graphite optimizer) or wasn't a
         # pull_request run. continue-on-error lets later steps gate on
         # steps.download.outcome instead of failing the whole job.
-        if: steps.pr.outputs.number != ''
+        if: steps.pr.outputs.result != ''
         continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh run download ${{ github.event.workflow_run.id }} \
-            --name pr-breakdown-metadata \
-            --dir /tmp/pr-breakdown-metadata \
-            --repo ${{ github.repository }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: pr-breakdown-metadata
+          path: /tmp/pr-breakdown-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Fetch current PR description
         if: steps.download.outcome == 'success'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # `.body // ""` coalesces a null description (PRs opened with no body
-          # at all) to an empty string — jq's raw output of null is the
-          # 4-character text "null", which would otherwise get glued into
-          # the description under the breakdown block.
-          gh pr view ${{ steps.pr.outputs.number }} \
-            --repo ${{ github.repository }} \
-            --json body -q '.body // ""' \
-            > /tmp/pr-breakdown-metadata/current-body.md
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require("fs")
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ steps.pr.outputs.result }},
+            })
+            // pr.body is null for a PR opened with no description at all —
+            // writing that straight to a jq-style ".body" would have produced
+            // the literal text "null"; ?? "" avoids that here for free.
+            fs.writeFileSync("/tmp/pr-breakdown-metadata/current-body.md", pr.body ?? "")
 
       - name: Build updated PR description
         if: steps.download.outcome == 'success'
@@ -159,12 +164,17 @@ jobs:
 
       - name: Update PR description
         if: steps.download.outcome == 'success'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr edit ${{ steps.pr.outputs.number }} \
-            --repo ${{ github.repository }} \
-            --body-file /tmp/pr-breakdown-metadata/new-body.md
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require("fs")
+            const body = fs.readFileSync("/tmp/pr-breakdown-metadata/new-body.md", "utf8")
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ steps.pr.outputs.result }},
+              body,
+            })
 
   post-bundle-size-comment:
     # Mirror of post-e2e-comment above — same fork-PR restriction applies.
@@ -176,13 +186,12 @@ jobs:
         # Absent when components-bundle-size was skipped (no component changes
         # or optimizer short-circuit); gate subsequent steps on outcome.
         continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh run download ${{ github.event.workflow_run.id }} \
-            --name bundle-size-metadata \
-            --dir /tmp/bundle-size-metadata \
-            --repo ${{ github.repository }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bundle-size-metadata
+          path: /tmp/bundle-size-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Post bundle size comment
         if: steps.download.outcome == 'success'
