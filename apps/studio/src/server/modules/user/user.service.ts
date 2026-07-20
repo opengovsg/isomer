@@ -41,7 +41,7 @@ export const validateEmailRoleCombination = async ({
     throw new TRPCError({
       code: "FORBIDDEN",
       message:
-        "Non-gov.sg emails cannot be added as admin. Select another role.",
+        "Non-whitelisted or vendor (temporarily whitelisted) emails cannot be added as admin. Select another role.",
     })
   }
 }

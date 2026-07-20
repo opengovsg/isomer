@@ -146,7 +146,9 @@ test("admin cannot invite a vendor collaborator as Admin", async ({ page }) => {
   // shows, and Send stays blocked.
   await expect(page.getByRole("button", { name: /^Admin/ })).toBeDisabled()
   await expect(
-    page.getByText("Non-gov.sg emails cannot be added as admin"),
+    page.getByText(
+      "Non-whitelisted or vendor (temporarily whitelisted) emails cannot be added as admin",
+    ),
   ).toBeVisible()
   await expect(page.getByRole("button", { name: "Send invite" })).toBeDisabled()
 })
