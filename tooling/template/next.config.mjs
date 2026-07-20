@@ -90,6 +90,10 @@ function scanSchemaUsage() {
         for (const block of page.content ?? []) {
           if (typeof block?.type === "string") components.add(block.type)
         }
+        // IndexPageLayout.ensureChildrenPagesBlock() injects a `childrenpages` block at
+        // render time for every "index"-layout page that doesn't already declare one, so it
+        // must count as used even when the schema file itself never mentions it.
+        if (page.layout === "index") components.add("childrenpages")
       }
     }
     walk(schemaDir)
