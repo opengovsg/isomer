@@ -281,7 +281,12 @@ jobs:
           service: isomer-base-template
           api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Template
-        run: pnpm exec turbo test-ci:unit --filter=isomer-base-template --env-mode=loose
+        # Not run via `turbo test-ci:unit` because that task isn't declared in turbo.json's
+        # `tasks` map (same as test-validators/test-pgboss/publishing-script-tests -- turbo
+        # silently no-ops undeclared tasks instead of erroring, so those jobs may not actually
+        # be running anything either; out of scope to fix here since declaring it would also
+        # switch those three on for the first time within this PR).
+        run: pnpm --filter isomer-base-template run test-ci:unit
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
