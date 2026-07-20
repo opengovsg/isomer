@@ -1549,7 +1549,7 @@ describe("page.router", async () => {
           layout: "content",
           page: pick(page, ["title", "permalink"]),
           version: "0.1.0",
-        } as UpdatePageOutput["content"]),
+        } satisfies UpdatePageOutput["content"]),
       }
     }
 
