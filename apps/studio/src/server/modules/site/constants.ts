@@ -7,9 +7,6 @@ export const PAGE_BLOB: IsomerSchema = {
   page: {},
   content: [
     {
-      type: "antiscambanner",
-    },
-    {
       type: "hero",
       variant: "gradient",
       title: "Isomer",
@@ -54,6 +51,9 @@ export const PAGE_BLOB: IsomerSchema = {
         },
       ],
       title: "Irrationality in numbers",
+    },
+    {
+      type: "antiscambanner",
     },
   ],
 }
