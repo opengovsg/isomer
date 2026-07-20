@@ -1,4 +1,6 @@
 import {
+  isEmailWhitelistedAdminInputSchema,
+  isEmailWhitelistedAdminOutputSchema,
   isEmailWhitelistedInputSchema,
   isEmailWhitelistedOutputSchema,
   whitelistEmailsInputSchema,
@@ -10,7 +12,11 @@ import {
   validatePermissionsForManagingUsers,
   validateUserIsIsomerAdmin,
 } from "../permissions/permissions.service"
-import { isEmailWhitelisted, whitelistEmails } from "./whitelist.service"
+import {
+  isEmailWhitelisted,
+  isEmailWhitelistedAdmin,
+  whitelistEmails,
+} from "./whitelist.service"
 
 export const whitelistRouter = router({
   isEmailWhitelisted: protectedProcedure
@@ -27,6 +33,21 @@ export const whitelistRouter = router({
       })
 
       return await isEmailWhitelisted(email)
+    }),
+  isEmailWhitelistedAdmin: protectedProcedure
+    .input(isEmailWhitelistedAdminInputSchema)
+    .output(isEmailWhitelistedAdminOutputSchema)
+    .query(async ({ ctx, input: { siteId, email } }) => {
+      // Validate permissions as this endpoint is used for user management
+      // and allows checking if emails are whitelisted. This ensures proper
+      // access control even though the operation itself is read-only.
+      await validatePermissionsForManagingUsers({
+        siteId,
+        userId: ctx.user.id,
+        action: "manage",
+      })
+
+      return await isEmailWhitelistedAdmin(email)
     }),
   whitelistEmails: protectedProcedure
     .input(whitelistEmailsInputSchema)

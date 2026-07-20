@@ -30,7 +30,7 @@ import {
   updateUserModalAtom,
 } from "../../atoms"
 import { SingpassConditionalTooltip } from "../SingpassConditionalTooltip"
-import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
+import { AddAdminWarning, EmailNotWhitelistedForAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
@@ -95,6 +95,16 @@ export const EditUserModal = () => {
 
   const isNonGovEmailInput = useMemo(() => !isGovEmail(email), [email])
 
+  const { data: isWhitelistedAdmin } =
+    trpc.whitelist.isEmailWhitelistedAdmin.useQuery(
+      { siteId, email },
+      { enabled: !!siteId && isNonGovEmailInput },
+    )
+
+  // Non-gov.sg emails can still be assigned the Admin role if their domain
+  // has been granted a permanent (non-expiring) whitelist entry.
+  const isAdminRoleDisabled = isNonGovEmailInput && !isWhitelistedAdmin
+
   return (
     <Modal isOpen={!!siteId && !!userId} onClose={onClose}>
       <ModalOverlay />
@@ -133,16 +143,18 @@ export const EditUserModal = () => {
                       isSelected={selectedRole === role}
                       onClick={() => setValue("role", role)}
                       permissionLabels={permissionLabels}
-                      isDisabled={role === RoleType.Admin && isNonGovEmailInput}
+                      isDisabled={
+                        role === RoleType.Admin && isAdminRoleDisabled
+                      }
                     />
                   ))}
                 </HStack>
               </FormControl>
-              {selectedRole === RoleType.Admin && !isNonGovEmailInput && (
+              {selectedRole === RoleType.Admin && !isAdminRoleDisabled && (
                 <AddAdminWarning />
               )}
-              {selectedRole === RoleType.Admin && isNonGovEmailInput && (
-                <NonGovEmailCannotBeAdmin />
+              {selectedRole === RoleType.Admin && isAdminRoleDisabled && (
+                <EmailNotWhitelistedForAdmin />
               )}
             </VStack>
           </VStack>

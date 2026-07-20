@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
@@ -96,7 +96,23 @@ export const AdminWarningBanner: Story = {
   },
 }
 
-export const NonGovEmailCannotBeAdmin: Story = {
+// A wholly non-whitelisted non-gov.sg domain also cannot be Admin, but that
+// scenario is already covered from the general-whitelist-gate angle by
+// EmailIsNotWhitelisted below. The interesting/representative case for the
+// Admin-specific gate is a *vendor* (temporarily whitelisted) email: it's
+// allowed to be added at all (isEmailWhitelisted: true, no domain error),
+// but still isn't Admin-eligible since it isn't a *permanent* grant
+// (isEmailWhitelistedAdmin: false).
+export const VendorEmailCannotBeAdmin: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        ...COMMON_HANDLERS,
+        whitelistHandlers.isEmailWhitelisted.true(),
+        whitelistHandlers.isEmailWhitelistedAdmin.false(),
+      ],
+    },
+  },
   play: async (context) => {
     const { canvasElement } = context
     await Default.play?.(context)
@@ -111,13 +127,63 @@ export const NonGovEmailCannotBeAdmin: Story = {
       ),
     )[0]
     if (emailInput) {
-      await userEvent.type(emailInput, "this_is_a_non_gov_email@non-gov.sg")
+      await userEvent.type(emailInput, "someone@vendor-agency.com")
     }
 
-    const nonGovEmailCannotBeAdminText = await screen.findByText(
-      "Non-gov.sg emails cannot be added as admin. Select another role.",
+    const emailNotWhitelistedForAdminText = await screen.findByText(
+      "Non-whitelisted or vendor (temporarily whitelisted) emails cannot be added as admin. Select another role.",
     )
-    await expect(nonGovEmailCannotBeAdminText).toBeVisible()
+    await expect(emailNotWhitelistedForAdminText).toBeVisible()
+
+    const sendInviteButton = await screen.findByText("Send invite")
+    await waitFor(() => expect(sendInviteButton).toBeDisabled())
+  },
+}
+
+// Regression test for the fix allowing Admin for non-gov.sg emails whose
+// domain has a permanent whitelist grant. The email is typed first and the
+// whitelist checks are awaited *before* selecting Admin, so the assertion
+// actually exercises the whitelisted-domain path rather than the "no email
+// entered yet" default state.
+export const NonGovEmailWhitelistedForAdmin: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        ...COMMON_HANDLERS,
+        whitelistHandlers.isEmailWhitelisted.true(),
+        whitelistHandlers.isEmailWhitelistedAdmin.true(),
+      ],
+    },
+  },
+  play: async (context) => {
+    const { canvasElement } = context
+    await Default.play?.(context)
+
+    const screen = within(canvasElement.ownerDocument.body)
+
+    const emailInput = Array.from(
+      canvasElement.ownerDocument.querySelectorAll(
+        'input[name="email"][required]',
+      ),
+    )[0]
+    if (emailInput) {
+      await userEvent.type(emailInput, "someone@whitelisted-non-gov-domain.com")
+    }
+
+    const AdminRoleButton = await screen.findByRole("button", {
+      name: "Admin role",
+    })
+    await waitFor(() => expect(AdminRoleButton).not.toBeDisabled())
+
+    await userEvent.click(AdminRoleButton)
+
+    const adminWarningText = await screen.findByText(
+      "You are adding a new admin to the website. An admin can make any change to the site content, settings, and users.",
+    )
+    await expect(adminWarningText).toBeVisible()
+
+    const sendInviteButton = await screen.findByText("Send invite")
+    await waitFor(() => expect(sendInviteButton).not.toBeDisabled())
   },
 }
 
@@ -127,6 +193,7 @@ export const EmailIsNotWhitelisted: Story = {
       handlers: [
         ...COMMON_HANDLERS,
         whitelistHandlers.isEmailWhitelisted.false(),
+        whitelistHandlers.isEmailWhitelistedAdmin.false(),
       ],
     },
   },

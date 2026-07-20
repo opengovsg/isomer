@@ -1,2 +1,2 @@
 export * from "./AddAdminWarning"
-export * from "./NonGovEmailCannotBeAdmin"
+export * from "./EmailNotWhitelistedForAdmin"

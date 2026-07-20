@@ -7,6 +7,10 @@ export const isEmailWhitelistedInputSchema = z.object({
 
 export const isEmailWhitelistedOutputSchema = z.boolean()
 
+export const isEmailWhitelistedAdminInputSchema = isEmailWhitelistedInputSchema
+
+export const isEmailWhitelistedAdminOutputSchema = z.boolean()
+
 // Helper schema to normalize and deduplicate email array
 // Trims, lowercases, filters empty strings, and removes duplicates
 const emailArraySchema = z

@@ -32,7 +32,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { addUserModalAtom, DEFAULT_ADD_USER_MODAL_STATE } from "../../atoms"
 import { SingpassConditionalTooltip } from "../SingpassConditionalTooltip"
-import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
+import { AddAdminWarning, EmailNotWhitelistedForAdmin } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
@@ -112,6 +112,18 @@ export const AddUserModal = () => {
     },
   )
 
+  const { data: isWhitelistedAdmin, refetch: checkWhitelistAdmin } =
+    trpc.whitelist.isEmailWhitelistedAdmin.useQuery(
+      { siteId, email: (debouncedEmail || "").trim() },
+      {
+        enabled: false,
+      },
+    )
+
+  // Non-gov.sg emails can still be assigned the Admin role if their domain
+  // has been granted a permanent (non-expiring) whitelist entry.
+  const isAdminRoleDisabled = isNonGovEmailInput && !isWhitelistedAdmin
+
   useEffect(() => {
     // Run after the whitelist check is successful
     if (!isSuccess) {
@@ -142,11 +154,13 @@ export const AddUserModal = () => {
     if (!debouncedEmail || errors.email) return
 
     void checkWhitelist()
+    void checkWhitelistAdmin()
   }, [
     debouncedEmail,
     isNonGovEmailInput,
     errors.email,
     checkWhitelist,
+    checkWhitelistAdmin,
     setAddUserModalState,
   ])
 
@@ -209,7 +223,7 @@ export const AddUserModal = () => {
               <FormControl
                 isRequired
                 isInvalid={
-                  watch("role") === RoleType.Admin && isNonGovEmailInput
+                  watch("role") === RoleType.Admin && isAdminRoleDisabled
                 }
               >
                 <FormLabel
@@ -235,16 +249,18 @@ export const AddUserModal = () => {
                       isSelected={watch("role") === role}
                       onClick={() => setValue("role", role)}
                       permissionLabels={permissionLabels}
-                      isDisabled={role === RoleType.Admin && isNonGovEmailInput}
+                      isDisabled={
+                        role === RoleType.Admin && isAdminRoleDisabled
+                      }
                     />
                   ))}
                 </HStack>
               </FormControl>
-              {watch("role") === RoleType.Admin && !isNonGovEmailInput && (
+              {watch("role") === RoleType.Admin && !isAdminRoleDisabled && (
                 <AddAdminWarning />
               )}
-              {watch("role") === RoleType.Admin && isNonGovEmailInput && (
-                <NonGovEmailCannotBeAdmin />
+              {watch("role") === RoleType.Admin && isAdminRoleDisabled && (
+                <EmailNotWhitelistedForAdmin />
               )}
             </VStack>
           </VStack>
@@ -267,7 +283,7 @@ export const AddUserModal = () => {
                 email === "" ||
                 additionalEmailError ||
                 email !== debouncedEmail || // check if email has changed
-                (watch("role") === RoleType.Admin && isNonGovEmailInput) ||
+                (watch("role") === RoleType.Admin && isAdminRoleDisabled) ||
                 !isSingpassEnabled
               }
             >

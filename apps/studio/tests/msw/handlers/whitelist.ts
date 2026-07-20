@@ -11,4 +11,14 @@ export const whitelistHandlers = {
         return false
       }),
   },
+  isEmailWhitelistedAdmin: {
+    true: () =>
+      trpcMsw.whitelist.isEmailWhitelistedAdmin.query(() => {
+        return true
+      }),
+    false: () =>
+      trpcMsw.whitelist.isEmailWhitelistedAdmin.query(() => {
+        return false
+      }),
+  },
 }

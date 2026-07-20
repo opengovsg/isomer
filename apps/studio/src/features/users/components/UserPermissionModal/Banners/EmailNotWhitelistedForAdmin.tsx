@@ -1,6 +1,6 @@
 import { Infobox } from "@opengovsg/design-system-react"
 
-export const NonGovEmailCannotBeAdmin = () => (
+export const EmailNotWhitelistedForAdmin = () => (
   <Infobox
     textStyle="body-2"
     size="sm"
@@ -10,6 +10,7 @@ export const NonGovEmailCannotBeAdmin = () => (
     w="100%"
     border="none"
   >
-    Non-gov.sg emails cannot be added as admin. Select another role.
+    Non-whitelisted or vendor (temporarily whitelisted) emails cannot be added
+    as admin. Select another role.
   </Infobox>
 )
