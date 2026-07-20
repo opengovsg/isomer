@@ -79,7 +79,7 @@ catalog:
   msw: ^2.14.6
   msw-storybook-addon: ^2.0.7
   msw-trpc: ^2.0.1
-  node-mocks-http: ^1.16.2
+  node-mocks-http: ^1.18.0
   npm-run-all2: ^9.0.2
   "@octokit/rest": ^22.0.0
   "@inquirer/prompts": ^8.5.2
@@ -96,14 +96,14 @@ catalog:
   postcss-preset-env: ^11.3.2
   react-icons: ^5.7.0
   rimraf: ^6.1.3
-  react-instantsearch: ^7.37.0
+  react-instantsearch: ^7.39.0
   sherif: ^1.12.0
   start-server-and-test: ^3.0.11
   tailwindcss: ^3.4.4
   testcontainers: ^12.0.3
   tsc-alias: ^1.8.17
   "@typescript/native-preview": 7.0.0-dev.20260703.1
-  type-fest: ^5.7.0
+  type-fest: ^5.8.0
   tsx: ^4.22.5
   turbo: ^2.10.3
   typescript: ^6.0.3
@@ -119,7 +119,7 @@ catalog:
   "@types/request": ^2.48.12
   "@types/validator": ^13.15.2
   "@1password/sdk": ^0.4.0
-  "@datadog/browser-rum": ^7.4.0
+  "@datadog/browser-rum": ^7.5.0
   "@fontsource/ibm-plex-mono": ^5.1.1
   "@formkit/auto-animate": ^0.9.0
   "@headlessui/react": ^2.2.10
@@ -148,7 +148,7 @@ catalog:
   nanoid: ^5.1.16
   next: 16.2.6
   openid-client: ^5.7.1
-  oxfmt: ^0.57.0
+  oxfmt: ^0.58.0
   oxlint: ^1.72.0
   oxlint-tsgolint: ^0.24.0
   papaparse: ^5.5.4
@@ -175,21 +175,21 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^2.0.1
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.0.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1076.0
-    "@aws-sdk/client-amplify": ^3.1076.0
-    "@aws-sdk/client-cloudfront": ^3.1076.0
-    "@aws-sdk/client-codebuild": ^3.1076.0
-    "@aws-sdk/client-s3": ^3.1076.0
-    "@aws-sdk/s3-request-presigner": ^3.1076.0
-    "@aws-sdk/credential-providers": ^3.1076.0
+    "@aws-sdk/client-acm": ^3.1080.0
+    "@aws-sdk/client-amplify": ^3.1080.0
+    "@aws-sdk/client-cloudfront": ^3.1080.0
+    "@aws-sdk/client-codebuild": ^3.1080.0
+    "@aws-sdk/client-s3": ^3.1080.0
+    "@aws-sdk/s3-request-presigner": ^3.1080.0
+    "@aws-sdk/credential-providers": ^3.1080.0
   babel:
     "@babel/plugin-transform-class-properties": ^8.0.1
     "@babel/plugin-transform-object-rest-spread": ^8.0.1
     "@babel/preset-env": ^8.0.2
     "@babel/preset-typescript": ^8.0.1
   casl:
-    "@casl/ability": ^7.0.0
-    "@casl/react": ^7.0.0
+    "@casl/ability": ^7.0.1
+    "@casl/react": ^7.0.1
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
     "@chakra-ui/cli": ^2.5.8
@@ -279,5 +279,5 @@ catalogs:
     "@vitejs/plugin-react": ^6.0.3
     "@vitest/browser-playwright": ^4.1.9
     "@vitest/coverage-istanbul": ^4.1.10
-    vite: ^8.1.2
+    vite: ^8.1.4
     vitest: ^4.1.10
