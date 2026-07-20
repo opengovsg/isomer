@@ -76,7 +76,7 @@ catalog:
   jsdom: ^29.1.1
   isomorphic-dompurify: ^3.18.0
   mockdate: ^3.0.5
-  msw: ^2.14.6
+  msw: ^2.15.0
   msw-storybook-addon: ^2.0.7
   msw-trpc: ^2.0.1
   node-mocks-http: ^1.18.0
