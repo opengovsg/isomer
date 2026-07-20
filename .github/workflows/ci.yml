@@ -312,16 +312,19 @@ jobs:
       # lets classify-pr-diff.mjs's three-dot diff find the real merge-base
       # instead of diffing straight against base's current tip.
       #
-      # Bounded at 100 rather than 0 (full history): this job runs on every
+      # Bounded at 500 rather than 0 (full history): this job runs on every
       # PR push unconditionally (unlike this repo's only other fetch-depth: 0
       # jobs, Chromatic's, which are gated behind a paths-filter), so an
       # unbounded clone here would scale with total repo history rather than
-      # with this one PR's size. 100 commits covers the vast majority of
-      # real PR ages; a PR staler than that fails this one step visibly
-      # (no merge-base found) rather than silently reporting wrong numbers.
+      # with this one PR's size. 500 commits covers roughly 2+ months of
+      # commit history at this repo's current pace — comfortable headroom
+      # for a long-lived or unrebased PR, at negligible extra transfer cost
+      # over a much shallower depth. A PR staler than that fails this one
+      # step visibly (no merge-base found) rather than silently reporting
+      # wrong numbers.
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          fetch-depth: 100
+          fetch-depth: 500
 
       - name: Classify changed files
         run: node .github/scripts/classify-pr-diff.mjs > /tmp/pr-breakdown-body.md
