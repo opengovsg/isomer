@@ -4,6 +4,7 @@ import { useRouter } from "next/router"
 import { useEffect } from "react"
 import { SIGN_IN } from "~/lib/routes"
 import { callbackUrlSchema } from "~/schemas/url"
+import { trpc } from "~/utils/trpc"
 import { appendWithRedirect } from "~/utils/url"
 
 import { FullscreenSpinner } from "../FullscreenSpinner"
@@ -14,18 +15,28 @@ import { UnexpectedErrorCard } from "./UnexpectedErrorCard"
 const UnauthorizedError = ({
   resetErrorBoundary,
 }: Pick<FallbackProps, "resetErrorBoundary">) => {
+  const utils = trpc.useUtils()
   const router = useRouter()
 
   useEffect(() => {
     const { pathname, search, hash } = window.location
+
+    void utils.invalidate()
+
+    if (pathname === SIGN_IN) {
+      resetErrorBoundary()
+      return
+    }
+
     const callbackUrl = encodeURIComponent(`${pathname}${search}${hash}`)
 
     void router
       .replace(
         callbackUrlSchema.parse(appendWithRedirect(SIGN_IN, callbackUrl)),
       )
-      .then(resetErrorBoundary)
-  }, [resetErrorBoundary, router])
+      .catch(() => undefined)
+      .then(() => resetErrorBoundary())
+  }, [resetErrorBoundary, router, utils])
 
   return <FullscreenSpinner />
 }
