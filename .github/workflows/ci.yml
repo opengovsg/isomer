@@ -302,18 +302,26 @@ jobs:
     permissions:
       contents: read
     steps:
-      # fetch-depth: 0 is required, not just convenient: the default checkout
-      # resolves the PR's synthetic merge ref (refs/pull/N/merge), whose two
-      # parents are the real base and head commits — fork or not, GitHub
-      # materializes that ref server-side, so this is also what makes the
-      # head commit fetchable at all for fork PRs (origin is the base repo;
-      # a fork's head SHA isn't otherwise fetchable from it directly). Full
-      # depth pulls the complete ancestor history of both parents, which is
-      # also what lets classify-pr-diff.mjs's three-dot diff find the real
-      # merge-base instead of diffing straight against base's current tip.
+      # Non-default fetch-depth is required, not just convenient: the default
+      # checkout resolves the PR's synthetic merge ref (refs/pull/N/merge),
+      # whose two parents are the real base and head commits — fork or not,
+      # GitHub materializes that ref server-side, so this is also what makes
+      # the head commit fetchable at all for fork PRs (origin is the base
+      # repo; a fork's head SHA isn't otherwise fetchable from it directly).
+      # Extra depth pulls ancestor history for both parents, which is what
+      # lets classify-pr-diff.mjs's three-dot diff find the real merge-base
+      # instead of diffing straight against base's current tip.
+      #
+      # Bounded at 100 rather than 0 (full history): this job runs on every
+      # PR push unconditionally (unlike this repo's only other fetch-depth: 0
+      # jobs, Chromatic's, which are gated behind a paths-filter), so an
+      # unbounded clone here would scale with total repo history rather than
+      # with this one PR's size. 100 commits covers the vast majority of
+      # real PR ages; a PR staler than that fails this one step visibly
+      # (no merge-base found) rather than silently reporting wrong numbers.
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          fetch-depth: 0
+          fetch-depth: 100
 
       - name: Classify changed files
         run: node .github/scripts/classify-pr-diff.mjs > /tmp/pr-breakdown-body.md
@@ -327,10 +335,16 @@ jobs:
       # Same fork-PR restriction as the e2e/bundle-size comments below: this
       # job can't post to the PR directly, so it hands the body off as an
       # artifact for post-pr-comment.yml to pick up in the base-repo context.
+      #
+      # Deliberately NOT including a pr-number.txt here: this step runs with
+      # the PR's own (possibly forked, possibly modified) version of this
+      # workflow file, so anything it writes is attacker-controlled. The
+      # consuming job derives the PR number itself from the trusted
+      # workflow_run event payload instead of trusting a number from this
+      # artifact — see post-pr-comment.yml.
       - name: Save PR breakdown metadata
         run: |
           mkdir -p /tmp/pr-breakdown-metadata
-          echo "${{ github.event.pull_request.number }}" > /tmp/pr-breakdown-metadata/pr-number.txt
           cp /tmp/pr-breakdown-body.md /tmp/pr-breakdown-metadata/body.md
 
       - name: Upload PR breakdown metadata
