@@ -2,6 +2,12 @@ import { checkbox, confirm, input, select } from "@inquirer/prompts"
 
 import { withDbClient } from "../utils/db"
 
+/**
+ * Site IDs to run this script for. Edit this list before running —
+ * only RootPages belonging to these sites will be considered.
+ */
+export const SITE_IDS: number[] = []
+
 export const ANTISCAM_BANNER_BLOCK = { type: "antiscambanner" }
 
 export type BlobContent = { content?: unknown[] } & Record<string, unknown>
@@ -34,9 +40,7 @@ export const getBucket = (row: RootPageRow): Bucket => {
 }
 
 /** Plain object blob payload — rejects null, arrays, and double-encoded JSON strings. */
-export const isUsableBlobContent = (
-  content: unknown,
-): content is BlobContent =>
+export const isUsableBlobContent = (content: unknown): content is BlobContent =>
   content !== null && typeof content === "object" && !Array.isArray(content)
 
 export const hasAntiscamBanner = (content: BlobContent | null): boolean => {
@@ -144,6 +148,13 @@ export const insertAntiscamBanner = async () => {
     return
   }
 
+  if (SITE_IDS.length === 0) {
+    console.error(
+      "SITE_IDS is empty. Edit SITE_IDS at the top of insert-antiscam-banner.ts with the site ID(s) to run this script for.",
+    )
+    return
+  }
+
   await withDbClient(async (client) => {
     // Resolve publisher for Version.publishedBy
     const userResult = await client.query<{ id: string }>(
@@ -157,7 +168,7 @@ export const insertAntiscamBanner = async () => {
     }
     const publisherUserId = user.id
 
-    // Load all RootPages with draft/published blob content
+    // Load RootPages with draft/published blob content, scoped to SITE_IDS
     const rootPages = await client.query<RootPageRow>(
       `SELECT "Resource".id, "Resource".title, "Resource"."siteId", "Site".name AS "siteName",
               "Resource"."draftBlobId", "Resource"."publishedVersionId",
@@ -168,8 +179,9 @@ export const insertAntiscamBanner = async () => {
        LEFT JOIN "Blob" AS "DraftBlob" ON "Resource"."draftBlobId" = "DraftBlob".id
        LEFT JOIN "Version" ON "Resource"."publishedVersionId" = "Version".id
        LEFT JOIN "Blob" AS "PublishedBlob" ON "Version"."blobId" = "PublishedBlob".id
-       WHERE "Resource".type = 'RootPage'
+       WHERE "Resource".type = 'RootPage' AND "Site".id = ANY($1::int[])
        ORDER BY "Site".name, "Resource".title`,
+      [SITE_IDS],
     )
 
     const rowsWithBucket = rootPages.rows.map((row) => ({
@@ -186,13 +198,13 @@ export const insertAntiscamBanner = async () => {
 
     if (eligibleRows.length === 0) {
       console.log(
-        "No RootPage resources with a draft or published blob were found.",
+        `No RootPage resources with a draft or published blob were found for site(s) ${SITE_IDS.join(", ")}.`,
       )
       return
     }
 
     console.log(
-      `Found ${eligibleRows.length} RootPage resource(s) across ${new Set(eligibleRows.map(({ row }) => row.siteId)).size} site(s):`,
+      `Found ${eligibleRows.length} RootPage resource(s) across ${new Set(eligibleRows.map(({ row }) => row.siteId)).size} of the selected site(s) (${SITE_IDS.join(", ")}):`,
     )
     for (const { row, bucket } of eligibleRows) {
       console.log(`  [${row.id}] ${row.siteName} — ${row.title} (${bucket})`)
@@ -203,29 +215,17 @@ export const insertAntiscamBanner = async () => {
       )
     }
 
-    // Scope: all / by site / by resource
+    // Scope: all / by resource (sites are already fixed via the SITE_IDS constant)
     const scope = await select({
       message: "Apply to which resources?",
       choices: [
         { name: `All ${eligibleRows.length} resources`, value: "all" as const },
-        { name: "Select sites individually", value: "sites" as const },
         { name: "Select resources individually", value: "resources" as const },
       ],
     })
 
     let selectedRows = eligibleRows
-    if (scope === "sites") {
-      const siteChoices = [
-        ...new Map(eligibleRows.map(({ row }) => [row.siteId, row.siteName])),
-      ].map(([siteId, siteName]) => ({ name: siteName, value: siteId }))
-      const selectedSiteIds = await checkbox({
-        message: "Select sites",
-        choices: siteChoices,
-      })
-      selectedRows = eligibleRows.filter(({ row }) =>
-        selectedSiteIds.includes(row.siteId),
-      )
-    } else if (scope === "resources") {
+    if (scope === "resources") {
       const resourceChoices = eligibleRows.map(({ row, bucket }) => ({
         name: `[${row.id}] ${row.siteName} — ${row.title} (${bucket})`,
         value: row.id,
