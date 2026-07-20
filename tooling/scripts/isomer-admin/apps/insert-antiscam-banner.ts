@@ -32,8 +32,16 @@ export const getBucket = (row: RootPageRow): Bucket => {
   return "none"
 }
 
+/** Plain object blob payload — rejects null, arrays, and double-encoded JSON strings. */
+export const isUsableBlobContent = (
+  content: unknown,
+): content is BlobContent =>
+  content !== null && typeof content === "object" && !Array.isArray(content)
+
 export const hasAntiscamBanner = (content: BlobContent | null): boolean => {
-  if (!content || !Array.isArray(content.content)) return false
+  if (!isUsableBlobContent(content) || !Array.isArray(content.content)) {
+    return false
+  }
   return content.content.some(
     (block) => (block as { type?: string })?.type === "antiscambanner",
   )
@@ -47,17 +55,50 @@ export const appendAntiscamBanner = (content: BlobContent): BlobContent => {
 export type PublishedStep =
   | { action: "create-version"; newContent: BlobContent }
   | { action: "skip-already-has-banner" }
+  | { action: "skip-missing-content" }
   | { action: "none" }
 
 export type DraftStep =
   | { action: "update-draft"; newContent: BlobContent }
   | { action: "skip-already-has-banner" }
+  | { action: "skip-missing-content" }
   | { action: "none" }
 
 export interface ResourcePlan {
   bucket: Bucket
   publishedStep: PublishedStep
   draftStep: DraftStep
+}
+
+export const normalizePublisherEmail = (email: string): string | null => {
+  const normalized = email.trim().toLowerCase()
+  return normalized.length > 0 ? normalized : null
+}
+
+export const describePublishedStep = (step: PublishedStep): string => {
+  switch (step.action) {
+    case "create-version":
+      return "published: create new version"
+    case "skip-already-has-banner":
+      return "published: already has banner, skip"
+    case "skip-missing-content":
+      return "published: missing/invalid content, skip"
+    case "none":
+      return "published: none"
+  }
+}
+
+export const describeDraftStep = (step: DraftStep): string => {
+  switch (step.action) {
+    case "update-draft":
+      return "draft: update in place"
+    case "skip-already-has-banner":
+      return "draft: already has banner, skip"
+    case "skip-missing-content":
+      return "draft: missing/invalid content, skip"
+    case "none":
+      return "draft: none"
+  }
 }
 
 /**
@@ -70,36 +111,45 @@ export const planResource = (row: RootPageRow): ResourcePlan => {
 
   const publishedStep: PublishedStep =
     bucket === "published-only" || bucket === "published-and-draft"
-      ? hasAntiscamBanner(row.publishedContent)
-        ? { action: "skip-already-has-banner" }
-        : {
-            action: "create-version",
-            newContent: appendAntiscamBanner(row.publishedContent!),
-          }
+      ? !isUsableBlobContent(row.publishedContent)
+        ? { action: "skip-missing-content" }
+        : hasAntiscamBanner(row.publishedContent)
+          ? { action: "skip-already-has-banner" }
+          : {
+              action: "create-version",
+              newContent: appendAntiscamBanner(row.publishedContent),
+            }
       : { action: "none" }
 
   const draftStep: DraftStep =
     bucket === "published-and-draft" || bucket === "draft-only"
-      ? hasAntiscamBanner(row.draftContent)
-        ? { action: "skip-already-has-banner" }
-        : {
-            action: "update-draft",
-            newContent: appendAntiscamBanner(row.draftContent!),
-          }
+      ? !isUsableBlobContent(row.draftContent)
+        ? { action: "skip-missing-content" }
+        : hasAntiscamBanner(row.draftContent)
+          ? { action: "skip-already-has-banner" }
+          : {
+              action: "update-draft",
+              newContent: appendAntiscamBanner(row.draftContent),
+            }
       : { action: "none" }
 
   return { bucket, publishedStep, draftStep }
 }
 
 export const insertAntiscamBanner = async () => {
-  const publisherEmail = await input({
+  const rawEmail = await input({
     message: "Enter your email address (e.g. adriangoh@open.gov.sg)",
   })
+  const publisherEmail = normalizePublisherEmail(rawEmail)
+  if (!publisherEmail) {
+    console.error("Email address is required.")
+    return
+  }
 
   await withDbClient(async (client) => {
     const userResult = await client.query<{ id: string }>(
       `SELECT id FROM "User" WHERE email = $1 AND "deletedAt" IS NULL`,
-      [publisherEmail.toLowerCase()],
+      [publisherEmail],
     )
     const user = userResult.rows[0]
     if (!user) {
@@ -193,13 +243,44 @@ export const insertAntiscamBanner = async () => {
       return
     }
 
-    console.log(`\nWill process ${selectedRows.length} resource(s):`)
-    for (const { row, bucket } of selectedRows) {
-      console.log(`  [${row.id}] ${row.siteName} — ${row.title} (${bucket})`)
+    const selectedPlans = selectedRows.map(({ row }) => ({
+      row,
+      plan: planResource(row),
+    }))
+
+    let publishedCreates = 0
+    let draftUpdates = 0
+    let skips = 0
+    console.log(`\nPlan for ${selectedPlans.length} resource(s):`)
+    for (const { row, plan } of selectedPlans) {
+      const parts = [
+        describePublishedStep(plan.publishedStep),
+        describeDraftStep(plan.draftStep),
+      ].filter((part) => !part.endsWith(": none"))
+      console.log(
+        `  [${row.id}] ${row.siteName} — ${row.title}: ${parts.join("; ")}`,
+      )
+      if (plan.publishedStep.action === "create-version") publishedCreates++
+      if (plan.draftStep.action === "update-draft") draftUpdates++
+      if (
+        plan.publishedStep.action === "skip-already-has-banner" ||
+        plan.publishedStep.action === "skip-missing-content"
+      ) {
+        skips++
+      }
+      if (
+        plan.draftStep.action === "skip-already-has-banner" ||
+        plan.draftStep.action === "skip-missing-content"
+      ) {
+        skips++
+      }
     }
+    console.log(
+      `\nTotals: ${publishedCreates} published create(s), ${draftUpdates} draft update(s), ${skips} skip(s).`,
+    )
 
     const confirmed = await confirm({
-      message: `Insert the anti-scam banner into ${selectedRows.length} resource(s)?`,
+      message: `Apply this plan to ${selectedPlans.length} resource(s)?`,
       default: false,
     })
     if (!confirmed) {
@@ -211,14 +292,18 @@ export const insertAntiscamBanner = async () => {
 
     await client.query("BEGIN")
     try {
-      for (const { row } of selectedRows) {
-        const plan = planResource(row)
-
+      for (const { row, plan } of selectedPlans) {
         if (plan.publishedStep.action === "skip-already-has-banner") {
           results.push({
             id: row.id,
             title: row.title,
             status: "published: already has banner, skipped",
+          })
+        } else if (plan.publishedStep.action === "skip-missing-content") {
+          results.push({
+            id: row.id,
+            title: row.title,
+            status: "published: missing/invalid content, skipped",
           })
         } else if (plan.publishedStep.action === "create-version") {
           const currentVersion = await client.query<{ versionNum: number }>(
@@ -263,6 +348,12 @@ export const insertAntiscamBanner = async () => {
             id: row.id,
             title: row.title,
             status: "draft: already has banner, skipped",
+          })
+        } else if (plan.draftStep.action === "skip-missing-content") {
+          results.push({
+            id: row.id,
+            title: row.title,
+            status: "draft: missing/invalid content, skipped",
           })
         } else if (plan.draftStep.action === "update-draft") {
           await client.query(
