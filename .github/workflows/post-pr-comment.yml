@@ -85,6 +85,14 @@ jobs:
     # regardless of when CI finishes relative to human activity on the PR.
     if: github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
+    # Job-level permissions: REPLACE the workflow-level block above for this job,
+    # they don't merge — so this has to re-list actions: read (for `gh run
+    # download`) and pull-requests: write (for `gh pr edit`/`gh pr view`) on top
+    # of the contents: read this job newly needs for actions/checkout.
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -115,9 +123,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # `.body // ""` coalesces a null description (PRs opened with no body
+          # at all) to an empty string — jq's raw output of null is the
+          # 4-character text "null", which would otherwise get glued into
+          # the description under the breakdown block.
           gh pr view ${{ steps.metadata.outputs.pr-number }} \
             --repo ${{ github.repository }} \
-            --json body -q .body \
+            --json body -q '.body // ""' \
             > /tmp/pr-breakdown-metadata/current-body.md
 
       - name: Build updated PR description

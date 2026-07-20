@@ -129,7 +129,12 @@ function resolveRenamedPath(rawPath) {
 
 const numstat = execFileSync(
   "git",
-  ["diff", "--numstat", BASE_SHA, HEAD_SHA],
+  [
+    "diff",
+    "--numstat",
+    "-M", // detect renames explicitly — don't rely on the runner's diff.renames config
+    `${BASE_SHA}...${HEAD_SHA}`, // three-dot: diff against the merge-base, not base's current tip
+  ],
   { encoding: "utf8" },
 )
   .trim()

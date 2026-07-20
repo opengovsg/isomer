@@ -302,15 +302,18 @@ jobs:
     permissions:
       contents: read
     steps:
+      # fetch-depth: 0 is required, not just convenient: the default checkout
+      # resolves the PR's synthetic merge ref (refs/pull/N/merge), whose two
+      # parents are the real base and head commits — fork or not, GitHub
+      # materializes that ref server-side, so this is also what makes the
+      # head commit fetchable at all for fork PRs (origin is the base repo;
+      # a fork's head SHA isn't otherwise fetchable from it directly). Full
+      # depth pulls the complete ancestor history of both parents, which is
+      # also what lets classify-pr-diff.mjs's three-dot diff find the real
+      # merge-base instead of diffing straight against base's current tip.
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-      # Shallow-fetch just the two commits being diffed — `git diff A B` only
-      # needs both commit objects, not shared history, so this is enough even
-      # though the default checkout only has the PR merge ref.
-      - name: Fetch PR base and head commits
-        run: |
-          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.sha }}
-          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.head.sha }}
+        with:
+          fetch-depth: 0
 
       - name: Classify changed files
         run: node .github/scripts/classify-pr-diff.mjs > /tmp/pr-breakdown-body.md
