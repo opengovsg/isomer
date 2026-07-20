@@ -1,14 +1,10 @@
 import type { CollectionPageSchemaType } from "~/types"
+import { getCollectionItems, processCollectionItems } from "~/utils/collection"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 
 import { Skeleton } from "../Skeleton"
 import { CollectionClient } from "./CollectionClient"
-import {
-  getAvailableFilters,
-  getCollectionItems,
-  processCollectionItems,
-  shouldShowDate,
-} from "./utils"
+import { getAvailableFilters, shouldShowDate } from "./utils"
 
 export const CollectionLayout = ({
   site,

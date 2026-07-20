@@ -9,8 +9,8 @@
 // Only components/layouts confirmed to have no cross-imports from outside
 // `render/renderComponent.tsx` / `render/renderLayout.tsx` are stubbed here
 // (see COMPONENT_TARGETS/LAYOUT_TARGETS in next.config.mjs). Infobar,
-// InfoCards, ContactInformation, Prose, the Collection layout, and the
-// NotFound layout are permanently excluded and never redirected to this file.
+// InfoCards, ContactInformation, Prose, and the NotFound layout are
+// permanently excluded and never redirected to this file.
 
 export const Accordion = () => null
 export const AntiScamDisclaimerBanner = () => null
@@ -35,6 +35,7 @@ export const Map = () => null
 export const Video = () => null
 
 export const ArticleLayout = () => null
+export const CollectionLayout = () => null
 export const ContentLayout = () => null
 export const DatabaseLayout = () => null
 export const HomepageLayout = () => null

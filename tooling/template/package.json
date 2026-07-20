@@ -12,6 +12,9 @@
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
     "start": "next start",
+    "test-ci:unit": "vitest run",
+    "test:unit": "vitest run",
+    "test:watch": "vitest watch",
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
@@ -33,6 +36,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
-    "@typescript/native-preview": "catalog:"
+    "@typescript/native-preview": "catalog:",
+    "vitest": "catalog:vitest"
   }
 }

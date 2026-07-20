@@ -1,4 +1,5 @@
 import { type ArticlePageSchemaType } from "~/types"
+import { getTagsFromTagged } from "~/utils/collection"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
@@ -6,7 +7,6 @@ import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
-import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
 import { Skeleton } from "../Skeleton"
 
 export const ArticleLayout = ({
