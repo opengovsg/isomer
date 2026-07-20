@@ -16,28 +16,15 @@ const HEAD_SHA = requireEnv("HEAD_SHA")
 // Checked in this order — first match wins. Anything left over falls through
 // to "app" by elimination.
 const BUCKET_GLOBS = {
-  ignore: [
-    "pnpm-lock.yaml",
-    "**/*.lock",
-    "packages/db/src/generated/**",
-    "packages/db/prisma/generated/**",
-    "apps/studio/src/theme/generated/**",
-    "apps/studio/public/assets/css/preview-tw.css",
-    "**/dist/**",
-    "**/.next/**",
-    "**/storybook-static/**",
-    "**/*.tsbuildinfo",
-    "next-env.d.ts",
-  ],
-  doc: [
-    "docs/**",
-    "**/README.md",
-    "**/CONTEXT.md",
-    "**/CLAUDE.md",
-    "**/*.mdx",
-    "**/*.md",
-    ".github/pull_request_template.md",
-  ],
+  // Only paths that can actually appear in a real diff: everything else that
+  // was here previously (dist/, .next/, storybook-static/, *.tsbuildinfo,
+  // next-env.d.ts, preview-tw.css, packages/db/prisma/generated/) is already
+  // gitignored, so it can't show up here short of a force-add — in which
+  // case it's arguably worth surfacing, not hiding. These two generated dirs
+  // are the exception: verified with `git check-ignore` that neither is
+  // actually covered by .gitignore, despite living next to dirs that are.
+  ignore: ["pnpm-lock.yaml", "packages/db/src/generated/**", "apps/studio/src/theme/generated/**"],
+  doc: ["**/*.md", "**/*.mdx"],
   test: [
     "**/__tests__/**",
     "**/*.test.ts",
@@ -47,15 +34,23 @@ const BUCKET_GLOBS = {
     "apps/studio/tests/msw/**",
     "apps/studio/tests/load/**",
     "tooling/build/scripts/publishing/tests/**",
+    "**/*.stories.ts",
     "**/*.stories.tsx",
     "**/stories/**",
     "**/*.snap",
-    "**/vitest*.config.*",
-    "**/playwright.config.ts",
   ],
 }
 
+// Classification priority (ignore > doc > test > app) — NOT the same as the
+// table's row order below. Doc has to be checked before test so e.g. a
+// .mdx file under a stories/ dir counts as Doc, not Test.
 const BUCKET_ORDER = ["ignore", "doc", "test", "app"]
+
+// Table row order — independent of classification priority above, purely
+// for readability (App first, since that's usually what a reviewer cares
+// about most).
+const TABLE_ORDER = ["app", "test", "doc", "ignore"]
+
 const BUCKET_LABELS = {
   ignore: "🚫 Ignore",
   doc: "📄 Doc",
@@ -169,7 +164,7 @@ let body = "<!-- pr-diff-breakdown:start -->\n"
 body += "### 📊 PR diff breakdown\n\n"
 body += "| Bucket | Files | +Lines | -Lines |\n"
 body += "|---|---|---|---|\n"
-for (const bucket of BUCKET_ORDER) {
+for (const bucket of TABLE_ORDER) {
   const t = totals[bucket]
   body += `| ${BUCKET_LABELS[bucket]} | ${t.files} | +${t.add} | -${t.del} |\n`
 }

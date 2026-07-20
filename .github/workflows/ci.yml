@@ -312,19 +312,18 @@ jobs:
       # lets classify-pr-diff.mjs's three-dot diff find the real merge-base
       # instead of diffing straight against base's current tip.
       #
-      # Bounded at 500 rather than 0 (full history): this job runs on every
-      # PR push unconditionally (unlike this repo's only other fetch-depth: 0
-      # jobs, Chromatic's, which are gated behind a paths-filter), so an
-      # unbounded clone here would scale with total repo history rather than
-      # with this one PR's size. 500 commits covers roughly 2+ months of
-      # commit history at this repo's current pace — comfortable headroom
-      # for a long-lived or unrebased PR, at negligible extra transfer cost
-      # over a much shallower depth. A PR staler than that fails this one
-      # step visibly (no merge-base found) rather than silently reporting
-      # wrong numbers.
+      # Full history (0) rather than a bounded depth: a bounded fetch trades
+      # a small, currently-negligible cost saving for a real failure mode —
+      # any PR whose merge-base sits further back than the bound hard-fails
+      # this step with "no merge base found," with no continue-on-error, on
+      # every subsequent push to that PR. Full history has no such cliff; at
+      # this repo's current size (~80MB of history) the extra clone cost is
+      # a few seconds at most. This does mean the clone cost grows with the
+      # repo's total lifetime history, not with this one PR's size — worth
+      # revisiting if that ever becomes an actual bottleneck.
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          fetch-depth: 500
+          fetch-depth: 0
 
       - name: Classify changed files
         run: node .github/scripts/classify-pr-diff.mjs > /tmp/pr-breakdown-body.md
