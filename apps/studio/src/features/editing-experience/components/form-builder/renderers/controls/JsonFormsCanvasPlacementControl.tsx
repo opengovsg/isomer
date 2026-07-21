@@ -392,7 +392,9 @@ const usePreviewGridGuides = (
 // dragged selection that lands on the same grid line as a sibling block's
 // edge is drawn as a solid line through the preview canvas, so the user sees
 // flush alignment (or edge-to-edge adjacency) with the other blocks at the
-// moment it happens
+// moment it happens. The canvas's own centre line is drawn too whenever the
+// selection's column margins match, so centring on the canvas is as visible
+// as aligning with a sibling
 const usePreviewAlignmentGuides = (
   locatePreviewBlock: () => HTMLElement | null,
   selection: NormalisedPlacement | null,
@@ -413,6 +415,15 @@ const usePreviewAlignmentGuides = (
         .filter((line) => selectionRows.includes(line))
         .forEach((line) => alignedRows.add(line))
     })
+    // Equal column margins put the selection's centre on the canvas's centre
+    // line (the middle column line, mid-gap by symmetry); full-width
+    // selections are trivially centred and stay guide-free
+    if (
+      selection.colStart > 1 &&
+      selection.colStart - 1 === CANVAS_GRID_COLUMNS - selection.colEnd
+    ) {
+      alignedCols.add(CANVAS_GRID_COLUMNS / 2 + 1)
+    }
   }
   // Key the effect on the resolved lines so the guides only re-draw when the
   // alignment changes, not on every cell the pointer crosses

@@ -2186,6 +2186,109 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("shows a canvas-center guide when the dragged selection is horizontally centered", () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Measurable geometry (480×320) so the guide has a position to assert
+    // against: the canvas's horizontal center sits at 240px
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    // A single block, so sibling-edge alignment can never contribute guides
+    renderCanvasFormInEditorDrawer({
+      type: "canvas",
+      blocks: [BLOCKQUOTE_BLOCK],
+    } as IsomerComponent)
+
+    click(findButtonByText("Item 1")!)
+
+    const guides = () =>
+      previewDocument.querySelector("[data-canvas-alignment-guides]")
+
+    expect(guides()).toBeNull()
+
+    // Start drawing at column 4: margins are 3 and 8 columns — not centered
+    act(() => {
+      placementCellAt(2, 4).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    expect(guides()).toBeNull()
+
+    // Sweeping to column 9 balances the margins (3 and 3): the canvas's
+    // center line appears through the middle of the selection
+    act(() => {
+      placementCellAt(2, 9).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(guides()).not.toBeNull()
+    const centerLines = Array.from(guides()!.children) as HTMLElement[]
+    expect(centerLines).toHaveLength(1)
+    expect(centerLines[0]!.style.height).toBe("100%")
+    expect(centerLines[0]!.style.left).toBe("239px")
+
+    // One more column to the right (margins 3 and 2) removes the guide
+    act(() => {
+      placementCellAt(2, 10).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(guides()).toBeNull()
+    pressKey(placementCellAt(2, 10), "Escape")
+
+    // A full-width selection is trivially centered and never shows the guide
+    act(() => {
+      placementCellAt(3, 1).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    act(() => {
+      placementCellAt(3, 12).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(guides()).toBeNull()
+    pressKey(placementCellAt(3, 12), "Escape")
+
+    iframe.remove()
+  })
+
   it("shows a live grid-area badge on the preview block while dragging", () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
