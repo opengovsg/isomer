@@ -272,7 +272,9 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // left/centre/right of the grid or stretching it across the full width;
 // right-clicking the empty canvas background offers pasting or adding a new
 // default block at the clicked grid cell. Shift+clicking blocks gathers them
-// into a multi-selection for group actions: Delete removes them all at once,
+// into a multi-selection (⌘A/Ctrl+A selects every block on the canvas at
+// once, closing an open block editor) for group actions: Delete removes them
+// all at once,
 // ⌘D duplicates them all at once (the selection moving to the copies), ⌘C/⌘X
 // copy or cut the whole group to the block clipboard (⌘V pastes it back with
 // the members' relative layout intact, the selection moving to the copies),
@@ -1991,6 +1993,58 @@ export const useCanvasPreviewClickToEdit = ({
     removeMultiSelectedBlocks,
     selectedIndex,
   ])
+
+  // Wix-style ⌘A/Ctrl+A gathers every canvas block into the multi-selection,
+  // whatever the current state: from the block list, from an open block
+  // editor (which closes, like the Shift+click toggle's seeding), or from a
+  // partial multi-selection. Keystrokes aimed at a form field or carrying a
+  // live text selection keep their native select-all meaning, and an empty
+  // canvas leaves the browser's behaviour untouched. Registered on both
+  // windows so the shortcut works whether focus sits in the drawer or in the
+  // preview iframe.
+  useEffect(() => {
+    if (canvasOrdinal === null || path !== CANVAS_BLOCKS_PATH) {
+      return
+    }
+    const selectAllOnKey = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() !== "a" ||
+        !(event.metaKey || event.ctrlKey) ||
+        event.altKey ||
+        event.shiftKey ||
+        event.defaultPrevented ||
+        groupDrag !== null ||
+        marquee !== null ||
+        isEditableTarget(event.target) ||
+        hasTextSelection(event.target)
+      ) {
+        return
+      }
+      const blockCount = blocksRef.current.length
+      if (blockCount === 0) {
+        return
+      }
+      event.preventDefault()
+      if (selectedIndex !== undefined) {
+        setSelectedIndex(undefined)
+      }
+      setMultiSelectedIndices((previous) =>
+        previous.length === blockCount
+          ? previous
+          : Array.from({ length: blockCount }, (_, index) => index),
+      )
+    }
+    window.addEventListener("keydown", selectAllOnKey)
+    const previewWindow =
+      findCanvasPreviewContainer(document, canvasOrdinal)?.ownerDocument
+        .defaultView ?? null
+    const foreignPreviewWindow = previewWindow === window ? null : previewWindow
+    foreignPreviewWindow?.addEventListener("keydown", selectAllOnKey)
+    return () => {
+      window.removeEventListener("keydown", selectAllOnKey)
+      foreignPreviewWindow?.removeEventListener("keydown", selectAllOnKey)
+    }
+  }, [canvasOrdinal, groupDrag, marquee, path, selectedIndex, setSelectedIndex])
 
   // Wix-style keyboard shortcuts while a block's nested editor is open:
   // Delete or Backspace removes the block from the canvas and returns to the

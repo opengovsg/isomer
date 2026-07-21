@@ -7690,4 +7690,141 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("selects every canvas block into the multi-selection with ⌘A", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          BLOCKQUOTE_BLOCK,
+          { type: "blockquote", quote: "The second quote", source: "s2" },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    // Dispatched manually (not via pressKey) so the browser-shortcut
+    // takeover is observable through defaultPrevented
+    const pressSelectAll = (target: Element) => {
+      const event = new KeyboardEvent("keydown", {
+        key: "a",
+        metaKey: true,
+        bubbles: true,
+        cancelable: true,
+      })
+      act(() => {
+        target.dispatchEvent(event)
+      })
+      return event
+    }
+
+    await flush()
+    const baselineChangeCount = changes.length
+
+    // ⌘A from the block list view gathers every block into the
+    // multi-selection, consuming the keystroke so the browser's text
+    // select-all never fires — no editor opens and no data changes
+    expect(pressSelectAll(document.body).defaultPrevented).toBe(true)
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // ⌘A from a partial multi-selection grows it to every block
+    pressKey(document.body, "Escape")
+    shiftClick(blockAt(1))
+    expect(blockAt(0).style.outline).toBe("")
+    pressSelectAll(document.body)
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+    pressKey(document.body, "Escape")
+
+    // With a block's editor open, ⌘A aimed at a form field keeps its native
+    // select-the-field-text meaning
+    click(findButtonByText("Item 1")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await flush()
+    const quoteInput = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input, textarea",
+      ),
+    ).find((field) => field.value === BLOCKQUOTE_BLOCK.quote)
+    expect(quoteInput).not.toBeUndefined()
+    expect(pressSelectAll(quoteInput!).defaultPrevented).toBe(false)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    // The edited block keeps the placement control's own outline; the
+    // siblings staying bare proves no multi-selection formed
+    expect(blockAt(1).style.outline).toBe("")
+    expect(blockAt(2).style.outline).toBe("")
+
+    // ⌘A outside any field closes the editor and selects every block, the
+    // edited block seeding the set like the Shift+click toggle
+    pressSelectAll(document.body)
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Add item")
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+
+    // The selection composes with the group actions: Delete removes every
+    // block on the canvas in one data change
+    pressKey(document.body, "Delete")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    const afterDelete = changes.at(-1) as { blocks?: unknown[] } | undefined
+    expect(afterDelete?.blocks).toHaveLength(0)
+    expect(container.textContent).toContain("Items you add will appear here")
+
+    // With no blocks on the canvas, ⌘A keeps its native meaning
+    expect(pressSelectAll(document.body).defaultPrevented).toBe(false)
+
+    iframe.remove()
+  })
 })
