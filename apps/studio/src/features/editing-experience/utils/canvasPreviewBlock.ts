@@ -469,6 +469,7 @@ export const showCanvasSelectionToolbar = (
   block: HTMLElement,
   actions: CanvasSelectionToolbarAction[],
   toolbarColor: string,
+  ariaLabel = "Block actions",
 ): (() => void) => {
   const appliedPosition = block.style.position === ""
   if (appliedPosition) {
@@ -478,7 +479,7 @@ export const showCanvasSelectionToolbar = (
   const toolbar = doc.createElement("div")
   toolbar.setAttribute(CANVAS_SELECTION_TOOLBAR_DATA_ATTRIBUTE, "")
   toolbar.setAttribute("role", "toolbar")
-  toolbar.setAttribute("aria-label", "Block actions")
+  toolbar.setAttribute("aria-label", ariaLabel)
   Object.assign(toolbar.style, {
     position: "absolute",
     bottom: "100%",

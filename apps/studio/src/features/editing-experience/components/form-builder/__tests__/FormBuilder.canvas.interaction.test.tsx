@@ -4569,6 +4569,176 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("shows a Wix-style group action toolbar on the multi-selection in the live preview", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    // More preview block elements than data blocks, so the toolbar has an
+    // element to anchor to on the copies appended by the group duplicate
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+        <div data-canvas-block-index="4"><span>fifth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 3, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 5, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const toolbar = () =>
+      previewDocument.querySelector<HTMLElement>(
+        "[data-canvas-selection-toolbar]",
+      )
+    const toolbarButton = (label: string) => {
+      const button = previewDocument.querySelector<HTMLButtonElement>(
+        `[data-canvas-selection-toolbar] button[aria-label="${label}"]`,
+      )
+      expect(button).not.toBeNull()
+      return button!
+    }
+    const clickToolbarButton = (label: string) => {
+      act(() => {
+        toolbarButton(label).click()
+      })
+    }
+    const latestBlocks = () =>
+      (
+        changes.at(-1) as
+          | {
+              blocks?: {
+                quote?: string
+                placement?: { rowStart?: number }
+              }[]
+            }
+          | undefined
+      )?.blocks
+
+    // No toolbar while nothing is multi-selected
+    await flush()
+    expect(toolbar()).toBeNull()
+
+    // Shift+clicking two blocks pins the group toolbar to the topmost placed
+    // member, labelled for the group, with the arrange buttons reflecting
+    // the group's place in the stack (a back-of-stack group cannot be sent
+    // further back) — no editor opens and no data changes
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    await flush()
+    const baselineChangeCount = changes.length
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    const groupToolbar = toolbar()!
+    expect(groupToolbar.getAttribute("aria-label")).toBe("Group actions")
+    expect(
+      blockAt(1).querySelector("[data-canvas-selection-toolbar]"),
+    ).not.toBeNull()
+    expect(
+      Array.from(groupToolbar.querySelectorAll("button")).map((button) =>
+        button.getAttribute("aria-label"),
+      ),
+    ).toEqual([
+      "Duplicate blocks (⌘D)",
+      "Bring to front (⌘⇧])",
+      "Send to back (⌘⇧[)",
+      "Delete blocks (Delete)",
+    ])
+    expect(toolbarButton("Bring to front (⌘⇧])").disabled).toBe(false)
+    expect(toolbarButton("Send to back (⌘⇧[)").disabled).toBe(true)
+
+    // Bring to front moves both members to the end of the stack in one data
+    // change; the selection follows, the toolbar re-anchors to the moved
+    // topmost member, and the arrange buttons flip
+    clickToolbarButton("Bring to front (⌘⇧])")
+    await flush()
+    expect(changes).toHaveLength(baselineChangeCount + 1)
+    expect(latestBlocks()?.map((block) => block.quote)).toEqual([
+      "The third quote",
+      BLOCKQUOTE_BLOCK.quote,
+      "The second quote",
+    ])
+    expect(
+      blockAt(2).querySelector("[data-canvas-selection-toolbar]"),
+    ).not.toBeNull()
+    expect(toolbarButton("Bring to front (⌘⇧])").disabled).toBe(true)
+    expect(toolbarButton("Send to back (⌘⇧[)").disabled).toBe(false)
+
+    // Duplicate appends a copy of both members one row down in one data
+    // change and hands the selection (and the toolbar) to the copies
+    clickToolbarButton("Duplicate blocks (⌘D)")
+    await flush()
+    expect(changes).toHaveLength(baselineChangeCount + 2)
+    const afterDuplicate = latestBlocks()
+    expect(afterDuplicate).toHaveLength(5)
+    expect(afterDuplicate?.[3]?.quote).toBe(BLOCKQUOTE_BLOCK.quote)
+    expect(afterDuplicate?.[3]?.placement?.rowStart).toBe(4)
+    expect(afterDuplicate?.[4]?.quote).toBe("The second quote")
+    expect(afterDuplicate?.[4]?.placement?.rowStart).toBe(2)
+    expect(
+      blockAt(4).querySelector("[data-canvas-selection-toolbar]"),
+    ).not.toBeNull()
+
+    // Delete removes the copies in one data change; the emptied selection
+    // takes the toolbar with it
+    clickToolbarButton("Delete blocks (Delete)")
+    await flush()
+    expect(changes).toHaveLength(baselineChangeCount + 3)
+    expect(latestBlocks()).toHaveLength(3)
+    expect(toolbar()).toBeNull()
+
+    iframe.remove()
+  })
+
   it("opens a Wix-style right-click context menu on canvas blocks in the live preview", async () => {
     resetCanvasBlockClipboard()
     const iframe = document.createElement("iframe")

@@ -2406,6 +2406,96 @@ export const useCanvasPreviewClickToEdit = ({
     removeSelectedBlock,
   ])
 
+  // Wix-style group action toolbar pinned above the multi-selection: the
+  // same mouse-discoverable entry point the single selection's toolbar
+  // offers, driving the shared group callbacks behind the keyboard
+  // shortcuts. It anchors to the group's topmost placed member (the
+  // rightmost on a tie, since the toolbar hangs off the anchor's top-right
+  // corner; the first member when nothing is placed) and hides while a
+  // pointer group drag is moving the members. Group actions that retarget
+  // the selection re-run the effect, so the anchor and the arrange
+  // disabled-states follow the members.
+  useEffect(() => {
+    if (
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH ||
+      multiSelectedIndices.length === 0 ||
+      selectedIndex !== undefined ||
+      groupDragActive
+    ) {
+      return
+    }
+    const placedMembers = collectPlacedGroupMembers(
+      blocksRef.current,
+      multiSelectedIndices,
+    )
+    const anchor = placedMembers.reduce<PlacedGroupMember | null>(
+      (best, member) =>
+        best === null ||
+        member.rowStart < best.rowStart ||
+        (member.rowStart === best.rowStart &&
+          member.colStart + member.colSpan > best.colStart + best.colSpan)
+          ? member
+          : best,
+      null,
+    )
+    const anchorIndex = anchor?.index ?? Math.min(...multiSelectedIndices)
+    const block = findCanvasBlockPreviewElement(
+      document,
+      canvasOrdinal,
+      anchorIndex,
+    )
+    if (!block) {
+      return
+    }
+    const sorted = [...multiSelectedIndices].sort((a, b) => a - b)
+    const groupAtFront = sorted[0] === blocksRef.current.length - sorted.length
+    const groupAtBack = sorted[sorted.length - 1] === sorted.length - 1
+    return showCanvasSelectionToolbar(
+      block,
+      [
+        {
+          name: "duplicate-group",
+          label: "Duplicate blocks (⌘D)",
+          glyph: "⧉",
+          onClick: duplicateMultiSelectedBlocks,
+        },
+        {
+          name: "bring-group-to-front",
+          label: "Bring to front (⌘⇧])",
+          glyph: "⤒",
+          disabled: groupAtFront,
+          onClick: () => arrangeMultiSelectedBlocks("front"),
+        },
+        {
+          name: "send-group-to-back",
+          label: "Send to back (⌘⇧[)",
+          glyph: "⤓",
+          disabled: groupAtBack,
+          onClick: () => arrangeMultiSelectedBlocks("back"),
+        },
+        {
+          name: "delete-group",
+          label: "Delete blocks (Delete)",
+          glyph: "✕",
+          onClick: removeMultiSelectedBlocks,
+        },
+      ],
+      hoverColor,
+      "Group actions",
+    )
+  }, [
+    canvasOrdinal,
+    path,
+    multiSelectedIndices,
+    selectedIndex,
+    groupDragActive,
+    hoverColor,
+    duplicateMultiSelectedBlocks,
+    arrangeMultiSelectedBlocks,
+    removeMultiSelectedBlocks,
+  ])
+
   // Wix-style right-click context menu: on a block, the same selection
   // actions as the toolbar and the keyboard shortcuts; on a member of the
   // multi-selection, the group actions behind the group shortcuts; on the
