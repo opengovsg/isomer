@@ -5,6 +5,7 @@ import {
   AccordionSchema,
   AudioSchema,
   BlockquoteSchema,
+  ButtonSchema,
   CalloutSchema,
   ChildrenPagesSchema,
   CollectionBlockSchema,
@@ -40,6 +41,7 @@ import {
 export const IsomerComplexComponentsMap = {
   accordion: AccordionSchema,
   blockquote: BlockquoteSchema,
+  button: ButtonSchema,
   callout: CalloutSchema,
   formsg: FormSGSchema,
   hero: HeroSchema,

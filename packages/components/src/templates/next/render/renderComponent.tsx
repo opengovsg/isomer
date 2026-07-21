@@ -8,6 +8,7 @@ import { Accordion } from "../components/complex/Accordion"
 import { AntiScamDisclaimerBanner } from "../components/complex/AntiScamDisclaimerBanner"
 import { Audio } from "../components/complex/Audio"
 import { Blockquote } from "../components/complex/Blockquote"
+import { Button } from "../components/complex/Button"
 import { Callout } from "../components/complex/Callout"
 import { ChildrenPages } from "../components/complex/ChildrenPages"
 import { CollectionBlock } from "../components/complex/CollectionBlock"
@@ -56,6 +57,8 @@ export const renderComponent = ({
       )
     case "blockquote":
       return <Blockquote key={elementKey} {...component} {...rest} />
+    case "button":
+      return <Button key={elementKey} {...component} {...rest} />
     case "callout":
       return <Callout key={elementKey} {...component} {...rest} />
     case "contentpic":
