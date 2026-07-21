@@ -13,6 +13,8 @@ export const CalloutVariant = {
   note: "Did you know",
 } as const
 
+export const DEFAULT_CALLOUT_VARIANT = "information"
+
 export const CalloutSchema = Type.Object(
   {
     type: Type.Literal("callout", { default: "callout" }),
@@ -26,7 +28,7 @@ export const CalloutSchema = Type.Object(
         ),
         {
           title: "Message type",
-          default: "information",
+          default: DEFAULT_CALLOUT_VARIANT,
           format: CALLOUT_VARIANT_FORMAT,
         },
       ),

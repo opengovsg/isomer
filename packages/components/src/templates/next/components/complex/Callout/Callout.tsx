@@ -1,6 +1,7 @@
 import type { IconType } from "react-icons"
 import type { CalloutProps } from "~/interfaces"
 import { BiCheckCircle, BiError, BiErrorCircle } from "react-icons/bi"
+import { DEFAULT_CALLOUT_VARIANT } from "~/interfaces/complex/Callout"
 import { tv } from "~/lib/tv"
 
 import { Prose } from "../../native/Prose"
@@ -62,7 +63,7 @@ const calloutStyles = tv({
     },
   },
   defaultVariants: {
-    variant: "information",
+    variant: DEFAULT_CALLOUT_VARIANT,
     hasIcon: false,
   },
 })
@@ -70,7 +71,7 @@ const calloutStyles = tv({
 export const Callout = ({
   content,
   site,
-  variant = "information",
+  variant = DEFAULT_CALLOUT_VARIANT,
 }: CalloutProps) => {
   const { icon: Icon, label } = CALLOUT_CONFIG[variant]
   const styles = calloutStyles({ variant, hasIcon: !!Icon })
