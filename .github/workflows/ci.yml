@@ -344,10 +344,16 @@ jobs:
       # consuming job derives the PR number itself from the trusted
       # workflow_run event payload instead of trusting a number from this
       # artifact — see post-pr-comment.yml.
+      #
+      # base-ref.txt IS included, but only ever used downstream as a
+      # tie-breaker among candidates already independently constrained by
+      # trusted fields (fork+branch+exact head commit) — never as the
+      # source of truth for which PR to edit. See post-pr-comment.yml.
       - name: Save PR breakdown metadata
         run: |
           mkdir -p /tmp/pr-breakdown-metadata
           cp /tmp/pr-breakdown-body.md /tmp/pr-breakdown-metadata/body.md
+          echo "${{ github.event.pull_request.base.ref }}" > /tmp/pr-breakdown-metadata/base-ref.txt
 
       - name: Upload PR breakdown metadata
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
