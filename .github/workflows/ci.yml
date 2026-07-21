@@ -336,19 +336,20 @@ jobs:
 
       # Same fork-PR restriction as the e2e/bundle-size comments below: this
       # job can't post to the PR directly, so it hands the body off as an
-      # artifact for post-pr-comment.yml to pick up in the base-repo context.
+      # artifact for update-pr-description.yml to pick up in the base-repo
+      # context.
       #
       # Deliberately NOT including a pr-number.txt here: this step runs with
       # the PR's own (possibly forked, possibly modified) version of this
       # workflow file, so anything it writes is attacker-controlled. The
       # consuming job derives the PR number itself from the trusted
       # workflow_run event payload instead of trusting a number from this
-      # artifact — see post-pr-comment.yml.
+      # artifact — see update-pr-description.yml.
       #
       # base-ref.txt IS included, but only ever used downstream as a
       # tie-breaker among candidates already independently constrained by
       # trusted fields (fork+branch+exact head commit) — never as the
-      # source of truth for which PR to edit. See post-pr-comment.yml.
+      # source of truth for which PR to edit. See update-pr-description.yml.
       - name: Save PR breakdown metadata
         run: |
           mkdir -p /tmp/pr-breakdown-metadata
