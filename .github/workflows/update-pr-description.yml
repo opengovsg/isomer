@@ -20,7 +20,7 @@ on:
     types: [completed]
 
 jobs:
-  update-pr-description:
+  pr-diff-description:
     # Only run for PR triggers; push runs on main/staging/production don't have
     # a PR to edit.
     if: github.event.workflow_run.event == 'pull_request'
