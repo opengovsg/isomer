@@ -26,10 +26,10 @@ const CALLOUT_LABELS: Partial<
 
 const calloutStyles = tv({
   slots: {
-    container:
-      "flex items-start gap-3 rounded-lg border-[1.5px] px-5 py-4 [&:not(:first-child)]:mt-7",
-    content: "prose-headline-lg-regular",
+    container: "rounded-lg border-[1.5px] [&:not(:first-child)]:mt-7",
+    iconWrapper: "flex shrink-0 items-center justify-center px-3 py-4",
     icon: "h-6 w-6 flex-shrink-0",
+    content: "prose-headline-lg-regular min-w-0 flex-1 overflow-x-auto",
   },
   variants: {
     variant: {
@@ -38,24 +38,40 @@ const calloutStyles = tv({
           "border-utility-feedback-info bg-utility-feedback-info-subtle",
       },
       [CalloutVariant.GoodToKnow.value]: {
-        container: "border-[#009D47] bg-[#DCEAE2]",
-        icon: "text-[#009D47]",
+        container: "border-utility-feedback-success",
+        iconWrapper: "bg-utility-feedback-success",
+        icon: "text-white",
+        content: "bg-utility-feedback-success-subtle",
       },
       [CalloutVariant.Warning.value]: {
-        container: "border-[#FAC515] bg-[#FEF7C3]",
-        icon: "text-[#FAC515]",
+        container: "border-utility-feedback-warning",
+        iconWrapper: "bg-utility-feedback-warning",
+        icon: "text-white",
+        content: "bg-utility-feedback-warning-subtle",
       },
       [CalloutVariant.Urgent.value]: {
-        container: "border-[#D90000] bg-[#FCF1F1]",
-        icon: "text-[#D90000]",
+        container: "border-utility-feedback-alert",
+        iconWrapper: "bg-utility-feedback-alert",
+        icon: "text-white",
+        content: "bg-utility-feedback-alert-subtle",
       },
       [CalloutVariant.Note.value]: {
         container: "border-0 bg-[#EEF0F3]",
       },
     },
+    hasIcon: {
+      true: {
+        container: "flex items-stretch overflow-hidden",
+        content: "px-5 py-4",
+      },
+      false: {
+        container: "flex items-start gap-3 px-5 py-4",
+      },
+    },
   },
   defaultVariants: {
     variant: CalloutVariant.Information.value,
+    hasIcon: false,
   },
 })
 
