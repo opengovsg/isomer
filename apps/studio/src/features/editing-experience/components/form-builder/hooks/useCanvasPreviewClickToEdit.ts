@@ -929,6 +929,26 @@ export const useCanvasPreviewClickToEdit = ({
     setMultiSelectedIndices([])
   }, [])
 
+  // Wix's "select all": gathers every canvas block into the multi-selection,
+  // closing any open block editor so the edited block seeds the set — shared
+  // by the ⌘A shortcut and the background context menu's Select all command
+  // so the two entry points cannot drift. An empty canvas has nothing to
+  // select, so the call is a no-op there.
+  const selectAllBlocks = useCallback(() => {
+    const blockCount = blocksRef.current.length
+    if (blockCount === 0) {
+      return
+    }
+    if (selectedIndex !== undefined) {
+      setSelectedIndex(undefined)
+    }
+    setMultiSelectedIndices((previous) =>
+      previous.length === blockCount
+        ? previous
+        : Array.from({ length: blockCount }, (_, index) => index),
+    )
+  }, [selectedIndex, setSelectedIndex])
+
   const canvasOrdinal = useMemo(() => {
     if (
       content === undefined ||
@@ -1217,8 +1237,8 @@ export const useCanvasPreviewClickToEdit = ({
     // Right-clicking a block selects it and opens the context menu at the
     // pointer, Wix-style. Right-clicking the empty canvas background offers
     // "paste here" and "add here" commands targeting the right-clicked grid
-    // cell; the browser's native menu is kept only when the canvas cannot be
-    // measured (no cell to target).
+    // cell, plus "select all"; the browser's native menu is kept only when
+    // the canvas cannot be measured (no cell to target).
     const openContextMenu = (event: MouseEvent) => {
       const block = resolveBlock(event)
       if (!block) {
@@ -2020,19 +2040,11 @@ export const useCanvasPreviewClickToEdit = ({
       ) {
         return
       }
-      const blockCount = blocksRef.current.length
-      if (blockCount === 0) {
+      if (blocksRef.current.length === 0) {
         return
       }
       event.preventDefault()
-      if (selectedIndex !== undefined) {
-        setSelectedIndex(undefined)
-      }
-      setMultiSelectedIndices((previous) =>
-        previous.length === blockCount
-          ? previous
-          : Array.from({ length: blockCount }, (_, index) => index),
-      )
+      selectAllBlocks()
     }
     window.addEventListener("keydown", selectAllOnKey)
     const previewWindow =
@@ -2044,7 +2056,7 @@ export const useCanvasPreviewClickToEdit = ({
       window.removeEventListener("keydown", selectAllOnKey)
       foreignPreviewWindow?.removeEventListener("keydown", selectAllOnKey)
     }
-  }, [canvasOrdinal, groupDrag, marquee, path, selectedIndex, setSelectedIndex])
+  }, [canvasOrdinal, groupDrag, marquee, path, selectAllBlocks])
 
   // Wix-style keyboard shortcuts while a block's nested editor is open:
   // Delete or Backspace removes the block from the canvas and returns to the
@@ -2311,7 +2323,8 @@ export const useCanvasPreviewClickToEdit = ({
   // actions as the toolbar and the keyboard shortcuts; on a member of the
   // multi-selection, the group actions behind the group shortcuts; on the
   // empty canvas background, "paste here" and one "add here" command per
-  // canvas child block type, both targeting the right-clicked grid cell. Opened
+  // canvas child block type — both targeting the right-clicked grid cell —
+  // plus "select all", mirroring the ⌘A shortcut. Opened
   // at the pointer by the contextmenu handler above, dismissed by pressing
   // anywhere outside the menu or by Escape — which closes only the menu,
   // keeping any selection — and invoking an action closes it before acting.
@@ -2343,6 +2356,13 @@ export const useCanvasPreviewClickToEdit = ({
           glyph: "⇲",
           disabled: !clipboardHasBlocks(),
           onClick: withClose(() => pasteBlockHereFromClipboard(cell)),
+        },
+        {
+          name: "select-all",
+          label: "Select all blocks (⌘A)",
+          glyph: "⛶",
+          disabled: blocksRef.current.length === 0,
+          onClick: withClose(selectAllBlocks),
         },
         ...CANVAS_ADDABLE_BLOCK_TYPES.map(
           (type): CanvasSelectionToolbarAction => ({
@@ -2665,6 +2685,7 @@ export const useCanvasPreviewClickToEdit = ({
     cutSelectedBlock,
     pasteBlockFromClipboard,
     pasteBlockHereFromClipboard,
+    selectAllBlocks,
     addBlockHere,
     bringSelectedForward,
     sendSelectedBackward,

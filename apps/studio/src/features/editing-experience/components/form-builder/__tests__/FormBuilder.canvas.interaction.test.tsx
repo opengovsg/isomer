@@ -5330,9 +5330,10 @@ describe("FormBuilder canvas editing interactions", () => {
       const label = BLOCK_TO_META[type as keyof typeof BLOCK_TO_META].label
       expect(menuItem(`Add ${label.toLowerCase()} here`).disabled).toBe(false)
     }
-    // Paste plus one add command per union member, nothing else
+    // Paste and select-all plus one add command per union member, nothing
+    // else
     expect(menu()!.querySelectorAll("button")).toHaveLength(
-      1 + unionTypes.length,
+      2 + unionTypes.length,
     )
 
     // Adding an image lands the default image block with its top-left corner
@@ -7824,6 +7825,143 @@ describe("FormBuilder canvas editing interactions", () => {
 
     // With no blocks on the canvas, ⌘A keeps its native meaning
     expect(pressSelectAll(document.body).defaultPrevented).toBe(false)
+
+    iframe.remove()
+  })
+
+  it("selects every canvas block via the background context menu's Select all command", async () => {
+    resetCanvasBlockClipboard()
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // The background menu only opens when a grid cell can be resolved, so
+    // the canvas needs measurable geometry (480px content box over 12
+    // columns puts a column every 40px and a base row every 32px)
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          BLOCKQUOTE_BLOCK,
+          { type: "blockquote", quote: "The second quote", source: "s2" },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const menu = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (
+      element: Element,
+      coords: Pick<MouseEventInit, "clientX" | "clientY">,
+    ) => {
+      const event = new iframeRealm.MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        ...coords,
+      })
+      act(() => {
+        element.dispatchEvent(event)
+      })
+      return event
+    }
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    await flush()
+    const baselineChangeCount = changes.length
+
+    // The background menu offers Select all blocks; invoking it from list
+    // view gathers every block into the multi-selection, closing the menu
+    // with no editor opened and no data change
+    rightClick(previewCanvas, { clientX: 90, clientY: 70 })
+    await flush()
+    expect(menuItem("Select all blocks (⌘A)").disabled).toBe(false)
+    act(() => {
+      menuItem("Select all blocks (⌘A)").click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // From an open block editor, the command closes the editor and selects
+    // every block, the edited block seeding the set like the ⌘A shortcut
+    pressKey(document.body, "Escape")
+    expect(blockAt(0).style.outline).toBe("")
+    click(findButtonByText("Item 1")!)
+    await flush()
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    rightClick(previewCanvas, { clientX: 90, clientY: 70 })
+    await flush()
+    act(() => {
+      menuItem("Select all blocks (⌘A)").click()
+    })
+    await flush()
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Add item")
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+
+    // The menu-driven selection composes with the group actions: Delete
+    // removes every block in one data change
+    pressKey(document.body, "Delete")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    const afterDelete = changes.at(-1) as { blocks?: unknown[] } | undefined
+    expect(afterDelete?.blocks).toHaveLength(0)
+
+    // With no blocks left on the canvas, the command is disabled
+    rightClick(previewCanvas, { clientX: 90, clientY: 70 })
+    await flush()
+    expect(menuItem("Select all blocks (⌘A)").disabled).toBe(true)
 
     iframe.remove()
   })
