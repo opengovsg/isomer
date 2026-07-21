@@ -18,23 +18,12 @@ export const CalloutSchema = Type.Object(
     type: Type.Literal("callout", { default: "callout" }),
     variant: Type.Optional(
       Type.Union(
-        [
-          Type.Literal("information", {
-            title: CalloutVariant.information,
-          }),
-          Type.Literal("goodToKnow", {
-            title: CalloutVariant.goodToKnow,
-          }),
-          Type.Literal("warning", {
-            title: CalloutVariant.warning,
-          }),
-          Type.Literal("urgent", {
-            title: CalloutVariant.urgent,
-          }),
-          Type.Literal("note", {
-            title: CalloutVariant.note,
-          }),
-        ],
+        (Object.keys(CalloutVariant) as (keyof typeof CalloutVariant)[]).map(
+          (value) =>
+            Type.Literal(value, {
+              title: CalloutVariant[value],
+            }),
+        ),
         {
           title: "Message type",
           default: "information",
