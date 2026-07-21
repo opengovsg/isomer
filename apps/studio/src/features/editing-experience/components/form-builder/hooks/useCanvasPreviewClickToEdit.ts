@@ -1919,36 +1919,38 @@ export const useCanvasPreviewClickToEdit = ({
     )
   }, [groupDrag, canvasOrdinal, path, hoverColor])
 
-  // Wix-style alignment guides during the group drag: any edge of the group's
-  // shifted bounding box that lands on the same grid line as a non-member
-  // placed block's edge is drawn as a solid line through the preview canvas,
-  // plus the canvas's own centre line when the box's column margins match —
-  // the same affordance the single-block placement drag shows
+  // Wix-style alignment guides during the group drag and group resize: any
+  // edge of the group's live bounding box (shifted by the drag delta, or
+  // resized between the pointer and the anchor corner) that lands on the same
+  // grid line as a non-member placed block's edge is drawn as a solid line
+  // through the preview canvas, plus the canvas's own centre line when the
+  // box's column margins match — the same affordance the single-block
+  // placement drag shows
   const groupAlignedCols = new Set<number>()
   const groupAlignedRows = new Set<number>()
+  let activeGroupBox: GroupBoundingBox | null = null
+  let activeGroupMembers: PlacedGroupMember[] = []
   if (groupDrag !== null && groupDrag.moved && groupDrag.members.length > 0) {
     const { dCol, dRow } = clampGroupDragDelta(groupDrag)
-    const boxColStart =
-      Math.min(...groupDrag.members.map((member) => member.colStart)) + dCol
-    const boxColEnd =
-      Math.max(
-        ...groupDrag.members.map(
-          (member) => member.colStart + member.colSpan - 1,
-        ),
-      ) + dCol
-    const boxRowStart =
-      Math.min(...groupDrag.members.map((member) => member.rowStart)) + dRow
-    const boxRowEnd =
-      Math.max(
-        ...groupDrag.members.map(
-          (member) => member.rowStart + member.rowSpan - 1,
-        ),
-      ) + dRow
+    const box = groupBoundingBoxOf(groupDrag.members)
+    activeGroupBox = {
+      colStart: box.colStart + dCol,
+      colEnd: box.colEnd + dCol,
+      rowStart: box.rowStart + dRow,
+      rowEnd: box.rowEnd + dRow,
+    }
+    activeGroupMembers = groupDrag.members
+  } else if (groupResize !== null && groupResize.moved) {
+    activeGroupBox = resolveGroupResizeBox(groupResize)
+    activeGroupMembers = groupResize.members
+  }
+  if (activeGroupBox !== null && activeGroupMembers.length > 0) {
+    const { colStart, colEnd, rowStart, rowEnd } = activeGroupBox
     // An area's edges sit on grid lines colStart/colEnd+1 (rowStart/rowEnd+1)
-    const boxCols = [boxColStart, boxColEnd + 1]
-    const boxRows = [boxRowStart, boxRowEnd + 1]
+    const boxCols = [colStart, colEnd + 1]
+    const boxRows = [rowStart, rowEnd + 1]
     const memberIndices = new Set(
-      groupDrag.members.map((member) => member.index),
+      activeGroupMembers.map((member) => member.index),
     )
     collectPlacedGroupMembers(
       blocksRef.current,
@@ -1966,10 +1968,7 @@ export const useCanvasPreviewClickToEdit = ({
     // Equal column margins put the box's centre on the canvas's centre line
     // (the middle column line, mid-gap by symmetry); full-width boxes are
     // trivially centred and stay guide-free
-    if (
-      boxColStart > 1 &&
-      boxColStart - 1 === CANVAS_GRID_COLUMNS - boxColEnd
-    ) {
+    if (colStart > 1 && colStart - 1 === CANVAS_GRID_COLUMNS - colEnd) {
       groupAlignedCols.add(CANVAS_GRID_COLUMNS / 2 + 1)
     }
   }
@@ -2125,7 +2124,8 @@ export const useCanvasPreviewClickToEdit = ({
   // Live feedback while the group resize is in progress: every placed member
   // is repositioned to its proportionally scaled placement via the Canvas
   // renderer's CSS custom properties (originals captured once per gesture for
-  // restore-on-cancel), matching the group drag's affordance
+  // restore-on-cancel), and a badge above the box's topmost member names the
+  // grid area the release will commit, matching the group drag's affordance
   useEffect(() => {
     if (
       groupResize === null ||
@@ -2137,14 +2137,14 @@ export const useCanvasPreviewClickToEdit = ({
     }
     const resizedBox = resolveGroupResizeBox(groupResize)
     const captures = (groupDragCapturesRef.current ??= new Map())
-    groupResize.members.forEach((member) => {
+    const scaledMembers = groupResize.members.flatMap((member) => {
       const element = findCanvasBlockPreviewElement(
         document,
         canvasOrdinal,
         member.index,
       )
       if (!element) {
-        return
+        return []
       }
       const placement = scaleMemberPlacementIntoBox(
         member,
@@ -2166,8 +2166,29 @@ export const useCanvasPreviewClickToEdit = ({
         "--canvas-grid-row",
         `${placement.rowStart} / span ${placement.rowSpan}`,
       )
+      return [{ element, placement }]
     })
-  }, [groupResize, canvasOrdinal, path])
+    // The badge hangs above the box's topmost (then leftmost) member, so it
+    // sits at the top of the resized group like the toolbar does at rest
+    const badgeAnchor = scaledMembers.reduce(
+      (topmost: (typeof scaledMembers)[number] | null, candidate) =>
+        topmost === null ||
+        candidate.placement.rowStart < topmost.placement.rowStart ||
+        (candidate.placement.rowStart === topmost.placement.rowStart &&
+          candidate.placement.colStart < topmost.placement.colStart)
+          ? candidate
+          : topmost,
+      null,
+    )
+    if (badgeAnchor === null) {
+      return
+    }
+    return showCanvasDragBadge(
+      badgeAnchor.element,
+      `Columns ${resizedBox.colStart}–${resizedBox.colEnd}, rows ${resizedBox.rowStart}–${resizedBox.rowEnd}`,
+      hoverColor,
+    )
+  }, [groupResize, canvasOrdinal, path, hoverColor])
 
   // The rubber-band marquee's tracking and commit: the pointer is tracked on
   // the preview window in viewport coordinates, releasing turns every block

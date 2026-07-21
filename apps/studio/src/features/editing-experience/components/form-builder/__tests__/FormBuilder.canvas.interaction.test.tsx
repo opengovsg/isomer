@@ -8264,6 +8264,209 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("shows a drag badge and alignment guides while the group resize is in progress", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    blockAt(0).style.setProperty("--canvas-grid-column", "2 / span 3")
+    blockAt(0).style.setProperty("--canvas-grid-row", "2 / span 1")
+    blockAt(0).getBoundingClientRect = () => ({
+      left: 40,
+      top: 32,
+      width: 120,
+      height: 32,
+      right: 160,
+      bottom: 64,
+      x: 40,
+      y: 32,
+      toJSON: () => ({}),
+    })
+    blockAt(1).style.setProperty("--canvas-grid-column", "1 / span 4")
+    blockAt(1).style.setProperty("--canvas-grid-row", "1 / span 2")
+    blockAt(1).getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 160,
+      height: 64,
+      right: 160,
+      bottom: 64,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    // The non-member sibling occupies columns 9–10 and rows 5–6, so its
+    // edges sit on column lines 9/11 and row lines 5/7
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          {
+            type: "blockquote",
+            quote: "The third quote",
+            source: "s3",
+            placement: { colStart: 9, colSpan: 2, rowStart: 5, rowSpan: 2 },
+          },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const pressHandle = (corner: string) => {
+      const handle = previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-group-resize-handle="${corner}"]`,
+      )
+      expect(handle).not.toBeNull()
+      act(() => {
+        handle!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
+      })
+    }
+    const movePointer = (clientX: number, clientY: number) =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousemove", { clientX, clientY }),
+        )
+      })
+    const releasePointer = () =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mouseup"),
+        )
+      })
+    const badge = () =>
+      previewDocument.querySelector("[data-canvas-drag-badge]")
+    const guides = () =>
+      previewDocument.querySelector("[data-canvas-alignment-guides]")
+    const guideLines = () => {
+      const lines = Array.from(guides()?.children ?? []) as HTMLElement[]
+      return {
+        vertical: lines.filter((line) => line.style.height === "100%"),
+        horizontal: lines.filter((line) => line.style.height !== "100%"),
+      }
+    }
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    const baselineChangeCount = changes.length
+
+    // Grabbing a corner shows nothing until the pointer crosses cells
+    pressHandle("bottom-right")
+    expect(badge()).toBeNull()
+    expect(guides()).toBeNull()
+
+    // Growing the box to cols 1–8, rows 1–4 puts its right edge on the
+    // sibling's left column line (9) and its bottom edge on the sibling's
+    // top row line (5); the badge names the box the release will commit
+    movePointer(300, 110) // cell (row 4, col 8)
+    expect(badge()).not.toBeNull()
+    expect(badge()!.textContent).toBe("Columns 1–8, rows 1–4")
+    expect(guides()).not.toBeNull()
+    expect(guideLines().vertical.map((line) => line.style.left)).toEqual([
+      "319px",
+    ])
+    expect(guideLines().horizontal.map((line) => line.style.top)).toEqual([
+      "127px",
+    ])
+
+    // A box sharing no grid line with the sibling keeps the badge but
+    // drops the guides
+    movePointer(260, 80) // cell (row 3, col 7) → box cols 1–7, rows 1–3
+    expect(badge()!.textContent).toBe("Columns 1–7, rows 1–3")
+    expect(guides()).toBeNull()
+
+    // Cancelling the resize removes the badge
+    pressKey(document.body, "Escape")
+    expect(badge()).toBeNull()
+    expect(guides()).toBeNull()
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // Releasing an aligned resize commits and removes both affordances
+    pressHandle("bottom-right")
+    movePointer(300, 110)
+    expect(badge()).not.toBeNull()
+    expect(guides()).not.toBeNull()
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(badge()).toBeNull()
+    expect(guides()).toBeNull()
+
+    iframe.remove()
+  })
+
   it("multi-selects blocks by sweeping a rubber-band marquee on the canvas background", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
