@@ -6084,4 +6084,240 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("moves the whole multi-selection by dragging one member in the live preview", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    // The placed members carry the custom properties the Canvas renderer
+    // would emit, so restore-on-cancel has real values to put back
+    blockAt(0).style.setProperty("--canvas-grid-column", "2 / span 3")
+    blockAt(0).style.setProperty("--canvas-grid-row", "2 / span 1")
+    blockAt(1).style.setProperty("--canvas-grid-column", "1 / span 4")
+    blockAt(1).style.setProperty("--canvas-grid-row", "1 / span 2")
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const pressBlock = (block: HTMLElement, clientX: number, clientY: number) =>
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            clientX,
+            clientY,
+          }),
+        )
+      })
+    const movePointer = (clientX: number, clientY: number) =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousemove", { clientX, clientY }),
+        )
+      })
+    const releasePointer = () =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mouseup"),
+        )
+      })
+    const clickBlock = (block: HTMLElement, clientX: number, clientY: number) =>
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            clientX,
+            clientY,
+          }),
+        )
+      })
+    const gridColumnOf = (index: number) =>
+      blockAt(index).style.getPropertyValue("--canvas-grid-column")
+    const gridRowOf = (index: number) =>
+      blockAt(index).style.getPropertyValue("--canvas-grid-row")
+    const placementAt = (index: number) => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks?.[index]?.placement
+    }
+    const overlay = () =>
+      previewDocument.querySelector("[data-canvas-grid-overlay]")
+    const badge = () =>
+      previewDocument.querySelector("[data-canvas-drag-badge]")
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    shiftClick(blockAt(2))
+    const baselineChangeCount = changes.length
+
+    // A plain press on a member grabs the whole group instead of dropping
+    // the set: no editor opens, nothing commits, and no feedback shows until
+    // the pointer actually crosses into another grid cell
+    pressBlock(blockAt(0), 85, 40) // cell (row 2, col 3), inside the block
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(overlay()).toBeNull()
+
+    // Crossing cells moves every placed member live by the same delta, with
+    // the grid overlay up and a badge naming the grabbed member's live area;
+    // the unplaced member stays in the stacked flow
+    movePointer(165, 72) // cell (row 3, col 5): delta +2 columns, +1 row
+    expect(overlay()).not.toBeNull()
+    expect(gridColumnOf(0)).toBe("4 / span 3")
+    expect(gridRowOf(0)).toBe("3 / span 1")
+    expect(gridColumnOf(1)).toBe("3 / span 4")
+    expect(gridRowOf(1)).toBe("2 / span 2")
+    expect(gridColumnOf(2)).toBe("")
+    expect(badge()?.textContent).toBe("Columns 4–6, rows 3–3")
+
+    // The group clamps as a unit: one member already sits on column 1 and
+    // row 1, so dragging up-left past the grid edge moves nothing
+    movePointer(5, 8) // cell (row 1, col 1): raw delta -2 columns, -1 row
+    expect(gridColumnOf(0)).toBe("2 / span 3")
+    expect(gridRowOf(0)).toBe("2 / span 1")
+    expect(gridColumnOf(1)).toBe("1 / span 4")
+    expect(gridRowOf(1)).toBe("1 / span 2")
+
+    // Releasing commits every placed member's shifted placement in ONE data
+    // change, keeping the multi-selection (and its highlight) intact
+    movePointer(165, 72)
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(placementAt(0)).toEqual({
+      colStart: 4,
+      colSpan: 3,
+      rowStart: 3,
+      rowSpan: 1,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 3,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    expect(placementAt(2)).toBeUndefined()
+    expect(overlay()).toBeNull()
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+
+    // The click that ends the drag must not open the dragged block's editor
+    clickBlock(blockAt(0), 165, 72)
+    await flush()
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+
+    // Escape cancels an in-progress group drag: the members return to their
+    // pre-drag positions, nothing commits, and the selection survives the
+    // release and its trailing click
+    pressBlock(blockAt(0), 165, 72) // cell (row 3, col 5), inside the block
+    movePointer(205, 104) // cell (row 4, col 6): delta +1 column, +1 row
+    expect(gridColumnOf(0)).toBe("5 / span 3")
+    expect(gridRowOf(1)).toBe("3 / span 2")
+    pressKey(document.body, "Escape")
+    expect(gridColumnOf(0)).toBe("4 / span 3")
+    expect(gridRowOf(0)).toBe("3 / span 1")
+    expect(gridColumnOf(1)).toBe("3 / span 4")
+    expect(gridRowOf(1)).toBe("2 / span 2")
+    expect(blockAt(0).style.outline).toContain("solid")
+    releasePointer()
+    clickBlock(blockAt(0), 205, 104)
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+
+    // A press released without crossing cells is a plain click: it commits
+    // nothing and opens that block's editor, dropping the multi-selection
+    pressBlock(blockAt(0), 165, 72)
+    releasePointer()
+    clickBlock(blockAt(0), 165, 72)
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("A quote inside the canvas")
+    expect(blockAt(1).style.outline).toBe("")
+    expect(blockAt(2).style.outline).toBe("")
+
+    iframe.remove()
+  })
 })

@@ -25,6 +25,8 @@ import {
   isEditableTarget,
   resolveCanvasGridCellFromPoint,
   showCanvasContextMenu,
+  showCanvasDragBadge,
+  showCanvasGridOverlay,
   showCanvasHoverLabel,
   showCanvasSelectionToolbar,
 } from "../../../utils/canvasPreviewBlock"
@@ -84,6 +86,114 @@ const shiftPlacementOneRowDown = (block: {
   }
 }
 
+// A multi-selection member with a full grid placement, captured when the
+// group is grabbed in the live preview: the drag moves every placed member by
+// the same grid-cell delta
+interface PlacedGroupMember {
+  index: number
+  colStart: number
+  colSpan: number
+  rowStart: number
+  rowSpan: number
+}
+
+const collectPlacedGroupMembers = (
+  blocks: unknown[],
+  indices: number[],
+): PlacedGroupMember[] =>
+  indices.flatMap((index) => {
+    const block = blocks[index] as
+      | { placement?: CanvasBlockPlacement }
+      | undefined
+    const placement = block?.placement
+    return placement?.colStart !== undefined &&
+      placement.colSpan !== undefined &&
+      placement.rowStart !== undefined
+      ? [
+          {
+            index,
+            colStart: placement.colStart,
+            colSpan: placement.colSpan,
+            rowStart: placement.rowStart,
+            rowSpan: placement.rowSpan ?? 1,
+          },
+        ]
+      : []
+  })
+
+const shiftBlockPlacements = (
+  blocks: unknown[],
+  moved: Set<number>,
+  dCol: number,
+  dRow: number,
+): unknown[] =>
+  blocks.map((block, index) => {
+    if (!moved.has(index)) {
+      return block
+    }
+    const { placement, ...rest } = block as {
+      placement?: CanvasBlockPlacement
+    }
+    return {
+      ...rest,
+      placement: {
+        ...placement,
+        colStart: (placement?.colStart ?? 1) + dCol,
+        rowStart: (placement?.rowStart ?? 1) + dRow,
+      },
+    }
+  })
+
+// Wix-style pointer group drag: pressing a member of the multi-selection
+// grabs the whole group, and the drag moves every placed member by the grid
+// cells the pointer has crossed since the grab. `moved` flips once the
+// pointer leaves the grab cell — a press that never moves is a plain click.
+interface GroupDragState {
+  members: PlacedGroupMember[]
+  grabbedIndex: number
+  grab: CanvasGridCell
+  current: CanvasGridCell
+  moved: boolean
+}
+
+// The group moves as a unit: the pointer's raw delta is clamped so no member
+// leaves the grid, so members' relative positions never distort — the group
+// slides along an edge it has hit instead of crushing against it
+const clampGroupDragDelta = (
+  drag: GroupDragState,
+): { dCol: number; dRow: number } => {
+  const rawDCol = drag.current.col - drag.grab.col
+  const rawDRow = drag.current.row - drag.grab.row
+  const minDCol = Math.max(...drag.members.map((member) => 1 - member.colStart))
+  const maxDCol = Math.min(
+    ...drag.members.map(
+      (member) => CANVAS_GRID_COLUMNS - (member.colStart + member.colSpan - 1),
+    ),
+  )
+  const minDRow = Math.max(...drag.members.map((member) => 1 - member.rowStart))
+  const maxDRow = Math.min(
+    ...drag.members.map(
+      (member) => CANVAS_MAX_ROW - (member.rowStart + member.rowSpan - 1),
+    ),
+  )
+  return {
+    dCol: Math.min(Math.max(rawDCol, minDCol), maxDCol),
+    dRow: Math.min(Math.max(rawDRow, minDRow), maxDRow),
+  }
+}
+
+const restoreCustomProperty = (
+  element: HTMLElement,
+  name: string,
+  value: string,
+): void => {
+  if (value) {
+    element.style.setProperty(name, value)
+  } else {
+    element.style.removeProperty(name)
+  }
+}
+
 // The canvas child-block union in schema order: a background right-click
 // offers one "Add <block> here" command per entry, inserting that type's
 // standard default block at the right-clicked grid cell. Kept in sync with
@@ -139,8 +249,11 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // into a multi-selection for group actions: Delete removes them all at once,
 // ⌘D duplicates them all at once (the selection moving to the copies), the
 // arrow keys move the group one grid cell (clamped as a unit at the grid
-// edges), Escape or a plain background click clears the set, and
-// right-clicking a member opens a group context menu with the same actions.
+// edges), dragging any member moves the whole group by the grid cells the
+// pointer crosses (committed on release in one data change, Escape
+// cancelling the drag), Escape or a plain background click clears the set,
+// and right-clicking a member opens a group context menu with the same
+// actions.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -180,6 +293,38 @@ export const useCanvasPreviewClickToEdit = ({
   // single selection — opening a block's editor drops the multi-selection,
   // and seeding the set closes the editor.
   const [multiSelectedIndices, setMultiSelectedIndices] = useState<number[]>([])
+  // Wix-style pointer group drag: a plain press on a member of the
+  // multi-selection grabs the whole group, and releasing commits every
+  // placed member's shifted placement in one data change
+  const [groupDrag, setGroupDrag] = useState<GroupDragState | null>(null)
+  // The click that ends a group drag lands on the dragged block and must not
+  // open its editor — that would drop the multi-selection the drag just moved
+  const suppressGroupDragClickRef = useRef(false)
+  // The preview only re-renders when data commits, so during a group drag the
+  // members are repositioned live via the same CSS custom properties the
+  // Canvas renderer emits; the originals are captured here so a cancelled
+  // drag can restore them (a committed drag keeps the final values — the
+  // committed data re-renders the preview and owns them from then on)
+  const groupDragCapturesRef = useRef<Map<
+    number,
+    { element: HTMLElement; column: string; row: string }
+  > | null>(null)
+  const releaseGroupDragFeedback = useCallback((restore: boolean) => {
+    const captures = groupDragCapturesRef.current
+    groupDragCapturesRef.current = null
+    if (!captures || !restore) {
+      return
+    }
+    captures.forEach(({ element, column, row }) => {
+      restoreCustomProperty(element, "--canvas-grid-column", column)
+      restoreCustomProperty(element, "--canvas-grid-row", row)
+    })
+  }, [])
+  // Closing the editor (or unmounting) mid-drag restores the members
+  useEffect(
+    () => () => releaseGroupDragFeedback(true),
+    [releaseGroupDragFeedback],
+  )
   const editorContext = useOptionalEditorDrawerContext()
   const content = editorContext?.previewPageState.content
   const currActiveIdx = editorContext?.currActiveIdx
@@ -645,6 +790,31 @@ export const useCanvasPreviewClickToEdit = ({
         }
         return
       }
+      // A plain press on a member of the multi-selection grabs the whole
+      // group, Wix-style: the drag moves every placed member by the same
+      // grid-cell delta, committed on release, and the set survives the drag
+      if (multiSelectedIndices.includes(index)) {
+        const cell = resolveCanvasGridCellFromPoint(
+          canvas,
+          event.clientX,
+          event.clientY,
+        )
+        const members = collectPlacedGroupMembers(
+          blocksRef.current,
+          multiSelectedIndices,
+        )
+        if (!cell || members.length === 0) {
+          return
+        }
+        setGroupDrag({
+          members,
+          grabbedIndex: index,
+          grab: cell,
+          current: cell,
+          moved: false,
+        })
+        return
+      }
       setMultiSelectedIndices((previous) =>
         previous.length === 0 ? previous : [],
       )
@@ -656,6 +826,11 @@ export const useCanvasPreviewClickToEdit = ({
     }
 
     const openBlockEditor = (event: MouseEvent) => {
+      // The click that ends (or follows a cancelled) group drag must not
+      // open the dragged block's editor — that would drop the set the drag
+      // just acted on; a press-and-release that never moved is a plain click
+      const suppressClick = suppressGroupDragClickRef.current
+      suppressGroupDragClickRef.current = false
       const block = resolveBlock(event)
       if (!block) {
         if (deselectArmed && !event.shiftKey) {
@@ -678,7 +853,7 @@ export const useCanvasPreviewClickToEdit = ({
       // Links inside the block should open its editor, not navigate the preview
       event.preventDefault()
       // A Shift+click's mousedown already toggled the multi-selection
-      if (event.shiftKey) {
+      if (event.shiftKey || suppressClick) {
         return
       }
       if (index !== selectedIndex) {
@@ -869,6 +1044,169 @@ export const useCanvasPreviewClickToEdit = ({
     return () => restores.forEach((restore) => restore())
   }, [canvasOrdinal, hoverColor, multiSelectedIndices, path, selectedIndex])
 
+  // The pointer group drag's tracking and commit: the pointer is tracked on
+  // the preview window (mapped to grid cells through the rendered canvas's
+  // geometry), releasing anywhere commits the clamped delta in ONE data
+  // change (a release on the grab cell commits nothing), and Escape cancels
+  // the drag — capture phase so the group-shortcut Escape (clear selection)
+  // and the drawer's own close handlers never see it.
+  useEffect(() => {
+    if (groupDrag === null) {
+      return
+    }
+    const canvas =
+      canvasOrdinal !== null && path === CANVAS_BLOCKS_PATH
+        ? findCanvasPreviewContainer(document, canvasOrdinal)
+        : null
+    if (!canvas) {
+      setGroupDrag(null)
+      return
+    }
+    const endDrag = (commit: boolean) => {
+      if (groupDrag.moved) {
+        suppressGroupDragClickRef.current = true
+      }
+      const { dCol, dRow } = clampGroupDragDelta(groupDrag)
+      if (commit && (dCol !== 0 || dRow !== 0) && dispatch) {
+        // The committed data re-renders the preview and owns the members'
+        // positions from then on
+        releaseGroupDragFeedback(false)
+        const moved = new Set(groupDrag.members.map((member) => member.index))
+        dispatch(
+          update(path, (blocks: unknown[]) =>
+            shiftBlockPlacements(blocks, moved, dCol, dRow),
+          ),
+        )
+      } else {
+        releaseGroupDragFeedback(true)
+      }
+      setGroupDrag(null)
+    }
+    const commitGroupDrag = () => endDrag(true)
+    const cancelOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return
+      }
+      event.preventDefault()
+      event.stopPropagation()
+      endDrag(false)
+    }
+    const trackPointer = (event: MouseEvent) => {
+      const cell = resolveCanvasGridCellFromPoint(
+        canvas,
+        event.clientX,
+        event.clientY,
+      )
+      if (!cell) {
+        return
+      }
+      setGroupDrag((current) =>
+        current &&
+        (current.current.row !== cell.row || current.current.col !== cell.col)
+          ? {
+              ...current,
+              current: cell,
+              moved:
+                current.moved ||
+                cell.row !== current.grab.row ||
+                cell.col !== current.grab.col,
+            }
+          : current,
+      )
+    }
+    // addEventListener dedupes, so double registration is safe when the
+    // preview shares the editor window
+    const previewWindow = canvas.ownerDocument.defaultView
+    window.addEventListener("mouseup", commitGroupDrag)
+    window.addEventListener("keydown", cancelOnEscape, true)
+    previewWindow?.addEventListener("mousemove", trackPointer)
+    previewWindow?.addEventListener("mouseup", commitGroupDrag)
+    previewWindow?.addEventListener("keydown", cancelOnEscape, true)
+    return () => {
+      window.removeEventListener("mouseup", commitGroupDrag)
+      window.removeEventListener("keydown", cancelOnEscape, true)
+      previewWindow?.removeEventListener("mousemove", trackPointer)
+      previewWindow?.removeEventListener("mouseup", commitGroupDrag)
+      previewWindow?.removeEventListener("keydown", cancelOnEscape, true)
+    }
+  }, [groupDrag, canvasOrdinal, path, dispatch, releaseGroupDragFeedback])
+
+  // The grid overlay while a group drag is in progress — keyed on the moved
+  // flag (not the pointer cell) so it draws once per drag, and only once the
+  // pointer has actually crossed cells: a plain click never flashes the grid
+  const groupDragActive = groupDrag !== null && groupDrag.moved
+  useEffect(() => {
+    if (
+      !groupDragActive ||
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH
+    ) {
+      return
+    }
+    const canvas = findCanvasPreviewContainer(document, canvasOrdinal)
+    if (!canvas) {
+      return
+    }
+    return showCanvasGridOverlay(canvas, hoverColor)
+  }, [groupDragActive, canvasOrdinal, path, hoverColor])
+
+  // Live feedback while the group drag is in progress: every placed member is
+  // repositioned by the clamped delta via the Canvas renderer's CSS custom
+  // properties (originals captured once per drag for restore-on-cancel), and
+  // a badge above the grabbed member names the grid area it will occupy on
+  // release, matching the single-block drag's affordance
+  useEffect(() => {
+    if (
+      groupDrag === null ||
+      !groupDrag.moved ||
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH
+    ) {
+      return
+    }
+    const { dCol, dRow } = clampGroupDragDelta(groupDrag)
+    const captures = (groupDragCapturesRef.current ??= new Map())
+    groupDrag.members.forEach((member) => {
+      const element = findCanvasBlockPreviewElement(
+        document,
+        canvasOrdinal,
+        member.index,
+      )
+      if (!element) {
+        return
+      }
+      if (!captures.has(member.index)) {
+        captures.set(member.index, {
+          element,
+          column: element.style.getPropertyValue("--canvas-grid-column"),
+          row: element.style.getPropertyValue("--canvas-grid-row"),
+        })
+      }
+      element.style.setProperty(
+        "--canvas-grid-column",
+        `${member.colStart + dCol} / span ${member.colSpan}`,
+      )
+      element.style.setProperty(
+        "--canvas-grid-row",
+        `${member.rowStart + dRow} / span ${member.rowSpan}`,
+      )
+    })
+    const grabbed = groupDrag.members.find(
+      (member) => member.index === groupDrag.grabbedIndex,
+    )
+    const grabbedElement = grabbed
+      ? findCanvasBlockPreviewElement(document, canvasOrdinal, grabbed.index)
+      : null
+    if (!grabbed || !grabbedElement) {
+      return
+    }
+    return showCanvasDragBadge(
+      grabbedElement,
+      `Columns ${grabbed.colStart + dCol}–${grabbed.colStart + grabbed.colSpan - 1 + dCol}, rows ${grabbed.rowStart + dRow}–${grabbed.rowStart + grabbed.rowSpan - 1 + dRow}`,
+      hoverColor,
+    )
+  }, [groupDrag, canvasOrdinal, path, hoverColor])
+
   // Group actions on the multi-selection: Delete/Backspace removes every
   // multi-selected block in one data change, ⌘D/Ctrl+D appends a copy of
   // every member in one data change (placed copies land one row below their
@@ -892,25 +1230,10 @@ export const useCanvasPreviewClickToEdit = ({
       }
       // Only placed members move; an unplaced block has no grid position to
       // shift and stays in the stacked flow
-      const placedMembers = multiSelectedIndices.flatMap((index) => {
-        const block = blocksRef.current[index] as
-          | { placement?: CanvasBlockPlacement }
-          | undefined
-        const placement = block?.placement
-        return placement?.colStart !== undefined &&
-          placement.colSpan !== undefined &&
-          placement.rowStart !== undefined
-          ? [
-              {
-                index,
-                colStart: placement.colStart,
-                colSpan: placement.colSpan,
-                rowStart: placement.rowStart,
-                rowSpan: placement.rowSpan ?? 1,
-              },
-            ]
-          : []
-      })
+      const placedMembers = collectPlacedGroupMembers(
+        blocksRef.current,
+        multiSelectedIndices,
+      )
       const blocked = placedMembers.some(
         (member) =>
           member.colStart + dCol < 1 ||
@@ -924,27 +1247,19 @@ export const useCanvasPreviewClickToEdit = ({
       const moved = new Set(placedMembers.map((member) => member.index))
       dispatch(
         update(path, (blocks: unknown[]) =>
-          blocks.map((block, index) => {
-            if (!moved.has(index)) {
-              return block
-            }
-            const { placement, ...rest } = block as {
-              placement?: CanvasBlockPlacement
-            }
-            return {
-              ...rest,
-              placement: {
-                ...placement,
-                colStart: (placement?.colStart ?? 1) + dCol,
-                rowStart: (placement?.rowStart ?? 1) + dRow,
-              },
-            }
-          }),
+          shiftBlockPlacements(blocks, moved, dCol, dRow),
         ),
       )
     }
     const handleGroupShortcut = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || isEditableTarget(event.target)) {
+      // While a pointer group drag is in progress the drag owns the keys:
+      // Escape cancels the drag (its own capture listener), and the group
+      // shortcuts must not fire mid-drag
+      if (
+        groupDrag !== null ||
+        event.defaultPrevented ||
+        isEditableTarget(event.target)
+      ) {
         return
       }
       if (
@@ -1011,6 +1326,7 @@ export const useCanvasPreviewClickToEdit = ({
     canvasOrdinal,
     dispatch,
     duplicateMultiSelectedBlocks,
+    groupDrag,
     multiSelectedIndices,
     path,
     removeMultiSelectedBlocks,
