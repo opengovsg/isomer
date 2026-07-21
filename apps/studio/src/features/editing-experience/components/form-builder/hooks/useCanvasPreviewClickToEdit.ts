@@ -188,13 +188,16 @@ const clampGroupDragDelta = (
 // background sweeps out a viewport-space rectangle, and every block it
 // touches on release becomes the multi-selection. `moved` flips once the
 // pointer has travelled the threshold — anything less stays a plain click,
-// keeping the deselect-on-background-click gesture intact.
+// keeping the deselect-on-background-click gesture intact. `additive`
+// (Shift held at press) makes the swept blocks join the existing
+// multi-selection instead of replacing it.
 interface MarqueeDragState {
   startX: number
   startY: number
   currentX: number
   currentY: number
   moved: boolean
+  additive: boolean
 }
 
 const CANVAS_MARQUEE_DRAG_THRESHOLD_PX = 4
@@ -937,20 +940,21 @@ export const useCanvasPreviewClickToEdit = ({
       }
       const block = resolveBlock(event)
       if (!block) {
-        // A plain press on the canvas background sweeps out a rubber-band
+        // A press on the canvas background sweeps out a rubber-band
         // marquee: every block it touches on release becomes the
-        // multi-selection, Wix-style. Shift is reserved for the Shift+click
-        // toggle, and a press that never travels stays a plain click.
-        if (!event.shiftKey) {
-          event.preventDefault()
-          setMarquee({
-            startX: event.clientX,
-            startY: event.clientY,
-            currentX: event.clientX,
-            currentY: event.clientY,
-            moved: false,
-          })
-        }
+        // multi-selection, Wix-style. Holding Shift makes the sweep
+        // additive — the swept blocks join the existing selection instead
+        // of replacing it — and a press that never travels stays a plain
+        // click.
+        event.preventDefault()
+        setMarquee({
+          startX: event.clientX,
+          startY: event.clientY,
+          currentX: event.clientX,
+          currentY: event.clientY,
+          moved: false,
+          additive: event.shiftKey,
+        })
         return
       }
       const index = Number(
@@ -1400,7 +1404,8 @@ export const useCanvasPreviewClickToEdit = ({
   // The rubber-band marquee's tracking and commit: the pointer is tracked on
   // the preview window in viewport coordinates, releasing turns every block
   // whose rendered rect the rectangle touches into the multi-selection (a
-  // sweep over empty canvas deselects, like a plain background click), and
+  // plain sweep over empty canvas deselects, like a plain background click;
+  // a Shift-held sweep adds to the existing selection instead), and
   // Escape cancels the sweep — capture phase so the group-shortcut Escape
   // (clear selection) and the drawer's own close handlers never see it. A
   // click while the marquee is somehow still active means its mouseup was
@@ -1451,7 +1456,27 @@ export const useCanvasPreviewClickToEdit = ({
             rect.bottom >= top
           return touched ? [index] : []
         })
-        if (indices.length > 0) {
+        if (marquee.additive) {
+          // A Shift-held sweep adds what it touched to the existing
+          // selection; with a block's editor open, that block seeds the
+          // set, same as the Shift+click toggle. Sweeping nothing keeps
+          // the selection (only a plain sweep over nothing deselects).
+          if (indices.length > 0) {
+            setMultiSelectedIndices((previous) => {
+              const seeded =
+                previous.length === 0 && selectedIndex !== undefined
+                  ? [selectedIndex]
+                  : previous
+              const added = indices.filter((index) => !seeded.includes(index))
+              return added.length === 0 && seeded === previous
+                ? previous
+                : [...seeded, ...added]
+            })
+            if (selectedIndex !== undefined) {
+              setSelectedIndex(undefined)
+            }
+          }
+        } else if (indices.length > 0) {
           setMultiSelectedIndices(indices)
           if (selectedIndex !== undefined) {
             setSelectedIndex(undefined)

@@ -6898,4 +6898,223 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("adds marquee-swept blocks to the existing multi-selection when Shift is held", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const mockRect = (
+      element: HTMLElement,
+      left: number,
+      top: number,
+      right: number,
+      bottom: number,
+    ) => {
+      element.getBoundingClientRect = () => ({
+        left,
+        top,
+        right,
+        bottom,
+        width: right - left,
+        height: bottom - top,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      })
+    }
+    mockRect(blockAt(0), 40, 32, 160, 64)
+    mockRect(blockAt(1), 0, 0, 160, 64)
+    mockRect(blockAt(2), 0, 250, 480, 282)
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const pressBackground = (clientX: number, clientY: number) =>
+      act(() => {
+        previewCanvas.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            clientX,
+            clientY,
+            shiftKey: true,
+          }),
+        )
+      })
+    const movePointer = (clientX: number, clientY: number) =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousemove", {
+            clientX,
+            clientY,
+            shiftKey: true,
+          }),
+        )
+      })
+    const releasePointer = () =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mouseup", { shiftKey: true }),
+        )
+      })
+    const clickBackground = (clientX: number, clientY: number) =>
+      act(() => {
+        previewCanvas.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            clientX,
+            clientY,
+            shiftKey: true,
+          }),
+        )
+      })
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const marqueeRectangle = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-marquee]")
+
+    await flush()
+    const baselineChangeCount = changes.length
+
+    // Seed a multi-selection with the first block, then sweep an additive
+    // marquee over the stacked third block only
+    shiftClick(blockAt(0))
+    expect(blockAt(0).style.outline).toContain("solid")
+
+    // A Shift+press on the background sweeps a marquee too
+    pressBackground(400, 290)
+    expect(marqueeRectangle()).toBeNull()
+    movePointer(300, 260)
+    const rectangle = marqueeRectangle()
+    expect(rectangle).not.toBeNull()
+    expect(rectangle!.style.left).toBe("300px")
+    expect(rectangle!.style.top).toBe("260px")
+    expect(rectangle!.style.width).toBe("100px")
+    expect(rectangle!.style.height).toBe("30px")
+
+    // Releasing ADDS the swept block to the existing selection instead of
+    // replacing it: both the seeded and the swept block light up, no editor
+    // opens, and nothing commits
+    releasePointer()
+    await flush()
+    expect(marqueeRectangle()).toBeNull()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toBe("")
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(changes.length).toBe(baselineChangeCount)
+    clickBackground(300, 260)
+    await flush()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+
+    // An additive sweep over empty canvas keeps the selection (a plain
+    // sweep over nothing would deselect)
+    pressBackground(300, 100)
+    movePointer(470, 150)
+    releasePointer()
+    await flush()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+
+    // With a block's editor open, an additive sweep seeds the set with the
+    // edited block — same as the Shift+click toggle — and closes the editor
+    pressKey(document.body, "Escape")
+    expect(blockAt(0).style.outline).toBe("")
+    click(findButtonByText("Item 2")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await flush()
+    pressBackground(400, 290)
+    movePointer(300, 260)
+    releasePointer()
+    await flush()
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+    expect(blockAt(0).style.outline).toBe("")
+
+    // The grown set is a real multi-selection: Delete removes both members
+    // in one data change, leaving only the never-swept first block
+    pressKey(document.body, "Delete")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    const afterDelete = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(afterDelete?.blocks).toHaveLength(1)
+    expect(afterDelete?.blocks?.[0]?.quote).toBe("A quote inside the canvas")
+
+    iframe.remove()
+  })
 })
