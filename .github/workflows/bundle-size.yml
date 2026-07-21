@@ -56,10 +56,10 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      # Copy the scripts out of the tree so they survive the `main` checkout below
-      # (they only exist on this PR branch).
+      # Copy the script out of the tree so it survives the `main` checkout below
+      # (it only exists on this PR branch).
       - name: Stage scripts
-        run: cp .github/scripts/measure-template-bundle.sh .github/scripts/comment-template-bundle-size.sh "$RUNNER_TEMP/"
+        run: cp .github/scripts/measure-template-bundle.sh "$RUNNER_TEMP/"
 
       # The Template (next build --webpack) is the real consumer of the components
       # package; its webpack-bundled, tree-shaken, gzipped output is what ships.
@@ -86,9 +86,13 @@ jobs:
           pnpm --filter isomer-base-template run build:template
           bash "$RUNNER_TEMP/measure-template-bundle.sh" tooling/template/out >> "$GITHUB_OUTPUT"
 
-      # Save metrics + the comment script into an artifact so
+      # Save metrics (data only, no scripts) into an artifact so
       # post-bundle-size-comment.yml can post the comment from the base-repo
       # context (where GITHUB_TOKEN always has write access, even for fork PRs).
+      # post-bundle-size-comment.yml treats every value here as untrusted data —
+      # it never sources this file or executes anything this job staged; it
+      # re-checks-out and runs its own trusted copy of the comment script. See
+      # post-bundle-size-comment.yml for why.
       - name: Save bundle size metadata
         run: |
           mkdir -p /tmp/bundle-size-metadata
@@ -105,7 +109,6 @@ jobs:
           BASE_CSS=${{ steps.base.outputs.css }}
           BASE_TOTAL=${{ steps.base.outputs.total }}
           ENVEOF
-          cp "$RUNNER_TEMP/comment-template-bundle-size.sh" /tmp/bundle-size-metadata/
 
       - name: Upload bundle size metadata
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

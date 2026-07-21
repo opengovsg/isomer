@@ -19,12 +19,21 @@ name: Post bundle size comment
 # This job downloads a small metadata artifact written by bundle-size.yml,
 # since the two workflows run in separate contexts and can't share
 # environment variables.
+#
+# That artifact is untrusted: bundle-size.yml runs with the PR's own
+# (possibly forked, possibly modified) workflow file, so anything it writes
+# is attacker-controlled. This job therefore treats values.env as data only —
+# never `source`d or otherwise executed, only parsed after validating every
+# value is a plain non-negative integer — and never runs a script the
+# artifact supplied. comment-template-bundle-size.sh instead comes from this
+# job's own checkout of the trusted base-repo ref.
 on:
   workflow_run:
     workflows: ["bundle-size"]
     types: [completed]
 
 permissions:
+  contents: read # needed by actions/checkout to fetch the trusted comment script
   actions: read # needed by actions/download-artifact to access a different run's artifacts
   issues: write # GitHub routes PR comments through the issues API endpoint
 
@@ -35,6 +44,10 @@ jobs:
     if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: .github/scripts
+
       - name: Download bundle size metadata
         id: download
         # Absent when components-bundle-size was skipped (no component changes
@@ -47,12 +60,27 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
 
-      - name: Post bundle size comment
+      # Every expected key is a plain non-negative integer (a byte count or a
+      # PR number) — reject anything else instead of trusting it, so a
+      # malicious values.env (e.g. `PR_TOTAL=1; curl ...`) fails here rather
+      # than executing. GITHUB_ENV, not `source`: the file is data, never a
+      # script.
+      - name: Validate and load bundle size metadata
+        id: metadata
         if: steps.download.outcome == 'success'
+        run: |
+          set -euo pipefail
+          while IFS= read -r line; do
+            [ -z "$line" ] && continue
+            if [[ ! "$line" =~ ^[A-Z_]+=[0-9]+$ ]]; then
+              echo "::error::Unexpected content in values.env, refusing to load it"
+              exit 1
+            fi
+            echo "$line" >> "$GITHUB_ENV"
+          done < /tmp/bundle-size-metadata/values.env
+
+      - name: Post bundle size comment
+        if: steps.metadata.outcome == 'success'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -a
-          source /tmp/bundle-size-metadata/values.env
-          set +a
-          bash /tmp/bundle-size-metadata/comment-template-bundle-size.sh
+        run: bash .github/scripts/comment-template-bundle-size.sh
