@@ -35,7 +35,7 @@ describe("unescapeHtml", () => {
     expect(result).toBe(`</p><a href='x&y'>Click "here"</a>`)
   })
 
-  it("is the exact inverse of escapeHtml", () => {
+  it("undoes escapeHtml", () => {
     // Arrange
     const original = `Fish & Chips <2024>`
 

@@ -13,10 +13,10 @@ describe("escapeTemplateArguments", () => {
       }),
     )
 
-  it("escapes template data before calling the underlying template", () => {
+  it("escapes nested strings before calling the template", () => {
+    // Arrange
     const template = createTemplate()
     const wrapped = escapeTemplateArguments({ alert: template })
-
     const input = {
       title: malicious,
       nested: { labels: [malicious] },
@@ -24,8 +24,11 @@ describe("escapeTemplateArguments", () => {
       count: 2,
       scheduledAt: new Date("2024-01-01T00:00:00.000Z"),
     }
+
+    // Act
     const result = wrapped.alert(input)
 
+    // Assert
     expect(template).toHaveBeenCalledWith({
       title: escaped,
       nested: { labels: [escaped] },
@@ -37,7 +40,8 @@ describe("escapeTemplateArguments", () => {
     expect(input.title).toBe(malicious)
   })
 
-  it("throws instead of silently skipping escaping for a non-plain-object value", () => {
+  it("throws for class instances", () => {
+    // Arrange
     class ResourceLike {
       constructor(public title: string) {}
     }
@@ -49,18 +53,22 @@ describe("escapeTemplateArguments", () => {
       resource: new ResourceLike(malicious),
     }
 
+    // Act / Assert
     expect(() => wrapped.alert(input)).toThrow()
     expect(template).not.toHaveBeenCalled()
   })
 
   it("wraps every template without changing keys", () => {
+    // Arrange
     const first = createTemplate()
     const second = createTemplate()
     const wrapped = escapeTemplateArguments({ first, second })
 
+    // Act
     wrapped.first({ title: malicious })
     wrapped.second({ title: "Safe title" })
 
+    // Assert
     expect(first).toHaveBeenCalledWith({ title: escaped })
     expect(second).toHaveBeenCalledWith({ title: "Safe title" })
   })

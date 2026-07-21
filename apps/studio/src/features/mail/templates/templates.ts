@@ -31,8 +31,7 @@ export const gazetteDeletionTemplate = (
 ) => {
   const { fileId, gazetteTitle } = data
 
-  // NOTE: Greeting is intentionally not personalised — this email is sent
-  // once with all site admins on it (primary recipient + cc).
+  // Greeting is not personalised. This email goes to all site admins (to + cc).
   return {
     subject: `[Isomer Studio] The gazette with file id: ${fileId} and title: ${gazetteTitle} has been deleted`,
     body: `<p>Hi everyone,</p>
