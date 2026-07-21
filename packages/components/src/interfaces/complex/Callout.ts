@@ -6,11 +6,14 @@ import { CALLOUT_VARIANT_FORMAT } from "../format"
 import { CalloutProseSchema } from "../native/Prose"
 
 export const CalloutVariant = {
-  Information: { value: "information", label: "Information (Default)" },
-  GoodToKnow: { value: "goodToKnow", label: "Good to know" },
-  Warning: { value: "warning", label: "Warning" },
-  Urgent: { value: "urgent", label: "Urgent" },
-  Note: { value: "note", label: "Note" },
+  Information: {
+    value: "information",
+    label: "Important information (default)",
+  },
+  GoodToKnow: { value: "goodToKnow", label: "Positive news" },
+  Warning: { value: "warning", label: "Heads-up" },
+  Urgent: { value: "urgent", label: "Needs urgent action" },
+  Note: { value: "note", label: "Did you know" },
 } as const
 
 export const CalloutSchema = Type.Object(
