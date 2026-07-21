@@ -31,15 +31,13 @@ export const gazetteDeletionTemplate = (
   data: GazetteDeletionEmailTemplateData,
 ) => {
   const { fileId, gazetteTitle } = data
-  const escapedFileId = escapeHtml(fileId)
-  const escapedGazetteTitle = escapeHtml(gazetteTitle)
 
   // NOTE: Greeting is intentionally not personalised — this email is sent
   // once with all site admins on it (primary recipient + cc).
   return {
-    subject: `[Isomer Studio] The gazette with file id: ${escapedFileId} and title: ${escapedGazetteTitle} has been deleted`,
+    subject: `[Isomer Studio] The gazette with file id: ${fileId} and title: ${gazetteTitle} has been deleted`,
     body: `<p>Hi everyone,</p>
-<p>The gazette ${escapedGazetteTitle} has been deleted from your site and removed from the search results</p>
+<p>The gazette ${gazetteTitle} has been deleted from your site and removed from the search results</p>
 <p>If you believe this was a mistake or need assistance, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
