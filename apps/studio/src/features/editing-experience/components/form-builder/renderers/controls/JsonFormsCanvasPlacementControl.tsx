@@ -38,6 +38,7 @@ import {
   CANVAS_MAX_ROW,
   CANVAS_SELECTION_EDGE_HANDLES,
   CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE,
+  canvasGridAreasOverlap,
   findCanvasBlockPreviewElement,
   isEditableTarget,
   proportionalCanvasGridCell,
@@ -154,15 +155,6 @@ const isCorner = (
 ): boolean =>
   (row === area.rowStart || row === area.rowEnd) &&
   (col === area.colStart || col === area.colEnd)
-
-const rectanglesOverlap = (
-  a: NormalisedPlacement,
-  b: NormalisedPlacement,
-): boolean =>
-  a.colStart <= b.colEnd &&
-  b.colStart <= a.colEnd &&
-  a.rowStart <= b.rowEnd &&
-  b.rowStart <= a.rowEnd
 
 const resolveDragSelection = (drag: DragState): NormalisedPlacement =>
   drag.mode === "draw"
@@ -490,12 +482,16 @@ const usePreviewAlignmentGuides = (
 const usePreviewDragBadge = (
   locatePreviewBlock: () => HTMLElement | null,
   selection: NormalisedPlacement | null,
+  siblings: NormalisedPlacement[],
 ): void => {
   const [badgeColor] = useToken("colors", ["interaction.main.default"])
   const text =
     selection === null
       ? null
-      : `Columns ${selection.colStart}–${selection.colEnd}, rows ${selection.rowStart}–${selection.rowEnd}`
+      : `Columns ${selection.colStart}–${selection.colEnd}, rows ${selection.rowStart}–${selection.rowEnd}` +
+        (siblings.some((sibling) => canvasGridAreasOverlap(selection, sibling))
+          ? " · overlaps another block"
+          : "")
 
   useEffect(() => {
     if (text === null) {
@@ -631,7 +627,7 @@ function JsonFormsCanvasPlacementControl({
     dragSelection,
     siblingPlacements,
   )
-  usePreviewDragBadge(locatePreviewBlock, dragSelection)
+  usePreviewDragBadge(locatePreviewBlock, dragSelection, siblingPlacements)
 
   // Starts a drag relative to a base rectangle: its corners resize (a sweep
   // anchored at the opposite corner), its body moves, and anywhere else
@@ -1021,7 +1017,9 @@ function JsonFormsCanvasPlacementControl({
   // Overlap is legal (CSS grid stacks the blocks), so warn rather than block
   const overlapsSibling =
     selection !== undefined &&
-    siblingPlacements.some((sibling) => rectanglesOverlap(selection, sibling))
+    siblingPlacements.some((sibling) =>
+      canvasGridAreasOverlap(selection, sibling),
+    )
 
   // Corners of the saved selection read as resize handles, its body as a
   // move handle, and everything else as a fresh draw

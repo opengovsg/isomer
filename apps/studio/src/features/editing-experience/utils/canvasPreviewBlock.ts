@@ -183,6 +183,18 @@ export interface CanvasGridArea {
   rowEnd: number
 }
 
+// Two grid areas overlap when they share at least one cell, both edges
+// inclusive. Overlapping is legal on the canvas (CSS grid stacks the
+// blocks), so placement gestures warn rather than block.
+export const canvasGridAreasOverlap = (
+  a: CanvasGridArea,
+  b: CanvasGridArea,
+): boolean =>
+  a.colStart <= b.colEnd &&
+  b.colStart <= a.colEnd &&
+  a.rowStart <= b.rowEnd &&
+  b.rowStart <= a.rowEnd
+
 // The grid cells a rendered block currently covers. An unplaced block has no
 // placement data to manipulate relative to, so its rendered footprint serves
 // as the starting rectangle when it is grabbed in the preview to receive its

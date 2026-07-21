@@ -13,6 +13,7 @@ import {
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import type {
+  CanvasGridArea,
   CanvasGridCell,
   CanvasGroupResizeHandle,
   CanvasMarqueeRectangle,
@@ -23,6 +24,7 @@ import {
   CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE,
   CANVAS_DRAG_BADGE_DATA_ATTRIBUTE,
   CANVAS_MAX_ROW,
+  canvasGridAreasOverlap,
   findCanvasBlockPreviewElement,
   findCanvasPreviewContainer,
   isEditableTarget,
@@ -148,6 +150,34 @@ const collectPlacedGroupMembers = (
         ]
       : []
   })
+
+// A placement's footprint as a grid area with inclusive edges, the shape the
+// canvas geometry helpers speak
+const memberGridArea = (member: {
+  colStart: number
+  colSpan: number
+  rowStart: number
+  rowSpan: number
+}): CanvasGridArea => ({
+  colStart: member.colStart,
+  colEnd: member.colStart + member.colSpan - 1,
+  rowStart: member.rowStart,
+  rowEnd: member.rowStart + member.rowSpan - 1,
+})
+
+// The placed blocks OUTSIDE a group gesture's member set — the blocks a
+// moving or resizing group can land on, and so the ones its feedback
+// (alignment guides, overlap warning) is measured against
+const collectNonMemberPlacedBlocks = (
+  blocks: unknown[],
+  members: PlacedGroupMember[],
+): PlacedGroupMember[] => {
+  const memberIndices = new Set(members.map((member) => member.index))
+  return collectPlacedGroupMembers(
+    blocks,
+    blocks.flatMap((_, index) => (memberIndices.has(index) ? [] : [index])),
+  )
+}
 
 const shiftBlockPlacements = (
   blocks: unknown[],
@@ -1912,9 +1942,27 @@ export const useCanvasPreviewClickToEdit = ({
     if (!grabbed || !grabbedElement) {
       return
     }
+    // Overlapping another block is legal (the grid stacks them), so the
+    // badge warns instead of the drag blocking, like the picker's warning
+    const nonMembers = collectNonMemberPlacedBlocks(
+      blocksRef.current,
+      groupDrag.members,
+    )
+    const overlapsSibling = groupDrag.members.some((member) =>
+      nonMembers.some((other) =>
+        canvasGridAreasOverlap(
+          memberGridArea({
+            ...member,
+            colStart: member.colStart + dCol,
+            rowStart: member.rowStart + dRow,
+          }),
+          memberGridArea(other),
+        ),
+      ),
+    )
     return showCanvasDragBadge(
       grabbedElement,
-      `Columns ${grabbed.colStart + dCol}–${grabbed.colStart + grabbed.colSpan - 1 + dCol}, rows ${grabbed.rowStart + dRow}–${grabbed.rowStart + grabbed.rowSpan - 1 + dRow}`,
+      `Columns ${grabbed.colStart + dCol}–${grabbed.colStart + grabbed.colSpan - 1 + dCol}, rows ${grabbed.rowStart + dRow}–${grabbed.rowStart + grabbed.rowSpan - 1 + dRow}${overlapsSibling ? " · overlaps another block" : ""}`,
       hoverColor,
     )
   }, [groupDrag, canvasOrdinal, path, hoverColor])
@@ -1949,22 +1997,16 @@ export const useCanvasPreviewClickToEdit = ({
     // An area's edges sit on grid lines colStart/colEnd+1 (rowStart/rowEnd+1)
     const boxCols = [colStart, colEnd + 1]
     const boxRows = [rowStart, rowEnd + 1]
-    const memberIndices = new Set(
-      activeGroupMembers.map((member) => member.index),
+    collectNonMemberPlacedBlocks(blocksRef.current, activeGroupMembers).forEach(
+      (sibling) => {
+        ;[sibling.colStart, sibling.colStart + sibling.colSpan]
+          .filter((line) => boxCols.includes(line))
+          .forEach((line) => groupAlignedCols.add(line))
+        ;[sibling.rowStart, sibling.rowStart + sibling.rowSpan]
+          .filter((line) => boxRows.includes(line))
+          .forEach((line) => groupAlignedRows.add(line))
+      },
     )
-    collectPlacedGroupMembers(
-      blocksRef.current,
-      blocksRef.current.flatMap((_, index) =>
-        memberIndices.has(index) ? [] : [index],
-      ),
-    ).forEach((sibling) => {
-      ;[sibling.colStart, sibling.colStart + sibling.colSpan]
-        .filter((line) => boxCols.includes(line))
-        .forEach((line) => groupAlignedCols.add(line))
-      ;[sibling.rowStart, sibling.rowStart + sibling.rowSpan]
-        .filter((line) => boxRows.includes(line))
-        .forEach((line) => groupAlignedRows.add(line))
-    })
     // Equal column margins put the box's centre on the canvas's centre line
     // (the middle column line, mid-gap by symmetry); full-width boxes are
     // trivially centred and stay guide-free
@@ -2183,9 +2225,25 @@ export const useCanvasPreviewClickToEdit = ({
     if (badgeAnchor === null) {
       return
     }
+    // Overlapping another block is legal (the grid stacks them), so the
+    // badge warns instead of the resize blocking, like the picker's warning
+    const nonMembers = collectNonMemberPlacedBlocks(
+      blocksRef.current,
+      groupResize.members,
+    )
+    const overlapsSibling = groupResize.members.some((member) =>
+      nonMembers.some((other) =>
+        canvasGridAreasOverlap(
+          memberGridArea(
+            scaleMemberPlacementIntoBox(member, groupResize.box, resizedBox),
+          ),
+          memberGridArea(other),
+        ),
+      ),
+    )
     return showCanvasDragBadge(
       badgeAnchor.element,
-      `Columns ${resizedBox.colStart}–${resizedBox.colEnd}, rows ${resizedBox.rowStart}–${resizedBox.rowEnd}`,
+      `Columns ${resizedBox.colStart}–${resizedBox.colEnd}, rows ${resizedBox.rowStart}–${resizedBox.rowEnd}${overlapsSibling ? " · overlaps another block" : ""}`,
       hoverColor,
     )
   }, [groupResize, canvasOrdinal, path, hoverColor])

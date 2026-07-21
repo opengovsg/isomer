@@ -2446,6 +2446,83 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("warns in the drag badge when the live area overlaps a sibling block", () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+        <div data-canvas-block-index="1"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+
+    renderCanvasFormInEditorDrawer({
+      type: "canvas",
+      blocks: [
+        BLOCKQUOTE_BLOCK,
+        {
+          type: "blockquote",
+          quote: "The second quote",
+          source: "s2",
+          placement: { colStart: 5, colSpan: 2, rowStart: 2, rowSpan: 2 },
+        },
+      ],
+    } as IsomerComponent)
+
+    click(findButtonByText("Item 1")!)
+
+    const badge = () =>
+      previewBlock.querySelector<HTMLElement>("[data-canvas-drag-badge]")
+
+    // A sweep clear of the sibling names the live area with no warning
+    act(() => {
+      placementCellAt(1, 1).dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true }),
+      )
+    })
+    expect(badge()?.textContent).toBe("Columns 1–1, rows 1–1")
+
+    // Sweeping across the sibling (columns 5–6, rows 2–3) appends the warning
+    act(() => {
+      placementCellAt(3, 7).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(badge()?.textContent).toBe(
+      "Columns 1–7, rows 1–3 · overlaps another block",
+    )
+
+    // Sweeping back off the sibling drops the warning
+    act(() => {
+      placementCellAt(1, 4).dispatchEvent(
+        new MouseEvent("mouseover", {
+          bubbles: true,
+          cancelable: true,
+          relatedTarget: document.body,
+        }),
+      )
+    })
+    expect(badge()?.textContent).toBe("Columns 1–4, rows 1–1")
+
+    pressKey(placementCellAt(1, 4), "Escape")
+    expect(badge()).toBeNull()
+
+    iframe.remove()
+  })
+
   it("moves and resizes a placed block by dragging it directly in the live preview", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
@@ -8627,6 +8704,202 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(changes.length).toBe(baselineChangeCount + 1)
     expect(badge()).toBeNull()
     expect(guides()).toBeNull()
+
+    iframe.remove()
+  })
+
+  it("warns in the group drag and group resize badges when the live group overlaps a non-member block", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    blockAt(0).style.setProperty("--canvas-grid-column", "2 / span 3")
+    blockAt(0).style.setProperty("--canvas-grid-row", "2 / span 1")
+    blockAt(0).getBoundingClientRect = () => ({
+      left: 40,
+      top: 32,
+      width: 120,
+      height: 32,
+      right: 160,
+      bottom: 64,
+      x: 40,
+      y: 32,
+      toJSON: () => ({}),
+    })
+    blockAt(1).style.setProperty("--canvas-grid-column", "1 / span 4")
+    blockAt(1).style.setProperty("--canvas-grid-row", "1 / span 2")
+    blockAt(1).getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 160,
+      height: 64,
+      right: 160,
+      bottom: 64,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    // The non-member sibling occupies columns 9–10 and rows 5–6
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          {
+            type: "blockquote",
+            quote: "The third quote",
+            source: "s3",
+            placement: { colStart: 9, colSpan: 2, rowStart: 5, rowSpan: 2 },
+          },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const pressBlock = (block: HTMLElement, clientX: number, clientY: number) =>
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            clientX,
+            clientY,
+          }),
+        )
+      })
+    const pressHandle = (corner: string) => {
+      const handle = previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-group-resize-handle="${corner}"]`,
+      )
+      expect(handle).not.toBeNull()
+      act(() => {
+        handle!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
+      })
+    }
+    const movePointer = (clientX: number, clientY: number) =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousemove", { clientX, clientY }),
+        )
+      })
+    const releasePointer = () =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mouseup"),
+        )
+      })
+    const badge = () =>
+      previewDocument.querySelector("[data-canvas-drag-badge]")
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    const baselineChangeCount = changes.length
+
+    // Dragging the group onto the non-member appends the warning to the
+    // badge: at delta +5 columns, +3 rows the members cover columns 6–9,
+    // rows 4–5, crossing the sibling's columns 9–10, rows 5–6
+    pressBlock(blockAt(0), 85, 40) // cell (row 2, col 3), inside the block
+    movePointer(300, 144) // cell (row 5, col 8)
+    expect(badge()?.textContent).toBe(
+      "Columns 7–9, rows 5–5 · overlaps another block",
+    )
+
+    // Dragging back clear of the sibling drops the warning
+    movePointer(165, 72) // cell (row 3, col 5): delta +2 columns, +1 row
+    expect(badge()?.textContent).toBe("Columns 4–6, rows 3–3")
+
+    pressKey(document.body, "Escape")
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // Resizing the group's bounding box across the non-member warns too:
+    // grown to columns 1–10, rows 1–6 the scaled second member covers the
+    // sibling's whole area
+    pressHandle("bottom-right")
+    movePointer(380, 176) // cell (row 6, col 10)
+    expect(badge()?.textContent).toBe(
+      "Columns 1–10, rows 1–6 · overlaps another block",
+    )
+
+    // Shrinking back clear of the sibling drops the warning
+    movePointer(260, 80) // cell (row 3, col 7) → box cols 1–7, rows 1–3
+    expect(badge()?.textContent).toBe("Columns 1–7, rows 1–3")
+
+    pressKey(document.body, "Escape")
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount)
 
     iframe.remove()
   })
