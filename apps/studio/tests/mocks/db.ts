@@ -1,4 +1,8 @@
 import type { DB } from "~/server/modules/database"
+import {
+  getContainer,
+  getPostgresConnectionString,
+} from "@opengovsg/starter-kitty-testcontainers"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Kysely, PostgresDialect } from "kysely"
 import { randomUUID } from "node:crypto"
@@ -6,10 +10,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Client, Pool } from "pg"
-import { parse } from "superjson"
 import { PrismaClient } from "~prisma/generated/prisma/client"
-
-import { CONTAINER_INFORMATION_SCHEMA } from "../common"
 
 const prismaMigrationDir = join(
   fileURLToPath(dirname(import.meta.url)),
@@ -23,32 +24,15 @@ const prismaMigrationDir = join(
   "migrations",
 )
 
-const parsed = CONTAINER_INFORMATION_SCHEMA.parse(
-  parse(process.env.testcontainers ?? ""),
-)
-
-const container = parsed.find((c) => c.configuration.name === "database")
-
-if (!container) {
-  console.log("cannot find container")
-  throw new Error("Cannot find container")
-}
-
-const { host, ports, configuration } = container
-
-const username = configuration.environment?.POSTGRES_USER ?? "postgres"
-const password = configuration.environment?.POSTGRES_PASSWORD ?? "postgres"
-const databaseId = configuration.environment?.POSTGRES_DB ?? "test"
+const container = getContainer("postgres")
 
 const testSpecificDb = randomUUID()
 
-const originalConnectionString = `postgres://${username}:${password}@${host}:${
-  ports.get(5432)?.toString() ?? "5432"
-}/${databaseId}`
+const originalConnectionString = getPostgresConnectionString(container)
 
-const connectionString = `postgres://${username}:${password}@${host}:${
-  ports.get(5432)?.toString() ?? "5432"
-}/${testSpecificDb}`
+const connectionString = getPostgresConnectionString(container, {
+  database: testSpecificDb,
+})
 
 const setupPgClient = async () => {
   const _pgClient = new Client({
