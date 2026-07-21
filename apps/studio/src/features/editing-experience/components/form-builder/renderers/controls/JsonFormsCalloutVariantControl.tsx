@@ -52,9 +52,6 @@ function JsonFormsCalloutVariantControl({
           {label || "Message type"}
         </FormLabel>
         <Radio.RadioGroup
-          display="grid"
-          gridTemplateColumns="repeat(2, 1fr)"
-          gap={4}
           onChange={(value) => {
             handleChange(path, value)
           }}
@@ -68,7 +65,11 @@ function JsonFormsCalloutVariantControl({
                 <Image
                   src={CALLOUT_VARIANT_IMAGES[value]}
                   alt=""
-                  style={{ width: "100%", height: "auto", marginTop: "1rem" }}
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    marginTop: "0.75rem",
+                  }}
                 />
               </Radio>
             ),
