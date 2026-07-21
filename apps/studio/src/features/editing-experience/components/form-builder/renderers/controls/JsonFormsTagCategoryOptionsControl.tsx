@@ -29,14 +29,6 @@ import { createDefaultTagOption } from "./constants"
 const DELETE_OPTION_UNDO_TEXT =
   "To undo this change, you will need to create and re-assign this option to all items."
 
-function DeleteOptionUndoNotice() {
-  return (
-    <Text textStyle="body-1" color="base.content.strong">
-      {DELETE_OPTION_UNDO_TEXT}
-    </Text>
-  )
-}
-
 function DeleteOptionWarningBody({
   siteId,
   pageId,
@@ -52,13 +44,11 @@ function DeleteOptionWarningBody({
     tagOptionIds: [tagId],
   })
 
-  if (count === 0) {
-    return <DeleteOptionUndoNotice />
-  }
-
   return (
     <Text textStyle="body-1" color="base.content.strong">
-      This option is being used in {count} {count === 1 ? "item" : "items"}.{" "}
+      {count > 0
+        ? `This option is being used in ${count === 1 ? "1 item" : `${count} items`}.`
+        : ""}
       {DELETE_OPTION_UNDO_TEXT}
     </Text>
   )
@@ -297,7 +287,13 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           label={deleteTarget.label}
           noun="filter option"
           warningBody={
-            <ErrorBoundary fallbackRender={() => <DeleteOptionUndoNotice />}>
+            <ErrorBoundary
+              fallbackRender={() => (
+                <Text textStyle="body-1" color="base.content.strong">
+                  {DELETE_OPTION_UNDO_TEXT}
+                </Text>
+              )}
+            >
               <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
                 <DeleteOptionWarningBody
                   siteId={siteId}
