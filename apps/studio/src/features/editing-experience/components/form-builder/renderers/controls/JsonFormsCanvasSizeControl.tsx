@@ -34,8 +34,15 @@ export const jsonFormsCanvasSizeControlTester: RankedTester = rankWith(
 // the canvas's own padding keeps this region clear of any block
 const RESIZE_HANDLE_SIZE_PX = 16
 
+// Holding Shift while dragging the handle snaps the size to tidy steps
+// (width in % of the parent, height in px), Wix-style
+const RESIZE_SNAP_STEP = { width: 5, height: 25 } as const
+
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max)
+
+const snapToStep = (value: number, step: number): number =>
+  Math.round(value / step) * step
 
 // Resolves the edited canvas's rendered container in the live preview: the
 // page block at currActiveIdx, found by counting the canvases before it.
@@ -142,7 +149,7 @@ const useCommitPreviewCanvasResize = ({
     // shows the size the release would commit. Owned by the height instance
     // alone (like the resize affordance) so the two size controls cannot
     // pin duplicate badges.
-    const trackResize = () => {
+    const trackResize = (event: MouseEvent) => {
       if (!startSize) {
         return
       }
@@ -152,8 +159,15 @@ const useCommitPreviewCanvasResize = ({
       const width =
         widthPercent === null
           ? `${Math.round(rect.width)}px`
-          : `${Math.round(widthPercent)}%`
-      badge.update(`${width} × ${Math.round(rect.height)}px`)
+          : `${
+              event.shiftKey
+                ? snapToStep(widthPercent, RESIZE_SNAP_STEP.width)
+                : Math.round(widthPercent)
+            }%`
+      const height = event.shiftKey
+        ? snapToStep(rect.height, RESIZE_SNAP_STEP.height)
+        : Math.round(rect.height)
+      badge.update(`${width} × ${height}px`)
     }
 
     const grabHandle = (event: MouseEvent) => {
@@ -172,7 +186,7 @@ const useCommitPreviewCanvasResize = ({
       startSize = { width: rect.width, height: rect.height }
     }
 
-    const commitResize = () => {
+    const commitResize = (event: MouseEvent) => {
       dropBadge()
       if (!startSize) {
         return
@@ -191,7 +205,9 @@ const useCommitPreviewCanvasResize = ({
         return
       }
       const committed = clamp(
-        Math.round(value),
+        event.shiftKey
+          ? snapToStep(value, RESIZE_SNAP_STEP[dimension])
+          : Math.round(value),
         typeof minimum === "number" ? minimum : 1,
         typeof maximum === "number" ? maximum : Number.MAX_SAFE_INTEGER,
       )
@@ -245,7 +261,8 @@ function JsonFormsCanvasSizeControl(props: ControlProps) {
       {dimension === "height" && (
         <Text mt="0.5rem" textStyle="body-2" textColor="base.content.medium">
           You can also resize the canvas freely by dragging the handle at its
-          bottom-right corner in the page preview.
+          bottom-right corner in the page preview. Hold Shift while dragging to
+          snap the size to 5% and 25px steps.
         </Text>
       )}
     </>

@@ -3546,6 +3546,147 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("snaps the free-resize to 5% and 25px steps while Shift is held", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div id="page">
+        <div data-canvas-container="">
+          <div data-canvas-block-index="0"></div>
+        </div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      MouseEvent: typeof MouseEvent
+    }
+
+    const parent = previewDocument.querySelector<HTMLElement>("#page")!
+    parent.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 1000,
+      height: 800,
+      right: 1000,
+      bottom: 800,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    // Mutable canvas geometry standing in for the native CSS resize the
+    // browser performs between mousedown and mouseup
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    const canvasSize = { width: 1000, height: 300 }
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: canvasSize.width,
+      height: canvasSize.height,
+      right: canvasSize.width,
+      bottom: canvasSize.height,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      { type: "canvas", blocks: [BLOCKQUOTE_BLOCK] } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    // Grab the handle and drag to an untidy size with Shift held: the live
+    // badge already shows the snapped size the release would commit
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 995,
+          clientY: 295,
+        }),
+      )
+    })
+    canvasSize.width = 634 // 63.4% of the parent
+    canvasSize.height = 417
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { shiftKey: true }),
+      )
+    })
+    expect(
+      previewDocument.querySelector("[data-canvas-size-badge]")?.textContent,
+    ).toBe("65% × 425px")
+
+    // Releasing with Shift held commits the snapped size
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mouseup", { shiftKey: true }),
+      )
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    let lastChange = changes.at(-1) as
+      | { width?: number; height?: number }
+      | undefined
+    expect(lastChange?.width).toBe(65)
+    expect(lastChange?.height).toBe(425)
+
+    // Snapping follows the live key state: the badge snaps while Shift is
+    // down and reverts to the raw size when it is released mid-drag
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          clientX: 630,
+          clientY: 412,
+        }),
+      )
+    })
+    canvasSize.width = 612 // 61.2% of the parent
+    canvasSize.height = 433
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { shiftKey: true }),
+      )
+    })
+    expect(
+      previewDocument.querySelector("[data-canvas-size-badge]")?.textContent,
+    ).toBe("60% × 425px")
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove"),
+      )
+    })
+    expect(
+      previewDocument.querySelector("[data-canvas-size-badge]")?.textContent,
+    ).toBe("61% × 433px")
+
+    // A release without Shift commits the raw size — snapping is decided at
+    // release time
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    lastChange = changes.at(-1) as
+      | { width?: number; height?: number }
+      | undefined
+    expect(lastChange?.width).toBe(61)
+    expect(lastChange?.height).toBe(433)
+
+    iframe.remove()
+  })
+
   it("opens a block's editor by clicking it in the live preview and switches blocks by clicking siblings", () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
