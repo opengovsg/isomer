@@ -7,7 +7,7 @@ import {
   getMetadata,
   getSitemapXml,
   shouldBlockIndexing,
-} from "@opengovsg/isomer-components"
+} from "@opengovsg/isomer-components/engine/metadata"
 import { getSitemapAsArray } from "@opengovsg/isomer-components/utils/getSitemapAsArray"
 
 export const INDEX_PAGE_PERMALINK = "_index"

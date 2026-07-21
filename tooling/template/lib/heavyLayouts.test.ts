@@ -165,8 +165,17 @@ describe("generate-layout-routes", () => {
       path.join(tmpDir, "app", "(heavy)", "news", "page.tsx"),
       "utf8",
     )
-    expect(source).toContain('makeHeavyPage("news")')
+    expect(source).toContain('makeCollectionPage("news")')
+    expect(source).toContain("@/render/makeCollectionPage")
     expect(source).toContain("layout: collection")
+
+    const searchSource = fs.readFileSync(
+      path.join(tmpDir, "app", "(heavy)", "search", "page.tsx"),
+      "utf8",
+    )
+    expect(searchSource).toContain('makeSearchPage("search")')
+    expect(searchSource).toContain("@/render/makeSearchPage")
+    expect(searchSource).not.toContain("makeCollectionPage")
   })
 
   it("clears previous generated routes on re-run", () => {

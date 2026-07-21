@@ -2,10 +2,8 @@ import type { Metadata } from "next"
 import config from "@/data/config.json"
 import "@/styles/globals.css"
 import sitemap from "@/sitemap.json"
-import {
-  RenderApplicationHeadScripts,
-  RenderApplicationScripts,
-} from "@opengovsg/isomer-components"
+import { RenderApplicationHeadScripts } from "@opengovsg/isomer-components/engine/renderApplicationHeadScripts"
+import { RenderApplicationScripts } from "@opengovsg/isomer-components/engine/renderApplicationScripts"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 

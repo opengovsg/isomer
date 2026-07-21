@@ -1,4 +1,12 @@
 export * from "./engine"
+// RenderEngine lives outside engine/index so client-only root imports
+// (LinkComponentProvider, scripts) do not pull fat renderLayout into the
+// template client graph. Studio still gets RenderEngine from the package root.
+export {
+  RenderEngine,
+  renderComponentPreviewText,
+  renderPrefillText,
+} from "./engine/render"
 export * from "./hooks"
 export * from "./presets"
 export {
