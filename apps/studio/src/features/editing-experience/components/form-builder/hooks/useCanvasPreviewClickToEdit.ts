@@ -14,6 +14,7 @@ import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import type {
   CanvasGridCell,
+  CanvasMarqueeRectangle,
   CanvasSelectionToolbarAction,
 } from "../../../utils/canvasPreviewBlock"
 import {
@@ -28,6 +29,7 @@ import {
   showCanvasDragBadge,
   showCanvasGridOverlay,
   showCanvasHoverLabel,
+  showCanvasMarqueeRectangle,
   showCanvasSelectionToolbar,
 } from "../../../utils/canvasPreviewBlock"
 import { setCanvasPreviewGrabHandoff } from "../../../utils/canvasPreviewGrabHandoff"
@@ -182,6 +184,21 @@ const clampGroupDragDelta = (
   }
 }
 
+// Wix-style rubber-band selection: a plain press on the empty canvas
+// background sweeps out a viewport-space rectangle, and every block it
+// touches on release becomes the multi-selection. `moved` flips once the
+// pointer has travelled the threshold — anything less stays a plain click,
+// keeping the deselect-on-background-click gesture intact.
+interface MarqueeDragState {
+  startX: number
+  startY: number
+  currentX: number
+  currentY: number
+  moved: boolean
+}
+
+const CANVAS_MARQUEE_DRAG_THRESHOLD_PX = 4
+
 const restoreCustomProperty = (
   element: HTMLElement,
   name: string,
@@ -254,7 +271,9 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // cancelling the drag), Escape or a plain background click clears the set,
 // and right-clicking a member opens a group context menu with the same
 // actions plus Wix's group align commands, which line the placed members up
-// against an edge (or the centre) of the group's own bounding box.
+// against an edge (or the centre) of the group's own bounding box. Sweeping
+// a plain press across the empty canvas background rubber-bands every block
+// the marquee touches into the same multi-selection.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -298,9 +317,17 @@ export const useCanvasPreviewClickToEdit = ({
   // multi-selection grabs the whole group, and releasing commits every
   // placed member's shifted placement in one data change
   const [groupDrag, setGroupDrag] = useState<GroupDragState | null>(null)
-  // The click that ends a group drag lands on the dragged block and must not
-  // open its editor — that would drop the multi-selection the drag just moved
-  const suppressGroupDragClickRef = useRef(false)
+  // Wix-style rubber-band selection: a plain press on the empty canvas
+  // background sweeps out a marquee, and every block it touches on release
+  // becomes the multi-selection
+  const [marquee, setMarquee] = useState<MarqueeDragState | null>(null)
+  // The marquee rectangle is created once per sweep and repositioned per
+  // pointer move through this ref, so it is not recreated on every move
+  const marqueeRectangleRef = useRef<CanvasMarqueeRectangle | null>(null)
+  // The click that trails a group drag or a marquee sweep must not act as a
+  // plain click — it would open the released-over block's editor or clear
+  // the multi-selection the gesture just produced
+  const suppressPreviewClickRef = useRef(false)
   // The preview only re-renders when data commits, so during a group drag the
   // members are repositioned live via the same CSS custom properties the
   // Canvas renderer emits; the originals are captured here so a cancelled
@@ -846,6 +873,20 @@ export const useCanvasPreviewClickToEdit = ({
       }
       const block = resolveBlock(event)
       if (!block) {
+        // A plain press on the canvas background sweeps out a rubber-band
+        // marquee: every block it touches on release becomes the
+        // multi-selection, Wix-style. Shift is reserved for the Shift+click
+        // toggle, and a press that never travels stays a plain click.
+        if (!event.shiftKey) {
+          event.preventDefault()
+          setMarquee({
+            startX: event.clientX,
+            startY: event.clientY,
+            currentX: event.clientX,
+            currentY: event.clientY,
+            moved: false,
+          })
+        }
         return
       }
       const index = Number(
@@ -910,14 +951,15 @@ export const useCanvasPreviewClickToEdit = ({
     }
 
     const openBlockEditor = (event: MouseEvent) => {
-      // The click that ends (or follows a cancelled) group drag must not
-      // open the dragged block's editor — that would drop the set the drag
-      // just acted on; a press-and-release that never moved is a plain click
-      const suppressClick = suppressGroupDragClickRef.current
-      suppressGroupDragClickRef.current = false
+      // The click that trails a group drag or a marquee sweep must not act
+      // as a plain click — it would open the dragged block's editor or
+      // clear the selection the sweep just produced; a press-and-release
+      // that never moved is a plain click
+      const suppressClick = suppressPreviewClickRef.current
+      suppressPreviewClickRef.current = false
       const block = resolveBlock(event)
       if (!block) {
-        if (deselectArmed && !event.shiftKey) {
+        if (deselectArmed && !event.shiftKey && !suppressClick) {
           if (selectedIndex !== undefined) {
             setSelectedIndex(undefined)
           }
@@ -1148,7 +1190,7 @@ export const useCanvasPreviewClickToEdit = ({
     }
     const endDrag = (commit: boolean) => {
       if (groupDrag.moved) {
-        suppressGroupDragClickRef.current = true
+        suppressPreviewClickRef.current = true
       }
       const { dCol, dRow } = clampGroupDragDelta(groupDrag)
       if (commit && (dCol !== 0 || dRow !== 0) && dispatch) {
@@ -1290,6 +1332,162 @@ export const useCanvasPreviewClickToEdit = ({
       hoverColor,
     )
   }, [groupDrag, canvasOrdinal, path, hoverColor])
+
+  // The rubber-band marquee's tracking and commit: the pointer is tracked on
+  // the preview window in viewport coordinates, releasing turns every block
+  // whose rendered rect the rectangle touches into the multi-selection (a
+  // sweep over empty canvas deselects, like a plain background click), and
+  // Escape cancels the sweep — capture phase so the group-shortcut Escape
+  // (clear selection) and the drawer's own close handlers never see it. A
+  // click while the marquee is somehow still active means its mouseup was
+  // missed, so the click doubles as the release.
+  useEffect(() => {
+    if (marquee === null) {
+      return
+    }
+    const canvas =
+      canvasOrdinal !== null && path === CANVAS_BLOCKS_PATH
+        ? findCanvasPreviewContainer(document, canvasOrdinal)
+        : null
+    if (!canvas) {
+      setMarquee(null)
+      return
+    }
+    const endMarquee = (commit: boolean) => {
+      if (marquee.moved) {
+        // The trailing click must not clear the selection the sweep just
+        // produced
+        suppressPreviewClickRef.current = true
+      }
+      if (commit && marquee.moved) {
+        const left = Math.min(marquee.startX, marquee.currentX)
+        const right = Math.max(marquee.startX, marquee.currentX)
+        const top = Math.min(marquee.startY, marquee.currentY)
+        const bottom = Math.max(marquee.startY, marquee.currentY)
+        const indices = Array.from(
+          canvas.querySelectorAll<HTMLElement>(
+            `[${CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE}]`,
+          ),
+        ).flatMap((element) => {
+          const index = Number(
+            element.getAttribute(CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE),
+          )
+          if (!Number.isInteger(index) || index < 0) {
+            return []
+          }
+          // The marquee selects what it visibly touches; a zero-size rect
+          // cannot be swept
+          const rect = element.getBoundingClientRect()
+          const touched =
+            rect.width > 0 &&
+            rect.height > 0 &&
+            rect.left <= right &&
+            rect.right >= left &&
+            rect.top <= bottom &&
+            rect.bottom >= top
+          return touched ? [index] : []
+        })
+        if (indices.length > 0) {
+          setMultiSelectedIndices(indices)
+          if (selectedIndex !== undefined) {
+            setSelectedIndex(undefined)
+          }
+        } else {
+          setMultiSelectedIndices((previous) =>
+            previous.length === 0 ? previous : [],
+          )
+        }
+      }
+      setMarquee(null)
+    }
+    const commitMarquee = () => endMarquee(true)
+    const cancelOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return
+      }
+      event.preventDefault()
+      event.stopPropagation()
+      endMarquee(false)
+    }
+    const trackPointer = (event: MouseEvent) => {
+      setMarquee((current) =>
+        current &&
+        (current.currentX !== event.clientX ||
+          current.currentY !== event.clientY)
+          ? {
+              ...current,
+              currentX: event.clientX,
+              currentY: event.clientY,
+              moved:
+                current.moved ||
+                Math.abs(event.clientX - current.startX) >=
+                  CANVAS_MARQUEE_DRAG_THRESHOLD_PX ||
+                Math.abs(event.clientY - current.startY) >=
+                  CANVAS_MARQUEE_DRAG_THRESHOLD_PX,
+            }
+          : current,
+      )
+    }
+    // addEventListener dedupes, so double registration is safe when the
+    // preview shares the editor window
+    const previewWindow = canvas.ownerDocument.defaultView
+    window.addEventListener("mouseup", commitMarquee)
+    window.addEventListener("click", commitMarquee)
+    window.addEventListener("keydown", cancelOnEscape, true)
+    previewWindow?.addEventListener("mousemove", trackPointer)
+    previewWindow?.addEventListener("mouseup", commitMarquee)
+    previewWindow?.addEventListener("click", commitMarquee)
+    previewWindow?.addEventListener("keydown", cancelOnEscape, true)
+    return () => {
+      window.removeEventListener("mouseup", commitMarquee)
+      window.removeEventListener("click", commitMarquee)
+      window.removeEventListener("keydown", cancelOnEscape, true)
+      previewWindow?.removeEventListener("mousemove", trackPointer)
+      previewWindow?.removeEventListener("mouseup", commitMarquee)
+      previewWindow?.removeEventListener("click", commitMarquee)
+      previewWindow?.removeEventListener("keydown", cancelOnEscape, true)
+    }
+  }, [marquee, canvasOrdinal, path, selectedIndex, setSelectedIndex])
+
+  // The marquee rectangle draws once the press has actually travelled (a
+  // plain background click never flashes it) and is torn down when the sweep
+  // ends; the effect below repositions it per pointer move, so the rectangle
+  // is not recreated on every move
+  const marqueeVisible = marquee !== null && marquee.moved
+  useEffect(() => {
+    if (
+      !marqueeVisible ||
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH
+    ) {
+      return
+    }
+    const canvas = findCanvasPreviewContainer(document, canvasOrdinal)
+    if (!canvas) {
+      return
+    }
+    const rectangle = showCanvasMarqueeRectangle(
+      canvas.ownerDocument,
+      hoverColor,
+    )
+    marqueeRectangleRef.current = rectangle
+    return () => {
+      marqueeRectangleRef.current = null
+      rectangle.cleanup()
+    }
+  }, [marqueeVisible, canvasOrdinal, path, hoverColor])
+
+  useEffect(() => {
+    if (marquee === null || !marquee.moved) {
+      return
+    }
+    marqueeRectangleRef.current?.update({
+      left: Math.min(marquee.startX, marquee.currentX),
+      top: Math.min(marquee.startY, marquee.currentY),
+      width: Math.abs(marquee.currentX - marquee.startX),
+      height: Math.abs(marquee.currentY - marquee.startY),
+    })
+  }, [marquee])
 
   // Group actions on the multi-selection: Delete/Backspace removes every
   // multi-selected block in one data change, ⌘D/Ctrl+D appends a copy of

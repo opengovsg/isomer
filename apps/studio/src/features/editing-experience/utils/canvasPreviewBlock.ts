@@ -398,6 +398,55 @@ export const showCanvasSizeBadge = (
   }
 }
 
+export const CANVAS_MARQUEE_DATA_ATTRIBUTE = "data-canvas-marquee"
+
+export interface CanvasMarqueeRectangle {
+  update: (rect: {
+    left: number
+    top: number
+    width: number
+    height: number
+  }) => void
+  cleanup: () => void
+}
+
+// Wix-style rubber-band marquee: while a press on the empty canvas
+// background sweeps out a multi-selection, a tinted rectangle stretches
+// between the press point and the pointer. It lives in the preview document
+// body with fixed positioning (viewport coords match fixed coords inside
+// the iframe) so the canvas's own overflow never clips it, and is
+// repositioned through update on every pointer move.
+export const showCanvasMarqueeRectangle = (
+  doc: Document,
+  marqueeColor: string,
+): CanvasMarqueeRectangle => {
+  const rectangle = doc.createElement("div")
+  rectangle.setAttribute(CANVAS_MARQUEE_DATA_ATTRIBUTE, "")
+  rectangle.setAttribute("aria-hidden", "true")
+  Object.assign(rectangle.style, {
+    position: "fixed",
+    boxSizing: "border-box",
+    border: `1px solid ${marqueeColor}`,
+    // A hex-alpha fill tints the swept area without obscuring the blocks
+    // being selected
+    backgroundColor: `${marqueeColor}20`,
+    pointerEvents: "none",
+    zIndex: "3",
+  })
+  doc.body.appendChild(rectangle)
+  return {
+    update: ({ left, top, width, height }) => {
+      rectangle.style.left = `${left}px`
+      rectangle.style.top = `${top}px`
+      rectangle.style.width = `${width}px`
+      rectangle.style.height = `${height}px`
+    },
+    cleanup: () => {
+      rectangle.remove()
+    },
+  }
+}
+
 export const CANVAS_SELECTION_TOOLBAR_DATA_ATTRIBUTE =
   "data-canvas-selection-toolbar"
 export const CANVAS_TOOLBAR_ACTION_DATA_ATTRIBUTE = "data-canvas-toolbar-action"

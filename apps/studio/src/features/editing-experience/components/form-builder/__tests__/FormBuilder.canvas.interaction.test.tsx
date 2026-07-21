@@ -6512,4 +6512,207 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("multi-selects blocks by sweeping a rubber-band marquee on the canvas background", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    // The marquee selects what it visibly touches, so the blocks carry the
+    // rects the 480×320 canvas would give their placements; the unplaced
+    // third block sits in the stacked flow below the placed two
+    const mockRect = (
+      element: HTMLElement,
+      left: number,
+      top: number,
+      right: number,
+      bottom: number,
+    ) => {
+      element.getBoundingClientRect = () => ({
+        left,
+        top,
+        right,
+        bottom,
+        width: right - left,
+        height: bottom - top,
+        x: left,
+        y: top,
+        toJSON: () => ({}),
+      })
+    }
+    mockRect(blockAt(0), 40, 32, 160, 64)
+    mockRect(blockAt(1), 0, 0, 160, 64)
+    mockRect(blockAt(2), 0, 250, 480, 282)
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const pressBackground = (clientX: number, clientY: number) =>
+      act(() => {
+        previewCanvas.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            clientX,
+            clientY,
+          }),
+        )
+      })
+    const movePointer = (clientX: number, clientY: number) =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousemove", { clientX, clientY }),
+        )
+      })
+    const releasePointer = () =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mouseup"),
+        )
+      })
+    const clickBackground = (clientX: number, clientY: number) =>
+      act(() => {
+        previewCanvas.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            clientX,
+            clientY,
+          }),
+        )
+      })
+    const marqueeRectangle = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-marquee]")
+
+    await flush()
+    const baselineChangeCount = changes.length
+
+    // A background press alone shows nothing, and neither does a
+    // sub-threshold jiggle — that press stays a plain click
+    pressBackground(350, 100)
+    expect(marqueeRectangle()).toBeNull()
+    movePointer(352, 102)
+    expect(marqueeRectangle()).toBeNull()
+
+    // Travelling past the threshold draws the rectangle between the press
+    // point and the pointer
+    movePointer(30, 20)
+    const rectangle = marqueeRectangle()
+    expect(rectangle).not.toBeNull()
+    expect(rectangle!.style.left).toBe("30px")
+    expect(rectangle!.style.top).toBe("20px")
+    expect(rectangle!.style.width).toBe("320px")
+    expect(rectangle!.style.height).toBe("80px")
+
+    // Releasing selects every block the sweep touched: both placed blocks
+    // light up as the multi-selection, the stacked block outside the
+    // rectangle does not, no editor opens, and nothing commits
+    releasePointer()
+    await flush()
+    expect(marqueeRectangle()).toBeNull()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toBe("")
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // The click trailing the sweep lands on the background but must not
+    // clear the selection the sweep just produced
+    clickBackground(30, 20)
+    await flush()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+
+    // Escape cancels an in-progress sweep: the rectangle disappears and the
+    // existing selection survives the release and its trailing click
+    pressBackground(400, 290)
+    movePointer(470, 310)
+    expect(marqueeRectangle()).not.toBeNull()
+    pressKey(document.body, "Escape")
+    expect(marqueeRectangle()).toBeNull()
+    releasePointer()
+    clickBackground(470, 310)
+    await flush()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+
+    // Sweeping only empty canvas deselects, like a plain background click
+    pressBackground(400, 290)
+    movePointer(470, 310)
+    releasePointer()
+    await flush()
+    expect(blockAt(0).style.outline).toBe("")
+    expect(blockAt(1).style.outline).toBe("")
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // The swept set is a real multi-selection: Delete removes every member
+    // in one keystroke and one data change
+    pressBackground(350, 100)
+    movePointer(30, 20)
+    releasePointer()
+    await flush()
+    pressKey(document.body, "Delete")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    const afterDelete = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(afterDelete?.blocks).toHaveLength(1)
+    expect(afterDelete?.blocks?.[0]?.quote).toBe("The third quote")
+
+    iframe.remove()
+  })
 })
