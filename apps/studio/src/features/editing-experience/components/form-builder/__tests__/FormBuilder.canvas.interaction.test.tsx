@@ -4305,4 +4305,141 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("aligns the selected block's columns on the grid via the context menu", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>placed</span></div>
+        <div data-canvas-block-index="1"><span>unplaced</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 4, colSpan: 3, rowStart: 2, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "Unplaced quote", source: "Second" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const menu = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (element: Element) => {
+      act(() => {
+        element.dispatchEvent(
+          new iframeRealm.MouseEvent("contextmenu", {
+            bubbles: true,
+            cancelable: true,
+            clientX: 40,
+            clientY: 40,
+          }),
+        )
+      })
+    }
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const lastPlacement = () => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks?.[0]?.placement
+    }
+    const placedBlock = previewDocument.querySelector(
+      '[data-canvas-block-index="0"] span',
+    )!
+    const chooseAlign = async (label: string) => {
+      rightClick(placedBlock)
+      await flush()
+      act(() => {
+        menuItem(label).click()
+      })
+      await flush()
+    }
+    await flush()
+
+    // Align left keeps the block's span and rows, moving it to column 1
+    await chooseAlign("Align left")
+    expect(menu()).toBeNull()
+    expect(lastPlacement()).toEqual({
+      colStart: 1,
+      colSpan: 3,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    expect(container.textContent).toContain("Columns 1–3, rows 2–3")
+
+    // Align right moves it against the last grid column
+    await chooseAlign("Align right")
+    expect(lastPlacement()).toEqual({
+      colStart: 10,
+      colSpan: 3,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    expect(container.textContent).toContain("Columns 10–12, rows 2–3")
+
+    // Align center centres the span on the 12 columns
+    await chooseAlign("Align center")
+    expect(lastPlacement()).toEqual({
+      colStart: 5,
+      colSpan: 3,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    expect(container.textContent).toContain("Columns 5–7, rows 2–3")
+
+    // Re-aligning to the position the block already holds commits nothing
+    const changeCount = changes.length
+    await chooseAlign("Align center")
+    expect(changes.length).toBe(changeCount)
+    expect(container.textContent).toContain("Columns 5–7, rows 2–3")
+
+    // Stretch spans the block across the full grid width, rows untouched
+    await chooseAlign("Stretch to full width")
+    expect(lastPlacement()).toEqual({
+      colStart: 1,
+      colSpan: 12,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    expect(container.textContent).toContain("Columns 1–12, rows 2–3")
+
+    // An unplaced block spans the full width already — nothing to align
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="1"] span')!,
+    )
+    await flush()
+    expect(menuItem("Align left").disabled).toBe(true)
+    expect(menuItem("Align center").disabled).toBe(true)
+    expect(menuItem("Align right").disabled).toBe(true)
+    expect(menuItem("Stretch to full width").disabled).toBe(true)
+
+    iframe.remove()
+  })
 })

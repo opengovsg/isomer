@@ -1,7 +1,10 @@
 import { useToken } from "@chakra-ui/react"
-import { Resolve } from "@jsonforms/core"
+import { composePaths, Resolve, update } from "@jsonforms/core"
 import { useJsonForms } from "@jsonforms/react"
-import { CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE } from "@opengovsg/isomer-components"
+import {
+  CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE,
+  CANVAS_GRID_COLUMNS,
+} from "@opengovsg/isomer-components"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BLOCK_TO_META } from "~/components/PageEditor/constants"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -88,6 +91,9 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // move it forward/backward in the stacking order, and ⌘⇧]/⌘⇧[ jump it to the
 // front/back of the stack. Holding Alt (⌥) while pressing any block leaves a
 // copy of it in place while the press drags the original away, Wix-style.
+// The right-click context menu additionally offers Wix's align commands,
+// repositioning a placed block's columns against the left/centre/right of
+// the grid or stretching it across the full width.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -97,7 +103,7 @@ export const useCanvasPreviewClickToEdit = ({
   moveUp,
   moveDown,
 }: UseCanvasPreviewClickToEditArgs): void => {
-  const jsonFormsCore = useJsonForms().core
+  const { core: jsonFormsCore, dispatch } = useJsonForms()
   const [hoverColor] = useToken("colors", ["interaction.main.default"])
   // Preview-viewport coordinates of an open right-click context menu
   const [contextMenu, setContextMenu] = useState<{
@@ -228,6 +234,48 @@ export const useCanvasPreviewClickToEdit = ({
     }
     setSelectedIndex(0)
   }, [selectedIndex, path, moveUp, setSelectedIndex])
+
+  // Wix's align-to-section commands: reposition the selected block's columns
+  // against the left/centre/right of the grid, or stretch it across the full
+  // width, leaving its rows untouched. Only meaningful for a block with a
+  // column placement (an unplaced block already spans the full width), and
+  // aligning a block to the position it already holds commits nothing so the
+  // command can never spuriously dirty the page.
+  const alignSelectedBlock = useCallback(
+    (alignment: "left" | "center" | "right" | "stretch") => {
+      if (selectedIndex === undefined || !dispatch) {
+        return
+      }
+      const source = blocksRef.current[selectedIndex] as
+        | { placement?: CanvasBlockPlacement }
+        | undefined
+      const placement = source?.placement
+      if (
+        placement?.colStart === undefined ||
+        placement.colSpan === undefined
+      ) {
+        return
+      }
+      const colSpan =
+        alignment === "stretch" ? CANVAS_GRID_COLUMNS : placement.colSpan
+      const colStart =
+        alignment === "left" || alignment === "stretch"
+          ? 1
+          : alignment === "right"
+            ? CANVAS_GRID_COLUMNS - colSpan + 1
+            : Math.floor((CANVAS_GRID_COLUMNS - colSpan) / 2) + 1
+      if (colStart === placement.colStart && colSpan === placement.colSpan) {
+        return
+      }
+      dispatch(
+        update(
+          composePaths(composePaths(path, `${selectedIndex}`), "placement"),
+          () => ({ ...placement, colStart, colSpan }),
+        ),
+      )
+    },
+    [selectedIndex, path, dispatch],
+  )
 
   const canvasOrdinal = useMemo(() => {
     if (
@@ -778,6 +826,14 @@ export const useCanvasPreviewClickToEdit = ({
       closeMenu()
       action()
     }
+    // The align commands need a column placement to act on; an unplaced
+    // block already spans the full width
+    const selectedBlock = blocksRef.current[selectedIndex] as
+      | { placement?: CanvasBlockPlacement }
+      | undefined
+    const canAlign =
+      selectedBlock?.placement?.colStart !== undefined &&
+      selectedBlock.placement.colSpan !== undefined
     const removeMenu = showCanvasContextMenu(
       canvas.ownerDocument,
       contextMenu,
@@ -815,6 +871,34 @@ export const useCanvasPreviewClickToEdit = ({
           glyph: "⤓",
           disabled: selectedIndex <= 0,
           onClick: withClose(sendSelectedToBack),
+        },
+        {
+          name: "align-left",
+          label: "Align left",
+          glyph: "⇤",
+          disabled: !canAlign,
+          onClick: withClose(() => alignSelectedBlock("left")),
+        },
+        {
+          name: "align-center",
+          label: "Align center",
+          glyph: "↔",
+          disabled: !canAlign,
+          onClick: withClose(() => alignSelectedBlock("center")),
+        },
+        {
+          name: "align-right",
+          label: "Align right",
+          glyph: "⇥",
+          disabled: !canAlign,
+          onClick: withClose(() => alignSelectedBlock("right")),
+        },
+        {
+          name: "stretch",
+          label: "Stretch to full width",
+          glyph: "⇔",
+          disabled: !canAlign,
+          onClick: withClose(() => alignSelectedBlock("stretch")),
         },
         {
           name: "delete",
@@ -879,6 +963,7 @@ export const useCanvasPreviewClickToEdit = ({
     sendSelectedBackward,
     bringSelectedToFront,
     sendSelectedToBack,
+    alignSelectedBlock,
     removeSelectedBlock,
   ])
 }
