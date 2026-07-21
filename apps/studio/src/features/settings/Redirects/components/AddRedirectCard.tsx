@@ -1,6 +1,7 @@
 import {
   Box,
   Center,
+  Flex,
   FormControl,
   HStack,
   Icon,
@@ -14,19 +15,22 @@ import {
   Button,
   FormErrorMessage,
   FormLabel,
+  Link,
   useToast,
 } from "@opengovsg/design-system-react"
 import { useState } from "react"
-import { BiPlus, BiRightArrowAlt, BiSearch } from "react-icons/bi"
+import { BiBulb, BiPlus, BiRightArrowAlt, BiSearch } from "react-icons/bi"
 import { REDIRECT_MESSAGES } from "~/constants/redirect"
 import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { useIsAdvancedRedirectsEnabled } from "~/hooks/useIsAdvancedRedirectsEnabled"
 import { useZodForm } from "~/lib/form"
 
 import { useCreateRedirect } from "../api"
 import { addRedirectSchema, type AddRedirectInput } from "../types"
+import { BulkUploadRedirectsModal } from "./BulkUploadRedirectsModal"
 import { SelectDestinationPageModal } from "./SelectDestinationPageModal"
 
 interface AddRedirectCardProps {
@@ -51,10 +55,16 @@ export const AddRedirectCard = ({
   })
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { mutate: createRedirect, isPending } = useCreateRedirect()
+  const isAdvancedRedirectsEnabled = useIsAdvancedRedirectsEnabled()
   const {
     isOpen: isPageModalOpen,
     onOpen: onPageModalOpen,
     onClose: onPageModalClose,
+  } = useDisclosure()
+  const {
+    isOpen: isBulkUploadOpen,
+    onOpen: onBulkUploadOpen,
+    onClose: onBulkUploadClose,
   } = useDisclosure()
 
   const [source, destination] = watch(["source", "destination"])
@@ -131,6 +141,39 @@ export const AddRedirectCard = ({
         New redirects publish right away, but can take a few minutes to take
         effect on your live site.
       </Text>
+
+      {isAdvancedRedirectsEnabled && (
+        <Flex
+          align="center"
+          gap="0.5rem"
+          bg="utility.feedback.info-subtle"
+          borderRadius="4px"
+          p="0.75rem"
+          mb="1.25rem"
+        >
+          <Icon
+            as={BiBulb}
+            boxSize="1.25rem"
+            color="base.content.default"
+            flexShrink={0}
+          />
+          <Flex wrap="wrap" columnGap="0.25rem" rowGap="0.25rem">
+            <Text textStyle="subhead-2" color="base.content.default">
+              Have more than 10 redirects to add? You can
+            </Text>
+            <Link
+              as="button"
+              type="button"
+              variant="inline"
+              textStyle="subhead-2"
+              color="interaction.links.default"
+              onClick={onBulkUploadOpen}
+            >
+              bulk upload with a .csv instead.
+            </Link>
+          </Flex>
+        </Flex>
+      )}
 
       <HStack as="form" align="flex-start" onSubmit={handleSubmit(onSubmit)}>
         <FormControl
@@ -258,6 +301,12 @@ export const AddRedirectCard = ({
             shouldDirty: true,
           })
         }
+      />
+
+      <BulkUploadRedirectsModal
+        siteId={siteId}
+        isOpen={isBulkUploadOpen}
+        onClose={onBulkUploadClose}
       />
     </Box>
   )

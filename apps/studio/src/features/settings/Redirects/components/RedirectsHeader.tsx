@@ -1,32 +1,10 @@
-import {
-  Center,
-  Flex,
-  Icon,
-  Stack,
-  Text,
-  useDisclosure,
-} from "@chakra-ui/react"
-import { Button, Link } from "@opengovsg/design-system-react"
-import { BiUpload, BiWrench } from "react-icons/bi"
-import { useIsAdvancedRedirectsEnabled } from "~/hooks/useIsAdvancedRedirectsEnabled"
+import { Center, Flex, Icon, Stack, Text } from "@chakra-ui/react"
+import { Link } from "@opengovsg/design-system-react"
+import { BiWrench } from "react-icons/bi"
 
-import { BulkUploadRedirectsModal } from "./BulkUploadRedirectsModal"
 import { REDIRECTS_SUPPORT_LINK } from "../constants"
 
-interface RedirectsHeaderProps {
-  siteId: number
-}
-
-export const RedirectsHeader = ({
-  siteId,
-}: RedirectsHeaderProps): JSX.Element => {
-  const isAdvancedRedirectsEnabled = useIsAdvancedRedirectsEnabled()
-  const {
-    isOpen: isBulkUploadOpen,
-    onOpen: onBulkUploadOpen,
-    onClose: onBulkUploadClose,
-  } = useDisclosure()
-
+export const RedirectsHeader = (): JSX.Element => {
   return (
     <Flex justifyContent="space-between" align="center" gap="1rem" w="full">
       <Stack spacing="0.5rem">
@@ -52,25 +30,6 @@ export const RedirectsHeader = ({
           .
         </Text>
       </Stack>
-
-      {/* Placement is intentionally temporary (top-right of the page) — a home
-          for the bulk-upload entry point until the final location is decided. */}
-      {isAdvancedRedirectsEnabled && (
-        <>
-          <Button
-            variant="outline"
-            leftIcon={<BiUpload fontSize="1.25rem" />}
-            onClick={onBulkUploadOpen}
-          >
-            Bulk upload redirects
-          </Button>
-          <BulkUploadRedirectsModal
-            siteId={siteId}
-            isOpen={isBulkUploadOpen}
-            onClose={onBulkUploadClose}
-          />
-        </>
-      )}
     </Flex>
   )
 }
