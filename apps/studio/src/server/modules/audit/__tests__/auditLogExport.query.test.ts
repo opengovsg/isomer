@@ -237,11 +237,10 @@ describe("auditLogExport.query", () => {
         deletedAt: new Date("2024-05-10T00:00:00Z"),
       })
 
-      // Created Jan 2024, revoked exactly at the last covered instant of the
-      // range (rangeEndInclusive === rangeEnd - 1ms === 2024-03-31T15:59:59.999Z,
-      // i.e. 2024-03-31 23:59:59.999 SGT) → EXCLUDED. "As of the end instant"
-      // semantics (script's `deletedAt > monthEnd`): a revocation landing on
-      // the last covered instant means the user no longer had access there.
+      // Created Jan 2024, revoked just inside the range's trailing edge
+      // (deletedAt === rangeEnd - 1ms === 2024-03-31T15:59:59.999Z, i.e.
+      // 2024-03-31 23:59:59.999 SGT) → EXCLUDED: `deletedAt >= rangeEnd`
+      // fails, so the user no longer had access at the end of the range.
       const revokedAtBoundaryUser = await setupUser({
         email: "revoked-at-boundary@agency.gov.sg",
       })
@@ -332,9 +331,9 @@ describe("auditLogExport.query", () => {
         createdAt: new Date("2024-03-31T15:00:00Z"),
       })
 
-      // A permission revoked exactly at the last covered instant
-      // (deletedAt === rangeEndInclusive === 2024-03-31T15:59:59.999Z) is
-      // EXCLUDED: it no longer had access at that instant.
+      // A permission revoked just inside the range's trailing edge
+      // (deletedAt === rangeEnd - 1ms === 2024-03-31T15:59:59.999Z) is
+      // EXCLUDED: `deletedAt >= rangeEnd` fails.
       const revokedAtBoundaryUser = await setupUser({
         email: "revoked-at-boundary@agency.gov.sg",
       })
