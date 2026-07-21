@@ -8057,6 +8057,213 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("keeps the group's proportions when Shift is held while dragging a corner of the bounding box", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    blockAt(0).style.setProperty("--canvas-grid-column", "2 / span 3")
+    blockAt(0).style.setProperty("--canvas-grid-row", "2 / span 1")
+    blockAt(0).getBoundingClientRect = () => ({
+      left: 40,
+      top: 32,
+      width: 120,
+      height: 32,
+      right: 160,
+      bottom: 64,
+      x: 40,
+      y: 32,
+      toJSON: () => ({}),
+    })
+    blockAt(1).style.setProperty("--canvas-grid-column", "1 / span 4")
+    blockAt(1).style.setProperty("--canvas-grid-row", "1 / span 2")
+    blockAt(1).getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 160,
+      height: 64,
+      right: 160,
+      bottom: 64,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const pressHandle = (corner: string) => {
+      const handle = previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-group-resize-handle="${corner}"]`,
+      )
+      expect(handle).not.toBeNull()
+      act(() => {
+        handle!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
+      })
+    }
+    const movePointer = (clientX: number, clientY: number, shiftKey = false) =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousemove", {
+            clientX,
+            clientY,
+            shiftKey,
+          }),
+        )
+      })
+    const releasePointer = () =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mouseup"),
+        )
+      })
+    const gridColumnOf = (index: number) =>
+      blockAt(index).style.getPropertyValue("--canvas-grid-column")
+    const gridRowOf = (index: number) =>
+      blockAt(index).style.getPropertyValue("--canvas-grid-row")
+    const placementAt = (index: number) => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks?.[index]?.placement
+    }
+    const overlay = () =>
+      previewDocument.querySelector("[data-canvas-grid-overlay]")
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    shiftClick(blockAt(2))
+    const baselineChangeCount = changes.length
+
+    // Shift+dragging the bottom-right corner to cell (row 5, col 8) keeps
+    // the box's 4:2 (2:1) proportions: the swept rows lead (5 rows beats 8
+    // columns proportionally), so the columns derive to 10 and the box
+    // becomes cols 1–10, rows 1–5 instead of following the pointer to col 8
+    pressHandle("bottom-right")
+    movePointer(300, 140, true)
+    expect(overlay()).not.toBeNull()
+    expect(gridColumnOf(0)).toBe("4 / span 7")
+    expect(gridRowOf(0)).toBe("4 / span 2")
+    expect(gridColumnOf(1)).toBe("1 / span 10")
+    expect(gridRowOf(1)).toBe("1 / span 5")
+    expect(gridColumnOf(2)).toBe("")
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(placementAt(0)).toEqual({
+      colStart: 4,
+      colSpan: 7,
+      rowStart: 4,
+      rowSpan: 2,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 1,
+      colSpan: 10,
+      rowStart: 1,
+      rowSpan: 5,
+    })
+    expect(placementAt(2)).toBeUndefined()
+
+    // A Shift-constrained sweep that derives back to the grabbed corner is
+    // not a move — and releasing Shift mid-drag lets the box follow the raw
+    // pointer again (cols 1–10 → 1–8); Escape then cancels back to the
+    // committed placements without another commit
+    pressHandle("bottom-right")
+    movePointer(300, 140, true) // pointer cell (row 5, col 8) derives to the grab (row 5, col 10)
+    expect(overlay()).toBeNull()
+    movePointer(300, 140)
+    expect(overlay()).not.toBeNull()
+    expect(gridColumnOf(0)).toBe("3 / span 6")
+    expect(gridColumnOf(1)).toBe("1 / span 8")
+    expect(gridRowOf(1)).toBe("1 / span 5")
+    pressKey(document.body, "Escape")
+    expect(gridColumnOf(0)).toBe("4 / span 7")
+    expect(gridColumnOf(1)).toBe("1 / span 10")
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(blockAt(0).style.outline).toContain("solid")
+
+    iframe.remove()
+  })
+
   it("multi-selects blocks by sweeping a rubber-band marquee on the canvas background", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)

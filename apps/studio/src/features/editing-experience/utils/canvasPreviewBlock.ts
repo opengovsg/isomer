@@ -135,6 +135,47 @@ export const resolveCanvasGridCellFromPoint = (
   return { row: clamp(row, 1, CANVAS_MAX_ROW), col }
 }
 
+// A grabbed rectangle's col:row span ratio, carried by corner resizes so
+// holding Shift can keep the rectangle's proportions; the dir fields point
+// from the anchor toward the grabbed corner, for sweeps with no extent on
+// one axis
+export interface CanvasSpanRatio {
+  cols: number
+  rows: number
+  rowDir: 1 | -1
+  colDir: 1 | -1
+}
+
+// Holding Shift while dragging a corner keeps the grabbed rectangle's
+// proportions, Wix-style: the axis the pointer has swept proportionally
+// further leads, and the other axis is derived from the rectangle's col:row
+// span ratio — clamped to the grid, so the proportions can bend at its edges
+export const proportionalCanvasGridCell = (
+  anchor: CanvasGridCell,
+  cell: CanvasGridCell,
+  ratio: CanvasSpanRatio,
+): CanvasGridCell => {
+  const cols = Math.abs(cell.col - anchor.col) + 1
+  const rows = Math.abs(cell.row - anchor.row) + 1
+  if (cols * ratio.rows >= rows * ratio.cols) {
+    const rowDir = Math.sign(cell.row - anchor.row) || ratio.rowDir
+    const derivedRows = Math.max(
+      1,
+      Math.round((cols * ratio.rows) / ratio.cols),
+    )
+    return {
+      col: cell.col,
+      row: clamp(anchor.row + rowDir * (derivedRows - 1), 1, CANVAS_MAX_ROW),
+    }
+  }
+  const colDir = Math.sign(cell.col - anchor.col) || ratio.colDir
+  const derivedCols = Math.max(1, Math.round((rows * ratio.cols) / ratio.rows))
+  return {
+    row: cell.row,
+    col: clamp(anchor.col + colDir * (derivedCols - 1), 1, CANVAS_GRID_COLUMNS),
+  }
+}
+
 export interface CanvasGridArea {
   colStart: number
   colEnd: number

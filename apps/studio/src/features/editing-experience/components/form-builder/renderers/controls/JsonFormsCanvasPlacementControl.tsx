@@ -30,13 +30,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
-import type { CanvasSelectionEdge } from "../../../../utils/canvasPreviewBlock"
+import type {
+  CanvasSelectionEdge,
+  CanvasSpanRatio,
+} from "../../../../utils/canvasPreviewBlock"
 import {
   CANVAS_MAX_ROW,
   CANVAS_SELECTION_EDGE_HANDLES,
   CANVAS_SELECTION_HANDLE_DATA_ATTRIBUTE,
   findCanvasBlockPreviewElement,
   isEditableTarget,
+  proportionalCanvasGridCell,
   resolveCanvasBlockGridArea,
   resolveCanvasGridCellFromPoint,
   showCanvasAlignmentGuides,
@@ -79,16 +83,6 @@ interface NormalisedPlacement {
   rowEnd: number
 }
 
-// The grabbed rectangle's span ratio, carried by corner resizes so holding
-// Shift can keep the block's proportions; the dir fields point from the
-// anchor toward the grabbed corner, for sweeps with no extent on one axis
-interface DrawRatio {
-  cols: number
-  rows: number
-  rowDir: 1 | -1
-  colDir: 1 | -1
-}
-
 // Drawing (and corner-resizing, which is drawing anchored at the opposite
 // corner) sweeps a rectangle between two cells; moving shifts the whole
 // saved rectangle by the drag delta. An edge-handle resize is a draw whose
@@ -100,7 +94,7 @@ type DragState =
       anchor: GridCell
       current: GridCell
       lock?: "row" | "col"
-      ratio?: DrawRatio
+      ratio?: CanvasSpanRatio
     }
   | {
       mode: "move"
@@ -175,36 +169,6 @@ const resolveDragSelection = (drag: DragState): NormalisedPlacement =>
     ? sweepSelection(drag.anchor, drag.current)
     : shiftSelection(drag.origin, drag.grab, drag.current)
 
-// Holding Shift while dragging a corner keeps the block's proportions,
-// Wix-style: the axis the pointer has swept proportionally further leads,
-// and the other axis is derived from the grabbed rectangle's col:row span
-// ratio — clamped to the grid, so the proportions can bend at its edges
-const proportionalCurrent = (
-  anchor: GridCell,
-  cell: GridCell,
-  ratio: DrawRatio,
-): GridCell => {
-  const cols = Math.abs(cell.col - anchor.col) + 1
-  const rows = Math.abs(cell.row - anchor.row) + 1
-  if (cols * ratio.rows >= rows * ratio.cols) {
-    const rowDir = Math.sign(cell.row - anchor.row) || ratio.rowDir
-    const derivedRows = Math.max(
-      1,
-      Math.round((cols * ratio.rows) / ratio.cols),
-    )
-    return {
-      col: cell.col,
-      row: clamp(anchor.row + rowDir * (derivedRows - 1), 1, CANVAS_MAX_ROW),
-    }
-  }
-  const colDir = Math.sign(cell.col - anchor.col) || ratio.colDir
-  const derivedCols = Math.max(1, Math.round((rows * ratio.cols) / ratio.rows))
-  return {
-    row: cell.row,
-    col: clamp(anchor.col + colDir * (derivedCols - 1), 1, CANVAS_GRID_COLUMNS),
-  }
-}
-
 // Every pointer/focus update to a drag's current cell goes through here so a
 // locked axis is pinned in one place. Holding Shift while moving constrains
 // the move to a straight line along the dominant axis of the sweep so far,
@@ -229,7 +193,7 @@ const withCurrent = (
     if (constrainAxis && drag.ratio) {
       return {
         ...drag,
-        current: proportionalCurrent(drag.anchor, cell, drag.ratio),
+        current: proportionalCanvasGridCell(drag.anchor, cell, drag.ratio),
       }
     }
     return { ...drag, current: cell }

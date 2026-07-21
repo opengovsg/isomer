@@ -17,6 +17,7 @@ import type {
   CanvasGroupResizeHandle,
   CanvasMarqueeRectangle,
   CanvasSelectionToolbarAction,
+  CanvasSpanRatio,
 } from "../../../utils/canvasPreviewBlock"
 import {
   CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE,
@@ -25,6 +26,7 @@ import {
   findCanvasBlockPreviewElement,
   findCanvasPreviewContainer,
   isEditableTarget,
+  proportionalCanvasGridCell,
   resolveCanvasGridCellFromPoint,
   showCanvasAlignmentGuides,
   showCanvasContextMenu,
@@ -234,9 +236,11 @@ const groupBoundingBoxOf = (
 // corner, and every placed member's placement maps proportionally into the
 // scaled box. An edge-midpoint handle locks the resize to that edge's axis
 // (`axis`): the box's other axis keeps its original bounds no matter where
-// the pointer travels. `moved` flips once the pointer leaves the grabbed
-// cell along a resizing axis — a press that never moves (or only travels
-// along a locked axis) commits nothing.
+// the pointer travels. Corner grabs carry the box's col:row span ratio
+// (`ratio`) so holding Shift keeps the group's proportions, like the single
+// block's Shift+corner resize. `moved` flips once the pointer leaves the
+// grabbed cell along a resizing axis — a press that never moves (or only
+// travels along a locked axis) commits nothing.
 type GroupResizeAxis = "both" | "col" | "row"
 
 interface GroupResizeState {
@@ -246,6 +250,7 @@ interface GroupResizeState {
   grab: CanvasGridCell
   current: CanvasGridCell
   axis: GroupResizeAxis
+  ratio?: CanvasSpanRatio
   moved: boolean
 }
 
@@ -2064,17 +2069,31 @@ export const useCanvasPreviewClickToEdit = ({
       endResize(false)
     }
     const trackPointer = (event: MouseEvent) => {
-      const cell = resolveCanvasGridCellFromPoint(
+      const pointerCell = resolveCanvasGridCellFromPoint(
         canvas,
         event.clientX,
         event.clientY,
       )
-      if (!cell) {
+      if (!pointerCell) {
         return
       }
-      setGroupResize((current) =>
-        current &&
-        (current.current.row !== cell.row || current.current.col !== cell.col)
+      setGroupResize((current) => {
+        if (!current) {
+          return current
+        }
+        // Holding Shift on a corner resize keeps the group's proportions,
+        // like the single block's Shift+corner gesture; releasing Shift
+        // mid-drag lets the box follow the pointer again
+        const cell =
+          event.shiftKey && current.ratio
+            ? proportionalCanvasGridCell(
+                current.anchor,
+                pointerCell,
+                current.ratio,
+              )
+            : pointerCell
+        return current.current.row !== cell.row ||
+          current.current.col !== cell.col
           ? {
               ...current,
               current: cell,
@@ -2083,8 +2102,8 @@ export const useCanvasPreviewClickToEdit = ({
                 (current.axis !== "col" && cell.row !== current.grab.row) ||
                 (current.axis !== "row" && cell.col !== current.grab.col),
             }
-          : current,
-      )
+          : current
+      })
     }
     // addEventListener dedupes, so double registration is safe when the
     // preview shares the editor window
@@ -2953,6 +2972,12 @@ export const useCanvasPreviewClickToEdit = ({
           col: handle.endsWith("right") ? box.colEnd : box.colStart,
           row: handle.startsWith("bottom") ? box.rowEnd : box.rowStart,
         }
+        const axis: GroupResizeAxis =
+          handle === "left" || handle === "right"
+            ? "col"
+            : handle === "top" || handle === "bottom"
+              ? "row"
+              : "both"
         setGroupResize({
           members: placedMembers,
           box,
@@ -2962,12 +2987,18 @@ export const useCanvasPreviewClickToEdit = ({
           },
           grab,
           current: grab,
-          axis:
-            handle === "left" || handle === "right"
-              ? "col"
-              : handle === "top" || handle === "bottom"
-                ? "row"
-                : "both",
+          axis,
+          // Only a corner resize can keep the box's proportions; an edge
+          // handle's locked axis already pins one dimension
+          ratio:
+            axis === "both"
+              ? {
+                  cols: box.colEnd - box.colStart + 1,
+                  rows: box.rowEnd - box.rowStart + 1,
+                  colDir: handle.endsWith("right") ? 1 : -1,
+                  rowDir: handle.startsWith("bottom") ? 1 : -1,
+                }
+              : undefined,
           moved: false,
         })
       },
