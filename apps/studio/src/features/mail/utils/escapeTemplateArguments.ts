@@ -1,7 +1,7 @@
 import { isObject, isPlainObject, mapValues } from "lodash-es"
 
 import type { EmailTemplate, EmailTemplateMap } from "../templates/types"
-import { escapeHtml } from "./escapeHtml"
+import { escapeHtml } from "./html"
 
 type EscapedTemplateArguments<T extends EmailTemplateMap> = {
   [K in keyof T]: (data: Parameters<T[K]>[0]) => EmailTemplate

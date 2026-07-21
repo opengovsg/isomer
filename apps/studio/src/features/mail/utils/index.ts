@@ -1,2 +1,2 @@
-export * from "./escapeHtml"
+export * from "./html"
 export * from "./escapeTemplateArguments"
