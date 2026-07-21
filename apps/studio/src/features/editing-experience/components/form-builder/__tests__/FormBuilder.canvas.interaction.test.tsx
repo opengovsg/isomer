@@ -9,6 +9,7 @@ import { getComponentSchema } from "@opengovsg/isomer-components"
 import { act, useEffect } from "react"
 import { createRoot } from "react-dom/client"
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
+import { BLOCK_TO_META } from "~/components/PageEditor/constants"
 import {
   EditorDrawerProvider,
   useEditorDrawerContext,
@@ -4241,8 +4242,6 @@ describe("FormBuilder canvas editing interactions", () => {
   })
 
   it("opens a Wix-style right-click context menu on canvas blocks in the live preview", async () => {
-    // The background right-click assertion below relies on there being
-    // nothing to paste
     resetCanvasBlockClipboard()
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
@@ -4379,8 +4378,9 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(menu()).toBeNull()
     expect(container.textContent).toContain("Edit Canvas blocks")
 
-    // Right-clicking the empty canvas background with nothing in the block
-    // clipboard keeps the native menu
+    // Right-clicking the empty canvas background keeps the native menu when
+    // the canvas cannot be measured (zero-size here, so no grid cell for the
+    // paste/add commands to target)
     const backgroundEvent = rightClick(
       previewDocument.querySelector("[data-canvas-container]")!,
       { clientX: 5, clientY: 5 },
@@ -4799,14 +4799,25 @@ describe("FormBuilder canvas editing interactions", () => {
       )?.blocks
     await flush()
 
-    // Right-clicking the background with an empty block clipboard keeps the
-    // browser's native menu
+    // Right-clicking the background with an empty block clipboard still
+    // opens the menu — the add commands need no clipboard — with the paste
+    // command disabled
     const emptyClipboardEvent = rightClick(previewCanvas, {
       clientX: 200,
       clientY: 100,
     })
     await flush()
-    expect(emptyClipboardEvent.defaultPrevented).toBe(false)
+    expect(emptyClipboardEvent.defaultPrevented).toBe(true)
+    expect(menuItem("Paste block here").disabled).toBe(true)
+    act(() => {
+      previewDocument.querySelector("[data-canvas-container]")!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    await flush()
     expect(menu()).toBeNull()
 
     // Copy the unplaced second block, dismissing its menu without pasting
@@ -4820,8 +4831,8 @@ describe("FormBuilder canvas editing interactions", () => {
     })
     await flush()
 
-    // Right-clicking the background now opens the paste menu at the pointer,
-    // offering only "Paste block here"
+    // Right-clicking the background now opens the menu at the pointer, with
+    // "Paste block here" enabled
     const backgroundEvent = rightClick(previewCanvas, {
       clientX: 250,
       clientY: 100,
@@ -4831,7 +4842,7 @@ describe("FormBuilder canvas editing interactions", () => {
     const openedMenu = menu()!
     expect(openedMenu.style.left).toBe("250px")
     expect(openedMenu.style.top).toBe("100px")
-    expect(openedMenu.querySelectorAll("button")).toHaveLength(1)
+    expect(menuItem("Paste block here").disabled).toBe(false)
 
     // Pasting the unplaced block pins it full width at the clicked row
     // (clientY 100 → row 4); the editor switches to the pasted copy
@@ -4878,6 +4889,159 @@ describe("FormBuilder canvas editing interactions", () => {
       rowSpan: 1,
     })
     expect(container.textContent).toContain("Columns 9–12, rows 1–1")
+
+    iframe.remove()
+  })
+
+  it("adds a default block at the right-clicked grid cell via the background context menu", async () => {
+    resetCanvasBlockClipboard()
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    // Spare wrappers (indices 1-2) so added blocks' selections have rendered
+    // elements
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // 480px content box over 12 columns (empty computed styles read as zero
+    // gaps/padding/borders in jsdom) puts a column every 40px and a base row
+    // every 32px
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [BLOCKQUOTE_BLOCK],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const menu = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (
+      element: Element,
+      coords: Pick<MouseEventInit, "clientX" | "clientY">,
+    ) => {
+      const event = new iframeRealm.MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        ...coords,
+      })
+      act(() => {
+        element.dispatchEvent(event)
+      })
+      return event
+    }
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const lastBlocks = () =>
+      (
+        changes.at(-1) as
+          | {
+              blocks?: {
+                type?: string
+                placement?: Record<string, number>
+              }[]
+            }
+          | undefined
+      )?.blocks
+    await flush()
+
+    // The background menu offers one add command per member of the canvas
+    // schema's child-block union, so the menu cannot drift from the schema
+    rightClick(previewCanvas, { clientX: 90, clientY: 70 })
+    await flush()
+    const unionTypes = (
+      canvasSchema as unknown as {
+        properties: {
+          blocks: {
+            items: { anyOf: { properties: { type: { const: string } } }[] }
+          }
+        }
+      }
+    ).properties.blocks.items.anyOf.map(
+      (member) => member.properties.type.const,
+    )
+    expect(unionTypes.length).toBeGreaterThan(0)
+    for (const type of unionTypes) {
+      const label = BLOCK_TO_META[type as keyof typeof BLOCK_TO_META].label
+      expect(menuItem(`Add ${label.toLowerCase()} here`).disabled).toBe(false)
+    }
+    // Paste plus one add command per union member, nothing else
+    expect(menu()!.querySelectorAll("button")).toHaveLength(
+      1 + unionTypes.length,
+    )
+
+    // Adding an image lands the default image block with its top-left corner
+    // on the clicked cell (clientX 90 → column 3, clientY 70 → row 3) at half
+    // the grid's width, and the editor switches to it
+    act(() => {
+      menuItem("Add image here").click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(lastBlocks()).toHaveLength(2)
+    expect(lastBlocks()?.[1]?.type).toBe("image")
+    expect(lastBlocks()?.[1]?.placement).toEqual({
+      colStart: 3,
+      colSpan: 6,
+      rowStart: 3,
+      rowSpan: 1,
+    })
+    expect(container.textContent).toContain("Columns 3–8, rows 3–3")
+
+    // Adding near the right edge clamps the start column so the block stays
+    // on the grid (clientX 470 → column 12 → clamped to start at column 7)
+    rightClick(previewCanvas, { clientX: 470, clientY: 10 })
+    await flush()
+    act(() => {
+      menuItem("Add quote here").click()
+    })
+    await flush()
+    expect(lastBlocks()).toHaveLength(3)
+    expect(lastBlocks()?.[2]?.type).toBe("blockquote")
+    expect(lastBlocks()?.[2]?.placement).toEqual({
+      colStart: 7,
+      colSpan: 6,
+      rowStart: 1,
+      rowSpan: 1,
+    })
+    expect(container.textContent).toContain("Columns 7–12, rows 1–1")
 
     iframe.remove()
   })
