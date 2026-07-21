@@ -33,7 +33,7 @@ import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { Can } from "~/features/permissions"
+import { CanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -126,7 +126,7 @@ const FixedBlock = () => {
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
           icon={BiCog}
         />
-        <Can do="create" on={{ parentId: null }}>
+        <CanManageCollectionFilters>
           <BaseBlock
             variant="vertical"
             onClick={() => {
@@ -137,7 +137,7 @@ const FixedBlock = () => {
             description="Define and manage filters for this Collection."
             icon={BiSlider}
           />
-        </Can>
+        </CanManageCollectionFilters>{" "}
       </>
     )
   }

@@ -13,8 +13,8 @@ import { isEmpty, isEqual } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useMe } from "~/features/me/api"
-import { usePermissions } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trackEvent, triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
@@ -46,8 +46,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const { me } = useMe()
-  const ability = usePermissions()
-  const isSiteAdmin = ability.can("create", { parentId: null })
+  const canManageFilters = useCanManageCollectionFilters()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -75,7 +74,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   })
 
   const schemaFields = useMemo(() => {
-    if (isSiteAdmin) {
+    if (canManageFilters) {
       return drawerStateType === "display"
         ? {
             exclude: ["tagCategories", "tags"],
@@ -87,7 +86,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     return {
       exclude: ["tagCategories", "tags"],
     }
-  }, [drawerStateType, isSiteAdmin])
+  }, [drawerStateType, canManageFilters])
 
   const metadataSchema = getScopedSchema({
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
