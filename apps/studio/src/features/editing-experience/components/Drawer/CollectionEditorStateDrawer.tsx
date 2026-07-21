@@ -14,12 +14,10 @@ import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useMe } from "~/features/me/api"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trackEvent, triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
 import {
@@ -47,9 +45,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const { me } = useMe()
-  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -77,19 +72,14 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   })
 
   const schemaFields = useMemo(() => {
-    if (isUserIsomerAdmin) {
-      return drawerStateType === "display"
-        ? {
-            exclude: ["tagCategories", "tags"],
-          }
-        : {
-            include: ["tagCategories", "tags"],
-          }
-    }
-    return {
-      exclude: ["tagCategories", "tags"],
-    }
-  }, [drawerStateType, isUserIsomerAdmin])
+    return drawerStateType === "display"
+      ? {
+          exclude: ["tagCategories", "tags"],
+        }
+      : {
+          include: ["tagCategories", "tags"],
+        }
+  }, [drawerStateType])
 
   const metadataSchema = getScopedSchema({
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,

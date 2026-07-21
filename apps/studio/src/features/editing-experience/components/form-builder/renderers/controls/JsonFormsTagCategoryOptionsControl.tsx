@@ -9,10 +9,8 @@ import { Suspense, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
@@ -320,17 +318,4 @@ export const jsonFormsTagCategoryOptionsControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "tag-category-options"),
 )
 
-const JsonFormsTagCategoryOptionsControl = (props: ArrayLayoutProps) => {
-  // Tag category options are admin-only until the feature ships broadly.
-  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
-
-  if (!isUserIsomerAdmin) {
-    return null
-  }
-
-  return <JsonFormsTagCategoryOptionsArrayLayout {...props} />
-}
-
-export default JsonFormsTagCategoryOptionsControl
+export default JsonFormsTagCategoryOptionsArrayLayout
