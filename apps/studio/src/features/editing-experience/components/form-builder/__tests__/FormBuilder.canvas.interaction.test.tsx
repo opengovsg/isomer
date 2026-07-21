@@ -3877,6 +3877,107 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("outlines a block in the live preview while its row in the block list is hovered", () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    renderCanvasFormInEditorDrawer({
+      type: "canvas",
+      blocks: [
+        BLOCKQUOTE_BLOCK,
+        { type: "image", src: "/an-image.png", alt: "An image" },
+      ],
+    } as IsomerComponent)
+
+    const firstBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    const secondBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="1"]',
+    )!
+    const hoverLabelIn = (block: HTMLElement) =>
+      block.querySelector<HTMLElement>("[data-canvas-hover-label]")
+    const listRowAt = (index: number) => {
+      const row = container.querySelector(
+        `[data-rfd-draggable-id="blocks.${index}"]`,
+      )
+      expect(row).not.toBeNull()
+      return row!
+    }
+    // React synthesises onMouseEnter/onMouseLeave from bubbling
+    // mouseover/mouseout events whose relatedTarget lies outside the row
+    const hoverListRow = (row: Element) => {
+      act(() => {
+        row.dispatchEvent(
+          new MouseEvent("mouseover", {
+            bubbles: true,
+            cancelable: true,
+            relatedTarget: document.body,
+          }),
+        )
+      })
+    }
+    const unhoverListRow = (row: Element) => {
+      act(() => {
+        row.dispatchEvent(
+          new MouseEvent("mouseout", {
+            bubbles: true,
+            cancelable: true,
+            relatedTarget: document.body,
+          }),
+        )
+      })
+    }
+
+    // No outline or name label until a row is hovered
+    expect(firstBlock.style.outline).toBe("")
+    expect(secondBlock.style.outline).toBe("")
+
+    // Hovering a block's row outlines that block on the preview and names it,
+    // exactly like hovering the block on the canvas itself
+    hoverListRow(listRowAt(0))
+    expect(firstBlock.style.outline).toContain("dashed")
+    expect(hoverLabelIn(firstBlock)?.textContent).toBe("Quote")
+    expect(secondBlock.style.outline).toBe("")
+
+    // Moving to the sibling's row hands the affordance over
+    unhoverListRow(listRowAt(0))
+    hoverListRow(listRowAt(1))
+    expect(firstBlock.style.outline).toBe("")
+    expect(hoverLabelIn(firstBlock)).toBeNull()
+    expect(secondBlock.style.outline).toContain("dashed")
+    expect(hoverLabelIn(secondBlock)?.textContent).toBe("Image")
+
+    // Leaving the list clears it
+    unhoverListRow(listRowAt(1))
+    expect(secondBlock.style.outline).toBe("")
+    expect(hoverLabelIn(secondBlock)).toBeNull()
+
+    // Opening a block's editor by clicking its hovered row drops the row
+    // hover affordance — the row list unmounts, so its mouseleave never
+    // fires — and the placement control's solid highlight takes over
+    hoverListRow(listRowAt(0))
+    expect(firstBlock.style.outline).toContain("dashed")
+    click(listRowAt(0).querySelector("button")!)
+    expect(container.textContent).toContain("A quote inside the canvas")
+    expect(firstBlock.style.outline).toContain("solid")
+    expect(firstBlock.style.outline).not.toContain("dashed")
+    expect(hoverLabelIn(firstBlock)).toBeNull()
+
+    iframe.remove()
+  })
+
   it("selects a block and drags it with the same press, Wix-style", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)

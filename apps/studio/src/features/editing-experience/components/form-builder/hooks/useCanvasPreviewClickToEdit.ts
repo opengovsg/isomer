@@ -44,6 +44,13 @@ interface UseCanvasPreviewClickToEditArgs {
   moveDown?: (path: string, index: number) => () => void
 }
 
+interface UseCanvasPreviewClickToEditResult {
+  // Rows in the block list report their hover here so the hovered block can
+  // be highlighted on the live preview, Wix's layers-panel style; a no-op
+  // for every non-canvas array control
+  setHoveredListBlockIndex: (index: number | null) => void
+}
+
 interface CanvasBlockPlacement {
   colStart?: number
   colSpan?: number
@@ -136,7 +143,7 @@ export const useCanvasPreviewClickToEdit = ({
   addItem,
   moveUp,
   moveDown,
-}: UseCanvasPreviewClickToEditArgs): void => {
+}: UseCanvasPreviewClickToEditArgs): UseCanvasPreviewClickToEditResult => {
   const { core: jsonFormsCore, dispatch } = useJsonForms()
   const [hoverColor] = useToken("colors", ["interaction.main.default"])
   // Preview-viewport coordinates of an open right-click context menu: on a
@@ -152,6 +159,11 @@ export const useCanvasPreviewClickToEdit = ({
         cell: CanvasGridCell
       }
     | null
+  >(null)
+  // Index of the block whose row in the sidebar block list is being hovered,
+  // reported by the array control's rows via setHoveredListBlockIndex
+  const [hoveredListBlockIndex, setHoveredListBlockIndex] = useState<
+    number | null
   >(null)
   const editorContext = useOptionalEditorDrawerContext()
   const content = editorContext?.previewPageState.content
@@ -656,6 +668,62 @@ export const useCanvasPreviewClickToEdit = ({
     setSelectedIndex,
   ])
 
+  // Wix's layers-panel hover sync, the reverse of the preview hover above:
+  // hovering a block's row in the sidebar block list outlines that block on
+  // the live preview with the same dashed outline and name chip, so rows can
+  // be matched to blocks before opening one. Rows only render in list view,
+  // and a row click both selects and unmounts the list — its mouseleave never
+  // fires — so stale hover state is dropped once a block is selected.
+  useEffect(() => {
+    if (
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH ||
+      hoveredListBlockIndex === null
+    ) {
+      return
+    }
+    if (selectedIndex !== undefined) {
+      setHoveredListBlockIndex(null)
+      return
+    }
+    const block = findCanvasBlockPreviewElement(
+      document,
+      canvasOrdinal,
+      hoveredListBlockIndex,
+    )
+    if (!block) {
+      return
+    }
+    const previousOutline = block.style.outline
+    const previousOutlineOffset = block.style.outlineOffset
+    block.style.outline = `2px dashed ${hoverColor}`
+    block.style.outlineOffset = "2px"
+    const canvasPageBlock =
+      content !== undefined && currActiveIdx !== undefined
+        ? content[currActiveIdx]
+        : undefined
+    const child =
+      canvasPageBlock?.type === "canvas"
+        ? canvasPageBlock.blocks[hoveredListBlockIndex]
+        : undefined
+    const removeLabel = child
+      ? showCanvasHoverLabel(block, BLOCK_TO_META[child.type].label, hoverColor)
+      : null
+    return () => {
+      block.style.outline = previousOutline
+      block.style.outlineOffset = previousOutlineOffset
+      removeLabel?.()
+    }
+  }, [
+    canvasOrdinal,
+    content,
+    currActiveIdx,
+    hoverColor,
+    hoveredListBlockIndex,
+    path,
+    selectedIndex,
+  ])
+
   // Wix-style keyboard shortcuts while a block's nested editor is open:
   // Delete or Backspace removes the block from the canvas and returns to the
   // block list, ⌘D/Ctrl+D appends a copy of the block (its placement
@@ -1136,4 +1204,6 @@ export const useCanvasPreviewClickToEdit = ({
     alignSelectedBlock,
     removeSelectedBlock,
   ])
+
+  return { setHoveredListBlockIndex }
 }

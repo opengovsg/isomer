@@ -25,11 +25,20 @@ interface RootProps {
   draggableProps: DraggableProvidedDraggableProps
   isError: boolean
   children: ReactNode
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
 }
 
 const Root = forwardRef<RootProps, "div">(
-  ({ draggableProps, isError, children }, ref) => (
-    <Box my="0.25rem" ref={ref} {...draggableProps} w="full">
+  ({ draggableProps, isError, children, onMouseEnter, onMouseLeave }, ref) => (
+    <Box
+      my="0.25rem"
+      ref={ref}
+      {...draggableProps}
+      w="full"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <HStack
         spacing={0}
         border="1px solid"

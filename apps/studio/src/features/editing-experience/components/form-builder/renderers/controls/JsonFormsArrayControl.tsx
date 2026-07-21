@@ -89,9 +89,10 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
 
   // Canvas blocks can be selected by clicking them on the live preview,
   // removed with the Delete key, duplicated with ⌘D/Ctrl+D, and moved
-  // forward/backward in the stacking order with ⌘]/⌘[; for every other
-  // array this is a no-op
-  useCanvasPreviewClickToEdit({
+  // forward/backward in the stacking order with ⌘]/⌘[; hovering a block's
+  // row below highlights it on the preview. For every other array this is
+  // a no-op
+  const { setHoveredListBlockIndex } = useCanvasPreviewClickToEdit({
     path,
     selectedIndex,
     setSelectedIndex,
@@ -152,6 +153,8 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
                             draggableProps={draggableProps}
                             isError={hasError}
                             ref={innerRef}
+                            onMouseEnter={() => setHoveredListBlockIndex(index)}
+                            onMouseLeave={() => setHoveredListBlockIndex(null)}
                           >
                             <DraggableTagButton.Handle
                               dragHandleProps={dragHandleProps}
