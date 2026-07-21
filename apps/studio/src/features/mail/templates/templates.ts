@@ -1,5 +1,4 @@
 import { toZonedTime } from "date-fns-tz"
-import { unescape } from "lodash-es"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { formatScheduledAtDate } from "~/lib/dates"
@@ -22,7 +21,7 @@ import type {
   SchedulePageTemplateData,
   SuccessfulPublishTemplateData,
 } from "./types"
-import { escapeHtml, escapeTemplateArguments } from "../utils"
+import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}">${escapeHtml(env.NEXT_PUBLIC_APP_URL?.replace("https://", ""))}</a>`
@@ -194,7 +193,7 @@ const publishAlertContentPublisherTemplate = (
   const studioResourceUrl = getStudioResourceUrl(resource)
 
   return {
-    subject: `[Isomer Studio] ${unescape(resource.title)} has been published`,
+    subject: `[Isomer Studio] ${unescapeHtml(resource.title)} has been published`,
     body: `<p>Hi ${recipientEmail},</p>
     <p>You have successfully published "${resource.title}" on ${siteName}. You can access your published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
     <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. If you didn't authorize this publication, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
@@ -210,7 +209,7 @@ const publishAlertSiteAdminTemplate = (
   const studioResourceUrl = getStudioResourceUrl(resource)
 
   return {
-    subject: `[Isomer Studio] ${unescape(resource.title)} has been published`,
+    subject: `[Isomer Studio] ${unescapeHtml(resource.title)} has been published`,
     body: `<p>Hi ${recipientEmail},</p>
     <p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
     <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. As a site admin, we want to keep you informed of all publishing activities. If you have any concerns, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
