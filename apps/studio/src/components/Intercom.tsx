@@ -16,7 +16,7 @@ export const Intercom = () => {
       email: me.email,
       created_at: convertDateToUnixTimestamp(me.createdAt),
     })
-  }, [me.id, me.email, me.name, me.createdAt])
+  }, [me])
 
   return <></>
 }

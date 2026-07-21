@@ -1,3 +1,4 @@
+// oxlint-disable-next-line no-restricted-imports
 import {
   Intercom as bootIntercomSdk,
   startSurvey,
