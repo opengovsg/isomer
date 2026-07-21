@@ -1,10 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { userEvent, within } from "storybook/test"
+import { expect, userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-import { userHandlers } from "tests/msw/handlers/user"
 import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
@@ -110,7 +109,7 @@ export const WithBanner: Story = {
   },
 }
 
-export const NewCollectionIndexEditingExperienceNonIsomerAdmin: Story = {
+export const NewCollectionIndexEditingExperienceAsAdmin: Story = {
   parameters: {
     growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   },
@@ -121,17 +120,20 @@ export const NewCollectionIndexEditingExperienceNonIsomerAdmin: Story = {
   },
 }
 
-export const NewCollectionIndexEditingExperienceIsomerAdmin: Story = {
+export const NewCollectionIndexEditingExperienceAsEditor: Story = {
   parameters: {
     growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
-      handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
+      handlers: [resourceHandlers.getRolesFor.editor(), ...COMMON_HANDLERS],
     },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await canvas.findByText(/Manage Collection/i)
-    await canvas.findByRole("button", { name: /Filters/i })
+    await canvas.findByRole("button", { name: /Collection display/i })
+    expect(
+      canvas.queryByRole("button", { name: /Filters/i }),
+    ).not.toBeInTheDocument()
   },
 }
 

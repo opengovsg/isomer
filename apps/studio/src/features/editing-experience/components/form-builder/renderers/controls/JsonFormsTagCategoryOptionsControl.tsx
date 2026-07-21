@@ -9,6 +9,7 @@ import { Suspense, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 import { pageSchema } from "~/features/editing-experience/schema"
+import { usePermissions } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
 
@@ -318,4 +319,14 @@ export const jsonFormsTagCategoryOptionsControlTester: RankedTester = rankWith(
   schemaMatches((schema) => schema.format === "tag-category-options"),
 )
 
-export default JsonFormsTagCategoryOptionsArrayLayout
+const JsonFormsTagCategoryOptionsControl = (props: ArrayLayoutProps) => {
+  // Site Admin only — same gate as root create (navbar/footer settings).
+  const ability = usePermissions()
+  if (!ability.can("create", { parentId: null })) {
+    return null
+  }
+
+  return <JsonFormsTagCategoryOptionsArrayLayout {...props} />
+}
+
+export default JsonFormsTagCategoryOptionsControl

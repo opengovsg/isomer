@@ -33,6 +33,7 @@ import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { Can } from "~/features/permissions"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -125,16 +126,18 @@ const FixedBlock = () => {
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
           icon={BiCog}
         />
-        <BaseBlock
-          variant="vertical"
-          onClick={() => {
-            setCurrActiveIdx(0)
-            setDrawerState({ state: "collectionEditor", type: "filter" })
-          }}
-          label="Filters"
-          description="Define and manage filters for this Collection."
-          icon={BiSlider}
-        />
+        <Can do="create" on={{ parentId: null }}>
+          <BaseBlock
+            variant="vertical"
+            onClick={() => {
+              setCurrActiveIdx(0)
+              setDrawerState({ state: "collectionEditor", type: "filter" })
+            }}
+            label="Filters"
+            description="Define and manage filters for this Collection."
+            icon={BiSlider}
+          />
+        </Can>
       </>
     )
   }

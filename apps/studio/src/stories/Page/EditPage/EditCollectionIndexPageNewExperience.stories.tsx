@@ -251,6 +251,26 @@ export const ManageCollection: Story = {
   },
 }
 
+/** Editors can open Collection display but cannot manage Filters. */
+export const ManageCollectionAsEditor: Story = {
+  parameters: {
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
+    msw: {
+      handlers: [resourceHandlers.getRolesFor.editor(), ...COMMON_HANDLERS],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await canvas.findByText(/Manage Collection/i)
+    await expect(
+      canvas.getByRole("button", { name: /Collection display/i }),
+    ).toBeVisible()
+    await expect(
+      canvas.queryByRole("button", { name: /Filters/i }),
+    ).not.toBeInTheDocument()
+  },
+}
+
 export const CollectionDisplay: Story = {
   parameters: {
     growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],

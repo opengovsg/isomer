@@ -14,6 +14,7 @@ import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useMe } from "~/features/me/api"
+import { usePermissions } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trackEvent, triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
@@ -45,6 +46,8 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const { me } = useMe()
+  const ability = usePermissions()
+  const isSiteAdmin = ability.can("create", { parentId: null })
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -72,14 +75,19 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   })
 
   const schemaFields = useMemo(() => {
-    return drawerStateType === "display"
-      ? {
-          exclude: ["tagCategories", "tags"],
-        }
-      : {
-          include: ["tagCategories", "tags"],
-        }
-  }, [drawerStateType])
+    if (isSiteAdmin) {
+      return drawerStateType === "display"
+        ? {
+            exclude: ["tagCategories", "tags"],
+          }
+        : {
+            include: ["tagCategories", "tags"],
+          }
+    }
+    return {
+      exclude: ["tagCategories", "tags"],
+    }
+  }, [drawerStateType, isSiteAdmin])
 
   const metadataSchema = getScopedSchema({
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
