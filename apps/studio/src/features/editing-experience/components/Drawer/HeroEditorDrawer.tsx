@@ -23,6 +23,15 @@ import FormBuilder from "../form-builder/FormBuilder"
 import { uploadModifiedAssets } from "../utils"
 import { DrawerHeader } from "./DrawerHeader"
 
+// NOTE: Must be module-scoped so the schema identity is stable across renders.
+// getComponentSchema returns a fresh object per call; passing a new schema to
+// JsonForms on every render makes its internal resync effect fire on each
+// parent re-render, replacing in-progress form state with the (stale) data
+// prop. Async writes (e.g. uploaded image src, which arrives ~10ms later via
+// JsonForms' debounced onChange) get silently erased before reaching us.
+const heroSchema = getComponentSchema({ component: "hero" })
+const validateHeroFn = ajv.compile<IsomerComponent>(heroSchema)
+
 export default function HeroEditorDrawer(): JSX.Element {
   const {
     isOpen: isDiscardChangesModalOpen,
@@ -40,9 +49,6 @@ export default function HeroEditorDrawer(): JSX.Element {
     setModifiedAssets,
   } = useEditorDrawerContext()
   const toast = useToast()
-
-  const subSchema = getComponentSchema({ component: "hero" })
-  const validateFn = ajv.compile<IsomerComponent>(subSchema)
 
   const { pageId, siteId } = useQueryParse(pageSchema)
   const utils = trpc.useUtils()
@@ -206,8 +212,8 @@ export default function HeroEditorDrawer(): JSX.Element {
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
             <Box mb="1rem">
               <FormBuilder<IsomerComponent>
-                schema={subSchema}
-                validateFn={validateFn}
+                schema={heroSchema}
+                validateFn={validateHeroFn}
                 data={previewPageState.content[0]}
                 handleChange={handleChange}
               />
