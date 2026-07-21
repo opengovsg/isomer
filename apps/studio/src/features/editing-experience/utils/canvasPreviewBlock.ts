@@ -268,6 +268,82 @@ export const showCanvasSelectionHandles = (
   }
 }
 
+export const CANVAS_GROUP_BOUNDING_BOX_DATA_ATTRIBUTE =
+  "data-canvas-group-bounding-box"
+export const CANVAS_GROUP_RESIZE_HANDLE_DATA_ATTRIBUTE =
+  "data-canvas-group-resize-handle"
+
+const GROUP_RESIZE_CORNERS = [
+  { name: "top-left", top: "0%", left: "0%", cursor: "nwse-resize" },
+  { name: "top-right", top: "0%", left: "100%", cursor: "nesw-resize" },
+  { name: "bottom-left", top: "100%", left: "0%", cursor: "nesw-resize" },
+  { name: "bottom-right", top: "100%", left: "100%", cursor: "nwse-resize" },
+] as const
+
+export type CanvasGroupResizeCorner =
+  (typeof GROUP_RESIZE_CORNERS)[number]["name"]
+
+// Wix-style group bounding box: while a multi-selection with placed members
+// is idle, a rectangle around the members' combined footprint shows corner
+// resize handles — grabbing one scales the whole group. The box lives in the
+// preview document body with fixed positioning (viewport coords match fixed
+// coords inside the iframe) so the canvas's own overflow never clips it; the
+// box itself passes pointer events through, only the handles are grabbable.
+// Returns a cleanup that removes the box and its handles.
+export const showCanvasGroupResizeHandles = (
+  doc: Document,
+  rect: { left: number; top: number; width: number; height: number },
+  handleColor: string,
+  onGrab: (corner: CanvasGroupResizeCorner, event: MouseEvent) => void,
+): (() => void) => {
+  const box = doc.createElement("div")
+  box.setAttribute(CANVAS_GROUP_BOUNDING_BOX_DATA_ATTRIBUTE, "")
+  box.setAttribute("aria-hidden", "true")
+  Object.assign(box.style, {
+    position: "fixed",
+    left: `${rect.left}px`,
+    top: `${rect.top}px`,
+    width: `${rect.width}px`,
+    height: `${rect.height}px`,
+    boxSizing: "border-box",
+    border: `1px solid ${handleColor}`,
+    pointerEvents: "none",
+    zIndex: "3",
+  })
+  GROUP_RESIZE_CORNERS.forEach(({ name, top, left, cursor }) => {
+    const handle = doc.createElement("div")
+    handle.setAttribute(CANVAS_GROUP_RESIZE_HANDLE_DATA_ATTRIBUTE, name)
+    Object.assign(handle.style, {
+      position: "absolute",
+      top,
+      left,
+      width: "10px",
+      height: "10px",
+      transform: "translate(-50%, -50%)",
+      boxSizing: "border-box",
+      backgroundColor: "#ffffff",
+      border: `2px solid ${handleColor}`,
+      borderRadius: "50%",
+      cursor,
+      pointerEvents: "auto",
+    })
+    handle.addEventListener("mousedown", (event) => {
+      if (event.button !== 0) {
+        return
+      }
+      // Keep the press from starting text selection; the handle sits outside
+      // the canvas so no canvas gesture can double-handle it
+      event.preventDefault()
+      onGrab(name, event)
+    })
+    box.appendChild(handle)
+  })
+  doc.body.appendChild(box)
+  return () => {
+    box.remove()
+  }
+}
+
 export const CANVAS_DRAG_BADGE_DATA_ATTRIBUTE = "data-canvas-drag-badge"
 export const CANVAS_HOVER_LABEL_DATA_ATTRIBUTE = "data-canvas-hover-label"
 

@@ -7559,6 +7559,274 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("resizes the whole multi-selection by dragging a corner of its bounding box", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    // The placed members carry the custom properties the Canvas renderer
+    // would emit, so restore-on-cancel has real values to put back, and
+    // rendered rects matching their grid areas, so the bounding box has a
+    // real union to frame
+    blockAt(0).style.setProperty("--canvas-grid-column", "2 / span 3")
+    blockAt(0).style.setProperty("--canvas-grid-row", "2 / span 1")
+    blockAt(0).getBoundingClientRect = () => ({
+      left: 40,
+      top: 32,
+      width: 120,
+      height: 32,
+      right: 160,
+      bottom: 64,
+      x: 40,
+      y: 32,
+      toJSON: () => ({}),
+    })
+    blockAt(1).style.setProperty("--canvas-grid-column", "1 / span 4")
+    blockAt(1).style.setProperty("--canvas-grid-row", "1 / span 2")
+    blockAt(1).getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 160,
+      height: 64,
+      right: 160,
+      bottom: 64,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const boundingBox = () =>
+      previewDocument.querySelector<HTMLElement>(
+        "[data-canvas-group-bounding-box]",
+      )
+    const resizeHandles = () =>
+      previewDocument.querySelectorAll("[data-canvas-group-resize-handle]")
+    const pressHandle = (corner: string) => {
+      const handle = previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-group-resize-handle="${corner}"]`,
+      )
+      expect(handle).not.toBeNull()
+      act(() => {
+        handle!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
+      })
+    }
+    const movePointer = (clientX: number, clientY: number) =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousemove", { clientX, clientY }),
+        )
+      })
+    const releasePointer = () =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mouseup"),
+        )
+      })
+    const clickBlock = (block: HTMLElement, clientX: number, clientY: number) =>
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            clientX,
+            clientY,
+          }),
+        )
+      })
+    const gridColumnOf = (index: number) =>
+      blockAt(index).style.getPropertyValue("--canvas-grid-column")
+    const gridRowOf = (index: number) =>
+      blockAt(index).style.getPropertyValue("--canvas-grid-row")
+    const placementAt = (index: number) => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks?.[index]?.placement
+    }
+    const overlay = () =>
+      previewDocument.querySelector("[data-canvas-grid-overlay]")
+
+    await flush()
+    expect(boundingBox()).toBeNull()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    shiftClick(blockAt(2))
+    const baselineChangeCount = changes.length
+
+    // The idle multi-selection frames its placed members' combined footprint
+    // (cols 1–4, rows 1–2 → 0,0 to 160,64) with a bounding box carrying the
+    // four corner resize handles
+    const box = boundingBox()
+    expect(box).not.toBeNull()
+    expect(box!.style.left).toBe("0px")
+    expect(box!.style.top).toBe("0px")
+    expect(box!.style.width).toBe("160px")
+    expect(box!.style.height).toBe("64px")
+    expect(resizeHandles()).toHaveLength(4)
+
+    // Grabbing a corner opens no editor and commits nothing until the
+    // pointer actually crosses into another grid cell
+    pressHandle("bottom-right")
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(changes.length).toBe(baselineChangeCount)
+    expect(overlay()).toBeNull()
+    expect(boundingBox()).not.toBeNull()
+
+    // Dragging the corner to cell (row 4, col 8) doubles the box (cols 1–4,
+    // rows 1–2 → cols 1–8, rows 1–4): every placed member scales into it
+    // live, with the grid overlay up and the box hidden while resizing; the
+    // unplaced member stays in the stacked flow
+    movePointer(300, 110)
+    expect(overlay()).not.toBeNull()
+    expect(boundingBox()).toBeNull()
+    expect(gridColumnOf(0)).toBe("3 / span 6")
+    expect(gridRowOf(0)).toBe("3 / span 2")
+    expect(gridColumnOf(1)).toBe("1 / span 8")
+    expect(gridRowOf(1)).toBe("1 / span 4")
+    expect(gridColumnOf(2)).toBe("")
+
+    // Releasing commits every placed member's scaled placement in ONE data
+    // change, keeping the multi-selection (and its highlight) intact and
+    // bringing the bounding box back
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(placementAt(0)).toEqual({
+      colStart: 3,
+      colSpan: 6,
+      rowStart: 3,
+      rowSpan: 2,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 1,
+      colSpan: 8,
+      rowStart: 1,
+      rowSpan: 4,
+    })
+    expect(placementAt(2)).toBeUndefined()
+    expect(overlay()).toBeNull()
+    expect(boundingBox()).not.toBeNull()
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+
+    // The click that ends the resize must not open a block's editor
+    clickBlock(blockAt(0), 300, 110)
+    await flush()
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+
+    // Escape cancels an in-progress resize: the members return to their
+    // committed positions, nothing more commits, and the selection survives
+    // the release and its trailing click
+    pressHandle("bottom-right")
+    movePointer(125, 40) // cell (row 2, col 4): halves the box back down
+    expect(gridColumnOf(0)).toBe("2 / span 3")
+    expect(gridRowOf(0)).toBe("2 / span 1")
+    expect(gridColumnOf(1)).toBe("1 / span 4")
+    expect(gridRowOf(1)).toBe("1 / span 2")
+    pressKey(document.body, "Escape")
+    expect(gridColumnOf(0)).toBe("3 / span 6")
+    expect(gridRowOf(0)).toBe("3 / span 2")
+    expect(gridColumnOf(1)).toBe("1 / span 8")
+    expect(gridRowOf(1)).toBe("1 / span 4")
+    releasePointer()
+    clickBlock(blockAt(0), 125, 40)
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+
+    // A corner press released without crossing cells commits nothing
+    pressHandle("bottom-right")
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(boundingBox()).not.toBeNull()
+
+    iframe.remove()
+  })
+
   it("multi-selects blocks by sweeping a rubber-band marquee on the canvas background", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)

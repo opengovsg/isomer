@@ -14,6 +14,7 @@ import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import type {
   CanvasGridCell,
+  CanvasGroupResizeCorner,
   CanvasMarqueeRectangle,
   CanvasSelectionToolbarAction,
 } from "../../../utils/canvasPreviewBlock"
@@ -29,6 +30,7 @@ import {
   showCanvasContextMenu,
   showCanvasDragBadge,
   showCanvasGridOverlay,
+  showCanvasGroupResizeHandles,
   showCanvasHoverLabel,
   showCanvasMarqueeRectangle,
   showCanvasSelectionToolbar,
@@ -206,6 +208,129 @@ const clampGroupDragDelta = (
   }
 }
 
+// The multi-selection's combined footprint on the grid, both edges inclusive
+interface GroupBoundingBox {
+  colStart: number
+  colEnd: number
+  rowStart: number
+  rowEnd: number
+}
+
+const groupBoundingBoxOf = (
+  members: PlacedGroupMember[],
+): GroupBoundingBox => ({
+  colStart: Math.min(...members.map((member) => member.colStart)),
+  colEnd: Math.max(
+    ...members.map((member) => member.colStart + member.colSpan - 1),
+  ),
+  rowStart: Math.min(...members.map((member) => member.rowStart)),
+  rowEnd: Math.max(
+    ...members.map((member) => member.rowStart + member.rowSpan - 1),
+  ),
+})
+
+// Wix-style group resize: grabbing a corner handle of the multi-selection's
+// bounding box scales the box between the pointer and the opposite (anchor)
+// corner, and every placed member's placement maps proportionally into the
+// scaled box. `moved` flips once the pointer leaves the grabbed corner's
+// cell — a press that never moves commits nothing.
+interface GroupResizeState {
+  members: PlacedGroupMember[]
+  box: GroupBoundingBox
+  anchor: { col: number; row: number }
+  grab: CanvasGridCell
+  current: CanvasGridCell
+  moved: boolean
+}
+
+const resolveGroupResizeBox = (drag: GroupResizeState): GroupBoundingBox => ({
+  colStart: Math.min(drag.anchor.col, drag.current.col),
+  colEnd: Math.max(drag.anchor.col, drag.current.col),
+  rowStart: Math.min(drag.anchor.row, drag.current.row),
+  rowEnd: Math.max(drag.anchor.row, drag.current.row),
+})
+
+const boxesEqual = (a: GroupBoundingBox, b: GroupBoundingBox): boolean =>
+  a.colStart === b.colStart &&
+  a.colEnd === b.colEnd &&
+  a.rowStart === b.rowStart &&
+  a.rowEnd === b.rowEnd
+
+// Both edges of a member's span scale into the new box independently and
+// round to the nearest grid line, so members that abut in the original box
+// still abut after the resize; a span never drops below one cell, shifting
+// its start back when the collapsed box leaves no room at the far edge
+const scaleAxisIntoBox = (
+  start: number,
+  span: number,
+  fromStart: number,
+  fromSize: number,
+  toStart: number,
+  toSize: number,
+): { start: number; span: number } => {
+  const scale = toSize / fromSize
+  const startOffset = Math.round((start - fromStart) * scale)
+  const endOffset = Math.round((start - fromStart + span) * scale)
+  const scaledSpan = Math.max(1, endOffset - startOffset)
+  return {
+    start: toStart + Math.min(startOffset, toSize - scaledSpan),
+    span: scaledSpan,
+  }
+}
+
+const scaleMemberPlacementIntoBox = (
+  member: PlacedGroupMember,
+  from: GroupBoundingBox,
+  to: GroupBoundingBox,
+): Required<CanvasBlockPlacement> => {
+  const cols = scaleAxisIntoBox(
+    member.colStart,
+    member.colSpan,
+    from.colStart,
+    from.colEnd - from.colStart + 1,
+    to.colStart,
+    to.colEnd - to.colStart + 1,
+  )
+  const rows = scaleAxisIntoBox(
+    member.rowStart,
+    member.rowSpan,
+    from.rowStart,
+    from.rowEnd - from.rowStart + 1,
+    to.rowStart,
+    to.rowEnd - to.rowStart + 1,
+  )
+  return {
+    colStart: cols.start,
+    colSpan: cols.span,
+    rowStart: rows.start,
+    rowSpan: rows.span,
+  }
+}
+
+const scaleBlockPlacementsIntoBox = (
+  blocks: unknown[],
+  members: PlacedGroupMember[],
+  from: GroupBoundingBox,
+  to: GroupBoundingBox,
+): unknown[] => {
+  const scaled = new Map(
+    members.map(
+      (member) =>
+        [member.index, scaleMemberPlacementIntoBox(member, from, to)] as const,
+    ),
+  )
+  return blocks.map((block, index) => {
+    const target = scaled.get(index)
+    if (!target) {
+      return block
+    }
+    const { placement, ...rest } = block as {
+      placement?: CanvasBlockPlacement
+    }
+    return { ...rest, placement: { ...placement, ...target } }
+  })
+}
+
 // Wix-style rubber-band selection: a plain press on the empty canvas
 // background sweeps out a viewport-space rectangle, and every block it
 // touches on release becomes the multi-selection. `moved` flips once the
@@ -368,6 +493,10 @@ export const useCanvasPreviewClickToEdit = ({
   // multi-selection grabs the whole group, and releasing commits every
   // placed member's shifted placement in one data change
   const [groupDrag, setGroupDrag] = useState<GroupDragState | null>(null)
+  // Wix-style group resize: grabbing a corner handle of the multi-selection's
+  // bounding box scales the box, and releasing commits every placed member's
+  // proportionally mapped placement in one data change
+  const [groupResize, setGroupResize] = useState<GroupResizeState | null>(null)
   // Wix-style rubber-band selection: a plain press on the empty canvas
   // background sweeps out a marquee, and every block it touches on release
   // becomes the multi-selection
@@ -1689,13 +1818,15 @@ export const useCanvasPreviewClickToEdit = ({
     }
   }, [groupDrag, canvasOrdinal, path, dispatch, releaseGroupDragFeedback])
 
-  // The grid overlay while a group drag is in progress — keyed on the moved
-  // flag (not the pointer cell) so it draws once per drag, and only once the
-  // pointer has actually crossed cells: a plain click never flashes the grid
+  // The grid overlay while a group drag or group resize is in progress —
+  // keyed on the moved flags (not the pointer cell) so it draws once per
+  // gesture, and only once the pointer has actually crossed cells: a plain
+  // click never flashes the grid
   const groupDragActive = groupDrag !== null && groupDrag.moved
+  const groupResizeActive = groupResize !== null && groupResize.moved
   useEffect(() => {
     if (
-      !groupDragActive ||
+      (!groupDragActive && !groupResizeActive) ||
       canvasOrdinal === null ||
       path !== CANVAS_BLOCKS_PATH
     ) {
@@ -1706,7 +1837,7 @@ export const useCanvasPreviewClickToEdit = ({
       return
     }
     return showCanvasGridOverlay(canvas, hoverColor)
-  }, [groupDragActive, canvasOrdinal, path, hoverColor])
+  }, [groupDragActive, groupResizeActive, canvasOrdinal, path, hoverColor])
 
   // Live feedback while the group drag is in progress: every placed member is
   // repositioned by the clamped delta via the Canvas renderer's CSS custom
@@ -1860,6 +1991,146 @@ export const useCanvasPreviewClickToEdit = ({
     path,
     alignmentGuideColor,
   ])
+
+  // The group resize's tracking and commit: the pointer is tracked on the
+  // preview window (mapped to grid cells through the rendered canvas's
+  // geometry, so the box between the pointer and the anchor corner is always
+  // on-grid), releasing anywhere commits every placed member's proportionally
+  // scaled placement in ONE data change (a release that leaves the bounding
+  // box unchanged commits nothing), and Escape cancels the resize — capture
+  // phase so the group-shortcut Escape (clear selection) and the drawer's own
+  // close handlers never see it.
+  useEffect(() => {
+    if (groupResize === null) {
+      return
+    }
+    const canvas =
+      canvasOrdinal !== null && path === CANVAS_BLOCKS_PATH
+        ? findCanvasPreviewContainer(document, canvasOrdinal)
+        : null
+    if (!canvas) {
+      setGroupResize(null)
+      return
+    }
+    const endResize = (commit: boolean) => {
+      if (groupResize.moved) {
+        suppressPreviewClickRef.current = true
+      }
+      const resizedBox = resolveGroupResizeBox(groupResize)
+      if (commit && !boxesEqual(resizedBox, groupResize.box) && dispatch) {
+        // The committed data re-renders the preview and owns the members'
+        // placements from then on
+        releaseGroupDragFeedback(false)
+        dispatch(
+          update(path, (blocks: unknown[]) =>
+            scaleBlockPlacementsIntoBox(
+              blocks,
+              groupResize.members,
+              groupResize.box,
+              resizedBox,
+            ),
+          ),
+        )
+      } else {
+        releaseGroupDragFeedback(true)
+      }
+      setGroupResize(null)
+    }
+    const commitGroupResize = () => endResize(true)
+    const cancelOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return
+      }
+      event.preventDefault()
+      event.stopPropagation()
+      endResize(false)
+    }
+    const trackPointer = (event: MouseEvent) => {
+      const cell = resolveCanvasGridCellFromPoint(
+        canvas,
+        event.clientX,
+        event.clientY,
+      )
+      if (!cell) {
+        return
+      }
+      setGroupResize((current) =>
+        current &&
+        (current.current.row !== cell.row || current.current.col !== cell.col)
+          ? {
+              ...current,
+              current: cell,
+              moved:
+                current.moved ||
+                cell.row !== current.grab.row ||
+                cell.col !== current.grab.col,
+            }
+          : current,
+      )
+    }
+    // addEventListener dedupes, so double registration is safe when the
+    // preview shares the editor window
+    const previewWindow = canvas.ownerDocument.defaultView
+    window.addEventListener("mouseup", commitGroupResize)
+    window.addEventListener("keydown", cancelOnEscape, true)
+    previewWindow?.addEventListener("mousemove", trackPointer)
+    previewWindow?.addEventListener("mouseup", commitGroupResize)
+    previewWindow?.addEventListener("keydown", cancelOnEscape, true)
+    return () => {
+      window.removeEventListener("mouseup", commitGroupResize)
+      window.removeEventListener("keydown", cancelOnEscape, true)
+      previewWindow?.removeEventListener("mousemove", trackPointer)
+      previewWindow?.removeEventListener("mouseup", commitGroupResize)
+      previewWindow?.removeEventListener("keydown", cancelOnEscape, true)
+    }
+  }, [groupResize, canvasOrdinal, path, dispatch, releaseGroupDragFeedback])
+
+  // Live feedback while the group resize is in progress: every placed member
+  // is repositioned to its proportionally scaled placement via the Canvas
+  // renderer's CSS custom properties (originals captured once per gesture for
+  // restore-on-cancel), matching the group drag's affordance
+  useEffect(() => {
+    if (
+      groupResize === null ||
+      !groupResize.moved ||
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH
+    ) {
+      return
+    }
+    const resizedBox = resolveGroupResizeBox(groupResize)
+    const captures = (groupDragCapturesRef.current ??= new Map())
+    groupResize.members.forEach((member) => {
+      const element = findCanvasBlockPreviewElement(
+        document,
+        canvasOrdinal,
+        member.index,
+      )
+      if (!element) {
+        return
+      }
+      const placement = scaleMemberPlacementIntoBox(
+        member,
+        groupResize.box,
+        resizedBox,
+      )
+      if (!captures.has(member.index)) {
+        captures.set(member.index, {
+          element,
+          column: element.style.getPropertyValue("--canvas-grid-column"),
+          row: element.style.getPropertyValue("--canvas-grid-row"),
+        })
+      }
+      element.style.setProperty(
+        "--canvas-grid-column",
+        `${placement.colStart} / span ${placement.colSpan}`,
+      )
+      element.style.setProperty(
+        "--canvas-grid-row",
+        `${placement.rowStart} / span ${placement.rowSpan}`,
+      )
+    })
+  }, [groupResize, canvasOrdinal, path])
 
   // The rubber-band marquee's tracking and commit: the pointer is tracked on
   // the preview window in viewport coordinates, releasing turns every block
@@ -2086,11 +2357,12 @@ export const useCanvasPreviewClickToEdit = ({
       )
     }
     const handleGroupShortcut = (event: KeyboardEvent) => {
-      // While a pointer group drag is in progress the drag owns the keys:
-      // Escape cancels the drag (its own capture listener), and the group
-      // shortcuts must not fire mid-drag
+      // While a pointer group drag or group resize is in progress the
+      // gesture owns the keys: Escape cancels it (its own capture listener),
+      // and the group shortcuts must not fire mid-drag
       if (
         groupDrag !== null ||
+        groupResize !== null ||
         event.defaultPrevented ||
         isEditableTarget(event.target)
       ) {
@@ -2193,6 +2465,7 @@ export const useCanvasPreviewClickToEdit = ({
     dispatch,
     duplicateMultiSelectedBlocks,
     groupDrag,
+    groupResize,
     multiSelectedIndices,
     path,
     removeMultiSelectedBlocks,
@@ -2519,7 +2792,8 @@ export const useCanvasPreviewClickToEdit = ({
       path !== CANVAS_BLOCKS_PATH ||
       multiSelectedIndices.length === 0 ||
       selectedIndex !== undefined ||
-      groupDragActive
+      groupDragActive ||
+      groupResizeActive
     ) {
       return
     }
@@ -2588,10 +2862,99 @@ export const useCanvasPreviewClickToEdit = ({
     multiSelectedIndices,
     selectedIndex,
     groupDragActive,
+    groupResizeActive,
     hoverColor,
     duplicateMultiSelectedBlocks,
     arrangeMultiSelectedBlocks,
     removeMultiSelectedBlocks,
+  ])
+
+  // Wix-style group resize handles: while the multi-selection is idle, a
+  // bounding box around its placed members' combined footprint shows corner
+  // handles in the live preview — grabbing one starts a resize anchored at
+  // the opposite corner, scaling every placed member proportionally. The
+  // effect is keyed on the members' placements (not just the indices) so the
+  // box follows commits that move or resize the members, and it hides while
+  // a group drag or resize is moving them.
+  const placedMembersKey =
+    canvasOrdinal !== null &&
+    path === CANVAS_BLOCKS_PATH &&
+    multiSelectedIndices.length > 0
+      ? JSON.stringify(
+          collectPlacedGroupMembers(blocksRef.current, multiSelectedIndices),
+        )
+      : ""
+  useEffect(() => {
+    if (
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH ||
+      multiSelectedIndices.length === 0 ||
+      selectedIndex !== undefined ||
+      groupDragActive ||
+      groupResizeActive
+    ) {
+      return
+    }
+    const canvas = findCanvasPreviewContainer(document, canvasOrdinal)
+    if (!canvas) {
+      return
+    }
+    const placedMembers = collectPlacedGroupMembers(
+      blocksRef.current,
+      multiSelectedIndices,
+    )
+    if (placedMembers.length === 0) {
+      return
+    }
+    const rects = placedMembers.flatMap((member) => {
+      const element = findCanvasBlockPreviewElement(
+        document,
+        canvasOrdinal,
+        member.index,
+      )
+      return element ? [element.getBoundingClientRect()] : []
+    })
+    if (rects.length === 0) {
+      return
+    }
+    const left = Math.min(...rects.map((rect) => rect.left))
+    const top = Math.min(...rects.map((rect) => rect.top))
+    const right = Math.max(...rects.map((rect) => rect.right))
+    const bottom = Math.max(...rects.map((rect) => rect.bottom))
+    return showCanvasGroupResizeHandles(
+      canvas.ownerDocument,
+      { left, top, width: right - left, height: bottom - top },
+      hoverColor,
+      (corner: CanvasGroupResizeCorner) => {
+        const box = groupBoundingBoxOf(placedMembers)
+        // The grabbed corner's cell doubles as the drag's starting pointer
+        // cell; the anchor is the box's opposite corner
+        const grab = {
+          col: corner.endsWith("right") ? box.colEnd : box.colStart,
+          row: corner.startsWith("bottom") ? box.rowEnd : box.rowStart,
+        }
+        setGroupResize({
+          members: placedMembers,
+          box,
+          anchor: {
+            col: corner.endsWith("right") ? box.colStart : box.colEnd,
+            row: corner.startsWith("bottom") ? box.rowStart : box.rowEnd,
+          },
+          grab,
+          current: grab,
+          moved: false,
+        })
+      },
+    )
+  }, [
+    canvasOrdinal,
+    path,
+    multiSelectedIndices,
+    placedMembersKey,
+    selectedIndex,
+    groupDragActive,
+    groupResizeActive,
+    hoverColor,
   ])
 
   // Wix-style right-click context menu: on a block, the same selection
