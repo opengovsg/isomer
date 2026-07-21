@@ -1,6 +1,6 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
-import type { StaticImageData } from "next/image"
-import { Box, FormControl } from "@chakra-ui/react"
+import type { ComponentType } from "react"
+import { Box, FormControl, type HTMLChakraProps } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
@@ -8,34 +8,27 @@ import {
   CALLOUT_VARIANT_FORMAT,
   CalloutVariant,
 } from "@opengovsg/isomer-components"
-import Image from "next/image"
-import calloutGoodToKnowImgRaw from "~/components/icons/callout/StyleCard-good-to-know.svg"
-import calloutInfoImgRaw from "~/components/icons/callout/StyleCard-info.svg"
-import calloutNoteImgRaw from "~/components/icons/callout/StyleCard-note.svg"
-import calloutUrgentImgRaw from "~/components/icons/callout/StyleCard-urgent.svg"
-import calloutWarningImgRaw from "~/components/icons/callout/StyleCard-warning.svg"
+import { StyleCardGoodToKnow } from "~/components/icons/callout/variant/goodToKnow"
+import { StyleCardInformation } from "~/components/icons/callout/variant/information"
+import { StyleCardNote } from "~/components/icons/callout/variant/note"
+import { StyleCardUrgent } from "~/components/icons/callout/variant/urgent"
+import { StyleCardWarning } from "~/components/icons/callout/variant/warning"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
-
-const calloutInfoImg = calloutInfoImgRaw as StaticImageData
-const calloutGoodToKnowImg = calloutGoodToKnowImgRaw as StaticImageData
-const calloutWarningImg = calloutWarningImgRaw as StaticImageData
-const calloutUrgentImg = calloutUrgentImgRaw as StaticImageData
-const calloutNoteImg = calloutNoteImgRaw as StaticImageData
 
 export const jsonFormsCalloutVariantControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CalloutVariantControl,
   schemaMatches((schema) => schema.format === CALLOUT_VARIANT_FORMAT),
 )
 
-const CALLOUT_VARIANT_IMAGES: Record<
+const CALLOUT_VARIANT_PREVIEWS: Record<
   (typeof CalloutVariant)[keyof typeof CalloutVariant]["value"],
-  StaticImageData
+  ComponentType<HTMLChakraProps<"svg">>
 > = {
-  [CalloutVariant.Information.value]: calloutInfoImg,
-  [CalloutVariant.GoodToKnow.value]: calloutGoodToKnowImg,
-  [CalloutVariant.Warning.value]: calloutWarningImg,
-  [CalloutVariant.Urgent.value]: calloutUrgentImg,
-  [CalloutVariant.Note.value]: calloutNoteImg,
+  [CalloutVariant.Information.value]: StyleCardInformation,
+  [CalloutVariant.GoodToKnow.value]: StyleCardGoodToKnow,
+  [CalloutVariant.Warning.value]: StyleCardWarning,
+  [CalloutVariant.Urgent.value]: StyleCardUrgent,
+  [CalloutVariant.Note.value]: StyleCardNote,
 }
 
 function JsonFormsCalloutVariantControl({
@@ -59,20 +52,26 @@ function JsonFormsCalloutVariantControl({
           defaultValue={CalloutVariant.Information.value}
         >
           {Object.values(CalloutVariant).map(
-            ({ value, label: optionLabel }) => (
-              <Radio key={value} value={value} allowDeselect={false} size="sm">
-                {optionLabel}
-                <Image
-                  src={CALLOUT_VARIANT_IMAGES[value]}
-                  alt=""
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    marginTop: "0.75rem",
-                  }}
-                />
-              </Radio>
-            ),
+            ({ value, label: optionLabel }) => {
+              const Preview = CALLOUT_VARIANT_PREVIEWS[value]
+              return (
+                <Radio
+                  key={value}
+                  value={value}
+                  allowDeselect={false}
+                  size="sm"
+                >
+                  {optionLabel}
+                  <Preview
+                    aria-hidden
+                    w="100%"
+                    h="auto"
+                    mt="0.75rem"
+                    display="block"
+                  />
+                </Radio>
+              )
+            },
           )}
         </Radio.RadioGroup>
       </FormControl>
