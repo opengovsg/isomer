@@ -1,4 +1,4 @@
-import { isPlainObject, mapValues } from "lodash-es"
+import { isObject, isPlainObject, mapValues } from "lodash-es"
 
 import type { EmailTemplate, EmailTemplateMap } from "../templates/types"
 import { escapeHtml } from "./escapeHtml"
@@ -43,6 +43,10 @@ const escapeTemplateArgument = <T>(value: T): T => {
 
   if (isPlainObject(value)) {
     return mapValues(value as object, escapeTemplateArgument) as T
+  }
+
+  if (isObject(value)) {
+    throw new Error("Cannot escape a non-plain object")
   }
 
   return value

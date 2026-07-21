@@ -14,18 +14,13 @@ describe("escapeTemplateArguments", () => {
     )
 
   it("escapes template data before calling the underlying template", () => {
-    class ResourceLike {
-      constructor(public title: string) {}
-    }
-
     const template = createTemplate()
     const wrapped = escapeTemplateArguments({ alert: template })
-    const resource = new ResourceLike(malicious)
 
     const input = {
       title: malicious,
       nested: { labels: [malicious] },
-      resource,
+      resource: { title: malicious },
       count: 2,
       scheduledAt: new Date("2024-01-01T00:00:00.000Z"),
     }
@@ -34,13 +29,28 @@ describe("escapeTemplateArguments", () => {
     expect(template).toHaveBeenCalledWith({
       title: escaped,
       nested: { labels: [escaped] },
-      resource,
+      resource: { title: escaped },
       count: 2,
       scheduledAt: input.scheduledAt,
     })
     expect(result).toEqual({ subject: escaped, body: escaped })
     expect(input.title).toBe(malicious)
-    expect(resource.title).toBe(malicious)
+  })
+
+  it("throws instead of silently skipping escaping for a non-plain-object value", () => {
+    class ResourceLike {
+      constructor(public title: string) {}
+    }
+
+    const template = createTemplate()
+    const wrapped = escapeTemplateArguments({ alert: template })
+    const input = {
+      title: "irrelevant",
+      resource: new ResourceLike(malicious),
+    }
+
+    expect(() => wrapped.alert(input)).toThrow()
+    expect(template).not.toHaveBeenCalled()
   })
 
   it("wraps every template without changing keys", () => {
