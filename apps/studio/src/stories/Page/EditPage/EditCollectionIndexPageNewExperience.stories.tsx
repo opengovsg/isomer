@@ -301,6 +301,20 @@ export const FiltersDeleteOptionModalEnabledCta: Story = {
   },
 }
 
+export const FiltersDeleteOptionModalZeroUsage: Story = {
+  parameters: newCollectionFiltersIsomerAdminParameters,
+  play: async (context) => {
+    await FiltersDeleteOptionModalDisabledCta.play?.(context)
+    const portals = withinPortals(context.canvasElement)
+    await expect(
+      portals.queryByText(/This option is being used in/i),
+    ).not.toBeInTheDocument()
+    await portals.findByText(
+      /To undo this change, you will need to create and re-assign this option to all items\./i,
+    )
+  },
+}
+
 export const FiltersBackShowsOptionCount: Story = {
   parameters: newCollectionFiltersIsomerAdminParameters,
   play: async ({ canvasElement }) => {
@@ -374,6 +388,29 @@ export const FiltersDeleteFilterModalEnabledCta: Story = {
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
     ).not.toBeDisabled()
+  },
+}
+
+export const FiltersDeleteFilterModalZeroUsage: Story = {
+  parameters: {
+    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
+    msw: {
+      handlers: [
+        userHandlers.isIsomerAdmin.admin(),
+        ...COMMON_HANDLERS.slice(0, -1),
+        collectionHandlers.countTagOptionsUsage.zero(),
+      ],
+    },
+  },
+  play: async (context) => {
+    await FiltersDeleteFilterModalDisabledCta.play?.(context)
+    const portals = withinPortals(context.canvasElement)
+    await expect(
+      portals.queryByText(/It’s being used on/i),
+    ).not.toBeInTheDocument()
+    await portals.findByText(
+      /To undo this change, you will need to recreate this filter and assign options to each item individually\./i,
+    )
   },
 }
 

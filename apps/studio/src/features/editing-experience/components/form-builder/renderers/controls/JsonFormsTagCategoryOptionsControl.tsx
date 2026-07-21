@@ -26,25 +26,37 @@ import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultTagOption } from "./constants"
 
-function TagOptionUsageCount({
+function DeleteOptionWarningBody({
   siteId,
   pageId,
   tagId,
 }: {
   siteId: number
   pageId: number
-  tagId: string
+  tagId?: string
 }) {
+  const undoText =
+    "To undo this change, you will need to create and re-assign this option to all items."
+
+  if (!tagId) {
+    return <Text textStyle="body-2">{undoText}</Text>
+  }
+
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
     siteId,
     pageId,
     tagOptionIds: [tagId],
   })
 
+  if (count === 0) {
+    return <Text textStyle="body-2">{undoText}</Text>
+  }
+
   return (
-    <>
-      {count} {count === 1 ? "item" : "items"}
-    </>
+    <Text textStyle="body-2">
+      This option is being used in {count} {count === 1 ? "item" : "items"}.{" "}
+      {undoText}
+    </Text>
   )
 }
 
@@ -281,34 +293,22 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           label={deleteTarget.label}
           noun="filter option"
           warningBody={
-            <Text textStyle="body-2">
-              This option is being used in{" "}
-              <ErrorBoundary fallbackRender={() => <>—</>}>
-                <Suspense
-                  fallback={
-                    <Skeleton
-                      as="span"
-                      display="inline-block"
-                      verticalAlign="middle"
-                      height="1em"
-                      width="2ch"
-                    />
-                  }
-                >
-                  {deleteTarget.tagId ? (
-                    <TagOptionUsageCount
-                      siteId={siteId}
-                      pageId={pageId}
-                      tagId={deleteTarget.tagId}
-                    />
-                  ) : (
-                    <>0 items</>
-                  )}
-                </Suspense>
-              </ErrorBoundary>
-              {". "}To undo this change, you will need to create and re-assign
-              this option to all items.
-            </Text>
+            <ErrorBoundary
+              fallbackRender={() => (
+                <Text textStyle="body-2">
+                  To undo this change, you will need to create and re-assign
+                  this option to all items.
+                </Text>
+              )}
+            >
+              <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
+                <DeleteOptionWarningBody
+                  siteId={siteId}
+                  pageId={pageId}
+                  tagId={deleteTarget.tagId}
+                />
+              </Suspense>
+            </ErrorBoundary>
           }
           onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}

@@ -60,11 +60,20 @@ function FilterUsageInfobox({
     tagOptionIds,
   })
 
+  const undoText =
+    "To undo this change, you will need to recreate this filter and assign options to each item individually."
+
+  if (count === 0) {
+    return (
+      <Text textStyle="body-1" color="base.content.strong">
+        {undoText}
+      </Text>
+    )
+  }
+
   return (
     <Text textStyle="body-1" color="base.content.strong">
-      It’s being used on {count === 1 ? "1 item" : `${count} items`}. To undo
-      this change, you will need to recreate this filter and assign options to
-      each item individually.
+      It’s being used on {count === 1 ? "1 item" : `${count} items`}. {undoText}
     </Text>
   )
 }
