@@ -9,6 +9,7 @@
 //   HEAD_SHA   the PR head commit
 
 import { execFileSync } from "node:child_process"
+import { matchesGlob } from "node:path"
 
 const BASE_SHA = requireEnv("BASE_SHA")
 const HEAD_SHA = requireEnv("HEAD_SHA")
@@ -64,46 +65,10 @@ function requireEnv(name) {
   return value
 }
 
-// Minimal glob->RegExp: this repo's bucket globs only ever use `*` and `**`,
-// so a full glob library (brace expansion, extglob, etc.) would be unused
-// surface area — this covers exactly what's needed.
-function globToRegExp(glob) {
-  let pattern = "^"
-  for (let i = 0; i < glob.length; ) {
-    const char = glob[i]
-    if (char === "*" && glob[i + 1] === "*") {
-      pattern += ".*"
-      i += 2
-      if (glob[i] === "/") i += 1
-      continue
-    }
-    if (char === "*") {
-      pattern += "[^/]*"
-      i += 1
-      continue
-    }
-    if ("\\^$.|?+()[]{}".includes(char)) {
-      pattern += `\\${char}`
-      i += 1
-      continue
-    }
-    pattern += char
-    i += 1
-  }
-  return new RegExp(`${pattern}$`)
-}
-
-const matchers = Object.fromEntries(
-  Object.entries(BUCKET_GLOBS).map(([bucket, globs]) => [
-    bucket,
-    globs.map(globToRegExp),
-  ]),
-)
-
 function classify(path) {
   for (const bucket of BUCKET_ORDER) {
     if (bucket === "app") return "app"
-    if (matchers[bucket].some((re) => re.test(path))) return bucket
+    if (BUCKET_GLOBS[bucket].some((glob) => matchesGlob(path, glob))) return bucket
   }
   return "app"
 }
