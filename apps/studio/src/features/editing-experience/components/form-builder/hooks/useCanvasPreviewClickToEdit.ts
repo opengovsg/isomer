@@ -91,9 +91,9 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // move it forward/backward in the stacking order, and ⌘⇧]/⌘⇧[ jump it to the
 // front/back of the stack. Holding Alt (⌥) while pressing any block leaves a
 // copy of it in place while the press drags the original away, Wix-style.
-// The right-click context menu additionally offers Wix's align commands,
-// repositioning a placed block's columns against the left/centre/right of
-// the grid or stretching it across the full width.
+// The right-click context menu offers the same clipboard commands plus
+// Wix's align commands, repositioning a placed block's columns against the
+// left/centre/right of the grid or stretching it across the full width.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -845,6 +845,27 @@ export const useCanvasPreviewClickToEdit = ({
           onClick: withClose(duplicateSelectedBlock),
         },
         {
+          name: "copy",
+          label: "Copy block (⌘C)",
+          glyph: "⿻",
+          onClick: withClose(() => {
+            copySelectedBlock()
+          }),
+        },
+        {
+          name: "cut",
+          label: "Cut block (⌘X)",
+          glyph: "✂",
+          onClick: withClose(cutSelectedBlock),
+        },
+        {
+          name: "paste",
+          label: "Paste block (⌘V)",
+          glyph: "⇲",
+          disabled: canvasBlockClipboard === null,
+          onClick: withClose(pasteBlockFromClipboard),
+        },
+        {
           name: "bring-forward",
           label: "Bring forward (⌘])",
           glyph: "▲",
@@ -959,6 +980,9 @@ export const useCanvasPreviewClickToEdit = ({
     selectedIndex,
     hoverColor,
     duplicateSelectedBlock,
+    copySelectedBlock,
+    cutSelectedBlock,
+    pasteBlockFromClipboard,
     bringSelectedForward,
     sendSelectedBackward,
     bringSelectedToFront,

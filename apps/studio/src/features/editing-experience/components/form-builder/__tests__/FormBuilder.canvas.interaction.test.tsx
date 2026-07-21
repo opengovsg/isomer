@@ -4442,4 +4442,155 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("copies, cuts, and pastes canvas blocks via the right-click context menu", async () => {
+    resetCanvasBlockClipboard()
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    // Spare wrappers (indices 2-3) so pasted copies' selections have
+    // rendered elements
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 1 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const menu = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (element: Element) => {
+      act(() => {
+        element.dispatchEvent(
+          new iframeRealm.MouseEvent("contextmenu", {
+            bubbles: true,
+            cancelable: true,
+            clientX: 40,
+            clientY: 40,
+          }),
+        )
+      })
+    }
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const lastBlocks = () =>
+      (
+        changes.at(-1) as
+          | {
+              blocks?: {
+                quote?: string
+                placement?: Record<string, number>
+              }[]
+            }
+          | undefined
+      )?.blocks
+    await flush()
+
+    // With an empty block clipboard, Paste is disabled while Copy/Cut act
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="0"] span')!,
+    )
+    await flush()
+    expect(menuItem("Copy block (⌘C)").disabled).toBe(false)
+    expect(menuItem("Cut block (⌘X)").disabled).toBe(false)
+    expect(menuItem("Paste block (⌘V)").disabled).toBe(true)
+
+    // Copy closes the menu and commits no data change
+    const changeCount = changes.length
+    act(() => {
+      menuItem("Copy block (⌘C)").click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(changes.length).toBe(changeCount)
+
+    // Paste is now enabled: it appends a copy with its placement shifted one
+    // row down and switches the editor to the pasted copy
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="0"] span')!,
+    )
+    await flush()
+    const pasteItem = menuItem("Paste block (⌘V)")
+    expect(pasteItem.disabled).toBe(false)
+    act(() => {
+      pasteItem.click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(lastBlocks()).toHaveLength(3)
+    expect(lastBlocks()?.[2]?.quote).toBe(BLOCKQUOTE_BLOCK.quote)
+    expect(lastBlocks()?.[2]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 1,
+    })
+    expect(container.textContent).toContain("Columns 2–5, rows 2–2")
+
+    // Cut removes the block, returning to the block list with the cut block
+    // held in the clipboard
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="1"] span')!,
+    )
+    await flush()
+    act(() => {
+      menuItem("Cut block (⌘X)").click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(lastBlocks()).toHaveLength(2)
+    expect(
+      lastBlocks()?.some((block) => block.quote === "The second quote"),
+    ).toBe(false)
+    expect(container.textContent).toContain("Add item")
+
+    // Pasting from the menu puts the cut block back; it had no placement, so
+    // the pasted copy is unplaced too
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="0"] span')!,
+    )
+    await flush()
+    act(() => {
+      menuItem("Paste block (⌘V)").click()
+    })
+    await flush()
+    expect(lastBlocks()).toHaveLength(3)
+    expect(lastBlocks()?.[2]?.quote).toBe("The second quote")
+    expect(lastBlocks()?.[2]?.placement).toBeUndefined()
+
+    iframe.remove()
+  })
 })
