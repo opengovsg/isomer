@@ -382,6 +382,33 @@ describe("inactiveUsers.service", () => {
       expect(deletedPermissions).toHaveLength(0)
     })
 
+    it("should continue sending emails when retrieving site admins throws", async () => {
+      // Arrange
+      await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      const withSpy = vi.spyOn(db, "with").mockImplementationOnce(() => {
+        throw new Error("Database error")
+      })
+
+      // Act
+      try {
+        await bulkDeactivateInactiveUsers()
+      } finally {
+        withSpy.mockRestore()
+      }
+
+      // Assert
+      expect(sendAccountDeactivationEmail).toHaveBeenCalledTimes(1)
+    })
+
     it("should only delete non-deleted permissions", async () => {
       // Arrange
       const user = await setupUserWrapper({

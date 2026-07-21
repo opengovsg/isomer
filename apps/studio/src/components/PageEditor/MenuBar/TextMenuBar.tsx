@@ -9,7 +9,6 @@ import {
   BiListOl,
   BiListUl,
   BiStrikethrough,
-  BiTable,
   BiUnderline,
   BiWrench,
 } from "react-icons/bi"
@@ -24,6 +23,7 @@ import {
   IconMergeCells,
   IconSplitCell,
 } from "~/components/icons"
+import { TableSizePicker } from "~/features/editing-experience/components/TableSizePicker/TableSizePicker"
 
 import type { PossibleMenubarItemProps } from "./MenubarItem/types"
 import { TableSettingsModal } from "../TableSettingsModal"
@@ -160,16 +160,10 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
         isActive: () => editor.isActive("link"),
       },
       {
-        type: "item",
-        icon: BiTable,
-        title: "Table",
-        action: () => {
-          if (editor.isActive("table")) {
-            return editor.chain().focus().deleteTable().run()
-          }
-          return editor.chain().focus().insertTable().run()
-        },
-        isActive: () => editor.isActive("table"),
+        // A grid-based size picker when not in a table (insert), or a plain
+        // delete button when a table is selected — see TableSizePicker.
+        type: "custom",
+        render: () => <TableSizePicker editor={editor} />,
       },
       // Table-specific commands
       {
@@ -238,6 +232,26 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
           },
         ],
       },
+      // Table-scoped: promoted onto the main toolbar instead of the overflow
+      // menu while editing inside a table, same as the "Table" group above.
+      {
+        type: "item",
+        icon: MdSuperscript,
+        title: "Superscript",
+        isHidden: () => !editor.isActive("table"),
+        action: () =>
+          editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
+        isActive: () => editor.isActive("superscript"),
+      },
+      {
+        type: "item",
+        icon: MdSubscript,
+        title: "Subscript",
+        isHidden: () => !editor.isActive("table"),
+        action: () =>
+          editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
+        isActive: () => editor.isActive("subscript"),
+      },
       // Lesser-used commands are kept inside the overflow items list
       {
         type: "overflow-list",
@@ -246,6 +260,7 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
             type: "item",
             icon: MdSuperscript,
             title: "Superscript",
+            isHidden: () => editor.isActive("table"),
             action: () =>
               editor.chain().focus().unsetSubscript().toggleSuperscript().run(),
             isActive: () => editor.isActive("superscript"),
@@ -254,6 +269,7 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
             type: "item",
             icon: MdSubscript,
             title: "Subscript",
+            isHidden: () => editor.isActive("table"),
             action: () =>
               editor.chain().focus().unsetSuperscript().toggleSubscript().run(),
             isActive: () => editor.isActive("subscript"),
@@ -262,6 +278,7 @@ export const TextMenuBar = ({ editor }: { editor: Editor }) => {
             type: "item",
             icon: MdHorizontalRule,
             title: "Divider",
+            isHidden: () => editor.isActive("table"),
             action: () => editor.chain().focus().setHorizontalRule().run(),
             isActive: () => editor.isActive("divider"),
           },
