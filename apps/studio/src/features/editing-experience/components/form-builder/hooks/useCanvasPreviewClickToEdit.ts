@@ -266,7 +266,9 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // clipboard pasted back (with or without a selection) by ⌘V, ⌘]/⌘[ (or Ctrl)
 // move it forward/backward in the stacking order, and ⌘⇧]/⌘⇧[ jump it to the
 // front/back of the stack. Holding Alt (⌥) while pressing any block leaves a
-// copy of it in place while the press drags the original away, Wix-style.
+// copy of it in place while the press drags the original away, Wix-style —
+// on a member of the multi-selection, every placed member leaves a copy so
+// the whole group duplicates as the drag moves the originals.
 // The right-click context menu offers the same clipboard commands plus
 // Wix's align commands, repositioning a placed block's columns against the
 // left/centre/right of the grid or stretching it across the full width;
@@ -1075,9 +1077,13 @@ export const useCanvasPreviewClickToEdit = ({
     // Wix/Figma-style: the clone keeps the pressed block's exact placement
     // and is appended at the end of the blocks array — so no indices shift
     // and the press continues untouched into the usual machinery, moving the
-    // ORIGINAL block away while the copy stays in place. Capture phase,
-    // because presses on the selected block stop propagation in the
-    // placement control's grab handler before they would reach this hook.
+    // ORIGINAL block away while the copy stays in place. A press on a member
+    // of the multi-selection continues as a group drag, so it leaves a copy
+    // of EVERY placed member behind instead, appended in stacking order in
+    // ONE data change (unplaced members never move during a group drag, so
+    // they leave no copy). Capture phase, because presses on the selected
+    // block stop propagation in the placement control's grab handler before
+    // they would reach this hook.
     const duplicateOnAltPress = (event: MouseEvent) => {
       if (event.button !== 0 || !event.altKey || event.shiftKey) {
         return
@@ -1090,6 +1096,26 @@ export const useCanvasPreviewClickToEdit = ({
         block.getAttribute(CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE),
       )
       if (!Number.isInteger(index) || index < 0) {
+        return
+      }
+      if (multiSelectedIndices.includes(index)) {
+        const placed = new Set(
+          collectPlacedGroupMembers(
+            blocksRef.current,
+            multiSelectedIndices,
+          ).map((member) => member.index),
+        )
+        if (placed.size === 0 || !dispatch) {
+          return
+        }
+        dispatch(
+          update(path, (blocks: unknown[]) => [
+            ...blocks,
+            ...blocks
+              .filter((_, blockIndex) => placed.has(blockIndex))
+              .map((member) => structuredClone(member)),
+          ]),
+        )
         return
       }
       const source: unknown = blocksRef.current[index]
@@ -1312,6 +1338,7 @@ export const useCanvasPreviewClickToEdit = ({
     canvasOrdinal,
     content,
     currActiveIdx,
+    dispatch,
     hoverColor,
     multiSelectedIndices,
     path,

@@ -6875,6 +6875,186 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("leaves copies of the placed multi-selected blocks in place when Alt is held while group-dragging", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    blockAt(0).style.setProperty("--canvas-grid-column", "2 / span 3")
+    blockAt(0).style.setProperty("--canvas-grid-row", "2 / span 1")
+    blockAt(1).style.setProperty("--canvas-grid-column", "1 / span 4")
+    blockAt(1).style.setProperty("--canvas-grid-row", "1 / span 2")
+
+    const FIRST_PLACEMENT = { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 1 }
+    const SECOND_PLACEMENT = {
+      colStart: 1,
+      colSpan: 4,
+      rowStart: 1,
+      rowSpan: 2,
+    }
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          { ...BLOCKQUOTE_BLOCK, placement: FIRST_PLACEMENT },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: SECOND_PLACEMENT,
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const gridColumnOf = (index: number) =>
+      blockAt(index).style.getPropertyValue("--canvas-grid-column")
+    const gridRowOf = (index: number) =>
+      blockAt(index).style.getPropertyValue("--canvas-grid-row")
+    const latestBlocks = () => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks
+    }
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    shiftClick(blockAt(2))
+    const baselineChangeCount = changes.length
+
+    // Alt-pressing a member of the multi-selection leaves a copy of EVERY
+    // placed member in place in ONE data change — appended at the end in
+    // stacking order with their exact placements, the unplaced member
+    // excluded — while the same press grabs the group for the usual drag
+    act(() => {
+      blockAt(0).dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          altKey: true,
+          clientX: 85,
+          clientY: 40, // cell (row 2, col 3), inside the first block
+        }),
+      )
+    })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    let blocks = latestBlocks()
+    expect(blocks).toHaveLength(5)
+    expect(blocks?.[3]).toEqual({
+      ...BLOCKQUOTE_BLOCK,
+      placement: FIRST_PLACEMENT,
+    })
+    expect(blocks?.[4]).toEqual({
+      type: "blockquote",
+      quote: "The second quote",
+      source: "s2",
+      placement: SECOND_PLACEMENT,
+    })
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+
+    // The drag moves the ORIGINAL members live while the copies stay behind
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 165, clientY: 72 }),
+      )
+    })
+    expect(gridColumnOf(0)).toBe("4 / span 3")
+    expect(gridRowOf(0)).toBe("3 / span 1")
+    expect(gridColumnOf(1)).toBe("3 / span 4")
+    expect(gridRowOf(1)).toBe("2 / span 2")
+
+    // Releasing commits the originals' shifted placements in one more data
+    // change; the copies keep the pre-drag placements and the selection (and
+    // its highlight) stays on the originals
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    blocks = latestBlocks()
+    expect(blocks).toHaveLength(5)
+    expect(blocks?.[0]?.placement).toEqual({
+      colStart: 4,
+      colSpan: 3,
+      rowStart: 3,
+      rowSpan: 1,
+    })
+    expect(blocks?.[1]?.placement).toEqual({
+      colStart: 3,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    expect(blocks?.[2]?.placement).toBeUndefined()
+    expect(blocks?.[3]?.placement).toEqual(FIRST_PLACEMENT)
+    expect(blocks?.[4]?.placement).toEqual(SECOND_PLACEMENT)
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+
+    iframe.remove()
+  })
+
   it("multi-selects blocks by sweeping a rubber-band marquee on the canvas background", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
