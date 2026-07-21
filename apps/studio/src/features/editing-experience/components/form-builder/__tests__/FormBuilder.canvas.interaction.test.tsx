@@ -5615,4 +5615,152 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("moves the multi-selected blocks one grid cell with the arrow keys", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const placementAt = (index: number) => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks?.[index]?.placement
+    }
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    const baselineChangeCount = changes.length
+
+    // ArrowRight moves every placed member one column right in ONE data
+    // change, keeping the multi-selection (and its highlight) intact
+    pressKey(document.body, "ArrowRight")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(placementAt(0)).toEqual({
+      colStart: 3,
+      colSpan: 3,
+      rowStart: 2,
+      rowSpan: 1,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 2,
+      colSpan: 4,
+      rowStart: 1,
+      rowSpan: 2,
+    })
+    expect(placementAt(2)).toBeUndefined()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+
+    // ArrowDown shifts the group one row down
+    pressKey(document.body, "ArrowDown")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(placementAt(0)?.rowStart).toBe(3)
+    expect(placementAt(1)?.rowStart).toBe(2)
+
+    // ArrowLeft moves the group back; a second ArrowLeft is blocked because
+    // one member sits at the left grid edge — the group moves as a unit, so
+    // nothing commits and no member moves
+    pressKey(document.body, "ArrowLeft")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 3)
+    expect(placementAt(0)?.colStart).toBe(2)
+    expect(placementAt(1)?.colStart).toBe(1)
+    pressKey(document.body, "ArrowLeft")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 3)
+
+    // Same clamp at the top edge: the first ArrowUp fits, the second would
+    // push a member off the grid and is ignored
+    pressKey(document.body, "ArrowUp")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
+    expect(placementAt(0)?.rowStart).toBe(2)
+    expect(placementAt(1)?.rowStart).toBe(1)
+    pressKey(document.body, "ArrowUp")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
+
+    // A multi-selection holding only an unplaced block ignores the arrows —
+    // an unplaced block has no grid position to shift
+    pressKey(document.body, "Escape")
+    shiftClick(blockAt(2))
+    pressKey(document.body, "ArrowRight")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
+
+    // A mixed selection moves only its placed members; the unplaced block
+    // stays in the stacked flow without gaining a placement
+    shiftClick(blockAt(0))
+    pressKey(document.body, "ArrowDown")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 5)
+    expect(placementAt(0)?.rowStart).toBe(3)
+    expect(placementAt(2)).toBeUndefined()
+
+    iframe.remove()
+  })
 })

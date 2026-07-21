@@ -137,7 +137,8 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // right-clicking the empty canvas background offers pasting or adding a new
 // default block at the clicked grid cell. Shift+clicking blocks gathers them
 // into a multi-selection for group actions: Delete removes them all at once,
-// Escape or a plain background click clears the set.
+// the arrow keys move the group one grid cell (clamped as a unit at the grid
+// edges), and Escape or a plain background click clears the set.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -811,7 +812,10 @@ export const useCanvasPreviewClickToEdit = ({
   }, [canvasOrdinal, hoverColor, multiSelectedIndices, path, selectedIndex])
 
   // Group actions on the multi-selection: Delete/Backspace removes every
-  // multi-selected block in one data change, Escape clears the selection.
+  // multi-selected block in one data change, the arrow keys nudge every
+  // placed member one grid cell (the group moves as a unit — if any member
+  // would leave the grid, nothing moves, so members' relative positions
+  // never distort), and Escape clears the selection.
   // Registered on both windows, like the single-selection shortcuts below.
   useEffect(() => {
     if (
@@ -821,6 +825,63 @@ export const useCanvasPreviewClickToEdit = ({
       selectedIndex !== undefined
     ) {
       return
+    }
+    const nudgeGroup = (dCol: number, dRow: number) => {
+      if (!dispatch) {
+        return
+      }
+      // Only placed members move; an unplaced block has no grid position to
+      // shift and stays in the stacked flow
+      const placedMembers = multiSelectedIndices.flatMap((index) => {
+        const block = blocksRef.current[index] as
+          | { placement?: CanvasBlockPlacement }
+          | undefined
+        const placement = block?.placement
+        return placement?.colStart !== undefined &&
+          placement.colSpan !== undefined &&
+          placement.rowStart !== undefined
+          ? [
+              {
+                index,
+                colStart: placement.colStart,
+                colSpan: placement.colSpan,
+                rowStart: placement.rowStart,
+                rowSpan: placement.rowSpan ?? 1,
+              },
+            ]
+          : []
+      })
+      const blocked = placedMembers.some(
+        (member) =>
+          member.colStart + dCol < 1 ||
+          member.colStart + member.colSpan - 1 + dCol > CANVAS_GRID_COLUMNS ||
+          member.rowStart + dRow < 1 ||
+          member.rowStart + member.rowSpan - 1 + dRow > CANVAS_MAX_ROW,
+      )
+      if (placedMembers.length === 0 || blocked) {
+        return
+      }
+      const moved = new Set(placedMembers.map((member) => member.index))
+      dispatch(
+        update(path, (blocks: unknown[]) =>
+          blocks.map((block, index) => {
+            if (!moved.has(index)) {
+              return block
+            }
+            const { placement, ...rest } = block as {
+              placement?: CanvasBlockPlacement
+            }
+            return {
+              ...rest,
+              placement: {
+                ...placement,
+                colStart: (placement?.colStart ?? 1) + dCol,
+                rowStart: (placement?.rowStart ?? 1) + dRow,
+              },
+            }
+          }),
+        ),
+      )
     }
     const handleGroupShortcut = (event: KeyboardEvent) => {
       if (
@@ -840,6 +901,19 @@ export const useCanvasPreviewClickToEdit = ({
       } else if (event.key === "Escape") {
         event.preventDefault()
         setMultiSelectedIndices([])
+      } else if (
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowRight" ||
+        event.key === "ArrowUp" ||
+        event.key === "ArrowDown"
+      ) {
+        // Take over the keystroke even when the move clamps: while a
+        // multi-selection is active, the arrows must never scroll the page
+        event.preventDefault()
+        nudgeGroup(
+          event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0,
+          event.key === "ArrowUp" ? -1 : event.key === "ArrowDown" ? 1 : 0,
+        )
       }
     }
     window.addEventListener("keydown", handleGroupShortcut)
@@ -852,7 +926,14 @@ export const useCanvasPreviewClickToEdit = ({
       window.removeEventListener("keydown", handleGroupShortcut)
       foreignPreviewWindow?.removeEventListener("keydown", handleGroupShortcut)
     }
-  }, [canvasOrdinal, multiSelectedIndices, path, removeItems, selectedIndex])
+  }, [
+    canvasOrdinal,
+    dispatch,
+    multiSelectedIndices,
+    path,
+    removeItems,
+    selectedIndex,
+  ])
 
   // Wix-style keyboard shortcuts while a block's nested editor is open:
   // Delete or Backspace removes the block from the canvas and returns to the
