@@ -5763,4 +5763,128 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("duplicates the multi-selected blocks together with ⌘D", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    // More preview block elements than data blocks, so the highlight on the
+    // copies appended by the group duplicate has elements to land on
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+        <div data-canvas-block-index="4"><span>fifth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 1, rowSpan: 1 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "s2" },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const latestBlocks = () => {
+      const latest = changes.at(-1) as
+        | {
+            blocks?: {
+              quote?: string
+              placement?: Record<string, number>
+            }[]
+          }
+        | undefined
+      return latest?.blocks
+    }
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    const baselineChangeCount = changes.length
+
+    // ⌘D appends a copy of every multi-selected block in ONE data change:
+    // the placed copy lands one row below its source, the unplaced copy
+    // stays unplaced, and the originals are untouched
+    pressKey(document.body, "d", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    const blocks = latestBlocks()
+    expect(blocks).toHaveLength(5)
+    expect(blocks?.[0]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 3,
+      rowStart: 1,
+      rowSpan: 1,
+    })
+    expect(blocks?.[3]?.quote).toBe("A quote inside the canvas")
+    expect(blocks?.[3]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 3,
+      rowStart: 2,
+      rowSpan: 1,
+    })
+    expect(blocks?.[4]?.quote).toBe("The second quote")
+    expect(blocks?.[4]?.placement).toBeUndefined()
+
+    // The multi-selection (and its highlight) moves to the copies, Wix-style,
+    // so a follow-up group action acts on the duplicates
+    expect(blockAt(0).style.outline).toBe("")
+    expect(blockAt(1).style.outline).toBe("")
+    expect(blockAt(3).style.outline).toContain("solid")
+    expect(blockAt(4).style.outline).toContain("solid")
+
+    // A second ⌘D duplicates the copies, cascading the placed one down again
+    pressKey(document.body, "d", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    const cascaded = latestBlocks()
+    expect(cascaded).toHaveLength(7)
+    expect(cascaded?.[5]?.placement?.rowStart).toBe(3)
+    expect(cascaded?.[6]?.placement).toBeUndefined()
+
+    iframe.remove()
+  })
 })

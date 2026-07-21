@@ -137,7 +137,8 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // right-clicking the empty canvas background offers pasting or adding a new
 // default block at the clicked grid cell. Shift+clicking blocks gathers them
 // into a multi-selection for group actions: Delete removes them all at once,
-// the arrow keys move the group one grid cell (clamped as a unit at the grid
+// ⌘D duplicates them all at once (the selection moving to the copies), the
+// arrow keys move the group one grid cell (clamped as a unit at the grid
 // edges), and Escape or a plain background click clears the set.
 export const useCanvasPreviewClickToEdit = ({
   path,
@@ -812,10 +813,12 @@ export const useCanvasPreviewClickToEdit = ({
   }, [canvasOrdinal, hoverColor, multiSelectedIndices, path, selectedIndex])
 
   // Group actions on the multi-selection: Delete/Backspace removes every
-  // multi-selected block in one data change, the arrow keys nudge every
-  // placed member one grid cell (the group moves as a unit — if any member
-  // would leave the grid, nothing moves, so members' relative positions
-  // never distort), and Escape clears the selection.
+  // multi-selected block in one data change, ⌘D/Ctrl+D appends a copy of
+  // every member in one data change (placed copies land one row below their
+  // sources, and the selection moves to the copies), the arrow keys nudge
+  // every placed member one grid cell (the group moves as a unit — if any
+  // member would leave the grid, nothing moves, so members' relative
+  // positions never distort), and Escape clears the selection.
   // Registered on both windows, like the single-selection shortcuts below.
   useEffect(() => {
     if (
@@ -883,15 +886,50 @@ export const useCanvasPreviewClickToEdit = ({
         ),
       )
     }
+    // Copies append in stacking order regardless of the order the members
+    // were Shift+clicked in, and the selection moves to the copies so a
+    // follow-up group action (another ⌘D, an arrow nudge) acts on them
+    const duplicateGroup = () => {
+      if (!dispatch) {
+        return
+      }
+      const members = [...multiSelectedIndices].sort((a, b) => a - b)
+      const copies = members.flatMap((index) => {
+        const source: unknown = blocksRef.current[index]
+        if (source === undefined || source === null) {
+          return []
+        }
+        const copy = structuredClone(source) as {
+          placement?: CanvasBlockPlacement
+        }
+        shiftPlacementOneRowDown(copy)
+        return [copy]
+      })
+      if (copies.length === 0) {
+        return
+      }
+      const firstCopyIndex = blocksRef.current.length
+      dispatch(update(path, (blocks: unknown[]) => [...blocks, ...copies]))
+      setMultiSelectedIndices(
+        copies.map((_, offset) => firstCopyIndex + offset),
+      )
+    }
     const handleGroupShortcut = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || isEditableTarget(event.target)) {
+        return
+      }
       if (
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey ||
-        event.defaultPrevented ||
-        isEditableTarget(event.target)
+        event.key.toLowerCase() === "d" &&
+        (event.metaKey || event.ctrlKey) &&
+        !event.altKey &&
+        !event.shiftKey
       ) {
+        // Take over the keystroke even from the browser's bookmark shortcut
+        event.preventDefault()
+        duplicateGroup()
+        return
+      }
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return
       }
       if (event.key === "Delete" || event.key === "Backspace") {
