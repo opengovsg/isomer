@@ -3,6 +3,7 @@ import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 import { LINK_HREF_PATTERN, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 
+import { ARRAY_RADIO_FORMAT } from "../format"
 import { LinkHubProseSchema } from "../native/Prose"
 
 export const LINK_HUB_MAX_LINKS = 10
@@ -26,6 +27,20 @@ const LinkHubLinkSchema = Type.Object({
 export const LinkHubSchema = Type.Object(
   {
     type: Type.Literal("linkhub", { default: "linkhub" }),
+    variant: Type.Optional(
+      Type.Union(
+        [
+          Type.Literal("vertical", { title: "Vertical" }),
+          Type.Literal("horizontal", { title: "Horizontal" }),
+        ],
+        {
+          title: "Layout",
+          default: "vertical",
+          format: ARRAY_RADIO_FORMAT,
+          type: "string",
+        },
+      ),
+    ),
     title: Type.Optional(
       Type.String({
         title: "Title",

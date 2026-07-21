@@ -44,6 +44,30 @@ export const Default: Story = {
         },
       ],
     },
+    variant: "vertical",
+    links,
+  },
+}
+
+export const HorizontalVariant: Story = {
+  name: "Horizontal variant",
+  args: {
+    title: "Quick links",
+    description: {
+      type: "prose",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Here are some links to help you get started.",
+            },
+          ],
+        },
+      ],
+    },
+    variant: "horizontal",
     links,
   },
 }

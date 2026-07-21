@@ -26,33 +26,48 @@ const CARD_ICONS: Record<ReturnType<typeof getLinkHubLinkType>, IconType> = {
   tel: BiPhoneCall,
 }
 
-const CTAS: Record<
-  ReturnType<typeof getLinkHubLinkType>,
-  { text: string; Icon: IconType }
-> = {
-  file: { text: "Download", Icon: BiDownload },
-  external: { text: "Visit", Icon: BiLinkExternal },
-  internal: { text: "Visit", Icon: BiRightArrowAlt },
-  email: { text: "Email", Icon: BiLinkExternal },
-  tel: { text: "Call", Icon: BiLinkExternal },
+const CTAS: Record<ReturnType<typeof getLinkHubLinkType>, IconType> = {
+  file: BiDownload,
+  external: BiLinkExternal,
+  internal: BiRightArrowAlt,
+  email: BiLinkExternal,
+  tel: BiLinkExternal,
 }
 
 const linkHubStyles = tv({
   slots: {
     root: "flex flex-col gap-5 [&:not(:first-child)]:mt-7",
-    title: "prose-title-md-semibold text-base-content-strong",
-    list: "flex flex-col gap-3",
-    card: "group flex items-center justify-between gap-4 rounded-lg border-[1.5px] border-base-divider-medium bg-[#F8F9FB] px-5 py-4 hover:border-[#4675E5] hover:bg-[#E6ECF9]",
-    cardMain: "flex items-center gap-4",
-    cardIcon: "h-6 w-6 flex-shrink-0 text-brand-interaction",
+    title: "prose-display-sm text-base-content-strong",
+    list: "gap-7",
+    card: "group flex gap-4 rounded-lg border-[1.5px] border-base-divider-medium bg-[#F8F9FB] px-5 py-4 transition-colors hover:bg-brand-interaction-hover",
+    cardIcon:
+      "h-6 w-6 flex-shrink-0 text-brand-interaction transition-colors group-hover:text-base-content-inverse",
+    lowerRow: "flex items-center justify-between gap-4",
     cardText: "flex flex-col gap-1",
     cardTitle:
-      "prose-headline-base-semibold text-base-content group-hover:text-link-hover group-hover:underline",
-    cardDetail: "prose-label-md-regular text-base-content-light",
-    cta: "flex flex-shrink-0 items-center gap-2",
-    ctaText:
-      "prose-label-md-medium text-base-content group-hover:text-link-hover group-hover:underline",
-    ctaIcon: "h-4 w-4 text-base-content group-hover:text-link-hover",
+      "prose-headline-base-semibold text-base-content transition-colors group-hover:text-base-content-inverse group-hover:underline",
+    cardDetail:
+      "prose-label-md-regular text-base-content-light transition-colors group-hover:text-base-content-inverse",
+    cta: "flex flex-shrink-0 items-center",
+    ctaIcon:
+      "h-4 w-4 text-base-content transition-colors group-hover:text-base-content-inverse",
+  },
+  variants: {
+    variant: {
+      vertical: {
+        list: "grid grid-cols-1 lg:grid-cols-2",
+        card: "flex-row items-center",
+        lowerRow: "min-w-0 flex-1",
+      },
+      horizontal: {
+        list: "grid grid-cols-1 md:grid-cols-2",
+        card: "flex-col items-start",
+        lowerRow: "w-full",
+      },
+    },
+  },
+  defaultVariants: {
+    variant: "vertical",
   },
 })
 
@@ -80,8 +95,14 @@ const getLinkDetail = ({
   }
 }
 
-export const LinkHub = ({ title, description, links, site }: LinkHubProps) => {
-  const styles = linkHubStyles()
+export const LinkHub = ({
+  title,
+  description,
+  variant,
+  links,
+  site,
+}: LinkHubProps) => {
+  const styles = linkHubStyles({ variant })
 
   return (
     <div className={styles.root()}>
@@ -102,7 +123,7 @@ export const LinkHub = ({ title, description, links, site }: LinkHubProps) => {
               site.assetsBaseUrl,
             ) ?? link.url
           const CardIcon = CARD_ICONS[type]
-          const cta = CTAS[type]
+          const CtaIcon = CTAS[type]
 
           return (
             <li key={link.url}>
@@ -111,19 +132,19 @@ export const LinkHub = ({ title, description, links, site }: LinkHubProps) => {
                 isExternal={type === "external"}
                 className={styles.card()}
               >
-                <span className={styles.cardMain()}>
-                  <CardIcon aria-hidden className={styles.cardIcon()} />
+                <CardIcon aria-hidden className={styles.cardIcon()} />
+
+                <span className={styles.lowerRow()}>
                   <span className={styles.cardText()}>
                     <span className={styles.cardTitle()}>{link.title}</span>
                     <span className={styles.cardDetail()}>
                       {getLinkDetail({ type, link, resolvedHref })}
                     </span>
                   </span>
-                </span>
 
-                <span className={styles.cta()}>
-                  <span className={styles.ctaText()}>{cta.text}</span>
-                  <cta.Icon aria-hidden className={styles.ctaIcon()} />
+                  <span className={styles.cta()}>
+                    <CtaIcon aria-hidden className={styles.ctaIcon()} />
+                  </span>
                 </span>
               </Link>
             </li>
