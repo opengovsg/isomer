@@ -10,9 +10,9 @@ export const CalloutVariant = {
     value: "information",
     label: "Important information (default)",
   },
-  GoodToKnow: { value: "goodToKnow", label: "Positive news" },
+  GoodToKnow: { value: "goodToKnow", label: "Update" },
   Warning: { value: "warning", label: "Heads-up" },
-  Urgent: { value: "urgent", label: "Needs urgent action" },
+  Urgent: { value: "urgent", label: "Needs action" },
   Note: { value: "note", label: "Did you know" },
 } as const
 
