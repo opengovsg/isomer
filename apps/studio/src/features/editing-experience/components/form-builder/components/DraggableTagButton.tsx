@@ -7,7 +7,7 @@ import type {
   OwnPropsOfMasterListItem,
   StatePropsOfMasterItem,
 } from "@jsonforms/core"
-import type { ReactNode } from "react"
+import type { MouseEvent, ReactNode } from "react"
 import type { IconType } from "react-icons"
 import {
   Box,
@@ -18,19 +18,33 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react"
+import { dataAttr } from "@chakra-ui/utils"
 import { withJsonFormsMasterListItemProps } from "@jsonforms/react"
 import { BiGridVertical, BiInfoCircle } from "react-icons/bi"
 
 interface RootProps {
   draggableProps: DraggableProvidedDraggableProps
   isError: boolean
+  // Membership in the canvas multi-selection, mirrored from the block's
+  // solid highlight on the live preview
+  isSelected?: boolean
   children: ReactNode
   onMouseEnter?: () => void
   onMouseLeave?: () => void
 }
 
 const Root = forwardRef<RootProps, "div">(
-  ({ draggableProps, isError, children, onMouseEnter, onMouseLeave }, ref) => (
+  (
+    {
+      draggableProps,
+      isError,
+      isSelected,
+      children,
+      onMouseEnter,
+      onMouseLeave,
+    },
+    ref,
+  ) => (
     <Box
       my="0.25rem"
       ref={ref}
@@ -48,6 +62,15 @@ const Root = forwardRef<RootProps, "div">(
         transitionProperty="common"
         transitionDuration="normal"
         aria-invalid={isError}
+        data-selected={dataAttr(isSelected)}
+        _selected={{
+          bg: "interaction.muted.main.active",
+          borderColor: "base.divider.brand",
+          _hover: {
+            bg: "interaction.muted.main.active",
+            borderColor: "base.divider.brand",
+          },
+        }}
         _hover={{
           bg: "interaction.muted.main.hover",
           borderColor: "interaction.main-subtle.hover",
@@ -106,12 +129,15 @@ const Handle = ({ dragHandleProps, py = "0.5rem" }: HandleProps) => (
 )
 
 interface BodyProps {
-  onClick: () => void
+  onClick: (event: MouseEvent<HTMLButtonElement>) => void
   children: ReactNode
   py?: BoxProps["py"]
+  // Membership in the canvas multi-selection; leave undefined for rows that
+  // cannot be toggled so they keep plain button semantics
+  isPressed?: boolean
 }
 
-const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => (
+const Body = ({ onClick, children, py = "0.5rem", isPressed }: BodyProps) => (
   <Box
     layerStyle="focusRing"
     as="button"
@@ -124,6 +150,7 @@ const Body = ({ onClick, children, py = "0.5rem" }: BodyProps) => (
     py={py}
     pl="0.25rem"
     pr="1rem"
+    aria-pressed={isPressed}
     onClick={onClick}
   >
     <HStack align="stretch" spacing="0.75rem" w="full">

@@ -90,9 +90,15 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
   // Canvas blocks can be selected by clicking them on the live preview,
   // removed with the Delete key, duplicated with ⌘D/Ctrl+D, and moved
   // forward/backward in the stacking order with ⌘]/⌘[; hovering a block's
-  // row below highlights it on the preview. For every other array this is
-  // a no-op
-  const { setHoveredListBlockIndex } = useCanvasPreviewClickToEdit({
+  // row below highlights it on the preview, and Shift+clicking a row
+  // toggles its block in the Wix-style multi-selection. For every other
+  // array this is a no-op
+  const {
+    setHoveredListBlockIndex,
+    isCanvasBlocksList,
+    multiSelectedIndices,
+    toggleMultiSelectedBlock,
+  } = useCanvasPreviewClickToEdit({
     path,
     selectedIndex,
     setSelectedIndex,
@@ -141,6 +147,8 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
                   {[...Array(data).keys()].map((index) => {
                     const childPath = composePaths(path, `${index}`)
                     const hasError = hasErrorAt(childPath)
+                    const isMultiSelected =
+                      isCanvasBlocksList && multiSelectedIndices.includes(index)
 
                     return (
                       <Draggable
@@ -153,6 +161,7 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
                           <DraggableTagButton.Root
                             draggableProps={draggableProps}
                             isError={hasError}
+                            isSelected={isMultiSelected}
                             ref={innerRef}
                             onMouseEnter={() => setHoveredListBlockIndex(index)}
                             onMouseLeave={() => setHoveredListBlockIndex(null)}
@@ -162,7 +171,18 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
                               py={hasError ? "0.75rem" : "1.25rem"}
                             />
                             <DraggableTagButton.Body
-                              onClick={() => setSelectedIndex(index)}
+                              onClick={(event) => {
+                                // Shift+click mirrors the preview's Wix-style
+                                // multi-selection toggle from the block list
+                                if (isCanvasBlocksList && event.shiftKey) {
+                                  toggleMultiSelectedBlock(index)
+                                  return
+                                }
+                                setSelectedIndex(index)
+                              }}
+                              isPressed={
+                                isCanvasBlocksList ? isMultiSelected : undefined
+                              }
                               py={hasError ? "0.75rem" : "1rem"}
                             >
                               <DraggableTagButton.Content>

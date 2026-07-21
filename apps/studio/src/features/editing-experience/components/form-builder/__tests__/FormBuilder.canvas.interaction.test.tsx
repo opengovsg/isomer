@@ -8649,4 +8649,113 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("toggles blocks into the multi-selection with Shift+click on their block list rows", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          BLOCKQUOTE_BLOCK,
+          { type: "blockquote", quote: "The second quote", source: "s2" },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    await flush()
+    const baselineChangeCount = changes.length
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const rowAt = (label: string) => {
+      const row = findButtonByText(label)
+      expect(row).not.toBeUndefined()
+      return row!
+    }
+    const shiftClickRow = (label: string) => {
+      act(() => {
+        rowAt(label).dispatchEvent(
+          new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+
+    // Shift+clicking a row toggles the block into the multi-selection
+    // instead of opening its editor: the row shows its membership and the
+    // block gets the solid group highlight on the live preview
+    shiftClickRow("Item 1")
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Add item")
+    expect(rowAt("Item 1").getAttribute("aria-pressed")).toBe("true")
+    expect(blockAt(0).style.outline).toContain("solid")
+
+    shiftClickRow("Item 3")
+    expect(rowAt("Item 1").getAttribute("aria-pressed")).toBe("true")
+    expect(rowAt("Item 2").getAttribute("aria-pressed")).toBe("false")
+    expect(rowAt("Item 3").getAttribute("aria-pressed")).toBe("true")
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toBe("")
+    expect(blockAt(2).style.outline).toContain("solid")
+
+    // Shift+clicking a member row again toggles it back out
+    shiftClickRow("Item 3")
+    expect(rowAt("Item 3").getAttribute("aria-pressed")).toBe("false")
+    expect(blockAt(2).style.outline).toBe("")
+
+    // Building the selection from the list commits no data changes
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // A plain row click still opens the block's editor, and the two
+    // selection modes stay mutually exclusive: the multi-selection clears
+    click(rowAt("Item 2"))
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await flush()
+    expect(blockAt(0).style.outline).toBe("")
+    pressKey(document.body, "Escape")
+    await flush()
+    expect(container.textContent).toContain("Add item")
+
+    // The row-built selection is the same set behind the group actions:
+    // Delete removes both members in one data change
+    shiftClickRow("Item 1")
+    shiftClickRow("Item 3")
+    pressKey(document.body, "Delete")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    const afterDelete = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(afterDelete?.blocks).toHaveLength(1)
+    expect(afterDelete?.blocks?.[0]?.quote).toBe("The second quote")
+
+    iframe.remove()
+  })
 })

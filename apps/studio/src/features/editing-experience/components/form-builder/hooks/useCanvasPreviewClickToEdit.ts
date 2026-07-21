@@ -55,6 +55,14 @@ interface UseCanvasPreviewClickToEditResult {
   // be highlighted on the live preview, Wix's layers-panel style; a no-op
   // for every non-canvas array control
   setHoveredListBlockIndex: (index: number | null) => void
+  // Whether this array control is the canvas child-block list, so its rows
+  // can offer the layers-panel multi-selection below
+  isCanvasBlocksList: boolean
+  // The Wix-style multi-selection, so block list rows can show membership
+  multiSelectedIndices: number[]
+  // Shift+clicking a row in the block list toggles its block in the
+  // multi-selection, sharing the preview Shift+click's exact semantics
+  toggleMultiSelectedBlock: (index: number) => void
 }
 
 interface CanvasBlockPlacement {
@@ -998,6 +1006,33 @@ export const useCanvasPreviewClickToEdit = ({
     setMultiSelectedIndices([])
   }, [])
 
+  // Wix's layers-panel multi-selection: toggles a block in the
+  // multi-selection with the same semantics as Shift+clicking it on the live
+  // preview — with a block's editor open, that block seeds the set and the
+  // editor closes so both blocks show as selected. Shared by the preview
+  // Shift+click and the block list rows' Shift+click so the two entry points
+  // cannot drift; a no-op for every non-canvas array control.
+  const toggleMultiSelectedBlock = useCallback(
+    (index: number) => {
+      if (path !== CANVAS_BLOCKS_PATH) {
+        return
+      }
+      setMultiSelectedIndices((previous) => {
+        const seeded =
+          previous.length === 0 && selectedIndex !== undefined
+            ? [selectedIndex]
+            : previous
+        return seeded.includes(index)
+          ? seeded.filter((member) => member !== index)
+          : [...seeded, index]
+      })
+      if (selectedIndex !== undefined) {
+        setSelectedIndex(undefined)
+      }
+    },
+    [path, selectedIndex, setSelectedIndex],
+  )
+
   // Wix's "select all": gathers every canvas block into the multi-selection,
   // closing any open block editor so the edited block seeds the set — shared
   // by the ⌘A shortcut and the background context menu's Select all command
@@ -1241,18 +1276,7 @@ export const useCanvasPreviewClickToEdit = ({
       // selecting it, Wix-style; with a block's editor open, that block
       // seeds the set and the editor closes so both blocks show as selected
       if (event.shiftKey) {
-        setMultiSelectedIndices((previous) => {
-          const seeded =
-            previous.length === 0 && selectedIndex !== undefined
-              ? [selectedIndex]
-              : previous
-          return seeded.includes(index)
-            ? seeded.filter((member) => member !== index)
-            : [...seeded, index]
-        })
-        if (selectedIndex !== undefined) {
-          setSelectedIndex(undefined)
-        }
+        toggleMultiSelectedBlock(index)
         return
       }
       // A plain press on a member of the multi-selection grabs the whole
@@ -1416,6 +1440,7 @@ export const useCanvasPreviewClickToEdit = ({
     path,
     selectedIndex,
     setSelectedIndex,
+    toggleMultiSelectedBlock,
   ])
 
   // Wix's layers-panel hover sync, the reverse of the preview hover above:
@@ -2941,5 +2966,10 @@ export const useCanvasPreviewClickToEdit = ({
     setSelectedIndex,
   ])
 
-  return { setHoveredListBlockIndex }
+  return {
+    setHoveredListBlockIndex,
+    isCanvasBlocksList: canvasOrdinal !== null && path === CANVAS_BLOCKS_PATH,
+    multiSelectedIndices,
+    toggleMultiSelectedBlock,
+  }
 }
