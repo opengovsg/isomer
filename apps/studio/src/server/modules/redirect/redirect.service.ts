@@ -20,7 +20,13 @@ import {
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { sql } from "kysely"
-import { REDIRECT_MESSAGES, RedirectValidationCode } from "~/constants/redirect"
+import { chunk } from "lodash-es"
+import {
+  BULK_DUPLICATE_SOURCE_MESSAGE,
+  BULK_MALFORMED_ROW_MESSAGE,
+  REDIRECT_MESSAGES,
+  RedirectValidationCode,
+} from "~/constants/redirect"
 import { parseRedirectCsv } from "~/lib/redirectCsv"
 import {
   isValidExternalDestination,
@@ -596,22 +602,12 @@ const BULK_REDIRECT_INSERT_CHUNK_SIZE = 500
 // automatically when the transaction ends.
 const REDIRECT_WRITE_LOCK_NAMESPACE = 0x5244 // "RD"
 
-// Shown when a row is split by an unquoted comma into extra columns.
-const BULK_MALFORMED_ROW_MESSAGE =
-  "This row has extra columns. Put double quotes around any value that contains a comma."
-
 // Thrown inside the bulk insert when a source stopped being publishable between
 // validation and the insert — either it gained a live redirect (the upsert
 // skipped it, a shortfall) or a page was published at it (the in-txn recheck).
 // bulkCreate catches it to re-validate and return fresh row verdicts rather than
 // surface a generic failure.
 class BulkRedirectRaceError extends Error {}
-
-// Cross-file duplicate copy. The other row errors reuse the shared Studio
-// messages (REDIRECT_MESSAGES) so the errors file reads the same as the inline
-// form errors, per the design.
-const BULK_DUPLICATE_SOURCE_MESSAGE =
-  "This source is listed more than once in your file."
 
 // One row after evaluation: the values as the editor typed them (for the errors
 // file + preview), the normalized values (for the DB checks + insert), and the
@@ -693,6 +689,10 @@ const resolveDestinationsForStorage = async (
   destinations: string[],
 ): Promise<Map<string, string>> => {
   const result = new Map<string, string>()
+  // First pass resolves everything storable as-is (query/fragment paths,
+  // external URLs, existing references) and sets those directly, collecting the
+  // internal paths that still need a resource lookup. parseDestination returns
+  // value === destination for an internal path, so the path doubles as the key.
   const internalPaths: string[] = []
   for (const destination of new Set(destinations)) {
     const parsed = parseDestination(destination)
@@ -707,18 +707,18 @@ const resolveDestinationsForStorage = async (
     internalPaths.push(parsed.value)
   }
 
+  // Second pass resolves only those internal paths: each becomes a [resource:...]
+  // reference when a resource lives at that permalink, or stays literal when none
+  // does (a typo or an as-yet-uncreated page — it just won't follow moves).
   const idByPath = internalPaths.length
     ? await getResourceIdsByPermalinks(siteId, internalPaths)
     : new Map<string, number | null>()
-  for (const destination of new Set(destinations)) {
-    if (result.has(destination)) {
-      continue
-    }
-    const resourceId = idByPath.get(destination) ?? null
+  for (const path of internalPaths) {
+    const resourceId = idByPath.get(path) ?? null
     result.set(
-      destination,
+      path,
       resourceId === null
-        ? destination
+        ? path
         : getReferenceLink({
             siteId: String(siteId),
             resourceId: String(resourceId),
@@ -738,8 +738,7 @@ const resolveDestinationsForStorage = async (
 // leading INTO a cycle is (correctly) not included.
 const findCycleNodes = (edges: Map<string, string | null>): Set<string> => {
   const cycleNodes = new Set<string>()
-  // 0 = on the path currently being walked, 1 = fully explored.
-  const state = new Map<string, 0 | 1>()
+  const state = new Map<string, "walking" | "explored">()
   for (const start of edges.keys()) {
     if (state.has(start)) {
       continue
@@ -749,19 +748,26 @@ const findCycleNodes = (edges: Map<string, string | null>): Set<string> => {
     const path: string[] = []
     let current: string | null = start
     while (current !== null && !state.has(current)) {
-      state.set(current, 0)
+      state.set(current, "walking")
       path.push(current)
       current = edges.get(current) ?? null
     }
-    // Stopping on a node still marked "on the current path" closed a cycle; every
-    // node from it to the end of the path lies on that cycle.
-    if (current !== null && state.get(current) === 0) {
+    // The walk stops in one of three ways, and only the last is a cycle:
+    //   - current === null       → the chain terminates; no cycle.
+    //   - state is "explored"    → it merged into an already-resolved chain
+    //                              (e.g. a tail leading into someone else's
+    //                              path); no new cycle on this walk.
+    //   - state is "walking"     → we looped back onto the current path; every
+    //                              node from there to the end lies on the cycle.
+    // (So we can't assert current === null for the no-cycle case — the explored
+    // exit is equally valid.)
+    if (current !== null && state.get(current) === "walking") {
       for (const node of path.slice(path.indexOf(current))) {
         cycleNodes.add(node)
       }
     }
     for (const node of path) {
-      state.set(node, 1)
+      state.set(node, "explored")
     }
   }
   return cycleNodes
@@ -1076,18 +1082,13 @@ export const bulkCreateRedirects = async ({
       }
 
       const insertedRows: typeof existingRows = []
-      for (
-        let i = 0;
-        i < valuesToInsert.length;
-        i += BULK_REDIRECT_INSERT_CHUNK_SIZE
-      ) {
-        const chunk = valuesToInsert.slice(
-          i,
-          i + BULK_REDIRECT_INSERT_CHUNK_SIZE,
-        )
+      for (const batch of chunk(
+        valuesToInsert,
+        BULK_REDIRECT_INSERT_CHUNK_SIZE,
+      )) {
         const inserted = await tx
           .insertInto("Redirect")
-          .values(chunk)
+          .values(batch)
           .onConflict((oc) =>
             oc
               .columns(["siteId", "source"])
@@ -1160,15 +1161,8 @@ export const bulkCreateRedirects = async ({
         userId: byUser.id,
         metadata: {},
       }))
-      for (
-        let i = 0;
-        i < auditValues.length;
-        i += BULK_REDIRECT_INSERT_CHUNK_SIZE
-      ) {
-        await tx
-          .insertInto("AuditLog")
-          .values(auditValues.slice(i, i + BULK_REDIRECT_INSERT_CHUNK_SIZE))
-          .execute()
+      for (const batch of chunk(auditValues, BULK_REDIRECT_INSERT_CHUNK_SIZE)) {
+        await tx.insertInto("AuditLog").values(batch).execute()
       }
 
       // The whole batch republishes once, audited as a single Publish event.
@@ -1194,7 +1188,18 @@ export const bulkCreateRedirects = async ({
       // shows the offending row(s) rather than a generic failure — this keeps
       // the ok:false contract.
       const { fileError, rows } = await runBulkValidation(siteId, csv)
-      return { ok: false, validation: toValidationResult(fileError, rows) }
+      const validation = toValidationResult(fileError, rows)
+      // The race may have cleared by the time we re-validate (e.g. the
+      // conflicting redirect was deleted). With nothing left to flag, ok:false
+      // would strand the modal on an errors screen listing no rows, so surface a
+      // transient conflict instead — the client prompts a retry, which succeeds.
+      if (validation.fileError === null && validation.errorCount === 0) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "The site changed while publishing. Please try again.",
+        })
+      }
+      return { ok: false, validation }
     }
     throw error
   }
