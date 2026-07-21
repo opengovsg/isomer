@@ -324,7 +324,7 @@ const BulkUploadModalBody = ({
       )
     case "success":
       return (
-        <Stack spacing="1rem">
+        <Stack spacing="1.5rem">
           <Flex gap="0.5rem">
             <Icon
               as={BiSolidCheckCircle}
@@ -333,11 +333,11 @@ const BulkUploadModalBody = ({
               mt="0.125rem"
             />
             <Stack spacing="0.25rem">
-              <Text textStyle="subhead-2">
+              <Text textStyle="subhead-2" color="utility.feedback.success">
                 All {validRows.length} redirect
                 {validRows.length === 1 ? " is" : "s are"} good to go.
               </Text>
-              <Text textStyle="body-2" color="base.content.medium">
+              <Text textStyle="body-2" color="base.content.default">
                 Clicking &lsquo;Publish {validRows.length} redirect
                 {validRows.length === 1 ? "" : "s"}&rsquo; will publish them
                 immediately.
@@ -349,9 +349,15 @@ const BulkUploadModalBody = ({
               border="1px solid"
               borderColor="base.divider.medium"
               borderRadius="0.25rem"
+              background="base.canvas.alt"
             >
               <AccordionButton>
-                <Text flex="1" textAlign="left" textStyle="subhead-2">
+                <Text
+                  flex="1"
+                  textAlign="left"
+                  paddingY="1"
+                  textStyle="subhead-2"
+                >
                   Redirects to be added
                 </Text>
                 <AccordionIcon />
@@ -362,7 +368,7 @@ const BulkUploadModalBody = ({
                     <Flex
                       key={row.rowNumber}
                       align="center"
-                      gap="0.5rem"
+                      gap="1rem"
                       textStyle="body-2"
                     >
                       <Text flex="1" noOfLines={1} title={row.source}>
@@ -385,17 +391,16 @@ const BulkUploadModalBody = ({
       // "upload" and "errors" share the same picker; the error banner and
       // template-vs-errors-file download are the only differences.
       return (
-        <Stack spacing="1rem">
+        <Stack spacing="2rem">
           {stage === "errors" && validation ? (
             <Flex gap="0.5rem">
               <Icon
                 as={BiSolidError}
                 color="utility.feedback.critical"
                 boxSize="1.25rem"
-                mt="0.125rem"
               />
-              <Stack spacing="0.5rem" align="flex-start">
-                <Text textStyle="body-2" color="utility.feedback.critical">
+              <Stack spacing="1rem" align="flex-start">
+                <Text textStyle="subhead-2" color="utility.feedback.critical">
                   {errorBannerText(validation)}
                 </Text>
                 {validation.fileError === null && (
@@ -413,14 +418,15 @@ const BulkUploadModalBody = ({
           ) : (
             <Stack spacing="0.75rem" align="flex-start">
               <Text textStyle="body-2">
-                To make sure your redirects are formatted properly, list your
-                redirects on the redirects template:
+                To make sure your redirects are formatted properly, download and
+                use the template:
               </Text>
               <Button
                 as="a"
                 href={TEMPLATE_HREF}
                 download
                 variant="outline"
+                size="xs"
                 leftIcon={<BiDownload fontSize="1.25rem" />}
               >
                 Download redirects template (.csv)
@@ -428,11 +434,12 @@ const BulkUploadModalBody = ({
             </Stack>
           )}
 
-          {stage === "errors" && (
-            <Text textStyle="subhead-2">Re-upload the file with fixes</Text>
-          )}
-
           <Stack spacing="0.5rem">
+            {stage === "errors" && (
+              <Text textStyle="subhead-2" textColor="base.content.strong">
+                Re-upload the file with fixes
+              </Text>
+            )}
             <Attachment
               name="redirects-csv"
               multiple={false}
@@ -448,12 +455,12 @@ const BulkUploadModalBody = ({
               <br />
               Accepted file type: .csv
             </Text>
+            {fileError && (
+              <Text textStyle="body-2" color="utility.feedback.critical">
+                {fileError}
+              </Text>
+            )}
           </Stack>
-          {fileError && (
-            <Text textStyle="body-2" color="utility.feedback.critical">
-              {fileError}
-            </Text>
-          )}
         </Stack>
       )
   }
