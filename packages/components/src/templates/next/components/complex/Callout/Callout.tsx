@@ -5,22 +5,15 @@ import { tv } from "~/lib/tv"
 
 import { Prose } from "../../native/Prose"
 
-const CALLOUT_ICONS: Partial<
-  Record<NonNullable<CalloutProps["variant"]>, IconType>
+const CALLOUT_CONFIG: Record<
+  NonNullable<CalloutProps["variant"]>,
+  { label: string; icon?: IconType }
 > = {
-  goodToKnow: BiCheckCircle,
-  warning: BiErrorCircle,
-  urgent: BiError,
-}
-
-const CALLOUT_LABELS: Partial<
-  Record<NonNullable<CalloutProps["variant"]>, string>
-> = {
-  information: "Information",
-  goodToKnow: "Positive update",
-  warning: "Warning",
-  urgent: "Needs urgent action",
-  note: "Note",
+  information: { label: "Information" },
+  goodToKnow: { label: "Positive update", icon: BiCheckCircle },
+  warning: { label: "Warning", icon: BiErrorCircle },
+  urgent: { label: "Needs urgent action", icon: BiError },
+  note: { label: "Note" },
 }
 
 const calloutStyles = tv({
@@ -74,10 +67,13 @@ const calloutStyles = tv({
   },
 })
 
-export const Callout = ({ content, site, variant }: CalloutProps) => {
-  const Icon = variant ? CALLOUT_ICONS[variant] : undefined
+export const Callout = ({
+  content,
+  site,
+  variant = "information",
+}: CalloutProps) => {
+  const { icon: Icon, label } = CALLOUT_CONFIG[variant]
   const styles = calloutStyles({ variant, hasIcon: !!Icon })
-  const label = variant ? CALLOUT_LABELS[variant] : undefined
 
   return (
     <div className={styles.container()} role="group" aria-label={label}>
