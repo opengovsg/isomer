@@ -5,14 +5,6 @@ import { Type } from "@sinclair/typebox"
 import { CALLOUT_VARIANT_FORMAT } from "../format"
 import { CalloutProseSchema } from "../native/Prose"
 
-export const CalloutVariant = {
-  information: "Important information (default)",
-  goodToKnow: "Positive update",
-  warning: "Warning",
-  urgent: "Needs urgent action",
-  note: "Did you know",
-} as const
-
 export const DEFAULT_CALLOUT_VARIANT = "information"
 
 export const CalloutSchema = Type.Object(
@@ -20,12 +12,15 @@ export const CalloutSchema = Type.Object(
     type: Type.Literal("callout", { default: "callout" }),
     variant: Type.Optional(
       Type.Union(
-        (Object.keys(CalloutVariant) as (keyof typeof CalloutVariant)[]).map(
-          (value) =>
-            Type.Literal(value, {
-              title: CalloutVariant[value],
-            }),
-        ),
+        [
+          Type.Literal("information", {
+            title: "Important information (default)",
+          }),
+          Type.Literal("goodToKnow", { title: "Positive update" }),
+          Type.Literal("warning", { title: "Warning" }),
+          Type.Literal("urgent", { title: "Needs urgent action" }),
+          Type.Literal("note", { title: "Did you know" }),
+        ],
         {
           title: "Message type",
           default: DEFAULT_CALLOUT_VARIANT,
@@ -44,3 +39,5 @@ export const CalloutSchema = Type.Object(
 export type CalloutProps = Static<typeof CalloutSchema> & {
   site: IsomerSiteProps
 }
+
+export type CalloutVariant = NonNullable<CalloutProps["variant"]>

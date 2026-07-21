@@ -1,4 +1,5 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
+import type { CalloutVariant } from "@opengovsg/isomer-components"
 import type { ComponentType } from "react"
 import { Box, FormControl, type HTMLChakraProps } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
@@ -6,7 +7,7 @@ import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
 import {
   CALLOUT_VARIANT_FORMAT,
-  CalloutVariant,
+  DEFAULT_CALLOUT_VARIANT,
 } from "@opengovsg/isomer-components"
 import { StyleCardGoodToKnow } from "~/components/icons/callout/variant/goodToKnow"
 import { StyleCardInformation } from "~/components/icons/callout/variant/information"
@@ -21,7 +22,7 @@ export const jsonFormsCalloutVariantControlTester: RankedTester = rankWith(
 )
 
 const CALLOUT_VARIANT_PREVIEWS: Record<
-  keyof typeof CalloutVariant,
+  CalloutVariant,
   ComponentType<HTMLChakraProps<"svg">>
 > = {
   information: StyleCardInformation,
@@ -37,6 +38,7 @@ function JsonFormsCalloutVariantControl({
   handleChange,
   path,
   description,
+  schema,
 }: ControlProps): JSX.Element {
   return (
     <Box>
@@ -49,30 +51,25 @@ function JsonFormsCalloutVariantControl({
             handleChange(path, value)
           }}
           value={data as string}
-          defaultValue="information"
+          defaultValue={DEFAULT_CALLOUT_VARIANT}
         >
-          {(Object.keys(CalloutVariant) as (keyof typeof CalloutVariant)[]).map(
-            (value) => {
-              const Preview = CALLOUT_VARIANT_PREVIEWS[value]
-              return (
-                <Radio
-                  key={value}
-                  value={value}
-                  allowDeselect={false}
-                  size="sm"
-                >
-                  {CalloutVariant[value]}
-                  <Preview
-                    aria-hidden
-                    w="100%"
-                    h="auto"
-                    mt="0.75rem"
-                    display="block"
-                  />
-                </Radio>
-              )
-            },
-          )}
+          {schema.anyOf?.map((option) => {
+            const value = option.const as CalloutVariant
+            const Preview = CALLOUT_VARIANT_PREVIEWS[value]
+
+            return (
+              <Radio key={value} value={value} allowDeselect={false} size="sm">
+                {option.title}
+                <Preview
+                  aria-hidden
+                  w="100%"
+                  h="auto"
+                  mt="0.75rem"
+                  display="block"
+                />
+              </Radio>
+            )
+          })}
         </Radio.RadioGroup>
       </FormControl>
     </Box>
