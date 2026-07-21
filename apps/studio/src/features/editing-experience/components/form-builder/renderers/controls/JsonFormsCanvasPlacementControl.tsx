@@ -1084,15 +1084,17 @@ function JsonFormsCanvasPlacementControl({
         {selection && (
           <Text textStyle="body-2" textColor="base.content.medium">
             Drag the highlighted area (or the block itself in the page preview)
-            to move it — hold Shift to move it in a straight line — or drag a
-            corner to resize it; in the preview, the edge handles resize in one
-            direction only. With the keyboard, use the arrow keys to nudge the
-            block one cell at a time (hold Shift to resize instead), or press
-            Enter on a cell to start a selection, Enter on another cell to
-            finish, and Escape to cancel. Press Delete to remove the block from
-            the canvas, ⌘D/Ctrl+D to duplicate it, ⌘]/⌘[ (or Ctrl) to bring it
-            forward or send it backward (add Shift to bring it to the front or
-            send it to the back), or Escape to go back to the block list.
+            to move it — hold Shift to move it in a straight line, or hold ⌥/Alt
+            when starting a drag in the preview to leave a copy of the block
+            behind — or drag a corner to resize it; in the preview, the edge
+            handles resize in one direction only. With the keyboard, use the
+            arrow keys to nudge the block one cell at a time (hold Shift to
+            resize instead), or press Enter on a cell to start a selection,
+            Enter on another cell to finish, and Escape to cancel. Press Delete
+            to remove the block from the canvas, ⌘D/Ctrl+D to duplicate it,
+            ⌘]/⌘[ (or Ctrl) to bring it forward or send it backward (add Shift
+            to bring it to the front or send it to the back), or Escape to go
+            back to the block list.
           </Text>
         )}
         {siblingPlacements.length > 0 && (

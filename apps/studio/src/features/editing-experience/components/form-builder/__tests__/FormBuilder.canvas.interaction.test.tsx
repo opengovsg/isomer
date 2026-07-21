@@ -3841,6 +3841,170 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("leaves a copy of a block in place when Alt is held while dragging it in the live preview", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const previewBlock = previewDocument.querySelector<HTMLElement>(
+      '[data-canvas-block-index="0"]',
+    )!
+    previewBlock.style.setProperty("--canvas-grid-column", "2 / span 4")
+    previewBlock.style.setProperty("--canvas-grid-row", "1 / span 2")
+
+    const ORIGINAL_PLACEMENT = {
+      colStart: 2,
+      colSpan: 4,
+      rowStart: 1,
+      rowSpan: 2,
+    }
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [{ ...BLOCKQUOTE_BLOCK, placement: ORIGINAL_PLACEMENT }],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    // JsonForms emits its initial onChange on a later tick; flush it so the
+    // background-press assertion below sees a stable baseline
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    // An Alt-press on the canvas background clones nothing
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          altKey: true,
+          clientX: 400,
+          clientY: 300,
+        }),
+      )
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const baselineChangeCount = changes.length
+
+    // Alt-pressing the unselected block from the list view leaves a copy in
+    // place while the same press selects the block and keeps going as a drag
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          altKey: true,
+          clientX: 85,
+          clientY: 16,
+        }),
+      )
+    })
+    expect(container.textContent).toContain("A quote inside the canvas")
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 165, clientY: 48 }),
+      )
+    })
+    // The original block follows the drag live; the copy stays behind
+    expect(previewBlock.style.getPropertyValue("--canvas-grid-column")).toBe(
+      "4 / span 4",
+    )
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    expect(changes.length).toBeGreaterThan(baselineChangeCount)
+    let lastChange = changes.at(-1) as
+      | { blocks?: { quote?: string; placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks).toHaveLength(2)
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 4,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    expect(lastChange?.blocks?.[1]).toEqual({
+      ...BLOCKQUOTE_BLOCK,
+      placement: ORIGINAL_PLACEMENT,
+    })
+
+    // Alt-pressing the SELECTED block also clones it — its press never
+    // bubbles past the placement control, so only a capture-phase listener
+    // can see it — and the press continues as the usual move drag
+    act(() => {
+      previewBlock.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+          altKey: true,
+          clientX: 185,
+          clientY: 80,
+        }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(
+        new iframeRealm.MouseEvent("mousemove", { clientX: 225, clientY: 112 }),
+      )
+    })
+    act(() => {
+      iframe.contentWindow!.dispatchEvent(new iframeRealm.MouseEvent("mouseup"))
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    lastChange = changes.at(-1) as
+      | { blocks?: { quote?: string; placement?: unknown }[] }
+      | undefined
+    expect(lastChange?.blocks).toHaveLength(3)
+    expect(lastChange?.blocks?.[0]?.placement).toEqual({
+      colStart: 5,
+      colSpan: 4,
+      rowStart: 3,
+      rowSpan: 2,
+    })
+    expect(lastChange?.blocks?.[2]?.placement).toEqual({
+      colStart: 4,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+
+    iframe.remove()
+  })
+
   it("shows a Wix-style action toolbar on the selected block in the live preview", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)

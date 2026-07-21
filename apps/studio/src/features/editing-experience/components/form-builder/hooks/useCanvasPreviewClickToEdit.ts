@@ -86,7 +86,8 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // ⌘D/Ctrl+D duplicates it, ⌘C/⌘X copy or cut it to an in-memory block
 // clipboard pasted back (with or without a selection) by ⌘V, ⌘]/⌘[ (or Ctrl)
 // move it forward/backward in the stacking order, and ⌘⇧]/⌘⇧[ jump it to the
-// front/back of the stack.
+// front/back of the stack. Holding Alt (⌥) while pressing any block leaves a
+// copy of it in place while the press drags the original away, Wix-style.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -347,6 +348,34 @@ export const useCanvasPreviewClickToEdit = ({
       }
     }
 
+    // Holding Alt (⌥) while pressing a block leaves a copy of it behind,
+    // Wix/Figma-style: the clone keeps the pressed block's exact placement
+    // and is appended at the end of the blocks array — so no indices shift
+    // and the press continues untouched into the usual machinery, moving the
+    // ORIGINAL block away while the copy stays in place. Capture phase,
+    // because presses on the selected block stop propagation in the
+    // placement control's grab handler before they would reach this hook.
+    const duplicateOnAltPress = (event: MouseEvent) => {
+      if (event.button !== 0 || !event.altKey) {
+        return
+      }
+      const block = resolveBlock(event)
+      if (!block) {
+        return
+      }
+      const index = Number(
+        block.getAttribute(CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE),
+      )
+      if (!Number.isInteger(index) || index < 0) {
+        return
+      }
+      const source: unknown = blocksRef.current[index]
+      if (source === undefined || source === null) {
+        return
+      }
+      addItem(path, structuredClone(source))()
+    }
+
     // Deselect only when the press also started outside every block: a block
     // drag released over the background fires its click at the canvas
     // ancestor too, and must not close the editor. Capture phase, because the
@@ -427,6 +456,7 @@ export const useCanvasPreviewClickToEdit = ({
       setContextMenu({ clientX: event.clientX, clientY: event.clientY })
     }
 
+    canvas.addEventListener("mousedown", duplicateOnAltPress, true)
     canvas.addEventListener("mousedown", armDeselect, true)
     canvas.addEventListener("mousedown", grabToSelect)
     canvas.addEventListener("click", openBlockEditor)
@@ -434,6 +464,7 @@ export const useCanvasPreviewClickToEdit = ({
     canvas.addEventListener("mouseover", hoverBlock)
     canvas.addEventListener("mouseout", unhoverBlock)
     return () => {
+      canvas.removeEventListener("mousedown", duplicateOnAltPress, true)
       canvas.removeEventListener("mousedown", armDeselect, true)
       canvas.removeEventListener("mousedown", grabToSelect)
       canvas.removeEventListener("click", openBlockEditor)
@@ -446,6 +477,7 @@ export const useCanvasPreviewClickToEdit = ({
       })
     }
   }, [
+    addItem,
     canvasOrdinal,
     content,
     currActiveIdx,
