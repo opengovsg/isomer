@@ -1,7 +1,5 @@
 export * from "./engine"
-// RenderEngine lives outside engine/index so client-only root imports
-// (LinkComponentProvider, scripts) do not pull fat renderLayout into the
-// template client graph. Studio still gets RenderEngine from the package root.
+// Exported here, not from ./engine, so LinkComponentProvider imports stay thin.
 export {
   RenderEngine,
   renderComponentPreviewText,

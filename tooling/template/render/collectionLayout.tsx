@@ -3,8 +3,8 @@ import { CollectionLayout } from "@opengovsg/isomer-components/templates/next/la
 import { getSitemapAsArray } from "@opengovsg/isomer-components/utils/getSitemapAsArray"
 
 /**
- * Collection landing only — do not import Search/Database here.
- * Codegen'd `app/(heavy)/…` collection routes import this engine alone.
+ * Used only by codegen'd collection landings under app/(heavy)/.
+ * Keep Search and Database out of this module graph.
  */
 export const CollectionRenderEngine = (props: IsomerPageSchemaType) => {
   const renderProps: IsomerPageSchemaType = {

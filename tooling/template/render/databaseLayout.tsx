@@ -5,9 +5,9 @@ import { getSitemapAsArray } from "@opengovsg/isomer-components/utils/getSitemap
 import { renderPageContent } from "./lightComponents"
 
 /**
- * Database landing only — do not import Collection/Search here.
- * Uses DatabaseSkeleton + light renderPageContent for content blocks.
- * Codegen'd `app/(heavy)/…` database routes import this engine alone.
+ * Used only by codegen'd database landings under app/(heavy)/.
+ * Keep Collection and Search out of this module graph.
+ * DatabaseSkeleton + light renderPageContent cover the table and content blocks.
  */
 export const DatabaseRenderEngine = (props: IsomerPageSchemaType) => {
   const renderProps: IsomerPageSchemaType = {
