@@ -261,3 +261,98 @@ export const OrderedListFirst: Story = {
     )
   },
 }
+
+export const OrderedListOnly: Story = {
+  args: {
+    summary: "Title for accordion item",
+    details: {
+      type: "prose",
+      content: [
+        {
+          type: "orderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "This is a bullet point" }],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    { type: "text", text: "This is another bullet point" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByText(`${OrderedListOnly.args?.summary}1`))
+  },
+}
+
+export const ListInMiddle: Story = {
+  args: {
+    summary: "Title for accordion item",
+    details: {
+      type: "prose",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "Enter content for the accordion here." },
+          ],
+        },
+        {
+          type: "unorderedList",
+          content: [
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "This is a bullet point" }],
+                },
+              ],
+            },
+            {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    { type: "text", text: "This is another bullet point" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Accordions hide content by default, so make sure that anything written inside an accordion is not critical information.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByText(`${ListInMiddle.args?.summary}1`))
+  },
+}
