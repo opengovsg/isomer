@@ -2376,7 +2376,10 @@ export const useCanvasPreviewClickToEdit = ({
   // send it to the back of the stacking order in one data change, the arrow
   // keys nudge every placed member one grid cell (the group moves as a unit —
   // if any member would leave the grid, nothing moves, so members' relative
-  // positions never distort), and Escape clears the selection.
+  // positions never distort), Shift+arrows resize instead — the bounding
+  // box's end edge grows or shrinks one cell and every placed member scales
+  // proportionally into the resized box, mirroring the single block's
+  // Shift+arrow resize — and Escape clears the selection.
   // Registered on both windows, like the single-selection shortcuts below.
   useEffect(() => {
     if (
@@ -2411,6 +2414,44 @@ export const useCanvasPreviewClickToEdit = ({
       dispatch(
         update(path, (blocks: unknown[]) =>
           shiftBlockPlacements(blocks, moved, dCol, dRow),
+        ),
+      )
+    }
+    const resizeGroup = (dCol: number, dRow: number) => {
+      if (!dispatch) {
+        return
+      }
+      // Only placed members give the group a bounding box to resize; the
+      // box's end edge moves one cell (its start edge stays put, like the
+      // single block's Shift+arrow resize) clamped to the grid and a
+      // one-cell minimum, and every placed member scales proportionally
+      // into the resized box — the pointer group resize's geometry
+      const placedMembers = collectPlacedGroupMembers(
+        blocksRef.current,
+        multiSelectedIndices,
+      )
+      if (placedMembers.length === 0) {
+        return
+      }
+      const box = groupBoundingBoxOf(placedMembers)
+      const resized: GroupBoundingBox = {
+        colStart: box.colStart,
+        colEnd: Math.min(
+          Math.max(box.colEnd + dCol, box.colStart),
+          CANVAS_GRID_COLUMNS,
+        ),
+        rowStart: box.rowStart,
+        rowEnd: Math.min(
+          Math.max(box.rowEnd + dRow, box.rowStart),
+          CANVAS_MAX_ROW,
+        ),
+      }
+      if (boxesEqual(box, resized)) {
+        return
+      }
+      dispatch(
+        update(path, (blocks: unknown[]) =>
+          scaleBlockPlacementsIntoBox(blocks, placedMembers, box, resized),
         ),
       )
     }
@@ -2465,6 +2506,26 @@ export const useCanvasPreviewClickToEdit = ({
           }
           return
         }
+      }
+      if (
+        event.shiftKey &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        (event.key === "ArrowLeft" ||
+          event.key === "ArrowRight" ||
+          event.key === "ArrowUp" ||
+          event.key === "ArrowDown")
+      ) {
+        // Take over the keystroke even when the resize clamps: while a
+        // multi-selection is active, Shift+arrows must never extend a text
+        // selection or scroll the page
+        event.preventDefault()
+        resizeGroup(
+          event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0,
+          event.key === "ArrowUp" ? -1 : event.key === "ArrowDown" ? 1 : 0,
+        )
+        return
       }
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return

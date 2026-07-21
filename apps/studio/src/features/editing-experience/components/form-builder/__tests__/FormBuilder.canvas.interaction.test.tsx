@@ -6072,6 +6072,170 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("resizes the multi-selection's bounding box with Shift+arrow keys, scaling members proportionally", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 1, colSpan: 2, rowStart: 1, rowSpan: 2 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 3, colSpan: 2, rowStart: 3, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const placementAt = (index: number) => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks?.[index]?.placement
+    }
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    shiftClick(blockAt(2))
+    const baselineChangeCount = changes.length
+
+    // Shift+ArrowRight grows the bounding box one column (cols 1–4 → 1–5)
+    // and scales both placed members proportionally into it in ONE data
+    // change, keeping the selection highlight and leaving the unplaced
+    // member untouched
+    pressKey(document.body, "ArrowRight", { shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(placementAt(0)).toEqual({
+      colStart: 1,
+      colSpan: 3,
+      rowStart: 1,
+      rowSpan: 2,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 4,
+      colSpan: 2,
+      rowStart: 3,
+      rowSpan: 2,
+    })
+    expect(placementAt(2)).toBeUndefined()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+
+    // Shift+ArrowDown grows the rows (rows 1–4 → 1–5), columns untouched
+    pressKey(document.body, "ArrowDown", { shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(placementAt(0)).toEqual({
+      colStart: 1,
+      colSpan: 3,
+      rowStart: 1,
+      rowSpan: 3,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 4,
+      colSpan: 2,
+      rowStart: 4,
+      rowSpan: 2,
+    })
+
+    // Shift+ArrowLeft shrinks the columns back to the original box
+    pressKey(document.body, "ArrowLeft", { shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 3)
+    expect(placementAt(0)).toEqual({
+      colStart: 1,
+      colSpan: 2,
+      rowStart: 1,
+      rowSpan: 3,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 3,
+      colSpan: 2,
+      rowStart: 4,
+      rowSpan: 2,
+    })
+
+    // Shrinking a single-member selection reaches the one-column minimum,
+    // after which a further Shift+ArrowLeft clamps to the same box and
+    // commits nothing
+    pressKey(document.body, "Escape")
+    shiftClick(blockAt(0))
+    pressKey(document.body, "ArrowLeft", { shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
+    expect(placementAt(0)).toEqual({
+      colStart: 1,
+      colSpan: 1,
+      rowStart: 1,
+      rowSpan: 3,
+    })
+    pressKey(document.body, "ArrowLeft", { shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
+
+    // A multi-selection holding only an unplaced block ignores Shift+arrows —
+    // an unplaced block gives the group no bounding box to resize
+    pressKey(document.body, "Escape")
+    shiftClick(blockAt(2))
+    pressKey(document.body, "ArrowRight", { shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
+
+    iframe.remove()
+  })
+
   it("duplicates the multi-selected blocks together with ⌘D", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
