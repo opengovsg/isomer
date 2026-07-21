@@ -885,6 +885,66 @@ export const useCanvasPreviewClickToEdit = ({
     [dispatch, multiSelectedIndices, path],
   )
 
+  // Wix's match-size commands: resize every placed member of the
+  // multi-selection to the group's largest span on one axis, in ONE data
+  // change. Starts are preserved except where the larger span would push a
+  // member past the grid's edge, where the member shifts back just enough to
+  // fit — always possible because the target span comes from an on-grid
+  // member. The other axis and unplaced members are untouched, and with
+  // fewer than two placed members, or when every member already has the
+  // target size, nothing commits so the command can never spuriously dirty
+  // the page.
+  const matchMultiSelectedBlockSizes = useCallback(
+    (axis: "width" | "height") => {
+      if (!dispatch) {
+        return
+      }
+      const members = collectPlacedGroupMembers(
+        blocksRef.current,
+        multiSelectedIndices,
+      )
+      if (members.length < 2) {
+        return
+      }
+      const startOf = (member: PlacedGroupMember) =>
+        axis === "width" ? member.colStart : member.rowStart
+      const spanOf = (member: PlacedGroupMember) =>
+        axis === "width" ? member.colSpan : member.rowSpan
+      const limit = axis === "width" ? CANVAS_GRID_COLUMNS : CANVAS_MAX_ROW
+      const targetSpan = Math.max(...members.map(spanOf))
+      const targets = new Map<number, Partial<CanvasBlockPlacement>>()
+      for (const member of members) {
+        const start = Math.min(startOf(member), limit - targetSpan + 1)
+        if (targetSpan !== spanOf(member) || start !== startOf(member)) {
+          targets.set(
+            member.index,
+            axis === "width"
+              ? { colStart: start, colSpan: targetSpan }
+              : { rowStart: start, rowSpan: targetSpan },
+          )
+        }
+      }
+      if (targets.size === 0) {
+        return
+      }
+      dispatch(
+        update(path, (blocks: unknown[]) =>
+          blocks.map((block, index) => {
+            const target = targets.get(index)
+            if (!target) {
+              return block
+            }
+            const { placement, ...rest } = block as {
+              placement?: CanvasBlockPlacement
+            }
+            return { ...rest, placement: { ...placement, ...target } }
+          }),
+        ),
+      )
+    },
+    [dispatch, multiSelectedIndices, path],
+  )
+
   // Wix's group arrange commands: move every member of the multi-selection
   // to the front or the back of the stacking order in ONE data change —
   // overlapping blocks paint in source order, so this is the group z-order
@@ -2407,9 +2467,9 @@ export const useCanvasPreviewClickToEdit = ({
         setContextMenu(null)
         return
       }
-      // The group align commands need at least two placed members to have a
-      // bounding box to align within; distribute needs a third, middle member
-      // to space out
+      // The group align and match-size commands need at least two placed
+      // members to have a box or size to match; distribute needs a third,
+      // middle member to space out
       const placedGroupMemberCount = collectPlacedGroupMembers(
         blocksRef.current,
         multiSelectedIndices,
@@ -2523,6 +2583,20 @@ export const useCanvasPreviewClickToEdit = ({
           glyph: "⇅",
           disabled: !canDistributeGroup,
           onClick: withClose(() => distributeMultiSelectedBlocks("vertical")),
+        },
+        {
+          name: "match-group-width",
+          label: "Match width",
+          glyph: "⟷",
+          disabled: !canAlignGroup,
+          onClick: withClose(() => matchMultiSelectedBlockSizes("width")),
+        },
+        {
+          name: "match-group-height",
+          label: "Match height",
+          glyph: "⇳",
+          disabled: !canAlignGroup,
+          onClick: withClose(() => matchMultiSelectedBlockSizes("height")),
         },
         {
           name: "delete-group",
@@ -2705,6 +2779,7 @@ export const useCanvasPreviewClickToEdit = ({
     arrangeMultiSelectedBlocks,
     alignMultiSelectedBlocks,
     distributeMultiSelectedBlocks,
+    matchMultiSelectedBlockSizes,
     removeMultiSelectedBlocks,
     clearMultiSelection,
     duplicateSelectedBlock,

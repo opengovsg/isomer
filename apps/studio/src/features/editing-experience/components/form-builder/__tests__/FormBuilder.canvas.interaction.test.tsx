@@ -6026,6 +6026,8 @@ describe("FormBuilder canvas editing interactions", () => {
       "Align bottom",
       "Distribute horizontally",
       "Distribute vertically",
+      "Match width",
+      "Match height",
       "Delete blocks (Delete)",
       "Clear selection (Escape)",
     ])
@@ -6460,6 +6462,201 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(menuItem("Distribute horizontally").disabled).toBe(true)
     expect(menuItem("Distribute vertically").disabled).toBe(true)
     expect(menuItem("Align left").disabled).toBe(false)
+    pressKey(document.body, "Escape")
+    await flush()
+
+    iframe.remove()
+  })
+
+  it("matches the multi-selected blocks' sizes via the group context menu", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 1, colSpan: 2, rowStart: 1, rowSpan: 3 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 4, colSpan: 6, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The third quote",
+            source: "s3",
+            placement: { colStart: 9, colSpan: 4, rowStart: 5, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The fourth quote", source: "s4" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const menu = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (element: Element) => {
+      act(() => {
+        element.dispatchEvent(
+          new iframeRealm.MouseEvent("contextmenu", {
+            bubbles: true,
+            cancelable: true,
+            clientX: 60,
+            clientY: 40,
+          }),
+        )
+      })
+    }
+    const matchVia = async (label: string) => {
+      rightClick(blockAt(0).querySelector("span")!)
+      await flush()
+      act(() => {
+        menuItem(label).click()
+      })
+      await flush()
+      expect(menu()).toBeNull()
+    }
+    const placementAt = (index: number) => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks?.[index]?.placement
+    }
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    shiftClick(blockAt(2))
+    shiftClick(blockAt(3))
+    const baselineChangeCount = changes.length
+
+    // Match width resizes every placed member to the group's widest span (6)
+    // in ONE data change: starts and rows are preserved, except the member
+    // near the right edge (columns 9-12) shifts back to column 7 so the wider
+    // span still fits the 12-column grid; the already-widest member and the
+    // unplaced member are untouched, and the multi-selection (and its
+    // highlight) survives
+    await matchVia("Match width")
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(placementAt(0)).toEqual({
+      colStart: 1,
+      colSpan: 6,
+      rowStart: 1,
+      rowSpan: 3,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 4,
+      colSpan: 6,
+      rowStart: 2,
+      rowSpan: 1,
+    })
+    expect(placementAt(2)).toEqual({
+      colStart: 7,
+      colSpan: 6,
+      rowStart: 5,
+      rowSpan: 2,
+    })
+    expect(placementAt(3)).toBeUndefined()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+    expect(blockAt(3).style.outline).toContain("solid")
+
+    // Re-matching an already-uniform group commits nothing, so the command
+    // can never spuriously dirty the page
+    await matchVia("Match width")
+    expect(changes.length).toBe(baselineChangeCount + 1)
+
+    // Match height resizes every placed member to the group's tallest span
+    // (3), leaving row starts and the just-matched column spans untouched
+    await matchVia("Match height")
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(placementAt(0)).toEqual({
+      colStart: 1,
+      colSpan: 6,
+      rowStart: 1,
+      rowSpan: 3,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 4,
+      colSpan: 6,
+      rowStart: 2,
+      rowSpan: 3,
+    })
+    expect(placementAt(2)).toEqual({
+      colStart: 7,
+      colSpan: 6,
+      rowStart: 5,
+      rowSpan: 3,
+    })
+
+    // With fewer than two placed members there is no size to match — the
+    // match commands are disabled while the group actions stay enabled
+    pressKey(document.body, "Escape")
+    await flush()
+    shiftClick(blockAt(2))
+    shiftClick(blockAt(3))
+    rightClick(blockAt(2).querySelector("span")!)
+    await flush()
+    expect(menuItem("Match width").disabled).toBe(true)
+    expect(menuItem("Match height").disabled).toBe(true)
+    expect(menuItem("Duplicate blocks (⌘D)").disabled).toBe(false)
     pressKey(document.body, "Escape")
     await flush()
 
