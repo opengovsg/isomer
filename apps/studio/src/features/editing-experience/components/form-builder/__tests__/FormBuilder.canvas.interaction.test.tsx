@@ -5887,4 +5887,201 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("opens a group context menu on the multi-selection in the live preview", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    // More preview block elements than data blocks, so the highlight on the
+    // copies appended by the group duplicate has elements to land on
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+        <div data-canvas-block-index="4"><span>fifth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 1, rowSpan: 1 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "s2" },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const menu = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const menuItemLabels = () =>
+      Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).map((button) => button.textContent)
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (
+      element: Element,
+      coords: Pick<MouseEventInit, "clientX" | "clientY">,
+    ) => {
+      const event = new iframeRealm.MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        ...coords,
+      })
+      act(() => {
+        element.dispatchEvent(event)
+      })
+      return event
+    }
+    const latestBlocks = () => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks
+    }
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    const baselineChangeCount = changes.length
+
+    // Right-clicking a member of the multi-selection opens the group menu at
+    // the pointer, keeping the set (and its highlight) intact and opening no
+    // block editor
+    const openEvent = rightClick(blockAt(1).querySelector("span")!, {
+      clientX: 120,
+      clientY: 80,
+    })
+    await flush()
+    expect(openEvent.defaultPrevented).toBe(true)
+    const openedMenu = menu()!
+    expect(openedMenu.style.left).toBe("120px")
+    expect(openedMenu.style.top).toBe("80px")
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(menuItemLabels()).toEqual([
+      "Duplicate blocks (⌘D)",
+      "Delete blocks (Delete)",
+      "Clear selection (Escape)",
+    ])
+
+    // Escape closes only the menu — the multi-selection stays
+    pressKey(document.body, "Escape")
+    await flush()
+    expect(menu()).toBeNull()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // Duplicate blocks appends a copy of every member in ONE data change,
+    // with the selection moving to the copies
+    rightClick(blockAt(0).querySelector("span")!, { clientX: 60, clientY: 40 })
+    await flush()
+    act(() => {
+      menuItem("Duplicate blocks (⌘D)").click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(latestBlocks()).toHaveLength(5)
+    expect(latestBlocks()?.[3]?.placement?.rowStart).toBe(2)
+    expect(blockAt(0).style.outline).toBe("")
+    expect(blockAt(3).style.outline).toContain("solid")
+    expect(blockAt(4).style.outline).toContain("solid")
+
+    // Delete blocks removes every member of the (moved) selection in one
+    // data change
+    rightClick(blockAt(4).querySelector("span")!, { clientX: 60, clientY: 40 })
+    await flush()
+    act(() => {
+      menuItem("Delete blocks (Delete)").click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(latestBlocks()).toHaveLength(3)
+    expect(blockAt(3).style.outline).toBe("")
+    expect(blockAt(4).style.outline).toBe("")
+
+    // Clear selection empties the set without touching the data
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    rightClick(blockAt(0).querySelector("span")!, { clientX: 60, clientY: 40 })
+    await flush()
+    act(() => {
+      menuItem("Clear selection (Escape)").click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(blockAt(0).style.outline).toBe("")
+    expect(blockAt(1).style.outline).toBe("")
+    expect(changes.length).toBe(baselineChangeCount + 2)
+
+    // Right-clicking a block OUTSIDE the multi-selection keeps the existing
+    // behavior: it selects that block (dropping the set) and opens the
+    // single-block menu
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    rightClick(blockAt(2).querySelector("span")!, { clientX: 60, clientY: 40 })
+    await flush()
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toBe("")
+    expect(blockAt(1).style.outline).toBe("")
+    const labels = menuItemLabels()
+    expect(labels).toContain("Duplicate block (⌘D)")
+    expect(labels).not.toContain("Duplicate blocks (⌘D)")
+
+    iframe.remove()
+  })
 })

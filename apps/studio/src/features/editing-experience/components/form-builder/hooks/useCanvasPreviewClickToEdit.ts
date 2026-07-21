@@ -139,7 +139,8 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // into a multi-selection for group actions: Delete removes them all at once,
 // ⌘D duplicates them all at once (the selection moving to the copies), the
 // arrow keys move the group one grid cell (clamped as a unit at the grid
-// edges), and Escape or a plain background click clears the set.
+// edges), Escape or a plain background click clears the set, and
+// right-clicking a member opens a group context menu with the same actions.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -153,11 +154,13 @@ export const useCanvasPreviewClickToEdit = ({
   const { core: jsonFormsCore, dispatch } = useJsonForms()
   const [hoverColor] = useToken("colors", ["interaction.main.default"])
   // Preview-viewport coordinates of an open right-click context menu: on a
-  // block it offers the selection actions, on the empty canvas background it
-  // offers Wix's "paste here" and "add here" commands targeting the
-  // right-clicked grid cell
+  // block it offers the selection actions, on a member of the multi-selection
+  // it offers the group actions, and on the empty canvas background it offers
+  // Wix's "paste here" and "add here" commands targeting the right-clicked
+  // grid cell
   const [contextMenu, setContextMenu] = useState<
     | { variant: "block"; clientX: number; clientY: number }
+    | { variant: "multi"; clientX: number; clientY: number }
     | {
         variant: "background"
         clientX: number
@@ -400,6 +403,49 @@ export const useCanvasPreviewClickToEdit = ({
     },
     [selectedIndex, path, dispatch],
   )
+
+  // Group actions shared by the multi-selection keyboard shortcuts and the
+  // group context menu, so the two entry points cannot drift apart: duplicate
+  // appends a copy of every member in ONE data change (copies in stacking
+  // order regardless of the order the members were Shift+clicked in, placed
+  // copies landing one row below their sources) and moves the selection to
+  // the copies so a follow-up group action acts on them; remove deletes every
+  // member in one data change.
+  const duplicateMultiSelectedBlocks = useCallback(() => {
+    if (!dispatch || multiSelectedIndices.length === 0) {
+      return
+    }
+    const members = [...multiSelectedIndices].sort((a, b) => a - b)
+    const copies = members.flatMap((index) => {
+      const source: unknown = blocksRef.current[index]
+      if (source === undefined || source === null) {
+        return []
+      }
+      const copy = structuredClone(source) as {
+        placement?: CanvasBlockPlacement
+      }
+      shiftPlacementOneRowDown(copy)
+      return [copy]
+    })
+    if (copies.length === 0) {
+      return
+    }
+    const firstCopyIndex = blocksRef.current.length
+    dispatch(update(path, (blocks: unknown[]) => [...blocks, ...copies]))
+    setMultiSelectedIndices(copies.map((_, offset) => firstCopyIndex + offset))
+  }, [dispatch, multiSelectedIndices, path])
+
+  const removeMultiSelectedBlocks = useCallback(() => {
+    if (multiSelectedIndices.length === 0) {
+      return
+    }
+    removeItems?.(path, [...multiSelectedIndices])()
+    setMultiSelectedIndices([])
+  }, [multiSelectedIndices, path, removeItems])
+
+  const clearMultiSelection = useCallback(() => {
+    setMultiSelectedIndices([])
+  }, [])
 
   const canvasOrdinal = useMemo(() => {
     if (
@@ -672,6 +718,17 @@ export const useCanvasPreviewClickToEdit = ({
         return
       }
       event.preventDefault()
+      // Right-clicking a member of the multi-selection keeps the set intact
+      // and opens the group menu; a non-member right-click selects that
+      // block (which drops the multi-selection) and opens the block menu
+      if (multiSelectedIndices.includes(index)) {
+        setContextMenu({
+          variant: "multi",
+          clientX: event.clientX,
+          clientY: event.clientY,
+        })
+        return
+      }
       if (index !== selectedIndex) {
         setSelectedIndex(index)
       }
@@ -886,34 +943,6 @@ export const useCanvasPreviewClickToEdit = ({
         ),
       )
     }
-    // Copies append in stacking order regardless of the order the members
-    // were Shift+clicked in, and the selection moves to the copies so a
-    // follow-up group action (another ⌘D, an arrow nudge) acts on them
-    const duplicateGroup = () => {
-      if (!dispatch) {
-        return
-      }
-      const members = [...multiSelectedIndices].sort((a, b) => a - b)
-      const copies = members.flatMap((index) => {
-        const source: unknown = blocksRef.current[index]
-        if (source === undefined || source === null) {
-          return []
-        }
-        const copy = structuredClone(source) as {
-          placement?: CanvasBlockPlacement
-        }
-        shiftPlacementOneRowDown(copy)
-        return [copy]
-      })
-      if (copies.length === 0) {
-        return
-      }
-      const firstCopyIndex = blocksRef.current.length
-      dispatch(update(path, (blocks: unknown[]) => [...blocks, ...copies]))
-      setMultiSelectedIndices(
-        copies.map((_, offset) => firstCopyIndex + offset),
-      )
-    }
     const handleGroupShortcut = (event: KeyboardEvent) => {
       if (event.defaultPrevented || isEditableTarget(event.target)) {
         return
@@ -926,7 +955,7 @@ export const useCanvasPreviewClickToEdit = ({
       ) {
         // Take over the keystroke even from the browser's bookmark shortcut
         event.preventDefault()
-        duplicateGroup()
+        duplicateMultiSelectedBlocks()
         return
       }
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
@@ -934,9 +963,23 @@ export const useCanvasPreviewClickToEdit = ({
       }
       if (event.key === "Delete" || event.key === "Backspace") {
         event.preventDefault()
-        removeItems?.(path, [...multiSelectedIndices])()
-        setMultiSelectedIndices([])
+        removeMultiSelectedBlocks()
       } else if (event.key === "Escape") {
+        // While the group context menu is open, Escape means "close the
+        // menu" (its own capture listener handles that), keeping the
+        // selection; the DOM marker is the order-independent guard for
+        // keydowns dispatched directly on either window
+        const previewDocument = findCanvasPreviewContainer(
+          document,
+          canvasOrdinal,
+        )?.ownerDocument
+        if (
+          previewDocument?.querySelector(
+            `[${CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE}]`,
+          )
+        ) {
+          return
+        }
         event.preventDefault()
         setMultiSelectedIndices([])
       } else if (
@@ -967,9 +1010,10 @@ export const useCanvasPreviewClickToEdit = ({
   }, [
     canvasOrdinal,
     dispatch,
+    duplicateMultiSelectedBlocks,
     multiSelectedIndices,
     path,
-    removeItems,
+    removeMultiSelectedBlocks,
     selectedIndex,
   ])
 
@@ -1235,9 +1279,10 @@ export const useCanvasPreviewClickToEdit = ({
   ])
 
   // Wix-style right-click context menu: on a block, the same selection
-  // actions as the toolbar and the keyboard shortcuts; on the empty canvas
-  // background, "paste here" and one "add here" command per canvas child
-  // block type, both targeting the right-clicked grid cell. Opened
+  // actions as the toolbar and the keyboard shortcuts; on a member of the
+  // multi-selection, the group actions behind the group shortcuts; on the
+  // empty canvas background, "paste here" and one "add here" command per
+  // canvas child block type, both targeting the right-clicked grid cell. Opened
   // at the pointer by the contextmenu handler above, dismissed by pressing
   // anywhere outside the menu or by Escape — which closes only the menu,
   // keeping any selection — and invoking an action closes it before acting.
@@ -1278,6 +1323,33 @@ export const useCanvasPreviewClickToEdit = ({
             onClick: withClose(() => addBlockHere(type, cell)),
           }),
         ),
+      ]
+    } else if (contextMenu.variant === "multi") {
+      if (multiSelectedIndices.length === 0) {
+        // The multi-selection went away underneath an open menu — drop the
+        // stale menu state
+        setContextMenu(null)
+        return
+      }
+      items = [
+        {
+          name: "duplicate-group",
+          label: "Duplicate blocks (⌘D)",
+          glyph: "⧉",
+          onClick: withClose(duplicateMultiSelectedBlocks),
+        },
+        {
+          name: "delete-group",
+          label: "Delete blocks (Delete)",
+          glyph: "✕",
+          onClick: withClose(removeMultiSelectedBlocks),
+        },
+        {
+          name: "clear-selection",
+          label: "Clear selection (Escape)",
+          glyph: "⊘",
+          onClick: withClose(clearMultiSelection),
+        },
       ]
     } else if (selectedIndex === undefined) {
       // The selection went away underneath an open menu (e.g. the block was
@@ -1440,6 +1512,10 @@ export const useCanvasPreviewClickToEdit = ({
     path,
     selectedIndex,
     hoverColor,
+    multiSelectedIndices,
+    duplicateMultiSelectedBlocks,
+    removeMultiSelectedBlocks,
+    clearMultiSelection,
     duplicateSelectedBlock,
     copySelectedBlock,
     cutSelectedBlock,
