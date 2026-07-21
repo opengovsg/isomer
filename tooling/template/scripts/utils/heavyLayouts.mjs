@@ -1,5 +1,18 @@
+import fs from "node:fs"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+/** @type {string[]} */
+const heavyLayoutTypes = JSON.parse(
+  fs.readFileSync(
+    path.join(__dirname, "../../lib/heavy-layout-types.json"),
+    "utf8",
+  ),
+)
+
 /** Layouts that get their own Next.js route modules at publish time. */
-export const HEAVY_LAYOUTS = new Set(["collection", "search", "database"])
+export const HEAVY_LAYOUTS = new Set(heavyLayoutTypes)
 
 /**
  * @typedef {object} SitemapNode

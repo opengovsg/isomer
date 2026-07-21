@@ -1,6 +1,6 @@
 import type { IsomerPageSchemaType } from "@opengovsg/isomer-components"
 import type { Metadata, ResolvingMetadata } from "next"
-import { getHeavyNormalizedPermalinks } from "@/lib/heavyLayouts"
+import { excludeHeavyFromCatchAllUrls } from "@/lib/heavyLayouts"
 import {
   buildMeta,
   buildSiteProps,
@@ -33,18 +33,15 @@ const getPatchedPermalink = async (
 }
 
 export const generateStaticParams = () => {
-  const excluded = getHeavyNormalizedPermalinks(sitemap)
-
   // TODO: fixup all the typing errors
   // @ts-expect-error to fix when types are proper
-  return getSitemapXml(sitemap)
-    .map(({ url }: { url: string }) =>
-      url.replace(/^\//, "").replace(/\/$/, ""),
-    )
-    .filter((normalized: string) => !excluded.has(normalized))
-    .map((normalized: string) => ({
+  const urls = getSitemapXml(sitemap).map(({ url }: { url: string }) => url)
+
+  return excludeHeavyFromCatchAllUrls(urls, sitemap).map(
+    (normalized: string) => ({
       permalink: normalized === "" ? [""] : normalized.split("/"),
-    }))
+    }),
+  )
 }
 
 export const generateMetadata = async (

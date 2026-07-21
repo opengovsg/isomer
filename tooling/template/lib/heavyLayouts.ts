@@ -1,5 +1,7 @@
+import heavyLayoutTypes from "./heavy-layout-types.json"
+
 /** Layouts that get their own Next.js route modules at publish time. */
-export const HEAVY_LAYOUTS = new Set(["collection", "search", "database"])
+export const HEAVY_LAYOUTS = new Set<string>(heavyLayoutTypes)
 
 interface SitemapNode {
   permalink?: string
@@ -37,4 +39,19 @@ export function getHeavyNormalizedPermalinks(
 
   walk(sitemap)
   return result
+}
+
+/**
+ * Drop heavy-layout landings from catch-all static params so `output: "export"`
+ * does not emit the same HTML from both the catch-all and `app/(heavy)/`.
+ * Article children under a collection prefix are kept.
+ */
+export function excludeHeavyFromCatchAllUrls(
+  urls: string[],
+  sitemap: SitemapNode,
+): string[] {
+  const excluded = getHeavyNormalizedPermalinks(sitemap)
+  return urls
+    .map((url) => normalizePermalink(url))
+    .filter((normalized) => !excluded.has(normalized))
 }
