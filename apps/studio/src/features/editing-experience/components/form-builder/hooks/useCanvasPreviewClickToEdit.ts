@@ -25,6 +25,7 @@ import {
   findCanvasPreviewContainer,
   isEditableTarget,
   resolveCanvasGridCellFromPoint,
+  showCanvasAlignmentGuides,
   showCanvasContextMenu,
   showCanvasDragBadge,
   showCanvasGridOverlay,
@@ -295,7 +296,10 @@ export const useCanvasPreviewClickToEdit = ({
   removeItems,
 }: UseCanvasPreviewClickToEditArgs): UseCanvasPreviewClickToEditResult => {
   const { core: jsonFormsCore, dispatch } = useJsonForms()
-  const [hoverColor] = useToken("colors", ["interaction.main.default"])
+  const [hoverColor, alignmentGuideColor] = useToken("colors", [
+    "interaction.main.default",
+    "utility.feedback.success",
+  ])
   // Preview-viewport coordinates of an open right-click context menu: on a
   // block it offers the selection actions, on a member of the multi-selection
   // it offers the group actions, and on the empty canvas background it offers
@@ -1553,6 +1557,102 @@ export const useCanvasPreviewClickToEdit = ({
       hoverColor,
     )
   }, [groupDrag, canvasOrdinal, path, hoverColor])
+
+  // Wix-style alignment guides during the group drag: any edge of the group's
+  // shifted bounding box that lands on the same grid line as a non-member
+  // placed block's edge is drawn as a solid line through the preview canvas,
+  // plus the canvas's own centre line when the box's column margins match —
+  // the same affordance the single-block placement drag shows
+  const groupAlignedCols = new Set<number>()
+  const groupAlignedRows = new Set<number>()
+  if (groupDrag !== null && groupDrag.moved && groupDrag.members.length > 0) {
+    const { dCol, dRow } = clampGroupDragDelta(groupDrag)
+    const boxColStart =
+      Math.min(...groupDrag.members.map((member) => member.colStart)) + dCol
+    const boxColEnd =
+      Math.max(
+        ...groupDrag.members.map(
+          (member) => member.colStart + member.colSpan - 1,
+        ),
+      ) + dCol
+    const boxRowStart =
+      Math.min(...groupDrag.members.map((member) => member.rowStart)) + dRow
+    const boxRowEnd =
+      Math.max(
+        ...groupDrag.members.map(
+          (member) => member.rowStart + member.rowSpan - 1,
+        ),
+      ) + dRow
+    // An area's edges sit on grid lines colStart/colEnd+1 (rowStart/rowEnd+1)
+    const boxCols = [boxColStart, boxColEnd + 1]
+    const boxRows = [boxRowStart, boxRowEnd + 1]
+    const memberIndices = new Set(
+      groupDrag.members.map((member) => member.index),
+    )
+    collectPlacedGroupMembers(
+      blocksRef.current,
+      blocksRef.current.flatMap((_, index) =>
+        memberIndices.has(index) ? [] : [index],
+      ),
+    ).forEach((sibling) => {
+      ;[sibling.colStart, sibling.colStart + sibling.colSpan]
+        .filter((line) => boxCols.includes(line))
+        .forEach((line) => groupAlignedCols.add(line))
+      ;[sibling.rowStart, sibling.rowStart + sibling.rowSpan]
+        .filter((line) => boxRows.includes(line))
+        .forEach((line) => groupAlignedRows.add(line))
+    })
+    // Equal column margins put the box's centre on the canvas's centre line
+    // (the middle column line, mid-gap by symmetry); full-width boxes are
+    // trivially centred and stay guide-free
+    if (
+      boxColStart > 1 &&
+      boxColStart - 1 === CANVAS_GRID_COLUMNS - boxColEnd
+    ) {
+      groupAlignedCols.add(CANVAS_GRID_COLUMNS / 2 + 1)
+    }
+  }
+  // Key the effect on the resolved lines so the guides only re-draw when the
+  // alignment changes, not on every cell the pointer crosses
+  const groupAlignedColsKey = [...groupAlignedCols]
+    .sort((a, b) => a - b)
+    .join(",")
+  const groupAlignedRowsKey = [...groupAlignedRows]
+    .sort((a, b) => a - b)
+    .join(",")
+  useEffect(() => {
+    if (
+      groupAlignedColsKey + groupAlignedRowsKey === "" ||
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH
+    ) {
+      return
+    }
+    const canvas = findCanvasPreviewContainer(document, canvasOrdinal)
+    if (!canvas) {
+      return
+    }
+    return showCanvasAlignmentGuides(
+      canvas,
+      {
+        cols:
+          groupAlignedColsKey === ""
+            ? []
+            : groupAlignedColsKey.split(",").map(Number),
+        rows:
+          groupAlignedRowsKey === ""
+            ? []
+            : groupAlignedRowsKey.split(",").map(Number),
+      },
+      alignmentGuideColor,
+    )
+  }, [
+    groupAlignedColsKey,
+    groupAlignedRowsKey,
+    canvasOrdinal,
+    path,
+    alignmentGuideColor,
+  ])
 
   // The rubber-band marquee's tracking and commit: the pointer is tracked on
   // the preview window in viewport coordinates, releasing turns every block

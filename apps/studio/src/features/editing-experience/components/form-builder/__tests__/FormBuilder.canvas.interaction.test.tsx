@@ -6701,6 +6701,179 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("shows alignment guides while a group drag lines the group's bounding box up with another block", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+
+    // The group's bounding box spans columns 2–5 and rows 2–3 (grid lines
+    // 2/6 and 2/4); the non-member sibling occupies columns 7–8 and rows
+    // 5–6, so its edges sit on column lines 7/9 and row lines 5/7
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 2, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 4, colSpan: 2, rowStart: 3, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The third quote",
+            source: "s3",
+            placement: { colStart: 7, colSpan: 2, rowStart: 5, rowSpan: 2 },
+          },
+        ],
+      } as IsomerComponent,
+      () => undefined,
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const pressBlock = (block: HTMLElement, clientX: number, clientY: number) =>
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            clientX,
+            clientY,
+          }),
+        )
+      })
+    const movePointer = (clientX: number, clientY: number) =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousemove", { clientX, clientY }),
+        )
+      })
+    const releasePointer = () =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mouseup"),
+        )
+      })
+    const guides = () =>
+      previewDocument.querySelector("[data-canvas-alignment-guides]")
+    const guideLines = () => {
+      const lines = Array.from(guides()?.children ?? []) as HTMLElement[]
+      return {
+        vertical: lines.filter((line) => line.style.height === "100%"),
+        horizontal: lines.filter((line) => line.style.height !== "100%"),
+      }
+    }
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+
+    // Grabbing a member shows nothing until the pointer crosses cells
+    pressBlock(blockAt(0), 60, 48) // cell (row 2, col 2)
+    expect(guides()).toBeNull()
+
+    // Delta +1/+1 puts the box's right edge on the sibling's left column
+    // line (7) and its bottom edge on the sibling's top row line (5)
+    movePointer(100, 80) // cell (row 3, col 3)
+    expect(guides()).not.toBeNull()
+    expect(guideLines().vertical.map((line) => line.style.left)).toEqual([
+      "239px",
+    ])
+    expect(guideLines().horizontal.map((line) => line.style.top)).toEqual([
+      "127px",
+    ])
+
+    // Delta +2/+2 shares no grid line with the sibling and leaves the box
+    // off-centre: the guides disappear
+    movePointer(140, 112) // cell (row 4, col 4)
+    expect(guides()).toBeNull()
+
+    // Delta +3/+3 aligns the box's right edge with the sibling's right
+    // column line (9), both row edges (lines 5 and 7), AND balances the
+    // column margins (4 and 4), adding the canvas-centre line (7)
+    movePointer(180, 144) // cell (row 5, col 5)
+    expect(guideLines().vertical.map((line) => line.style.left)).toEqual([
+      "239px",
+      "319px",
+    ])
+    expect(guideLines().horizontal.map((line) => line.style.top)).toEqual([
+      "127px",
+      "191px",
+    ])
+
+    // Cancelling the drag removes the guides
+    pressKey(document.body, "Escape")
+    expect(guides()).toBeNull()
+    releasePointer()
+
+    // Releasing an aligned drag also removes the guides
+    pressBlock(blockAt(0), 60, 48)
+    movePointer(100, 80)
+    expect(guides()).not.toBeNull()
+    releasePointer()
+    await flush()
+    expect(guides()).toBeNull()
+
+    iframe.remove()
+  })
+
   it("multi-selects blocks by sweeping a rubber-band marquee on the canvas background", async () => {
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
