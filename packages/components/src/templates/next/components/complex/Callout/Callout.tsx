@@ -1,5 +1,5 @@
 import type { IconType } from "react-icons"
-import type { CalloutProps } from "~/interfaces"
+import type { CalloutProps, CalloutVariant } from "~/interfaces"
 import { BiCheckCircle, BiError, BiErrorCircle } from "react-icons/bi"
 import { DEFAULT_CALLOUT_VARIANT } from "~/interfaces/complex/Callout"
 import { tv } from "~/lib/tv"
@@ -7,7 +7,7 @@ import { tv } from "~/lib/tv"
 import { Prose } from "../../native/Prose"
 
 const CALLOUT_CONFIG: Record<
-  NonNullable<CalloutProps["variant"]>,
+  CalloutVariant,
   { label: string; icon?: IconType }
 > = {
   information: { label: "Information" },
