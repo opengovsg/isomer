@@ -699,6 +699,70 @@ export const useCanvasPreviewClickToEdit = ({
     [dispatch, multiSelectedIndices, path],
   )
 
+  // Wix's distribute-spacing commands: equalize the gaps between consecutive
+  // placed members of the multi-selection along one axis, keeping the
+  // outermost members' edges (the group's bounding box) fixed, in ONE data
+  // change. Spans are untouched and unplaced members are skipped. It takes at
+  // least three placed members to have a middle block to space out — with
+  // fewer, or when the gaps are already equal, nothing commits. A fractional
+  // ideal gap is rounded per position, so the last member still lands exactly
+  // on the box's far edge and every target stays inside the on-grid box.
+  const distributeMultiSelectedBlocks = useCallback(
+    (axis: "horizontal" | "vertical") => {
+      if (!dispatch) {
+        return
+      }
+      const members = collectPlacedGroupMembers(
+        blocksRef.current,
+        multiSelectedIndices,
+      )
+      if (members.length < 3) {
+        return
+      }
+      const startOf = (member: PlacedGroupMember) =>
+        axis === "horizontal" ? member.colStart : member.rowStart
+      const spanOf = (member: PlacedGroupMember) =>
+        axis === "horizontal" ? member.colSpan : member.rowSpan
+      const sorted = [...members].sort((a, b) => startOf(a) - startOf(b))
+      const boxStart = Math.min(...sorted.map(startOf))
+      const boxEnd = Math.max(
+        ...sorted.map((member) => startOf(member) + spanOf(member) - 1),
+      )
+      const totalSpan = sorted.reduce((sum, member) => sum + spanOf(member), 0)
+      const gap = (boxEnd - boxStart + 1 - totalSpan) / (sorted.length - 1)
+      const targets = new Map<number, Partial<CanvasBlockPlacement>>()
+      let precedingSpans = 0
+      sorted.forEach((member, position) => {
+        const start = boxStart + precedingSpans + Math.round(position * gap)
+        precedingSpans += spanOf(member)
+        if (start !== startOf(member)) {
+          targets.set(
+            member.index,
+            axis === "horizontal" ? { colStart: start } : { rowStart: start },
+          )
+        }
+      })
+      if (targets.size === 0) {
+        return
+      }
+      dispatch(
+        update(path, (blocks: unknown[]) =>
+          blocks.map((block, index) => {
+            const target = targets.get(index)
+            if (!target) {
+              return block
+            }
+            const { placement, ...rest } = block as {
+              placement?: CanvasBlockPlacement
+            }
+            return { ...rest, placement: { ...placement, ...target } }
+          }),
+        ),
+      )
+    },
+    [dispatch, multiSelectedIndices, path],
+  )
+
   const clearMultiSelection = useCallback(() => {
     setMultiSelectedIndices([])
   }, [])
@@ -1930,10 +1994,14 @@ export const useCanvasPreviewClickToEdit = ({
         return
       }
       // The group align commands need at least two placed members to have a
-      // bounding box to align within
-      const canAlignGroup =
-        collectPlacedGroupMembers(blocksRef.current, multiSelectedIndices)
-          .length >= 2
+      // bounding box to align within; distribute needs a third, middle member
+      // to space out
+      const placedGroupMemberCount = collectPlacedGroupMembers(
+        blocksRef.current,
+        multiSelectedIndices,
+      ).length
+      const canAlignGroup = placedGroupMemberCount >= 2
+      const canDistributeGroup = placedGroupMemberCount >= 3
       items = [
         {
           name: "duplicate-group",
@@ -1982,6 +2050,20 @@ export const useCanvasPreviewClickToEdit = ({
           glyph: "⤓",
           disabled: !canAlignGroup,
           onClick: withClose(() => alignMultiSelectedBlocks("bottom")),
+        },
+        {
+          name: "distribute-group-horizontal",
+          label: "Distribute horizontally",
+          glyph: "⇹",
+          disabled: !canDistributeGroup,
+          onClick: withClose(() => distributeMultiSelectedBlocks("horizontal")),
+        },
+        {
+          name: "distribute-group-vertical",
+          label: "Distribute vertically",
+          glyph: "⇅",
+          disabled: !canDistributeGroup,
+          onClick: withClose(() => distributeMultiSelectedBlocks("vertical")),
         },
         {
           name: "delete-group",
@@ -2160,6 +2242,7 @@ export const useCanvasPreviewClickToEdit = ({
     multiSelectedIndices,
     duplicateMultiSelectedBlocks,
     alignMultiSelectedBlocks,
+    distributeMultiSelectedBlocks,
     removeMultiSelectedBlocks,
     clearMultiSelection,
     duplicateSelectedBlock,
