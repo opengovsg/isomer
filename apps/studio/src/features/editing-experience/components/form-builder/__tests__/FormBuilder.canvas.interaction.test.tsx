@@ -6012,6 +6012,12 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(blockAt(1).style.outline).toContain("solid")
     expect(menuItemLabels()).toEqual([
       "Duplicate blocks (⌘D)",
+      "Align left",
+      "Align center",
+      "Align right",
+      "Align top",
+      "Align middle",
+      "Align bottom",
       "Delete blocks (Delete)",
       "Clear selection (Escape)",
     ])
@@ -6081,6 +6087,192 @@ describe("FormBuilder canvas editing interactions", () => {
     const labels = menuItemLabels()
     expect(labels).toContain("Duplicate block (⌘D)")
     expect(labels).not.toContain("Duplicate blocks (⌘D)")
+
+    iframe.remove()
+  })
+
+  it("aligns the multi-selected blocks within the group's bounding box via the group context menu", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 2 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 5, colSpan: 4, rowStart: 5, rowSpan: 1 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const menu = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (element: Element) => {
+      act(() => {
+        element.dispatchEvent(
+          new iframeRealm.MouseEvent("contextmenu", {
+            bubbles: true,
+            cancelable: true,
+            clientX: 60,
+            clientY: 40,
+          }),
+        )
+      })
+    }
+    const alignVia = async (label: string) => {
+      rightClick(blockAt(0).querySelector("span")!)
+      await flush()
+      act(() => {
+        menuItem(label).click()
+      })
+      await flush()
+      expect(menu()).toBeNull()
+    }
+    const placementAt = (index: number) => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks?.[index]?.placement
+    }
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    shiftClick(blockAt(2))
+    const baselineChangeCount = changes.length
+
+    // Align left pulls every placed member's left edge to the group's left
+    // edge (column 2) in ONE data change; the unplaced member is untouched
+    // and the multi-selection (and its highlight) stays intact
+    await alignVia("Align left")
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(placementAt(0)).toEqual({
+      colStart: 2,
+      colSpan: 3,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 2,
+      colSpan: 4,
+      rowStart: 5,
+      rowSpan: 1,
+    })
+    expect(placementAt(2)).toBeUndefined()
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+
+    // Align right pushes every member's right edge to the group's right edge
+    // (column 5 after the align-left): only the narrower block moves
+    await alignVia("Align right")
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(placementAt(0)?.colStart).toBe(3)
+    expect(placementAt(1)?.colStart).toBe(2)
+
+    // Align center centres each member across the group's columns (2-5)
+    await alignVia("Align center")
+    expect(changes.length).toBe(baselineChangeCount + 3)
+    expect(placementAt(0)?.colStart).toBe(2)
+    expect(placementAt(1)?.colStart).toBe(2)
+
+    // Align top lifts every member's top edge to the group's top row (2)
+    await alignVia("Align top")
+    expect(changes.length).toBe(baselineChangeCount + 4)
+    expect(placementAt(0)?.rowStart).toBe(2)
+    expect(placementAt(1)?.rowStart).toBe(2)
+
+    // Align bottom drops each member's bottom edge to the group's bottom row
+    // (3, set by the taller block)
+    await alignVia("Align bottom")
+    expect(changes.length).toBe(baselineChangeCount + 5)
+    expect(placementAt(0)?.rowStart).toBe(2)
+    expect(placementAt(1)?.rowStart).toBe(3)
+
+    // Align middle centres each member down the group's rows
+    await alignVia("Align middle")
+    expect(changes.length).toBe(baselineChangeCount + 6)
+    expect(placementAt(0)?.rowStart).toBe(2)
+    expect(placementAt(1)?.rowStart).toBe(2)
+
+    // Re-aligning an already-aligned group commits nothing, so the command
+    // can never spuriously dirty the page
+    await alignVia("Align middle")
+    expect(changes.length).toBe(baselineChangeCount + 6)
+
+    // With fewer than two placed members there is nothing to align against —
+    // the align commands are disabled
+    pressKey(document.body, "Escape")
+    await flush()
+    shiftClick(blockAt(1))
+    shiftClick(blockAt(2))
+    rightClick(blockAt(1).querySelector("span")!)
+    await flush()
+    expect(menuItem("Align left").disabled).toBe(true)
+    expect(menuItem("Align middle").disabled).toBe(true)
+    expect(menuItem("Duplicate blocks (⌘D)").disabled).toBe(false)
+    pressKey(document.body, "Escape")
+    await flush()
 
     iframe.remove()
   })

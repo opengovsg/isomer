@@ -253,7 +253,8 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // pointer crosses (committed on release in one data change, Escape
 // cancelling the drag), Escape or a plain background click clears the set,
 // and right-clicking a member opens a group context menu with the same
-// actions.
+// actions plus Wix's group align commands, which line the placed members up
+// against an edge (or the centre) of the group's own bounding box.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -587,6 +588,89 @@ export const useCanvasPreviewClickToEdit = ({
     removeItems?.(path, [...multiSelectedIndices])()
     setMultiSelectedIndices([])
   }, [multiSelectedIndices, path, removeItems])
+
+  // Wix's group align commands: line up every placed member of the
+  // multi-selection against an edge (or the centre) of the group's own
+  // bounding box, in ONE data change. Spans are untouched, unplaced members
+  // are skipped, and it takes at least two placed members to have a box to
+  // align within — with fewer, or when every member already sits on the
+  // target edge, nothing commits so the command can never spuriously dirty
+  // the page. Targets stay on the grid without clamping because the bounding
+  // box is itself made of on-grid placements.
+  const alignMultiSelectedBlocks = useCallback(
+    (alignment: "left" | "center" | "right" | "top" | "middle" | "bottom") => {
+      if (!dispatch) {
+        return
+      }
+      const members = collectPlacedGroupMembers(
+        blocksRef.current,
+        multiSelectedIndices,
+      )
+      if (members.length < 2) {
+        return
+      }
+      const boxColStart = Math.min(...members.map((member) => member.colStart))
+      const boxColEnd = Math.max(
+        ...members.map((member) => member.colStart + member.colSpan - 1),
+      )
+      const boxRowStart = Math.min(...members.map((member) => member.rowStart))
+      const boxRowEnd = Math.max(
+        ...members.map((member) => member.rowStart + member.rowSpan - 1),
+      )
+      const targets = new Map<number, Partial<CanvasBlockPlacement>>()
+      for (const member of members) {
+        const target: Partial<CanvasBlockPlacement> =
+          alignment === "left"
+            ? { colStart: boxColStart }
+            : alignment === "right"
+              ? { colStart: boxColEnd - member.colSpan + 1 }
+              : alignment === "center"
+                ? {
+                    colStart:
+                      boxColStart +
+                      Math.floor(
+                        (boxColEnd - boxColStart + 1 - member.colSpan) / 2,
+                      ),
+                  }
+                : alignment === "top"
+                  ? { rowStart: boxRowStart }
+                  : alignment === "bottom"
+                    ? { rowStart: boxRowEnd - member.rowSpan + 1 }
+                    : {
+                        rowStart:
+                          boxRowStart +
+                          Math.floor(
+                            (boxRowEnd - boxRowStart + 1 - member.rowSpan) / 2,
+                          ),
+                      }
+        const changed =
+          (target.colStart !== undefined &&
+            target.colStart !== member.colStart) ||
+          (target.rowStart !== undefined && target.rowStart !== member.rowStart)
+        if (changed) {
+          targets.set(member.index, target)
+        }
+      }
+      if (targets.size === 0) {
+        return
+      }
+      dispatch(
+        update(path, (blocks: unknown[]) =>
+          blocks.map((block, index) => {
+            const target = targets.get(index)
+            if (!target) {
+              return block
+            }
+            const { placement, ...rest } = block as {
+              placement?: CanvasBlockPlacement
+            }
+            return { ...rest, placement: { ...placement, ...target } }
+          }),
+        ),
+      )
+    },
+    [dispatch, multiSelectedIndices, path],
+  )
 
   const clearMultiSelection = useCallback(() => {
     setMultiSelectedIndices([])
@@ -1647,12 +1731,59 @@ export const useCanvasPreviewClickToEdit = ({
         setContextMenu(null)
         return
       }
+      // The group align commands need at least two placed members to have a
+      // bounding box to align within
+      const canAlignGroup =
+        collectPlacedGroupMembers(blocksRef.current, multiSelectedIndices)
+          .length >= 2
       items = [
         {
           name: "duplicate-group",
           label: "Duplicate blocks (⌘D)",
           glyph: "⧉",
           onClick: withClose(duplicateMultiSelectedBlocks),
+        },
+        {
+          name: "align-group-left",
+          label: "Align left",
+          glyph: "⇤",
+          disabled: !canAlignGroup,
+          onClick: withClose(() => alignMultiSelectedBlocks("left")),
+        },
+        {
+          name: "align-group-center",
+          label: "Align center",
+          glyph: "↔",
+          disabled: !canAlignGroup,
+          onClick: withClose(() => alignMultiSelectedBlocks("center")),
+        },
+        {
+          name: "align-group-right",
+          label: "Align right",
+          glyph: "⇥",
+          disabled: !canAlignGroup,
+          onClick: withClose(() => alignMultiSelectedBlocks("right")),
+        },
+        {
+          name: "align-group-top",
+          label: "Align top",
+          glyph: "⤒",
+          disabled: !canAlignGroup,
+          onClick: withClose(() => alignMultiSelectedBlocks("top")),
+        },
+        {
+          name: "align-group-middle",
+          label: "Align middle",
+          glyph: "↕",
+          disabled: !canAlignGroup,
+          onClick: withClose(() => alignMultiSelectedBlocks("middle")),
+        },
+        {
+          name: "align-group-bottom",
+          label: "Align bottom",
+          glyph: "⤓",
+          disabled: !canAlignGroup,
+          onClick: withClose(() => alignMultiSelectedBlocks("bottom")),
         },
         {
           name: "delete-group",
@@ -1830,6 +1961,7 @@ export const useCanvasPreviewClickToEdit = ({
     hoverColor,
     multiSelectedIndices,
     duplicateMultiSelectedBlocks,
+    alignMultiSelectedBlocks,
     removeMultiSelectedBlocks,
     clearMultiSelection,
     duplicateSelectedBlock,
