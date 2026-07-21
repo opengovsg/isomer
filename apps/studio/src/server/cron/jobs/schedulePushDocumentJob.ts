@@ -6,6 +6,7 @@ import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import { createBaseLogger } from "~/lib/logger"
 import { getBlob, setAssetAsPublished } from "~/lib/s3"
 import { createGrowthBookContext } from "~/server/context"
+import { getContentDispositionForTitle } from "~/server/modules/asset/asset.service"
 import { db } from "~/server/modules/database"
 import {
   generateDocumentId,
@@ -58,10 +59,12 @@ const collectionIndexPageContentSchema = z.object({
 const extractResourceData = async ({
   resourceId,
   parentId,
+  title,
   content,
 }: {
   resourceId: string
   parentId: string | null
+  title: string
   content: unknown
 }): Promise<{
   ref: string
@@ -105,10 +108,12 @@ const extractResourceData = async ({
   const blob = await getBlob(env.S3_GAZETTE_BUCKET_NAME, ref.slice(1))
 
   // NOTE: Remove `scheduledAt` tags from our s3 object
-  // so that the pdf is viewable to MOPs
+  // so that the pdf is viewable to MOPs, and rename the download
+  // filename to the gazette's title
   await setAssetAsPublished({
     Key: ref.slice(1),
     Bucket: env.S3_GAZETTE_BUCKET_NAME,
+    ContentDisposition: getContentDispositionForTitle(title, ref),
   })
 
   // NOTE: Derive the subcategory from the tagged mapping
@@ -200,6 +205,7 @@ export const schedulePushDocumentJobHandler = async () => {
             const extracted = await extractResourceData({
               resourceId,
               parentId,
+              title,
               content,
             })
             if (extracted === null) return null
@@ -255,6 +261,7 @@ export const schedulePushDocumentJobHandler = async () => {
           const extracted = await extractResourceData({
             resourceId,
             parentId,
+            title,
             content,
           })
           if (extracted === null) continue

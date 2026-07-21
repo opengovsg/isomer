@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import {
   doAllFileKeysBelongToSite,
   getContentDispositionForKey,
+  getContentDispositionForTitle,
   getContentTypeFromKey,
   getFileKey,
   sanitizeSvg,
@@ -56,6 +57,32 @@ describe("asset.service", () => {
       const result = getContentDispositionForKey("1/abc/测试文件.pdf")
       expect(result).toMatch(/^inline; filename\*=UTF-8''/)
       expect(result).toContain(encodeURIComponent("测试文件.pdf"))
+    })
+  })
+
+  describe("getContentDispositionForTitle", () => {
+    it("should use the title as filename, keeping the key's extension", () => {
+      const result = getContentDispositionForTitle(
+        "Government Gazette No. 1",
+        "2024/category/sub/file.pdf",
+      )
+      expect(result).toBe(
+        `inline; filename*=UTF-8''${encodeURIComponent("Government Gazette No. 1.pdf")}`,
+      )
+    })
+
+    it("should encode special characters in the title", () => {
+      const result = getContentDispositionForTitle("测试文件", "1/abc/doc.pdf")
+      expect(result).toBe(
+        `inline; filename*=UTF-8''${encodeURIComponent("测试文件.pdf")}`,
+      )
+    })
+
+    it("should omit the extension when the key has none", () => {
+      const result = getContentDispositionForTitle("My Title", "1/abc/blob")
+      expect(result).toBe(
+        `inline; filename*=UTF-8''${encodeURIComponent("My Title")}`,
+      )
     })
   })
 
