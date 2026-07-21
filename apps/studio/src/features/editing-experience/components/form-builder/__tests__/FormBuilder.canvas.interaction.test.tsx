@@ -6015,6 +6015,8 @@ describe("FormBuilder canvas editing interactions", () => {
       "Copy blocks (⌘C)",
       "Cut blocks (⌘X)",
       "Paste blocks (⌘V)",
+      "Bring to front (⌘⇧])",
+      "Send to back (⌘⇧[)",
       "Align left",
       "Align center",
       "Align right",
@@ -7343,6 +7345,175 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(container.textContent).not.toContain("Edit Canvas blocks")
     expect(blockAt(5).style.outline).toContain("solid")
     expect(blockAt(6).style.outline).toContain("solid")
+
+    iframe.remove()
+  })
+
+  it("moves the multi-selection to the front and back of the stack together", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 1, rowSpan: 1 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "s2" },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+          { type: "blockquote", quote: "The fourth quote", source: "s4" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (element: Element) => {
+      act(() => {
+        element.dispatchEvent(
+          new iframeRealm.MouseEvent("contextmenu", {
+            bubbles: true,
+            cancelable: true,
+            clientX: 60,
+            clientY: 40,
+          }),
+        )
+      })
+    }
+    const latestBlocks = () => {
+      const latest = changes.at(-1) as
+        | {
+            blocks?: {
+              quote?: string
+              placement?: Record<string, number>
+            }[]
+          }
+        | undefined
+      return latest?.blocks
+    }
+    const lastQuotes = () => latestBlocks()?.map((block) => block.quote)
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(2))
+    const baselineChangeCount = changes.length
+
+    // ⌘⇧] brings every member of the multi-selection to the front of the
+    // stack in ONE data change, keeping the members' relative order and the
+    // other blocks' relative order intact — placements travel with the
+    // moved blocks, and the selection (with its highlight) follows them
+    pressKey(document.body, "}", { metaKey: true, shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      "The fourth quote",
+      "A quote inside the canvas",
+      "The third quote",
+    ])
+    expect(latestBlocks()?.[2]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 3,
+      rowStart: 1,
+      rowSpan: 1,
+    })
+    expect(blockAt(0).style.outline).toBe("")
+    expect(blockAt(1).style.outline).toBe("")
+    expect(blockAt(2).style.outline).toContain("solid")
+    expect(blockAt(3).style.outline).toContain("solid")
+
+    // A second ⌘⇧] commits nothing — the group already sits at the front
+    pressKey(document.body, "}", { metaKey: true, shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+
+    // ⌘⇧[ sends the group to the back of the stack in one data change
+    pressKey(document.body, "{", { metaKey: true, shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(lastQuotes()).toEqual([
+      "A quote inside the canvas",
+      "The third quote",
+      "The second quote",
+      "The fourth quote",
+    ])
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toBe("")
+    expect(blockAt(3).style.outline).toBe("")
+
+    // The group context menu offers the same commands: Send to back is
+    // disabled while the group sits at the back, and Bring to front commits
+    // the reorder with the selection following the members
+    rightClick(blockAt(0).querySelector("span")!)
+    await flush()
+    expect(menuItem("Send to back (⌘⇧[)").disabled).toBe(true)
+    expect(menuItem("Bring to front (⌘⇧])").disabled).toBe(false)
+    act(() => {
+      menuItem("Bring to front (⌘⇧])").click()
+    })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 3)
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      "The fourth quote",
+      "A quote inside the canvas",
+      "The third quote",
+    ])
+    expect(blockAt(2).style.outline).toContain("solid")
+    expect(blockAt(3).style.outline).toContain("solid")
 
     iframe.remove()
   })

@@ -877,6 +877,48 @@ export const useCanvasPreviewClickToEdit = ({
     [dispatch, multiSelectedIndices, path],
   )
 
+  // Wix's group arrange commands: move every member of the multi-selection
+  // to the front or the back of the stacking order in ONE data change —
+  // overlapping blocks paint in source order, so this is the group z-order
+  // control. The members' relative order and the other blocks' relative
+  // order are both preserved, the selection follows the members to their
+  // new indices, and when the group already sits at that end of the stack
+  // nothing commits so the command can never spuriously dirty the page.
+  const arrangeMultiSelectedBlocks = useCallback(
+    (edge: "front" | "back") => {
+      if (!dispatch || multiSelectedIndices.length === 0) {
+        return
+      }
+      const sorted = [...multiSelectedIndices].sort((a, b) => a - b)
+      const count = blocksRef.current.length
+      // A strictly increasing index set is contiguous at an end of the
+      // array exactly when its extreme index sits at that end
+      const atEdge =
+        edge === "front"
+          ? sorted[0] === count - sorted.length
+          : sorted[sorted.length - 1] === sorted.length - 1
+      if (atEdge) {
+        return
+      }
+      const members = new Set(sorted)
+      dispatch(
+        update(path, (blocks: unknown[]) => {
+          const selected = blocks.filter((_, index) => members.has(index))
+          const others = blocks.filter((_, index) => !members.has(index))
+          return edge === "front"
+            ? [...others, ...selected]
+            : [...selected, ...others]
+        }),
+      )
+      setMultiSelectedIndices(
+        sorted.map((_, offset) =>
+          edge === "front" ? count - sorted.length + offset : offset,
+        ),
+      )
+    },
+    [dispatch, multiSelectedIndices, path],
+  )
+
   const clearMultiSelection = useCallback(() => {
     setMultiSelectedIndices([])
   }, [])
@@ -1694,10 +1736,11 @@ export const useCanvasPreviewClickToEdit = ({
   // every member in one data change (placed copies land one row below their
   // sources, and the selection moves to the copies), ⌘C/⌘X copy or cut the
   // group to the block clipboard (⌘V, handled by the always-active clipboard
-  // effect below, pastes it back), the arrow keys nudge every placed member
-  // one grid cell (the group moves as a unit — if any member would leave the
-  // grid, nothing moves, so members' relative positions never distort), and
-  // Escape clears the selection.
+  // effect below, pastes it back), ⌘⇧]/⌘⇧[ bring the group to the front or
+  // send it to the back of the stacking order in one data change, the arrow
+  // keys nudge every placed member one grid cell (the group moves as a unit —
+  // if any member would leave the grid, nothing moves, so members' relative
+  // positions never distort), and Escape clears the selection.
   // Registered on both windows, like the single-selection shortcuts below.
   useEffect(() => {
     if (
@@ -1745,6 +1788,20 @@ export const useCanvasPreviewClickToEdit = ({
         isEditableTarget(event.target)
       ) {
         return
+      }
+      if ((event.metaKey || event.ctrlKey) && !event.altKey && event.shiftKey) {
+        // Shift+]/[ arrive as }/{ on US layouts
+        const key =
+          event.key === "}" ? "]" : event.key === "{" ? "[" : event.key
+        if (key === "]" || key === "[") {
+          // Take over the keystroke even when the group already sits at that
+          // end of the stack: ⌘[/⌘] are browser history-navigation
+          // shortcuts, which must never fire while a multi-selection is
+          // active
+          event.preventDefault()
+          arrangeMultiSelectedBlocks(key === "]" ? "front" : "back")
+          return
+        }
       }
       if (
         (event.metaKey || event.ctrlKey) &&
@@ -1822,6 +1879,7 @@ export const useCanvasPreviewClickToEdit = ({
       foreignPreviewWindow?.removeEventListener("keydown", handleGroupShortcut)
     }
   }, [
+    arrangeMultiSelectedBlocks,
     canvasOrdinal,
     copyMultiSelectedBlocks,
     cutMultiSelectedBlocks,
@@ -2157,6 +2215,16 @@ export const useCanvasPreviewClickToEdit = ({
       ).length
       const canAlignGroup = placedGroupMemberCount >= 2
       const canDistributeGroup = placedGroupMemberCount >= 3
+      // The arrange commands clamp at the ends of the stack: a strictly
+      // increasing index set is contiguous at an end of the array exactly
+      // when its extreme index sits at that end
+      const sortedGroupIndices = [...multiSelectedIndices].sort((a, b) => a - b)
+      const groupAtFront =
+        sortedGroupIndices[0] ===
+        blocksRef.current.length - sortedGroupIndices.length
+      const groupAtBack =
+        sortedGroupIndices[sortedGroupIndices.length - 1] ===
+        sortedGroupIndices.length - 1
       items = [
         {
           name: "duplicate-group",
@@ -2184,6 +2252,20 @@ export const useCanvasPreviewClickToEdit = ({
           glyph: "⇲",
           disabled: !clipboardHasBlocks(),
           onClick: withClose(pasteBlockFromClipboard),
+        },
+        {
+          name: "bring-group-to-front",
+          label: "Bring to front (⌘⇧])",
+          glyph: "⤒",
+          disabled: groupAtFront,
+          onClick: withClose(() => arrangeMultiSelectedBlocks("front")),
+        },
+        {
+          name: "send-group-to-back",
+          label: "Send to back (⌘⇧[)",
+          glyph: "⤓",
+          disabled: groupAtBack,
+          onClick: withClose(() => arrangeMultiSelectedBlocks("back")),
         },
         {
           name: "align-group-left",
@@ -2419,6 +2501,7 @@ export const useCanvasPreviewClickToEdit = ({
     duplicateMultiSelectedBlocks,
     copyMultiSelectedBlocks,
     cutMultiSelectedBlocks,
+    arrangeMultiSelectedBlocks,
     alignMultiSelectedBlocks,
     distributeMultiSelectedBlocks,
     removeMultiSelectedBlocks,
