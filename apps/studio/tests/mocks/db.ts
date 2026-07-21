@@ -1,8 +1,5 @@
 import type { DB } from "~/server/modules/database"
-import {
-  getContainer,
-  getPostgresConnectionString,
-} from "@opengovsg/starter-kitty-testcontainers"
+import { getPostgresConnectionString } from "@opengovsg/starter-kitty-testcontainers"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Kysely, PostgresDialect } from "kysely"
 import { randomUUID } from "node:crypto"
@@ -10,6 +7,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Client, Pool } from "pg"
+import { inject } from "vitest"
 import { PrismaClient } from "~prisma/generated/prisma/client"
 
 const prismaMigrationDir = join(
@@ -24,7 +22,11 @@ const prismaMigrationDir = join(
   "migrations",
 )
 
-const container = getContainer("postgres")
+const container = inject("testcontainers").postgres
+
+if (!container) {
+  throw new Error("Cannot find postgres container")
+}
 
 const testSpecificDb = randomUUID()
 

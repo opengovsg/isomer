@@ -108,8 +108,8 @@ catalogs:
       specifier: ^1.31.0
       version: 1.34.0
     '@opengovsg/starter-kitty-testcontainers':
-      specifier: ^0.1.0
-      version: 0.1.0
+      specifier: 0.0.0-snapshot-20260721023508
+      version: 0.0.0-snapshot-20260721023508
     '@opengovsg/starter-kitty-validators':
       specifier: ^1.3.0
       version: 1.3.0
@@ -1014,7 +1014,7 @@ importers:
         version: link:../../tooling/typescript
       '@opengovsg/starter-kitty-testcontainers':
         specifier: 'catalog:'
-        version: 0.1.0(testcontainers@12.0.4)(zod@4.4.3)
+        version: 0.0.0-snapshot-20260721023508(testcontainers@12.0.4)(vitest@4.1.10)(zod@4.4.3)
       '@playwright/test':
         specifier: catalog:playwright
         version: 1.61.1
@@ -4712,11 +4712,15 @@ packages:
       react: ^18.2.0
       react-dom: ^18.2.0
 
-  '@opengovsg/starter-kitty-testcontainers@0.1.0':
-    resolution: {integrity: sha512-MHH97iw/bVqhfn11zRDDcU0AXHcAlqu5D+Hn1aE8v34cDlB+jTAz8Ke2EAk95QqzT4rTEO3RP1xy/Qi8XKFGlQ==}
+  '@opengovsg/starter-kitty-testcontainers@0.0.0-snapshot-20260721023508':
+    resolution: {integrity: sha512-VsH9Q9o3wcadpdYaLAaKMA3BQlplpnEaSY9meehTGURqK4yCvDRLY/23jTpeK86k6jfz2qsFyBswKejYqOg7ug==}
     peerDependencies:
       testcontainers: ^10.0.0 || ^11.0.0 || ^12.0.0
+      vitest: ^4.1.0
       zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      vitest:
+        optional: true
 
   '@opengovsg/starter-kitty-validators@1.3.0':
     resolution: {integrity: sha512-okU3YPn60/2KWdWPdlUjEVvpoHK8yCE3xm3MxpZ3sC/w2iGIHjXt4eMgzqynAGk33InkPUoOih2pVBeKKn0FHQ==}
@@ -15671,10 +15675,12 @@ snapshots:
       - prop-types
       - supports-color
 
-  '@opengovsg/starter-kitty-testcontainers@0.1.0(testcontainers@12.0.4)(zod@4.4.3)':
+  '@opengovsg/starter-kitty-testcontainers@0.0.0-snapshot-20260721023508(testcontainers@12.0.4)(vitest@4.1.10)(zod@4.4.3)':
     dependencies:
       testcontainers: 12.0.4
       zod: 4.4.3
+    optionalDependencies:
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.1.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-istanbul@4.1.10)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.1.1)(typescript@6.0.3))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.8.3))
 
   '@opengovsg/starter-kitty-validators@1.3.0(zod@4.4.3)':
     dependencies:
