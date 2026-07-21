@@ -402,6 +402,17 @@ interface MarqueeDragState {
 
 const CANVAS_MARQUEE_DRAG_THRESHOLD_PX = 4
 
+// Wix-style undo: how many past states of the canvas's blocks ⌘Z can walk
+// back through while the canvas form stays open
+const CANVAS_UNDO_HISTORY_LIMIT = 50
+
+// One entry of the undo/redo history: a blocks array as it was, with its
+// serialization so states compare without re-stringifying
+interface CanvasBlocksSnapshot {
+  blocks: unknown[]
+  serialized: string
+}
+
 const restoreCustomProperty = (
   element: HTMLElement,
   name: string,
@@ -557,6 +568,14 @@ export const useCanvasPreviewClickToEdit = ({
   // The marquee rectangle is created once per sweep and repositioned per
   // pointer move through this ref, so it is not recreated on every move
   const marqueeRectangleRef = useRef<CanvasMarqueeRectangle | null>(null)
+  // Wix-style undo/redo history of the canvas's blocks. `current` mirrors
+  // the last observed state; the ⌘Z handler updates it synchronously when it
+  // restores, so its own data change is never re-recorded as a new state.
+  const undoHistoryRef = useRef<{
+    current: CanvasBlocksSnapshot
+    undo: CanvasBlocksSnapshot[]
+    redo: CanvasBlocksSnapshot[]
+  } | null>(null)
   // The click that trails a group drag or a marquee sweep must not act as a
   // plain click — it would open the released-over block's editor or clear
   // the multi-selection the gesture just produced
@@ -2928,6 +2947,109 @@ export const useCanvasPreviewClickToEdit = ({
     copySelectedBlock,
     cutSelectedBlock,
     pasteBlockFromClipboard,
+  ])
+
+  // Records the canvas blocks' history for undo, observing every data change
+  // whatever its source — preview gesture commits, sidebar reorders, and
+  // form edits alike. A fresh change forks history: the previous state joins
+  // the undo stack and the redo stack is dropped. Restores made by the ⌘Z
+  // handler below update the tracked state synchronously, so they read as
+  // no change here and are never re-recorded.
+  useEffect(() => {
+    if (canvasOrdinal === null || path !== CANVAS_BLOCKS_PATH) {
+      return
+    }
+    const blocks = Array.isArray(resolvedBlocks) ? resolvedBlocks : []
+    const serialized = JSON.stringify(blocks)
+    const history = undoHistoryRef.current
+    if (history === null) {
+      undoHistoryRef.current = {
+        current: { blocks, serialized },
+        undo: [],
+        redo: [],
+      }
+      return
+    }
+    if (history.current.serialized === serialized) {
+      return
+    }
+    history.undo.push(history.current)
+    if (history.undo.length > CANVAS_UNDO_HISTORY_LIMIT) {
+      history.undo.shift()
+    }
+    history.redo = []
+    history.current = { blocks, serialized }
+  }, [resolvedBlocks, canvasOrdinal, path])
+
+  // Wix-style undo/redo shortcuts, active whenever the canvas editor is open
+  // (like the clipboard effect above): ⌘Z/Ctrl+Z restores the blocks to
+  // their state before the last change and ⌘⇧Z re-applies the change an
+  // undo removed, each in one data change. Keystrokes in form fields keep
+  // their native text undo, a mid-gesture ⌘Z stays with the gesture (Escape
+  // cancels it), and a selection the restored array no longer covers is
+  // dropped so nothing points past its end.
+  useEffect(() => {
+    if (canvasOrdinal === null || path !== CANVAS_BLOCKS_PATH) {
+      return
+    }
+    const undoOnKey = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() !== "z" ||
+        !(event.metaKey || event.ctrlKey) ||
+        event.altKey ||
+        event.defaultPrevented ||
+        isEditableTarget(event.target) ||
+        groupDrag !== null ||
+        groupResize !== null ||
+        marquee !== null ||
+        !dispatch
+      ) {
+        return
+      }
+      const history = undoHistoryRef.current
+      if (!history) {
+        return
+      }
+      const restored = (event.shiftKey ? history.redo : history.undo).pop()
+      if (!restored) {
+        return
+      }
+      event.preventDefault()
+      ;(event.shiftKey ? history.undo : history.redo).push(history.current)
+      history.current = restored
+      if (
+        selectedIndex !== undefined &&
+        selectedIndex >= restored.blocks.length
+      ) {
+        setSelectedIndex(undefined)
+      }
+      setMultiSelectedIndices((previous) => {
+        const pruned = previous.filter(
+          (index) => index < restored.blocks.length,
+        )
+        return pruned.length === previous.length ? previous : pruned
+      })
+      dispatch(update(path, () => restored.blocks))
+    }
+    window.addEventListener("keydown", undoOnKey)
+    const previewWindow =
+      findCanvasPreviewContainer(document, canvasOrdinal)?.ownerDocument
+        .defaultView ?? null
+    const foreignPreviewWindow = previewWindow === window ? null : previewWindow
+    foreignPreviewWindow?.addEventListener("keydown", undoOnKey)
+    return () => {
+      window.removeEventListener("keydown", undoOnKey)
+      foreignPreviewWindow?.removeEventListener("keydown", undoOnKey)
+    }
+  }, [
+    canvasOrdinal,
+    dispatch,
+    groupDrag,
+    groupResize,
+    marquee,
+    path,
+    selectedIndex,
+    setSelectedIndex,
   ])
 
   // Wix-style action toolbar pinned above the selected block in the live

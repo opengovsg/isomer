@@ -10471,4 +10471,190 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("undoes and redoes canvas block changes with ⌘Z and ⌘⇧Z", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 2, rowStart: 2, rowSpan: 2 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 6, colSpan: 2, rowStart: 2, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const latestBlocks = () => {
+      const latest = changes.at(-1) as
+        | {
+            blocks?: {
+              quote?: string
+              placement?: Record<string, number>
+            }[]
+          }
+        | undefined
+      return latest?.blocks
+    }
+    const lastPlacements = () => latestBlocks()?.map((block) => block.placement)
+
+    await flush()
+
+    // ⌘Z before anything has changed has no history to restore
+    const initialChangeCount = changes.length
+    pressKey(document.body, "z", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(initialChangeCount)
+
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    const baselineChangeCount = changes.length
+
+    // Two group nudges commit two data changes to walk back through
+    pressKey(document.body, "ArrowRight")
+    await flush()
+    pressKey(document.body, "ArrowDown")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(lastPlacements()).toEqual([
+      { colStart: 3, colSpan: 2, rowStart: 3, rowSpan: 2 },
+      { colStart: 7, colSpan: 2, rowStart: 3, rowSpan: 2 },
+      undefined,
+    ])
+
+    // ⌘Z restores the state before the last change in one data change,
+    // keeping the multi-selection highlighted
+    pressKey(document.body, "z", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 3)
+    expect(lastPlacements()).toEqual([
+      { colStart: 3, colSpan: 2, rowStart: 2, rowSpan: 2 },
+      { colStart: 7, colSpan: 2, rowStart: 2, rowSpan: 2 },
+      undefined,
+    ])
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+
+    // A second ⌘Z walks back to the original placements; a third finds an
+    // empty history and commits nothing
+    pressKey(document.body, "z", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
+    expect(lastPlacements()).toEqual([
+      { colStart: 2, colSpan: 2, rowStart: 2, rowSpan: 2 },
+      { colStart: 6, colSpan: 2, rowStart: 2, rowSpan: 2 },
+      undefined,
+    ])
+    pressKey(document.body, "z", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
+
+    // ⌘⇧Z re-applies the undone change
+    pressKey(document.body, "z", { metaKey: true, shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 5)
+    expect(lastPlacements()).toEqual([
+      { colStart: 3, colSpan: 2, rowStart: 2, rowSpan: 2 },
+      { colStart: 7, colSpan: 2, rowStart: 2, rowSpan: 2 },
+      undefined,
+    ])
+
+    // A fresh change forks history: the remaining redo entry is dropped, so
+    // ⌘⇧Z after a new nudge commits nothing
+    pressKey(document.body, "ArrowLeft")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 6)
+    pressKey(document.body, "z", { metaKey: true, shiftKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 6)
+
+    // Undo brings back blocks a group Delete removed, in one data change
+    pressKey(document.body, "Delete")
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 7)
+    expect(latestBlocks()?.map((block) => block.quote)).toEqual([
+      "The third quote",
+    ])
+    pressKey(document.body, "z", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 8)
+    expect(latestBlocks()?.map((block) => block.quote)).toEqual([
+      BLOCKQUOTE_BLOCK.quote,
+      "The second quote",
+      "The third quote",
+    ])
+    expect(lastPlacements()).toEqual([
+      { colStart: 2, colSpan: 2, rowStart: 2, rowSpan: 2 },
+      { colStart: 6, colSpan: 2, rowStart: 2, rowSpan: 2 },
+      undefined,
+    ])
+
+    // ⌘Z aimed at a form field keeps its native text-undo meaning
+    click(findButtonByText("Item 1")!)
+    await flush()
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    const quoteInput = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input, textarea",
+      ),
+    ).find((field) => field.value === BLOCKQUOTE_BLOCK.quote)
+    expect(quoteInput).not.toBeUndefined()
+    pressKey(quoteInput!, "z", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 8)
+
+    iframe.remove()
+  })
 })
