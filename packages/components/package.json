@@ -24,6 +24,42 @@
     "./templates/next": {
       "import": "./dist/esm/templates/next/index.js",
       "default": "./dist/esm/templates/next/index.js"
+    },
+    "./templates/next/layouts/*": {
+      "import": "./dist/esm/templates/next/layouts/*/index.js",
+      "default": "./dist/esm/templates/next/layouts/*/index.js"
+    },
+    "./templates/next/components/complex/*": {
+      "import": "./dist/esm/templates/next/components/complex/*/index.js",
+      "default": "./dist/esm/templates/next/components/complex/*/index.js"
+    },
+    "./templates/next/components/native/*": {
+      "import": "./dist/esm/templates/next/components/native/*/index.js",
+      "default": "./dist/esm/templates/next/components/native/*/index.js"
+    },
+    "./templates/next/render/*": {
+      "import": "./dist/esm/templates/next/render/*.js",
+      "default": "./dist/esm/templates/next/render/*.js"
+    },
+    "./utils/getSitemapAsArray": {
+      "import": "./dist/esm/utils/getSitemapAsArray.js",
+      "default": "./dist/esm/utils/getSitemapAsArray.js"
+    },
+    "./engine/metadata": {
+      "import": "./dist/esm/engine/metadata.js",
+      "default": "./dist/esm/engine/metadata.js"
+    },
+    "./engine/renderApplicationScripts": {
+      "import": "./dist/esm/engine/renderApplicationScripts.js",
+      "default": "./dist/esm/engine/renderApplicationScripts.js"
+    },
+    "./engine/renderApplicationHeadScripts": {
+      "import": "./dist/esm/engine/renderApplicationHeadScripts.js",
+      "default": "./dist/esm/engine/renderApplicationHeadScripts.js"
+    },
+    "./templates/next/context/LinkComponentContext": {
+      "import": "./dist/esm/templates/next/context/LinkComponentContext.js",
+      "default": "./dist/esm/templates/next/context/LinkComponentContext.js"
     }
   },
   "publishConfig": {

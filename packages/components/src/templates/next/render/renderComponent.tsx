@@ -1,9 +1,4 @@
-import type {
-  IsomerComponent,
-  IsomerPageLayoutType,
-  IsomerSiteProps,
-} from "~/types"
-
+import type { RenderComponentProps } from "./types"
 import { Accordion } from "../components/complex/Accordion"
 import { AntiScamDisclaimerBanner } from "../components/complex/AntiScamDisclaimerBanner"
 import { Audio } from "../components/complex/Audio"
@@ -29,15 +24,6 @@ import { LogoCloud } from "../components/complex/LogoCloud"
 import { Map } from "../components/complex/Map"
 import { Video } from "../components/complex/Video"
 import { Prose } from "../components/native/Prose"
-
-interface RenderComponentProps {
-  elementKey?: number
-  component: IsomerComponent
-  layout: IsomerPageLayoutType
-  site: IsomerSiteProps
-  shouldLazyLoad?: boolean
-  permalink: string
-}
 
 export const renderComponent = ({
   elementKey,

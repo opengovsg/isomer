@@ -1,4 +1,10 @@
 export * from "./engine"
+// Exported here, not from ./engine, so LinkComponentProvider imports stay thin.
+export {
+  RenderEngine,
+  renderComponentPreviewText,
+  renderPrefillText,
+} from "./engine/render"
 export * from "./hooks"
 export * from "./presets"
 export {

@@ -44,6 +44,10 @@ build-storybook.log
 # Build artifacts
 dist/
 
+# Publish-time codegen: heavy layout landings under app/(heavy)/
+tooling/template/app/(heavy)/
+tooling/template/.generated-heavy-routes.json
+
 # env file
 .env
 .env.local.*

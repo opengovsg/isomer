@@ -15,8 +15,9 @@ const TSX_BIN = join(PACKAGE_DIR, "node_modules", ".bin", "tsx")
 // the template's committed placeholder fixtures are swapped for the real
 // output here and restored afterwards
 const TEMPLATE_DIR = join(PACKAGE_DIR, "..", "..", "..", "template")
-const NEXT_BIN = join(TEMPLATE_DIR, "node_modules", ".bin", "next")
 const OUT_DIR = join(TEMPLATE_DIR, "out")
+const HEAVY_ROUTES_DIR = join(TEMPLATE_DIR, "app", "(heavy)")
+const HEAVY_ROUTES_MANIFEST = join(TEMPLATE_DIR, ".generated-heavy-routes.json")
 const SWAPPED_PATHS = ["schema", "data", "sitemap.json"]
 
 let outputDir: string
@@ -36,6 +37,10 @@ const restoreTemplate = () => {
   }
   rmSync(join(TEMPLATE_DIR, "public", "sitemap.json"), { force: true })
   rmSync(OUT_DIR, { recursive: true, force: true })
+  // build:template codegen — remove so a failed/killed run does not leave
+  // fixture-specific heavy routes in the working tree
+  rmSync(HEAVY_ROUTES_DIR, { recursive: true, force: true })
+  rmSync(HEAVY_ROUTES_MANIFEST, { force: true })
   restored = true
 }
 
@@ -96,7 +101,15 @@ beforeAll(async () => {
     cpSync(indexJsonPath, join(TEMPLATE_DIR, "schema", "not-found.json"))
     rmSync(OUT_DIR, { recursive: true, force: true })
 
-    const buildResult = spawnSync(NEXT_BIN, ["build", "--webpack"], {
+    // Match publisher.sh / build.sh: generate layout routes, then next
+    // build. Collection/search/database landings are excluded from the
+    // catch-all and only emit HTML via codegen'd app/(heavy) pages.
+    //
+    // Spawned (not execFile) so the child can inherit a clean
+    // NODE_OPTIONS — CI injects dd-trace via --require/--import, and
+    // that instrumentation crashes next's build worker under Node 22 +
+    // Next 15.5.
+    const buildResult = spawnSync("pnpm", ["run", "build:template"], {
       cwd: TEMPLATE_DIR,
       encoding: "utf-8",
       timeout: 600_000,

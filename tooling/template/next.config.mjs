@@ -2,6 +2,12 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
+import {
+  buildStubRegex,
+  getUnusedTargetDirs,
+  scanSchemaUsage,
+} from "./treeshake.mjs"
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // `data/config.json` is written to disk (by the publisher) before `build:template` runs,
@@ -33,6 +39,24 @@ const nextConfig = {
         ),
       )
     }
+
+    // Site-level component/layout tree-shaking: stub out any complex component or layout
+    // type the site's schema never uses, so its render-time cost (and that of anything it
+    // statically imports) never enters the client bundle. See `treeshake.mjs` for the
+    // target tables, exclusions, and scanning logic (and its test suite for coverage).
+    const usage = scanSchemaUsage(path.join(__dirname, "schema"))
+    if (usage) {
+      const stubPath = path.join(__dirname, "stubs/renderTargets.js")
+      for (const dir of getUnusedTargetDirs(usage)) {
+        config.plugins.push(
+          new webpack.NormalModuleReplacementPlugin(
+            buildStubRegex(dir),
+            stubPath,
+          ),
+        )
+      }
+    }
+
     return config
   },
 }

@@ -4,14 +4,18 @@
   "private": true,
   "scripts": {
     "build:local": "rm -rf .next && curl https://raw.githubusercontent.com/opengovsg/isomer/main/tooling/build/scripts/preBuild.sh | bash && pnpm run build",
-    "build:template": "next build --webpack",
+    "build:template": "pnpm run generate:layout-routes && next build --webpack",
     "clean": "git clean -xdf .next .turbo node_modules out",
     "dev": "PORT=3001 next dev --webpack",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
+    "generate:layout-routes": "node ./scripts/generate-layout-routes.mjs",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
     "start": "next start",
+    "test-ci:unit": "vitest run",
+    "test:unit": "vitest run",
+    "test:watch": "vitest watch",
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
@@ -33,6 +37,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
-    "@typescript/native-preview": "catalog:"
+    "@typescript/native-preview": "catalog:",
+    "vitest": "catalog:vitest"
   }
 }
