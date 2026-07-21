@@ -131,13 +131,14 @@ const PageSettingsModalContent = ({
   )
 
   const originalPermalink = permalinkTree[permalinkTree.length - 1] ?? ""
+  const isPagePublished = publishedVersionId !== null
   // Offer the redirect only when a published Page/CollectionPage URL actually
   // changes — an unpublished page has no live URL to preserve, so the server
   // skips redirect creation for it anyway.
   const showRedirectOption =
     (type === ResourceType.Page || type === ResourceType.CollectionPage) &&
     permalink !== originalPermalink &&
-    publishedVersionId !== null
+    isPagePublished
   const oldFullPermalink = `${permalinksToRender.parentPermalinks}${originalPermalink}`
 
   const utils = trpc.useUtils()
@@ -295,10 +296,12 @@ const PageSettingsModalContent = ({
             </FormControl>
           )}
 
-          <Infobox variant="warning" size="sm">
-            {`Changes to your title${type === ResourceType.CollectionLink ? "" : " and URL"} will get published immediately. If you
+          {isPagePublished && (
+            <Infobox variant="warning" size="sm">
+              {`Changes to your title${type === ResourceType.CollectionLink ? "" : " and URL"} will get published immediately. If you
             don't want to publish ${type === ResourceType.CollectionLink ? "it" : "them"}, make this change later.`}
-          </Infobox>
+            </Infobox>
+          )}
         </VStack>
       </ModalBody>
 
@@ -307,7 +310,7 @@ const PageSettingsModalContent = ({
           Close
         </Button>
         <Button onClick={onSubmit} isLoading={isPending}>
-          Publish immediately
+          {isPagePublished ? "Publish immediately" : "Save"}
         </Button>
       </ModalFooter>
     </ModalContent>
