@@ -9,6 +9,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BLOCK_TO_META } from "~/components/PageEditor/constants"
 import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
+import type {
+  CanvasGridCell,
+  CanvasSelectionToolbarAction,
+} from "../../../utils/canvasPreviewBlock"
 import {
   CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE,
   CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
@@ -16,6 +20,7 @@ import {
   findCanvasBlockPreviewElement,
   findCanvasPreviewContainer,
   isEditableTarget,
+  resolveCanvasGridCellFromPoint,
   showCanvasContextMenu,
   showCanvasHoverLabel,
   showCanvasSelectionToolbar,
@@ -105,11 +110,19 @@ export const useCanvasPreviewClickToEdit = ({
 }: UseCanvasPreviewClickToEditArgs): void => {
   const { core: jsonFormsCore, dispatch } = useJsonForms()
   const [hoverColor] = useToken("colors", ["interaction.main.default"])
-  // Preview-viewport coordinates of an open right-click context menu
-  const [contextMenu, setContextMenu] = useState<{
-    clientX: number
-    clientY: number
-  } | null>(null)
+  // Preview-viewport coordinates of an open right-click context menu: on a
+  // block it offers the selection actions, on the empty canvas background it
+  // offers Wix's "paste here" targeting the right-clicked grid cell
+  const [contextMenu, setContextMenu] = useState<
+    | { variant: "block"; clientX: number; clientY: number }
+    | {
+        variant: "background"
+        clientX: number
+        clientY: number
+        cell: CanvasGridCell
+      }
+    | null
+  >(null)
   const editorContext = useOptionalEditorDrawerContext()
   const content = editorContext?.previewPageState.content
   const currActiveIdx = editorContext?.currActiveIdx
@@ -179,6 +192,35 @@ export const useCanvasPreviewClickToEdit = ({
     addItem(path, copy)()
     setSelectedIndex(blocksRef.current.length)
   }, [path, addItem, setSelectedIndex])
+
+  // Wix's "paste here": the clipboard block lands with its top-left corner
+  // on the grid cell that was right-clicked, keeping its span (clamped so the
+  // block stays on the grid); an unplaced clipboard block stays full width
+  // and is pinned at the clicked row. The clipboard re-snapshots the placed
+  // copy so a follow-up ⌘V cascades from the pasted position.
+  const pasteBlockHereFromClipboard = useCallback(
+    (cell: CanvasGridCell) => {
+      if (canvasBlockClipboard === null) {
+        return
+      }
+      const copy = structuredClone(canvasBlockClipboard) as {
+        placement?: CanvasBlockPlacement
+      }
+      const colSpan = copy.placement?.colSpan ?? CANVAS_GRID_COLUMNS
+      const rowSpan = copy.placement?.rowSpan ?? 1
+      copy.placement = {
+        ...copy.placement,
+        colStart: Math.min(cell.col, CANVAS_GRID_COLUMNS - colSpan + 1),
+        colSpan,
+        rowStart: Math.min(cell.row, CANVAS_MAX_ROW - rowSpan + 1),
+        rowSpan,
+      }
+      canvasBlockClipboard = structuredClone(copy)
+      addItem(path, copy)()
+      setSelectedIndex(blocksRef.current.length)
+    },
+    [path, addItem, setSelectedIndex],
+  )
 
   const removeSelectedBlock = useCallback(() => {
     if (selectedIndex === undefined) {
@@ -484,11 +526,30 @@ export const useCanvasPreviewClickToEdit = ({
     }
 
     // Right-clicking a block selects it and opens the context menu at the
-    // pointer, Wix-style; right-clicking the empty canvas background keeps
-    // the browser's native menu
+    // pointer, Wix-style. Right-clicking the empty canvas background offers
+    // "paste here" targeting the right-clicked grid cell when the block
+    // clipboard holds something; otherwise the browser's native menu is kept.
     const openContextMenu = (event: MouseEvent) => {
       const block = resolveBlock(event)
       if (!block) {
+        if (canvasBlockClipboard === null) {
+          return
+        }
+        const cell = resolveCanvasGridCellFromPoint(
+          canvas,
+          event.clientX,
+          event.clientY,
+        )
+        if (!cell) {
+          return
+        }
+        event.preventDefault()
+        setContextMenu({
+          variant: "background",
+          clientX: event.clientX,
+          clientY: event.clientY,
+          cell,
+        })
         return
       }
       const index = Number(
@@ -501,7 +562,11 @@ export const useCanvasPreviewClickToEdit = ({
       if (index !== selectedIndex) {
         setSelectedIndex(index)
       }
-      setContextMenu({ clientX: event.clientX, clientY: event.clientY })
+      setContextMenu({
+        variant: "block",
+        clientX: event.clientX,
+        clientY: event.clientY,
+      })
     }
 
     canvas.addEventListener("mousedown", duplicateOnAltPress, true)
@@ -797,22 +862,17 @@ export const useCanvasPreviewClickToEdit = ({
     removeSelectedBlock,
   ])
 
-  // Wix-style right-click context menu: the same selection actions as the
-  // toolbar and the keyboard shortcuts, opened at the pointer by the
-  // contextmenu handler above. Dismissed by pressing anywhere outside the
-  // menu or by Escape — which closes only the menu, keeping the block
-  // selected — and invoking an action closes it before acting.
+  // Wix-style right-click context menu: on a block, the same selection
+  // actions as the toolbar and the keyboard shortcuts; on the empty canvas
+  // background, "paste here" targeting the right-clicked grid cell. Opened
+  // at the pointer by the contextmenu handler above, dismissed by pressing
+  // anywhere outside the menu or by Escape — which closes only the menu,
+  // keeping any selection — and invoking an action closes it before acting.
   useEffect(() => {
     if (contextMenu === null) {
       return
     }
-    if (
-      canvasOrdinal === null ||
-      path !== CANVAS_BLOCKS_PATH ||
-      selectedIndex === undefined
-    ) {
-      // The selection went away underneath an open menu (e.g. the block was
-      // deleted) — drop the stale menu state
+    if (canvasOrdinal === null || path !== CANVAS_BLOCKS_PATH) {
       setContextMenu(null)
       return
     }
@@ -826,18 +886,33 @@ export const useCanvasPreviewClickToEdit = ({
       closeMenu()
       action()
     }
-    // The align commands need a column placement to act on; an unplaced
-    // block already spans the full width
-    const selectedBlock = blocksRef.current[selectedIndex] as
-      | { placement?: CanvasBlockPlacement }
-      | undefined
-    const canAlign =
-      selectedBlock?.placement?.colStart !== undefined &&
-      selectedBlock.placement.colSpan !== undefined
-    const removeMenu = showCanvasContextMenu(
-      canvas.ownerDocument,
-      contextMenu,
-      [
+    let items: CanvasSelectionToolbarAction[]
+    if (contextMenu.variant === "background") {
+      const { cell } = contextMenu
+      items = [
+        {
+          name: "paste-here",
+          label: "Paste block here",
+          glyph: "⇲",
+          disabled: canvasBlockClipboard === null,
+          onClick: withClose(() => pasteBlockHereFromClipboard(cell)),
+        },
+      ]
+    } else if (selectedIndex === undefined) {
+      // The selection went away underneath an open menu (e.g. the block was
+      // deleted) — drop the stale menu state
+      setContextMenu(null)
+      return
+    } else {
+      // The align commands need a column placement to act on; an unplaced
+      // block already spans the full width
+      const selectedBlock = blocksRef.current[selectedIndex] as
+        | { placement?: CanvasBlockPlacement }
+        | undefined
+      const canAlign =
+        selectedBlock?.placement?.colStart !== undefined &&
+        selectedBlock.placement.colSpan !== undefined
+      items = [
         {
           name: "duplicate",
           label: "Duplicate block (⌘D)",
@@ -927,7 +1002,12 @@ export const useCanvasPreviewClickToEdit = ({
           glyph: "✕",
           onClick: withClose(removeSelectedBlock),
         },
-      ],
+      ]
+    }
+    const removeMenu = showCanvasContextMenu(
+      canvas.ownerDocument,
+      contextMenu,
+      items,
       hoverColor,
     )
 
@@ -983,6 +1063,7 @@ export const useCanvasPreviewClickToEdit = ({
     copySelectedBlock,
     cutSelectedBlock,
     pasteBlockFromClipboard,
+    pasteBlockHereFromClipboard,
     bringSelectedForward,
     sendSelectedBackward,
     bringSelectedToFront,

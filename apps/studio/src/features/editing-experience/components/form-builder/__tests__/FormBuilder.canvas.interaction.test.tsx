@@ -4137,6 +4137,9 @@ describe("FormBuilder canvas editing interactions", () => {
   })
 
   it("opens a Wix-style right-click context menu on canvas blocks in the live preview", async () => {
+    // The background right-click assertion below relies on there being
+    // nothing to paste
+    resetCanvasBlockClipboard()
     const iframe = document.createElement("iframe")
     document.body.appendChild(iframe)
     const previewDocument = iframe.contentDocument!
@@ -4272,7 +4275,8 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(menu()).toBeNull()
     expect(container.textContent).toContain("Edit Canvas blocks")
 
-    // Right-clicking the empty canvas background keeps the native menu
+    // Right-clicking the empty canvas background with nothing in the block
+    // clipboard keeps the native menu
     const backgroundEvent = rightClick(
       previewDocument.querySelector("[data-canvas-container]")!,
       { clientX: 5, clientY: 5 },
@@ -4590,6 +4594,186 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(lastBlocks()).toHaveLength(3)
     expect(lastBlocks()?.[2]?.quote).toBe("The second quote")
     expect(lastBlocks()?.[2]?.placement).toBeUndefined()
+
+    iframe.remove()
+  })
+
+  it("pastes the clipboard block at the right-clicked grid cell via the background context menu", async () => {
+    resetCanvasBlockClipboard()
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    // Spare wrappers (indices 2-4) so pasted copies' selections have
+    // rendered elements
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+        <div data-canvas-block-index="4"><span>fifth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // 480px content box over 12 columns (empty computed styles read as zero
+    // gaps/padding/borders in jsdom) puts a column every 40px and a base row
+    // every 32px
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 1 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "Second" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const menu = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (
+      element: Element,
+      coords: Pick<MouseEventInit, "clientX" | "clientY">,
+    ) => {
+      const event = new iframeRealm.MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        ...coords,
+      })
+      act(() => {
+        element.dispatchEvent(event)
+      })
+      return event
+    }
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const lastBlocks = () =>
+      (
+        changes.at(-1) as
+          | {
+              blocks?: {
+                quote?: string
+                placement?: Record<string, number>
+              }[]
+            }
+          | undefined
+      )?.blocks
+    await flush()
+
+    // Right-clicking the background with an empty block clipboard keeps the
+    // browser's native menu
+    const emptyClipboardEvent = rightClick(previewCanvas, {
+      clientX: 200,
+      clientY: 100,
+    })
+    await flush()
+    expect(emptyClipboardEvent.defaultPrevented).toBe(false)
+    expect(menu()).toBeNull()
+
+    // Copy the unplaced second block, dismissing its menu without pasting
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="1"] span')!,
+      { clientX: 40, clientY: 40 },
+    )
+    await flush()
+    act(() => {
+      menuItem("Copy block (⌘C)").click()
+    })
+    await flush()
+
+    // Right-clicking the background now opens the paste menu at the pointer,
+    // offering only "Paste block here"
+    const backgroundEvent = rightClick(previewCanvas, {
+      clientX: 250,
+      clientY: 100,
+    })
+    await flush()
+    expect(backgroundEvent.defaultPrevented).toBe(true)
+    const openedMenu = menu()!
+    expect(openedMenu.style.left).toBe("250px")
+    expect(openedMenu.style.top).toBe("100px")
+    expect(openedMenu.querySelectorAll("button")).toHaveLength(1)
+
+    // Pasting the unplaced block pins it full width at the clicked row
+    // (clientY 100 → row 4); the editor switches to the pasted copy
+    act(() => {
+      menuItem("Paste block here").click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(lastBlocks()).toHaveLength(3)
+    expect(lastBlocks()?.[2]?.quote).toBe("The second quote")
+    expect(lastBlocks()?.[2]?.placement).toEqual({
+      colStart: 1,
+      colSpan: 12,
+      rowStart: 4,
+      rowSpan: 1,
+    })
+    expect(container.textContent).toContain("Columns 1–12, rows 4–4")
+
+    // Copy the placed first block, then paste it near the right edge: the
+    // block keeps its 4-column span with its top-left corner at the clicked
+    // cell, clamped so it stays on the grid (clientX 470 → column 12 →
+    // clamped to start at column 9)
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="0"] span')!,
+      { clientX: 40, clientY: 40 },
+    )
+    await flush()
+    act(() => {
+      menuItem("Copy block (⌘C)").click()
+    })
+    await flush()
+    rightClick(previewCanvas, { clientX: 470, clientY: 10 })
+    await flush()
+    act(() => {
+      menuItem("Paste block here").click()
+    })
+    await flush()
+    expect(lastBlocks()).toHaveLength(4)
+    expect(lastBlocks()?.[3]?.quote).toBe(BLOCKQUOTE_BLOCK.quote)
+    expect(lastBlocks()?.[3]?.placement).toEqual({
+      colStart: 9,
+      colSpan: 4,
+      rowStart: 1,
+      rowSpan: 1,
+    })
+    expect(container.textContent).toContain("Columns 9–12, rows 1–1")
 
     iframe.remove()
   })
