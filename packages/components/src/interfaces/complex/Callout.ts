@@ -6,14 +6,11 @@ import { CALLOUT_VARIANT_FORMAT } from "../format"
 import { CalloutProseSchema } from "../native/Prose"
 
 export const CalloutVariant = {
-  Information: {
-    value: "information",
-    label: "Important information (default)",
-  },
-  GoodToKnow: { value: "goodToKnow", label: "Positive update" },
-  Warning: { value: "warning", label: "Warning" },
-  Urgent: { value: "urgent", label: "Needs urgent action" },
-  Note: { value: "note", label: "Did you know" },
+  information: "Important information (default)",
+  goodToKnow: "Positive update",
+  warning: "Warning",
+  urgent: "Needs urgent action",
+  note: "Did you know",
 } as const
 
 export const CalloutSchema = Type.Object(
@@ -22,25 +19,25 @@ export const CalloutSchema = Type.Object(
     variant: Type.Optional(
       Type.Union(
         [
-          Type.Literal(CalloutVariant.Information.value, {
-            title: CalloutVariant.Information.label,
+          Type.Literal("information", {
+            title: CalloutVariant.information,
           }),
-          Type.Literal(CalloutVariant.GoodToKnow.value, {
-            title: CalloutVariant.GoodToKnow.label,
+          Type.Literal("goodToKnow", {
+            title: CalloutVariant.goodToKnow,
           }),
-          Type.Literal(CalloutVariant.Warning.value, {
-            title: CalloutVariant.Warning.label,
+          Type.Literal("warning", {
+            title: CalloutVariant.warning,
           }),
-          Type.Literal(CalloutVariant.Urgent.value, {
-            title: CalloutVariant.Urgent.label,
+          Type.Literal("urgent", {
+            title: CalloutVariant.urgent,
           }),
-          Type.Literal(CalloutVariant.Note.value, {
-            title: CalloutVariant.Note.label,
+          Type.Literal("note", {
+            title: CalloutVariant.note,
           }),
         ],
         {
           title: "Message type",
-          default: CalloutVariant.Information.value,
+          default: "information",
           format: CALLOUT_VARIANT_FORMAT,
         },
       ),

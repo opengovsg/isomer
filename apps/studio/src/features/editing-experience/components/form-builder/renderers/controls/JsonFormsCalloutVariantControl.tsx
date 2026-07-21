@@ -21,14 +21,14 @@ export const jsonFormsCalloutVariantControlTester: RankedTester = rankWith(
 )
 
 const CALLOUT_VARIANT_PREVIEWS: Record<
-  (typeof CalloutVariant)[keyof typeof CalloutVariant]["value"],
+  keyof typeof CalloutVariant,
   ComponentType<HTMLChakraProps<"svg">>
 > = {
-  [CalloutVariant.Information.value]: StyleCardInformation,
-  [CalloutVariant.GoodToKnow.value]: StyleCardGoodToKnow,
-  [CalloutVariant.Warning.value]: StyleCardWarning,
-  [CalloutVariant.Urgent.value]: StyleCardUrgent,
-  [CalloutVariant.Note.value]: StyleCardNote,
+  information: StyleCardInformation,
+  goodToKnow: StyleCardGoodToKnow,
+  warning: StyleCardWarning,
+  urgent: StyleCardUrgent,
+  note: StyleCardNote,
 }
 
 function JsonFormsCalloutVariantControl({
@@ -49,10 +49,10 @@ function JsonFormsCalloutVariantControl({
             handleChange(path, value)
           }}
           value={data as string}
-          defaultValue={CalloutVariant.Information.value}
+          defaultValue="information"
         >
-          {Object.values(CalloutVariant).map(
-            ({ value, label: optionLabel }) => {
+          {(Object.keys(CalloutVariant) as (keyof typeof CalloutVariant)[]).map(
+            (value) => {
               const Preview = CALLOUT_VARIANT_PREVIEWS[value]
               return (
                 <Radio
@@ -61,7 +61,7 @@ function JsonFormsCalloutVariantControl({
                   allowDeselect={false}
                   size="sm"
                 >
-                  {optionLabel}
+                  {CalloutVariant[value]}
                   <Preview
                     aria-hidden
                     w="100%"
