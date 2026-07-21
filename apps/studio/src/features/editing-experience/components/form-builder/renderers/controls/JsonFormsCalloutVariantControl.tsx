@@ -40,9 +40,7 @@ function JsonFormsCalloutVariantControl({
   return (
     <Box>
       <FormControl isRequired gap="0.5rem">
-        <FormLabel description={description}>
-          {label || "Message type"}
-        </FormLabel>
+        <FormLabel description={description}>{label}</FormLabel>
         <Radio.RadioGroup
           onChange={(value) => {
             handleChange(path, value)
