@@ -90,14 +90,16 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
   // Canvas blocks can be selected by clicking them on the live preview,
   // removed with the Delete key, duplicated with ⌘D/Ctrl+D, and moved
   // forward/backward in the stacking order with ⌘]/⌘[; hovering a block's
-  // row below highlights it on the preview, and Shift+clicking a row
-  // toggles its block in the Wix-style multi-selection. For every other
-  // array this is a no-op
+  // row below highlights it on the preview, Shift+clicking a row toggles
+  // its block in the Wix-style multi-selection, and right-clicking a row
+  // opens the block or group context menu. For every other array this is
+  // a no-op
   const {
     setHoveredListBlockIndex,
     isCanvasBlocksList,
     multiSelectedIndices,
     toggleMultiSelectedBlock,
+    openListBlockContextMenu,
   } = useCanvasPreviewClickToEdit({
     path,
     selectedIndex,
@@ -165,6 +167,18 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
                             ref={innerRef}
                             onMouseEnter={() => setHoveredListBlockIndex(index)}
                             onMouseLeave={() => setHoveredListBlockIndex(null)}
+                            onContextMenu={(event) => {
+                              // Right-click mirrors the preview's Wix-style
+                              // context menu from the block list
+                              if (!isCanvasBlocksList) {
+                                return
+                              }
+                              event.preventDefault()
+                              openListBlockContextMenu(index, {
+                                clientX: event.clientX,
+                                clientY: event.clientY,
+                              })
+                            }}
                           >
                             <DraggableTagButton.Handle
                               dragHandleProps={dragHandleProps}

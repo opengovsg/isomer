@@ -8758,4 +8758,170 @@ describe("FormBuilder canvas editing interactions", () => {
 
     iframe.remove()
   })
+
+  it("opens the block and group context menus from right-clicking sidebar block list rows", async () => {
+    resetCanvasBlockClipboard()
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    // One spare element (index 3) so a duplicated block's selection has a
+    // rendered wrapper
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          BLOCKQUOTE_BLOCK,
+          { type: "blockquote", quote: "The second quote", source: "s2" },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    await flush()
+    const baselineChangeCount = changes.length
+
+    const studioMenu = () =>
+      document.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        document.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rowAt = (label: string) => {
+      const row = findButtonByText(label)
+      expect(row).not.toBeUndefined()
+      return row!
+    }
+    const rightClickRow = (
+      label: string,
+      coords: Pick<MouseEventInit, "clientX" | "clientY">,
+    ) => {
+      const event = new MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        ...coords,
+      })
+      act(() => {
+        rowAt(label).dispatchEvent(event)
+      })
+      return event
+    }
+    const shiftClickRow = (label: string) => {
+      act(() => {
+        rowAt(label).dispatchEvent(
+          new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+
+    // Right-clicking a row in list view suppresses the native menu, selects
+    // the block (opening its editor), and opens the block context menu at
+    // the pointer — rendered in the Studio window, not the preview iframe
+    const openEvent = rightClickRow("Item 2", { clientX: 310, clientY: 220 })
+    await flush()
+    expect(openEvent.defaultPrevented).toBe(true)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    const openedMenu = studioMenu()
+    expect(openedMenu).not.toBeNull()
+    expect(openedMenu?.style.left).toBe("310px")
+    expect(openedMenu?.style.top).toBe("220px")
+    expect(
+      previewDocument.querySelector("[data-canvas-context-menu]"),
+    ).toBeNull()
+
+    // The menu drives the same single-block actions as the preview's menu
+    act(() => {
+      menuItem("Duplicate block (⌘D)").click()
+    })
+    await flush()
+    expect(studioMenu()).toBeNull()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    const afterDuplicate = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(afterDuplicate?.blocks).toHaveLength(4)
+    expect(afterDuplicate?.blocks?.[3]?.quote).toBe("The second quote")
+
+    // Back to the list view
+    pressKey(document.body, "Escape")
+    await flush()
+    expect(container.textContent).toContain("Add item")
+
+    // Right-clicking a member of the multi-selection opens the group menu,
+    // keeping the set and opening no editor
+    shiftClickRow("Item 1")
+    shiftClickRow("Item 3")
+    const groupEvent = rightClickRow("Item 1", { clientX: 120, clientY: 80 })
+    await flush()
+    expect(groupEvent.defaultPrevented).toBe(true)
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(studioMenu()).not.toBeNull()
+    menuItem("Duplicate blocks (⌘D)")
+    expect(rowAt("Item 1").getAttribute("aria-pressed")).toBe("true")
+    expect(rowAt("Item 3").getAttribute("aria-pressed")).toBe("true")
+
+    // Escape closes only the menu; the multi-selection survives
+    pressKey(document.body, "Escape")
+    await flush()
+    expect(studioMenu()).toBeNull()
+    expect(rowAt("Item 1").getAttribute("aria-pressed")).toBe("true")
+    expect(rowAt("Item 3").getAttribute("aria-pressed")).toBe("true")
+
+    // The group menu drives the same group actions: Delete removes both
+    // members in one data change
+    rightClickRow("Item 3", { clientX: 130, clientY: 90 })
+    await flush()
+    act(() => {
+      menuItem("Delete blocks (Delete)").click()
+    })
+    await flush()
+    expect(studioMenu()).toBeNull()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    const afterDelete = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(afterDelete?.blocks?.map((block) => block.quote)).toEqual([
+      "The second quote",
+      "The second quote",
+    ])
+
+    // Right-clicking a non-member row drops the set and opens that block's
+    // editor with the block menu, exactly like the preview's non-member
+    // right-click
+    shiftClickRow("Item 1")
+    rightClickRow("Item 2", { clientX: 140, clientY: 100 })
+    await flush()
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    expect(studioMenu()).not.toBeNull()
+    menuItem("Duplicate block (⌘D)")
+
+    iframe.remove()
+  })
 })

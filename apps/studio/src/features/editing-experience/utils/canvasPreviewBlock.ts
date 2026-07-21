@@ -557,7 +557,10 @@ export const showCanvasContextMenu = (
     backgroundColor: menuColor,
     borderRadius: "4px",
     padding: "2px",
-    zIndex: "3",
+    // The menu can render in the Studio window (opened from a sidebar block
+    // list row), so it must clear Studio's own stacked chrome, not just the
+    // preview affordances
+    zIndex: "1500",
   })
   // Right-clicking the menu itself must not open the browser's native menu
   // on top of it

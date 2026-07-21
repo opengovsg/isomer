@@ -63,6 +63,14 @@ interface UseCanvasPreviewClickToEditResult {
   // Shift+clicking a row in the block list toggles its block in the
   // multi-selection, sharing the preview Shift+click's exact semantics
   toggleMultiSelectedBlock: (index: number) => void
+  // Right-clicking a row in the block list opens the same context menu as
+  // right-clicking the block on the live preview — the group menu for a
+  // member of the multi-selection, otherwise the block menu (selecting the
+  // block) — rendered in the Studio window at the pointer
+  openListBlockContextMenu: (
+    index: number,
+    position: { clientX: number; clientY: number },
+  ) => void
 }
 
 interface CanvasBlockPlacement {
@@ -312,23 +320,33 @@ export const useCanvasPreviewClickToEdit = ({
     "interaction.main.default",
     "utility.feedback.success",
   ])
-  // Preview-viewport coordinates of an open right-click context menu: on a
-  // block it offers the selection actions, on a member of the multi-selection
-  // it offers the group actions, and on the empty canvas background it offers
-  // Wix's "paste here" and "add here" commands targeting the right-clicked
-  // grid cell
+  // An open right-click context menu: on a block it offers the selection
+  // actions, on a member of the multi-selection it offers the group actions,
+  // and on the empty canvas background it offers Wix's "paste here" and "add
+  // here" commands targeting the right-clicked grid cell. The coordinates
+  // are viewport coordinates of the window named by surface — the preview
+  // iframe for menus opened on the canvas, the Studio window for menus
+  // opened from the sidebar block list rows
   const [contextMenu, setContextMenu] = useState<
     | {
         variant: "block"
+        surface: "preview" | "list"
         clientX: number
         clientY: number
-        // The right-clicked grid cell (null on an unmeasurable canvas): other
-        // placed blocks covering it are offered as "select underneath" items
+        // The right-clicked grid cell (null on an unmeasurable canvas or a
+        // list row): other placed blocks covering it are offered as "select
+        // underneath" items
         cell: CanvasGridCell | null
       }
-    | { variant: "multi"; clientX: number; clientY: number }
+    | {
+        variant: "multi"
+        surface: "preview" | "list"
+        clientX: number
+        clientY: number
+      }
     | {
         variant: "background"
+        surface: "preview"
         clientX: number
         clientY: number
         cell: CanvasGridCell
@@ -1066,6 +1084,46 @@ export const useCanvasPreviewClickToEdit = ({
       .filter((block) => block.type === "canvas").length
   }, [content, currActiveIdx])
 
+  // Wix's layers-panel context menu: right-clicking a block's row in the
+  // sidebar block list opens the same context menu as right-clicking the
+  // block on the live preview — the group menu for a member of the
+  // multi-selection (keeping the set intact), otherwise the block menu,
+  // selecting the block so the menu's actions target it. Rendered in the
+  // Studio window at the pointer; a no-op for every non-canvas array control.
+  const openListBlockContextMenu = useCallback(
+    (index: number, position: { clientX: number; clientY: number }) => {
+      if (canvasOrdinal === null || path !== CANVAS_BLOCKS_PATH) {
+        return
+      }
+      if (multiSelectedIndices.includes(index)) {
+        setContextMenu({
+          variant: "multi",
+          surface: "list",
+          clientX: position.clientX,
+          clientY: position.clientY,
+        })
+        return
+      }
+      if (index !== selectedIndex) {
+        setSelectedIndex(index)
+      }
+      setContextMenu({
+        variant: "block",
+        surface: "list",
+        clientX: position.clientX,
+        clientY: position.clientY,
+        cell: null,
+      })
+    },
+    [
+      canvasOrdinal,
+      path,
+      multiSelectedIndices,
+      selectedIndex,
+      setSelectedIndex,
+    ],
+  )
+
   useEffect(() => {
     if (canvasOrdinal === null || path !== CANVAS_BLOCKS_PATH) {
       return
@@ -1370,6 +1428,7 @@ export const useCanvasPreviewClickToEdit = ({
         event.preventDefault()
         setContextMenu({
           variant: "background",
+          surface: "preview",
           clientX: event.clientX,
           clientY: event.clientY,
           cell,
@@ -1389,6 +1448,7 @@ export const useCanvasPreviewClickToEdit = ({
       if (multiSelectedIndices.includes(index)) {
         setContextMenu({
           variant: "multi",
+          surface: "preview",
           clientX: event.clientX,
           clientY: event.clientY,
         })
@@ -1399,6 +1459,7 @@ export const useCanvasPreviewClickToEdit = ({
       }
       setContextMenu({
         variant: "block",
+        surface: "preview",
         clientX: event.clientX,
         clientY: event.clientY,
         cell: resolveCanvasGridCellFromPoint(
@@ -2885,8 +2946,12 @@ export const useCanvasPreviewClickToEdit = ({
         )
       }
     }
+    // A menu opened from a sidebar block list row renders in the Studio
+    // window; one opened on the preview canvas renders in its iframe
+    const menuDocument =
+      contextMenu.surface === "list" ? document : canvas.ownerDocument
     const removeMenu = showCanvasContextMenu(
-      canvas.ownerDocument,
+      menuDocument,
       contextMenu,
       items,
       hoverColor,
@@ -2971,5 +3036,6 @@ export const useCanvasPreviewClickToEdit = ({
     isCanvasBlocksList: canvasOrdinal !== null && path === CANVAS_BLOCKS_PATH,
     multiSelectedIndices,
     toggleMultiSelectedBlock,
+    openListBlockContextMenu,
   }
 }

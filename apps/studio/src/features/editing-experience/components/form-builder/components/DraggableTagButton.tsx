@@ -31,6 +31,7 @@ interface RootProps {
   children: ReactNode
   onMouseEnter?: () => void
   onMouseLeave?: () => void
+  onContextMenu?: (event: MouseEvent<HTMLDivElement>) => void
 }
 
 const Root = forwardRef<RootProps, "div">(
@@ -42,6 +43,7 @@ const Root = forwardRef<RootProps, "div">(
       children,
       onMouseEnter,
       onMouseLeave,
+      onContextMenu,
     },
     ref,
   ) => (
@@ -52,6 +54,7 @@ const Root = forwardRef<RootProps, "div">(
       w="full"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onContextMenu={onContextMenu}
     >
       <HStack
         spacing={0}
