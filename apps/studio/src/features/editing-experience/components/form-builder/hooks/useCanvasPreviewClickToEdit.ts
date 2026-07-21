@@ -1161,14 +1161,16 @@ export const useCanvasPreviewClickToEdit = ({
   )
 
   // Wix's group arrange commands: move every member of the multi-selection
-  // to the front or the back of the stacking order in ONE data change —
-  // overlapping blocks paint in source order, so this is the group z-order
-  // control. The members' relative order and the other blocks' relative
-  // order are both preserved, the selection follows the members to their
-  // new indices, and when the group already sits at that end of the stack
-  // nothing commits so the command can never spuriously dirty the page.
+  // to the front or the back of the stacking order, or one step toward it,
+  // in ONE data change — overlapping blocks paint in source order, so this
+  // is the group z-order control. The members' relative order and the other
+  // blocks' relative order are both preserved, the selection follows the
+  // members to their new indices, and when the group already sits contiguous
+  // at that end of the stack nothing commits (the one-step moves clamp
+  // against the same ends, so all four commands no-op on the same guard) and
+  // the command can never spuriously dirty the page.
   const arrangeMultiSelectedBlocks = useCallback(
-    (edge: "front" | "back") => {
+    (direction: "front" | "back" | "forward" | "backward") => {
       if (!dispatch || multiSelectedIndices.length === 0) {
         return
       }
@@ -1177,26 +1179,55 @@ export const useCanvasPreviewClickToEdit = ({
       // A strictly increasing index set is contiguous at an end of the
       // array exactly when its extreme index sits at that end
       const atEdge =
-        edge === "front"
+        direction === "front" || direction === "forward"
           ? sorted[0] === count - sorted.length
           : sorted[sorted.length - 1] === sorted.length - 1
       if (atEdge) {
         return
       }
+      // Old index → new index for every member: the jump commands pack the
+      // members contiguously at the pointed end; the one-step commands move
+      // each member one slot toward it, clamping against that end and
+      // against members already clamped there
+      const targets = new Map<number, number>()
+      if (direction === "front" || direction === "back") {
+        sorted.forEach((index, offset) => {
+          targets.set(
+            index,
+            direction === "front" ? count - sorted.length + offset : offset,
+          )
+        })
+      } else if (direction === "forward") {
+        let ceiling = count - 1
+        for (const index of [...sorted].reverse()) {
+          const next = Math.min(index + 1, ceiling)
+          targets.set(index, next)
+          ceiling = next - 1
+        }
+      } else {
+        let floor = 0
+        for (const index of sorted) {
+          const next = Math.max(index - 1, floor)
+          targets.set(index, next)
+          floor = next + 1
+        }
+      }
       const members = new Set(sorted)
       dispatch(
         update(path, (blocks: unknown[]) => {
-          const selected = blocks.filter((_, index) => members.has(index))
+          const result = Array.from<unknown>({ length: blocks.length })
+          targets.forEach((to, from) => {
+            result[to] = blocks[from]
+          })
           const others = blocks.filter((_, index) => !members.has(index))
-          return edge === "front"
-            ? [...others, ...selected]
-            : [...selected, ...others]
+          let cursor = 0
+          return result.map((slot) =>
+            slot === undefined ? others[cursor++] : slot,
+          )
         }),
       )
       setMultiSelectedIndices(
-        sorted.map((_, offset) =>
-          edge === "front" ? count - sorted.length + offset : offset,
-        ),
+        sorted.map((index) => targets.get(index) ?? index),
       )
     },
     [dispatch, multiSelectedIndices, path],
@@ -2430,8 +2461,9 @@ export const useCanvasPreviewClickToEdit = ({
   // every member in one data change (placed copies land one row below their
   // sources, and the selection moves to the copies), ⌘C/⌘X copy or cut the
   // group to the block clipboard (⌘V, handled by the always-active clipboard
-  // effect below, pastes it back), ⌘⇧]/⌘⇧[ bring the group to the front or
-  // send it to the back of the stacking order in one data change, the arrow
+  // effect below, pastes it back), ⌘]/⌘[ move the group one step
+  // forward/backward in the stacking order and ⌘⇧]/⌘⇧[ jump it to the front
+  // or the back, each in one data change, the arrow
   // keys nudge every placed member one grid cell (the group moves as a unit —
   // if any member would leave the grid, nothing moves, so members' relative
   // positions never distort), Shift+arrows resize instead — the bounding
@@ -2549,6 +2581,15 @@ export const useCanvasPreviewClickToEdit = ({
           // Take over the keystroke even from the browser's bookmark shortcut
           event.preventDefault()
           duplicateMultiSelectedBlocks()
+          return
+        }
+        if (combo === "]" || combo === "[") {
+          // Take over the keystroke even when the group already sits at that
+          // end of the stack: ⌘[/⌘] are browser history-navigation
+          // shortcuts, which must never fire while a multi-selection is
+          // active
+          event.preventDefault()
+          arrangeMultiSelectedBlocks(combo === "]" ? "forward" : "backward")
           return
         }
         if (combo === "c" || combo === "x") {
@@ -3010,11 +3051,25 @@ export const useCanvasPreviewClickToEdit = ({
           onClick: duplicateMultiSelectedBlocks,
         },
         {
+          name: "bring-group-forward",
+          label: "Bring forward (⌘])",
+          glyph: "▲",
+          disabled: groupAtFront,
+          onClick: () => arrangeMultiSelectedBlocks("forward"),
+        },
+        {
           name: "bring-group-to-front",
           label: "Bring to front (⌘⇧])",
           glyph: "⤒",
           disabled: groupAtFront,
           onClick: () => arrangeMultiSelectedBlocks("front"),
+        },
+        {
+          name: "send-group-backward",
+          label: "Send backward (⌘[)",
+          glyph: "▼",
+          disabled: groupAtBack,
+          onClick: () => arrangeMultiSelectedBlocks("backward"),
         },
         {
           name: "send-group-to-back",
@@ -3263,11 +3318,25 @@ export const useCanvasPreviewClickToEdit = ({
           onClick: withClose(pasteBlockFromClipboard),
         },
         {
+          name: "bring-group-forward",
+          label: "Bring forward (⌘])",
+          glyph: "▲",
+          disabled: groupAtFront,
+          onClick: withClose(() => arrangeMultiSelectedBlocks("forward")),
+        },
+        {
           name: "bring-group-to-front",
           label: "Bring to front (⌘⇧])",
           glyph: "⤒",
           disabled: groupAtFront,
           onClick: withClose(() => arrangeMultiSelectedBlocks("front")),
+        },
+        {
+          name: "send-group-backward",
+          label: "Send backward (⌘[)",
+          glyph: "▼",
+          disabled: groupAtBack,
+          onClick: withClose(() => arrangeMultiSelectedBlocks("backward")),
         },
         {
           name: "send-group-to-back",

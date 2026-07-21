@@ -4766,11 +4766,15 @@ describe("FormBuilder canvas editing interactions", () => {
       ),
     ).toEqual([
       "Duplicate blocks (⌘D)",
+      "Bring forward (⌘])",
       "Bring to front (⌘⇧])",
+      "Send backward (⌘[)",
       "Send to back (⌘⇧[)",
       "Delete blocks (Delete)",
     ])
+    expect(toolbarButton("Bring forward (⌘])").disabled).toBe(false)
     expect(toolbarButton("Bring to front (⌘⇧])").disabled).toBe(false)
+    expect(toolbarButton("Send backward (⌘[)").disabled).toBe(true)
     expect(toolbarButton("Send to back (⌘⇧[)").disabled).toBe(true)
 
     // Bring to front moves both members to the end of the stack in one data
@@ -4787,7 +4791,9 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(
       blockAt(2).querySelector("[data-canvas-selection-toolbar]"),
     ).not.toBeNull()
+    expect(toolbarButton("Bring forward (⌘])").disabled).toBe(true)
     expect(toolbarButton("Bring to front (⌘⇧])").disabled).toBe(true)
+    expect(toolbarButton("Send backward (⌘[)").disabled).toBe(false)
     expect(toolbarButton("Send to back (⌘⇧[)").disabled).toBe(false)
 
     // Duplicate appends a copy of both members one row down in one data
@@ -6564,7 +6570,9 @@ describe("FormBuilder canvas editing interactions", () => {
       "Copy blocks (⌘C)",
       "Cut blocks (⌘X)",
       "Paste blocks (⌘V)",
+      "Bring forward (⌘])",
       "Bring to front (⌘⇧])",
+      "Send backward (⌘[)",
       "Send to back (⌘⇧[)",
       "Align left",
       "Align center",
@@ -9717,6 +9725,200 @@ describe("FormBuilder canvas editing interactions", () => {
     ])
     expect(blockAt(2).style.outline).toContain("solid")
     expect(blockAt(3).style.outline).toContain("solid")
+
+    iframe.remove()
+  })
+
+  it("moves the multi-selection one step forward and backward in the stack with ⌘]/⌘[", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 1, rowSpan: 1 },
+          },
+          { type: "blockquote", quote: "The second quote", source: "s2" },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+          { type: "blockquote", quote: "The fourth quote", source: "s4" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (element: Element) => {
+      act(() => {
+        element.dispatchEvent(
+          new iframeRealm.MouseEvent("contextmenu", {
+            bubbles: true,
+            cancelable: true,
+            clientX: 60,
+            clientY: 40,
+          }),
+        )
+      })
+    }
+    const latestBlocks = () => {
+      const latest = changes.at(-1) as
+        | {
+            blocks?: {
+              quote?: string
+              placement?: Record<string, number>
+            }[]
+          }
+        | undefined
+      return latest?.blocks
+    }
+    const lastQuotes = () => latestBlocks()?.map((block) => block.quote)
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(2))
+    const baselineChangeCount = changes.length
+
+    // ⌘] moves every member ONE step forward in the stack in one data
+    // change, keeping the members' and the other blocks' relative orders —
+    // placements travel with the moved blocks and the selection (with its
+    // highlight) follows them
+    pressKey(document.body, "]", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      "A quote inside the canvas",
+      "The fourth quote",
+      "The third quote",
+    ])
+    expect(latestBlocks()?.[1]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 3,
+      rowStart: 1,
+      rowSpan: 1,
+    })
+    expect(blockAt(0).style.outline).toBe("")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toBe("")
+    expect(blockAt(3).style.outline).toContain("solid")
+
+    // A second ⌘] clamps the leading member against the front of the stack
+    // while the trailing member still steps forward, packing the group
+    pressKey(document.body, "]", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      "The fourth quote",
+      "A quote inside the canvas",
+      "The third quote",
+    ])
+    expect(blockAt(2).style.outline).toContain("solid")
+    expect(blockAt(3).style.outline).toContain("solid")
+
+    // A third ⌘] commits nothing — the group sits contiguous at the front
+    pressKey(document.body, "]", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+
+    // ⌘[ moves the group one step backward in one data change
+    pressKey(document.body, "[", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 3)
+    expect(lastQuotes()).toEqual([
+      "The second quote",
+      "A quote inside the canvas",
+      "The third quote",
+      "The fourth quote",
+    ])
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+
+    // The group context menu offers the same one-step commands alongside the
+    // jumps: Send backward steps the group to the back of the stack with the
+    // selection following
+    rightClick(blockAt(1).querySelector("span")!)
+    await flush()
+    expect(menuItem("Bring forward (⌘])").disabled).toBe(false)
+    expect(menuItem("Send backward (⌘[)").disabled).toBe(false)
+    act(() => {
+      menuItem("Send backward (⌘[)").click()
+    })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
+    expect(lastQuotes()).toEqual([
+      "A quote inside the canvas",
+      "The third quote",
+      "The second quote",
+      "The fourth quote",
+    ])
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+
+    // With the group contiguous at the back, both backward commands disable
+    // and ⌘[ commits nothing
+    rightClick(blockAt(0).querySelector("span")!)
+    await flush()
+    expect(menuItem("Send backward (⌘[)").disabled).toBe(true)
+    expect(menuItem("Send to back (⌘⇧[)").disabled).toBe(true)
+    expect(menuItem("Bring forward (⌘])").disabled).toBe(false)
+    pressKey(document.body, "Escape")
+    await flush()
+    pressKey(document.body, "[", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
 
     iframe.remove()
   })
