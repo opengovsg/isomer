@@ -16,7 +16,12 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsControlProps } from "@jsonforms/react"
-import { Button, FormLabel, Infobox } from "@opengovsg/design-system-react"
+import {
+  Button,
+  FormLabel,
+  Infobox,
+  Switch,
+} from "@opengovsg/design-system-react"
 import {
   CANVAS_CONTAINER_DATA_ATTRIBUTE,
   CANVAS_GRID_COLUMNS,
@@ -52,6 +57,15 @@ export const jsonFormsCanvasPlacementControlTester: RankedTester = rankWith(
 // Always show enough rows to drag out a tall block; the grid grows as the
 // selection approaches the bottom edge
 const MIN_DISPLAYED_ROWS = 8
+
+// Wix keeps its gridlines toggle on until it is turned off, so the preference
+// lives at module scope: the control remounts on every block switch, and the
+// grid should not vanish because the user selected another block
+let persistedShowGridPreference = false
+
+export const resetCanvasShowGridPreference = (): void => {
+  persistedShowGridPreference = false
+}
 
 interface GridCell {
   row: number
@@ -366,8 +380,8 @@ const usePreviewSelectionHandles = (
 
 // The rendered page gives no hint of where the grid cells are, so while a
 // placement drag is in progress (whether it started on the picker or on the
-// preview block itself) the grid's column and row guides are drawn on the
-// preview canvas, Wix-style, and removed when the drag ends
+// preview block itself) — or while the user has toggled the grid on — the
+// grid's column and row guides are drawn on the preview canvas, Wix-style
 const usePreviewGridGuides = (
   locatePreviewBlock: () => HTMLElement | null,
   dragActive: boolean,
@@ -571,6 +585,11 @@ function JsonFormsCanvasPlacementControl({
     grab: GridCell
     edge: CanvasSelectionEdge | null
   } | null>(null)
+  const [showGrid, setShowGrid] = useState(persistedShowGridPreference)
+  const toggleShowGrid = (checked: boolean): void => {
+    persistedShowGridPreference = checked
+    setShowGrid(checked)
+  }
   const locatePreviewBlock = usePreviewBlockLocator(path)
   useHighlightPreviewBlock(locatePreviewBlock)
   usePreviewSelectionHandles(locatePreviewBlock, visible && enabled)
@@ -585,7 +604,10 @@ function JsonFormsCanvasPlacementControl({
     locatePreviewBlock,
     dragSelection,
   )
-  usePreviewGridGuides(locatePreviewBlock, drag !== null)
+  usePreviewGridGuides(
+    locatePreviewBlock,
+    drag !== null || (showGrid && visible && enabled),
+  )
   usePreviewAlignmentGuides(
     locatePreviewBlock,
     dragSelection,
@@ -1086,6 +1108,16 @@ function JsonFormsCanvasPlacementControl({
             }),
           )}
         </Grid>
+
+        <Switch
+          mt="0.5rem"
+          size="sm"
+          isChecked={showGrid}
+          isDisabled={!enabled}
+          onChange={(event) => toggleShowGrid(event.target.checked)}
+        >
+          Show grid on page preview
+        </Switch>
 
         <Text mt="0.5rem" textStyle="body-2" textColor="base.content.medium">
           {selection

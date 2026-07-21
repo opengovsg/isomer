@@ -19,6 +19,7 @@ import { ajv } from "~/utils/ajv"
 import { ErrorProvider } from "../ErrorProvider"
 import FormBuilder from "../FormBuilder"
 import { resetCanvasBlockClipboard } from "../hooks/useCanvasPreviewClickToEdit"
+import { resetCanvasShowGridPreference } from "../renderers/controls/JsonFormsCanvasPlacementControl"
 
 // Some child block forms (e.g. blockquote's optional image) mount controls
 // that read the page route; outside a Next app the router is not mounted
@@ -4878,6 +4879,113 @@ describe("FormBuilder canvas editing interactions", () => {
     })
     expect(container.textContent).toContain("Columns 9–12, rows 1–1")
 
+    iframe.remove()
+  })
+
+  it("shows the preview grid while the gridlines toggle is on, persisting across block selections without blocking Escape", async () => {
+    resetCanvasShowGridPreference()
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const overlay = () =>
+      previewDocument.querySelector("[data-canvas-grid-overlay]")
+    const gridSwitch = () => {
+      const label = Array.from(container.querySelectorAll("label")).find(
+        (candidate) =>
+          candidate.textContent.includes("Show grid on page preview"),
+      )
+      expect(label).not.toBeUndefined()
+      const input = label!.querySelector<HTMLInputElement>(
+        'input[type="checkbox"]',
+      )
+      expect(input).not.toBeNull()
+      return input!
+    }
+    await flush()
+    const baselineChangeCount = changes.length
+
+    // Opening a block's editor shows no grid until the toggle is turned on
+    click(findButtonByText("Item 1")!)
+    await flush()
+    expect(overlay()).toBeNull()
+    expect(gridSwitch().checked).toBe(false)
+
+    // Toggling the grid on draws the guides on the preview canvas with no
+    // drag in progress and commits no data change
+    click(gridSwitch())
+    await flush()
+    expect(gridSwitch().checked).toBe(true)
+    expect(overlay()).not.toBeNull()
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // Toggling it off removes the guides
+    click(gridSwitch())
+    expect(gridSwitch().checked).toBe(false)
+    expect(overlay()).toBeNull()
+
+    // With the toggle back on, Escape still deselects back to the block
+    // list (the persistent overlay is not mistaken for an active drag), and
+    // closing the editor removes the guides
+    click(gridSwitch())
+    expect(overlay()).not.toBeNull()
+    pressKey(document.body, "Escape")
+    await flush()
+    expect(container.textContent).toContain("Item 1")
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(overlay()).toBeNull()
+
+    // Reopening a block finds the preference persisted: the switch is still
+    // on and the guides come straight back
+    click(findButtonByText("Item 1")!)
+    await flush()
+    expect(gridSwitch().checked).toBe(true)
+    expect(overlay()).not.toBeNull()
+    expect(changes.length).toBe(baselineChangeCount)
+
+    resetCanvasShowGridPreference()
     iframe.remove()
   })
 })

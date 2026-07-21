@@ -15,7 +15,7 @@ import type {
 } from "../../../utils/canvasPreviewBlock"
 import {
   CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE,
-  CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE,
+  CANVAS_DRAG_BADGE_DATA_ATTRIBUTE,
   CANVAS_MAX_ROW,
   findCanvasBlockPreviewElement,
   findCanvasPreviewContainer,
@@ -691,15 +691,14 @@ export const useCanvasPreviewClickToEdit = ({
       // While a placement drag is active, Escape means "cancel the drag";
       // the placement control's capture-phase listener usually intercepts
       // the event first, but a keydown targeting the preview window itself
-      // reaches both listeners, so the drag's grid-guide overlay is the
-      // reliable in-progress marker. Likewise, while the context menu is
-      // open Escape means "close the menu" (its own listener handles that),
-      // keeping the block selected.
+      // reaches both listeners, so the drag badge is the reliable
+      // in-progress marker (the grid-guide overlay also shows while the
+      // gridlines toggle is on, drag or not). Likewise, while the context
+      // menu is open Escape means "close the menu" (its own listener
+      // handles that), keeping the block selected.
       const previewCanvas = findCanvasPreviewContainer(document, canvasOrdinal)
       if (
-        previewCanvas?.querySelector(
-          `[${CANVAS_GRID_OVERLAY_DATA_ATTRIBUTE}]`,
-        ) ??
+        previewCanvas?.querySelector(`[${CANVAS_DRAG_BADGE_DATA_ATTRIBUTE}]`) ??
         previewCanvas?.ownerDocument.querySelector(
           `[${CANVAS_CONTEXT_MENU_DATA_ATTRIBUTE}]`,
         )
