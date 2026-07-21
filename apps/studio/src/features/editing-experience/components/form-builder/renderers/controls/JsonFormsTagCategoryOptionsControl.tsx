@@ -39,7 +39,11 @@ function DeleteOptionWarningBody({
     "To undo this change, you will need to create and re-assign this option to all items."
 
   if (!tagId) {
-    return <Text textStyle="body-2">{undoText}</Text>
+    return (
+      <Text textStyle="body-1" color="base.content.strong">
+        {undoText}
+      </Text>
+    )
   }
 
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
@@ -49,11 +53,15 @@ function DeleteOptionWarningBody({
   })
 
   if (count === 0) {
-    return <Text textStyle="body-2">{undoText}</Text>
+    return (
+      <Text textStyle="body-1" color="base.content.strong">
+        {undoText}
+      </Text>
+    )
   }
 
   return (
-    <Text textStyle="body-2">
+    <Text textStyle="body-1" color="base.content.strong">
       This option is being used in {count} {count === 1 ? "item" : "items"}.{" "}
       {undoText}
     </Text>
@@ -295,7 +303,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           warningBody={
             <ErrorBoundary
               fallbackRender={() => (
-                <Text textStyle="body-2">
+                <Text textStyle="body-1" color="base.content.strong">
                   To undo this change, you will need to create and re-assign
                   this option to all items.
                 </Text>

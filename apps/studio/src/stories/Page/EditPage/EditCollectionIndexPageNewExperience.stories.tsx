@@ -63,6 +63,17 @@ const newCollectionFiltersIsomerAdminParameters = {
   },
 } satisfies Story["parameters"]
 
+const zeroTagOptionsUsageParameters = {
+  growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
+  msw: {
+    handlers: [
+      userHandlers.isIsomerAdmin.admin(),
+      ...COMMON_HANDLERS.slice(0, -1),
+      collectionHandlers.countTagOptionsUsage.zero(),
+    ],
+  },
+} satisfies Story["parameters"]
+
 /** Chromatic delay for play-driven inline edit snapshots. */
 const inlineEditSnapshotParameters = {
   ...newCollectionFiltersIsomerAdminParameters,
@@ -198,6 +209,39 @@ function withinPortals(canvasElement: HTMLElement) {
   return within(canvasElement.ownerDocument.body)
 }
 
+async function playOpenDeleteOptionModal(canvasElement: HTMLElement) {
+  await playOpenManageFilters(canvasElement)
+  await playOpenFirstFilterEditor(canvasElement)
+  await playFillFilterNameAndAddThreeOptions(canvasElement)
+  await renameOptionAtIndex(canvasElement, 0, "Option 1")
+  await clickOptionActionsMenu(canvasElement, 1)
+  const portals = withinPortals(canvasElement)
+  await userEvent.click(await portals.findByText(/^Delete option$/i), {
+    pointerEventsCheck: 0,
+  })
+  await portals.findByRole("dialog", { name: /Delete filter option/i })
+  return portals
+}
+
+async function playOpenDeleteFilterModal(canvasElement: HTMLElement) {
+  await playOpenManageFilters(canvasElement)
+  await playOpenFirstFilterEditor(canvasElement)
+  await playFillFilterNameAndAddThreeOptions(canvasElement)
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /Return to Filters/i }),
+  )
+  await userEvent.click(
+    await canvas.findByRole("button", { name: /Filter 1 actions/i }),
+  )
+  const portals = withinPortals(canvasElement)
+  await userEvent.click(
+    await portals.findByRole("menuitem", { name: /Delete filter/i }),
+  )
+  await portals.findByText(/You are deleting an entire filter\./i)
+  return portals
+}
+
 export const NonIsomerAdmin: Story = {
   parameters: {
     growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
@@ -269,16 +313,7 @@ export const FiltersOpenOptionRowMenu: Story = {
 export const FiltersDeleteOptionModalDisabledCta: Story = {
   parameters: newCollectionFiltersIsomerAdminParameters,
   play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenFirstFilterEditor(canvasElement)
-    await playFillFilterNameAndAddThreeOptions(canvasElement)
-    await renameOptionAtIndex(canvasElement, 0, "Option 1")
-    await clickOptionActionsMenu(canvasElement, 1)
-    const portals = withinPortals(canvasElement)
-    await userEvent.click(await portals.findByText(/^Delete option$/i), {
-      pointerEventsCheck: 0,
-    })
-    await portals.findByRole("dialog", { name: /Delete filter option/i })
+    const portals = await playOpenDeleteOptionModal(canvasElement)
     await expect(
       await portals.findByRole("button", { name: /^Delete filter option$/i }),
     ).toBeDisabled()
@@ -302,10 +337,9 @@ export const FiltersDeleteOptionModalEnabledCta: Story = {
 }
 
 export const FiltersDeleteOptionModalZeroUsage: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
-  play: async (context) => {
-    await FiltersDeleteOptionModalDisabledCta.play?.(context)
-    const portals = withinPortals(context.canvasElement)
+  parameters: zeroTagOptionsUsageParameters,
+  play: async ({ canvasElement }) => {
+    const portals = await playOpenDeleteOptionModal(canvasElement)
     await expect(
       portals.queryByText(/This option is being used in/i),
     ).not.toBeInTheDocument()
@@ -353,21 +387,7 @@ export const FiltersOpenFilterRowMenu: Story = {
 export const FiltersDeleteFilterModalDisabledCta: Story = {
   parameters: newCollectionFiltersIsomerAdminParameters,
   play: async ({ canvasElement }) => {
-    await playOpenManageFilters(canvasElement)
-    await playOpenFirstFilterEditor(canvasElement)
-    await playFillFilterNameAndAddThreeOptions(canvasElement)
-    const canvas = within(canvasElement)
-    await userEvent.click(
-      await canvas.findByRole("button", { name: /Return to Filters/i }),
-    )
-    await userEvent.click(
-      await canvas.findByRole("button", { name: /Filter 1 actions/i }),
-    )
-    const portals = withinPortals(canvasElement)
-    await userEvent.click(
-      await portals.findByRole("menuitem", { name: /Delete filter/i }),
-    )
-    await portals.findByText(/You are deleting an entire filter\./i)
+    const portals = await playOpenDeleteFilterModal(canvasElement)
     await portals.findByText(/It’s being used on/i)
     await expect(
       await portals.findByRole("button", { name: /^Delete filter$/i }),
@@ -392,19 +412,9 @@ export const FiltersDeleteFilterModalEnabledCta: Story = {
 }
 
 export const FiltersDeleteFilterModalZeroUsage: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-    msw: {
-      handlers: [
-        userHandlers.isIsomerAdmin.admin(),
-        ...COMMON_HANDLERS.slice(0, -1),
-        collectionHandlers.countTagOptionsUsage.zero(),
-      ],
-    },
-  },
-  play: async (context) => {
-    await FiltersDeleteFilterModalDisabledCta.play?.(context)
-    const portals = withinPortals(context.canvasElement)
+  parameters: zeroTagOptionsUsageParameters,
+  play: async ({ canvasElement }) => {
+    const portals = await playOpenDeleteFilterModal(canvasElement)
     await expect(
       portals.queryByText(/It’s being used on/i),
     ).not.toBeInTheDocument()
