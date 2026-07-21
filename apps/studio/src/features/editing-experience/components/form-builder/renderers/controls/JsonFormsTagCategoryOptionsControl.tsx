@@ -26,6 +26,17 @@ import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultTagOption } from "./constants"
 
+const DELETE_OPTION_UNDO_TEXT =
+  "To undo this change, you will need to create and re-assign this option to all items."
+
+function DeleteOptionUndoNotice() {
+  return (
+    <Text textStyle="body-1" color="base.content.strong">
+      {DELETE_OPTION_UNDO_TEXT}
+    </Text>
+  )
+}
+
 function DeleteOptionWarningBody({
   siteId,
   pageId,
@@ -33,19 +44,8 @@ function DeleteOptionWarningBody({
 }: {
   siteId: number
   pageId: number
-  tagId?: string
+  tagId: string
 }) {
-  const undoText =
-    "To undo this change, you will need to create and re-assign this option to all items."
-
-  if (!tagId) {
-    return (
-      <Text textStyle="body-1" color="base.content.strong">
-        {undoText}
-      </Text>
-    )
-  }
-
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
     siteId,
     pageId,
@@ -53,17 +53,13 @@ function DeleteOptionWarningBody({
   })
 
   if (count === 0) {
-    return (
-      <Text textStyle="body-1" color="base.content.strong">
-        {undoText}
-      </Text>
-    )
+    return <DeleteOptionUndoNotice />
   }
 
   return (
     <Text textStyle="body-1" color="base.content.strong">
       This option is being used in {count} {count === 1 ? "item" : "items"}.{" "}
-      {undoText}
+      {DELETE_OPTION_UNDO_TEXT}
     </Text>
   )
 }
@@ -91,7 +87,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const { hasErrorAt } = useBuilderErrors()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const items = get(core?.data, path) as
-    | { label?: string; id?: string }[]
+    | { label?: string; id: string }[]
     | undefined
   // Inline label editing is keyed by array index. editingDraftLabel feeds
   // useLiveLabelIssues so duplicate/blank checks reflect unsaved keystrokes.
@@ -148,13 +144,13 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     openDeleteModal,
     closeDeleteModal,
     handleConfirmDelete,
-  } = useDeleteTarget<{ label: string; tagId?: string }>({
+  } = useDeleteTarget<{ label: string; tagId: string }>({
     path,
     removeItems,
     isRemoveItemDisabled,
     resolveTarget: (index) => ({
       label: items?.[index]?.label?.trim() ?? "",
-      tagId: items?.[index]?.id,
+      tagId: items?.[index]?.id ?? "", // always set by createDefaultTagOption()
     }),
   })
 
@@ -301,14 +297,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           label={deleteTarget.label}
           noun="filter option"
           warningBody={
-            <ErrorBoundary
-              fallbackRender={() => (
-                <Text textStyle="body-1" color="base.content.strong">
-                  To undo this change, you will need to create and re-assign
-                  this option to all items.
-                </Text>
-              )}
-            >
+            <ErrorBoundary fallbackRender={() => <DeleteOptionUndoNotice />}>
               <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
                 <DeleteOptionWarningBody
                   siteId={siteId}
