@@ -17,11 +17,11 @@ const CALLOUT_ICONS: Partial<
 const CALLOUT_LABELS: Partial<
   Record<NonNullable<CalloutProps["variant"]>, string>
 > = {
-  [CalloutVariant.Information.value]: CalloutVariant.Information.label,
-  [CalloutVariant.GoodToKnow.value]: CalloutVariant.GoodToKnow.label,
-  [CalloutVariant.Warning.value]: CalloutVariant.Warning.label,
-  [CalloutVariant.Urgent.value]: CalloutVariant.Urgent.label,
-  [CalloutVariant.Note.value]: CalloutVariant.Note.label,
+  [CalloutVariant.Information.value]: "Information",
+  [CalloutVariant.GoodToKnow.value]: "Positive update",
+  [CalloutVariant.Warning.value]: "Warning",
+  [CalloutVariant.Urgent.value]: "Needs urgent action",
+  [CalloutVariant.Note.value]: "Note",
 }
 
 const calloutStyles = tv({
