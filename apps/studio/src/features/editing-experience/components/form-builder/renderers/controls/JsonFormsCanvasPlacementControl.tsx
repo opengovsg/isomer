@@ -79,13 +79,29 @@ interface NormalisedPlacement {
   rowEnd: number
 }
 
+// The grabbed rectangle's span ratio, carried by corner resizes so holding
+// Shift can keep the block's proportions; the dir fields point from the
+// anchor toward the grabbed corner, for sweeps with no extent on one axis
+interface DrawRatio {
+  cols: number
+  rows: number
+  rowDir: 1 | -1
+  colDir: 1 | -1
+}
+
 // Drawing (and corner-resizing, which is drawing anchored at the opposite
 // corner) sweeps a rectangle between two cells; moving shifts the whole
 // saved rectangle by the drag delta. An edge-handle resize is a draw whose
 // `lock` axis never follows the pointer, so the block only grows or shrinks
 // in the handle's direction.
 type DragState =
-  | { mode: "draw"; anchor: GridCell; current: GridCell; lock?: "row" | "col" }
+  | {
+      mode: "draw"
+      anchor: GridCell
+      current: GridCell
+      lock?: "row" | "col"
+      ratio?: DrawRatio
+    }
   | {
       mode: "move"
       origin: NormalisedPlacement
@@ -159,26 +175,64 @@ const resolveDragSelection = (drag: DragState): NormalisedPlacement =>
     ? sweepSelection(drag.anchor, drag.current)
     : shiftSelection(drag.origin, drag.grab, drag.current)
 
+// Holding Shift while dragging a corner keeps the block's proportions,
+// Wix-style: the axis the pointer has swept proportionally further leads,
+// and the other axis is derived from the grabbed rectangle's col:row span
+// ratio — clamped to the grid, so the proportions can bend at its edges
+const proportionalCurrent = (
+  anchor: GridCell,
+  cell: GridCell,
+  ratio: DrawRatio,
+): GridCell => {
+  const cols = Math.abs(cell.col - anchor.col) + 1
+  const rows = Math.abs(cell.row - anchor.row) + 1
+  if (cols * ratio.rows >= rows * ratio.cols) {
+    const rowDir = Math.sign(cell.row - anchor.row) || ratio.rowDir
+    const derivedRows = Math.max(
+      1,
+      Math.round((cols * ratio.rows) / ratio.cols),
+    )
+    return {
+      col: cell.col,
+      row: clamp(anchor.row + rowDir * (derivedRows - 1), 1, CANVAS_MAX_ROW),
+    }
+  }
+  const colDir = Math.sign(cell.col - anchor.col) || ratio.colDir
+  const derivedCols = Math.max(1, Math.round((rows * ratio.cols) / ratio.rows))
+  return {
+    row: cell.row,
+    col: clamp(anchor.col + colDir * (derivedCols - 1), 1, CANVAS_GRID_COLUMNS),
+  }
+}
+
 // Every pointer/focus update to a drag's current cell goes through here so a
 // locked axis is pinned in one place. Holding Shift while moving constrains
 // the move to a straight line along the dominant axis of the sweep so far,
-// Wix-style; the constraint only applies to moves — edge resizes carry their
-// own permanent lock, and corner resizes/fresh draws follow the pointer.
+// Wix-style, and holding it while corner-resizing keeps the block's
+// proportions; edge resizes carry their own permanent lock, and fresh draws
+// follow the pointer.
 const withCurrent = (
   drag: DragState,
   cell: GridCell,
   constrainAxis = false,
 ): DragState => {
   if (drag.mode === "draw") {
-    return drag.lock !== undefined
-      ? {
-          ...drag,
-          current: {
-            row: drag.lock === "row" ? drag.current.row : cell.row,
-            col: drag.lock === "col" ? drag.current.col : cell.col,
-          },
-        }
-      : { ...drag, current: cell }
+    if (drag.lock !== undefined) {
+      return {
+        ...drag,
+        current: {
+          row: drag.lock === "row" ? drag.current.row : cell.row,
+          col: drag.lock === "col" ? drag.current.col : cell.col,
+        },
+      }
+    }
+    if (constrainAxis && drag.ratio) {
+      return {
+        ...drag,
+        current: proportionalCurrent(drag.anchor, cell, drag.ratio),
+      }
+    }
+    return { ...drag, current: cell }
   }
   if (constrainAxis) {
     const rowDelta = Math.abs(cell.row - drag.grab.row)
@@ -623,13 +677,20 @@ function JsonFormsCanvasPlacementControl({
     (base: NormalisedPlacement | undefined, row: number, col: number): void => {
       if (base && coversCell(base, row, col)) {
         if (isCorner(base, row, col)) {
+          const anchor = {
+            row: row === base.rowStart ? base.rowEnd : base.rowStart,
+            col: col === base.colStart ? base.colEnd : base.colStart,
+          }
           setDrag({
             mode: "draw",
-            anchor: {
-              row: row === base.rowStart ? base.rowEnd : base.rowStart,
-              col: col === base.colStart ? base.colEnd : base.colStart,
-            },
+            anchor,
             current: { row, col },
+            ratio: {
+              cols: base.colEnd - base.colStart + 1,
+              rows: base.rowEnd - base.rowStart + 1,
+              rowDir: row < anchor.row ? -1 : 1,
+              colDir: col < anchor.col ? -1 : 1,
+            },
           })
           return
         }
@@ -1129,15 +1190,15 @@ function JsonFormsCanvasPlacementControl({
             Drag the highlighted area (or the block itself in the page preview)
             to move it — hold Shift to move it in a straight line, or hold ⌥/Alt
             when starting a drag in the preview to leave a copy of the block
-            behind — or drag a corner to resize it; in the preview, the edge
-            handles resize in one direction only. With the keyboard, use the
-            arrow keys to nudge the block one cell at a time (hold Shift to
-            resize instead), or press Enter on a cell to start a selection,
-            Enter on another cell to finish, and Escape to cancel. Press Delete
-            to remove the block from the canvas, ⌘D/Ctrl+D to duplicate it,
-            ⌘]/⌘[ (or Ctrl) to bring it forward or send it backward (add Shift
-            to bring it to the front or send it to the back), or Escape to go
-            back to the block list.
+            behind — or drag a corner to resize it (hold Shift to keep its
+            proportions); in the preview, the edge handles resize in one
+            direction only. With the keyboard, use the arrow keys to nudge the
+            block one cell at a time (hold Shift to resize instead), or press
+            Enter on a cell to start a selection, Enter on another cell to
+            finish, and Escape to cancel. Press Delete to remove the block from
+            the canvas, ⌘D/Ctrl+D to duplicate it, ⌘]/⌘[ (or Ctrl) to bring it
+            forward or send it backward (add Shift to bring it to the front or
+            send it to the back), or Escape to go back to the block list.
           </Text>
         )}
         {siblingPlacements.length > 0 && (

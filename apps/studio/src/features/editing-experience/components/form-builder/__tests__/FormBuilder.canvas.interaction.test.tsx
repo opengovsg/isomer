@@ -592,6 +592,92 @@ describe("FormBuilder canvas editing interactions", () => {
     })
   })
 
+  it("keeps the block's proportions when Shift is held while dragging a corner", async () => {
+    const changes: IsomerComponent[] = []
+    renderCanvasForm(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 3, colSpan: 4, rowStart: 2, rowSpan: 2 },
+          },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+
+    click(findButtonByText("Item 1")!)
+
+    // Grab the bottom-right corner (3, 6) and sweep to (4, 10) with Shift
+    // held: the pointer covers 8 columns but only 3 rows from the top-left
+    // anchor (2, 3), so the columns lead and the rows are derived from the
+    // block's 4:2 span ratio — 8 columns keep 4 rows, not the pointer's 3
+    dragBetweenPlacementCells(
+      { row: 3, col: 6 },
+      { row: 4, col: 10 },
+      { shiftKey: true },
+    )
+
+    expect(container.textContent).toContain("Columns 3–10, rows 2–5")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const grownBlocks = (
+      changes.at(-1) as { blocks?: { placement?: unknown }[] } | undefined
+    )?.blocks
+    expect(grownBlocks?.[0]?.placement).toEqual({
+      colStart: 3,
+      colSpan: 8,
+      rowStart: 2,
+      rowSpan: 4,
+    })
+
+    // A row-dominant Shift-sweep derives the columns instead; the block is
+    // now 8×4, so 7 rows want 14 columns — clamped at the grid's last column
+    dragBetweenPlacementCells(
+      { row: 5, col: 10 },
+      { row: 8, col: 4 },
+      { shiftKey: true },
+    )
+
+    expect(container.textContent).toContain("Columns 3–12, rows 2–8")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const clampedBlocks = (
+      changes.at(-1) as { blocks?: { placement?: unknown }[] } | undefined
+    )?.blocks
+    expect(clampedBlocks?.[0]?.placement).toEqual({
+      colStart: 3,
+      colSpan: 10,
+      rowStart: 2,
+      rowSpan: 7,
+    })
+
+    // A fresh draw outside the saved placement has no proportions to keep:
+    // Shift leaves the sweep following the pointer freely
+    dragBetweenPlacementCells(
+      { row: 7, col: 1 },
+      { row: 8, col: 2 },
+      { shiftKey: true },
+    )
+
+    expect(container.textContent).toContain("Columns 1–2, rows 7–8")
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+    const redrawnBlocks = (
+      changes.at(-1) as { blocks?: { placement?: unknown }[] } | undefined
+    )?.blocks
+    expect(redrawnBlocks?.[0]?.placement).toEqual({
+      colStart: 1,
+      colSpan: 2,
+      rowStart: 7,
+      rowSpan: 2,
+    })
+  })
+
   it("clamps a moved block to the grid edge", async () => {
     const changes: IsomerComponent[] = []
     renderCanvasForm(
