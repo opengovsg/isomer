@@ -5,7 +5,6 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-import { userHandlers } from "tests/msw/handlers/user"
 import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 
@@ -64,7 +63,6 @@ const zeroTagOptionsUsageParameters = {
   growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   msw: {
     handlers: [
-      userHandlers.isIsomerAdmin.admin(),
       ...COMMON_HANDLERS.slice(0, -1),
       collectionHandlers.countTagOptionsUsage.zero(),
     ],
@@ -239,27 +237,16 @@ async function playOpenDeleteFilterModal(canvasElement: HTMLElement) {
   return portals
 }
 
-export const NonIsomerAdmin: Story = {
+export const ManageCollection: Story = {
   parameters: {
     growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await canvas.findByText(/Manage Collection/i)
-    await expect(canvas.getByRole("button", { name: /Filters/i })).toBeVisible()
-  },
-}
-
-export const IsomerAdmin: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-    msw: {
-      handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
-    },
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await canvas.findByText(/Manage Collection/i)
+    await expect(
+      canvas.getByRole("button", { name: /Collection display/i }),
+    ).toBeVisible()
     await expect(canvas.getByRole("button", { name: /Filters/i })).toBeVisible()
   },
 }
