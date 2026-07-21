@@ -131,7 +131,7 @@ export const NewCollectionIndexEditingExperienceAsEditor: Story = {
     const canvas = within(canvasElement)
     await canvas.findByText(/Manage Collection/i)
     await canvas.findByRole("button", { name: /Collection display/i })
-    expect(
+    await expect(
       canvas.queryByRole("button", { name: /Filters/i }),
     ).not.toBeInTheDocument()
   },
