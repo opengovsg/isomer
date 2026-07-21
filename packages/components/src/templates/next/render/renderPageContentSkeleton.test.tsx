@@ -1,6 +1,7 @@
 import type { IsomerComponent, IsomerSiteProps } from "~/types"
 import { describe, expect, it, vi } from "vitest"
 
+import type { RenderComponentProps } from "./types"
 import { renderPageContentSkeleton } from "./renderPageContentSkeleton"
 
 const site = {
@@ -31,7 +32,7 @@ const site = {
 describe("renderPageContentSkeleton", () => {
   it("calls the injected renderComponent for each visible block", () => {
     // Arrange
-    const renderComponent = vi.fn(() => <div />)
+    const renderComponent = vi.fn((_props: RenderComponentProps) => <div />)
     const content = [
       { type: "prose", content: [] },
       { type: "prose", content: [] },
@@ -61,7 +62,7 @@ describe("renderPageContentSkeleton", () => {
 
   it("skips hidden childrenpages blocks", () => {
     // Arrange
-    const renderComponent = vi.fn(() => <div />)
+    const renderComponent = vi.fn((_props: RenderComponentProps) => <div />)
     const content = [
       {
         type: "childrenpages",
