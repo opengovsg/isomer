@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { CalloutProps } from "~/interfaces"
-import { CalloutVariant } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { Callout } from "./Callout"
@@ -45,7 +44,7 @@ export const GoodToKnow: Story = {
   args: {
     site: generateSiteConfig(),
     content,
-    variant: CalloutVariant.GoodToKnow.value,
+    variant: "goodToKnow",
   },
 }
 
@@ -53,7 +52,7 @@ export const Warning: Story = {
   args: {
     site: generateSiteConfig(),
     content,
-    variant: CalloutVariant.Warning.value,
+    variant: "warning",
   },
 }
 
@@ -61,7 +60,7 @@ export const Urgent: Story = {
   args: {
     site: generateSiteConfig(),
     content,
-    variant: CalloutVariant.Urgent.value,
+    variant: "urgent",
   },
 }
 
@@ -69,6 +68,6 @@ export const Note: Story = {
   args: {
     site: generateSiteConfig(),
     content,
-    variant: CalloutVariant.Note.value,
+    variant: "note",
   },
 }

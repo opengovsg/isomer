@@ -1,7 +1,6 @@
 import type { IconType } from "react-icons"
 import type { CalloutProps } from "~/interfaces"
 import { BiCheckCircle, BiError, BiErrorCircle } from "react-icons/bi"
-import { CalloutVariant } from "~/interfaces"
 import { tv } from "~/lib/tv"
 
 import { Prose } from "../../native/Prose"
@@ -9,19 +8,19 @@ import { Prose } from "../../native/Prose"
 const CALLOUT_ICONS: Partial<
   Record<NonNullable<CalloutProps["variant"]>, IconType>
 > = {
-  [CalloutVariant.GoodToKnow.value]: BiCheckCircle,
-  [CalloutVariant.Warning.value]: BiErrorCircle,
-  [CalloutVariant.Urgent.value]: BiError,
+  goodToKnow: BiCheckCircle,
+  warning: BiErrorCircle,
+  urgent: BiError,
 }
 
 const CALLOUT_LABELS: Partial<
   Record<NonNullable<CalloutProps["variant"]>, string>
 > = {
-  [CalloutVariant.Information.value]: "Information",
-  [CalloutVariant.GoodToKnow.value]: "Positive update",
-  [CalloutVariant.Warning.value]: "Warning",
-  [CalloutVariant.Urgent.value]: "Needs urgent action",
-  [CalloutVariant.Note.value]: "Note",
+  information: "Information",
+  goodToKnow: "Positive update",
+  warning: "Warning",
+  urgent: "Needs urgent action",
+  note: "Note",
 }
 
 const calloutStyles = tv({
@@ -33,29 +32,29 @@ const calloutStyles = tv({
   },
   variants: {
     variant: {
-      [CalloutVariant.Information.value]: {
+      information: {
         container:
           "border-utility-feedback-info bg-utility-feedback-info-subtle",
       },
-      [CalloutVariant.GoodToKnow.value]: {
+      goodToKnow: {
         container: "border-utility-feedback-success",
         iconWrapper: "bg-utility-feedback-success",
         icon: "text-white",
         content: "bg-utility-feedback-success-subtle",
       },
-      [CalloutVariant.Warning.value]: {
+      warning: {
         container: "border-utility-feedback-warning",
         iconWrapper: "bg-utility-feedback-warning",
         icon: "text-white",
         content: "bg-utility-feedback-warning-subtle",
       },
-      [CalloutVariant.Urgent.value]: {
+      urgent: {
         container: "border-utility-feedback-alert",
         iconWrapper: "bg-utility-feedback-alert",
         icon: "text-white",
         content: "bg-utility-feedback-alert-subtle",
       },
-      [CalloutVariant.Note.value]: {
+      note: {
         container: "border-0 bg-[#EEF0F3]",
       },
     },
@@ -70,7 +69,7 @@ const calloutStyles = tv({
     },
   },
   defaultVariants: {
-    variant: CalloutVariant.Information.value,
+    variant: "information",
     hasIcon: false,
   },
 })
