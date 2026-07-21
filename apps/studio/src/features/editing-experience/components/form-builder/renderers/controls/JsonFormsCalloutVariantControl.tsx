@@ -1,33 +1,17 @@
 import type { ControlProps, RankedTester } from "@jsonforms/core"
 import type { CalloutVariant } from "@opengovsg/isomer-components"
-import type { ComponentType } from "react"
-import { Box, FormControl, type HTMLChakraProps } from "@chakra-ui/react"
+import { Box, FormControl } from "@chakra-ui/react"
 import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel, Radio } from "@opengovsg/design-system-react"
 import { CALLOUT_VARIANT_FORMAT } from "@opengovsg/isomer-components"
-import { StyleCardGoodToKnow } from "~/components/icons/callout/variant/goodToKnow"
-import { StyleCardInformation } from "~/components/icons/callout/variant/information"
-import { StyleCardNote } from "~/components/icons/callout/variant/note"
-import { StyleCardUrgent } from "~/components/icons/callout/variant/urgent"
-import { StyleCardWarning } from "~/components/icons/callout/variant/warning"
+import * as calloutVariantPreviews from "~/components/icons/callout/variant"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 export const jsonFormsCalloutVariantControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.CalloutVariantControl,
   schemaMatches((schema) => schema.format === CALLOUT_VARIANT_FORMAT),
 )
-
-const CALLOUT_VARIANT_PREVIEWS: Record<
-  CalloutVariant,
-  ComponentType<HTMLChakraProps<"svg">>
-> = {
-  information: StyleCardInformation,
-  goodToKnow: StyleCardGoodToKnow,
-  warning: StyleCardWarning,
-  urgent: StyleCardUrgent,
-  note: StyleCardNote,
-}
 
 function JsonFormsCalloutVariantControl({
   data,
@@ -50,7 +34,7 @@ function JsonFormsCalloutVariantControl({
         >
           {schema.anyOf?.map((option) => {
             const value = option.const as CalloutVariant
-            const Preview = CALLOUT_VARIANT_PREVIEWS[value]
+            const Preview = calloutVariantPreviews[value]
 
             return (
               <Radio key={value} value={value} allowDeselect={false} size="sm">
