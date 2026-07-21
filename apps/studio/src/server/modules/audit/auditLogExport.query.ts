@@ -4,6 +4,7 @@ import { addDays, addMonths, format, startOfMonth } from "date-fns"
 import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz"
 import Papa from "papaparse"
 
+import type { AccessReportRow, AuditReportQueryParams } from "./audit.types"
 import { AuditLogEvent, db, sql } from "../database"
 
 // NOTE: Sentinel for middle of month to ensure that we always land inside a month
@@ -113,26 +114,7 @@ export const getExportRange = (
   }
 }
 
-export interface AuditReportQueryParams {
-  siteId: number
-  auditLogDateRange: string
-}
-
-// NOTE: The string-alias form `as "Date added"` keeps the double-quotes as
-// part of the returned column key (Kysely does not strip them), so the
-// runtime keys are `"Date added"` / `"Last login"` — quotes included. This
-// matches the original script, which relies on `toCsv` stripping the quotes
-// from the CSV header. The label text is preserved verbatim.
-// (A type alias — not an interface — because only type aliases get an
-// implicit index signature, making rows assignable to `Record<string,
-// unknown>` so they can be passed straight to `toCsv`.)
-// oxlint-disable-next-line typescript/consistent-type-definitions
-export type AccessReportRow = {
-  Email: string | null
-  '"Last login"': Date | null
-  Role: string
-  '"Date added"': Date
-}
+export type { AccessReportRow, AuditReportQueryParams } from "./audit.types"
 
 /**
  * POINT-IN-TIME access report (ADR docs/adr/0003).
@@ -142,16 +124,18 @@ export type AccessReportRow = {
  * reconstructed from `ResourcePermission` createdAt/deletedAt soft-delete
  * history — NOT who has access now.
  *
- * The export range is half-open `[rangeStart, rangeEnd)`, so the last covered
- * instant is `rangeEndInclusive = rangeEnd - 1ms`. A row is included when it
- * was created no later than that instant and had not yet been revoked as of
- * that instant:
- *   `createdAt <= rangeEndInclusive
- *      AND (deletedAt IS NULL OR deletedAt > rangeEndInclusive)`
+ * The export range is half-open `[rangeStart, rangeEnd)`, so the predicates
+ * compare directly against the exclusive `rangeEnd` — no "last covered
+ * instant" arithmetic. A row is included when it was created strictly inside
+ * the range and had not yet been revoked before its trailing edge:
+ *   `createdAt < rangeEnd
+ *      AND (deletedAt IS NULL OR deletedAt >= rangeEnd)`
  *
- * This mirrors the original script's `<= monthEnd` / `> monthEnd` semantics:
- * a permission revoked exactly at the exclusive boundary (`deletedAt ===
- * rangeEnd`) no longer had access at the last covered instant and is excluded.
+ * A permission created exactly at `rangeEnd` belongs to the next range and is
+ * excluded; one revoked exactly at `rangeEnd` still covered every instant of
+ * this range and is included. (An earlier revision subtracted 1ms to build an
+ * inclusive bound, but Postgres timestamps carry microsecond precision, so
+ * rows in the final millisecond of the range were misclassified.)
  *
  * For an in-progress range (a current-month export clamped to SGT-today + 1
  * day, whose trailing edge is still in the future) the predicate naturally
@@ -165,10 +149,6 @@ export const getAccessReportRows = async ({
   auditLogDateRange,
 }: AuditReportQueryParams): Promise<AccessReportRow[]> => {
   const { rangeEnd } = getExportRange(auditLogDateRange)
-  // The last covered instant of the half-open range (the exclusive boundary
-  // minus one millisecond). Using this — rather than the exclusive `rangeEnd`
-  // — is what excludes a revocation landing exactly on the boundary.
-  const rangeEndInclusive = new Date(rangeEnd.getTime() - 1)
 
   return (
     db
@@ -188,13 +168,14 @@ export const getAccessReportRows = async ({
       .where("u.id", "not in", (eb) =>
         eb.selectFrom("IsomerAdmin").select("IsomerAdmin.userId"),
       )
-      // Point-in-time predicate: permission must already exist as of the last
-      // covered instant, and must not have been revoked at or before it.
-      .where("rp.createdAt", "<=", rangeEndInclusive)
+      // Point-in-time predicate against the exclusive trailing edge: the
+      // permission must have been created inside the range and must not have
+      // been revoked before its end.
+      .where("rp.createdAt", "<", rangeEnd)
       .where((eb) =>
         eb.or([
           eb("rp.deletedAt", "is", null),
-          eb("rp.deletedAt", ">", rangeEndInclusive),
+          eb("rp.deletedAt", ">=", rangeEnd),
         ]),
       )
       .execute()
@@ -264,11 +245,6 @@ export const getActivityReportRows = async ({
 }: AuditReportQueryParams) => {
   const { rangeStart, rangeEnd } = getExportRange(auditLogDateRange)
 
-  // The last covered instant of the half-open activity range. Used to decide
-  // which collaboration windows could overlap the export range for the
-  // Login/Logout gating CTE below.
-  const rangeEndInclusive = new Date(rangeEnd.getTime() - 1)
-
   return db
     .with("collaboratorWindows", (eb) =>
       eb
@@ -293,8 +269,8 @@ export const getActivityReportRows = async ({
         .where("collaboratorUser.id", "not in", (ieb) =>
           ieb.selectFrom("IsomerAdmin").select("IsomerAdmin.userId"),
         )
-        // Restrict to windows that could overlap the export range
-        .where("permission.createdAt", "<=", rangeEndInclusive)
+        // Restrict to windows that could overlap the half-open export range
+        .where("permission.createdAt", "<", rangeEnd)
         .where((web) =>
           web.or([
             web("permission.deletedAt", "is", null),
