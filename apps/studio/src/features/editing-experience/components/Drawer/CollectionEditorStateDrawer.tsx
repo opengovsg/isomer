@@ -4,7 +4,6 @@ import type {
 } from "@opengovsg/isomer-components"
 import type { Static } from "@sinclair/typebox"
 import { Box, Flex, Text, useDisclosure } from "@chakra-ui/react"
-import { trackEvent } from "@intercom/messenger-js-sdk"
 import { Button, Infobox, useToast } from "@opengovsg/design-system-react"
 import {
   getScopedSchema,
@@ -14,11 +13,10 @@ import { isEmpty, isEqual } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
-import { env } from "~/env.mjs"
 import { useMe } from "~/features/me/api"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
+import { trackEvent, triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
@@ -118,11 +116,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       {
         onSuccess: () => {
           setDrawerState({ state: "root" })
-          if (
-            env.NEXT_PUBLIC_INTERCOM_APP_ID &&
-            hadNoTagsBefore &&
-            hasTagsNow
-          ) {
+          if (hadNoTagsBefore && hasTagsNow) {
             trackEvent("first_tag_added")
             triggerCollectionTagCsatSurveyOnce({ userId: me.id })
           }
