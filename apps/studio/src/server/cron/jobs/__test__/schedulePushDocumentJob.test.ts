@@ -285,6 +285,15 @@ describe("schedulePushDocumentJobHandler", async () => {
       // S3 + PDF parser were each invoked exactly once.
       expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
       expect(gazetteService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+
+      // The published object's download filename is rewritten to the
+      // gazette title (extension carried over from the key).
+      expect(s3Lib.setAssetAsPublished).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Key: expectedObjectGroup,
+          ContentDisposition: `inline; filename*=UTF-8''${encodeURIComponent("Document Title.pdf")}`,
+        }),
+      )
     })
 
     it("passes the full PDF text to Algolia without truncating to 50k", async () => {
@@ -702,6 +711,14 @@ describe("schedulePushDocumentJobHandler", async () => {
       // S3 + PDF parser were each invoked exactly once.
       expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
       expect(gazetteService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+
+      // The published object's download filename is rewritten to the
+      // gazette title (extension carried over from the key).
+      expect(s3Lib.setAssetAsPublished).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ContentDisposition: `inline; filename*=UTF-8''${encodeURIComponent("Document Title.pdf")}`,
+        }),
+      )
     })
 
     it("skips rows scheduled for the future", async () => {
