@@ -63,15 +63,20 @@ interface CanvasBlockPlacement {
   rowSpan?: number
 }
 
-// In-memory clipboard for canvas blocks, module-level so a copied block
-// survives selection changes, editor reopens, and pastes into other canvases
-// (every canvas shares the same child-block union). The OS clipboard is left
-// alone: block JSON there would clobber the text users expect ⌘C to own.
-let canvasBlockClipboard: unknown = null
+// In-memory clipboard for canvas blocks, module-level so copied blocks
+// survive selection changes, editor reopens, and pastes into other canvases
+// (every canvas shares the same child-block union). It holds one block from
+// ⌘C on a selected block, or several in stacking order from ⌘C on a
+// multi-selection. The OS clipboard is left alone: block JSON there would
+// clobber the text users expect ⌘C to own.
+let canvasBlockClipboard: unknown[] | null = null
 
 export const resetCanvasBlockClipboard = (): void => {
   canvasBlockClipboard = null
 }
+
+const clipboardHasBlocks = (): boolean =>
+  canvasBlockClipboard !== null && canvasBlockClipboard.length > 0
 
 // A copied or pasted block lands one row below its source so it is visible
 // instead of stacking invisibly on the original, clamped to stay on the grid
@@ -267,8 +272,10 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // right-clicking the empty canvas background offers pasting or adding a new
 // default block at the clicked grid cell. Shift+clicking blocks gathers them
 // into a multi-selection for group actions: Delete removes them all at once,
-// ⌘D duplicates them all at once (the selection moving to the copies), the
-// arrow keys move the group one grid cell (clamped as a unit at the grid
+// ⌘D duplicates them all at once (the selection moving to the copies), ⌘C/⌘X
+// copy or cut the whole group to the block clipboard (⌘V pastes it back with
+// the members' relative layout intact, the selection moving to the copies),
+// the arrow keys move the group one grid cell (clamped as a unit at the grid
 // edges), dragging any member moves the whole group by the grid cells the
 // pointer crosses (committed on release in one data change, Escape
 // cancelling the drag), Escape or a plain background click clears the set,
@@ -391,10 +398,12 @@ export const useCanvasPreviewClickToEdit = ({
   }, [selectedIndex, path, addItem, setSelectedIndex])
 
   // The clipboard actions behind ⌘C/⌘X/⌘V: copy snapshots the selected block
-  // into the module-level clipboard, cut also removes it, and paste appends a
-  // clone with its placement shifted one row down — re-snapshotting the
-  // shifted clone so successive pastes cascade down the grid instead of
-  // stacking on one spot — and switches the editor to the pasted block.
+  // into the module-level clipboard, cut also removes it, and paste appends
+  // clones with their placements shifted one row down — re-snapshotting the
+  // shifted clones so successive pastes cascade down the grid instead of
+  // stacking on one spot. Pasting a single block switches the editor to it;
+  // pasting a group (copied from a multi-selection) becomes the new
+  // multi-selection so a follow-up group action acts on the copies.
   const copySelectedBlock = useCallback(() => {
     if (selectedIndex === undefined) {
       return false
@@ -403,7 +412,7 @@ export const useCanvasPreviewClickToEdit = ({
     if (source === undefined || source === null) {
       return false
     }
-    canvasBlockClipboard = structuredClone(source)
+    canvasBlockClipboard = [structuredClone(source)]
     return true
   }, [selectedIndex])
 
@@ -413,46 +422,118 @@ export const useCanvasPreviewClickToEdit = ({
     }
   }, [copySelectedBlock, removeSelectedItem, path, selectedIndex])
 
-  const pasteBlockFromClipboard = useCallback(() => {
-    if (canvasBlockClipboard === null) {
-      return
-    }
-    const copy = structuredClone(canvasBlockClipboard) as {
-      placement?: CanvasBlockPlacement
-    }
-    shiftPlacementOneRowDown(copy)
-    canvasBlockClipboard = structuredClone(copy)
-    addItem(path, copy)()
-    setSelectedIndex(blocksRef.current.length)
-  }, [path, addItem, setSelectedIndex])
-
-  // Wix's "paste here": the clipboard block lands with its top-left corner
-  // on the grid cell that was right-clicked, keeping its span (clamped so the
-  // block stays on the grid); an unplaced clipboard block stays full width
-  // and is pinned at the clicked row. The clipboard re-snapshots the placed
-  // copy so a follow-up ⌘V cascades from the pasted position.
-  const pasteBlockHereFromClipboard = useCallback(
-    (cell: CanvasGridCell) => {
-      if (canvasBlockClipboard === null) {
+  const appendBlockCopies = useCallback(
+    (copies: unknown[]) => {
+      const firstCopyIndex = blocksRef.current.length
+      if (copies.length === 1) {
+        addItem(path, copies[0])()
+        setSelectedIndex(firstCopyIndex)
         return
       }
-      const copy = structuredClone(canvasBlockClipboard) as {
+      if (!dispatch) {
+        return
+      }
+      dispatch(update(path, (blocks: unknown[]) => [...blocks, ...copies]))
+      setMultiSelectedIndices(
+        copies.map((_, offset) => firstCopyIndex + offset),
+      )
+      if (selectedIndex !== undefined) {
+        setSelectedIndex(undefined)
+      }
+    },
+    [path, addItem, dispatch, selectedIndex, setSelectedIndex],
+  )
+
+  const pasteBlockFromClipboard = useCallback(() => {
+    if (!clipboardHasBlocks()) {
+      return
+    }
+    const copies = (canvasBlockClipboard ?? []).map((block) => {
+      const copy = structuredClone(block) as {
         placement?: CanvasBlockPlacement
       }
-      const colSpan = copy.placement?.colSpan ?? CANVAS_GRID_COLUMNS
-      const rowSpan = copy.placement?.rowSpan ?? 1
-      copy.placement = {
-        ...copy.placement,
-        colStart: Math.min(cell.col, CANVAS_GRID_COLUMNS - colSpan + 1),
-        colSpan,
-        rowStart: Math.min(cell.row, CANVAS_MAX_ROW - rowSpan + 1),
-        rowSpan,
+      shiftPlacementOneRowDown(copy)
+      return copy
+    })
+    canvasBlockClipboard = copies.map((copy) => structuredClone(copy))
+    appendBlockCopies(copies)
+  }, [appendBlockCopies])
+
+  // Wix's "paste here": the clipboard blocks land with their group's
+  // top-left corner on the grid cell that was right-clicked, keeping every
+  // member's span and the members' relative layout (the whole group's shift
+  // is clamped as a unit so every member stays on the grid); an unplaced
+  // clipboard block stays full width and is pinned at the clicked row. The
+  // clipboard re-snapshots the placed copies so a follow-up ⌘V cascades from
+  // the pasted position.
+  const pasteBlockHereFromClipboard = useCallback(
+    (cell: CanvasGridCell) => {
+      if (!clipboardHasBlocks()) {
+        return
       }
-      canvasBlockClipboard = structuredClone(copy)
-      addItem(path, copy)()
-      setSelectedIndex(blocksRef.current.length)
+      const copies = (canvasBlockClipboard ?? []).map(
+        (block) =>
+          structuredClone(block) as { placement?: CanvasBlockPlacement },
+      )
+      const placed = copies.flatMap((copy) => {
+        const placement = copy.placement
+        return placement?.colStart !== undefined &&
+          placement.colSpan !== undefined &&
+          placement.rowStart !== undefined
+          ? [
+              {
+                copy,
+                colStart: placement.colStart,
+                colSpan: placement.colSpan,
+                rowStart: placement.rowStart,
+                rowSpan: placement.rowSpan ?? 1,
+              },
+            ]
+          : []
+      })
+      if (placed.length > 0) {
+        const minColStart = Math.min(...placed.map((entry) => entry.colStart))
+        const minRowStart = Math.min(...placed.map((entry) => entry.rowStart))
+        const dCol = Math.min(
+          cell.col - minColStart,
+          ...placed.map(
+            (entry) =>
+              CANVAS_GRID_COLUMNS - (entry.colStart + entry.colSpan - 1),
+          ),
+        )
+        const dRow = Math.min(
+          cell.row - minRowStart,
+          ...placed.map(
+            (entry) => CANVAS_MAX_ROW - (entry.rowStart + entry.rowSpan - 1),
+          ),
+        )
+        placed.forEach((entry) => {
+          entry.copy.placement = {
+            ...entry.copy.placement,
+            colStart: entry.colStart + dCol,
+            rowStart: entry.rowStart + dRow,
+          }
+        })
+      }
+      const placedCopies = new Set(placed.map((entry) => entry.copy))
+      copies.forEach((copy) => {
+        if (placedCopies.has(copy)) {
+          return
+        }
+        const colSpan = copy.placement?.colSpan ?? CANVAS_GRID_COLUMNS
+        const rowSpan = copy.placement?.rowSpan ?? 1
+        copy.placement = {
+          ...copy.placement,
+          colStart: Math.min(cell.col, CANVAS_GRID_COLUMNS - colSpan + 1),
+          colSpan,
+          rowStart: Math.min(cell.row, CANVAS_MAX_ROW - rowSpan + 1),
+          rowSpan,
+        }
+      })
+      canvasBlockClipboard = copies.map((copy) => structuredClone(copy))
+      appendBlockCopies(copies)
     },
-    [path, addItem, setSelectedIndex],
+    [appendBlockCopies],
   )
 
   // Wix's "add here": a background right-click can insert any canvas child
@@ -618,6 +699,36 @@ export const useCanvasPreviewClickToEdit = ({
     removeItems?.(path, [...multiSelectedIndices])()
     setMultiSelectedIndices([])
   }, [multiSelectedIndices, path, removeItems])
+
+  // The group clipboard actions behind ⌘C/⌘X on the multi-selection: copy
+  // snapshots every member into the block clipboard in stacking order
+  // (regardless of the order the members were Shift+clicked in), so a paste
+  // reproduces the group's layout; cut also removes the members in one data
+  // change. Pasting a group goes through pasteBlockFromClipboard above.
+  const copyMultiSelectedBlocks = useCallback(() => {
+    if (multiSelectedIndices.length === 0) {
+      return false
+    }
+    const snapshots = [...multiSelectedIndices]
+      .sort((a, b) => a - b)
+      .flatMap((index) => {
+        const source: unknown = blocksRef.current[index]
+        return source === undefined || source === null
+          ? []
+          : [structuredClone(source)]
+      })
+    if (snapshots.length === 0) {
+      return false
+    }
+    canvasBlockClipboard = snapshots
+    return true
+  }, [multiSelectedIndices])
+
+  const cutMultiSelectedBlocks = useCallback(() => {
+    if (copyMultiSelectedBlocks()) {
+      removeMultiSelectedBlocks()
+    }
+  }, [copyMultiSelectedBlocks, removeMultiSelectedBlocks])
 
   // Wix's group align commands: line up every placed member of the
   // multi-selection against an edge (or the centre) of the group's own
@@ -1581,10 +1692,12 @@ export const useCanvasPreviewClickToEdit = ({
   // Group actions on the multi-selection: Delete/Backspace removes every
   // multi-selected block in one data change, ⌘D/Ctrl+D appends a copy of
   // every member in one data change (placed copies land one row below their
-  // sources, and the selection moves to the copies), the arrow keys nudge
-  // every placed member one grid cell (the group moves as a unit — if any
-  // member would leave the grid, nothing moves, so members' relative
-  // positions never distort), and Escape clears the selection.
+  // sources, and the selection moves to the copies), ⌘C/⌘X copy or cut the
+  // group to the block clipboard (⌘V, handled by the always-active clipboard
+  // effect below, pastes it back), the arrow keys nudge every placed member
+  // one grid cell (the group moves as a unit — if any member would leave the
+  // grid, nothing moves, so members' relative positions never distort), and
+  // Escape clears the selection.
   // Registered on both windows, like the single-selection shortcuts below.
   useEffect(() => {
     if (
@@ -1634,15 +1747,30 @@ export const useCanvasPreviewClickToEdit = ({
         return
       }
       if (
-        event.key.toLowerCase() === "d" &&
         (event.metaKey || event.ctrlKey) &&
         !event.altKey &&
         !event.shiftKey
       ) {
-        // Take over the keystroke even from the browser's bookmark shortcut
-        event.preventDefault()
-        duplicateMultiSelectedBlocks()
-        return
+        const combo = event.key.toLowerCase()
+        if (combo === "d") {
+          // Take over the keystroke even from the browser's bookmark shortcut
+          event.preventDefault()
+          duplicateMultiSelectedBlocks()
+          return
+        }
+        if (combo === "c" || combo === "x") {
+          // A live text selection keeps its native copy meaning
+          if (hasTextSelection(event.target)) {
+            return
+          }
+          event.preventDefault()
+          if (combo === "c") {
+            copyMultiSelectedBlocks()
+          } else {
+            cutMultiSelectedBlocks()
+          }
+          return
+        }
       }
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
         return
@@ -1695,6 +1823,8 @@ export const useCanvasPreviewClickToEdit = ({
     }
   }, [
     canvasOrdinal,
+    copyMultiSelectedBlocks,
+    cutMultiSelectedBlocks,
     dispatch,
     duplicateMultiSelectedBlocks,
     groupDrag,
@@ -1864,7 +1994,7 @@ export const useCanvasPreviewClickToEdit = ({
         return
       }
       if (key === "v") {
-        if (canvasBlockClipboard === null) {
+        if (!clipboardHasBlocks()) {
           return
         }
         event.preventDefault()
@@ -1999,7 +2129,7 @@ export const useCanvasPreviewClickToEdit = ({
           name: "paste-here",
           label: "Paste block here",
           glyph: "⇲",
-          disabled: canvasBlockClipboard === null,
+          disabled: !clipboardHasBlocks(),
           onClick: withClose(() => pasteBlockHereFromClipboard(cell)),
         },
         ...CANVAS_ADDABLE_BLOCK_TYPES.map(
@@ -2033,6 +2163,27 @@ export const useCanvasPreviewClickToEdit = ({
           label: "Duplicate blocks (⌘D)",
           glyph: "⧉",
           onClick: withClose(duplicateMultiSelectedBlocks),
+        },
+        {
+          name: "copy-group",
+          label: "Copy blocks (⌘C)",
+          glyph: "⿻",
+          onClick: withClose(() => {
+            copyMultiSelectedBlocks()
+          }),
+        },
+        {
+          name: "cut-group",
+          label: "Cut blocks (⌘X)",
+          glyph: "✂",
+          onClick: withClose(cutMultiSelectedBlocks),
+        },
+        {
+          name: "paste-group",
+          label: "Paste blocks (⌘V)",
+          glyph: "⇲",
+          disabled: !clipboardHasBlocks(),
+          onClick: withClose(pasteBlockFromClipboard),
         },
         {
           name: "align-group-left",
@@ -2142,7 +2293,7 @@ export const useCanvasPreviewClickToEdit = ({
           name: "paste",
           label: "Paste block (⌘V)",
           glyph: "⇲",
-          disabled: canvasBlockClipboard === null,
+          disabled: !clipboardHasBlocks(),
           onClick: withClose(pasteBlockFromClipboard),
         },
         {
@@ -2266,6 +2417,8 @@ export const useCanvasPreviewClickToEdit = ({
     hoverColor,
     multiSelectedIndices,
     duplicateMultiSelectedBlocks,
+    copyMultiSelectedBlocks,
+    cutMultiSelectedBlocks,
     alignMultiSelectedBlocks,
     distributeMultiSelectedBlocks,
     removeMultiSelectedBlocks,

@@ -6012,6 +6012,9 @@ describe("FormBuilder canvas editing interactions", () => {
     expect(blockAt(1).style.outline).toContain("solid")
     expect(menuItemLabels()).toEqual([
       "Duplicate blocks (⌘D)",
+      "Copy blocks (⌘C)",
+      "Cut blocks (⌘X)",
+      "Paste blocks (⌘V)",
       "Align left",
       "Align center",
       "Align right",
@@ -7114,6 +7117,232 @@ describe("FormBuilder canvas editing interactions", () => {
       | undefined
     expect(afterDelete?.blocks).toHaveLength(1)
     expect(afterDelete?.blocks?.[0]?.quote).toBe("A quote inside the canvas")
+
+    iframe.remove()
+  })
+
+  it("copies, cuts, and pastes the multi-selected blocks as a group", async () => {
+    resetCanvasBlockClipboard()
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    // More preview block elements than data blocks, so the highlight on the
+    // copies appended by each group paste has elements to land on
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+        <div data-canvas-block-index="3"><span>fourth</span></div>
+        <div data-canvas-block-index="4"><span>fifth</span></div>
+        <div data-canvas-block-index="5"><span>sixth</span></div>
+        <div data-canvas-block-index="6"><span>seventh</span></div>
+        <div data-canvas-block-index="7"><span>eighth</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // 480px content box over 12 columns (empty computed styles read as zero
+    // gaps/padding/borders in jsdom) puts a column every 40px and a base row
+    // every 32px — the background "paste here" needs a resolvable grid cell
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 1, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 7, colSpan: 4, rowStart: 2, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const menuItem = (label: string) => {
+      const item = Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).find((button) => button.textContent === label)
+      expect(item).not.toBeUndefined()
+      return item!
+    }
+    const rightClick = (
+      element: Element,
+      coords: Pick<MouseEventInit, "clientX" | "clientY">,
+    ) => {
+      act(() => {
+        element.dispatchEvent(
+          new iframeRealm.MouseEvent("contextmenu", {
+            bubbles: true,
+            cancelable: true,
+            ...coords,
+          }),
+        )
+      })
+    }
+    const latestBlocks = () => {
+      const latest = changes.at(-1) as
+        | {
+            blocks?: {
+              quote?: string
+              placement?: Record<string, number>
+            }[]
+          }
+        | undefined
+      return latest?.blocks
+    }
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    const baselineChangeCount = changes.length
+
+    // ⌘C snapshots the multi-selection into the block clipboard without
+    // touching the data, keeping the selection intact
+    pressKey(document.body, "c", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount)
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+
+    // ⌘V pastes the whole group in ONE data change: each copy lands one row
+    // below its source (the unselected third block is untouched), no block
+    // editor opens, and the selection moves to the pasted copies
+    pressKey(document.body, "v", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(latestBlocks()).toHaveLength(5)
+    expect(latestBlocks()?.[3]?.quote).toBe(BLOCKQUOTE_BLOCK.quote)
+    expect(latestBlocks()?.[3]?.placement).toEqual({
+      colStart: 2,
+      colSpan: 3,
+      rowStart: 2,
+      rowSpan: 1,
+    })
+    expect(latestBlocks()?.[4]?.quote).toBe("The second quote")
+    expect(latestBlocks()?.[4]?.placement).toEqual({
+      colStart: 7,
+      colSpan: 4,
+      rowStart: 3,
+      rowSpan: 2,
+    })
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toBe("")
+    expect(blockAt(1).style.outline).toBe("")
+    expect(blockAt(3).style.outline).toContain("solid")
+    expect(blockAt(4).style.outline).toContain("solid")
+
+    // Pasting again cascades the group one more row down instead of stacking
+    pressKey(document.body, "v", { metaKey: true })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(latestBlocks()).toHaveLength(7)
+    expect(latestBlocks()?.[5]?.placement?.rowStart).toBe(3)
+    expect(latestBlocks()?.[6]?.placement?.rowStart).toBe(4)
+    expect(blockAt(5).style.outline).toContain("solid")
+    expect(blockAt(6).style.outline).toContain("solid")
+
+    // The group context menu offers the same clipboard commands: Cut blocks
+    // removes every member in ONE data change, leaving the cut pair in the
+    // clipboard
+    rightClick(blockAt(5).querySelector("span")!, { clientX: 60, clientY: 40 })
+    await flush()
+    expect(menuItem("Copy blocks (⌘C)").disabled).toBe(false)
+    expect(menuItem("Paste blocks (⌘V)").disabled).toBe(false)
+    act(() => {
+      menuItem("Cut blocks (⌘X)").click()
+    })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 3)
+    expect(latestBlocks()).toHaveLength(5)
+    expect(blockAt(5).style.outline).toBe("")
+    expect(blockAt(6).style.outline).toBe("")
+
+    // "Paste block here" with a group clipboard keeps the members' relative
+    // layout: the group's top-left corner lands on the right-clicked cell
+    // (clientX 330 → column 9, clientY 10 → row 1), clamped as a unit so the
+    // wider member stays on the grid (column delta clamps to +2), and the
+    // selection lands on the pasted copies
+    rightClick(previewCanvas, { clientX: 330, clientY: 10 })
+    await flush()
+    act(() => {
+      menuItem("Paste block here").click()
+    })
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 4)
+    expect(latestBlocks()).toHaveLength(7)
+    expect(latestBlocks()?.[5]?.quote).toBe(BLOCKQUOTE_BLOCK.quote)
+    expect(latestBlocks()?.[5]?.placement).toEqual({
+      colStart: 4,
+      colSpan: 3,
+      rowStart: 1,
+      rowSpan: 1,
+    })
+    expect(latestBlocks()?.[6]?.quote).toBe("The second quote")
+    expect(latestBlocks()?.[6]?.placement).toEqual({
+      colStart: 9,
+      colSpan: 4,
+      rowStart: 2,
+      rowSpan: 2,
+    })
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(5).style.outline).toContain("solid")
+    expect(blockAt(6).style.outline).toContain("solid")
 
     iframe.remove()
   })
