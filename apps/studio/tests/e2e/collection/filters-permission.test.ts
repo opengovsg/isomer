@@ -55,6 +55,39 @@ test.describe("admin", () => {
   })
 })
 
+// Core/Migrator are seeded with IsomerAdmin only — no site ResourcePermission
+// (see ensureGodModeAdmin in fixtures/seed.ts). They still get implicit site
+// Admin via getResourcePermission, so Filters must remain available.
+for (const role of ["core", "migrator"] as const) {
+  test.describe(`isomer admin (${role}) without site permission`, () => {
+    test.use({ storageState: storageStateFor(role) })
+
+    let collectionId: string
+    let indexPageId: string
+
+    test.beforeEach(async () => {
+      await dismissWelcomeModal(TEST_EMAILS[role])
+      ;({ collectionId, indexPageId } = await seedCollection())
+    })
+
+    test.afterEach(async () => {
+      await deleteCollection(collectionId)
+    })
+
+    test("can see and open Filters on the collection index", async ({
+      page,
+    }) => {
+      const collection = new CollectionPO(page)
+      await page.goto(`/sites/${siteId}/pages/${indexPageId}`)
+
+      await collection.expectManageCollectionVisible()
+      await collection.expectFiltersVisible()
+      await collection.openFilters()
+      await collection.expectManageFiltersDrawerOpen()
+    })
+  })
+}
+
 for (const role of ["editor", "publisher"] as const) {
   test.describe(role, () => {
     test.use({ storageState: storageStateFor(role) })
