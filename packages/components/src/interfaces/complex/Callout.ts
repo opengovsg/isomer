@@ -13,9 +13,7 @@ export const CalloutSchema = Type.Object(
     variant: Type.Optional(
       Type.Union(
         [
-          Type.Literal("information", {
-            title: "Important information (default)",
-          }),
+          Type.Literal("information", { title: "Important information" }),
           Type.Literal("goodToKnow", { title: "Positive update" }),
           Type.Literal("warning", { title: "Warning" }),
           Type.Literal("urgent", { title: "Needs urgent action" }),
