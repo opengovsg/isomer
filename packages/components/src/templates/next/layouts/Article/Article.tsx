@@ -1,71 +1,10 @@
 import { type ArticlePageSchemaType } from "~/types"
-import { getTagsFromTagged } from "~/utils/collection"
-import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
-import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
-import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
 
-import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
-import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
-import { Skeleton } from "../Skeleton"
+import { ArticleLayoutSkeleton } from "../ArticleSkeleton"
 
-export const ArticleLayout = ({
-  site,
-  page,
-  layout,
-  content,
-}: ArticlePageSchemaType) => {
-  const breadcrumb = getBreadcrumbFromSiteMap(
-    site.siteMap,
-    page.permalink.split("/").slice(1),
-  )
-
-  const parent = getIndexByPermalink(page.permalink, site.siteMap)
-  const tagged = page.tagged
-  const tags = page.tags
-
-  const resolvedTags =
-    tagged &&
-    parent?.layout === "collection" &&
-    parent.collectionPagePageProps?.tagCategories
-      ? getTagsFromTagged(tagged, parent.collectionPagePageProps?.tagCategories)
-      : tags
-
-  const categoryOptions =
-    parent?.layout === "collection"
-      ? parent.collectionPagePageProps?.categoryOptions
-      : undefined
-
-  const resolvedCategory = resolveCategoryLabel({
-    categoryId: page.categoryId,
-    category: page.category,
-    categoryOptions,
-  })
-
+export const ArticleLayout = (props: ArticlePageSchemaType) => {
   return (
-    <Skeleton site={site} page={page} layout={layout}>
-      <div className="mx-auto flex max-w-[47.8rem] flex-col gap-7 px-6 md:px-10">
-        <ArticlePageHeader
-          {...page.articlePageHeader}
-          breadcrumb={breadcrumb}
-          category={resolvedCategory}
-          title={page.title}
-          date={page.date}
-          tags={resolvedTags}
-        />
-
-        <div className="mx-auto w-full gap-10 pb-20">
-          <div className="w-full overflow-x-auto break-words lg:max-w-[660px]">
-            {renderPageContent({
-              site,
-              layout,
-              content,
-              permalink: page.permalink,
-            })}
-          </div>
-          <BackToTopLink />
-        </div>
-      </div>
-    </Skeleton>
+    <ArticleLayoutSkeleton {...props} renderPageContent={renderPageContent} />
   )
 }
