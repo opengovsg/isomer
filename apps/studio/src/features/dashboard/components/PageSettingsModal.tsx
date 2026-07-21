@@ -153,11 +153,18 @@ const PageSettingsModalContent = ({
         await utils.folder.invalidate()
         await utils.collection.invalidate()
 
-        toast({
-          title: "Saved and published settings",
-          description: "Check your site in 5-10 minutes to view it live.",
-          status: "success",
-        })
+        toast(
+          isPagePublished
+            ? {
+                title: "Saved and published settings",
+                description: "Check your site in 5-10 minutes to view it live.",
+                status: "success",
+              }
+            : {
+                title: "Saved settings",
+                status: "success",
+              },
+        )
       },
       onError: (error) => {
         toast({
