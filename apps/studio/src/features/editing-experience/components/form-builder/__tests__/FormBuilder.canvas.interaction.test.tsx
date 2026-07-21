@@ -5391,6 +5391,143 @@ describe("FormBuilder canvas editing interactions", () => {
     iframe.remove()
   })
 
+  it("selects a covered block underneath the right-clicked block via the context menu", async () => {
+    resetCanvasBlockClipboard()
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>bottom</span></div>
+        <div data-canvas-block-index="1"><span>top</span></div>
+        <div data-canvas-block-index="2"><span>far</span></div>
+        <div data-canvas-block-index="3"><span>unplaced</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // 480px content box over 12 columns (empty computed styles read as zero
+    // gaps/padding/borders in jsdom) puts a column every 40px and a base row
+    // every 32px
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          // The bottom block's area (columns 4-9, rows 2-4) fully contains
+          // the top block (columns 5-6, row 3), so the bottom one cannot be
+          // reached by clicking the preview
+          {
+            type: "blockquote",
+            quote: "The bottom quote",
+            source: "Bottom",
+            placement: { colStart: 4, colSpan: 6, rowStart: 2, rowSpan: 3 },
+          },
+          {
+            type: "blockquote",
+            quote: "The top quote",
+            source: "Top",
+            placement: { colStart: 5, colSpan: 2, rowStart: 3, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The far quote",
+            source: "Far",
+            placement: { colStart: 11, colSpan: 2, rowStart: 8, rowSpan: 1 },
+          },
+          { type: "blockquote", quote: "The unplaced quote", source: "Loose" },
+        ],
+      },
+      (data) => changes.push(data),
+    )
+    const menu = () =>
+      previewDocument.querySelector<HTMLElement>("[data-canvas-context-menu]")
+    const underneathItems = () =>
+      Array.from(
+        previewDocument.querySelectorAll<HTMLButtonElement>(
+          "[data-canvas-context-menu] button",
+        ),
+      ).filter((button) => button.textContent?.includes("underneath"))
+    const rightClick = (
+      element: Element,
+      coords: Pick<MouseEventInit, "clientX" | "clientY">,
+    ) => {
+      const event = new iframeRealm.MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        ...coords,
+      })
+      act(() => {
+        element.dispatchEvent(event)
+      })
+      return event
+    }
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    await flush()
+    const baselineChangeCount = changes.length
+
+    // Right-clicking the top block inside the overlap (clientX 180 → column
+    // 5, clientY 70 → row 3) selects it and offers to select the covered
+    // block underneath — but not the far or unplaced siblings
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="1"] span')!,
+      { clientX: 180, clientY: 70 },
+    )
+    await flush()
+    expect(menu()).not.toBeNull()
+    expect(container.textContent).toContain("Columns 5–6, rows 3–3")
+    const items = underneathItems()
+    expect(items.map((item) => item.textContent)).toEqual([
+      "Select quote underneath (block 1)",
+    ])
+
+    // Choosing it closes the menu and switches the editor to the covered
+    // block, without committing any data change
+    act(() => {
+      items[0]!.click()
+    })
+    await flush()
+    expect(menu()).toBeNull()
+    expect(container.textContent).toContain("Columns 4–9, rows 2–4")
+    expect(container.textContent).not.toContain("Columns 5–6, rows 3–3")
+    expect(changes.length).toBe(baselineChangeCount)
+
+    // Right-clicking the far block, whose cell no other block covers, offers
+    // no underneath items
+    rightClick(
+      previewDocument.querySelector('[data-canvas-block-index="2"] span')!,
+      { clientX: 420, clientY: 240 },
+    )
+    await flush()
+    expect(menu()).not.toBeNull()
+    expect(underneathItems()).toHaveLength(0)
+
+    iframe.remove()
+  })
+
   it("adds a default block at the right-clicked grid cell via the background context menu", async () => {
     resetCanvasBlockClipboard()
     const iframe = document.createElement("iframe")

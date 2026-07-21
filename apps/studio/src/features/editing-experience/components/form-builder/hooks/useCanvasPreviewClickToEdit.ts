@@ -310,7 +310,14 @@ export const useCanvasPreviewClickToEdit = ({
   // Wix's "paste here" and "add here" commands targeting the right-clicked
   // grid cell
   const [contextMenu, setContextMenu] = useState<
-    | { variant: "block"; clientX: number; clientY: number }
+    | {
+        variant: "block"
+        clientX: number
+        clientY: number
+        // The right-clicked grid cell (null on an unmeasurable canvas): other
+        // placed blocks covering it are offered as "select underneath" items
+        cell: CanvasGridCell | null
+      }
     | { variant: "multi"; clientX: number; clientY: number }
     | {
         variant: "background"
@@ -1370,6 +1377,11 @@ export const useCanvasPreviewClickToEdit = ({
         variant: "block",
         clientX: event.clientX,
         clientY: event.clientY,
+        cell: resolveCanvasGridCellFromPoint(
+          canvas,
+          event.clientX,
+          event.clientY,
+        ),
       })
     }
 
@@ -2806,6 +2818,47 @@ export const useCanvasPreviewClickToEdit = ({
           onClick: withClose(removeSelectedBlock),
         },
       ]
+      // Wix's overlapping-elements affordance: a preview click always
+      // reaches the topmost block at that point, so a block covered by the
+      // clicked one is unreachable except through the sidebar list — the
+      // menu offers every other placed block covering the right-clicked
+      // cell, front to back, and choosing one opens its editor. Numbered by
+      // stacking position so same-type blocks stay distinguishable.
+      const { cell } = contextMenu
+      if (cell) {
+        const coveringBlocks = blocksRef.current
+          .map((block, index) => ({
+            block: block as {
+              type: keyof typeof BLOCK_TO_META
+              placement?: CanvasBlockPlacement
+            },
+            index,
+          }))
+          .filter(({ block, index }) => {
+            const { placement } = block
+            return (
+              index !== selectedIndex &&
+              placement?.colStart !== undefined &&
+              placement.colSpan !== undefined &&
+              placement.rowStart !== undefined &&
+              cell.col >= placement.colStart &&
+              cell.col <= placement.colStart + placement.colSpan - 1 &&
+              cell.row >= placement.rowStart &&
+              cell.row <= placement.rowStart + (placement.rowSpan ?? 1) - 1
+            )
+          })
+          .sort((a, b) => b.index - a.index)
+        items.push(
+          ...coveringBlocks.map(
+            ({ block, index }): CanvasSelectionToolbarAction => ({
+              name: `select-underneath-${index}`,
+              label: `Select ${BLOCK_TO_META[block.type].label.toLowerCase()} underneath (block ${index + 1})`,
+              glyph: "▣",
+              onClick: withClose(() => setSelectedIndex(index)),
+            }),
+          ),
+        )
+      }
     }
     const removeMenu = showCanvasContextMenu(
       canvas.ownerDocument,
@@ -2885,6 +2938,7 @@ export const useCanvasPreviewClickToEdit = ({
     sendSelectedToBack,
     alignSelectedBlock,
     removeSelectedBlock,
+    setSelectedIndex,
   ])
 
   return { setHoveredListBlockIndex }
