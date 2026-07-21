@@ -14,6 +14,16 @@ const CALLOUT_ICONS: Partial<
   [CalloutVariant.Urgent.value]: BiError,
 }
 
+const CALLOUT_LABELS: Partial<
+  Record<NonNullable<CalloutProps["variant"]>, string>
+> = {
+  [CalloutVariant.Information.value]: CalloutVariant.Information.label,
+  [CalloutVariant.GoodToKnow.value]: CalloutVariant.GoodToKnow.label,
+  [CalloutVariant.Warning.value]: CalloutVariant.Warning.label,
+  [CalloutVariant.Urgent.value]: CalloutVariant.Urgent.label,
+  [CalloutVariant.Note.value]: CalloutVariant.Note.label,
+}
+
 const calloutStyles = tv({
   slots: {
     container:
@@ -50,13 +60,18 @@ const calloutStyles = tv({
 })
 
 export const Callout = ({ content, site, variant }: CalloutProps) => {
-  const styles = calloutStyles({ variant })
   const Icon = variant ? CALLOUT_ICONS[variant] : undefined
+  const styles = calloutStyles({ variant, hasIcon: !!Icon })
+  const label = variant ? CALLOUT_LABELS[variant] : undefined
 
   return (
-    <div className={styles.container()}>
-      {Icon && <Icon aria-hidden className={styles.icon()} />}
-      <div className={styles.content()}>
+    <div className={styles.container()} role="group" aria-label={label}>
+      {Icon && (
+        <div className={styles.iconWrapper()}>
+          <Icon aria-hidden className={styles.icon()} />
+        </div>
+      )}
+      <div className={styles.content()} tabIndex={0}>
         <Prose {...content} site={site} />
       </div>
     </div>
