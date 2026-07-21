@@ -32,6 +32,13 @@ export const DEFAULT_BLOCKS = {
     source: "Describe who said the quote.",
     imageAlt: "Enter a descriptive alt text.",
   },
+  button: {
+    type: "button",
+    variant: "single",
+    alignment: "left",
+    buttonLabel: "Enter your button text.",
+    buttonUrl: "https://www.google.com",
+  },
   callout: {
     type: "callout",
     content: {
@@ -437,6 +444,11 @@ export const BLOCK_TO_META: Record<
       "Humanise your site with powerful quotes or stories from real people.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
+  button: {
+    label: "Button",
+    description: "Add a single button or a pair of buttons to drive action.",
+    // TODO: Add imageSrc
+  },
   contactinformation: {
     label: "Contact information",
     description: "Display contact information.",
@@ -473,6 +485,7 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "callout",
       "blockquote",
       "imagegallery",
+      "button",
     ],
   },
   { label: "Embed external content", types: ["map", "video"] },
@@ -490,6 +503,7 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "contentpic",
       "infobar",
       "imagegallery",
+      "button",
     ],
   },
   {
