@@ -7734,14 +7734,14 @@ describe("FormBuilder canvas editing interactions", () => {
 
     // The idle multi-selection frames its placed members' combined footprint
     // (cols 1–4, rows 1–2 → 0,0 to 160,64) with a bounding box carrying the
-    // four corner resize handles
+    // four corner and four edge resize handles
     const box = boundingBox()
     expect(box).not.toBeNull()
     expect(box!.style.left).toBe("0px")
     expect(box!.style.top).toBe("0px")
     expect(box!.style.width).toBe("160px")
     expect(box!.style.height).toBe("64px")
-    expect(resizeHandles()).toHaveLength(4)
+    expect(resizeHandles()).toHaveLength(8)
 
     // Grabbing a corner opens no editor and commits nothing until the
     // pointer actually crosses into another grid cell
@@ -7823,6 +7823,236 @@ describe("FormBuilder canvas editing interactions", () => {
     await flush()
     expect(changes.length).toBe(baselineChangeCount + 1)
     expect(boundingBox()).not.toBeNull()
+
+    iframe.remove()
+  })
+
+  it("axis-locks the group resize when dragging an edge handle of the bounding box", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    // Deterministic geometry: 12 × 40px columns and 32px base rows
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    previewCanvas.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 480,
+      height: 320,
+      right: 480,
+      bottom: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    blockAt(0).style.setProperty("--canvas-grid-column", "2 / span 3")
+    blockAt(0).style.setProperty("--canvas-grid-row", "2 / span 1")
+    blockAt(0).getBoundingClientRect = () => ({
+      left: 40,
+      top: 32,
+      width: 120,
+      height: 32,
+      right: 160,
+      bottom: 64,
+      x: 40,
+      y: 32,
+      toJSON: () => ({}),
+    })
+    blockAt(1).style.setProperty("--canvas-grid-column", "1 / span 4")
+    blockAt(1).style.setProperty("--canvas-grid-row", "1 / span 2")
+    blockAt(1).getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      width: 160,
+      height: 64,
+      right: 160,
+      bottom: 64,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          {
+            ...BLOCKQUOTE_BLOCK,
+            placement: { colStart: 2, colSpan: 3, rowStart: 2, rowSpan: 1 },
+          },
+          {
+            type: "blockquote",
+            quote: "The second quote",
+            source: "s2",
+            placement: { colStart: 1, colSpan: 4, rowStart: 1, rowSpan: 2 },
+          },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+    const resizeHandle = (name: string) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-group-resize-handle="${name}"]`,
+      )
+    const pressHandle = (name: string) => {
+      const handle = resizeHandle(name)
+      expect(handle).not.toBeNull()
+      act(() => {
+        handle!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
+      })
+    }
+    const movePointer = (clientX: number, clientY: number) =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mousemove", { clientX, clientY }),
+        )
+      })
+    const releasePointer = () =>
+      act(() => {
+        iframe.contentWindow!.dispatchEvent(
+          new iframeRealm.MouseEvent("mouseup"),
+        )
+      })
+    const gridColumnOf = (index: number) =>
+      blockAt(index).style.getPropertyValue("--canvas-grid-column")
+    const gridRowOf = (index: number) =>
+      blockAt(index).style.getPropertyValue("--canvas-grid-row")
+    const placementAt = (index: number) => {
+      const latest = changes.at(-1) as
+        | { blocks?: { placement?: Record<string, number> }[] }
+        | undefined
+      return latest?.blocks?.[index]?.placement
+    }
+    const overlay = () =>
+      previewDocument.querySelector("[data-canvas-grid-overlay]")
+
+    await flush()
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(1))
+    shiftClick(blockAt(2))
+    const baselineChangeCount = changes.length
+
+    // The bounding box carries edge handles at the side midpoints alongside
+    // the four corners, with single-axis resize cursors
+    expect(
+      previewDocument.querySelectorAll("[data-canvas-group-resize-handle]"),
+    ).toHaveLength(8)
+    expect(resizeHandle("right")!.style.cursor).toBe("ew-resize")
+    expect(resizeHandle("bottom")!.style.cursor).toBe("ns-resize")
+    expect(resizeHandle("top")!.style.cursor).toBe("ns-resize")
+    expect(resizeHandle("left")!.style.cursor).toBe("ew-resize")
+
+    // Dragging the right edge to cell (row 4, col 8) doubles the box's
+    // columns (cols 1–4 → 1–8) while the rows stay locked despite the
+    // pointer's vertical travel: members scale horizontally only
+    pressHandle("right")
+    movePointer(300, 110)
+    expect(overlay()).not.toBeNull()
+    expect(gridColumnOf(0)).toBe("3 / span 6")
+    expect(gridRowOf(0)).toBe("2 / span 1")
+    expect(gridColumnOf(1)).toBe("1 / span 8")
+    expect(gridRowOf(1)).toBe("1 / span 2")
+    expect(gridColumnOf(2)).toBe("")
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(placementAt(0)).toEqual({
+      colStart: 3,
+      colSpan: 6,
+      rowStart: 2,
+      rowSpan: 1,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 1,
+      colSpan: 8,
+      rowStart: 1,
+      rowSpan: 2,
+    })
+    expect(placementAt(2)).toBeUndefined()
+
+    // Dragging the bottom edge to cell (row 4, col 2) doubles the box's rows
+    // (rows 1–2 → 1–4) while the columns stay locked despite the pointer's
+    // horizontal travel: members scale vertically only
+    pressHandle("bottom")
+    movePointer(60, 110)
+    expect(gridColumnOf(0)).toBe("3 / span 6")
+    expect(gridRowOf(0)).toBe("3 / span 2")
+    expect(gridColumnOf(1)).toBe("1 / span 8")
+    expect(gridRowOf(1)).toBe("1 / span 4")
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(placementAt(0)).toEqual({
+      colStart: 3,
+      colSpan: 6,
+      rowStart: 3,
+      rowSpan: 2,
+    })
+    expect(placementAt(1)).toEqual({
+      colStart: 1,
+      colSpan: 8,
+      rowStart: 1,
+      rowSpan: 4,
+    })
+
+    // Pointer travel purely along the locked axis is not a move: the drag
+    // never starts visually and releasing commits nothing
+    pressHandle("right")
+    movePointer(300, 40) // row 1 → row 2, staying in the grabbed edge's column 8
+    expect(overlay()).toBeNull()
+    releasePointer()
+    await flush()
+    expect(changes.length).toBe(baselineChangeCount + 2)
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
 
     iframe.remove()
   })

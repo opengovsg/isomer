@@ -273,28 +273,34 @@ export const CANVAS_GROUP_BOUNDING_BOX_DATA_ATTRIBUTE =
 export const CANVAS_GROUP_RESIZE_HANDLE_DATA_ATTRIBUTE =
   "data-canvas-group-resize-handle"
 
-const GROUP_RESIZE_CORNERS = [
+const GROUP_RESIZE_HANDLES = [
   { name: "top-left", top: "0%", left: "0%", cursor: "nwse-resize" },
   { name: "top-right", top: "0%", left: "100%", cursor: "nesw-resize" },
   { name: "bottom-left", top: "100%", left: "0%", cursor: "nesw-resize" },
   { name: "bottom-right", top: "100%", left: "100%", cursor: "nwse-resize" },
+  { name: "top", top: "0%", left: "50%", cursor: "ns-resize" },
+  { name: "right", top: "50%", left: "100%", cursor: "ew-resize" },
+  { name: "bottom", top: "100%", left: "50%", cursor: "ns-resize" },
+  { name: "left", top: "50%", left: "0%", cursor: "ew-resize" },
 ] as const
 
-export type CanvasGroupResizeCorner =
-  (typeof GROUP_RESIZE_CORNERS)[number]["name"]
+export type CanvasGroupResizeHandle =
+  (typeof GROUP_RESIZE_HANDLES)[number]["name"]
 
 // Wix-style group bounding box: while a multi-selection with placed members
 // is idle, a rectangle around the members' combined footprint shows corner
-// resize handles — grabbing one scales the whole group. The box lives in the
-// preview document body with fixed positioning (viewport coords match fixed
-// coords inside the iframe) so the canvas's own overflow never clips it; the
-// box itself passes pointer events through, only the handles are grabbable.
-// Returns a cleanup that removes the box and its handles.
+// and edge-midpoint resize handles — grabbing a corner scales the whole
+// group on both axes, grabbing an edge on that edge's axis only. The box
+// lives in the preview document body with fixed positioning (viewport
+// coords match fixed coords inside the iframe) so the canvas's own overflow
+// never clips it; the box itself passes pointer events through, only the
+// handles are grabbable. Returns a cleanup that removes the box and its
+// handles.
 export const showCanvasGroupResizeHandles = (
   doc: Document,
   rect: { left: number; top: number; width: number; height: number },
   handleColor: string,
-  onGrab: (corner: CanvasGroupResizeCorner, event: MouseEvent) => void,
+  onGrab: (handle: CanvasGroupResizeHandle, event: MouseEvent) => void,
 ): (() => void) => {
   const box = doc.createElement("div")
   box.setAttribute(CANVAS_GROUP_BOUNDING_BOX_DATA_ATTRIBUTE, "")
@@ -310,7 +316,7 @@ export const showCanvasGroupResizeHandles = (
     pointerEvents: "none",
     zIndex: "3",
   })
-  GROUP_RESIZE_CORNERS.forEach(({ name, top, left, cursor }) => {
+  GROUP_RESIZE_HANDLES.forEach(({ name, top, left, cursor }) => {
     const handle = doc.createElement("div")
     handle.setAttribute(CANVAS_GROUP_RESIZE_HANDLE_DATA_ATTRIBUTE, name)
     Object.assign(handle.style, {

@@ -14,7 +14,7 @@ import { useOptionalEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 
 import type {
   CanvasGridCell,
-  CanvasGroupResizeCorner,
+  CanvasGroupResizeHandle,
   CanvasMarqueeRectangle,
   CanvasSelectionToolbarAction,
 } from "../../../utils/canvasPreviewBlock"
@@ -232,22 +232,40 @@ const groupBoundingBoxOf = (
 // Wix-style group resize: grabbing a corner handle of the multi-selection's
 // bounding box scales the box between the pointer and the opposite (anchor)
 // corner, and every placed member's placement maps proportionally into the
-// scaled box. `moved` flips once the pointer leaves the grabbed corner's
-// cell — a press that never moves commits nothing.
+// scaled box. An edge-midpoint handle locks the resize to that edge's axis
+// (`axis`): the box's other axis keeps its original bounds no matter where
+// the pointer travels. `moved` flips once the pointer leaves the grabbed
+// cell along a resizing axis — a press that never moves (or only travels
+// along a locked axis) commits nothing.
+type GroupResizeAxis = "both" | "col" | "row"
+
 interface GroupResizeState {
   members: PlacedGroupMember[]
   box: GroupBoundingBox
   anchor: { col: number; row: number }
   grab: CanvasGridCell
   current: CanvasGridCell
+  axis: GroupResizeAxis
   moved: boolean
 }
 
 const resolveGroupResizeBox = (drag: GroupResizeState): GroupBoundingBox => ({
-  colStart: Math.min(drag.anchor.col, drag.current.col),
-  colEnd: Math.max(drag.anchor.col, drag.current.col),
-  rowStart: Math.min(drag.anchor.row, drag.current.row),
-  rowEnd: Math.max(drag.anchor.row, drag.current.row),
+  colStart:
+    drag.axis === "row"
+      ? drag.box.colStart
+      : Math.min(drag.anchor.col, drag.current.col),
+  colEnd:
+    drag.axis === "row"
+      ? drag.box.colEnd
+      : Math.max(drag.anchor.col, drag.current.col),
+  rowStart:
+    drag.axis === "col"
+      ? drag.box.rowStart
+      : Math.min(drag.anchor.row, drag.current.row),
+  rowEnd:
+    drag.axis === "col"
+      ? drag.box.rowEnd
+      : Math.max(drag.anchor.row, drag.current.row),
 })
 
 const boxesEqual = (a: GroupBoundingBox, b: GroupBoundingBox): boolean =>
@@ -2062,8 +2080,8 @@ export const useCanvasPreviewClickToEdit = ({
               current: cell,
               moved:
                 current.moved ||
-                cell.row !== current.grab.row ||
-                cell.col !== current.grab.col,
+                (current.axis !== "col" && cell.row !== current.grab.row) ||
+                (current.axis !== "row" && cell.col !== current.grab.col),
             }
           : current,
       )
@@ -2871,8 +2889,9 @@ export const useCanvasPreviewClickToEdit = ({
 
   // Wix-style group resize handles: while the multi-selection is idle, a
   // bounding box around its placed members' combined footprint shows corner
-  // handles in the live preview — grabbing one starts a resize anchored at
-  // the opposite corner, scaling every placed member proportionally. The
+  // and edge handles in the live preview — grabbing one starts a resize
+  // anchored at the opposite corner (locked to one axis for edge handles),
+  // scaling every placed member proportionally. The
   // effect is keyed on the members' placements (not just the indices) so the
   // box follows commits that move or resize the members, and it hides while
   // a group drag or resize is moving them.
@@ -2925,23 +2944,30 @@ export const useCanvasPreviewClickToEdit = ({
       canvas.ownerDocument,
       { left, top, width: right - left, height: bottom - top },
       hoverColor,
-      (corner: CanvasGroupResizeCorner) => {
+      (handle: CanvasGroupResizeHandle) => {
         const box = groupBoundingBoxOf(placedMembers)
-        // The grabbed corner's cell doubles as the drag's starting pointer
-        // cell; the anchor is the box's opposite corner
+        // The grabbed handle's cell doubles as the drag's starting pointer
+        // cell; the anchor is the box's opposite corner (an edge handle's
+        // locked axis never resolves, so its col/row here are inert)
         const grab = {
-          col: corner.endsWith("right") ? box.colEnd : box.colStart,
-          row: corner.startsWith("bottom") ? box.rowEnd : box.rowStart,
+          col: handle.endsWith("right") ? box.colEnd : box.colStart,
+          row: handle.startsWith("bottom") ? box.rowEnd : box.rowStart,
         }
         setGroupResize({
           members: placedMembers,
           box,
           anchor: {
-            col: corner.endsWith("right") ? box.colStart : box.colEnd,
-            row: corner.startsWith("bottom") ? box.rowStart : box.rowEnd,
+            col: handle.endsWith("right") ? box.colStart : box.colEnd,
+            row: handle.startsWith("bottom") ? box.rowStart : box.rowEnd,
           },
           grab,
           current: grab,
+          axis:
+            handle === "left" || handle === "right"
+              ? "col"
+              : handle === "top" || handle === "bottom"
+                ? "row"
+                : "both",
           moved: false,
         })
       },
