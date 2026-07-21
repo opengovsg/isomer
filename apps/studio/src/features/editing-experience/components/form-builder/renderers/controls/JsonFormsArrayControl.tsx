@@ -100,6 +100,7 @@ function JsonFormsArrayControl(props: ArrayLayoutProps) {
     addItem,
     moveUp,
     moveDown,
+    removeItems,
   })
 
   return (

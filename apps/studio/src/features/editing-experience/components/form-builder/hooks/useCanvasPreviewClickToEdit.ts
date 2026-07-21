@@ -42,6 +42,7 @@ interface UseCanvasPreviewClickToEditArgs {
   addItem: (path: string, value: unknown) => () => void
   moveUp?: (path: string, index: number) => () => void
   moveDown?: (path: string, index: number) => () => void
+  removeItems?: (path: string, toDelete: number[]) => () => void
 }
 
 interface UseCanvasPreviewClickToEditResult {
@@ -134,7 +135,9 @@ const hasTextSelection = (target: EventTarget | null): boolean => {
 // Wix's align commands, repositioning a placed block's columns against the
 // left/centre/right of the grid or stretching it across the full width;
 // right-clicking the empty canvas background offers pasting or adding a new
-// default block at the clicked grid cell.
+// default block at the clicked grid cell. Shift+clicking blocks gathers them
+// into a multi-selection for group actions: Delete removes them all at once,
+// Escape or a plain background click clears the set.
 export const useCanvasPreviewClickToEdit = ({
   path,
   selectedIndex,
@@ -143,6 +146,7 @@ export const useCanvasPreviewClickToEdit = ({
   addItem,
   moveUp,
   moveDown,
+  removeItems,
 }: UseCanvasPreviewClickToEditArgs): UseCanvasPreviewClickToEditResult => {
   const { core: jsonFormsCore, dispatch } = useJsonForms()
   const [hoverColor] = useToken("colors", ["interaction.main.default"])
@@ -165,6 +169,12 @@ export const useCanvasPreviewClickToEdit = ({
   const [hoveredListBlockIndex, setHoveredListBlockIndex] = useState<
     number | null
   >(null)
+  // Wix-style multi-selection: Shift+clicking blocks in the live preview
+  // gathers them here for group actions (Delete removes them all, Escape or
+  // a plain background click clears the set). Mutually exclusive with the
+  // single selection — opening a block's editor drops the multi-selection,
+  // and seeding the set closes the editor.
+  const [multiSelectedIndices, setMultiSelectedIndices] = useState<number[]>([])
   const editorContext = useOptionalEditorDrawerContext()
   const content = editorContext?.previewPageState.content
   const currActiveIdx = editorContext?.currActiveIdx
@@ -469,7 +479,10 @@ export const useCanvasPreviewClickToEdit = ({
         ? Number(block.getAttribute(CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE))
         : NaN
       const target =
-        block && Number.isInteger(index) && index !== selectedIndex
+        block &&
+        Number.isInteger(index) &&
+        index !== selectedIndex &&
+        !multiSelectedIndices.includes(index)
           ? block
           : null
       if (target === hovered) {
@@ -516,7 +529,7 @@ export const useCanvasPreviewClickToEdit = ({
     // because presses on the selected block stop propagation in the
     // placement control's grab handler before they would reach this hook.
     const duplicateOnAltPress = (event: MouseEvent) => {
-      if (event.button !== 0 || !event.altKey) {
+      if (event.button !== 0 || !event.altKey || event.shiftKey) {
         return
       }
       const block = resolveBlock(event)
@@ -566,6 +579,27 @@ export const useCanvasPreviewClickToEdit = ({
       }
       // Keep the preview content from starting native drags or text selection
       event.preventDefault()
+      // Shift+press toggles the block in the multi-selection instead of
+      // selecting it, Wix-style; with a block's editor open, that block
+      // seeds the set and the editor closes so both blocks show as selected
+      if (event.shiftKey) {
+        setMultiSelectedIndices((previous) => {
+          const seeded =
+            previous.length === 0 && selectedIndex !== undefined
+              ? [selectedIndex]
+              : previous
+          return seeded.includes(index)
+            ? seeded.filter((member) => member !== index)
+            : [...seeded, index]
+        })
+        if (selectedIndex !== undefined) {
+          setSelectedIndex(undefined)
+        }
+        return
+      }
+      setMultiSelectedIndices((previous) =>
+        previous.length === 0 ? previous : [],
+      )
       setCanvasPreviewGrabHandoff(
         { blockIndex: index, clientX: event.clientX, clientY: event.clientY },
         canvas.ownerDocument.defaultView ?? window,
@@ -576,8 +610,13 @@ export const useCanvasPreviewClickToEdit = ({
     const openBlockEditor = (event: MouseEvent) => {
       const block = resolveBlock(event)
       if (!block) {
-        if (deselectArmed && selectedIndex !== undefined) {
-          setSelectedIndex(undefined)
+        if (deselectArmed && !event.shiftKey) {
+          if (selectedIndex !== undefined) {
+            setSelectedIndex(undefined)
+          }
+          setMultiSelectedIndices((previous) =>
+            previous.length === 0 ? previous : [],
+          )
         }
         deselectArmed = false
         return
@@ -590,6 +629,10 @@ export const useCanvasPreviewClickToEdit = ({
       }
       // Links inside the block should open its editor, not navigate the preview
       event.preventDefault()
+      // A Shift+click's mousedown already toggled the multi-selection
+      if (event.shiftKey) {
+        return
+      }
       if (index !== selectedIndex) {
         setSelectedIndex(index)
       }
@@ -663,6 +706,7 @@ export const useCanvasPreviewClickToEdit = ({
     content,
     currActiveIdx,
     hoverColor,
+    multiSelectedIndices,
     path,
     selectedIndex,
     setSelectedIndex,
@@ -678,7 +722,9 @@ export const useCanvasPreviewClickToEdit = ({
     if (
       canvasOrdinal === null ||
       path !== CANVAS_BLOCKS_PATH ||
-      hoveredListBlockIndex === null
+      hoveredListBlockIndex === null ||
+      // A multi-selected block already shows its solid highlight
+      multiSelectedIndices.includes(hoveredListBlockIndex)
     ) {
       return
     }
@@ -720,9 +766,93 @@ export const useCanvasPreviewClickToEdit = ({
     currActiveIdx,
     hoverColor,
     hoveredListBlockIndex,
+    multiSelectedIndices,
     path,
     selectedIndex,
   ])
+
+  // Solid highlight on every multi-selected block in the live preview.
+  // Opening a block's editor (e.g. by clicking its row in the block list,
+  // which bypasses the preview handlers) drops the multi-selection — the two
+  // selection modes are mutually exclusive.
+  useEffect(() => {
+    if (
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH ||
+      multiSelectedIndices.length === 0
+    ) {
+      return
+    }
+    if (selectedIndex !== undefined) {
+      setMultiSelectedIndices([])
+      return
+    }
+    const restores = multiSelectedIndices.flatMap((index) => {
+      const block = findCanvasBlockPreviewElement(
+        document,
+        canvasOrdinal,
+        index,
+      )
+      if (!block) {
+        return []
+      }
+      const previousOutline = block.style.outline
+      const previousOutlineOffset = block.style.outlineOffset
+      block.style.outline = `2px solid ${hoverColor}`
+      block.style.outlineOffset = "2px"
+      return [
+        () => {
+          block.style.outline = previousOutline
+          block.style.outlineOffset = previousOutlineOffset
+        },
+      ]
+    })
+    return () => restores.forEach((restore) => restore())
+  }, [canvasOrdinal, hoverColor, multiSelectedIndices, path, selectedIndex])
+
+  // Group actions on the multi-selection: Delete/Backspace removes every
+  // multi-selected block in one data change, Escape clears the selection.
+  // Registered on both windows, like the single-selection shortcuts below.
+  useEffect(() => {
+    if (
+      canvasOrdinal === null ||
+      path !== CANVAS_BLOCKS_PATH ||
+      multiSelectedIndices.length === 0 ||
+      selectedIndex !== undefined
+    ) {
+      return
+    }
+    const handleGroupShortcut = (event: KeyboardEvent) => {
+      if (
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.defaultPrevented ||
+        isEditableTarget(event.target)
+      ) {
+        return
+      }
+      if (event.key === "Delete" || event.key === "Backspace") {
+        event.preventDefault()
+        removeItems?.(path, [...multiSelectedIndices])()
+        setMultiSelectedIndices([])
+      } else if (event.key === "Escape") {
+        event.preventDefault()
+        setMultiSelectedIndices([])
+      }
+    }
+    window.addEventListener("keydown", handleGroupShortcut)
+    const previewWindow =
+      findCanvasPreviewContainer(document, canvasOrdinal)?.ownerDocument
+        .defaultView ?? null
+    const foreignPreviewWindow = previewWindow === window ? null : previewWindow
+    foreignPreviewWindow?.addEventListener("keydown", handleGroupShortcut)
+    return () => {
+      window.removeEventListener("keydown", handleGroupShortcut)
+      foreignPreviewWindow?.removeEventListener("keydown", handleGroupShortcut)
+    }
+  }, [canvasOrdinal, multiSelectedIndices, path, removeItems, selectedIndex])
 
   // Wix-style keyboard shortcuts while a block's nested editor is open:
   // Delete or Backspace removes the block from the canvas and returns to the

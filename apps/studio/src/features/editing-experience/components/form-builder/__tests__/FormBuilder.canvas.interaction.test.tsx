@@ -5480,4 +5480,139 @@ describe("FormBuilder canvas editing interactions", () => {
     resetCanvasShowGridPreference()
     iframe.remove()
   })
+
+  it("multi-selects blocks with Shift+click in the live preview and deletes them together", async () => {
+    const iframe = document.createElement("iframe")
+    document.body.appendChild(iframe)
+    const previewDocument = iframe.contentDocument!
+    previewDocument.body.innerHTML = `
+      <div data-canvas-container="">
+        <div data-canvas-block-index="0"><span>first</span></div>
+        <div data-canvas-block-index="1"><span>second</span></div>
+        <div data-canvas-block-index="2"><span>third</span></div>
+      </div>
+    `
+    const iframeRealm = iframe.contentWindow as unknown as {
+      Element: { prototype: { scrollIntoView: () => void } }
+      MouseEvent: typeof MouseEvent
+    }
+    iframeRealm.Element.prototype.scrollIntoView = () => undefined
+
+    const changes: IsomerComponent[] = []
+    renderCanvasFormInEditorDrawer(
+      {
+        type: "canvas",
+        blocks: [
+          BLOCKQUOTE_BLOCK,
+          { type: "blockquote", quote: "The second quote", source: "s2" },
+          { type: "blockquote", quote: "The third quote", source: "s3" },
+        ],
+      } as IsomerComponent,
+      (data) => changes.push(data),
+    )
+    const flush = async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
+    }
+
+    const blockAt = (index: number) =>
+      previewDocument.querySelector<HTMLElement>(
+        `[data-canvas-block-index="${index}"]`,
+      )!
+    const shiftClick = (block: HTMLElement) => {
+      act(() => {
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+        block.dispatchEvent(
+          new iframeRealm.MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            shiftKey: true,
+          }),
+        )
+      })
+    }
+
+    // Shift+clicking a block from the list view highlights it without
+    // opening its editor
+    shiftClick(blockAt(0))
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(blockAt(0).style.outline).toContain("solid")
+
+    // Shift+clicking a sibling adds it to the multi-selection
+    shiftClick(blockAt(2))
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toBe("")
+
+    // Shift+clicking a multi-selected block removes it from the selection
+    shiftClick(blockAt(2))
+    expect(blockAt(2).style.outline).toBe("")
+    expect(blockAt(0).style.outline).toContain("solid")
+
+    // Escape clears the multi-selection without deleting anything
+    pressKey(document.body, "Escape")
+    expect(blockAt(0).style.outline).toBe("")
+    expect(container.textContent).toContain("Item 3")
+
+    // With a block's editor open, Shift+clicking a sibling closes the editor
+    // and seeds the multi-selection with both blocks
+    click(findButtonByText("Item 2")!)
+    expect(container.textContent).toContain("Edit Canvas blocks")
+    await flush()
+    shiftClick(blockAt(0))
+    expect(container.textContent).not.toContain("Edit Canvas blocks")
+    expect(container.textContent).toContain("Add item")
+    expect(blockAt(0).style.outline).toContain("solid")
+    expect(blockAt(1).style.outline).toContain("solid")
+    expect(blockAt(2).style.outline).toBe("")
+
+    // A plain press on the canvas background clears the multi-selection
+    const previewCanvas = previewDocument.querySelector<HTMLElement>(
+      "[data-canvas-container]",
+    )!
+    act(() => {
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("mousedown", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+      previewCanvas.dispatchEvent(
+        new iframeRealm.MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+        }),
+      )
+    })
+    expect(blockAt(0).style.outline).toBe("")
+    expect(blockAt(1).style.outline).toBe("")
+    await flush()
+    const baselineChangeCount = changes.length
+
+    // Delete removes every multi-selected block in one keystroke and one
+    // data change, leaving only the unselected block behind
+    shiftClick(blockAt(0))
+    shiftClick(blockAt(2))
+    pressKey(document.body, "Delete")
+    await flush()
+    expect(container.textContent).toContain("Item 1")
+    expect(container.textContent).not.toContain("Item 2")
+    expect(blockAt(0).style.outline).toBe("")
+    expect(blockAt(2).style.outline).toBe("")
+    const afterDelete = changes.at(-1) as
+      | { blocks?: { quote?: string }[] }
+      | undefined
+    expect(changes.length).toBe(baselineChangeCount + 1)
+    expect(afterDelete?.blocks).toHaveLength(1)
+    expect(afterDelete?.blocks?.[0]?.quote).toBe("The second quote")
+
+    iframe.remove()
+  })
 })
