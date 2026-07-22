@@ -20,7 +20,7 @@ import {
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { sql } from "kysely"
-import { chunk } from "lodash-es"
+import { chunk, get } from "lodash-es"
 import {
   BULK_DUPLICATE_SOURCE_MESSAGE,
   BULK_MALFORMED_ROW_MESSAGE,
@@ -43,6 +43,7 @@ import type { SafeKysely, Transaction } from "../database"
 import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { AuditLogEvent, db } from "../database"
+import { PG_ERROR_CODES } from "../database/constants"
 import {
   getDescendantResourceIds,
   getResourceByFullPermalink,
@@ -464,118 +465,126 @@ export const createRedirect = async ({
 }) => {
   const byUser = await getByUser(byUserId)
 
-  const created = await db.transaction().execute(async (tx) => {
-    // Serialise redirect writes for this site (the same lock bulkCreateRedirects
-    // takes), so a single create and a concurrent bulk create can't each miss
-    // the other's uncommitted row in the loop/shadow guards below and both
-    // publish a loop. Released automatically at commit/rollback.
-    await sql`SELECT pg_advisory_xact_lock(${REDIRECT_WRITE_LOCK_NAMESPACE}, ${siteId})`.execute(
-      tx,
-    )
-
-    // Reject creating over a live redirect. A soft-deleted row for the same
-    // source still holds the (siteId, source) unique constraint and is revived
-    // by the upsert below.
-    const existing = await tx
-      .selectFrom("Redirect")
-      .selectAll()
-      .where("siteId", "=", siteId)
-      .where("source", "=", source)
-      .executeTakeFirst()
-    if (existing && existing.deletedAt === null) {
-      throw new TRPCError({
-        code: "CONFLICT",
-        message: `A redirect already exists for ${source}`,
-      })
-    }
-
-    // Re-enforce the no-loop rule server-side; the preflight is advisory. Unlike
-    // the recreate check (constraint-backed), this is a plain read, so two admins
-    // racing the mirror pair (/a->/b and /b->/a) could each pass and persist a
-    // loop — accepted, since the result is recoverable by deleting either side.
-    const chained = await getChainedRedirect(tx, {
-      siteId,
-      source,
-      destination,
-    })
-    if (chained?.isLoop) {
-      // UNPROCESSABLE_CONTENT is reserved for the loop guard — the form maps it
-      // to the loop message on the destination field; don't reuse it elsewhere.
-      throw new TRPCError({
-        code: "UNPROCESSABLE_CONTENT",
-        message: REDIRECT_MESSAGES.loop,
-      })
-    }
-
-    // Re-enforce the source-vs-published-page guard (a published page or live
-    // folder/collection at this URL would be shadowed). Also a plain read, so
-    // same accepted race as above. PRECONDITION_FAILED keeps it distinct from
-    // the already-exists CONFLICT.
-    const pageAtSource = await getResourceByFullPermalink({
-      siteId,
-      fullPermalink: source,
-    })
-    if (pageAtSource && pageAtSource.publishedVersionId !== null) {
-      throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message: REDIRECT_MESSAGES.sourceIsExistingPage,
-      })
-    }
-
-    // Resolve an internal-path destination to a [resource:...] reference (so it
-    // follows page renames); a path with no live page yet is kept literal (the
-    // preflight already warned). Never blocks the create.
-    const storedDestination = await resolveDestinationForStorage(
-      siteId,
-      destination,
-    )
-
-    const created = await tx
-      .insertInto("Redirect")
-      .values({ siteId, source, destination: storedDestination })
-      .onConflict((oc) =>
-        oc
-          .columns(["siteId", "source"])
-          .doUpdateSet({
-            destination: storedDestination,
-            deletedAt: null,
-            // Revived rows republish now, so refresh createdAt (the publish
-            // time shown to users).
-            createdAt: dbNow,
-          })
-          // Only soft-deleted rows may be revived; a concurrent live create
-          // must surface as a conflict, not silently overwrite.
-          .where("Redirect.deletedAt", "is not", null),
+  const created = await db
+    .transaction()
+    .execute(async (tx) => {
+      // Bound the wait for the lock so a stalled holder can't block this write
+      // indefinitely; the wait aborts as a retryable CONFLICT (see the .catch).
+      await sql`SET LOCAL lock_timeout = ${sql.lit(REDIRECT_LOCK_TIMEOUT_MS)}`.execute(
+        tx,
       )
-      .returningAll()
-      // A null row means the upsert skipped a live redirect — a conflict.
-      .executeTakeFirstOrThrow(
-        () =>
-          new TRPCError({
-            code: "CONFLICT",
-            message: `A redirect already exists for ${source}`,
-          }),
+      // Serialise redirect writes for this site (the same lock bulkCreateRedirects
+      // takes), so a single create and a concurrent bulk create can't each miss
+      // the other's uncommitted row in the loop/shadow guards below and both
+      // publish a loop. Released automatically at commit/rollback.
+      await sql`SELECT pg_advisory_xact_lock(${REDIRECT_WRITE_LOCK_NAMESPACE}, ${siteId})`.execute(
+        tx,
       )
 
-    // delta holds the real before/after rows committed.
-    await logRedirectEvent(tx, {
-      siteId,
-      by: byUser,
-      eventType: AuditLogEvent.RedirectCreate,
-      delta: { before: existing ?? null, after: created },
-    })
+      // Reject creating over a live redirect. A soft-deleted row for the same
+      // source still holds the (siteId, source) unique constraint and is revived
+      // by the upsert below.
+      const existing = await tx
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", siteId)
+        .where("source", "=", source)
+        .executeTakeFirst()
+      if (existing && existing.deletedAt === null) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: `A redirect already exists for ${source}`,
+        })
+      }
 
-    // Every mutation republishes the site; audited as a separate Publish event.
-    await logPublishEvent(tx, {
-      siteId,
-      by: byUser,
-      delta: { before: null, after: null },
-      eventType: AuditLogEvent.Publish,
-      metadata: { redirects: { created: [created] } },
-    })
+      // Re-enforce the no-loop rule server-side; the preflight is advisory. Unlike
+      // the recreate check (constraint-backed), this is a plain read, so two admins
+      // racing the mirror pair (/a->/b and /b->/a) could each pass and persist a
+      // loop — accepted, since the result is recoverable by deleting either side.
+      const chained = await getChainedRedirect(tx, {
+        siteId,
+        source,
+        destination,
+      })
+      if (chained?.isLoop) {
+        // UNPROCESSABLE_CONTENT is reserved for the loop guard — the form maps it
+        // to the loop message on the destination field; don't reuse it elsewhere.
+        throw new TRPCError({
+          code: "UNPROCESSABLE_CONTENT",
+          message: REDIRECT_MESSAGES.loop,
+        })
+      }
 
-    return created
-  })
+      // Re-enforce the source-vs-published-page guard (a published page or live
+      // folder/collection at this URL would be shadowed). Also a plain read, so
+      // same accepted race as above. PRECONDITION_FAILED keeps it distinct from
+      // the already-exists CONFLICT.
+      const pageAtSource = await getResourceByFullPermalink({
+        siteId,
+        fullPermalink: source,
+      })
+      if (pageAtSource && pageAtSource.publishedVersionId !== null) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: REDIRECT_MESSAGES.sourceIsExistingPage,
+        })
+      }
+
+      // Resolve an internal-path destination to a [resource:...] reference (so it
+      // follows page renames); a path with no live page yet is kept literal (the
+      // preflight already warned). Never blocks the create.
+      const storedDestination = await resolveDestinationForStorage(
+        siteId,
+        destination,
+      )
+
+      const created = await tx
+        .insertInto("Redirect")
+        .values({ siteId, source, destination: storedDestination })
+        .onConflict((oc) =>
+          oc
+            .columns(["siteId", "source"])
+            .doUpdateSet({
+              destination: storedDestination,
+              deletedAt: null,
+              // Revived rows republish now, so refresh createdAt (the publish
+              // time shown to users).
+              createdAt: dbNow,
+            })
+            // Only soft-deleted rows may be revived; a concurrent live create
+            // must surface as a conflict, not silently overwrite.
+            .where("Redirect.deletedAt", "is not", null),
+        )
+        .returningAll()
+        // A null row means the upsert skipped a live redirect — a conflict.
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "CONFLICT",
+              message: `A redirect already exists for ${source}`,
+            }),
+        )
+
+      // delta holds the real before/after rows committed.
+      await logRedirectEvent(tx, {
+        siteId,
+        by: byUser,
+        eventType: AuditLogEvent.RedirectCreate,
+        delta: { before: existing ?? null, after: created },
+      })
+
+      // Every mutation republishes the site; audited as a separate Publish event.
+      await logPublishEvent(tx, {
+        siteId,
+        by: byUser,
+        delta: { before: null, after: null },
+        eventType: AuditLogEvent.Publish,
+        metadata: { redirects: { created: [created] } },
+      })
+
+      return created
+    })
+    .catch(rethrowLockTimeoutAsConflict)
 
   // Publish after the transaction commits so the external CodeBuild call is off
   // the row locks and a failed publish can't roll back a saved redirect
@@ -601,6 +610,35 @@ const BULK_REDIRECT_INSERT_CHUNK_SIZE = 500
 // this from ever colliding with a future one; pg_advisory_xact_lock releases
 // automatically when the transaction ends.
 const REDIRECT_WRITE_LOCK_NAMESPACE = 0x5244 // "RD"
+
+// Cap how long a redirect write waits for the per-site advisory lock. A writer
+// that waits longer aborts (Postgres 55P03) rather than blocking indefinitely on
+// a stalled holder and tying up a pooled connection. 15s is well above the
+// lock's normal hold time — it only covers the in-transaction DB work, since
+// publishSite runs after commit.
+const REDIRECT_LOCK_TIMEOUT_MS = 15_000
+
+// Shown when a write aborts on that timeout: another redirect write for the same
+// site is in flight, so the caller just retries.
+const REDIRECT_WRITE_BUSY_MESSAGE =
+  "Another change to this site's redirects is in progress. Please try again."
+
+// True when a query aborted waiting for a lock — here, the advisory lock's
+// lock_timeout firing.
+const isLockTimeoutError = (error: unknown): boolean =>
+  get(error, "code") === PG_ERROR_CODES.lockTimeout
+
+// Rethrow a lock-timeout wait as a retryable CONFLICT; pass everything else
+// through unchanged (so the transaction's own TRPCErrors keep their codes).
+const rethrowLockTimeoutAsConflict = (error: unknown): never => {
+  if (isLockTimeoutError(error)) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: REDIRECT_WRITE_BUSY_MESSAGE,
+    })
+  }
+  throw error
+}
 
 // Thrown inside the bulk insert when a source stopped being publishable between
 // validation and the insert — either it gained a live redirect (the upsert
@@ -1032,6 +1070,11 @@ export const bulkCreateRedirects = async ({
 
   try {
     const created = await db.transaction().execute(async (tx) => {
+      // Bound the wait for the lock so a stalled holder can't block this write
+      // indefinitely; the wait aborts as a retryable CONFLICT (see the catch).
+      await sql`SET LOCAL lock_timeout = ${sql.lit(REDIRECT_LOCK_TIMEOUT_MS)}`.execute(
+        tx,
+      )
       // Serialise redirect writes for this site: two concurrent bulk creates
       // could otherwise each miss the other's uncommitted rows in the rechecks
       // below (READ COMMITTED doesn't see them) and both publish — e.g. one
@@ -1182,6 +1225,14 @@ export const bulkCreateRedirects = async ({
 
     return { ok: true, publishedCount: created.length }
   } catch (error) {
+    // A writer that waited past the lock_timeout for the per-site advisory lock
+    // aborts here; surface it as a retryable conflict rather than a 500.
+    if (isLockTimeoutError(error)) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: REDIRECT_WRITE_BUSY_MESSAGE,
+      })
+    }
     if (error instanceof BulkRedirectRaceError) {
       // A source gained a live redirect or a published page between validation
       // and the insert. Re-validate against the now-current table so the modal
