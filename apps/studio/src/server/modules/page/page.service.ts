@@ -75,6 +75,9 @@ export const createDefaultPage = ({
  * invoking `page.updatePageBlob` directly with a modified `tagCategories`.
  * Throws FORBIDDEN if that field changed and the caller can't create at the
  * site root — the same CASL check the client-side gate uses.
+ *
+ * `tagCategories` only exists on the "collection" layout's `page` schema, so
+ * this is a no-op for every other layout.
  */
 export const assertTagCategoriesUnchangedForNonSiteAdmin = async ({
   userId,
@@ -87,6 +90,12 @@ export const assertTagCategoriesUnchangedForNonSiteAdmin = async ({
   oldContent: UnwrapTagged<PrismaJson.BlobJsonContent>
   newContent: UnwrapTagged<PrismaJson.BlobJsonContent>
 }): Promise<void> => {
+  const isCollectionIndexPage =
+    get(oldContent, "layout") === ISOMER_USABLE_PAGE_LAYOUTS.Collection ||
+    get(newContent, "layout") === ISOMER_USABLE_PAGE_LAYOUTS.Collection
+
+  if (!isCollectionIndexPage) return
+
   const tagCategoriesUnchanged = isEqual(
     get(oldContent, "page.tagCategories"),
     get(newContent, "page.tagCategories"),

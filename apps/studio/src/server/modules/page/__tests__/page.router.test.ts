@@ -1668,6 +1668,30 @@ describe("page.router", async () => {
       expect(result).toBeDefined()
     })
 
+    it("should allow a non-admin site editor to update a non-collection page normally", async () => {
+      // Arrange
+      const { page } = await setupPageResource({ resourceType: "Page" })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: page.siteId,
+      })
+
+      // Act
+      const result = await caller.updatePageBlob({
+        pageId: Number(page.id),
+        siteId: page.siteId,
+        content: JSON.stringify({
+          layout: "content",
+          page: { contentPageHeader: { summary: "Updated summary" } },
+          content: [],
+          version: "0.1.0",
+        } satisfies IsomerSchema),
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+    })
+
     it("should allow a site admin to modify tagCategories", async () => {
       // Arrange
       const { site, indexPage } = await setupCollectionIndexPageWithTags()
