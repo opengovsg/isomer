@@ -60,7 +60,7 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 
 ### Feature flags
 
-- [Gate risky changes behind a GrowthBook flag; canary via enabledSites](conventions/growthbook-flag-risky-changes.md) — best practice: risky changes ship behind a GrowthBook flag (key constant + safe fallback); canary to chosen agencies via `enabledSites`, the only canary we have
+- [Gate risky changes behind a GrowthBook flag; canary via enabledSites](conventions/growthbook-flag-risky-changes.md) — best practice: risky changes ship behind a GrowthBook flag (key constant + safe fallback); canary to chosen agencies via `enabledSites`, or to individuals via GrowthBook's native `email` targeting
 
 ### Dependencies
 
