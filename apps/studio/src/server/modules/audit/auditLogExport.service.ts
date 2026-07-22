@@ -202,8 +202,9 @@ const logger: BaseLogger = createBaseLogger({
   path: "modules/audit/auditLogExport.service",
 })
 
-// After this many failed attempts a request is marked Failed (and the
-// requester is emailed) rather than retried again on the next sweep.
+// After this many started attempts (charged at claim time) a failing request
+// is marked Failed (and the requester emailed) rather than retried again on
+// the next sweep.
 const MAX_ATTEMPTS = 3
 
 // Number of Pending requests claimed per cron sweep. Keeps each minute's run
@@ -267,14 +268,16 @@ const getRangeSlug = (auditLogDateRange: string): string => {
  * claim left behind by a killed/redeployed worker — see PROCESSING_LEASE_MS).
  * The `WHERE` guard plus `RETURNING` make the claim race-safe: if no row comes
  * back, another sweep already grabbed it (or it is freshly Processing) and we
- * skip. Re-claiming a stale row counts as a fresh attempt (attempts += 1) so a
- * repeatedly-crashing row still exhausts MAX_ATTEMPTS instead of looping
- * forever.
+ * skip. `attempts` counts processing attempts STARTED: every claim (fresh or
+ * stale re-claim) charges attempts + 1 atomically, so an attempt is counted
+ * exactly once whether it ends in a caught error, a dead worker, or success —
+ * a repeatedly-crashing row still exhausts MAX_ATTEMPTS instead of looping
+ * forever, and a stale re-claim that fails is never double-charged.
  *
  * Steps 2–6 (load site/user, generate CSVs, upload to S3, sign URLs, send the
  * ready email, mark Done) are wrapped in a try/catch: on any failure we
- * increment `attempts` and either re-queue the row (Pending) for the next
- * sweep or, once `attempts >= MAX_ATTEMPTS`, mark it Failed and best-effort
+ * either re-queue the row (Pending) for the next sweep or, once the
+ * already-charged `attempts >= MAX_ATTEMPTS`, mark it Failed and best-effort
  * email the requester. Raw errors are only ever logged, never surfaced to the
  * recipient.
  *
@@ -288,21 +291,15 @@ export const processAuditLogExportRequest = async (
 ): Promise<void> => {
   // Step 1: atomic claim. Claim a fresh `Pending` row, or re-claim a
   // `Processing` row whose lease has expired (abandoned by a dead worker).
-  // Re-claiming a stale row bumps `attempts` so it can't retry infinitely;
-  // a fresh Pending claim leaves `attempts` untouched (the catch owns that
-  // increment for genuine in-process failures).
+  // Every claim charges the attempt up front — the catch never increments, so
+  // a stale re-claim that fails again is charged once, not twice.
   const request = await db
     .updateTable("AuditLogExportRequest")
-    .set((eb) => ({
+    .set({
       status: "Processing",
       updatedAt: new Date(),
-      attempts: eb
-        .case()
-        .when("status", "=", "Processing")
-        .then(sql<number>`attempts + 1`)
-        .else(eb.ref("attempts"))
-        .end(),
-    }))
+      attempts: sql<number>`attempts + 1`,
+    })
     .where("id", "=", requestId)
     .where((eb) =>
       eb.or([
@@ -392,8 +389,9 @@ export const processAuditLogExportRequest = async (
       .where("id", "=", requestId)
       .execute()
   } catch (error) {
-    // Step 7: failure handling. Increment attempts; re-queue or fail.
-    const attempts = request.attempts + 1
+    // Step 7: failure handling. The claim already charged this attempt, so
+    // `request.attempts` (post-claim) is authoritative — re-queue or fail.
+    const { attempts } = request
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error"
 
@@ -403,12 +401,11 @@ export const processAuditLogExportRequest = async (
     )
 
     if (attempts < MAX_ATTEMPTS) {
-      // Re-queue for the next sweep.
+      // Re-queue for the next sweep; `attempts` is already persisted.
       await db
         .updateTable("AuditLogExportRequest")
         .set({
           status: "Pending",
-          attempts,
           errorMessage,
           updatedAt: new Date(),
         })
@@ -422,7 +419,6 @@ export const processAuditLogExportRequest = async (
       .updateTable("AuditLogExportRequest")
       .set({
         status: "Failed",
-        attempts,
         errorMessage,
         updatedAt: new Date(),
       })
