@@ -1,6 +1,4 @@
-import type { IsoMonth } from "~/schemas/audit"
 import { TRPCError } from "@trpc/server"
-import { getMonthDateRange } from "~/server/modules/audit/auditLogExport.query"
 
 import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
@@ -12,16 +10,12 @@ export const auditHandlers = {
     // Both — `Both` is input vocabulary only and fans out into two DB rows.
     success: () =>
       trpcMsw.audit.createExportRequest.mutation(
-        ({ input: { siteId, month, reportType } }) => {
+        ({ input: { siteId, reportType } }) => {
           // The service stores the picked month as a half-open SGT date range
-          // string, `[YYYY-MM-DD,YYYY-MM-DD)`; mirror that in the mocked rows.
-          // The mock sees the raw wire input (`z.input`, a plain string); on
-          // the real server zod narrows it to `IsoMonth` before this point,
-          // so mirror that narrowing with a cast.
-          const auditLogDateRange = getMonthDateRange(
-            month as IsoMonth,
-            new Date(),
-          )
+          // string, `[YYYY-MM-DD,YYYY-MM-DD)`. The UI never reads this value,
+          // so a fixed literal is enough for the mocked rows — avoids pulling
+          // the server DB query module into the Storybook browser bundle.
+          const auditLogDateRange = "[2024-09-01,2024-09-13)"
           const dbReportTypes =
             reportType === "Both"
               ? (["Access", "Activity"] as const)
