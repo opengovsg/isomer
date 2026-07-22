@@ -2,6 +2,14 @@ export { AccordionSchema, type AccordionProps } from "./Accordion"
 export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export { CalloutSchema, type CalloutProps } from "./Callout"
+export {
+  CANVAS_BLOCK_INDEX_DATA_ATTRIBUTE,
+  CANVAS_CONTAINER_DATA_ATTRIBUTE,
+  CANVAS_GRID_COLUMNS,
+  CanvasSchema,
+  type CanvasBlockPlacementProps,
+  type CanvasProps,
+} from "./Canvas"
 export { type CardsProps } from "./Cards"
 export { ContentpicSchema, type ContentpicProps } from "./Contentpic"
 export { FormSGSchema, type FormSGProps } from "./FormSG"

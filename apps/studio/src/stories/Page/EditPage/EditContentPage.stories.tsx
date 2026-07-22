@@ -55,12 +55,20 @@ export default meta
 type Story = StoryObj<typeof EditPage>
 
 export const Default: Story = {}
+
+// The editor's first paint waits on MSW-mocked queries and AJV compiling the
+// full page schema, which can exceed testing-library's default 1s timeout on
+// throttled CI browsers (e.g. Chromatic)
+const FIND_TIMEOUT = { timeout: 15_000 }
+
 export const Wordbreak: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", {
-      name: /This is a prose block/i,
-    })
+    const button = await canvas.findByRole(
+      "button",
+      { name: /This is a prose block/i },
+      FIND_TIMEOUT,
+    )
     await userEvent.click(button)
 
     const textbox = await canvas.findByRole("textbox")
@@ -74,9 +82,11 @@ export const Wordbreak: Story = {
 export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", {
-      name: /Content page header/i,
-    })
+    const button = await canvas.findByRole(
+      "button",
+      { name: /Content page header/i },
+      FIND_TIMEOUT,
+    )
     await userEvent.click(button)
   },
 }
@@ -95,7 +105,11 @@ export const SaveToast: Story = {
 export const AddBlock: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", { name: /add block/i })
+    const button = await canvas.findByRole(
+      "button",
+      { name: /add block/i },
+      FIND_TIMEOUT,
+    )
     await userEvent.click(button)
   },
 }

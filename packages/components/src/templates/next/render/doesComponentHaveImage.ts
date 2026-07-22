@@ -35,6 +35,10 @@ export const doesComponentHaveImage = ({
       return true
     case "infocards":
       return component.cards.some((card) => "imageUrl" in card)
+    case "canvas":
+      return component.blocks.some((block) =>
+        doesComponentHaveImage({ component: block }),
+      )
     case "collectionblock":
       return component.displayThumbnail
     case "blockquote":

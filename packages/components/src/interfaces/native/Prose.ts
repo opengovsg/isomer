@@ -43,10 +43,12 @@ const generateProseSchema = ({
   id,
   format = "prose",
   isRequired = false,
+  title,
 }: {
   id?: string
   format?: ComponentsWithProse
   isRequired?: boolean
+  title?: string
 }) => {
   return Type.Object(
     {
@@ -58,6 +60,7 @@ const generateProseSchema = ({
     {
       ...(id && { $id: id }),
       ...BASE_PROSE_META,
+      ...(title && { title }),
       format,
     },
   )
@@ -78,6 +81,14 @@ export const SimpleProseSchema = Type.Object(
 
 export const ProseSchema = generateProseSchema({
   id: "components-native-prose",
+})
+// No $id: this schema is inlined inside the canvas blocks union, and a
+// duplicate $id would make AJV reject the compiled page schema. Its $ref
+// content resolves against the same definitions as the other prose schemas.
+// The title labels the variant in Studio's combinator picker.
+export const CanvasProseSchema = generateProseSchema({
+  format: "prose",
+  title: "Text",
 })
 export const AccordionProseSchema = generateProseSchema({
   format: "accordion",
