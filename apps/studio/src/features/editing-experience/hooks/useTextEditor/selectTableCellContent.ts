@@ -1,7 +1,8 @@
 import type { Editor } from "@tiptap/react"
+import { TableCell, TableHeader } from "@tiptap/extension-table"
 import { TextSelection } from "@tiptap/pm/state"
 
-const TABLE_CELL_NODE_NAMES = new Set(["tableCell", "tableHeader"])
+const TABLE_CELL_NODE_NAMES = new Set([TableCell.name, TableHeader.name])
 
 /**
  * Selects the text content of the table cell containing the current selection.
