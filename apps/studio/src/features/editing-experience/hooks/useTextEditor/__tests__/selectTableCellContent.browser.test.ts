@@ -1,6 +1,7 @@
 import type { JSONContent } from "@tiptap/react"
 import { Editor } from "@tiptap/react"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { page, userEvent } from "vitest/browser"
 
 import {
   BASE_EXTENSIONS,
@@ -161,6 +162,29 @@ const selectedText = (editor: Editor) =>
     editor.state.selection.to,
   )
 
+/** Real click via Playwright automation, so the editable region gains actual browser focus. */
+const focusEditor = (editor: Editor) =>
+  userEvent.click(page.elementLocator(editor.view.dom))
+
+/**
+ * Triggers a real browser copy and captures what actually lands in the
+ * clipboard, verifying the user-visible selection rather than only
+ * ProseMirror's internal selection state.
+ */
+const copiedText = async () => {
+  let captured: string | undefined
+  const onCopy = (event: ClipboardEvent) => {
+    captured = event.clipboardData?.getData("text/plain")
+    event.preventDefault()
+  }
+
+  document.addEventListener("copy", onCopy)
+  await userEvent.copy()
+  document.removeEventListener("copy", onCopy)
+
+  return captured
+}
+
 /** Dispatch Ctrl/Cmd+A through ProseMirror keymaps (Linux CI uses Ctrl). */
 const dispatchModA = (editor: Editor) => {
   const event = new KeyboardEvent("keydown", {
@@ -188,8 +212,9 @@ describe("selectTableCellContent", () => {
     document.body.replaceChildren()
   })
 
-  it("selects only the current table cell content when caret is inside a cell", () => {
+  it("selects only the current table cell content when caret is inside a cell", async () => {
     // Arrange
+    await focusEditor(editor)
     const cellOne = findTextRange(editor, "Cell One")
     editor.commands.setTextSelection(cellOne.from)
 
@@ -201,10 +226,12 @@ describe("selectTableCellContent", () => {
     expect(selectedText(editor)).toBe("Cell One")
     expect(editor.state.selection.from).toBe(cellOne.from)
     expect(editor.state.selection.to).toBe(cellOne.to)
+    expect(await copiedText()).toBe("Cell One")
   })
 
-  it("selects only the current table header content when caret is inside a header", () => {
+  it("selects only the current table header content when caret is inside a header", async () => {
     // Arrange
+    await focusEditor(editor)
     const headerA = findTextRange(editor, "Header A")
     editor.commands.setTextSelection(headerA.from)
 
@@ -216,13 +243,15 @@ describe("selectTableCellContent", () => {
     expect(selectedText(editor)).toBe("Header A")
     expect(editor.state.selection.from).toBe(headerA.from)
     expect(editor.state.selection.to).toBe(headerA.to)
+    expect(await copiedText()).toBe("Header A")
   })
 
-  it("selects all paragraphs inside a multi-paragraph cell", () => {
+  it("selects all paragraphs inside a multi-paragraph cell", async () => {
     // Arrange
     editor.destroy()
     document.body.replaceChildren()
     editor = createEditor(MULTI_PARAGRAPH_CELL_DOC)
+    await focusEditor(editor)
     const firstLine = findTextRange(editor, "First line")
     editor.commands.setTextSelection(firstLine.from)
 
@@ -232,6 +261,7 @@ describe("selectTableCellContent", () => {
     // Assert
     expect(handled).toBe(true)
     expect(selectedText(editor)).toBe("First lineSecond line")
+    expect(await copiedText()).toBe("First line\n\nSecond line")
   })
 
   it("returns false when the caret is outside a table", () => {
@@ -259,8 +289,9 @@ describe("IsomerTable Mod-a shortcut", () => {
     document.body.replaceChildren()
   })
 
-  it("selects cell content via Mod-a when inside a table cell", () => {
+  it("selects cell content via Mod-a when inside a table cell", async () => {
     // Arrange
+    await focusEditor(editor)
     const cellTwo = findTextRange(editor, "Cell Two")
     editor.commands.setTextSelection(cellTwo.from)
 
@@ -271,6 +302,7 @@ describe("IsomerTable Mod-a shortcut", () => {
     expect(selectedText(editor)).toBe("Cell Two")
     expect(editor.state.selection.from).toBe(cellTwo.from)
     expect(editor.state.selection.to).toBe(cellTwo.to)
+    expect(await copiedText()).toBe("Cell Two")
   })
 
   it("still selects the entire document via Mod-a outside a table", () => {
