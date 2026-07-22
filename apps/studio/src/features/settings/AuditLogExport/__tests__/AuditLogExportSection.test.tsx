@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import type { UserManagementAbility } from "~/server/modules/permissions/permissions.type"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { render, screen, waitFor } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
 import { AuditLogExportRequestedReportType } from "~/schemas/audit"
@@ -72,10 +71,9 @@ describe("AuditLogExportSection", () => {
   // than driving the dropdown — the submitted payload still proves the form
   // wires the selected month + type + site id into the mutation.
   it("submits the selected month and report type with the site id", async () => {
-    const user = userEvent.setup()
     renderWith(adminAbility)
 
-    await user.click(screen.getByRole("button", { name: "Request export" }))
+    fireEvent.click(screen.getByRole("button", { name: "Request export" }))
 
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
     const [payload] = mutate.mock.calls[0] as [
@@ -89,11 +87,10 @@ describe("AuditLogExportSection", () => {
   })
 
   it("surfaces the server error message on failure", async () => {
-    const user = userEvent.setup()
     renderWith(adminAbility)
 
-    await user.click(screen.getByRole("button", { name: "Request export" }))
-    expect(capturedOptions?.onError).toBeDefined()
+    fireEvent.click(screen.getByRole("button", { name: "Request export" }))
+    await waitFor(() => expect(capturedOptions?.onError).toBeDefined())
 
     capturedOptions?.onError?.({
       message:
