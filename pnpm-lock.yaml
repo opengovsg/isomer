@@ -129,7 +129,7 @@ catalogs:
       specifier: ^2.3.7
       version: 2.3.7
     '@types/node':
-      specifier: ^26.1.0
+      specifier: ^26.1.1
       version: 26.1.1
     '@types/papaparse':
       specifier: ^5.5.0
