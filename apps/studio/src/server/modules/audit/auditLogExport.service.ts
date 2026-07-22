@@ -8,14 +8,13 @@ import {
   parseISO,
 } from "date-fns"
 import { sql } from "kysely"
+import { env } from "~/env.mjs"
 import {
   sendAuditLogExportFailedEmail,
   sendAuditLogExportReadyEmail,
 } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
 import {
-  AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS,
-  generateSignedGetUrl,
   getFileSize,
   getStudioAssetsBucketName,
   uploadAuditLogExport,
@@ -41,6 +40,7 @@ import {
   parseAuditLogDateRange,
   toCsv,
 } from "./auditLogExport.query"
+import { sealAuditLogExportToken } from "./auditLogExportToken"
 
 type CreateAuditLogExportRequestProps = CreateAuditLogExportRequestInput & {
   userId: string
@@ -433,12 +433,17 @@ export const processAuditLogExportRequest = async (
       await uploadAuditLogExport({ key: objectKey, body: csv })
     }
 
-    // Both paths converge here: sign a fresh URL against whichever object
-    // (reused or freshly generated) fulfils this request.
-    const url = await generateSignedGetUrl(
-      { Bucket: bucket, Key: objectKey },
-      AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS,
-    )
+    // Both paths converge here. We do NOT presign the S3 object now: a SigV4
+    // URL is capped by the signing credentials' lifetime (~1h on the ECS task
+    // role), so an emailed "3-day" presigned URL silently died within the hour
+    // (ADR 0006). Instead we email a sealed Download Token pointing at a
+    // Studio endpoint that presigns fresh (short expiry) at CLICK time. The
+    // token carries only the request id; the row stays the source of truth on
+    // redemption. `objectKey` is stamped onto the row in step 6, so the route
+    // can re-read it. The email copy's "expires in 3 days" stays true — the
+    // Download Window still anchors to this row's completedAt.
+    const token = await sealAuditLogExportToken(requestId)
+    const url = `${env.NEXT_PUBLIC_APP_URL}/api/audit-log-exports/download?token=${encodeURIComponent(token)}`
 
     // Step 5: one ready email with the single download link. A "Both" user
     // request is two independent rows, so it yields two independent emails —
