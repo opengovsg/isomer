@@ -21,7 +21,6 @@ interface FailedEmailArg {
 
 const {
   mockUploadAuditLogExport,
-  mockGenerateSignedGetUrl,
   mockGetStudioAssetsBucketName,
   mockGetFileSize,
   mockSendAuditLogExportReadyEmail,
@@ -29,7 +28,6 @@ const {
 } = vi.hoisted(() => ({
   mockUploadAuditLogExport:
     vi.fn<(args: { key: string; body: unknown }) => Promise<void>>(),
-  mockGenerateSignedGetUrl: vi.fn<() => Promise<string>>(),
   mockGetStudioAssetsBucketName: vi.fn<() => string>(),
   // HeadObject-backed existence probe used by the Complete-Artifact reuse
   // fork: a byte size means the object exists, null means it is gone.
@@ -55,17 +53,23 @@ vi.mock("~/env.mjs", () => ({
     // oxlint-disable-next-line node/no-process-env
     DATABASE_URL: process.env.DATABASE_URL,
     S3_STUDIO_ASSETS_BUCKET_NAME: "test-audit-bucket",
+    // The emailed download link is `${NEXT_PUBLIC_APP_URL}/api/...` and the
+    // Download Token is sealed with SESSION_SECRET — both are read via the
+    // fulfilment path now, so the mocked env must supply them.
+    NEXT_PUBLIC_APP_URL: "https://studio.test.gov.sg",
+    SESSION_SECRET: "test-session-secret-at-least-32-chars-long",
   },
 }))
 
 // Mock only the external boundaries (S3 + mail). The DB is NOT mocked — the
 // request rows, sites, users and permissions are seeded into a real Postgres.
+// Fulfilment no longer presigns at export time (it emails a sealed Download
+// Token instead — ADR 0006), so generateSignedGetUrl is no longer part of
+// this path and is not mocked here.
 vi.mock("~/lib/s3", () => ({
   uploadAuditLogExport: mockUploadAuditLogExport,
-  generateSignedGetUrl: mockGenerateSignedGetUrl,
   getStudioAssetsBucketName: mockGetStudioAssetsBucketName,
   getFileSize: mockGetFileSize,
-  AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS: 60 * 60 * 24 * 3,
 }))
 
 vi.mock("~/features/mail/service", () => ({
@@ -148,7 +152,6 @@ describe("auditLogExport processor", () => {
     )
     vi.clearAllMocks()
     mockGetStudioAssetsBucketName.mockReturnValue("test-audit-bucket")
-    mockGenerateSignedGetUrl.mockResolvedValue("https://signed.example/url")
     mockUploadAuditLogExport.mockResolvedValue(undefined)
     // By default every candidate artifact still exists in S3.
     mockGetFileSize.mockResolvedValue(1024)
@@ -184,10 +187,15 @@ describe("auditLogExport processor", () => {
 
     expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
     const emailArg = mockSendAuditLogExportReadyEmail.mock.calls[0]![0]
-    expect(emailArg.link).toEqual({
-      label: "access",
-      url: "https://signed.example/url",
-    })
+    // The emailed link points at the Studio redemption endpoint carrying a
+    // sealed Download Token (ADR 0006), NOT a presigned S3 URL. This pins the
+    // actual bug: no signing-credential-lifetime-capped amazonaws.com URL is
+    // emailed anymore.
+    expect(emailArg.link.label).toBe("access")
+    expect(emailArg.link.url).toContain(
+      "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
+    )
+    expect(emailArg.link.url).not.toContain("amazonaws.com")
     expect(emailArg.recipientEmail).toBe("admin@vendor.com.sg")
     expect(emailArg.month).toBe("March 2024")
     expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
@@ -198,6 +206,61 @@ describe("auditLogExport processor", () => {
     // The generate path stamps completedAt too — it is what later identical
     // requests compare against the range end to qualify this row for reuse.
     expect(updated.completedAt).not.toBeNull()
+  })
+
+  it("marks the row Done BEFORE sending the ready email, so the emailed token is already live", async () => {
+    // Arrange
+    const { site } = await setupSite()
+    const admin = await setupUser({ email: "ordering@vendor.com.sg" })
+    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    const request = await seedRequest({
+      siteId: site.id,
+      userId: admin.id,
+      reportType: "Access",
+    })
+
+    // Capture the row's state at the exact moment the email goes out: if the
+    // send ever moves back ahead of the Done UPDATE, a recipient clicking
+    // immediately hits the download route's status guard and sees "expired".
+    let statusAtSendTime: string | null = null
+    let completedAtSendTime: Date | null = null
+    mockSendAuditLogExportReadyEmail.mockImplementation(async () => {
+      const row = await getRequest(request.id)
+      statusAtSendTime = row.status
+      completedAtSendTime = row.completedAt
+    })
+
+    // Act
+    await processPendingAuditLogExports()
+
+    // Assert
+    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+    expect(statusAtSendTime).toBe("Done")
+    expect(completedAtSendTime).not.toBeNull()
+  })
+
+  it("re-queues a row whose ready email failed, even though it was already marked Done", async () => {
+    // Arrange
+    const { site } = await setupSite()
+    const admin = await setupUser({ email: "sesdown@vendor.com.sg" })
+    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    const request = await seedRequest({
+      siteId: site.id,
+      userId: admin.id,
+      reportType: "Access",
+    })
+    mockSendAuditLogExportReadyEmail.mockRejectedValue(new Error("ses down"))
+
+    // Act
+    await processPendingAuditLogExports()
+
+    // Assert: the Done UPDATE ran first, but the catch re-queues so a later
+    // sweep retries the send; that retry re-marks the row Done, which makes
+    // the same requestId's token live again. No failure email on attempt 1.
+    const updated = await getRequest(request.id)
+    expect(updated.status).toBe("Pending")
+    expect(updated.attempts).toBe(1)
+    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
   })
 
   it("processes a fanned-out Both request (two rows): two uploads, two single-link emails, both Done", async () => {
@@ -483,10 +546,13 @@ describe("auditLogExport processor", () => {
       expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(2)
       const secondEmail = mockSendAuditLogExportReadyEmail.mock.calls[1]![0]
       expect(secondEmail.recipientEmail).toBe("second@vendor.com.sg")
-      expect(secondEmail.link).toEqual({
-        label: "access",
-        url: "https://signed.example/url",
-      })
+      // Reuse still emails a Download Token link (against the reused row's own
+      // token), never a presigned S3 URL.
+      expect(secondEmail.link.label).toBe("access")
+      expect(secondEmail.link.url).toContain(
+        "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
+      )
+      expect(secondEmail.link.url).not.toContain("amazonaws.com")
       expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
     })
 

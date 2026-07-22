@@ -8,14 +8,13 @@ import {
   parseISO,
 } from "date-fns"
 import { sql } from "kysely"
+import { env } from "~/env.mjs"
 import {
   sendAuditLogExportFailedEmail,
   sendAuditLogExportReadyEmail,
 } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
 import {
-  AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS,
-  generateSignedGetUrl,
   getFileSize,
   getStudioAssetsBucketName,
   uploadAuditLogExport,
@@ -41,6 +40,7 @@ import {
   parseAuditLogDateRange,
   toCsv,
 } from "./auditLogExport.query"
+import { sealAuditLogExportToken } from "./auditLogExportToken"
 
 type CreateAuditLogExportRequestProps = CreateAuditLogExportRequestInput & {
   userId: string
@@ -304,7 +304,7 @@ const getRangeSlug = (auditLogDateRange: string): string => {
  * forever, and a stale re-claim that fails is never double-charged.
  *
  * Steps 2–6 (load site/user, reuse a Complete Artifact or generate + upload
- * the CSV, sign a URL, send the ready email, mark Done with `completedAt`)
+ * the CSV, mark Done with `completedAt`, then send the ready email)
  * are wrapped in a try/catch: on any failure we
  * either re-queue the row (Pending) for the next sweep or, once the
  * already-charged `attempts >= MAX_ATTEMPTS`, mark it Failed and best-effort
@@ -433,26 +433,31 @@ export const processAuditLogExportRequest = async (
       await uploadAuditLogExport({ key: objectKey, body: csv })
     }
 
-    // Both paths converge here: sign a fresh URL against whichever object
-    // (reused or freshly generated) fulfils this request.
-    const url = await generateSignedGetUrl(
-      { Bucket: bucket, Key: objectKey },
-      AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS,
-    )
+    // Both paths converge here. We do NOT presign the S3 object now: a SigV4
+    // URL is capped by the signing credentials' lifetime (~1h on the ECS task
+    // role), so an emailed "3-day" presigned URL silently died within the hour
+    // (ADR 0006). Instead we email a sealed Download Token pointing at a
+    // Studio endpoint that presigns fresh (short expiry) at CLICK time. The
+    // token carries only the request id; the row stays the source of truth on
+    // redemption. `objectKey` is stamped onto the row in step 5, so the route
+    // can re-read it. The email copy's "expires in 3 days" stays true — the
+    // Download Window still anchors to this row's completedAt.
+    const token = await sealAuditLogExportToken(requestId)
+    const url = `${env.NEXT_PUBLIC_APP_URL}/api/audit-log-exports/download?token=${encodeURIComponent(token)}`
 
-    // Step 5: one ready email with the single download link. A "Both" user
-    // request is two independent rows, so it yields two independent emails —
-    // no cross-job coordination.
-    await sendAuditLogExportReadyEmail({
-      recipientEmail,
-      siteName,
-      month: getExportPeriodLabel(request.auditLogDateRange),
-      link: { label: report.label, url },
-    })
-
-    // Step 6: mark Done. `completedAt` is set on BOTH paths (reuse and
-    // generate): it is what a later request compares against `rangeEnd` to
-    // decide whether THIS row holds a Complete Artifact.
+    // Step 5: mark Done BEFORE emailing. The download route only honours Done
+    // rows, so the row must be Done by the time the token can land in an
+    // inbox — emailing first left a window (and, if this UPDATE then threw, a
+    // whole re-queue cycle) during which a delivered link redirected to
+    // "expired". `completedAt` is set on BOTH paths (reuse and generate): it
+    // anchors this row's Download Window and is what a later request compares
+    // against `rangeEnd` to decide whether THIS row holds a Complete Artifact.
+    // If the email send below fails, the catch re-queues the row and the retry
+    // re-marks it Done — the same requestId keeps any (re)sent token valid.
+    // Residual trade-off: a crash between this UPDATE and the send leaves a
+    // Done row whose email never went out (sweeps skip Done rows); that window
+    // is two adjacent awaits, versus the deterministic dead-link window the
+    // old ordering had on every single request.
     await db
       .updateTable("AuditLogExportRequest")
       .set({
@@ -464,6 +469,16 @@ export const processAuditLogExportRequest = async (
       })
       .where("id", "=", requestId)
       .execute()
+
+    // Step 6: one ready email with the single download link. A "Both" user
+    // request is two independent rows, so it yields two independent emails —
+    // no cross-job coordination.
+    await sendAuditLogExportReadyEmail({
+      recipientEmail,
+      siteName,
+      month: getExportPeriodLabel(request.auditLogDateRange),
+      link: { label: report.label, url },
+    })
   } catch (error) {
     // Step 7: failure handling. The claim already charged this attempt, so
     // `request.attempts` (post-claim) is authoritative — re-queue or fail.

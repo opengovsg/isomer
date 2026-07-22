@@ -78,3 +78,9 @@ _Avoid_: user list, access log
 
 **Activity report** (`type: "events"`): The export view answering *what happened* on a site during the selected month — derived from `AuditLog` events.
 _Avoid_: event log (ambiguous with the table), audit report
+
+**Download Token**: The sealed, tamper-proof credential embedded in the export-ready email link. Identifies exactly one Audit Log Export request; possession of the link suffices to download — no Studio login. Opaque to the recipient and unforgeable.
+_Avoid_: presigned URL (the short-lived S3 URL minted at download time, a different thing), encrypted URL (the token is sealed — encrypted *and* authenticated)
+
+**Download Window**: The period during which a Download Token is honoured — 3 days from the request's fulfilment (`completedAt`), not from the CSV file's creation. Under Complete-Artifact reuse, each request gets its own Download Window even when several requests share one CSV.
+_Avoid_: URL expiry (conflates the emailed link with the S3 URL's lifetime), CSV creation time (wrong anchor under reuse)
