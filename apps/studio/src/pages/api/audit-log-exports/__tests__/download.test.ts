@@ -214,6 +214,28 @@ describe("GET /api/audit-log-exports/download", () => {
     expect(res._getRedirectUrl()).toContain(objectKey)
   })
 
+  it("collapses an S3 presign failure to the expired redirect instead of a 500", async () => {
+    const { site } = await setupSite()
+    const user = await setupUser({ email: "s3down@vendor.com.sg" })
+    const objectKey = `audit-log-exports/${site.id}/1/access.csv`
+    // Infrastructure failure at the last step — a prober must not be able to
+    // distinguish this from an expired link, and the handler must not 500.
+    mockGenerateSignedGetUrl.mockRejectedValue(new Error("S3 unavailable"))
+    const request = await seedRequest({
+      siteId: site.id,
+      userId: user.id,
+      status: "Done",
+      objectKey,
+      completedAt: new Date(),
+    })
+    const token = await sealAuditLogExportToken(request.id)
+
+    const res = await callRoute({ token })
+
+    expect(res.statusCode).toBe(302)
+    expect(res._getRedirectUrl()).toBe(EXPIRED_PAGE_PATH)
+  })
+
   it("redirects to the expired page for an invalid / unsealable token", async () => {
     const res = await callRoute({ token: "not-a-real-token" })
     expect(res.statusCode).toBe(302)
