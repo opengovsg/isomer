@@ -9,6 +9,7 @@ import {
   type IsomerSitemap,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import chunk from "lodash-es/chunk"
 import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
@@ -1084,9 +1085,14 @@ export const getResourceIdsByPermalinks = async (
   )
   const allSegments = [...new Set([...segmentsByPath.values()].flat())]
 
-  // One query for every candidate segment across all paths, plus the root page
-  // only when a bare "/" path is present — two round-trips regardless of N.
-  const [root, candidates] = await Promise.all([
+  // Chunk the candidate lookup so a large bulk upload (many distinct segments)
+  // can't push the IN (...) past Postgres' 65535 bind-parameter cap and fail the
+  // whole query. Well under the cap; candidates from every chunk are merged.
+  const SEGMENT_LOOKUP_CHUNK_SIZE = 20_000
+
+  // One query per candidate-segment chunk across all paths, plus the root page
+  // only when a bare "/" path is present.
+  const [root, candidateChunks] = await Promise.all([
     needsRoot
       ? db
           .selectFrom("Resource")
@@ -1096,15 +1102,18 @@ export const getResourceIdsByPermalinks = async (
           .select("Resource.id")
           .executeTakeFirst()
       : Promise.resolve(undefined),
-    allSegments.length > 0
-      ? db
+    Promise.all(
+      chunk(allSegments, SEGMENT_LOOKUP_CHUNK_SIZE).map((segments) =>
+        db
           .selectFrom("Resource")
           .where("Resource.siteId", "=", siteId)
-          .where("Resource.permalink", "in", allSegments)
+          .where("Resource.permalink", "in", segments)
           .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
-          .execute()
-      : Promise.resolve([]),
+          .execute(),
+      ),
+    ),
   ])
+  const candidates = candidateChunks.flat()
 
   // Index candidates by (parentId, permalink) so each segment step is an O(1)
   // lookup. A linear `candidates.find` per segment is O(segments * candidates),

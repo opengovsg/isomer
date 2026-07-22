@@ -186,6 +186,12 @@ const getPublishedStateByResourceIds = async (
   return result
 }
 
+// Strips a "?query"/"#fragment" off a path, leaving the bare path before the
+// first "?" or "#". A redirect source is always a clean path, so a destination
+// like "/b?x" has to compare as "/b" — both when resolving it for display and
+// when matching it against sources for loop detection.
+const stripQueryFragment = (value: string) => value.split(/[?#]/)[0] ?? value
+
 // Resolves stored internal destinations (both [resource:...] references and
 // literal "/paths") for the table. For references it returns the destination
 // page's current permalink for display (null if the page is gone). `warn` is
@@ -199,10 +205,6 @@ export const resolveRedirectReferences = async ({
 }: ResolveRedirectReferencesInput): Promise<
   { reference: string; permalink: string | null; warn: boolean }[]
 > => {
-  // A literal path may carry a "?query"/"#fragment" that isn't part of the
-  // resource path — resolve against the bare path.
-  const stripQueryFragment = (value: string) => value.split(/[?#]/)[0] ?? value
-
   // Classify each destination synchronously. References are anchored AND must
   // belong to this site; a cross-site reference can't resolve here. Literal
   // paths carry their bare path so they can be resolved together in one batch
@@ -497,10 +499,10 @@ export const createRedirect = async ({
         })
       }
 
-      // Re-enforce the no-loop rule server-side; the preflight is advisory. Unlike
-      // the recreate check (constraint-backed), this is a plain read, so two admins
-      // racing the mirror pair (/a->/b and /b->/a) could each pass and persist a
-      // loop — accepted, since the result is recoverable by deleting either side.
+      // Re-enforce the no-loop rule server-side; the preflight is advisory. The
+      // per-site advisory lock above serialises redirect writes, so a concurrent
+      // create can't slip the other half of a mirror pair (/a->/b and /b->/a)
+      // past this read — the later writer waits, then sees the committed row.
       const chained = await getChainedRedirect(tx, {
         siteId,
         source,
@@ -516,9 +518,10 @@ export const createRedirect = async ({
       }
 
       // Re-enforce the source-vs-published-page guard (a published page or live
-      // folder/collection at this URL would be shadowed). Also a plain read, so
-      // same accepted race as above. PRECONDITION_FAILED keeps it distinct from
-      // the already-exists CONFLICT.
+      // folder/collection at this URL would be shadowed). A page publish doesn't
+      // take the redirect lock, so this plain read can still race one going live
+      // — accepted, since a redirect shadowing a page is recoverable by deleting
+      // it. PRECONDITION_FAILED keeps it distinct from the already-exists CONFLICT.
       const pageAtSource = await getResourceByFullPermalink({
         siteId,
         fullPermalink: source,
@@ -690,7 +693,13 @@ const resolveStoredDestinationsToSources = async (
   const referenceIdByDestination = new Map<string, number>()
   for (const destination of new Set(storedDestinations)) {
     if (destination.startsWith("/")) {
-      result.set(destination, normalizeRedirectSource(destination))
+      // Compare against sources by the bare path: a source can't carry "?"/"#",
+      // so "/b?x" must resolve to the "/b" node or a /a->/b?x, /b->/a loop is
+      // missed (a request to /b?x still matches the /b source rule).
+      result.set(
+        destination,
+        normalizeRedirectSource(stripQueryFragment(destination)),
+      )
       continue
     }
     const match = REFERENCE_DESTINATION_REGEX.exec(destination)
@@ -1086,15 +1095,21 @@ export const bulkCreateRedirects = async ({
       )
 
       // Re-read every existing row (live or soft-deleted) for these sources
-      // first, so each audit entry's `before` is the real committed row.
-      const existingRows = sources.length
-        ? await tx
-            .selectFrom("Redirect")
-            .selectAll()
-            .where("siteId", "=", siteId)
-            .where("source", "in", sources)
-            .execute()
-        : []
+      // first, so each audit entry's `before` is the real committed row. Chunked
+      // so a large batch's WHERE source IN (...) can't exceed Postgres' 65535
+      // bind-parameter cap.
+      const existingRows = (
+        await Promise.all(
+          chunk(sources, BULK_REDIRECT_INSERT_CHUNK_SIZE).map((batch) =>
+            tx
+              .selectFrom("Redirect")
+              .selectAll()
+              .where("siteId", "=", siteId)
+              .where("source", "in", batch)
+              .execute(),
+          ),
+        )
+      ).flat()
       const existingBySource = new Map(
         existingRows.map((row) => [row.source, row]),
       )
@@ -1209,12 +1224,15 @@ export const bulkCreateRedirects = async ({
       }
 
       // The whole batch republishes once, audited as a single Publish event.
+      // Store only the count here — the per-row detail lives in the RedirectCreate
+      // entries above, so embedding every inserted row would just bloat this one
+      // AuditLog row (thousands of rows on a large upload).
       await logPublishEvent(tx, {
         siteId,
         by: byUser,
         delta: { before: null, after: null },
         eventType: AuditLogEvent.Publish,
-        metadata: { redirects: { created: insertedRows } },
+        metadata: { redirects: { createdCount: insertedRows.length } },
       })
 
       return insertedRows

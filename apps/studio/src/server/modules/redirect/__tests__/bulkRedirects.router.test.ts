@@ -204,6 +204,26 @@ describe("redirect.router bulk upload", async () => {
       expect(errorFor(result, "/a")).toBeTruthy()
     })
 
+    it("flags a loop even when the destination carries a query string", async () => {
+      // Arrange: table has /b -> /a. Uploading /a -> /b?ref=x still closes the
+      // loop — a request to /b?ref=x hits the /b source rule (the query is
+      // ignored in matching), so the destination must resolve to /b for the
+      // loop check, not to a distinct "/b?ref=x" node.
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/b", destination: "/a" })
+        .execute()
+
+      // Act
+      const result = await caller.bulkValidate({
+        siteId,
+        csv: csvOf([["/a", "/b?ref=x"]]),
+      })
+
+      // Assert
+      expect(errorFor(result, "/a")).toContain("never-ending loop")
+    })
+
     it("flags a batch loop longer than 10 hops (any-length cycle)", async () => {
       // Arrange: a 12-node cycle /n0 -> /n1 -> ... -> /n11 -> /n0, longer than
       // the former fixed hop cap, so every node must still be flagged.
