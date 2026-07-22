@@ -30,11 +30,9 @@ interface DeleteFilterModalProps {
   onConfirm: () => void
 }
 
-// Querying usage counts for very large filters is disallowed server-side
-// (see MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) since the count is not worth the
-// request/SQL cost at that scale. Skip the query entirely and say so, rather
-// than sending a request we know will fail or truncating to a misleading
-// capped number like "999+".
+const DELETE_FILTER_UNDO_TEXT =
+  "To undo this change, you will need to recreate this filter and assign options to each item individually."
+
 function FilterUsageInfobox({
   siteId,
   pageId,
@@ -44,16 +42,6 @@ function FilterUsageInfobox({
   pageId: number
   tagOptionIds: string[]
 }) {
-  if (tagOptionIds.length > MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) {
-    return (
-      <Text textStyle="body-1" color="base.content.strong">
-        It’s being used on a large number of results. To undo this change, you
-        will need to recreate this filter and assign options to each item
-        individually.
-      </Text>
-    )
-  }
-
   const [{ count }] = trpc.collection.countTagOptionsUsage.useSuspenseQuery({
     siteId,
     pageId,
@@ -62,9 +50,10 @@ function FilterUsageInfobox({
 
   return (
     <Text textStyle="body-1" color="base.content.strong">
-      It’s being used on {count === 1 ? "1 item" : `${count} items`}. To undo
-      this change, you will need to recreate this filter and assign options to
-      each item individually.
+      {count > 0
+        ? `It’s being used on ${count === 1 ? "1 item" : `${count} items`}.`
+        : ""}
+      {DELETE_FILTER_UNDO_TEXT}
     </Text>
   )
 }
@@ -94,18 +83,29 @@ export function DeleteFilterModal({
               <ErrorBoundary
                 fallbackRender={() => (
                   <Text textStyle="body-1" color="base.content.strong">
-                    To undo this change, you will need to recreate this filter
-                    and assign options to each item individually.
+                    {DELETE_FILTER_UNDO_TEXT}
                   </Text>
                 )}
               >
-                <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
-                  <FilterUsageInfobox
-                    siteId={siteId}
-                    pageId={pageId}
-                    tagOptionIds={tagOptionIds}
-                  />
-                </Suspense>
+                {/* Querying usage counts for very large filters is disallowed server-side
+                (see MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT) since the count is not worth the
+                request/SQL cost at that scale. Skip the query entirely and say so, rather
+                than sending a request we know will fail or truncating to a misleading
+                capped number like "999+". */}
+                {tagOptionIds.length > MAX_TAG_OPTION_IDS_FOR_USAGE_COUNT ? (
+                  <Text textStyle="body-1" color="base.content.strong">
+                    It’s being used on a large number of results.{" "}
+                    {DELETE_FILTER_UNDO_TEXT}
+                  </Text>
+                ) : (
+                  <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
+                    <FilterUsageInfobox
+                      siteId={siteId}
+                      pageId={pageId}
+                      tagOptionIds={tagOptionIds}
+                    />
+                  </Suspense>
+                )}
               </ErrorBoundary>
             </Infobox>
             <HStack align="start">

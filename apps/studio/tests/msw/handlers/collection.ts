@@ -102,5 +102,7 @@ export const collectionHandlers = {
   countTagOptionsUsage: {
     default: () =>
       trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 3 })),
+    zero: () =>
+      trpcMsw.collection.countTagOptionsUsage.query(() => ({ count: 0 })),
   },
 }
