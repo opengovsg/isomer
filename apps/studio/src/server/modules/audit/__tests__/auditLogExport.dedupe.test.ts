@@ -203,12 +203,16 @@ const useTx = (tx: ReturnType<typeof makeTx>) => {
 const expectExportCreateEvent = (
   tx: ReturnType<typeof makeTx>,
   requestedReportType: string,
+  ipAddress?: string,
 ) => {
   expect(tx.auditLogValues).toHaveLength(1)
   expect(tx.auditLogValues[0]).toMatchObject({
     eventType: "AuditLogExportCreate",
     userId: FAKE_USER.id,
     siteId: 1,
+    // The requester IP threaded from the router is recorded on the event,
+    // matching sibling resource/permission/login events.
+    ipAddress,
     delta: {
       before: null,
       after: { reportType: requestedReportType },
@@ -245,13 +249,15 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
       userId: "user-1",
       month: VALID_MONTH,
       reportType: "Access",
+      ip: "203.0.113.7",
     })
 
     // Assert: the caller gets the winner's row as a plain success; nothing of
-    // ours was inserted, and the ask is still recorded as an event.
+    // ours was inserted, and the ask is still recorded as an event carrying the
+    // requester IP.
     expect(result).toEqual([winnerRow])
     expect(tx.insertedValues).toHaveLength(0)
-    expectExportCreateEvent(tx, "Access")
+    expectExportCreateEvent(tx, "Access", "203.0.113.7")
   })
 
   it("re-throws a non-conflict INSERT error unchanged", async () => {

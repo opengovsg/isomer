@@ -155,6 +155,39 @@ describe("audit.router", async () => {
       })
     })
 
+    it("records the requester IP on the AuditLogExportCreate event", async () => {
+      // Arrange: a caller whose request carries a forwarded client IP, the same
+      // way our edge/proxy sets it in production (see getClientIp).
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const ipCaller = createCaller(
+        createMockRequest(session, {
+          method: "GET",
+          headers: { "x-forwarded-for": "203.0.113.7" },
+        }),
+      )
+
+      // Act
+      await ipCaller.createExportRequest({
+        siteId: site.id,
+        month: VALID_MONTH,
+        reportType: "Access",
+      })
+
+      // Assert: the event captures the requester IP, not null — matching the
+      // provenance that sibling resource/permission/login events record.
+      const events = await getExportCreateEvents({ siteId: site.id })
+      expect(events).toHaveLength(1)
+      expect(events[0]).toMatchObject({
+        userId: session.userId,
+        siteId: site.id,
+        ipAddress: "203.0.113.7",
+      })
+    })
+
     it("should fan a Both request out into two Pending rows (Access + Activity)", async () => {
       // Arrange
       const { site } = await setupSite()

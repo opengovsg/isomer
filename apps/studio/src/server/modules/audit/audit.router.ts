@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { createAuditLogExportRequestSchema } from "~/schemas/audit"
+import getIP from "~/utils/getClientIp"
 
 import { protectedProcedure, router } from "../../trpc"
 import { validateUserIsSiteAdmin } from "../permissions/permissions.service"
@@ -26,6 +27,10 @@ export const auditRouter = router({
           userId: ctx.user.id,
           month,
           reportType,
+          // Capture the requester IP the same way sibling audit events do
+          // (see auth.router.ts), so the AuditLogExportCreate event records
+          // who exported the logs AND from where.
+          ip: getIP(ctx.req),
         })
       } catch (error) {
         // Permission / validation failures are already typed TRPCErrors with

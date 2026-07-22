@@ -36,6 +36,10 @@ import {
 
 type CreateAuditLogExportRequestProps = CreateAuditLogExportRequestInput & {
   userId: string
+  // Requester IP, resolved by the router (getIP(ctx.req)) and recorded on the
+  // AuditLogExportCreate event, matching sibling resource/permission/login
+  // events. Optional so non-request callers (tests, future jobs) can omit it.
+  ip?: string
 }
 
 // Statuses that represent an export that is still in-flight; a duplicate
@@ -80,6 +84,7 @@ export const createAuditLogExportRequest = async ({
   userId,
   month,
   reportType,
+  ip,
 }: CreateAuditLogExportRequestProps) => {
   const futureMonthCheck = validateIsNotFutureMonth(month)
   const possibleError =
@@ -186,6 +191,7 @@ export const createAuditLogExportRequest = async ({
       eventType: "AuditLogExportCreate",
       by: requestedBy,
       siteId,
+      ip,
       delta: {
         before: null,
         after: { auditLogDateRange, reportType },
@@ -401,8 +407,11 @@ export const processAuditLogExportRequest = async (
     let objectKey = completeArtifact?.objectKey ?? null
     if (objectKey !== null) {
       // The artifact row may outlive the S3 object (e.g. a future lifecycle
-      // policy): verify the object still exists before promising it. A gone
-      // object simply falls through to regeneration.
+      // policy): verify the object still exists before promising it. Only a
+      // genuinely-absent object (getFileSize returns null on a 404/NoSuchKey)
+      // falls through to regeneration; a transient S3/network error propagates
+      // out of getFileSize into this attempt's catch, which re-queues the row
+      // for retry rather than needlessly regenerating the whole artifact.
       const artifactSize = await getFileSize({ Bucket: bucket, Key: objectKey })
       if (artifactSize === null) {
         objectKey = null
