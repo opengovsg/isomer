@@ -102,7 +102,7 @@ catalog:
   tailwindcss: ^3.4.4
   testcontainers: ^12.0.3
   tsc-alias: ^1.9.0
-  "@typescript/native-preview": 7.0.0-dev.20260703.1
+  "@typescript/native-preview": 7.0.0-dev.20260707.2
   type-fest: ^5.8.0
   tsx: ^4.23.1
   turbo: ^2.10.3
@@ -175,13 +175,13 @@ catalogs:
     "@atlaskit/pragmatic-drag-and-drop": ^2.0.1
     "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.0.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1080.0
-    "@aws-sdk/client-amplify": ^3.1080.0
-    "@aws-sdk/client-cloudfront": ^3.1080.0
-    "@aws-sdk/client-codebuild": ^3.1080.0
-    "@aws-sdk/client-s3": ^3.1080.0
-    "@aws-sdk/s3-request-presigner": ^3.1080.0
-    "@aws-sdk/credential-providers": ^3.1080.0
+    "@aws-sdk/client-acm": ^3.1086.0
+    "@aws-sdk/client-amplify": ^3.1086.0
+    "@aws-sdk/client-cloudfront": ^3.1086.0
+    "@aws-sdk/client-codebuild": ^3.1086.0
+    "@aws-sdk/client-s3": ^3.1086.0
+    "@aws-sdk/s3-request-presigner": ^3.1086.0
+    "@aws-sdk/credential-providers": ^3.1086.0
   babel:
     "@babel/plugin-transform-class-properties": ^8.0.1
     "@babel/plugin-transform-object-rest-spread": ^8.0.1
