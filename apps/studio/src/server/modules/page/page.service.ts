@@ -84,8 +84,8 @@ export const assertTagCategoriesUnchangedForNonSiteAdmin = async ({
 }: {
   userId: string
   siteId: number
-  oldContent: unknown
-  newContent: unknown
+  oldContent: UnwrapTagged<PrismaJson.BlobJsonContent>
+  newContent: UnwrapTagged<PrismaJson.BlobJsonContent>
 }): Promise<void> => {
   const tagCategoriesUnchanged = isEqual(
     get(oldContent, "page.tagCategories"),
