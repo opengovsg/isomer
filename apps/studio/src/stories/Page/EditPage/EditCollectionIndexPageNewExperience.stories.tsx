@@ -5,7 +5,6 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-import { userHandlers } from "tests/msw/handlers/user"
 import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 
@@ -56,18 +55,14 @@ const meta: Meta<typeof EditPage> = {
 export default meta
 type Story = StoryObj<typeof EditPage>
 
-const newCollectionFiltersIsomerAdminParameters = {
+const newCollectionFiltersParameters = {
   growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-  msw: {
-    handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
-  },
 } satisfies Story["parameters"]
 
 const zeroTagOptionsUsageParameters = {
   growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   msw: {
     handlers: [
-      userHandlers.isIsomerAdmin.admin(),
       ...COMMON_HANDLERS.slice(0, -1),
       collectionHandlers.countTagOptionsUsage.zero(),
     ],
@@ -76,7 +71,7 @@ const zeroTagOptionsUsageParameters = {
 
 /** Chromatic delay for play-driven inline edit snapshots. */
 const inlineEditSnapshotParameters = {
-  ...newCollectionFiltersIsomerAdminParameters,
+  ...newCollectionFiltersParameters,
   chromatic: { delay: 300 },
 } satisfies Story["parameters"]
 
@@ -242,27 +237,37 @@ async function playOpenDeleteFilterModal(canvasElement: HTMLElement) {
   return portals
 }
 
-export const NonIsomerAdmin: Story = {
+export const ManageCollection: Story = {
   parameters: {
     growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await canvas.findByText(/Manage Collection/i)
+    await expect(
+      canvas.getByRole("button", { name: /Collection display/i }),
+    ).toBeVisible()
+    await expect(canvas.getByRole("button", { name: /Filters/i })).toBeVisible()
   },
 }
 
-// "Filters" block is currently only accessible by Isomer Admin
-export const IsomerAdmin: Story = {
+/** Editors can open Collection display but cannot manage Filters. */
+export const ManageCollectionAsEditor: Story = {
   parameters: {
     growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
-      handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
+      handlers: [resourceHandlers.getRolesFor.editor(), ...COMMON_HANDLERS],
     },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await canvas.findByText(/Manage Collection/i)
+    await expect(
+      canvas.getByRole("button", { name: /Collection display/i }),
+    ).toBeVisible()
+    await expect(
+      canvas.queryByRole("button", { name: /Filters/i }),
+    ).not.toBeInTheDocument()
   },
 }
 
@@ -280,16 +285,15 @@ export const CollectionDisplay: Story = {
   },
 }
 
-// Currently only accessible by Isomer Admin
 export const ManageFilters: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
   },
 }
 
 export const FiltersAddThreeOptions: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
@@ -298,7 +302,7 @@ export const FiltersAddThreeOptions: Story = {
 }
 
 export const FiltersOpenOptionRowMenu: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
@@ -311,7 +315,7 @@ export const FiltersOpenOptionRowMenu: Story = {
 }
 
 export const FiltersDeleteOptionModalDisabledCta: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     const portals = await playOpenDeleteOptionModal(canvasElement)
     await expect(
@@ -321,7 +325,7 @@ export const FiltersDeleteOptionModalDisabledCta: Story = {
 }
 
 export const FiltersDeleteOptionModalEnabledCta: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async (context) => {
     await FiltersDeleteOptionModalDisabledCta.play?.(context)
     const portals = withinPortals(context.canvasElement)
@@ -350,7 +354,7 @@ export const FiltersDeleteOptionModalZeroUsage: Story = {
 }
 
 export const FiltersBackShowsOptionCount: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
@@ -365,7 +369,7 @@ export const FiltersBackShowsOptionCount: Story = {
 }
 
 export const FiltersOpenFilterRowMenu: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     await playOpenFirstFilterEditor(canvasElement)
@@ -385,7 +389,7 @@ export const FiltersOpenFilterRowMenu: Story = {
 }
 
 export const FiltersDeleteFilterModalDisabledCta: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async ({ canvasElement }) => {
     const portals = await playOpenDeleteFilterModal(canvasElement)
     await portals.findByText(/It’s being used on/i)
@@ -396,7 +400,7 @@ export const FiltersDeleteFilterModalDisabledCta: Story = {
 }
 
 export const FiltersDeleteFilterModalEnabledCta: Story = {
-  parameters: newCollectionFiltersIsomerAdminParameters,
+  parameters: newCollectionFiltersParameters,
   play: async (context) => {
     await FiltersDeleteFilterModalDisabledCta.play?.(context)
     const portals = withinPortals(context.canvasElement)
@@ -430,7 +434,6 @@ export const FiltersDeleteFilterModalManyOptions: Story = {
     msw: {
       handlers: [
         pageHandlers.readPageAndBlob.collectionWithManyFilterOptions(),
-        userHandlers.isIsomerAdmin.admin(),
         ...COMMON_HANDLERS,
       ],
     },
@@ -484,9 +487,6 @@ export const CollectionDisplaySaveToast: Story = {
 export const ManageFiltersSaveToast: Story = {
   parameters: {
     growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-    msw: {
-      handlers: [userHandlers.isIsomerAdmin.admin(), ...COMMON_HANDLERS],
-    },
   },
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)

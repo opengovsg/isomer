@@ -33,6 +33,7 @@ import { DEFAULT_BLOCKS } from "~/components/PageEditor/constants"
 import { BlockEditingPlaceholder } from "~/components/Svg"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { CanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { useQueryParse } from "~/hooks/useQueryParse"
@@ -82,10 +83,6 @@ const FIXED_BLOCK_CONTENT: Record<string, FixedBlockContent> = {
 }
 
 const FixedBlock = () => {
-  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
-
   const { setCurrActiveIdx, setDrawerState, previewPageState } =
     useEditorDrawerContext()
   const pageLayout = previewPageState.layout
@@ -129,7 +126,7 @@ const FixedBlock = () => {
           description="Customise the Collection’s Summary, Layout, Sorting logic, and Thumbnail."
           icon={BiCog}
         />
-        {isUserIsomerAdmin && (
+        <CanManageCollectionFilters>
           <BaseBlock
             variant="vertical"
             onClick={() => {
@@ -140,7 +137,7 @@ const FixedBlock = () => {
             description="Define and manage filters for this Collection."
             icon={BiSlider}
           />
-        )}
+        </CanManageCollectionFilters>{" "}
       </>
     )
   }

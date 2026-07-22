@@ -8,11 +8,10 @@ import { get } from "lodash-es"
 import { Suspense, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { pageSchema } from "~/features/editing-experience/schema"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
@@ -321,12 +320,8 @@ export const jsonFormsTagCategoryOptionsControlTester: RankedTester = rankWith(
 )
 
 const JsonFormsTagCategoryOptionsControl = (props: ArrayLayoutProps) => {
-  // Tag category options are admin-only until the feature ships broadly.
-  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
-
-  if (!isUserIsomerAdmin) {
+  const canManageFilters = useCanManageCollectionFilters()
+  if (!canManageFilters) {
     return null
   }
 
