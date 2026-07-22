@@ -1,6 +1,7 @@
 import type { Client } from "pg";
 
 import type { AssetsMap } from "../types";
+import { buildAssetReplacementEntries } from "./rewrite-asset-paths";
 
 const GET_ALL_RESOURCES_WITH_FULL_PERMALINKS = `
 WITH RECURSIVE "resourcePath" (id, title, permalink, "parentId", type, "fullPermalink") AS (
@@ -48,10 +49,10 @@ const studioifyContent = (
 ): string => {
   let newContent = content;
 
-  for (const asset of Object.keys(assetsMap)) {
+  for (const [oldPath, newPath] of buildAssetReplacementEntries(assetsMap)) {
     newContent = newContent
-      .replaceAll(`"${asset}"`, `"${assetsMap[asset]}"`)
-      .replaceAll(`'${asset}'`, `'${assetsMap[asset]}'`);
+      .replaceAll(`"${oldPath}"`, `"${newPath}"`)
+      .replaceAll(`'${oldPath}'`, `'${newPath}'`);
   }
 
   for (const page of Object.keys(resourcesMap)) {
