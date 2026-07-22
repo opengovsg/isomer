@@ -4,11 +4,10 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
+import AuditLogExportSettingsPage from "~/pages/sites/[siteId]/settings/audit"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import AuditLogExportSettingsPage from "../audit"
 
 // jsdom has no `matchMedia`; Chakra's `FullscreenSpinner` (rendered on the
 // non-admin / loading paths) reads it via `useMediaQuery`.
