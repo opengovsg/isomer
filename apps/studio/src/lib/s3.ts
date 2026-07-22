@@ -17,6 +17,7 @@ import {
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { addDays } from "date-fns"
+import { AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS } from "~/constants/misc"
 import { env } from "~/env.mjs"
 
 const DELETE_TAG = "deletedAt"
@@ -31,11 +32,13 @@ export const isR2Configured = !!(
   env.R2_SECRET_ACCESS_KEY
 )
 
-// Signed download URLs for audit log exports are valid for 3 days, matching
-// the object lifecycle on the audit-log export bucket. Exposed so the
-// orchestrator (next layer) can sign URLs against the same bucket with a
+// Signed download URLs for audit log exports are valid for
+// AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS (shared with the email copy via
+// ~/constants/misc), matching the object lifecycle on the bucket. Exposed so
+// the orchestrator (next layer) can sign URLs against the same bucket with a
 // consistent expiry.
-export const AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS = 60 * 60 * 24 * 3
+export const AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS =
+  60 * 60 * 24 * AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS
 
 const storage = new S3Client(
   isR2Configured
