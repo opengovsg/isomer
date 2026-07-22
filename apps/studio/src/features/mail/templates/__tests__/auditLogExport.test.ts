@@ -18,7 +18,7 @@ describe("auditLogExportReady template", () => {
 
     // Assert: the label renders its mapped text against its own signed URL
     expect(template.body).toContain(
-      `<a href="https://s3.example/access?sig=abc">Download access review [.csv]</a>`,
+      `<a href="https://s3.example/access?sig=abc">Download access review logs for June 2026 [.csv]</a>`,
     )
   })
 
@@ -31,7 +31,7 @@ describe("auditLogExportReady template", () => {
 
     // Assert: the label renders its mapped text against its own signed URL
     expect(template.body).toContain(
-      `<a href="https://s3.example/audit?sig=def">Download audit logs [.csv]</a>`,
+      `<a href="https://s3.example/audit?sig=def">Download audit review logs for June 2026 [.csv]</a>`,
     )
   })
 
@@ -48,7 +48,7 @@ describe("auditLogExportReady template", () => {
     ).length
     expect(hrefCount).toBe(1)
     expect(template.body).toContain(
-      `<a href="https://s3.example/only?sig=1">Download access review [.csv]</a>`,
+      `<a href="https://s3.example/only?sig=1">Download access review logs for June 2026 [.csv]</a>`,
     )
   })
 
@@ -61,7 +61,7 @@ describe("auditLogExportReady template", () => {
 
     // Assert
     expect(template.subject).toBe(
-      "[Isomer] Access logs for Test Site (June 2026) is ready",
+      "[Isomer] Access logs for June 2026 for your site (Test Site) is ready",
     )
   })
 
@@ -74,7 +74,7 @@ describe("auditLogExportReady template", () => {
 
     // Assert
     expect(template.subject).toBe(
-      "[Isomer] Audit logs for Test Site (June 2026) is ready",
+      "[Isomer] Audit logs for June 2026 for your site (Test Site) is ready",
     )
   })
 
@@ -114,6 +114,25 @@ describe("auditLogExportReady template", () => {
     // Assert: special chars escaped, no raw injection
     expect(template.subject).toContain("Evil &lt;b&gt;&amp;&lt;/b&gt; Co")
     expect(template.subject).not.toContain("<b>&</b>")
+  })
+
+  it("escapes a multi-parameter signed URL exactly once", () => {
+    // Act: SigV4 URLs carry several &-separated query params. Escaping twice
+    // renders &amp;amp;, which an email client decodes back to a query string
+    // S3 never signed — the download link 404s.
+    const template = templates.auditLogExportReady({
+      ...baseData,
+      link: {
+        label: "access",
+        url: "https://s3.example/k?X-Amz-Signature=abc&X-Amz-Expires=259200",
+      },
+    })
+
+    // Assert: single-escaped ampersand in the href, never a double escape
+    expect(template.body).toContain(
+      `<a href="https://s3.example/k?X-Amz-Signature=abc&amp;X-Amz-Expires=259200">`,
+    )
+    expect(template.body).not.toContain("&amp;amp;")
   })
 })
 

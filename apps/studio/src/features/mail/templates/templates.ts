@@ -281,25 +281,23 @@ const accountDeactivationTemplate = (
   }
 }
 
+// `data` is already HTML-escaped by the `escapeTemplateArguments` wrapper on
+// the `templates` export (including nested fields like `link.url`), so no
+// field may be escaped again here: double-escaping turns `&` in the signed
+// URL's query string into `&amp;amp;`, which breaks the S3 signature.
 const auditLogExportReadyTemplate = (
   data: AuditLogExportReadyEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, siteName, month, link } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
-  const escapedMonth = escapeHtml(month)
-  const escapedSiteName = escapeHtml(siteName)
 
   const logName = link.label === "access" ? "Access" : "Audit"
 
-  // The href is escaped since it is interpolated into HTML. Escaping the URL
-  // prevents a stray quote from breaking out of the href attribute and
-  // injecting markup.
-  const downloadLink = `<a href="${escapeHtml(link.url)}">${getDownloadLinkLabel(link.label, escapedMonth)}</a>`
+  const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month)}</a>`
 
   return {
-    subject: `[Isomer] ${logName} logs for ${escapedMonth} for your site (${escapedSiteName}) is ready`,
-    body: `<p>Hi ${escapedRecipientEmail},</p>
-<p>You requested for audit logs for your site(s) for (${escapedMonth}). This link will expire after 3 days.</p>
+    subject: `[Isomer] ${logName} logs for ${month} for your site (${siteName}) is ready`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>You requested for audit logs for your site(s) for (${month}). This link will expire after 3 days.</p>
 <br/>
 <p>${downloadLink}</p>
 <p>Best,</p>
@@ -307,18 +305,17 @@ const auditLogExportReadyTemplate = (
   }
 }
 
+// `data` is pre-escaped by `escapeTemplateArguments` — see the note on
+// `auditLogExportReadyTemplate`.
 const auditLogExportFailedTemplate = (
   data: AuditLogExportFailedEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, siteName, month } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
-  const escapedSiteName = escapeHtml(siteName)
-  const escapedMonth = escapeHtml(month)
 
   return {
-    subject: `[Isomer Studio] Your audit log export for ${escapedSiteName} (${escapedMonth}) could not be generated`,
-    body: `<p>Hi ${escapedRecipientEmail},</p>
-<p>We're sorry — we couldn't generate your audit log export for ${escapedSiteName} (${escapedMonth}).</p>
+    subject: `[Isomer Studio] Your audit log export for ${siteName} (${month}) could not be generated`,
+    body: `<p>Hi ${recipientEmail},</p>
+<p>We're sorry — we couldn't generate your audit log export for ${siteName} (${month}).</p>
 <p>Please try again later. If the problem persists, contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
