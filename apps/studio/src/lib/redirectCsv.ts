@@ -23,8 +23,10 @@ export const BULK_REDIRECT_CSV_ERROR_HEADER = "Error"
 export const BULK_REDIRECT_CSV_NO_ERROR = "No error"
 
 export interface ParsedRedirectRow {
-  // 1-based line number in the uploaded file (the header is line 1), so a
-  // per-row error can point the editor at the offending line.
+  // 1-based physical line number in the uploaded file, so a per-row error can
+  // point the editor at the offending line. Blank lines are counted, so this
+  // stays the true file line even when leading blanks push the header past
+  // line 1.
   rowNumber: number
   source: string
   destination: string
