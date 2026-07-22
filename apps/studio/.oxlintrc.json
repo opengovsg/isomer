@@ -58,6 +58,10 @@
                   "FormHelperText"
                 ],
                 "message": "Please use FormLabel, FormErrorMessage, and FormHelperText from @opengovsg/design-system-react instead."
+              },
+              {
+                "name": "@intercom/messenger-js-sdk",
+                "message": "Use `~/lib/intercom` instead so calls fall back to a console.log when NEXT_PUBLIC_INTERCOM_APP_ID is absent (e.g. on staging)."
               }
             ]
           }
