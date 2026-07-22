@@ -135,13 +135,14 @@ model User {
   deletedAt   DateTime?
   lastLoginAt DateTime?
 
-  ResourcePermission ResourcePermission[]
-  IsomerAdmin        IsomerAdmin[]
-  versions           Version[]
-  AuditLog           AuditLog[]
-  CodeBuildJobs      CodeBuildJobs[]
-  ScheduledResources Resource[]
-  pushDocumentJobs   PushDocumentJob[]
+  ResourcePermission    ResourcePermission[]
+  IsomerAdmin           IsomerAdmin[]
+  versions              Version[]
+  AuditLog              AuditLog[]
+  CodeBuildJobs         CodeBuildJobs[]
+  ScheduledResources    Resource[]
+  pushDocumentJobs      PushDocumentJob[]
+  AuditLogExportRequest AuditLogExportRequest[]
 
   // This unique index is subsequently replaced with a custom index that
   // treats nulls as not distinct.
@@ -168,18 +169,19 @@ model Site {
   footer      Footer?
   codeBuildId String?
 
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @default(now()) @updatedAt
-  ResourcePermission ResourcePermission[]
-  AuditLog           AuditLog[]
-  CodeBuildJobs      CodeBuildJobs[]
-  Redirect           Redirect[]
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @default(now()) @updatedAt
+  ResourcePermission    ResourcePermission[]
+  AuditLog              AuditLog[]
+  CodeBuildJobs         CodeBuildJobs[]
+  Redirect              Redirect[]
+  AuditLogExportRequest AuditLogExportRequest[]
 }
 
 model Redirect {
-  id          BigInt   @id @default(autoincrement())
+  id          BigInt    @id @default(autoincrement())
   siteId      Int
-  site        Site     @relation(fields: [siteId], references: [id])
+  site        Site      @relation(fields: [siteId], references: [id])
   source      String
   destination String
   createdAt   DateTime  @default(now())
@@ -365,4 +367,49 @@ model PushDocumentJob {
 
   @@index([scheduledAt])
   @@index([resourceId])
+}
+
+enum AuditLogExportReportType {
+  Access // who had access (point-in-time)
+  Activity // what happened (events)
+  // NOTE: a "both" user request is fanned out by the service into two rows
+  // (one Access, one Activity), so there is no `Both` variant here.
+}
+
+enum AuditLogExportStatus {
+  Pending
+  Processing
+  Done
+  Failed
+}
+
+model AuditLogExportRequest {
+  id                BigInt                   @id @default(autoincrement())
+  site              Site                     @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  siteId            Int
+  user              User                     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  userId            String
+  // Export range: bounds are SGT calendar dates, half-open [) (Postgres
+  // canonicalizes daterange to this form). A full month is e.g.
+  // [2026-04-01,2026-05-01); current-month requests are clamped to today+1
+  // at insert time.
+  /// @kyselyType(string)
+  auditLogDateRange Unsupported("daterange")
+  reportType        AuditLogExportReportType
+  status            AuditLogExportStatus     @default(Pending)
+  attempts          Int                      @default(0)
+  errorMessage      String?
+  objectKey         String? // S3 key of the generated CSV (one job produces exactly one CSV)
+  completedAt       DateTime? // set when the request reaches Done; a completed row whose completedAt >= the end of its auditLogDateRange holds a Complete Artifact eligible for reuse
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @default(now()) @updatedAt
+
+  @@index([status])
+  // NOTE: the migration promotes this to a PARTIAL UNIQUE index
+  // (`WHERE status IN ('Pending', 'Processing')`) to prevent duplicate
+  // in-flight requests for the same range. Prisma's schema DSL cannot express
+  // a partial unique index, so it is defined as raw SQL in the migration and
+  // this stays a plain `@@index`. As a result `prisma migrate dev` against an
+  // existing DB will report drift here; that divergence is expected.
+  @@index([siteId, userId, auditLogDateRange, reportType])
 }
