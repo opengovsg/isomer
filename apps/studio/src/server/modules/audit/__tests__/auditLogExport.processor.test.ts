@@ -22,14 +22,14 @@ interface FailedEmailArg {
 const {
   mockUploadAuditLogExport,
   mockGenerateSignedGetUrl,
-  mockGetAuditLogExportBucketName,
+  mockGetStudioAssetsBucketName,
   mockSendAuditLogExportReadyEmail,
   mockSendAuditLogExportFailedEmail,
 } = vi.hoisted(() => ({
   mockUploadAuditLogExport:
     vi.fn<(args: { key: string; body: unknown }) => Promise<void>>(),
   mockGenerateSignedGetUrl: vi.fn<() => Promise<string>>(),
-  mockGetAuditLogExportBucketName: vi.fn<() => string>(),
+  mockGetStudioAssetsBucketName: vi.fn<() => string>(),
   mockSendAuditLogExportReadyEmail:
     vi.fn<(data: ReadyEmailArg) => Promise<void>>(),
   mockSendAuditLogExportFailedEmail:
@@ -59,7 +59,7 @@ vi.mock("~/env.mjs", () => ({
 vi.mock("~/lib/s3", () => ({
   uploadAuditLogExport: mockUploadAuditLogExport,
   generateSignedGetUrl: mockGenerateSignedGetUrl,
-  getAuditLogExportBucketName: mockGetAuditLogExportBucketName,
+  getStudioAssetsBucketName: mockGetStudioAssetsBucketName,
   AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS: 60 * 60 * 24 * 3,
 }))
 
@@ -131,7 +131,7 @@ describe("auditLogExport processor", () => {
       "AuditLog",
     )
     vi.clearAllMocks()
-    mockGetAuditLogExportBucketName.mockReturnValue("test-audit-bucket")
+    mockGetStudioAssetsBucketName.mockReturnValue("test-audit-bucket")
     mockGenerateSignedGetUrl.mockResolvedValue("https://signed.example/url")
     mockUploadAuditLogExport.mockResolvedValue(undefined)
     mockSendAuditLogExportReadyEmail.mockResolvedValue(undefined)
