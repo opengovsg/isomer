@@ -40,7 +40,10 @@ type IsoMonthSegment =
   | "10"
   | "11"
   | "12"
-export type IsoMonth = `${number}-${IsoMonthSegment}`
+type YearPrefix = "2"
+type YearSuffix = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+type IsoYear = `${YearPrefix}${YearSuffix}${YearSuffix}${YearSuffix}`
+export type IsoMonth = `${IsoYear}-${IsoMonthSegment}`
 
 // Matches a calendar month like "2026-03" — the runtime counterpart of
 // `IsoMonth`, used where values cross from untyped input into the type.
