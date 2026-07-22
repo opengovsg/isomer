@@ -259,11 +259,10 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should throw 403 if assigning a whitelisted non-gov.sg email with admin role", async () => {
+    it("should throw 403 if assigning a non-whitelisted non-gov.sg email with admin role", async () => {
       // Arrange
       const nonGovSgEmail = "test@coolvendor.com"
       await setupAdminPermissions({ userId: session.userId, siteId })
-      await setUpWhitelist({ email: nonGovSgEmail })
 
       // Act
       const result = caller.create({
@@ -275,14 +274,47 @@ describe("user.router", () => {
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "FORBIDDEN",
-          message:
-            "Non-gov.sg emails cannot be added as admin. Select another role.",
+          message: "There are non-gov.sg domains that need to be whitelisted.",
         }),
       )
 
       // Assert DB - audit logs
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(0)
+    })
+
+    it("should create a temporarily (vendor) whitelisted non-gov.sg email with admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test-vendor-whitelisted@coolvendor.com"
+      const oneYearFromNow = new Date()
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setUpWhitelist({ email: nonGovSgEmail, expiry: oneYearFromNow })
+
+      // Act
+      const result = await caller.create({
+        siteId,
+        users: [{ email: nonGovSgEmail, role: RoleType.Admin }],
+      })
+
+      // Assert
+      expect(result).toEqual(expect.anything())
+    })
+
+    it("should create a whitelisted non-gov.sg email with admin role", async () => {
+      // Arrange
+      const nonGovSgEmail = "test@coolvendor.com"
+      await setupAdminPermissions({ userId: session.userId, siteId })
+      await setUpWhitelist({ email: nonGovSgEmail })
+
+      // Act
+      const result = await caller.create({
+        siteId,
+        users: [{ email: nonGovSgEmail, role: RoleType.Admin }],
+      })
+
+      // Assert
+      expect(result).toEqual(expect.anything())
     })
 
     it("should create a whitelisted non-gov.sg email with non-admin role", async () => {
@@ -1542,7 +1574,40 @@ describe("user.router", () => {
       expect(auditLogs).toHaveLength(0)
     })
 
-    it("should throw 403 if assigning a non-gov.sg email with admin role", async () => {
+    // Unlike createUserWithPermission, the update flow has never checked
+    // whitelist status for any role, including Admin -- it only cares that
+    // the caller has permission to manage users on the site. This means a
+    // user whose whitelist entry later expires keeps whatever role they
+    // already have, and if they're re-whitelisted (even temporarily), they
+    // don't need to go through this check again to keep/regain that role.
+    it("should update a non-whitelisted non-gov.sg email to admin role successfully", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: "test-not-whitelisted@coolvendor.com",
+        isDeleted: false,
+      })
+      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: RoleType.Admin,
+      })
+
+      // Assert
+      expect(result).toEqual(
+        expect.objectContaining({
+          siteId,
+          userId: userToUpdate.id,
+          role: RoleType.Admin,
+        }),
+      )
+    })
+
+    it("should update a whitelisted non-gov.sg email to admin role successfully", async () => {
       // Arrange
       await setupAdminPermissions({ userId: session.userId, siteId })
 
@@ -1551,26 +1616,56 @@ describe("user.router", () => {
         isDeleted: false,
       })
       await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      await setUpWhitelist({ email: userToUpdate.email })
 
       // Act
-      const result = caller.update({
+      const result = await caller.update({
         siteId,
         userId: userToUpdate.id,
         role: RoleType.Admin,
       })
 
       // Assert
-      await expect(result).rejects.toThrow(
-        new TRPCError({
-          code: "FORBIDDEN",
-          message:
-            "Non-gov.sg emails cannot be added as admin. Select another role.",
+      expect(result).toEqual(
+        expect.objectContaining({
+          siteId,
+          userId: userToUpdate.id,
+          role: RoleType.Admin,
         }),
       )
+    })
 
-      // Assert DB - audit logs
-      const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
-      expect(auditLogs).toHaveLength(0)
+    it("should update a temporarily (vendor) whitelisted non-gov.sg email to admin role successfully", async () => {
+      // Arrange
+      await setupAdminPermissions({ userId: session.userId, siteId })
+
+      const userToUpdate = await setupUser({
+        email: "test-vendor-whitelisted@coolvendor.com",
+        isDeleted: false,
+      })
+      await setupEditorPermissions({ userId: userToUpdate.id, siteId })
+      const oneYearFromNow = new Date()
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+      await setUpWhitelist({
+        email: userToUpdate.email,
+        expiry: oneYearFromNow,
+      })
+
+      // Act
+      const result = await caller.update({
+        siteId,
+        userId: userToUpdate.id,
+        role: RoleType.Admin,
+      })
+
+      // Assert
+      expect(result).toEqual(
+        expect.objectContaining({
+          siteId,
+          userId: userToUpdate.id,
+          role: RoleType.Admin,
+        }),
+      )
     })
 
     it("should update a non-gov.sg email with non-admin role successfully", async () => {
