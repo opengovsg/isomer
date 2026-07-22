@@ -185,12 +185,18 @@ const copiedText = async () => {
   return captured
 }
 
-/** Dispatch Ctrl/Cmd+A through ProseMirror keymaps (Linux CI uses Ctrl). */
+// prosemirror-keymap normalizes "Mod" to Meta on Mac and Ctrl elsewhere,
+// based on the same navigator.platform check, so the dispatched event must
+// match: https://github.com/ProseMirror/prosemirror-keymap/blob/1.2.3/src/keymap.ts#L26
+const isMac = /Mac|iP(hone|[oa]d)/.test(navigator.platform)
+
+/** Dispatch Ctrl/Cmd+A through ProseMirror keymaps. */
 const dispatchModA = (editor: Editor) => {
   const event = new KeyboardEvent("keydown", {
     key: "a",
     code: "KeyA",
-    ctrlKey: true,
+    ctrlKey: !isMac,
+    metaKey: isMac,
     bubbles: true,
     cancelable: true,
   })
