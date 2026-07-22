@@ -4,10 +4,7 @@ import { TextSelection } from "@tiptap/pm/state"
 
 const TABLE_CELL_NODE_NAMES = new Set([TableCell.name, TableHeader.name])
 
-/**
- * Selects the text content of the table cell containing the current selection.
- * Returns false when the selection is not inside a table cell/header.
- */
+/** Select all text in the table cell (or header) that contains the caret. */
 export const selectTableCellContent = (editor: Editor): boolean => {
   const { state } = editor
   const { $from } = state.selection
@@ -18,8 +15,7 @@ export const selectTableCellContent = (editor: Editor): boolean => {
       continue
     }
 
-    // Cell content positions can sit on node boundaries; TextSelection.between
-    // resolves them to the nearest valid inline range inside the cell.
+    // start/end may land on node boundaries; between() snaps to a valid inline range.
     const selection = TextSelection.between(
       state.doc.resolve($from.start(depth)),
       state.doc.resolve($from.end(depth)),

@@ -120,7 +120,6 @@ export const IsomerTable = Table.extend({
   addKeyboardShortcuts() {
     return {
       ...this.parent?.(),
-      // Inside a cell, select only that cell's content instead of the whole doc.
       "Mod-a": () =>
         selectTableCellContent(this.editor) || this.editor.commands.selectAll(),
     }

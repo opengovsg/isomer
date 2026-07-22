@@ -162,15 +162,11 @@ const selectedText = (editor: Editor) =>
     editor.state.selection.to,
   )
 
-/** Real click via Playwright automation, so the editable region gains actual browser focus. */
+// Click so the editable gets real browser focus (needed for clipboard checks).
 const focusEditor = (editor: Editor) =>
   userEvent.click(page.elementLocator(editor.view.dom))
 
-/**
- * Triggers a real browser copy and captures what actually lands in the
- * clipboard, verifying the user-visible selection rather than only
- * ProseMirror's internal selection state.
- */
+// Copy via the browser and return clipboard text/plain.
 const copiedText = async () => {
   let captured: string | undefined
   const onCopy = (event: ClipboardEvent) => {
@@ -185,12 +181,10 @@ const copiedText = async () => {
   return captured
 }
 
-// prosemirror-keymap normalizes "Mod" to Meta on Mac and Ctrl elsewhere,
-// based on the same navigator.platform check, so the dispatched event must
-// match: https://github.com/ProseMirror/prosemirror-keymap/blob/1.2.3/src/keymap.ts#L26
+// prosemirror-keymap maps Mod to Meta on Mac and Ctrl elsewhere
+// (same navigator.platform check): https://github.com/ProseMirror/prosemirror-keymap/blob/1.2.3/src/keymap.ts#L26
 const isMac = /Mac|iP(hone|[oa]d)/.test(navigator.platform)
 
-/** Dispatch Ctrl/Cmd+A through ProseMirror keymaps. */
 const dispatchModA = (editor: Editor) => {
   const event = new KeyboardEvent("keydown", {
     key: "a",
@@ -218,7 +212,7 @@ describe("selectTableCellContent", () => {
     document.body.replaceChildren()
   })
 
-  it("selects only the current table cell content when caret is inside a cell", async () => {
+  it("selects the cell under the caret", async () => {
     // Arrange
     await focusEditor(editor)
     const cellOne = findTextRange(editor, "Cell One")
@@ -235,7 +229,7 @@ describe("selectTableCellContent", () => {
     expect(await copiedText()).toBe("Cell One")
   })
 
-  it("selects only the current table header content when caret is inside a header", async () => {
+  it("selects the header under the caret", async () => {
     // Arrange
     await focusEditor(editor)
     const headerA = findTextRange(editor, "Header A")
@@ -252,7 +246,7 @@ describe("selectTableCellContent", () => {
     expect(await copiedText()).toBe("Header A")
   })
 
-  it("selects all paragraphs inside a multi-paragraph cell", async () => {
+  it("selects every paragraph in a multi-paragraph cell", async () => {
     // Arrange
     editor.destroy()
     document.body.replaceChildren()
@@ -270,16 +264,13 @@ describe("selectTableCellContent", () => {
     expect(await copiedText()).toBe("First line\n\nSecond line")
   })
 
-  it("returns false when the caret is outside a table", () => {
+  it("returns false outside a table", () => {
     // Arrange
     const beforeTable = findTextRange(editor, "before table")
     editor.commands.setTextSelection(beforeTable.from)
 
-    // Act
-    const handled = selectTableCellContent(editor)
-
-    // Assert
-    expect(handled).toBe(false)
+    // Act / Assert
+    expect(selectTableCellContent(editor)).toBe(false)
   })
 })
 
@@ -295,7 +286,7 @@ describe("IsomerTable Mod-a shortcut", () => {
     document.body.replaceChildren()
   })
 
-  it("selects cell content via Mod-a when inside a table cell", async () => {
+  it("selects the current cell on Mod-a", async () => {
     // Arrange
     await focusEditor(editor)
     const cellTwo = findTextRange(editor, "Cell Two")
@@ -311,7 +302,7 @@ describe("IsomerTable Mod-a shortcut", () => {
     expect(await copiedText()).toBe("Cell Two")
   })
 
-  it("still selects the entire document via Mod-a outside a table", () => {
+  it("selects the whole document on Mod-a outside a table", () => {
     // Arrange
     const beforeTable = findTextRange(editor, "before table")
     editor.commands.setTextSelection(beforeTable.from)
