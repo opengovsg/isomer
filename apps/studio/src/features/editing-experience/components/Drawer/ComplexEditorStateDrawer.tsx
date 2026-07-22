@@ -4,7 +4,7 @@ import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { cloneDeep, isEmpty, isEqual } from "lodash-es"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { BiTrash } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -266,23 +266,36 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
   const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
 
+  const component = previewPageState.content[currActiveIdx]
+  const componentType = component?.type
+  const pageLayout = previewPageState.layout
+  // NOTE: Memoised so the schema identity is stable across renders.
+  // getComponentSchema returns a fresh object per call; passing a new schema
+  // to JsonForms on every render makes its internal resync effect fire on each
+  // parent re-render, replacing in-progress form state with the (stale) data
+  // prop. Async writes (e.g. uploaded image src, which arrives ~10ms later via
+  // JsonForms' debounced onChange) get silently erased before reaching us.
+  const { subSchema, validateFn } = useMemo(() => {
+    if (!componentType) return { subSchema: undefined, validateFn: undefined }
+    const schema = getComponentSchema({
+      component: componentType,
+      layout: pageLayout,
+    })
+    return {
+      subSchema: schema,
+      validateFn: ajv.compile<IsomerComponent>(schema),
+    }
+  }, [componentType, pageLayout])
+
   if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
     return <></>
   }
 
-  const component = previewPageState.content[currActiveIdx]
-
-  if (!component) {
+  if (!component || !subSchema || !validateFn) {
     return <></>
   }
 
-  const subSchema = getComponentSchema({
-    component: component.type,
-    layout: previewPageState.layout,
-  })
-  const { title } = subSchema
-  const validateFn = ajv.compile<IsomerComponent>(subSchema)
-  const componentName = title || "component"
+  const componentName = subSchema.title || "component"
 
   return (
     <>

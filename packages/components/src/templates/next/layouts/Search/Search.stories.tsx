@@ -116,6 +116,26 @@ export const EgazetteAlgoliaWithYearRange: Story = {
   },
 }
 
+// A year beyond the index's derived range must be rejected with an inline error
+// instead of applying a filter that matches nothing. 3000 is safely past any
+// gazette's publish year, so it always exceeds the index's max.
+export const EgazetteAlgoliaYearOutOfRange: Story = {
+  args: EGAZETTE_ARGS,
+  parameters: liveAlgoliaParameters,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // The year "To" field is the first "To" input (year precedes month).
+    const yearToInput = canvas.getAllByLabelText("To")[0]
+    if (!yearToInput) throw new Error("Year range input not found")
+    await waitFor(() => expect(yearToInput).toBeEnabled(), { timeout: 10000 })
+    await userEvent.type(yearToInput, "3000")
+    const goButton = canvas.getAllByRole("button", { name: "Go" })[0]
+    if (!goButton) throw new Error("Year range submit button not found")
+    await userEvent.click(goButton)
+    await expect(await canvas.findByText(/or earlier/i)).toBeInTheDocument()
+  },
+}
+
 // Seeds the URL with egazette deep-link params before <InstantSearch> mounts,
 // then restores the original URL on unmount so other stories are unaffected.
 const withDeepLinkParams = (search: string): Decorator => {

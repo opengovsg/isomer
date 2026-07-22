@@ -8,11 +8,10 @@ import { get } from "lodash-es"
 import { Suspense, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { pageSchema } from "~/features/editing-experience/schema"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { AddItemButton } from "../../components/AddItemButton"
 import { DeleteConfirmModal } from "../../components/DeleteConfirmModal"
@@ -26,7 +25,10 @@ import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useLiveLabelIssues } from "../../hooks/useLiveLabelIssues"
 import { createDefaultTagOption } from "./constants"
 
-function TagOptionUsageCount({
+const DELETE_OPTION_UNDO_TEXT =
+  "To undo this change, you will need to create and re-assign this option to all items."
+
+function DeleteOptionWarningBody({
   siteId,
   pageId,
   tagId,
@@ -42,9 +44,12 @@ function TagOptionUsageCount({
   })
 
   return (
-    <>
-      {count} {count === 1 ? "item" : "items"}
-    </>
+    <Text textStyle="body-1" color="base.content.strong">
+      {count > 0
+        ? `This option is being used in ${count === 1 ? "1 item" : `${count} items`}.`
+        : ""}
+      {DELETE_OPTION_UNDO_TEXT}
+    </Text>
   )
 }
 
@@ -71,7 +76,7 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
   const { hasErrorAt } = useBuilderErrors()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const items = get(core?.data, path) as
-    | { label?: string; id?: string }[]
+    | { label?: string; id: string }[]
     | undefined
   // Inline label editing is keyed by array index. editingDraftLabel feeds
   // useLiveLabelIssues so duplicate/blank checks reflect unsaved keystrokes.
@@ -128,13 +133,13 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
     openDeleteModal,
     closeDeleteModal,
     handleConfirmDelete,
-  } = useDeleteTarget<{ label: string; tagId?: string }>({
+  } = useDeleteTarget<{ label: string; tagId: string }>({
     path,
     removeItems,
     isRemoveItemDisabled,
     resolveTarget: (index) => ({
       label: items?.[index]?.label?.trim() ?? "",
-      tagId: items?.[index]?.id,
+      tagId: items?.[index]?.id ?? "", // always set by createDefaultTagOption()
     }),
   })
 
@@ -281,34 +286,21 @@ const JsonFormsTagCategoryOptionsArrayLayoutInner = (
           label={deleteTarget.label}
           noun="filter option"
           warningBody={
-            <Text textStyle="body-2">
-              This option is being used in{" "}
-              <ErrorBoundary fallbackRender={() => <>—</>}>
-                <Suspense
-                  fallback={
-                    <Skeleton
-                      as="span"
-                      display="inline-block"
-                      verticalAlign="middle"
-                      height="1em"
-                      width="2ch"
-                    />
-                  }
-                >
-                  {deleteTarget.tagId ? (
-                    <TagOptionUsageCount
-                      siteId={siteId}
-                      pageId={pageId}
-                      tagId={deleteTarget.tagId}
-                    />
-                  ) : (
-                    <>0 items</>
-                  )}
-                </Suspense>
-              </ErrorBoundary>
-              {". "}To undo this change, you will need to create and re-assign
-              this option to all items.
-            </Text>
+            <ErrorBoundary
+              fallbackRender={() => (
+                <Text textStyle="body-1" color="base.content.strong">
+                  {DELETE_OPTION_UNDO_TEXT}
+                </Text>
+              )}
+            >
+              <Suspense fallback={<Skeleton height="2.5em" width="100%" />}>
+                <DeleteOptionWarningBody
+                  siteId={siteId}
+                  pageId={pageId}
+                  tagId={deleteTarget.tagId}
+                />
+              </Suspense>
+            </ErrorBoundary>
           }
           onClose={closeDeleteModal}
           onConfirm={handleConfirmDelete}
@@ -328,12 +320,8 @@ export const jsonFormsTagCategoryOptionsControlTester: RankedTester = rankWith(
 )
 
 const JsonFormsTagCategoryOptionsControl = (props: ArrayLayoutProps) => {
-  // Tag category options are admin-only until the feature ships broadly.
-  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
-
-  if (!isUserIsomerAdmin) {
+  const canManageFilters = useCanManageCollectionFilters()
+  if (!canManageFilters) {
     return null
   }
 

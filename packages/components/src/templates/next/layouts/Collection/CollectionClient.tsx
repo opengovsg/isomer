@@ -36,8 +36,8 @@ const createCollectionLayoutStyles = tv({
   variants: {
     hasNoFilters: {
       true: {
-        filterContainer: "hidden lg:block",
-        content: "pt-0",
+        filterContainer: "hidden",
+        content: "pt-0 lg:col-span-12 lg:ml-0",
       },
     },
   },
@@ -102,7 +102,6 @@ export const CollectionClient = ({
             setAppliedFilters={setAppliedFilters}
             handleClearFilter={handleClearFilter}
           />
-          <BackToTopLink className="hidden lg:inline-flex" />
         </div>
         <div
           className={compoundStyles.content({
@@ -123,8 +122,9 @@ export const CollectionClient = ({
               siteAssetsBaseUrl={siteAssetsBaseUrl}
             />
           </div>
-          {paginatedItems.length > 0 && (
-            <div className="flex w-full justify-center lg:justify-end">
+          <div className="flex w-full flex-col-reverse items-center justify-between gap-4 lg:flex-row">
+            <BackToTopLink className="hidden lg:inline-flex" />
+            {paginatedItems.length > 0 && (
               <PaginationControls
                 totalItems={filteredCount}
                 onPageChange={onPageChange}
@@ -132,8 +132,8 @@ export const CollectionClient = ({
                 currPage={currPage}
                 setCurrPage={setCurrPage}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </>

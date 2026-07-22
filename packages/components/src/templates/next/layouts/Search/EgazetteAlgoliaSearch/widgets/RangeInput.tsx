@@ -11,7 +11,7 @@ interface RangeInputProps {
 }
 
 const inputStyles = tv({
-  base: "h-10 w-full rounded border bg-white px-2",
+  base: "h-10 w-full rounded border bg-white px-2 disabled:cursor-not-allowed",
   variants: {
     hasError: {
       true: "border-utility-feedback-alert",
@@ -63,6 +63,14 @@ export const RangeInput = ({
   })
   const [minRaw, maxRaw] = start
 
+  // Validate against the range Algolia derived from the attribute's facet stats
+  // when no explicit `bound` was passed. Without this a visitor can submit a
+  // year/month outside the data's range — a filter that matches nothing.
+  const effectiveBound = {
+    min: bound?.min ?? range.min,
+    max: bound?.max ?? range.max,
+  }
+
   const [min, setMin] = useState(toInputValue(minRaw))
   const [max, setMax] = useState(toInputValue(maxRaw))
   const [error, setError] = useState<string>()
@@ -91,7 +99,7 @@ export const RangeInput = ({
       setError("Please enter a valid number")
       return
     }
-    const validationError = validate(minNum, maxNum, bound)
+    const validationError = validate(minNum, maxNum, effectiveBound)
     if (validationError) {
       setError(validationError)
       return
@@ -142,7 +150,7 @@ export const RangeInput = ({
         <button
           type="submit"
           disabled={!canRefine}
-          className="prose-headline-base-medium h-10 rounded border border-base-content-strong bg-white px-3 text-base-content disabled:opacity-50"
+          className="prose-headline-base-medium h-10 rounded border border-base-content-strong bg-white px-3 text-base-content disabled:cursor-not-allowed disabled:opacity-50"
         >
           Go
         </button>

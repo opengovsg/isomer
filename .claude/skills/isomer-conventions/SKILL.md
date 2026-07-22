@@ -58,6 +58,10 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 ### Testing
 - [Structure tests as Arrange / Act / Assert](conventions/tests-arrange-act-assert.md) — best practice: mark AAA phases (collapse adjacent markers when trivial), one Act per test
 
+### Feature flags
+
+- [Gate risky changes behind a GrowthBook flag; canary via enabledSites](conventions/growthbook-flag-risky-changes.md) — best practice: risky changes ship behind a GrowthBook flag (key constant + safe fallback); canary to chosen agencies via `enabledSites`, or to individuals via GrowthBook's native `email` targeting
+
 ### Dependencies
 
 - [Reference catalog packages via "catalog:" not direct version strings](conventions/pnpm-catalog-references.md) — smell: direct version strings in package.json for packages defined in pnpm-workspace.yaml catalog

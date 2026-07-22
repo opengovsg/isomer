@@ -1,5 +1,6 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
+import { resolveTagCategoryDisplay } from "~/types/constants"
 
 import type { Filter, FilterItem } from "../../../types/Filter"
 
@@ -44,12 +45,17 @@ export const getTagFilters = (
         }),
       )
 
+      const matchedCategory = tagCategories?.find(
+        (tagCategory) => tagCategory.label === category,
+      )
+
       const filters: Filter[] = [
         ...acc,
         {
           items,
           id: category,
           label: category,
+          display: resolveTagCategoryDisplay(matchedCategory?.display),
         },
       ]
 
