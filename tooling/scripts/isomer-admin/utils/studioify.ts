@@ -55,7 +55,9 @@ const studioifyContent = (
       .replaceAll(`'${oldPath}'`, `'${newPath}'`);
   }
 
-  for (const page of Object.keys(resourcesMap)) {
+  for (const page of Object.keys(resourcesMap).sort(
+    (a, b) => b.length - a.length,
+  )) {
     const resourceId = resourcesMap[page]?.id;
     if (!resourceId) {
       continue;
