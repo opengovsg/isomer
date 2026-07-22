@@ -25,7 +25,7 @@
     "@isomer/db": "workspace:*",
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
-    "testcontainers": "catalog:",
+    "@opengovsg/starter-kitty-testcontainers": "catalog:",
     "vitest": "catalog:vitest"
   }
 }

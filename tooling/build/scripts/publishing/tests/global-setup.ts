@@ -1,8 +1,12 @@
+import {
+  getMappedPort,
+  postgres,
+} from "@opengovsg/starter-kitty-testcontainers"
+import { createGlobalSetup } from "@opengovsg/starter-kitty-testcontainers/vitest"
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Client } from "pg"
-import { GenericContainer, Wait } from "testcontainers"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -19,10 +23,6 @@ const prismaMigrationDir = join(
   "migrations",
 )
 
-const DB_USERNAME = "root"
-const DB_PASSWORD = "root"
-const DB_NAME = "test"
-
 // Running migrations manually; dd-trace intercepts `exec` usage and prevents runs
 const applyMigrations = async (client: Client) => {
   const directory = readdirSync(prismaMigrationDir).sort()
@@ -35,24 +35,32 @@ const applyMigrations = async (client: Client) => {
   }
 }
 
-export default async () => {
-  const container = await new GenericContainer("postgres:15-alpine")
-    .withExposedPorts(5432)
-    .withEnvironment({
-      POSTGRES_USER: DB_USERNAME,
-      POSTGRES_PASSWORD: DB_PASSWORD,
-      POSTGRES_DB: DB_NAME,
-    })
-    .withStartupTimeout(60_000)
-    .withWaitStrategy(Wait.forListeningPorts())
-    .start()
+const baseSetup = createGlobalSetup([
+  postgres({ image: "postgres:15-alpine" }),
+])
+
+export default async (
+  project: Parameters<typeof baseSetup>[0],
+): ReturnType<typeof baseSetup> => {
+  const teardown = await baseSetup(project)
+
+  const pg = project.getProvidedContext().testcontainers.postgres
+  if (!pg) {
+    throw new Error("Cannot find postgres container")
+  }
+
+  const env = pg.configuration.environment ?? {}
+  const dbUsername = env.POSTGRES_USER ?? "root"
+  const dbPassword = env.POSTGRES_PASSWORD ?? "root"
+  const dbName = env.POSTGRES_DB ?? "test"
+  const dbPort = getMappedPort(pg, 5432)
 
   const client = new Client({
-    host: container.getHost(),
-    port: container.getMappedPort(5432),
-    user: DB_USERNAME,
-    password: DB_PASSWORD,
-    database: DB_NAME,
+    host: pg.host,
+    port: dbPort,
+    user: dbUsername,
+    password: dbPassword,
+    database: dbName,
   })
   await client.connect()
   await applyMigrations(client)
@@ -60,13 +68,11 @@ export default async () => {
 
   // Test workers fork off this process after global setup, so plain env
   // assignments are visible to the test files
-  process.env.TEST_DB_HOST = container.getHost()
-  process.env.TEST_DB_PORT = String(container.getMappedPort(5432))
-  process.env.TEST_DB_USERNAME = DB_USERNAME
-  process.env.TEST_DB_PASSWORD = DB_PASSWORD
-  process.env.TEST_DB_NAME = DB_NAME
+  process.env.TEST_DB_HOST = pg.host
+  process.env.TEST_DB_PORT = String(dbPort)
+  process.env.TEST_DB_USERNAME = dbUsername
+  process.env.TEST_DB_PASSWORD = dbPassword
+  process.env.TEST_DB_NAME = dbName
 
-  return async () => {
-    await container.stop({ remove: true })
-  }
+  return teardown
 }
