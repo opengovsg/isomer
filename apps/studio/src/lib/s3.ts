@@ -331,11 +331,13 @@ export const putObjectDirect = async (
   await storage.send(new PutObjectCommand(props))
 }
 
-// Resolves the private bucket that holds audit-log CSV exports. Throws a clear
-// error if the env var is unset, so misconfiguration fails loudly at call time
-// rather than silently uploading to `undefined`. Exposed so the orchestrator
-// (next layer) can build keys / sign URLs against the same bucket.
-export const getAuditLogExportBucketName = (): string => {
+// Resolves the private studio assets bucket. Audit-log CSV exports live in it
+// under the `audit-log-exports/` key prefix — there is no dedicated audit
+// bucket. Throws a clear error if the env var is unset, so misconfiguration
+// fails loudly at call time rather than silently uploading to `undefined`.
+// Exposed so the orchestrator (next layer) can build keys / sign URLs against
+// the same bucket.
+export const getStudioAssetsBucketName = (): string => {
   const bucket = env.S3_STUDIO_ASSETS_BUCKET_NAME
   if (!bucket) {
     throw new Error("S3_STUDIO_ASSETS_BUCKET_NAME is not configured")
@@ -343,9 +345,9 @@ export const getAuditLogExportBucketName = (): string => {
   return bucket
 }
 
-// Uploads a generated audit-log CSV export to the private audit-log bucket.
-// The download disposition uses the key's basename as the filename so the
-// browser saves a sensibly-named .csv rather than the full object key.
+// Uploads a generated audit-log CSV export to the private studio assets
+// bucket. The download disposition uses the key's basename as the filename so
+// the browser saves a sensibly-named .csv rather than the full object key.
 export const uploadAuditLogExport = async ({
   key,
   body,
@@ -353,7 +355,7 @@ export const uploadAuditLogExport = async ({
   key: string
   body: PutObjectCommandInput["Body"]
 }): Promise<void> => {
-  const Bucket = getAuditLogExportBucketName()
+  const Bucket = getStudioAssetsBucketName()
   const filename = key.split("/").pop() ?? key
   await putObjectDirect({
     Bucket,
