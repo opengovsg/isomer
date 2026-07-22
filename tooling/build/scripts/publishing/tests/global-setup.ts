@@ -1,3 +1,5 @@
+import type {} from "@opengovsg/starter-kitty-testcontainers/vitest"
+import type { TestProject } from "vitest/node"
 import {
   getMappedPort,
   postgres,
@@ -35,14 +37,18 @@ const applyMigrations = async (client: Client) => {
   }
 }
 
-const baseSetup = createGlobalSetup([
-  postgres({ image: "postgres:15-alpine" }),
+const setupContainers = createGlobalSetup([
+  postgres({
+    image: "postgres:15-alpine",
+    wait: {
+      type: "LOG",
+      message: "database system is ready to accept connections",
+    },
+  }),
 ])
 
-export default async (
-  project: Parameters<typeof baseSetup>[0],
-): ReturnType<typeof baseSetup> => {
-  const teardown = await baseSetup(project)
+export default async (project: TestProject) => {
+  const teardown = await setupContainers(project)
 
   const pg = project.getProvidedContext().testcontainers.postgres
   if (!pg) {

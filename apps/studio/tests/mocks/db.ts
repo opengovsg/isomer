@@ -1,3 +1,4 @@
+import type {} from "@opengovsg/starter-kitty-testcontainers/vitest"
 import type { DB } from "~/server/modules/database"
 import { getPostgresConnectionString } from "@opengovsg/starter-kitty-testcontainers"
 import { PrismaPg } from "@prisma/adapter-pg"
