@@ -16,7 +16,7 @@ import { createBaseLogger } from "~/lib/logger"
 import {
   AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS,
   generateSignedGetUrl,
-  getAuditLogExportBucketName,
+  getStudioAssetsBucketName,
   uploadAuditLogExport,
 } from "~/lib/s3"
 import {
@@ -346,7 +346,7 @@ export const processAuditLogExportRequest = async (
     // URL. `Both` requests were fanned out into two rows at request time, so
     // one row is always exactly one report.
     const report = REPORT_BY_TYPE[request.reportType]
-    const bucket = getAuditLogExportBucketName()
+    const bucket = getStudioAssetsBucketName()
 
     const rows =
       report.kind === "Access"
