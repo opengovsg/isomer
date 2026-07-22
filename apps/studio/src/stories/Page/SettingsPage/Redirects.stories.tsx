@@ -118,7 +118,7 @@ const openModalAndUpload = async (canvasElement: HTMLElement) => {
   const body = canvasElement.ownerDocument.body
   const screen = within(body)
   await userEvent.click(
-    await screen.findByRole("button", { name: "Bulk upload redirects" }),
+    await screen.findByRole("button", { name: /bulk upload with a \.csv/i }),
   )
   // The dropzone's file input has no stable accessible label, so grab it
   // directly once the modal has mounted.
@@ -139,7 +139,7 @@ const openModalAndUpload = async (canvasElement: HTMLElement) => {
   return screen
 }
 
-// Clicking the top-right button opens the modal at its initial upload state.
+// Clicking the inline bulk-upload CTA opens the modal at its initial upload state.
 export const BulkUploadModal: Story = {
   parameters: {
     growthbook: [
@@ -157,7 +157,7 @@ export const BulkUploadModal: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body)
     await userEvent.click(
-      await screen.findByRole("button", { name: "Bulk upload redirects" }),
+      await screen.findByRole("button", { name: /bulk upload with a \.csv/i }),
     )
     // Finding the template download confirms the modal opened. Presence (not a
     // one-shot toBeVisible) is used deliberately: asserting visibility during

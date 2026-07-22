@@ -303,11 +303,13 @@ export const AddRedirectCard = ({
         }
       />
 
-      <BulkUploadRedirectsModal
-        siteId={siteId}
-        isOpen={isBulkUploadOpen}
-        onClose={onBulkUploadClose}
-      />
+      {isAdvancedRedirectsEnabled && (
+        <BulkUploadRedirectsModal
+          siteId={siteId}
+          isOpen={isBulkUploadOpen}
+          onClose={onBulkUploadClose}
+        />
+      )}
     </Box>
   )
 }

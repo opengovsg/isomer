@@ -68,8 +68,12 @@ const triggerCsvDownload = (filename: string, contents: string) => {
 // download filename (slashes, colons, newlines), so reduce it to a safe slug.
 const toFilenameSlug = (value: string) =>
   value
+    // Collapse every run of characters outside [A-Za-z0-9._-] into a single "-",
+    // so only filename-safe characters remain.
     .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    // Trim leading/trailing "-" left by that collapse (e.g. from a leading slash).
     .replace(/^-+|-+$/g, "")
+    // Cap the length, and fall back to "site" if nothing usable is left.
     .slice(0, 64) || "site"
 
 export const BulkUploadRedirectsModal = ({
@@ -81,7 +85,12 @@ export const BulkUploadRedirectsModal = ({
   const { validate, isPending: isValidating } = useBulkValidateRedirects(siteId)
   const { mutateAsync: publish } = useBulkCreateRedirects()
   // Site display name (Site config `siteName`), used to name the errors file.
-  const { data: site } = trpc.site.getSiteName.useQuery({ siteId })
+  // Only needed once the modal is open, so don't fetch it on the settings page
+  // behind a closed modal.
+  const { data: site } = trpc.site.getSiteName.useQuery(
+    { siteId },
+    { enabled: isOpen },
+  )
 
   const [stage, setStage] = useState<Stage>("upload")
   const [file, setFile] = useState<File | null>(null)
@@ -145,6 +154,12 @@ export const BulkUploadRedirectsModal = ({
     }
     latestFileRef.current = selected
     setFile(selected)
+    // Clear the previous file's parsed csv, error, and any dropzone rejections
+    // synchronously, so nothing stale is shown or processed during the async
+    // read below (Process stays disabled until the new csv is parsed).
+    setCsv(null)
+    setFileError(null)
+    setRejections([])
     try {
       const text = await selected.text()
       // A newer file was picked while this one was being read — drop the stale
