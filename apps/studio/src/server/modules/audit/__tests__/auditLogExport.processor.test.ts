@@ -21,7 +21,6 @@ interface FailedEmailArg {
 
 const {
   mockUploadAuditLogExport,
-  mockGenerateSignedGetUrl,
   mockGetStudioAssetsBucketName,
   mockGetFileSize,
   mockSendAuditLogExportReadyEmail,
@@ -29,7 +28,6 @@ const {
 } = vi.hoisted(() => ({
   mockUploadAuditLogExport:
     vi.fn<(args: { key: string; body: unknown }) => Promise<void>>(),
-  mockGenerateSignedGetUrl: vi.fn<() => Promise<string>>(),
   mockGetStudioAssetsBucketName: vi.fn<() => string>(),
   // HeadObject-backed existence probe used by the Complete-Artifact reuse
   // fork: a byte size means the object exists, null means it is gone.
@@ -55,17 +53,23 @@ vi.mock("~/env.mjs", () => ({
     // oxlint-disable-next-line node/no-process-env
     DATABASE_URL: process.env.DATABASE_URL,
     S3_STUDIO_ASSETS_BUCKET_NAME: "test-audit-bucket",
+    // The emailed download link is `${NEXT_PUBLIC_APP_URL}/api/...` and the
+    // Download Token is sealed with SESSION_SECRET — both are read via the
+    // fulfilment path now, so the mocked env must supply them.
+    NEXT_PUBLIC_APP_URL: "https://studio.test.gov.sg",
+    SESSION_SECRET: "test-session-secret-at-least-32-chars-long",
   },
 }))
 
 // Mock only the external boundaries (S3 + mail). The DB is NOT mocked — the
 // request rows, sites, users and permissions are seeded into a real Postgres.
+// Fulfilment no longer presigns at export time (it emails a sealed Download
+// Token instead — ADR 0006), so generateSignedGetUrl is no longer part of
+// this path and is not mocked here.
 vi.mock("~/lib/s3", () => ({
   uploadAuditLogExport: mockUploadAuditLogExport,
-  generateSignedGetUrl: mockGenerateSignedGetUrl,
   getStudioAssetsBucketName: mockGetStudioAssetsBucketName,
   getFileSize: mockGetFileSize,
-  AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS: 60 * 60 * 24 * 3,
 }))
 
 vi.mock("~/features/mail/service", () => ({
@@ -148,7 +152,6 @@ describe("auditLogExport processor", () => {
     )
     vi.clearAllMocks()
     mockGetStudioAssetsBucketName.mockReturnValue("test-audit-bucket")
-    mockGenerateSignedGetUrl.mockResolvedValue("https://signed.example/url")
     mockUploadAuditLogExport.mockResolvedValue(undefined)
     // By default every candidate artifact still exists in S3.
     mockGetFileSize.mockResolvedValue(1024)
@@ -184,10 +187,15 @@ describe("auditLogExport processor", () => {
 
     expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
     const emailArg = mockSendAuditLogExportReadyEmail.mock.calls[0]![0]
-    expect(emailArg.link).toEqual({
-      label: "access",
-      url: "https://signed.example/url",
-    })
+    // The emailed link points at the Studio redemption endpoint carrying a
+    // sealed Download Token (ADR 0006), NOT a presigned S3 URL. This pins the
+    // actual bug: no signing-credential-lifetime-capped amazonaws.com URL is
+    // emailed anymore.
+    expect(emailArg.link.label).toBe("access")
+    expect(emailArg.link.url).toContain(
+      "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
+    )
+    expect(emailArg.link.url).not.toContain("amazonaws.com")
     expect(emailArg.recipientEmail).toBe("admin@vendor.com.sg")
     expect(emailArg.month).toBe("March 2024")
     expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
@@ -483,10 +491,13 @@ describe("auditLogExport processor", () => {
       expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(2)
       const secondEmail = mockSendAuditLogExportReadyEmail.mock.calls[1]![0]
       expect(secondEmail.recipientEmail).toBe("second@vendor.com.sg")
-      expect(secondEmail.link).toEqual({
-        label: "access",
-        url: "https://signed.example/url",
-      })
+      // Reuse still emails a Download Token link (against the reused row's own
+      // token), never a presigned S3 URL.
+      expect(secondEmail.link.label).toBe("access")
+      expect(secondEmail.link.url).toContain(
+        "https://studio.test.gov.sg/api/audit-log-exports/download?token=",
+      )
+      expect(secondEmail.link.url).not.toContain("amazonaws.com")
       expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
     })
 
