@@ -10,7 +10,7 @@ jobs:
     if: github.head_ref != 'main'
     runs-on: ubuntu-latest
     steps:
-      - uses: neondatabase/delete-branch-action@ed7d9bfda9b787d3269d18596eea76633ec34fe2
+      - uses: neondatabase/delete-branch-action@4468d825d5a88ef4012f1705a82f02ec3072f776
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch: preview/${{ github.head_ref }}
