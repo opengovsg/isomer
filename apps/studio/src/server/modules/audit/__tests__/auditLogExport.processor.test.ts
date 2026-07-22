@@ -353,6 +353,38 @@ describe("auditLogExport processor", () => {
     expect(updated.attempts).toBe(1)
   })
 
+  it("charges a stale re-claim that fails exactly one attempt, not two", async () => {
+    // Arrange: a stale Processing row that has already burned one attempt.
+    // The re-claim charges attempt 2 at claim time; when processing then
+    // fails, the catch must NOT add another increment — the row still has a
+    // retry left, so it is re-queued rather than Failed. (Regression: the
+    // catch used to add 1 to the post-claim value, jumping 1 → 3 and
+    // skipping the middle retry entirely.)
+    const { site } = await setupSite()
+    const admin = await setupUser({ email: "stalefail@vendor.com.sg" })
+    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    mockUploadAuditLogExport.mockRejectedValue(new Error("s3 down"))
+
+    const staleUpdatedAt = new Date(Date.now() - 30 * 60 * 1000) // 30 min ago
+    const request = await seedRequest({
+      siteId: site.id,
+      userId: admin.id,
+      reportType: "Access",
+      status: "Processing",
+      attempts: 1,
+      updatedAt: staleUpdatedAt,
+    })
+
+    // Act
+    await processPendingAuditLogExports()
+
+    // Assert: one attempt charged (1 → 2), re-queued with a retry remaining.
+    const updated = await getRequest(request.id)
+    expect(updated.attempts).toBe(2)
+    expect(updated.status).toBe("Pending")
+    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+  })
+
   it("does not touch a fresh Processing row within the lease window", async () => {
     // Arrange: a row currently Processing whose `updatedAt` is recent (a live
     // worker is presumably still on it). A concurrent sweep must leave it alone.
