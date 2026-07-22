@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0006-sealed-download-tokens-for-audit-exports.md
 ---
 
 # Audit Log Exports are delivered as long-lived signed S3 URLs in email
