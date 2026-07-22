@@ -11,6 +11,7 @@
 // rendered in SGT (+08:00) instead of UTC.
 import type { IsoMonth } from "~/schemas/audit"
 import { format, subMonths } from "date-fns"
+import { toZonedTime } from "date-fns-tz"
 import fs from "fs"
 import path, { dirname } from "path"
 import { fileURLToPath } from "url"
@@ -148,12 +149,19 @@ const MONTH_YEAR: IsoMonth | "" = ""
 
 const getAuditLogsForSite = async () => {
   // If MONTH_YEAR is provided, use that, else get the previous month from
-  // today. The cast is sound because "yyyy-MM" zero-pads the month (same
-  // pattern as `getCurrentSingaporeMonth` in `~/schemas/audit`).
+  // SGT-today. `toZonedTime` re-labels the instant with SGT wall-clock fields
+  // so the month arithmetic runs on the SGT calendar — on a UTC host during
+  // the first 8 hours of the 1st (SGT), the UTC clock is still in the previous
+  // month and plain `new Date()` would export two months back. The cast is
+  // sound because "yyyy-MM" zero-pads the month (same pattern as
+  // `getCurrentSingaporeMonth` in `~/schemas/audit`).
   // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const monthYear: IsoMonth = MONTH_YEAR
     ? MONTH_YEAR
-    : (format(subMonths(new Date(), 1), "yyyy-MM") as IsoMonth)
+    : (format(
+        subMonths(toZonedTime(new Date(), "Asia/Singapore"), 1),
+        "yyyy-MM",
+      ) as IsoMonth)
   const auditLogDateRange = getMonthDateRange(monthYear, new Date())
 
   for (const siteId of SITES_WITH_AUDIT_LOGS) {
