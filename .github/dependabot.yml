@@ -149,3 +149,11 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 7 # to mitigate supply chain attacks
+    groups:
+      # github/codeql-action ships init/analyze/autobuild/upload-sarif from
+      # a single repo and requires them to be pinned to the same release —
+      # group them so Dependabot bumps them together in one PR instead of
+      # leaving them mismatched.
+      codeql:
+        patterns:
+          - "github/codeql-action/*"
