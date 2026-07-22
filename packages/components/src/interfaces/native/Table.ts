@@ -106,6 +106,28 @@ export const TableSchema = Type.Object(
         title: "Table caption",
         description: "The caption of the table",
       }),
+      // One entry per column, by index -- not a per-cell field, since a
+      // column's width belongs to the table, not to any particular cell.
+      // Optional (older content predates this field) and nullable as a
+      // whole (not yet resized) -- but once populated, every entry is a
+      // number: the editor only ever writes a full array or `null`, never a
+      // partial one.
+      colwidths: Type.Optional(
+        Type.Union([
+          Type.Array(
+            Type.Number({
+              minimum: 0,
+              maximum: 100,
+            }),
+            {
+              title: "Table column widths",
+              description:
+                "The width of each column, as a percentage of the table's total width",
+            },
+          ),
+          Type.Null(),
+        ]),
+      ),
     }),
     content: Type.Array(
       Type.Union([TableHeaderRowSchema, TableContentRowSchema]),

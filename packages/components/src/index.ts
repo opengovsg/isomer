@@ -12,6 +12,8 @@ export {
   createChildrenPagesComparator,
   formatBytes,
   DGS_REQUEST_MAX_BYTES,
+  getEqualColumnWidths,
+  resolveColumnWidths,
 } from "./utils"
 export * from "./schemas"
 export * from "./types"

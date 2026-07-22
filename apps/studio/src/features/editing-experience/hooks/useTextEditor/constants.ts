@@ -26,6 +26,8 @@ import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule } from "@tiptap/react"
 
 import { getHtmlWithRelativeReferenceLinks } from "../../utils"
+import { IsomerTableView } from "./IsomerTableView"
+import { tableColumnWidthNormalizerPlugin } from "./tableColumnWidthNormalizerPlugin"
 
 export { TableRow } from "@tiptap/extension-table-row"
 
@@ -112,7 +114,25 @@ export const IsomerTable = Table.extend({
       caption: {
         default: "Table caption",
       },
+      // One percent width per column, by index -- not a per-cell attribute,
+      // since the table itself (not any particular cell) owns its columns'
+      // widths. Never round-tripped through HTML (Studio only ever loads/
+      // saves via editor.getJSON(), never HTML parsing), so no custom
+      // parseHTML/renderHTML is needed, same as `caption` above.
+      colwidths: {
+        default: null,
+      },
     }
+  },
+  addProseMirrorPlugins() {
+    return [tableColumnWidthNormalizerPlugin(), ...(this.parent?.() ?? [])]
+  },
+  // Replaces TipTap's stock TableView node view (see IsomerTableView.ts for
+  // why: its colgroup rendering can only ever express px, not this
+  // feature's percentage-of-table-width model).
+  addNodeView() {
+    return ({ node, view, getPos, HTMLAttributes }) =>
+      new IsomerTableView(node, view, getPos, HTMLAttributes)
   },
 })
 

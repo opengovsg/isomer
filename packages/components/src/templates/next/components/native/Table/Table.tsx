@@ -1,6 +1,7 @@
 import type { TableProps } from "~/interfaces"
 import { useId } from "react"
 import { tv } from "~/lib/tv"
+import { resolveColumnWidths } from "~/utils/getTableColumnWidths"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
 import { Divider } from "../Divider"
@@ -18,8 +19,27 @@ const tableCellStyles = tv({
   },
 })
 
-export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
+const getColumnCount = (content: TableProps["content"]): number =>
+  Math.max(
+    ...content.map((row) =>
+      row.content.reduce((sum, cell) => sum + (cell.attrs?.colspan ?? 1), 0),
+    ),
+  )
+
+export const Table = ({
+  attrs: { caption, colwidths },
+  content,
+  site,
+}: TableProps) => {
   const tableDescriptionId = useId()
+  // A column's width should only ever change because of an explicit resize
+  // drag, never because of how much text happens to be typed into a cell --
+  // which an equal split, rendered under `table-layout: fixed`, guarantees
+  // regardless of content. `resolveColumnWidths` falls back to that split
+  // whenever `colwidths` is missing (pre-feature content), `null` (never
+  // resized), or the wrong length (stale, from before a column add/remove
+  // was normalized) -- the same fallback the editor applies.
+  const columnWidths = resolveColumnWidths(colwidths, getColumnCount(content))
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
@@ -30,9 +50,14 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
-          className="w-full border-collapse border-spacing-0 border border-base-divider-medium"
+          className="w-full table-fixed border-collapse border-spacing-0 border border-base-divider-medium"
           aria-describedby={tableDescriptionId}
         >
+          <colgroup>
+            {columnWidths.map((width, index) => (
+              <col key={index} style={{ width: `${width}%` }} />
+            ))}
+          </colgroup>
           <tbody>
             {content.map((row, index) => {
               const TableCellTag =
