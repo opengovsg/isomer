@@ -3,7 +3,6 @@ import type { ResourcePermission, User } from "~prisma/generated/generatedTypes"
 import { createId } from "@paralleldrive/cuid2"
 import { TRPCError } from "@trpc/server"
 import isEmail from "validator/lib/isEmail"
-import { isGovEmail } from "~/utils/email"
 import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { DB, Transaction } from "../database"
@@ -21,22 +20,6 @@ export const isUserDeleted = async (email: string) => {
     .executeTakeFirst()
 
   return user?.deletedAt ? true : false
-}
-
-export const validateEmailRoleCombination = ({
-  email,
-  role,
-}: {
-  email: string
-  role: ResourcePermission["role"]
-}) => {
-  if (!isGovEmail(email) && role === RoleType.Admin) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message:
-        "Non-gov.sg emails cannot be added as admin. Select another role.",
-    })
-  }
 }
 
 interface CreateUserProps {
@@ -64,8 +47,6 @@ export const createUserWithPermission = async ({
       message: "Invalid email",
     })
   }
-
-  validateEmailRoleCombination({ email, role })
 
   const isWhitelisted = await isEmailWhitelisted(email)
   if (!isWhitelisted) {

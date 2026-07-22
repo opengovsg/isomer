@@ -99,7 +99,12 @@ export const ToastAfterEditingUser: Story = {
   },
 }
 
-export const NonGovEmailCannotBeAdmin: Story = {
+// The update flow doesn't distinguish Admin from any other role, or check
+// whitelist status for any role at all -- "Editor User" (editor@example.com,
+// a non-gov.sg email) can be made Admin exactly like the gov.sg "Government
+// Editor" case in AdminWarningBanner above. There's no separate whitelist
+// query and no disabled state to wait on any more.
+export const AdminWarningBannerForNonGovUser: Story = {
   play: async (context) => {
     const { canvasElement } = context
     const rootScreen = within(canvasElement.ownerDocument.body)
@@ -112,5 +117,16 @@ export const NonGovEmailCannotBeAdmin: Story = {
 
     const editUserButton = await rootScreen.findByText("Edit user")
     await userEvent.click(editUserButton, { pointerEventsCheck: 0 })
+
+    const AdminRoleButton = await rootScreen.findByRole("button", {
+      name: "Admin role",
+    })
+    await expect(AdminRoleButton).not.toBeDisabled()
+    await userEvent.click(AdminRoleButton)
+
+    const adminWarningText = await rootScreen.findByText(
+      "You are adding a new admin to the website. An admin can make any change to the site content, settings, and users.",
+    )
+    await expect(adminWarningText).toBeVisible()
   },
 }
