@@ -39,10 +39,9 @@ vi.mock("~/lib/s3", () => ({
   getStudioAssetsBucketName: () => "test-audit-bucket",
 }))
 
+import handler from "~/pages/api/audit-log-exports/download"
 import { sealAuditLogExportToken } from "~/server/modules/audit/auditLogExportToken"
 import { db } from "~/server/modules/database"
-
-import handler from "../download"
 
 const EXPIRED_PAGE_PATH = "/audit-log-exports/expired"
 
