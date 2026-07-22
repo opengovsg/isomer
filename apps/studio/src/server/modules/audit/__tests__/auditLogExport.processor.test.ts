@@ -605,5 +605,52 @@ describe("auditLogExport processor", () => {
       expect(updated.objectKey).not.toBe(goneKey)
       expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
     })
+
+    it("re-queues (Pending) without regenerating when the existence probe hits a transient S3 error", async () => {
+      // Arrange: a qualifying Done row exists, but the HeadObject probe fails
+      // with a transient (non-404) error — getFileSize rethrows it rather than
+      // reporting the object as gone, so the attempt must fail-and-requeue, NOT
+      // regenerate. A blip must never be mistaken for a vanished artifact.
+      const { site } = await setupSite()
+      const admin = await setupUser({ email: "throttled@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+
+      const reusableKey = `audit-log-exports/${site.id}/997/access-2024-03-01-to-2024-03-31.csv`
+      await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+        status: "Done",
+        objectKey: reusableKey,
+        completedAt: new Date(),
+      })
+      const transientError = Object.assign(new Error("SlowDown"), {
+        name: "SlowDown",
+        $metadata: { httpStatusCode: 503 },
+      })
+      mockGetFileSize.mockRejectedValue(transientError)
+
+      const request = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+      })
+
+      // Act
+      await processPendingAuditLogExports()
+
+      // Assert: the probe ran, but the transient failure short-circuited the
+      // attempt — no regeneration, no upload, no email — and the row is left
+      // Pending for the next sweep.
+      expect(mockGetFileSize).toHaveBeenCalledWith({
+        Bucket: "test-audit-bucket",
+        Key: reusableKey,
+      })
+      expect(mockUploadAuditLogExport).not.toHaveBeenCalled()
+      expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+      const updated = await getRequest(request.id)
+      expect(updated.status).toBe("Pending")
+      expect(updated.objectKey).toBeNull()
+    })
   })
 })
