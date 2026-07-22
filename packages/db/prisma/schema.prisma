@@ -296,6 +296,7 @@ enum AuditLogEvent {
   NavbarUpdate
   RedirectCreate
   RedirectDelete
+  AuditLogExportCreate
 }
 
 model AuditLog {

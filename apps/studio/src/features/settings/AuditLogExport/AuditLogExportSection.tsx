@@ -67,8 +67,9 @@ export const AuditLogExportSection = ({
         })
       },
       // The server returns typed, user-facing messages for the expected
-      // rejections (future month, duplicate in flight, not an admin). Surface
-      // those directly; fall back to a generic message for anything else.
+      // rejections (future month, not an admin). Duplicate requests never
+      // fail — they are accepted idempotently. Surface server messages
+      // directly; fall back to a generic message for anything else.
       onError: (error) => {
         if (error.data?.code === "FORBIDDEN") {
           toast({

@@ -796,6 +796,38 @@ describe("auditLogExport.query", () => {
       expect(rows).toHaveLength(0)
     })
 
+    it("renders an AuditLogExportCreate description from the requested range and report type", async () => {
+      const { site } = await setupSite()
+      const admin = await setupUser({ email: "exporter@agency.gov.sg" })
+
+      // The delta stores what was ASKED for — the requested report type may
+      // be "Both", which never exists as a DB row type.
+      await insertAuditLog({
+        eventType: AuditLogEvent.AuditLogExportCreate,
+        userId: admin.id,
+        siteId: site.id,
+        delta: {
+          before: null,
+          after: {
+            auditLogDateRange: "[2024-02-01,2024-03-01)",
+            reportType: "Both",
+          },
+        },
+        createdAt: new Date("2024-03-14T02:00:00Z"),
+      })
+
+      const rows = await getActivityReportRows({
+        siteId: site.id,
+        auditLogDateRange,
+      })
+
+      expect(rows).toHaveLength(1)
+      expect(rows[0]?.['"Event type"']).toBe(AuditLogEvent.AuditLogExportCreate)
+      expect(rows[0]?.Description).toBe(
+        "Audit log export requested for [2024-02-01,2024-03-01) (Both)",
+      )
+    })
+
     it("renders RedirectCreate, RedirectCreate-revival and RedirectDelete descriptions", async () => {
       const { site } = await setupSite()
       const user = await setupUser({ email: "editor@agency.gov.sg" })

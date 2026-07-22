@@ -86,6 +86,9 @@ describe("AuditLogExportSection", () => {
     })
   })
 
+  // NOTE: there is no duplicate-request failure path any more — the server
+  // accepts duplicate asks idempotently (ADR docs/adr/0005) — so the error
+  // surface only exists for genuine rejections like an out-of-window month.
   it("surfaces the server error message on failure", async () => {
     renderWith(adminAbility)
 
@@ -93,15 +96,30 @@ describe("AuditLogExportSection", () => {
     await waitFor(() => expect(capturedOptions?.onError).toBeDefined())
 
     capturedOptions?.onError?.({
-      message:
-        "An export for this period and report type is already being generated",
-      data: { code: "CONFLICT" },
+      message: "You cannot export audit logs for a month that is in the future",
+      data: { code: "BAD_REQUEST" },
     })
 
     expect(
       await screen.findByText(
-        "An export for this period and report type is already being generated",
+        "You cannot export audit logs for a month that is in the future",
       ),
     ).not.toBeNull()
+  })
+
+  // A duplicate ask is a success, not an error: submitting the same form
+  // twice issues two mutations and the success handler runs for each.
+  it("treats a repeated identical submission as a plain success", async () => {
+    renderWith(adminAbility)
+
+    fireEvent.click(screen.getByRole("button", { name: "Request export" }))
+    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
+    capturedOptions?.onSuccess?.()
+
+    fireEvent.click(screen.getByRole("button", { name: "Request export" }))
+    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(2))
+    // Identical payload both times — the duplicate is sent as-is; the server
+    // idempotent-accepts it rather than erroring.
+    expect(mutate.mock.calls[1]).toEqual(mutate.mock.calls[0])
   })
 })

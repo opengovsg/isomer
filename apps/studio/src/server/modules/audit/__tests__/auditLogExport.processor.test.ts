@@ -23,6 +23,7 @@ const {
   mockUploadAuditLogExport,
   mockGenerateSignedGetUrl,
   mockGetStudioAssetsBucketName,
+  mockGetFileSize,
   mockSendAuditLogExportReadyEmail,
   mockSendAuditLogExportFailedEmail,
 } = vi.hoisted(() => ({
@@ -30,6 +31,9 @@ const {
     vi.fn<(args: { key: string; body: unknown }) => Promise<void>>(),
   mockGenerateSignedGetUrl: vi.fn<() => Promise<string>>(),
   mockGetStudioAssetsBucketName: vi.fn<() => string>(),
+  // HeadObject-backed existence probe used by the Complete-Artifact reuse
+  // fork: a byte size means the object exists, null means it is gone.
+  mockGetFileSize: vi.fn<() => Promise<number | null>>(),
   mockSendAuditLogExportReadyEmail:
     vi.fn<(data: ReadyEmailArg) => Promise<void>>(),
   mockSendAuditLogExportFailedEmail:
@@ -60,6 +64,7 @@ vi.mock("~/lib/s3", () => ({
   uploadAuditLogExport: mockUploadAuditLogExport,
   generateSignedGetUrl: mockGenerateSignedGetUrl,
   getStudioAssetsBucketName: mockGetStudioAssetsBucketName,
+  getFileSize: mockGetFileSize,
   AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS: 60 * 60 * 24 * 3,
 }))
 
@@ -67,6 +72,8 @@ vi.mock("~/features/mail/service", () => ({
   sendAuditLogExportReadyEmail: mockSendAuditLogExportReadyEmail,
   sendAuditLogExportFailedEmail: mockSendAuditLogExportFailedEmail,
 }))
+
+import { getCurrentSingaporeMonth } from "~/schemas/audit"
 
 import { db } from "../../database"
 import { getMonthDateRange } from "../auditLogExport.query"
@@ -88,6 +95,9 @@ const seedRequest = async ({
   status = "Pending",
   attempts = 0,
   updatedAt,
+  auditLogDateRange = AUDIT_LOG_DATE_RANGE,
+  objectKey,
+  completedAt,
 }: {
   siteId: number
   userId: string
@@ -97,17 +107,23 @@ const seedRequest = async ({
   // Override the DB-managed `updatedAt` — used to simulate a stale (or fresh)
   // `Processing` claim relative to the lease window.
   updatedAt?: Date
+  auditLogDateRange?: string
+  // Used to seed pre-existing Done/Failed rows directly for the reuse tests.
+  objectKey?: string
+  completedAt?: Date
 }) => {
   return db
     .insertInto("AuditLogExportRequest")
     .values({
       siteId,
       userId,
-      auditLogDateRange: AUDIT_LOG_DATE_RANGE,
+      auditLogDateRange,
       reportType,
       status,
       attempts,
       ...(updatedAt ? { updatedAt } : {}),
+      ...(objectKey ? { objectKey } : {}),
+      ...(completedAt ? { completedAt } : {}),
     })
     .returningAll()
     .executeTakeFirstOrThrow()
@@ -134,6 +150,8 @@ describe("auditLogExport processor", () => {
     mockGetStudioAssetsBucketName.mockReturnValue("test-audit-bucket")
     mockGenerateSignedGetUrl.mockResolvedValue("https://signed.example/url")
     mockUploadAuditLogExport.mockResolvedValue(undefined)
+    // By default every candidate artifact still exists in S3.
+    mockGetFileSize.mockResolvedValue(1024)
     mockSendAuditLogExportReadyEmail.mockResolvedValue(undefined)
     mockSendAuditLogExportFailedEmail.mockResolvedValue(undefined)
   })
@@ -177,6 +195,9 @@ describe("auditLogExport processor", () => {
     const updated = await getRequest(request.id)
     expect(updated.status).toBe("Done")
     expect(updated.objectKey).toBe(expectedKey)
+    // The generate path stamps completedAt too — it is what later identical
+    // requests compare against the range end to qualify this row for reuse.
+    expect(updated.completedAt).not.toBeNull()
   })
 
   it("processes a fanned-out Both request (two rows): two uploads, two single-link emails, both Done", async () => {
@@ -414,5 +435,222 @@ describe("auditLogExport processor", () => {
     expect(updated.attempts).toBe(0)
     // `updatedAt` must not have moved (not re-claimed).
     expect(updated.updatedAt.getTime()).toBe(freshUpdatedAt.getTime())
+  })
+
+  // Complete-Artifact reuse (ADR docs/adr/0005): an identical (site, range,
+  // report type) request is fulfilled by re-delivering an existing Done row's
+  // artifact — with a fresh signed URL and email — instead of regenerating,
+  // provided that artifact was completed AFTER the range fully elapsed and
+  // the S3 object still exists.
+  describe("Complete-Artifact reuse", () => {
+    it("reuses the Done artifact of an identical past-range request from ANOTHER user (per-site reuse, no second upload)", async () => {
+      // Arrange: first admin's request is processed to Done normally.
+      const { site } = await setupSite()
+      const firstAdmin = await setupUser({ email: "first@vendor.com.sg" })
+      await setupAdminPermissions({ userId: firstAdmin.id, siteId: site.id })
+      const first = await seedRequest({
+        siteId: site.id,
+        userId: firstAdmin.id,
+        reportType: "Access",
+      })
+      await processPendingAuditLogExports()
+      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+
+      // A SECOND admin asks for the same (site, range, type): the artifact is
+      // a function of (site, range, type) only, so their request qualifies.
+      const secondAdmin = await setupUser({ email: "second@vendor.com.sg" })
+      await setupAdminPermissions({ userId: secondAdmin.id, siteId: site.id })
+      const second = await seedRequest({
+        siteId: site.id,
+        userId: secondAdmin.id,
+        reportType: "Access",
+      })
+
+      // Act
+      await processPendingAuditLogExports()
+
+      // Assert: ONE upload across both requests — the second run reused the
+      // first artifact's key and only re-signed + re-emailed it.
+      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      const updatedFirst = await getRequest(first.id)
+      const updatedSecond = await getRequest(second.id)
+      expect(updatedSecond.status).toBe("Done")
+      expect(updatedSecond.objectKey).toBe(updatedFirst.objectKey)
+      expect(updatedSecond.completedAt).not.toBeNull()
+      expect(updatedSecond.errorMessage).toBeNull()
+
+      // A fresh ready email went to the SECOND requester.
+      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(2)
+      const secondEmail = mockSendAuditLogExportReadyEmail.mock.calls[1]![0]
+      expect(secondEmail.recipientEmail).toBe("second@vendor.com.sg")
+      expect(secondEmail.link).toEqual({
+        label: "access",
+        url: "https://signed.example/url",
+      })
+      expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+    })
+
+    it("does NOT reuse an in-progress-month snapshot (completedAt before the range end)", async () => {
+      // Arrange: a CURRENT-month request stores a clamped range whose end
+      // instant is still in the future, so its Done row is a point-in-time
+      // snapshot (completedAt < rangeEnd) — never a Complete Artifact.
+      const currentMonthRange = getMonthDateRange(
+        getCurrentSingaporeMonth(),
+        new Date(),
+      )
+      const { site } = await setupSite()
+      const admin = await setupUser({ email: "snapshot@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+
+      const first = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+        auditLogDateRange: currentMonthRange,
+      })
+      await processPendingAuditLogExports()
+      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+
+      const second = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+        auditLogDateRange: currentMonthRange,
+      })
+
+      // Act
+      await processPendingAuditLogExports()
+
+      // Assert: the snapshot was regenerated, not reused — a second upload
+      // under the second request's own key.
+      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(2)
+      const updatedFirst = await getRequest(first.id)
+      const updatedSecond = await getRequest(second.id)
+      expect(updatedSecond.status).toBe("Done")
+      expect(updatedSecond.objectKey).not.toBe(updatedFirst.objectKey)
+      expect(updatedSecond.objectKey).toContain(`/${second.id}/`)
+    })
+
+    it("does NOT reuse a Failed row even if it carries an objectKey and a qualifying completedAt", async () => {
+      // Arrange: a Failed row that (pathologically) has both an objectKey and
+      // a completedAt after the range end — status must still disqualify it.
+      const { site } = await setupSite()
+      const admin = await setupUser({ email: "failed@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+
+      const failedKey = `audit-log-exports/${site.id}/999/access-2024-03-01-to-2024-03-31.csv`
+      await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+        status: "Failed",
+        objectKey: failedKey,
+        completedAt: new Date(),
+      })
+
+      const request = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+      })
+
+      // Act
+      await processPendingAuditLogExports()
+
+      // Assert: generated fresh under this request's own key.
+      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      const updated = await getRequest(request.id)
+      expect(updated.status).toBe("Done")
+      expect(updated.objectKey).toContain(`/${request.id}/`)
+      expect(updated.objectKey).not.toBe(failedKey)
+    })
+
+    it("falls back to generation when the reusable artifact's S3 object is gone", async () => {
+      // Arrange: a qualifying Done row exists, but the HeadObject probe says
+      // the object has vanished (e.g. a lifecycle policy deleted it).
+      const { site } = await setupSite()
+      const admin = await setupUser({ email: "vanished@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+
+      const goneKey = `audit-log-exports/${site.id}/998/access-2024-03-01-to-2024-03-31.csv`
+      await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+        status: "Done",
+        objectKey: goneKey,
+        completedAt: new Date(),
+      })
+      mockGetFileSize.mockResolvedValue(null)
+
+      const request = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+      })
+
+      // Act
+      await processPendingAuditLogExports()
+
+      // Assert: the existence check ran against the candidate, found nothing,
+      // and the report was regenerated + uploaded under a fresh key.
+      expect(mockGetFileSize).toHaveBeenCalledWith({
+        Bucket: "test-audit-bucket",
+        Key: goneKey,
+      })
+      expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+      const updated = await getRequest(request.id)
+      expect(updated.status).toBe("Done")
+      expect(updated.objectKey).toContain(`/${request.id}/`)
+      expect(updated.objectKey).not.toBe(goneKey)
+      expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+    })
+
+    it("re-queues (Pending) without regenerating when the existence probe hits a transient S3 error", async () => {
+      // Arrange: a qualifying Done row exists, but the HeadObject probe fails
+      // with a transient (non-404) error — getFileSize rethrows it rather than
+      // reporting the object as gone, so the attempt must fail-and-requeue, NOT
+      // regenerate. A blip must never be mistaken for a vanished artifact.
+      const { site } = await setupSite()
+      const admin = await setupUser({ email: "throttled@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+
+      const reusableKey = `audit-log-exports/${site.id}/997/access-2024-03-01-to-2024-03-31.csv`
+      await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+        status: "Done",
+        objectKey: reusableKey,
+        completedAt: new Date(),
+      })
+      const transientError = Object.assign(new Error("SlowDown"), {
+        name: "SlowDown",
+        $metadata: { httpStatusCode: 503 },
+      })
+      mockGetFileSize.mockRejectedValue(transientError)
+
+      const request = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+      })
+
+      // Act
+      await processPendingAuditLogExports()
+
+      // Assert: the probe ran, but the transient failure short-circuited the
+      // attempt — no regeneration, no upload, no email — and the row is left
+      // Pending for the next sweep.
+      expect(mockGetFileSize).toHaveBeenCalledWith({
+        Bucket: "test-audit-bucket",
+        Key: reusableKey,
+      })
+      expect(mockUploadAuditLogExport).not.toHaveBeenCalled()
+      expect(mockSendAuditLogExportReadyEmail).not.toHaveBeenCalled()
+      const updated = await getRequest(request.id)
+      expect(updated.status).toBe("Pending")
+      expect(updated.objectKey).toBeNull()
+    })
   })
 })

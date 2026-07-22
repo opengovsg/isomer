@@ -211,6 +211,9 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
   PermissionDelete: sql<string>`CONCAT('Permission (', al.delta -> 'before' ->> 'role', ') revoked from ', pu.email)`,
   Login: sql<string>`CONCAT('Login attempt by ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 1), ' from IP address ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 2))`,
   Logout: sql<string>`CONCAT('Logout attempt by ', al.delta -> 'before' ->> 'email', ' from IP address ', al."ipAddress")`,
+  // The delta stores the REQUESTED report type (possibly "Both"), so the
+  // description reflects the user's ask, not the fanned-out DB rows.
+  AuditLogExportCreate: sql<string>`CONCAT('Audit log export requested for ', al.delta -> 'after' ->> 'auditLogDateRange', ' (', al.delta -> 'after' ->> 'reportType', ')')`,
 }
 
 // NOTE: As with the access report, string-alias columns keep their quotes in
@@ -345,6 +348,8 @@ export const getActivityReportRows = async ({
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.Login])
         .when("al.eventType", "=", AuditLogEvent.Logout)
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.Logout])
+        .when("al.eventType", "=", AuditLogEvent.AuditLogExportCreate)
+        .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.AuditLogExportCreate])
         .else("-")
         .end()
         .as("Description"),

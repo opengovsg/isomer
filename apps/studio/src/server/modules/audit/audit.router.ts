@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { createAuditLogExportRequestSchema } from "~/schemas/audit"
+import getIP from "~/utils/getClientIp"
 
 import { protectedProcedure, router } from "../../trpc"
 import { createAuditLogExportRequest } from "./auditLogExport.service"
@@ -18,10 +19,15 @@ export const auditRouter = router({
           userId: ctx.user.id,
           month,
           reportType,
+          // Capture the requester IP the same way sibling audit events do
+          // (see auth.router.ts), so the AuditLogExportCreate event records
+          // who exported the logs AND from where.
+          ip: getIP(ctx.req),
         })
       } catch (error) {
-        // Permission / validation / dedupe failures are already typed
-        // TRPCErrors with safe, user-facing messages — let them through.
+        // Permission / validation failures are already typed TRPCErrors with
+        // safe, user-facing messages — let them through. (Duplicate asks no
+        // longer error: they are accepted idempotently by the service.)
         if (error instanceof TRPCError) {
           throw error
         }
