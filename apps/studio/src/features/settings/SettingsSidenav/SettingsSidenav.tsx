@@ -2,9 +2,11 @@ import type { UseDisclosureReturn } from "@chakra-ui/react"
 import type { IconType } from "react-icons"
 import { VStack } from "@chakra-ui/react"
 import { useRouter } from "next/router"
+import { useContext } from "react"
 import { BiDirections, BiPaint, BiWrench } from "react-icons/bi"
 import { CmsCollapsibleSidenav } from "~/components/CmsSidebar/CmsCollapsibleSidenav"
 import { siteSchema } from "~/features/editing-experience/schema"
+import { UserManagementContext } from "~/features/users"
 import { useIsRedirectionsEnabled } from "~/hooks/useIsRedirectionsEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 
@@ -31,6 +33,14 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
   const router = useRouter()
   const isRedirectionsEnabled = useIsRedirectionsEnabled()
 
+  // Audit log export is a site-admin-only surface, gated by the same
+  // `manage UserManagement` ability used elsewhere for admin-only actions.
+  // The ability derivation is owned by `UserManagementProvider` (mounted by
+  // `SiteSettingsLayout` around this sidenav); read it here instead of
+  // re-deriving so there is a single source of truth.
+  const ability = useContext(UserManagementContext)
+  const isAdmin = ability.can("manage", "UserManagement")
+
   const SIDENAV_ITEMS: SideNavItem[] = [
     {
       header: { label: "General", icon: BiWrench },
@@ -49,6 +59,14 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
               {
                 label: "Redirects",
                 href: `/sites/${siteId}/settings/redirects`,
+              },
+            ]
+          : []),
+        ...(isAdmin
+          ? [
+              {
+                label: "Audit log export",
+                href: `/sites/${siteId}/settings/audit`,
               },
             ]
           : []),
