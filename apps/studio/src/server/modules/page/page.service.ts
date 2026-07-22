@@ -5,6 +5,9 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
+import { get, isEqual } from "lodash-es"
+
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 export const createDefaultPage = ({
   layout,
@@ -63,6 +66,40 @@ export const createDefaultPage = ({
       return _exhaustiveCheck
     }
   }
+}
+
+/**
+ * Managing Collection Filters / tag categories is restricted to site Admins
+ * in the editor UI (see `canManageCollectionFilters`), but that restriction
+ * isn't otherwise enforced: nothing stops a lower-privileged caller from
+ * invoking `page.updatePageBlob` directly with a modified `tagCategories`.
+ * Throws FORBIDDEN if that field changed and the caller can't create at the
+ * site root — the same CASL check the client-side gate uses.
+ */
+export const assertTagCategoriesUnchangedForNonSiteAdmin = async ({
+  userId,
+  siteId,
+  oldContent,
+  newContent,
+}: {
+  userId: string
+  siteId: number
+  oldContent: unknown
+  newContent: unknown
+}): Promise<void> => {
+  const tagCategoriesUnchanged = isEqual(
+    get(oldContent, "page.tagCategories"),
+    get(newContent, "page.tagCategories"),
+  )
+
+  if (tagCategoriesUnchanged) return
+
+  await bulkValidateUserPermissionsForResources({
+    userId,
+    siteId,
+    action: "create",
+    resourceIds: [null],
+  })
 }
 
 export const createFolderIndexPage = (title: string) => {

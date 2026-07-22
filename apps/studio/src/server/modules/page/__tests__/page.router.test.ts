@@ -17,6 +17,7 @@ import {
   setupCollection,
   setupEditorPermissions,
   setupFolder,
+  setupIsomerAdmin,
   setupPageResource,
   setupPublisherPermissions,
   setupSite,
@@ -26,6 +27,7 @@ import { normalizeRedirectPath } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import {
   AuditLogEvent,
+  IsomerAdminRole,
   ResourceState,
   ResourceType,
 } from "~prisma/generated/generatedEnums"
@@ -1554,6 +1556,170 @@ describe("page.router", async () => {
           },
         },
       })
+    })
+  })
+
+  describe("updatePageBlob - tagCategories admin enforcement", () => {
+    const TAG_CATEGORY_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+    const TAG_OPTION_ID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+    const INJECTED_TAG_OPTION_ID = "6ba7b810-9dad-11d1-80b4-00c04fd430c9"
+
+    const collectionIndexContent = (
+      tagCategories: {
+        id: string
+        label: string
+        isRequired: boolean
+        options: { id: string; label: string }[]
+      }[],
+    ) =>
+      ({
+        layout: "collection",
+        page: { subtitle: "Test subtitle", tagCategories },
+        content: [],
+        version: "0.1.0",
+      }) satisfies IsomerSchema
+
+    const originalTagCategories = [
+      {
+        id: TAG_CATEGORY_ID,
+        label: "Topic",
+        isRequired: false,
+        options: [{ id: TAG_OPTION_ID, label: "Technology" }],
+      },
+    ]
+    const modifiedTagCategories = [
+      {
+        id: TAG_CATEGORY_ID,
+        label: "Topic",
+        isRequired: false,
+        options: [
+          { id: TAG_OPTION_ID, label: "Technology" },
+          { id: INJECTED_TAG_OPTION_ID, label: "Injected by non-admin" },
+        ],
+      },
+    ]
+
+    async function setupCollectionIndexPageWithTags() {
+      const { collection, site } = await setupCollection()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: collection.id,
+      })
+
+      await db
+        .updateTable("Blob")
+        .set({ content: jsonb(collectionIndexContent(originalTagCategories)) })
+        .where("id", "=", indexPage.draftBlobId)
+        .execute()
+
+      return { site, indexPage }
+    }
+
+    it("should throw 403 if a non-admin site editor tries to modify tagCategories", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionIndexPageWithTags()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.updatePageBlob({
+        pageId: Number(indexPage.id),
+        siteId: site.id,
+        content: JSON.stringify(collectionIndexContent(modifiedTagCategories)),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Blob")
+        .where("id", "=", indexPage.draftBlobId)
+        .select("content")
+        .executeTakeFirstOrThrow()
+      expect(actual.content).toEqual(
+        collectionIndexContent(originalTagCategories),
+      )
+    })
+
+    it("should allow a non-admin site editor to save the page when tagCategories are unchanged", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionIndexPageWithTags()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updatePageBlob({
+        pageId: Number(indexPage.id),
+        siteId: site.id,
+        content: JSON.stringify(collectionIndexContent(originalTagCategories)),
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+    })
+
+    it("should allow a site admin to modify tagCategories", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionIndexPageWithTags()
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.updatePageBlob({
+        pageId: Number(indexPage.id),
+        siteId: site.id,
+        content: JSON.stringify(collectionIndexContent(modifiedTagCategories)),
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      const actual = await db
+        .selectFrom("Blob")
+        .where("id", "=", indexPage.draftBlobId)
+        .select("content")
+        .executeTakeFirstOrThrow()
+      expect(actual.content).toEqual(
+        collectionIndexContent(modifiedTagCategories),
+      )
+    })
+
+    it("should allow an Isomer admin without site permissions to modify tagCategories", async () => {
+      // Arrange
+      const { site, indexPage } = await setupCollectionIndexPageWithTags()
+      await setupIsomerAdmin({
+        userId: user.id,
+        role: IsomerAdminRole.Core,
+      })
+
+      // Act
+      const result = await caller.updatePageBlob({
+        pageId: Number(indexPage.id),
+        siteId: site.id,
+        content: JSON.stringify(collectionIndexContent(modifiedTagCategories)),
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      const actual = await db
+        .selectFrom("Blob")
+        .where("id", "=", indexPage.draftBlobId)
+        .select("content")
+        .executeTakeFirstOrThrow()
+      expect(actual.content).toEqual(
+        collectionIndexContent(modifiedTagCategories),
+      )
     })
   })
 
