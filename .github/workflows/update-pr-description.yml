@@ -1,22 +1,27 @@
 name: Update PR description
 
-# Why a separate workflow instead of a job inside ci.yml?
+# Why a separate workflow instead of a job inside pr-breakdown.yml?
 #
 # GitHub hard-restricts the GITHUB_TOKEN to read-only for `pull_request`
 # events triggered by a fork, regardless of what the `permissions:` block
 # declares. Editing a PR's description requires write access, so this step
-# would always 403 on fork PRs if it ran inside ci.yml.
+# would always 403 on fork PRs if it ran inside pr-breakdown.yml.
 #
 # The `workflow_run` trigger is the official GitHub workaround: it fires after
 # the target workflow completes but runs in the BASE repo's context, so
 # GITHUB_TOKEN always has the permissions declared below — even when the
 # triggering PR came from a fork.
 #
-# This job downloads a small metadata artifact written by ci.yml, since the
-# two workflows run in separate contexts and can't share environment variables.
+# Listening to "pr-breakdown" specifically (rather than the full "CI"
+# workflow) means this fires as soon as that fast job completes, instead of
+# waiting on ci.yml's slower jobs (end-to-end-tests, test-studio, etc).
+#
+# This job downloads a small metadata artifact written by pr-breakdown.yml,
+# since the two workflows run in separate contexts and can't share
+# environment variables.
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ["pr-breakdown"]
     types: [completed]
 
 jobs:
@@ -51,7 +56,7 @@ jobs:
 
       # Does NOT trust pr-number.txt (there isn't one) or base-ref.txt as the
       # source of truth for which PR to edit: everything this job's own
-      # (possibly forked, possibly attacker-modified) ci.yml run wrote is
+      # (possibly forked, possibly attacker-modified) pr-breakdown.yml run wrote is
       # untrusted. head_sha/head_repository/head_branch instead come from the
       # workflow_run event payload itself, populated by GitHub's own
       # infrastructure — a fork can't forge these by editing its workflow.
