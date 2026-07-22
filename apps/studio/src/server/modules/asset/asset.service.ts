@@ -43,14 +43,17 @@ export const generateTagsQueryString = (
   return entries.join("&")
 }
 
+const getFilenameFromKey = (key: string): string => key.split("/").pop() ?? ""
+
+const getExtensionFromFilename = (filename: string): string =>
+  filename.includes(".") ? filename.substring(filename.lastIndexOf(".")) : ""
+
 /**
  * Derive trusted Content-Type from key. Key is only produced after schema validation,
  * so the file extension is always from the allowlist.
  */
 export const getContentTypeFromKey = (key: string): string => {
-  const segment = key.split("/").pop() ?? ""
-  const lower = segment.toLowerCase()
-  const ext = lower.includes(".") ? lower.substring(lower.lastIndexOf(".")) : ""
+  const ext = getExtensionFromFilename(getFilenameFromKey(key).toLowerCase())
   return EXTENSION_TO_MIME[ext] ?? "application/octet-stream"
 }
 
@@ -58,8 +61,7 @@ export const getContentTypeFromKey = (key: string): string => {
  * Build Content-Disposition for signed upload (inline; filename for download hint).
  */
 export const getContentDispositionForKey = (key: string): string => {
-  const segment = key.split("/").pop() ?? ""
-  const encoded = encodeURIComponent(segment)
+  const encoded = encodeURIComponent(getFilenameFromKey(key))
   return `inline; filename*=UTF-8''${encoded}`
 }
 
@@ -72,10 +74,7 @@ export const getContentDispositionForTitle = (
   title: string,
   key: string,
 ): string => {
-  const segment = key.split("/").pop() ?? ""
-  const extension = segment.includes(".")
-    ? segment.substring(segment.lastIndexOf("."))
-    : ""
+  const extension = getExtensionFromFilename(getFilenameFromKey(key))
   const encoded = encodeURIComponent(`${title}${extension}`)
   return `inline; filename*=UTF-8''${encoded}`
 }
