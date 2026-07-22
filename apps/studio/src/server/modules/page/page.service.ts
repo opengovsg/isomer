@@ -69,15 +69,14 @@ export const createDefaultPage = ({
 }
 
 /**
- * Managing Collection Filters / tag categories is restricted to site Admins
- * in the editor UI (see `canManageCollectionFilters`), but that restriction
- * isn't otherwise enforced: nothing stops a lower-privileged caller from
- * invoking `page.updatePageBlob` directly with a modified `tagCategories`.
- * Throws FORBIDDEN if that field changed and the caller can't create at the
- * site root — the same CASL check the client-side gate uses.
+ * Collection Filters (`tagCategories`) are UI-gated to site Admins via
+ * `canManageCollectionFilters`. Callers with page-update access can still hit
+ * `page.updatePageBlob` directly, so when `page.tagCategories` changes, run
+ * the same CASL check the client uses (`can("create", { parentId: null })`).
+ * Throws FORBIDDEN if the caller fails it.
  *
- * `tagCategories` only exists on the "collection" layout's `page` schema, so
- * this is a no-op for every other layout.
+ * No-op for non-collection layouts. `tagCategories` only exists on the
+ * collection layout's `page` schema.
  */
 export const assertTagCategoriesUnchangedForNonSiteAdmin = async ({
   userId,
