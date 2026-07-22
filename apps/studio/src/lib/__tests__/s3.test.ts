@@ -23,7 +23,7 @@ vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
 })
 
 // Imported after the mock is registered so the module-level S3Client is mocked.
-const { deleteFile, setAssetAsPublished } = await import("../s3")
+const { copyFile, deleteFile, setAssetAsPublished } = await import("../s3")
 
 const DELETE_TAG = "deletedAt"
 
@@ -128,6 +128,59 @@ describe("setAssetAsPublished", () => {
     })
   })
 
+  it("URL-encodes the CopySource for keys with reserved characters", async () => {
+    // Arrange: gazette keys contain spaces (e.g. "Government Gazette"), which
+    // the SDK passes through verbatim in the x-amz-copy-source header.
+    sendMock.mockResolvedValue({})
+    sendMock.mockResolvedValueOnce({ TagSet: [] })
+    sendMock.mockResolvedValueOnce({ ContentType: "application/pdf" })
+
+    // Act
+    await setAssetAsPublished({
+      Key: "2026/Government Gazette/Notices #1/file.pdf",
+      Bucket: "test-bucket",
+      ContentDisposition: "inline; filename*=UTF-8''file.pdf",
+    })
+
+    // Assert: each path segment is encoded, but the Key itself stays raw
+    // (the SDK encodes Key params on its own).
+    const copyCommand = sendMock.mock.calls
+      .map(([command]) => command as unknown)
+      .find((command) => command instanceof CopyObjectCommand)
+    expect(copyCommand?.input).toMatchObject({
+      CopySource:
+        "test-bucket/2026/Government%20Gazette/Notices%20%231/file.pdf",
+      Key: "2026/Government Gazette/Notices #1/file.pdf",
+    })
+  })
+
+  it("skips the self-copy when the disposition is already correct", async () => {
+    // Arrange: HeadObject reports the target disposition already set — e.g.
+    // a pg-boss retry after an earlier attempt already rewrote it.
+    const contentDisposition = "inline; filename*=UTF-8''My%20Gazette.pdf"
+    sendMock.mockResolvedValue({})
+    sendMock.mockResolvedValueOnce({ TagSet: [] })
+    sendMock.mockResolvedValueOnce({
+      ContentDisposition: contentDisposition,
+    })
+
+    // Act
+    await setAssetAsPublished({
+      Key: "2024/category/sub/file.pdf",
+      Bucket: "test-bucket",
+      ContentDisposition: contentDisposition,
+    })
+
+    // Assert: no copy issued, but the lock still applies.
+    const commands = sendMock.mock.calls.map(([command]) => command as unknown)
+    expect(
+      commands.some((command) => command instanceof CopyObjectCommand),
+    ).toBe(false)
+    expect(
+      commands.some((command) => command instanceof PutObjectRetentionCommand),
+    ).toBe(true)
+  })
+
   it("skips the self-copy when no ContentDisposition is given", async () => {
     // Arrange
     sendMock.mockResolvedValue({})
@@ -147,5 +200,33 @@ describe("setAssetAsPublished", () => {
     expect(
       commands.some((command) => command instanceof PutObjectRetentionCommand),
     ).toBe(true)
+  })
+})
+
+describe("copyFile", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("URL-encodes the CopySource for keys with reserved characters", async () => {
+    // Arrange
+    sendMock.mockResolvedValue({})
+
+    // Act
+    await copyFile({
+      SourceKey: "2026/Government Gazette/Notices #1/file.pdf",
+      DestKey: "2026/Government Gazette/Notices #1/copy.pdf",
+      Bucket: "test-bucket",
+    })
+
+    // Assert: the copy source is encoded per segment; the destination Key
+    // stays raw (the SDK encodes Key params on its own).
+    const copyCommand = sendMock.mock.calls[0]?.[0]
+    expect(copyCommand).toBeInstanceOf(CopyObjectCommand)
+    expect((copyCommand as CopyObjectCommand).input).toMatchObject({
+      CopySource:
+        "test-bucket/2026/Government%20Gazette/Notices%20%231/file.pdf",
+      Key: "2026/Government Gazette/Notices #1/copy.pdf",
+    })
   })
 })

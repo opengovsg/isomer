@@ -22,6 +22,12 @@ import { env } from "~/env.mjs"
 const DELETE_TAG = "deletedAt"
 const EGAZETTE_COMPLIANCE_HOLD_IN_DAYS = 10000
 
+// Unlike Key params (which the SDK URL-encodes), CopySource is sent verbatim
+// as the x-amz-copy-source header, so keys with spaces or reserved characters
+// (e.g. "2026/Government Gazette/...") must be encoded per path segment here.
+const getEncodedCopySource = (Bucket?: string, Key?: string) =>
+  `${Bucket}/${Key?.split("/").map(encodeURIComponent).join("/")}`
+
 // R2 credentials are only set for preview, but the choice of backend is
 // driven by their presence rather than the environment name. Exported so
 // other modules don't have to re-derive this from the raw env vars.
@@ -196,17 +202,21 @@ export const setAssetAsPublished = async ({
   // tags carry over via the default TaggingDirective (COPY).
   if (ContentDisposition) {
     const head = await storage.send(new HeadObjectCommand({ Bucket, Key }))
-    await storage.send(
-      new CopyObjectCommand({
-        Bucket,
-        CopySource: `${Bucket}/${Key}`,
-        Key,
-        MetadataDirective: "REPLACE",
-        ContentType: head.ContentType,
-        Metadata: head.Metadata,
-        ContentDisposition,
-      }),
-    )
+    // Skip the (paid) self-copy when the disposition is already correct,
+    // e.g. on a pg-boss retry after an earlier attempt already rewrote it.
+    if (head.ContentDisposition !== ContentDisposition) {
+      await storage.send(
+        new CopyObjectCommand({
+          Bucket,
+          CopySource: getEncodedCopySource(Bucket, Key),
+          Key,
+          MetadataDirective: "REPLACE",
+          ContentType: head.ContentType,
+          Metadata: head.Metadata,
+          ContentDisposition,
+        }),
+      )
+    }
   }
 
   // NOTE: Lock first to preserve guarantee that once published
@@ -268,7 +278,7 @@ export const copyFile = async ({
   return storage.send(
     new CopyObjectCommand({
       Bucket,
-      CopySource: `${Bucket}/${SourceKey}`,
+      CopySource: getEncodedCopySource(Bucket, SourceKey),
       Key: DestKey,
     }),
   )
