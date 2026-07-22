@@ -38,6 +38,7 @@ export const auditHandlers = {
             attempts: 0,
             errorMessage: null,
             objectKey: null,
+            completedAt: null,
             createdAt: MOCK_STORY_DATE,
             updatedAt: MOCK_STORY_DATE,
           }))
