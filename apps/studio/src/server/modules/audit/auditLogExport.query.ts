@@ -114,8 +114,6 @@ export const getExportRange = (
   }
 }
 
-export type { AccessReportRow, AuditReportQueryParams } from "./audit.types"
-
 /**
  * POINT-IN-TIME access report (ADR docs/adr/0003).
  *
