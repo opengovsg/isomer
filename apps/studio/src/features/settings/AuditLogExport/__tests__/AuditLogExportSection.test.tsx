@@ -110,14 +110,13 @@ describe("AuditLogExportSection", () => {
   // A duplicate ask is a success, not an error: submitting the same form
   // twice issues two mutations and the success handler runs for each.
   it("treats a repeated identical submission as a plain success", async () => {
-    const user = userEvent.setup()
     renderWith(adminAbility)
 
-    await user.click(screen.getByRole("button", { name: "Request export" }))
+    fireEvent.click(screen.getByRole("button", { name: "Request export" }))
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
     capturedOptions?.onSuccess?.()
 
-    await user.click(screen.getByRole("button", { name: "Request export" }))
+    fireEvent.click(screen.getByRole("button", { name: "Request export" }))
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(2))
     // Identical payload both times — the duplicate is sent as-is; the server
     // idempotent-accepts it rather than erroring.
