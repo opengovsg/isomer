@@ -359,9 +359,7 @@ export const processAuditLogExportRequest = async (
             auditLogDateRange: request.auditLogDateRange,
           })
 
-    // The report row types are precise interfaces without an index
-    // signature; `toCsv` only needs string-keyed records, so widen here.
-    const csv = toCsv(rows as unknown as Record<string, unknown>[])
+    const csv = toCsv(rows)
     const rangeSlug = getRangeSlug(request.auditLogDateRange)
     const objectKey = `audit-log-exports/${request.siteId}/${requestId}/${report.kind.toLowerCase()}-${rangeSlug}.csv`
 
