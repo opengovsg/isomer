@@ -252,12 +252,12 @@ export const bulkDeactivateInactiveUsers = async (): Promise<void> => {
   for (const { user, siteIds } of deactivatedUsersAndSiteIds) {
     if (siteIds.length === 0) continue
 
-    const sitesAndAdmins = await getSiteAndAdmins({
-      userId: user.id,
-      siteIds,
-    })
-
     try {
+      const sitesAndAdmins = await getSiteAndAdmins({
+        userId: user.id,
+        siteIds,
+      })
+
       await sendAccountDeactivationEmail({
         recipientEmail: user.email,
         sitesAndAdmins,

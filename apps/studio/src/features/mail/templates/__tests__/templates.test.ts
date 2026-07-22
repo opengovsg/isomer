@@ -3,12 +3,7 @@ import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
 
-import {
-  accountDeactivationTemplate,
-  accountDeactivationWarningTemplate,
-  invitationTemplate,
-  templates,
-} from "../templates"
+import { templates } from "../templates"
 
 describe("invitationTemplate", () => {
   const mockData = {
@@ -19,14 +14,14 @@ describe("invitationTemplate", () => {
   }
 
   it("should generate correct subject line", () => {
-    const template = invitationTemplate(mockData)
+    const template = templates.invitation(mockData)
     expect(template.subject).toBe(
       `[Isomer Studio] Activate your account to edit Isomer sites`,
     )
   })
 
   it("should generate correct body content for Admin role", () => {
-    const template = invitationTemplate(mockData)
+    const template = templates.invitation(mockData)
     expect(template.body).toContain("Hi test@example.com")
     expect(template.body).toContain("Test Site")
     expect(template.body).toContain("as Admin")
@@ -39,7 +34,7 @@ describe("invitationTemplate", () => {
   })
 
   it("should generate correct body content for Publisher role", () => {
-    const template = invitationTemplate({
+    const template = templates.invitation({
       ...mockData,
       role: RoleType.Publisher,
     })
@@ -48,7 +43,7 @@ describe("invitationTemplate", () => {
   })
 
   it("should generate correct body content for Editor role", () => {
-    const template = invitationTemplate({
+    const template = templates.invitation({
       ...mockData,
       role: RoleType.Editor,
     })
@@ -58,7 +53,7 @@ describe("invitationTemplate", () => {
 
   it("should throw error for invalid role", () => {
     expect(() =>
-      invitationTemplate({
+      templates.invitation({
         ...mockData,
         role: "InvalidRole" as RoleType,
       }),
@@ -75,7 +70,7 @@ describe("accountDeactivationWarningTemplate", () => {
 
   it("should generate correct subject line with days remaining", () => {
     // Arrange
-    const template = accountDeactivationWarningTemplate(mockData)
+    const template = templates.accountDeactivationWarning(mockData)
 
     // Assert
     expect(template.subject).toBe(
@@ -85,7 +80,7 @@ describe("accountDeactivationWarningTemplate", () => {
 
   it("should generate correct subject line with different days remaining", () => {
     // Arrange
-    const template = accountDeactivationWarningTemplate({
+    const template = templates.accountDeactivationWarning({
       ...mockData,
       inHowManyDays: 14,
     })
@@ -98,7 +93,7 @@ describe("accountDeactivationWarningTemplate", () => {
 
   it("should generate correct body content with recipient email", () => {
     // Arrange
-    const template = accountDeactivationWarningTemplate(mockData)
+    const template = templates.accountDeactivationWarning(mockData)
 
     // Assert
     expect(template.body).toContain("Hi test@example.com")
@@ -106,7 +101,7 @@ describe("accountDeactivationWarningTemplate", () => {
 
   it("should include login reminder with correct days", () => {
     // Arrange
-    const template = accountDeactivationWarningTemplate(mockData)
+    const template = templates.accountDeactivationWarning(mockData)
 
     // Assert
     expect(template.body).toContain("please log in within the next 7 days")
@@ -117,7 +112,7 @@ describe("accountDeactivationWarningTemplate", () => {
 
   it("should include security measure message", () => {
     // Arrange
-    const template = accountDeactivationWarningTemplate(mockData)
+    const template = templates.accountDeactivationWarning(mockData)
 
     // Assert
     expect(template.body).toContain(
@@ -127,7 +122,7 @@ describe("accountDeactivationWarningTemplate", () => {
 
   it("should include site access loss warning", () => {
     // Arrange
-    const template = accountDeactivationWarningTemplate(mockData)
+    const template = templates.accountDeactivationWarning(mockData)
 
     // Assert
     expect(template.body).toContain(
@@ -137,7 +132,7 @@ describe("accountDeactivationWarningTemplate", () => {
 
   it("should include single site name in list", () => {
     // Arrange
-    const template = accountDeactivationWarningTemplate(mockData)
+    const template = templates.accountDeactivationWarning(mockData)
 
     // Assert
     expect(template.body).toContain("<li>Test Site 1</li>")
@@ -145,7 +140,7 @@ describe("accountDeactivationWarningTemplate", () => {
 
   it("should include multiple site names in list", () => {
     // Arrange
-    const template = accountDeactivationWarningTemplate({
+    const template = templates.accountDeactivationWarning({
       ...mockData,
       siteNames: ["Site A", "Site B", "Site C"],
     })
@@ -158,7 +153,7 @@ describe("accountDeactivationWarningTemplate", () => {
 
   it("should include content preservation message", () => {
     // Arrange
-    const template = accountDeactivationWarningTemplate(mockData)
+    const template = templates.accountDeactivationWarning(mockData)
 
     // Assert
     expect(template.body).toContain(
@@ -175,7 +170,7 @@ describe("accountDeactivationTemplate", () => {
 
   it("should generate correct subject line", () => {
     // Arrange
-    const template = accountDeactivationTemplate(mockData)
+    const template = templates.accountDeactivation(mockData)
 
     // Assert
     expect(template.subject).toBe(
@@ -185,7 +180,7 @@ describe("accountDeactivationTemplate", () => {
 
   it("should generate correct body content with recipient email", () => {
     // Arrange
-    const template = accountDeactivationTemplate(mockData)
+    const template = templates.accountDeactivation(mockData)
 
     // Assert
     expect(template.body).toContain("Hi test@example.com")
@@ -193,7 +188,7 @@ describe("accountDeactivationTemplate", () => {
 
   it("should include inactivity message with correct days", () => {
     // Arrange
-    const template = accountDeactivationTemplate(mockData)
+    const template = templates.accountDeactivation(mockData)
 
     // Assert
     expect(template.body).toContain(
@@ -203,7 +198,7 @@ describe("accountDeactivationTemplate", () => {
 
   it("should include reason for deactivation", () => {
     // Arrange
-    const template = accountDeactivationTemplate(mockData)
+    const template = templates.accountDeactivation(mockData)
 
     // Assert
     expect(template.body).toContain(
@@ -213,7 +208,7 @@ describe("accountDeactivationTemplate", () => {
 
   it("should include content preservation and site accessibility reassurance message", () => {
     // Arrange
-    const template = accountDeactivationTemplate(mockData)
+    const template = templates.accountDeactivation(mockData)
 
     // Assert
     expect(template.body).toContain(
@@ -226,7 +221,7 @@ describe("accountDeactivationTemplate", () => {
 
   it("should include instructions for regaining access", () => {
     // Arrange
-    const template = accountDeactivationTemplate(mockData)
+    const template = templates.accountDeactivation(mockData)
 
     // Assert
     expect(template.body).toContain(
@@ -236,7 +231,7 @@ describe("accountDeactivationTemplate", () => {
 
   it("should include site name and admin emails in instructions when admins exist", () => {
     // Arrange
-    const template = accountDeactivationTemplate({
+    const template = templates.accountDeactivation({
       recipientEmail: "test@example.com",
       sitesAndAdmins: [
         {
@@ -256,7 +251,7 @@ describe("accountDeactivationTemplate", () => {
 
   it("should show support email message when no admins exist", () => {
     // Arrange
-    const template = accountDeactivationTemplate({
+    const template = templates.accountDeactivation({
       recipientEmail: "test@example.com",
       sitesAndAdmins: [
         {
@@ -275,7 +270,7 @@ describe("accountDeactivationTemplate", () => {
 
   it("should handle multiple sites with admins", () => {
     // Arrange
-    const template = accountDeactivationTemplate({
+    const template = templates.accountDeactivation({
       recipientEmail: "test@example.com",
       sitesAndAdmins: [
         {
@@ -305,7 +300,7 @@ describe("accountDeactivationTemplate", () => {
 
   it("should handle multiple sites with mixed admin scenarios", () => {
     // Arrange
-    const template = accountDeactivationTemplate({
+    const template = templates.accountDeactivation({
       recipientEmail: "test@example.com",
       sitesAndAdmins: [
         {
@@ -373,7 +368,7 @@ describe("email template HTML escaping", () => {
     }
 
     // Act
-    const template = invitationTemplate(templateData)
+    const template = templates.invitation(templateData)
 
     // Assert
     expect(template.body).toContain(escapedPayload)
@@ -403,6 +398,32 @@ describe("email template HTML escaping", () => {
     expect(template.body).not.toContain("https://evil.tld?a=1&b=2")
   })
 
+  it("keeps the resource title unescaped in publish alert subjects", () => {
+    // Arrange
+    const templateData = {
+      recipientEmail: "publisher@example.com",
+      publisherEmail: "publisher@example.com",
+      siteName: "Test Site",
+      resource: {
+        ...mockResource,
+        title: "R&D Report",
+      },
+    }
+
+    // Act
+    const contentPublisherTemplate =
+      templates.publishAlertContentPublisher(templateData)
+    const siteAdminTemplate = templates.publishAlertSiteAdmin(templateData)
+
+    // Assert
+    expect(contentPublisherTemplate.subject).toBe(
+      "[Isomer Studio] R&D Report has been published",
+    )
+    expect(siteAdminTemplate.subject).toBe(
+      "[Isomer Studio] R&D Report has been published",
+    )
+  })
+
   it("escapes site names in account deactivation warnings", () => {
     // Arrange
     const templateData = {
@@ -412,7 +433,7 @@ describe("email template HTML escaping", () => {
     }
 
     // Act
-    const template = accountDeactivationWarningTemplate(templateData)
+    const template = templates.accountDeactivationWarning(templateData)
 
     // Assert
     expect(template.body).toContain(`<li>${escapedPayload}</li>`)
@@ -433,7 +454,7 @@ describe("email template HTML escaping", () => {
     }
 
     // Act
-    const template = accountDeactivationTemplate(templateData)
+    const template = templates.accountDeactivation(templateData)
 
     // Assert
     expect(template.body).toContain(`<p><b>${escapedPayload}</b></p>`)

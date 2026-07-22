@@ -1,12 +1,11 @@
 import { type ArticlePageSchemaType } from "~/types"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
-import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
 
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
-import { getTagsFromTagged } from "../Collection/utils/getTagsFromTagged"
+import { getPillAndPlaintextTags } from "../Collection/utils/getPillAndPlaintextTags"
 import { Skeleton } from "../Skeleton"
 
 export const ArticleLayout = ({
@@ -21,19 +20,18 @@ export const ArticleLayout = ({
   )
 
   const parent = getIndexByPermalink(page.permalink, site.siteMap)
-  const tagged = page.tagged
-  const tags = page.tags
 
-  const resolvedTags =
-    tagged &&
-    parent?.layout === "collection" &&
-    parent.collectionPagePageProps?.tagCategories
-      ? getTagsFromTagged(tagged, parent.collectionPagePageProps?.tagCategories)
-      : tags
+  const parentTagCategories =
+    parent?.layout === "collection"
+      ? parent.collectionPagePageProps?.tagCategories
+      : undefined
 
-  const resolvedCategory = resolveCategoryLabel({
-    category: page.category,
-  })
+  // NOTE: No longer falls back to the legacy `page.tags` field — Article Pages are
+  // expected to carry `tagged` + the parent Collection's `tagCategories` going forward.
+  const { pillTags, plaintextTags } = getPillAndPlaintextTags(
+    page.tagged,
+    parentTagCategories,
+  )
 
   return (
     <Skeleton site={site} page={page} layout={layout}>
@@ -41,10 +39,10 @@ export const ArticleLayout = ({
         <ArticlePageHeader
           {...page.articlePageHeader}
           breadcrumb={breadcrumb}
-          category={resolvedCategory}
+          plaintextTags={plaintextTags}
           title={page.title}
           date={page.date}
-          tags={resolvedTags}
+          pillTags={pillTags}
         />
 
         <div className="mx-auto w-full gap-10 pb-20">

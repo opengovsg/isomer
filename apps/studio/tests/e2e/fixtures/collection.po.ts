@@ -34,4 +34,35 @@ export class CollectionPO {
       this.page.getByText("At least one option must be selected"),
     ).toBeVisible()
   }
+
+  /** New collection editing experience root section (feature flag on). */
+  async expectManageCollectionVisible() {
+    await expect(this.page.getByText("Manage Collection")).toBeVisible()
+  }
+
+  async expectCollectionDisplayVisible() {
+    await expect(
+      this.page.getByRole("button", { name: /Collection display/i }),
+    ).toBeVisible()
+  }
+
+  async expectFiltersVisible() {
+    await expect(
+      this.page.getByRole("button", { name: /Filters/i }),
+    ).toBeVisible()
+  }
+
+  async expectFiltersHidden() {
+    await expect(
+      this.page.getByRole("button", { name: /Filters/i }),
+    ).not.toBeVisible()
+  }
+
+  async openFilters() {
+    await this.page.getByRole("button", { name: /Filters/i }).click()
+  }
+
+  async expectManageFiltersDrawerOpen() {
+    await expect(this.page.getByText("Manage filters")).toBeVisible()
+  }
 }

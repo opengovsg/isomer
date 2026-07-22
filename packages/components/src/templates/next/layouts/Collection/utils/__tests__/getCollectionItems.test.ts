@@ -1,6 +1,7 @@
-import type { IsomerSitemap } from "~/types"
+import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { getCollectionItems } from "../getCollectionItems"
 
@@ -325,28 +326,69 @@ describe("getCollectionItems", () => {
     })
   })
 
-  describe("category resolution", () => {
-    it("should use legacy category string", () => {
+  describe("plaintextTags resolution", () => {
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        label: "Topic",
+        id: "topic-1",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        options: [{ label: "Health", id: "topic-opt-1" }],
+      },
+      {
+        label: "Category",
+        id: "cat-1",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        options: [
+          { label: "Guides", id: "cat-opt-1" },
+          { label: "Articles", id: "cat-opt-2" },
+        ],
+      },
+    ]
+
+    it('resolves plaintextTags from groups with display: "plaintext" via the item\'s tagged options', () => {
       // Arrange
       const site = createSiteWithChildren([
-        createArticleChild({ category: "Legacy Category" }),
+        createArticleChild({ tagged: ["cat-opt-1"] }),
       ])
 
       // Act
       const result = getCollectionItems({
         site,
         permalink: "/collection",
+        tagCategories,
       })
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.category).toBe("Legacy Category")
+      expect(result[0]!.plaintextTags).toEqual([
+        { id: "cat-1", category: "Category", selected: ["Guides"] },
+      ])
     })
 
-    it("should fall back to 'Others' when category is absent", () => {
+    it("keeps all selected options for a plaintext group, uncombined (joining is a render concern)", () => {
       // Arrange
       const site = createSiteWithChildren([
-        createArticleChild({ category: undefined }),
+        createArticleChild({ tagged: ["cat-opt-1", "cat-opt-2"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.plaintextTags).toEqual([
+        { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
+      ])
+    })
+
+    it("returns undefined when the collection has no tagCategories", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["cat-opt-1"] }),
       ])
 
       // Act
@@ -357,7 +399,144 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.category).toBe("Others")
+      expect(result[0]!.plaintextTags).toBeUndefined()
+    })
+
+    it("returns undefined when the item has no tagged options", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: undefined }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.plaintextTags).toBeUndefined()
+    })
+  })
+
+  describe('pillTags include only display: "pills" groups', () => {
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        label: "Topic",
+        id: "topic-1",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        options: [{ label: "Health", id: "topic-opt-1" }],
+      },
+      {
+        label: "Category",
+        id: "cat-1",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        options: [
+          { label: "Guides", id: "cat-opt-1" },
+          { label: "Articles", id: "cat-opt-2" },
+        ],
+      },
+    ]
+
+    it("includes all groups in tags, but only pills groups in pillTags", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["topic-opt-1", "cat-opt-1"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.tags).toEqual([
+        { id: "topic-1", category: "Topic", selected: ["Health"] },
+        { id: "cat-1", category: "Category", selected: ["Guides"] },
+      ])
+      expect(result[0]!.pillTags).toEqual([
+        { id: "topic-1", category: "Topic", selected: ["Health"] },
+      ])
+    })
+
+    it("returns undefined for tags and pillTags when tagCategories is undefined", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["topic-opt-1"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.tags).toBeUndefined()
+      expect(result[0]!.pillTags).toBeUndefined()
+    })
+
+    it("treats legacy tag categories without display as pills in pillTags", () => {
+      // Arrange
+      const legacyTagCategories = [
+        {
+          label: "Topic",
+          id: "topic-1",
+          options: [{ label: "Health", id: "topic-opt-1" }],
+        },
+      ] satisfies CollectionPageSchemaType["page"]["tagCategories"]
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["topic-opt-1"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories: legacyTagCategories,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.pillTags).toEqual([
+        { id: "topic-1", category: "Topic", selected: ["Health"] },
+      ])
+      expect(result[0]!.plaintextTags).toEqual([])
+    })
+
+    it('returns an empty array for pillTags when the only group is display: "plaintext"', () => {
+      // Arrange
+      const singleTagCategory = [
+        {
+          label: "Category",
+          id: "cat-1",
+          display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+          options: [{ label: "Guides", id: "cat-opt-1" }],
+        },
+      ]
+      const site = createSiteWithChildren([
+        createArticleChild({ tagged: ["cat-opt-1"] }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        tagCategories: singleTagCategory,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.tags).toEqual([
+        { id: "cat-1", category: "Category", selected: ["Guides"] },
+      ])
+      expect(result[0]!.pillTags).toEqual([])
     })
   })
 })

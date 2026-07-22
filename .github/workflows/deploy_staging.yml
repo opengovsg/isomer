@@ -44,4 +44,9 @@ jobs:
       app-s3-assets-bucket-name: "isomer-next-infra-stg-assets-private-b18ec1f"
       app-s3-assets-domain-name: "isomer-user-content-stg.by.gov.sg"
       app-growthbook-client-key: "sdk-x4jkIJGr4TizR8qK"
-      app-intercom-app-id: "jv2tjc3g"
+      # NOTE: app-intercom-app-id is intentionally omitted here. Staging is
+      # used for internal self-testing, and booting Intercom with the same
+      # app id as production/UAT would pollute their data with test traffic.
+      # Leaving this unset makes NEXT_PUBLIC_INTERCOM_APP_ID empty on staging,
+      # which the Intercom wrapper (apps/studio/src/lib/intercom.ts) treats
+      # as "not configured" and logs to the console instead.

@@ -15,24 +15,26 @@ export const processCollectionItems = (
       site,
       variant,
       date,
-      category,
+      plaintextTags,
       title,
       description,
       image,
       isContainNeeded,
       url,
       tags,
+      pillTags,
     } = item
     const file = variant === "file" ? item.fileDetails : null
     return {
       id,
       date,
-      category,
+      plaintextTags,
       title,
       description,
       image,
       isContainNeeded,
       tags,
+      pillTags,
       referenceLinkHref: getReferenceLinkHref(
         url,
         site.siteMapArray,
