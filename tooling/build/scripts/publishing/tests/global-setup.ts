@@ -25,6 +25,8 @@ const prismaMigrationDir = join(
   "migrations",
 )
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 // Running migrations manually; dd-trace intercepts `exec` usage and prevents runs
 const applyMigrations = async (client: Client) => {
   const directory = readdirSync(prismaMigrationDir).sort()
@@ -33,6 +35,32 @@ const applyMigrations = async (client: Client) => {
     if (statSync(name).isDirectory()) {
       const migration = readFileSync(`${name}/migration.sql`, "utf8")
       await client.query(migration)
+    }
+  }
+}
+
+const connectAndMigrate = async (config: {
+  host: string
+  port: number
+  user: string
+  password: string
+  database: string
+}) => {
+  for (let attempt = 1; attempt <= 10; attempt++) {
+    const client = new Client(config)
+    try {
+      await client.connect()
+      await applyMigrations(client)
+      await client.end()
+      return
+    } catch (error) {
+      try {
+        await client.end()
+      } catch {
+        // The client may not have connected yet.
+      }
+      if (attempt === 10) throw error
+      await sleep(500 * attempt)
     }
   }
 }
@@ -61,16 +89,13 @@ export default async (project: TestProject) => {
   const dbName = env.POSTGRES_DB ?? "test"
   const dbPort = getMappedPort(pg, 5432)
 
-  const client = new Client({
+  await connectAndMigrate({
     host: pg.host,
     port: dbPort,
     user: dbUsername,
     password: dbPassword,
     database: dbName,
   })
-  await client.connect()
-  await applyMigrations(client)
-  await client.end()
 
   // Test workers fork off this process after global setup, so plain env
   // assignments are visible to the test files

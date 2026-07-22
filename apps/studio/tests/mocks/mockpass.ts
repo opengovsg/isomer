@@ -1,4 +1,3 @@
-import type {} from "@opengovsg/starter-kitty-testcontainers/vitest"
 import { getMappedPort } from "@opengovsg/starter-kitty-testcontainers"
 import { inject } from "vitest"
 
