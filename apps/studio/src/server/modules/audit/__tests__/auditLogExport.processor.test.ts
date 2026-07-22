@@ -208,6 +208,61 @@ describe("auditLogExport processor", () => {
     expect(updated.completedAt).not.toBeNull()
   })
 
+  it("marks the row Done BEFORE sending the ready email, so the emailed token is already live", async () => {
+    // Arrange
+    const { site } = await setupSite()
+    const admin = await setupUser({ email: "ordering@vendor.com.sg" })
+    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    const request = await seedRequest({
+      siteId: site.id,
+      userId: admin.id,
+      reportType: "Access",
+    })
+
+    // Capture the row's state at the exact moment the email goes out: if the
+    // send ever moves back ahead of the Done UPDATE, a recipient clicking
+    // immediately hits the download route's status guard and sees "expired".
+    let statusAtSendTime: string | null = null
+    let completedAtSendTime: Date | null = null
+    mockSendAuditLogExportReadyEmail.mockImplementation(async () => {
+      const row = await getRequest(request.id)
+      statusAtSendTime = row.status
+      completedAtSendTime = row.completedAt
+    })
+
+    // Act
+    await processPendingAuditLogExports()
+
+    // Assert
+    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledTimes(1)
+    expect(statusAtSendTime).toBe("Done")
+    expect(completedAtSendTime).not.toBeNull()
+  })
+
+  it("re-queues a row whose ready email failed, even though it was already marked Done", async () => {
+    // Arrange
+    const { site } = await setupSite()
+    const admin = await setupUser({ email: "sesdown@vendor.com.sg" })
+    await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+    const request = await seedRequest({
+      siteId: site.id,
+      userId: admin.id,
+      reportType: "Access",
+    })
+    mockSendAuditLogExportReadyEmail.mockRejectedValue(new Error("ses down"))
+
+    // Act
+    await processPendingAuditLogExports()
+
+    // Assert: the Done UPDATE ran first, but the catch re-queues so a later
+    // sweep retries the send; that retry re-marks the row Done, which makes
+    // the same requestId's token live again. No failure email on attempt 1.
+    const updated = await getRequest(request.id)
+    expect(updated.status).toBe("Pending")
+    expect(updated.attempts).toBe(1)
+    expect(mockSendAuditLogExportFailedEmail).not.toHaveBeenCalled()
+  })
+
   it("processes a fanned-out Both request (two rows): two uploads, two single-link emails, both Done", async () => {
     // Arrange: a "Both" user request is stored as two independent rows — one
     // Access, one Activity — each fulfilled as its own job with its own email.
