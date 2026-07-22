@@ -1,5 +1,9 @@
 import { toZonedTime } from "date-fns-tz"
-import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
+import {
+  AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS,
+  ISOMER_SUPPORT_EMAIL,
+  ISOMER_SUPPORT_LINK,
+} from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { formatScheduledAtDate } from "~/lib/dates"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
@@ -297,7 +301,7 @@ const auditLogExportReadyTemplate = (
   return {
     subject: `[Isomer] ${logName} logs for ${month} for your site (${siteName}) is ready`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You requested for audit logs for your site(s) for (${month}). This link will expire after 3 days.</p>
+<p>You requested for audit logs for your site(s) for (${month}). This link will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
 <br/>
 <p>${downloadLink}</p>
 <p>Best,</p>
