@@ -1,10 +1,26 @@
-import type { RawBuilder } from "kysely"
-import { endOfMonth, format, parse, startOfMonth, subMonths } from "date-fns"
+// Thin wrapper over the audit log export module's queries
+// (`~/server/modules/audit/auditLogExport.query`) — that module is the single
+// source of truth for the report queries and CSV serialisation; this script
+// only orchestrates per-site execution and file output.
+//
+// Behavior change vs the old standalone script: the export range uses SGT
+// (Asia/Singapore) month boundaries with a half-open end (instead of local-tz
+// startOfMonth/endOfMonth), the users report is point-in-time as of the end
+// of the range (ADR 0003) instead of "has access now", PermissionDelete
+// descriptions now render the revoked user's email, and CSV timestamps are
+// rendered in SGT (+08:00) instead of UTC.
+import type { IsoMonth } from "~/schemas/audit"
+import { format, subMonths } from "date-fns"
+import { toZonedTime } from "date-fns-tz"
 import fs from "fs"
-import Papa from "papaparse"
 import path, { dirname } from "path"
 import { fileURLToPath } from "url"
-import { AuditLogEvent, db, sql } from "~/server/modules/database"
+import {
+  getAccessReportRows,
+  getActivityReportRows,
+  getMonthDateRange,
+  toCsv,
+} from "~/server/modules/audit/auditLogExport.query"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -129,303 +145,45 @@ const SITES_WITH_AUDIT_LOGS = [
 
 // Month and year to get audit logs for, in the format of YYYY-MM,
 // leave empty for previous month
-const MONTH_YEAR = ""
-
-interface GetAuditLogsQueryParams {
-  siteId: number
-  type: "users" | "events"
-  monthYear: string // in the format of YYYY-MM
-}
-
-type DisplayableAuditLogEvent = Exclude<
-  AuditLogEvent,
-  | "UserCreate"
-  | "UserUpdate"
-  | "UserDelete"
-  | "PermissionUpdate"
-  | "SchedulePublish"
-  | "CancelSchedulePublish"
->
-
-// NOTE: Only use these queries in the context of the getAuditLogQuery function,
-// they are separated out for type safety to ensure all event types are handled
-const AUDIT_LOGS_EVENTS_QUERIES: Record<
-  DisplayableAuditLogEvent,
-  RawBuilder<unknown>
-> = {
-  ResourceCreate: sql<string>`CONCAT('"', al.delta -> 'after' -> 'resource' ->> 'title', '" (', al.delta -> 'after' -> 'resource' ->> 'type', ' ', al.delta -> 'after' -> 'resource' ->> 'id', ') created')`,
-  ResourceUpdate: sql<string>`CONCAT('"', al.delta -> 'before' -> 'resource' ->> 'title', '" (', al.delta -> 'before' -> 'resource' ->> 'type', ' ', al.delta -> 'before' -> 'resource' ->> 'id', ') updated')`,
-  ResourceDelete: sql<string>`CONCAT('"', al.delta -> 'before' ->> 'title', '" (', al.delta -> 'before' ->> 'type', ' ', al.delta -> 'before' ->> 'id', ') deleted')`,
-  Publish: sql<string>`CONCAT('"', al.metadata ->> 'title', '" (', al.metadata ->> 'type', ' ', al.metadata ->> 'id', ') published to Version No. ', al.delta -> 'after' ->> 'versionNum')`,
-  NavbarUpdate: sql<string>`'Navbar has been updated'`,
-  FooterUpdate: sql<string>`'Footer has been updated'`,
-  SiteConfigUpdate: sql<string>`'Site configuration has been updated'`,
-  RedirectCreate: sql<string>`CONCAT('Redirect from "', al.delta -> 'after' ->> 'source', '" to "', al.delta -> 'after' ->> 'destination', '" ', CASE WHEN al.delta -> 'before' ->> 'destination' IS NOT NULL THEN CONCAT('revived (was: "', al.delta -> 'before' ->> 'destination', '")') ELSE 'created' END)`,
-  RedirectDelete: sql<string>`CONCAT('Redirect from "', al.delta -> 'before' ->> 'source', '" to "', al.delta -> 'before' ->> 'destination', '" deleted')`,
-  PermissionCreate: sql<string>`CONCAT('Permission (', al.delta -> 'after' ->> 'role', ') granted to ', pu.email)`,
-  PermissionDelete: sql<string>`CONCAT('Permission (', al.delta -> 'before' ->> 'role', ') revoked from ', pu.email)`,
-  Login: sql<string>`CONCAT('Login attempt by ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 1), ' from IP address ', SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 2))`,
-  Logout: sql<string>`CONCAT('Logout attempt by ', al.delta -> 'before' ->> 'email', ' from IP address ', al."ipAddress")`,
-}
-
-export const getAuditLogQuery = ({
-  siteId,
-  type,
-  monthYear,
-}: GetAuditLogsQueryParams) => {
-  // Parse the date from the given monthYear
-  const date = parse(monthYear, "yyyy-MM", new Date())
-  const startDate = startOfMonth(date)
-  const endDate = endOfMonth(date)
-
-  switch (type) {
-    case "users":
-      return (
-        db
-          .selectFrom("User as u")
-          .innerJoin("ResourcePermission as rp", "u.id", "rp.userId")
-          .select([
-            "u.email as Email",
-            'u.lastLoginAt as "Last login"',
-            "rp.role as Role",
-            'rp.createdAt as "Date added"',
-          ])
-          .where("rp.siteId", "=", siteId)
-          // Exclude internal Isomer admins from agency-facing reports
-          .where("u.id", "not in", (eb) =>
-            eb.selectFrom("IsomerAdmin").select("IsomerAdmin.userId"),
-          )
-          .where("rp.deletedAt", "is", null)
-      )
-    case "events":
-      return db
-        .with("collaboratorWindows", (eb) =>
-          eb
-            .selectFrom("ResourcePermission as permission")
-            .innerJoin(
-              "User as collaboratorUser",
-              "collaboratorUser.id",
-              "permission.userId",
-            )
-            .select([
-              "collaboratorUser.email",
-              "permission.createdAt as grantedAt",
-              "permission.deletedAt as revokedAt",
-            ])
-            .where("permission.siteId", "=", siteId)
-            // Exclude internal Isomer admins from agency-facing reports
-            .where("collaboratorUser.id", "not in", (ieb) =>
-              ieb.selectFrom("IsomerAdmin").select("IsomerAdmin.userId"),
-            )
-            // Restrict to windows that could overlap the queried month
-            .where("permission.createdAt", "<=", endDate)
-            .where((eb) =>
-              eb.or([
-                eb("permission.deletedAt", "is", null),
-                eb("permission.deletedAt", ">", startDate),
-              ]),
-            ),
-        )
-        .selectFrom("AuditLog as al")
-        .leftJoin("User as u", "al.userId", "u.id")
-        .leftJoin("User as pu", (eb) =>
-          eb
-            .onRef("pu.id", "=", sql<string>`al.delta -> 'after' ->> 'userId'`)
-            .on("al.eventType", "in", [
-              AuditLogEvent.PermissionCreate,
-              AuditLogEvent.PermissionDelete,
-            ]),
-        )
-        .select((eb) => [
-          'al.createdAt as "Date and time"',
-          'al.eventType as "Event type"',
-          eb
-            .case()
-            // Special cases
-            .when(
-              eb.and([
-                eb("al.eventType", "=", AuditLogEvent.ResourceUpdate),
-                sql<boolean>`al.delta -> 'before' ->> 'title' IS NOT NULL`,
-              ]),
-            )
-            .then(
-              sql<string>`CONCAT('"', al.delta -> 'before' ->> 'title', '" (', al.delta -> 'before' ->> 'type', ' ', al.delta -> 'before' ->> 'id', ') updated')`,
-            )
-            .when(
-              eb.and([
-                eb("al.eventType", "=", AuditLogEvent.Publish),
-                sql<boolean>`al.delta ->> 'before' IS NULL`,
-                sql<boolean>`al.delta ->> 'after' IS NULL`,
-              ]),
-            )
-            .then("Publish")
-            // Ordinary cases
-            .when("al.eventType", "=", AuditLogEvent.ResourceCreate)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.ResourceCreate])
-            .when("al.eventType", "=", AuditLogEvent.ResourceUpdate)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.ResourceUpdate])
-            .when("al.eventType", "=", AuditLogEvent.ResourceDelete)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.ResourceDelete])
-            .when("al.eventType", "=", AuditLogEvent.Publish)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.Publish])
-            .when("al.eventType", "=", AuditLogEvent.NavbarUpdate)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.NavbarUpdate])
-            .when("al.eventType", "=", AuditLogEvent.FooterUpdate)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.FooterUpdate])
-            .when("al.eventType", "=", AuditLogEvent.SiteConfigUpdate)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.SiteConfigUpdate])
-            .when("al.eventType", "=", AuditLogEvent.RedirectCreate)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.RedirectCreate])
-            .when("al.eventType", "=", AuditLogEvent.RedirectDelete)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.RedirectDelete])
-            .when("al.eventType", "=", AuditLogEvent.PermissionCreate)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.PermissionCreate])
-            .when("al.eventType", "=", AuditLogEvent.PermissionDelete)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.PermissionDelete])
-            .when("al.eventType", "=", AuditLogEvent.Login)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.Login])
-            .when("al.eventType", "=", AuditLogEvent.Logout)
-            .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.Logout])
-            .else("-")
-            .end()
-            .as("Description"),
-          "u.name as Name",
-          "u.email as Email",
-          'u.lastLoginAt as "Last login date"',
-          'u.createdAt as "Account creation date"',
-          "al.metadata as Metadata",
-          "al.delta as Delta",
-        ])
-        .where((eb) =>
-          eb.or([
-            eb.and([
-              eb(
-                "al.eventType",
-                "in",
-                Object.keys(
-                  AUDIT_LOGS_EVENTS_QUERIES,
-                ) as DisplayableAuditLogEvent[],
-              ),
-              eb.or([
-                eb.eb("al.siteId", "=", siteId),
-                eb.eb(
-                  sql<number>`"al".delta -> 'after' ->> 'siteId'`,
-                  "=",
-                  siteId,
-                ),
-              ]),
-            ]),
-            eb.and([
-              eb("al.eventType", "=", AuditLogEvent.Login),
-              eb(
-                sql<string>`SPLIT_PART(al.delta -> 'before' ->> 'identifier', '|', 1)`,
-                "in",
-                (fb) =>
-                  fb
-                    .selectFrom("collaboratorWindows as cw")
-                    .select("cw.email")
-                    // Only while the user was an active collaborator at event time
-                    .where("cw.grantedAt", "<=", sql<Date>`al."createdAt"`)
-                    .where((eb) =>
-                      eb.or([
-                        eb("cw.revokedAt", "is", null),
-                        eb("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
-                      ]),
-                    ),
-              ),
-            ]),
-            eb.and([
-              eb("al.eventType", "=", AuditLogEvent.Logout),
-              eb(sql<string>`al.delta -> 'before' ->> 'email'`, "in", (fb) =>
-                fb
-                  .selectFrom("collaboratorWindows as cw")
-                  .select("cw.email")
-                  // Only while the user was an active collaborator at event time
-                  .where("cw.grantedAt", "<=", sql<Date>`al."createdAt"`)
-                  .where((eb) =>
-                    eb.or([
-                      eb("cw.revokedAt", "is", null),
-                      eb("cw.revokedAt", ">", sql<Date>`al."createdAt"`),
-                    ]),
-                  ),
-              ),
-            ]),
-          ]),
-        )
-        .where("al.createdAt", ">=", startDate)
-        .where("al.createdAt", "<=", endDate)
-        .orderBy("al.createdAt", "asc")
-    default:
-      const _: never = type
-      // oxlint-disable-next-line @typescript-eslint/restrict-template-expressions
-      throw new Error(`Unknown type: ${type}`)
-  }
-}
-
-export const getStringifiedValue = (value: unknown) => {
-  if (value === null || value === undefined) {
-    return ""
-  }
-  if (value instanceof Date) {
-    return value.toISOString()
-  }
-  if (typeof value === "string") {
-    return value
-  }
-  return JSON.stringify(value)
-}
+const MONTH_YEAR: IsoMonth | "" = ""
 
 const getAuditLogsForSite = async () => {
-  // If MONTH_YEAR is provided, use that, else get the previous month from today
-  const now = new Date()
-  const previousMonth = subMonths(now, 1)
+  // If MONTH_YEAR is provided, use that, else get the previous month from
+  // SGT-today. `toZonedTime` re-labels the instant with SGT wall-clock fields
+  // so the month arithmetic runs on the SGT calendar — on a UTC host during
+  // the first 8 hours of the 1st (SGT), the UTC clock is still in the previous
+  // month and plain `new Date()` would export two months back. The cast is
+  // sound because "yyyy-MM" zero-pads the month (same pattern as
+  // `getCurrentSingaporeMonth` in `~/schemas/audit`).
   // oxlint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const monthYear = MONTH_YEAR ? MONTH_YEAR : format(previousMonth, "yyyy-MM")
+  const monthYear: IsoMonth = MONTH_YEAR
+    ? MONTH_YEAR
+    : (format(
+        subMonths(toZonedTime(new Date(), "Asia/Singapore"), 1),
+        "yyyy-MM",
+      ) as IsoMonth)
+  const auditLogDateRange = getMonthDateRange(monthYear, new Date())
 
   for (const siteId of SITES_WITH_AUDIT_LOGS) {
     console.log(`Getting audit logs for siteId: ${siteId}`)
 
-    // Get users
-    const users = await getAuditLogQuery({
-      siteId,
-      type: "users",
-      monthYear,
-    }).execute()
+    // Get users with access as of the end of the range (point-in-time)
+    const users = await getAccessReportRows({ siteId, auditLogDateRange })
 
-    // Get events from the previous month
-    const events = await getAuditLogQuery({
-      siteId,
-      type: "events",
-      monthYear,
-    }).execute()
+    // Get events within the range
+    const events = await getActivityReportRows({ siteId, auditLogDateRange })
 
     // Save as CSV files
     const usersFilename = `useraccess_${siteId}_${monthYear}.csv`
     const eventsFilename = `auditlogs_${siteId}_${monthYear}.csv`
-
-    const usersCsv = Papa.unparse({
-      fields: Object.keys(users[0] ?? {}).map((key) => key.replaceAll('"', "")),
-      data: users.map((row) =>
-        Object.values(row).map((value) => getStringifiedValue(value)),
-      ),
-    })
-
-    const eventsCsv = Papa.unparse({
-      fields: Object.keys(events[0] ?? {}).map((key) =>
-        key.replaceAll('"', ""),
-      ),
-      data: events.map((row) =>
-        Object.values(row).map((value) => getStringifiedValue(value)),
-      ),
-    })
 
     const outputDir = path.join(__dirname, "output")
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir)
     }
 
-    fs.writeFileSync(path.join(outputDir, usersFilename), usersCsv)
-    fs.writeFileSync(path.join(outputDir, eventsFilename), eventsCsv)
+    fs.writeFileSync(path.join(outputDir, usersFilename), toCsv(users))
+    fs.writeFileSync(path.join(outputDir, eventsFilename), toCsv(events))
   }
 
   console.log('All audit logs saved in "output" folder')
