@@ -114,8 +114,8 @@ catalogs:
       specifier: ^3.3.0
       version: 3.3.0
     '@sinclair/typebox':
-      specifier: ^0.33.12
-      version: 0.33.22
+      specifier: ^0.33.24
+      version: 0.33.24
     '@tanstack/react-table':
       specifier: ^8.21.2
       version: 8.21.3
@@ -749,7 +749,7 @@ importers:
         version: 7.8.0
       '@sinclair/typebox':
         specifier: 'catalog:'
-        version: 0.33.22
+        version: 0.33.24
       '@tanstack/query-devtools':
         specifier: catalog:tanstack-query
         version: 5.101.2
@@ -1170,7 +1170,7 @@ importers:
         version: 3.10.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sinclair/typebox':
         specifier: 'catalog:'
-        version: 0.33.22
+        version: 0.33.24
       algoliasearch:
         specifier: 'catalog:'
         version: 4.27.0
@@ -6002,8 +6002,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@sinclair/typebox@0.33.22':
-    resolution: {integrity: sha512-auUj4k+f4pyrIVf4GW5UKquSZFHJWri06QgARy9C0t9ZTjJLIuNIrr1yl9bWcJWJ1Gz1vOvYN1D+QPaIlNMVkQ==}
+  '@sinclair/typebox@0.33.24':
+    resolution: {integrity: sha512-91up4t0BLjfkCZ4Ap/BcgaPrMaX6n0I2YRu+kc03xGhLy9G3N05nbTpnK8q7GXdv0PxwUoxi67A8o3Wr5U7j3w==}
 
   '@sindresorhus/is@5.6.0':
     resolution: {integrity: sha512-TV7t8GKYaJWsn00tFDqBw8+Uqmr8A0fRU1tvTQhyZzGv0sJCGRQL3JGMI3ucuKo3XIZdUP+Lx7/gh2t3lewy7g==}
@@ -16519,7 +16519,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.60.1':
     optional: true
 
-  '@sinclair/typebox@0.33.22': {}
+  '@sinclair/typebox@0.33.24': {}
 
   '@sindresorhus/is@5.6.0': {}
 
