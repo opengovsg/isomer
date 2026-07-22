@@ -16,7 +16,8 @@ const createAccordionStyles = tv({
     details:
       "group mt-7 border-y border-divider-medium px-4 py-5 first:mt-0 has-[+_details]:border-b-0 [&+details]:mt-0",
     icon: "h-6 w-6 flex-shrink-0 [&.minus]:hidden [&.minus]:group-open:block [&.plus]:block [&.plus]:group-open:hidden",
-    content: "pt-5 text-base-content-strong",
+    content:
+      "pt-5 text-base-content-strong [&>:is(ol,ul):first-child>li:first-child]:mt-0 [&>:is(ol,ul):first-child]:mt-0 [&>:is(ol,ul):last-child>li:last-child]:mb-0",
   },
 })
 

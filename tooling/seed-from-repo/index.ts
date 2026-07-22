@@ -79,7 +79,7 @@ async function ensureSiteExists(
         `git clone https://oauth2:${process.env.GITHUB_TOKEN}@github.com/isomerpages/${siteName}.git ${cloneDir}/${siteName}`,
         (err) => {
           if (err) {
-            reject(err);
+            reject(err instanceof Error ? err : new Error(err.message));
           } else {
             resolve();
           }

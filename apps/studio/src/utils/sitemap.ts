@@ -26,8 +26,20 @@ type ResourceDto = Omit<
   summary?: string
   thumbnail?: string
   category?: string
+  categoryId?: string | null
+  tagged?: string | null
   date?: string
   content?: string
+}
+
+const parseTagged = (raw: string | null | undefined): string[] | undefined => {
+  if (!raw) return undefined
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed) ? (parsed as string[]) : undefined
+  } catch {
+    return undefined
+  }
 }
 
 type CollectionItemResourceDto = Omit<ResourceDto, "type" | "parentId"> & {
@@ -114,6 +126,8 @@ const getSitemapTreeFromArray = (
         lastModified: resource.updatedAt.toISOString(),
         permalink,
         category: resource.category ?? "Others",
+        categoryId: resource.categoryId ?? undefined,
+        tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",
@@ -136,6 +150,8 @@ const getSitemapTreeFromArray = (
         lastModified: resource.updatedAt.toISOString(),
         permalink,
         category: resource.category ?? "Others",
+        categoryId: resource.categoryId ?? undefined,
+        tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
         image: {
           src: resource.thumbnail ?? "",

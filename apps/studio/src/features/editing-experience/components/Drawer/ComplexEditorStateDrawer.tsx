@@ -4,7 +4,7 @@ import { Box, Flex, HStack, useDisclosure } from "@chakra-ui/react"
 import { Button, IconButton, useToast } from "@opengovsg/design-system-react"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { cloneDeep, isEmpty, isEqual } from "lodash-es"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { BiTrash } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -171,6 +171,8 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
   const handleSave = useCallback(async () => {
     let newPageState = previewPageState
 
+    let assetsToDelete: string[] = []
+
     if (modifiedAssets.length > 0) {
       const updatedBlocks = Array.from(previewPageState.content)
       const newBlock = cloneDeep(updatedBlocks[currActiveIdx])
@@ -211,24 +213,15 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
         return
       }
 
-      // Delete the original assets for those that have been modified
-      // This is done by deleting the file key stored in the src attribute, as
-      // it would have been replaced by new file keys after uploading
-      const assetsToDelete = modifiedAssets
-        .map(({ src }) => src?.slice(1))
-        .filter((src) => src !== PLACEHOLDER_IMAGE_FILENAME)
-        .reduce<string[]>((acc, curr) => {
-          if (curr !== undefined) {
-            acc.push(curr)
-          }
-          return acc
-        }, [])
-
-      deleteAssets({
-        siteId,
-        resourceId: String(pageId),
-        fileKeys: assetsToDelete,
-      })
+      // Collect the original asset keys so they can be deleted after the page
+      // save succeeds.
+      assetsToDelete = modifiedAssets.reduce<string[]>((acc, { src }) => {
+        const fileKey = src?.slice(1)
+        if (fileKey !== undefined && fileKey !== PLACEHOLDER_IMAGE_FILENAME) {
+          acc.push(fileKey)
+        }
+        return acc
+      }, [])
     }
 
     savePage(
@@ -244,6 +237,13 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
           setSavedPageState(newPageState)
           setDrawerState({ state: "root" })
           setAddedBlockIndex(null)
+          if (assetsToDelete.length > 0) {
+            deleteAssets({
+              siteId,
+              resourceId: String(pageId),
+              fileKeys: assetsToDelete,
+            })
+          }
         },
       },
     )
@@ -266,23 +266,36 @@ export default function ComplexEditorStateDrawer(): JSX.Element {
 
   const isLoading = isSavingPage || isUploadingAsset || isDeletingAssets
 
+  const component = previewPageState.content[currActiveIdx]
+  const componentType = component?.type
+  const pageLayout = previewPageState.layout
+  // NOTE: Memoised so the schema identity is stable across renders.
+  // getComponentSchema returns a fresh object per call; passing a new schema
+  // to JsonForms on every render makes its internal resync effect fire on each
+  // parent re-render, replacing in-progress form state with the (stale) data
+  // prop. Async writes (e.g. uploaded image src, which arrives ~10ms later via
+  // JsonForms' debounced onChange) get silently erased before reaching us.
+  const { subSchema, validateFn } = useMemo(() => {
+    if (!componentType) return { subSchema: undefined, validateFn: undefined }
+    const schema = getComponentSchema({
+      component: componentType,
+      layout: pageLayout,
+    })
+    return {
+      subSchema: schema,
+      validateFn: ajv.compile<IsomerComponent>(schema),
+    }
+  }, [componentType, pageLayout])
+
   if (currActiveIdx === -1 || currActiveIdx > previewPageState.content.length) {
     return <></>
   }
 
-  const component = previewPageState.content[currActiveIdx]
-
-  if (!component) {
+  if (!component || !subSchema || !validateFn) {
     return <></>
   }
 
-  const subSchema = getComponentSchema({
-    component: component.type,
-    layout: previewPageState.layout,
-  })
-  const { title } = subSchema
-  const validateFn = ajv.compile<IsomerComponent>(subSchema)
-  const componentName = title || "component"
+  const componentName = subSchema.title || "component"
 
   return (
     <>

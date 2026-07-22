@@ -67,7 +67,10 @@ describe("redirect.router", async () => {
     permalink: string
     published: boolean
   }) => {
-    const { page: rootPage } = await setupPageResource({
+    // Top-level resources are stored with parentId = null in production (they
+    // are NOT children of the RootPage's id), so seed them that way — otherwise
+    // getResourceByFullPermalink can't resolve them.
+    await setupPageResource({
       siteId,
       resourceType: ResourceType.RootPage,
       parentId: null,
@@ -75,7 +78,7 @@ describe("redirect.router", async () => {
     const { page } = await setupPageResource({
       siteId,
       resourceType: ResourceType.Page,
-      parentId: rootPage.id,
+      parentId: null,
       permalink,
       ...(published
         ? { state: ResourceState.Published, userId }
@@ -397,7 +400,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ errors: [], warnings: [] })
+      expect(result).toEqual({ errors: [] })
     })
 
     it("should report no issues for a redirect to a published page", async () => {
@@ -412,7 +415,7 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual({ errors: [], warnings: [] })
+      expect(result).toEqual({ errors: [] })
     })
 
     it("should error when a live redirect already exists for the source", async () => {
@@ -485,7 +488,7 @@ describe("redirect.router", async () => {
     it("should not flag a multi-hop cycle as a loop (only one hop is checked)", async () => {
       // Arrange — /b -> /c and /c -> /a already exist. Adding /a -> /b closes a
       // three-redirect cycle, but loop detection only looks one hop deep by
-      // design, so this surfaces as a chain warning rather than a loop error.
+      // design, so it is allowed rather than flagged as a loop error.
       await db
         .insertInto("Redirect")
         .values([
@@ -505,16 +508,11 @@ describe("redirect.router", async () => {
       expect(result.errors).not.toContainEqual(
         expect.objectContaining({ code: "REDIRECT_LOOP" }),
       )
-      expect(result.warnings).toContainEqual({
-        code: "DESTINATION_IS_REDIRECT_SOURCE",
-        message:
-          "This page already redirects to /c. Visitors will end up there instead.",
-      })
     })
 
     it("should not flag a multi-hop chain that never returns to the source", async () => {
       // Arrange — /b -> /c -> /d terminates at /d, so adding /a -> /b chains but
-      // does not loop; it is a warning, not an error.
+      // does not loop, so it is allowed.
       await db
         .insertInto("Redirect")
         .values([
@@ -559,159 +557,6 @@ describe("redirect.router", async () => {
       expect(result.errors).toEqual([])
     })
 
-    it("should warn when the destination is itself a separate redirect source", async () => {
-      // Arrange
-      // /b redirects to /c, so /a -> /b would chain through /b to /c
-      await db
-        .insertInto("Redirect")
-        .values({ siteId, source: "/b", destination: "/c" })
-        .execute()
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/a",
-        destination: "/b",
-      })
-
-      // Assert
-      expect(result.errors).toEqual([])
-      expect(result.warnings).toContainEqual({
-        code: "DESTINATION_IS_REDIRECT_SOURCE",
-        message:
-          "This page already redirects to /c. Visitors will end up there instead.",
-      })
-    })
-
-    it("should warn when the internal destination does not exist", async () => {
-      // Arrange / Act
-      const result = await caller.validate({
-        siteId,
-        source: "/old",
-        destination: "/missing",
-      })
-
-      // Assert
-      expect(result.warnings).toContainEqual({
-        code: "DESTINATION_NOT_FOUND",
-        message:
-          "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
-      })
-    })
-
-    it("should warn when the internal destination exists but is not published", async () => {
-      // Arrange
-      await seedPageAtRoot({ permalink: "draft-page", published: false })
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/old",
-        destination: "/draft-page",
-      })
-
-      // Assert
-      expect(result.warnings).toContainEqual({
-        code: "DESTINATION_NOT_PUBLISHED",
-        message:
-          "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
-      })
-    })
-
-    it("should not warn for a published page nested under a folder", async () => {
-      // Arrange — /folder/leaf, where leaf is a published page under a folder.
-      // This exercises the multi-segment walk past depth 1.
-      const { page: rootPage } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
-        parentId: null,
-      })
-      const { folder } = await setupFolder({
-        siteId,
-        permalink: "folder",
-        parentId: rootPage.id,
-      })
-      await setupPageResource({
-        siteId,
-        resourceType: ResourceType.Page,
-        parentId: folder.id,
-        permalink: "leaf",
-        state: ResourceState.Published,
-        userId,
-      })
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/old",
-        destination: "/folder/leaf",
-      })
-
-      // Assert
-      expect(result.warnings).toEqual([])
-    })
-
-    it("should not warn for a folder whose index page is published", async () => {
-      // Arrange — "/folder" is served by the folder's published IndexPage, so
-      // it must resolve as published (exercises the folder->IndexPage branch).
-      const { page: rootPage } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
-        parentId: null,
-      })
-      const { folder } = await setupFolder({
-        siteId,
-        permalink: "folder",
-        parentId: rootPage.id,
-      })
-      await setupPageResource({
-        siteId,
-        resourceType: ResourceType.IndexPage,
-        parentId: folder.id,
-        state: ResourceState.Published,
-        userId,
-      })
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/old",
-        destination: "/folder",
-      })
-
-      // Assert
-      expect(result.warnings).toEqual([])
-    })
-
-    it("should warn NOT_PUBLISHED for a folder with no index page", async () => {
-      // Arrange — a folder with no IndexPage has no live page at its URL, so
-      // resolution falls back to the (unpublished) container.
-      const { page: rootPage } = await setupPageResource({
-        siteId,
-        resourceType: ResourceType.RootPage,
-        parentId: null,
-      })
-      await setupFolder({
-        siteId,
-        permalink: "folder",
-        parentId: rootPage.id,
-      })
-
-      // Act
-      const result = await caller.validate({
-        siteId,
-        source: "/old",
-        destination: "/folder",
-      })
-
-      // Assert
-      expect(result.warnings).toContainEqual({
-        code: "DESTINATION_NOT_PUBLISHED",
-        message:
-          "This page doesn't exist on your site yet. Make sure the page is live before publishing this redirect.",
-      })
-    })
-
     it("should error when the source is the URL of a published page", async () => {
       // Arrange — a live page sits at /live-page; redirecting from there would
       // shadow it on the published site.
@@ -746,6 +591,43 @@ describe("redirect.router", async () => {
 
       // Assert
       expect(result.errors).toEqual([])
+    })
+
+    it("should error when the source is the URL of a live folder (published index)", async () => {
+      // Arrange — a folder whose index page is published is live at "/folder",
+      // so a redirect there would shadow it. Regression test: the source guard
+      // must resolve top-level containers (parentId = null), not only pages.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.validate({
+        siteId,
+        source: "/folder",
+        destination: "/somewhere",
+      })
+
+      // Assert
+      expect(result.errors).toContainEqual({
+        code: "SOURCE_IS_EXISTING_PAGE",
+        message:
+          "A live page already uses this URL. The redirect would hide it. Move or unpublish that page first.",
+      })
     })
   })
 
@@ -1231,9 +1113,10 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe("/no-such-page")
     })
 
-    it("stores a literal path when the destination page exists but is unpublished", async () => {
-      // Arrange — a draft page has no live URL yet
-      await setupPageResource({
+    it("stores a reference when the destination page exists but is unpublished", async () => {
+      // Arrange — a draft page exists at /draft-page; it has no live URL yet, but
+      // the redirect references it so it starts working once the page publishes
+      const { page } = await setupPageResource({
         siteId,
         resourceType: ResourceType.Page,
         permalink: "draft-page",
@@ -1247,14 +1130,14 @@ describe("redirect.router", async () => {
         destination: "/draft-page",
       })
 
-      // Assert — kept literal (not converted to a reference, not rejected)
+      // Assert — resolved to a [resource:...] reference, not kept literal
       const row = await db
         .selectFrom("Redirect")
         .select("destination")
         .where("siteId", "=", siteId)
         .where("source", "=", "/from")
         .executeTakeFirstOrThrow()
-      expect(row.destination).toBe("/draft-page")
+      expect(row.destination).toBe(`[resource:${siteId}:${page.id}]`)
     })
 
     it("should resolve the site root '/' to the RootPage reference", async () => {
@@ -1307,8 +1190,9 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe(`[resource:${siteId}:${folder.id}]`)
     })
 
-    it("stores a literal path for a folder destination whose index page is unpublished", async () => {
-      // Arrange — a folder with no live index page has no live URL behind it yet
+    it("stores the folder reference for a folder destination whose index page is unpublished", async () => {
+      // Arrange — a folder whose index page is still a draft has no live URL yet,
+      // but the redirect references the folder so it works once it's published
       const { folder } = await setupFolder({ siteId, permalink: "about" })
       await setupPageResource({
         siteId,
@@ -1325,14 +1209,14 @@ describe("redirect.router", async () => {
         destination: "/about",
       })
 
-      // Assert — kept literal until the folder is published
+      // Assert — resolved to the folder reference, not kept literal
       const row = await db
         .selectFrom("Redirect")
         .select("destination")
         .where("siteId", "=", siteId)
         .where("source", "=", "/from")
         .executeTakeFirstOrThrow()
-      expect(row.destination).toBe("/about")
+      expect(row.destination).toBe(`[resource:${siteId}:${folder.id}]`)
     })
   })
 
@@ -1357,6 +1241,8 @@ describe("redirect.router", async () => {
         siteId,
         resourceType: ResourceType.Page,
         permalink: "target-page",
+        state: ResourceState.Published,
+        userId: session.userId,
       })
       const reference = `[resource:${siteId}:${page.id}]`
 
@@ -1367,7 +1253,31 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: "/target-page" }])
+      expect(result).toEqual([
+        { reference, permalink: "/target-page", warn: false },
+      ])
+    })
+
+    it("should warn for a reference whose page exists but is not published", async () => {
+      // Arrange — a draft page resolves to its permalink for display, but has no
+      // live page behind it yet, so the redirect currently leads nowhere.
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "draft-page",
+      })
+      const reference = `[resource:${siteId}:${page.id}]`
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: [reference],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference, permalink: "/draft-page", warn: true },
+      ])
     })
 
     it("should resolve a nested reference to its full permalink", async () => {
@@ -1394,7 +1304,7 @@ describe("redirect.router", async () => {
 
       // Assert
       expect(result).toEqual([
-        { reference, permalink: "/parent-folder/child-page" },
+        { reference, permalink: "/parent-folder/child-page", warn: false },
       ])
     })
 
@@ -1407,6 +1317,8 @@ describe("redirect.router", async () => {
         resourceType: ResourceType.IndexPage,
         permalink: "_index",
         parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId,
       })
       const reference = `[resource:${siteId}:${indexPage.id}]`
 
@@ -1417,10 +1329,10 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: "/info" }])
+      expect(result).toEqual([{ reference, permalink: "/info", warn: false }])
     })
 
-    it("should resolve a deleted page's reference to null", async () => {
+    it("should resolve a deleted page's reference to null and warn", async () => {
       // Arrange — a reference to a resource that doesn't exist
       const reference = `[resource:${siteId}:999999]`
 
@@ -1431,10 +1343,10 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: null }])
+      expect(result).toEqual([{ reference, permalink: null, warn: true }])
     })
 
-    it("should resolve a reference whose embedded siteId is not this site to null", async () => {
+    it("should resolve a reference whose embedded siteId is not this site to null and warn", async () => {
       // Arrange — the resourceId exists on this site, but the reference claims a
       // different site, so it must not resolve here.
       const { page } = await setupPageResource({
@@ -1451,7 +1363,182 @@ describe("redirect.router", async () => {
       })
 
       // Assert
-      expect(result).toEqual([{ reference, permalink: null }])
+      expect(result).toEqual([{ reference, permalink: null, warn: true }])
+    })
+
+    it("should not resolve or warn for an external URL destination", async () => {
+      // Arrange — external URLs aren't internal destinations; they never warn.
+      const reference = "https://www.example.gov.sg/page"
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: [reference],
+      })
+
+      // Assert
+      expect(result).toEqual([{ reference, permalink: null, warn: false }])
+    })
+
+    it("should not warn for a literal path to a published page (no permalink echoed)", async () => {
+      // Arrange — a literal "/path" destination shows as typed (permalink stays
+      // null), and only warns when it has no published page behind it.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: null,
+        permalink: "leaf",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/leaf"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/leaf", permalink: null, warn: false },
+      ])
+    })
+
+    it("should not warn for a literal path to a published page carrying a #fragment", async () => {
+      // Arrange — a literal destination may keep a "#fragment"; resolution must
+      // strip it and still find the underlying published page.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: null,
+        permalink: "leaf",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/leaf#section"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/leaf#section", permalink: null, warn: false },
+      ])
+    })
+
+    it("should warn for a literal path to an unpublished page", async () => {
+      // Arrange
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: null,
+        permalink: "draft-leaf",
+      })
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/draft-leaf"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/draft-leaf", permalink: null, warn: true },
+      ])
+    })
+
+    it("should warn for a literal path that matches no page", async () => {
+      // Arrange / Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/missing"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/missing", permalink: null, warn: true },
+      ])
+    })
+
+    it("should not warn for a folder whose index page is published", async () => {
+      // Arrange — "/folder" is served by the folder's published IndexPage, so it
+      // resolves as published (exercises the folder -> IndexPage branch).
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/folder"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/folder", permalink: null, warn: false },
+      ])
+    })
+
+    it("should warn for a folder whose index page is not published", async () => {
+      // Arrange — a folder with an unpublished IndexPage has no live page at its
+      // URL, so it warns.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/folder"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/folder", permalink: null, warn: true },
+      ])
     })
   })
 
@@ -1636,6 +1723,283 @@ describe("redirect.router", async () => {
         .where("eventType", "=", "Publish")
         .executeTakeFirstOrThrow()
       expect(publishEntry.userId).toBe(session.userId)
+    })
+  })
+
+  describe("getBySource", () => {
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site: otherSite } = await setupSite()
+
+      // Act
+      const result = caller.getBySource({
+        siteId: otherSite.id,
+        source: "/old",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return null when no live redirect has that source", async () => {
+      // Arrange / Act
+      const result = await caller.getBySource({
+        siteId,
+        source: "/no-redirect",
+      })
+
+      // Assert
+      expect(result).toBeNull()
+    })
+
+    it("should return an external destination verbatim", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/old",
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act
+      const result = await caller.getBySource({ siteId, source: "/old" })
+
+      // Assert
+      expect(result).toEqual({
+        destination: "https://www.example.gov.sg",
+        destinationResourceId: null,
+      })
+    })
+
+    it("should resolve a reference destination to the page's current permalink", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target-page",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/old",
+          destination: `[resource:${siteId}:${page.id}]`,
+        })
+        .execute()
+
+      // Act
+      const result = await caller.getBySource({ siteId, source: "/old" })
+
+      // Assert — destinationResourceId lets the caller detect a redirect that
+      // points back at the page being edited
+      expect(result).toEqual({
+        destination: "/target-page",
+        destinationResourceId: Number(page.id),
+      })
+    })
+
+    it("should match regardless of leading/trailing slashes in the queried path", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/old",
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act — the page settings field may pass an un-normalised path
+      const result = await caller.getBySource({ siteId, source: "old/" })
+
+      // Assert
+      expect(result).toEqual({
+        destination: "https://www.example.gov.sg",
+        destinationResourceId: null,
+      })
+    })
+
+    it("should not match a soft-deleted redirect", async () => {
+      // Arrange
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/old",
+          destination: "https://www.example.gov.sg",
+          deletedAt: new Date(),
+        })
+        .execute()
+
+      // Act
+      const result = await caller.getBySource({ siteId, source: "/old" })
+
+      // Assert
+      expect(result).toBeNull()
+    })
+  })
+
+  describe("countByDestinationResource", () => {
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { site: otherSite } = await setupSite()
+
+      // Act
+      const result = caller.countByDestinationResource({
+        siteId: otherSite.id,
+        resourceId: "1",
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should count live redirects pointing to the resource", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values([
+          {
+            siteId,
+            source: "/a",
+            destination: `[resource:${siteId}:${page.id}]`,
+          },
+          {
+            siteId,
+            source: "/b",
+            destination: `[resource:${siteId}:${page.id}]`,
+          },
+        ])
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(page.id),
+      })
+
+      // Assert
+      expect(count).toBe(2)
+    })
+
+    it("should count redirects pointing to a descendant page of a folder", async () => {
+      // Arrange — a redirect to a page nested inside the folder being counted
+      const { folder } = await setupFolder({ siteId, permalink: "folder" })
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "leaf",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/a",
+          destination: `[resource:${siteId}:${page.id}]`,
+        })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(folder.id),
+      })
+
+      // Assert
+      expect(count).toBe(1)
+    })
+
+    it("should not count a literal-path destination (reference-only)", async () => {
+      // Arrange — a literal-path destination that happens to match the page's
+      // path is not a reference, so it is intentionally not counted
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({ siteId, source: "/a", destination: "/target" })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(page.id),
+      })
+
+      // Assert
+      expect(count).toBe(0)
+    })
+
+    it("should not count soft-deleted redirects", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "target",
+        state: ResourceState.Published,
+        userId,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId,
+          source: "/a",
+          destination: `[resource:${siteId}:${page.id}]`,
+          deletedAt: new Date(),
+        })
+        .execute()
+
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: String(page.id),
+      })
+
+      // Assert
+      expect(count).toBe(0)
+    })
+
+    it("should return 0 for a resource that does not exist (empty references)", async () => {
+      // Arrange — no resource resolves, so the descendant reference list is
+      // empty; the count must short-circuit rather than emit an empty `in ()`.
+      // Act
+      const count = await caller.countByDestinationResource({
+        siteId,
+        resourceId: "999999",
+      })
+
+      // Assert
+      expect(count).toBe(0)
     })
   })
 })

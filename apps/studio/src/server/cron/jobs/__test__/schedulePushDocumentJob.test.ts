@@ -108,8 +108,10 @@ const seedDocumentReadyForIngestion = async ({
     .where("id", "=", String(indexBlob.id))
     .execute()
 
-  // A published Version for the IndexPage.
-  await db
+  // A published Version for the IndexPage. Publishing sets
+  // publishedVersionId on the Resource (see version.service.ts), and the
+  // handler resolves the index page blob through it.
+  const indexVersion = await db
     .insertInto("Version")
     .values({
       versionNum: 1,
@@ -117,6 +119,12 @@ const seedDocumentReadyForIngestion = async ({
       blobId: indexBlob.id,
       publishedBy,
     })
+    .returning("id")
+    .executeTakeFirstOrThrow()
+  await db
+    .updateTable("Resource")
+    .set({ publishedVersionId: indexVersion.id })
+    .where("id", "=", indexPage.id)
     .execute()
 
   // Child page that points at the PDF asset.
@@ -205,7 +213,7 @@ describe("schedulePushDocumentJobHandler", async () => {
     // Two sequential fetches: auth token, then ingest POST.
     vi.spyOn(global, "fetch").mockImplementation(
       // eslint-disable-next-line @typescript-eslint/require-await
-      (async (input: Parameters<typeof fetch>[0]) => {
+      async (input: Parameters<typeof fetch>[0]) => {
         const u = urlToString(input)
         if (u.endsWith("/v1/auth/token")) {
           return new Response(
@@ -217,7 +225,7 @@ describe("schedulePushDocumentJobHandler", async () => {
           return new Response("{}", { status: 200 })
         }
         throw new Error(`Unexpected fetch: ${u}`)
-      }) as typeof fetch,
+      },
     )
   })
 
@@ -442,6 +450,108 @@ describe("schedulePushDocumentJobHandler", async () => {
         .selectAll()
         .execute()
       expect(remaining).toHaveLength(0)
+    })
+
+    it("dispatches a resource that was already published (publishing cron won the race)", async () => {
+      // Arrange — simulate the schedule-publishing cron having already run
+      // for this gazette: publishing promotes the draft blob into the
+      // published Version and clears draftBlobId (see publishPageResource /
+      // version.service.ts). Both crons fire on the same scheduledAt, so
+      // this ordering happens whenever schedule-publishing wins the tick.
+      const { resourceId, ref } = await seedDocumentReadyForIngestion({
+        parentTitle: "Notices",
+        ref: "/2024/gazette/public/published-first.pdf",
+        category: "Government Gazettes",
+        publishedBy: user.id,
+      })
+      const version = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", String(resourceId))
+        .select("id")
+        .executeTakeFirstOrThrow()
+      await db
+        .updateTable("Resource")
+        .set({ publishedVersionId: version.id, draftBlobId: null })
+        .where("id", "=", String(resourceId))
+        .execute()
+      await db
+        .insertInto("PushDocumentJob")
+        .values({
+          resourceId: String(resourceId),
+          scheduledAt: FIXED_NOW,
+          scheduledBy: user.id,
+        })
+        .execute()
+
+      // Act
+      await schedulePushDocumentJobHandler()
+
+      // Assert — the gazette is indexed from the published Version's blob
+      // and its S3 object is untagged, even though no draft blob remains.
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
+        .calls[0]!
+      expect(records[0]).toMatchObject({ objectGroup: ref.slice(1) })
+      expect(s3Lib.setAssetAsPublished).toHaveBeenCalledTimes(1)
+      const remainingAfterPublish = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .execute()
+      expect(remainingAfterPublish).toHaveLength(0)
+    })
+
+    it("indexes the published version's content, not a newer unpublished draft", async () => {
+      // Arrange — publish the gazette, then attach a NEW draft blob whose
+      // ref differs. The job must index what actually went live, not
+      // unpublished edits.
+      const publishedRef = "/2024/gazette/public/live.pdf"
+      const draftRef = "/2024/gazette/public/edited-draft.pdf"
+      const { resourceId } = await seedDocumentReadyForIngestion({
+        parentTitle: "Notices",
+        ref: publishedRef,
+        category: "Government Gazettes",
+        publishedBy: user.id,
+      })
+      const version = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", String(resourceId))
+        .select("id")
+        .executeTakeFirstOrThrow()
+      const draftBlob = await db
+        .insertInto("Blob")
+        .values({ content: {} as never })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      await setBlobContentForPushDocument(
+        draftBlob.id,
+        draftRef,
+        "Government Gazettes",
+        ["tag-1"],
+      )
+      await db
+        .updateTable("Resource")
+        .set({ publishedVersionId: version.id, draftBlobId: draftBlob.id })
+        .where("id", "=", String(resourceId))
+        .execute()
+      await db
+        .insertInto("PushDocumentJob")
+        .values({
+          resourceId: String(resourceId),
+          scheduledAt: FIXED_NOW,
+          scheduledBy: user.id,
+        })
+        .execute()
+
+      // Act
+      await schedulePushDocumentJobHandler()
+
+      // Assert — records are built from the published ref, not the draft's.
+      expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
+      const [records] = vi.mocked(algoliaLib.saveObjectsToSearchIndex).mock
+        .calls[0]!
+      expect(records[0]).toMatchObject({
+        objectGroup: publishedRef.slice(1),
+      })
     })
 
     it("skips rows scheduled for the future", async () => {

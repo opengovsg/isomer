@@ -27,4 +27,5 @@ export type IsomerAdminScriptType =
   | "find-invalid-schema"
   | "create-content-from-local"
   | "import-folder-jsons"
+  | "publish-site-resources"
   | "rebuild-all-codebuild-projects"

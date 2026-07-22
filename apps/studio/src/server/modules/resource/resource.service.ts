@@ -1,6 +1,9 @@
-import type { SelectExpression } from "kysely"
+import type { SelectExpression, SelectQueryBuilder } from "kysely"
 import type { UnwrapTagged } from "type-fest"
-import type { ResourceItemContent } from "~/schemas/resource"
+import type {
+  ResourceItemContent,
+  ResourceOrderByOption,
+} from "~/schemas/resource"
 import {
   createChildrenPagesComparator,
   type IsomerSitemap,
@@ -8,6 +11,10 @@ import {
 import { TRPCError } from "@trpc/server"
 import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import {
+  normalizeRedirectPath,
+  normalizeRedirectSource,
+} from "~/schemas/redirect"
 import {
   getSitemapTree,
   injectTagMappings,
@@ -22,6 +29,7 @@ import type { Logger } from "@isomer/logging"
 import type {
   Footer,
   Navbar,
+  Redirect,
   Resource,
   SafeKysely,
   Site,
@@ -29,13 +37,14 @@ import type {
   User,
 } from "../database"
 import type { SearchResultResource } from "./resource.types"
-import { logPublishEvent } from "../audit/audit.service"
+import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { getUserById } from "../user/user.service"
 import { incrementVersion } from "../version/version.service"
 import { type Page } from "./resource.types"
+import { tokenizeSearchQuery } from "./resource.utils"
 
 // Specify the default columns to return from the Resource table
 export const defaultResourceSelect = [
@@ -53,6 +62,26 @@ export const defaultResourceSelect = [
   "Resource.scheduledAt",
   "Resource.scheduledBy",
 ] satisfies SelectExpression<DB, "Resource">[]
+
+// Shared by any query listing rows from the `Resource` table (e.g. folder/root
+// listings, collection item listings) so they sort identically and paginate
+// deterministically. `id` is used as the final tie-breaker
+export const applyResourceOrderBy = <O>(
+  query: SelectQueryBuilder<DB, "Resource", O>,
+  orderBy: ResourceOrderByOption,
+): SelectQueryBuilder<DB, "Resource", O> => {
+  switch (orderBy) {
+    case "title-asc":
+      return query
+        .orderBy(sql`lower("Resource"."title")`, "asc")
+        .orderBy("Resource.id", "asc")
+    case "updated-desc":
+    default:
+      return query
+        .orderBy("Resource.updatedAt", "desc")
+        .orderBy("Resource.id", "asc")
+  }
+}
 
 const defaultResourceWithBlobSelect = [
   ...defaultResourceSelect,
@@ -409,6 +438,20 @@ export const getLocalisedSitemap = async (
       ELSE ''
     END
 `.as("content")
+  const categoryIdSql = sql<string | null>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'categoryId')
+      ELSE NULL
+    END
+`.as("categoryId")
+  const taggedSql = sql<string | null>`
+    CASE
+      WHEN (published.content ->> 'layout') IN ('article','link')
+      THEN (published.content -> 'page' ->> 'tagged')
+      ELSE NULL
+    END
+`.as("tagged")
 
   // Get the actual resource first
   const resource = await getById(db, { resourceId, siteId })
@@ -431,6 +474,8 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
+          categoryIdSql,
+          taggedSql,
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -449,6 +494,8 @@ export const getLocalisedSitemap = async (
               eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
               eb.cast<string>(eb.val(""), "text").as("content"),
+              eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
+              eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -476,6 +523,8 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
+          categoryIdSql,
+          taggedSql,
           ...defaultResourceSelect,
         ]),
     )
@@ -492,12 +541,14 @@ export const getLocalisedSitemap = async (
         .where("Resource.state", "=", ResourceState.Published)
         .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
         .leftJoin("Blob as published", "Version.blobId", "published.id")
-        .select(() => [
+        .select(({ eb }) => [
           headerSql,
           thumbnailSql,
           categorySql,
           dateSql,
           contentSql,
+          eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
+          eb.cast<string | null>(eb.val(null), "text").as("tagged"),
           ...defaultResourceSelect,
         ])
         .unionAll((fb) =>
@@ -517,12 +568,14 @@ export const getLocalisedSitemap = async (
             .where("Resource.state", "=", ResourceState.Published)
             .leftJoin("Version", "Version.id", "Resource.publishedVersionId")
             .leftJoin("Blob as published", "Version.blobId", "published.id")
-            .select(() => [
+            .select(({ eb }) => [
               headerSql,
               thumbnailSql,
               categorySql,
               dateSql,
               contentSql,
+              eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
+              eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
         ),
@@ -535,6 +588,8 @@ export const getLocalisedSitemap = async (
       "category",
       "date",
       "content",
+      "categoryId",
+      "tagged",
       ...defaultResourceSelect,
     ])
     .union((eb) =>
@@ -546,6 +601,8 @@ export const getLocalisedSitemap = async (
           "category",
           "date",
           "content",
+          "categoryId",
+          "tagged",
           ...defaultResourceSelect,
         ]),
     )
@@ -558,6 +615,8 @@ export const getLocalisedSitemap = async (
           "category",
           "date",
           "content",
+          "categoryId",
+          "tagged",
           ...defaultResourceSelect,
         ]),
     )
@@ -656,11 +715,16 @@ const _updateOrderingForResource = (
   }
 }
 
+// Accepts an optional `trx` so callers inside a transaction (e.g. the publish
+// shadow-redirect guard) read the permalink within the same tx, instead of
+// racing a concurrent move that commits between reads. Opens its own
+// transaction only when called standalone.
 export const getResourcePermalinkTree = async (
   siteId: number,
   resourceId: number,
+  trx?: SafeKysely,
 ): Promise<string[]> => {
-  return db.transaction().execute(async (tx) => {
+  const run = async (tx: SafeKysely) => {
     // Guard against invalid resource
     const resource = await getById(tx, {
       siteId,
@@ -696,18 +760,51 @@ export const getResourcePermalinkTree = async (
       .map((r) => r.permalink)
       .reverse()
       .filter((v) => v !== INDEX_PAGE_PERMALINK)
-  })
+  }
+
+  return trx ? run(trx) : db.transaction().execute(run)
 }
 
 export const getResourceFullPermalink = async (
   siteId: number,
   resourceId: number,
+  trx?: SafeKysely,
 ) => {
-  const permalinkTree = await getResourcePermalinkTree(siteId, resourceId)
+  const permalinkTree = await getResourcePermalinkTree(siteId, resourceId, trx)
   if (permalinkTree.length === 0) {
     return null
   }
   return `/${permalinkTree.join("/")}`
+}
+
+// Returns the id of `resourceId` plus every descendant in its subtree — the
+// rows a cascading delete (Resource.parentId is onDelete: Cascade) removes.
+// Accepts a tx so the delete path and the count path resolve the same set.
+export const getDescendantResourceIds = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<string[]> => {
+  const rows = await trx
+    .withRecursive("subtree", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", resourceId)
+        .select("Resource.id")
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
+        // a cycle can't drive the recursion forever.
+        .union((fb) =>
+          fb
+            .selectFrom("Resource")
+            .innerJoin("subtree", "subtree.id", "Resource.parentId")
+            .where("Resource.siteId", "=", siteId)
+            .select("Resource.id"),
+        ),
+    )
+    .selectFrom("subtree")
+    .select("id")
+    .execute()
+  return rows.map((row) => String(row.id))
 }
 
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
@@ -723,39 +820,58 @@ export const getResourceByFullPermalink = async ({
   siteId: number
   fullPermalink: string
 }) => {
-  const segments = fullPermalink.split("/").filter(Boolean)
+  // A redirect destination may keep a literal "?query"/"#fragment" suffix, which
+  // isn't part of the resource path — strip it before walking segments so
+  // "/page#section" still resolves to the "/page" resource.
+  const segments = (fullPermalink.split(/[?#]/)[0] ?? "")
+    .split("/")
+    .filter(Boolean)
 
-  const root = await db
-    .selectFrom("Resource")
-    .where("Resource.siteId", "=", siteId)
-    .where("Resource.type", "=", ResourceType.RootPage)
-    .where("Resource.parentId", "is", null)
-    .select(defaultResourceSelect)
-    .executeTakeFirst()
-  if (!root) {
-    return undefined
-  }
-
-  let current = root
-  for (const segment of segments) {
-    const child = await db
+  // The site root ("/") is the RootPage, whose permalink is empty so it has no
+  // path segments to walk. Resolve it directly.
+  if (segments.length === 0) {
+    return db
       .selectFrom("Resource")
       .where("Resource.siteId", "=", siteId)
-      .where("Resource.parentId", "=", current.id)
-      .where("Resource.permalink", "=", segment)
-      // Meta and index resources are not directly addressable by a path
-      // segment — the index page is reached via its parent container below.
-      .where("Resource.type", "not in", [
-        ResourceType.IndexPage,
-        ResourceType.FolderMeta,
-        ResourceType.CollectionMeta,
-      ])
+      .where("Resource.type", "=", ResourceType.RootPage)
+      .where("Resource.parentId", "is", null)
       .select(defaultResourceSelect)
       .executeTakeFirst()
-    if (!child) {
+  }
+
+  // Fetch every resource whose permalink matches a segment, then walk the
+  // (parentId, permalink) chain in memory. Top-level resources have
+  // parentId = null (they are NOT stored as children of the RootPage's id), so
+  // the walk starts from null — matching getResourceIdByPermalink. Walking from
+  // the root page's id instead silently misses every top-level resource. Meta
+  // and index resources are never addressable by a path segment; the index page
+  // is reached via its parent container below.
+  const candidates = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.permalink", "in", segments)
+    .where("Resource.type", "not in", [
+      ResourceType.IndexPage,
+      ResourceType.FolderMeta,
+      ResourceType.CollectionMeta,
+    ])
+    .select(defaultResourceSelect)
+    .execute()
+
+  let parentId: string | null = null
+  let current: (typeof candidates)[number] | undefined
+  for (const segment of segments) {
+    current = candidates.find(
+      (candidate) =>
+        candidate.permalink === segment && candidate.parentId === parentId,
+    )
+    if (!current) {
       return undefined
     }
-    current = child
+    parentId = String(current.id)
+  }
+  if (!current) {
+    return undefined
   }
 
   if (
@@ -863,10 +979,14 @@ export const getResourceFullPermalinks = async (
 }
 
 // Reverse of getResourceFullPermalink: resolves a full permalink path back to
-// the live resource it points at (for storing a redirect destination as a
-// [resource:...] reference), or null if nothing live matches. One query fetches
-// every resource matching a path segment, then walks the parent chain in memory
-// — the (siteId, parentId, permalink) constraint makes each step unambiguous.
+// the resource it points at (for storing a redirect destination as a
+// [resource:...] reference), or null if no resource matches. Resolves
+// regardless of publish state — a reference to a not-yet-published page is
+// valid, and the published redirect rules only include it once it goes live, so
+// the redirect can be pre-created and starts working on publish. One query
+// fetches every resource matching a path segment, then walks the parent chain in
+// memory — the (siteId, parentId, permalink) constraint makes each step
+// unambiguous.
 export const getResourceIdByPermalink = async (
   siteId: number,
   fullPermalink: string,
@@ -874,13 +994,12 @@ export const getResourceIdByPermalink = async (
   const segments = fullPermalink.split("/").filter(Boolean)
 
   // The site root ("/") is the RootPage, whose permalink is empty so it has no
-  // path segments to walk. Resolve it directly (published only, as below).
+  // path segments to walk. Resolve it directly.
   if (segments.length === 0) {
     const root = await db
       .selectFrom("Resource")
       .where("Resource.siteId", "=", siteId)
       .where("Resource.type", "=", ResourceType.RootPage)
-      .where("Resource.publishedVersionId", "is not", null)
       .select("Resource.id")
       .executeTakeFirst()
     return root ? Number(root.id) : null
@@ -919,8 +1038,9 @@ export const getResourceIdByPermalink = async (
 
   // A Folder/Collection is served by its IndexPage child, and the published
   // site keys the URL on the container's id (the index page's id never appears
-  // there — the build remaps it to the folder). Resolve to the container,
-  // treating it as live when its index page is published.
+  // there — the build remaps it to the folder). Resolve to the container when it
+  // has an index page; publish state doesn't matter here (the build emits the
+  // redirect only once that index page is published).
   if (
     leaf.type === ResourceType.Folder ||
     leaf.type === ResourceType.Collection
@@ -930,18 +1050,87 @@ export const getResourceIdByPermalink = async (
       .where("Resource.siteId", "=", siteId)
       .where("Resource.parentId", "=", String(leaf.id))
       .where("Resource.type", "=", ResourceType.IndexPage)
-      .where("Resource.publishedVersionId", "is not", null)
       .select("Resource.id")
       .executeTakeFirst()
     return indexPage ? Number(leaf.id) : null
   }
 
-  // Any other resource type must itself be published — the walk traverses
-  // unpublished folders as path segments, but the target page must be live.
-  if (leaf.publishedVersionId === null) {
-    return null
-  }
   return Number(leaf.id)
+}
+
+// Batched variant of getResourceIdByPermalink: resolves many full-permalink
+// paths to the resource sitting at each path in a single pair of queries rather
+// than one walk (and round-trip) per path. Returns each path's leaf resource id
+// — a folder/collection resolves to its own id — regardless of publish state; a
+// path matching no resource maps to null. Liveness (including whether a
+// container has a published index page) is left to the caller's publish-state
+// lookup, so this is used to resolve the literal-path redirect destinations on
+// the visible page without an N+1.
+export const getResourceIdsByPermalinks = async (
+  siteId: number,
+  fullPermalinks: string[],
+): Promise<Map<string, number | null>> => {
+  const result = new Map<string, number | null>()
+  const uniquePaths = [...new Set(fullPermalinks)]
+  if (uniquePaths.length === 0) {
+    return result
+  }
+
+  const segmentsByPath = new Map(
+    uniquePaths.map((path) => [path, path.split("/").filter(Boolean)]),
+  )
+  const needsRoot = [...segmentsByPath.values()].some(
+    (segments) => segments.length === 0,
+  )
+  const allSegments = [...new Set([...segmentsByPath.values()].flat())]
+
+  // One query for every candidate segment across all paths, plus the root page
+  // only when a bare "/" path is present — two round-trips regardless of N.
+  const [root, candidates] = await Promise.all([
+    needsRoot
+      ? db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "=", ResourceType.RootPage)
+          .where("Resource.parentId", "is", null)
+          .select("Resource.id")
+          .executeTakeFirst()
+      : Promise.resolve(undefined),
+    allSegments.length > 0
+      ? db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.permalink", "in", allSegments)
+          .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
+          .execute()
+      : Promise.resolve([]),
+  ])
+
+  for (const [path, segments] of segmentsByPath) {
+    if (segments.length === 0) {
+      result.set(path, root ? Number(root.id) : null)
+      continue
+    }
+    // Walk the (parentId, permalink) chain in memory — the same unambiguous
+    // step the singular helper makes, resolved against the shared candidate set.
+    let parentId: string | null = null
+    let leafId: number | null = null
+    let resolved = true
+    for (const segment of segments) {
+      const match = candidates.find(
+        (candidate) =>
+          candidate.permalink === segment && candidate.parentId === parentId,
+      )
+      if (!match) {
+        resolved = false
+        break
+      }
+      leafId = Number(match.id)
+      parentId = String(match.id)
+    }
+    result.set(path, resolved ? leafId : null)
+  }
+  return result
 }
 
 interface PublishPageResourceArgs {
@@ -978,6 +1167,35 @@ export const publishPageResource = async ({
       })
     }
 
+    // Only the first publish needs the redirect handling below: the shadow
+    // guard (re-publishing an already-live page is fine) and the reference
+    // back-fill (a page that has published before was already back-filled). The
+    // full permalink drives both, so compute it once here.
+    const isFirstPublish = fullResource.publishedVersionId === null
+    const fullPermalink = isFirstPublish
+      ? await getResourceFullPermalink(siteId, Number(resourceId), tx)
+      : null
+
+    // First-publish guard: taking a page live at a URL a live redirect occupies
+    // would let the redirect shadow it. Mirror of the redirect-create
+    // SOURCE_IS_EXISTING_PAGE guard. The Redirect table is queried directly to
+    // avoid a circular import (redirect.service already depends on this module).
+    if (isFirstPublish && fullPermalink) {
+      const blockingRedirect = await tx
+        .selectFrom("Redirect")
+        .select("Redirect.id")
+        .where("Redirect.siteId", "=", siteId)
+        .where("Redirect.source", "=", normalizeRedirectSource(fullPermalink))
+        .where("Redirect.deletedAt", "is", null)
+        .executeTakeFirst()
+      if (blockingRedirect) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
+        })
+      }
+    }
+
     const version = await incrementVersion({ tx, siteId, resourceId, userId })
 
     if (!version) {
@@ -985,6 +1203,62 @@ export const publishPageResource = async ({
         `No draft found for resource ${resourceId} in site ${siteId}. Publish aborted.`,
       )
       return
+    }
+
+    // Reference back-fill: a redirect created to this resource's URL before it
+    // existed (or was published) is stored as a literal path — so it works once
+    // the URL is live but does NOT follow future moves. Now that the URL is
+    // live, rewrite those literal destinations into a [resource:...] reference
+    // so they track the resource from here on. An IndexPage renders at its
+    // container's URL, and creation stores the container id for that path, so
+    // reference the container (parent) id rather than the index page's own id.
+    if (isFirstPublish && fullPermalink) {
+      const referenceId =
+        fullResource.type === ResourceType.IndexPage
+          ? fullResource.parentId
+          : resourceId
+      if (referenceId) {
+        const literalDestination = normalizeRedirectPath(fullPermalink)
+        const backfilled = await tx
+          .updateTable("Redirect")
+          .set({ destination: `[resource:${siteId}:${referenceId}]` })
+          .where("siteId", "=", siteId)
+          .where("destination", "=", literalDestination)
+          .where("deletedAt", "is", null)
+          .returningAll()
+          .execute()
+
+        // Audit the rewrite as a delete of the literal redirect followed by a
+        // create of the reference one — the destination change isn't otherwise
+        // captured, and there's no dedicated RedirectUpdate event.
+        if (backfilled.length > 0) {
+          const byUser = await getUserById(userId)
+          for (const rewritten of backfilled) {
+            const literalBefore: Redirect = {
+              ...rewritten,
+              destination: literalDestination,
+              deletedAt: null,
+            }
+            const literalAfter: Redirect = {
+              ...rewritten,
+              destination: literalDestination,
+              deletedAt: new Date(),
+            }
+            await logRedirectEvent(tx, {
+              siteId,
+              by: byUser,
+              eventType: AuditLogEvent.RedirectDelete,
+              delta: { before: literalBefore, after: literalAfter },
+            })
+            await logRedirectEvent(tx, {
+              siteId,
+              by: byUser,
+              eventType: AuditLogEvent.RedirectCreate,
+              delta: { before: null, after: rewritten },
+            })
+          }
+        }
+      }
     }
 
     const { previousVersion, newVersion } = version
@@ -1243,16 +1517,19 @@ export const getSearchResults = async ({
   totalCount: number | null
   resources: SearchResultResource[]
 }> => {
-  const searchTerms: string[] = Array.from(
-    new Set(query.trim().toLowerCase().split(/\s+/)),
-  )
+  // An empty `in` list is invalid SQL, so guard like getWithFullPermalink.
+  if (resourceTypes.length === 0) {
+    return { resources: [], totalCount: 0 }
+  }
+
+  const searchTerms = tokenizeSearchQuery(query)
 
   const queriedResources = getResourcesWithLastUpdatedAt({
     siteId: Number(siteId),
   })
     .where("Resource.type", "in", resourceTypes)
     .where((eb) =>
-      eb.or(
+      eb.and(
         searchTerms.map((searchTerm) =>
           // Match if the search term is at the start of the title
           eb("Resource.title", "ilike", `${searchTerm}%`).or(

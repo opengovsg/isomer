@@ -305,6 +305,127 @@ describe("gazette.router", async () => {
         }),
       )
     })
+
+    it("rejects creation when a gazette with the same notification number already exists", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Create first gazette with a specific notification number
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert: creating a second gazette with the same notification number is rejected
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Second Notice",
+          permalink: crypto.randomUUID(),
+          ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
+          category: "Government Gazette",
+          date: "30/04/2026",
+          description: "N-2026-001", // Same notification number
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same notification number already exists",
+        }),
+      )
+    })
+
+    it("rejects creation for a non-Government Gazette category when notification number, year and subcategory all match", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Supplement",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
+        category: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["Acts Supplement"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert: same notification number + same year + same subcategory is a duplicate
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Second Supplement",
+          permalink: crypto.randomUUID(),
+          ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
+          category: "Legislative Supplements",
+          date: "30/04/2026",
+          description: "N-2026-001", // Same notification number
+          tagged: ["Acts Supplement"], // Same subcategory
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same notification number already exists",
+        }),
+      )
+    })
+
+    it("allows creation for a non-Government Gazette category when the subcategory differs, even with the same notification number and year", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Supplement",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
+        category: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["Acts Supplement"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act: same notification number + same year but a different subcategory.
+      // For non-Government Gazette categories the subcategory disambiguates, so
+      // this is not a duplicate and must be allowed.
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Second Supplement",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid2/second-file.pdf",
+        category: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "N-2026-001", // Same notification number
+        tagged: ["Bills Supplement"], // Different subcategory
+        scheduledAt: PAST_DATE,
+      })
+
+      // Assert: the second gazette was created
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(resource.title).toBe("Second Supplement")
+    })
   })
 
   describe("update", () => {
@@ -323,6 +444,10 @@ describe("gazette.router", async () => {
         tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
       })
+
+      const markFileAsDeleted = vi
+        .spyOn(gazetteService, "markFileAsDeleted")
+        .mockResolvedValue(undefined)
 
       // Act
       await caller.update({
@@ -365,6 +490,60 @@ describe("gazette.router", async () => {
       expect(page?.category).toBe("Other Supplements")
       expect(page?.description).toBe("new-desc")
       expect(page?.tagged).toEqual(["sub-2"])
+
+      // The superseded file (a different key) is soft-deleted after commit.
+      expect(markFileAsDeleted).toHaveBeenCalledExactlyOnceWith({
+        key: "1/abc/notice.pdf",
+      })
+    })
+
+    it("does not soft-delete the S3 object when the new ref matches the existing ref", async () => {
+      // Arrange: S3 keys are deterministic (year/category/subcategory/filename),
+      // so re-uploading a replacement file without changing its metadata lands
+      // on the SAME key — cleanup must be skipped or it tombstones the live file.
+      const { site, collection } = await seedToppanWithCollection()
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Original",
+        permalink: crypto.randomUUID(),
+        ref: "/2026/Government Gazette/sub-1/notice.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+      const markFileAsDeleted = vi
+        .spyOn(gazetteService, "markFileAsDeleted")
+        .mockResolvedValue(undefined)
+
+      // Act: re-upload to the same key
+      await caller.update({
+        siteId: site.id,
+        gazetteId: Number(gazetteId),
+        title: "Original",
+        newRef: "/2026/Government Gazette/sub-1/notice.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Assert: the gazette still points at the ref, and it was never tombstoned
+      expect(markFileAsDeleted).not.toHaveBeenCalled()
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const blob = await db
+        .selectFrom("Blob")
+        .where("id", "=", resource.draftBlobId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(
+        (blob.content as { page?: { ref?: string } } | null)?.page?.ref,
+      ).toBe("/2026/Government Gazette/sub-1/notice.pdf")
     })
 
     it("accepts a past scheduledAt on update (mirrors create's contract)", async () => {
@@ -453,6 +632,96 @@ describe("gazette.router", async () => {
           message: "A gazette with the same file ID already exists",
         }),
       )
+    })
+
+    it("rejects update when changing to a notification number that already exists", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Create first gazette with a notification number
+      await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "First Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/first-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Create second gazette with a different notification number
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Second Notice",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid2/second-file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        description: "N-2026-002",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert: updating to a notification number used by another gazette is rejected
+      await expect(
+        caller.update({
+          siteId: site.id,
+          gazetteId: Number(gazetteId),
+          title: "Second Notice",
+          category: "Government Gazette",
+          date: "30/04/2026",
+          description: "N-2026-001", // Same notification number as first
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "CONFLICT",
+          message: "A gazette with the same notification number already exists",
+        }),
+      )
+    })
+
+    it("allows update that keeps the gazette's own notification number", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Original",
+        permalink: crypto.randomUUID(),
+        ref: "/sites/1/gazettes/uuid1/file.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        description: "N-2026-001",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act: editing other fields while retaining the same notification number
+      // must not trip the duplicate check against the gazette's own record.
+      await caller.update({
+        siteId: site.id,
+        gazetteId: Number(gazetteId),
+        title: "Renamed",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        description: "N-2026-001", // Unchanged
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Assert
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(resource.title).toBe("Renamed")
     })
   })
 
@@ -631,6 +900,7 @@ describe("gazette.router", async () => {
         category: "Government Gazette",
         subcategory: "Public",
         fileName: "notice-1.pdf",
+        fileSize: 1234,
         tags: [{ key: "scheduledAt", value: "1700000000000" }],
       })
 
@@ -658,6 +928,7 @@ describe("gazette.router", async () => {
         category: "Government Gazette",
         subcategory: "Public",
         fileName: "notice-2.pdf",
+        fileSize: 1234,
       })
 
       const signerArgs = signedPutSpy.mock.calls[0]![0]

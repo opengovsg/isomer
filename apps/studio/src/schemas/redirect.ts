@@ -58,7 +58,7 @@ const REFERENCE_DESTINATION_REGEX = new RegExp(
 // whose host looks like a public domain (has a dot) — this rejects the doubled
 // scheme and bare single-label hosts (localhost, intranet names) that are never
 // valid redirect targets for a published site.
-const isValidExternalDestination = (value: string) => {
+export const isValidExternalDestination = (value: string) => {
   try {
     const url = new URL(value)
     return url.protocol === "https:" && url.hostname.includes(".")
@@ -94,11 +94,18 @@ const isReservedSource = (value: string) => {
 
 const sourceSchema = z
   .string()
+  .trim()
   .min(1, { message: "Source path is required" })
   .max(MAX_REDIRECT_SOURCE_LENGTH, { message: "Source path is too long" })
   .refine((value) => SOURCE_ALLOWED_CHARS_REGEX.test(value), {
     message:
       "Source can only contain letters, numbers, and URL path characters",
+  })
+  // Wildcard redirects aren't supported yet. A "*" would be stored as a literal
+  // path character that can never match an incoming request, so reject it with a
+  // clear message instead of silently creating a dead redirect.
+  .refine((value) => !value.includes("*"), {
+    message: "Wildcards aren't supported yet — enter the full path",
   })
   // The source is a path on this site, never a full URL — a scheme like
   // "https://" can never match an incoming request path, so reject it instead
@@ -128,6 +135,7 @@ const INVALID_DESTINATION_MESSAGE =
 
 const destinationSchema = z
   .string()
+  .trim()
   .min(1, { message: "Destination is required" })
   .max(MAX_REDIRECT_DESTINATION_LENGTH, { message: "Destination is too long" })
   // Strip control characters up front (a stray pasted CR/LF/NUL shouldn't block
@@ -154,12 +162,6 @@ const destinationSchema = z
   // target directly. Banning it outright keeps the rule simple.
   .refine((value) => !trimSlashes(value).split("/").includes(".."), {
     message: INVALID_DESTINATION_MESSAGE,
-  })
-  // An internal path can't redirect to an on-page anchor — the published
-  // redirect emits a Location header, which can't target a fragment. External
-  // https URLs may legitimately carry a #fragment, so this is scoped to paths.
-  .refine((value) => !value.startsWith("/") || !value.includes("#"), {
-    message: "Destination can't link to an anchor on a page",
   })
   // Normalise internal-path destinations like sources (this also collapses a
   // protocol-relative "//evil.com" to "/evil.com", closing an open redirect).
@@ -246,4 +248,29 @@ export const resolveRedirectReferencesSchema = z.object({
 })
 export type ResolveRedirectReferencesInput = z.infer<
   typeof resolveRedirectReferencesSchema
+>
+
+// Looks up whether a path is the source of a live redirect, for the
+// page-settings warning. `source` is a candidate page URL (a full permalink),
+// not necessarily a clean redirect source, so it is normalised server-side
+// before the lookup.
+export const getRedirectBySourceSchema = z.object({
+  siteId: z.number().min(1, { message: "Site ID is required" }),
+  source: z
+    .string()
+    .min(1, { message: "Source path is required" })
+    .max(MAX_REDIRECT_SOURCE_LENGTH, { message: "Source path is too long" }),
+})
+export type GetRedirectBySourceInput = z.infer<typeof getRedirectBySourceSchema>
+
+// Counts the live redirects whose destination resolves to a resource — or any
+// of its descendants — so the delete-page modal can warn that deleting the page
+// will remove those redirects. Descendants are resolved server-side from the
+// resource being deleted.
+export const countRedirectsByDestinationSchema = z.object({
+  siteId: z.number().min(1, { message: "Site ID is required" }),
+  resourceId: generateBigIntSchema("resource ID"),
+})
+export type CountRedirectsByDestinationInput = z.infer<
+  typeof countRedirectsByDestinationSchema
 >

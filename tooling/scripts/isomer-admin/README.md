@@ -85,6 +85,12 @@ Imports JSON files from `./input` to update existing resources in the database. 
 
 **NOTE:** This requires you to place the files inside `./input` first before running.
 
+### Publish Site Resources
+
+Publishes all draft resources for a given site ID in the database. Lists matching resources for review before confirming. For each resource, creates a new Version record and transitions the resource state from Draft to Published.
+
+**Use case:** Pre-launch assistance — when an agency needs all their content published live at once and requires admin help to do so.
+
 ### Rebuild All CodeBuild Projects
 
 Lists all AWS CodeBuild projects in a selected region, sorts them alphabetically, and starts a build for each project. The script can be run as a dry run to show project indexes first, then resumed from a specific index if a previous run stops midway.

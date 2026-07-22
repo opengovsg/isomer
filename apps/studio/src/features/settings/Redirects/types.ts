@@ -39,6 +39,7 @@ export const addRedirectSchema = z
     source: createRedirectObjectSchema.shape.source,
     destination: z
       .string()
+      .trim()
       .transform(normalizeDestinationScheme)
       .pipe(createRedirectObjectSchema.shape.destination),
   })

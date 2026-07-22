@@ -42,6 +42,9 @@ export const moveSchema = z.object({
   siteId: z.number(),
   movedResourceId: bigIntSchema,
   destinationResourceId: bigIntSchema.nullable(),
+  // Create a redirect from the resource's old URL on move. Defaults on,
+  // matching the checkbox's default-checked state.
+  shouldCreateRedirect: z.boolean().optional().default(true),
 })
 
 export const countResourceSchema = z.object({
@@ -59,10 +62,15 @@ export const getParentSchema = z.object({
   resourceId: bigIntSchema,
 })
 
+export const resourceOrderByOptions = ["updated-desc", "title-asc"] as const
+
+export type ResourceOrderByOption = (typeof resourceOrderByOptions)[number]
+
 export const listResourceSchema = z
   .object({
     siteId: z.number(),
     resourceId: z.number().optional(),
+    orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
   })
   .merge(offsetPaginationSchema)
 

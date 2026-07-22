@@ -1,0 +1,237 @@
+name: Post PR comments
+
+# Why a separate workflow instead of steps inside ci.yml?
+#
+# GitHub hard-restricts the GITHUB_TOKEN to read-only for `pull_request`
+# events triggered by a fork, regardless of what the `permissions:` block
+# declares. Posting a PR comment requires write access, so those steps would
+# always 403 on fork PRs.
+#
+# The `workflow_run` trigger is the official GitHub workaround: it fires after
+# the target workflow completes but runs in the BASE repo's context, so
+# GITHUB_TOKEN always has the permissions declared below — even when the
+# triggering PR came from a fork.
+#
+# Each job downloads a small metadata artifact written by ci.yml, since the
+# two workflows run in separate contexts and can't share environment variables.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  actions: read # needed by actions/download-artifact to access a different run's artifacts
+  pull-requests: write
+  issues: write # GitHub routes PR comments through the issues API endpoint
+
+jobs:
+  post-e2e-comment:
+    # Only run for PR triggers; push runs on main/staging/production don't have
+    # a PR to comment on.
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download E2E comment metadata
+        id: download
+        # The artifact won't exist if the E2E job was skipped (Graphite
+        # optimizer) or if the test-results upload failed. continue-on-error
+        # lets subsequent steps gate on `steps.download.outcome` instead of
+        # failing the whole job.
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: e2e-comment-metadata
+          path: /tmp/e2e-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Read metadata
+        if: steps.download.outcome == 'success'
+        id: metadata
+        run: |
+          echo "pr-number=$(cat /tmp/e2e-metadata/pr-number.txt)" >> $GITHUB_OUTPUT
+          echo "artifact-url=$(cat /tmp/e2e-metadata/artifact-url.txt)" >> $GITHUB_OUTPUT
+
+      - name: Find existing video-link comment
+        if: steps.download.outcome == 'success'
+        id: find-video-comment
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.metadata.outputs.pr-number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- e2e-video-link -->"
+
+      - name: Upsert PR comment with e2e video artifact link
+        if: steps.download.outcome == 'success'
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ steps.find-video-comment.outputs.comment-id }}
+          issue-number: ${{ steps.metadata.outputs.pr-number }}
+          edit-mode: replace
+          body: |
+            <!-- e2e-video-link -->
+            🎥 **E2E test videos** — [Download artifact](${{ steps.metadata.outputs.artifact-url }})
+
+            Each test has its own directory under the zip; play `video.webm` to watch the run.
+            Workflow: [run #${{ github.event.workflow_run.id }}](${{ github.event.workflow_run.html_url }}) — artifact expires in 7 days.
+
+  update-pr-description:
+    # Same fork-PR restriction as post-e2e-comment above, but this job edits
+    # the PR *description* instead of posting a comment, so the breakdown
+    # always renders at the very top of the PR — above every comment,
+    # regardless of when CI finishes relative to human activity on the PR.
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    # Job-level permissions: REPLACE the workflow-level block above for this job,
+    # they don't merge — so this has to re-list actions: read (for
+    # actions/download-artifact) and pull-requests: write (for the github-script
+    # steps below) on top of the contents: read this job needs for actions/checkout.
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: .github/scripts
+
+      # Download happens before PR resolution now: the resolution step below
+      # wants base-ref.txt from this artifact as an optional tie-breaker.
+      - name: Download PR breakdown metadata
+        id: download
+        # Absent if pr-breakdown was skipped (Graphite optimizer) or wasn't a
+        # pull_request run. continue-on-error lets later steps gate on
+        # steps.download.outcome instead of failing the whole job.
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: pr-breakdown-metadata
+          path: /tmp/pr-breakdown-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      # Does NOT trust pr-number.txt (there isn't one) or base-ref.txt as the
+      # source of truth for which PR to edit: everything this job's own
+      # (possibly forked, possibly attacker-modified) ci.yml run wrote is
+      # untrusted. head_sha/head_repository/head_branch instead come from the
+      # workflow_run event payload itself, populated by GitHub's own
+      # infrastructure — a fork can't forge these by editing its workflow.
+      #
+      # Filtering on open PRs from that exact fork+branch, then verifying the
+      # exact head commit, can still legitimately return more than one match
+      # (e.g. Graphite stacked PRs briefly sharing a head commit, or the same
+      # branch opened against two different base branches). base-ref.txt is
+      # used ONLY to break that tie: it can never redirect to an unrelated
+      # PR, because the candidate set is already constrained to PRs from this
+      # exact fork+branch+commit — something only this run's own author could
+      # have produced. If it doesn't resolve to exactly one PR, skip rather
+      # than guess.
+      - name: Resolve PR from trusted workflow_run head ref
+        id: pr
+        if: steps.download.outcome == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          result-encoding: string
+          script: |
+            const fs = require("fs")
+            const headSha = context.payload.workflow_run.head_sha
+            const headRepo = context.payload.workflow_run.head_repository
+            const headBranch = context.payload.workflow_run.head_branch
+            if (!headSha || !headRepo?.owner?.login || !headBranch) {
+              core.warning("Missing workflow_run head metadata; skipping.")
+              return ""
+            }
+            const headRef = `${headRepo.owner.login}:${headBranch}`
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              head: headRef,
+            })
+            let matches = pulls.filter((p) => p.head.sha === headSha)
+            if (matches.length > 1) {
+              let claimedBase = ""
+              try {
+                claimedBase = fs
+                  .readFileSync("/tmp/pr-breakdown-metadata/base-ref.txt", "utf8")
+                  .trim()
+              } catch {}
+              if (claimedBase) {
+                const narrowed = matches.filter((p) => p.base.ref === claimedBase)
+                if (narrowed.length === 1) matches = narrowed
+              }
+            }
+            if (matches.length !== 1) {
+              core.warning(
+                `Expected exactly 1 open PR for ${headRef}@${headSha}, found ${matches.length}; skipping.`,
+              )
+              return ""
+            }
+            return String(matches[0].number)
+
+      - name: Fetch current PR description
+        if: steps.pr.outputs.result != ''
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require("fs")
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ steps.pr.outputs.result }},
+            })
+            // pr.body is null for a PR opened with no description at all —
+            // writing that straight to a jq-style ".body" would have produced
+            // the literal text "null"; ?? "" avoids that here for free.
+            fs.writeFileSync("/tmp/pr-breakdown-metadata/current-body.md", pr.body ?? "")
+
+      - name: Build updated PR description
+        if: steps.pr.outputs.result != ''
+        run: |
+          node .github/scripts/update-pr-description.mjs \
+            /tmp/pr-breakdown-metadata/current-body.md \
+            /tmp/pr-breakdown-metadata/body.md \
+            > /tmp/pr-breakdown-metadata/new-body.md
+
+      - name: Update PR description
+        if: steps.pr.outputs.result != ''
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require("fs")
+            const body = fs.readFileSync("/tmp/pr-breakdown-metadata/new-body.md", "utf8")
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ steps.pr.outputs.result }},
+              body,
+            })
+
+  post-bundle-size-comment:
+    # Mirror of post-e2e-comment above — same fork-PR restriction applies.
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download bundle size metadata
+        id: download
+        # Absent when components-bundle-size was skipped (no component changes
+        # or optimizer short-circuit); gate subsequent steps on outcome.
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bundle-size-metadata
+          path: /tmp/bundle-size-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Post bundle size comment
+        if: steps.download.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -a
+          source /tmp/bundle-size-metadata/values.env
+          set +a
+          bash /tmp/bundle-size-metadata/comment-template-bundle-size.sh
