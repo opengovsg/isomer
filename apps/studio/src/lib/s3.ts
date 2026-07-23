@@ -343,12 +343,15 @@ export const putObjectDirect = async (
   await storage.send(new PutObjectCommand(props))
 }
 
-// Resolves the private studio assets bucket. Audit-log CSV exports live in it
-// under the `audit-log-exports/` key prefix — there is no dedicated audit
-// bucket. Throws a clear error if the env var is unset, so misconfiguration
-// fails loudly at call time rather than silently uploading to `undefined`.
-// Exposed so the orchestrator (next layer) can build keys / sign URLs against
-// the same bucket.
+// Resolves the private studio assets bucket — a dedicated bucket for
+// Studio-generated artifacts (provisioned in isomer-next-infra, published to
+// the env via SSM), separate from the public-facing website assets bucket; it
+// has no CDN or public access point in front of it. Audit-log CSV exports
+// live in it under the `audit-log-exports/` key prefix (see ADR 0007).
+// Throws a clear error if the env var is unset, so misconfiguration fails
+// loudly at call time rather than silently uploading to `undefined`. Exposed
+// so the orchestrator (next layer) can build keys / sign URLs against the
+// same bucket.
 export const getStudioAssetsBucketName = (): string => {
   const bucket = env.S3_STUDIO_ASSETS_BUCKET_NAME
   if (!bucket) {
