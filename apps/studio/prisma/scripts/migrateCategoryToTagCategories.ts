@@ -279,8 +279,15 @@ export const resolveSiteIds = async ({
     .sort((a, b) => a - b)
 }
 
-const getIndexPageRow = (collectionId: string, siteId: number) =>
-  db
+/** Read executor — site-level `tx` or module `db` for dry-run / standalone. */
+type ScriptDb = Pick<typeof db, "selectFrom">
+
+const getIndexPageRow = (
+  database: ScriptDb,
+  collectionId: string,
+  siteId: number,
+) =>
+  database
     .selectFrom("Resource as r")
     .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
     .leftJoin("Version as v", "r.publishedVersionId", "v.id")
@@ -303,8 +310,12 @@ const getIndexPageRow = (collectionId: string, siteId: number) =>
     ])
     .executeTakeFirst()
 
-const getItemRows = (collectionId: string, siteId: number) =>
-  db
+const getItemRows = (
+  database: ScriptDb,
+  collectionId: string,
+  siteId: number,
+) =>
+  database
     .selectFrom("Resource as r")
     .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
     .leftJoin("Version as v", "r.publishedVersionId", "v.id")
@@ -541,93 +552,100 @@ export const migrateCollection = async ({
   siteId: number
   dryRun: boolean
   publisherId: string | null
-  /** When set, writes use this transaction (site-level). Otherwise opens its own. */
+  /**
+   * When set, reads and writes share this transaction (site-level).
+   * When omitted outside dry-run, opens a per-collection transaction for both.
+   */
   tx?: Transaction<DB>
 }): Promise<CollectionMigrationResult> => {
-  const indexRow = await getIndexPageRow(collectionId, siteId)
-  if (!indexRow || (!indexRow.draftContent && !indexRow.publishedContent)) {
-    return {
-      collectionId,
-      status: "no-index",
-      categories: [],
-      itemsUpdated: 0,
-      versionsCreated: 0,
+  const run = async (
+    executor: ScriptDb | Transaction<DB>,
+  ): Promise<CollectionMigrationResult> => {
+    const indexRow = await getIndexPageRow(executor, collectionId, siteId)
+    if (!indexRow || (!indexRow.draftContent && !indexRow.publishedContent)) {
+      return {
+        collectionId,
+        status: "no-index",
+        categories: [],
+        itemsUpdated: 0,
+        versionsCreated: 0,
+      }
     }
-  }
 
-  // Risk accepted: skip when any "Category" group exists (draft or published).
-  // That covers re-runs and Studio-migrated collections, but also skips a
-  // human-created group with the same label. Confirmed empty via
-  // findCategoryTagGroups.sql before first run on each environment.
-  if (
-    hasCategoryGroup(indexRow.draftContent?.page.tagCategories) ||
-    hasCategoryGroup(indexRow.publishedContent?.page.tagCategories)
-  ) {
-    return {
-      collectionId,
-      status: "already-migrated",
-      categories: [],
-      itemsUpdated: 0,
-      versionsCreated: 0,
+    // Risk accepted: skip when any "Category" group exists (draft or published).
+    // That covers re-runs and Studio-migrated collections, but also skips a
+    // human-created group with the same label. Confirmed empty via
+    // findCategoryTagGroups.sql before first run on each environment.
+    if (
+      hasCategoryGroup(indexRow.draftContent?.page.tagCategories) ||
+      hasCategoryGroup(indexRow.publishedContent?.page.tagCategories)
+    ) {
+      return {
+        collectionId,
+        status: "already-migrated",
+        categories: [],
+        itemsUpdated: 0,
+        versionsCreated: 0,
+      }
     }
-  }
 
-  const itemRows = await getItemRows(collectionId, siteId)
+    const itemRows = await getItemRows(executor, collectionId, siteId)
 
-  const plan = buildMigrationPlan({
-    items: itemRows.map((row) => ({
-      resourceId: row.resourceId,
-      draftCategory: row.draftContent?.page.category,
-      draftTagged: row.draftContent?.page.tagged,
-      publishedCategory: row.publishedContent?.page.category,
-      publishedTagged: row.publishedContent?.page.tagged,
-    })),
-  })
+    const plan = buildMigrationPlan({
+      items: itemRows.map((row) => ({
+        resourceId: row.resourceId,
+        draftCategory: row.draftContent?.page.category,
+        draftTagged: row.draftContent?.page.tagged,
+        publishedCategory: row.publishedContent?.page.category,
+        publishedTagged: row.publishedContent?.page.tagged,
+      })),
+    })
 
-  const categories =
-    plan.status === "migrated" ? plan.group.options.map((o) => o.label) : []
-  const itemsUpdated = new Set(plan.itemUpdates.map((u) => u.resourceId)).size
-  // New Versions this run will (or, in dry-run, would) create — the index's
-  // published side plus one per item published-side update.
-  const versionsCreated =
-    plan.status === "migrated"
-      ? (indexRow.publishedContent ? 1 : 0) +
-        plan.itemUpdates.filter((u) => u.state === "published").length
-      : 0
+    const categories =
+      plan.status === "migrated" ? plan.group.options.map((o) => o.label) : []
+    const itemsUpdated = new Set(plan.itemUpdates.map((u) => u.resourceId)).size
+    // New Versions this run will (or, in dry-run, would) create — the index's
+    // published side plus one per item published-side update.
+    const versionsCreated =
+      plan.status === "migrated"
+        ? (indexRow.publishedContent ? 1 : 0) +
+          plan.itemUpdates.filter((u) => u.state === "published").length
+        : 0
 
-  if (plan.status !== "migrated" || dryRun) {
+    if (plan.status !== "migrated" || dryRun) {
+      return {
+        collectionId,
+        status: plan.status,
+        categories,
+        itemsUpdated,
+        versionsCreated,
+      }
+    }
+
+    await applyCollectionWrites(executor as Transaction<DB>, {
+      indexRow,
+      itemRows,
+      group: plan.group,
+      itemUpdates: plan.itemUpdates,
+      publisherId,
+    })
+
     return {
       collectionId,
-      status: plan.status,
+      status: "migrated",
       categories,
       itemsUpdated,
       versionsCreated,
     }
   }
 
-  const writeContext: CollectionWriteContext = {
-    indexRow,
-    itemRows,
-    group: plan.group,
-    itemUpdates: plan.itemUpdates,
-    publisherId,
-  }
-
   if (tx) {
-    await applyCollectionWrites(tx, writeContext)
-  } else {
-    await db
-      .transaction()
-      .execute(async (innerTx) => applyCollectionWrites(innerTx, writeContext))
+    return run(tx)
   }
-
-  return {
-    collectionId,
-    status: "migrated",
-    categories,
-    itemsUpdated,
-    versionsCreated,
+  if (dryRun) {
+    return run(db)
   }
+  return db.transaction().execute(async (innerTx) => run(innerTx))
 }
 
 type MigrationLogger = Pick<FileLogger, "info" | "error">

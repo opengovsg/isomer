@@ -400,6 +400,52 @@ describe("migrateCollection / migrateSite", () => {
     expect(itemContent.page.tagged).toEqual([])
   })
 
+  it("reads items via the caller-supplied transaction (sees uncommitted inserts)", async () => {
+    // Arrange — index exists outside the tx; the only item is inserted inside it
+    const { collection } = await setupCollection({ siteId })
+    await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+    })
+
+    await db.transaction().execute(async (tx) => {
+      const blob = await tx
+        .insertInto("Blob")
+        .values({
+          content: jsonb(collectionPageBlobContent([], "Guides")),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await tx
+        .insertInto("Resource")
+        .values({
+          title: "tx-only item",
+          permalink: "tx-only-item",
+          siteId,
+          parentId: collection.id,
+          type: ResourceType.CollectionPage,
+          state: ResourceState.Draft,
+          draftBlobId: blob.id,
+        })
+        .execute()
+
+      // Act — if reads used module-level `db`, this uncommitted item would be invisible
+      const result = await migrateCollection({
+        collectionId: collection.id,
+        siteId,
+        dryRun: true,
+        publisherId: null,
+        tx,
+      })
+
+      // Assert
+      expect(result.status).toBe("migrated")
+      expect(result.categories).toEqual(["Guides"])
+      expect(result.itemsUpdated).toBe(1)
+    })
+  })
+
   it("migrates a draft-only collection in place: appends the Category group and tags each item, leaving `category` untouched", async () => {
     // Arrange
     const { collection } = await setupCollection({ siteId })
