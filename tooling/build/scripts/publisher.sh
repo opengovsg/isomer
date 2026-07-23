@@ -193,9 +193,12 @@ aws s3 sync --only-show-errors . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUIL
 # Next.js uses unique content hashes in filenames, allowing updated content to have different filenames and invalidate the cache on new builds.
 aws s3 sync --only-show-errors _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=31536000, public"
 
+calculate_duration $start_time
+
 # Upload redirect objects AFTER the --delete sync so they are not swept away.
 # Each redirect becomes an empty index.html with x-amz-meta-redirect-destination metadata
 # that the CloudFront Function reads to issue the HTTP redirect response.
+start_time=$(date +%s)
 echo "Uploading redirect files to S3..."
 (
   cd ../../build/scripts/publishing
@@ -203,6 +206,7 @@ echo "Uploading redirect files to S3..."
     S3_BUCKET_NAME="$S3_BUCKET_NAME" \
     SITE_NAME="$SITE_NAME" \
     CODEBUILD_BUILD_NUMBER="$CODEBUILD_BUILD_NUMBER" \
+    S3_SYNC_CONCURRENCY="$S3_SYNC_CONCURRENCY" \
     npm run upload-redirects
 ) || echo "Warning: some redirects failed to upload, continuing..."
 

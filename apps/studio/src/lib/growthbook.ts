@@ -16,6 +16,10 @@ export const IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY =
   "homepage-antiscam-banner-enabled"
 export const EGAZETTE_INFO_FEATURE_KEY = "egazette-info"
 export const IS_REDIRECTIONS_ENABLED_FEATURE_KEY = "is-redirections-enabled"
+// Gates the "advanced redirects" surface (bulk CSV upload) separately from the
+// base redirects feature, which is already fully enabled pending flag removal.
+export const IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY =
+  "is-advanced-redirects-enabled"
 // When OFF (default): gazette ingestion targets Algolia directly.
 // When ON: gazette ingestion is routed to SearchSG instead.
 export const ENABLE_SEARCHSG_GAZETTE_INGESTION =

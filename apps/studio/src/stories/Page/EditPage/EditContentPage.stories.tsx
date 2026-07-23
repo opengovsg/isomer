@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { userEvent, within } from "storybook/test"
+import { expect, userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -158,5 +158,45 @@ export const AddTable: Story = {
     await userEvent.click(
       await canvas.findByRole("button", { name: /^table$/i }),
     )
+  },
+}
+
+export const ActiveTableToolbar: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const canvas = within(canvasElement)
+    await AddTextBlock.play?.(context)
+
+    // Outside a table: superscript/subscript live only under "More options".
+    // (The page also has an unrelated page-actions "More options" `Menu`
+    // button; the RTE toolbar's overflow list is a `Popover`, so
+    // disambiguate on aria-haspopup.)
+    const overflowTrigger = canvas
+      .getAllByRole("button", { name: /more options/i })
+      .find((button) => button.getAttribute("aria-haspopup") === "dialog")
+    if (!overflowTrigger) throw new Error("Overflow trigger not found")
+    await userEvent.click(overflowTrigger)
+    await canvas.findByRole("button", { name: /^superscript$/i })
+    await expect(
+      canvas.queryAllByRole("button", { name: /^superscript$/i }),
+    ).toHaveLength(1)
+    await userEvent.keyboard("{Escape}")
+
+    await userEvent.click(canvas.getByRole("button", { name: /^table$/i }))
+
+    // Inside a table: promoted directly onto the main toolbar, and no longer
+    // duplicated under "More options" (removed from that list entirely).
+    await canvas.findByRole("button", { name: /^superscript$/i })
+    await canvas.findByRole("button", { name: /^subscript$/i })
+    await expect(
+      canvas.getAllByRole("button", { name: /^superscript$/i }),
+    ).toHaveLength(1)
+
+    // Divider is also table-inapplicable, so "More options" has nothing left
+    // to show and disappears entirely — only the unrelated page-actions menu
+    // button remains.
+    await expect(
+      canvas.getAllByRole("button", { name: /more options/i }),
+    ).toHaveLength(1)
   },
 }
