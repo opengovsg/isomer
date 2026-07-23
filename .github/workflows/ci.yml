@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       components: ${{ steps.filter.outputs.components }}
+      template_or_components: ${{ steps.filter.outputs.template_or_components }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
@@ -38,6 +39,9 @@ jobs:
           filters: |
             components:
               - 'packages/components/**'
+            template_or_components:
+              - 'packages/components/**'
+              - 'tooling/template/**'
   build:
     runs-on: ubuntu-latest
     steps:
@@ -219,6 +223,21 @@ jobs:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           # Set timezone to Singapore to ensure that the tests are run in the correct timezone
+          TZ: Asia/Singapore
+
+  test-template:
+    name: Test Template bundle pruning
+    needs: [optimize_ci, changes]
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.template_or_components == 'true'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Test template bundle pruning
+        run: pnpm exec turbo test-ci:unit --filter=isomer-base-template --env-mode=loose
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
 
   test-validators:

@@ -4,6 +4,9 @@
   "tasks": {
     "build:template": {
       "dependsOn": ["@opengovsg/isomer-components#build"]
+    },
+    "test-ci:unit": {
+      "dependsOn": ["@opengovsg/isomer-components#build:module"]
     }
   }
 }
