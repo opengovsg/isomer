@@ -30,7 +30,10 @@
 1. Migrates each Collection's legacy `category` string values into a "Category" tagCategories group, and tags every Collection Item with the matching option UUID via `tagged`. The legacy `category` field is left untouched.
 2. The new "Category" group is written with `display: "plaintext"`. Every pre-existing tagCategories group on the same Index is stamped with an explicit `display: "pills"`.
 3. Idempotent — a Collection whose Index already has a "Category" group (draft or published) is skipped. This assumes `"Category"` is migration-owned; a human-created group with that label would also be skipped. Audit first with `findCategoryTagGroups.sql`.
-4. Pre-flight audit (optional but recommended):
-   `psql "$DATABASE_URL" -f prisma/scripts/findCategoryTagGroups.sql`
-5. Invoke with `--site-id <id>` (required) and optionally `--dry-run` to preview without writing:
-   `source .env && pnpm exec tsx prisma/scripts/migrateCategoryToTagCategories.ts --site-id 123 --dry-run`
+4. Site selection: edit `SITE_IDS_INCLUDE` / `SITE_IDS_EXCLUDE` at the top of the script. Empty include = all sites; exclude is always subtracted. The resolved list is printed and must be confirmed before proceeding.
+5. Each site runs in one transaction (all collections on that site succeed or the whole site rolls back). Outcomes are written to a timestamped `.log` next to the script — use failed site IDs from the log to retry via `SITE_IDS_INCLUDE`.
+6. Pre-flight audits (optional but recommended):
+   - `psql "$DATABASE_URL" -f prisma/scripts/findCategoryTagGroups.sql`
+   - `psql "$DATABASE_URL" -f prisma/scripts/findUntaggedWithLegacyCategory.sql` (only `has_push_document_job = true` rows affect SearchSG/Algolia; risk accepted after audit found none)
+7. Invoke with optional `--dry-run` to preview without writing:
+   `source .env && pnpm exec tsx prisma/scripts/migrateCategoryToTagCategories.ts --dry-run`

@@ -26,18 +26,41 @@
  * skipped (legacy `category` values would not be migrated). Audit with
  * `findCategoryTagGroups.sql` before running against an environment.
  *
+ * Risk accepted: items with an empty legacy category (common for Collection
+ * Links, which default to `category: ""`) are left with empty `tagged` even
+ * though the new Category group is `isRequired: true`. Studio Save stays
+ * disabled for those items until an editor picks a Category tag.
+ *
+ * Risk accepted: items with a non-empty legacy category and empty `tagged`
+ * get `tagged: [categoryOptionId]` after migration. SearchSG / Algolia
+ * ingestion (schedulePushDocumentJob) uses `tagged[0]` as subcategory — but
+ * only for resources with a PushDocumentJob (gazettes). Audited 2026-07-23:
+ * no such search-ingested rows existed (`findUntaggedWithLegacyCategory.sql`
+ * with `has_push_document_job = true`). Ordinary collection items are not
+ * on that path.
+ *
  * Display: the new "Category" group is written with `display: "plaintext"`.
  * Every pre-existing group on the same Index is stamped with an explicit
  * `display: "pills"` — the rendering behaviour they already had by default —
  * since the `display` field postdates those groups and they don't have it set.
  *
+ * Site selection (edit the constants below):
+ *   - SITE_IDS_INCLUDE empty → all sites; non-empty → only those IDs
+ *   - SITE_IDS_EXCLUDE → removed from the resolved set (either way)
+ * The resolved list is printed and must be confirmed before any writes.
+ *
+ * Each site runs in a single transaction (all collections succeed or the
+ * whole site rolls back). A local log file records per-collection and
+ * per-site outcomes for manual retry via SITE_IDS_INCLUDE.
+ *
  * Usage:
  *   cd apps/studio
- *   source .env && pnpm exec tsx prisma/scripts/migrateCategoryToTagCategories.ts --site-id 123 [--dry-run]
+ *   source .env && pnpm exec tsx prisma/scripts/migrateCategoryToTagCategories.ts [--dry-run]
  */
 import type { UnwrapTagged } from "type-fest"
-import { input } from "@inquirer/prompts"
+import { confirm, input } from "@inquirer/prompts"
 import { randomUUID } from "crypto"
+import path from "path"
 import { fileURLToPath } from "url"
 import { parseArgs } from "util"
 import {
@@ -48,6 +71,18 @@ import {
   sql,
   type Transaction,
 } from "~/server/modules/database"
+
+import { FileLogger } from "./FileLogger"
+
+// ---------------------------------------------------------------------------
+// Site selection — edit these before running
+// ---------------------------------------------------------------------------
+
+/** Empty = all sites. Non-empty = only these site IDs. */
+const SITE_IDS_INCLUDE: number[] = []
+
+/** Removed from the resolved set (after include / all-sites expansion). */
+const SITE_IDS_EXCLUDE: number[] = []
 
 const CATEGORY_GROUP_LABEL = "Category"
 
@@ -213,6 +248,37 @@ export const verifyUser = async (userId: string) => {
   return user
 }
 
+export const resolveSiteIds = async ({
+  include,
+  exclude,
+}: {
+  include: number[]
+  exclude: number[]
+}): Promise<number[]> => {
+  const excludeSet = new Set(exclude)
+  const rows =
+    include.length === 0
+      ? await db.selectFrom("Site").select("id").execute()
+      : await db
+          .selectFrom("Site")
+          .where("id", "in", include)
+          .select("id")
+          .execute()
+
+  if (include.length > 0) {
+    const found = new Set(rows.map((r) => r.id))
+    const missing = include.filter((id) => !found.has(id))
+    if (missing.length > 0) {
+      throw new Error(`Site ID(s) not found: ${missing.join(", ")}`)
+    }
+  }
+
+  return rows
+    .map((r) => r.id)
+    .filter((id) => !excludeSet.has(id))
+    .sort((a, b) => a - b)
+}
+
 const getIndexPageRow = (collectionId: string, siteId: number) =>
   db
     .selectFrom("Resource as r")
@@ -342,10 +408,106 @@ export const hasCategoryGroup = (
 
 export interface CollectionMigrationResult {
   collectionId: string
+  title?: string
   status: MigrationPlan["status"] | "no-index" | "already-migrated"
   categories: string[]
   itemsUpdated: number
   versionsCreated: number
+}
+
+export type SiteMigrationResult = {
+  siteId: number
+  status: "succeeded" | "failed" | "dry-run"
+  error?: string
+  collections: CollectionMigrationResult[]
+}
+
+type CollectionWriteContext = {
+  indexRow: NonNullable<Awaited<ReturnType<typeof getIndexPageRow>>>
+  itemRows: Awaited<ReturnType<typeof getItemRows>>
+  group: TagCategoryGroup
+  itemUpdates: ItemTagUpdate[]
+  publisherId: string | null
+}
+
+const applyCollectionWrites = async (
+  tx: Transaction<DB>,
+  {
+    indexRow,
+    itemRows,
+    group,
+    itemUpdates,
+    publisherId,
+  }: CollectionWriteContext,
+) => {
+  const requirePublisherId = (): string => {
+    if (!publisherId) {
+      throw new Error(
+        "publisherId is required to migrate a collection with published content outside --dry-run",
+      )
+    }
+    return publisherId
+  }
+
+  if (indexRow.draftContent && indexRow.draftBlobId) {
+    await updateBlobContent(tx, indexRow.draftBlobId, {
+      ...indexRow.draftContent,
+      page: {
+        ...indexRow.draftContent.page,
+        tagCategories: appendCategoryGroup(
+          indexRow.draftContent.page.tagCategories,
+          group,
+        ),
+      },
+    })
+  }
+
+  if (indexRow.publishedContent && indexRow.publishedVersionNum != null) {
+    await publishNewContent(tx, {
+      resourceId: indexRow.resourceId,
+      previousVersionNum: indexRow.publishedVersionNum,
+      publisherId: requirePublisherId(),
+      content: {
+        ...indexRow.publishedContent,
+        page: {
+          ...indexRow.publishedContent.page,
+          tagCategories: appendCategoryGroup(
+            indexRow.publishedContent.page.tagCategories,
+            group,
+          ),
+        },
+      },
+    })
+  }
+
+  const itemRowByResourceId = new Map(
+    itemRows.map((row) => [row.resourceId, row]),
+  )
+  for (const update of itemUpdates) {
+    const row = itemRowByResourceId.get(update.resourceId)
+    if (!row) continue
+
+    if (update.state === "draft" && row.draftContent && row.draftBlobId) {
+      await updateBlobContent(tx, row.draftBlobId, {
+        ...row.draftContent,
+        page: { ...row.draftContent.page, tagged: update.tagged },
+      })
+    } else if (
+      update.state === "published" &&
+      row.publishedContent &&
+      row.publishedVersionNum != null
+    ) {
+      await publishNewContent(tx, {
+        resourceId: row.resourceId,
+        previousVersionNum: row.publishedVersionNum,
+        publisherId: requirePublisherId(),
+        content: {
+          ...row.publishedContent,
+          page: { ...row.publishedContent.page, tagged: update.tagged },
+        },
+      })
+    }
+  }
 }
 
 export const migrateCollection = async ({
@@ -353,11 +515,14 @@ export const migrateCollection = async ({
   siteId,
   dryRun,
   publisherId,
+  tx,
 }: {
   collectionId: string
   siteId: number
   dryRun: boolean
   publisherId: string | null
+  /** When set, writes use this transaction (site-level). Otherwise opens its own. */
+  tx?: Transaction<DB>
 }): Promise<CollectionMigrationResult> => {
   const indexRow = await getIndexPageRow(collectionId, siteId)
   if (!indexRow || (!indexRow.draftContent && !indexRow.publishedContent)) {
@@ -420,77 +585,21 @@ export const migrateCollection = async ({
     }
   }
 
-  const group = plan.group
-  const requirePublisherId = (): string => {
-    if (!publisherId) {
-      throw new Error(
-        "publisherId is required to migrate a collection with published content outside --dry-run",
-      )
-    }
-    return publisherId
+  const writeContext: CollectionWriteContext = {
+    indexRow,
+    itemRows,
+    group: plan.group,
+    itemUpdates: plan.itemUpdates,
+    publisherId,
   }
 
-  await db.transaction().execute(async (tx) => {
-    if (indexRow.draftContent && indexRow.draftBlobId) {
-      await updateBlobContent(tx, indexRow.draftBlobId, {
-        ...indexRow.draftContent,
-        page: {
-          ...indexRow.draftContent.page,
-          tagCategories: appendCategoryGroup(
-            indexRow.draftContent.page.tagCategories,
-            group,
-          ),
-        },
-      })
-    }
-
-    if (indexRow.publishedContent && indexRow.publishedVersionNum != null) {
-      await publishNewContent(tx, {
-        resourceId: indexRow.resourceId,
-        previousVersionNum: indexRow.publishedVersionNum,
-        publisherId: requirePublisherId(),
-        content: {
-          ...indexRow.publishedContent,
-          page: {
-            ...indexRow.publishedContent.page,
-            tagCategories: appendCategoryGroup(
-              indexRow.publishedContent.page.tagCategories,
-              group,
-            ),
-          },
-        },
-      })
-    }
-
-    const itemRowByResourceId = new Map(
-      itemRows.map((row) => [row.resourceId, row]),
-    )
-    for (const update of plan.itemUpdates) {
-      const row = itemRowByResourceId.get(update.resourceId)
-      if (!row) continue
-
-      if (update.state === "draft" && row.draftContent && row.draftBlobId) {
-        await updateBlobContent(tx, row.draftBlobId, {
-          ...row.draftContent,
-          page: { ...row.draftContent.page, tagged: update.tagged },
-        })
-      } else if (
-        update.state === "published" &&
-        row.publishedContent &&
-        row.publishedVersionNum != null
-      ) {
-        await publishNewContent(tx, {
-          resourceId: row.resourceId,
-          previousVersionNum: row.publishedVersionNum,
-          publisherId: requirePublisherId(),
-          content: {
-            ...row.publishedContent,
-            page: { ...row.publishedContent.page, tagged: update.tagged },
-          },
-        })
-      }
-    }
-  })
+  if (tx) {
+    await applyCollectionWrites(tx, writeContext)
+  } else {
+    await db
+      .transaction()
+      .execute(async (innerTx) => applyCollectionWrites(innerTx, writeContext))
+  }
 
   return {
     collectionId,
@@ -501,15 +610,32 @@ export const migrateCollection = async ({
   }
 }
 
+type MigrationLogger = Pick<FileLogger, "info" | "error">
+
+const logLine = (
+  logger: MigrationLogger | undefined,
+  line: string,
+  level: "info" | "error" = "info",
+) => {
+  console.log(line)
+  if (level === "error") {
+    logger?.error(line)
+  } else {
+    logger?.info(line)
+  }
+}
+
 export const migrateSite = async ({
   siteId,
   dryRun,
   publisherId,
+  logger,
 }: {
   siteId: number
   dryRun: boolean
   publisherId: string | null
-}): Promise<CollectionMigrationResult[]> => {
+  logger?: MigrationLogger
+}): Promise<SiteMigrationResult> => {
   const collections = await db
     .selectFrom("Resource")
     .where("type", "=", ResourceType.Collection)
@@ -517,18 +643,65 @@ export const migrateSite = async ({
     .select(["id", "title"])
     .execute()
 
+  logLine(
+    logger,
+    `[site ${siteId}] starting (${collections.length} collection(s)${dryRun ? ", dry-run" : ""})`,
+  )
+
   const results: CollectionMigrationResult[] = []
-  for (const collection of collections) {
-    const result = await migrateCollection({
-      collectionId: collection.id,
-      siteId,
-      dryRun,
-      publisherId,
-    })
-    results.push(result)
-    console.log(formatResult(result, collection.title, dryRun))
+
+  if (dryRun) {
+    for (const collection of collections) {
+      const result = await migrateCollection({
+        collectionId: collection.id,
+        siteId,
+        dryRun: true,
+        publisherId,
+      })
+      results.push({ ...result, title: collection.title })
+      logLine(logger, formatResult(result, collection.title, true))
+    }
+    logLine(logger, `[site ${siteId}] dry-run complete`)
+    return { siteId, status: "dry-run", collections: results }
   }
-  return results
+
+  try {
+    await db.transaction().execute(async (tx) => {
+      for (const collection of collections) {
+        const result = await migrateCollection({
+          collectionId: collection.id,
+          siteId,
+          dryRun: false,
+          publisherId,
+          tx,
+        })
+        results.push({ ...result, title: collection.title })
+        logLine(logger, formatResult(result, collection.title, false))
+      }
+    })
+    logLine(logger, `[site ${siteId}] SUCCEEDED`)
+    return { siteId, status: "succeeded", collections: results }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    logLine(
+      logger,
+      `[site ${siteId}] FAILED (entire site rolled back): ${message}`,
+      "error",
+    )
+    for (const result of results) {
+      logLine(
+        logger,
+        `[site ${siteId}] rolled back prior collection work: ${formatResult(result, result.title ?? result.collectionId, false)}`,
+        "error",
+      )
+    }
+    return {
+      siteId,
+      status: "failed",
+      error: message,
+      collections: results,
+    }
+  }
 }
 
 const formatResult = (
@@ -551,30 +724,77 @@ const formatResult = (
   }
 }
 
+const formatSiteSelection = ({
+  include,
+  exclude,
+  resolved,
+}: {
+  include: number[]
+  exclude: number[]
+  resolved: number[]
+}): string => {
+  const includeLabel =
+    include.length === 0 ? "(empty → all sites)" : include.join(", ")
+  const excludeLabel = exclude.length === 0 ? "(empty)" : exclude.join(", ")
+  return [
+    `SITE_IDS_INCLUDE: ${includeLabel}`,
+    `SITE_IDS_EXCLUDE: ${excludeLabel}`,
+    `Resolved site IDs (${resolved.length}): ${resolved.length === 0 ? "(none)" : resolved.join(", ")}`,
+  ].join("\n")
+}
+
 // ---------------------------------------------------------------------------
 // CLI entrypoint
 // ---------------------------------------------------------------------------
 
-export const main = async (argv: string[] = process.argv.slice(2)) => {
+export const main = async (
+  argv: string[] = process.argv.slice(2),
+  {
+    siteIdsInclude = SITE_IDS_INCLUDE,
+    siteIdsExclude = SITE_IDS_EXCLUDE,
+    logger,
+  }: {
+    siteIdsInclude?: number[]
+    siteIdsExclude?: number[]
+    logger?: MigrationLogger
+  } = {},
+) => {
   const { values } = parseArgs({
     args: argv,
     options: {
-      "site-id": { type: "string" },
       "dry-run": { type: "boolean", default: false },
     },
   })
 
-  const siteIdStr = values["site-id"]
-  if (!siteIdStr || !/^\d+$/.test(siteIdStr)) {
-    console.error(
-      "Usage: tsx migrateCategoryToTagCategories.ts --site-id <numeric id> [--dry-run]",
-    )
+  const dryRun = values["dry-run"] === true
+  const resolvedSiteIds = await resolveSiteIds({
+    include: siteIdsInclude,
+    exclude: siteIdsExclude,
+  })
+
+  const selectionSummary = formatSiteSelection({
+    include: siteIdsInclude,
+    exclude: siteIdsExclude,
+    resolved: resolvedSiteIds,
+  })
+  console.log(`\n${selectionSummary}\n`)
+
+  if (resolvedSiteIds.length === 0) {
+    console.error("No sites to migrate after applying include/exclude.")
     process.exitCode = 1
     return
   }
 
-  const siteId = Number(siteIdStr)
-  const dryRun = values["dry-run"] === true
+  const proceed = await confirm({
+    message: dryRun
+      ? `Dry-run migration for ${resolvedSiteIds.length} site(s)?`
+      : `Migrate category → tagCategories for ${resolvedSiteIds.length} site(s)?`,
+    default: false,
+  })
+  if (!proceed) {
+    console.log("Aborted. No changes written.")
+    return
+  }
 
   let publisherId: string | null = null
   if (!dryRun) {
@@ -587,11 +807,49 @@ export const main = async (argv: string[] = process.argv.slice(2)) => {
     await verifyUser(publisherId)
   }
 
-  console.log(
-    `${dryRun ? "[DRY RUN] " : ""}Migrating category → tagCategories for site ${siteId}…`,
+  const scriptDir = path.dirname(fileURLToPath(import.meta.url))
+  const logPath = path.join(
+    scriptDir,
+    `migrateCategoryToTagCategories-${new Date().toISOString().replace(/[:.]/g, "-")}.log`,
   )
-  const results = await migrateSite({ siteId, dryRun, publisherId })
-  console.log(`\nDone. ${results.length} collection(s) processed.`)
+  const fileLogger = logger ?? new FileLogger(logPath)
+  if (!logger) {
+    console.log(`Logging to ${logPath}`)
+  }
+  fileLogger.info(selectionSummary)
+  fileLogger.info(
+    `${dryRun ? "[DRY RUN] " : ""}Starting migration for ${resolvedSiteIds.length} site(s)`,
+  )
+
+  const siteResults: SiteMigrationResult[] = []
+  for (const siteId of resolvedSiteIds) {
+    const result = await migrateSite({
+      siteId,
+      dryRun,
+      publisherId,
+      logger: fileLogger,
+    })
+    siteResults.push(result)
+  }
+
+  const succeeded = siteResults.filter((r) => r.status === "succeeded").length
+  const failed = siteResults.filter((r) => r.status === "failed")
+  const dryRunCount = siteResults.filter((r) => r.status === "dry-run").length
+
+  const summary = dryRun
+    ? `Done. Dry-run complete for ${dryRunCount} site(s).`
+    : `Done. ${succeeded} site(s) succeeded, ${failed.length} site(s) failed.`
+  logLine(fileLogger, `\n${summary}`)
+
+  if (failed.length > 0) {
+    const failedIds = failed.map((r) => r.siteId)
+    logLine(
+      fileLogger,
+      `Failed site IDs (retry via SITE_IDS_INCLUDE): ${failedIds.join(", ")}`,
+      "error",
+    )
+    process.exitCode = 1
+  }
 }
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url)

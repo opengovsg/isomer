@@ -2,7 +2,7 @@ import type { UnwrapTagged } from "type-fest"
 
 vi.mock("@inquirer/prompts")
 
-import { input } from "@inquirer/prompts"
+import { confirm, input } from "@inquirer/prompts"
 import {
   db,
   jsonb,
@@ -28,6 +28,7 @@ import {
   main,
   migrateCollection,
   migrateSite,
+  resolveSiteIds,
   type TagCategoryGroup,
   verifyUser,
 } from "../migrateCategoryToTagCategories"
@@ -837,16 +838,123 @@ describe("migrateCollection / migrateSite", () => {
     })
 
     // Act
-    const results = await migrateSite({
+    const siteResult = await migrateSite({
       siteId,
       dryRun: false,
       publisherId: null,
     })
 
     // Assert
-    expect(results).toHaveLength(1)
-    expect(results[0]!.collectionId).toBe(collectionA.id)
-    expect(results[0]!.status).toBe("migrated")
+    expect(siteResult.status).toBe("succeeded")
+    expect(siteResult.collections).toHaveLength(1)
+    expect(siteResult.collections[0]!.collectionId).toBe(collectionA.id)
+    expect(siteResult.collections[0]!.status).toBe("migrated")
+  })
+
+  it("migrateSite rolls back every collection when one collection write fails", async () => {
+    // Arrange — two collections that need published Versions (require publisherId)
+    const user = await setupUser({})
+    const { collection: collectionA } = await setupCollection({
+      siteId,
+      permalink: "collection-a",
+    })
+    await setupCollectionIndexPage({
+      collectionId: collectionA.id,
+      siteId,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    await setupCollectionPage({
+      siteId,
+      parentId: collectionA.id,
+      category: "Guides",
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+
+    const { collection: collectionB } = await setupCollection({
+      siteId,
+      permalink: "collection-b",
+    })
+    await setupCollectionIndexPage({
+      collectionId: collectionB.id,
+      siteId,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    await setupCollectionPage({
+      siteId,
+      parentId: collectionB.id,
+      permalink: "page-b",
+      category: "Events",
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+
+    // Act — missing publisherId forces a throw on the first published write
+    const siteResult = await migrateSite({
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
+
+    // Assert — site failed and neither Index gained a Category group
+    expect(siteResult.status).toBe("failed")
+    for (const collection of [collectionA, collectionB]) {
+      const index = await db
+        .selectFrom("Resource")
+        .where("parentId", "=", collection.id)
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["draftBlobId", "publishedVersionId"])
+        .executeTakeFirstOrThrow()
+      if (index.draftBlobId) {
+        const draft = await getBlobContent(index.draftBlobId)
+        expect(hasCategoryGroup(draft.page.tagCategories)).toBe(false)
+      }
+      if (index.publishedVersionId) {
+        const version = await db
+          .selectFrom("Version")
+          .where("id", "=", index.publishedVersionId)
+          .select("blobId")
+          .executeTakeFirstOrThrow()
+        const published = await getBlobContent(version.blobId)
+        expect(hasCategoryGroup(published.page.tagCategories)).toBe(false)
+      }
+    }
+  })
+})
+
+describe("resolveSiteIds", () => {
+  beforeEach(async () => {
+    await resetTables("Resource", "Blob", "Version", "Site", "Navbar", "Footer")
+  })
+
+  it("returns all sites when include is empty, minus exclude", async () => {
+    const { site: siteA } = await setupSite()
+    const { site: siteB } = await setupSite()
+
+    await expect(
+      resolveSiteIds({ include: [], exclude: [siteB.id] }),
+    ).resolves.toEqual([siteA.id])
+  })
+
+  it("returns only included sites minus exclude", async () => {
+    const { site: siteA } = await setupSite()
+    const { site: siteB } = await setupSite()
+    await setupSite()
+
+    await expect(
+      resolveSiteIds({
+        include: [siteA.id, siteB.id],
+        exclude: [siteB.id],
+      }),
+    ).resolves.toEqual([siteA.id])
+  })
+
+  it("throws when an include id does not exist", async () => {
+    await expect(
+      resolveSiteIds({ include: [999_999], exclude: [] }),
+    ).rejects.toThrow("Site ID(s) not found: 999999")
   })
 })
 
@@ -879,13 +987,20 @@ describe("main (CLI entrypoint)", () => {
     const { site } = await setupSite()
     siteId = site.id
     vi.mocked(input).mockReset()
+    vi.mocked(confirm).mockReset()
+    vi.mocked(confirm).mockResolvedValue(true)
   })
 
   it("does not prompt for a publisher id in --dry-run mode", async () => {
     // Act
-    await main(["--site-id", String(siteId), "--dry-run"])
+    await main(["--dry-run"], {
+      siteIdsInclude: [siteId],
+      siteIdsExclude: [],
+      logger: { info: vi.fn(), error: vi.fn() },
+    })
 
     // Assert
+    expect(confirm).toHaveBeenCalledTimes(1)
     expect(input).not.toHaveBeenCalled()
   })
 
@@ -895,9 +1010,14 @@ describe("main (CLI entrypoint)", () => {
     vi.mocked(input).mockResolvedValue(user.id)
 
     // Act
-    await main(["--site-id", String(siteId)])
+    await main([], {
+      siteIdsInclude: [siteId],
+      siteIdsExclude: [],
+      logger: { info: vi.fn(), error: vi.fn() },
+    })
 
     // Assert
+    expect(confirm).toHaveBeenCalledTimes(1)
     expect(input).toHaveBeenCalledTimes(1)
   })
 
@@ -906,8 +1026,27 @@ describe("main (CLI entrypoint)", () => {
     vi.mocked(input).mockResolvedValue("no-such-user")
 
     // Act + Assert
-    await expect(main(["--site-id", String(siteId)])).rejects.toThrow(
-      "User no-such-user not found",
-    )
+    await expect(
+      main([], {
+        siteIdsInclude: [siteId],
+        siteIdsExclude: [],
+        logger: { info: vi.fn(), error: vi.fn() },
+      }),
+    ).rejects.toThrow("User no-such-user not found")
+  })
+
+  it("aborts without migrating when confirm is declined", async () => {
+    // Arrange
+    vi.mocked(confirm).mockResolvedValue(false)
+
+    // Act
+    await main([], {
+      siteIdsInclude: [siteId],
+      siteIdsExclude: [],
+      logger: { info: vi.fn(), error: vi.fn() },
+    })
+
+    // Assert
+    expect(input).not.toHaveBeenCalled()
   })
 })
