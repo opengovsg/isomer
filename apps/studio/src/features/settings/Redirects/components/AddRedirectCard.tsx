@@ -169,8 +169,11 @@ export const AddRedirectCard = ({
               color="interaction.links.default"
               onClick={onBulkUploadOpen}
             >
-              bulk upload with a .csv instead.
+              bulk upload with a .csv instead
             </Link>
+            <Text textStyle="subhead-2" color="base.content.default">
+              .
+            </Text>
           </Flex>
         </Flex>
       )}
