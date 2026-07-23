@@ -387,6 +387,7 @@ export const processAuditLogExportRequest = async (
         objectKey,
         errorMessage: null,
         updatedAt: new Date(),
+        completedAt: new Date(),
       })
       .where("id", "=", requestId)
       .execute()
