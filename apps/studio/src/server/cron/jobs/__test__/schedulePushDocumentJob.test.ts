@@ -6,9 +6,10 @@ import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
 import * as s3Lib from "~/lib/s3"
-import * as gazetteService from "~/server/modules/gazette/gazette.service"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
+
+import * as algoliaPkg from "@isomer/algolia"
 
 // algolia.ts constructs the Algolia client at module load via
 // algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
@@ -198,7 +199,7 @@ describe("schedulePushDocumentJobHandler", async () => {
     // SearchSG endpoint.
     vi.spyOn(s3Lib, "getBlob").mockResolvedValue(new Uint8Array([1, 2, 3]))
     vi.spyOn(s3Lib, "setAssetAsPublished").mockResolvedValue(undefined)
-    vi.spyOn(gazetteService, "parseFullTextFromPDF").mockResolvedValue(
+    vi.spyOn(algoliaPkg, "parseFullTextFromPDF").mockResolvedValue(
       "parsed pdf text",
     )
 
@@ -284,7 +285,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // S3 + PDF parser were each invoked exactly once.
       expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
-      expect(gazetteService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+      expect(algoliaPkg.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
     })
 
     it("passes the full PDF text to Algolia without truncating to 50k", async () => {
@@ -294,9 +295,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       // into multiple records (a run with no whitespace produces only 1 record).
       const word = "gazette " // 8 chars including trailing space
       const longText = word.repeat(8000) // 64 000 chars, > 50 000
-      vi.spyOn(gazetteService, "parseFullTextFromPDF").mockResolvedValue(
-        longText,
-      )
+      vi.spyOn(algoliaPkg, "parseFullTextFromPDF").mockResolvedValue(longText)
       const { resourceId } = await seedDocumentReadyForIngestion({
         parentTitle: "Notices",
         ref: "/2024/gazette/public/long.pdf",
@@ -314,7 +313,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // Spy on buildGazetteSearchRecords to capture its typed SearchRecord[]
       // return value — text is string there, so no unsafe cast is needed.
-      const buildSpy = vi.spyOn(gazetteService, "buildGazetteSearchRecords")
+      const buildSpy = vi.spyOn(algoliaPkg, "buildGazetteSearchRecords")
 
       // Act
       await schedulePushDocumentJobHandler()
@@ -322,7 +321,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       // Assert — records were built from the full text (>1 chunk because the
       // text exceeds one 7 000-char chunk), and no 50k truncation was applied.
       expect(algoliaLib.saveObjectsToSearchIndex).toHaveBeenCalledTimes(1)
-      const builtRecords: gazetteService.SearchRecord[] =
+      const builtRecords: algoliaPkg.SearchRecord[] =
         buildSpy.mock.results[0]!.value
       expect(builtRecords.length).toBeGreaterThan(1)
       // The combined text length across all chunks equals the full text, not
@@ -365,7 +364,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
     it("skips save when PDF text is empty (no records built)", async () => {
       // Arrange
-      vi.spyOn(gazetteService, "parseFullTextFromPDF").mockResolvedValue("")
+      vi.spyOn(algoliaPkg, "parseFullTextFromPDF").mockResolvedValue("")
       const { resourceId } = await seedDocumentReadyForIngestion({
         parentTitle: "Notices",
         ref: "/empty/gazette.pdf",
@@ -701,7 +700,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       // S3 + PDF parser were each invoked exactly once.
       expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
-      expect(gazetteService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+      expect(algoliaPkg.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
     })
 
     it("skips rows scheduled for the future", async () => {
