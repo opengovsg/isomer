@@ -421,11 +421,12 @@ export const setupCollection = async ({
 
 export const collectionPageBlobContent = (
   tagged: string[] = [],
+  category = "Feature Articles",
 ): UnwrapTagged<PrismaJson.BlobJsonContent> => ({
   layout: "article",
   page: {
     date: "01/01/2026",
-    category: "Feature Articles",
+    category,
     articlePageHeader: {
       summary: "A concise summary of the main points regarding this article.",
     },
@@ -438,14 +439,15 @@ export const collectionPageBlobContent = (
 export const setupCollectionPage = async (
   args: Omit<SetupPageResourceProps, "resourceType" | "blobId"> & {
     tagged?: string[]
+    category?: string
   },
 ) => {
-  const { tagged = [], ...rest } = args
+  const { tagged = [], category, ...rest } = args
 
   const blob = await db
     .insertInto("Blob")
     .values({
-      content: jsonb(collectionPageBlobContent(tagged)),
+      content: jsonb(collectionPageBlobContent(tagged, category)),
     })
     .returningAll()
     .executeTakeFirstOrThrow()
