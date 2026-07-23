@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { createAuditLogExportRequestSchema } from "~/schemas/audit"
 
 import { protectedProcedure, router } from "../../trpc"
+import { validateUserIsSiteAdmin } from "../permissions/permissions.service"
 import { createAuditLogExportRequest } from "./auditLogExport.service"
 
 export const auditRouter = router({
@@ -12,6 +13,13 @@ export const auditRouter = router({
     // Arbitrary low limit to prevent abuse; tune if legitimate usage is blocked.
     .meta({ rateLimitOptions: { max: 5, windowMs: 60_000 } })
     .mutation(async ({ ctx, input: { siteId, month, reportType } }) => {
+      // Permission check FIRST, before any mutation. Audit log export is a
+      // Site Admin-only capability so we reject any attempts if they are not an admin
+      await validateUserIsSiteAdmin({
+        siteId,
+        userId: ctx.user.id,
+      })
+
       try {
         return await createAuditLogExportRequest({
           siteId,
