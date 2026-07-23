@@ -23,21 +23,6 @@ jobs:
         uses: withgraphite/graphite-ci-action@402a89bc8aa6db18ae1f9c61953d001d5f9d828f
         with:
           graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
-  # Detect which areas changed so dependent jobs can opt out when irrelevant.
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      components: ${{ steps.filter.outputs.components }}
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
-        id: filter
-        with:
-          # Covers both source/asset changes and dependency changes
-          # (a new dependency edits packages/components/package.json).
-          filters: |
-            components:
-              - 'packages/components/**'
   build:
     runs-on: ubuntu-latest
     steps:
@@ -86,79 +71,6 @@ jobs:
 
       - name: Typecheck
         run: pnpm run typecheck
-
-  components-bundle-size:
-    name: Components bundle size
-    needs: [optimize_ci, changes]
-    # Only meaningful on PRs (needs a `main` baseline to diff against), and only
-    # when the components package itself changed (source/assets or dependencies).
-    if: github.event_name == 'pull_request' && needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.components == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-      - name: Setup
-        uses: ./.github/actions/setup
-
-      # Copy the scripts out of the tree so they survive the `main` checkout below
-      # (they only exist on this PR branch).
-      - name: Stage scripts
-        run: cp .github/scripts/measure-template-bundle.sh .github/scripts/comment-template-bundle-size.sh "$RUNNER_TEMP/"
-
-      # The Template (next build --webpack) is the real consumer of the components
-      # package; its webpack-bundled, tree-shaken, gzipped output is what ships.
-      - name: Build Template (PR branch)
-        run: |
-          rm -rf packages/components/dist tooling/template/out tooling/template/.next
-          pnpm --filter @opengovsg/isomer-components run build:module
-          pnpm --filter isomer-base-template run build:template
-
-      - name: Measure PR bundle
-        id: pr
-        run: bash "$RUNNER_TEMP/measure-template-bundle.sh" tooling/template/out >> "$GITHUB_OUTPUT"
-
-      - name: Build Template (main)
-        id: base
-        run: |
-          git fetch --no-tags --depth=1 origin main
-          git checkout --force FETCH_HEAD
-          # main may have a different lockfile/deps than the PR branch.
-          pnpm install --frozen-lockfile
-          # Drop the PR build artifacts so we measure main cleanly.
-          rm -rf packages/components/dist tooling/template/out tooling/template/.next
-          pnpm --filter @opengovsg/isomer-components run build:module
-          pnpm --filter isomer-base-template run build:template
-          bash "$RUNNER_TEMP/measure-template-bundle.sh" tooling/template/out >> "$GITHUB_OUTPUT"
-
-      # Save metrics + the comment script into an artifact so post-pr-comment.yml
-      # can post the comment from the base-repo context (where GITHUB_TOKEN always
-      # has write access, even for fork PRs).
-      - name: Save bundle size metadata
-        run: |
-          mkdir -p /tmp/bundle-size-metadata
-          cat > /tmp/bundle-size-metadata/values.env <<'ENVEOF'
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          PR_FRAMEWORK=${{ steps.pr.outputs.framework }}
-          PR_VENDOR=${{ steps.pr.outputs.vendor }}
-          PR_PAGE=${{ steps.pr.outputs.page }}
-          PR_CSS=${{ steps.pr.outputs.css }}
-          PR_TOTAL=${{ steps.pr.outputs.total }}
-          BASE_FRAMEWORK=${{ steps.base.outputs.framework }}
-          BASE_VENDOR=${{ steps.base.outputs.vendor }}
-          BASE_PAGE=${{ steps.base.outputs.page }}
-          BASE_CSS=${{ steps.base.outputs.css }}
-          BASE_TOTAL=${{ steps.base.outputs.total }}
-          ENVEOF
-          cp "$RUNNER_TEMP/comment-template-bundle-size.sh" /tmp/bundle-size-metadata/
-
-      - name: Upload bundle size metadata
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: bundle-size-metadata
-          path: /tmp/bundle-size-metadata/
-          retention-days: 7
 
   test-studio:
     name: Test Studio (${{ matrix.shard }}/${{ matrix.total_shards }})
@@ -293,74 +205,6 @@ jobs:
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
-
-  pr-breakdown:
-    name: PR diff breakdown
-    needs: optimize_ci
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && needs.optimize_ci.outputs.skip == 'false'
-    permissions:
-      contents: read
-    steps:
-      # Non-default fetch-depth is required, not just convenient: the default
-      # checkout resolves the PR's synthetic merge ref (refs/pull/N/merge),
-      # whose two parents are the real base and head commits — fork or not,
-      # GitHub materializes that ref server-side, so this is also what makes
-      # the head commit fetchable at all for fork PRs (origin is the base
-      # repo; a fork's head SHA isn't otherwise fetchable from it directly).
-      # Extra depth pulls ancestor history for both parents, which is what
-      # lets classify-pr-diff.mjs's three-dot diff find the real merge-base
-      # instead of diffing straight against base's current tip.
-      #
-      # Full history (0) rather than a bounded depth: a bounded fetch trades
-      # a small, currently-negligible cost saving for a real failure mode —
-      # any PR whose merge-base sits further back than the bound hard-fails
-      # this step with "no merge base found," with no continue-on-error, on
-      # every subsequent push to that PR. Full history has no such cliff; at
-      # this repo's current size (~80MB of history) the extra clone cost is
-      # a few seconds at most. This does mean the clone cost grows with the
-      # repo's total lifetime history, not with this one PR's size — worth
-      # revisiting if that ever becomes an actual bottleneck.
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          fetch-depth: 0
-
-      - name: Classify changed files
-        run: node .github/scripts/classify-pr-diff.mjs > /tmp/pr-breakdown-body.md
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-
-      - name: Add to step summary
-        run: cat /tmp/pr-breakdown-body.md >> "$GITHUB_STEP_SUMMARY"
-
-      # Same fork-PR restriction as the e2e/bundle-size comments below: this
-      # job can't post to the PR directly, so it hands the body off as an
-      # artifact for post-pr-comment.yml to pick up in the base-repo context.
-      #
-      # Deliberately NOT including a pr-number.txt here: this step runs with
-      # the PR's own (possibly forked, possibly modified) version of this
-      # workflow file, so anything it writes is attacker-controlled. The
-      # consuming job derives the PR number itself from the trusted
-      # workflow_run event payload instead of trusting a number from this
-      # artifact — see post-pr-comment.yml.
-      #
-      # base-ref.txt IS included, but only ever used downstream as a
-      # tie-breaker among candidates already independently constrained by
-      # trusted fields (fork+branch+exact head commit) — never as the
-      # source of truth for which PR to edit. See post-pr-comment.yml.
-      - name: Save PR breakdown metadata
-        run: |
-          mkdir -p /tmp/pr-breakdown-metadata
-          cp /tmp/pr-breakdown-body.md /tmp/pr-breakdown-metadata/body.md
-          echo "${{ github.event.pull_request.base.ref }}" > /tmp/pr-breakdown-metadata/base-ref.txt
-
-      - name: Upload PR breakdown metadata
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: pr-breakdown-metadata
-          path: /tmp/pr-breakdown-metadata/
-          retention-days: 1
 
   end-to-end-tests:
     name: End-to-end tests

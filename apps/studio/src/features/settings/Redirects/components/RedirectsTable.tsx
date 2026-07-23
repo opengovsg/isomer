@@ -138,13 +138,7 @@ function DestinationCell({
           label={REDIRECT_MESSAGES.destinationNotPublished}
           placement="top"
         >
-          <Box
-            as="span"
-            ml="auto"
-            flexShrink={0}
-            display="inline-flex"
-            lineHeight="0"
-          >
+          <Box as="span" flexShrink={0} display="inline-flex" lineHeight="0">
             <Icon
               as={BiSolidErrorCircle}
               boxSize="1rem"

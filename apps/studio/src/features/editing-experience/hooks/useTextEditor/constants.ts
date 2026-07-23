@@ -25,7 +25,10 @@ import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule } from "@tiptap/react"
 
-import { getHtmlWithRelativeReferenceLinks } from "../../utils"
+import {
+  createTableSelectionBorderPlugin,
+  getHtmlWithRelativeReferenceLinks,
+} from "../../utils"
 import { selectTableCellContent } from "./selectTableCellContent"
 
 export { TableRow } from "@tiptap/extension-table-row"
@@ -123,6 +126,9 @@ export const IsomerTable = Table.extend({
       "Mod-a": () =>
         selectTableCellContent(this.editor) || this.editor.commands.selectAll(),
     }
+  },
+  addProseMirrorPlugins() {
+    return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
   },
 })
 

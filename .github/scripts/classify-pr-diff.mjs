@@ -117,11 +117,6 @@ for (const line of numstat) {
   totals[bucket].files += 1
 }
 
-const grandTotal = BUCKET_ORDER.reduce(
-  (sum, bucket) => sum + totals[bucket].files,
-  0,
-)
-
 // Wrapped in a start/end pair (rather than one marker line) so
 // update-pr-description.mjs can find-and-replace this whole block inside a
 // PR description on every push, instead of stacking a copy per push.
@@ -133,7 +128,6 @@ for (const bucket of TABLE_ORDER) {
   const t = totals[bucket]
   body += `| ${BUCKET_LABELS[bucket]} | ${t.files} | +${t.add} | -${t.del} |\n`
 }
-body += `\n${grandTotal} file(s) changed. Buckets derived from [\`docs/risk-taxonomy.md\`](../blob/main/docs/risk-taxonomy.md) conventions.\n`
 body += "<!-- pr-diff-breakdown:end -->\n"
 
 process.stdout.write(body)
