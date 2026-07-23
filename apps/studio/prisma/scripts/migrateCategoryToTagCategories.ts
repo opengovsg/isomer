@@ -122,13 +122,24 @@ interface CollectionItemContent {
   page: { category?: string; tagged?: string[] }
 }
 
+/** Trim + lowercase key — matches Studio tag-option duplicate rules. */
+const normalizedCategoryKey = (label: string): string =>
+  label.trim().toLowerCase()
+
 export const deriveDistinctCategories = (
   categories: (string | undefined)[],
 ): string[] => {
-  const distinct = new Set(
-    categories.map((c) => c?.trim()).filter((c): c is string => !!c),
-  )
-  return Array.from(distinct).sort((a, b) =>
+  // Case-insensitive dedupe; keep the first-seen trimmed casing as the option label.
+  const byNormalized = new Map<string, string>()
+  for (const raw of categories) {
+    const trimmed = raw?.trim()
+    if (!trimmed) continue
+    const key = normalizedCategoryKey(trimmed)
+    if (!byNormalized.has(key)) {
+      byNormalized.set(key, trimmed)
+    }
+  }
+  return Array.from(byNormalized.values()).sort((a, b) =>
     a.localeCompare(b, undefined, { numeric: true }),
   )
 }
@@ -193,7 +204,9 @@ export const buildMigrationPlan = ({
   }
 
   const group = buildCategoryTagGroup({ categories, generateId })
-  const optionIdByLabel = new Map(group.options.map((o) => [o.label, o.id]))
+  const optionIdByLabel = new Map(
+    group.options.map((o) => [normalizedCategoryKey(o.label), o.id]),
+  )
 
   const itemUpdates = items.flatMap(
     ({
@@ -206,7 +219,7 @@ export const buildMigrationPlan = ({
       const updates: ItemTagUpdate[] = []
 
       const draftOptionId = draftCategory
-        ? optionIdByLabel.get(draftCategory.trim())
+        ? optionIdByLabel.get(normalizedCategoryKey(draftCategory))
         : undefined
       if (draftOptionId) {
         updates.push({
@@ -217,7 +230,7 @@ export const buildMigrationPlan = ({
       }
 
       const publishedOptionId = publishedCategory
-        ? optionIdByLabel.get(publishedCategory.trim())
+        ? optionIdByLabel.get(normalizedCategoryKey(publishedCategory))
         : undefined
       if (publishedOptionId) {
         updates.push({

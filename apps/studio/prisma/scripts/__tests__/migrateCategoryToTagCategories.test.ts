@@ -166,6 +166,19 @@ describe("deriveDistinctCategories", () => {
     // Act + Assert
     expect(deriveDistinctCategories([])).toEqual([])
   })
+
+  it("dedupes case-insensitively, keeping the first-seen trimmed casing", () => {
+    // Act
+    const result = deriveDistinctCategories([
+      " Guides ",
+      "guides",
+      "GUIDES",
+      "Articles",
+    ])
+
+    // Assert — matches Studio tag-option duplicate rules (trim + lower)
+    expect(result).toEqual(["Articles", "Guides"])
+  })
 })
 
 describe("appendTagged", () => {
@@ -346,6 +359,30 @@ describe("buildMigrationPlan", () => {
     expect(plan.itemUpdates).toEqual([
       { resourceId: "1", state: "draft", tagged: ["id-1"] },
       { resourceId: "1", state: "published", tagged: ["id-2"] },
+    ])
+  })
+
+  it("maps differently-cased legacy categories to the same option id", () => {
+    // Arrange
+    let counter = 0
+    const generateId = () => `id-${counter++}`
+
+    // Act — first-seen casing "Guides" wins; "guides" must resolve to same option
+    const plan = buildMigrationPlan({
+      items: [
+        { resourceId: "1", publishedCategory: "Guides" },
+        { resourceId: "2", draftCategory: "guides" },
+      ],
+      generateId,
+    })
+
+    // Assert
+    expect(plan.status).toBe("migrated")
+    if (plan.status !== "migrated") return
+    expect(plan.group.options).toEqual([{ id: "id-1", label: "Guides" }])
+    expect(plan.itemUpdates).toEqual([
+      { resourceId: "1", state: "published", tagged: ["id-1"] },
+      { resourceId: "2", state: "draft", tagged: ["id-1"] },
     ])
   })
 })
