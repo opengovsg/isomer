@@ -33,6 +33,14 @@ export const REDIRECT_MESSAGES = {
     "This page or folder you're redirecting to hasn't been published yet.",
 } as const
 
+// Bulk-upload row errors with no single-create equivalent. Kept beside
+// REDIRECT_MESSAGES so all redirect copy lives together; the other bulk row
+// errors reuse REDIRECT_MESSAGES, so the errors file reads like the inline form.
+export const BULK_MALFORMED_ROW_MESSAGE =
+  "This row has extra columns. Put double quotes around any value that contains a comma."
+export const BULK_DUPLICATE_SOURCE_MESSAGE =
+  "This source is listed more than once in your file."
+
 export interface RedirectValidationIssue {
   code: RedirectValidationCode
   message: string
