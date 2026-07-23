@@ -5,10 +5,7 @@ import { redirectHandlers } from "tests/msw/handlers/redirect"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import RedirectsSettingsPage from "~/pages/sites/[siteId]/settings/redirects"
 import { ADMIN_HANDLERS } from "~/stories/handlers"
-import {
-  createAdvancedRedirectsEnabledGbParameters,
-  createRedirectionsEnabledGbParameters,
-} from "~/stories/utils/growthbook"
+import { createAdvancedRedirectsEnabledGbParameters } from "~/stories/utils/growthbook"
 
 const COMMON_HANDLERS = [
   ...ADMIN_HANDLERS,
@@ -48,7 +45,6 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   parameters: {
-    growthbook: [createRedirectionsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -61,7 +57,6 @@ export const Default: Story = {
 
 export const Empty: Story = {
   parameters: {
-    growthbook: [createRedirectionsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.empty(),
@@ -91,7 +86,6 @@ const submitNewRedirect = async (canvasElement: HTMLElement) => {
 // Creating over an existing live redirect shows the error inline on the source.
 export const AlreadyExistsError: Story = {
   parameters: {
-    growthbook: [createRedirectionsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -145,10 +139,7 @@ const openModalAndUpload = async (canvasElement: HTMLElement) => {
 // Clicking the inline bulk-upload CTA opens the modal at its initial upload state.
 export const BulkUploadModal: Story = {
   parameters: {
-    growthbook: [
-      createRedirectionsEnabledGbParameters(true),
-      createAdvancedRedirectsEnabledGbParameters(true),
-    ],
+    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -172,10 +163,7 @@ export const BulkUploadModal: Story = {
 // A fully valid file lands on the ready-to-publish screen.
 export const BulkUploadReadyToPublish: Story = {
   parameters: {
-    growthbook: [
-      createRedirectionsEnabledGbParameters(true),
-      createAdvancedRedirectsEnabledGbParameters(true),
-    ],
+    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -200,10 +188,7 @@ export const BulkUploadReadyToPublish: Story = {
 // A file with a bad row lands on the errors screen with the download affordance.
 export const BulkUploadWithErrors: Story = {
   parameters: {
-    growthbook: [
-      createRedirectionsEnabledGbParameters(true),
-      createAdvancedRedirectsEnabledGbParameters(true),
-    ],
+    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
@@ -225,7 +210,6 @@ export const BulkUploadWithErrors: Story = {
 // A redirect that loops back shows the error inline on the destination.
 export const RedirectLoopError: Story = {
   parameters: {
-    growthbook: [createRedirectionsEnabledGbParameters(true)],
     msw: {
       handlers: [
         redirectHandlers.list.default(),
