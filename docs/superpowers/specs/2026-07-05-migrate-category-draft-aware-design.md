@@ -23,7 +23,6 @@ This design makes both the Index page and every Collection Item's draft and publ
 
 ## Non-goals
 
-- Idempotency / safe re-running. This is a one-time migration against sites where no collection has ever had a "Category" group. Operator discipline (run once) is the safety mechanism, not the code. Re-running against an already-migrated site is expected to double-append a group and re-tag items — this is an accepted limitation, not a bug to fix here.
 - Removing the legacy `category` field from items — untouched, still required at the schema level (a later slice removes it).
 - Rendering cutover (`getAvailableFilters.ts` etc.) — covered separately in the same PR per the existing plan doc, not part of this script.
 
