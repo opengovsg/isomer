@@ -415,14 +415,14 @@ export interface CollectionMigrationResult {
   versionsCreated: number
 }
 
-export type SiteMigrationResult = {
+export interface SiteMigrationResult {
   siteId: number
   status: "succeeded" | "failed" | "dry-run"
   error?: string
   collections: CollectionMigrationResult[]
 }
 
-type CollectionWriteContext = {
+interface CollectionWriteContext {
   indexRow: NonNullable<Awaited<ReturnType<typeof getIndexPageRow>>>
   itemRows: Awaited<ReturnType<typeof getItemRows>>
   group: TagCategoryGroup
