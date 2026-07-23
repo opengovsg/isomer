@@ -9,6 +9,7 @@ import { findInvalidSchema } from "./apps/find-invalid-schema"
 import { importFolderJsons } from "./apps/import-folder-jsons"
 import { publishSiteResources } from "./apps/publish-site-resources"
 import { rebuildAllCodebuildProjects } from "./apps/rebuild-all-codebuild-projects"
+import { repairGazetteSearchRecords } from "./apps/repair-gazette-search-records"
 
 const main = async () => {
   const script = await select<IsomerAdminScriptType>({
@@ -61,6 +62,12 @@ const main = async () => {
           "List AWS CodeBuild projects and start builds for each project with resumable batching.",
         value: "rebuild-all-codebuild-projects",
       },
+      {
+        name: "Repair gazette search records",
+        description:
+          "Re-submit Search Records to Algolia for gazette resource IDs (incident response).",
+        value: "repair-gazette-search-records",
+      },
     ],
   })
 
@@ -88,6 +95,9 @@ const main = async () => {
       break
     case "rebuild-all-codebuild-projects":
       await rebuildAllCodebuildProjects()
+      break
+    case "repair-gazette-search-records":
+      await repairGazetteSearchRecords()
       break
     default:
       const _: never = script
