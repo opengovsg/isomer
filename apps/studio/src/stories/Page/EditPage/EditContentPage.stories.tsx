@@ -170,7 +170,13 @@ export const ActiveTableToolbar: Story = {
     ).toHaveLength(1)
     await userEvent.keyboard("{Escape}")
 
+    // Clicking "Table" only opens the size-picker popover — a cell still
+    // needs to be picked to actually insert a table and put the cursor
+    // inside it (see TableSizePicker.tsx).
     await userEvent.click(canvas.getByRole("button", { name: /^table$/i }))
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /^1 by 1 table$/i }),
+    )
 
     // Inside a table: promoted directly onto the main toolbar, and no longer
     // duplicated under "More options" (removed from that list entirely).
