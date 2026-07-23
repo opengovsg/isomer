@@ -351,11 +351,14 @@ const publishNewContent = async <T>(
   {
     resourceId,
     previousVersionNum,
+    previousPublishedVersionId,
     publisherId,
     content,
   }: {
     resourceId: string
     previousVersionNum: number
+    /** `Resource.publishedVersionId` as read earlier — guards against a concurrent publish. */
+    previousPublishedVersionId: string | null
     publisherId: string
     content: T
   },
@@ -382,11 +385,26 @@ const publishNewContent = async <T>(
     .returning("id")
     .executeTakeFirstOrThrow()
 
-  await tx
+  // Optimistic-concurrency guard: only repoint publishedVersionId if it still
+  // matches what we read before computing previousVersionNum. If a human
+  // editor or scheduled publish committed a newer Version in the meantime,
+  // this matches zero rows and we abort rather than silently clobber it.
+  const result = await tx
     .updateTable("Resource")
     .set({ publishedVersionId: newVersion.id })
     .where("id", "=", resourceId)
-    .execute()
+    .where(
+      "publishedVersionId",
+      previousPublishedVersionId === null ? "is" : "=",
+      previousPublishedVersionId,
+    )
+    .executeTakeFirst()
+
+  if (result.numUpdatedRows === BigInt(0)) {
+    throw new Error(
+      `Concurrent publish detected on resource ${resourceId} — publishedVersionId changed since it was read. Aborting.`,
+    )
+  }
 }
 
 const appendCategoryGroup = (
@@ -466,6 +484,7 @@ const applyCollectionWrites = async (
     await publishNewContent(tx, {
       resourceId: indexRow.resourceId,
       previousVersionNum: indexRow.publishedVersionNum,
+      previousPublishedVersionId: indexRow.publishedVersionId,
       publisherId: requirePublisherId(),
       content: {
         ...indexRow.publishedContent,
@@ -500,6 +519,7 @@ const applyCollectionWrites = async (
       await publishNewContent(tx, {
         resourceId: row.resourceId,
         previousVersionNum: row.publishedVersionNum,
+        previousPublishedVersionId: row.publishedVersionId,
         publisherId: requirePublisherId(),
         content: {
           ...row.publishedContent,
