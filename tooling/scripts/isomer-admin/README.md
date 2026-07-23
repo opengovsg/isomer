@@ -67,3 +67,11 @@ Publishes all draft resources for a given site ID in the database. Lists matchin
 ### Rebuild All CodeBuild Projects
 
 Lists all AWS CodeBuild projects in a selected region, sorts them alphabetically, and starts a build for each project. The script can be run as a dry run to show project indexes first, then resumed from a specific index if a previous run stops midway.
+
+### Repair Gazette Search Records
+
+Re-submits gazette **Search Records** to the shared egazette Algolia index. The operator lists the gazette resource IDs in `./input/resource-ids.csv` (one ID per line; commas also accepted, header lines are ignored); the script resolves each one, lists the repairable gazettes for review, and (after a single confirmation) processes them serially. For each gazette it fetches the live PDF from S3, strips the `scheduledAt` object tag so the PDF stays publicly viewable, rebuilds the Search Records, then deletes the gazette's existing records by **Object Group** and saves the fresh ones. Deleting first makes the operation idempotent and self-healing even when the PDF now yields fewer chunks than before. Unresolvable or non-gazette IDs are flagged and skipped; per-gazette failures are logged and do not stop the run.
+
+**Use case:** Incident response — when a batch of gazettes ends up with missing or stale Search Records in Algolia (e.g. the ingestion cron misfired), use this to re-submit the affected gazettes.
+
+Requires `ALGOLIA_APP_ID`, `ALGOLIA_API_KEY`, `ALGOLIA_INDEX_NAME`, `S3_GAZETTE_BUCKET_NAME`, `S3_GAZETTE_DOMAIN_NAME` and `DATABASE_URL` in `.env`, plus AWS credentials for the gazette bucket (e.g. `aws sso login --profile <your-profile>`).

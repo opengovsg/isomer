@@ -45,6 +45,14 @@ _Avoid_: trigger point (overloaded), exit (window close is not a Measuring Point
 **Measuring Period**: The recurrence window within which a given user is shown the editing survey at most once. Defined and enforced in the survey tool's frequency settings, not by Studio.
 _Avoid_: survey cooldown, quarter (the period is configurable, not fixed)
 
+### Gazette search
+
+**Search Record**: One Algolia record for a gazette, holding a single chunk of the gazette PDF's text plus its classification fields. A gazette produces one Search Record per text chunk; records are what search queries match against.
+_Avoid_: document (ambiguous with the SearchSG "document", which is one-per-gazette, not one-per-chunk), search object
+
+**Object Group**: The identity shared by all Search Records of one gazette — its S3 object key. Used to address a gazette's records as a unit (e.g. removing them all).
+_Avoid_: object key (true but hides the grouping role), ref (that's the leading-slash page field the Object Group is derived from)
+
 ### Roles and surfaces
 
 **Isomer Admin**: A user with the Core or Migrator role. The only role that can manage taxonomy (create, edit, delete Tag Categories, Tag Options, and Category Options) via the Manage Filters panel.
