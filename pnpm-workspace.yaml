@@ -53,6 +53,9 @@ allowBuilds:
   sharp: false
   ssh2: false
 
+patchedDependencies:
+  next@16.2.11: patches/next@16.2.11.patch
+
 catalog:
   # v4 is pinned deliberately: the legacy egazette integration uses the v4 client API
   # (algoliasearch(appId, key).initIndex(name), index.saveObjects, index.deleteBy).
@@ -284,6 +287,3 @@ catalogs:
     "@vitest/coverage-istanbul": ^4.1.10
     vite: ^8.1.4
     vitest: ^4.1.10
-
-patchedDependencies:
-  next@16.2.11: patches/next@16.2.11.patch
