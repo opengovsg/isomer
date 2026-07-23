@@ -158,6 +158,7 @@ const config = {
   /** We already do typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [
+    "@isomer/algolia",
     "@isomer/logging",
     "@isomer/pgboss",
     "@sinclair/typebox",
