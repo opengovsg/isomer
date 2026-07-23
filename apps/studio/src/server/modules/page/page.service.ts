@@ -5,6 +5,9 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { format } from "date-fns"
+import { get, isEqual } from "lodash-es"
+
+import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 
 export const createDefaultPage = ({
   layout,
@@ -63,6 +66,48 @@ export const createDefaultPage = ({
       return _exhaustiveCheck
     }
   }
+}
+
+/**
+ * Collection Filters (`tagCategories`) are UI-gated to site Admins via
+ * `canManageCollectionFilters`. Callers with page-update access can still hit
+ * `page.updatePageBlob` directly, so when `page.tagCategories` changes, run
+ * the same CASL check the client uses (`can("create", { parentId: null })`).
+ * Throws FORBIDDEN if the caller fails it.
+ *
+ * No-op for non-collection layouts. `tagCategories` only exists on the
+ * collection layout's `page` schema.
+ */
+export const assertTagCategoriesUnchangedForNonSiteAdmin = async ({
+  userId,
+  siteId,
+  oldContent,
+  newContent,
+}: {
+  userId: string
+  siteId: number
+  oldContent: UnwrapTagged<PrismaJson.BlobJsonContent>
+  newContent: UnwrapTagged<PrismaJson.BlobJsonContent>
+}): Promise<void> => {
+  const isCollectionIndexPage =
+    get(oldContent, "layout") === ISOMER_USABLE_PAGE_LAYOUTS.Collection ||
+    get(newContent, "layout") === ISOMER_USABLE_PAGE_LAYOUTS.Collection
+
+  if (!isCollectionIndexPage) return
+
+  const tagCategoriesUnchanged = isEqual(
+    get(oldContent, "page.tagCategories"),
+    get(newContent, "page.tagCategories"),
+  )
+
+  if (tagCategoriesUnchanged) return
+
+  await bulkValidateUserPermissionsForResources({
+    userId,
+    siteId,
+    action: "create",
+    resourceIds: [null],
+  })
 }
 
 export const createFolderIndexPage = (title: string) => {

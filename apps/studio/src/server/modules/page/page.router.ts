@@ -66,7 +66,11 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  assertTagCategoriesUnchangedForNonSiteAdmin,
+  createDefaultPage,
+  createFolderIndexPage,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -524,6 +528,14 @@ export const pageRouter = router({
           db: tx,
           resourceId: String(input.pageId),
         })
+
+        await assertTagCategoriesUnchangedForNonSiteAdmin({
+          userId: ctx.user.id,
+          siteId: input.siteId,
+          oldContent: oldBlob.content,
+          newContent: input.content,
+        })
+
         const updatedBlob = await updateBlobById(tx, input)
 
         await logResourceEvent(tx, {
