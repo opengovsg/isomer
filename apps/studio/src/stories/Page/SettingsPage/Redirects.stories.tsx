@@ -121,9 +121,12 @@ const openModalAndUpload = async (canvasElement: HTMLElement) => {
     await screen.findByRole("button", { name: /bulk upload with a \.csv/i }),
   )
   // The dropzone's file input has no stable accessible label, so grab it
-  // directly once the modal has mounted.
+  // directly once the modal has mounted. Scope to the modal dialog so an
+  // unrelated file input elsewhere on the page can't be picked up by mistake.
   const fileInput = await waitFor(() => {
-    const input = body.querySelector<HTMLInputElement>("input[type='file']")
+    const input = body.querySelector<HTMLInputElement>(
+      "[role='dialog'] input[type='file']",
+    )
     if (!input) throw new Error("file input not found")
     return input
   })

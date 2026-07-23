@@ -61,7 +61,9 @@ const triggerCsvDownload = (filename: string, contents: string) => {
   anchor.href = url
   anchor.download = filename
   anchor.click()
-  URL.revokeObjectURL(url)
+  // Revoke on the next tick, not synchronously after click(): some browsers
+  // abort the download if the blob URL is freed before it has started.
+  setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
 // A site name can contain characters that are invalid or surprising in a
