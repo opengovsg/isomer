@@ -157,10 +157,8 @@ export const AddRedirectCard = ({
             color="base.content.default"
             flexShrink={0}
           />
-          <Flex wrap="wrap" columnGap="0.25rem" rowGap="0.25rem">
-            <Text textStyle="subhead-2" color="base.content.default">
-              Have more than 10 redirects to add? You can
-            </Text>
+          <Text textStyle="subhead-2" color="base.content.default">
+            Have more than 10 redirects to add? You can{" "}
             <Link
               as="button"
               type="button"
@@ -171,10 +169,8 @@ export const AddRedirectCard = ({
             >
               bulk upload with a .csv instead
             </Link>
-            <Text textStyle="subhead-2" color="base.content.default">
-              .
-            </Text>
-          </Flex>
+            .
+          </Text>
         </Flex>
       )}
 
