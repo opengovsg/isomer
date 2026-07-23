@@ -3,4 +3,6 @@
 export const PG_ERROR_CODES = {
   uniqueViolation: "23505",
   serializationFailure: "40001",
+  // A statement aborted while waiting for a lock (e.g. lock_timeout fired).
+  lockTimeout: "55P03",
 } as const

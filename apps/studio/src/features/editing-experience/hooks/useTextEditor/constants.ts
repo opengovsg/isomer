@@ -25,7 +25,10 @@ import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule } from "@tiptap/react"
 
-import { getHtmlWithRelativeReferenceLinks } from "../../utils"
+import {
+  createTableSelectionBorderPlugin,
+  getHtmlWithRelativeReferenceLinks,
+} from "../../utils"
 
 export { TableRow } from "@tiptap/extension-table-row"
 
@@ -113,6 +116,9 @@ export const IsomerTable = Table.extend({
         default: "Table caption",
       },
     }
+  },
+  addProseMirrorPlugins() {
+    return [...(this.parent?.() ?? []), createTableSelectionBorderPlugin()]
   },
 })
 

@@ -9,14 +9,15 @@ import { getSeedSiteId } from "../fixtures/seed"
 const UNIQUE_INVITEE = () =>
   `e2e-invitee-${crypto.randomUUID().slice(0, 8)}@open.gov.sg`
 
-// Non-gov.sg domain — i.e. a "vendor" collaborator. Vendors can only be added
-// as Editor/Publisher (never Admin) and only if their email is whitelisted.
+// Non-gov.sg domain — i.e. a "vendor" collaborator. Vendors can only be
+// added if their email is whitelisted (any whitelist entry, temporary or
+// permanent, is sufficient for any role including Admin).
 const UNIQUE_VENDOR = () =>
   `e2e-vendor-${crypto.randomUUID().slice(0, 8)}@vendor.example.com`
 
 // Whitelist a vendor email so the whitelist gate isn't the blocker. A future
-// expiry marks it as a (temporary) vendor entry rather than a permanent admin
-// one; isEmailWhitelisted treats both as valid.
+// expiry marks it as a (temporary) vendor entry rather than a permanent one;
+// isEmailWhitelisted treats both as equally valid.
 const whitelistVendor = async (email: string) => {
   const expiry = new Date()
   expiry.setDate(expiry.getDate() + 90)
@@ -101,10 +102,9 @@ const deleteUsersByEmail = async (emailPattern: string) => {
 
 test.afterEach(async () => {
   await deleteUsersByEmail("e2e-invitee-%@open.gov.sg")
-  // Symmetric cleanup for vendor users, in case a positive vendor-invite test
-  // is added later that creates User rows.
+  // Cleanup for vendor users created by the positive vendor-invite test.
   await deleteUsersByEmail("e2e-vendor-%@vendor.example.com")
-  // Remove any vendor whitelist entries created by the negative-case tests.
+  // Remove any vendor whitelist entries created by these tests.
   await db
     .deleteFrom("Whitelist")
     .where("email", "like", "e2e-vendor-%@vendor.example.com")
@@ -131,24 +131,15 @@ test("admin can invite a new collaborator as Admin", async ({ page }) => {
   await expectGrantedRole(inviteeEmail).toBe("Admin")
 })
 
-test("admin cannot invite a vendor collaborator as Admin", async ({ page }) => {
+test("admin can invite a whitelisted vendor collaborator as Admin", async ({
+  page,
+}) => {
   const vendorEmail = UNIQUE_VENDOR()
-  // Whitelist the vendor so the whitelist gate is satisfied — this isolates the
-  // role restriction: a vendor still cannot be made Admin.
+  // A temporary (vendor) whitelist grant is now sufficient for Admin, same
+  // as a permanent one.
   await whitelistVendor(vendorEmail)
-  await openInviteModal(page)
-
-  // Select Admin while the email is empty (allowed), then enter a vendor email.
-  await page.getByRole("button", { name: /^Admin/ }).click()
-  await page.getByLabel("Email address").fill(vendorEmail)
-
-  // The Admin choice is rejected: the role box disables, the explanatory error
-  // shows, and Send stays blocked.
-  await expect(page.getByRole("button", { name: /^Admin/ })).toBeDisabled()
-  await expect(
-    page.getByText("Non-gov.sg emails cannot be added as admin"),
-  ).toBeVisible()
-  await expect(page.getByRole("button", { name: "Send invite" })).toBeDisabled()
+  await inviteCollaborator(page, { email: vendorEmail, role: "Admin" })
+  await expectGrantedRole(vendorEmail).toBe("Admin")
 })
 
 test("admin cannot invite a non-whitelisted vendor collaborator", async ({
@@ -160,6 +151,26 @@ test("admin cannot invite a non-whitelisted vendor collaborator", async ({
 
   // Default role is Editor, so the Admin restriction isn't in play — the sole
   // blocker is the missing whitelist entry.
+  await expect(
+    page.getByText("There are non-gov.sg domains that need to be whitelisted"),
+  ).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByRole("button", { name: "Send invite" })).toBeDisabled()
+})
+
+test("admin cannot invite a non-whitelisted vendor collaborator, even as Admin", async ({
+  page,
+}) => {
+  const vendorEmail = UNIQUE_VENDOR()
+  await openInviteModal(page)
+
+  // Selecting Admin has no whitelist-specific effect of its own -- there's no
+  // distinction between Admin and any other role. The role box is never
+  // disabled; the block comes purely from the general "needs whitelisting"
+  // gate that applies to every role.
+  await page.getByRole("button", { name: /^Admin/ }).click()
+  await page.getByLabel("Email address").fill(vendorEmail)
+
+  await expect(page.getByRole("button", { name: /^Admin/ })).toBeEnabled()
   await expect(
     page.getByText("There are non-gov.sg domains that need to be whitelisted"),
   ).toBeVisible({ timeout: 10_000 })

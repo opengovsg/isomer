@@ -12,7 +12,7 @@ name: Post PR comments
 # GITHUB_TOKEN always has the permissions declared below — even when the
 # triggering PR came from a fork.
 #
-# Each job downloads a small metadata artifact written by ci.yml, since the
+# This job downloads a small metadata artifact written by ci.yml, since the
 # two workflows run in separate contexts and can't share environment variables.
 on:
   workflow_run:
@@ -20,8 +20,7 @@ on:
     types: [completed]
 
 permissions:
-  actions: read # needed by `gh run download` to access the Actions artifacts API
-  pull-requests: write
+  actions: read # needed by actions/download-artifact to access a different run's artifacts
   issues: write # GitHub routes PR comments through the issues API endpoint
 
 jobs:
@@ -38,13 +37,12 @@ jobs:
         # lets subsequent steps gate on `steps.download.outcome` instead of
         # failing the whole job.
         continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh run download ${{ github.event.workflow_run.id }} \
-            --name e2e-comment-metadata \
-            --dir /tmp/e2e-metadata \
-            --repo ${{ github.repository }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: e2e-comment-metadata
+          path: /tmp/e2e-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Read metadata
         if: steps.download.outcome == 'success'
@@ -77,31 +75,3 @@ jobs:
 
             Each test has its own directory under the zip; play `video.webm` to watch the run.
             Workflow: [run #${{ github.event.workflow_run.id }}](${{ github.event.workflow_run.html_url }}) — artifact expires in 7 days.
-
-  post-bundle-size-comment:
-    # Mirror of post-e2e-comment above — same fork-PR restriction applies.
-    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download bundle size metadata
-        id: download
-        # Absent when components-bundle-size was skipped (no component changes
-        # or optimizer short-circuit); gate subsequent steps on outcome.
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh run download ${{ github.event.workflow_run.id }} \
-            --name bundle-size-metadata \
-            --dir /tmp/bundle-size-metadata \
-            --repo ${{ github.repository }}
-
-      - name: Post bundle size comment
-        if: steps.download.outcome == 'success'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -a
-          source /tmp/bundle-size-metadata/values.env
-          set +a
-          bash /tmp/bundle-size-metadata/comment-template-bundle-size.sh

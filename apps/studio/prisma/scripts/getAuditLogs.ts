@@ -12,6 +12,8 @@ const __dirname = dirname(__filename)
 // Sites requiring audit logs
 const SITES_WITH_AUDIT_LOGS = [
   1, // stb.gov.sg
+  30, // avs.nparks.gov.sg
+  32, // cuge.nparks.gov.sg
   41, // ssg.gov.sg
   46, // sportsingapore.gov.sg
   48, // muis.gov.sg
@@ -20,6 +22,7 @@ const SITES_WITH_AUDIT_LOGS = [
   61, // ipos.gov.sg
   109, // agc.gov.sg
   145, // ite.edu.sg
+  152, // sbg.nparks.gov.sg
   157, // pmo.gov.sg
   166, // mti.gov.sg
   176, // colombo.mfa.gov.sg
@@ -108,22 +111,36 @@ const SITES_WITH_AUDIT_LOGS = [
   259, // washington.mfa.gov.sg
   260, // hanoi.mfa.gov.sg
   261, // hochiminhcity.mfa.gov.sg
-  262, // www.mfa.gov.sg
+  262, // mfa.gov.sg
   263, // nagoya.mfa.gov.sg
   278, // istana.gov.sg
-  284, // www.ptc.gov.sg
-  287, // www.mot.gov.sg
-  289, // www.toteboard.gov.sg
+  283, // biodiversitysg.nparks.gov.sg
+  284, // ptc.gov.sg
+  287, // mot.gov.sg
+  289, // toteboard.gov.sg
   301, // space.gov.sg
+  314, // fotp.nparks.gov.sg
+  315, // gardencityfund.gov.sg
+  316, // gardeningsg.nparks.gov.sg
+  317, // heritagetrees.nparks.gov.sg
+  318, // juronglakegardens.nparks.gov.sg
+  319, // lightsbythelake.nparks.gov.sg
+  320, // naturekakis.nparks.gov.sg
+  321, // pcn.nparks.gov.sg
+  322, // railcorridor.nparks.gov.sg
+  323, // sgf.nparks.gov.sg
+  324, // pulau-ubin.nparks.gov.sg
   334, // seab.gov.sg
-  336, // www.caringcommuters.gov.sg
-  343, // www.motawardsceremony.gov.sg
-  357, // www.ago.gov.sg
+  336, // caringcommuters.gov.sg
+  343, // motawardsceremony.gov.sg
+  357, // ago.gov.sg
   378, // osir.gov.sg
-  397, // www.rp.edu.sg
-  409, // www.hsa.gov.sg
-  484, // www.hpb.gov.sg
-  492, // www.oneservice.gov.sg
+  397, // rp.edu.sg
+  406, // svc.gov.sg
+  409, // hsa.gov.sg
+  484, // hpb.gov.sg
+  492, // oneservice.gov.sg
+  511, // skyrisegreenery.nparks.gov.sg
   512, // cap.gov.sg
 ]
 
