@@ -6,7 +6,7 @@ import { REDIRECTS_SUPPORT_LINK } from "../constants"
 
 export const RedirectsHeader = (): JSX.Element => {
   return (
-    <Flex justifyContent="space-between" align="center" w="full">
+    <Flex justifyContent="space-between" align="center" gap="1rem" w="full">
       <Stack spacing="0.5rem">
         <Flex align="center" gap="0.75rem">
           <Center
