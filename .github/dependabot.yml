@@ -55,13 +55,6 @@ updates:
           - "@tanstack/query-devtools"
           - "@tanstack/react-query"
           - "@tanstack/react-query-devtools"
-      storybook:
-        applies-to: version-updates
-        patterns:
-          - "@storybook/*"
-          - "storybook"
-          - "storybook-addon-pseudo-states"
-          - "eslint-plugin-storybook"
       tiptap:
         applies-to: version-updates
         patterns:
@@ -121,6 +114,34 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "algoliasearch"
         update-types: ["version-update:semver-major"]
+      # Storybook 10.5.x breaks interactive stories: its instrumented
+      # HTMLElement.prototype.focus getter conflicts with
+      # @zag-js/focus-visible (used by Chakra/@opengovsg/design-system-react),
+      # throwing "Illegal invocation" on any story that opens a Chakra Menu.
+      # Pinned to 10.4.6 until fixed upstream — remove once resolved.
+      # These packages were also removed from the `storybook` update group
+      # above — grouped updates don't reliably respect per-dependency
+      # `update-types` ignores, so an ungrouped ignore is the only way to
+      # actually block them.
+      ### Storybook 10.5
+      - dependency-name: "storybook"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/addon-a11y"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/addon-docs"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/addon-links"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/addon-themes"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/nextjs"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "@storybook/react-vite"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "eslint-plugin-storybook"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "storybook-addon-pseudo-states"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
@@ -128,3 +149,11 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 7 # to mitigate supply chain attacks
+    groups:
+      # github/codeql-action ships init/analyze/autobuild/upload-sarif from
+      # a single repo and requires them to be pinned to the same release —
+      # group them so Dependabot bumps them together in one PR instead of
+      # leaving them mismatched.
+      codeql:
+        patterns:
+          - "github/codeql-action/*"
