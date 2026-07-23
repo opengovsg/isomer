@@ -12,8 +12,8 @@
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
     "start": "next start",
-    "test-ci:unit": "vitest run --config vitest.config.ts",
-    "test:bundle": "vitest run --config vitest.config.ts",
+    "test-ci:unit": "vitest run",
+    "test:bundle": "vitest run",
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
