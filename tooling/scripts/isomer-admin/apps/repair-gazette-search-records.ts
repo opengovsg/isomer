@@ -1,3 +1,10 @@
+import {
+  GetObjectCommand,
+  GetObjectTaggingCommand,
+  PutObjectTaggingCommand,
+  S3Client,
+} from "@aws-sdk/client-s3"
+import { confirm, input } from "@inquirer/prompts"
 /**
  * Repair gazette Search Records in Algolia.
  *
@@ -22,17 +29,13 @@
  *   2. Set ALGOLIA_APP_ID, ALGOLIA_API_KEY, ALGOLIA_INDEX_NAME,
  *      S3_GAZETTE_BUCKET_NAME, S3_GAZETTE_DOMAIN_NAME and DATABASE_URL in
  *      isomer-admin/.env (see .env.example).
- *   3. Run the admin CLI from tooling/scripts:
+ *   3. Put the gazette resource IDs to repair in ./input/resource-ids.csv
+ *      (one ID per line; commas also accepted, header lines are ignored).
+ *   4. Run the admin CLI from tooling/scripts:
  *        pnpm run isomer-admin
- *   4. Select "Repair gazette search records" and answer the prompts.
+ *   5. Select "Repair gazette search records" and answer the prompts.
  */
-import {
-  GetObjectCommand,
-  GetObjectTaggingCommand,
-  PutObjectTaggingCommand,
-  S3Client,
-} from "@aws-sdk/client-s3"
-import { confirm, input } from "@inquirer/prompts"
+import fs from "fs"
 
 import {
   buildGazetteSearchRecords,
@@ -177,23 +180,33 @@ export const repairGazetteSearchRecords = async (): Promise<void> => {
     validate: (value) => Boolean(value.trim()) || "AWS region is required.",
   })
 
-  const resourceIdsInput = await input({
-    message:
-      "Enter the gazette resource IDs to repair (comma- or whitespace-separated)",
-  })
-  // Accept comma and/or whitespace as separators. Resource IDs are numeric
-  // (BigInt primary keys), so keep only digit-only tokens.
+  // Read the resource IDs from the input CSV (same ./input convention as the
+  // other file-driven admin scripts).
+  const inputCsvPath = "./input/resource-ids.csv"
+  if (!fs.existsSync(inputCsvPath)) {
+    console.error(
+      `Input file not found: ${inputCsvPath}. Create it with one gazette resource ID per line.`,
+    )
+    return
+  }
+  const resourceIdsInput = fs.readFileSync(inputCsvPath, "utf-8")
+  // Accept newlines, commas and/or whitespace as separators. Resource IDs are
+  // numeric (BigInt primary keys), so keep only digit-only tokens — this also
+  // ignores any header line. Strip leading zeros so the tokens match the
+  // canonical decimal form Postgres returns for BigInt ids (an ID pasted as
+  // "007" must still find row "7").
   const resourceIds = [
     ...new Set(
       resourceIdsInput
         .split(/[\s,]+/)
         .map((id) => id.trim())
-        .filter((id) => id !== "" && /^\d+$/.test(id)),
+        .filter((id) => id !== "" && /^\d+$/.test(id))
+        .map((id) => id.replace(/^0+(?=\d)/, "")),
     ),
   ]
 
   if (resourceIds.length === 0) {
-    console.error("No valid resource IDs provided.")
+    console.error(`No valid resource IDs found in ${inputCsvPath}.`)
     return
   }
 
