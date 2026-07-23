@@ -12,20 +12,28 @@ describe("BackToTopLink", () => {
     vi.restoreAllMocks()
   })
 
-  it("scrolls to the top and prevents the default anchor navigation on click", () => {
+  it("renders a button rather than an anchor", () => {
     // Arrange
     render(<BackToTopLink />)
-    const link = screen.getByRole("link", { name: /back to top/i })
-
-    // Act
-    // fireEvent.click returns false when the click was cancelled via
-    // event.preventDefault(). Suppressing the browser's default href="#"
-    // navigation is what prevents the Studio preview iframe from loading the
-    // whole Studio app into itself ("studioception").
-    const notCancelled = fireEvent.click(link)
 
     // Assert
-    expect(notCancelled).toBe(false)
+    // "Back to top" is an action, so it must be a <button>. Using a <button>
+    // (instead of an <a href="#">) is what avoids the Studio preview iframe
+    // navigating the whole Studio app into itself ("studioception").
+    const button = screen.getByRole("button", { name: /back to top/i })
+    expect(button.tagName).toBe("BUTTON")
+    expect(screen.queryByRole("link", { name: /back to top/i })).toBeNull()
+  })
+
+  it("scrolls to the top on click", () => {
+    // Arrange
+    render(<BackToTopLink />)
+    const button = screen.getByRole("button", { name: /back to top/i })
+
+    // Act
+    fireEvent.click(button)
+
+    // Assert
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 0 })
   })
 })
