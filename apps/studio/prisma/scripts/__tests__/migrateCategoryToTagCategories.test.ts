@@ -24,6 +24,7 @@ import {
   buildCategoryTagGroup,
   buildMigrationPlan,
   deriveDistinctCategories,
+  hasCategoryGroup,
   main,
   migrateCollection,
   migrateSite,
@@ -181,6 +182,42 @@ describe("appendTagged", () => {
 
   it("preserves existing entries while appending", () => {
     expect(appendTagged(["opt-1"], "opt-2")).toEqual(["opt-1", "opt-2"])
+  })
+})
+
+describe("hasCategoryGroup", () => {
+  it("returns false when tagCategories is missing or empty", () => {
+    expect(hasCategoryGroup(undefined)).toBe(false)
+    expect(hasCategoryGroup([])).toBe(false)
+  })
+
+  it("returns true when a group labeled Category is present", () => {
+    expect(
+      hasCategoryGroup([
+        {
+          id: "topic-1",
+          label: "Topic",
+          options: [{ id: "t-1", label: "Health" }],
+        },
+        {
+          id: "cat-1",
+          label: "Category",
+          options: [{ id: "c-1", label: "Guides" }],
+        },
+      ]),
+    ).toBe(true)
+  })
+
+  it("returns false when other groups exist but none are labeled Category", () => {
+    expect(
+      hasCategoryGroup([
+        {
+          id: "topic-1",
+          label: "Topic",
+          options: [{ id: "t-1", label: "Health" }],
+        },
+      ]),
+    ).toBe(false)
   })
 })
 
@@ -698,6 +735,51 @@ describe("migrateCollection / migrateSite", () => {
       itemsUpdated: 0,
       versionsCreated: 0,
     })
+  })
+
+  it("skips a collection whose Index already has a Category group (idempotent re-run)", async () => {
+    // Arrange
+    const { collection } = await setupCollection({ siteId })
+    const existingCategoryGroup: TagCategoryGroup = {
+      id: "cat-1",
+      label: "Category",
+      isRequired: true,
+      display: "plaintext",
+      options: [{ id: "c-1", label: "Guides" }],
+    }
+    const { blob: indexBlob } = await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      tagCategories: [existingCategoryGroup],
+    })
+    const { blob: itemBlob } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      category: "Guides",
+    })
+
+    // Act
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
+
+    // Assert
+    expect(result).toEqual({
+      collectionId: collection.id,
+      status: "already-migrated",
+      categories: [],
+      itemsUpdated: 0,
+      versionsCreated: 0,
+    })
+    const indexContentAfter = await getBlobContent(indexBlob.id)
+    expect(indexContentAfter.page.tagCategories).toEqual([
+      existingCategoryGroup,
+    ])
+    const itemContent = await getBlobContent(itemBlob.id)
+    expect(itemContent.page.tagged).toEqual([])
   })
 
   it("skips items whose legacy category is empty on both sides, without failing the migration", async () => {

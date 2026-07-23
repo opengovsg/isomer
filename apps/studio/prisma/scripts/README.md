@@ -29,6 +29,8 @@
 
 1. Migrates each Collection's legacy `category` string values into a "Category" tagCategories group, and tags every Collection Item with the matching option UUID via `tagged`. The legacy `category` field is left untouched.
 2. The new "Category" group is written with `display: "plaintext"`. Every pre-existing tagCategories group on the same Index is stamped with an explicit `display: "pills"`.
-3. Idempotent — a Collection whose Index already has a "Category" group is skipped.
-4. Invoke with `--site-id <id>` (required) and optionally `--dry-run` to preview without writing:
+3. Idempotent — a Collection whose Index already has a "Category" group (draft or published) is skipped. This assumes `"Category"` is migration-owned; a human-created group with that label would also be skipped. Audit first with `findCategoryTagGroups.sql`.
+4. Pre-flight audit (optional but recommended):
+   `psql "$DATABASE_URL" -f prisma/scripts/findCategoryTagGroups.sql`
+5. Invoke with `--site-id <id>` (required) and optionally `--dry-run` to preview without writing:
    `source .env && pnpm exec tsx prisma/scripts/migrateCategoryToTagCategories.ts --site-id 123 --dry-run`

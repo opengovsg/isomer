@@ -20,10 +20,11 @@
  *     never trigger a publish — a draft may hold unrelated pending edits
  *     that aren't ready to ship.
  *
- * Not idempotent: this is a one-time migration intended to run exactly
- * once per site, against sites where no collection has a "Category" group
- * yet. Re-running it against an already-migrated site will double-append a
- * second "Category" group and re-tag every item.
+ * Idempotent via label: if the Index already has a tagCategories group
+ * labeled "Category" (draft or published), the collection is skipped.
+ * Risk accepted: a human-created group with that exact label is also
+ * skipped (legacy `category` values would not be migrated). Audit with
+ * `findCategoryTagGroups.sql` before running against an environment.
  *
  * Display: the new "Category" group is written with `display: "plaintext"`.
  * Every pre-existing group on the same Index is stamped with an explicit
@@ -333,9 +334,15 @@ const appendCategoryGroup = (
   group,
 ]
 
+/** True if any group is labeled "Category" — the migration's skip signal. */
+export const hasCategoryGroup = (
+  tagCategories: TagCategoryGroup[] | undefined,
+): boolean =>
+  (tagCategories ?? []).some((group) => group.label === CATEGORY_GROUP_LABEL)
+
 export interface CollectionMigrationResult {
   collectionId: string
-  status: MigrationPlan["status"] | "no-index"
+  status: MigrationPlan["status"] | "no-index" | "already-migrated"
   categories: string[]
   itemsUpdated: number
   versionsCreated: number
@@ -357,6 +364,23 @@ export const migrateCollection = async ({
     return {
       collectionId,
       status: "no-index",
+      categories: [],
+      itemsUpdated: 0,
+      versionsCreated: 0,
+    }
+  }
+
+  // Risk accepted: skip when any "Category" group exists (draft or published).
+  // That covers re-runs and Studio-migrated collections, but also skips a
+  // human-created group with the same label. Confirmed empty via
+  // findCategoryTagGroups.sql before first run on each environment.
+  if (
+    hasCategoryGroup(indexRow.draftContent?.page.tagCategories) ||
+    hasCategoryGroup(indexRow.publishedContent?.page.tagCategories)
+  ) {
+    return {
+      collectionId,
+      status: "already-migrated",
       categories: [],
       itemsUpdated: 0,
       versionsCreated: 0,
@@ -520,6 +544,8 @@ const formatResult = (
       return `skipped ${prefix}: no legacy category values found on any item`
     case "no-index":
       return `skipped ${prefix}: no Index page (or content) found`
+    case "already-migrated":
+      return `skipped ${prefix}: Index already has a "Category" tagCategories group`
     default:
       return `${prefix}: unknown status ${String(result.status satisfies never)}`
   }
