@@ -31,7 +31,6 @@ import type { BaseLogger } from "@isomer/logging"
 import type { AuditLogExportReportType } from "../database"
 import { db } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { validatePermissionsForManagingUsers } from "../permissions/permissions.service"
 import {
   getAccessReportRows,
   getActivityReportRows,
@@ -68,17 +67,6 @@ export const createAuditLogExportRequest = async ({
   month,
   reportType,
 }: CreateAuditLogExportRequestProps) => {
-  // Permission check FIRST, before any mutation. Audit log export is a
-  // Site Admin-only capability — we reuse the same admin-only gate as the
-  // user-management surface (`manage` on `UserManagement`), which only grants
-  // the `manage` action to the `Admin` role. Editors/Publishers can `read`
-  // but not `manage`, so they are rejected here with FORBIDDEN.
-  await validatePermissionsForManagingUsers({
-    siteId,
-    userId,
-    action: "manage",
-  })
-
   // Reject months outside the allowed window (in Singapore time). This mirrors
   // the schema's window refinements as defense-in-depth, and uses the same
   // date-fns comparators (parseISO + isBefore/isAfter/isSameMonth) so the
