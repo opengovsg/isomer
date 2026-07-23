@@ -20,7 +20,7 @@ import {
   uploadAuditLogExport,
 } from "~/lib/s3"
 import {
-  type AuditLogExportRequestedReportType,
+  AuditLogExportRequestedReportType,
   type CreateAuditLogExportRequestInput,
   getCurrentSingaporeMonth,
   getEarliestExportableMonth,
@@ -28,7 +28,7 @@ import {
 
 import type { BaseLogger } from "@isomer/logging"
 
-import type { AuditLogExportReportType } from "../database"
+import { AuditLogExportReportType } from "../database"
 import { AuditLogExportStatus, db } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
@@ -59,9 +59,14 @@ const REPORT_TYPES_BY_REQUESTED_TYPE: Record<
   AuditLogExportRequestedReportType,
   readonly AuditLogExportReportType[]
 > = {
-  Access: ["Access"],
-  Activity: ["Activity"],
-  Both: ["Access", "Activity"],
+  [AuditLogExportRequestedReportType.Access]: [AuditLogExportReportType.Access],
+  [AuditLogExportRequestedReportType.Activity]: [
+    AuditLogExportReportType.Activity,
+  ],
+  [AuditLogExportRequestedReportType.Both]: [
+    AuditLogExportReportType.Activity,
+    AuditLogExportReportType.Access,
+  ],
 }
 
 export const createAuditLogExportRequest = async ({
@@ -219,8 +224,14 @@ const PROCESSING_LEASE_MS = 15 * 60 * 1000
 // request time (see REPORT_TYPES_BY_REQUESTED_TYPE), so every row here maps to
 // exactly one report — one CSV, one download link, one email.
 const REPORT_BY_TYPE = {
-  Access: { kind: "Access", label: "access" },
-  Activity: { kind: "Activity", label: "audit" },
+  [AuditLogExportReportType.Access]: {
+    kind: AuditLogExportReportType.Access,
+    label: "access",
+  },
+  [AuditLogExportReportType.Activity]: {
+    kind: AuditLogExportReportType.Activity,
+    label: "audit",
+  },
 } as const
 
 /**
