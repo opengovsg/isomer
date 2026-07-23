@@ -717,6 +717,9 @@ importers:
       '@intercom/messenger-js-sdk':
         specifier: 'catalog:'
         version: 0.0.20
+      '@isomer/algolia':
+        specifier: workspace:*
+        version: link:../../packages/algolia
       '@isomer/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -861,9 +864,6 @@ importers:
       ajv-errors:
         specifier: 'catalog:'
         version: 3.0.0(ajv@8.20.0)
-      algoliasearch:
-        specifier: 'catalog:'
-        version: 4.27.0
       chakra-react-select:
         specifier: 'catalog:'
         version: 5.1.1(@chakra-ui/react@2.10.10(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(framer-motion@12.38.0(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@emotion/react@11.14.0(@types/react@18.3.28)(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1135,6 +1135,28 @@ importers:
       webpack-glob-entries:
         specifier: 'catalog:'
         version: 1.0.1
+
+  packages/algolia:
+    dependencies:
+      algoliasearch:
+        specifier: 'catalog:'
+        version: 4.27.0
+    devDependencies:
+      '@isomer/oxlint-config':
+        specifier: workspace:*
+        version: link:../../tooling/oxlint
+      '@isomer/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.1.1
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20260707.2
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
 
   packages/components:
     dependencies:
