@@ -32,7 +32,6 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { buildRedirectErrorsCsv, parseRedirectCsv } from "~/lib/redirectCsv"
 import { MAX_BULK_REDIRECT_CSV_BYTES } from "~/schemas/redirect"
 import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
-import { trpc } from "~/utils/trpc"
 
 import { useBulkCreateRedirects, useBulkValidateRedirects } from "../api"
 
@@ -66,18 +65,6 @@ const triggerCsvDownload = (filename: string, contents: string) => {
   setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
-// A site name can contain characters that are invalid or surprising in a
-// download filename (slashes, colons, newlines), so reduce it to a safe slug.
-const toFilenameSlug = (value: string) =>
-  value
-    // Collapse every run of characters outside [A-Za-z0-9._-] into a single "-",
-    // so only filename-safe characters remain.
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    // Trim leading/trailing "-" left by that collapse (e.g. from a leading slash).
-    .replace(/^-+|-+$/g, "")
-    // Cap the length, and fall back to "site" if nothing usable is left.
-    .slice(0, 64) || "site"
-
 export const BulkUploadRedirectsModal = ({
   siteId,
   isOpen,
@@ -86,13 +73,6 @@ export const BulkUploadRedirectsModal = ({
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { validate, isPending: isValidating } = useBulkValidateRedirects(siteId)
   const { mutateAsync: publish } = useBulkCreateRedirects()
-  // Site display name (Site config `siteName`), used to name the errors file.
-  // Only needed once the modal is open, so don't fetch it on the settings page
-  // behind a closed modal.
-  const { data: site } = trpc.site.getSiteName.useQuery(
-    { siteId },
-    { enabled: isOpen },
-  )
 
   const [stage, setStage] = useState<Stage>("upload")
   const [file, setFile] = useState<File | null>(null)
@@ -240,7 +220,7 @@ export const BulkUploadRedirectsModal = ({
   const handleDownloadErrors = () => {
     if (!validation) return
     triggerCsvDownload(
-      `redirects_errors_${toFilenameSlug(site?.name ?? "site")}.csv`,
+      `redirects_errors_${siteId}.csv`,
       buildRedirectErrorsCsv(validation.rows),
     )
   }
@@ -355,8 +335,8 @@ const BulkUploadModalBody = ({
                 {validRows.length === 1 ? " is" : "s are"} good to go.
               </Text>
               <Text textStyle="body-2" color="base.content.default">
-                Clicking &lsquo;Publish {validRows.length} redirect
-                {validRows.length === 1 ? "" : "s"}&rsquo; will publish them
+                Clicking ‘Publish {validRows.length} redirect
+                {validRows.length === 1 ? "" : "s"}’ will publish them
                 immediately.
               </Text>
             </Stack>
