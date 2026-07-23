@@ -29,7 +29,7 @@ import {
 import type { BaseLogger } from "@isomer/logging"
 
 import type { AuditLogExportReportType } from "../database"
-import { db } from "../database"
+import { AuditLogExportStatus, db } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
   getAccessReportRows,
@@ -46,7 +46,10 @@ type CreateAuditLogExportRequestProps = CreateAuditLogExportRequestInput & {
 // Statuses that represent an export that is still in-flight; a duplicate
 // request for the same (site, user, range, report type) should be rejected
 // while one of these exists.
-const IN_FLIGHT_STATUSES = ["Pending", "Processing"] as const
+const IN_FLIGHT_STATUSES = [
+  AuditLogExportStatus.Pending,
+  AuditLogExportStatus.Processing,
+]
 
 // Fan-out from the requested (input) report type to the DB rows to insert.
 // `Both` is UX vocabulary only (see schemas/audit.ts): it becomes TWO
