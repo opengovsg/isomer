@@ -23,7 +23,6 @@ This design makes both the Index page and every Collection Item's draft and publ
 
 ## Non-goals
 
-- Idempotency / safe re-running. This is a one-time migration against sites where no collection has ever had a "Category" group. Operator discipline (run once) is the safety mechanism, not the code. Re-running against an already-migrated site is expected to double-append a group and re-tag items — this is an accepted limitation, not a bug to fix here.
 - Removing the legacy `category` field from items — untouched, still required at the schema level (a later slice removes it).
 - Rendering cutover (`getAvailableFilters.ts` etc.) — covered separately in the same PR per the existing plan doc, not part of this script.
 
@@ -72,7 +71,11 @@ Every new `Version` row requires a valid `publishedBy` user id (NOT NULL FK to `
 
 ### 6. Idempotency
 
-None. No `hasCategoryGroup` pre-check anywhere in the script. Every collection is assumed unmigrated and is always processed. `no-categories` remains as a status (no item has any category value on either side, on that Collection) — that's a data condition, not an idempotency check.
+Idempotent via label: before building a plan, `migrateCollection` checks `hasCategoryGroup` against both the draft and published `tagCategories` for the Index. If either side already has a group labeled "Category", the collection is skipped entirely (status `"already-migrated"`, no writes) — this covers both re-runs and collections a human has already migrated in Studio.
+
+Risk accepted: a human-created group with that exact label is also skipped, so its legacy `category` values would not be migrated. Operators must audit for pre-existing "Category" groups with `findCategoryTagGroups.sql` before the first run against an environment.
+
+`no-categories` remains a separate status (no item has any category value on either side, on a Collection that passed the label check) — that's a data condition, not an idempotency check.
 
 ### 7. Transaction scope
 
@@ -85,10 +88,10 @@ Everything for one Collection — the Index's draft write, the Index's published
 
 ### 9. Operational prerequisites
 
-This script mutates live Resource/Blob/Version rows directly (a backfill, not a formal Prisma migration) and creates real Versions via `publishNewContent` — but unlike Studio's own publish flow (`publishPageResource` → `getFullPageById`), it does **not** take a row lock (`SELECT ... FOR UPDATE`) before reading `publishedVersionId`/`versionNum`, and its final `UPDATE Resource SET publishedVersionId = ...` is unconditional (no optimistic-concurrency check against the value it read). Concretely:
+This script mutates live Resource/Blob/Version rows directly (a backfill, not a formal Prisma migration) and creates real Versions via `publishNewContent`. Unlike Studio's own publish flow (`publishPageResource` → `getFullPageById`), it does **not** take a row lock (`SELECT ... FOR UPDATE`) before reading `publishedVersionId`/`versionNum` — but `publishNewContent`'s final `UPDATE Resource SET publishedVersionId = ...` does carry an optimistic-concurrency guard: it's scoped with `WHERE publishedVersionId = <the value read at the start of this write>`, and a zero-row result throws, rolling back that collection's transaction instead of silently repointing over a concurrent publish. Concretely:
 
-- If a human editor publishes a page in the same collection while the script is running, both the editor's publish and the script's write can read the same stale `versionNum`, and whichever `UPDATE Resource` commits last silently overwrites the other — a lost publish, and potentially two `Version` rows sharing the same `versionNum` (the `Version` table has no `@@unique([resourceId, versionNum])` constraint).
-- The same stale-read-then-blind-overwrite pattern applies to draft content: a concurrent draft autosave to the same Index or Item during the run can be silently reverted.
+- If a human editor (or a scheduled publish) publishes a page in the same collection while the script is running, whichever `UPDATE Resource` commits first wins; the loser's guard clause no longer matches and its transaction throws — a lost/retried write, but no longer a **silent** one. A duplicate `Version` row (same `resourceId`/`versionNum` as the winner's) can still be left behind from the losing transaction's insert, since `Version` has no `@@unique([resourceId, versionNum])` constraint — orphaned, not pointed to by `Resource`, but not cleaned up automatically.
+- The guard does not cover draft content: `updateBlobContent` still does an unconditional in-place `UPDATE Blob.content`, so a concurrent draft autosave to the same Index or Item during the run can still be silently reverted.
 - **Scheduled publishes count as concurrent activity too.** `apps/studio/src/server/cron/jobs/schedulePublishingJob.ts` calls the same `publishPageResource` path independently of the Studio UI, for any resource whose `scheduledAt` comes due — locking human editors out of Studio does not stop it.
 
 Given this, the script is safe to run only under these operational conditions, which must hold for the entire duration of the run against a given site:
@@ -97,14 +100,14 @@ Given this, the script is safe to run only under these operational conditions, w
 2. **No scheduled publishes due during the window** — confirm no resource on the target site has a `scheduledAt` falling inside the run window before starting (agencies are told not to schedule publishes for that period; ideally cross-checked against the DB before running).
 3. **One site at a time, run to completion** — since the script iterates collections sequentially and each collection's writes are transactional but independent, avoid overlapping two invocations against the same site.
 
-These are process/runbook requirements, not something the script enforces in code — no preflight check for pending schedules or in-flight edits exists yet. If the migration needs to run against a site that cannot get a clean maintenance window, treat the concurrency issue above as a blocker to fix first (e.g. add `SELECT ... FOR UPDATE` locking and an optimistic-concurrency check on the final `Resource` update, mirroring `getFullPageById`/`publishPageResource`).
+These remain process/runbook requirements, not something the script fully enforces in code — no preflight check for pending schedules or in-flight edits exists, and the draft-side blind overwrite is still unguarded. The published-side optimistic-concurrency check turns a silent data-loss bug into a loud, retryable failure for that collection, but does not remove the need for a clean maintenance window.
 
 ## Shape changes
 
 - `MigrationPlanItem`: `{ resourceId, draftCategory?, draftTagged?, publishedCategory?, publishedTagged? }` (only the fields for states that exist) instead of `{ resourceId, category? }`.
 - `MigrationPlan.itemUpdates`: `{ resourceId, state: "draft" | "published", tagged: string[] }[]` instead of `{ resourceId, tagged: string[] }[]`.
 - `MigrationPlan`: gains `group` (the shared new group) and `indexUpdates: { state: "draft" | "published" }[]` (which side(s) need writing) instead of a single `newTagCategories` array.
-- `MigrationPlan.status`: `"migrated" | "no-categories" | "no-index"` — `"already-migrated"` is removed.
+- `MigrationPlan.status`: `"migrated" | "no-categories"`, built only after a collection has passed the `hasCategoryGroup` skip check. `CollectionMigrationResult.status` widens this with `"no-index"` and `"already-migrated"` for the two skip paths that short-circuit before a plan is built.
 - DB read helpers (`getIndexPageRow`, `getItemRows`) need to additionally select `Version.versionNum` so the new-version insert can compute `versionNum: previous + 1`.
 
 ## Testing
@@ -114,5 +117,5 @@ New/changed coverage needed, replacing anything that tested idempotency or the o
 - Pure function tests (`buildMigrationPlan` and friends): item with diverging draft vs. published category; item with a category only in draft and no published content; item with a category only in published and a draft that lacks one; group always appended as the last element of an existing `tagCategories` array.
 - Integration tests: Index with both draft and published blobs, both get the group written (published via new Version, draft in place); Index published-only; Index draft-only (no publish should occur); an item's published-side write correctly bumps `versionNum` and `publishedVersionId` while leaving `draftBlobId` alone; an item's draft-side write mutates content in place without touching `publishedVersionId`; `versionsCreated` is asserted alongside `itemsUpdated` on the published and divergence fixtures.
 - `main` is exported (accepting an optional `argv` override for testability) and covered directly: `input()` from `@inquirer/prompts` is asserted not called in `--dry-run`, called and its result passed through `verifyUser` outside `--dry-run`, and the promise rejects when the prompted user id doesn't exist. `verifyUser` itself has direct found/not-found coverage.
-- Remove: the existing "is idempotent: re-running against an already-migrated collection makes no changes" test, since idempotency is no longer a goal.
+- Keep: a test asserting re-running against an already-migrated collection (one with an existing "Category" group, draft or published) makes no changes — idempotency via `hasCategoryGroup` label-skip is in scope.
 - Not covered (accepted gap): the concurrency scenarios in [Operational prerequisites](#9-operational-prerequisites) — no test exercises a concurrent publish or draft save racing the migration, since there's no code-level mitigation to verify yet.

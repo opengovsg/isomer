@@ -2,7 +2,7 @@ import type { UnwrapTagged } from "type-fest"
 
 vi.mock("@inquirer/prompts")
 
-import { input } from "@inquirer/prompts"
+import { confirm, input } from "@inquirer/prompts"
 import {
   db,
   jsonb,
@@ -24,9 +24,11 @@ import {
   buildCategoryTagGroup,
   buildMigrationPlan,
   deriveDistinctCategories,
+  hasCategoryGroup,
   main,
   migrateCollection,
   migrateSite,
+  resolveSiteIds,
   type TagCategoryGroup,
   verifyUser,
 } from "../migrateCategoryToTagCategories"
@@ -164,6 +166,19 @@ describe("deriveDistinctCategories", () => {
     // Act + Assert
     expect(deriveDistinctCategories([])).toEqual([])
   })
+
+  it("dedupes case-insensitively, keeping the first-seen trimmed casing", () => {
+    // Act
+    const result = deriveDistinctCategories([
+      " Guides ",
+      "guides",
+      "GUIDES",
+      "Articles",
+    ])
+
+    // Assert — matches Studio tag-option duplicate rules (trim + lower)
+    expect(result).toEqual(["Articles", "Guides"])
+  })
 })
 
 describe("appendTagged", () => {
@@ -181,6 +196,42 @@ describe("appendTagged", () => {
 
   it("preserves existing entries while appending", () => {
     expect(appendTagged(["opt-1"], "opt-2")).toEqual(["opt-1", "opt-2"])
+  })
+})
+
+describe("hasCategoryGroup", () => {
+  it("returns false when tagCategories is missing or empty", () => {
+    expect(hasCategoryGroup(undefined)).toBe(false)
+    expect(hasCategoryGroup([])).toBe(false)
+  })
+
+  it("returns true when a group labeled Category is present", () => {
+    expect(
+      hasCategoryGroup([
+        {
+          id: "topic-1",
+          label: "Topic",
+          options: [{ id: "t-1", label: "Health" }],
+        },
+        {
+          id: "cat-1",
+          label: "Category",
+          options: [{ id: "c-1", label: "Guides" }],
+        },
+      ]),
+    ).toBe(true)
+  })
+
+  it("returns false when other groups exist but none are labeled Category", () => {
+    expect(
+      hasCategoryGroup([
+        {
+          id: "topic-1",
+          label: "Topic",
+          options: [{ id: "t-1", label: "Health" }],
+        },
+      ]),
+    ).toBe(false)
   })
 })
 
@@ -310,6 +361,30 @@ describe("buildMigrationPlan", () => {
       { resourceId: "1", state: "published", tagged: ["id-2"] },
     ])
   })
+
+  it("maps differently-cased legacy categories to the same option id", () => {
+    // Arrange
+    let counter = 0
+    const generateId = () => `id-${counter++}`
+
+    // Act — first-seen casing "Guides" wins; "guides" must resolve to same option
+    const plan = buildMigrationPlan({
+      items: [
+        { resourceId: "1", publishedCategory: "Guides" },
+        { resourceId: "2", draftCategory: "guides" },
+      ],
+      generateId,
+    })
+
+    // Assert
+    expect(plan.status).toBe("migrated")
+    if (plan.status !== "migrated") return
+    expect(plan.group.options).toEqual([{ id: "id-1", label: "Guides" }])
+    expect(plan.itemUpdates).toEqual([
+      { resourceId: "1", state: "published", tagged: ["id-1"] },
+      { resourceId: "2", state: "draft", tagged: ["id-1"] },
+    ])
+  })
 })
 
 // Group B: integration tests requiring a real DB
@@ -360,6 +435,52 @@ describe("migrateCollection / migrateSite", () => {
 
     const itemContent = await getBlobContent(itemBlob1.id)
     expect(itemContent.page.tagged).toEqual([])
+  })
+
+  it("reads items via the caller-supplied transaction (sees uncommitted inserts)", async () => {
+    // Arrange — index exists outside the tx; the only item is inserted inside it
+    const { collection } = await setupCollection({ siteId })
+    await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+    })
+
+    await db.transaction().execute(async (tx) => {
+      const blob = await tx
+        .insertInto("Blob")
+        .values({
+          content: jsonb(collectionPageBlobContent([], "Guides")),
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+
+      await tx
+        .insertInto("Resource")
+        .values({
+          title: "tx-only item",
+          permalink: "tx-only-item",
+          siteId,
+          parentId: collection.id,
+          type: ResourceType.CollectionPage,
+          state: ResourceState.Draft,
+          draftBlobId: blob.id,
+        })
+        .execute()
+
+      // Act — if reads used module-level `db`, this uncommitted item would be invisible
+      const result = await migrateCollection({
+        collectionId: collection.id,
+        siteId,
+        dryRun: true,
+        publisherId: null,
+        tx,
+      })
+
+      // Assert
+      expect(result.status).toBe("migrated")
+      expect(result.categories).toEqual(["Guides"])
+      expect(result.itemsUpdated).toBe(1)
+    })
   })
 
   it("migrates a draft-only collection in place: appends the Category group and tags each item, leaving `category` untouched", async () => {
@@ -700,6 +821,51 @@ describe("migrateCollection / migrateSite", () => {
     })
   })
 
+  it("skips a collection whose Index already has a Category group (idempotent re-run)", async () => {
+    // Arrange
+    const { collection } = await setupCollection({ siteId })
+    const existingCategoryGroup: TagCategoryGroup = {
+      id: "cat-1",
+      label: "Category",
+      isRequired: true,
+      display: "plaintext",
+      options: [{ id: "c-1", label: "Guides" }],
+    }
+    const { blob: indexBlob } = await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      tagCategories: [existingCategoryGroup],
+    })
+    const { blob: itemBlob } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      category: "Guides",
+    })
+
+    // Act
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
+
+    // Assert
+    expect(result).toEqual({
+      collectionId: collection.id,
+      status: "already-migrated",
+      categories: [],
+      itemsUpdated: 0,
+      versionsCreated: 0,
+    })
+    const indexContentAfter = await getBlobContent(indexBlob.id)
+    expect(indexContentAfter.page.tagCategories).toEqual([
+      existingCategoryGroup,
+    ])
+    const itemContent = await getBlobContent(itemBlob.id)
+    expect(itemContent.page.tagged).toEqual([])
+  })
+
   it("skips items whose legacy category is empty on both sides, without failing the migration", async () => {
     // Arrange
     const { collection } = await setupCollection({ siteId })
@@ -755,16 +921,123 @@ describe("migrateCollection / migrateSite", () => {
     })
 
     // Act
-    const results = await migrateSite({
+    const siteResult = await migrateSite({
       siteId,
       dryRun: false,
       publisherId: null,
     })
 
     // Assert
-    expect(results).toHaveLength(1)
-    expect(results[0]!.collectionId).toBe(collectionA.id)
-    expect(results[0]!.status).toBe("migrated")
+    expect(siteResult.status).toBe("succeeded")
+    expect(siteResult.collections).toHaveLength(1)
+    expect(siteResult.collections[0]!.collectionId).toBe(collectionA.id)
+    expect(siteResult.collections[0]!.status).toBe("migrated")
+  })
+
+  it("migrateSite rolls back every collection when one collection write fails", async () => {
+    // Arrange — two collections that need published Versions (require publisherId)
+    const user = await setupUser({})
+    const { collection: collectionA } = await setupCollection({
+      siteId,
+      permalink: "collection-a",
+    })
+    await setupCollectionIndexPage({
+      collectionId: collectionA.id,
+      siteId,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    await setupCollectionPage({
+      siteId,
+      parentId: collectionA.id,
+      category: "Guides",
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+
+    const { collection: collectionB } = await setupCollection({
+      siteId,
+      permalink: "collection-b",
+    })
+    await setupCollectionIndexPage({
+      collectionId: collectionB.id,
+      siteId,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    await setupCollectionPage({
+      siteId,
+      parentId: collectionB.id,
+      permalink: "page-b",
+      category: "Events",
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+
+    // Act — missing publisherId forces a throw on the first published write
+    const siteResult = await migrateSite({
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
+
+    // Assert — site failed and neither Index gained a Category group
+    expect(siteResult.status).toBe("failed")
+    for (const collection of [collectionA, collectionB]) {
+      const index = await db
+        .selectFrom("Resource")
+        .where("parentId", "=", collection.id)
+        .where("type", "=", ResourceType.IndexPage)
+        .select(["draftBlobId", "publishedVersionId"])
+        .executeTakeFirstOrThrow()
+      if (index.draftBlobId) {
+        const draft = await getBlobContent(index.draftBlobId)
+        expect(hasCategoryGroup(draft.page.tagCategories)).toBe(false)
+      }
+      if (index.publishedVersionId) {
+        const version = await db
+          .selectFrom("Version")
+          .where("id", "=", index.publishedVersionId)
+          .select("blobId")
+          .executeTakeFirstOrThrow()
+        const published = await getBlobContent(version.blobId)
+        expect(hasCategoryGroup(published.page.tagCategories)).toBe(false)
+      }
+    }
+  })
+})
+
+describe("resolveSiteIds", () => {
+  beforeEach(async () => {
+    await resetTables("Resource", "Blob", "Version", "Site", "Navbar", "Footer")
+  })
+
+  it("returns all sites when include is empty, minus exclude", async () => {
+    const { site: siteA } = await setupSite()
+    const { site: siteB } = await setupSite()
+
+    await expect(
+      resolveSiteIds({ include: [], exclude: [siteB.id] }),
+    ).resolves.toEqual([siteA.id])
+  })
+
+  it("returns only included sites minus exclude", async () => {
+    const { site: siteA } = await setupSite()
+    const { site: siteB } = await setupSite()
+    await setupSite()
+
+    await expect(
+      resolveSiteIds({
+        include: [siteA.id, siteB.id],
+        exclude: [siteB.id],
+      }),
+    ).resolves.toEqual([siteA.id])
+  })
+
+  it("throws when an include id does not exist", async () => {
+    await expect(
+      resolveSiteIds({ include: [999_999], exclude: [] }),
+    ).rejects.toThrow("Site ID(s) not found: 999999")
   })
 })
 
@@ -797,13 +1070,20 @@ describe("main (CLI entrypoint)", () => {
     const { site } = await setupSite()
     siteId = site.id
     vi.mocked(input).mockReset()
+    vi.mocked(confirm).mockReset()
+    vi.mocked(confirm).mockResolvedValue(true)
   })
 
   it("does not prompt for a publisher id in --dry-run mode", async () => {
     // Act
-    await main(["--site-id", String(siteId), "--dry-run"])
+    await main(["--dry-run"], {
+      siteIdsInclude: [siteId],
+      siteIdsExclude: [],
+      logger: { info: vi.fn(), error: vi.fn() },
+    })
 
     // Assert
+    expect(confirm).toHaveBeenCalledTimes(1)
     expect(input).not.toHaveBeenCalled()
   })
 
@@ -813,9 +1093,14 @@ describe("main (CLI entrypoint)", () => {
     vi.mocked(input).mockResolvedValue(user.id)
 
     // Act
-    await main(["--site-id", String(siteId)])
+    await main([], {
+      siteIdsInclude: [siteId],
+      siteIdsExclude: [],
+      logger: { info: vi.fn(), error: vi.fn() },
+    })
 
     // Assert
+    expect(confirm).toHaveBeenCalledTimes(1)
     expect(input).toHaveBeenCalledTimes(1)
   })
 
@@ -824,8 +1109,27 @@ describe("main (CLI entrypoint)", () => {
     vi.mocked(input).mockResolvedValue("no-such-user")
 
     // Act + Assert
-    await expect(main(["--site-id", String(siteId)])).rejects.toThrow(
-      "User no-such-user not found",
-    )
+    await expect(
+      main([], {
+        siteIdsInclude: [siteId],
+        siteIdsExclude: [],
+        logger: { info: vi.fn(), error: vi.fn() },
+      }),
+    ).rejects.toThrow("User no-such-user not found")
+  })
+
+  it("aborts without migrating when confirm is declined", async () => {
+    // Arrange
+    vi.mocked(confirm).mockResolvedValue(false)
+
+    // Act
+    await main([], {
+      siteIdsInclude: [siteId],
+      siteIdsExclude: [],
+      logger: { info: vi.fn(), error: vi.fn() },
+    })
+
+    // Assert
+    expect(input).not.toHaveBeenCalled()
   })
 })
