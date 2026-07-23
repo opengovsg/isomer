@@ -9,12 +9,14 @@ import { createGrowthBookContext } from "~/server/context"
 import { getContentDispositionForTitle } from "~/server/modules/asset/asset.service"
 import { db } from "~/server/modules/database"
 import {
-  buildGazetteSearchRecords,
   generateDocumentId,
-  parseFullTextFromPDF,
   pushDocumentsForIngestion,
 } from "~/server/modules/gazette/gazette.service"
 
+import {
+  buildGazetteSearchRecords,
+  parseFullTextFromPDF,
+} from "@isomer/algolia"
 import { registerPgbossJob } from "@isomer/pgboss"
 
 const JOB_NAME = "schedule-push-document"
