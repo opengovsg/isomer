@@ -36,7 +36,8 @@ export const FileIdCell = ({
   if (fileKey) {
     return (
       <Link
-        href="#"
+        as="button"
+        type="button"
         onClick={handleClick}
         textStyle="body-2"
         color="interaction.links.default"
