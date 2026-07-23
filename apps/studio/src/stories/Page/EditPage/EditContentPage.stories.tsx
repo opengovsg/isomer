@@ -149,6 +149,18 @@ export const LinkModal: Story = {
   },
 }
 
+export const AddTable: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const canvas = within(canvasElement)
+    await AddTextBlock.play?.(context)
+
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /^table$/i }),
+    )
+  },
+}
+
 export const ActiveTableToolbar: Story = {
   play: async (context) => {
     const { canvasElement } = context
