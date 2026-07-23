@@ -28,6 +28,7 @@ import {
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import {
+  applyResourceOrderBy,
   defaultResourceSelect,
   getBlobOfResource,
   getSiteResourceById,
@@ -297,18 +298,9 @@ export const collectionRouter = router({
             ResourceType.CollectionLink,
           ])
 
-        switch (orderBy) {
-          case "title-asc":
-            query = query.orderBy("Resource.title", "asc")
-            break
-          case "updated-desc":
-          default:
-            query = query.orderBy("Resource.updatedAt", "desc")
-            break
-        }
+        query = applyResourceOrderBy(query, orderBy)
 
         return await query
-          .orderBy("Resource.id", "asc") // to ensure deterministic ordering
           .limit(limit)
           .offset(offset)
           .select(defaultResourceSelect)

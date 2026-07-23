@@ -183,6 +183,7 @@ echo "Number of cores: $NUMBER_OF_CORES"
 S3_SYNC_CONCURRENCY=$((4 * NUMBER_OF_CORES))                                   # 4x is an arbitrary number that should work well for most cases
 S3_SYNC_CONCURRENCY=$((S3_SYNC_CONCURRENCY < 20 ? 10 : S3_SYNC_CONCURRENCY))   # Minimum of 20
 S3_SYNC_CONCURRENCY=$((S3_SYNC_CONCURRENCY > 100 ? 100 : S3_SYNC_CONCURRENCY)) # Maximum of 100 (to prevent AWS from throttling us)
+export S3_SYNC_CONCURRENCY
 echo "S3 sync concurrency: $S3_SYNC_CONCURRENCY"
 aws configure set default.s3.max_concurrent_requests $S3_SYNC_CONCURRENCY
 
@@ -193,17 +194,21 @@ aws s3 sync --only-show-errors . s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUIL
 # Next.js uses unique content hashes in filenames, allowing updated content to have different filenames and invalidate the cache on new builds.
 aws s3 sync --only-show-errors _next s3://$S3_BUCKET_NAME/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest/_next --delete --no-progress --cache-control "max-age=31536000, public"
 
+calculate_duration $start_time
+
 # Upload redirect objects AFTER the --delete sync so they are not swept away.
 # Each redirect becomes an empty index.html with x-amz-meta-redirect-destination metadata
 # that the CloudFront Function reads to issue the HTTP redirect response.
+start_time=$(date +%s)
 echo "Uploading redirect files to S3..."
 (
   cd ../../build/scripts/publishing
-  REDIRECTS_JSON="$REDIRECTS_JSON" \
-    S3_BUCKET_NAME="$S3_BUCKET_NAME" \
-    SITE_NAME="$SITE_NAME" \
-    CODEBUILD_BUILD_NUMBER="$CODEBUILD_BUILD_NUMBER" \
-    npm run upload-redirects
+  pnpm exec tsx uploadRedirects.ts \
+    --redirects-json "$REDIRECTS_JSON" \
+    --s3-bucket-name "$S3_BUCKET_NAME" \
+    --site-name "$SITE_NAME" \
+    --build-number "$CODEBUILD_BUILD_NUMBER" \
+    --concurrency "$S3_SYNC_CONCURRENCY"
 ) || echo "Warning: some redirects failed to upload, continuing..."
 
 calculate_duration $start_time

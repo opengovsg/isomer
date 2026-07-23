@@ -44,6 +44,7 @@ import {
 } from "../redirect/redirect.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
+  applyResourceOrderBy,
   defaultResourceSelect,
   getBatchAncestryWithSelfQuery,
   getResourceFullPermalink,
@@ -629,47 +630,52 @@ export const resourceRouter = router({
 
   listWithoutRoot: protectedProcedure
     .input(listResourceSchema)
-    .query(async ({ ctx, input: { siteId, resourceId, offset, limit } }) => {
-      await bulkValidateUserPermissionsForResources({
-        action: "read",
-        resourceIds: [resourceId ? String(resourceId) : null],
-        userId: ctx.user.id,
-        siteId: Number(siteId),
-      })
+    .query(
+      async ({
+        ctx,
+        input: { siteId, resourceId, offset, limit, orderBy },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          action: "read",
+          resourceIds: [resourceId ? String(resourceId) : null],
+          userId: ctx.user.id,
+          siteId: Number(siteId),
+        })
 
-      let query = db
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.type", "!=", ResourceType.RootPage)
-        .where("Resource.type", "!=", ResourceType.IndexPage)
-        .where("Resource.type", "!=", ResourceType.FolderMeta)
-        .where("Resource.type", "!=", ResourceType.CollectionMeta)
-        .orderBy("Resource.updatedAt", "desc")
-        .orderBy("Resource.title", "asc")
-        .offset(offset)
-        .limit(limit)
+        let query = db
+          .selectFrom("Resource")
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "!=", ResourceType.RootPage)
+          .where("Resource.type", "!=", ResourceType.IndexPage)
+          .where("Resource.type", "!=", ResourceType.FolderMeta)
+          .where("Resource.type", "!=", ResourceType.CollectionMeta)
 
-      if (resourceId) {
-        query = query.where("Resource.parentId", "=", String(resourceId))
-      } else {
-        query = query.where("Resource.parentId", "is", null)
-      }
+        if (resourceId) {
+          query = query.where("Resource.parentId", "=", String(resourceId))
+        } else {
+          query = query.where("Resource.parentId", "is", null)
+        }
 
-      // TODO: Add pagination support
-      return query
-        .select([
-          "Resource.id",
-          "Resource.permalink",
-          "Resource.title",
-          "Resource.publishedVersionId",
-          "Resource.draftBlobId",
-          "Resource.type",
-          "Resource.parentId",
-          "Resource.updatedAt",
-          "Resource.scheduledAt",
-        ])
-        .execute()
-    }),
+        query = applyResourceOrderBy(query, orderBy)
+
+        // TODO: Add pagination support
+        return query
+          .offset(offset)
+          .limit(limit)
+          .select([
+            "Resource.id",
+            "Resource.permalink",
+            "Resource.title",
+            "Resource.publishedVersionId",
+            "Resource.draftBlobId",
+            "Resource.type",
+            "Resource.parentId",
+            "Resource.updatedAt",
+            "Resource.scheduledAt",
+          ])
+          .execute()
+      },
+    ),
 
   delete: protectedProcedure
     .input(deleteResourceSchema)
