@@ -71,7 +71,11 @@ Every new `Version` row requires a valid `publishedBy` user id (NOT NULL FK to `
 
 ### 6. Idempotency
 
-None. No `hasCategoryGroup` pre-check anywhere in the script. Every collection is assumed unmigrated and is always processed. `no-categories` remains as a status (no item has any category value on either side, on that Collection) — that's a data condition, not an idempotency check.
+Idempotent via label: before building a plan, `migrateCollection` checks `hasCategoryGroup` against both the draft and published `tagCategories` for the Index. If either side already has a group labeled "Category", the collection is skipped entirely (status `"already-migrated"`, no writes) — this covers both re-runs and collections a human has already migrated in Studio.
+
+Risk accepted: a human-created group with that exact label is also skipped, so its legacy `category` values would not be migrated. Operators must audit for pre-existing "Category" groups with `findCategoryTagGroups.sql` before the first run against an environment.
+
+`no-categories` remains a separate status (no item has any category value on either side, on a Collection that passed the label check) — that's a data condition, not an idempotency check.
 
 ### 7. Transaction scope
 
@@ -103,7 +107,7 @@ These are process/runbook requirements, not something the script enforces in cod
 - `MigrationPlanItem`: `{ resourceId, draftCategory?, draftTagged?, publishedCategory?, publishedTagged? }` (only the fields for states that exist) instead of `{ resourceId, category? }`.
 - `MigrationPlan.itemUpdates`: `{ resourceId, state: "draft" | "published", tagged: string[] }[]` instead of `{ resourceId, tagged: string[] }[]`.
 - `MigrationPlan`: gains `group` (the shared new group) and `indexUpdates: { state: "draft" | "published" }[]` (which side(s) need writing) instead of a single `newTagCategories` array.
-- `MigrationPlan.status`: `"migrated" | "no-categories" | "no-index"` — `"already-migrated"` is removed.
+- `MigrationPlan.status`: `"migrated" | "no-categories"`, built only after a collection has passed the `hasCategoryGroup` skip check. `CollectionMigrationResult.status` widens this with `"no-index"` and `"already-migrated"` for the two skip paths that short-circuit before a plan is built.
 - DB read helpers (`getIndexPageRow`, `getItemRows`) need to additionally select `Version.versionNum` so the new-version insert can compute `versionNum: previous + 1`.
 
 ## Testing
@@ -113,5 +117,5 @@ New/changed coverage needed, replacing anything that tested idempotency or the o
 - Pure function tests (`buildMigrationPlan` and friends): item with diverging draft vs. published category; item with a category only in draft and no published content; item with a category only in published and a draft that lacks one; group always appended as the last element of an existing `tagCategories` array.
 - Integration tests: Index with both draft and published blobs, both get the group written (published via new Version, draft in place); Index published-only; Index draft-only (no publish should occur); an item's published-side write correctly bumps `versionNum` and `publishedVersionId` while leaving `draftBlobId` alone; an item's draft-side write mutates content in place without touching `publishedVersionId`; `versionsCreated` is asserted alongside `itemsUpdated` on the published and divergence fixtures.
 - `main` is exported (accepting an optional `argv` override for testability) and covered directly: `input()` from `@inquirer/prompts` is asserted not called in `--dry-run`, called and its result passed through `verifyUser` outside `--dry-run`, and the promise rejects when the prompted user id doesn't exist. `verifyUser` itself has direct found/not-found coverage.
-- Remove: the existing "is idempotent: re-running against an already-migrated collection makes no changes" test, since idempotency is no longer a goal.
+- Keep: a test asserting re-running against an already-migrated collection (one with an existing "Category" group, draft or published) makes no changes — idempotency via `hasCategoryGroup` label-skip is in scope.
 - Not covered (accepted gap): the concurrency scenarios in [Operational prerequisites](#9-operational-prerequisites) — no test exercises a concurrent publish or draft save racing the migration, since there's no code-level mitigation to verify yet.
