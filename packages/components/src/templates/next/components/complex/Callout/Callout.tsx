@@ -22,7 +22,8 @@ const calloutStyles = tv({
     container: "rounded-lg border-[1.5px] [&:not(:first-child)]:mt-7",
     iconWrapper: "flex shrink-0 items-center justify-center px-3 py-4",
     icon: "h-6 w-6 flex-shrink-0",
-    content: "prose-headline-lg-regular min-w-0 flex-1 overflow-x-auto",
+    content:
+      "prose-headline-lg-regular min-w-0 flex-1 overflow-x-auto [&>:is(ol,ul):first-child>li:first-child]:mt-0 [&>:is(ol,ul):first-child]:mt-0 [&>:is(ol,ul):last-child>li:last-child]:mb-0",
   },
   variants: {
     variant: {
