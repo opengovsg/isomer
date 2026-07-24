@@ -36,19 +36,23 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     page,
   }) => {
     const inviteeEmail = uniqueInviteeEmail()
+
+    // Arrange
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Editor",
       siteId,
     })
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
-
     const users = new UsersPO(page)
     await users.goto(siteId)
+
+    // Act
     await users.openEditUser(inviteeEmail)
     await users.selectRoleInEditModal("Publisher")
     await users.saveUserChanges()
 
+    // Assert
     await users.expectUserRole(inviteeEmail, "Publisher")
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Publisher")
   })
@@ -57,19 +61,23 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     page,
   }) => {
     const inviteeEmail = uniqueInviteeEmail()
+
+    // Arrange
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Publisher",
       siteId,
     })
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Publisher")
-
     const users = new UsersPO(page)
     await users.goto(siteId)
+
+    // Act
     await users.openEditUser(inviteeEmail)
     await users.selectRoleInEditModal("Editor")
     await users.saveUserChanges()
 
+    // Assert
     await users.expectUserRole(inviteeEmail, "Editor")
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
   })
@@ -78,20 +86,24 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     page,
   }) => {
     const inviteeEmail = uniqueInviteeEmail()
+
+    // Arrange
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Editor",
       siteId,
     })
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
-
     const users = new UsersPO(page)
     await users.goto(siteId)
+
+    // Act
     await users.openEditUser(inviteeEmail)
     await users.selectRoleInEditModal("Admin")
     await users.expectAddAdminWarningVisible()
     await users.saveUserChanges()
 
+    // Assert
     await users.expectUserRole(inviteeEmail, "Admin")
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Admin")
   })
@@ -100,19 +112,23 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     page,
   }) => {
     const inviteeEmail = uniqueInviteeEmail()
+
+    // Arrange
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Editor",
       siteId,
     })
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
-
     const users = new UsersPO(page)
     await users.goto(siteId)
+
+    // Act
     await users.openEditUser(inviteeEmail)
     await users.selectRoleInEditModal("Publisher")
     await users.cancelEditUser()
 
+    // Assert
     await users.expectUserRole(inviteeEmail, "Editor")
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
   })
