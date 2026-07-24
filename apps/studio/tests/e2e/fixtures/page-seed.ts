@@ -1,5 +1,7 @@
+import { expect } from "@playwright/test"
 import crypto from "crypto"
 import { setupFolder, setupPageResource } from "tests/integration/helpers/seed"
+import { db } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 /** Prose preview label from the default integration seed blob. */
@@ -75,3 +77,29 @@ export const seedFolderWithPage = async ({
   })
   return { folder, page }
 }
+
+export const expectPageScheduledAt = (pageId: string) =>
+  expect.poll(
+    async () => {
+      const row = await db
+        .selectFrom("Resource")
+        .where("id", "=", pageId)
+        .select("scheduledAt")
+        .executeTakeFirst()
+      return row?.scheduledAt ?? null
+    },
+    { timeout: 10_000 },
+  )
+
+export const expectPageDraftBlobId = (pageId: string) =>
+  expect.poll(
+    async () => {
+      const row = await db
+        .selectFrom("Resource")
+        .where("id", "=", pageId)
+        .select("draftBlobId")
+        .executeTakeFirst()
+      return row?.draftBlobId ?? null
+    },
+    { timeout: 10_000 },
+  )
