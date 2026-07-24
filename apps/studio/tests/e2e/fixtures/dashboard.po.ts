@@ -108,6 +108,36 @@ export class DashboardPO {
     await expect(moveByAriaLabel.or(moveByVisibleText)).not.toBeVisible()
   }
 
+  async expectSearchPageMenuItemsDisabled() {
+    await expect(
+      this.page.getByRole("menuitem", { name: "Edit settings" }),
+    ).toBeDisabled()
+    await expect(
+      this.page.getByRole("menuitem", { name: "Move to..." }),
+    ).toBeDisabled()
+    await expect(
+      this.page.getByRole("menuitem", { name: "Delete", exact: true }),
+    ).toBeDisabled()
+  }
+
+  async expectResourceLinkVisible(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toBeVisible()
+  }
+
+  async expectResourceLinkHidden(title: string) {
+    await expect(this.page.getByRole("link", { name: title })).toHaveCount(0)
+  }
+
+  async expectPageHeading(title: string) {
+    await expect(this.page.getByRole("heading", { name: title })).toBeVisible()
+  }
+
+  async expectSearchResultVisible(title: string) {
+    const dialog = this.page.getByRole("dialog")
+    await expect(dialog.getByText(/\d+ search result.*in title/i)).toBeVisible()
+    await expect(dialog.getByRole("link", { name: title })).toBeVisible()
+  }
+
   async openFolderSettings(title: string) {
     await this.openResourceMenu(title)
     await this.page
@@ -132,6 +162,19 @@ export class DashboardPO {
     ).toBeVisible()
   }
 
+  async cancelDeleteResource(
+    label: "page" | "folder" | "collection",
+    { title }: { title: string },
+  ) {
+    await expect(
+      this.page.getByRole("dialog").getByText(`Delete ${title}?`),
+    ).toBeVisible()
+    await this.page.getByRole("button", { name: `No, keep ${label}` }).click()
+    await expect(
+      this.page.getByRole("dialog").getByText(`Delete ${title}?`),
+    ).not.toBeVisible()
+  }
+
   async selectMoveDestination(title: string) {
     await expect(
       this.page.getByRole("dialog").getByText(/Move ".+" to\.\.\./),
@@ -144,6 +187,22 @@ export class DashboardPO {
     await expect(moveButton).toBeEnabled()
     await moveButton.click()
     await expect(this.page.getByText("Resource moved!")).toBeVisible()
+  }
+
+  async cancelMove() {
+    await this.page.getByRole("button", { name: "Cancel" }).click()
+    await expect(
+      this.page.getByRole("dialog").getByText(/Move ".+" to\.\.\./),
+    ).not.toBeVisible()
+  }
+
+  async selectMoveToSiteRoot() {
+    const backButton = this.page.getByRole("button", {
+      name: "Back to parent folder",
+    })
+    while (await backButton.isVisible()) {
+      await backButton.click()
+    }
   }
 
   async openSearch() {
@@ -168,5 +227,13 @@ export class DashboardPO {
     const resultLink = dialog.getByRole("link", { name: title })
     await expect(resultLink).toBeVisible()
     await resultLink.click()
+  }
+
+  async expectSearchResultsDialogHidden() {
+    await expect(
+      this.page.getByPlaceholder(
+        /Search pages, collections, or folders by name/,
+      ),
+    ).not.toBeVisible()
   }
 }
