@@ -2,12 +2,11 @@ import { test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { inviteCollaborator } from "../fixtures/helpers"
+import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import {
   deleteUsersByEmailPattern,
   ensureUserOnboarded,
-  expectUserAbsentOnSite,
   expectUserRoleOnSite,
   uniqueInviteeEmail,
 } from "../fixtures/user"
@@ -33,7 +32,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await deleteUsersByEmailPattern("e2e-invitee-%@open.gov.sg")
   })
 
-  test("admin can remove a collaborator via RemoveUserModal", async ({
+  test("admin cannot invite a user who already has site access", async ({
     page,
   }) => {
     const inviteeEmail = uniqueInviteeEmail()
@@ -45,13 +44,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
 
     const users = new UsersPO(page)
-    await users.goto(siteId)
-    await users.expectUserInTable(inviteeEmail)
-
-    await users.openRemoveUserAccess(inviteeEmail)
-    await users.confirmRemoveUser()
-    await users.expectRemovedFromSiteToast(inviteeEmail)
-    await users.expectUserNotInTable(inviteeEmail)
-    await expectUserAbsentOnSite(siteId, inviteeEmail).toBeNull()
+    await openInviteModal(page, siteId)
+    await users.fillInviteForm(inviteeEmail, "Publisher")
+    await users.submitInvite()
+    await users.expectCreateUserFailed(
+      "User already has permission for this site",
+    )
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
   })
 })
