@@ -16,4 +16,9 @@ export class FolderSettingsPO {
     await this.page.getByRole("button", { name: "Save changes" }).click()
     await expect(this.page.getByText("Folder updated!")).toBeVisible()
   }
+
+  async closeWithoutSaving() {
+    await this.page.getByRole("button", { name: "Close" }).click()
+    await expect(this.page.getByLabel("Folder name")).not.toBeVisible()
+  }
 }
