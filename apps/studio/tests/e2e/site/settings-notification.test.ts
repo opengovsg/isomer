@@ -1,21 +1,33 @@
 import { expect, test } from "@playwright/test"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { resetSiteNotification } from "../fixtures/reset"
-import { getSeedSiteId } from "../fixtures/seed"
+import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 test.use({ storageState: storageStateFor("admin") })
 
+let siteId: number
+
+test.beforeAll(async () => {
+  const site = await provisionE2ESite({ roles: [RoleType.Admin] })
+  siteId = site.siteId
+})
+
+test.afterAll(async () => {
+  await teardownE2ESite(siteId)
+})
+
 test.beforeEach(async () => {
   await ensureUserOnboarded(TEST_EMAILS.admin)
-  await resetSiteNotification(getSeedSiteId())
+  await resetSiteNotification(siteId)
 })
 
 test("admin can save a notification title", async ({ page }) => {
   const site = new SitePO(page)
-  await page.goto(`/sites/${getSeedSiteId()}/settings/notification`)
+  await page.goto(`/sites/${siteId}/settings/notification`)
   await page.waitForURL(/\/settings\/notification$/)
 
   const toggleLabel = page.locator(".chakra-switch")

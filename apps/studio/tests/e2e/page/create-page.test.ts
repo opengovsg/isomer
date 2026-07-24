@@ -1,21 +1,38 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { createPageViaWizard } from "../fixtures/helpers"
-import { getSeedSiteId } from "../fixtures/seed"
+import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE_TITLE = () => `E2E Test Page ${crypto.randomUUID().slice(0, 8)}`
+
+let siteId: number
+
+test.beforeAll(async () => {
+  const site = await provisionE2ESite({
+    roles: [RoleType.Admin, RoleType.Editor, RoleType.Publisher],
+  })
+  siteId = site.siteId
+})
+
+test.afterAll(async () => {
+  await teardownE2ESite(siteId)
+})
 
 const createSeedFolder = () =>
   db
     .insertInto("Resource")
     .values({
       permalink: `e2e-test-folder-${crypto.randomUUID().slice(0, 8)}`,
-      siteId: getSeedSiteId(),
+      siteId,
       parentId: null,
       title: "E2E Test Folder",
       draftBlobId: null,
@@ -39,13 +56,12 @@ test.describe("admin", () => {
   test.afterEach(async () => {
     await db
       .deleteFrom("Resource")
-      .where("siteId", "=", getSeedSiteId())
+      .where("siteId", "=", siteId)
       .where("title", "like", "E2E Test Page %")
       .execute()
   })
 
   test("admin can create a new page via the wizard", async ({ page }) => {
-    const siteId = getSeedSiteId()
     const title = UNIQUE_TITLE()
     await createPageViaWizard(page, {
       startUrl: `/sites/${siteId}`,
@@ -74,7 +90,7 @@ test.describe("publisher", () => {
   })
 
   test("publisher does not see the Create new button", async ({ page }) => {
-    await page.goto(`/sites/${getSeedSiteId()}`)
+    await page.goto(`/sites/${siteId}`)
     await expect(
       page.getByRole("button", { name: "Create new..." }),
     ).not.toBeVisible()
@@ -89,7 +105,7 @@ test.describe("editor", () => {
   })
 
   test("editor does not see the Create new button", async ({ page }) => {
-    await page.goto(`/sites/${getSeedSiteId()}`)
+    await page.goto(`/sites/${siteId}`)
     await expect(
       page.getByRole("button", { name: "Create new..." }),
     ).not.toBeVisible()
@@ -111,7 +127,6 @@ test.describe("admin — create page in a subfolder", () => {
   })
 
   test("admin can create a new page inside a folder", async ({ page }) => {
-    const siteId = getSeedSiteId()
     const title = UNIQUE_TITLE()
     await createPageViaWizard(page, {
       startUrl: `/sites/${siteId}/folders/${folderId}`,
@@ -146,7 +161,6 @@ test.describe("publisher — create page in a subfolder", () => {
   })
 
   test("publisher can create a new page inside a folder", async ({ page }) => {
-    const siteId = getSeedSiteId()
     const title = UNIQUE_TITLE()
     await createPageViaWizard(page, {
       startUrl: `/sites/${siteId}/folders/${folderId}`,
@@ -181,7 +195,6 @@ test.describe("editor — create page in a subfolder", () => {
   })
 
   test("editor can create a new page inside a folder", async ({ page }) => {
-    const siteId = getSeedSiteId()
     const title = UNIQUE_TITLE()
     await createPageViaWizard(page, {
       startUrl: `/sites/${siteId}/folders/${folderId}`,
