@@ -28,6 +28,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     page,
   }) => {
     const users = new UsersPO(page)
+
+    // Arrange / Act / Assert
     await users.goto(siteId)
     await users.expectReadOnlyCollaboratorsDescription()
     await users.expectCannotAddNewUser()
@@ -44,6 +46,8 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     page,
   }) => {
     const users = new UsersPO(page)
+
+    // Arrange / Act / Assert
     await users.goto(siteId)
     await users.expectReadOnlyCollaboratorsDescription()
     await users.expectCannotAddNewUser()

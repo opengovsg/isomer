@@ -55,11 +55,9 @@ export class UsersPO {
 
   async sendInvite() {
     const sendBtn = this.page.getByRole("button", { name: "Send invite" })
-    await expect(sendBtn).toBeEnabled({ timeout: 10_000 })
+    await expect(sendBtn).toBeEnabled()
     await sendBtn.click()
-    await expect(this.page.getByText(/Sent invite to/)).toBeVisible({
-      timeout: 10_000,
-    })
+    await expect(this.page.getByText(/Sent invite to/)).toBeVisible()
   }
 
   async submitInvite() {
@@ -67,12 +65,8 @@ export class UsersPO {
   }
 
   async expectCreateUserFailed(description: string | RegExp) {
-    await expect(this.page.getByText("Failed to create user")).toBeVisible({
-      timeout: 10_000,
-    })
-    await expect(this.page.getByText(description)).toBeVisible({
-      timeout: 10_000,
-    })
+    await expect(this.page.getByText("Failed to create user")).toBeVisible()
+    await expect(this.page.getByText(description)).toBeVisible()
   }
 
   async expectNonGovSgWhitelistWarning() {
@@ -80,7 +74,7 @@ export class UsersPO {
       this.page.getByText(
         "There are non-gov.sg domains that need to be whitelisted",
       ),
-    ).toBeVisible({ timeout: 10_000 })
+    ).toBeVisible()
   }
 
   async expectSendInviteDisabled() {
@@ -127,9 +121,7 @@ export class UsersPO {
 
   async saveUserChanges() {
     await this.page.getByRole("button", { name: "Save changes" }).click()
-    await expect(this.page.getByText("Changes saved!")).toBeVisible({
-      timeout: 10_000,
-    })
+    await expect(this.page.getByText("Changes saved!")).toBeVisible()
   }
 
   async openRemoveUserAccess(email: string) {
@@ -154,7 +146,7 @@ export class UsersPO {
   async expectRemovedFromSiteToast(email: string) {
     await expect(
       this.page.getByText(`Removed ${email} from site.`),
-    ).toBeVisible({ timeout: 10_000 })
+    ).toBeVisible()
   }
 
   async clickResendInvite(email: string) {
@@ -170,9 +162,7 @@ export class UsersPO {
   }
 
   async expectResendInviteToast(email: string) {
-    await expect(this.page.getByText(`Invite resent to ${email}`)).toBeVisible({
-      timeout: 10_000,
-    })
+    await expect(this.page.getByText(`Invite resent to ${email}`)).toBeVisible()
   }
 
   async expectPendingInviteStatus(email: string) {
