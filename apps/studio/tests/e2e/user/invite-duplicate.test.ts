@@ -36,17 +36,22 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     page,
   }) => {
     const inviteeEmail = uniqueInviteeEmail()
+
+    // Arrange
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Editor",
       siteId,
     })
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
-
     const users = new UsersPO(page)
     await openInviteModal(page, siteId)
+
+    // Act
     await users.fillInviteForm(inviteeEmail, "Publisher")
     await users.submitInvite()
+
+    // Assert
     await users.expectCreateUserFailed(
       "User already has permission for this site",
     )

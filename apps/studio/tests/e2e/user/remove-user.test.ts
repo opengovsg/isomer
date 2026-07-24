@@ -37,19 +37,23 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     page,
   }) => {
     const inviteeEmail = uniqueInviteeEmail()
+
+    // Arrange
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Editor",
       siteId,
     })
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
-
     const users = new UsersPO(page)
     await users.goto(siteId)
     await users.expectUserInTable(inviteeEmail)
 
+    // Act
     await users.openRemoveUserAccess(inviteeEmail)
     await users.confirmRemoveUser()
+
+    // Assert
     await users.expectRemovedFromSiteToast(inviteeEmail)
     await users.expectUserNotInTable(inviteeEmail)
     await expectUserAbsentOnSite(siteId, inviteeEmail).toBeNull()
@@ -59,18 +63,22 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     page,
   }) => {
     const inviteeEmail = uniqueInviteeEmail()
+
+    // Arrange
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Editor",
       siteId,
     })
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
-
     const users = new UsersPO(page)
     await users.goto(siteId)
+
+    // Act
     await users.openRemoveUserAccess(inviteeEmail)
     await users.cancelRemoveUser()
 
+    // Assert
     await users.expectUserInTable(inviteeEmail)
     await users.expectUserRole(inviteeEmail, "Editor")
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
