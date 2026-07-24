@@ -11,7 +11,7 @@ import {
   seedFolderWithPage,
 } from "../fixtures/page-seed"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
 
 let siteId: number
 
@@ -44,9 +44,11 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher cannot publish a published page with no pending edits", async ({
     page,
   }) => {
+    const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
     const { page: seededPage } = await seedFolderWithPage({
       siteId,
       state: ResourceState.Published,
+      userId: publisherId,
     })
 
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
@@ -58,9 +60,11 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     page,
   }) => {
     const editedText = `Republish ${crypto.randomUUID().slice(0, 8)}`
+    const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
     const { page: seededPage } = await seedFolderWithPage({
       siteId,
       state: ResourceState.Published,
+      userId: publisherId,
     })
 
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)

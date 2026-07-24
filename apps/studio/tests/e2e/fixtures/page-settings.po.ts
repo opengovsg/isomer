@@ -39,7 +39,13 @@ export class PageSettingsPO {
   }
 
   async closeWithoutSaving() {
-    await this.page.getByRole("button", { name: "Close" }).click()
+    // The modal's `X` icon button shares the "Close" accessible name (via
+    // aria-label) with this footer button, but only this one has "Close" as
+    // its actual text content.
+    await this.page
+      .getByRole("button", { name: "Close" })
+      .filter({ hasText: "Close" })
+      .click()
     await expect(this.page.getByLabel("Title")).not.toBeVisible()
   }
 

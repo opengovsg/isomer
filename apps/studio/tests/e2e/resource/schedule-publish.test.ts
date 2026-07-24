@@ -35,7 +35,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher can schedule publish, see dashboard badge, cancel, and clear DB schedule", async ({
     page,
   }) => {
-    const { page: seededPage } = await seedFolderWithPage({ siteId })
+    const { folder, page: seededPage } = await seedFolderWithPage({ siteId })
 
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
 
@@ -47,7 +47,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await expectPageScheduledBy(seededPage.id).not.toBeNull()
 
     const dashboard = new DashboardPO(page)
-    await dashboard.gotoSite(siteId)
+    await dashboard.gotoFolder(siteId, folder.id)
     await dashboard.expectScheduledBadge(DEFAULT_PAGE_TITLE)
 
     await openSeededPageEditor(page, siteId, seededPage.id)
