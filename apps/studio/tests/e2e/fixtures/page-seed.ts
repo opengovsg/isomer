@@ -91,6 +91,26 @@ export const expectPageScheduledAt = (pageId: string) =>
     { timeout: 10_000 },
   )
 
+export const expectPageState = (pageId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", pageId)
+      .select("state")
+      .executeTakeFirst()
+    return row?.state ?? null
+  })
+
+export const expectPageTitle = (pageId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", pageId)
+      .select("title")
+      .executeTakeFirst()
+    return row?.title ?? null
+  })
+
 export const expectPageScheduledBy = (pageId: string) =>
   expect.poll(
     async () => {
