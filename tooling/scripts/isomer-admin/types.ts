@@ -24,5 +24,6 @@ export type IsomerAdminScriptType =
   | "extract-folder-jsons"
   | "find-invalid-schema"
   | "import-folder-jsons"
+  | "insert-antiscam-banner"
   | "publish-site-resources"
   | "rebuild-all-codebuild-projects"

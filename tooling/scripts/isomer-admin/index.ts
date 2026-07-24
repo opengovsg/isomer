@@ -7,6 +7,7 @@ import { exportSiteJsons } from "./apps/export-site-jsons"
 import { extractFolderJsons } from "./apps/extract-folder-jsons"
 import { findInvalidSchema } from "./apps/find-invalid-schema"
 import { importFolderJsons } from "./apps/import-folder-jsons"
+import { insertAntiscamBanner } from "./apps/insert-antiscam-banner"
 import { publishSiteResources } from "./apps/publish-site-resources"
 import { rebuildAllCodebuildProjects } from "./apps/rebuild-all-codebuild-projects"
 
@@ -50,6 +51,12 @@ const main = async () => {
         value: "import-folder-jsons",
       },
       {
+        name: "Insert anti-scam banner",
+        description:
+          "Insert the AntiScamDisclaimerBanner block into RootPage content (published and/or draft) across sites.",
+        value: "insert-antiscam-banner",
+      },
+      {
         name: "Publish site resources",
         description:
           "Publish all draft resources for a given site ID in the database.",
@@ -82,6 +89,9 @@ const main = async () => {
       break
     case "import-folder-jsons":
       await importFolderJsons()
+      break
+    case "insert-antiscam-banner":
+      await insertAntiscamBanner()
       break
     case "publish-site-resources":
       await publishSiteResources()
