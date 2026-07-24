@@ -29,6 +29,7 @@ import {
   createTableSelectionBorderPlugin,
   getHtmlWithRelativeReferenceLinks,
 } from "../../utils"
+import { selectTableCellContent } from "./selectTableCellContent"
 
 export { TableRow } from "@tiptap/extension-table-row"
 
@@ -110,11 +111,20 @@ export const PROSE_EXTENSIONS: Extensions = [
 ]
 
 export const IsomerTable = Table.extend({
+  // Higher than TipTap's default keymap so Mod-a is handled here first.
+  priority: 101,
   addAttributes() {
     return {
       caption: {
         default: "Table caption",
       },
+    }
+  },
+  addKeyboardShortcuts() {
+    return {
+      ...this.parent?.(),
+      "Mod-a": () =>
+        selectTableCellContent(this.editor) || this.editor.commands.selectAll(),
     }
   },
   addProseMirrorPlugins() {
