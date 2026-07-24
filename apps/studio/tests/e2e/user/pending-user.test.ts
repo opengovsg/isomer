@@ -36,15 +36,20 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     page,
   }) => {
     const inviteeEmail = uniqueInviteeEmail()
+
+    // Arrange
     await inviteCollaborator(page, {
       email: inviteeEmail,
       role: "Editor",
       siteId,
     })
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
-
     const users = new UsersPO(page)
+
+    // Act
     await users.goto(siteId)
+
+    // Assert
     await users.expectPendingInviteStatus(inviteeEmail)
   })
 })
