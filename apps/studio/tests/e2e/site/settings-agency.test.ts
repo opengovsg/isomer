@@ -1,8 +1,9 @@
+import { expect, test } from "@playwright/test"
+
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { resetSiteAgencySettings } from "../fixtures/reset"
 import { getSeedSiteId } from "../fixtures/seed"
 import { SitePO } from "../fixtures/site.po"
-import { expect, test } from "../fixtures/test"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 test.use({ storageState: storageStateFor("admin") })
