@@ -29,6 +29,11 @@ export class SitePO {
     await this.page.waitForURL(new RegExp(`/settings/${section}$`))
   }
 
+  async reloadSettingsSection(section: SettingsSection) {
+    await this.page.reload()
+    await this.page.waitForURL(new RegExp(`/settings/${section}$`))
+  }
+
   async openSettingsSection(section: SettingsSection) {
     // Settings landing redirects to /agency. To reach other sections we
     // navigate via the settings side-nav (label === section name, title-cased).
@@ -48,12 +53,146 @@ export class SitePO {
     return this.page.getByRole("button", { name: "Publish" })
   }
 
+  siteNameField() {
+    return this.page.getByLabel("Site name")
+  }
+
+  mainBrandColourField() {
+    return this.page.getByLabel("Main brand colour")
+  }
+
+  gtmIdField() {
+    return this.page.getByLabel("Google Tag Manager (GTM) ID")
+  }
+
+  notificationBannerToggle() {
+    return this.page.locator(".chakra-switch")
+  }
+
+  notificationTitleField() {
+    return this.page.getByLabel("Notification title")
+  }
+
+  notificationCheckbox() {
+    return this.page.getByRole("checkbox")
+  }
+
   /** Logo file input on the logos and favicon settings page. */
   logoUploadInput() {
     return this.page
       .getByRole("group")
       .filter({ hasText: /^Logo/ })
       .getByTestId("file-upload")
+  }
+
+  logoFilenameText(filename: string) {
+    return this.page.getByText(filename)
+  }
+
+  footerLinkButton(name: string) {
+    return this.page.getByRole("button", { name })
+  }
+
+  navbarItemText(name: string) {
+    return this.page.getByText(name, { exact: true })
+  }
+
+  redirectSourceField() {
+    return this.page.getByPlaceholder("redirect-from")
+  }
+
+  redirectDestinationField() {
+    return this.page.getByPlaceholder("/path-to-page or https://www.google.com")
+  }
+
+  redirectPathText(path: string) {
+    return this.page.getByText(path)
+  }
+
+  deleteRedirectButton(source: string) {
+    return this.page.getByRole("button", {
+      name: `Delete redirect for /${source}`,
+    })
+  }
+
+  bulkUploadRedirectsButton() {
+    return this.page.getByRole("button", { name: /bulk upload with a \.csv/i })
+  }
+
+  bulkUploadRedirectsDialogTitle() {
+    return this.page.getByText("Bulk upload redirects")
+  }
+
+  bulkUploadDialogFileInput() {
+    return this.page.locator("[role='dialog'] input[type='file']")
+  }
+
+  async fillSiteName(name: string) {
+    await this.siteNameField().fill(name)
+  }
+
+  async setMainBrandColour(hex: string) {
+    const field = this.mainBrandColourField()
+    await field.clear()
+    await field.fill(hex)
+  }
+
+  async fillGtmId(id: string) {
+    await this.gtmIdField().fill(id)
+  }
+
+  async enableNotificationBanner() {
+    await this.notificationBannerToggle().click()
+  }
+
+  async fillNotificationTitle(title: string) {
+    await this.notificationTitleField().fill(title)
+  }
+
+  async uploadLogo(filePath: string) {
+    await this.logoUploadInput().setInputFiles(filePath)
+  }
+
+  async editFooterLinkLabel(linkButtonName: string, newLabel: string) {
+    await this.footerLinkButton(linkButtonName).click()
+    await this.page.getByLabel("Link label").fill(newLabel)
+  }
+
+  async editNavbarItemLabel(itemName: string, newLabel: string) {
+    await this.navbarItemText(itemName).click()
+    await this.page.getByLabel("Menu item label").fill(newLabel)
+  }
+
+  async addRedirect(source: string, destination: string) {
+    await this.redirectSourceField().fill(source)
+    await this.redirectDestinationField().fill(destination)
+    await this.page.getByRole("button", { name: "Add" }).click()
+  }
+
+  async deleteRedirect(source: string) {
+    await this.deleteRedirectButton(source).click()
+    await this.page.getByRole("button", { name: "Delete redirect" }).click()
+  }
+
+  async bulkUploadRedirectsCsv(csvContent: string) {
+    await this.bulkUploadRedirectsButton().click()
+    await this.bulkUploadRedirectsDialogTitle().waitFor({ state: "visible" })
+
+    await this.bulkUploadDialogFileInput().setInputFiles({
+      name: "redirects.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(csvContent),
+    })
+
+    await this.page.getByRole("button", { name: "Process redirects" }).click()
+    await this.page.getByText("All 2 redirects are good to go.").waitFor({
+      state: "visible",
+    })
+
+    await this.page.getByRole("button", { name: "Publish 2 redirects" }).click()
+    await this.page.getByText("2 redirects published").waitFor({
+      state: "visible",
+    })
   }
 
   /**
