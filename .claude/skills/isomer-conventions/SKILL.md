@@ -57,6 +57,7 @@ Keep SKILL.md lean: detail lives in the entry files, never inline here.
 
 ### Testing
 - [Structure tests as Arrange / Act / Assert](conventions/tests-arrange-act-assert.md) — best practice: mark AAA phases (collapse adjacent markers when trivial), one Act per test
+- [E2E test conventions (Studio Playwright suite)](conventions/e2e-tests.md) — best practice: fixtures layout, helpers vs POs, per-site isolation, happy-path + permission-gate pattern
 
 ### Feature flags
 
