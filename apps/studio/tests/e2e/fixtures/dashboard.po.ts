@@ -27,7 +27,7 @@ export class DashboardPO {
 
   async openResourceMenu(title: string) {
     await this.page
-      .getByRole("button", { name: `Options for ${title}` })
+      .getByRole("button", { name: `Options for ${title}`, exact: true })
       .click()
   }
 
@@ -206,7 +206,7 @@ export class DashboardPO {
   }
 
   async cancelMove() {
-    await this.page.getByRole("button", { name: "Cancel" }).click()
+    await this.page.getByRole("button", { name: "Cancel", exact: true }).click()
     await expect(
       this.page.getByRole("dialog").getByText(/Move ".+" to\.\.\./),
     ).not.toBeVisible()
