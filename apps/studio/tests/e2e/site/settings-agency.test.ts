@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { resetSiteAgencySettings } from "../fixtures/reset"
@@ -12,7 +13,9 @@ let siteId: number
 let siteName: string
 
 test.beforeAll(async () => {
-  const site = await provisionE2ESite({ admin: true, publisher: true })
+  const site = await provisionE2ESite({
+    roles: [RoleType.Admin, RoleType.Publisher],
+  })
   siteId = site.siteId
   siteName = site.siteName
 })

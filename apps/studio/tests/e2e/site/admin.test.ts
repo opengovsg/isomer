@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor } from "../fixtures/auth"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
@@ -10,9 +11,7 @@ let siteId: number
 
 test.beforeAll(async () => {
   const site = await provisionE2ESite({
-    admin: true,
-    editor: true,
-    publisher: true,
+    roles: [RoleType.Admin, RoleType.Editor, RoleType.Publisher],
   })
   siteId = site.siteId
 })
