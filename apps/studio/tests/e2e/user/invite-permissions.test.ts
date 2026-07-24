@@ -26,7 +26,11 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
 
   test("publisher cannot add new users", async ({ page }) => {
     const users = new UsersPO(page)
+
+    // Arrange / Act
     await users.goto(siteId)
+
+    // Assert
     await users.expectCannotAddNewUser()
   })
 })
@@ -38,7 +42,11 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
 
   test("editor cannot add new users", async ({ page }) => {
     const users = new UsersPO(page)
+
+    // Arrange / Act
     await users.goto(siteId)
+
+    // Assert
     await users.expectCannotAddNewUser()
   })
 })
