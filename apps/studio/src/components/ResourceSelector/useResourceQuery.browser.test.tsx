@@ -76,6 +76,14 @@ const makePage = (start: number, count: number, nextOffset: number | null) => ({
   nextOffset,
 })
 
+const defaultProps = {
+  siteId: 1,
+  moveDest: undefined,
+  parentDest: undefined,
+  isResourceHighlighted: false,
+  showOnlyContainers: false,
+}
+
 describe("useResourceQuery", () => {
   beforeEach(() => {
     batchAncestryInputsSpy.mockClear()
@@ -90,15 +98,7 @@ describe("useResourceQuery", () => {
     ]
 
     // Act
-    const { result } = renderHook(() =>
-      useResourceQuery({
-        siteId: 1,
-        moveDest: undefined,
-        parentDest: undefined,
-        isResourceHighlighted: false,
-        showOnlyContainers: false,
-      }),
-    )
+    const { result } = renderHook(() => useResourceQuery(defaultProps))
 
     // Assert - one request per chunk, none exceeding the cap, all ids kept
     expect(batchAncestryInputsSpy).toHaveBeenCalledTimes(2)
@@ -117,18 +117,36 @@ describe("useResourceQuery", () => {
     childrenState.pages = [makePage(0, 10, null)]
 
     // Act
-    const { result } = renderHook(() =>
-      useResourceQuery({
-        siteId: 1,
-        moveDest: undefined,
-        parentDest: undefined,
-        isResourceHighlighted: false,
-        showOnlyContainers: false,
-      }),
-    )
+    const { result } = renderHook(() => useResourceQuery(defaultProps))
 
     // Assert
     expect(batchAncestryInputsSpy).toHaveBeenCalledTimes(1)
     expect(result.current.resourceItemsWithAncestryStack).toHaveLength(10)
+  })
+
+  it("issues exactly one ancestry request per Load-more rather than re-querying all loaded pages", () => {
+    // Arrange - initial single page
+    childrenState.pages = [
+      makePage(0, MAX_BATCH_RESOURCE_IDS, MAX_BATCH_RESOURCE_IDS),
+    ]
+    const { result, rerender } = renderHook(() =>
+      useResourceQuery(defaultProps),
+    )
+
+    expect(batchAncestryInputsSpy).toHaveBeenCalledTimes(1)
+    batchAncestryInputsSpy.mockClear()
+
+    // Act - simulate Load more (second page added)
+    childrenState.pages = [
+      makePage(0, MAX_BATCH_RESOURCE_IDS, MAX_BATCH_RESOURCE_IDS),
+      makePage(MAX_BATCH_RESOURCE_IDS, MAX_BATCH_RESOURCE_IDS, null),
+    ]
+    rerender()
+
+    // Assert - only page 2's ids queried, not all accumulated ids
+    expect(batchAncestryInputsSpy).toHaveBeenCalledTimes(1)
+    expect(result.current.resourceItemsWithAncestryStack).toHaveLength(
+      MAX_BATCH_RESOURCE_IDS * 2,
+    )
   })
 })
