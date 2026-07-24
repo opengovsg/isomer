@@ -62,6 +62,12 @@ test.afterAll(async () => {
 - Use `resetSite*` helpers from `fixtures/reset.ts` in `beforeEach` for idempotent state
 - `provisionE2ESite` creates a root page + search page so the site dashboard loads
 
+## Settings publisher gate (PR-7)
+
+Publisher permission gates for settings Publish buttons live in **one** file:
+`site/settings-permissions.test.ts`. Individual settings happy-path files do not
+repeat the gate — add new Publish-gated sections to `PUBLISH_GATED_SECTIONS` there.
+
 ## Role projects and tags (PR-3)
 
 Playwright config defines one project per role plus `unauthenticated` (smoke) and `singpass`. Role projects set `storageState` and filter with `grep: /@role\b/`.

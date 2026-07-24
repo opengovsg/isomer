@@ -2,20 +2,16 @@ import { expect, test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { resetSiteAgencySettings } from "../fixtures/reset"
+import { resetSiteTheme } from "../fixtures/reset"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
-let siteName: string
 
 test.beforeAll(async () => {
-  const site = await provisionE2ESite({
-    roles: [RoleType.Admin],
-  })
+  const site = await provisionE2ESite({ roles: [RoleType.Admin] })
   siteId = site.siteId
-  siteName = site.siteName
 })
 
 test.afterAll(async () => {
@@ -25,24 +21,20 @@ test.afterAll(async () => {
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
-    await resetSiteAgencySettings(siteId, siteName)
+    await resetSiteTheme(siteId)
   })
 
-  test("admin can update site name on the agency settings page", async ({
-    page,
-  }) => {
-    const renamedSiteName = `E2E Site ${siteId} Renamed`
+  test("admin can change the primary colour and publish", async ({ page }) => {
     const site = new SitePO(page)
-    await site.gotoSettings(siteId, "agency")
+    await page.goto(`/sites/${siteId}/settings/colours`)
+    await page.waitForURL(/\/settings\/colours$/)
 
-    const nameField = page.getByLabel("Site name")
-    await expect(nameField).toBeVisible()
-    await nameField.fill(renamedSiteName)
-
+    await page.getByPlaceholder("2164da").fill("ff0000")
+    await expect(site.publishButton()).toBeEnabled()
     await site.publishButton().click()
     await site.expectChangesPublishedToast()
 
     await page.reload()
-    await expect(page.getByLabel("Site name")).toHaveValue(renamedSiteName)
+    await expect(page.getByPlaceholder("2164da")).toHaveValue("ff0000")
   })
 })
