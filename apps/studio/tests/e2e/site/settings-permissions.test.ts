@@ -1,0 +1,48 @@
+import { expect, test } from "@playwright/test"
+import { RoleType } from "~prisma/generated/generatedEnums"
+
+import type { SettingsSection } from "../fixtures/site.po"
+import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { SitePO } from "../fixtures/site.po"
+import { ensureUserOnboarded } from "../fixtures/user"
+
+/** Settings sections that render a Publish CTA (redirects publish inline instead). */
+const PUBLISH_GATED_SECTIONS: SettingsSection[] = [
+  "agency",
+  "colours",
+  "footer",
+  "integrations",
+  "logo",
+  "navbar",
+  "notification",
+]
+
+let siteId: number
+
+test.beforeAll(async () => {
+  const site = await provisionE2ESite({ roles: [RoleType.Publisher] })
+  siteId = site.siteId
+})
+
+test.afterAll(async () => {
+  await teardownE2ESite(siteId)
+})
+
+test.describe("publisher", { tag: roleTag("publisher") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.publisher)
+  })
+
+  test("publisher does not see Publish on settings sections that use it", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+
+    for (const section of PUBLISH_GATED_SECTIONS) {
+      await page.goto(`/sites/${siteId}/settings/${section}`)
+      await page.waitForURL(new RegExp(`/settings/${section}$`))
+      await expect(site.publishButton()).not.toBeVisible()
+    }
+  })
+})
