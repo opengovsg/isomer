@@ -32,6 +32,13 @@ export const DEFAULT_BLOCKS = {
     source: "Describe who said the quote.",
     imageAlt: "Enter a descriptive alt text.",
   },
+  button: {
+    type: "button",
+    variant: "single",
+    alignment: "left",
+    buttonLabel: "Enter your button text.",
+    buttonUrl: "https://www.google.com",
+  },
   callout: {
     type: "callout",
     content: {
@@ -287,6 +294,34 @@ export const DEFAULT_BLOCKS = {
       },
     ],
   },
+  linkhub: {
+    type: "linkhub",
+    title: "Enter a title.",
+    description: {
+      type: "prose",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Elaborate on the title.",
+            },
+          ],
+        },
+      ],
+    },
+    links: [
+      {
+        title: "Enter a title for your first link.",
+        url: "https://www.google.com",
+      },
+      {
+        title: "Enter a title for your second link.",
+        url: "https://www.google.com",
+      },
+    ],
+  },
   dynamiccomponentlist: {
     type: "dynamiccomponentlist",
     dataSource: {
@@ -437,10 +472,21 @@ export const BLOCK_TO_META: Record<
       "Humanise your site with powerful quotes or stories from real people.",
     imageSrc: "/assets/block-images/Blockquote.png",
   },
+  button: {
+    label: "Button",
+    description: "Add a single button or a pair of buttons to drive action.",
+    // TODO: Add imageSrc
+  },
   contactinformation: {
     label: "Contact information",
     description: "Display contact information.",
     usageText: "Let people know how they can reach you.",
+    // TODO: Add imageSrc
+  },
+  linkhub: {
+    label: "Link hub",
+    description: "Display a curated list of links.",
+    usageText: "Group related links, files, and contact details together.",
     // TODO: Add imageSrc
   },
   dynamiccomponentlist: {
@@ -473,8 +519,10 @@ export const ARTICLE_ALLOWED_BLOCKS: AllowedBlockSections = [
       "callout",
       "blockquote",
       "imagegallery",
+      "button",
     ],
   },
+  { label: "Add a new section", types: ["linkhub"] },
   { label: "Embed external content", types: ["map", "video"] },
 ]
 
@@ -490,11 +538,12 @@ export const CONTENT_ALLOWED_BLOCKS: AllowedBlockSections = [
       "contentpic",
       "infobar",
       "imagegallery",
+      "button",
     ],
   },
   {
     label: "Add a new section",
-    types: ["infocards", "infocols", "keystatistics"],
+    types: ["infocards", "infocols", "keystatistics", "linkhub"],
   },
   { label: "Embed external content", types: ["map", "video", "formsg"] },
 ]

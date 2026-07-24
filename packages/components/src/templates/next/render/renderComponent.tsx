@@ -8,6 +8,7 @@ import { Accordion } from "../components/complex/Accordion"
 import { AntiScamDisclaimerBanner } from "../components/complex/AntiScamDisclaimerBanner"
 import { Audio } from "../components/complex/Audio"
 import { Blockquote } from "../components/complex/Blockquote"
+import { Button } from "../components/complex/Button"
 import { Callout } from "../components/complex/Callout"
 import { ChildrenPages } from "../components/complex/ChildrenPages"
 import { CollectionBlock } from "../components/complex/CollectionBlock"
@@ -25,6 +26,7 @@ import { InfoCards } from "../components/complex/InfoCards"
 import { InfoCols } from "../components/complex/InfoCols"
 import { Infopic } from "../components/complex/Infopic"
 import { KeyStatistics } from "../components/complex/KeyStatistics"
+import { LinkHub } from "../components/complex/LinkHub"
 import { LogoCloud } from "../components/complex/LogoCloud"
 import { Map } from "../components/complex/Map"
 import { Video } from "../components/complex/Video"
@@ -55,6 +57,8 @@ export const renderComponent = ({
       )
     case "blockquote":
       return <Blockquote key={elementKey} {...component} {...rest} />
+    case "button":
+      return <Button key={elementKey} {...component} {...rest} />
     case "callout":
       return <Callout key={elementKey} {...component} {...rest} />
     case "contentpic":
@@ -77,6 +81,8 @@ export const renderComponent = ({
       return <Infopic key={elementKey} {...component} {...rest} />
     case "keystatistics":
       return <KeyStatistics key={elementKey} {...component} {...rest} />
+    case "linkhub":
+      return <LinkHub key={elementKey} {...component} {...rest} />
     case "map":
       return <Map key={elementKey} {...component} {...rest} />
     case "childrenpages":

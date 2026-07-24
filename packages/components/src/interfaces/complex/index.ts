@@ -1,5 +1,6 @@
 export { AccordionSchema, type AccordionProps } from "./Accordion"
 export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
+export { ButtonSchema, type ButtonProps } from "./Button"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export { CalloutSchema, type CalloutProps } from "./Callout"
 export { type CardsProps } from "./Cards"
@@ -21,6 +22,11 @@ export {
   CARDS_WITH_IMAGES,
 } from "./InfoCards"
 export { InfoColsSchema, type InfoColsProps } from "./InfoCols"
+export {
+  LinkHubSchema,
+  type LinkHubLinkProps,
+  type LinkHubProps,
+} from "./LinkHub"
 export {
   InfobarDefaultSchema,
   InfobarHomepageSchema,
