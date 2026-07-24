@@ -141,4 +141,26 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
       .poll(async () => (await getResource(seededPage.id))?.title)
       .toBe(newTitle)
   })
+
+  test("editor does not see Publish immediately on a published page", async ({
+    page,
+  }) => {
+    // Arrange
+    const pageTitle = `Editor Published Page ${crypto.randomUUID().slice(0, 8)}`
+    await seedRootPage({
+      siteId,
+      pageTitle,
+      state: ResourceState.Published,
+    })
+
+    // Act
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoSite(siteId)
+    await dashboard.openPageSettings(pageTitle)
+
+    // Assert
+    const settings = new PageSettingsPO(page)
+    await settings.expectLoaded()
+    await settings.expectPublishImmediatelyHidden()
+  })
 })
