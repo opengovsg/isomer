@@ -39,16 +39,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const pageTitle = UNIQUE_TITLE()
     const editedText = `Lifecycle ${crypto.randomUUID().slice(0, 8)}`
 
-    await createFolderViaWizard(page, { siteId, title: folderTitle })
-    const folder = await db
-      .selectFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "=", folderTitle)
-      .select("id")
-      .executeTakeFirstOrThrow()
-
+    const { folderId } = await createFolderViaWizard(page, {
+      siteId,
+      title: folderTitle,
+    })
     await createPageViaWizard(page, {
-      startUrl: `/sites/${siteId}/folders/${folder.id}`,
+      startUrl: `/sites/${siteId}/folders/${folderId}`,
       title: pageTitle,
       siteId,
     })
@@ -67,6 +63,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       .select(["state", "parentId"])
       .executeTakeFirst()
     expect(resource?.state).toBe(ResourceState.Published)
-    expect(resource?.parentId).toBe(folder.id)
+    expect(resource?.parentId).toBe(folderId)
   })
 })
