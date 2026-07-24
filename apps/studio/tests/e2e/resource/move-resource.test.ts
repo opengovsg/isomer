@@ -90,7 +90,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const suffix = crypto.randomUUID().slice(0, 8)
     const parentTitle = `Move Parent Folder ${suffix}`
     const childTitle = `Move Nested Folder ${suffix}`
-    const { childFolder } = await seedNestedFolder({
+    const { parentFolder, childFolder } = await seedNestedFolder({
       siteId,
       parentFolderTitle: parentTitle,
       childFolderTitle: childTitle,
@@ -98,7 +98,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     const dashboard = new DashboardPO(page)
-    await dashboard.gotoSite(siteId)
+    await dashboard.gotoFolder(siteId, parentFolder.id)
     await dashboard.openResourceMenu(childTitle)
     await dashboard.clickMove()
     await dashboard.selectMoveToSiteRoot()
