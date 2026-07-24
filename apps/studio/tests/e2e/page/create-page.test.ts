@@ -11,6 +11,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { createPageViaWizard } from "../fixtures/helpers"
 import { PageEditorPO } from "../fixtures/page-editor.po"
+import { getResourceByTitle } from "../fixtures/resource.db"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -70,12 +71,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
     await new PageEditorPO(page).expectLoaded()
 
-    const created = await db
-      .selectFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "=", title)
-      .select(["id", "state", "type", "parentId"])
-      .executeTakeFirst()
+    const created = await getResourceByTitle({ siteId, title })
     expect(created).toBeTruthy()
     expect(created?.state).toBe("Draft")
     expect(created?.type).toBe("Page")
@@ -134,12 +130,7 @@ test.describe(
         siteId,
       })
 
-      const created = await db
-        .selectFrom("Resource")
-        .where("siteId", "=", siteId)
-        .where("title", "=", title)
-        .select(["id", "state", "parentId"])
-        .executeTakeFirst()
+      const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
       expect(created?.parentId).toBe(folderId)
@@ -174,12 +165,7 @@ test.describe(
         siteId,
       })
 
-      const created = await db
-        .selectFrom("Resource")
-        .where("siteId", "=", siteId)
-        .where("title", "=", title)
-        .select(["id", "state", "parentId"])
-        .executeTakeFirst()
+      const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
       expect(created?.parentId).toBe(folderId)
@@ -212,12 +198,7 @@ test.describe(
         siteId,
       })
 
-      const created = await db
-        .selectFrom("Resource")
-        .where("siteId", "=", siteId)
-        .where("title", "=", title)
-        .select(["id", "state", "parentId"])
-        .executeTakeFirst()
+      const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
       expect(created?.parentId).toBe(folderId)

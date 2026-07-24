@@ -21,6 +21,7 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 | **Helpers** | `fixtures/helpers.ts` | Multi-step flows crossing pages or modals (wizard, invite) |
 | **Page objects** | `fixtures/*.po.ts` | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …) |
 | **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle |
+| **DB assertions** | `fixtures/*.db.ts` | Query helpers that fetch persisted state for a test to assert on (`resource.db.ts`, `user.db.ts`, …) |
 
 ## Welcome modal
 
@@ -109,6 +110,37 @@ await dashboard.openCreateMenu()
 await dashboard.clickCreateFolder()
 ```
 
+## DB assertion helpers (PR-5)
+
+When a test needs to verify persisted state (e.g. "the created page has state
+Draft"), the raw query lives in `fixtures/<entity>.db.ts` — one file per DB
+entity, mirroring `*.po.ts` per UI surface. The test file imports the query
+helper and keeps the `expect(...)` calls itself (Assert stays in the test; the
+fixture only fetches data).
+
+```ts
+// fixtures/resource.db.ts
+export const getResourceByTitle = (opts: { siteId: number; title: string }) =>
+  db
+    .selectFrom("Resource")
+    .where("siteId", "=", opts.siteId)
+    .where("title", "=", opts.title)
+    .select(["id", "state", "type", "parentId"])
+    .executeTakeFirst()
+
+// tests/e2e/page/create-page.test.ts
+const created = await getResourceByTitle({ siteId, title })
+expect(created?.state).toBe("Draft")
+```
+
+Rules:
+
+- Query helpers return raw rows/values — no `expect()` inside `fixtures/*.db.ts`
+- One file per entity (`resource.db.ts`, `user.db.ts`), not per test
+- Setup/teardown mutations (inserts/deletes for fixtures, not assertions) stay
+  under the existing DB setup convention (`reset.ts`, `site.ts`) — this only
+  covers read queries used to verify an action's effect
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding site ID `1`, or calling `getSeedSiteId()` → use `provisionE2ESite` and assert on the returned site
@@ -116,3 +148,4 @@ await dashboard.clickCreateFolder()
 - `test.use({ storageState: storageStateFor(...) })` in a test file → use `{ tag: roleTag(...) }` on `test.describe` instead
 - Raw `{ tag: "@admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
 - Raw `page.getByRole("button", { name: "Create new..." })` repeated across files → use `DashboardPO`
+- Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
