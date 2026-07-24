@@ -32,23 +32,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     await site.gotoSettingsSection(siteId, "redirects")
 
-    await page.getByPlaceholder("redirect-from").fill(source)
-    await page
-      .getByPlaceholder("/path-to-page or https://www.google.com")
-      .fill(destination)
-    await page.getByRole("button", { name: "Add" }).click()
+    await site.addRedirect(source, destination)
     await site.expectChangesPublishedToast()
-    await expect(page.getByText(`/${source}`)).toBeVisible()
+    await expect(site.redirectPathText(`/${source}`)).toBeVisible()
 
-    await page
-      .getByRole("button", { name: `Delete redirect for /${source}` })
-      .click()
-    await page.getByRole("button", { name: "Delete redirect" }).click()
+    await site.deleteRedirect(source)
     await site.expectChangesPublishedToast()
 
-    await page.reload()
-    await expect(
-      page.getByRole("button", { name: `Delete redirect for /${source}` }),
-    ).not.toBeVisible()
+    await site.reloadSettingsSection("redirects")
+    await expect(site.deleteRedirectButton(source)).not.toBeVisible()
   })
 })

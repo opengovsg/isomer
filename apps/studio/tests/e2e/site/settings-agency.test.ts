@@ -27,20 +27,17 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can update site name on the agency settings page", async ({
     page,
   }) => {
-    // Arrange
     const renamedSiteName = `E2E Site ${siteId} Renamed`
     const site = new SitePO(page)
     await site.gotoSettingsSection(siteId, "agency")
-    const nameField = page.getByLabel("Site name")
-    await expect(nameField).toBeVisible()
 
-    // Act
-    await nameField.fill(renamedSiteName)
+    await expect(site.siteNameField()).toBeVisible()
+    await site.fillSiteName(renamedSiteName)
+
     await site.clickPublish()
     await site.expectChangesPublishedToast()
-    await page.reload()
 
-    // Assert
-    await expect(page.getByLabel("Site name")).toHaveValue(renamedSiteName)
+    await site.reloadSettingsSection("agency")
+    await expect(site.siteNameField()).toHaveValue(renamedSiteName)
   })
 })

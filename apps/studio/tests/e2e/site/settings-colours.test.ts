@@ -28,14 +28,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const site = new SitePO(page)
     await site.gotoSettingsSection(siteId, "colours")
 
-    const colourInput = page.getByLabel("Main brand colour")
-    await colourInput.clear()
-    await colourInput.fill("ff0000")
+    await site.setMainBrandColour("ff0000")
     await expect(site.publishButton()).toBeEnabled()
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
-    await page.reload()
-    await expect(colourInput).toHaveValue("ff0000")
+    await site.reloadSettingsSection("colours")
+    await expect(site.mainBrandColourField()).toHaveValue("ff0000")
   })
 })
