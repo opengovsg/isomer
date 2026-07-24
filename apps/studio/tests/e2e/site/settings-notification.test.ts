@@ -8,14 +8,14 @@ import { expectSiteNotificationTitle } from "../fixtures/site-expect"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
-test.describe("notification settings", { tag: roleTag("admin") }, () => {
-  let siteId: number
+let siteId: number
 
-  test.beforeAll(async () => {
-    const site = await provisionE2ESite({ roles: [RoleType.Admin] })
-    siteId = site.siteId
-  })
+test.beforeAll(async () => {
+  const site = await provisionE2ESite({ roles: [RoleType.Admin] })
+  siteId = site.siteId
+})
 
+test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
     await resetSiteNotification(siteId)

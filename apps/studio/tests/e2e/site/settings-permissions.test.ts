@@ -41,6 +41,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   }) => {
     const site = new SitePO(page)
 
+    // Arrange / Act / Assert
     for (const section of PUBLISH_GATED_SECTIONS) {
       await site.gotoSettingsSection(siteId, section)
       await expect(site.publishButton()).not.toBeVisible()
@@ -69,6 +70,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   }) => {
     const site = new SitePO(page)
 
+    // Arrange / Act / Assert
     for (const section of PUBLISH_GATED_SECTIONS) {
       await site.gotoSettingsSection(siteId, section)
       await expect(site.publishButton()).not.toBeVisible()
