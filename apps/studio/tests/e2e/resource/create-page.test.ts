@@ -40,7 +40,10 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test("admin can create a new page via the wizard", async ({ page }) => {
+    // Arrange
     const title = UNIQUE_TITLE()
+
+    // Act
     await createPageViaWizard(page, {
       startUrl: `/sites/${siteId}`,
       title,
@@ -48,6 +51,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
     await new PageEditorPO(page).expectLoaded()
 
+    // Assert
     const created = await getResourceByTitle({ siteId, title })
     expect(created).toBeTruthy()
     expect(created?.state).toBe("Draft")
@@ -62,8 +66,11 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   })
 
   test("publisher does not see the Create new button", async ({ page }) => {
+    // Arrange / Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
+
+    // Assert
     await dashboard.expectCreateButtonHidden()
   })
 })
@@ -74,8 +81,11 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   })
 
   test("editor does not see the Create new button", async ({ page }) => {
+    // Arrange / Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
+
+    // Assert
     await dashboard.expectCreateButtonHidden()
   })
 })
@@ -99,13 +109,17 @@ test.describe(
     })
 
     test("admin can create a new page inside a folder", async ({ page }) => {
+      // Arrange
       const title = UNIQUE_TITLE()
+
+      // Act
       await createPageViaWizard(page, {
         startUrl: `/sites/${siteId}/folders/${folderId}`,
         title,
         siteId,
       })
 
+      // Assert
       const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
@@ -135,13 +149,17 @@ test.describe(
     test("publisher can create a new page inside a folder", async ({
       page,
     }) => {
+      // Arrange
       const title = UNIQUE_TITLE()
+
+      // Act
       await createPageViaWizard(page, {
         startUrl: `/sites/${siteId}/folders/${folderId}`,
         title,
         siteId,
       })
 
+      // Assert
       const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
@@ -169,13 +187,17 @@ test.describe(
     })
 
     test("editor can create a new page inside a folder", async ({ page }) => {
+      // Arrange
       const title = UNIQUE_TITLE()
+
+      // Act
       await createPageViaWizard(page, {
         startUrl: `/sites/${siteId}/folders/${folderId}`,
         title,
         siteId,
       })
 
+      // Assert
       const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
