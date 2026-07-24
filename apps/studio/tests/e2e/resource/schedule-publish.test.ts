@@ -37,6 +37,12 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
 
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+    // Freeze the clock at a fixed early-morning time so the "Quick select a
+    // time?" presets (00:00/09:00/13:00/17:00) are always available: they're
+    // hidden once every preset for the day has already passed, which made
+    // this flow fail deterministically whenever the suite ran late in the
+    // day (real time was in the past relative to those presets).
+    await page.clock.install({ time: new Date("2099-01-01T00:01:00+08:00") })
 
     await editor.openScheduleModal()
     await editor.schedulePublishForToday()
