@@ -1,26 +1,27 @@
-import { stringify } from "superjson"
+import type { ContainerConfiguration } from "@opengovsg/starter-kitty-testcontainers"
+import { postgres } from "@opengovsg/starter-kitty-testcontainers"
+import { createGlobalSetup } from "@opengovsg/starter-kitty-testcontainers/vitest"
 
-import type { ContainerInformation } from "./common"
-import { CONTAINER_CONFIGURATIONS, setup, teardown } from "./common"
-
-export default async () => {
-  const containers = await setup([
-    CONTAINER_CONFIGURATIONS.database,
-    CONTAINER_CONFIGURATIONS.mockpass,
-  ])
-
-  Object.defineProperty(process.env, "testcontainers", {
-    value: stringify(
-      containers.map((container) => {
-        const { container: _, ...rest } = container
-        const result: ContainerInformation = rest
-        return result
-      }),
-    ),
-    configurable: true,
-    writable: true,
-    enumerable: true,
-  })
-
-  return () => teardown(containers)
+// No preset for mockpass; spelled out as a plain `ContainerConfiguration`.
+const mockpass: ContainerConfiguration = {
+  name: "mockpass",
+  image: "opengovsg/mockpass:4.5.1",
+  ports: [5156],
+  extraHosts: [{ host: "host.docker.internal", ipAddress: "host-gateway" }],
+  environment: {
+    MOCKPASS_NRIC: "S6005038D",
+    MOCKPASS_UEN: "123456789A",
+    SHOW_LOGIN_PAGE: "true",
+    // NOTE: the mockpass container needs to communicate with our host machine
+    // over port 3000 so that it can fetch the JWKS endpoint
+    SP_RP_JWKS_ENDPOINT:
+      "http://host.docker.internal:3000/api/sign-in/singpass/jwks",
+    SINGPASS_CLIENT_PROFILE: "direct",
+  },
+  wait: { type: "PORT" },
 }
+
+export default createGlobalSetup([
+  postgres({ image: "postgres:15-alpine" }),
+  mockpass,
+])

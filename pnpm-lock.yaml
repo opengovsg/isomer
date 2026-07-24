@@ -107,6 +107,9 @@ catalogs:
     '@opengovsg/design-system-react':
       specifier: ^1.31.0
       version: 1.34.0
+    '@opengovsg/starter-kitty-testcontainers':
+      specifier: ^0.2.0
+      version: 0.2.0
     '@opengovsg/starter-kitty-validators':
       specifier: ^1.3.0
       version: 1.3.0
@@ -359,9 +362,6 @@ catalogs:
     tailwindcss-react-aria-components:
       specifier: ^1.1.4
       version: 1.2.0
-    testcontainers:
-      specifier: ^12.0.3
-      version: 12.0.4
     tiptap-text-direction:
       specifier: ^0.5.0
       version: 0.5.0
@@ -1009,6 +1009,9 @@ importers:
       '@isomer/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/typescript
+      '@opengovsg/starter-kitty-testcontainers':
+        specifier: 'catalog:'
+        version: 0.2.0(testcontainers@12.0.4)(vitest@4.1.10)(zod@4.4.3)
       '@playwright/test':
         specifier: catalog:playwright
         version: 1.61.1
@@ -1114,9 +1117,6 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.19(tsx@4.23.1)(yaml@2.8.3)
-      testcontainers:
-        specifier: 'catalog:'
-        version: 12.0.4
       tsx:
         specifier: 'catalog:'
         version: 4.23.1
@@ -1552,15 +1552,15 @@ importers:
       '@isomer/db':
         specifier: workspace:*
         version: link:../../../../packages/db
+      '@opengovsg/starter-kitty-testcontainers':
+        specifier: 'catalog:'
+        version: 0.2.0(testcontainers@12.0.4)(vitest@4.1.10)(zod@4.4.3)
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
       '@types/pg':
         specifier: 'catalog:'
         version: 8.20.0
-      testcontainers:
-        specifier: 'catalog:'
-        version: 12.0.4
       vitest:
         specifier: catalog:vitest
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.1.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-istanbul@4.1.10)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.1.1)(typescript@6.0.3))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@2.7.0)(sass@1.101.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.8.3))
@@ -4729,6 +4729,16 @@ packages:
       '@chakra-ui/react': ^2.10.5
       react: ^18.2.0
       react-dom: ^18.2.0
+
+  '@opengovsg/starter-kitty-testcontainers@0.2.0':
+    resolution: {integrity: sha512-JhJZ7Fvto22+DNzMYFvL0tJEOjhjNdddsKGcG0WDXtA6APJq61OikwaoD1fOq9cdnvHRm1fkc/jO3KC4SkZiIg==}
+    peerDependencies:
+      testcontainers: ^10.0.0 || ^11.0.0 || ^12.0.0
+      vitest: ^4.1.0
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      vitest:
+        optional: true
 
   '@opengovsg/starter-kitty-validators@1.3.0':
     resolution: {integrity: sha512-okU3YPn60/2KWdWPdlUjEVvpoHK8yCE3xm3MxpZ3sC/w2iGIHjXt4eMgzqynAGk33InkPUoOih2pVBeKKn0FHQ==}
@@ -15670,6 +15680,13 @@ snapshots:
       - '@types/react'
       - prop-types
       - supports-color
+
+  '@opengovsg/starter-kitty-testcontainers@0.2.0(testcontainers@12.0.4)(vitest@4.1.10)(zod@4.4.3)':
+    dependencies:
+      testcontainers: 12.0.4
+      zod: 4.4.3
+    optionalDependencies:
+      vitest: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.1.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-istanbul@4.1.10)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.1.1)(typescript@6.0.3))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.0)(jiti@1.21.7)(sass@1.101.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.8.3))
 
   '@opengovsg/starter-kitty-validators@1.3.0(zod@4.4.3)':
     dependencies:
