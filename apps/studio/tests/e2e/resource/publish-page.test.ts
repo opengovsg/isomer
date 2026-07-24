@@ -1,12 +1,12 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { openSeededPageEditor } from "../fixtures/helpers"
 import {
   expectPageDraftBlobId,
+  expectPageState,
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
 } from "../fixtures/page-seed"
@@ -38,12 +38,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
-    const resource = await db
-      .selectFrom("Resource")
-      .where("id", "=", seededPage.id)
-      .select("state")
-      .executeTakeFirst()
-    expect(resource?.state).toBe(ResourceState.Published)
+    await expectPageState(seededPage.id).toBe(ResourceState.Published)
   })
 
   test("publisher cannot publish a published page with no pending edits", async ({
@@ -76,13 +71,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
-    const resource = await db
-      .selectFrom("Resource")
-      .where("id", "=", seededPage.id)
-      .select(["state", "draftBlobId"])
-      .executeTakeFirst()
-    expect(resource?.state).toBe(ResourceState.Published)
-    expect(resource?.draftBlobId).toBeNull()
+    await expectPageState(seededPage.id).toBe(ResourceState.Published)
+    await expectPageDraftBlobId(seededPage.id).toBeNull()
     await editor.expectBlockPreview(editedText)
   })
 })
