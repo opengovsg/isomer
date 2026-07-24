@@ -26,11 +26,10 @@
  * skipped (legacy `category` values would not be migrated). Audit with
  * `findCategoryTagGroups.sql` before running against an environment.
  *
- * Items with an empty legacy `category` (common for Collection Links) are tagged
- * with the migration-owned "Others" option so they remain filterable after cutover.
- *
- * Draft writes use optimistic concurrency (`Blob.updatedAt` + `Resource.draftBlobId`
- * guards) so concurrent Studio saves/publishes abort rather than clobber edits.
+ * Risk accepted: items with an empty legacy category (common for Collection
+ * Links, which default to `category: ""`) are left with empty `tagged` even
+ * though the new Category group is `isRequired: true`. Studio Save stays
+ * disabled for those items until an editor picks a Category tag.
  *
  * Risk accepted: items with a non-empty legacy category and empty `tagged`
  * get `tagged: [categoryOptionId]` after migration. SearchSG / Algolia
@@ -86,7 +85,6 @@ const SITE_IDS_INCLUDE: number[] = []
 const SITE_IDS_EXCLUDE: number[] = []
 
 const CATEGORY_GROUP_LABEL = "Category"
-export const CATEGORY_OTHERS_LABEL = "Others"
 
 // Mirrors TAG_CATEGORY_DISPLAY_OPTIONS in
 // packages/components/src/types/constants.ts — kept local so tsx does not
@@ -152,31 +150,13 @@ export const buildCategoryTagGroup = ({
 }: {
   categories: string[]
   generateId?: () => string
-}): TagCategoryGroup => {
-  const optionLabels = deriveDistinctCategories([
-    ...categories,
-    CATEGORY_OTHERS_LABEL,
-  ])
-
-  return {
-    id: generateId(),
-    label: CATEGORY_GROUP_LABEL,
-    isRequired: true,
-    display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-    options: optionLabels.map((label) => ({ id: generateId(), label })),
-  }
-}
-
-const resolveCategoryOptionId = (
-  category: string | undefined,
-  optionIdByLabel: Map<string, string>,
-): string | undefined => {
-  const trimmed = category?.trim()
-  if (trimmed) {
-    return optionIdByLabel.get(normalizedCategoryKey(trimmed))
-  }
-  return optionIdByLabel.get(normalizedCategoryKey(CATEGORY_OTHERS_LABEL))
-}
+}): TagCategoryGroup => ({
+  id: generateId(),
+  label: CATEGORY_GROUP_LABEL,
+  isRequired: true,
+  display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+  options: categories.map((label) => ({ id: generateId(), label })),
+})
 
 export const appendTagged = (
   tagged: string[] | undefined,
@@ -219,11 +199,7 @@ export const buildMigrationPlan = ({
   const categories = deriveDistinctCategories(
     items.flatMap((item) => [item.draftCategory, item.publishedCategory]),
   )
-  const hasCategoryFieldOnAnySide = items.some(
-    (item) =>
-      item.draftCategory !== undefined || item.publishedCategory !== undefined,
-  )
-  if (categories.length === 0 && !hasCategoryFieldOnAnySide) {
+  if (categories.length === 0) {
     return { status: "no-categories", itemUpdates: [] }
   }
 
@@ -242,11 +218,10 @@ export const buildMigrationPlan = ({
     }): ItemTagUpdate[] => {
       const updates: ItemTagUpdate[] = []
 
-      const draftOptionId = resolveCategoryOptionId(
-        draftCategory,
-        optionIdByLabel,
-      )
-      if (draftCategory !== undefined && draftOptionId) {
+      const draftOptionId = draftCategory
+        ? optionIdByLabel.get(normalizedCategoryKey(draftCategory))
+        : undefined
+      if (draftOptionId) {
         updates.push({
           resourceId,
           state: "draft",
@@ -254,11 +229,10 @@ export const buildMigrationPlan = ({
         })
       }
 
-      const publishedOptionId = resolveCategoryOptionId(
-        publishedCategory,
-        optionIdByLabel,
-      )
-      if (publishedCategory !== undefined && publishedOptionId) {
+      const publishedOptionId = publishedCategory
+        ? optionIdByLabel.get(normalizedCategoryKey(publishedCategory))
+        : undefined
+      if (publishedOptionId) {
         updates.push({
           resourceId,
           state: "published",
@@ -340,7 +314,6 @@ const getIndexPageRow = (
       "r.publishedVersionId",
       "v.blobId as publishedBlobId",
       "v.versionNum as publishedVersionNum",
-      sql<Date | null>`"draftBlob"."updatedAt"`.as("draftUpdatedAt"),
       sql<CollectionIndexContent | null>`"draftBlob"."content"`.as(
         "draftContent",
       ),
@@ -372,7 +345,6 @@ const getItemRows = (
       "r.publishedVersionId",
       "v.blobId as publishedBlobId",
       "v.versionNum as publishedVersionNum",
-      sql<Date | null>`"draftBlob"."updatedAt"`.as("draftUpdatedAt"),
       sql<CollectionItemContent | null>`"draftBlob"."content"`.as(
         "draftContent",
       ),
@@ -382,57 +354,20 @@ const getItemRows = (
     ])
     .execute()
 
-const updateDraftBlobInPlace = async <T>(
+const updateBlobContent = <T>(
   tx: Transaction<DB>,
-  {
-    resourceId,
-    expectedDraftBlobId,
-    expectedUpdatedAt,
-    mergeContent,
-  }: {
-    resourceId: string
-    expectedDraftBlobId: string
-    expectedUpdatedAt: Date
-    mergeContent: (current: T) => T
-  },
-) => {
-  const resource = await tx
-    .selectFrom("Resource")
-    .where("id", "=", resourceId)
-    .select("draftBlobId")
-    .executeTakeFirst()
-
-  if (resource?.draftBlobId !== expectedDraftBlobId) {
-    throw new Error(
-      `Concurrent publish detected on resource ${resourceId} — draftBlobId changed since it was read. Aborting.`,
-    )
-  }
-
-  const currentBlob = await tx
-    .selectFrom("Blob")
-    .where("id", "=", expectedDraftBlobId)
-    .select(["content", "updatedAt"])
-    .executeTakeFirstOrThrow()
-
-  const result = await tx
+  blobId: string,
+  content: T,
+) =>
+  tx
     .updateTable("Blob")
     .set({
       content: jsonb(
-        mergeContent(
-          currentBlob.content as unknown as T,
-        ) as unknown as UnwrapTagged<PrismaJson.BlobJsonContent>,
+        content as unknown as UnwrapTagged<PrismaJson.BlobJsonContent>,
       ),
     })
-    .where("id", "=", expectedDraftBlobId)
-    .where("updatedAt", "=", expectedUpdatedAt)
-    .executeTakeFirst()
-
-  if (result.numUpdatedRows === BigInt(0)) {
-    throw new Error(
-      `Concurrent draft edit detected on resource ${resourceId} — Blob.updatedAt changed since it was read. Aborting.`,
-    )
-  }
-}
+    .where("id", "=", blobId)
+    .execute()
 
 /** Publishes new content as a brand-new Version — never rewrites a historical Blob. */
 const publishNewContent = async <T>(
@@ -556,22 +491,16 @@ const applyCollectionWrites = async (
     return publisherId
   }
 
-  if (
-    indexRow.draftContent &&
-    indexRow.draftBlobId &&
-    indexRow.draftUpdatedAt
-  ) {
-    await updateDraftBlobInPlace(tx, {
-      resourceId: indexRow.resourceId,
-      expectedDraftBlobId: indexRow.draftBlobId,
-      expectedUpdatedAt: indexRow.draftUpdatedAt,
-      mergeContent: (current) => ({
-        ...current,
-        page: {
-          ...current.page,
-          tagCategories: appendCategoryGroup(current.page.tagCategories, group),
-        },
-      }),
+  if (indexRow.draftContent && indexRow.draftBlobId) {
+    await updateBlobContent(tx, indexRow.draftBlobId, {
+      ...indexRow.draftContent,
+      page: {
+        ...indexRow.draftContent.page,
+        tagCategories: appendCategoryGroup(
+          indexRow.draftContent.page.tagCategories,
+          group,
+        ),
+      },
     })
   }
 
@@ -601,20 +530,10 @@ const applyCollectionWrites = async (
     const row = itemRowByResourceId.get(update.resourceId)
     if (!row) continue
 
-    if (
-      update.state === "draft" &&
-      row.draftContent &&
-      row.draftBlobId &&
-      row.draftUpdatedAt
-    ) {
-      await updateDraftBlobInPlace(tx, {
-        resourceId: row.resourceId,
-        expectedDraftBlobId: row.draftBlobId,
-        expectedUpdatedAt: row.draftUpdatedAt,
-        mergeContent: (current) => ({
-          ...current,
-          page: { ...current.page, tagged: update.tagged },
-        }),
+    if (update.state === "draft" && row.draftContent && row.draftBlobId) {
+      await updateBlobContent(tx, row.draftBlobId, {
+        ...row.draftContent,
+        page: { ...row.draftContent.page, tagged: update.tagged },
       })
     } else if (
       update.state === "published" &&

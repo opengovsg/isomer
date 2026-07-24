@@ -27,7 +27,7 @@
 
 ## Migrate category to tag categories
 
-1. Migrates each Collection's legacy `category` string values into a "Category" tagCategories group, and tags every Collection Item with the matching option UUID via `tagged`. Items with an empty legacy `category` (common for Collection Links) are tagged with an "Others" option. The legacy `category` field is left untouched.
+1. Migrates each Collection's legacy `category` string values into a "Category" tagCategories group, and tags every Collection Item with the matching option UUID via `tagged`. The legacy `category` field is left untouched.
 2. The new "Category" group is written with `display: "plaintext"`. Every pre-existing tagCategories group on the same Index is stamped with an explicit `display: "pills"`.
 3. Idempotent — a Collection whose Index already has a "Category" group (draft or published) is skipped. This assumes `"Category"` is migration-owned; a human-created group with that label would also be skipped. Audit first with `findCategoryTagGroups.sql`.
 4. Site selection: edit `SITE_IDS_INCLUDE` / `SITE_IDS_EXCLUDE` at the top of the script. Empty include = all sites; exclude is always subtracted. The resolved list is printed and must be confirmed before proceeding.
