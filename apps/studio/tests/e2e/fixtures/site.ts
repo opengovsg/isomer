@@ -6,7 +6,11 @@ import {
   setupSite,
 } from "tests/integration/helpers/seed"
 import { db, sql } from "~/server/modules/database"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS } from "./auth"
 
@@ -24,50 +28,53 @@ const getUserIdByEmail = async (email: string) => {
   return user.id
 }
 
-type ProvisionE2ESiteOpts =
-  | { admin: true; editor?: boolean; publisher?: boolean }
-  | { admin?: boolean; editor: true; publisher?: boolean }
-  | { admin?: boolean; editor?: boolean; publisher: true }
+type Role = (typeof RoleType)[keyof typeof RoleType]
 
-export const provisionE2ESite = async (
-  opts: ProvisionE2ESiteOpts,
-): Promise<ProvisionedSite> => {
+const TEST_EMAIL_BY_ROLE: Record<Role, string> = {
+  [RoleType.Admin]: TEST_EMAILS.admin,
+  [RoleType.Editor]: TEST_EMAILS.editor,
+  [RoleType.Publisher]: TEST_EMAILS.publisher,
+}
+
+const SETUP_PERMISSIONS_BY_ROLE: Record<
+  Role,
+  (props: { siteId: number; userId: string }) => Promise<unknown>
+> = {
+  [RoleType.Admin]: setupAdminPermissions,
+  [RoleType.Editor]: setupEditorPermissions,
+  [RoleType.Publisher]: setupPublisherPermissions,
+}
+
+// Root page owner, in order of preference, when multiple roles are requested.
+const ROOT_PAGE_ROLE_PRIORITY: Role[] = [
+  RoleType.Admin,
+  RoleType.Editor,
+  RoleType.Publisher,
+]
+
+// Each requested role grants its own fixed TEST_EMAILS user (admin/editor/
+// publisher are separate accounts) that role on this site — never multiple
+// roles to one user. This lets a single test file switch `storageState`
+// between those canonical users to exercise several permission levels
+// against the same freshly-provisioned site.
+export const provisionE2ESite = async (opts: {
+  roles: [Role, ...Role[]]
+}): Promise<ProvisionedSite> => {
   const { site } = await setupSite()
 
-  const permissionSetup: Promise<unknown>[] = []
+  await Promise.all(
+    opts.roles.map(async (role) => {
+      const userId = await getUserIdByEmail(TEST_EMAIL_BY_ROLE[role])
+      return SETUP_PERMISSIONS_BY_ROLE[role]({ siteId: site.id, userId })
+    }),
+  )
 
-  if (opts.admin) {
-    permissionSetup.push(
-      setupAdminPermissions({
-        siteId: site.id,
-        userId: await getUserIdByEmail(TEST_EMAILS.admin),
-      }),
-    )
-  }
-  if (opts.editor) {
-    permissionSetup.push(
-      setupEditorPermissions({
-        siteId: site.id,
-        userId: await getUserIdByEmail(TEST_EMAILS.editor),
-      }),
-    )
-  }
-  if (opts.publisher) {
-    permissionSetup.push(
-      setupPublisherPermissions({
-        siteId: site.id,
-        userId: await getUserIdByEmail(TEST_EMAILS.publisher),
-      }),
-    )
-  }
-
-  await Promise.all(permissionSetup)
-
-  const rootPageUserId = opts.admin
-    ? await getUserIdByEmail(TEST_EMAILS.admin)
-    : opts.editor
-      ? await getUserIdByEmail(TEST_EMAILS.editor)
-      : await getUserIdByEmail(TEST_EMAILS.publisher)
+  const rootPageRole =
+    ROOT_PAGE_ROLE_PRIORITY.find((role) => opts.roles.includes(role)) ??
+    opts.roles[0]
+  const rootPageUserId = await getUserIdByEmail(
+    TEST_EMAIL_BY_ROLE[rootPageRole],
+  )
 
   await setupPageResource({
     siteId: site.id,
