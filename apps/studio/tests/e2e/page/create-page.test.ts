@@ -1,16 +1,13 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"
-import {
-  ResourceState,
-  ResourceType,
-  RoleType,
-} from "~prisma/generated/generatedEnums"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { createPageViaWizard } from "../fixtures/helpers"
 import { PageEditorPO } from "../fixtures/page-editor.po"
+import { seedFolder } from "../fixtures/page-seed"
 import { getResourceByTitle } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -25,22 +22,6 @@ test.beforeAll(async () => {
   })
   siteId = site.siteId
 })
-
-const createSeedFolder = () =>
-  db
-    .insertInto("Resource")
-    .values({
-      permalink: `e2e-test-folder-${crypto.randomUUID().slice(0, 8)}`,
-      siteId,
-      parentId: null,
-      title: "E2E Test Folder",
-      draftBlobId: null,
-      state: ResourceState.Draft,
-      type: ResourceType.Folder,
-      publishedVersionId: null,
-    })
-    .returning("id")
-    .executeTakeFirstOrThrow()
 
 const deleteFolder = (folderId: string) =>
   db.deleteFrom("Resource").where("id", "=", folderId).execute()
@@ -111,7 +92,8 @@ test.describe(
 
     test.beforeEach(async () => {
       await ensureUserOnboarded(TEST_EMAILS.admin)
-      folderId = (await createSeedFolder()).id
+      folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
+        .folder.id
     })
 
     test.afterEach(async () => {
@@ -144,7 +126,8 @@ test.describe(
 
     test.beforeEach(async () => {
       await ensureUserOnboarded(TEST_EMAILS.publisher)
-      folderId = (await createSeedFolder()).id
+      folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
+        .folder.id
     })
 
     test.afterEach(async () => {
@@ -179,7 +162,8 @@ test.describe(
 
     test.beforeEach(async () => {
       await ensureUserOnboarded(TEST_EMAILS.editor)
-      folderId = (await createSeedFolder()).id
+      folderId = (await seedFolder({ siteId, folderTitle: "E2E Test Folder" }))
+        .folder.id
     })
 
     test.afterEach(async () => {
