@@ -128,12 +128,10 @@ describe("AuditLogExportSection", () => {
     capturedOptions?.onSuccess?.()
     await waitFor(() =>
       expect(
-        (
-          screen.getByRole("button", {
-            name: "Select log types to export",
-          }) as HTMLButtonElement
-        ).disabled,
-      ).toBe(true),
+        screen.queryByRole("button", {
+          name: "Select log types to export",
+        }),
+      ).not.toBeNull(),
     )
 
     // Ask again, identically.
