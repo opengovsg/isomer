@@ -7,7 +7,7 @@ import {
   RoleType,
 } from "~prisma/generated/generatedEnums"
 
-import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
+import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { createPageViaWizard } from "../fixtures/helpers"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -46,9 +46,7 @@ const createSeedFolder = () =>
 const deleteFolder = (folderId: string) =>
   db.deleteFrom("Resource").where("id", "=", folderId).execute()
 
-test.describe("admin", () => {
-  test.use({ storageState: storageStateFor("admin") })
-
+test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
@@ -82,9 +80,7 @@ test.describe("admin", () => {
   })
 })
 
-test.describe("publisher", () => {
-  test.use({ storageState: storageStateFor("publisher") })
-
+test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.publisher)
   })
@@ -97,9 +93,7 @@ test.describe("publisher", () => {
   })
 })
 
-test.describe("editor", () => {
-  test.use({ storageState: storageStateFor("editor") })
-
+test.describe("editor", { tag: roleTag("editor") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
@@ -112,104 +106,118 @@ test.describe("editor", () => {
   })
 })
 
-test.describe("admin — create page in a subfolder", () => {
-  test.use({ storageState: storageStateFor("admin") })
+test.describe(
+  "admin — create page in a subfolder",
+  {
+    tag: roleTag("admin"),
+  },
+  () => {
+    let folderId: string
 
-  let folderId: string
-
-  test.beforeEach(async () => {
-    await ensureUserOnboarded(TEST_EMAILS.admin)
-    folderId = (await createSeedFolder()).id
-  })
-
-  test.afterEach(async () => {
-    await deleteFolder(folderId)
-  })
-
-  test("admin can create a new page inside a folder", async ({ page }) => {
-    const title = UNIQUE_TITLE()
-    await createPageViaWizard(page, {
-      startUrl: `/sites/${siteId}/folders/${folderId}`,
-      title,
-      siteId,
+    test.beforeEach(async () => {
+      await ensureUserOnboarded(TEST_EMAILS.admin)
+      folderId = (await createSeedFolder()).id
     })
 
-    const created = await db
-      .selectFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "=", title)
-      .select(["id", "state", "parentId"])
-      .executeTakeFirst()
-    expect(created).toBeTruthy()
-    expect(created?.state).toBe("Draft")
-    expect(created?.parentId).toBe(folderId)
-  })
-})
-
-test.describe("publisher — create page in a subfolder", () => {
-  test.use({ storageState: storageStateFor("publisher") })
-
-  let folderId: string
-
-  test.beforeEach(async () => {
-    await ensureUserOnboarded(TEST_EMAILS.publisher)
-    folderId = (await createSeedFolder()).id
-  })
-
-  test.afterEach(async () => {
-    await deleteFolder(folderId)
-  })
-
-  test("publisher can create a new page inside a folder", async ({ page }) => {
-    const title = UNIQUE_TITLE()
-    await createPageViaWizard(page, {
-      startUrl: `/sites/${siteId}/folders/${folderId}`,
-      title,
-      siteId,
+    test.afterEach(async () => {
+      await deleteFolder(folderId)
     })
 
-    const created = await db
-      .selectFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "=", title)
-      .select(["id", "state", "parentId"])
-      .executeTakeFirst()
-    expect(created).toBeTruthy()
-    expect(created?.state).toBe("Draft")
-    expect(created?.parentId).toBe(folderId)
-  })
-})
+    test("admin can create a new page inside a folder", async ({ page }) => {
+      const title = UNIQUE_TITLE()
+      await createPageViaWizard(page, {
+        startUrl: `/sites/${siteId}/folders/${folderId}`,
+        title,
+        siteId,
+      })
 
-test.describe("editor — create page in a subfolder", () => {
-  test.use({ storageState: storageStateFor("editor") })
+      const created = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", siteId)
+        .where("title", "=", title)
+        .select(["id", "state", "parentId"])
+        .executeTakeFirst()
+      expect(created).toBeTruthy()
+      expect(created?.state).toBe("Draft")
+      expect(created?.parentId).toBe(folderId)
+    })
+  },
+)
 
-  let folderId: string
+test.describe(
+  "publisher — create page in a subfolder",
+  {
+    tag: roleTag("publisher"),
+  },
+  () => {
+    let folderId: string
 
-  test.beforeEach(async () => {
-    await ensureUserOnboarded(TEST_EMAILS.editor)
-    folderId = (await createSeedFolder()).id
-  })
-
-  test.afterEach(async () => {
-    await deleteFolder(folderId)
-  })
-
-  test("editor can create a new page inside a folder", async ({ page }) => {
-    const title = UNIQUE_TITLE()
-    await createPageViaWizard(page, {
-      startUrl: `/sites/${siteId}/folders/${folderId}`,
-      title,
-      siteId,
+    test.beforeEach(async () => {
+      await ensureUserOnboarded(TEST_EMAILS.publisher)
+      folderId = (await createSeedFolder()).id
     })
 
-    const created = await db
-      .selectFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "=", title)
-      .select(["id", "state", "parentId"])
-      .executeTakeFirst()
-    expect(created).toBeTruthy()
-    expect(created?.state).toBe("Draft")
-    expect(created?.parentId).toBe(folderId)
-  })
-})
+    test.afterEach(async () => {
+      await deleteFolder(folderId)
+    })
+
+    test("publisher can create a new page inside a folder", async ({
+      page,
+    }) => {
+      const title = UNIQUE_TITLE()
+      await createPageViaWizard(page, {
+        startUrl: `/sites/${siteId}/folders/${folderId}`,
+        title,
+        siteId,
+      })
+
+      const created = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", siteId)
+        .where("title", "=", title)
+        .select(["id", "state", "parentId"])
+        .executeTakeFirst()
+      expect(created).toBeTruthy()
+      expect(created?.state).toBe("Draft")
+      expect(created?.parentId).toBe(folderId)
+    })
+  },
+)
+
+test.describe(
+  "editor — create page in a subfolder",
+  {
+    tag: roleTag("editor"),
+  },
+  () => {
+    let folderId: string
+
+    test.beforeEach(async () => {
+      await ensureUserOnboarded(TEST_EMAILS.editor)
+      folderId = (await createSeedFolder()).id
+    })
+
+    test.afterEach(async () => {
+      await deleteFolder(folderId)
+    })
+
+    test("editor can create a new page inside a folder", async ({ page }) => {
+      const title = UNIQUE_TITLE()
+      await createPageViaWizard(page, {
+        startUrl: `/sites/${siteId}/folders/${folderId}`,
+        title,
+        siteId,
+      })
+
+      const created = await db
+        .selectFrom("Resource")
+        .where("siteId", "=", siteId)
+        .where("title", "=", title)
+        .select(["id", "state", "parentId"])
+        .executeTakeFirst()
+      expect(created).toBeTruthy()
+      expect(created?.state).toBe("Draft")
+      expect(created?.parentId).toBe(folderId)
+    })
+  },
+)
