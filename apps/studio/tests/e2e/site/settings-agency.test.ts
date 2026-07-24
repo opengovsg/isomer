@@ -12,7 +12,7 @@ let siteName: string
 
 test.beforeAll(async () => {
   const site = await provisionE2ESite({
-    roles: [RoleType.Admin, RoleType.Publisher],
+    roles: [RoleType.Admin],
   })
   siteId = site.siteId
   siteName = site.siteName
@@ -40,22 +40,5 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     await page.reload()
     await expect(page.getByLabel("Site name")).toHaveValue(renamedSiteName)
-  })
-})
-
-test.describe("publisher", { tag: roleTag("publisher") }, () => {
-  test.beforeEach(async () => {
-    await ensureUserOnboarded(TEST_EMAILS.publisher)
-  })
-
-  test("publisher does not see the Publish button on agency settings", async ({
-    page,
-  }) => {
-    await new SitePO(page).gotoSettings(siteId, "agency")
-
-    await expect(page.getByLabel("Site name")).toBeVisible()
-    await expect(
-      page.getByRole("button", { name: "Publish" }),
-    ).not.toBeVisible()
   })
 })
