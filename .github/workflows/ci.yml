@@ -41,14 +41,14 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Lint
-        run: pnpm run lint && pnpm run lint:ws
-
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5
-        with:
-          dockerfile: "./apps/studio/Dockerfile"
-          failure-threshold: "error"
+      - parallel:
+          - name: Lint
+            run: pnpm run lint && pnpm run lint:ws
+          - name: Lint Dockerfile
+            uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5
+            with:
+              dockerfile: "./apps/studio/Dockerfile"
+              failure-threshold: "error"
 
   format:
     runs-on: ubuntu-latest
@@ -86,18 +86,19 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Install Playwright (Chromium)
-        # Required by the vitest "browser" project (Vitest Browser Mode).
-        run: pnpm --filter isomer-studio exec playwright install chromium
-      - name: Install dependencies
-        # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
-        run: pnpm exec turbo run generate --filter=isomer-studio
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
-        with:
-          languages: js
-          service: isomer-studio
-          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - parallel:
+          - name: Install Playwright (Chromium)
+            # Required by the vitest "browser" project (Vitest Browser Mode).
+            run: pnpm --filter isomer-studio exec playwright install chromium
+          - name: Install dependencies
+            # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
+            run: pnpm exec turbo run generate --filter=isomer-studio
+          - name: Configure Datadog Test Visibility
+            uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+            with:
+              languages: js
+              service: isomer-studio
+              api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Studio
         # Loose env mode required for env vars to be passed to the run
         run: pnpm exec turbo test-ci:unit --filter=isomer-studio --env-mode=loose -- --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
@@ -116,15 +117,16 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Install Playwright (Chromium)
-        # Required by the vitest "browser" project (Vitest Browser Mode).
-        run: pnpm --filter @opengovsg/isomer-components exec playwright install chromium
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
-        with:
-          languages: js
-          service: isomer-studio
-          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - parallel:
+          - name: Install Playwright (Chromium)
+            # Required by the vitest "browser" project (Vitest Browser Mode).
+            run: pnpm --filter @opengovsg/isomer-components exec playwright install chromium
+          - name: Configure Datadog Test Visibility
+            uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+            with:
+              languages: js
+              service: isomer-studio
+              api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Components
         run: pnpm exec turbo test-ci:unit --filter=@opengovsg/isomer-components --env-mode=loose
         env:
@@ -163,14 +165,15 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Start test containers
-        run: pnpm exec turbo run setup:test --filter=@isomer/pgboss
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
-        with:
-          languages: js
-          service: isomer-pgboss
-          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - parallel:
+          - name: Start test containers
+            run: pnpm exec turbo run setup:test --filter=@isomer/pgboss
+          - name: Configure Datadog Test Visibility
+            uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+            with:
+              languages: js
+              service: isomer-pgboss
+              api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test pgboss
         run: pnpm exec turbo test-ci:unit --filter=@isomer/pgboss --env-mode=loose
         env:
@@ -217,8 +220,6 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Install Playwright (Chromium)
-        run: pnpm --filter isomer-studio exec playwright install chromium
       - name: Load .env file
         uses: opengovsg/dotenv@eff1dce037c4c0143cc4180a810511024c2560c0 # v2
         with:
@@ -232,17 +233,20 @@ jobs:
           key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-
-      - name: Build Studio app
-        # Loose env mode required for env vars to be passed to the run
-        run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
-      - name: Start test containers
-        run: pnpm run setup:test
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
-        with:
-          languages: js
-          service: isomer-studio
-          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - parallel:
+          - name: Install Playwright (Chromium)
+            run: pnpm --filter isomer-studio exec playwright install chromium
+          - name: Build Studio app
+            # Loose env mode required for env vars to be passed to the run
+            run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
+          - name: Start test containers
+            run: pnpm run setup:test
+          - name: Configure Datadog Test Visibility
+            uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+            with:
+              languages: js
+              service: isomer-studio
+              api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Seed testing db
         run: pnpm exec turbo db:seed
       - name: Run Playwright tests
