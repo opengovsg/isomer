@@ -147,7 +147,8 @@ await withRoleSession(browser, "admin", async ({ page }) => {
 ## Page objects (PR-4)
 
 Page objects live in `fixtures/*.po.ts` and wrap locators + actions for **one** UI
-surface. Prefer them over raw Playwright calls when a locator will be reused.
+surface. **All `page.*` Playwright calls belong in `fixtures/*.po.ts` or
+`fixtures/helpers.ts` — not in `*.test.ts` files.**
 
 | PO | File | Surface |
 |----|------|---------|
@@ -225,16 +226,44 @@ rename) is asserted by wrapping the `*.db.ts` getter in `expect.poll` in the
 test: `await expect.poll(() => getResourceParentId(id)).toBe(folder.id)`. The
 getter stays a plain query; the `expect` stays in the test.
 
-### Site settings (`SitePO`)
+### `page.*` boundary
 
-- Deep-link to a section with `gotoSettingsSection(siteId, section)` — do not
-  repeat raw `page.goto` + `waitForURL` pairs in settings tests.
-- Publish via `clickPublish()`; pass `{ force: true }` when a FormBuilder inline
-  editor (navbar/footer rows) overlays the header Publish button.
-- Logo upload: `logoUploadInput()` — scopes past the separate favicon control.
-- GrowthBook-gated UI: call `enableGrowthBookFeature` in `beforeEach`, then
-  `page.goto("about:blank")` before the first app navigation so the client
-  singleton re-fetches mocked features.
+**Smell:** any `page.<method>(` in `tests/e2e/**/*.test.ts`.
+
+**Blessed:** the same call lives on the PO (or a helper) for that surface; the
+test file only constructs the PO and asserts outcomes.
+
+**Allowlist** (the only `page.*` permitted in test files):
+
+| Call | Why |
+|------|-----|
+| `async ({ page })` fixture destructuring | Playwright test signature |
+| `new SomePO(page)` | PO construction |
+| Documented infra exceptions in this file | e.g. `page.goto("about:blank")` before GrowthBook-gated navigation |
+
+Everything else — `page.goto`, `page.getByRole`, `page.getByLabel`, `page.locator`,
+`page.click`, `page.fill`, `page.waitForURL`, etc. — belongs in the relevant
+`*.po.ts` or `helpers.ts`. When a PO method does not exist yet, add it there
+first, then call it from the test.
+
+**How to detect:**
+
+```bash
+rg 'page\.\w+\(' apps/studio/tests/e2e --glob '*.test.ts'
+```
+
+Review each match against the allowlist above. A hit that is not allowlisted is a
+violation — extract it to the PO for that UI surface (or to `helpers.ts` if it
+crosses surfaces/modals).
+
+### Site settings (`SitePO`) — examples
+
+- `gotoSettingsSection(siteId, section)` — deep-link navigation
+- `clickPublish({ force: true })` — header Publish; `force` when FormBuilder
+  inline editors overlay the button (navbar/footer rows)
+- `logoUploadInput()` — scopes past the separate favicon control
+- GrowthBook-gated UI: `enableGrowthBookFeature` in `beforeEach`, then allowlisted
+  `page.goto("about:blank")` before the first app navigation
 
 ## How to detect violations
 
@@ -245,5 +274,4 @@ getter stays a plain query; the `expect` stays in the test.
 - Raw `page.getByRole("button", { name: "Create new..." })` repeated across files → use `DashboardPO`
 - Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
 - Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`
-- Raw `page.goto(\`/sites/${siteId}/settings/...\`)` in settings tests → use `SitePO.gotoSettingsSection`
-- Raw `publishButton().click({ force: true })` in navbar/footer tests → use `SitePO.clickPublish({ force: true })`
+- Any `page.<method>(` in `*.test.ts` outside the allowlist above → move to the relevant `*.po.ts` or `helpers.ts`
