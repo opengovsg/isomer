@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { createFolderViaWizard, createPageViaWizard } from "../fixtures/helpers"
 import { PageEditorPO } from "../fixtures/page-editor.po"
+import { getResourceByTitle } from "../fixtures/resource.db"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -56,12 +56,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
-    const resource = await db
-      .selectFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "=", pageTitle)
-      .select(["state", "parentId"])
-      .executeTakeFirst()
+    const resource = await getResourceByTitle({ siteId, title: pageTitle })
     expect(resource?.state).toBe(ResourceState.Published)
     expect(resource?.parentId).toBe(folderId)
   })

@@ -19,6 +19,12 @@ export class DashboardPO {
     await this.page.getByRole("button", { name: "Create new..." }).click()
   }
 
+  async expectCreateButtonHidden() {
+    await expect(
+      this.page.getByRole("button", { name: "Create new..." }),
+    ).not.toBeVisible()
+  }
+
   async openResourceMenu(title: string) {
     await this.page
       .getByRole("button", { name: `Options for ${title}` })
