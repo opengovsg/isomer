@@ -4,7 +4,6 @@
 
 | Module                | Purpose                                                        |
 | --------------------- | -------------------------------------------------------------- |
-| `fixtures/test.ts`    | Re-exports `test` and `expect` — import from here in new tests |
 | `fixtures/user.ts`    | `ensureUserOnboarded(email)` — skip welcome modal              |
 | `fixtures/reset.ts`   | Site-scoped DB reset helpers (`resetSiteAgencySettings`, etc.) |
 | `fixtures/helpers.ts` | Shared UI flows (create page/folder, invite user)              |

@@ -1,3 +1,4 @@
+import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
@@ -5,7 +6,6 @@ import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { createPageViaWizard } from "../fixtures/helpers"
 import { getSeedSiteId } from "../fixtures/seed"
-import { expect, test } from "../fixtures/test"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE_TITLE = () => `E2E Test Page ${crypto.randomUUID().slice(0, 8)}`
