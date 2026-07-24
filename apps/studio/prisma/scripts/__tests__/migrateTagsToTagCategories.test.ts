@@ -21,6 +21,8 @@ import {
 } from "../../../tests/integration/helpers/seed"
 import {
   appendTaggedMany,
+  applyGroupOptionPatches,
+  buildGroupOptionPatches,
   buildMigrationPlan,
   buildTagGroupsFromLegacyTags,
   collateLegacyTags,
@@ -169,6 +171,22 @@ describe("collateLegacyTags", () => {
         .size,
     ).toBe(0)
   })
+
+  it("dedupes categories and options case-insensitively, keeping first-seen trimmed casing", () => {
+    const result = collateLegacyTags([
+      [
+        { category: " Topic ", selected: [" Health ", "NEWS"] },
+        { category: "topic", selected: ["health", "Sports"] },
+      ],
+    ])
+
+    expect(Array.from(result.keys())).toEqual(["Topic"])
+    expect(Array.from(result.get("Topic")!).sort()).toEqual([
+      "Health",
+      "NEWS",
+      "Sports",
+    ])
+  })
 })
 
 describe("buildTagGroupsFromLegacyTags", () => {
@@ -205,8 +223,8 @@ describe("buildTagGroupsFromLegacyTags", () => {
         ],
       },
     ])
-    expect(optionIdByCategoryAndLabel.get("Topic")?.get("Health")).toBe("id-3")
-    expect(optionIdByCategoryAndLabel.get("Audience")?.get("Public")).toBe(
+    expect(optionIdByCategoryAndLabel.get("topic")?.get("health")).toBe("id-3")
+    expect(optionIdByCategoryAndLabel.get("audience")?.get("public")).toBe(
       "id-1",
     )
   })
@@ -222,13 +240,13 @@ describe("appendTaggedMany / resolveOptionIdsFromLegacyTags", () => {
   it("resolves option ids from legacy tags, scoped by category", () => {
     const optionIdByCategoryAndLabel = new Map([
       [
-        "Topic",
+        "topic",
         new Map([
-          ["Health", "t-health"],
-          ["News", "t-news"],
+          ["health", "t-health"],
+          ["news", "t-news"],
         ]),
       ],
-      ["Region", new Map([["North", "r-north"]])],
+      ["region", new Map([["north", "r-north"]])],
     ])
 
     expect(
@@ -367,6 +385,104 @@ describe("reconcileMigrationWork", () => {
       expect.any(String),
     ])
     expect(reconciled.isFullyMigrated).toBe(false)
+  })
+
+  it("adds missing options to an existing group and tags items with the new option ids", () => {
+    const existingTopicGroup: TagCategoryGroup = {
+      id: "topic-1",
+      label: "Topic",
+      display: "pills",
+      options: [{ id: "t-health", label: "Health" }],
+    }
+    const items = [
+      {
+        resourceId: "1",
+        draftTags: [{ category: "Topic", selected: ["Health", "News"] }],
+      },
+      {
+        resourceId: "2",
+        draftTags: [{ category: "Topic", selected: ["News"] }],
+      },
+    ]
+    let counter = 0
+    const generateId = () => `new-id-${counter++}`
+    const plan = buildMigrationPlan({ items, generateId })
+    if (plan.status !== "migrated") throw new Error("expected migrated plan")
+
+    const reconciled = reconcileMigrationWork({
+      plan,
+      draftTagCategories: [existingTopicGroup],
+      publishedTagCategories: undefined,
+      items,
+      generateId,
+    })
+
+    expect(reconciled.draftGroupsToAdd).toEqual([])
+    expect(reconciled.draftGroupOptionPatches).toEqual([
+      {
+        groupLabel: "Topic",
+        optionsToAdd: [{ id: "new-id-3", label: "News" }],
+      },
+    ])
+    expect(reconciled.itemUpdates).toEqual([
+      {
+        resourceId: "1",
+        state: "draft",
+        tagged: ["t-health", "new-id-3"],
+      },
+      {
+        resourceId: "2",
+        state: "draft",
+        tagged: ["new-id-3"],
+      },
+    ])
+    expect(reconciled.isFullyMigrated).toBe(false)
+  })
+})
+
+describe("buildGroupOptionPatches / applyGroupOptionPatches", () => {
+  it("appends only missing options to an existing group without creating a duplicate group", () => {
+    const existing: TagCategoryGroup[] = [
+      {
+        id: "topic-1",
+        label: "Topic",
+        options: [{ id: "t-health", label: "Health" }],
+      },
+    ]
+    const candidate: TagCategoryGroup[] = [
+      {
+        id: "topic-new",
+        label: "Topic",
+        display: "pills",
+        options: [
+          { id: "unused-health", label: "Health" },
+          { id: "unused-news", label: "News" },
+        ],
+      },
+    ]
+
+    const patches = buildGroupOptionPatches({
+      existingTagCategories: existing,
+      candidateGroups: candidate,
+      generateId: () => "t-news",
+    })
+
+    expect(patches).toEqual([
+      {
+        groupLabel: "Topic",
+        optionsToAdd: [{ id: "t-news", label: "News" }],
+      },
+    ])
+    expect(applyGroupOptionPatches(existing, patches)).toEqual([
+      {
+        id: "topic-1",
+        label: "Topic",
+        options: [
+          { id: "t-health", label: "Health" },
+          { id: "t-news", label: "News" },
+        ],
+      },
+    ])
   })
 })
 
@@ -869,20 +985,31 @@ describe("migrateCollection / migrateSite", () => {
     expect(itemContent.page.tagged).toEqual(["t-health"])
   })
 
-  it("skips items without usable tags without failing the migration", async () => {
+  it("adds missing options to an existing group and tags items", async () => {
     // Arrange
     const { collection } = await setupCollection({ siteId })
-    await setupCollectionIndexPage({ collectionId: collection.id, siteId })
-    const { blob: emptyItemBlob } = await setupCollectionPage({
+    const existingTopicGroup: TagCategoryGroup = {
+      id: "topic-1",
+      label: "Topic",
+      display: "pills",
+      options: [{ id: "t-health", label: "Health" }],
+    }
+    const { blob: indexBlob } = await setupCollectionIndexPage({
+      collectionId: collection.id,
       siteId,
-      parentId: collection.id,
-      tags: [{ category: "Topic", selected: [] }],
+      tagCategories: [existingTopicGroup],
     })
-    await setupCollectionPage({
+    const { blob: healthItemBlob } = await setupCollectionPage({
       siteId,
       parentId: collection.id,
-      permalink: "test-collection-page-2",
       tags: [{ category: "Topic", selected: ["Health"] }],
+      tagged: ["t-health"],
+    })
+    const { blob: newsItemBlob } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      permalink: "test-collection-page-news",
+      tags: [{ category: "Topic", selected: ["News"] }],
     })
 
     // Act
@@ -894,13 +1021,27 @@ describe("migrateCollection / migrateSite", () => {
     })
 
     // Assert
-    expect(result.groups).toEqual([{ label: "Topic", options: ["Health"] }])
+    expect(result.status).toBe("migrated")
+    expect(result.groups).toEqual([{ label: "Topic", options: ["News"] }])
     expect(result.itemsUpdated).toBe(1)
-    const emptyItemContent = await getBlobContent(emptyItemBlob.id)
-    expect(emptyItemContent.page.tagged).toEqual([])
+
+    const indexContentAfter = await getBlobContent(indexBlob.id)
+    expect(indexContentAfter.page.tagCategories).toHaveLength(1)
+    expect(indexContentAfter.page.tagCategories?.[0]?.options).toEqual([
+      { id: "t-health", label: "Health" },
+      { id: expect.any(String), label: "News" },
+    ])
+    const newsOptionId =
+      indexContentAfter.page.tagCategories?.[0]?.options[1]?.id
+
+    const healthItemContent = await getBlobContent(healthItemBlob.id)
+    expect(healthItemContent.page.tagged).toEqual(["t-health"])
+
+    const newsItemContent = await getBlobContent(newsItemBlob.id)
+    expect(newsItemContent.page.tagged).toEqual([newsOptionId])
   })
 
-  it("migrateSite processes every collection on the site and skips collections on other sites", async () => {
+  it("skips items without usable tags without failing the migration", async () => {
     // Arrange
     const { collection: collectionA } = await setupCollection({
       siteId,

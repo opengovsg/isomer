@@ -24,10 +24,11 @@
  * Idempotent per group label: before writing, each candidate group label (derived
  * from legacy tag categories) is checked against the Index's existing
  * `tagCategories` on each side independently. Only missing groups are appended;
- * item `tagged` UUIDs are still backfilled using existing option ids when a
- * group is already present. A collection is skipped (`"already-migrated"`) only
- * when every side is up to date and every item already carries the expected
- * option UUIDs.
+ * missing options are added to an existing group when legacy tags reference
+ * labels not yet present. Item `tagged` UUIDs are still backfilled using
+ * existing option ids when a group is already present. A collection is skipped
+ * (`"already-migrated"`) only when every side is up to date and every item
+ * already carries the expected option UUIDs.
  *
  * Draft writes use optimistic concurrency (`Blob.updatedAt` + `Resource.draftBlobId`
  * guards) so concurrent Studio saves/publishes abort rather than clobber edits.
@@ -113,34 +114,51 @@ interface CollectionItemContent {
 const sortLabels = (labels: string[]) =>
   [...labels].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
 
+/** Trim + lowercase — matches Studio tag-option duplicate rules. */
+const normalizedGroupLabel = (label: string): string =>
+  label.trim().toLowerCase()
+
 /** category label → set of option labels, derived from legacy tags. */
 export const collateLegacyTags = (
   tagLists: (LegacyTag[] | undefined)[],
 ): Map<string, Set<string>> => {
-  const mappings = new Map<string, Set<string>>()
+  // Case-insensitive dedupe; keep the first-seen trimmed casing as the label.
+  const categoryByKey = new Map<string, string>()
+  const optionsByCategoryKey = new Map<string, Map<string, string>>()
 
   for (const tags of tagLists) {
     if (!tags) continue
     for (const { category, selected } of tags) {
-      const categoryLabel = category.trim()
-      if (!categoryLabel) continue
+      const trimmedCategory = category.trim()
+      if (!trimmedCategory) continue
 
-      let options = mappings.get(categoryLabel)
-      if (!options) {
-        options = new Set()
-        mappings.set(categoryLabel, options)
+      const categoryKey = normalizedGroupLabel(trimmedCategory)
+      if (!categoryByKey.has(categoryKey)) {
+        categoryByKey.set(categoryKey, trimmedCategory)
+      }
+
+      let optionByKey = optionsByCategoryKey.get(categoryKey)
+      if (!optionByKey) {
+        optionByKey = new Map()
+        optionsByCategoryKey.set(categoryKey, optionByKey)
       }
 
       for (const value of selected) {
-        const optionLabel = value.trim()
-        if (optionLabel) options.add(optionLabel)
+        const trimmedOption = value.trim()
+        if (!trimmedOption) continue
+        const optionKey = normalizedGroupLabel(trimmedOption)
+        if (!optionByKey.has(optionKey)) {
+          optionByKey.set(optionKey, trimmedOption)
+        }
       }
     }
   }
 
-  // Drop categories that ended up with no options (e.g. empty `selected`).
-  for (const [categoryLabel, options] of mappings) {
-    if (options.size === 0) mappings.delete(categoryLabel)
+  const mappings = new Map<string, Set<string>>()
+  for (const [categoryKey, optionByKey] of optionsByCategoryKey) {
+    if (optionByKey.size === 0) continue
+    const categoryLabel = categoryByKey.get(categoryKey)!
+    mappings.set(categoryLabel, new Set(optionByKey.values()))
   }
 
   return mappings
@@ -386,11 +404,116 @@ export const buildItemUpdates = ({
     },
   )
 
+export interface TagCategoryGroupOptionPatch {
+  groupLabel: string
+  optionsToAdd: TagCategoryOption[]
+}
+
 export interface ReconciledMigrationWork {
   draftGroupsToAdd: TagCategoryGroup[]
   publishedGroupsToAdd: TagCategoryGroup[]
+  draftGroupOptionPatches: TagCategoryGroupOptionPatch[]
+  publishedGroupOptionPatches: TagCategoryGroupOptionPatch[]
   itemUpdates: ItemTagUpdate[]
   isFullyMigrated: boolean
+}
+
+export const findMatchingTagGroup = (
+  tagCategories: TagCategoryGroup[] | undefined,
+  candidateLabel: string,
+): TagCategoryGroup | undefined =>
+  (tagCategories ?? []).find(
+    (group) =>
+      normalizedGroupLabel(group.label) ===
+      normalizedGroupLabel(candidateLabel),
+  )
+
+export const computeMissingOptionsForGroup = ({
+  existingGroup,
+  candidateGroup,
+  generateId = randomUUID,
+}: {
+  existingGroup: TagCategoryGroup
+  candidateGroup: TagCategoryGroup
+  generateId?: () => string
+}): TagCategoryOption[] => {
+  const existingOptionKeys = new Set(
+    existingGroup.options.map((option) => normalizedGroupLabel(option.label)),
+  )
+
+  return candidateGroup.options
+    .filter(
+      (option) => !existingOptionKeys.has(normalizedGroupLabel(option.label)),
+    )
+    .map((option) => ({ id: generateId(), label: option.label }))
+}
+
+export const buildGroupOptionPatches = ({
+  existingTagCategories,
+  candidateGroups,
+  generateId = randomUUID,
+}: {
+  existingTagCategories?: TagCategoryGroup[]
+  candidateGroups: TagCategoryGroup[]
+  generateId?: () => string
+}): TagCategoryGroupOptionPatch[] => {
+  const patches: TagCategoryGroupOptionPatch[] = []
+
+  for (const candidate of candidateGroups) {
+    const existing = findMatchingTagGroup(
+      existingTagCategories,
+      candidate.label,
+    )
+    if (!existing) continue
+
+    const optionsToAdd = computeMissingOptionsForGroup({
+      existingGroup: existing,
+      candidateGroup: candidate,
+      generateId,
+    })
+    if (optionsToAdd.length === 0) continue
+
+    patches.push({ groupLabel: existing.label, optionsToAdd })
+  }
+
+  return patches
+}
+
+export const buildOptionIdLookupFromOptionPatches = (
+  patches: TagCategoryGroupOptionPatch[],
+): Map<string, Map<string, string>> => {
+  const lookup = new Map<string, Map<string, string>>()
+
+  for (const patch of patches) {
+    const categoryKey = normalizedGroupLabel(patch.groupLabel)
+    let byLabel = lookup.get(categoryKey)
+    if (!byLabel) {
+      byLabel = new Map()
+      lookup.set(categoryKey, byLabel)
+    }
+    for (const option of patch.optionsToAdd) {
+      byLabel.set(normalizedGroupLabel(option.label), option.id)
+    }
+  }
+
+  return lookup
+}
+
+export const applyGroupOptionPatches = (
+  tagCategories: TagCategoryGroup[] | undefined,
+  patches: TagCategoryGroupOptionPatch[],
+): TagCategoryGroup[] => {
+  if (patches.length === 0) return tagCategories ?? []
+
+  const patchByGroupKey = new Map(
+    patches.map((patch) => [normalizedGroupLabel(patch.groupLabel), patch]),
+  )
+
+  return (tagCategories ?? []).map((group) => {
+    const patch = patchByGroupKey.get(normalizedGroupLabel(group.label))
+    if (!patch) return group
+    return { ...group, options: [...group.options, ...patch.optionsToAdd] }
+  })
 }
 
 export const reconcileMigrationWork = ({
@@ -398,11 +521,13 @@ export const reconcileMigrationWork = ({
   draftTagCategories,
   publishedTagCategories,
   items,
+  generateId = randomUUID,
 }: {
   plan: Extract<MigrationPlan, { status: "migrated" }>
   draftTagCategories?: TagCategoryGroup[]
   publishedTagCategories?: TagCategoryGroup[]
   items: MigrationPlanItem[]
+  generateId?: () => string
 }): ReconciledMigrationWork => {
   const draftGroupsToAdd = filterGroupsToAdd(draftTagCategories, plan.groups)
   const publishedGroupsToAdd = filterGroupsToAdd(
@@ -410,13 +535,30 @@ export const reconcileMigrationWork = ({
     plan.groups,
   )
 
+  const draftGroupOptionPatches = buildGroupOptionPatches({
+    existingTagCategories: draftTagCategories,
+    candidateGroups: plan.groups,
+    generateId,
+  })
+  const publishedGroupOptionPatches = buildGroupOptionPatches({
+    existingTagCategories: publishedTagCategories,
+    candidateGroups: plan.groups,
+    generateId,
+  })
+
   const draftOptionIdByCategoryAndLabel = mergeOptionIdLookups(
-    buildOptionIdLookupFromTagCategories(draftTagCategories),
-    buildOptionIdLookupFromTagGroups(draftGroupsToAdd),
+    mergeOptionIdLookups(
+      buildOptionIdLookupFromTagCategories(draftTagCategories),
+      buildOptionIdLookupFromTagGroups(draftGroupsToAdd),
+    ),
+    buildOptionIdLookupFromOptionPatches(draftGroupOptionPatches),
   )
   const publishedOptionIdByCategoryAndLabel = mergeOptionIdLookups(
-    buildOptionIdLookupFromTagCategories(publishedTagCategories),
-    buildOptionIdLookupFromTagGroups(publishedGroupsToAdd),
+    mergeOptionIdLookups(
+      buildOptionIdLookupFromTagCategories(publishedTagCategories),
+      buildOptionIdLookupFromTagGroups(publishedGroupsToAdd),
+    ),
+    buildOptionIdLookupFromOptionPatches(publishedGroupOptionPatches),
   )
 
   const itemUpdates = buildItemUpdates({
@@ -429,6 +571,8 @@ export const reconcileMigrationWork = ({
   const isFullyMigrated =
     draftGroupsToAdd.length === 0 &&
     publishedGroupsToAdd.length === 0 &&
+    draftGroupOptionPatches.length === 0 &&
+    publishedGroupOptionPatches.length === 0 &&
     itemUpdates.every((update) => {
       const item = itemByResourceId.get(update.resourceId)
       if (!item) return true
@@ -440,6 +584,8 @@ export const reconcileMigrationWork = ({
   return {
     draftGroupsToAdd,
     publishedGroupsToAdd,
+    draftGroupOptionPatches,
+    publishedGroupOptionPatches,
     itemUpdates,
     isFullyMigrated,
   }
@@ -662,9 +808,52 @@ const appendTagGroups = (
   groups: TagCategoryGroup[],
 ): TagCategoryGroup[] => [...(tagCategories ?? []), ...groups]
 
-/** Trim + lowercase — matches Studio tag-option duplicate rules. */
-const normalizedGroupLabel = (label: string): string =>
-  label.trim().toLowerCase()
+const mergeTagCategoryChanges = ({
+  tagCategories,
+  groupsToAdd,
+  optionPatches,
+}: {
+  tagCategories: TagCategoryGroup[] | undefined
+  groupsToAdd: TagCategoryGroup[]
+  optionPatches: TagCategoryGroupOptionPatch[]
+}): TagCategoryGroup[] =>
+  applyGroupOptionPatches(
+    appendTagGroups(tagCategories, groupsToAdd),
+    optionPatches,
+  )
+
+const summarizeMigrationGroups = (
+  reconciled: ReconciledMigrationWork,
+): { label: string; options: string[] }[] => {
+  const byLabel = new Map<string, Set<string>>()
+
+  const addGroup = (group: TagCategoryGroup) => {
+    const options = byLabel.get(group.label) ?? new Set<string>()
+    for (const option of group.options) options.add(option.label)
+    byLabel.set(group.label, options)
+  }
+
+  for (const group of [
+    ...reconciled.draftGroupsToAdd,
+    ...reconciled.publishedGroupsToAdd,
+  ]) {
+    addGroup(group)
+  }
+
+  for (const patch of [
+    ...reconciled.draftGroupOptionPatches,
+    ...reconciled.publishedGroupOptionPatches,
+  ]) {
+    const options = byLabel.get(patch.groupLabel) ?? new Set<string>()
+    for (const option of patch.optionsToAdd) options.add(option.label)
+    byLabel.set(patch.groupLabel, options)
+  }
+
+  return sortLabels(Array.from(byLabel.keys())).map((label) => ({
+    label,
+    options: sortLabels(Array.from(byLabel.get(label) ?? [])),
+  }))
+}
 
 /** True if any existing group's label matches one of the candidate labels — the migration's skip signal. */
 export const hasMatchingTagGroup = (
@@ -724,11 +913,15 @@ export const migrateCollection = async ({
     | {
         draftGroupsToAdd: []
         publishedGroupsToAdd: []
+        draftGroupOptionPatches: []
+        publishedGroupOptionPatches: []
         itemUpdates: []
         isFullyMigrated: true
       } = {
     draftGroupsToAdd: [],
     publishedGroupsToAdd: [],
+    draftGroupOptionPatches: [],
+    publishedGroupOptionPatches: [],
     itemUpdates: [],
     isFullyMigrated: true,
   }
@@ -753,32 +946,16 @@ export const migrateCollection = async ({
   }
 
   const groups =
-    plan.status === "migrated"
-      ? [...reconciled.draftGroupsToAdd, ...reconciled.publishedGroupsToAdd]
-          .reduce<TagCategoryGroup[]>((acc, group) => {
-            if (
-              !acc.some(
-                (existing) =>
-                  normalizedGroupLabel(existing.label) ===
-                  normalizedGroupLabel(group.label),
-              )
-            ) {
-              acc.push(group)
-            }
-            return acc
-          }, [])
-          .map((g) => ({
-            label: g.label,
-            options: g.options.map((o) => o.label),
-          }))
-      : []
+    plan.status === "migrated" ? summarizeMigrationGroups(reconciled) : []
   const itemsUpdated = new Set(reconciled.itemUpdates.map((u) => u.resourceId))
     .size
   // New Versions this run will (or, in dry-run, would) create — the index's
   // published side plus one per item published-side update.
   const versionsCreated =
     plan.status === "migrated"
-      ? (indexRow.publishedContent && reconciled.publishedGroupsToAdd.length > 0
+      ? (indexRow.publishedContent &&
+        (reconciled.publishedGroupsToAdd.length > 0 ||
+          reconciled.publishedGroupOptionPatches.length > 0)
           ? 1
           : 0) +
         reconciled.itemUpdates.filter((u) => u.state === "published").length
@@ -804,11 +981,14 @@ export const migrateCollection = async ({
   }
 
   await db.transaction().execute(async (tx) => {
+    const hasDraftIndexChanges =
+      reconciled.draftGroupsToAdd.length > 0 ||
+      reconciled.draftGroupOptionPatches.length > 0
     if (
       indexRow.draftContent &&
       indexRow.draftBlobId &&
       indexRow.draftUpdatedAt &&
-      reconciled.draftGroupsToAdd.length > 0
+      hasDraftIndexChanges
     ) {
       await updateDraftBlobInPlace(tx, {
         resourceId: indexRow.resourceId,
@@ -818,19 +998,23 @@ export const migrateCollection = async ({
           ...current,
           page: {
             ...current.page,
-            tagCategories: appendTagGroups(
-              current.page.tagCategories,
-              reconciled.draftGroupsToAdd,
-            ),
+            tagCategories: mergeTagCategoryChanges({
+              tagCategories: current.page.tagCategories,
+              groupsToAdd: reconciled.draftGroupsToAdd,
+              optionPatches: reconciled.draftGroupOptionPatches,
+            }),
           },
         }),
       })
     }
 
+    const hasPublishedIndexChanges =
+      reconciled.publishedGroupsToAdd.length > 0 ||
+      reconciled.publishedGroupOptionPatches.length > 0
     if (
       indexRow.publishedContent &&
       indexRow.publishedVersionNum != null &&
-      reconciled.publishedGroupsToAdd.length > 0
+      hasPublishedIndexChanges
     ) {
       await publishNewContent(tx, {
         resourceId: indexRow.resourceId,
@@ -841,10 +1025,11 @@ export const migrateCollection = async ({
           ...indexRow.publishedContent,
           page: {
             ...indexRow.publishedContent.page,
-            tagCategories: appendTagGroups(
-              indexRow.publishedContent.page.tagCategories,
-              reconciled.publishedGroupsToAdd,
-            ),
+            tagCategories: mergeTagCategoryChanges({
+              tagCategories: indexRow.publishedContent.page.tagCategories,
+              groupsToAdd: reconciled.publishedGroupsToAdd,
+              optionPatches: reconciled.publishedGroupOptionPatches,
+            }),
           },
         },
       })
