@@ -77,23 +77,35 @@ export class DashboardPO {
   }
 
   async clickDelete() {
-    await this.page.getByRole("menuitem", { name: "Delete" }).click()
+    await this.page
+      .getByRole("menuitem", { name: "Delete", exact: true })
+      .click()
   }
 
   async clickMove() {
-    await this.page.getByRole("menuitem", { name: "Move to..." }).click()
+    const moveByVisibleText = this.page.getByRole("menuitem", {
+      name: "Move to...",
+    })
+    const moveByAriaLabel = this.page.getByRole("menuitem", {
+      name: /Move resource to another location for/,
+    })
+    await moveByAriaLabel.or(moveByVisibleText).click()
   }
 
   async expectDeleteMenuHidden() {
     await expect(
-      this.page.getByRole("menuitem", { name: "Delete" }),
+      this.page.getByRole("menuitem", { name: "Delete", exact: true }),
     ).not.toBeVisible()
   }
 
   async expectMoveMenuHidden() {
-    await expect(
-      this.page.getByRole("menuitem", { name: "Move to..." }),
-    ).not.toBeVisible()
+    const moveByVisibleText = this.page.getByRole("menuitem", {
+      name: "Move to...",
+    })
+    const moveByAriaLabel = this.page.getByRole("menuitem", {
+      name: /Move resource to another location for/,
+    })
+    await expect(moveByAriaLabel.or(moveByVisibleText)).not.toBeVisible()
   }
 
   async openFolderSettings(title: string) {
@@ -108,7 +120,7 @@ export class DashboardPO {
     { title }: { title: string },
   ) {
     await expect(
-      this.page.getByRole("heading", { name: `Delete ${title}?` }),
+      this.page.getByRole("dialog").getByText(`Delete ${title}?`),
     ).toBeVisible()
     await this.page
       .getByRole("checkbox", {
@@ -123,7 +135,7 @@ export class DashboardPO {
 
   async selectMoveDestination(title: string) {
     await expect(
-      this.page.getByRole("heading", { name: /Move ".+" to\.\.\./ }),
+      this.page.getByRole("dialog").getByText(/Move ".+" to\.\.\./),
     ).toBeVisible()
     await this.page.getByRole("button").filter({ hasText: title }).click()
   }
@@ -152,6 +164,10 @@ export class DashboardPO {
   }
 
   async clickSearchResult(title: string) {
-    await this.page.getByRole("link").filter({ hasText: title }).click()
+    await this.page
+      .getByRole("dialog")
+      .getByRole("link")
+      .filter({ hasText: title })
+      .click()
   }
 }
