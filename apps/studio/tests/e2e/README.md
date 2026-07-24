@@ -25,9 +25,41 @@
 4. Write **one permission-gate test per surface** for the most restrictive role boundary that has UI signal.
 5. Do **not** translate validation-error or audit-log scenarios — those stay in integration tests.
 
+## Role projects and `@role` tags
+
+Auth is wired through Playwright **projects**, not per-file `test.use({ storageState })`.
+
+| Project                                                        | How tests are selected            | Auth                         |
+| -------------------------------------------------------------- | --------------------------------- | ---------------------------- |
+| `unauthenticated`                                              | `testMatch: /smoke\.test\.ts/`    | none                         |
+| `singpass`                                                     | `testMatch: /singpass\.test\.ts/` | none (suite skipped)         |
+| `admin`, `editor`, `publisher`, `nomember`, `core`, `migrator` | `grep: /@role\b/`                 | `storageState` for that role |
+
+**New tests must use `roleTag(...)` on `test.describe`**, not `test.use({ storageState })`:
+
+```ts
+import { roleTag } from "../fixtures/auth"
+
+test.describe("admin", { tag: roleTag("admin") }, () => {
+  test("...", async ({ page }) => {
+    /* project supplies admin cookies */
+  })
+})
+
+test.describe("publisher", { tag: roleTag("publisher") }, () => {
+  test("...", async ({ page }) => {
+    /* ... */
+  })
+})
+```
+
+`roleTag` is typed against `ROLES` in `fixtures/auth.ts`, so an unknown role fails at compile time.
+
+Run a single role: `pnpm exec playwright test --project=admin`.
+
 ## Why storage-state, not per-test login
 
-OTP + Mockpass adds ~4s per login. Without storage state, a 10-test suite spends 40s on auth alone. Global-setup signs in each role once at startup; tests reuse cookies via `test.use({ storageState: storageStateFor("admin") })`.
+OTP + Mockpass adds ~4s per login. Without storage state, a 10-test suite spends 40s on auth alone. Global-setup signs in each role once at startup (in parallel); role projects reuse cookies via project `storageState`.
 
 ## Why we still keep integration tests
 
