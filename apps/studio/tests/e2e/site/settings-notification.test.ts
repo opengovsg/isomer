@@ -28,22 +28,18 @@ test.describe("notification settings", { tag: roleTag("admin") }, () => {
     const site = new SitePO(page)
     await site.gotoSettingsSection(siteId, "notification")
 
-    const toggleLabel = page.locator(".chakra-switch")
-    await expect(toggleLabel).toBeVisible()
-    await toggleLabel.click()
+    await expect(site.notificationBannerToggle()).toBeVisible()
+    await site.enableNotificationBanner()
 
-    const titleField = page.getByLabel("Notification title")
-    await expect(titleField).toBeVisible({ timeout: 5000 })
-    await titleField.fill("e2e test notification")
+    await expect(site.notificationTitleField()).toBeVisible({ timeout: 5000 })
+    await site.fillNotificationTitle("e2e test notification")
 
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
-    await page.reload()
-    await page.waitForURL(/\/settings\/notification$/)
-    const reloadedCheckbox = page.getByRole("checkbox")
-    await expect(reloadedCheckbox).toBeChecked()
-    await expect(page.getByLabel("Notification title")).toHaveValue(
+    await site.reloadSettingsSection("notification")
+    await expect(site.notificationCheckbox()).toBeChecked()
+    await expect(site.notificationTitleField()).toHaveValue(
       "e2e test notification",
     )
   })

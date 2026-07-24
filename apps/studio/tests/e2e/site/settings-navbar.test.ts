@@ -28,13 +28,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const site = new SitePO(page)
     await site.gotoSettingsSection(siteId, "navbar")
 
-    await page.getByText("Expandable nav item", { exact: true }).click()
-    await page.getByLabel("Menu item label").fill("E2E Nav Item")
+    await site.editNavbarItemLabel("Expandable nav item", "E2E Nav Item")
 
     await site.clickPublish({ force: true })
     await site.expectChangesPublishedToast()
 
-    await page.reload()
-    await expect(page.getByText("E2E Nav Item", { exact: true })).toBeVisible()
+    await site.reloadSettingsSection("navbar")
+    await expect(site.navbarItemText("E2E Nav Item")).toBeVisible()
   })
 })

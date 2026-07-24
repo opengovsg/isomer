@@ -176,7 +176,7 @@ test file only constructs the PO and asserts outcomes.
 |------|-----|
 | `async ({ page })` fixture destructuring | Playwright test signature |
 | `new SomePO(page)` | PO construction |
-| Documented infra exceptions in this file | e.g. `page.goto("about:blank")` before GrowthBook-gated navigation |
+| Documented infra exceptions in this file | e.g. `resetGrowthBookPage(page)` in `fixtures/network.ts` before GrowthBook-gated navigation |
 
 Everything else — `page.goto`, `page.getByRole`, `page.getByLabel`, `page.locator`,
 `page.click`, `page.fill`, `page.waitForURL`, etc. — belongs in the relevant
@@ -199,8 +199,8 @@ crosses surfaces/modals).
 - `clickPublish({ force: true })` — header Publish; `force` when FormBuilder
   inline editors overlay the button (navbar/footer rows)
 - `logoUploadInput()` — scopes past the separate favicon control
-- GrowthBook-gated UI: `enableGrowthBookFeature` in `beforeEach`, then allowlisted
-  `page.goto("about:blank")` before the first app navigation
+- GrowthBook-gated UI: `enableGrowthBookFeature` in `beforeEach`, then
+  `resetGrowthBookPage(page)` from `fixtures/network.ts` before the first app navigation
 
 ## How to detect violations
 

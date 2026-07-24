@@ -13,6 +13,7 @@ import { ensureUserOnboarded } from "../fixtures/user"
 const LOGO_FIXTURE = fileURLToPath(
   new URL("../fixtures/e2e-logo.png", import.meta.url),
 )
+const LOGO_FILENAME = path.basename(LOGO_FIXTURE)
 
 let siteId: number
 
@@ -36,15 +37,15 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const site = new SitePO(page)
     await site.gotoSettingsSection(siteId, "logo")
 
-    await site.logoUploadInput().setInputFiles(LOGO_FIXTURE)
-    await expect(page.getByText(path.basename(LOGO_FIXTURE))).toBeVisible({
+    await site.uploadLogo(LOGO_FIXTURE)
+    await expect(site.logoFilenameText(LOGO_FILENAME)).toBeVisible({
       timeout: 15_000,
     })
 
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
-    await page.reload()
-    await expect(page.getByText(path.basename(LOGO_FIXTURE))).toBeVisible()
+    await site.reloadSettingsSection("logo")
+    await expect(site.logoFilenameText(LOGO_FILENAME)).toBeVisible()
   })
 })

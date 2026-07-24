@@ -28,13 +28,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const site = new SitePO(page)
     await site.gotoSettingsSection(siteId, "integrations")
 
-    const gtmField = page.getByLabel("Google Tag Manager (GTM) ID")
-    await gtmField.fill("GTM-TESTE2E01")
+    await site.fillGtmId("GTM-TESTE2E01")
 
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
-    await page.reload()
-    await expect(gtmField).toHaveValue("GTM-TESTE2E01")
+    await site.reloadSettingsSection("integrations")
+    await expect(site.gtmIdField()).toHaveValue("GTM-TESTE2E01")
   })
 })

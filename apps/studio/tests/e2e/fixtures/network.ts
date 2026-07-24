@@ -29,6 +29,11 @@ export const mockAssetUploadRoutes = async (page: Page) => {
   })
 }
 
+/** Drop the in-memory GrowthBook singleton before the next app navigation. */
+export const resetGrowthBookPage = async (page: Page) => {
+  await page.goto("about:blank")
+}
+
 type GrowthBookFeaturesResponse = {
   features: Record<string, { defaultValue?: unknown; rules?: unknown[] }>
 }
