@@ -226,3 +226,16 @@ export class SitePO {
       .waitFor({ state: "visible" })
   }
 }
+
+// Labels come from SIDENAV_ITEMS in:
+// apps/studio/src/features/settings/SettingsSidenav/SettingsSidenav.tsx
+const SETTINGS_SECTION_LABELS: Record<SettingsSection, string> = {
+  agency: "Name and agency",
+  colours: "Colours",
+  footer: "Footer",
+  integrations: "Integrations",
+  logo: "Logos and favicon", // spec said "Logo" — actual label is "Logos and favicon"
+  navbar: "Navigation bar", // spec said "Navbar" — actual label is "Navigation bar"
+  notification: "Notification banner", // spec said "Notification" — actual label is "Notification banner"
+  redirects: "Redirects",
+}
