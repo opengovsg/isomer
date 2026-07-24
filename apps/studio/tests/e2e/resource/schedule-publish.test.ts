@@ -2,7 +2,7 @@ import { test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { PageEditorPO } from "../fixtures/page-editor.po"
+import { openSeededPageEditor } from "../fixtures/helpers"
 import { seedFolderWithPage } from "../fixtures/page-seed"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -28,9 +28,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   }) => {
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
-    const editor = new PageEditorPO(page)
-    await editor.gotoPage(siteId, seededPage.id)
-    await editor.expectLoaded()
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
 
     await editor.openScheduleModal()
     await editor.schedulePublishForToday()
