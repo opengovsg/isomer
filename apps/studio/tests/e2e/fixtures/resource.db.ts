@@ -8,30 +8,12 @@ export const getResourceByTitle = (opts: { siteId: number; title: string }) =>
     .select(["id", "state", "type", "parentId"])
     .executeTakeFirst()
 
-const getResource = (resourceId: string) =>
+export const getResource = (resourceId: string) =>
   db
     .selectFrom("Resource")
     .where("id", "=", resourceId)
     .selectAll()
     .executeTakeFirst()
-
-export const getResourceState = async (resourceId: string) =>
-  (await getResource(resourceId))?.state ?? null
-
-export const getResourceTitle = async (resourceId: string) =>
-  (await getResource(resourceId))?.title ?? null
-
-export const getResourcePermalink = async (resourceId: string) =>
-  (await getResource(resourceId))?.permalink ?? null
-
-export const getResourceScheduledAt = async (resourceId: string) =>
-  (await getResource(resourceId))?.scheduledAt ?? null
-
-export const getResourceScheduledBy = async (resourceId: string) =>
-  (await getResource(resourceId))?.scheduledBy ?? null
-
-export const getResourceDraftBlobId = async (resourceId: string) =>
-  (await getResource(resourceId))?.draftBlobId ?? null
 
 export const getResourceDraftBlobContent = async (resourceId: string) => {
   const row = await db

@@ -5,10 +5,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { openSeededPageEditor } from "../fixtures/helpers"
 import { seedFolderWithPage } from "../fixtures/page-seed"
-import {
-  getResourceScheduledAt,
-  getResourceScheduledBy,
-} from "../fixtures/resource.db"
+import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -44,10 +41,10 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.expectScheduledSuccessfully()
     await editor.expectCancelScheduleVisible()
     await expect
-      .poll(() => getResourceScheduledAt(seededPage.id))
+      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
       .not.toBeNull()
     await expect
-      .poll(() => getResourceScheduledBy(seededPage.id))
+      .poll(async () => (await getResource(seededPage.id))?.scheduledBy)
       .not.toBeNull()
 
     const dashboard = new DashboardPO(page)
@@ -57,8 +54,12 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.cancelSchedule()
     await editor.expectPublishButtonVisible()
-    await expect.poll(() => getResourceScheduledAt(seededPage.id)).toBeNull()
-    await expect.poll(() => getResourceScheduledBy(seededPage.id)).toBeNull()
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
+      .toBeNull()
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.scheduledBy)
+      .toBeNull()
   })
 })
 

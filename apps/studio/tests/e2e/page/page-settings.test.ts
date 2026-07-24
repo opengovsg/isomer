@@ -6,7 +6,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { seedRootPage } from "../fixtures/page-seed"
 import { PageSettingsPO } from "../fixtures/page-settings.po"
-import { getResourcePermalink, getResourceTitle } from "../fixtures/resource.db"
+import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
 
@@ -47,7 +47,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.fillTitle(newTitle)
     await settings.saveDraft()
 
-    await expect.poll(() => getResourceTitle(seededPage.id)).toBe(newTitle)
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.title)
+      .toBe(newTitle)
   })
 
   test("admin does not see redirect option when changing permalink on a draft page", async ({
@@ -69,7 +71,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.expectRedirectOptionHidden()
     await settings.closeWithoutSaving()
     await expect
-      .poll(() => getResourcePermalink(seededPage.id))
+      .poll(async () => (await getResource(seededPage.id))?.permalink)
       .toBe(seededPage.permalink)
   })
 
@@ -96,7 +98,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.saveAndPublish()
 
     await expect
-      .poll(() => getResourcePermalink(seededPage.id))
+      .poll(async () => (await getResource(seededPage.id))?.permalink)
       .toBe(newPermalink)
   })
 })
@@ -126,6 +128,8 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await settings.fillTitle(newTitle)
     await settings.saveDraft()
 
-    await expect.poll(() => getResourceTitle(seededPage.id)).toBe(newTitle)
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.title)
+      .toBe(newTitle)
   })
 })
