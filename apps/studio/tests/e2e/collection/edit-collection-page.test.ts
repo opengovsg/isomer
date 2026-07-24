@@ -28,16 +28,16 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     page,
   }) => {
     const editedSummary = `Edited summary ${crypto.randomUUID().slice(0, 8)}`
-    const { collectionPage } = await seedCollectionWithPage({ siteId })
 
     // Arrange
+    const { collectionPage } = await seedCollectionWithPage({ siteId })
     const editor = await openSeededPageEditor(page, siteId, collectionPage.id)
 
     // Act
     await editor.editArticleHeaderSummary(editedSummary)
 
     // Assert
-    await page.reload()
+    await editor.reload()
     await editor.expectLoaded()
     await editor.expectArticleHeaderSummary(editedSummary)
   })
