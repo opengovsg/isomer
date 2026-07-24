@@ -74,7 +74,7 @@ catalog:
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
   jsdom: ^29.1.1
-  isomorphic-dompurify: ^3.18.0
+  isomorphic-dompurify: ^3.19.0
   mockdate: ^3.0.5
   msw: ^2.15.0
   msw-storybook-addon: ^2.0.7
