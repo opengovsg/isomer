@@ -37,18 +37,17 @@ validation-edge-case scenarios — those stay in integration tests.
 
 Every test file gets a dedicated site via `provisionE2ESite` in `beforeAll`,
 torn down via `teardownE2ESite` in `afterAll` — including read-only tests.
-There is no shared seed-site accessor (`getSeedSiteId()` was removed); the only
-tests that still reference seed site ID `1` directly are ones asserting on the
-pre-seeded fixture data itself (e.g. `site/list.test.ts` checking the
-dashboard shows the pre-seeded "Sample Site"), not using it as a general-purpose
-test site.
+Seed data (e.g. "Sample Site") is for app bootstrap and auth only — never assert
+on seed site names or hardcode site ID `1`.
 
 ```ts
 let siteId: number
+let siteName: string
 
 test.beforeAll(async () => {
-  const site = await provisionE2ESite({ admin: true })
+  const site = await provisionE2ESite({ roles: [RoleType.Editor] })
   siteId = site.siteId
+  siteName = site.siteName
 })
 
 test.afterAll(async () => {
@@ -56,11 +55,12 @@ test.afterAll(async () => {
 })
 ```
 
-- Grant roles with `provisionE2ESite({ admin, editor, publisher })` — maps to `TEST_EMAILS`
+- Grant roles with `provisionE2ESite({ roles: [...] })` — maps to `TEST_EMAILS`
+- Assert on the returned `siteName` / `siteId`, not Prisma seed fixtures
 - Use `resetSite*` helpers from `fixtures/reset.ts` in `beforeEach` for idempotent state
 - `provisionE2ESite` creates a root page + search page so the site dashboard loads
 
 ## How to detect violations
 
-- Test using `getSeedSiteId()` or hardcoding site ID `1` → should use `provisionE2ESite`, unless it's specifically asserting on pre-seeded fixture data
+- Asserting "Sample Site", hardcoding site ID `1`, or calling `getSeedSiteId()` → use `provisionE2ESite` and assert on the returned site
 - Duplicated wizard/invite flows in test files → move to `helpers.ts` or a PO
