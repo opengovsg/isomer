@@ -28,7 +28,7 @@ describe("getTagsFromTagged", () => {
     ])
   })
 
-  it("excludes a category entirely when none of its options are tagged", () => {
+  it('assigns "Others" when the Category group has no tagged option', () => {
     // Arrange
     const tagged: NonNullable<ArticlePagePageProps["tagged"]> = ["topic-opt-1"]
     const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
@@ -51,18 +51,19 @@ describe("getTagsFromTagged", () => {
     // Assert
     expect(result).toEqual([
       { id: "topic-1", category: "Topic", selected: ["Health"] },
+      { id: "cat-1", category: "Category", selected: ["Others"] },
     ])
   })
 
-  it("returns an empty array when tagged is empty", () => {
+  it('assigns "Others" for Category when tagged is empty', () => {
     // Arrange
     const tagged: NonNullable<ArticlePagePageProps["tagged"]> = []
     const tagCategories: NonNullable<CollectionPagePageProps["tagCategories"]> =
       [
         {
-          label: "Topic",
-          id: "topic-1",
-          options: [{ label: "Health", id: "topic-opt-1" }],
+          label: "Category",
+          id: "cat-1",
+          options: [{ label: "Guides", id: "cat-opt-1" }],
         },
       ]
 
@@ -70,7 +71,9 @@ describe("getTagsFromTagged", () => {
     const result = getTagsFromTagged(tagged, tagCategories)
 
     // Assert
-    expect(result).toEqual([])
+    expect(result).toEqual([
+      { id: "cat-1", category: "Category", selected: ["Others"] },
+    ])
   })
 
   it("returns an empty array when tagCategories is empty", () => {

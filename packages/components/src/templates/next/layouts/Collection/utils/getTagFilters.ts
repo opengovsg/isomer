@@ -3,6 +3,7 @@ import type { CollectionPageSchemaType } from "~/types"
 import { resolveTagCategoryDisplay } from "~/types/constants"
 
 import type { Filter, FilterItem } from "../../../types/Filter"
+import { tagGroupMatchesFilterCategory } from "./buildTagGroupsFromTagged"
 
 export const getTagFilters = (
   items: ProcessedCollectionCardProps[],
@@ -10,21 +11,22 @@ export const getTagFilters = (
 ): Filter[] => {
   // NOTE: Each tag is a mapping of a category to its
   // associated set of values as well as the selected value.
-  // Hence, we store a map here of the category (eg: Body parts)
+  // Hence, we store a map here of the category id (stable uuid)
   // to the number of occurences of each value (eg: { Brain: 3, Leg: 2 })
   //
   // NOTE: Tag category `display` (pills vs plaintext) is not attached to
   // Filter objects. The sidebar always uses checkboxes; `display` is consumed
   // by card/article tag rendering (PillTags / PlaintextTags) from tagCategories.
-  const tagCategoryLabels = new Map<string, Map<string, number>>()
+  const tagCategoryCounts = new Map<string, Map<string, number>>()
 
   items.forEach(({ tags }) => {
     if (tags) {
-      tags.forEach(({ selected: selectedLabels, category }) => {
-        if (!tagCategoryLabels.has(category)) {
-          tagCategoryLabels.set(category, new Map())
+      tags.forEach(({ id, selected: selectedLabels, category }) => {
+        const categoryKey = id ?? category
+        if (!tagCategoryCounts.has(categoryKey)) {
+          tagCategoryCounts.set(categoryKey, new Map())
         }
-        const categoryMap = tagCategoryLabels.get(category) ?? new Map()
+        const categoryMap = tagCategoryCounts.get(categoryKey) ?? new Map()
         selectedLabels.forEach((label) => {
           if (!categoryMap.has(label)) {
             categoryMap.set(label, 0)
@@ -35,8 +37,8 @@ export const getTagFilters = (
     }
   })
 
-  const filters = Array.from(tagCategoryLabels.entries()).reduce(
-    (acc: Filter[], [category, values]) => {
+  const filters = Array.from(tagCategoryCounts.entries()).reduce(
+    (acc: Filter[], [categoryKey, values]) => {
       const items: FilterItem[] = Array.from(values.entries()).map(
         ([label, count]) => ({
           label,
@@ -46,15 +48,16 @@ export const getTagFilters = (
       )
 
       const matchedCategory = tagCategories?.find(
-        (tagCategory) => tagCategory.label === category,
+        (tagCategory) =>
+          tagCategory.id === categoryKey || tagCategory.label === categoryKey,
       )
 
       const filters: Filter[] = [
         ...acc,
         {
           items,
-          id: category,
-          label: category,
+          id: matchedCategory?.id ?? categoryKey,
+          label: matchedCategory?.label ?? categoryKey,
           display: resolveTagCategoryDisplay(matchedCategory?.display),
         },
       ]
@@ -68,11 +71,10 @@ export const getTagFilters = (
     return filters
   }
 
-  const tagCategoryIds = tagCategories.map(({ label }) => label)
+  const tagCategoryIds = tagCategories.map(({ id }) => id)
 
   const sortedFilters = tagCategoryIds
     ? filters.sort((a, b) => {
-        // NOTE: the label of the filter is the id
         const indexA = tagCategoryIds.indexOf(a.id)
         const indexB = tagCategoryIds.indexOf(b.id)
 
@@ -88,7 +90,9 @@ export const getTagFilters = (
     return {
       ...filter,
       items: filter.items.sort((a, b) => {
-        const category = tagCategories.find((cat) => cat.label === filter.id)
+        const category = tagCategories.find(
+          (cat) => cat.id === filter.id || cat.label === filter.id,
+        )
         const tagOptionIds =
           category?.options?.map((option) => option.label) ?? []
         return tagOptionIds.indexOf(a.id) - tagOptionIds.indexOf(b.id)

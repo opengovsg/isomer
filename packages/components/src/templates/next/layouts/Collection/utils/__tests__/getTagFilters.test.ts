@@ -84,13 +84,13 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Condition",
+        id: "c-1",
         label: "Condition",
         display: "pills",
         items: [{ id: "Acute", label: "Acute", count: 1 }],
       },
       {
-        id: "Body parts",
+        id: "b-1",
         label: "Body parts",
         display: "pills",
         items: [{ id: "Brain", label: "Brain", count: 1 }],
@@ -145,7 +145,7 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Body parts",
+        id: "b-1",
         label: "Body parts",
         display: "pills",
         items: [
@@ -155,7 +155,7 @@ describe("getTagFilters", () => {
         ],
       },
       {
-        id: "Condition",
+        id: "c-1",
         label: "Condition",
         display: "pills",
         items: [
@@ -275,13 +275,13 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Condition",
+        id: "c-1",
         label: "Condition",
         display: "pills",
         items: [{ id: "Acute", label: "Acute", count: 1 }],
       },
       {
-        id: "Body parts",
+        id: "b-1",
         label: "Body parts",
         display: "pills",
         items: [
@@ -337,13 +337,13 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Condition",
+        id: "c-1",
         label: "Condition",
         display: "pills",
         items: [{ id: "Acute", label: "Acute", count: 1 }], // Unlisted item appears first
       },
       {
-        id: "Body parts",
+        id: "b-1",
         label: "Body parts",
         display: "pills",
         items: [
@@ -496,7 +496,7 @@ describe("getTagFilters", () => {
     // Assert
     expect(result).toEqual([
       {
-        id: "Body parts",
+        id: "b-1",
         label: "Body parts",
         display: "pills",
         items: [
@@ -515,6 +515,53 @@ describe("getTagFilters", () => {
         label: "Color",
         display: "pills",
         items: [{ id: "Red", label: "Red", count: 1 }],
+      },
+    ])
+  })
+
+  it("keeps tag categories with duplicate labels as separate filters keyed by id", () => {
+    // Arrange
+    const items: ProcessedCollectionCardProps[] = [
+      {
+        title: "Item 1",
+        tags: [
+          { id: "region-1", selected: ["North"], category: "Region" },
+          { id: "region-2", selected: ["South"], category: "Region" },
+        ],
+      } as ProcessedCollectionCardProps,
+    ]
+
+    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+      {
+        label: "Region",
+        id: "region-1",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        options: [{ label: "North", id: "r-north" }],
+      },
+      {
+        label: "Region",
+        id: "region-2",
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+        options: [{ label: "South", id: "r-south" }],
+      },
+    ]
+
+    // Act
+    const result = getTagFilters(items, tagCategories)
+
+    // Assert
+    expect(result).toEqual([
+      {
+        id: "region-1",
+        label: "Region",
+        display: "pills",
+        items: [{ id: "North", label: "North", count: 1 }],
+      },
+      {
+        id: "region-2",
+        label: "Region",
+        display: "pills",
+        items: [{ id: "South", label: "South", count: 1 }],
       },
     ])
   })

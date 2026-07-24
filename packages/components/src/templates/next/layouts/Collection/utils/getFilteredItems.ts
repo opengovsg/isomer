@@ -1,6 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 
 import type { AppliedFilter } from "../../../types/Filter"
+import { tagGroupMatchesFilterCategory } from "./buildTagGroupsFromTagged"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
 
 export const getFilteredItems = (
@@ -41,19 +42,28 @@ export const getFilteredItems = (
 
     // Step 3: Compute set intersection between remaining filters and the set of items.
     // Take note that we use OR between items within the same filter and AND between filters.
+    // When `item.tags` is missing, optional chaining yields `undefined` — treat that as
+    // passing the filter (items without tags are not constrained by unrelated dimensions).
     return remainingFilters
-      .map(({ items: activeFilters, id }) => {
-        return item.tags?.some(({ category, selected: itemLabels }) => {
-          return (
-            category === id &&
-            activeFilters
-              .map(({ id }) => id)
-              .reduce((prev, cur) => {
-                return prev || itemLabels.includes(cur)
-              }, false) //includes(itemLabels)
-          )
-        })
+      .map(({ items: activeFilters, id: filterCategoryId }) => {
+        const matches = item.tags?.some(
+          ({ id, category, selected: itemLabels }) => {
+            return (
+              tagGroupMatchesFilterCategory(
+                { id, category },
+                filterCategoryId,
+              ) &&
+              activeFilters
+                .map(({ id }) => id)
+                .reduce((prev, cur) => {
+                  return prev || itemLabels.includes(cur)
+                }, false)
+            )
+          },
+        )
+
+        return matches !== false
       })
-      .every((x) => x)
+      .every(Boolean)
   })
 }
