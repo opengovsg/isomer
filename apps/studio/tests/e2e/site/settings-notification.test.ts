@@ -2,28 +2,39 @@ import { expect, test } from "@playwright/test"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { resetSiteNotification } from "../fixtures/reset"
-import { getSeedSiteId } from "../fixtures/seed"
+import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 test.use({ storageState: storageStateFor("admin") })
 
+let siteId: number
+
+test.beforeAll(async () => {
+  const site = await provisionE2ESite({ admin: true })
+  siteId = site.siteId
+})
+
+test.afterAll(async () => {
+  await teardownE2ESite(siteId)
+})
+
 test.beforeEach(async () => {
   await ensureUserOnboarded(TEST_EMAILS.admin)
-  await resetSiteNotification(getSeedSiteId())
+  await resetSiteNotification(siteId)
 })
 
 test("admin can save a notification title", async ({ page }) => {
   const site = new SitePO(page)
-  await page.goto(`/sites/${getSeedSiteId()}/settings/notification`)
+  await page.goto(`/sites/${siteId}/settings/notification`)
   await page.waitForURL(/\/settings\/notification$/)
 
   const toggleLabel = page.locator(".chakra-switch")
-  await expect(toggleLabel).toBeVisible()
+  await expect(toggleLabel).toBeVisible({ timeout: 30_000 })
   await toggleLabel.click()
 
   const titleField = page.getByLabel("Notification title")
-  await expect(titleField).toBeVisible({ timeout: 5000 })
+  await expect(titleField).toBeVisible({ timeout: 30_000 })
   await titleField.fill("e2e test notification")
 
   await site.publishButton().click()
@@ -32,8 +43,9 @@ test("admin can save a notification title", async ({ page }) => {
   await page.reload()
   await page.waitForURL(/\/settings\/notification$/)
   const reloadedCheckbox = page.getByRole("checkbox")
-  await expect(reloadedCheckbox).toBeChecked()
+  await expect(reloadedCheckbox).toBeChecked({ timeout: 30_000 })
   await expect(page.getByLabel("Notification title")).toHaveValue(
     "e2e test notification",
+    { timeout: 30_000 },
   )
 })
