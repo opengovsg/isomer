@@ -10,3 +10,12 @@ export const ensureUserOnboarded = (email: string) =>
     .set({ name: E2E_USER_NAME, phone: E2E_USER_PHONE })
     .where("email", "=", email)
     .execute()
+
+export const getE2EUserId = async (email: string) => {
+  const user = await db
+    .selectFrom("User")
+    .where("email", "=", email)
+    .select("id")
+    .executeTakeFirstOrThrow()
+  return user.id
+}
