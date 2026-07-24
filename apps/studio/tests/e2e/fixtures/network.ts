@@ -29,17 +29,31 @@ export const mockAssetUploadRoutes = async (page: Page) => {
   })
 }
 
+type GrowthBookFeaturesResponse = {
+  features: Record<string, { defaultValue?: unknown; rules?: unknown[] }>
+}
+
 /** Patch a GrowthBook feature into the CDN features response before navigation. */
 export const enableGrowthBookFeature = async (
   page: Page,
   featureKey: string,
   value: unknown,
 ) => {
-  await page.route("**/api/features/**", async (route) => {
-    const response = await route.fetch()
-    const body = (await response.json()) as {
-      features: Record<string, { defaultValue?: unknown; rules?: unknown[] }>
+  await page.route("https://cdn.growthbook.io/**", async (route) => {
+    const url = route.request().url()
+    if (!url.includes("/api/features/")) {
+      await route.continue()
+      return
     }
+
+    let body: GrowthBookFeaturesResponse
+    try {
+      const response = await route.fetch()
+      body = (await response.json()) as GrowthBookFeaturesResponse
+    } catch {
+      body = { features: {} }
+    }
+
     body.features[featureKey] = { defaultValue: value }
     await route.fulfill({
       status: 200,
