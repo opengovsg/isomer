@@ -2,6 +2,9 @@ import crypto from "crypto"
 import { setupFolder, setupPageResource } from "tests/integration/helpers/seed"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
+/** Prose preview label from the default integration seed blob. */
+export const SEEDED_PROSE_BLOCK_LABEL = "Test block"
+
 export const seedRootPage = async ({
   siteId,
   userId,
