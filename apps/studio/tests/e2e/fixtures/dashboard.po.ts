@@ -25,6 +25,43 @@ export class DashboardPO {
     ).not.toBeVisible()
   }
 
+  async expectCreateMenuHidden() {
+    await expect(
+      this.page.getByRole("button", { name: "Create new..." }),
+    ).not.toBeVisible()
+  }
+
+  async openCreateCollectionModal() {
+    await this.openCreateMenu()
+    await this.clickCreateCollection()
+    await expect(this.page.getByText("Create a new collection")).toBeVisible()
+  }
+
+  async fillCreateCollectionModalTitle(title: string) {
+    await this.page.getByLabel("Collection name").fill(title)
+  }
+
+  async cancelCreateCollectionModal() {
+    await this.page.getByRole("button", { name: "Close" }).click()
+    await expect(
+      this.page.getByText("Create a new collection"),
+    ).not.toBeVisible()
+  }
+
+  async openCollectionItemWizard() {
+    await this.clickAddCollectionItem()
+    await expect(
+      this.page.getByText("What kind of collection item are you creating?"),
+    ).toBeVisible()
+  }
+
+  async cancelCollectionItemWizard() {
+    await this.page.getByRole("button", { name: "Cancel" }).click()
+    await expect(
+      this.page.getByText("What kind of collection item are you creating?"),
+    ).not.toBeVisible()
+  }
+
   async openResourceMenu(title: string) {
     await this.page
       .getByRole("button", { name: `Options for ${title}`, exact: true })

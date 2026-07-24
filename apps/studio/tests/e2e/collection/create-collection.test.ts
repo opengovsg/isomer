@@ -4,6 +4,7 @@ import { db } from "~/server/modules/database"
 import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { DashboardPO } from "../fixtures/dashboard.po"
 import { createCollectionViaWizard } from "../fixtures/helpers"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -59,5 +60,29 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       .executeTakeFirst()
     expect(created).toBeTruthy()
     expect(created?.type).toBe("Collection")
+  })
+
+  test("admin can close the create collection modal without creating a collection", async ({
+    page,
+  }) => {
+    const title = UNIQUE_TITLE()
+    const dashboard = new DashboardPO(page)
+
+    // Arrange
+    await dashboard.gotoSite(siteId)
+
+    // Act
+    await dashboard.openCreateCollectionModal()
+    await dashboard.fillCreateCollectionModalTitle(title)
+    await dashboard.cancelCreateCollectionModal()
+
+    // Assert
+    const created = await db
+      .selectFrom("Resource")
+      .where("siteId", "=", siteId)
+      .where("title", "=", title)
+      .select("id")
+      .executeTakeFirst()
+    expect(created).toBeUndefined()
   })
 })

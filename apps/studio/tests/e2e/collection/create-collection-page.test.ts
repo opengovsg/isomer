@@ -4,6 +4,7 @@ import { db } from "~/server/modules/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { DashboardPO } from "../fixtures/dashboard.po"
 import { createCollectionPageViaWizard } from "../fixtures/helpers"
 import { PageEditorPO } from "../fixtures/page-editor.po"
 import { seedCollection } from "../fixtures/page-seed"
@@ -65,6 +66,36 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     expect(created?.type).toBe("CollectionPage")
     expect(created?.state).toBe("Draft")
     expect(created?.parentId).toBe(collectionId)
+  })
+
+  test("admin can cancel the add collection item wizard without creating a page", async ({
+    page,
+  }) => {
+    const dashboard = new DashboardPO(page)
+    const childrenBefore = await db
+      .selectFrom("Resource")
+      .where("siteId", "=", siteId)
+      .where("parentId", "=", collectionId)
+      .where("type", "=", "CollectionPage")
+      .select("id")
+      .execute()
+
+    // Arrange
+    await dashboard.gotoCollection(siteId, collectionId)
+
+    // Act
+    await dashboard.openCollectionItemWizard()
+    await dashboard.cancelCollectionItemWizard()
+
+    // Assert
+    const childrenAfter = await db
+      .selectFrom("Resource")
+      .where("siteId", "=", siteId)
+      .where("parentId", "=", collectionId)
+      .where("type", "=", "CollectionPage")
+      .select("id")
+      .execute()
+    expect(childrenAfter).toHaveLength(childrenBefore.length)
   })
 })
 
