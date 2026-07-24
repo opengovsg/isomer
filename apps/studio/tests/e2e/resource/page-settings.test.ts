@@ -1,12 +1,15 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
-import { expectPagePermalink, seedRootPage } from "../fixtures/page-seed"
+import {
+  expectPagePermalink,
+  expectPageTitle,
+  seedRootPage,
+} from "../fixtures/page-seed"
 import { PageSettingsPO } from "../fixtures/page-settings.po"
-import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
 
@@ -46,9 +49,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.saveDraft()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.title)
-      .toBe(newTitle)
+    await expectPageTitle(seededPage.id).toBe(newTitle)
   })
 
   test("admin does not see redirect option when changing permalink on a draft page", async ({
@@ -101,9 +102,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.saveAndPublish()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.permalink)
-      .toBe(newPermalink)
+    await expectPagePermalink(seededPage.id).toBe(newPermalink)
   })
 })
 
@@ -135,9 +134,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await settings.saveDraft()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.title)
-      .toBe(newTitle)
+    await expectPageTitle(seededPage.id).toBe(newTitle)
   })
 
   test("editor does not see Publish immediately on a published page", async ({
