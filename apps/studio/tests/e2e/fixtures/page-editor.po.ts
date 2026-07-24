@@ -62,7 +62,9 @@ export class PageEditorPO {
   }
 
   async clickPublish() {
-    await this.page.getByRole("button", { name: "Publish" }).click()
+    await this.page
+      .getByRole("button", { name: "Publish", exact: true })
+      .click()
     await this.page.getByRole("button", { name: "Publish now" }).click()
   }
 
@@ -75,25 +77,25 @@ export class PageEditorPO {
 
   async expectPublishButtonVisible() {
     await expect(
-      this.page.getByRole("button", { name: "Publish" }),
+      this.page.getByRole("button", { name: "Publish", exact: true }),
     ).toBeVisible()
   }
 
   async expectPublishButtonHidden() {
     await expect(
-      this.page.getByRole("button", { name: "Publish" }),
+      this.page.getByRole("button", { name: "Publish", exact: true }),
     ).not.toBeVisible()
   }
 
   async expectPublishButtonDisabled() {
     await expect(
-      this.page.getByRole("button", { name: "Publish" }),
+      this.page.getByRole("button", { name: "Publish", exact: true }),
     ).toBeDisabled()
   }
 
   async expectPublishButtonEnabled() {
     await expect(
-      this.page.getByRole("button", { name: "Publish" }),
+      this.page.getByRole("button", { name: "Publish", exact: true }),
     ).toBeEnabled()
   }
 
@@ -109,7 +111,10 @@ export class PageEditorPO {
   }
 
   async openScheduleModal() {
-    const publish = this.page.getByRole("button", { name: "Publish" })
+    const publish = this.page.getByRole("button", {
+      name: "Publish",
+      exact: true,
+    })
     await expect(publish).toBeVisible()
     await expect(publish).toBeEnabled()
     await this.page.getByRole("button", { name: "More options" }).click()

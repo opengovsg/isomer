@@ -1,7 +1,5 @@
-import { expect } from "@playwright/test"
 import crypto from "crypto"
 import { setupFolder, setupPageResource } from "tests/integration/helpers/seed"
-import { db } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 /** Prose preview label from the default integration seed blob. */
@@ -77,75 +75,3 @@ export const seedFolderWithPage = async ({
   })
   return { folder, page }
 }
-
-export const expectPageScheduledAt = (pageId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", pageId)
-      .select("scheduledAt")
-      .executeTakeFirst()
-    return row?.scheduledAt ?? null
-  })
-
-export const expectPageState = (pageId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", pageId)
-      .select("state")
-      .executeTakeFirst()
-    return row?.state ?? null
-  })
-
-export const expectPageTitle = (pageId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", pageId)
-      .select("title")
-      .executeTakeFirst()
-    return row?.title ?? null
-  })
-
-export const expectPageScheduledBy = (pageId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", pageId)
-      .select("scheduledBy")
-      .executeTakeFirst()
-    return row?.scheduledBy ?? null
-  })
-
-export const expectPagePermalink = (pageId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", pageId)
-      .select("permalink")
-      .executeTakeFirst()
-    return row?.permalink ?? null
-  })
-
-export const expectDraftBlobContainsText = (pageId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .innerJoin("Blob", "Blob.id", "Resource.draftBlobId")
-      .where("Resource.id", "=", pageId)
-      .select("Blob.content")
-      .executeTakeFirst()
-    if (!row?.content) return ""
-    return JSON.stringify(row.content)
-  })
-
-export const expectPageDraftBlobId = (pageId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", pageId)
-      .select("draftBlobId")
-      .executeTakeFirst()
-    return row?.draftBlobId ?? null
-  })

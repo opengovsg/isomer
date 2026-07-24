@@ -1,15 +1,17 @@
-import { test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { openSeededPageEditor } from "../fixtures/helpers"
 import {
-  expectPageDraftBlobId,
-  expectPageState,
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
 } from "../fixtures/page-seed"
+import {
+  getResourceDraftBlobId,
+  getResourceState,
+} from "../fixtures/resource.db"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
 
@@ -38,7 +40,9 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
-    await expectPageState(seededPage.id).toBe(ResourceState.Published)
+    await expect
+      .poll(() => getResourceState(seededPage.id))
+      .toBe(ResourceState.Published)
   })
 
   test("publisher cannot publish a published page with no pending edits", async ({
@@ -53,13 +57,13 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
 
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.expectPublishButtonDisabled()
-    await expectPageDraftBlobId(seededPage.id).toBeNull()
+    await expect.poll(() => getResourceDraftBlobId(seededPage.id)).toBeNull()
   })
 
   test("publisher can edit a published page and republish changes", async ({
     page,
   }) => {
-    const editedText = `Republish ${crypto.randomUUID().slice(0, 8)}`
+    const editedText = `Edited ${crypto.randomUUID().slice(0, 8)}`
     const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
     const { page: seededPage } = await seedFolderWithPage({
       siteId,
@@ -69,14 +73,18 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
 
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
-    await expectPageDraftBlobId(seededPage.id).not.toBeNull()
+    await expect
+      .poll(() => getResourceDraftBlobId(seededPage.id))
+      .not.toBeNull()
     await editor.expectPublishButtonEnabled()
 
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
-    await expectPageState(seededPage.id).toBe(ResourceState.Published)
-    await expectPageDraftBlobId(seededPage.id).toBeNull()
+    await expect
+      .poll(() => getResourceState(seededPage.id))
+      .toBe(ResourceState.Published)
+    await expect.poll(() => getResourceDraftBlobId(seededPage.id)).toBeNull()
     await editor.expectBlockPreview(editedText)
   })
 })
