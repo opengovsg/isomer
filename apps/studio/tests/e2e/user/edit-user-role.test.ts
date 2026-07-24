@@ -41,16 +41,58 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       role: "Editor",
       siteId,
     })
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
 
     const users = new UsersPO(page)
     await users.goto(siteId)
-    await users.expectUserRole(inviteeEmail, "Editor")
-
     await users.openEditUser(inviteeEmail)
     await users.selectRoleInEditModal("Publisher")
     await users.saveUserChanges()
 
     await users.expectUserRole(inviteeEmail, "Publisher")
     await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Publisher")
+  })
+
+  test("admin can demote a Publisher to Editor via EditUserModal", async ({
+    page,
+  }) => {
+    const inviteeEmail = uniqueInviteeEmail()
+    await inviteCollaborator(page, {
+      email: inviteeEmail,
+      role: "Publisher",
+      siteId,
+    })
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Publisher")
+
+    const users = new UsersPO(page)
+    await users.goto(siteId)
+    await users.openEditUser(inviteeEmail)
+    await users.selectRoleInEditModal("Editor")
+    await users.saveUserChanges()
+
+    await users.expectUserRole(inviteeEmail, "Editor")
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
+  })
+
+  test("admin can promote a collaborator to Admin via EditUserModal", async ({
+    page,
+  }) => {
+    const inviteeEmail = uniqueInviteeEmail()
+    await inviteCollaborator(page, {
+      email: inviteeEmail,
+      role: "Editor",
+      siteId,
+    })
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
+
+    const users = new UsersPO(page)
+    await users.goto(siteId)
+    await users.openEditUser(inviteeEmail)
+    await users.selectRoleInEditModal("Admin")
+    await users.expectAddAdminWarningVisible()
+    await users.saveUserChanges()
+
+    await users.expectUserRole(inviteeEmail, "Admin")
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Admin")
   })
 })

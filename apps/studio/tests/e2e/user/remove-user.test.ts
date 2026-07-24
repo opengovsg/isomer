@@ -7,6 +7,8 @@ import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import {
   deleteUsersByEmailPattern,
   ensureUserOnboarded,
+  expectUserAbsentOnSite,
+  expectUserRoleOnSite,
   uniqueInviteeEmail,
 } from "../fixtures/user"
 import { UsersPO } from "../fixtures/users.po"
@@ -40,6 +42,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       role: "Editor",
       siteId,
     })
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
 
     const users = new UsersPO(page)
     await users.goto(siteId)
@@ -49,5 +52,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await users.confirmRemoveUser()
     await users.expectRemovedFromSiteToast(inviteeEmail)
     await users.expectUserNotInTable(inviteeEmail)
+    await expectUserAbsentOnSite(siteId, inviteeEmail).toBeNull()
   })
 })

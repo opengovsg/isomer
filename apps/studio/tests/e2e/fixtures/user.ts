@@ -36,6 +36,23 @@ export const expectUserRoleOnSite = (siteId: number, email: string) =>
     { timeout: 10_000 },
   )
 
+/** Active sitewide permission absent (e.g. after remove-user). */
+export const expectUserAbsentOnSite = (siteId: number, email: string) =>
+  expect.poll(
+    async () => {
+      const row = await db
+        .selectFrom("User as u")
+        .innerJoin("ResourcePermission as rp", "rp.userId", "u.id")
+        .where("u.email", "=", email)
+        .where("rp.siteId", "=", siteId)
+        .where("rp.deletedAt", "is", null)
+        .select(["rp.id"])
+        .executeTakeFirst()
+      return row ?? null
+    },
+    { timeout: 10_000 },
+  )
+
 /** Skip the welcome modal by ensuring name + phone are set on the user. */
 export const ensureUserOnboarded = (email: string) =>
   db
