@@ -132,10 +132,12 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     page,
   }) => {
     const pageTitle = `Editor Published Page ${crypto.randomUUID().slice(0, 8)}`
+    const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
     await seedRootPage({
       siteId,
       pageTitle,
       state: ResourceState.Published,
+      userId: publisherId,
     })
 
     const dashboard = new DashboardPO(page)
