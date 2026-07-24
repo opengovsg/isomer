@@ -3,8 +3,11 @@ import crypto from "crypto"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { PageEditorPO } from "../fixtures/page-editor.po"
-import { seedFolderWithPage } from "../fixtures/page-seed"
+import { openSeededPageEditor } from "../fixtures/helpers"
+import {
+  SEEDED_PROSE_BLOCK_LABEL,
+  seedFolderWithPage,
+} from "../fixtures/page-seed"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -30,10 +33,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const editedText = `Edited ${crypto.randomUUID().slice(0, 8)}`
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
-    const editor = new PageEditorPO(page)
-    await editor.gotoPage(siteId, seededPage.id)
-    await editor.expectLoaded()
-    await editor.editProseBlock("Test block", editedText)
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+    await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
 
     await page.reload()
     await editor.expectLoaded()

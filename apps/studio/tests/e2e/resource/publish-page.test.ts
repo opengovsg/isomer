@@ -3,7 +3,7 @@ import { db } from "~/server/modules/database"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { PageEditorPO } from "../fixtures/page-editor.po"
+import { openSeededPageEditor } from "../fixtures/helpers"
 import { seedFolderWithPage } from "../fixtures/page-seed"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -29,9 +29,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher can publish a draft page", async ({ page }) => {
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
-    const editor = new PageEditorPO(page)
-    await editor.gotoPage(siteId, seededPage.id)
-    await editor.expectLoaded()
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
@@ -54,9 +52,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   }) => {
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
-    const editor = new PageEditorPO(page)
-    await editor.gotoPage(siteId, seededPage.id)
-    await editor.expectLoaded()
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.expectPublishButtonHidden()
   })
 })
