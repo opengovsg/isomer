@@ -29,12 +29,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await page.goto(`/sites/${siteId}/settings/colours`)
     await page.waitForURL(/\/settings\/colours$/)
 
-    await page.getByPlaceholder("2164da").fill("ff0000")
+    const colourInput = page.getByLabel("Main brand colour")
+    await colourInput.clear()
+    await colourInput.fill("ff0000")
     await expect(site.publishButton()).toBeEnabled()
     await site.publishButton().click()
     await site.expectChangesPublishedToast()
 
     await page.reload()
-    await expect(page.getByPlaceholder("2164da")).toHaveValue("ff0000")
+    await expect(colourInput).toHaveValue("ff0000")
   })
 })
