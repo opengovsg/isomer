@@ -6,6 +6,22 @@ import { DashboardPO } from "./dashboard.po"
 import { PageEditorPO } from "./page-editor.po"
 import { UsersPO } from "./users.po"
 
+export const deleteResourceTreeByTitle = async (
+  siteId: number,
+  title: string,
+) => {
+  const resource = await db
+    .selectFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "=", title)
+    .select("id")
+    .executeTakeFirst()
+  if (!resource) return
+
+  await db.deleteFrom("Resource").where("parentId", "=", resource.id).execute()
+  await db.deleteFrom("Resource").where("id", "=", resource.id).execute()
+}
+
 export const openSeededPageEditor = async (
   page: Page,
   siteId: number,
@@ -59,6 +75,72 @@ export const createFolderViaWizard = async (
     .executeTakeFirstOrThrow()
 
   return { folderId: folder.id }
+}
+
+export const createCollectionViaWizard = async (
+  page: Page,
+  { siteId, title }: { siteId: number; title: string },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoSite(siteId)
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreateCollection()
+  await dashboard.fillCollectionWizard(title)
+
+  const collection = await db
+    .selectFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "=", title)
+    .where("type", "=", ResourceType.Collection)
+    .select("id")
+    .executeTakeFirstOrThrow()
+
+  return { collectionId: collection.id }
+}
+
+export const createCollectionPageViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    title,
+  }: { siteId: number; collectionId: string; title: string },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoCollection(siteId, collectionId)
+  await dashboard.clickAddCollectionItem()
+  await dashboard.proceedToCollectionItemDetails()
+  await dashboard.fillCollectionPageWizard(title)
+
+  await page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
+  const pageId = page.url().match(/\/pages\/(\d+)$/)?.[1]
+  if (!pageId) {
+    throw new Error(`Expected page editor URL after wizard, got ${page.url()}`)
+  }
+  return { pageId }
+}
+
+export const createCollectionLinkViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    title,
+  }: { siteId: number; collectionId: string; title: string },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoCollection(siteId, collectionId)
+  await dashboard.clickAddCollectionItem()
+  await dashboard.selectCollectionItemType("Link or file")
+  await dashboard.proceedToCollectionItemDetails()
+  await dashboard.fillCollectionLinkWizard(title)
+
+  await page.waitForURL(new RegExp(`/sites/${siteId}/links/\\d+$`))
+  const linkId = page.url().match(/\/links\/(\d+)$/)?.[1]
+  if (!linkId) {
+    throw new Error(`Expected link editor URL after wizard, got ${page.url()}`)
+  }
+  return { linkId }
 }
 
 export const openInviteModal = async (page: Page, siteId: number) => {
