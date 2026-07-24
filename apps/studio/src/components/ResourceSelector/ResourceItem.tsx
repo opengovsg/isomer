@@ -2,12 +2,12 @@ import type { ButtonProps } from "@opengovsg/design-system-react"
 import type { ResourceItemContent } from "~/schemas/resource"
 import { Icon, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { dataAttr } from "@chakra-ui/utils"
-import { Button } from "@opengovsg/design-system-react"
+import { Button, TouchableTooltip } from "@opengovsg/design-system-react"
 import { getIcon } from "~/utils/resources"
 
 interface ResourceItemProps {
   item: ResourceItemContent
-  isDisabled?: boolean
+  disabledReason?: string
   isHighlighted?: boolean
   handleOnClick?: () => void
   hasAdditionalLeftPadding?: boolean
@@ -42,12 +42,12 @@ export const ResourceItemSkeleton = () => {
 
 export const ResourceItem = ({
   item,
-  isDisabled,
+  disabledReason,
   isHighlighted = false,
   handleOnClick,
   hasAdditionalLeftPadding = false,
 }: ResourceItemProps) => {
-  return (
+  const resourceItem = (
     <ResourceItemContainer
       data-selected={dataAttr(isHighlighted)}
       _selected={{
@@ -61,7 +61,7 @@ export const ResourceItem = ({
       {...(hasAdditionalLeftPadding && { pl: "2.25rem" })}
       onClick={handleOnClick}
       leftIcon={<Icon as={getIcon(item.type)} />}
-      isDisabled={isDisabled}
+      isDisabled={!!disabledReason}
     >
       <VStack alignItems="flex-start" textAlign="left" gap="0.25rem">
         <Text noOfLines={1} textStyle="caption-1">
@@ -72,5 +72,17 @@ export const ResourceItem = ({
         </Text>
       </VStack>
     </ResourceItemContainer>
+  )
+
+  return disabledReason ? (
+    <TouchableTooltip
+      label={disabledReason}
+      placement="right"
+      wrapperStyles={{ display: "block", width: "100%" }}
+    >
+      {resourceItem}
+    </TouchableTooltip>
+  ) : (
+    resourceItem
   )
 }

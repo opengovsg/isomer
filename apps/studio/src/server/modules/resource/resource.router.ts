@@ -412,7 +412,7 @@ export const resourceRouter = router({
             if (toMove.parentId === parent.id) {
               throw new TRPCError({
                 code: "BAD_REQUEST",
-                message: "You cannot move a resource to the same folder",
+                message: `You cannot move a resource to the same ${parent.type === ResourceType.Collection ? "collection" : "folder"}`,
               })
             }
 

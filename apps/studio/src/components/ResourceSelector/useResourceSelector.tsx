@@ -53,27 +53,38 @@ export const useResourceSelector = ({
     [nestedChildrenOfExistingResourceResult?.items],
   )
 
-  const isResourceItemDisabled = useCallback(
-    (resourceItem: ResourceItemContent): boolean => {
-      if (!existingResource) return false
+  const getResourceItemDisabledReason = useCallback(
+    (resourceItem: ResourceItemContent): string | undefined => {
+      if (!existingResource) return undefined
 
       // Then we are linking the resource and not moving any resource
       // Thus, no checks are needed because we can link to any resource
-      if (interactionType === "link") return false
+      if (interactionType === "link") return undefined
 
       // A resource should not be able to move to within itself
-      if (existingResource.id === resourceItem.id) return true
+      if (existingResource.id === resourceItem.id) {
+        return "This item cannot be moved into itself."
+      }
+
+      // A resource should not be able to move to its current parent
+      if (existingResource.parentId === resourceItem.id) {
+        return `This item is already in this ${resourceItem.type === ResourceType.Collection ? "collection" : "folder"}.`
+      }
 
       // If a resource is not allowed to have children then it is a page-ish resource
       // Thus, it can move to within any resource and no further checks are needed
-      if (!isAllowedToHaveChildren(existingResource.type)) return false
+      if (!isAllowedToHaveChildren(existingResource.type)) return undefined
 
       // A resource should not be able to move to its nested children
-      return (
+      if (
         nestedChildrenOfExistingResource.some(
           (child) => child.id === resourceItem.id,
-        ) || false
-      )
+        )
+      ) {
+        return "This folder cannot be moved into one of its subfolders."
+      }
+
+      return undefined
     },
     [existingResource, interactionType, nestedChildrenOfExistingResource],
   )
@@ -148,7 +159,7 @@ export const useResourceSelector = ({
 
   return {
     isResourceIdHighlighted,
-    isResourceItemDisabled,
+    getResourceItemDisabledReason,
     hasParentInStack,
     handleClickBackButton,
     handleClickResourceItem,
