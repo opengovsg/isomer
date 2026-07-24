@@ -37,7 +37,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await page.goto(`/sites/${siteId}/settings/logo`)
     await page.waitForURL(/\/settings\/logo$/)
 
-    await page.locator('input[name="file-upload"]').setInputFiles(LOGO_FIXTURE)
+    await page
+      .getByRole("group")
+      .filter({ hasText: /^Logo/ })
+      .getByTestId("file-upload")
+      .setInputFiles(LOGO_FIXTURE)
     await expect(page.getByText(path.basename(LOGO_FIXTURE))).toBeVisible({
       timeout: 15_000,
     })

@@ -32,7 +32,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await page.getByRole("button", { name: "About us" }).click()
     await page.getByLabel("Link label").fill("About E2E")
 
-    await site.publishButton().click()
+    await site.publishButton().click({ force: true })
     await site.expectChangesPublishedToast()
 
     await page.reload()
