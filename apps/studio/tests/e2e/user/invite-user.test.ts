@@ -101,6 +101,15 @@ test.describe("invite user", { tag: roleTag("admin") }, () => {
     await expectUserRoleOnSite(siteId, vendorEmail).toBe("Admin")
   })
 
+  test("admin sees AddAdminWarning when selecting Admin role in invite modal", async ({
+    page,
+  }) => {
+    const users = new UsersPO(page)
+    await openInviteModal(page, siteId)
+    await users.selectInviteRole("Admin")
+    await users.expectAddAdminWarningVisible()
+  })
+
   test("admin cannot invite a non-whitelisted vendor collaborator", async ({
     page,
   }) => {

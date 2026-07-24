@@ -24,10 +24,14 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.publisher)
   })
 
-  test("publisher cannot add new users", async ({ page }) => {
+  test("publisher cannot manage users on the collaborators page", async ({
+    page,
+  }) => {
     const users = new UsersPO(page)
     await users.goto(siteId)
+    await users.expectReadOnlyCollaboratorsDescription()
     await users.expectCannotAddNewUser()
+    await users.expectNoRowActionsMenus()
   })
 })
 
@@ -36,9 +40,13 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.editor)
   })
 
-  test("editor cannot add new users", async ({ page }) => {
+  test("editor cannot manage users on the collaborators page", async ({
+    page,
+  }) => {
     const users = new UsersPO(page)
     await users.goto(siteId)
+    await users.expectReadOnlyCollaboratorsDescription()
     await users.expectCannotAddNewUser()
+    await users.expectNoRowActionsMenus()
   })
 })

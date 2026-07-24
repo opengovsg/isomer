@@ -7,7 +7,6 @@ import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import {
   deleteUsersByEmailPattern,
   ensureUserOnboarded,
-  expectUserAbsentOnSite,
   expectUserRoleOnSite,
   uniqueInviteeEmail,
 } from "../fixtures/user"
@@ -33,7 +32,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await deleteUsersByEmailPattern("e2e-invitee-%@open.gov.sg")
   })
 
-  test("admin can remove a collaborator via RemoveUserModal", async ({
+  test("pending invitee shows Waiting to accept invite in the table", async ({
     page,
   }) => {
     const inviteeEmail = uniqueInviteeEmail()
@@ -46,12 +45,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     const users = new UsersPO(page)
     await users.goto(siteId)
-    await users.expectUserInTable(inviteeEmail)
-
-    await users.openRemoveUserAccess(inviteeEmail)
-    await users.confirmRemoveUser()
-    await users.expectRemovedFromSiteToast(inviteeEmail)
-    await users.expectUserNotInTable(inviteeEmail)
-    await expectUserAbsentOnSite(siteId, inviteeEmail).toBeNull()
+    await users.expectPendingInviteStatus(inviteeEmail)
   })
 })
