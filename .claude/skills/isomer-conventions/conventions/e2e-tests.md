@@ -35,10 +35,13 @@ validation-edge-case scenarios — those stay in integration tests.
 
 ## Per-site isolation (PR-2)
 
-| Test category | Site strategy |
-|---------------|---------------|
-| **Read-only / seed-dependent** | Seed site ID `1` ("Sample Site") — e.g. `site/list.test.ts`, `godmode/access.test.ts` |
-| **Mutating** | Dedicated site per test file via `provisionE2ESite` in `beforeAll`, `teardownE2ESite` in `afterAll` |
+Every test file gets a dedicated site via `provisionE2ESite` in `beforeAll`,
+torn down via `teardownE2ESite` in `afterAll` — including read-only tests.
+There is no shared seed-site accessor (`getSeedSiteId()` was removed); the only
+tests that still reference seed site ID `1` directly are ones asserting on the
+pre-seeded fixture data itself (e.g. `site/list.test.ts` checking the
+dashboard shows the pre-seeded "Sample Site"), not using it as a general-purpose
+test site.
 
 ```ts
 let siteId: number
@@ -54,12 +57,10 @@ test.afterAll(async () => {
 ```
 
 - Grant roles with `provisionE2ESite({ admin, editor, publisher })` — maps to `TEST_EMAILS`
-- `getSeedSiteId()` is **deprecated for mutating tests**; keep for read-only seed tests only
 - Use `resetSite*` helpers from `fixtures/reset.ts` in `beforeEach` for idempotent state
 - `provisionE2ESite` creates a root page + search page so the site dashboard loads
 
 ## How to detect violations
 
-- Mutating test using `getSeedSiteId()` → should use `provisionE2ESite`
+- Test using `getSeedSiteId()` or hardcoding site ID `1` → should use `provisionE2ESite`, unless it's specifically asserting on pre-seeded fixture data
 - Duplicated wizard/invite flows in test files → move to `helpers.ts` or a PO
-- Test file writing to site ID `1` outside read-only suites
