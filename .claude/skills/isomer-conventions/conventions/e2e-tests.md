@@ -37,8 +37,9 @@ validation-edge-case scenarios — those stay in integration tests.
 
 Every test file gets a dedicated site via `provisionE2ESite` in `beforeAll`,
 torn down via `teardownE2ESite` in `afterAll` — including read-only tests.
-Seed data (e.g. "Sample Site") is for app bootstrap and auth only — never assert
-on seed site names or hardcode site ID `1`.
+Playwright `global-setup` seeds auth bootstrap only (`@open.gov.sg` whitelist +
+canonical test users). Per-test sites come from `provisionE2ESite` — never assert
+on Prisma dev seed data or hardcode site ID `1`.
 
 ```ts
 let siteId: number

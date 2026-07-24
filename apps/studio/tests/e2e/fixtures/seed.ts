@@ -1,25 +1,12 @@
 import { createId } from "@paralleldrive/cuid2"
+import { setUpWhitelist } from "tests/integration/helpers/seed"
 import { db } from "~/server/modules/database"
-import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS } from "./auth"
 
-const SEED_SITE_ID = 1
-
-/**
- * Idempotent: inserts user if missing, then ensures a ResourcePermission
- * with `role` on the seed site exists (re-activating if soft-deleted).
- *
- * The unique constraint on ResourcePermission is
- * (userId, siteId, resourceId, deletedAt) NULLS NOT DISTINCT.
- * We conflict on that constraint so that a second run with deletedAt=NULL
- * is a no-op (we just update the role to the desired value).
- */
-const ensureUserWithRole = async (
-  email: string,
-  role: (typeof RoleType)[keyof typeof RoleType] | null,
-) => {
-  const user = await db
+const ensureUser = async (email: string) => {
+  return db
     .insertInto("User")
     .values({
       id: createId(),
@@ -34,34 +21,18 @@ const ensureUserWithRole = async (
     )
     .returning(["id"])
     .executeTakeFirstOrThrow()
+}
 
-  if (role === null) {
-    // The e2e suite relies on this user being permissionless. A prior run or
-    // manual debugging may have granted them a ResourcePermission, so remove
-    // any that exist to guarantee a clean, access-free state.
-    await db
-      .deleteFrom("ResourcePermission")
-      .where("userId", "=", user.id)
-      .execute()
-    return user
-  }
+/**
+ * Idempotent: inserts user if missing and removes all site permissions so the
+ * account stays permissionless across runs.
+ */
+const ensureUserWithoutPermissions = async (email: string) => {
+  const user = await ensureUser(email)
 
   await db
-    .insertInto("ResourcePermission")
-    .values({
-      userId: user.id,
-      siteId: SEED_SITE_ID,
-      role,
-      resourceId: null,
-    })
-    .onConflict((oc) =>
-      // Unique constraint: (userId, siteId, resourceId, deletedAt) NULLS NOT DISTINCT
-      // When inserting with deletedAt=NULL, a conflict means an active row already
-      // exists. We update the role to ensure it matches what we expect.
-      oc
-        .columns(["userId", "siteId", "resourceId", "deletedAt"])
-        .doUpdateSet({ role }),
-    )
+    .deleteFrom("ResourcePermission")
+    .where("userId", "=", user.id)
     .execute()
 
   return user
@@ -71,7 +42,7 @@ const ensureGodModeAdmin = async (
   email: string,
   role: (typeof IsomerAdminRole)[keyof typeof IsomerAdminRole],
 ) => {
-  const user = await ensureUserWithRole(email, null)
+  const user = await ensureUserWithoutPermissions(email)
 
   await db
     .insertInto("IsomerAdmin")
@@ -82,12 +53,14 @@ const ensureGodModeAdmin = async (
     .execute()
 }
 
+/** Whitelist + canonical role users for Playwright storage-state sign-in. */
 export const seedRolesForE2E = async () => {
-  await ensureUserWithRole(TEST_EMAILS.admin, RoleType.Admin)
-  await ensureUserWithRole(TEST_EMAILS.nomember, null)
-  // editor + publisher are seeded by prisma/seed.ts; ensure they're still active
-  await ensureUserWithRole(TEST_EMAILS.editor, RoleType.Editor)
-  await ensureUserWithRole(TEST_EMAILS.publisher, RoleType.Publisher)
+  await setUpWhitelist({ email: "@open.gov.sg" })
+
+  await ensureUser(TEST_EMAILS.admin)
+  await ensureUserWithoutPermissions(TEST_EMAILS.nomember)
+  await ensureUser(TEST_EMAILS.editor)
+  await ensureUser(TEST_EMAILS.publisher)
   await ensureGodModeAdmin(TEST_EMAILS.core, IsomerAdminRole.Core)
   await ensureGodModeAdmin(TEST_EMAILS.migrator, IsomerAdminRole.Migrator)
 }
