@@ -1,15 +1,12 @@
-import { test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
-import {
-  expectPagePermalink,
-  expectPageTitle,
-  seedRootPage,
-} from "../fixtures/page-seed"
+import { seedRootPage } from "../fixtures/page-seed"
 import { PageSettingsPO } from "../fixtures/page-settings.po"
+import { getResourcePermalink, getResourceTitle } from "../fixtures/resource.db"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
 
@@ -50,7 +47,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.fillTitle(newTitle)
     await settings.saveDraft()
 
-    await expectPageTitle(seededPage.id).toBe(newTitle)
+    await expect.poll(() => getResourceTitle(seededPage.id)).toBe(newTitle)
   })
 
   test("admin does not see redirect option when changing permalink on a draft page", async ({
@@ -71,7 +68,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.fillPermalink(newPermalink)
     await settings.expectRedirectOptionHidden()
     await settings.closeWithoutSaving()
-    await expectPagePermalink(seededPage.id).toBe(seededPage.permalink)
+    await expect
+      .poll(() => getResourcePermalink(seededPage.id))
+      .toBe(seededPage.permalink)
   })
 
   test("admin sees redirect option when changing permalink on a published page", async ({
@@ -96,7 +95,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.expectRedirectOptionVisible()
     await settings.saveAndPublish()
 
-    await expectPagePermalink(seededPage.id).toBe(newPermalink)
+    await expect
+      .poll(() => getResourcePermalink(seededPage.id))
+      .toBe(newPermalink)
   })
 })
 
@@ -125,7 +126,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await settings.fillTitle(newTitle)
     await settings.saveDraft()
 
-    await expectPageTitle(seededPage.id).toBe(newTitle)
+    await expect.poll(() => getResourceTitle(seededPage.id)).toBe(newTitle)
   })
 
   test("editor does not see Publish immediately on a published page", async ({
