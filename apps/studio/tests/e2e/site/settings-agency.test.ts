@@ -38,16 +38,14 @@ test("admin can update site name on the agency settings page", async ({
   await page.waitForURL(/\/settings\/agency$/)
 
   const nameField = page.getByLabel("Site name")
-  await expect(nameField).toBeVisible({ timeout: 30_000 })
+  await expect(nameField).toBeVisible()
   await nameField.fill(renamedSiteName)
 
   await site.publishButton().click()
   await site.expectChangesPublishedToast()
 
   await page.reload()
-  await expect(page.getByLabel("Site name")).toHaveValue(renamedSiteName, {
-    timeout: 30_000,
-  })
+  await expect(page.getByLabel("Site name")).toHaveValue(renamedSiteName)
 })
 
 test.describe("publisher", () => {
@@ -63,7 +61,7 @@ test.describe("publisher", () => {
     await page.goto(`/sites/${siteId}/settings/agency`)
     await page.waitForURL(/\/settings\/agency$/)
 
-    await expect(page.getByLabel("Site name")).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByLabel("Site name")).toBeVisible()
     await expect(
       page.getByRole("button", { name: "Publish" }),
     ).not.toBeVisible()
