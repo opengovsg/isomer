@@ -1,10 +1,10 @@
+import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { createFolderViaWizard } from "../fixtures/helpers"
 import { getSeedSiteId } from "../fixtures/seed"
-import { expect, test } from "../fixtures/test"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE_TITLE = () => `E2E Test Folder ${crypto.randomUUID().slice(0, 8)}`
