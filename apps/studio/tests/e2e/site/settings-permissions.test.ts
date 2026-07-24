@@ -60,3 +60,31 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     }
   })
 })
+
+test.describe("editor", { tag: roleTag("editor") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.editor)
+  })
+
+  test("editor can view agency settings but not publish", async ({ page }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "agency")
+
+    // Assert
+    await expect(site.siteNameField()).toBeVisible()
+    await expect(site.publishButton()).not.toBeVisible()
+  })
+
+  test("editor does not see Publish on settings sections that use it", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+
+    for (const section of PUBLISH_GATED_SECTIONS) {
+      await site.gotoSettingsSection(siteId, section)
+      await expect(site.publishButton()).not.toBeVisible()
+    }
+  })
+})
