@@ -37,6 +37,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test("admin can bulk-upload redirects via CSV", async ({ page }) => {
+    // Drop the in-memory GrowthBook singleton so the mocked features fetch runs
+    // on the next app load (see fixtures/network.ts).
+    await page.goto("about:blank")
     await page.goto(`/sites/${siteId}/settings/redirects`)
     await page.waitForURL(/\/settings\/redirects$/)
 

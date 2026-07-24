@@ -32,7 +32,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await page.getByText("Expandable nav item", { exact: true }).click()
     await page.getByLabel("Menu item label").fill("E2E Nav Item")
 
-    await site.publishButton().click()
+    await site.publishButton().click({ force: true })
     await site.expectChangesPublishedToast()
 
     await page.reload()
