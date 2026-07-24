@@ -21,7 +21,8 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 | **Helpers** | `fixtures/helpers.ts` | Multi-step flows crossing pages or modals (wizard, invite) |
 | **Page objects** | `fixtures/*.po.ts` | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …) |
 | **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle |
-| **DB assertions** | `fixtures/*.db.ts` | Query helpers that fetch persisted state for a test to assert on (`resource.db.ts`, `user.db.ts`, …) |
+| **DB assertions** | `fixtures/*.db.ts`, `fixtures/site-expect.ts`, `fixtures/page-seed.ts` | Query/poll helpers that fetch or wait on persisted state for a test to assert on |
+| **Network mocks** | `fixtures/network.ts` | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach` |
 
 ## Welcome modal
 
@@ -62,6 +63,12 @@ test.afterAll(async () => {
 - Use `resetSite*` helpers from `fixtures/reset.ts` in `beforeEach` for idempotent state
 - `provisionE2ESite` creates a root page + search page so the site dashboard loads
 
+## Settings publisher gate (PR-7)
+
+Publisher permission gates for settings Publish buttons live in **one** file:
+`site/settings-permissions.test.ts`. Individual settings happy-path files do not
+repeat the gate — add new Publish-gated sections to `PUBLISH_GATED_SECTIONS` there.
+
 ## Role projects and tags (PR-3)
 
 Playwright config defines one project per role plus `unauthenticated` (smoke) and `singpass`. Role projects set `storageState` and filter with `grep: /@role\b/`.
@@ -87,7 +94,8 @@ Use `roleTag(...)` (typed from `ROLES`) — not a raw `"@admin"` string. Multi-r
 ## Page objects (PR-4)
 
 Page objects live in `fixtures/*.po.ts` and wrap locators + actions for **one** UI
-surface. Prefer them over raw Playwright calls when a locator will be reused.
+surface. **All `page.*` Playwright calls belong in `fixtures/*.po.ts` or
+`fixtures/helpers.ts` — not in `*.test.ts` files.**
 
 | PO | File | Surface |
 |----|------|---------|
@@ -155,13 +163,52 @@ files. Examples:
 
 Use Playwright's default poll timeout unless a specific surface needs more.
 
+### `page.*` boundary
+
+**Smell:** any `page.<method>(` in `tests/e2e/**/*.test.ts`.
+
+**Blessed:** the same call lives on the PO (or a helper) for that surface; the
+test file only constructs the PO and asserts outcomes.
+
+**Allowlist** (the only `page.*` permitted in test files):
+
+| Call | Why |
+|------|-----|
+| `async ({ page })` fixture destructuring | Playwright test signature |
+| `new SomePO(page)` | PO construction |
+| Documented infra exceptions in this file | e.g. `resetGrowthBookPage(page)` in `fixtures/network.ts` before GrowthBook-gated navigation |
+
+Everything else — `page.goto`, `page.getByRole`, `page.getByLabel`, `page.locator`,
+`page.click`, `page.fill`, `page.waitForURL`, etc. — belongs in the relevant
+`*.po.ts` or `helpers.ts`. When a PO method does not exist yet, add it there
+first, then call it from the test.
+
+**How to detect:**
+
+```bash
+rg 'page\.\w+\(' apps/studio/tests/e2e --glob '*.test.ts'
+```
+
+Review each match against the allowlist above. A hit that is not allowlisted is a
+violation — extract it to the PO for that UI surface (or to `helpers.ts` if it
+crosses surfaces/modals).
+
+### Site settings (`SitePO`) — examples
+
+- `gotoSettingsSection(siteId, section)` — deep-link navigation
+- `clickPublish({ force: true })` — header Publish; `force` when FormBuilder
+  inline editors overlay the button (navbar/footer rows)
+- `logoUploadInput()` — scopes past the separate favicon control
+- GrowthBook-gated UI: `enableGrowthBookFeature` in `beforeEach`, then
+  `resetGrowthBookPage(page)` from `fixtures/network.ts` before the first app navigation
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding site ID `1`, or calling `getSeedSiteId()` → use `provisionE2ESite` and assert on the returned site
 - Duplicated wizard/invite flows in test files → move to `helpers.ts` or a PO
 - `test.use({ storageState: storageStateFor(...) })` in a test file → use `{ tag: roleTag(...) }` on `test.describe` instead
 - Raw `{ tag: "@admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
-- Raw `page.getByRole("button", { name: "Create new..." })` repeated across files → use `DashboardPO`
 - Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
 - Inline `db.selectFrom("Resource")` in `*.test.ts` → use `page-seed.ts` poll helpers
 - Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`
+- Any `page.<method>(` in `*.test.ts` outside the allowlist above → move to the relevant `*.po.ts` or `helpers.ts`

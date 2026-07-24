@@ -4,6 +4,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { resetSiteAgencySettings } from "../fixtures/reset"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { expectSiteName } from "../fixtures/site-expect"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -12,7 +13,7 @@ let siteName: string
 
 test.beforeAll(async () => {
   const site = await provisionE2ESite({
-    roles: [RoleType.Admin, RoleType.Publisher],
+    roles: [RoleType.Admin],
   })
   siteId = site.siteId
   siteName = site.siteName
@@ -33,33 +34,19 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   }) => {
     const renamedSiteName = `E2E Site ${siteId} Renamed`
     const site = new SitePO(page)
-    await site.gotoSettings(siteId, "agency")
 
-    const nameField = page.getByLabel("Site name")
-    await expect(nameField).toBeVisible()
-    await nameField.fill(renamedSiteName)
+    // Arrange
+    await site.gotoSettingsSection(siteId, "agency")
+    await expect(site.siteNameField()).toBeVisible()
 
-    await site.publishButton().click()
+    // Act
+    await site.fillSiteName(renamedSiteName)
+    await site.clickPublish()
     await site.expectChangesPublishedToast()
 
-    await page.reload()
-    await expect(page.getByLabel("Site name")).toHaveValue(renamedSiteName)
-  })
-})
-
-test.describe("publisher", { tag: roleTag("publisher") }, () => {
-  test.beforeEach(async () => {
-    await ensureUserOnboarded(TEST_EMAILS.publisher)
-  })
-
-  test("publisher does not see the Publish button on agency settings", async ({
-    page,
-  }) => {
-    await new SitePO(page).gotoSettings(siteId, "agency")
-
-    await expect(page.getByLabel("Site name")).toBeVisible()
-    await expect(
-      page.getByRole("button", { name: "Publish" }),
-    ).not.toBeVisible()
+    // Assert
+    await expect(expectSiteName(siteId)).resolves.toBe(renamedSiteName)
+    await site.reloadSettingsSection("agency")
+    await expect(site.siteNameField()).toHaveValue(renamedSiteName)
   })
 })
