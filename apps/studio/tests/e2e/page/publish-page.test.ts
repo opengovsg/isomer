@@ -8,10 +8,7 @@ import {
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
 } from "../fixtures/page-seed"
-import {
-  getResourceDraftBlobId,
-  getResourceState,
-} from "../fixtures/resource.db"
+import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
 
@@ -41,7 +38,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.expectPublishedToast()
 
     await expect
-      .poll(() => getResourceState(seededPage.id))
+      .poll(async () => (await getResource(seededPage.id))?.state)
       .toBe(ResourceState.Published)
   })
 
@@ -57,7 +54,9 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
 
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.expectPublishButtonDisabled()
-    await expect.poll(() => getResourceDraftBlobId(seededPage.id)).toBeNull()
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
+      .toBeNull()
   })
 
   test("publisher can edit a published page and republish changes", async ({
@@ -74,7 +73,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
     await expect
-      .poll(() => getResourceDraftBlobId(seededPage.id))
+      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
       .not.toBeNull()
     await editor.expectPublishButtonEnabled()
 
@@ -82,9 +81,11 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.expectPublishedToast()
 
     await expect
-      .poll(() => getResourceState(seededPage.id))
+      .poll(async () => (await getResource(seededPage.id))?.state)
       .toBe(ResourceState.Published)
-    await expect.poll(() => getResourceDraftBlobId(seededPage.id)).toBeNull()
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
+      .toBeNull()
     await editor.expectBlockPreview(editedText)
   })
 })
