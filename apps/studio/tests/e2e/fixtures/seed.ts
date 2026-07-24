@@ -6,9 +6,6 @@ import { TEST_EMAILS } from "./auth"
 
 const SEED_SITE_ID = 1
 
-/** @deprecated for mutating tests — use provisionE2ESite() */
-export const getSeedSiteId = () => SEED_SITE_ID
-
 /**
  * Idempotent: inserts user if missing, then ensures a ResourcePermission
  * with `role` on the seed site exists (re-activating if soft-deleted).
