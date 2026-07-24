@@ -1,14 +1,14 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { openSeededPageEditor } from "../fixtures/helpers"
 import {
+  expectDraftBlobContainsText,
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
 } from "../fixtures/page-seed"
-import { getResourceDraftBlobContent } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -36,9 +36,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
-    await expect
-      .poll(() => getResourceDraftBlobContent(seededPage.id))
-      .toContain(editedText)
+    await expectDraftBlobContainsText(seededPage.id).toContain(editedText)
     await editor.reload()
 
     // Assert
@@ -62,9 +60,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
-    await expect
-      .poll(() => getResourceDraftBlobContent(seededPage.id))
-      .toContain(editedText)
+    await expectDraftBlobContainsText(seededPage.id).toContain(editedText)
     await editor.reload()
 
     // Assert

@@ -4,7 +4,7 @@ import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
-import { seedRootPage } from "../fixtures/page-seed"
+import { expectPagePermalink, seedRootPage } from "../fixtures/page-seed"
 import { PageSettingsPO } from "../fixtures/page-settings.po"
 import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
@@ -73,9 +73,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.closeWithoutSaving()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.permalink)
-      .toBe(seededPage.permalink)
+    await expectPagePermalink(seededPage.id).toBe(seededPage.permalink)
   })
 
   test("admin sees redirect option when changing permalink on a published page", async ({
