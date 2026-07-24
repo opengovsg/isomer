@@ -52,9 +52,6 @@ const SuspendablePublishButton = ({
     onSettled: () => {
       void Promise.all([
         utils.page.readPage.refetch({ pageId, siteId }),
-        utils.page.getCategories.invalidate(),
-        utils.page.getCategoryOptions.invalidate(),
-        utils.collection.getCategoryOptionUsageCount.invalidate(),
         utils.site.getLocalisedSitemap.invalidate({
           resourceId: pageId,
           siteId,

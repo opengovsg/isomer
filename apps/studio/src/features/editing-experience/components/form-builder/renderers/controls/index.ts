@@ -45,6 +45,10 @@ export {
   jsonFormsImageControlTester,
 } from "./JsonFormsImageControl"
 export {
+  default as JsonFormsImageRadioControl,
+  jsonFormsImageRadioControlTester,
+} from "./JsonFormsImageRadioControl"
+export {
   default as JsonFormsProseControl,
   jsonFormsProseControlTester,
 } from "./JsonFormsProseControl"
@@ -72,14 +76,6 @@ export {
   default as JsonFormsUnionRootControl,
   jsonFormsUnionRootControlTester,
 } from "./JsonFormsUnionRootControl"
-export {
-  default as JsonFormsCategoryControl,
-  jsonFormsCategoryControlTester,
-} from "./JsonFormsCategoryControl"
-export {
-  default as JsonFormsCategoryIdControl,
-  jsonFormsCategoryIdControlTester,
-} from "./JsonFormsCategoryIdControl"
 export {
   default as JsonFormsCollectionDropdownControl,
   jsonFormsCollectionDropdownControlTester,
@@ -112,10 +108,6 @@ export {
   default as JsonFormsTagCategoryOptionsControl,
   jsonFormsTagCategoryOptionsControlTester,
 } from "./JsonFormsTagCategoryOptionsControl"
-export {
-  default as JsonFormsCategoryOptionsControl,
-  jsonFormsCategoryOptionsControlTester,
-} from "./JsonFormsCategoryOptionsControl"
 export {
   default as JsonFormsNavbarControl,
   jsonFormsNavbarControlTester,

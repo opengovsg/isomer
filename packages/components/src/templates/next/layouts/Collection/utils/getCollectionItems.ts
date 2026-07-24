@@ -1,13 +1,10 @@
 import type { AllCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
-import type {
-  CollectionPageCategoryOption,
-  CollectionPagePageProps,
-} from "~/types/page"
+import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
-import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
 
+import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
 
@@ -72,7 +69,6 @@ export type GetCollectionItemsProps = Pick<
   permalink: string
   sortBy?: CollectionPagePageProps["defaultSortBy"]
   sortDirection?: CollectionPagePageProps["defaultSortDirection"]
-  categoryOptions?: CollectionPageCategoryOption[]
 }
 
 export const getCollectionItems = ({
@@ -84,7 +80,6 @@ export const getCollectionItems = ({
   showDate,
   showThumbnail,
   tagCategories,
-  categoryOptions,
 }: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap: IsomerSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
@@ -126,26 +121,29 @@ export const getCollectionItems = ({
         ? getParsedDate(item.date)
         : undefined
     const image = getItemImage({ showThumbnail, item, site })
+    const { pillTags, plaintextTags } = getPillAndPlaintextTags(
+      item.tagged,
+      tagCategories,
+    )
 
     const baseItem = {
       type: "collectionCard" as const,
       id: item.permalink,
       date,
       lastModified: item.lastModified,
-      category: resolveCategoryLabel({
-        categoryId: item.categoryId,
-        category: item.category,
-        categoryOptions,
-      }),
+      plaintextTags,
       title: item.title,
       description: item.summary,
       image,
       isContainNeeded: image?.isContainNeeded || false,
       site,
+      // NOTE: `tags` no longer falls back to the legacy `item.tags` field — Collection
+      // Items are expected to carry `tagged` + the parent's `tagCategories` going forward.
       tags:
         tagCategories && item.tagged
           ? getTagsFromTagged(item.tagged, tagCategories)
-          : item.tags,
+          : undefined,
+      pillTags,
     }
 
     if (item.layout === "file") {

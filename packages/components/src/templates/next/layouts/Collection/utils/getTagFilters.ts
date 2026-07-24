@@ -1,5 +1,6 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 import type { CollectionPageSchemaType } from "~/types"
+import { resolveTagCategoryDisplay } from "~/types/constants"
 
 import type { Filter, FilterItem } from "../../../types/Filter"
 
@@ -11,6 +12,10 @@ export const getTagFilters = (
   // associated set of values as well as the selected value.
   // Hence, we store a map here of the category (eg: Body parts)
   // to the number of occurences of each value (eg: { Brain: 3, Leg: 2 })
+  //
+  // NOTE: Tag category `display` (pills vs plaintext) is not attached to
+  // Filter objects. The sidebar always uses checkboxes; `display` is consumed
+  // by card/article tag rendering (PillTags / PlaintextTags) from tagCategories.
   const tagCategoryLabels = new Map<string, Map<string, number>>()
 
   items.forEach(({ tags }) => {
@@ -40,12 +45,17 @@ export const getTagFilters = (
         }),
       )
 
+      const matchedCategory = tagCategories?.find(
+        (tagCategory) => tagCategory.label === category,
+      )
+
       const filters: Filter[] = [
         ...acc,
         {
           items,
           id: category,
           label: category,
+          display: resolveTagCategoryDisplay(matchedCategory?.display),
         },
       ]
 

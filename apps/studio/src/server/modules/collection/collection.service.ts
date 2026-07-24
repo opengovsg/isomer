@@ -4,7 +4,6 @@ import type {
 } from "@opengovsg/isomer-components"
 import type { MergeExclusive, UnwrapTagged } from "type-fest"
 import { ISOMER_USABLE_PAGE_LAYOUTS } from "@opengovsg/isomer-components"
-import { TRPCError } from "@trpc/server"
 import { format } from "date-fns"
 
 import { db, ResourceType, sql } from "../database"
@@ -104,64 +103,4 @@ export const getCollectionTagsForResource = async ({
     : (row.publishedContent?.page.tagCategories ??
         row.draftContent?.page.tagCategories ??
         [])
-}
-
-export const getCategoryOptionUsageCount = async ({
-  siteId,
-  indexPageId,
-  categoryId,
-}: {
-  siteId: number
-  indexPageId: number
-  categoryId: string
-}): Promise<{ count: number }> => {
-  const { id: collectionId } = await db
-    .selectFrom("Resource as r")
-    .innerJoin("Resource as c", (join) =>
-      join
-        .onRef("c.id", "=", "r.parentId")
-        .on("c.type", "=", ResourceType.Collection)
-        .on("c.siteId", "=", siteId),
-    )
-    .where("r.id", "=", String(indexPageId))
-    .where("r.siteId", "=", siteId)
-    .where("r.type", "=", ResourceType.IndexPage)
-    .select("c.id")
-    .executeTakeFirstOrThrow(
-      () =>
-        new TRPCError({
-          code: "NOT_FOUND",
-          message: "Collection not found",
-        }),
-    )
-
-  const row = await db
-    .selectFrom("Resource as r")
-    .leftJoin("Blob as draftBlob", "r.draftBlobId", "draftBlob.id")
-    .leftJoin("Version as v", "r.publishedVersionId", "v.id")
-    .leftJoin("Blob as publishedBlob", "v.blobId", "publishedBlob.id")
-    .where("r.parentId", "=", collectionId)
-    .where("r.siteId", "=", siteId)
-    .where("r.type", "in", [
-      ResourceType.CollectionPage,
-      ResourceType.CollectionLink,
-    ])
-    .where((eb) =>
-      eb.or([
-        eb(
-          sql`nullif(trim("draftBlob"."content"->'page'->>'categoryId'), '')`,
-          "=",
-          categoryId,
-        ),
-        eb(
-          sql`nullif(trim("publishedBlob"."content"->'page'->>'categoryId'), '')`,
-          "=",
-          categoryId,
-        ),
-      ]),
-    )
-    .select(sql<number>`cast(count(*) as int)`.as("count"))
-    .executeTakeFirstOrThrow()
-
-  return { count: row.count }
 }

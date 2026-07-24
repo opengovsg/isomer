@@ -1,9 +1,6 @@
 import type { CollectionCardProps } from "~/interfaces"
 import type { FileCardProps } from "~/interfaces/internal/CollectionCard"
-import type {
-  CollectionPageCategoryOption,
-  CollectionPagePageProps,
-} from "~/types"
+import type { ArticlePagePageProps, CollectionPagePageProps } from "~/types"
 
 import type { IsomerPageLayoutType } from "./schema"
 
@@ -14,7 +11,6 @@ interface IsomerBaseSitemap {
   lastModified: string
   permalink: string
   category?: string
-  categoryId?: string
   // TODO: we should aim to separate BaseSiteMap into different types
   // so that the properties that are exclusive to, for example, `CollectionCard`
   // will only be available there
@@ -22,8 +18,10 @@ interface IsomerBaseSitemap {
   firstImage?: CollectionCardProps["image"]
   date?: string
   children?: IsomerSitemap[]
-  tags?: CollectionCardProps["tags"]
-  tagged?: CollectionCardProps["tagged"]
+  // NOTE: the raw selections an editor made; combined with the parent Collection's
+  // `tagCategories` (see getPillAndPlaintextTags/getTagsFromTagged) to derive what's
+  // actually rendered. The legacy resolved `tags` field is no longer supported.
+  tagged?: ArticlePagePageProps["tagged"]
 }
 
 interface IsomerPageSitemap extends IsomerBaseSitemap {
@@ -35,7 +33,6 @@ export interface IsomerCollectionPageSitemap extends IsomerBaseSitemap {
   // TODO: Reconsider how this is done as currently every item in the sitemap has the same props
   collectionPagePageProps?: {
     tagCategories?: CollectionPagePageProps["tagCategories"]
-    categoryOptions?: CollectionPageCategoryOption[]
     sortOrder?: CollectionPagePageProps["sortOrder"]
     defaultSortBy?: CollectionPagePageProps["defaultSortBy"]
     defaultSortDirection?: CollectionPagePageProps["defaultSortDirection"]

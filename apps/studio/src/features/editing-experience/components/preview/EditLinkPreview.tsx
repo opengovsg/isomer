@@ -1,6 +1,7 @@
 import type { IsomerSitemap } from "@opengovsg/isomer-components"
 import type { CollectionLinkProps } from "~/schemas/collection"
 import { useMemo } from "react"
+import { useSuspenseCollectionTags } from "~/features/editing-experience/hooks/useCollectionTags"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { editLinkSchema } from "~/pages/sites/[siteId]/links/[linkId]"
 import { trpc } from "~/utils/trpc"
@@ -33,13 +34,8 @@ export const EditCollectionLinkPreview = ({
     siteId,
   })
 
-  const [tagCategories] = trpc.collection.getCollectionTags.useSuspenseQuery({
+  const [tagCategories] = useSuspenseCollectionTags({
     resourceId: linkId,
-    siteId,
-  })
-
-  const [{ categoryOptions }] = trpc.page.getCategoryOptions.useSuspenseQuery({
-    pageId: linkId,
     siteId,
   })
 
@@ -69,7 +65,7 @@ export const EditCollectionLinkPreview = ({
             layout: "collection",
             title: parentTitle,
             summary: "",
-            collectionPagePageProps: { tagCategories, categoryOptions },
+            collectionPagePageProps: { tagCategories },
             children: [
               {
                 id: "9999999",
@@ -84,22 +80,14 @@ export const EditCollectionLinkPreview = ({
           },
         ],
       }) satisfies IsomerSitemap,
-    [
-      parentPermalink,
-      parentTitle,
-      tagCategories,
-      categoryOptions,
-      link,
-      permalink,
-      title,
-    ],
+    [parentPermalink, parentTitle, tagCategories, link, permalink, title],
   )
 
   return (
     <ViewportContainer siteId={siteId}>
       <PreviewWithCustomSitemap
         content={[]}
-        page={{ title: parentTitle, tagCategories, categoryOptions }}
+        page={{ title: parentTitle, tagCategories }}
         layout={"collection"}
         siteId={siteId}
         siteMap={siteMap}

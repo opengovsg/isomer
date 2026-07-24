@@ -32,7 +32,7 @@ export const getCollectionPages = ({
     sortBy: collectionParent.collectionPagePageProps?.defaultSortBy,
     sortDirection:
       collectionParent.collectionPagePageProps?.defaultSortDirection,
-    categoryOptions: collectionParent.collectionPagePageProps?.categoryOptions,
+    tagCategories: collectionParent.collectionPagePageProps?.tagCategories,
     showThumbnail,
   })
 

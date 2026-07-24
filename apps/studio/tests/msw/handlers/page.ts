@@ -1,6 +1,7 @@
 import type { DelayMode } from "msw"
 import type { getPageById } from "~/server/modules/resource/resource.service"
 import type { RouterOutput } from "~/utils/trpc"
+import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
 import { delay } from "msw"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -80,28 +81,6 @@ export const pageHandlers = {
       })
     },
   },
-  getCategoryOptions: {
-    default: () => {
-      return trpcMsw.page.getCategoryOptions.query(() => {
-        return {
-          categoryOptions: [
-            {
-              id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-              label: "Category 1",
-            },
-            {
-              id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
-              label: "Category 2",
-            },
-            {
-              id: "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
-              label: "Category 3",
-            },
-          ],
-        }
-      })
-    },
-  },
   getCollectionTags: {
     default: () => {
       return trpcMsw.collection.getCollectionTags.query(() => {
@@ -109,6 +88,7 @@ export const pageHandlers = {
           {
             label: "Topic",
             id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
                 label: "Technology",
@@ -121,11 +101,13 @@ export const pageHandlers = {
           {
             label: "Empty Category",
             id: "123e4567-e89b-12d3-a456-426614174000",
+            display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [],
           },
           {
             label: "Industries",
             id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+            display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
                 label: "Agriculture & Food",
@@ -239,6 +221,7 @@ export const pageHandlers = {
             label: "Topic",
             id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
             isRequired: true,
+            display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
                 label: "Technology",
@@ -251,6 +234,7 @@ export const pageHandlers = {
             label: "Industry",
             id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
             isRequired: false,
+            display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
                 label: "Agriculture & Food",
@@ -1128,6 +1112,56 @@ export const pageHandlers = {
               title: "article layout",
               category: "Feature Articles",
               subtitle: "This is a subtitle for the collection page",
+            },
+            layout: "collection",
+            content: [],
+            version: "0.1.0",
+          },
+          type: "IndexPage",
+          theme: "isomer-next",
+          url: "https://www.isomer.gov.sg",
+          logoUrl: "",
+          siteName: "MTI",
+          isGovernment: true,
+        }
+      })
+    },
+    collectionWithManyFilterOptions: () => {
+      // @ts-expect-error incomplete types
+      return trpcMsw.page.readPageAndBlob.query(() => {
+        return {
+          title: "Index page",
+          updatedAt: new Date("2024-09-12T07:00:00.000Z"),
+          permalink: "_index",
+          navbar: { id: 1, siteId: 1, content: [] },
+          footer: {
+            id: 1,
+            siteId: 1,
+            content: {
+              siteNavItems: [],
+              contactUsLink: "/contact-us",
+              termsOfUseLink: "/terms-of-use",
+              feedbackFormLink: "https://www.form.gov.sg",
+              privacyStatementLink: "/privacy",
+            },
+          },
+          content: {
+            page: {
+              date: "11-09-2024",
+              title: "article layout",
+              category: "Feature Articles",
+              subtitle: "This is a subtitle for the collection page",
+              tagCategories: [
+                {
+                  id: "a1b2c3d4-0000-4000-8000-000000000001",
+                  label: "Test filter",
+                  isRequired: false,
+                  options: Array.from({ length: 101 }, (_, i) => ({
+                    id: `a1b2c3d4-0001-4000-8000-${String(i + 1).padStart(12, "0")}`,
+                    label: `Option ${i + 1}`,
+                  })),
+                },
+              ],
             },
             layout: "collection",
             content: [],

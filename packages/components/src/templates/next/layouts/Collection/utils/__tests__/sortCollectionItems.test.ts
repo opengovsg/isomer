@@ -16,7 +16,7 @@ describe("sortCollectionItems", () => {
       variant: "article",
       url: "/test-item",
       description: "",
-      category: "Category",
+      plaintextTags: [{ category: "Category", selected: ["Category"] }],
       site: {
         siteMap: {
           id: "root",

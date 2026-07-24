@@ -1,21 +1,24 @@
 import type { ImageProps } from "~/interfaces"
-import type {
-  ArticlePagePageProps,
-  FormattedDate,
-  IsomerSiteProps,
-} from "~/types"
+import type { FormattedDate, IsomerSiteProps, TagGroup } from "~/types"
 
 interface FileDetails {
   type: string
   size: string
 }
 interface BaseCardProps {
-  tags?: ArticlePagePageProps["tags"]
-  tagged?: ArticlePagePageProps["tagged"]
+  // NOTE: All groups (pills + plaintext combined), used for filter matching
+  // (see getFilteredItems/getTagFilters) — derived from `tagged` + `tagCategories`,
+  // no legacy fallback.
+  tags?: TagGroup[]
+  // NOTE: Same as `tags`, but only includes groups shown as pills
+  // (see getPillAndPlaintextTags) — plaintext groups are shown via `plaintextTags`
+  pillTags?: TagGroup[]
   id: string
   date?: Date
   lastModified: string
-  category: string
+  // NOTE: Same shape as `pillTags`, but only includes groups shown as plaintext
+  // — rendered as comma-joined text, dot-separated between groups (see PlaintextTags)
+  plaintextTags?: TagGroup[]
   title: string
   url: string
   description: string
@@ -46,12 +49,12 @@ export type CollectionCardProps = Pick<
   AllCardProps,
   | "id"
   | "date"
-  | "category"
+  | "plaintextTags"
   | "title"
   | "description"
   | "image"
   | "tags"
-  | "tagged"
+  | "pillTags"
   | "isContainNeeded"
 > & {
   referenceLinkHref: string | undefined
