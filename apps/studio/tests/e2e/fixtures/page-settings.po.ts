@@ -38,6 +38,11 @@ export class PageSettingsPO {
     ).toHaveCount(0)
   }
 
+  async closeWithoutSaving() {
+    await this.page.getByRole("button", { name: "Close" }).click()
+    await expect(this.page.getByLabel("Title")).not.toBeVisible()
+  }
+
   async saveDraft() {
     await this.page.getByRole("button", { name: "Save" }).click()
     await expect(this.page.getByText("Saved settings")).toBeVisible()
