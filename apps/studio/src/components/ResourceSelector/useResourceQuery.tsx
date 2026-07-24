@@ -1,4 +1,5 @@
 import type { ResourceItemContent } from "~/schemas/resource"
+import { chunk } from "lodash-es"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
 
@@ -41,18 +42,34 @@ export const useResourceQuery = ({
   )
 
   const useResourceIdsFromSearch = !!resourceIds
-  const { data: resourceItemsWithAncestryStack } =
-    trpc.resource.getBatchAncestryWithSelf.useQuery(
-      {
-        siteId: String(siteId),
-        resourceIds: useResourceIdsFromSearch
-          ? resourceIds
-          : pages.flatMap(({ items }) => items).map((item) => item.id),
-      },
-      {
-        enabled: !isLoadingChildren,
-      },
-    )
+  const allResourceIds = useResourceIdsFromSearch
+    ? resourceIds
+    : pages.flatMap(({ items }) => items).map((item) => item.id)
+
+  // getBatchAncestryWithSelf caps each request at MAX_BATCH_RESOURCE_IDS to
+  // bound the cost of its recursive ancestry query. Paging through children
+  // with "Load more" grows the accumulated list past that cap, so split it
+  // into cap-sized chunks and issue one request per chunk to stay within it.
+  const resourceIdChunks = chunk(allResourceIds, MAX_BATCH_RESOURCE_IDS)
+  const ancestryQueries = trpc.useQueries((t) =>
+    resourceIdChunks.map((chunkedResourceIds) =>
+      t.resource.getBatchAncestryWithSelf(
+        {
+          siteId: String(siteId),
+          resourceIds: chunkedResourceIds,
+        },
+        {
+          enabled: !isLoadingChildren,
+        },
+      ),
+    ),
+  )
+
+  const isFetchingAncestry = ancestryQueries.some((query) => query.isLoading)
+  const resourceItemsWithAncestryStack =
+    isLoadingChildren || isFetchingAncestry
+      ? undefined
+      : ancestryQueries.flatMap((query) => query.data ?? [])
 
   return {
     resourceItemsWithAncestryStack,
