@@ -28,13 +28,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const site = new SitePO(page)
     await site.gotoSettingsSection(siteId, "footer")
 
-    await page.getByRole("button", { name: "About us" }).click()
-    await page.getByLabel("Link label").fill("About E2E")
+    await site.editFooterLinkLabel("About us", "About E2E")
 
     await site.clickPublish({ force: true })
     await site.expectChangesPublishedToast()
 
-    await page.reload()
-    await expect(page.getByRole("button", { name: "About E2E" })).toBeVisible()
+    await site.reloadSettingsSection("footer")
+    await expect(site.footerLinkButton("About E2E")).toBeVisible()
   })
 })
