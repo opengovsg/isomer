@@ -32,8 +32,10 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher can schedule publish, see dashboard badge, cancel, and clear DB schedule", async ({
     page,
   }) => {
+    // Arrange
     const { folder, page: seededPage } = await seedFolderWithPage({ siteId })
 
+    // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
 
     await editor.openScheduleModal()
@@ -54,6 +56,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.cancelSchedule()
     await editor.expectPublishButtonVisible()
+
+    // Assert
     await expect
       .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
       .toBeNull()
@@ -71,9 +75,13 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   test("editor does not see publish or schedule controls on the page editor", async ({
     page,
   }) => {
+    // Arrange
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
+    // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+
+    // Assert
     await editor.expectPublishButtonHidden()
     await editor.expectScheduleOptionsHidden()
   })

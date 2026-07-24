@@ -31,6 +31,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can update draft page title via PageSettingsModal", async ({
     page,
   }) => {
+    // Arrange
     const pageTitle = `Settings Draft Page ${crypto.randomUUID().slice(0, 8)}`
     const { page: seededPage } = await seedRootPage({
       siteId,
@@ -38,6 +39,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
     const newTitle = `Renamed ${crypto.randomUUID().slice(0, 8)}`
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openPageSettings(pageTitle)
@@ -47,6 +49,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.fillTitle(newTitle)
     await settings.saveDraft()
 
+    // Assert
     await expect
       .poll(async () => (await getResource(seededPage.id))?.title)
       .toBe(newTitle)
@@ -55,6 +58,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin does not see redirect option when changing permalink on a draft page", async ({
     page,
   }) => {
+    // Arrange
     const pageTitle = `Settings Draft Permalink ${crypto.randomUUID().slice(0, 8)}`
     const { page: seededPage } = await seedRootPage({
       siteId,
@@ -62,6 +66,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
     const newPermalink = `renamed-${crypto.randomUUID().slice(0, 8)}`
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openPageSettings(pageTitle)
@@ -70,6 +75,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.fillPermalink(newPermalink)
     await settings.expectRedirectOptionHidden()
     await settings.closeWithoutSaving()
+
+    // Assert
     await expect
       .poll(async () => (await getResource(seededPage.id))?.permalink)
       .toBe(seededPage.permalink)
@@ -78,6 +85,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin sees redirect option when changing permalink on a published page", async ({
     page,
   }) => {
+    // Arrange
     const pageTitle = `Settings Published Page ${crypto.randomUUID().slice(0, 8)}`
     const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
     const { page: seededPage } = await seedRootPage({
@@ -88,6 +96,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
     const newPermalink = `renamed-${crypto.randomUUID().slice(0, 8)}`
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openPageSettings(pageTitle)
@@ -97,6 +106,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.expectRedirectOptionVisible()
     await settings.saveAndPublish()
 
+    // Assert
     await expect
       .poll(async () => (await getResource(seededPage.id))?.permalink)
       .toBe(newPermalink)
@@ -111,6 +121,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   test("editor can save draft page title via PageSettingsModal", async ({
     page,
   }) => {
+    // Arrange
     const pageTitle = `Editor Draft Page ${crypto.randomUUID().slice(0, 8)}`
     const { page: seededPage } = await seedRootPage({
       siteId,
@@ -118,6 +129,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     })
     const newTitle = `Editor Renamed ${crypto.randomUUID().slice(0, 8)}`
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openPageSettings(pageTitle)
@@ -128,6 +140,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await settings.fillTitle(newTitle)
     await settings.saveDraft()
 
+    // Assert
     await expect
       .poll(async () => (await getResource(seededPage.id))?.title)
       .toBe(newTitle)

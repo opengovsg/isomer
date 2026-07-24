@@ -33,16 +33,19 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can edit a page inside a folder and persist changes after reload", async ({
     page,
   }) => {
+    // Arrange
     const editedText = `Edited ${crypto.randomUUID().slice(0, 8)}`
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
+    // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
     await expect
       .poll(() => getResourceDraftBlobContent(seededPage.id))
       .toContain(editedText)
-
     await editor.reload()
+
+    // Assert
     await editor.expectLoaded()
     await editor.expectBlockPreview(editedText)
   })
@@ -56,16 +59,19 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   test("editor can edit a page inside a folder and persist changes after reload", async ({
     page,
   }) => {
+    // Arrange
     const editedText = `Editor edit ${crypto.randomUUID().slice(0, 8)}`
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
+    // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
     await expect
       .poll(() => getResourceDraftBlobContent(seededPage.id))
       .toContain(editedText)
-
     await editor.reload()
+
+    // Assert
     await editor.expectLoaded()
     await editor.expectBlockPreview(editedText)
   })

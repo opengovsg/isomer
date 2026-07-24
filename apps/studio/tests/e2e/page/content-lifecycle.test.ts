@@ -35,10 +35,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can create, edit, and publish a page inside a folder", async ({
     page,
   }) => {
+    // Arrange
     const folderTitle = UNIQUE_FOLDER()
     const pageTitle = UNIQUE_TITLE()
     const editedText = `Lifecycle ${crypto.randomUUID().slice(0, 8)}`
 
+    // Act
     const { folderId } = await createFolderViaWizard(page, {
       siteId,
       title: folderTitle,
@@ -56,6 +58,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
+    // Assert
     const resource = await getResourceByTitle({ siteId, title: pageTitle })
     expect(resource?.state).toBe(ResourceState.Published)
     expect(resource?.parentId).toBe(folderId)
