@@ -32,6 +32,7 @@ import { BiLink } from "react-icons/bi"
 import { z } from "zod"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { pageSettingsModalAtom } from "~/features/dashboard/atoms"
+import { Can } from "~/features/permissions"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { generateBasePermalinkSchema } from "~/schemas/common"
@@ -316,9 +317,15 @@ const PageSettingsModalContent = ({
         <Button mr={3} variant="clear" onClick={onClose}>
           Close
         </Button>
-        <Button onClick={onSubmit} isLoading={isPending}>
-          {isPagePublished ? "Publish immediately" : "Save"}
-        </Button>
+        <Can do="publish" on="Resource" passThrough>
+          {({ isAllowed: canPublish }) =>
+            !isPagePublished || canPublish ? (
+              <Button onClick={onSubmit} isLoading={isPending}>
+                {isPagePublished ? "Publish immediately" : "Save"}
+              </Button>
+            ) : null
+          }
+        </Can>
       </ModalFooter>
     </ModalContent>
   )
