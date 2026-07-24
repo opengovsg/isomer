@@ -31,12 +31,15 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   })
 
   test("publisher can publish a draft page", async ({ page }) => {
+    // Arrange
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
+    // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
+    // Assert
     await expect
       .poll(async () => (await getResource(seededPage.id))?.state)
       .toBe(ResourceState.Published)
@@ -45,6 +48,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher cannot publish a published page with no pending edits", async ({
     page,
   }) => {
+    // Arrange
     const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
     const { page: seededPage } = await seedFolderWithPage({
       siteId,
@@ -52,7 +56,10 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       userId: publisherId,
     })
 
+    // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+
+    // Assert
     await editor.expectPublishButtonDisabled()
     await expect
       .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
@@ -62,6 +69,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher can edit a published page and republish changes", async ({
     page,
   }) => {
+    // Arrange
     const editedText = `Edited ${crypto.randomUUID().slice(0, 8)}`
     const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
     const { page: seededPage } = await seedFolderWithPage({
@@ -70,16 +78,17 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       userId: publisherId,
     })
 
+    // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
     await expect
       .poll(async () => (await getResource(seededPage.id))?.draftBlobId)
       .not.toBeNull()
     await editor.expectPublishButtonEnabled()
-
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
+    // Assert
     await expect
       .poll(async () => (await getResource(seededPage.id))?.state)
       .toBe(ResourceState.Published)
@@ -98,9 +107,13 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   test("editor does not see the Publish button on the page editor", async ({
     page,
   }) => {
+    // Arrange
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
+    // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+
+    // Assert
     await editor.expectPublishButtonHidden()
   })
 })
