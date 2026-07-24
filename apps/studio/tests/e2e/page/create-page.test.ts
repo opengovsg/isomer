@@ -1,7 +1,11 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  ResourceState,
+  ResourceType,
+  RoleType,
+} from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { createPageViaWizard } from "../fixtures/helpers"
@@ -14,9 +18,7 @@ let siteId: number
 
 test.beforeAll(async () => {
   const site = await provisionE2ESite({
-    admin: true,
-    editor: true,
-    publisher: true,
+    roles: [RoleType.Admin, RoleType.Editor, RoleType.Publisher],
   })
   siteId = site.siteId
 })

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
@@ -18,7 +19,7 @@ const UNIQUE_VENDOR = () =>
 let siteId: number
 
 test.beforeAll(async () => {
-  const site = await provisionE2ESite({ admin: true })
+  const site = await provisionE2ESite({ roles: [RoleType.Admin] })
   siteId = site.siteId
 })
 
