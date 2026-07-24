@@ -63,4 +63,95 @@ export class DashboardPO {
     const row = this.page.getByRole("row").filter({ hasText: title })
     await expect(row.getByText("Scheduled")).toBeVisible()
   }
+
+  async gotoCollection(siteId: number, collectionId: string) {
+    await this.page.goto(`/sites/${siteId}/collections/${collectionId}`)
+    await this.page.waitForURL(
+      new RegExp(`/sites/${siteId}/collections/${collectionId}$`),
+    )
+  }
+
+  /** Collection table uses the same options menu as the resource table. */
+  async openCollectionResourceMenu(title: string) {
+    await this.openResourceMenu(title)
+  }
+
+  async clickDelete() {
+    await this.page.getByRole("menuitem", { name: "Delete" }).click()
+  }
+
+  async clickMove() {
+    await this.page.getByRole("menuitem", { name: "Move to..." }).click()
+  }
+
+  async expectDeleteMenuHidden() {
+    await expect(
+      this.page.getByRole("menuitem", { name: "Delete" }),
+    ).not.toBeVisible()
+  }
+
+  async expectMoveMenuHidden() {
+    await expect(
+      this.page.getByRole("menuitem", { name: "Move to..." }),
+    ).not.toBeVisible()
+  }
+
+  async openFolderSettings(title: string) {
+    await this.openResourceMenu(title)
+    await this.page
+      .getByRole("menuitem", { name: "Edit folder settings" })
+      .click()
+  }
+
+  async confirmDeleteResource(
+    label: "page" | "folder" | "collection",
+    { title }: { title: string },
+  ) {
+    await expect(
+      this.page.getByRole("heading", { name: `Delete ${title}?` }),
+    ).toBeVisible()
+    await this.page
+      .getByRole("checkbox", {
+        name: new RegExp(`Yes, delete this ${label} permanently`),
+      })
+      .click()
+    await this.page.getByRole("button", { name: `Delete ${label}` }).click()
+    await expect(
+      this.page.getByText(new RegExp(`${label} deleted!`, "i")),
+    ).toBeVisible()
+  }
+
+  async selectMoveDestination(title: string) {
+    await expect(
+      this.page.getByRole("heading", { name: /Move ".+" to\.\.\./ }),
+    ).toBeVisible()
+    await this.page.getByRole("button").filter({ hasText: title }).click()
+  }
+
+  async confirmMove() {
+    const moveButton = this.page.getByRole("button", { name: "Move here" })
+    await expect(moveButton).toBeEnabled()
+    await moveButton.click()
+    await expect(this.page.getByText("Resource moved!")).toBeVisible()
+  }
+
+  async openSearch() {
+    await this.page.getByRole("button", { name: "search-button" }).click()
+    await expect(
+      this.page.getByPlaceholder(
+        /Search pages, collections, or folders by name/,
+      ),
+    ).toBeVisible()
+  }
+
+  async searchFor(query: string) {
+    await this.openSearch()
+    await this.page
+      .getByPlaceholder(/Search pages, collections, or folders by name/)
+      .fill(query)
+  }
+
+  async clickSearchResult(title: string) {
+    await this.page.getByRole("link").filter({ hasText: title }).click()
+  }
 }
