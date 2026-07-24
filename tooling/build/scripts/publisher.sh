@@ -223,4 +223,46 @@ echo "ETag: $ETag"
 
 jq '.Distribution.DistributionConfig' distribution.json >distribution-new.json
 jq ".Origins.Items[0].OriginPath = \"/$SITE_NAME/$CODEBUILD_BUILD_NUMBER/latest\"" distribution-new.json >distribution-config.json
-aws cloudfront update-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --distribution-config file://distribution-config.json --if-match $ETag
+
+# Temporarily disable set -e so we can inspect the exit code and error message before deciding
+# whether to fail or warn. Re-enabled immediately after the command.
+set +e
+UPDATE_DISTRIBUTION_OUTPUT=$(aws cloudfront update-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --distribution-config file://distribution-config.json --if-match $ETag 2>&1)
+UPDATE_DISTRIBUTION_EXIT_CODE=$?
+set -e
+
+if [ $UPDATE_DISTRIBUTION_EXIT_CODE -ne 0 ]; then
+  # PreconditionFailed means the ETag we read no longer matches the distribution's current ETag,
+  # i.e. someone updated the distribution between our get-distribution and update-distribution calls.
+  # This can happen legitimately when two builds run concurrently for the same site and the other
+  # build won the race. In that case it's safe to skip our update — but only if the distribution
+  # already points to a build that is at least as new as ours. If the current origin path is older
+  # or unrecognised (e.g. a manual or IaC change), we still want to fail loudly so the operator
+  # knows our build's content is not being served.
+  if echo "$UPDATE_DISTRIBUTION_OUTPUT" | grep -q "PreconditionFailed"; then
+    # Re-fetch the distribution to see what origin path won the race.
+    CURRENT_ORIGIN_PATH=$(aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID \
+      | jq -r '.Distribution.DistributionConfig.Origins.Items[0].OriginPath')
+    echo "PreconditionFailed: current origin path is $CURRENT_ORIGIN_PATH"
+
+    # Extract the build number from the current origin path (format: /<site>/<build>/latest).
+    # The anchored pattern returns an empty string for any path that does not strictly match
+    # /<site>/<digits>/latest (e.g. a path missing /latest, or from a different site), which
+    # causes the numeric check below to fail and the build to exit loudly as intended.
+    CURRENT_BUILD_NUMBER=$(echo "$CURRENT_ORIGIN_PATH" | sed -n "s|^/$SITE_NAME/\([0-9]\+\)/latest$|\1|p")
+
+    # Only skip if the winning update already points to a newer-or-equal build for this site.
+    # A non-numeric result means the path is in an unexpected format (manual change, wrong site,
+    # etc.) and we should not silently accept it.
+    if [[ "$CURRENT_BUILD_NUMBER" =~ ^[0-9]+$ ]] && [ "$CURRENT_BUILD_NUMBER" -ge "$CODEBUILD_BUILD_NUMBER" ]; then
+      echo "Warning: CloudFront already points to build $CURRENT_BUILD_NUMBER (>= ours: $CODEBUILD_BUILD_NUMBER). Concurrent build won the race — skipping update."
+    else
+      echo "Error: PreconditionFailed but current origin path ($CURRENT_ORIGIN_PATH) does not point to a newer build. A non-build update may have occurred. Manual inspection required."
+      exit 1
+    fi
+  else
+    # Any other AWS error should still fail the build.
+    echo "$UPDATE_DISTRIBUTION_OUTPUT"
+    exit $UPDATE_DISTRIBUTION_EXIT_CODE
+  fi
+fi
