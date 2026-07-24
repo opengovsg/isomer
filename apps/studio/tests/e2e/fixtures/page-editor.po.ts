@@ -14,6 +14,10 @@ export class PageEditorPO {
     ).toBeVisible()
   }
 
+  async reload() {
+    await this.page.reload()
+  }
+
   /**
    * Opens a root-drawer block by its accessible name, then fills the first
    * textbox in the block editor. Label examples: "Content page header",
@@ -76,6 +80,24 @@ export class PageEditorPO {
   async expectPublishButtonHidden() {
     await expect(
       this.page.getByRole("button", { name: "Publish" }),
+    ).not.toBeVisible()
+  }
+
+  async expectPublishButtonDisabled() {
+    await expect(
+      this.page.getByRole("button", { name: "Publish" }),
+    ).toBeDisabled()
+  }
+
+  async expectPublishButtonEnabled() {
+    await expect(
+      this.page.getByRole("button", { name: "Publish" }),
+    ).toBeEnabled()
+  }
+
+  async expectScheduleOptionsHidden() {
+    await expect(
+      this.page.getByRole("button", { name: "More options" }),
     ).not.toBeVisible()
   }
 
