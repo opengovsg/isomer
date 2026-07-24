@@ -16,9 +16,7 @@ import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
 let siteId: number
 
 test.beforeAll(async () => {
-  const site = await provisionE2ESite({
-    roles: [RoleType.Admin, RoleType.Editor, RoleType.Publisher],
-  })
+  const site = await provisionE2ESite({ roles: [RoleType.Admin] })
   siteId = site.siteId
 })
 
