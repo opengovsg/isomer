@@ -123,9 +123,8 @@ export class DashboardPO {
       this.page.getByRole("dialog").getByText(`Delete ${title}?`),
     ).toBeVisible()
     await this.page
-      .getByRole("checkbox", {
-        name: new RegExp(`Yes, delete this ${label} permanently`),
-      })
+      .getByRole("dialog")
+      .getByText(new RegExp(`Yes, delete this ${label} permanently`))
       .click()
     await this.page.getByRole("button", { name: `Delete ${label}` }).click()
     await expect(
@@ -164,10 +163,10 @@ export class DashboardPO {
   }
 
   async clickSearchResult(title: string) {
-    await this.page
-      .getByRole("dialog")
-      .getByRole("link")
-      .filter({ hasText: title })
-      .click()
+    const dialog = this.page.getByRole("dialog")
+    await expect(dialog.getByText(/\d+ search result.*in title/i)).toBeVisible()
+    const resultLink = dialog.getByRole("link", { name: title })
+    await expect(resultLink).toBeVisible()
+    await resultLink.click()
   }
 }
