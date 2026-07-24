@@ -132,6 +132,22 @@ export class DashboardPO {
     await expect(this.page.getByRole("heading", { name: title })).toBeVisible()
   }
 
+  async expectOnPageEditor(siteId: number, pageId: string) {
+    await this.page.waitForURL(new RegExp(`/sites/${siteId}/pages/${pageId}`))
+  }
+
+  async expectOnFolder(siteId: number, folderId: string) {
+    await this.page.waitForURL(
+      new RegExp(`/sites/${siteId}/folders/${folderId}$`),
+    )
+  }
+
+  async expectOnCollection(siteId: number, collectionId: string) {
+    await this.page.waitForURL(
+      new RegExp(`/sites/${siteId}/collections/${collectionId}$`),
+    )
+  }
+
   async expectSearchResultVisible(title: string) {
     const dialog = this.page.getByRole("dialog")
     await expect(dialog.getByText(/\d+ search result.*in title/i)).toBeVisible()
@@ -227,13 +243,5 @@ export class DashboardPO {
     const resultLink = dialog.getByRole("link", { name: title })
     await expect(resultLink).toBeVisible()
     await resultLink.click()
-  }
-
-  async expectSearchResultsDialogHidden() {
-    await expect(
-      this.page.getByPlaceholder(
-        /Search pages, collections, or folders by name/,
-      ),
-    ).not.toBeVisible()
   }
 }
