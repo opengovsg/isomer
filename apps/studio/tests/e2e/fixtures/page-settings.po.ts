@@ -22,6 +22,22 @@ export class PageSettingsPO {
     ).toBeVisible()
   }
 
+  async expectRedirectOptionHidden() {
+    await expect(
+      this.page.getByText("Redirect page automatically"),
+    ).toHaveCount(0)
+  }
+
+  async expectSaveButtonVisible() {
+    await expect(this.page.getByRole("button", { name: "Save" })).toBeVisible()
+  }
+
+  async expectPublishImmediatelyHidden() {
+    await expect(
+      this.page.getByRole("button", { name: "Publish immediately" }),
+    ).toHaveCount(0)
+  }
+
   async saveDraft() {
     await this.page.getByRole("button", { name: "Save" }).click()
     await expect(this.page.getByText("Saved settings")).toBeVisible()
