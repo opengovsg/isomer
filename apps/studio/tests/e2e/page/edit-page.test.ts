@@ -5,6 +5,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { openSeededPageEditor } from "../fixtures/helpers"
 import {
+  expectDraftBlobContainsText,
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
 } from "../fixtures/page-seed"
@@ -37,6 +38,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
+    await expectDraftBlobContainsText(seededPage.id).toContain(editedText)
 
     await editor.reload()
     await editor.expectLoaded()
@@ -57,6 +59,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
 
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
+    await expectDraftBlobContainsText(seededPage.id).toContain(editedText)
 
     await editor.reload()
     await editor.expectLoaded()
