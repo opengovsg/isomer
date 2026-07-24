@@ -10,7 +10,7 @@ import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS } from "./auth"
 
-export type ProvisionedSite = {
+export interface ProvisionedSite {
   siteId: number
   siteName: string
 }
@@ -24,11 +24,14 @@ const getUserIdByEmail = async (email: string) => {
   return user.id
 }
 
-export const provisionE2ESite = async (opts: {
-  admin?: boolean
-  editor?: boolean
-  publisher?: boolean
-}): Promise<ProvisionedSite> => {
+type ProvisionE2ESiteOpts =
+  | { admin: true; editor?: boolean; publisher?: boolean }
+  | { admin?: boolean; editor: true; publisher?: boolean }
+  | { admin?: boolean; editor?: boolean; publisher: true }
+
+export const provisionE2ESite = async (
+  opts: ProvisionE2ESiteOpts,
+): Promise<ProvisionedSite> => {
   const { site } = await setupSite()
 
   const permissionSetup: Promise<unknown>[] = []
@@ -96,18 +99,11 @@ export const teardownE2ESite = async (siteId: number): Promise<void> => {
     const resourceIds = resources.map((r) => r.id)
 
     if (resourceIds.length > 0) {
+      // PushDocumentJob has no siteId column and its resourceId FK is
+      // onDelete: Restrict, so this must be scoped by resourceId — the
+      // siteId-scoped deletes below can't reach it.
       await tx
         .deleteFrom("PushDocumentJob")
-        .where("resourceId", "in", resourceIds)
-        .execute()
-
-      await tx
-        .deleteFrom("CodeBuildJobs")
-        .where("resourceId", "in", resourceIds)
-        .execute()
-
-      await tx
-        .deleteFrom("ResourcePermission")
         .where("resourceId", "in", resourceIds)
         .execute()
     }
@@ -123,10 +119,6 @@ export const teardownE2ESite = async (siteId: number): Promise<void> => {
     await sql`SET LOCAL session_replication_role = 'origin'`.execute(tx)
     await tx.deleteFrom("Redirect").where("siteId", "=", siteId).execute()
 
-    const versionIds = resources
-      .map((r) => r.publishedVersionId)
-      .filter((id): id is NonNullable<typeof id> => id != null)
-
     const draftBlobIds = resources
       .map((r) => r.draftBlobId)
       .filter((id): id is NonNullable<typeof id> => id != null)
@@ -139,14 +131,21 @@ export const teardownE2ESite = async (siteId: number): Promise<void> => {
 
     const blobIds = new Set(draftBlobIds)
 
-    if (versionIds.length > 0) {
+    if (resourceIds.length > 0) {
+      // Scoped by resourceId, not just each resource's current
+      // publishedVersionId — publishing repeatedly creates a new Version
+      // row each time without deleting the superseded one, so old versions
+      // would otherwise leak past teardown.
       const versions = await tx
         .selectFrom("Version")
-        .where("id", "in", versionIds)
+        .where("resourceId", "in", resourceIds)
         .select("blobId")
         .execute()
 
-      await tx.deleteFrom("Version").where("id", "in", versionIds).execute()
+      await tx
+        .deleteFrom("Version")
+        .where("resourceId", "in", resourceIds)
+        .execute()
 
       for (const version of versions) {
         blobIds.add(version.blobId)

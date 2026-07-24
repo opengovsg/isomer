@@ -1,3 +1,4 @@
+import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { sql } from "kysely"
 import { db, jsonb } from "~/server/modules/database"
 
@@ -16,7 +17,7 @@ export const resetSiteAgencySettings = async (
     .select("config")
     .executeTakeFirstOrThrow()
 
-  const config = site.config as Record<string, unknown>
+  const config = site.config as IsomerSiteConfigProps
 
   await db
     .updateTable("Site")
