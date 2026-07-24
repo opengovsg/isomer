@@ -62,7 +62,7 @@ Per UI surface: **one happy-path** + **one permission-gate** where the UI shows 
 ```
 PR-1  fixtures foundation
   └─ PR-2  per-site isolation (migrate existing tests)
-       └─ PR-3  playwright config tuning
+       └─ PR-3  playwright config + role projects
             └─ PR-4  page objects
                  └─ PR-5  page module tests (edit + publish)
                       └─ PR-6  resource module tests (delete + move + search)
@@ -70,6 +70,7 @@ PR-1  fixtures foundation
                                 └─ PR-8  user management completion
                                      └─ PR-9  collection module
                                           └─ PR-10 godmode actions
+                                               └─ PR-11 CI parallelism (tentative — only if E2E job is slow)
 ```
 
 ---
@@ -246,7 +247,7 @@ test.describe("publisher", { tag: "@publisher" }, () => {
 await Promise.all(ROLES.map((role) => signInOnce(role, baseURL)))
 ```
 
-**Do not add:** CI sharding or matrix jobs (only CI improvement deferred).
+**Do not add:** CI sharding in this PR — that is PR-11 (tentative last step, conditional on CI runtime).
 
 ### Acceptance criteria
 
@@ -419,9 +420,78 @@ Route access already covered by `godmode/access.test.ts`. These PRs cover **acti
 
 ---
 
+## PR-11: CI parallelism (tentative — conditional)
+
+**Branch:** `cursor/e2e-ci-sharding-a5d0`  
+**Priority:** P4 — last step in stack  
+**Depends on:** PR-10  
+**Status:** **Do not start unless the go/no-go check passes.**
+
+### Go / no-go (required before opening this PR)
+
+After PR-10 merges, measure the `end-to-end-tests` job duration on `main` over **3 consecutive green runs**.
+
+| Condition | Action |
+|-----------|--------|
+| Median E2E job duration **< 15 min** | **Skip PR-11.** Close or don't open. Revisit if duration crosses 15 min later. |
+| Median E2E job duration **≥ 15 min** | Proceed with PR-11. |
+
+Record the measured duration in the PR description when opening.
+
+**Why 15 min:** Balances CI feedback loop vs complexity of multi-job sharding (duplicate container startup, artifact merging, flakiness surface).
+
+### Prerequisites (must already be merged)
+
+- PR-2 per-site isolation — shards share one Postgres; tests must not collide on site ID 1
+- PR-3 role projects + `workers: 2` — local parallelism proven before cross-job parallelism
+
+### Scope
+
+**Modify:** `.github/workflows/ci.yml` — split `end-to-end-tests` into a matrix:
+
+```yaml
+end-to-end-tests:
+  strategy:
+    fail-fast: false
+    matrix:
+      shard: [1, 2, 3]
+  steps:
+    # ... existing setup (checkout, playwright install, .env, build, containers, seed) ...
+    - name: Run Playwright tests (shard ${{ matrix.shard }}/3)
+      run: >-
+        pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
+        -- --shard=${{ matrix.shard }}/3
+```
+
+Start with **3 shards**; bump to 4 only if still ≥ 15 min after sharding.
+
+Each matrix job:
+- Starts its own Postgres/Mockpass containers (existing `setup:test`)
+- Runs `db:seed` + `globalSetup` independently (acceptable overhead)
+- Uploads test-results artifact with shard suffix: `e2e-test-results-${{ github.run_id }}-shard-${{ matrix.shard }}`
+
+**Modify:** `post-pr-comment.yml` (if needed) — aggregate or link multiple shard artifacts.
+
+**Do not change:** Playwright project structure or test files unless sharding exposes a shared-state bug (fix in a separate PR).
+
+### Acceptance criteria
+
+- [ ] Go/no-go documented in PR with median runtime from 3 `main` runs
+- [ ] 3-shard matrix reduces wall-clock E2E job by ≥ 30% vs single job
+- [ ] No new flakes over 3 consecutive CI runs on the PR branch
+- [ ] All shards green; combined test count matches pre-shard total
+
+### If skipped
+
+Leave a note in `apps/studio/tests/e2e/README.md`:
+
+> CI sharding (PR-11) deferred — E2E job median runtime below 15 min as of \<date\>. Revisit when runtime exceeds threshold.
+
+---
+
 ## Future backlog (not in this stack)
 
-Track separately; do not start until PR-10 is merged:
+Track separately; do not start until PR-10 is merged (PR-11 excepted — see go/no-go above):
 
 | Item | Notes |
 |------|-------|
@@ -433,7 +503,6 @@ Track separately; do not start until PR-10 is merged:
 | `gazette/*` | Requires Toppan fixture + S3 mock |
 | `auth/logout.test.ts` | Logout → redirect to sign-in |
 | `auth/unauthenticated-redirect.test.ts` | Protected route → sign-in |
-| CI sharding | When suite runtime > ~15 min in CI |
 | `fixtures/reset.ts` expansion | Add reset helpers per settings surface as PR-7 lands (navbar, footer, integrations, redirects, logo) |
 | `singpass.test.ts` | Out of scope until real Singpass test env exists |
 
@@ -483,5 +552,8 @@ cd apps/studio && pnpm exec playwright test --project=unauthenticated
 | PR-8 User management | P2 | M | Collaborator flows |
 | PR-9 Collection | P2 | M | Collection flows |
 | PR-10 Godmode actions | P3 | S | Platform admin flows |
+| PR-11 CI parallelism | P4 | M | **Tentative** — only if E2E job median ≥ 15 min after PR-10 |
 
 **Effort key:** S = <1 day agent time, M = 1–2 days, L = 2–3 days (settings split across files).
+
+**PR-11 is optional:** Agents should complete PR-1–10 first, measure CI runtime, then either implement PR-11 or document skip per go/no-go table.
