@@ -109,6 +109,13 @@ $max-depth: 13;
     pointer-events: none;
   }
 
+  // Match published Table (`packages/components`): fixed layout + explicit
+  // column tracks (TipTap TableView injects <colgroup>). Without fixed layout,
+  // staggered merges can collapse phantom columns to zero width.
+  .tableWrapper {
+    overflow-x: auto;
+  }
+
   table {
     border-collapse: collapse;
     margin: 0;
