@@ -47,7 +47,9 @@ Use `test.info().parallelIndex` only if two workers within the same file need di
 
 ### Auth
 
-Keep existing `storageState` + `globalSetup`. No per-test login. Optionally parallelise sign-ins in `globalSetup` (`Promise.all`) as a small win in PR 3.
+Keep existing `storageState` + `globalSetup`. No per-test login. Parallelise sign-ins in `globalSetup` (`Promise.all`) in PR-3.
+
+**Role projects (PR-3):** Replace per-file `test.use({ storageState })` with Playwright projects — one project per role, plus an `unauthenticated` project for smoke tests. Multi-role files use `@role` tags on `test.describe` blocks matched via project `grep`.
 
 ### Test pattern (unchanged)
 
@@ -157,7 +159,7 @@ Delete site row (cascade should clean resources). If FK constraints block delete
 
 ---
 
-## PR-3: Playwright config tuning
+## PR-3: Playwright config tuning + role projects
 
 **Branch:** `cursor/e2e-playwright-config-a5d0`  
 **Priority:** P1  
@@ -167,29 +169,91 @@ Delete site row (cascade should clean resources). If FK constraints block delete
 
 **Modify:** `apps/studio/playwright.config.ts`
 
+Replace the single `e2e` project with role-based projects. Only **CI sharding** is deferred — projects ship in this PR.
+
 ```typescript
+import { ROLES, storageStateFor } from "./tests/e2e/fixtures/auth"
+
+const baseUse = {
+  ...devices["Desktop Chrome"],
+  baseURL: baseUrl,
+  headless: opts.headless,
+  video: "retain-on-failure" as const,
+}
+
 export default defineConfig({
-  // ...
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined, // start conservative; bump to 4 if CI stable
-  // ...
+  globalSetup: "./tests/e2e/global-setup.ts",
+  testDir: "./tests/e2e",
+  projects: [
+    {
+      name: "unauthenticated",
+      testMatch: /smoke\.test\.ts/,
+      use: { ...baseUse },
+    },
+    // singpass.test.ts stays in unauthenticated project but remains skipped
+    {
+      name: "singpass",
+      testMatch: /singpass\.test\.ts/,
+      use: { ...baseUse },
+    },
+    ...ROLES.map((role) => ({
+      name: role,
+      grep: new RegExp(`@${role}\\b`),
+      use: { ...baseUse, storageState: storageStateFor(role) },
+    })),
+  ],
 })
 ```
+
+**Tag convention for multi-role files:**
+
+```typescript
+test.describe("admin", { tag: "@admin" }, () => {
+  // remove test.use({ storageState: storageStateFor("admin") })
+  test("...", async ({ page }) => { /* ... */ })
+})
+
+test.describe("publisher", { tag: "@publisher" }, () => {
+  test("...", async ({ page }) => { /* ... */ })
+})
+```
+
+**Single-role files:** add `{ tag: "@admin" }` on the outer `test.describe` (or file-level via `test.describe.configure`) and remove top-level `test.use({ storageState })`.
+
+**Migrate existing tests:**
+
+| File | Migration |
+|------|-----------|
+| `smoke.test.ts` | No tags; picked up by `unauthenticated` project |
+| `singpass.test.ts` | Do not modify tests; `singpass` project only |
+| `site/list.test.ts` | Split describes: `@editor`, `@nomember` |
+| `site/settings-agency.test.ts` | `@admin` block + `@publisher` block; remove both `test.use` |
+| `site/settings-notification.test.ts` | `@admin` |
+| `site/admin.test.ts` | `@core`, `@migrator`, `@editor`, `@publisher`, `@admin`, `@nomember` per describe loop |
+| `page/create-page.test.ts` | `@admin`, `@publisher`, `@editor` per describe |
+| `resource/create-folder.test.ts` | `@admin` |
+| `user/invite-user.test.ts` | `@admin` |
+| `godmode/access.test.ts` | `@core`, `@migrator`, `@admin` per describe |
+
+**Modify:** `apps/studio/tests/e2e/README.md` — document tag convention; new tests must use `@role` tags, not `test.use({ storageState })`.
 
 **Modify:** `apps/studio/tests/e2e/global-setup.ts` — parallelise role sign-ins:
 ```typescript
 await Promise.all(ROLES.map((role) => signInOnce(role, baseURL)))
 ```
 
-**Do not add:** CI sharding or matrix jobs.
-
-**Defer (see Future backlog):** Playwright projects per role group — not needed until test-file count makes `test.use({ storageState })` boilerplate painful (~15+ files).
+**Do not add:** CI sharding or matrix jobs (only CI improvement deferred).
 
 ### Acceptance criteria
 
-- [ ] `pnpm dev:e2e` passes locally with default workers
+- [ ] `pnpm dev:e2e` passes — all 29 active tests green across role projects
+- [ ] No remaining `test.use({ storageState: storageStateFor(...) })` in test files (except `singpass.test.ts` if untouched)
+- [ ] `pnpm exec playwright test --project=admin` runs only `@admin`-tagged tests
+- [ ] `pnpm exec playwright test --project=unauthenticated` runs smoke only
 - [ ] CI E2E job passes with `workers: 2`
 - [ ] `globalSetup` runtime reduced (serial 6 logins → parallel)
 
@@ -370,7 +434,6 @@ Track separately; do not start until PR-10 is merged:
 | `auth/logout.test.ts` | Logout → redirect to sign-in |
 | `auth/unauthenticated-redirect.test.ts` | Protected route → sign-in |
 | CI sharding | When suite runtime > ~15 min in CI |
-| Playwright projects per role | When `test.use({ storageState })` is duplicated across 15+ files; add projects like `{ name: 'admin', use: { storageState: storageStateFor('admin') } }` to `playwright.config.ts` |
 | `fixtures/reset.ts` expansion | Add reset helpers per settings surface as PR-7 lands (navbar, footer, integrations, redirects, logo) |
 | `singpass.test.ts` | Out of scope until real Singpass test env exists |
 
@@ -381,7 +444,7 @@ Track separately; do not start until PR-10 is merged:
 1. Branch off previous stack PR: `gt create cursor/<name>-a5d0`
 2. Run `pnpm dev:e2e` from `apps/studio` before push
 3. One concern per PR — no drive-by refactors
-4. New test files follow `tests/e2e/<module>/<surface>.test.ts`
+4. New test files follow `tests/e2e/<module>/<surface>.test.ts` and tag describes with `@role` (not `test.use({ storageState })`)
 5. Mutating tests use `provisionE2ESite` / `teardownE2ESite`
 6. Do not modify `singpass.test.ts`
 7. Update `apps/studio/tests/e2e/README.md` only when adding new fixture APIs worth documenting
@@ -397,8 +460,11 @@ cd apps/studio && pnpm dev:e2e
 # Parallel smoke (after PR-2)
 cd apps/studio && pnpm exec playwright test --workers=4
 
-# Single file
-cd apps/studio && pnpm exec playwright test tests/e2e/page/publish-page.test.ts
+# Single role
+cd apps/studio && pnpm exec playwright test --project=admin
+
+# Unauthenticated only
+cd apps/studio && pnpm exec playwright test --project=unauthenticated
 ```
 
 ---
@@ -409,7 +475,7 @@ cd apps/studio && pnpm exec playwright test tests/e2e/page/publish-page.test.ts
 |----|----------|--------|----------|
 | PR-1 Fixtures + reset helpers | P0 | S | All new tests |
 | PR-2 Per-site isolation | P0 | M | Parallel execution |
-| PR-3 Playwright config | P1 | S | CI throughput |
+| PR-3 Playwright config + role projects | P1 | M | Parallel runs, no test.use boilerplate |
 | PR-4 Page objects | P1 | M | PR-5–10 ergonomics |
 | PR-5 Page edit/publish | P1 | M | Core CMS coverage |
 | PR-6 Resource delete/move/search | P1 | M | Content tree coverage |
