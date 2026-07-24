@@ -97,6 +97,9 @@ fi
 
 # packages/components/dist is gitignored; Next resolves @opengovsg/isomer-components via workspace.
 # Cache dist separately from .pnpm-store: restoring plain files does not affect the content-addressable store or node_modules linking.
+# For release builds this artifact is normally pre-published to the cache by the
+# publish_components GitHub workflow (.github/workflows/publish_components.yml);
+# the build-and-cache branch below is a fallback for cold caches (e.g. feature branches).
 COMPONENTS_DIST_TGZ="isomer-components-dist.tar.zst"
 COMPONENTS_DIST_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$COMPONENTS_DIST_TGZ"
 echo "Fetching cached isomer-components dist..."
