@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
 
 export class UsersPO {
   constructor(private readonly page: Page) {}
@@ -10,6 +10,22 @@ export class UsersPO {
 
   async openAddUser() {
     await this.page.getByRole("button", { name: "Add new user" }).click()
+  }
+
+  async fillInviteForm(email: string, role: string) {
+    await this.page.getByLabel("Email address").fill(email)
+    await this.page
+      .getByRole("button", { name: new RegExp(`^${role}`) })
+      .click()
+  }
+
+  async sendInvite() {
+    const sendBtn = this.page.getByRole("button", { name: "Send invite" })
+    await expect(sendBtn).toBeEnabled({ timeout: 10_000 })
+    await sendBtn.click()
+    await expect(this.page.getByText(/Sent invite to/)).toBeVisible({
+      timeout: 10_000,
+    })
   }
 
   /**
