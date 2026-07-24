@@ -11,6 +11,7 @@ import {
   expectResourceParentId,
   seedFolder,
   seedFolderWithPage,
+  seedNestedFolder,
   seedRootCollection,
   seedRootPage,
   seedTwoCollections,
@@ -82,6 +83,31 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expectResourceParentId(sourceFolder.id).toBe(destFolder.id)
     await dashboard.gotoFolder(siteId, destFolder.id)
     await dashboard.expectResourceLinkVisible(sourceTitle)
+  })
+
+  test("admin can move a nested folder to the site root", async ({ page }) => {
+    // Arrange
+    const suffix = crypto.randomUUID().slice(0, 8)
+    const parentTitle = `Move Parent Folder ${suffix}`
+    const childTitle = `Move Nested Folder ${suffix}`
+    const { childFolder } = await seedNestedFolder({
+      siteId,
+      parentFolderTitle: parentTitle,
+      childFolderTitle: childTitle,
+    })
+
+    // Act
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoSite(siteId)
+    await dashboard.openResourceMenu(childTitle)
+    await dashboard.clickMove()
+    await dashboard.selectMoveToSiteRoot()
+    await dashboard.confirmMove()
+
+    // Assert
+    await expectResourceParentId(childFolder.id).toBeNull()
+    await dashboard.gotoSite(siteId)
+    await dashboard.expectResourceLinkVisible(childTitle)
   })
 
   test("admin can move a collection into a folder", async ({ page }) => {
