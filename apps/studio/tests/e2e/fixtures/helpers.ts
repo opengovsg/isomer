@@ -34,16 +34,12 @@ export const createFolderViaWizard = async (
   await page.getByLabel("Folder name").fill(title)
   await page.getByRole("button", { name: "Create Folder" }).click()
 
-  await expect(page.getByText("Folder created!")).toBeVisible({
-    timeout: 30_000,
-  })
+  await expect(page.getByText("Folder created!")).toBeVisible()
 }
 
 export const openInviteModal = async (page: Page, siteId: number) => {
-  await page.goto(`/sites/${siteId}/users`, { timeout: 60_000 })
-  await page
-    .getByRole("button", { name: "Add new user" })
-    .click({ timeout: 30_000 })
+  await page.goto(`/sites/${siteId}/users`)
+  await page.getByRole("button", { name: "Add new user" }).click()
 }
 
 export const inviteCollaborator = async (
