@@ -76,7 +76,7 @@ describe("AuditLogExportSettingsPage", () => {
 
   it("renders the export section for admins", () => {
     renderWith(adminAbility)
-    expect(screen.queryByText("Audit log export")).not.toBeNull()
+    expect(screen.queryByRole("heading", { name: "Logs" })).not.toBeNull()
     expect(replace).not.toHaveBeenCalled()
   })
 
@@ -86,7 +86,7 @@ describe("AuditLogExportSettingsPage", () => {
     await waitFor(() =>
       expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`),
     )
-    expect(screen.queryByText("Audit log export")).toBeNull()
+    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
   })
 
   it("does not redirect while roles are still loading", () => {
@@ -94,6 +94,6 @@ describe("AuditLogExportSettingsPage", () => {
     renderWith(editorAbility)
 
     expect(replace).not.toHaveBeenCalled()
-    expect(screen.queryByText("Audit log export")).toBeNull()
+    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
   })
 })

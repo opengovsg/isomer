@@ -54,26 +54,31 @@ describe("AuditLogExportSection", () => {
 
   it("does not render for non-admins", () => {
     renderWith(editorAbility)
-    expect(screen.queryByRole("button", { name: "Request export" })).toBeNull()
+    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
   })
 
-  it("renders the heading and form for admins", () => {
+  it("renders the heading and a disabled submit for admins", () => {
     renderWith(adminAbility)
-    expect(screen.queryByText("Audit log export")).not.toBeNull()
-    expect(
-      screen.queryByRole("button", { name: "Request export" }),
-    ).not.toBeNull()
+    expect(screen.queryByRole("heading", { name: "Logs" })).not.toBeNull()
+    // With nothing selected the submit is the disabled call-to-action.
+    const submit = screen.getByRole("button", {
+      name: "Select log types to export",
+    })
+    expect((submit as HTMLButtonElement).disabled).toBe(true)
   })
 
-  // The month + report type selectors are pre-filled with valid defaults (the
-  // most recent month and "Both"). The SingleSelect option list is virtualised
-  // and does not render under jsdom, so we assert against those defaults rather
-  // than driving the dropdown — the submitted payload still proves the form
-  // wires the selected month + type + site id into the mutation.
-  it("submits the selected month and report type with the site id", async () => {
+  // Each selectable card maps onto a report type; picking both yields `Both`.
+  // The month picker defaults to the most recent (current, partial) month, so
+  // the submitted payload proves the cards + month + site id are wired through.
+  it("submits the selected report types and month with the site id", async () => {
     renderWith(adminAbility)
 
-    fireEvent.click(screen.getByRole("button", { name: "Request export" }))
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: /User access review logs/ }),
+    )
+    fireEvent.click(screen.getByRole("checkbox", { name: /Audit logs/ }))
+
+    fireEvent.click(screen.getByRole("button", { name: "Export log" }))
 
     await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1))
     const [payload] = mutate.mock.calls[0] as [
@@ -89,7 +94,8 @@ describe("AuditLogExportSection", () => {
   it("surfaces the server error message on failure", async () => {
     renderWith(adminAbility)
 
-    fireEvent.click(screen.getByRole("button", { name: "Request export" }))
+    fireEvent.click(screen.getByRole("checkbox", { name: /Audit logs/ }))
+    fireEvent.click(screen.getByRole("button", { name: "Export log" }))
     await waitFor(() => expect(capturedOptions?.onError).toBeDefined())
 
     capturedOptions?.onError?.({

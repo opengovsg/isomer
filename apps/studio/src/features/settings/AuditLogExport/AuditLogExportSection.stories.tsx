@@ -42,15 +42,35 @@ const meta: Meta<typeof AuditLogExportSection> = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-// Admin, form ready with the defaults pre-filled.
+// Admin, initial empty state: no log type picked, so the submit button is the
+// disabled "Select log types to export" call-to-action.
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await waitFor(async () =>
       expect(
-        await canvas.findByRole("button", { name: "Request export" }),
+        await canvas.findByRole("button", {
+          name: "Select log types to export",
+        }),
+      ).toBeDisabled(),
+    )
+  },
+}
+
+// Selecting the "Audit logs" card reveals its month picker and enables the
+// submit button as "Export log".
+export const Selected: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      await canvas.findByRole("checkbox", { name: /Audit logs/ }),
+    )
+    await waitFor(async () =>
+      expect(
+        await canvas.findByRole("button", { name: "Export log" }),
       ).toBeEnabled(),
     )
+    await expect(canvas.getByText("For the month of")).toBeVisible()
   },
 }
 
@@ -66,9 +86,10 @@ export const Submitting: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", {
-      name: "Request export",
-    })
+    await userEvent.click(
+      await canvas.findByRole("checkbox", { name: /Audit logs/ }),
+    )
+    const button = await canvas.findByRole("button", { name: "Export log" })
     await userEvent.click(button)
     await waitFor(() => expect(button).toBeDisabled())
   },
@@ -86,10 +107,12 @@ export const Conflict: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = await canvas.findByRole("button", {
-      name: "Request export",
-    })
-    await userEvent.click(button)
+    await userEvent.click(
+      await canvas.findByRole("checkbox", { name: /Audit logs/ }),
+    )
+    await userEvent.click(
+      await canvas.findByRole("button", { name: "Export log" }),
+    )
     await waitFor(async () =>
       expect(
         await within(document.body).findByText(

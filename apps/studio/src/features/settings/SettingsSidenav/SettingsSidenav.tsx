@@ -59,7 +59,7 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
         ...(isAdmin
           ? [
               {
-                label: "Audit log export",
+                label: "Logs",
                 href: `/sites/${siteId}/settings/audit`,
               },
             ]
