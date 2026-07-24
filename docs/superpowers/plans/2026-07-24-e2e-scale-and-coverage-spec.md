@@ -4,7 +4,7 @@
 >
 > **Required skills:** `feature-implement` for test PRs; follow `apps/studio/tests/e2e/README.md` and [E2E conventions](#e2e-conventions-skill) in `isomer-conventions`.
 
-**Goal:** Make the E2E suite safe to run in parallel locally and ready to grow to ~40 test files, then add high-value coverage for the core CMS loop.
+**Goal:** Make the E2E suite safe to run in parallel locally and ready to grow (~45–55 test files after PR-10), with dense coverage of the core CMS loop (edit/publish/tree ops) rather than thin one-happy-path stubs.
 
 **Non-goals (explicitly deferred):**
 - `singpass.test.ts` — keep all 4 tests `test.skip`; do not un-skip or rewrite
@@ -51,9 +51,24 @@ Keep existing `storageState` + `globalSetup`. No per-test login. Parallelise sig
 
 **Role projects (PR-3):** Replace per-file `test.use({ storageState })` with Playwright projects — one project per role, plus an `unauthenticated` project for smoke tests. Multi-role files use `@role` tags on `test.describe` blocks matched via project `grep`.
 
-### Test pattern (unchanged)
+### Test pattern (density by surface class)
 
-Per UI surface: **one happy-path** + **one permission-gate** where the UI shows a signal (hidden button, redirect, disabled control).
+| Surface class | Required coverage | Examples |
+|---------------|-------------------|----------|
+| **Core mutating** (edit / publish / delete / move) | Happy path + **persist assert** (reload and/or DB) + one permission gate where the UI shows a signal | Page edit, publish, resource delete/move |
+| **Settings / secondary** | Happy path + permission gate | Site colours, navbar, invite |
+| **Shared permission signal** | Prefer **one** shared gate file over repeating the same gate N times | Publisher cannot Publish on settings → single `settings-permissions.test.ts` |
+
+Do **not** translate validation-error, audit-log, or SearchSG side-effect scenarios — those stay in integration tests.
+
+### Module ownership (create / edit / tree ops)
+
+| Concern | Owns it |
+|---------|---------|
+| Create Page / Folder | Existing `page/create-page.test.ts`, `resource/create-folder.test.ts` (expand nested create on the page file if root-only) |
+| Edit / publish / schedule / page settings (normal **Page**) | **PR-5** |
+| Delete / move / search (+ folder rename) across resource types | **PR-6** — does **not** own create |
+| Collection create + edit (collection page & link) | **PR-9** |
 
 ### E2E conventions skill
 
@@ -68,8 +83,8 @@ Maintain **one** living convention file for the whole E2E stack:
 
 | Update `e2e-tests.md`? | Example |
 |------------------------|---------|
-| Yes | PR-2 adds per-site isolation; PR-3 adds role projects + `@role` tags; PR-4 adds page-object rules |
-| No | PR-5 adds `edit-page.test.ts`; PR-7 adds six settings files; PR-8 adds invite cleanup tests that follow existing patterns |
+| Yes | PR-2 adds per-site isolation; PR-3 adds role projects + `@role` tags; PR-4 adds page-object rules; **PR-5 documents density-by-surface-class** |
+| No | PR-5 adds `edit-page.test.ts` cases; PR-8 adds invite cleanup that follows existing patterns |
 
 When updating, add a dated subsection (e.g. `## Per-site isolation (PR-2)`) rather than spawning new convention files.
 
@@ -83,11 +98,11 @@ docs  cursor/e2e-scale-spec-a5d0          ← this spec (living doc + e2e-tests.
        └─ PR-2  per-site isolation (migrate existing tests)
             └─ PR-3  playwright config + role projects
             └─ PR-4  page objects
-                 └─ PR-5  page module tests (edit + publish)
-                      └─ PR-6  resource module tests (delete + move + search)
-                           └─ PR-7  remaining site settings
+                 └─ PR-5  page module (edit folder-page + publish/schedule/settings + lifecycle)
+                      └─ PR-6  resource tree ops (multi-type delete/move + search + folder rename)
+                           └─ PR-7  remaining site settings (shared publisher gate + bulk redirects)
                                 └─ PR-8  user management completion
-                                     └─ PR-9  collection module
+                                     └─ PR-9  collection module (create + edit page/link)
                                           └─ PR-10 godmode actions
                                                └─ PR-11 CI parallelism (tentative — only if E2E job is slow)
 ```
@@ -296,11 +311,13 @@ await Promise.all(ROLES.map((role) => signInOnce(role, baseURL)))
 
 **Create:**
 - `apps/studio/tests/e2e/fixtures/dashboard.po.ts` — `DashboardPO`
-  - `gotoSite(siteId)`, `openCreateMenu()`, `openResourceMenu(title)`, `clickCreatePage()` / `clickCreateFolder()`
+  - `gotoSite(siteId)`, `openCreateMenu()`, `openResourceMenu(title)`, `clickCreatePage()` / `clickCreateFolder()`, `openCollectionResourceMenu(title)` (collection table)
 - `apps/studio/tests/e2e/fixtures/page-editor.po.ts` — `PageEditorPO`
-  - `expectLoaded()`, `fillBlock(label, text)`, `clickPublish()`, `expectPublishedToast()`, `openMetaSettingsTab()`
+  - `expectLoaded()`, `fillBlock(label, text)`, `clickPublish()`, `expectPublishedToast()`, `openMetaSettingsTab()`, schedule helpers as needed by PR-5
 - `apps/studio/tests/e2e/fixtures/users.po.ts` — `UsersPO`
   - `goto(siteId)`, `openAddUser()`, `openUserMenu(email)`
+
+**Defer to PR-9:** `CollectionLinkPO` (or link-editor methods) for `/links/[linkId]` — not required until collection link edit lands.
 
 **Modify:** Refactor one existing test file per PO to prove the API (e.g. `create-folder.test.ts` → `DashboardPO`, `invite-user.test.ts` → `UsersPO`). Do not rewrite all existing tests — just enough to validate.
 
@@ -314,52 +331,88 @@ await Promise.all(ROLES.map((role) => signInOnce(role, baseURL)))
 
 ---
 
-## PR-5: Page module — edit & publish
+## PR-5: Page module — edit, publish, schedule, settings
 
 **Branch:** `cursor/e2e-page-edit-publish-a5d0`  
 **Priority:** P1 (highest user-impact coverage)  
 **Depends on:** PR-4
 
+> **Out of scope for PR-5:** Collection page / collection link edit — those belong in **PR-9**. Publish/schedule coverage here uses a normal **Page** only (shared PublishingModal).
+
 ### New files
 
 | File | Tests |
 |------|-------|
-| `page/edit-page.test.ts` | Admin opens seeded draft page → edits a text field → reload → content persisted |
-| `page/publish-page.test.ts` | Publisher publishes draft → UI shows published state; Editor does not see Publish button |
+| `page/edit-page.test.ts` | Admin opens a **Page inside a folder** → edits a text field → reload → content persisted |
+| `page/publish-page.test.ts` | Publisher publishes draft → UI shows published state + DB `Resource.state`; Editor does not see Publish button |
+| `page/schedule-publish.test.ts` | Publisher schedules publish → scheduled indicator; cancel schedule → back to draft UI |
+| `page/page-settings.test.ts` | Admin changes permalink (or title) via `PageSettingsModal` → redirect prompt / persisted settings as UI shows |
+| `page/content-lifecycle.test.ts` | Journey: create page (wizard) → edit → publish (folder Page). One vertical slice only |
+
+### Also modify (create gap)
+
+If `page/create-page.test.ts` only creates at site root, add an `@admin` (or editor) case: **create page inside a folder**. Still page-module create ownership — not PR-6.
 
 ### Setup
 
-Use `provisionE2ESite` + `setupPageResource` (integration seed) to create a draft page in `beforeAll` instead of driving the create wizard (faster, fewer moving parts).
+Prefer integration seed for non-wizard tests:
+- `provisionE2ESite` + `setupFolder` + `setupPageResource({ parentId: folder.id, resourceType: Page })` for edit/publish/schedule/settings
+- Drive the create wizard **only** in `content-lifecycle` and create-page tests
 
-**Conventions skill:** Add **Integration seed for setup** subsection to `e2e-tests.md` (prefer `setupPageResource` over wizard when the test is not about the wizard).
+**Conventions skill:**
+1. Add **Integration seed for setup** subsection (prefer seed over wizard when the test is not about the wizard).
+2. Add **Density by surface class** subsection (document the architecture table above).
 
 ### Acceptance criteria
 
-- [ ] Happy-path edit + publish covered
-- [ ] One permission gate (editor cannot publish)
-- [ ] Uses `PageEditorPO` and provisioned site
-- [ ] DB assertion on `Resource.state` after publish
+- [ ] Folder-scoped Page edit + persist covered
+- [ ] Publish happy path + editor permission gate + DB assert on `Resource.state`
+- [ ] Schedule + cancel covered
+- [ ] Page settings surface covered
+- [ ] One create → edit → publish lifecycle journey
+- [ ] Nested create-page case present if it was previously root-only
+- [ ] Uses `PageEditorPO` / `DashboardPO` and provisioned sites
+- [ ] No collection-page or collection-link edit tests in this PR
 
 ---
 
-## PR-6: Resource module — delete, move, search
+## PR-6: Resource tree ops — multi-type delete, move, search + folder rename
 
 **Branch:** `cursor/e2e-resource-crud-a5d0`  
 **Priority:** P1  
 **Depends on:** PR-5
 
+> **Create is out of scope.** Page/folder create stay on existing files; collection create stays in PR-9. PR-6 seeds resources via integration helpers and exercises **delete / move / search / folder rename** only.
+
 ### New files
 
 | File | Tests |
 |------|-------|
-| `resource/delete-resource.test.ts` | Admin deletes page via table menu → confirm modal → gone from table |
-| `resource/move-resource.test.ts` | Admin moves page to folder via `MoveResourceModal` |
+| `resource/delete-resource.test.ts` | `@admin` describes for **Page**, **Folder** (cascade copy + children gone), **Collection** (cascade copy), and **one** collection item (**CollectionPage** *or* **CollectionLink** via collection table). One shared permission gate (`Can do="delete"`) — Editor cannot delete when UI hides/disables. |
+| `resource/move-resource.test.ts` | `@admin` describes: **Page → folder**, **Folder → folder** (or to root), **one** collection item → another collection. One shared move permission gate where UI shows it. |
 | `resource/search.test.ts` | Search by page title in `Searchbar` → click result → lands on page editor |
+| `folder/edit-folder.test.ts` | Admin renames folder via `FolderSettingsModal` → title persists |
+
+### Skip (unless cheap one-liner)
+
+- RootPage / IndexPage delete
+- Search system page (disabled menu items) — optional assert that Delete/Move are disabled
+- Moving a whole Collection — only if product path is clearly supported and valuable
+
+### Setup
+
+Seed with `setupFolder`, `setupPageResource`, `setupCollection`, `setupCollectionPage` / `setupCollectionLink` as needed. Do **not** drive create wizards inside delete/move tests.
+
+Use `DashboardPO` (resource + collection table menus). Collection delete/move for items may need collection-table helpers on `DashboardPO` from PR-4.
 
 ### Acceptance criteria
 
-- [ ] Uses `DashboardPO` + provisioned site with folder + page seeded via integration helpers
-- [ ] One permission gate per file where UI shows it (e.g. editor cannot delete root resource if gated)
+- [ ] Delete covered for Page, Folder, Collection, and one collection item type
+- [ ] Move covered for Page, Folder, and one collection item type
+- [ ] Search happy path covered
+- [ ] Folder rename covered
+- [ ] One delete permission gate + one move permission gate (not per-type duplicates)
+- [ ] Provisioned site; no create-wizard usage in delete/move files
 
 ---
 
@@ -369,27 +422,31 @@ Use `provisionE2ESite` + `setupPageResource` (integration seed) to create a draf
 **Priority:** P2  
 **Depends on:** PR-6
 
-### New files (one per settings section)
+### New files
 
-| File | Happy path | Permission gate |
-|------|------------|-----------------|
-| `site/settings-colours.test.ts` | Admin changes primary colour, publish, persists | Publisher: no Publish button |
-| `site/settings-navbar.test.ts` | Admin edits navbar item | Publisher: no Publish button |
-| `site/settings-footer.test.ts` | Admin edits footer link | Publisher: no Publish button |
-| `site/settings-integrations.test.ts` | Admin toggles an integration field | Publisher: no Publish button |
-| `site/settings-redirects.test.ts` | Admin creates + deletes a redirect | Publisher: no Publish button |
-| `site/settings-logo.test.ts` | Admin uploads logo (mock S3 if needed) | Publisher: no Publish button |
+| File | Happy path | Notes |
+|------|------------|-------|
+| `site/settings-colours.test.ts` | Admin changes primary colour, publish, persists | |
+| `site/settings-navbar.test.ts` | Admin edits navbar item | |
+| `site/settings-footer.test.ts` | Admin edits footer link | |
+| `site/settings-integrations.test.ts` | Admin toggles an integration field | No SearchSG side-effect asserts |
+| `site/settings-redirects.test.ts` | Admin creates + deletes a single redirect | |
+| `site/settings-redirects-bulk.test.ts` | Admin bulk-uploads redirects via `BulkUploadRedirectsModal` → success | Distinct surface from single redirect CRUD |
+| `site/settings-logo.test.ts` | Admin uploads logo (mock S3 if needed) | |
+| `site/settings-permissions.test.ts` | Publisher visits a settings section → Publish button absent | **One** shared gate for all settings Publish CTAs — do not repeat per file |
 
-Use existing `SitePO.openSettingsSection()`. Each file provisions its own site.
+Use existing `SitePO.openSettingsSection()`. Each mutating file provisions its own site (permissions file may reuse one section URL).
 
-**Optional consolidation:** If 6 files feels heavy, split into 2 PRs (PR-7a: colours/navbar/footer, PR-7b: integrations/redirects/logo).
+**Optional consolidation:** If file count feels heavy, split into 2 PRs (PR-7a: colours/navbar/footer + permissions, PR-7b: integrations/redirects/bulk/logo).
 
-**Conventions skill:** Update `e2e-tests.md` only if a new settings pattern emerges (e.g. a new `resetSite*` helper worth documenting).
+**Conventions skill:** Update `e2e-tests.md` only if a new settings pattern emerges (e.g. shared `settings-permissions` gate, or a new `resetSite*` helper).
 
 ### Acceptance criteria
 
-- [ ] All 8 `SitePO` settings sections have E2E coverage (agency + notification already exist)
-- [ ] Permission gate can be shared pattern: publisher visits settings page, Publish button absent
+- [ ] All 8 `SitePO` settings sections have a happy-path E2E (agency + notification already exist)
+- [ ] Bulk redirects covered
+- [ ] Publisher Publish-button gate exists **once** in `settings-permissions.test.ts`
+- [ ] No duplicated publisher-gate blocks copy-pasted into every settings file
 
 ---
 
@@ -416,24 +473,33 @@ Use existing `SitePO.openSettingsSection()`. Each file provisions its own site.
 
 ---
 
-## PR-9: Collection module
+## PR-9: Collection module — create + edit
 
 **Branch:** `cursor/e2e-collection-a5d0`  
 **Priority:** P2  
 **Depends on:** PR-8
+
+> Owns **all** collection-specific create and edit flows (including collection page and collection link). Delete/move of collection resources stay in PR-6.
 
 ### New files
 
 | File | Tests |
 |------|-------|
 | `collection/create-collection.test.ts` | Admin creates collection via wizard |
-| `collection/create-collection-page.test.ts` | Editor creates collection page item |
-| `collection/edit-collection-link.test.ts` | Editor edits collection link metadata |
+| `collection/create-collection-page.test.ts` | Editor/Admin creates collection **page** via wizard |
+| `collection/create-collection-link.test.ts` | Editor/Admin creates collection **link** via wizard (type screen → link) |
+| `collection/edit-collection-page.test.ts` | Editor edits collection page (article metadata and/or body) → reload → persisted |
+| `collection/edit-collection-link.test.ts` | Editor edits collection link metadata on `/links/[linkId]` → reload → persisted |
 
-Seed collection parent via integration `setupCollection` in `beforeAll` where it speeds up the test.
+Seed collection parent via `setupCollection` in `beforeAll` where it speeds up edit tests. Add `CollectionLinkPO` (or link-editor helpers) in this PR if not introduced earlier.
+
+Publish of collection pages is **not** required here if PR-5 already covered PublishingModal on a normal Page; optional single publish assert only if collection-page publish UI diverges.
 
 ### Acceptance criteria
 
+- [ ] Create collection + collection page + collection link covered
+- [ ] Edit collection page + collection link covered (persist/reload)
+- [ ] Uses provisioned site + integration seed where appropriate
 - [ ] All new collection tests pass
 
 ---
@@ -537,16 +603,15 @@ Track separately; do not start until PR-10 is merged (PR-11 excepted — see go/
 
 | Item | Notes |
 |------|-------|
-| `page/schedule-publish.test.ts` | Schedule + cancel flows |
-| `page/page-settings.test.ts` | Permalink change + redirect prompt |
-| `page/content-lifecycle.test.ts` | Cross-surface smoke: create → edit → publish |
-| `folder/edit-folder.test.ts` | Rename folder |
-| `asset/upload-image.test.ts` | Requires S3 route mock |
-| `gazette/*` | Requires Toppan fixture + S3 mock |
-| `auth/logout.test.ts` | Logout → redirect to sign-in |
+| `auth/logout.test.ts` | Logout → redirect to sign-in (cheap; candidate to pull earlier after PR-3 if capacity) |
 | `auth/unauthenticated-redirect.test.ts` | Protected route → sign-in |
+| `asset/upload-image.test.ts` | Requires S3 route mock (logo settings may cover a subset) |
+| `gazette/*` | Requires Toppan fixture + S3 mock |
 | `fixtures/reset.ts` expansion | Add reset helpers per settings surface as PR-7 lands (navbar, footer, integrations, redirects, logo) |
 | `singpass.test.ts` | Out of scope until real Singpass test env exists |
+| Search-page locked menu | Optional one-liner: Delete/Move/Settings disabled on `/search` system page |
+
+**Promoted into this stack (no longer backlog):** schedule-publish, page-settings, content-lifecycle, folder edit/rename, multi-type delete/move, bulk redirects, settings-permissions consolidation, collection page/link create+edit.
 
 ---
 
@@ -557,9 +622,10 @@ Track separately; do not start until PR-10 is merged (PR-11 excepted — see go/
 3. One concern per PR — no drive-by refactors
 4. New test files follow `tests/e2e/<module>/<surface>.test.ts` and tag describes with `@role` (not `test.use({ storageState })`)
 5. Mutating tests use `provisionE2ESite` / `teardownE2ESite`
-6. Do not modify `singpass.test.ts`
-7. Update `apps/studio/tests/e2e/README.md` only when adding new fixture APIs worth documenting
-8. Update `conventions/e2e-tests.md` only when the PR introduces a **new reusable convention** (see [E2E conventions skill](#e2e-conventions-skill))
+6. Respect [density by surface class](#test-pattern-density-by-surface-class) and [module ownership](#module-ownership-create--edit--tree-ops)
+7. Do not modify `singpass.test.ts`
+8. Update `apps/studio/tests/e2e/README.md` only when adding new fixture APIs worth documenting
+9. Update `conventions/e2e-tests.md` only when the PR introduces a **new reusable convention** (see [E2E conventions skill](#e2e-conventions-skill))
 
 ---
 
@@ -589,14 +655,14 @@ cd apps/studio && pnpm exec playwright test --project=unauthenticated
 | PR-2 Per-site isolation | P0 | M | Parallel execution |
 | PR-3 Playwright config + role projects | P1 | M | Parallel runs, no test.use boilerplate |
 | PR-4 Page objects | P1 | M | PR-5–10 ergonomics |
-| PR-5 Page edit/publish | P1 | M | Core CMS coverage |
-| PR-6 Resource delete/move/search | P1 | M | Content tree coverage |
-| PR-7 Site settings (6 files) | P2 | L | Settings completeness |
+| PR-5 Page edit/publish/schedule/settings + lifecycle | P1 | L | Core CMS loop (normal Page only) |
+| PR-6 Multi-type delete/move + search + folder rename | P1 | L | Content tree coverage (no create) |
+| PR-7 Site settings + shared gate + bulk redirects | P2 | L | Settings completeness |
 | PR-8 User management | P2 | M | Collaborator flows |
-| PR-9 Collection | P2 | M | Collection flows |
+| PR-9 Collection create + edit (page & link) | P2 | M | Collection flows |
 | PR-10 Godmode actions | P3 | S | Platform admin flows |
 | PR-11 CI parallelism | P4 | M | **Tentative** — only if E2E job median ≥ 15 min after PR-10 |
 
-**Effort key:** S = <1 day agent time, M = 1–2 days, L = 2–3 days (settings split across files).
+**Effort key:** S = <1 day agent time, M = 1–2 days, L = 2–3 days.
 
 **PR-11 is optional:** Agents should complete PR-1–10 first, measure CI runtime, then either implement PR-11 or document skip per go/no-go table.
