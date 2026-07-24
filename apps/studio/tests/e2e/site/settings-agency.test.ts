@@ -1,33 +1,15 @@
-import { expect, test } from "@playwright/test"
-import { sql } from "kysely"
-import { db } from "~/server/modules/database"
-
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
+import { resetSiteAgencySettings } from "../fixtures/reset"
 import { getSeedSiteId } from "../fixtures/seed"
 import { SitePO } from "../fixtures/site.po"
+import { expect, test } from "../fixtures/test"
+import { ensureUserOnboarded } from "../fixtures/user"
 
 test.use({ storageState: storageStateFor("admin") })
 
 test.beforeEach(async () => {
-  // Ensure the admin user has name + phone set so the "Welcome" onboarding
-  // dialog does not appear and obstruct the form. Other suites (e.g.
-  // singpass.test.ts) blank out user profiles in the shared test DB, so
-  // re-populate it here to keep this test independent of run order.
-  await db
-    .updateTable("User")
-    .set({ name: "test-e2e", phone: "82345678" })
-    .where("email", "=", TEST_EMAILS.admin)
-    .execute()
-
-  // Reset both the name column and config.siteName so the test is idempotent.
-  await db
-    .updateTable("Site")
-    .set({
-      name: "Isomer",
-      config: sql`jsonb_set(config, '{siteName}', '"Isomer"')`,
-    })
-    .where("id", "=", getSeedSiteId())
-    .execute()
+  await ensureUserOnboarded(TEST_EMAILS.admin)
+  await resetSiteAgencySettings(getSeedSiteId())
 })
 
 test("admin can update site name on the agency settings page", async ({
@@ -44,7 +26,6 @@ test("admin can update site name on the agency settings page", async ({
   await site.publishButton().click()
   await site.expectChangesPublishedToast()
 
-  // Hard-assert persistence: reload and verify the value sticks.
   await page.reload()
   await expect(page.getByLabel("Site name")).toHaveValue("Isomer (renamed)")
 })
@@ -53,12 +34,7 @@ test.describe("publisher", () => {
   test.use({ storageState: storageStateFor("publisher") })
 
   test.beforeEach(async () => {
-    // Same welcome-modal workaround as the admin test block.
-    await db
-      .updateTable("User")
-      .set({ name: "test-e2e", phone: "82345678" })
-      .where("email", "=", TEST_EMAILS.publisher)
-      .execute()
+    await ensureUserOnboarded(TEST_EMAILS.publisher)
   })
 
   test("publisher does not see the Publish button on agency settings", async ({
@@ -67,9 +43,7 @@ test.describe("publisher", () => {
     await page.goto(`/sites/${getSeedSiteId()}/settings/agency`)
     await page.waitForURL(/\/settings\/agency$/)
 
-    // Form input is visible (settings page rendered)…
     await expect(page.getByLabel("Site name")).toBeVisible()
-    // …but the Publish button (gated by `<Can do="create">`) is not.
     await expect(
       page.getByRole("button", { name: "Publish" }),
     ).not.toBeVisible()
