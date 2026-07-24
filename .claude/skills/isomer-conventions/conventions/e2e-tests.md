@@ -22,6 +22,7 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 | **Page objects** | `fixtures/*.po.ts` | Locators + actions on **one** UI surface, including multi-step modals/forms on that surface (`fillPageWizard`, `fillInviteForm`, …) |
 | **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle |
 | **DB assertions** | `fixtures/*.db.ts` | Query helpers that fetch persisted state for a test to assert on (`resource.db.ts`, `user.db.ts`, …) |
+| **DB assertions** | `fixtures/site-expect.ts`, `fixtures/page-seed.ts` | `expect.poll` helpers for post-action DB state |
 | **Network mocks** | `fixtures/network.ts` | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach` |
 
 **Wizards** here means multi-step modals on a single surface (e.g. Create Page:
