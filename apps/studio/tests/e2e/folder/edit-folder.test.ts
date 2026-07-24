@@ -1,19 +1,20 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { FolderSettingsPO } from "../fixtures/folder-settings.po"
-import { seedFolder } from "../fixtures/page-seed"
+import { expectPageTitle, seedFolder } from "../fixtures/page-seed"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 
 test.beforeAll(async () => {
-  const site = await provisionE2ESite({ roles: [RoleType.Admin] })
+  const site = await provisionE2ESite({
+    roles: [RoleType.Admin, RoleType.Editor],
+  })
   siteId = site.siteId
 })
 
@@ -42,11 +43,53 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.fillTitle(newTitle)
     await settings.saveChanges()
 
-    const updated = await db
-      .selectFrom("Resource")
-      .where("id", "=", folder.id)
-      .select("title")
-      .executeTakeFirst()
-    expect(updated?.title).toBe(newTitle)
+    await expectPageTitle(folder.id).toBe(newTitle)
+    await dashboard.expectResourceLinkVisible(newTitle)
+  })
+
+  test("admin keeps folder title unchanged when closing settings without saving", async ({
+    page,
+  }) => {
+    const folderTitle = `Unsaved Folder ${crypto.randomUUID().slice(0, 8)}`
+    const newTitle = `Unsaved Rename ${crypto.randomUUID().slice(0, 8)}`
+    const { folder } = await seedFolder({ siteId, folderTitle })
+
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoSite(siteId)
+    await dashboard.openFolderSettings(folderTitle)
+
+    const settings = new FolderSettingsPO(page)
+    await settings.fillTitle(newTitle)
+    await settings.closeWithoutSaving()
+
+    await expectPageTitle(folder.id).toBe(folderTitle)
+    await dashboard.expectResourceLinkVisible(folderTitle)
+    await dashboard.expectResourceLinkHidden(newTitle)
+  })
+})
+
+test.describe("editor", { tag: roleTag("editor") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.editor)
+  })
+
+  test("editor can rename a folder via FolderSettingsModal", async ({
+    page,
+  }) => {
+    const folderTitle = `Editor Folder ${crypto.randomUUID().slice(0, 8)}`
+    const newTitle = `Editor Renamed ${crypto.randomUUID().slice(0, 8)}`
+    const { folder } = await seedFolder({ siteId, folderTitle })
+
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoSite(siteId)
+    await dashboard.openFolderSettings(folderTitle)
+
+    const settings = new FolderSettingsPO(page)
+    await settings.expectLoaded()
+    await settings.fillTitle(newTitle)
+    await settings.saveChanges()
+
+    await expectPageTitle(folder.id).toBe(newTitle)
+    await dashboard.expectResourceLinkVisible(newTitle)
   })
 })

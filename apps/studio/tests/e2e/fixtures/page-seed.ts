@@ -1,10 +1,13 @@
+import { expect } from "@playwright/test"
 import crypto from "crypto"
 import {
   setupCollection,
+  setupCollectionLink,
   setupCollectionPage,
   setupFolder,
   setupPageResource,
 } from "tests/integration/helpers/seed"
+import { db } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 /** Prose preview label from the default integration seed blob. */
@@ -156,3 +159,106 @@ export const seedTwoCollections = async ({
   })
   return { sourceCollection, destCollection, collectionPage }
 }
+
+export const seedNestedFolder = async ({
+  siteId,
+  parentFolderTitle = "E2E Parent Folder",
+  childFolderTitle = "E2E Nested Folder",
+}: {
+  siteId: number
+  parentFolderTitle?: string
+  childFolderTitle?: string
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { folder: parentFolder } = await seedFolder({
+    siteId,
+    folderTitle: parentFolderTitle,
+  })
+  const { folder: childFolder } = await setupFolder({
+    siteId,
+    title: childFolderTitle,
+    permalink: `e2e-nested-folder-${suffix}`,
+    parentId: parentFolder.id,
+  })
+  return { parentFolder, childFolder }
+}
+
+export const seedCollectionWithLink = async ({
+  siteId,
+  collectionTitle = "E2E Seed Collection",
+  linkTitle = "E2E Collection Link",
+}: {
+  siteId: number
+  collectionTitle?: string
+  linkTitle?: string
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { collection } = await setupCollection({
+    siteId,
+    title: collectionTitle,
+    permalink: `e2e-collection-${suffix}`,
+  })
+  const { collectionLink } = await setupCollectionLink({
+    siteId,
+    collectionId: collection.id,
+    title: linkTitle,
+    permalink: `e2e-collection-link-${suffix}`,
+  })
+  return { collection, collectionLink }
+}
+
+export const seedRootCollection = async ({
+  siteId,
+  collectionTitle = "E2E Root Collection",
+}: {
+  siteId: number
+  collectionTitle?: string
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { collection } = await setupCollection({
+    siteId,
+    title: collectionTitle,
+    permalink: `e2e-root-collection-${suffix}`,
+  })
+  return { collection }
+}
+
+export const expectResourceAbsent = (resourceId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("id")
+      .executeTakeFirst()
+    return row?.id ?? null
+  })
+
+export const expectResourcePresent = (resourceId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("id")
+      .executeTakeFirst()
+    return row?.id ?? null
+  })
+
+export const expectPageParentId = (resourceId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("parentId")
+      .executeTakeFirst()
+    return row?.parentId ?? null
+  })
+
+export const expectPageTitle = (resourceId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("title")
+      .executeTakeFirst()
+    return row?.title ?? null
+  })
