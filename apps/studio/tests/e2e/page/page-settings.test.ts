@@ -1,11 +1,14 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
-import { expectPagePermalink, seedRootPage } from "../fixtures/page-seed"
+import {
+  expectPagePermalink,
+  expectPageTitle,
+  seedRootPage,
+} from "../fixtures/page-seed"
 import { PageSettingsPO } from "../fixtures/page-settings.po"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
@@ -47,12 +50,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.fillTitle(newTitle)
     await settings.saveDraft()
 
-    const updated = await db
-      .selectFrom("Resource")
-      .where("id", "=", seededPage.id)
-      .select("title")
-      .executeTakeFirst()
-    expect(updated?.title).toBe(newTitle)
+    await expectPageTitle(seededPage.id).toBe(newTitle)
   })
 
   test("admin does not see redirect option when changing permalink on a draft page", async ({
@@ -98,12 +96,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.expectRedirectOptionVisible()
     await settings.saveAndPublish()
 
-    const updated = await db
-      .selectFrom("Resource")
-      .where("id", "=", seededPage.id)
-      .select("permalink")
-      .executeTakeFirst()
-    expect(updated?.permalink).toBe(newPermalink)
+    await expectPagePermalink(seededPage.id).toBe(newPermalink)
   })
 })
 
@@ -132,12 +125,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await settings.fillTitle(newTitle)
     await settings.saveDraft()
 
-    const updated = await db
-      .selectFrom("Resource")
-      .where("id", "=", seededPage.id)
-      .select("title")
-      .executeTakeFirst()
-    expect(updated?.title).toBe(newTitle)
+    await expectPageTitle(seededPage.id).toBe(newTitle)
   })
 
   test("editor does not see Publish immediately on a published page", async ({
