@@ -83,6 +83,11 @@ PR-1  fixtures foundation
 **Create:**
 - `apps/studio/tests/e2e/fixtures/test.ts` — extended Playwright `test` fixture
 - `apps/studio/tests/e2e/fixtures/user.ts` — `ensureUserOnboarded(email)` (name + phone set)
+- `apps/studio/tests/e2e/fixtures/reset.ts` — shared DB reset helpers (site-agnostic; take `siteId` arg):
+  - `resetSiteAgencySettings(siteId)` — reset `Site.name` + `config.siteName`
+  - `resetSiteNotification(siteId)` — reset notification banner fields
+  - `resetSiteTheme(siteId)` — reset theme to seed default (for colours tests)
+  - Re-export `ensureUserOnboarded` from `user.ts` for convenience
 - `apps/studio/tests/e2e/fixtures/helpers.ts` — move shared flows out of individual test files:
   - `createPageViaWizard(page, { startUrl, title })`
   - `createFolderViaWizard(page, { siteId, title })`
@@ -122,8 +127,8 @@ PR-1  fixtures foundation
 **Modify — migrate to provisioned site:**
 | File | Change |
 |------|--------|
-| `site/settings-agency.test.ts` | `beforeAll` provision site; remove hardcoded `getSeedSiteId()` |
-| `site/settings-notification.test.ts` | same |
+| `site/settings-agency.test.ts` | `beforeAll` provision site; `beforeEach` → `resetSiteAgencySettings(siteId)` from `fixtures/reset.ts` |
+| `site/settings-notification.test.ts` | `beforeAll` provision site; `beforeEach` → `resetSiteNotification(siteId)` |
 | `site/admin.test.ts` | provision site for core/migrator access tests (or keep site 1 if only testing redirect — evaluate) |
 | `page/create-page.test.ts` | provision site with admin/editor/publisher permissions |
 | `resource/create-folder.test.ts` | provision site |
@@ -178,7 +183,9 @@ export default defineConfig({
 await Promise.all(ROLES.map((role) => signInOnce(role, baseURL)))
 ```
 
-**Do not add:** CI sharding, matrix jobs, or extra Playwright projects yet.
+**Do not add:** CI sharding or matrix jobs.
+
+**Defer (see Future backlog):** Playwright projects per role group — not needed until test-file count makes `test.use({ storageState })` boilerplate painful (~15+ files).
 
 ### Acceptance criteria
 
@@ -363,6 +370,8 @@ Track separately; do not start until PR-10 is merged:
 | `auth/logout.test.ts` | Logout → redirect to sign-in |
 | `auth/unauthenticated-redirect.test.ts` | Protected route → sign-in |
 | CI sharding | When suite runtime > ~15 min in CI |
+| Playwright projects per role | When `test.use({ storageState })` is duplicated across 15+ files; add projects like `{ name: 'admin', use: { storageState: storageStateFor('admin') } }` to `playwright.config.ts` |
+| `fixtures/reset.ts` expansion | Add reset helpers per settings surface as PR-7 lands (navbar, footer, integrations, redirects, logo) |
 | `singpass.test.ts` | Out of scope until real Singpass test env exists |
 
 ---
@@ -398,7 +407,7 @@ cd apps/studio && pnpm exec playwright test tests/e2e/page/publish-page.test.ts
 
 | PR | Priority | Effort | Unblocks |
 |----|----------|--------|----------|
-| PR-1 Fixtures | P0 | S | All new tests |
+| PR-1 Fixtures + reset helpers | P0 | S | All new tests |
 | PR-2 Per-site isolation | P0 | M | Parallel execution |
 | PR-3 Playwright config | P1 | S | CI throughput |
 | PR-4 Page objects | P1 | M | PR-5–10 ergonomics |
