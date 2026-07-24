@@ -79,68 +79,53 @@ export const seedFolderWithPage = async ({
 }
 
 export const expectPageScheduledAt = (pageId: string) =>
-  expect.poll(
-    async () => {
-      const row = await db
-        .selectFrom("Resource")
-        .where("id", "=", pageId)
-        .select("scheduledAt")
-        .executeTakeFirst()
-      return row?.scheduledAt ?? null
-    },
-    { timeout: 10_000 },
-  )
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", pageId)
+      .select("scheduledAt")
+      .executeTakeFirst()
+    return row?.scheduledAt ?? null
+  })
 
 export const expectPageScheduledBy = (pageId: string) =>
-  expect.poll(
-    async () => {
-      const row = await db
-        .selectFrom("Resource")
-        .where("id", "=", pageId)
-        .select("scheduledBy")
-        .executeTakeFirst()
-      return row?.scheduledBy ?? null
-    },
-    { timeout: 10_000 },
-  )
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", pageId)
+      .select("scheduledBy")
+      .executeTakeFirst()
+    return row?.scheduledBy ?? null
+  })
 
 export const expectPagePermalink = (pageId: string) =>
-  expect.poll(
-    async () => {
-      const row = await db
-        .selectFrom("Resource")
-        .where("id", "=", pageId)
-        .select("permalink")
-        .executeTakeFirst()
-      return row?.permalink ?? null
-    },
-    { timeout: 10_000 },
-  )
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", pageId)
+      .select("permalink")
+      .executeTakeFirst()
+    return row?.permalink ?? null
+  })
 
 export const expectDraftBlobContainsText = (pageId: string) =>
-  expect.poll(
-    async () => {
-      const row = await db
-        .selectFrom("Resource")
-        .innerJoin("Blob", "Blob.id", "Resource.draftBlobId")
-        .where("Resource.id", "=", pageId)
-        .select("Blob.content")
-        .executeTakeFirst()
-      if (!row?.content) return ""
-      return JSON.stringify(row.content)
-    },
-    { timeout: 10_000 },
-  )
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .innerJoin("Blob", "Blob.id", "Resource.draftBlobId")
+      .where("Resource.id", "=", pageId)
+      .select("Blob.content")
+      .executeTakeFirst()
+    if (!row?.content) return ""
+    return JSON.stringify(row.content)
+  })
 
 export const expectPageDraftBlobId = (pageId: string) =>
-  expect.poll(
-    async () => {
-      const row = await db
-        .selectFrom("Resource")
-        .where("id", "=", pageId)
-        .select("draftBlobId")
-        .executeTakeFirst()
-      return row?.draftBlobId ?? null
-    },
-    { timeout: 10_000 },
-  )
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", pageId)
+      .select("draftBlobId")
+      .executeTakeFirst()
+    return row?.draftBlobId ?? null
+  })
