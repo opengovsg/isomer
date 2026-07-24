@@ -69,16 +69,6 @@ Publisher permission gates for settings Publish buttons live in **one** file:
 `site/settings-permissions.test.ts`. Individual settings happy-path files do not
 repeat the gate — add new Publish-gated sections to `PUBLISH_GATED_SECTIONS` there.
 
-## User management permission gate (PR-8)
-
-Editor/Publisher permission gates for the collaborators page live in **one** file:
-`user/user-permissions.test.ts`. Individual user happy-path files do not repeat
-the gate — assert disabled add button, read-only description, and absent row
-actions there.
-
-Role add/change/delete happy paths must also assert DB state via
-`expectUserRoleOnSite` / `expectUserAbsentOnSite` in `fixtures/user.ts`.
-
 ## Role projects and tags (PR-3)
 
 Playwright config defines one project per role plus `unauthenticated` (smoke) and `singpass`. Role projects set `storageState` and filter with `grep: /@role\b/`.
