@@ -2,7 +2,7 @@
 
 > **For agentic workers:** Implement as **stacked PRs via Graphite** (`gt create` / `gt stack submit`). Each PR below is one branch in the stack. Do not combine PRs unless explicitly marked as mergeable.
 >
-> **Required skills:** `feature-implement` for test PRs; follow `apps/studio/tests/e2e/README.md` conventions.
+> **Required skills:** `feature-implement` for test PRs; follow `apps/studio/tests/e2e/README.md` and [E2E conventions](#e2e-conventions-skill) in `isomer-conventions`.
 
 **Goal:** Make the E2E suite safe to run in parallel locally and ready to grow to ~40 test files, then add high-value coverage for the core CMS loop.
 
@@ -55,14 +55,33 @@ Keep existing `storageState` + `globalSetup`. No per-test login. Parallelise sig
 
 Per UI surface: **one happy-path** + **one permission-gate** where the UI shows a signal (hidden button, redirect, disabled control).
 
+### E2E conventions skill
+
+Maintain **one** living convention file for the whole E2E stack:
+
+- **File:** `.claude/skills/isomer-conventions/conventions/e2e-tests.md`
+- **Catalog:** link it once under **Testing** in `.claude/skills/isomer-conventions/SKILL.md`
+
+**PR-1** creates `e2e-tests.md` with the initial blessed patterns (fixtures layout, helpers vs page objects, welcome modal, happy-path + permission-gate pattern, file naming).
+
+**Later PRs** append or revise `e2e-tests.md` only when the stack introduces a **new reusable convention** — not when merely adding test coverage.
+
+| Update `e2e-tests.md`? | Example |
+|------------------------|---------|
+| Yes | PR-2 adds per-site isolation; PR-3 adds role projects + `@role` tags; PR-4 adds page-object rules |
+| No | PR-5 adds `edit-page.test.ts`; PR-7 adds six settings files; PR-8 adds invite cleanup tests that follow existing patterns |
+
+When updating, add a dated subsection (e.g. `## Per-site isolation (PR-2)`) rather than spawning new convention files.
+
 ---
 
 ## Stacked PR order
 
 ```
-PR-1  fixtures foundation
-  └─ PR-2  per-site isolation (migrate existing tests)
-       └─ PR-3  playwright config + role projects
+docs  cursor/e2e-scale-spec-a5d0          ← this spec (living doc + e2e-tests.md convention)
+  └─ PR-1  fixtures foundation
+       └─ PR-2  per-site isolation (migrate existing tests)
+            └─ PR-3  playwright config + role projects
             └─ PR-4  page objects
                  └─ PR-5  page module tests (edit + publish)
                       └─ PR-6  resource module tests (delete + move + search)
@@ -84,7 +103,6 @@ PR-1  fixtures foundation
 ### Scope
 
 **Create:**
-- `apps/studio/tests/e2e/fixtures/test.ts` — extended Playwright `test` fixture
 - `apps/studio/tests/e2e/fixtures/user.ts` — `ensureUserOnboarded(email)` (name + phone set)
 - `apps/studio/tests/e2e/fixtures/reset.ts` — shared DB reset helpers (site-agnostic; take `siteId` arg):
   - `resetSiteAgencySettings(siteId)` — reset `Site.name` + `config.siteName`
@@ -103,15 +121,19 @@ PR-1  fixtures foundation
 
 **Do not touch:** `singpass.test.ts`
 
+**Conventions skill:** Create `.claude/skills/isomer-conventions/conventions/e2e-tests.md` and link it under **Testing** in `SKILL.md` (see [E2E conventions skill](#e2e-conventions-skill)).
+
+> **If PR-1 already merged without `e2e-tests.md`:** backfill in PR-2.
+
 ### Acceptance criteria
 
 - [ ] All 29 active E2E tests still pass (`pnpm dev:e2e` from `apps/studio`)
 - [ ] No duplicated `dismissWelcomeModal` / welcome-modal `beforeEach` in test files
-- [ ] `fixtures/test.ts` exports `test` and `expect` for new tests to import
+- [ ] `e2e-tests.md` created and linked in `SKILL.md`
 
 ### Notes
 
-`test.extend` is optional in this PR — a plain shared module is fine. Add `test.extend` only if it reduces boilerplate without over-engineering.
+`test.extend` is deferred until a custom fixture is actually needed (e.g. auto-provisioned site). Import `test` / `expect` from `@playwright/test` directly — no `fixtures/test.ts` re-export.
 
 ---
 
@@ -150,6 +172,8 @@ PR-1  fixtures foundation
 ### Teardown strategy
 
 Delete site row (cascade should clean resources). If FK constraints block delete, document and use soft-delete or explicit child cleanup matching integration test patterns.
+
+**Conventions skill:** Add **Per-site isolation** subsection to `e2e-tests.md`.
 
 ### Acceptance criteria
 
@@ -249,6 +273,8 @@ await Promise.all(ROLES.map((role) => signInOnce(role, baseURL)))
 
 **Do not add:** CI sharding in this PR — that is PR-11 (tentative last step, conditional on CI runtime).
 
+**Conventions skill:** Add **Role projects and tags** subsection to `e2e-tests.md`.
+
 ### Acceptance criteria
 
 - [ ] `pnpm dev:e2e` passes — all 29 active tests green across role projects
@@ -278,6 +304,8 @@ await Promise.all(ROLES.map((role) => signInOnce(role, baseURL)))
 
 **Modify:** Refactor one existing test file per PO to prove the API (e.g. `create-folder.test.ts` → `DashboardPO`, `invite-user.test.ts` → `UsersPO`). Do not rewrite all existing tests — just enough to validate.
 
+**Conventions skill:** Add **Page objects** subsection to `e2e-tests.md`.
+
 ### Acceptance criteria
 
 - [ ] Three POs exported from `fixtures/`
@@ -302,6 +330,8 @@ await Promise.all(ROLES.map((role) => signInOnce(role, baseURL)))
 ### Setup
 
 Use `provisionE2ESite` + `setupPageResource` (integration seed) to create a draft page in `beforeAll` instead of driving the create wizard (faster, fewer moving parts).
+
+**Conventions skill:** Add **Integration seed for setup** subsection to `e2e-tests.md` (prefer `setupPageResource` over wizard when the test is not about the wizard).
 
 ### Acceptance criteria
 
@@ -354,6 +384,8 @@ Use existing `SitePO.openSettingsSection()`. Each file provisions its own site.
 
 **Optional consolidation:** If 6 files feels heavy, split into 2 PRs (PR-7a: colours/navbar/footer, PR-7b: integrations/redirects/logo).
 
+**Conventions skill:** Update `e2e-tests.md` only if a new settings pattern emerges (e.g. a new `resetSite*` helper worth documenting).
+
 ### Acceptance criteria
 
 - [ ] All 8 `SitePO` settings sections have E2E coverage (agency + notification already exist)
@@ -400,6 +432,10 @@ Use existing `SitePO.openSettingsSection()`. Each file provisions its own site.
 
 Seed collection parent via integration `setupCollection` in `beforeAll` where it speeds up the test.
 
+### Acceptance criteria
+
+- [ ] All new collection tests pass
+
 ---
 
 ## PR-10: Godmode actions
@@ -417,6 +453,10 @@ Seed collection parent via integration `setupCollection` in `beforeAll` where it
 | `godmode/whitelist.test.ts` | Migrator bulk-whitelists vendor emails → success toast |
 
 Route access already covered by `godmode/access.test.ts`. These PRs cover **actions**.
+
+### Acceptance criteria
+
+- [ ] Godmode action happy-paths covered
 
 ---
 
@@ -474,6 +514,8 @@ Each matrix job:
 
 **Do not change:** Playwright project structure or test files unless sharding exposes a shared-state bug (fix in a separate PR).
 
+**Conventions skill (if PR-11 ships):** Add **CI sharding** subsection to `e2e-tests.md`.
+
 ### Acceptance criteria
 
 - [ ] Go/no-go documented in PR with median runtime from 3 `main` runs
@@ -517,6 +559,7 @@ Track separately; do not start until PR-10 is merged (PR-11 excepted — see go/
 5. Mutating tests use `provisionE2ESite` / `teardownE2ESite`
 6. Do not modify `singpass.test.ts`
 7. Update `apps/studio/tests/e2e/README.md` only when adding new fixture APIs worth documenting
+8. Update `conventions/e2e-tests.md` only when the PR introduces a **new reusable convention** (see [E2E conventions skill](#e2e-conventions-skill))
 
 ---
 
