@@ -92,6 +92,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
       collectionId,
       title,
     })
+    await new PageEditorPO(page).expectLoaded()
 
     // Assert
     const created = await db

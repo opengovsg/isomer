@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
@@ -32,13 +32,13 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   }) => {
     const summary = `E2E link summary ${crypto.randomUUID().slice(0, 8)}`
     const linkText = "External resource"
+    const linkEditor = new CollectionLinkPO(page)
+
+    // Arrange
     const { collectionLink } = await seedCollectionLink({
       siteId,
       collectionId,
     })
-    const linkEditor = new CollectionLinkPO(page)
-
-    // Arrange
     await linkEditor.gotoLink(siteId, collectionLink.id)
     await linkEditor.expectLoaded()
 
@@ -48,9 +48,9 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await linkEditor.save()
 
     // Assert
-    await page.reload()
+    await linkEditor.reload()
     await linkEditor.expectLoaded()
-    await expect(linkEditor.summaryField()).toHaveValue(summary)
-    await expect(page.getByRole("button", { name: linkText })).toBeVisible()
+    await linkEditor.expectSummary(summary)
+    await linkEditor.expectExternalLinkButton(linkText)
   })
 })

@@ -6,22 +6,6 @@ import { DashboardPO } from "./dashboard.po"
 import { PageEditorPO } from "./page-editor.po"
 import { UsersPO } from "./users.po"
 
-export const deleteResourceTreeByTitle = async (
-  siteId: number,
-  title: string,
-) => {
-  const resource = await db
-    .selectFrom("Resource")
-    .where("siteId", "=", siteId)
-    .where("title", "=", title)
-    .select("id")
-    .executeTakeFirst()
-  if (!resource) return
-
-  await db.deleteFrom("Resource").where("parentId", "=", resource.id).execute()
-  await db.deleteFrom("Resource").where("id", "=", resource.id).execute()
-}
-
 export const openSeededPageEditor = async (
   page: Page,
   siteId: number,
