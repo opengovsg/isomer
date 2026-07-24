@@ -40,8 +40,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     const site = new SitePO(page)
 
     for (const section of PUBLISH_GATED_SECTIONS) {
-      await page.goto(`/sites/${siteId}/settings/${section}`)
-      await page.waitForURL(new RegExp(`/settings/${section}$`))
+      await site.gotoSettingsSection(siteId, section)
       await expect(site.publishButton()).not.toBeVisible()
     }
   })

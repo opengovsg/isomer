@@ -34,19 +34,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
   test("admin can upload a logo and publish", async ({ page }) => {
     const site = new SitePO(page)
-    await page.goto(`/sites/${siteId}/settings/logo`)
-    await page.waitForURL(/\/settings\/logo$/)
+    await site.gotoSettingsSection(siteId, "logo")
 
-    await page
-      .getByRole("group")
-      .filter({ hasText: /^Logo/ })
-      .getByTestId("file-upload")
-      .setInputFiles(LOGO_FIXTURE)
+    await site.logoUploadInput().setInputFiles(LOGO_FIXTURE)
     await expect(page.getByText(path.basename(LOGO_FIXTURE))).toBeVisible({
       timeout: 15_000,
     })
 
-    await site.publishButton().click()
+    await site.clickPublish()
     await site.expectChangesPublishedToast()
 
     await page.reload()

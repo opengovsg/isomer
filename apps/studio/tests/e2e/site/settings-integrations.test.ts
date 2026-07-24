@@ -26,13 +26,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
   test("admin can save a GTM ID on integrations settings", async ({ page }) => {
     const site = new SitePO(page)
-    await page.goto(`/sites/${siteId}/settings/integrations`)
-    await page.waitForURL(/\/settings\/integrations$/)
+    await site.gotoSettingsSection(siteId, "integrations")
 
     const gtmField = page.getByLabel("Google Tag Manager (GTM) ID")
     await gtmField.fill("GTM-TESTE2E01")
 
-    await site.publishButton().click()
+    await site.clickPublish()
     await site.expectChangesPublishedToast()
 
     await page.reload()

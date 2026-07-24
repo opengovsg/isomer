@@ -22,6 +22,7 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 | **Page objects** | `fixtures/*.po.ts` | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …) |
 | **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle |
 | **DB assertions** | `fixtures/*.db.ts` | Query helpers that fetch persisted state for a test to assert on (`resource.db.ts`, `user.db.ts`, …) |
+| **Network mocks** | `fixtures/network.ts` | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach` |
 
 ## Welcome modal
 
@@ -161,6 +162,17 @@ files. Examples:
 
 Use Playwright's default poll timeout unless a specific surface needs more.
 
+### Site settings (`SitePO`)
+
+- Deep-link to a section with `gotoSettingsSection(siteId, section)` — do not
+  repeat raw `page.goto` + `waitForURL` pairs in settings tests.
+- Publish via `clickPublish()`; pass `{ force: true }` when a FormBuilder inline
+  editor (navbar/footer rows) overlays the header Publish button.
+- Logo upload: `logoUploadInput()` — scopes past the separate favicon control.
+- GrowthBook-gated UI: call `enableGrowthBookFeature` in `beforeEach`, then
+  `page.goto("about:blank")` before the first app navigation so the client
+  singleton re-fetches mocked features.
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding site ID `1`, or calling `getSeedSiteId()` → use `provisionE2ESite` and assert on the returned site
@@ -171,3 +183,5 @@ Use Playwright's default poll timeout unless a specific surface needs more.
 - Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
 - Inline `db.selectFrom("Resource")` in `*.test.ts` → use `page-seed.ts` poll helpers
 - Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`
+- Raw `page.goto(\`/sites/${siteId}/settings/...\`)` in settings tests → use `SitePO.gotoSettingsSection`
+- Raw `publishButton().click({ force: true })` in navbar/footer tests → use `SitePO.clickPublish({ force: true })`

@@ -26,13 +26,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
   test("admin can edit a navbar item label", async ({ page }) => {
     const site = new SitePO(page)
-    await page.goto(`/sites/${siteId}/settings/navbar`)
-    await page.waitForURL(/\/settings\/navbar$/)
+    await site.gotoSettingsSection(siteId, "navbar")
 
     await page.getByText("Expandable nav item", { exact: true }).click()
     await page.getByLabel("Menu item label").fill("E2E Nav Item")
 
-    await site.publishButton().click({ force: true })
+    await site.clickPublish({ force: true })
     await site.expectChangesPublishedToast()
 
     await page.reload()
