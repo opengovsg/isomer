@@ -45,4 +45,9 @@ export class DashboardPO {
     await this.openResourceMenu(title)
     await this.page.getByRole("menuitem", { name: "Edit settings" }).click()
   }
+
+  async expectScheduledBadge(title: string) {
+    const row = this.page.getByRole("row").filter({ hasText: title })
+    await expect(row.getByText("Scheduled")).toBeVisible()
+  }
 }
