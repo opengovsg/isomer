@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { resetSiteNotification } from "../fixtures/reset"
@@ -11,7 +12,7 @@ test.use({ storageState: storageStateFor("admin") })
 let siteId: number
 
 test.beforeAll(async () => {
-  const site = await provisionE2ESite({ admin: true })
+  const site = await provisionE2ESite({ roles: [RoleType.Admin] })
   siteId = site.siteId
 })
 
