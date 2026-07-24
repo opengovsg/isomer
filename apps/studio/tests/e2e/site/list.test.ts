@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { storageStateFor } from "../fixtures/auth"
+import { roleTag } from "../fixtures/auth"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 
 let siteId: number
@@ -17,10 +17,10 @@ test.afterAll(async () => {
   await teardownE2ESite(siteId)
 })
 
-test.describe("editor", () => {
-  test.use({ storageState: storageStateFor("editor") })
-
-  test("sees the provisioned site on the dashboard", async ({ page }) => {
+test.describe("editor", { tag: roleTag("editor") }, () => {
+  test("editor sees their provisioned site on the dashboard", async ({
+    page,
+  }) => {
     await page.goto("/")
 
     await expect(
@@ -30,10 +30,8 @@ test.describe("editor", () => {
   })
 })
 
-test.describe("nomember", () => {
-  test.use({ storageState: storageStateFor("nomember") })
-
-  test("sees empty state", async ({ page }) => {
+test.describe("nomember", { tag: roleTag("nomember") }, () => {
+  test("user with no permissions sees empty state", async ({ page }) => {
     await page.goto("/")
 
     await expect(
