@@ -6,6 +6,7 @@ import { exportIndividualJsons } from "./apps/export-individual-jsons"
 import { exportSiteJsons } from "./apps/export-site-jsons"
 import { extractFolderJsons } from "./apps/extract-folder-jsons"
 import { findInvalidSchema } from "./apps/find-invalid-schema"
+import { createContentFromLocal } from "./apps/create-content-from-local"
 import { importFolderJsons } from "./apps/import-folder-jsons"
 import { publishSiteResources } from "./apps/publish-site-resources"
 import { rebuildAllCodebuildProjects } from "./apps/rebuild-all-codebuild-projects"
@@ -44,6 +45,12 @@ const main = async () => {
         value: "find-invalid-schema",
       },
       {
+        name: "Create content from local",
+        description:
+          "Prepare assets, studioify schemas, and create a published Collection or Folder from local JSON.",
+        value: "create-content-from-local",
+      },
+      {
         name: "Import folder JSONs",
         description:
           "Import JSON files from ./input to update existing resources in the database.",
@@ -79,6 +86,9 @@ const main = async () => {
       break
     case "find-invalid-schema":
       await findInvalidSchema()
+      break
+    case "create-content-from-local":
+      await createContentFromLocal()
       break
     case "import-folder-jsons":
       await importFolderJsons()
