@@ -30,7 +30,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await resetSiteRedirects(siteId)
   })
 
-  test("admin can create and delete a redirect", async ({ page }) => {
+  test("admin can create a redirect", async ({ page }) => {
     const source = `e2e-${crypto.randomUUID().slice(0, 8)}`
     const destination = "/new-destination"
     const site = new SitePO(page)
@@ -47,6 +47,17 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       destination,
     )
     await expect(site.redirectPathText(`/${source}`)).toBeVisible()
+  })
+
+  test("admin can delete a redirect", async ({ page }) => {
+    const source = `e2e-${crypto.randomUUID().slice(0, 8)}`
+    const destination = "/new-destination"
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "redirects")
+    await site.addRedirect(source, destination)
+    await site.expectChangesPublishedToast()
 
     // Act
     await site.deleteRedirect(source)
