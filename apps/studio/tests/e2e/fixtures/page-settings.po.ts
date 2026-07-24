@@ -22,6 +22,22 @@ export class PageSettingsPO {
     ).toBeVisible()
   }
 
+  saveButton() {
+    return this.page.getByRole("button", { name: "Save" })
+  }
+
+  publishImmediatelyButton() {
+    return this.page.getByRole("button", { name: "Publish immediately" })
+  }
+
+  async expectSaveButtonVisible() {
+    await expect(this.saveButton()).toBeVisible()
+  }
+
+  async expectPublishImmediatelyHidden() {
+    await expect(this.publishImmediatelyButton()).toHaveCount(0)
+  }
+
   async saveDraft() {
     await this.page.getByRole("button", { name: "Save" }).click()
     await expect(this.page.getByText("Saved settings")).toBeVisible()
