@@ -223,6 +223,41 @@ export const seedRootCollection = async ({
   return { collection }
 }
 
+export const seedCollection = async ({
+  siteId,
+  collectionTitle = "E2E Seed Collection",
+}: {
+  siteId: number
+  collectionTitle?: string
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { collection } = await setupCollection({
+    siteId,
+    title: collectionTitle,
+    permalink: `e2e-collection-${suffix}`,
+  })
+  return { collection }
+}
+
+export const seedCollectionLink = async ({
+  siteId,
+  collectionId,
+  linkTitle = "E2E Collection Link",
+}: {
+  siteId: number
+  collectionId: string
+  linkTitle?: string
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { collectionLink } = await setupCollectionLink({
+    siteId,
+    collectionId,
+    title: linkTitle,
+    permalink: `e2e-collection-link-${suffix}`,
+  })
+  return { collectionLink }
+}
+
 export const expectResourceAbsent = (resourceId: string) =>
   expect.poll(async () => {
     const row = await db

@@ -39,6 +39,10 @@ export class DashboardPO {
     await this.page.getByRole("menuitem", { name: "Folder" }).click()
   }
 
+  async clickCreateCollection() {
+    await this.page.getByRole("menuitem", { name: "Collection" }).click()
+  }
+
   async fillPageWizard(title: string) {
     await this.page
       .getByRole("button", { name: "Next: Page title and URL" })
@@ -51,6 +55,34 @@ export class DashboardPO {
     await this.page.getByLabel("Folder name").fill(title)
     await this.page.getByRole("button", { name: "Create Folder" }).click()
     await expect(this.page.getByText("Folder created!")).toBeVisible()
+  }
+
+  async fillCollectionWizard(title: string) {
+    await this.page.getByLabel("Collection name").fill(title)
+    await this.page.getByRole("button", { name: "Create collection" }).click()
+    await expect(this.page.getByText("Collection created!")).toBeVisible()
+  }
+
+  async clickAddCollectionItem() {
+    await this.page.getByRole("button", { name: "Add new item" }).click()
+  }
+
+  async selectCollectionItemType(type: "Page" | "Link or file") {
+    await this.page.getByText(type, { exact: true }).click()
+  }
+
+  async proceedToCollectionItemDetails() {
+    await this.page.getByRole("button", { name: "Next: Page details" }).click()
+  }
+
+  async fillCollectionPageWizard(title: string) {
+    await this.page.getByLabel("Page title").fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
+  }
+
+  async fillCollectionLinkWizard(title: string) {
+    await this.page.getByLabel("Item title").fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
   }
 
   async openPageSettings(title: string) {
