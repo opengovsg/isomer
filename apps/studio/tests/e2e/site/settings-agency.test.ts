@@ -33,8 +33,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   }) => {
     const renamedSiteName = `E2E Site ${siteId} Renamed`
     const site = new SitePO(page)
-    await page.goto(`/sites/${siteId}/settings/agency`)
-    await page.waitForURL(/\/settings\/agency$/)
+    await site.gotoSettings(siteId, "agency")
 
     const nameField = page.getByLabel("Site name")
     await expect(nameField).toBeVisible()
@@ -56,8 +55,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher does not see the Publish button on agency settings", async ({
     page,
   }) => {
-    await page.goto(`/sites/${siteId}/settings/agency`)
-    await page.waitForURL(/\/settings\/agency$/)
+    await new SitePO(page).gotoSettings(siteId, "agency")
 
     await expect(page.getByLabel("Site name")).toBeVisible()
     await expect(
