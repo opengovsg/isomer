@@ -100,7 +100,7 @@ export const teardownE2ESite = async (siteId: number): Promise<void> => {
     const resources = await tx
       .selectFrom("Resource")
       .where("siteId", "=", siteId)
-      .select(["id", "draftBlobId", "publishedVersionId"])
+      .select(["id", "draftBlobId"])
       .execute()
 
     const resourceIds = resources.map((r) => r.id)
@@ -130,11 +130,7 @@ export const teardownE2ESite = async (siteId: number): Promise<void> => {
       .map((r) => r.draftBlobId)
       .filter((id): id is NonNullable<typeof id> => id != null)
 
-    await tx
-      .updateTable("Resource")
-      .set({ parentId: null, publishedVersionId: null, draftBlobId: null })
-      .where("siteId", "=", siteId)
-      .execute()
+    await tx.deleteFrom("Resource").where("siteId", "=", siteId).execute()
 
     const blobIds = new Set(draftBlobIds)
 
@@ -166,7 +162,6 @@ export const teardownE2ESite = async (siteId: number): Promise<void> => {
         .execute()
     }
 
-    await tx.deleteFrom("Resource").where("siteId", "=", siteId).execute()
     await tx.deleteFrom("Navbar").where("siteId", "=", siteId).execute()
     await tx.deleteFrom("Footer").where("siteId", "=", siteId).execute()
     await tx.deleteFrom("Site").where("id", "=", siteId).execute()
