@@ -2,6 +2,9 @@ import type { RoleType } from "~prisma/generated/generatedEnums"
 import { type Page } from "@playwright/test"
 import { expect } from "@playwright/test"
 
+import { DashboardPO } from "./dashboard.po"
+import { UsersPO } from "./users.po"
+
 export const createPageViaWizard = async (
   page: Page,
   {
@@ -12,8 +15,9 @@ export const createPageViaWizard = async (
 ) => {
   await page.goto(startUrl)
 
-  await page.getByRole("button", { name: "Create new..." }).click()
-  await page.getByRole("menuitem", { name: "Page" }).click()
+  const dashboard = new DashboardPO(page)
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreatePage()
 
   await page.getByRole("button", { name: "Next: Page title and URL" }).click()
 
@@ -27,10 +31,10 @@ export const createFolderViaWizard = async (
   page: Page,
   { siteId, title }: { siteId: number; title: string },
 ) => {
-  await page.goto(`/sites/${siteId}`)
-
-  await page.getByRole("button", { name: "Create new..." }).click()
-  await page.getByRole("menuitem", { name: "Folder" }).click()
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoSite(siteId)
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreateFolder()
 
   await page.getByLabel("Folder name").fill(title)
   await page.getByRole("button", { name: "Create Folder" }).click()
@@ -39,8 +43,9 @@ export const createFolderViaWizard = async (
 }
 
 export const openInviteModal = async (page: Page, siteId: number) => {
-  await page.goto(`/sites/${siteId}/users`)
-  await page.getByRole("button", { name: "Add new user" }).click()
+  const users = new UsersPO(page)
+  await users.goto(siteId)
+  await users.openAddUser()
 }
 
 export const inviteCollaborator = async (
