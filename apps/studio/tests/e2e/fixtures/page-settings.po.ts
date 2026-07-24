@@ -32,12 +32,6 @@ export class PageSettingsPO {
     await expect(this.page.getByRole("button", { name: "Save" })).toBeVisible()
   }
 
-  async expectPublishImmediatelyHidden() {
-    await expect(
-      this.page.getByRole("button", { name: "Publish immediately" }),
-    ).toHaveCount(0)
-  }
-
   async closeWithoutSaving() {
     // The modal's `X` icon button shares the "Close" accessible name (via
     // aria-label) with this footer button, but only this one has "Close" as
