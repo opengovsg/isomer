@@ -1,14 +1,14 @@
-import { test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { openSeededPageEditor } from "../fixtures/helpers"
+import { seedFolderWithPage } from "../fixtures/page-seed"
 import {
-  expectPageScheduledAt,
-  expectPageScheduledBy,
-  seedFolderWithPage,
-} from "../fixtures/page-seed"
+  getResourceScheduledAt,
+  getResourceScheduledBy,
+} from "../fixtures/resource.db"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -43,8 +43,12 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.schedulePublishForToday()
     await editor.expectScheduledSuccessfully()
     await editor.expectCancelScheduleVisible()
-    await expectPageScheduledAt(seededPage.id).not.toBeNull()
-    await expectPageScheduledBy(seededPage.id).not.toBeNull()
+    await expect
+      .poll(() => getResourceScheduledAt(seededPage.id))
+      .not.toBeNull()
+    await expect
+      .poll(() => getResourceScheduledBy(seededPage.id))
+      .not.toBeNull()
 
     const dashboard = new DashboardPO(page)
     await dashboard.gotoFolder(siteId, folder.id)
@@ -53,8 +57,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.cancelSchedule()
     await editor.expectPublishButtonVisible()
-    await expectPageScheduledAt(seededPage.id).toBeNull()
-    await expectPageScheduledBy(seededPage.id).toBeNull()
+    await expect.poll(() => getResourceScheduledAt(seededPage.id)).toBeNull()
+    await expect.poll(() => getResourceScheduledBy(seededPage.id)).toBeNull()
   })
 })
 
