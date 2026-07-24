@@ -5,6 +5,22 @@ import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 /** Prose preview label from the default integration seed blob. */
 export const SEEDED_PROSE_BLOCK_LABEL = "Test block"
 
+export const seedFolder = async ({
+  siteId,
+  folderTitle = "E2E Seed Folder",
+}: {
+  siteId: number
+  folderTitle?: string
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { folder } = await setupFolder({
+    siteId,
+    title: folderTitle,
+    permalink: `e2e-folder-${suffix}`,
+  })
+  return { folder }
+}
+
 export const seedRootPage = async ({
   siteId,
   userId,
@@ -47,11 +63,7 @@ export const seedFolderWithPage = async ({
   folderTitle?: string
 }) => {
   const suffix = crypto.randomUUID().slice(0, 8)
-  const { folder } = await setupFolder({
-    siteId,
-    title: folderTitle,
-    permalink: `e2e-folder-${suffix}`,
-  })
+  const { folder } = await seedFolder({ siteId, folderTitle })
   const { page } = await setupPageResource({
     siteId,
     resourceType: ResourceType.Page,

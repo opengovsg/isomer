@@ -40,18 +40,6 @@ export class DashboardPO {
     await expect(this.page.getByText("Folder created!")).toBeVisible()
   }
 
-  async gotoFolder(siteId: number, folderId: string) {
-    await this.page.goto(`/sites/${siteId}/folders/${folderId}`)
-    await this.page.waitForURL(
-      new RegExp(`/sites/${siteId}/folders/${folderId}`),
-    )
-  }
-
-  async openPageByTitle(title: string) {
-    await this.page.getByRole("link", { name: title }).click()
-    await this.page.waitForURL(/\/pages\/\d+/)
-  }
-
   async openPageSettings(title: string) {
     await expect(this.page.getByRole("link", { name: title })).toBeVisible()
     await this.openResourceMenu(title)
