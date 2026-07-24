@@ -22,6 +22,12 @@ import { env } from "~/env.mjs"
 const DELETE_TAG = "deletedAt"
 const EGAZETTE_COMPLIANCE_HOLD_IN_DAYS = 10000
 
+// Unlike Key params (which the SDK URL-encodes), CopySource is sent verbatim
+// as the x-amz-copy-source header, so keys with spaces or reserved characters
+// (e.g. "2026/Government Gazette/...") must be encoded per path segment here.
+const getEncodedCopySource = (Bucket?: string, Key?: string) =>
+  `${Bucket}/${Key?.split("/").map(encodeURIComponent).join("/")}`
+
 // R2 credentials are only set for preview, but the choice of backend is
 // driven by their presence rather than the environment name. Exported so
 // other modules don't have to re-derive this from the raw env vars.
@@ -147,15 +153,19 @@ export const deleteFile = async ({
   )
 }
 
-// NOTE: In order to set the asset as published, we have to do 2 things:
-// 1. we have to set the object lock retention
-// 2. we have to remove the scheduledAt tag
+// NOTE: In order to set the asset as published, we have to do 3 things:
+// 1. we rewrite the Content-Disposition (when given) so downloads are named
+//    after the gazette title rather than the raw S3 key
+// 2. we have to set the object lock retention
+// 3. we have to remove the scheduledAt tag
 // this is required to guarantee that the gazettes
 // can be seen and cannot be deleted
 export const setAssetAsPublished = async ({
   Key,
   Bucket,
-}: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket">) => {
+  ContentDisposition,
+}: Pick<PutObjectTaggingCommandInput, "Key" | "Bucket"> &
+  Pick<PutObjectCommandInput, "ContentDisposition">) => {
   // Skip on R2: the COMPLIANCE-mode Object Lock below is irreversible for
   // ~27 years — applying it to a shared preview bucket would permanently
   // lock every test upload. The GuardDuty malware-scan tag check is also
@@ -182,6 +192,31 @@ export const setAssetAsPublished = async ({
   )
   if (hasFailedScan) {
     throw new Error("Cannot publish asset with failed malware scan")
+  }
+
+  // NOTE: S3 object metadata is immutable, so rewriting Content-Disposition
+  // requires a self-copy with MetadataDirective REPLACE. This must happen
+  // before the retention lock below — once the object lock is applied the
+  // object can no longer be overwritten. REPLACE drops all existing metadata,
+  // so ContentType and user metadata are read back and re-supplied; object
+  // tags carry over via the default TaggingDirective (COPY).
+  if (ContentDisposition) {
+    const head = await storage.send(new HeadObjectCommand({ Bucket, Key }))
+    // Skip the (paid) self-copy when the disposition is already correct,
+    // e.g. on a pg-boss retry after an earlier attempt already rewrote it.
+    if (head.ContentDisposition !== ContentDisposition) {
+      await storage.send(
+        new CopyObjectCommand({
+          Bucket,
+          CopySource: getEncodedCopySource(Bucket, Key),
+          Key,
+          MetadataDirective: "REPLACE",
+          ContentType: head.ContentType,
+          Metadata: head.Metadata,
+          ContentDisposition,
+        }),
+      )
+    }
   }
 
   // NOTE: Lock first to preserve guarantee that once published
@@ -243,7 +278,7 @@ export const copyFile = async ({
   return storage.send(
     new CopyObjectCommand({
       Bucket,
-      CopySource: `${Bucket}/${SourceKey}`,
+      CopySource: getEncodedCopySource(Bucket, SourceKey),
       Key: DestKey,
     }),
   )
