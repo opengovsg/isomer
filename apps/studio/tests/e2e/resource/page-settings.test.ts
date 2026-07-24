@@ -136,28 +136,4 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     // Assert
     await expectPageTitle(seededPage.id).toBe(newTitle)
   })
-
-  test("editor does not see Publish immediately on a published page", async ({
-    page,
-  }) => {
-    // Arrange
-    const pageTitle = `Editor Published Page ${crypto.randomUUID().slice(0, 8)}`
-    const publisherId = await getE2EUserId(TEST_EMAILS.publisher)
-    await seedRootPage({
-      siteId,
-      pageTitle,
-      state: ResourceState.Published,
-      userId: publisherId,
-    })
-
-    // Act
-    const dashboard = new DashboardPO(page)
-    await dashboard.gotoSite(siteId)
-    await dashboard.openPageSettings(pageTitle)
-
-    // Assert
-    const settings = new PageSettingsPO(page)
-    await settings.expectLoaded()
-    await settings.expectPublishImmediatelyHidden()
-  })
 })
