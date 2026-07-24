@@ -7,6 +7,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { mockAssetUploadRoutes } from "../fixtures/network"
 import { resetSiteLogoSettings } from "../fixtures/reset"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { expectSiteLogoUrl } from "../fixtures/site-expect"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -35,16 +36,18 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
   test("admin can upload a logo and publish", async ({ page }) => {
     const site = new SitePO(page)
+
+    // Arrange
     await site.gotoSettingsSection(siteId, "logo")
 
+    // Act
     await site.uploadLogo(LOGO_FIXTURE)
-    await expect(site.logoFilenameText(LOGO_FILENAME)).toBeVisible({
-      timeout: 15_000,
-    })
-
+    await site.expectLogoFilenameVisible(LOGO_FILENAME)
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
+    // Assert
+    await expect(expectSiteLogoUrl(siteId)).resolves.toMatch(/.+/)
     await site.reloadSettingsSection("logo")
     await expect(site.logoFilenameText(LOGO_FILENAME)).toBeVisible()
   })

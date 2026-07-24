@@ -9,6 +9,10 @@ import {
 } from "../fixtures/network"
 import { resetSiteRedirects } from "../fixtures/reset"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import {
+  expectLiveRedirectCount,
+  expectRedirectDestination,
+} from "../fixtures/site-expect"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -17,6 +21,8 @@ const VALID_BULK_REDIRECTS_CSV = [
   "/bulk-one,/dest-one",
   "/bulk-two,/dest-two",
 ].join("\n")
+
+const BULK_REDIRECT_COUNT = 2
 
 let siteId: number
 
@@ -42,11 +48,27 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
   test("admin can bulk-upload redirects via CSV", async ({ page }) => {
     const site = new SitePO(page)
+
+    // Arrange
     await resetGrowthBookPage(page)
     await site.gotoSettingsSection(siteId, "redirects")
 
-    await site.bulkUploadRedirectsCsv(VALID_BULK_REDIRECTS_CSV)
+    // Act
+    await site.bulkUploadRedirectsCsv(
+      VALID_BULK_REDIRECTS_CSV,
+      BULK_REDIRECT_COUNT,
+    )
 
+    // Assert
+    await expect(expectLiveRedirectCount(siteId)).resolves.toBe(
+      BULK_REDIRECT_COUNT,
+    )
+    await expect(expectRedirectDestination(siteId, "bulk-one")).resolves.toBe(
+      "/dest-one",
+    )
+    await expect(expectRedirectDestination(siteId, "bulk-two")).resolves.toBe(
+      "/dest-two",
+    )
     await expect(site.redirectPathText("/bulk-one")).toBeVisible()
     await expect(site.redirectPathText("/bulk-two")).toBeVisible()
   })

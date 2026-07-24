@@ -66,15 +66,11 @@ export class SitePO {
   }
 
   notificationBannerToggle() {
-    return this.page.locator(".chakra-switch")
+    return this.page.getByRole("switch")
   }
 
   notificationTitleField() {
     return this.page.getByLabel("Notification title")
-  }
-
-  notificationCheckbox() {
-    return this.page.getByRole("checkbox")
   }
 
   /** Logo file input on the logos and favicon settings page. */
@@ -174,7 +170,12 @@ export class SitePO {
     await this.page.getByRole("button", { name: "Delete redirect" }).click()
   }
 
-  async bulkUploadRedirectsCsv(csvContent: string) {
+  async cancelDeleteRedirect(source: string) {
+    await this.deleteRedirectButton(source).click()
+    await this.page.getByRole("button", { name: "No, keep redirect" }).click()
+  }
+
+  async bulkUploadRedirectsCsv(csvContent: string, expectedCount: number) {
     await this.bulkUploadRedirectsButton().click()
     await this.bulkUploadRedirectsDialogTitle().waitFor({ state: "visible" })
 
@@ -185,14 +186,24 @@ export class SitePO {
     })
 
     await this.page.getByRole("button", { name: "Process redirects" }).click()
-    await this.page.getByText("All 2 redirects are good to go.").waitFor({
-      state: "visible",
-    })
+    await this.page
+      .getByText(`All ${expectedCount} redirects are good to go.`)
+      .waitFor({ state: "visible" })
 
-    await this.page.getByRole("button", { name: "Publish 2 redirects" }).click()
-    await this.page.getByText("2 redirects published").waitFor({
-      state: "visible",
-    })
+    await this.page
+      .getByRole("button", { name: `Publish ${expectedCount} redirects` })
+      .click()
+    await this.page
+      .getByText(`${expectedCount} redirects published`)
+      .waitFor({ state: "visible" })
+  }
+
+  async expectLogoFilenameVisible(filename: string) {
+    await this.logoFilenameText(filename).waitFor({ state: "visible" })
+  }
+
+  async expectNotificationTitleFieldVisible() {
+    await this.notificationTitleField().waitFor({ state: "visible" })
   }
 
   /**

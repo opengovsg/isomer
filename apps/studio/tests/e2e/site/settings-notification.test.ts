@@ -4,6 +4,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { resetSiteNotification } from "../fixtures/reset"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { expectSiteNotificationTitle } from "../fixtures/site-expect"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -26,21 +27,25 @@ test.describe("notification settings", { tag: roleTag("admin") }, () => {
 
   test("admin can save a notification title", async ({ page }) => {
     const site = new SitePO(page)
+    const notificationTitle = "e2e test notification"
+
+    // Arrange
     await site.gotoSettingsSection(siteId, "notification")
-
     await expect(site.notificationBannerToggle()).toBeVisible()
+
+    // Act
     await site.enableNotificationBanner()
-
-    await expect(site.notificationTitleField()).toBeVisible({ timeout: 5000 })
-    await site.fillNotificationTitle("e2e test notification")
-
+    await site.expectNotificationTitleFieldVisible()
+    await site.fillNotificationTitle(notificationTitle)
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
-    await site.reloadSettingsSection("notification")
-    await expect(site.notificationCheckbox()).toBeChecked()
-    await expect(site.notificationTitleField()).toHaveValue(
-      "e2e test notification",
+    // Assert
+    await expect(expectSiteNotificationTitle(siteId)).resolves.toBe(
+      notificationTitle,
     )
+    await site.reloadSettingsSection("notification")
+    await expect(site.notificationBannerToggle()).toBeChecked()
+    await expect(site.notificationTitleField()).toHaveValue(notificationTitle)
   })
 })

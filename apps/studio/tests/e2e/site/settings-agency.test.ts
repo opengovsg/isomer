@@ -4,6 +4,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { resetSiteAgencySettings } from "../fixtures/reset"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { expectSiteName } from "../fixtures/site-expect"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -33,14 +34,18 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   }) => {
     const renamedSiteName = `E2E Site ${siteId} Renamed`
     const site = new SitePO(page)
+
+    // Arrange
     await site.gotoSettingsSection(siteId, "agency")
-
     await expect(site.siteNameField()).toBeVisible()
-    await site.fillSiteName(renamedSiteName)
 
+    // Act
+    await site.fillSiteName(renamedSiteName)
     await site.clickPublish()
     await site.expectChangesPublishedToast()
 
+    // Assert
+    await expect(expectSiteName(siteId)).resolves.toBe(renamedSiteName)
     await site.reloadSettingsSection("agency")
     await expect(site.siteNameField()).toHaveValue(renamedSiteName)
   })
