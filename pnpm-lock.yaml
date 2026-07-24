@@ -159,7 +159,7 @@ catalogs:
       specifier: ^4.24.0
       version: 4.27.0
     autoprefixer:
-      specifier: ^10.5.3
+      specifier: ^10.5.4
       version: 10.5.4
     axios:
       specifier: ^1.18.1
@@ -7190,13 +7190,6 @@ packages:
     resolution: {integrity: sha512-0bDNnY/u6pPwHDMoF0FieU354oBi0a8rD9FcsLwzcGWbc8KS8KPIi7y+s13OlVY+gMWc/9xEMUgNE6Qm8ZllYQ==}
     engines: {node: '>=4'}
 
-  autoprefixer@10.5.2:
-    resolution: {integrity: sha512-rD5t5DwOjJdmSORcTq64j8MawTC+tbQ+HHqjR4NDumamy/ambn1UJrlKL+KdwujWxMkFjPM3pPHOEA9tl4767Q==}
-    engines: {node: ^10 || ^12 || >=14}
-    hasBin: true
-    peerDependencies:
-      postcss: ^8.1.0
-
   autoprefixer@10.5.4:
     resolution: {integrity: sha512-MaU0U/za7N3r6brxD4YB/l4NSrFzLPlANv6wEuQVaIPlD3L4W9rFcQPbL/EilY9BHhHvhfcz3gInDLrEtWT4EA==}
     engines: {node: ^10 || ^12 || >=14}
@@ -12922,7 +12915,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.29.7
       '@babel/helper-validator-option': 7.29.7
-      browserslist: 4.28.4
+      browserslist: 4.28.6
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -17951,15 +17944,6 @@ snapshots:
 
   attr-accept@2.2.5: {}
 
-  autoprefixer@10.5.2(postcss@8.5.19):
-    dependencies:
-      browserslist: 4.28.4
-      caniuse-lite: 1.0.30001806
-      fraction.js: 5.3.4
-      picocolors: 1.1.1
-      postcss: 8.5.19
-      postcss-value-parser: 4.2.0
-
   autoprefixer@10.5.4(postcss@8.5.19):
     dependencies:
       browserslist: 4.28.6
@@ -21773,7 +21757,7 @@ snapshots:
       '@csstools/postcss-text-decoration-shorthand': 5.0.4(postcss@8.5.19)
       '@csstools/postcss-trigonometric-functions': 5.0.3(postcss@8.5.19)
       '@csstools/postcss-unset-value': 5.0.0(postcss@8.5.19)
-      autoprefixer: 10.5.2(postcss@8.5.19)
+      autoprefixer: 10.5.4(postcss@8.5.19)
       browserslist: 4.28.4
       css-blank-pseudo: 8.0.1(postcss@8.5.19)
       css-has-pseudo: 8.0.0(postcss@8.5.19)
@@ -23779,7 +23763,7 @@ snapshots:
       '@webassemblyjs/wasm-parser': 1.14.1
       acorn: 8.17.0
       acorn-import-phases: 1.0.4(acorn@8.17.0)
-      browserslist: 4.28.4
+      browserslist: 4.28.6
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.20.1
       es-module-lexer: 2.3.0
@@ -23812,7 +23796,7 @@ snapshots:
       '@webassemblyjs/wasm-parser': 1.14.1
       acorn: 8.17.0
       acorn-import-phases: 1.0.4(acorn@8.17.0)
-      browserslist: 4.28.4
+      browserslist: 4.28.6
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.20.1
       es-module-lexer: 2.3.0

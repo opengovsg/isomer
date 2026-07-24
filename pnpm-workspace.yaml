@@ -62,7 +62,7 @@ catalog:
   # v5 changed the client API — do not "upgrade" this without reviewing egazette compatibility.
   algoliasearch: ^4.24.0
   ajv: ^8.20.0
-  autoprefixer: ^10.5.3
+  autoprefixer: ^10.5.4
   axios: ^1.18.1
   bootstrap-icons: ^1.13.1
   browserslist-useragent-regexp: ^4.1.4
