@@ -8,6 +8,13 @@ export class DashboardPO {
     await this.page.waitForURL(new RegExp(`/sites/${siteId}$`))
   }
 
+  async gotoFolder(siteId: number, folderId: string) {
+    await this.page.goto(`/sites/${siteId}/folders/${folderId}`)
+    await this.page.waitForURL(
+      new RegExp(`/sites/${siteId}/folders/${folderId}$`),
+    )
+  }
+
   async openCreateMenu() {
     await this.page.getByRole("button", { name: "Create new..." }).click()
   }
