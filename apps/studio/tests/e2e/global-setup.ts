@@ -42,9 +42,7 @@ const globalSetup = async (config: FullConfig) => {
 
   await seedRolesForE2E()
 
-  for (const role of ROLES) {
-    await signInOnce(role, baseURL)
-  }
+  await Promise.all(ROLES.map((role) => signInOnce(role, baseURL)))
 }
 
 export default globalSetup
