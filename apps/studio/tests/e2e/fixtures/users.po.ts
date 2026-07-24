@@ -8,31 +8,49 @@ export class UsersPO {
     await this.page.waitForURL(new RegExp(`/sites/${siteId}/users`))
   }
 
+  addNewUserButton() {
+    return this.page.getByRole("button", { name: "Add new user" })
+  }
+
+  async expectCannotAddNewUser() {
+    await expect(this.addNewUserButton()).toBeDisabled()
+  }
+
   async openAddUser() {
-    await this.page.getByRole("button", { name: "Add new user" }).click()
+    await this.addNewUserButton().click()
   }
 
-  async fillEmail(email: string) {
-    await this.page.getByLabel("Email address").fill(email)
-  }
-
-  async selectRole(role: string) {
-    // Role picker buttons are labelled "Editor — can edit…", "Publisher — can
-    // publish…", etc. Anchor at ^role so "Editor" doesn't also match "Chief
-    // Editor" if that role were added later.
-    await this.roleButton(role).click()
-  }
-
-  roleButton(role: string) {
-    return this.page.getByRole("button", { name: new RegExp(`^${role}`) })
+  async selectInviteRole(role: string) {
+    await this.page
+      .getByRole("button", { name: new RegExp(`^${role}`) })
+      .click()
   }
 
   async fillInviteForm(email: string, role: string) {
-    await this.fillEmail(email)
-    await this.selectRole(role)
+    await this.fillInviteEmail(email)
+    await this.selectInviteRole(role)
   }
 
-  async expectVendorWhitelistRequired() {
+  async fillInviteEmail(email: string) {
+    await this.page.getByLabel("Email address").fill(email)
+  }
+
+  async expectInviteRoleEnabled(role: string) {
+    await expect(
+      this.page.getByRole("button", { name: new RegExp(`^${role}`) }),
+    ).toBeEnabled()
+  }
+
+  async sendInvite() {
+    const sendBtn = this.page.getByRole("button", { name: "Send invite" })
+    await expect(sendBtn).toBeEnabled({ timeout: 10_000 })
+    await sendBtn.click()
+    await expect(this.page.getByText(/Sent invite to/)).toBeVisible({
+      timeout: 10_000,
+    })
+  }
+
+  async expectNonGovSgWhitelistWarning() {
     await expect(
       this.page.getByText(
         "There are non-gov.sg domains that need to be whitelisted",
@@ -46,19 +64,6 @@ export class UsersPO {
     ).toBeDisabled()
   }
 
-  async expectRoleEnabled(role: string) {
-    await expect(this.roleButton(role)).toBeEnabled()
-  }
-
-  async sendInvite() {
-    const sendBtn = this.page.getByRole("button", { name: "Send invite" })
-    await expect(sendBtn).toBeEnabled({ timeout: 10_000 })
-    await sendBtn.click()
-    await expect(this.page.getByText(/Sent invite to/)).toBeVisible({
-      timeout: 10_000,
-    })
-  }
-
   /**
    * Opens the row actions menu for the user whose email is shown in the table.
    * Locates by email (stable) rather than display name (local-part for invites).
@@ -66,5 +71,66 @@ export class UsersPO {
   async openUserMenu(email: string) {
     const row = this.page.getByRole("row").filter({ hasText: email })
     await row.getByRole("button", { name: /Options for/ }).click()
+  }
+
+  async openEditUser(email: string) {
+    await this.openUserMenu(email)
+    await this.page.getByRole("menuitem", { name: "Edit user" }).click()
+  }
+
+  async selectRoleInEditModal(role: string) {
+    await this.page.getByRole("button", { name: `${role} role` }).click()
+  }
+
+  async saveUserChanges() {
+    await this.page.getByRole("button", { name: "Save changes" }).click()
+    await expect(this.page.getByText("Changes saved!")).toBeVisible({
+      timeout: 10_000,
+    })
+  }
+
+  async openRemoveUserAccess(email: string) {
+    await this.openUserMenu(email)
+    await this.page
+      .getByRole("menuitem", { name: "Remove user access" })
+      .click()
+  }
+
+  async confirmRemoveUser() {
+    await this.page.getByRole("button", { name: "Remove user" }).click()
+  }
+
+  async expectRemovedFromSiteToast(email: string) {
+    await expect(
+      this.page.getByText(`Removed ${email} from site.`),
+    ).toBeVisible({ timeout: 10_000 })
+  }
+
+  async clickResendInvite(email: string) {
+    await this.openUserMenu(email)
+    await this.page.getByRole("menuitem", { name: "Resend invite" }).click()
+  }
+
+  async expectResendInviteToast(email: string) {
+    await expect(this.page.getByText(`Invite resent to ${email}`)).toBeVisible({
+      timeout: 10_000,
+    })
+  }
+
+  async expectUserInTable(email: string) {
+    await expect(
+      this.page.getByRole("row").filter({ hasText: email }),
+    ).toBeVisible()
+  }
+
+  async expectUserNotInTable(email: string) {
+    await expect(
+      this.page.getByRole("row").filter({ hasText: email }),
+    ).toHaveCount(0)
+  }
+
+  async expectUserRole(email: string, role: string) {
+    const row = this.page.getByRole("row").filter({ hasText: email })
+    await expect(row).toContainText(role)
   }
 }
