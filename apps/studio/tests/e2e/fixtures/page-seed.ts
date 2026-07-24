@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test"
 import crypto from "crypto"
 import {
   setupCollection,
@@ -6,6 +7,7 @@ import {
   setupFolder,
   setupPageResource,
 } from "tests/integration/helpers/seed"
+import { db } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 /** Prose preview label from the default integration seed blob. */
@@ -241,7 +243,7 @@ export const expectResourcePresent = (resourceId: string) =>
     return row?.id ?? null
   })
 
-export const expectPageParentId = (resourceId: string) =>
+export const expectResourceParentId = (resourceId: string) =>
   expect.poll(async () => {
     const row = await db
       .selectFrom("Resource")
@@ -251,7 +253,7 @@ export const expectPageParentId = (resourceId: string) =>
     return row?.parentId ?? null
   })
 
-export const expectPageTitle = (resourceId: string) =>
+export const expectResourceTitle = (resourceId: string) =>
   expect.poll(async () => {
     const row = await db
       .selectFrom("Resource")

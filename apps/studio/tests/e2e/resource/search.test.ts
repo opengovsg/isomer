@@ -34,39 +34,46 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can search for a page and open it in the editor", async ({
     page,
   }) => {
+    // Arrange
     const pageTitle = `Search Target ${crypto.randomUUID().slice(0, 8)}`
     const { page: seededPage } = await seedRootPage({ siteId, pageTitle })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.searchFor(pageTitle)
     await dashboard.expectSearchResultVisible(pageTitle)
     await dashboard.clickSearchResult(pageTitle)
 
+    // Assert
     const editor = new PageEditorPO(page)
     await editor.expectLoaded()
-    await page.waitForURL(new RegExp(`/sites/${siteId}/pages/${seededPage.id}`))
+    await dashboard.expectOnPageEditor(siteId, seededPage.id)
   })
 
   test("admin can search for a folder and open it on the dashboard", async ({
     page,
   }) => {
+    // Arrange
     const folderTitle = `Search Folder ${crypto.randomUUID().slice(0, 8)}`
     const { folder } = await seedFolder({ siteId, folderTitle })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.searchFor(folderTitle)
     await dashboard.expectSearchResultVisible(folderTitle)
     await dashboard.clickSearchResult(folderTitle)
 
-    await page.waitForURL(new RegExp(`/sites/${siteId}/folders/${folder.id}$`))
+    // Assert
+    await dashboard.expectOnFolder(siteId, folder.id)
     await dashboard.expectPageHeading(folderTitle)
   })
 
   test("admin can search for a collection and open it on the dashboard", async ({
     page,
   }) => {
+    // Arrange
     const collectionTitle = `Search Collection ${crypto.randomUUID().slice(0, 8)}`
     const { collection } = await seedCollectionWithPage({
       siteId,
@@ -74,24 +81,27 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       pageTitle: `Search Col Page ${crypto.randomUUID().slice(0, 8)}`,
     })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.searchFor(collectionTitle)
     await dashboard.expectSearchResultVisible(collectionTitle)
     await dashboard.clickSearchResult(collectionTitle)
 
-    await page.waitForURL(
-      new RegExp(`/sites/${siteId}/collections/${collection.id}$`),
-    )
+    // Assert
+    await dashboard.expectOnCollection(siteId, collection.id)
     await dashboard.expectPageHeading(collectionTitle)
   })
 
   test("admin sees disabled delete, move, and settings on the Search system page", async ({
     page,
   }) => {
+    // Arrange / Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openResourceMenu(SEARCH_PAGE_TITLE)
+
+    // Assert
     await dashboard.expectSearchPageMenuItemsDisabled()
   })
 })
