@@ -2,7 +2,19 @@ import { type Page } from "@playwright/test"
 import { type RoleType } from "~prisma/generated/generatedEnums"
 
 import { DashboardPO } from "./dashboard.po"
+import { PageEditorPO } from "./page-editor.po"
 import { UsersPO } from "./users.po"
+
+export const openSeededPageEditor = async (
+  page: Page,
+  siteId: number,
+  pageId: string,
+) => {
+  const editor = new PageEditorPO(page)
+  await editor.gotoPage(siteId, pageId)
+  await editor.expectLoaded()
+  return editor
+}
 
 export const createPageViaWizard = async (
   page: Page,
