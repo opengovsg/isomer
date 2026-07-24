@@ -30,8 +30,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const destination = "/new-destination"
     const site = new SitePO(page)
 
-    await page.goto(`/sites/${siteId}/settings/redirects`)
-    await page.waitForURL(/\/settings\/redirects$/)
+    await site.gotoSettingsSection(siteId, "redirects")
 
     await page.getByPlaceholder("redirect-from").fill(source)
     await page

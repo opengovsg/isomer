@@ -6,6 +6,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { enableGrowthBookFeature } from "../fixtures/network"
 import { resetSiteRedirects } from "../fixtures/reset"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 const VALID_BULK_REDIRECTS_CSV = [
@@ -37,11 +38,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test("admin can bulk-upload redirects via CSV", async ({ page }) => {
+    const site = new SitePO(page)
     // Drop the in-memory GrowthBook singleton so the mocked features fetch runs
     // on the next app load (see fixtures/network.ts).
     await page.goto("about:blank")
-    await page.goto(`/sites/${siteId}/settings/redirects`)
-    await page.waitForURL(/\/settings\/redirects$/)
+    await site.gotoSettingsSection(siteId, "redirects")
 
     await page
       .getByRole("button", { name: /bulk upload with a \.csv/i })

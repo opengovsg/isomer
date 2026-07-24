@@ -30,13 +30,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange
     const renamedSiteName = `E2E Site ${siteId} Renamed`
     const site = new SitePO(page)
-    await site.gotoSettings(siteId, "agency")
+    await site.gotoSettingsSection(siteId, "agency")
     const nameField = page.getByLabel("Site name")
     await expect(nameField).toBeVisible()
 
     // Act
     await nameField.fill(renamedSiteName)
-    await site.publishButton().click()
+    await site.clickPublish()
     await site.expectChangesPublishedToast()
     await page.reload()
 

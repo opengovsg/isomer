@@ -26,13 +26,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
   test("admin can edit a footer link label", async ({ page }) => {
     const site = new SitePO(page)
-    await page.goto(`/sites/${siteId}/settings/footer`)
-    await page.waitForURL(/\/settings\/footer$/)
+    await site.gotoSettingsSection(siteId, "footer")
 
     await page.getByRole("button", { name: "About us" }).click()
     await page.getByLabel("Link label").fill("About E2E")
 
-    await site.publishButton().click({ force: true })
+    await site.clickPublish({ force: true })
     await site.expectChangesPublishedToast()
 
     await page.reload()

@@ -22,6 +22,7 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 | **Page objects** | `fixtures/*.po.ts` | Locators + actions on **one** UI surface, including multi-step modals/forms on that surface (`fillPageWizard`, `fillInviteForm`, …) |
 | **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts`, `fixtures/session-mint.ts` | Non-UI reset, site lifecycle, auth storage-state mint (`setSingpassUuidFor`, `mintStorageStateForRole`) |
 | **DB assertions** | `fixtures/*.db.ts` | Query helpers that fetch persisted state for a test to assert on (`resource.db.ts`, `user.db.ts`, …) |
+| **Network mocks** | `fixtures/network.ts` | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach` |
 
 **Wizards** here means multi-step modals on a single surface (e.g. Create Page:
 "Next: Page title and URL" → fill title → "Start editing"). The step sequence
@@ -224,6 +225,17 @@ rename) is asserted by wrapping the `*.db.ts` getter in `expect.poll` in the
 test: `await expect.poll(() => getResourceParentId(id)).toBe(folder.id)`. The
 getter stays a plain query; the `expect` stays in the test.
 
+### Site settings (`SitePO`)
+
+- Deep-link to a section with `gotoSettingsSection(siteId, section)` — do not
+  repeat raw `page.goto` + `waitForURL` pairs in settings tests.
+- Publish via `clickPublish()`; pass `{ force: true }` when a FormBuilder inline
+  editor (navbar/footer rows) overlays the header Publish button.
+- Logo upload: `logoUploadInput()` — scopes past the separate favicon control.
+- GrowthBook-gated UI: call `enableGrowthBookFeature` in `beforeEach`, then
+  `page.goto("about:blank")` before the first app navigation so the client
+  singleton re-fetches mocked features.
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists anymore) → use `provisionE2ESite` and assert on the returned site
@@ -233,3 +245,5 @@ getter stays a plain query; the `expect` stays in the test.
 - Raw `page.getByRole("button", { name: "Create new..." })` repeated across files → use `DashboardPO`
 - Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
 - Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`
+- Raw `page.goto(\`/sites/${siteId}/settings/...\`)` in settings tests → use `SitePO.gotoSettingsSection`
+- Raw `publishButton().click({ force: true })` in navbar/footer tests → use `SitePO.clickPublish({ force: true })`
