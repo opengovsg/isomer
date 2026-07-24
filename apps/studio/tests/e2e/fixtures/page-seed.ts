@@ -243,7 +243,7 @@ export const expectResourcePresent = (resourceId: string) =>
     return row?.id ?? null
   })
 
-export const expectPageParentId = (resourceId: string) =>
+export const expectResourceParentId = (resourceId: string) =>
   expect.poll(async () => {
     const row = await db
       .selectFrom("Resource")
@@ -253,7 +253,7 @@ export const expectPageParentId = (resourceId: string) =>
     return row?.parentId ?? null
   })
 
-export const expectPageTitle = (resourceId: string) =>
+export const expectResourceTitle = (resourceId: string) =>
   expect.poll(async () => {
     const row = await db
       .selectFrom("Resource")
