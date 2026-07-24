@@ -26,14 +26,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
   test("admin can change the primary colour and publish", async ({ page }) => {
     const site = new SitePO(page)
-    await page.goto(`/sites/${siteId}/settings/colours`)
-    await page.waitForURL(/\/settings\/colours$/)
+    await site.gotoSettingsSection(siteId, "colours")
 
     const colourInput = page.getByLabel("Main brand colour")
     await colourInput.clear()
     await colourInput.fill("ff0000")
     await expect(site.publishButton()).toBeEnabled()
-    await site.publishButton().click()
+    await site.clickPublish()
     await site.expectChangesPublishedToast()
 
     await page.reload()

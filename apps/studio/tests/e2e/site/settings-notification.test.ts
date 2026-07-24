@@ -23,7 +23,8 @@ test.describe("notification settings", { tag: roleTag("admin") }, () => {
   test("admin can save a notification title", async ({ page }) => {
     // Arrange
     const site = new SitePO(page)
-    await site.gotoSettings(siteId, "notification")
+    await site.gotoSettingsSection(siteId, "notification")
+
     const toggleLabel = page.locator(".chakra-switch")
     await expect(toggleLabel).toBeVisible()
 
@@ -32,7 +33,8 @@ test.describe("notification settings", { tag: roleTag("admin") }, () => {
     const titleField = page.getByLabel("Notification title")
     await expect(titleField).toBeVisible({ timeout: 5000 })
     await titleField.fill("e2e test notification")
-    await site.publishButton().click()
+
+    await site.clickPublish()
     await site.expectChangesPublishedToast()
     await page.reload()
     await page.waitForURL(/\/settings\/notification$/)
