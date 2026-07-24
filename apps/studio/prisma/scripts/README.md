@@ -37,3 +37,12 @@
    - `psql "$DATABASE_URL" -f prisma/scripts/findUntaggedWithLegacyCategory.sql` (only `has_push_document_job = true` rows affect SearchSG/Algolia; risk accepted after audit found none)
 7. Invoke with optional `--dry-run` to preview without writing:
    `source .env && pnpm exec tsx prisma/scripts/migrateCategoryToTagCategories.ts --dry-run`
+
+## Migrate tags to tag categories
+
+1. Migrates each Collection Item's legacy `tags` (`{ category, selected[] }`) into `tagCategories` groups on the Index, and appends the matching option UUIDs to each item's `tagged` array. The legacy `tags` field is left untouched.
+2. Newly created groups are written with `display: "pills"` and appended after any existing groups (so a prior "Category" group's order/`plaintext` display is preserved).
+3. Idempotent per group label — only missing tag category groups are appended on each Index side; missing options are added to an existing group when legacy tags reference labels not yet present. Item `tagged` UUIDs are still backfilled when a group already exists. A collection is skipped only when every side is fully up to date.
+4. Site selection: edit `SITE_IDS_INCLUDE` / `SITE_IDS_EXCLUDE` at the top of the script. Empty include = all sites; exclude is always subtracted. The resolved list is printed and must be confirmed before proceeding.
+5. Invoke with optional `--dry-run` to preview without writing:
+   `source .env && pnpm exec tsx prisma/scripts/migrateTagsToTagCategories.ts --dry-run`
