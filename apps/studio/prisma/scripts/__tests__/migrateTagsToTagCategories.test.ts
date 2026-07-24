@@ -24,10 +24,12 @@ import {
   buildMigrationPlan,
   buildTagGroupsFromLegacyTags,
   collateLegacyTags,
+  filterGroupsToAdd,
   hasMatchingTagGroup,
   main,
   migrateCollection,
   migrateSite,
+  reconcileMigrationWork,
   resolveOptionIdsFromLegacyTags,
   resolveSiteIds,
   type LegacyTag,
@@ -322,6 +324,65 @@ describe("buildMigrationPlan", () => {
       { resourceId: "3", state: "draft", tagged: [topicNews] },
       { resourceId: "3", state: "published", tagged: [topicHealth] },
     ])
+  })
+})
+
+describe("reconcileMigrationWork", () => {
+  it("appends only missing groups and backfills item tags using existing option ids", () => {
+    // Arrange
+    const existingTopicGroup: TagCategoryGroup = {
+      id: "topic-1",
+      label: "Topic",
+      display: "pills",
+      options: [{ id: "t-health", label: "Health" }],
+    }
+    const items = [
+      {
+        resourceId: "1",
+        draftTags: [
+          { category: "Topic", selected: ["Health"] },
+          { category: "Region", selected: ["North"] },
+        ],
+      },
+    ]
+    let counter = 0
+    const generateId = () => `new-id-${counter++}`
+    const plan = buildMigrationPlan({ items, generateId })
+    if (plan.status !== "migrated") throw new Error("expected migrated plan")
+
+    // Act
+    const reconciled = reconcileMigrationWork({
+      plan,
+      draftTagCategories: [existingTopicGroup],
+      publishedTagCategories: undefined,
+      items,
+    })
+
+    // Assert
+    expect(reconciled.draftGroupsToAdd.map((group) => group.label)).toEqual([
+      "Region",
+    ])
+    expect(reconciled.itemUpdates[0]?.tagged).toEqual([
+      "t-health",
+      expect.any(String),
+    ])
+    expect(reconciled.isFullyMigrated).toBe(false)
+  })
+})
+
+describe("filterGroupsToAdd", () => {
+  it("returns only groups whose labels are not already present", () => {
+    const existing: TagCategoryGroup[] = [
+      { id: "g-1", label: "Topic", options: [] },
+    ]
+    const candidates: TagCategoryGroup[] = [
+      { id: "g-2", label: "Topic", options: [] },
+      { id: "g-3", label: "Region", options: [] },
+    ]
+
+    expect(filterGroupsToAdd(existing, candidates).map((g) => g.label)).toEqual(
+      ["Region"],
+    )
   })
 })
 
@@ -730,14 +791,14 @@ describe("migrateCollection / migrateSite", () => {
     })
   })
 
-  it("skips a collection whose Index already has a matching tagCategories group (idempotent re-run)", async () => {
+  it("skips a collection only when every group and item tag is already present", async () => {
     // Arrange
     const { collection } = await setupCollection({ siteId })
     const existingTopicGroup: TagCategoryGroup = {
       id: "topic-1",
       label: "Topic",
       display: "pills",
-      options: [{ id: "t-1", label: "Health" }],
+      options: [{ id: "t-health", label: "Health" }],
     }
     const { blob: indexBlob } = await setupCollectionIndexPage({
       collectionId: collection.id,
@@ -748,6 +809,7 @@ describe("migrateCollection / migrateSite", () => {
       siteId,
       parentId: collection.id,
       tags: [{ category: "Topic", selected: ["Health"] }],
+      tagged: ["t-health"],
     })
 
     // Act
@@ -769,7 +831,42 @@ describe("migrateCollection / migrateSite", () => {
     const indexContentAfter = await getBlobContent(indexBlob.id)
     expect(indexContentAfter.page.tagCategories).toEqual([existingTopicGroup])
     const itemContent = await getBlobContent(itemBlob.id)
-    expect(itemContent.page.tagged).toEqual([])
+    expect(itemContent.page.tagged).toEqual(["t-health"])
+  })
+
+  it("backfills item tagged UUIDs when the Index group already exists", async () => {
+    // Arrange
+    const { collection } = await setupCollection({ siteId })
+    const existingTopicGroup: TagCategoryGroup = {
+      id: "topic-1",
+      label: "Topic",
+      display: "pills",
+      options: [{ id: "t-health", label: "Health" }],
+    }
+    await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      tagCategories: [existingTopicGroup],
+    })
+    const { blob: itemBlob } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      tags: [{ category: "Topic", selected: ["Health"] }],
+    })
+
+    // Act
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
+
+    // Assert
+    expect(result.status).toBe("migrated")
+    expect(result.itemsUpdated).toBe(1)
+    const itemContent = await getBlobContent(itemBlob.id)
+    expect(itemContent.page.tagged).toEqual(["t-health"])
   })
 
   it("skips items without usable tags without failing the migration", async () => {

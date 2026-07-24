@@ -21,13 +21,16 @@
  *     never trigger a publish — a draft may hold unrelated pending edits
  *     that aren't ready to ship.
  *
- * Idempotent via label: before writing, each candidate group label (derived
+ * Idempotent per group label: before writing, each candidate group label (derived
  * from legacy tag categories) is checked against the Index's existing
- * `tagCategories` (draft or published). If any candidate label already has a
- * matching group, the whole collection is skipped (`"already-migrated"`) —
- * covers re-runs and collections a human has already migrated in Studio.
- * Risk accepted: a human-created group with a matching label is also
- * skipped, so its legacy tags would not be migrated for that collection.
+ * `tagCategories` on each side independently. Only missing groups are appended;
+ * item `tagged` UUIDs are still backfilled using existing option ids when a
+ * group is already present. A collection is skipped (`"already-migrated"`) only
+ * when every side is up to date and every item already carries the expected
+ * option UUIDs.
+ *
+ * Draft writes use optimistic concurrency (`Blob.updatedAt` + `Resource.draftBlobId`
+ * guards) so concurrent Studio saves/publishes abort rather than clobber edits.
  *
  * Display: each newly created group is written with `display: "pills"`
  * (the historical default for tag filters).
@@ -164,10 +167,13 @@ export const buildTagGroupsFromLegacyTags = ({
       const byLabel = new Map<string, string>()
       const options = optionLabels.map((label) => {
         const id = generateId()
-        byLabel.set(label, id)
+        byLabel.set(normalizedGroupLabel(label), id)
         return { id, label }
       })
-      optionIdByCategoryAndLabel.set(categoryLabel, byLabel)
+      optionIdByCategoryAndLabel.set(
+        normalizedGroupLabel(categoryLabel),
+        byLabel,
+      )
 
       return {
         id: groupId,
@@ -204,13 +210,15 @@ export const resolveOptionIdsFromLegacyTags = (
   for (const { category, selected } of tags) {
     const categoryLabel = category.trim()
     if (!categoryLabel) continue
-    const byLabel = optionIdByCategoryAndLabel.get(categoryLabel)
+    const byLabel = optionIdByCategoryAndLabel.get(
+      normalizedGroupLabel(categoryLabel),
+    )
     if (!byLabel) continue
 
     for (const value of selected) {
       const optionLabel = value.trim()
       if (!optionLabel) continue
-      const id = byLabel.get(optionLabel)
+      const id = byLabel.get(normalizedGroupLabel(optionLabel))
       if (id && !ids.includes(id)) ids.push(id)
     }
   }
@@ -258,7 +266,89 @@ export const buildMigrationPlan = ({
     generateId,
   })
 
-  const itemUpdates = items.flatMap(
+  const itemUpdates = buildItemUpdates({
+    items,
+    draftOptionIdByCategoryAndLabel: optionIdByCategoryAndLabel,
+    publishedOptionIdByCategoryAndLabel: optionIdByCategoryAndLabel,
+  })
+
+  return { status: "migrated", groups, itemUpdates }
+}
+
+export const buildOptionIdLookupFromTagCategories = (
+  tagCategories: TagCategoryGroup[] | undefined,
+): Map<string, Map<string, string>> => {
+  const lookup = new Map<string, Map<string, string>>()
+
+  for (const group of tagCategories ?? []) {
+    const categoryKey = normalizedGroupLabel(group.label)
+    let byLabel = lookup.get(categoryKey)
+    if (!byLabel) {
+      byLabel = new Map()
+      lookup.set(categoryKey, byLabel)
+    }
+    for (const option of group.options) {
+      byLabel.set(normalizedGroupLabel(option.label), option.id)
+    }
+  }
+
+  return lookup
+}
+
+export const buildOptionIdLookupFromTagGroups = (
+  groups: TagCategoryGroup[],
+): Map<string, Map<string, string>> =>
+  buildOptionIdLookupFromTagCategories(groups)
+
+export const mergeOptionIdLookups = (
+  existing: Map<string, Map<string, string>>,
+  additions: Map<string, Map<string, string>>,
+): Map<string, Map<string, string>> => {
+  const merged = new Map(existing)
+
+  for (const [categoryKey, additionByLabel] of additions) {
+    let byLabel = merged.get(categoryKey)
+    if (!byLabel) {
+      byLabel = new Map()
+      merged.set(categoryKey, byLabel)
+    }
+    for (const [labelKey, optionId] of additionByLabel) {
+      if (!byLabel.has(labelKey)) {
+        byLabel.set(labelKey, optionId)
+      }
+    }
+  }
+
+  return merged
+}
+
+export const filterGroupsToAdd = (
+  existingTagCategories: TagCategoryGroup[] | undefined,
+  candidateGroups: TagCategoryGroup[],
+): TagCategoryGroup[] =>
+  candidateGroups.filter(
+    (group) => !hasMatchingTagGroup(existingTagCategories, [group.label]),
+  )
+
+const taggedArraysEqual = (
+  current: string[] | undefined,
+  next: string[],
+): boolean => {
+  const a = current ?? []
+  if (a.length !== next.length) return false
+  return a.every((id, index) => id === next[index])
+}
+
+export const buildItemUpdates = ({
+  items,
+  draftOptionIdByCategoryAndLabel,
+  publishedOptionIdByCategoryAndLabel,
+}: {
+  items: MigrationPlanItem[]
+  draftOptionIdByCategoryAndLabel: Map<string, Map<string, string>>
+  publishedOptionIdByCategoryAndLabel: Map<string, Map<string, string>>
+}): ItemTagUpdate[] =>
+  items.flatMap(
     ({
       resourceId,
       draftTags,
@@ -270,7 +360,7 @@ export const buildMigrationPlan = ({
 
       const draftOptionIds = resolveOptionIdsFromLegacyTags(
         draftTags,
-        optionIdByCategoryAndLabel,
+        draftOptionIdByCategoryAndLabel,
       )
       if (draftOptionIds.length > 0) {
         updates.push({
@@ -282,7 +372,7 @@ export const buildMigrationPlan = ({
 
       const publishedOptionIds = resolveOptionIdsFromLegacyTags(
         publishedTags,
-        optionIdByCategoryAndLabel,
+        publishedOptionIdByCategoryAndLabel,
       )
       if (publishedOptionIds.length > 0) {
         updates.push({
@@ -296,7 +386,63 @@ export const buildMigrationPlan = ({
     },
   )
 
-  return { status: "migrated", groups, itemUpdates }
+export interface ReconciledMigrationWork {
+  draftGroupsToAdd: TagCategoryGroup[]
+  publishedGroupsToAdd: TagCategoryGroup[]
+  itemUpdates: ItemTagUpdate[]
+  isFullyMigrated: boolean
+}
+
+export const reconcileMigrationWork = ({
+  plan,
+  draftTagCategories,
+  publishedTagCategories,
+  items,
+}: {
+  plan: Extract<MigrationPlan, { status: "migrated" }>
+  draftTagCategories?: TagCategoryGroup[]
+  publishedTagCategories?: TagCategoryGroup[]
+  items: MigrationPlanItem[]
+}): ReconciledMigrationWork => {
+  const draftGroupsToAdd = filterGroupsToAdd(draftTagCategories, plan.groups)
+  const publishedGroupsToAdd = filterGroupsToAdd(
+    publishedTagCategories,
+    plan.groups,
+  )
+
+  const draftOptionIdByCategoryAndLabel = mergeOptionIdLookups(
+    buildOptionIdLookupFromTagCategories(draftTagCategories),
+    buildOptionIdLookupFromTagGroups(draftGroupsToAdd),
+  )
+  const publishedOptionIdByCategoryAndLabel = mergeOptionIdLookups(
+    buildOptionIdLookupFromTagCategories(publishedTagCategories),
+    buildOptionIdLookupFromTagGroups(publishedGroupsToAdd),
+  )
+
+  const itemUpdates = buildItemUpdates({
+    items,
+    draftOptionIdByCategoryAndLabel,
+    publishedOptionIdByCategoryAndLabel,
+  })
+
+  const itemByResourceId = new Map(items.map((item) => [item.resourceId, item]))
+  const isFullyMigrated =
+    draftGroupsToAdd.length === 0 &&
+    publishedGroupsToAdd.length === 0 &&
+    itemUpdates.every((update) => {
+      const item = itemByResourceId.get(update.resourceId)
+      if (!item) return true
+      const currentTagged =
+        update.state === "draft" ? item.draftTagged : item.publishedTagged
+      return taggedArraysEqual(currentTagged, update.tagged)
+    })
+
+  return {
+    draftGroupsToAdd,
+    publishedGroupsToAdd,
+    itemUpdates,
+    isFullyMigrated,
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -359,6 +505,7 @@ const getIndexPageRow = (collectionId: string, siteId: number) =>
       "r.publishedVersionId",
       "v.blobId as publishedBlobId",
       "v.versionNum as publishedVersionNum",
+      sql<Date | null>`"draftBlob"."updatedAt"`.as("draftUpdatedAt"),
       sql<CollectionIndexContent | null>`"draftBlob"."content"`.as(
         "draftContent",
       ),
@@ -386,6 +533,7 @@ const getItemRows = (collectionId: string, siteId: number) =>
       "r.publishedVersionId",
       "v.blobId as publishedBlobId",
       "v.versionNum as publishedVersionNum",
+      sql<Date | null>`"draftBlob"."updatedAt"`.as("draftUpdatedAt"),
       sql<CollectionItemContent | null>`"draftBlob"."content"`.as(
         "draftContent",
       ),
@@ -395,20 +543,57 @@ const getItemRows = (collectionId: string, siteId: number) =>
     ])
     .execute()
 
-const updateBlobContent = <T>(
+const updateDraftBlobInPlace = async <T>(
   tx: Transaction<DB>,
-  blobId: string,
-  content: T,
-) =>
-  tx
+  {
+    resourceId,
+    expectedDraftBlobId,
+    expectedUpdatedAt,
+    mergeContent,
+  }: {
+    resourceId: string
+    expectedDraftBlobId: string
+    expectedUpdatedAt: Date
+    mergeContent: (current: T) => T
+  },
+) => {
+  const resource = await tx
+    .selectFrom("Resource")
+    .where("id", "=", resourceId)
+    .select("draftBlobId")
+    .executeTakeFirst()
+
+  if (resource?.draftBlobId !== expectedDraftBlobId) {
+    throw new Error(
+      `Concurrent publish detected on resource ${resourceId} — draftBlobId changed since it was read. Aborting.`,
+    )
+  }
+
+  const currentBlob = await tx
+    .selectFrom("Blob")
+    .where("id", "=", expectedDraftBlobId)
+    .select(["content", "updatedAt"])
+    .executeTakeFirstOrThrow()
+
+  const result = await tx
     .updateTable("Blob")
     .set({
       content: jsonb(
-        content as unknown as UnwrapTagged<PrismaJson.BlobJsonContent>,
+        mergeContent(
+          currentBlob.content as unknown as T,
+        ) as unknown as UnwrapTagged<PrismaJson.BlobJsonContent>,
       ),
     })
-    .where("id", "=", blobId)
-    .execute()
+    .where("id", "=", expectedDraftBlobId)
+    .where("updatedAt", "=", expectedUpdatedAt)
+    .executeTakeFirst()
+
+  if (result.numUpdatedRows === BigInt(0)) {
+    throw new Error(
+      `Concurrent draft edit detected on resource ${resourceId} — Blob.updatedAt changed since it was read. Aborting.`,
+    )
+  }
+}
 
 /** Publishes new content as a brand-new Version — never rewrites a historical Blob. */
 const publishNewContent = async <T>(
@@ -524,31 +709,39 @@ export const migrateCollection = async ({
 
   const itemRows = await getItemRows(collectionId, siteId)
 
-  const plan = buildMigrationPlan({
-    items: itemRows.map((row) => ({
-      resourceId: row.resourceId,
-      draftTags: row.draftContent?.page.tags,
-      draftTagged: row.draftContent?.page.tagged,
-      publishedTags: row.publishedContent?.page.tags,
-      publishedTagged: row.publishedContent?.page.tagged,
-    })),
-  })
+  const itemInputs: MigrationPlanItem[] = itemRows.map((row) => ({
+    resourceId: row.resourceId,
+    draftTags: row.draftContent?.page.tags,
+    draftTagged: row.draftContent?.page.tagged,
+    publishedTags: row.publishedContent?.page.tags,
+    publishedTagged: row.publishedContent?.page.tagged,
+  }))
 
-  // Risk accepted: skip when any candidate group label already matches an
-  // existing group (draft or published). Covers re-runs and Studio-migrated
-  // collections, but also skips a human-created group sharing that label.
+  const plan = buildMigrationPlan({ items: itemInputs })
+
+  let reconciled:
+    | ReconciledMigrationWork
+    | {
+        draftGroupsToAdd: []
+        publishedGroupsToAdd: []
+        itemUpdates: []
+        isFullyMigrated: true
+      } = {
+    draftGroupsToAdd: [],
+    publishedGroupsToAdd: [],
+    itemUpdates: [],
+    isFullyMigrated: true,
+  }
+
   if (plan.status === "migrated") {
-    const candidateLabels = plan.groups.map((g) => g.label)
-    const alreadyMigrated =
-      hasMatchingTagGroup(
-        indexRow.draftContent?.page.tagCategories,
-        candidateLabels,
-      ) ||
-      hasMatchingTagGroup(
-        indexRow.publishedContent?.page.tagCategories,
-        candidateLabels,
-      )
-    if (alreadyMigrated) {
+    reconciled = reconcileMigrationWork({
+      plan,
+      draftTagCategories: indexRow.draftContent?.page.tagCategories,
+      publishedTagCategories: indexRow.publishedContent?.page.tagCategories,
+      items: itemInputs,
+    })
+
+    if (reconciled.isFullyMigrated) {
       return {
         collectionId,
         status: "already-migrated",
@@ -561,18 +754,34 @@ export const migrateCollection = async ({
 
   const groups =
     plan.status === "migrated"
-      ? plan.groups.map((g) => ({
-          label: g.label,
-          options: g.options.map((o) => o.label),
-        }))
+      ? [...reconciled.draftGroupsToAdd, ...reconciled.publishedGroupsToAdd]
+          .reduce<TagCategoryGroup[]>((acc, group) => {
+            if (
+              !acc.some(
+                (existing) =>
+                  normalizedGroupLabel(existing.label) ===
+                  normalizedGroupLabel(group.label),
+              )
+            ) {
+              acc.push(group)
+            }
+            return acc
+          }, [])
+          .map((g) => ({
+            label: g.label,
+            options: g.options.map((o) => o.label),
+          }))
       : []
-  const itemsUpdated = new Set(plan.itemUpdates.map((u) => u.resourceId)).size
+  const itemsUpdated = new Set(reconciled.itemUpdates.map((u) => u.resourceId))
+    .size
   // New Versions this run will (or, in dry-run, would) create — the index's
   // published side plus one per item published-side update.
   const versionsCreated =
     plan.status === "migrated"
-      ? (indexRow.publishedContent ? 1 : 0) +
-        plan.itemUpdates.filter((u) => u.state === "published").length
+      ? (indexRow.publishedContent && reconciled.publishedGroupsToAdd.length > 0
+          ? 1
+          : 0) +
+        reconciled.itemUpdates.filter((u) => u.state === "published").length
       : 0
 
   if (plan.status !== "migrated" || dryRun) {
@@ -595,20 +804,34 @@ export const migrateCollection = async ({
   }
 
   await db.transaction().execute(async (tx) => {
-    if (indexRow.draftContent && indexRow.draftBlobId) {
-      await updateBlobContent(tx, indexRow.draftBlobId, {
-        ...indexRow.draftContent,
-        page: {
-          ...indexRow.draftContent.page,
-          tagCategories: appendTagGroups(
-            indexRow.draftContent.page.tagCategories,
-            plan.groups,
-          ),
-        },
+    if (
+      indexRow.draftContent &&
+      indexRow.draftBlobId &&
+      indexRow.draftUpdatedAt &&
+      reconciled.draftGroupsToAdd.length > 0
+    ) {
+      await updateDraftBlobInPlace(tx, {
+        resourceId: indexRow.resourceId,
+        expectedDraftBlobId: indexRow.draftBlobId,
+        expectedUpdatedAt: indexRow.draftUpdatedAt,
+        mergeContent: (current) => ({
+          ...current,
+          page: {
+            ...current.page,
+            tagCategories: appendTagGroups(
+              current.page.tagCategories,
+              reconciled.draftGroupsToAdd,
+            ),
+          },
+        }),
       })
     }
 
-    if (indexRow.publishedContent && indexRow.publishedVersionNum != null) {
+    if (
+      indexRow.publishedContent &&
+      indexRow.publishedVersionNum != null &&
+      reconciled.publishedGroupsToAdd.length > 0
+    ) {
       await publishNewContent(tx, {
         resourceId: indexRow.resourceId,
         previousVersionNum: indexRow.publishedVersionNum,
@@ -620,7 +843,7 @@ export const migrateCollection = async ({
             ...indexRow.publishedContent.page,
             tagCategories: appendTagGroups(
               indexRow.publishedContent.page.tagCategories,
-              plan.groups,
+              reconciled.publishedGroupsToAdd,
             ),
           },
         },
@@ -630,14 +853,32 @@ export const migrateCollection = async ({
     const itemRowByResourceId = new Map(
       itemRows.map((row) => [row.resourceId, row]),
     )
-    for (const update of plan.itemUpdates) {
+    for (const update of reconciled.itemUpdates) {
       const row = itemRowByResourceId.get(update.resourceId)
       if (!row) continue
 
-      if (update.state === "draft" && row.draftContent && row.draftBlobId) {
-        await updateBlobContent(tx, row.draftBlobId, {
-          ...row.draftContent,
-          page: { ...row.draftContent.page, tagged: update.tagged },
+      const currentTagged =
+        update.state === "draft"
+          ? row.draftContent?.page.tagged
+          : row.publishedContent?.page.tagged
+      if (taggedArraysEqual(currentTagged, update.tagged)) {
+        continue
+      }
+
+      if (
+        update.state === "draft" &&
+        row.draftContent &&
+        row.draftBlobId &&
+        row.draftUpdatedAt
+      ) {
+        await updateDraftBlobInPlace(tx, {
+          resourceId: row.resourceId,
+          expectedDraftBlobId: row.draftBlobId,
+          expectedUpdatedAt: row.draftUpdatedAt,
+          mergeContent: (current) => ({
+            ...current,
+            page: { ...current.page, tagged: update.tagged },
+          }),
         })
       } else if (
         update.state === "published" &&

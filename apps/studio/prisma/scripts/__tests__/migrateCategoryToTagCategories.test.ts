@@ -256,23 +256,43 @@ describe("buildCategoryTagGroup", () => {
       options: [
         { id: "id-1", label: "Articles" },
         { id: "id-2", label: "Guides" },
+        { id: "id-3", label: "Others" },
       ],
     })
   })
 })
 
 describe("buildMigrationPlan", () => {
-  it("returns no-categories when no item has a category value on either side", () => {
+  it("returns no-categories when no item has a category field on either side", () => {
     // Act
     const plan = buildMigrationPlan({
-      items: [
-        { resourceId: "1", draftCategory: "", publishedCategory: undefined },
-        { resourceId: "2" },
-      ],
+      items: [{ resourceId: "2" }],
     })
 
     // Assert
     expect(plan).toEqual({ status: "no-categories", itemUpdates: [] })
+  })
+
+  it('tags an empty legacy category as "Others"', () => {
+    // Arrange
+    let counter = 0
+    const generateId = () => `id-${counter++}`
+
+    // Act
+    const plan = buildMigrationPlan({
+      items: [{ resourceId: "1", draftCategory: "" }],
+      generateId,
+    })
+
+    // Assert
+    expect(plan.status).toBe("migrated")
+    if (plan.status !== "migrated") return
+    const othersId = plan.group.options.find(
+      (option) => option.label === "Others",
+    )?.id
+    expect(plan.itemUpdates).toEqual([
+      { resourceId: "1", state: "draft", tagged: [othersId] },
+    ])
   })
 
   it("collects categories from both draft and published values across items", () => {
@@ -866,7 +886,7 @@ describe("migrateCollection / migrateSite", () => {
     expect(itemContent.page.tagged).toEqual([])
   })
 
-  it("skips items whose legacy category is empty on both sides, without failing the migration", async () => {
+  it('tags items whose legacy category is empty with "Others"', async () => {
     // Arrange
     const { collection } = await setupCollection({ siteId })
     await setupCollectionIndexPage({ collectionId: collection.id, siteId })
@@ -891,10 +911,13 @@ describe("migrateCollection / migrateSite", () => {
     })
 
     // Assert
-    expect(result.categories).toEqual(["Guides"])
-    expect(result.itemsUpdated).toBe(1)
+    expect(result.categories).toEqual(["Guides", "Others"])
+    expect(result.itemsUpdated).toBe(2)
     const emptyItemContent = await getBlobContent(emptyItemBlob.id)
-    expect(emptyItemContent.page.tagged).toEqual([])
+    expect(emptyItemContent.page.tagged).toHaveLength(1)
+    expect(emptyItemContent.page.tagged?.[0]).toEqual(
+      expect.stringMatching(/^[0-9a-f-]{36}$/),
+    )
   })
 
   it("migrateSite processes every collection on the site and skips collections on other sites", async () => {
