@@ -8,7 +8,9 @@ import {
 } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { DashboardPO } from "../fixtures/dashboard.po"
 import { createPageViaWizard } from "../fixtures/helpers"
+import { PageEditorPO } from "../fixtures/page-editor.po"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -66,6 +68,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       title,
       siteId,
     })
+    await new PageEditorPO(page).expectLoaded()
 
     const created = await db
       .selectFrom("Resource")
@@ -86,7 +89,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   })
 
   test("publisher does not see the Create new button", async ({ page }) => {
-    await page.goto(`/sites/${siteId}`)
+    await new DashboardPO(page).gotoSite(siteId)
     await expect(
       page.getByRole("button", { name: "Create new..." }),
     ).not.toBeVisible()
@@ -99,7 +102,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   })
 
   test("editor does not see the Create new button", async ({ page }) => {
-    await page.goto(`/sites/${siteId}`)
+    await new DashboardPO(page).gotoSite(siteId)
     await expect(
       page.getByRole("button", { name: "Create new..." }),
     ).not.toBeVisible()

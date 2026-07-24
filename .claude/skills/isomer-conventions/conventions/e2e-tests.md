@@ -83,9 +83,36 @@ Use `roleTag(...)` (typed from `ROLES`) — not a raw `"@admin"` string. Multi-r
 | Put smoke in `smoke.test.ts` (no role tag) | Mix unauthenticated smoke into role-tagged files |
 | Run `pnpm exec playwright test --project=admin` to filter | Rely on file path alone for role selection |
 
+## Page objects (PR-4)
+
+Page objects live in `fixtures/*.po.ts` and wrap locators + actions for **one** UI
+surface. Prefer them over raw Playwright calls when a locator will be reused.
+
+| PO | File | Surface |
+|----|------|---------|
+| `SitePO` | `site.po.ts` | Site settings |
+| `DashboardPO` | `dashboard.po.ts` | Site dashboard / resource table |
+| `PageEditorPO` | `page-editor.po.ts` | Page edit + publish chrome |
+| `UsersPO` | `users.po.ts` | Users / collaborators page |
+
+Rules:
+
+- Constructor takes `Page`; methods are async actions or locator getters
+- Keep multi-step flows that cross surfaces (create wizard, invite) in
+  `helpers.ts` — helpers may call POs for the surface-specific steps
+- Do not put DB setup in POs — use `provisionE2ESite` / integration seed helpers
+
+```ts
+const dashboard = new DashboardPO(page)
+await dashboard.gotoSite(siteId)
+await dashboard.openCreateMenu()
+await dashboard.clickCreateFolder()
+```
+
 ## How to detect violations
 
 - Asserting "Sample Site", hardcoding site ID `1`, or calling `getSeedSiteId()` → use `provisionE2ESite` and assert on the returned site
 - Duplicated wizard/invite flows in test files → move to `helpers.ts` or a PO
 - `test.use({ storageState: storageStateFor(...) })` in a test file → use `{ tag: roleTag(...) }` on `test.describe` instead
 - Raw `{ tag: "@admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
+- Raw `page.getByRole("button", { name: "Create new..." })` repeated across files → use `DashboardPO`
