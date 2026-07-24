@@ -37,9 +37,33 @@ export const resetSiteNotification = (siteId: number) =>
     .where("id", "=", siteId)
     .execute()
 
-/** Reset theme column to seed default (null) for colours settings tests. */
+// Mirrors createSite() defaults in server/modules/site/site.service.ts so the
+// colours form validates and setTheme can update an existing theme row.
+const DEFAULT_SITE_THEME = {
+  colors: {
+    brand: {
+      canvas: {
+        alt: "#bfcfd7",
+        default: "#e6ecef",
+        inverse: "#00405f",
+        backdrop: "#80a0af",
+      },
+      interaction: {
+        hover: "#002e44",
+        default: "#00405f",
+        pressed: "#00283b",
+      },
+    },
+  },
+}
+
+/** Reset theme column to the provisioned-site default for colours settings tests. */
 export const resetSiteTheme = (siteId: number) =>
-  db.updateTable("Site").set({ theme: null }).where("id", "=", siteId).execute()
+  db
+    .updateTable("Site")
+    .set({ theme: jsonb(DEFAULT_SITE_THEME) })
+    .where("id", "=", siteId)
+    .execute()
 
 // Defaults mirror tests/integration/helpers/seed/index.ts setupSite().
 const DEFAULT_NAVBAR_CONTENT = {
