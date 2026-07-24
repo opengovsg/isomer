@@ -7,6 +7,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
+import { getGrantedRole } from "../fixtures/user.db"
 
 test.describe("invite user", { tag: roleTag("admin") }, () => {
   test.describe.configure({ mode: "serial" })
@@ -44,17 +45,7 @@ test.describe("invite user", { tag: roleTag("admin") }, () => {
 
   const expectGrantedRole = (email: string) =>
     expect.poll(
-      async () => {
-        const row = await db
-          .selectFrom("User as u")
-          .innerJoin("ResourcePermission as rp", "rp.userId", "u.id")
-          .where("u.email", "=", email)
-          .where("rp.siteId", "=", siteId)
-          .where("rp.deletedAt", "is", null)
-          .select(["rp.role"])
-          .executeTakeFirst()
-        return row?.role ?? null
-      },
+      async () => (await getGrantedRole({ siteId, email }))?.role ?? null,
       { timeout: 10_000 },
     )
 

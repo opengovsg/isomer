@@ -2,14 +2,17 @@
 
 ## Fixtures
 
-| Module                | Purpose                                                        |
-| --------------------- | -------------------------------------------------------------- |
-| `fixtures/user.ts`    | `ensureUserOnboarded(email)` — skip welcome modal              |
-| `fixtures/reset.ts`   | Site-scoped DB reset helpers (`resetSiteAgencySettings`, etc.) |
-| `fixtures/helpers.ts` | Shared UI flows (create page/folder, invite user)              |
-| `fixtures/auth.ts`    | Role storage-state paths and `TEST_EMAILS`                     |
-| `fixtures/seed.ts`    | Idempotent E2E role seeding                                    |
-| `fixtures/site.po.ts` | Site settings page object                                      |
+| Module                       | Purpose                                                        |
+| ---------------------------- | -------------------------------------------------------------- |
+| `fixtures/user.ts`           | `ensureUserOnboarded(email)` — skip welcome modal              |
+| `fixtures/reset.ts`          | Site-scoped DB reset helpers (`resetSiteAgencySettings`, etc.) |
+| `fixtures/helpers.ts`        | Shared UI flows (create page/folder, invite user)              |
+| `fixtures/auth.ts`           | Role storage-state paths and `TEST_EMAILS`                     |
+| `fixtures/seed.ts`           | Idempotent E2E role seeding                                    |
+| `fixtures/site.po.ts`        | Site settings page object                                      |
+| `fixtures/dashboard.po.ts`   | Site dashboard / resource table page object                    |
+| `fixtures/page-editor.po.ts` | Page editor / publish page object                              |
+| `fixtures/users.po.ts`       | Users / collaborators page object                              |
 
 ## Structure
 
@@ -24,6 +27,20 @@
 3. Write **one happy-path test per surface** (drive the UI, assert toast + persisted state).
 4. Write **one permission-gate test per surface** for the most restrictive role boundary that has UI signal.
 5. Do **not** translate validation-error or audit-log scenarios — those stay in integration tests.
+
+## Page objects vs. generic Playwright calls
+
+A `.po.ts` method wraps `page.goto`/`page.waitForURL` **only when it's the
+canonical entry point onto that PO's surface**, reused across tests (e.g.
+`SitePO.gotoSettings`, `DashboardPO.gotoSite`, `UsersPO.goto`). These exist so
+every test lands on the surface the same way, and so a route change is a
+one-line fix instead of a multi-file find-and-replace.
+
+Generic, one-off Playwright calls — `page.reload()`, ad hoc `page.goto(...)`
+to a path with no dedicated PO, a `page.waitForURL(...)` just confirming
+state after an action — stay inline in the test as plain `page.*` calls.
+Wrapping them in a PO method adds a layer with no app-specific knowledge to
+encapsulate.
 
 ## Role projects and `@role` tags
 

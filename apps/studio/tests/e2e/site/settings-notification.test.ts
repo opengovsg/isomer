@@ -26,8 +26,7 @@ test.describe("notification settings", { tag: roleTag("admin") }, () => {
 
   test("admin can save a notification title", async ({ page }) => {
     const site = new SitePO(page)
-    await page.goto(`/sites/${siteId}/settings/notification`)
-    await page.waitForURL(/\/settings\/notification$/)
+    await site.gotoSettings(siteId, "notification")
 
     const toggleLabel = page.locator(".chakra-switch")
     await expect(toggleLabel).toBeVisible()

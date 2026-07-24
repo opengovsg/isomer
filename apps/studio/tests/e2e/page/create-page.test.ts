@@ -8,7 +8,10 @@ import {
 } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { DashboardPO } from "../fixtures/dashboard.po"
 import { createPageViaWizard } from "../fixtures/helpers"
+import { PageEditorPO } from "../fixtures/page-editor.po"
+import { getResourceByTitle } from "../fixtures/resource.db"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -66,13 +69,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       title,
       siteId,
     })
+    await new PageEditorPO(page).expectLoaded()
 
-    const created = await db
-      .selectFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "=", title)
-      .select(["id", "state", "type", "parentId"])
-      .executeTakeFirst()
+    const created = await getResourceByTitle({ siteId, title })
     expect(created).toBeTruthy()
     expect(created?.state).toBe("Draft")
     expect(created?.type).toBe("Page")
@@ -86,7 +85,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   })
 
   test("publisher does not see the Create new button", async ({ page }) => {
-    await page.goto(`/sites/${siteId}`)
+    await new DashboardPO(page).gotoSite(siteId)
     await expect(
       page.getByRole("button", { name: "Create new..." }),
     ).not.toBeVisible()
@@ -99,7 +98,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   })
 
   test("editor does not see the Create new button", async ({ page }) => {
-    await page.goto(`/sites/${siteId}`)
+    await new DashboardPO(page).gotoSite(siteId)
     await expect(
       page.getByRole("button", { name: "Create new..." }),
     ).not.toBeVisible()
@@ -131,12 +130,7 @@ test.describe(
         siteId,
       })
 
-      const created = await db
-        .selectFrom("Resource")
-        .where("siteId", "=", siteId)
-        .where("title", "=", title)
-        .select(["id", "state", "parentId"])
-        .executeTakeFirst()
+      const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
       expect(created?.parentId).toBe(folderId)
@@ -171,12 +165,7 @@ test.describe(
         siteId,
       })
 
-      const created = await db
-        .selectFrom("Resource")
-        .where("siteId", "=", siteId)
-        .where("title", "=", title)
-        .select(["id", "state", "parentId"])
-        .executeTakeFirst()
+      const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
       expect(created?.parentId).toBe(folderId)
@@ -209,12 +198,7 @@ test.describe(
         siteId,
       })
 
-      const created = await db
-        .selectFrom("Resource")
-        .where("siteId", "=", siteId)
-        .where("title", "=", title)
-        .select(["id", "state", "parentId"])
-        .executeTakeFirst()
+      const created = await getResourceByTitle({ siteId, title })
       expect(created).toBeTruthy()
       expect(created?.state).toBe("Draft")
       expect(created?.parentId).toBe(folderId)
