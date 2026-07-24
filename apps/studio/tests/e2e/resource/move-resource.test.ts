@@ -5,7 +5,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import {
-  expectPageParentId,
+  expectResourceParentId,
   seedFolder,
   seedNestedFolder,
   seedRootCollection,
@@ -34,12 +34,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test("admin can move a page into a folder", async ({ page }) => {
+    // Arrange
     const suffix = crypto.randomUUID().slice(0, 8)
     const pageTitle = `Move Page ${suffix}`
     const folderTitle = `Move Dest Folder ${suffix}`
     const { page: seededPage } = await seedRootPage({ siteId, pageTitle })
     const { folder } = await seedFolder({ siteId, folderTitle })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openResourceMenu(pageTitle)
@@ -47,7 +49,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.selectMoveDestination(folderTitle)
     await dashboard.confirmMove()
 
-    await expectPageParentId(seededPage.id).toBe(folder.id)
+    // Assert
+    await expectResourceParentId(seededPage.id).toBe(folder.id)
     await dashboard.gotoFolder(siteId, folder.id)
     await dashboard.expectResourceLinkVisible(pageTitle)
     await dashboard.gotoSite(siteId)
@@ -55,6 +58,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test("admin can move a folder into another folder", async ({ page }) => {
+    // Arrange
     const suffix = crypto.randomUUID().slice(0, 8)
     const sourceTitle = `Move Source Folder ${suffix}`
     const destTitle = `Move Target Folder ${suffix}`
@@ -67,6 +71,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       folderTitle: destTitle,
     })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openResourceMenu(sourceTitle)
@@ -74,12 +79,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.selectMoveDestination(destTitle)
     await dashboard.confirmMove()
 
-    await expectPageParentId(sourceFolder.id).toBe(destFolder.id)
+    // Assert
+    await expectResourceParentId(sourceFolder.id).toBe(destFolder.id)
     await dashboard.gotoFolder(siteId, destFolder.id)
     await dashboard.expectResourceLinkVisible(sourceTitle)
   })
 
   test("admin can move a nested folder to the site root", async ({ page }) => {
+    // Arrange
     const suffix = crypto.randomUUID().slice(0, 8)
     const parentTitle = `Move Parent Folder ${suffix}`
     const childTitle = `Move Nested Folder ${suffix}`
@@ -89,6 +96,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       childFolderTitle: childTitle,
     })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openResourceMenu(childTitle)
@@ -96,12 +104,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.selectMoveToSiteRoot()
     await dashboard.confirmMove()
 
-    await expectPageParentId(childFolder.id).toBeNull()
+    // Assert
+    await expectResourceParentId(childFolder.id).toBeNull()
     await dashboard.gotoSite(siteId)
     await dashboard.expectResourceLinkVisible(childTitle)
   })
 
   test("admin can move a collection into a folder", async ({ page }) => {
+    // Arrange
     const suffix = crypto.randomUUID().slice(0, 8)
     const collectionTitle = `Move Collection ${suffix}`
     const folderTitle = `Move Collection Folder ${suffix}`
@@ -111,6 +121,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     })
     const { folder } = await seedFolder({ siteId, folderTitle })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openResourceMenu(collectionTitle)
@@ -118,7 +129,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.selectMoveDestination(folderTitle)
     await dashboard.confirmMove()
 
-    await expectPageParentId(collection.id).toBe(folder.id)
+    // Assert
+    await expectResourceParentId(collection.id).toBe(folder.id)
     await dashboard.gotoFolder(siteId, folder.id)
     await dashboard.expectResourceLinkVisible(collectionTitle)
     await dashboard.gotoSite(siteId)
@@ -128,6 +140,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can move a collection page into another collection", async ({
     page,
   }) => {
+    // Arrange
     const { sourceCollection, destCollection, collectionPage } =
       await seedTwoCollections({
         siteId,
@@ -136,6 +149,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
         destCollectionTitle: `Move Dest Col ${crypto.randomUUID().slice(0, 8)}`,
       })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoCollection(siteId, sourceCollection.id)
     await dashboard.openCollectionResourceMenu(collectionPage.title)
@@ -143,7 +157,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.selectMoveDestination(destCollection.title)
     await dashboard.confirmMove()
 
-    await expectPageParentId(collectionPage.id).toBe(destCollection.id)
+    // Assert
+    await expectResourceParentId(collectionPage.id).toBe(destCollection.id)
     await dashboard.gotoCollection(siteId, destCollection.id)
     await dashboard.expectResourceLinkVisible(collectionPage.title)
   })
@@ -151,12 +166,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can cancel move and keep the resource parent unchanged", async ({
     page,
   }) => {
+    // Arrange
     const suffix = crypto.randomUUID().slice(0, 8)
     const pageTitle = `Cancel Move Page ${suffix}`
     const folderTitle = `Cancel Move Folder ${suffix}`
     const { page: seededPage } = await seedRootPage({ siteId, pageTitle })
     await seedFolder({ siteId, folderTitle })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openResourceMenu(pageTitle)
@@ -164,7 +181,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.selectMoveDestination(folderTitle)
     await dashboard.cancelMove()
 
-    await expectPageParentId(seededPage.id).toBeNull()
+    // Assert
+    await expectResourceParentId(seededPage.id).toBeNull()
     await dashboard.expectResourceLinkVisible(pageTitle)
   })
 })
@@ -177,41 +195,53 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   test("editor cannot move a root-level page when the menu hides move", async ({
     page,
   }) => {
+    // Arrange
     const pageTitle = `Root Move Gate ${crypto.randomUUID().slice(0, 8)}`
     await seedRootPage({ siteId, pageTitle })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openResourceMenu(pageTitle)
+
+    // Assert
     await dashboard.expectMoveMenuHidden()
   })
 
   test("editor cannot move a root-level folder when the menu hides move", async ({
     page,
   }) => {
+    // Arrange
     const folderTitle = `Root Folder Move Gate ${crypto.randomUUID().slice(0, 8)}`
     const { folder } = await seedFolder({ siteId, folderTitle })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openResourceMenu(folderTitle)
+
+    // Assert
     await dashboard.expectMoveMenuHidden()
-    await expectPageParentId(folder.id).toBeNull()
+    await expectResourceParentId(folder.id).toBeNull()
   })
 
   test("editor cannot move a root-level collection when the menu hides move", async ({
     page,
   }) => {
+    // Arrange
     const collectionTitle = `Root Collection Move Gate ${crypto.randomUUID().slice(0, 8)}`
     const { collection } = await seedRootCollection({
       siteId,
       collectionTitle,
     })
 
+    // Act
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
     await dashboard.openResourceMenu(collectionTitle)
+
+    // Assert
     await dashboard.expectMoveMenuHidden()
-    await expectPageParentId(collection.id).toBeNull()
+    await expectResourceParentId(collection.id).toBeNull()
   })
 })
