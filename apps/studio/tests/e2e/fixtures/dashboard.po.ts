@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test"
+import { expect, type Page } from "@playwright/test"
 
 export class DashboardPO {
   constructor(private readonly page: Page) {}
@@ -24,5 +24,19 @@ export class DashboardPO {
 
   async clickCreateFolder() {
     await this.page.getByRole("menuitem", { name: "Folder" }).click()
+  }
+
+  async fillPageWizard(title: string) {
+    await this.page
+      .getByRole("button", { name: "Next: Page title and URL" })
+      .click()
+    await this.page.getByLabel("Page title").fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
+  }
+
+  async fillFolderWizard(title: string) {
+    await this.page.getByLabel("Folder name").fill(title)
+    await this.page.getByRole("button", { name: "Create Folder" }).click()
+    await expect(this.page.getByText("Folder created!")).toBeVisible()
   }
 }
