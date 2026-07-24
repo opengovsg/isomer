@@ -62,10 +62,9 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   })
 
   test("publisher does not see the Create new button", async ({ page }) => {
-    await new DashboardPO(page).gotoSite(siteId)
-    await expect(
-      page.getByRole("button", { name: "Create new..." }),
-    ).not.toBeVisible()
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoSite(siteId)
+    await dashboard.expectCreateButtonHidden()
   })
 })
 
@@ -75,10 +74,9 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   })
 
   test("editor does not see the Create new button", async ({ page }) => {
-    await new DashboardPO(page).gotoSite(siteId)
-    await expect(
-      page.getByRole("button", { name: "Create new..." }),
-    ).not.toBeVisible()
+    const dashboard = new DashboardPO(page)
+    await dashboard.gotoSite(siteId)
+    await dashboard.expectCreateButtonHidden()
   })
 })
 
