@@ -72,5 +72,5 @@ E2E covers user-visible behavior. Integration tests cover server-side correctnes
 
 ## Open follow-ups
 
-- **Admin dashboard bypass in `settings-agency.test.ts`.** The admin test navigates directly to `/sites/1/settings/agency` instead of clicking through the dashboard site list. Reason: the admin storage state was hitting an empty/unmatched site list at the time of writing. The editor test in `site/list.test.ts` does click through successfully, so this is admin-specific. Worth investigating whether admin sees a different dashboard render or whether it's a session/timing race.
+- **Admin dashboard bypass in `settings-agency.test.ts`.** Resolved — tests navigate directly to the provisioned site settings URL.
 - **`.chakra-switch` selector in `settings-notification.test.ts`.** Couples the test to Chakra UI's class naming. Right fix is upstream: add an `aria-label` to the Switch in the FormBuilder render path for optional object groups, then update the locator to `getByRole("switch", { name: ... })`.
