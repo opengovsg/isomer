@@ -5,6 +5,7 @@ import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
 import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
+import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
 
 interface GetItemImageProps {
@@ -120,7 +121,7 @@ export const getCollectionItems = ({
         ? getParsedDate(item.date)
         : undefined
     const image = getItemImage({ showThumbnail, item, site })
-    const { pillTags, plaintextTags, tags } = getPillAndPlaintextTags(
+    const { pillTags, plaintextTags } = getPillAndPlaintextTags(
       item.tagged,
       tagCategories,
     )
@@ -136,7 +137,12 @@ export const getCollectionItems = ({
       image,
       isContainNeeded: image?.isContainNeeded || false,
       site,
-      tags,
+      // NOTE: `tags` no longer falls back to the legacy `item.tags` field — Collection
+      // Items are expected to carry `tagged` + the parent's `tagCategories` going forward.
+      tags:
+        tagCategories && item.tagged
+          ? getTagsFromTagged(item.tagged, tagCategories)
+          : undefined,
       pillTags,
     }
 

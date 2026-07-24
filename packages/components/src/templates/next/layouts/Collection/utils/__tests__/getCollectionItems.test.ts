@@ -402,7 +402,7 @@ describe("getCollectionItems", () => {
       expect(result[0]!.plaintextTags).toBeUndefined()
     })
 
-    it("returns plaintextTags with Others when the item has no tagged options", () => {
+    it("returns undefined when the item has no tagged options", () => {
       // Arrange
       const site = createSiteWithChildren([
         createArticleChild({ tagged: undefined }),
@@ -417,12 +417,7 @@ describe("getCollectionItems", () => {
 
       // Assert
       expect(result).toHaveLength(1)
-      expect(result[0]!.plaintextTags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Others"] },
-      ])
-      expect(result[0]!.tags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Others"] },
-      ])
+      expect(result[0]!.plaintextTags).toBeUndefined()
     })
   })
 

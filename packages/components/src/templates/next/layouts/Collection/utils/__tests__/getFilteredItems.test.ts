@@ -113,21 +113,21 @@ describe("getFilteredItems", () => {
       {
         title: "A",
         description: "",
-        tags: [{ id: "cat-1", selected: ["Guides"], category: "Category" }],
+        tags: [{ selected: ["Guides"], category: "Category" }],
       } as ProcessedCollectionCardProps,
       {
         title: "B",
         description: "",
-        tags: [{ id: "cat-1", selected: ["Articles"], category: "Category" }],
+        tags: [{ selected: ["Articles"], category: "Category" }],
       } as ProcessedCollectionCardProps,
       {
         title: "C",
         description: "",
-        tags: [{ id: "cat-1", selected: ["Tutorials"], category: "Category" }],
+        tags: [{ selected: ["Tutorials"], category: "Category" }],
       } as ProcessedCollectionCardProps,
     ]
     const appliedFilters: AppliedFilter[] = [
-      { id: "cat-1", items: [{ id: "Guides" }, { id: "Articles" }] },
+      { id: "Category", items: [{ id: "Guides" }, { id: "Articles" }] },
     ]
 
     // Act
@@ -144,22 +144,22 @@ describe("getFilteredItems", () => {
         title: "A",
         description: "",
         tags: [
-          { id: "cat-1", selected: ["Guides"], category: "Category" },
-          { id: "topic-1", selected: ["Health"], category: "Topic" },
+          { selected: ["Guides"], category: "Category" },
+          { selected: ["Health"], category: "Topic" },
         ],
       } as ProcessedCollectionCardProps,
       {
         title: "B",
         description: "",
         tags: [
-          { id: "cat-1", selected: ["Guides"], category: "Category" },
-          { id: "topic-1", selected: ["Finance"], category: "Topic" },
+          { selected: ["Guides"], category: "Category" },
+          { selected: ["Finance"], category: "Topic" },
         ],
       } as ProcessedCollectionCardProps,
     ]
     const appliedFilters: AppliedFilter[] = [
-      { id: "cat-1", items: [{ id: "Guides" }] },
-      { id: "topic-1", items: [{ id: "Health" }] },
+      { id: "Category", items: [{ id: "Guides" }] },
+      { id: "Topic", items: [{ id: "Health" }] },
     ]
 
     // Act
@@ -169,7 +169,7 @@ describe("getFilteredItems", () => {
     expect(result).toEqual([items[0]])
   })
 
-  it("passes tag filters when item.tags is undefined (unrelated dimensions do not constrain)", () => {
+  it("excludes items that have no tags at all when a tag filter is applied", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       {
@@ -179,33 +179,7 @@ describe("getFilteredItems", () => {
       } as ProcessedCollectionCardProps,
     ]
     const appliedFilters: AppliedFilter[] = [
-      { id: "cat-1", items: [{ id: "Guides" }] },
-    ]
-
-    // Act
-    const result = getFilteredItems(items, appliedFilters, "")
-
-    // Assert
-    expect(result).toEqual([items[0]])
-  })
-
-  it("excludes items with a Category tag that does not match the applied filter", () => {
-    // Arrange
-    const items: ProcessedCollectionCardProps[] = [
-      {
-        title: "A",
-        description: "",
-        tags: [
-          {
-            id: "cat-1",
-            selected: ["Others"],
-            category: "Category",
-          },
-        ],
-      } as ProcessedCollectionCardProps,
-    ]
-    const appliedFilters: AppliedFilter[] = [
-      { id: "cat-1", items: [{ id: "Guides" }] },
+      { id: "Category", items: [{ id: "Guides" }] },
     ]
 
     // Act
@@ -221,16 +195,16 @@ describe("getFilteredItems", () => {
       {
         title: "Guide to Isomer",
         description: "",
-        tags: [{ id: "cat-1", selected: ["Guides"], category: "Category" }],
+        tags: [{ selected: ["Guides"], category: "Category" }],
       } as ProcessedCollectionCardProps,
       {
         title: "Guide to something else",
         description: "",
-        tags: [{ id: "cat-1", selected: ["Articles"], category: "Category" }],
+        tags: [{ selected: ["Articles"], category: "Category" }],
       } as ProcessedCollectionCardProps,
     ]
     const appliedFilters: AppliedFilter[] = [
-      { id: "cat-1", items: [{ id: "Guides" }] },
+      { id: "Category", items: [{ id: "Guides" }] },
     ]
 
     // Act

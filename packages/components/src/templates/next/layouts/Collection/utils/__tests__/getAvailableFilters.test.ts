@@ -22,7 +22,7 @@ describe("getAvailableFilters", () => {
     const items: ProcessedCollectionCardProps[] = [
       {
         title: "Item 1",
-        tags: [{ id: "cat-1", selected: ["Guides"], category: "Category" }],
+        tags: [{ selected: ["Guides"], category: "Category" }],
         date: new Date("2023-01-01"),
       } as ProcessedCollectionCardProps,
     ]
@@ -39,11 +39,11 @@ describe("getAvailableFilters", () => {
     // Act
     const result = getAvailableFilters(items, tagCategories)
 
-    // Assert — exactly one "Category" filter, keyed by stable id
-    const categoryFilters = result.filter((filter) => filter.id === "cat-1")
+    // Assert — exactly one "Category" filter, sourced from tagCategories/tags
+    const categoryFilters = result.filter((filter) => filter.id === "Category")
     expect(categoryFilters).toHaveLength(1)
     expect(categoryFilters[0]).toEqual({
-      id: "cat-1",
+      id: "Category",
       label: "Category",
       display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
       items: [{ id: "Guides", label: "Guides", count: 1 }],
@@ -55,24 +55,16 @@ describe("getAvailableFilters", () => {
     const items: ProcessedCollectionCardProps[] = [
       {
         title: "Item 1",
-        tags: [{ id: "cat-1", selected: ["Guides"], category: "Category" }],
+        tags: [{ selected: ["Guides"], category: "Category" }],
         date: new Date("2023-01-01"),
       } as ProcessedCollectionCardProps,
     ]
-    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
-      {
-        label: "Category",
-        id: "cat-1",
-        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-        options: [{ label: "Guides", id: "cat-opt-1" }],
-      },
-    ]
 
     // Act
-    const result = getAvailableFilters(items, tagCategories)
+    const result = getAvailableFilters(items)
 
     // Assert
-    expect(result.map((filter) => filter.id)).toEqual(["cat-1", "year"])
+    expect(result.map((filter) => filter.id)).toEqual(["Category", "year"])
   })
 
   it("omits filters that have no items", () => {

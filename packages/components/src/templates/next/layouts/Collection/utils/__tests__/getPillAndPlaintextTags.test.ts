@@ -5,7 +5,7 @@ import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 import { getPillAndPlaintextTags } from "../getPillAndPlaintextTags"
 
 describe("getPillAndPlaintextTags", () => {
-  it('assigns "Others" for Category when tagged is undefined', () => {
+  it("returns undefined for both when tagged is undefined", () => {
     // Arrange
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
@@ -14,25 +14,13 @@ describe("getPillAndPlaintextTags", () => {
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
-      {
-        label: "Category",
-        id: "cat-1",
-        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-        options: [{ label: "Guides", id: "cat-opt-1" }],
-      },
     ]
 
     // Act
     const result = getPillAndPlaintextTags(undefined, tagCategories)
 
     // Assert
-    expect(result).toEqual({
-      pillTags: [],
-      plaintextTags: [
-        { id: "cat-1", category: "Category", selected: ["Others"] },
-      ],
-      tags: [{ id: "cat-1", category: "Category", selected: ["Others"] }],
-    })
+    expect(result).toEqual({ pillTags: undefined, plaintextTags: undefined })
   })
 
   it("returns undefined for both when tagCategories is undefined", () => {
@@ -40,11 +28,7 @@ describe("getPillAndPlaintextTags", () => {
     const result = getPillAndPlaintextTags(["topic-opt-1"], undefined)
 
     // Assert
-    expect(result).toEqual({
-      pillTags: undefined,
-      plaintextTags: undefined,
-      tags: undefined,
-    })
+    expect(result).toEqual({ pillTags: undefined, plaintextTags: undefined })
   })
 
   it("splits selected groups into pillTags and plaintextTags by display", () => {
@@ -99,7 +83,7 @@ describe("getPillAndPlaintextTags", () => {
     expect(result.plaintextTags).toEqual([])
   })
 
-  it('assigns "Others" for Category when no category option is selected', () => {
+  it("excludes a group entirely from both lists when none of its options are selected", () => {
     // Arrange
     const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
       {
@@ -121,12 +105,7 @@ describe("getPillAndPlaintextTags", () => {
 
     // Assert
     expect(result.pillTags).toEqual([])
-    expect(result.plaintextTags).toEqual([
-      { id: "cat-1", category: "Category", selected: ["Others"] },
-    ])
-    expect(result.tags).toEqual([
-      { id: "cat-1", category: "Category", selected: ["Others"] },
-    ])
+    expect(result.plaintextTags).toEqual([])
   })
 
   it("keeps all selected options for a group, uncombined (joining is a render concern)", () => {
