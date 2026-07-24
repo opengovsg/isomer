@@ -71,6 +71,12 @@ test.beforeAll(async () => {
 - **Exception:** files that exercise surfaces not scoped to a site (e.g. `godmode/`,
   `smoke.test.ts`) do not need `provisionE2ESite`
 
+## Settings publisher gate (PR-7)
+
+Publisher permission gates for settings Publish buttons live in **one** file:
+`site/settings-permissions.test.ts`. Individual settings happy-path files do not
+repeat the gate — add new Publish-gated sections to `PUBLISH_GATED_SECTIONS` there.
+
 ## Role projects and tags (PR-3)
 
 Playwright config defines one project per role plus `unauthenticated` (smoke) and `singpass`. Role projects set `storageState` and filter with `grep: /@role\b/`.
