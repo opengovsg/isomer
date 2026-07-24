@@ -8,24 +8,79 @@ export class UsersPO {
     await this.page.waitForURL(new RegExp(`/sites/${siteId}/users`))
   }
 
-  async openAddUser() {
-    await this.page.getByRole("button", { name: "Add new user" }).click()
+  addNewUserButton() {
+    return this.page.getByRole("button", { name: "Add new user" })
   }
 
-  async fillInviteForm(email: string, role: string) {
-    await this.page.getByLabel("Email address").fill(email)
+  async expectCannotAddNewUser() {
+    await expect(this.addNewUserButton()).toBeDisabled()
+  }
+
+  async expectReadOnlyCollaboratorsDescription() {
+    await expect(
+      this.page.getByText("View users that work with you on this site."),
+    ).toBeVisible()
+  }
+
+  async expectNoRowActionsMenus() {
+    await expect(
+      this.page.getByRole("button", { name: /Options for/ }),
+    ).toHaveCount(0)
+  }
+
+  async openAddUser() {
+    await this.addNewUserButton().click()
+  }
+
+  async selectInviteRole(role: string) {
     await this.page
       .getByRole("button", { name: new RegExp(`^${role}`) })
       .click()
   }
 
+  async fillInviteForm(email: string, role: string) {
+    await this.fillInviteEmail(email)
+    await this.selectInviteRole(role)
+  }
+
+  async fillInviteEmail(email: string) {
+    await this.page.getByLabel("Email address").fill(email)
+  }
+
+  async expectInviteRoleEnabled(role: string) {
+    await expect(
+      this.page.getByRole("button", { name: new RegExp(`^${role}`) }),
+    ).toBeEnabled()
+  }
+
   async sendInvite() {
     const sendBtn = this.page.getByRole("button", { name: "Send invite" })
-    await expect(sendBtn).toBeEnabled({ timeout: 10_000 })
+    await expect(sendBtn).toBeEnabled()
     await sendBtn.click()
-    await expect(this.page.getByText(/Sent invite to/)).toBeVisible({
-      timeout: 10_000,
-    })
+    await expect(this.page.getByText(/Sent invite to/)).toBeVisible()
+  }
+
+  async submitInvite() {
+    await this.page.getByRole("button", { name: "Send invite" }).click()
+  }
+
+  async expectCreateUserFailed(description: string | RegExp) {
+    await expect(this.page.getByText("Failed to create user")).toBeVisible()
+    await expect(this.page.getByText(description)).toBeVisible()
+  }
+
+  async expectNonGovSgWhitelistWarning() {
+    await expect(
+      this.page.getByText(
+        "There are non-gov.sg domains that need to be whitelisted",
+      ),
+    ).toBeVisible()
+  }
+
+  async expectSendInviteDisabled() {
+    await expect(
+      this.page.getByRole("button", { name: "Send invite" }),
+    ).toBeDisabled()
   }
 
   /**
@@ -35,5 +90,107 @@ export class UsersPO {
   async openUserMenu(email: string) {
     const row = this.page.getByRole("row").filter({ hasText: email })
     await row.getByRole("button", { name: /Options for/ }).click()
+  }
+
+  userRow(email: string) {
+    return this.page.getByRole("row").filter({ hasText: email })
+  }
+
+  async expectNoActionsMenuForUser(email: string) {
+    await expect(
+      this.userRow(email).getByRole("button", { name: /Options for/ }),
+    ).toHaveCount(0)
+  }
+
+  async openEditUser(email: string) {
+    await this.openUserMenu(email)
+    await this.page.getByRole("menuitem", { name: "Edit user" }).click()
+  }
+
+  async selectRoleInEditModal(role: string) {
+    await this.page.getByRole("button", { name: `${role} role` }).click()
+  }
+
+  async expectAddAdminWarningVisible() {
+    await expect(
+      this.page.getByText(
+        "You are adding a new admin to the website. An admin can make any change to the site content, settings, and users.",
+      ),
+    ).toBeVisible()
+  }
+
+  async saveUserChanges() {
+    await this.page.getByRole("button", { name: "Save changes" }).click()
+    await expect(this.page.getByText("Changes saved!")).toBeVisible()
+  }
+
+  async openRemoveUserAccess(email: string) {
+    await this.openUserMenu(email)
+    await this.page
+      .getByRole("menuitem", { name: "Remove user access" })
+      .click()
+  }
+
+  async confirmRemoveUser() {
+    await this.page.getByRole("button", { name: "Remove user" }).click()
+  }
+
+  async cancelRemoveUser() {
+    await this.page.getByRole("button", { name: "No, cancel" }).click()
+  }
+
+  async cancelEditUser() {
+    await this.page.getByRole("button", { name: "Cancel" }).click()
+  }
+
+  async expectRemovedFromSiteToast(email: string) {
+    await expect(
+      this.page.getByText(`Removed ${email} from site.`),
+    ).toBeVisible()
+  }
+
+  async clickResendInvite(email: string) {
+    await this.openUserMenu(email)
+    await this.page.getByRole("menuitem", { name: "Resend invite" }).click()
+  }
+
+  async expectResendInviteNotVisible(email: string) {
+    await this.openUserMenu(email)
+    await expect(
+      this.page.getByRole("menuitem", { name: "Resend invite" }),
+    ).not.toBeVisible()
+  }
+
+  async expectResendInviteToast(email: string) {
+    await expect(this.page.getByText(`Invite resent to ${email}`)).toBeVisible()
+  }
+
+  async expectPendingInviteStatus(email: string) {
+    const row = this.userRow(email)
+    await expect(row.getByText("Waiting to accept invite")).toBeVisible()
+  }
+
+  async clickIsomerAdminsTab() {
+    await this.page.getByRole("tab", { name: /Isomer admins/ }).click()
+  }
+
+  async expectIsomerAdminBanner() {
+    await expect(
+      this.page.getByText(
+        "All Isomer Admins have access to your site and may make changes on your behalf.",
+      ),
+    ).toBeVisible()
+  }
+
+  async expectUserInTable(email: string) {
+    await expect(this.userRow(email)).toBeVisible()
+  }
+
+  async expectUserNotInTable(email: string) {
+    await expect(this.userRow(email)).toHaveCount(0)
+  }
+
+  async expectUserRole(email: string, role: string) {
+    await expect(this.userRow(email)).toContainText(role)
   }
 }
