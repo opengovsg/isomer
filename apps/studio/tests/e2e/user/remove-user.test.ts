@@ -54,4 +54,25 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await users.expectUserNotInTable(inviteeEmail)
     await expectUserAbsentOnSite(siteId, inviteeEmail).toBeNull()
   })
+
+  test("admin can cancel RemoveUserModal without removing the collaborator", async ({
+    page,
+  }) => {
+    const inviteeEmail = uniqueInviteeEmail()
+    await inviteCollaborator(page, {
+      email: inviteeEmail,
+      role: "Editor",
+      siteId,
+    })
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
+
+    const users = new UsersPO(page)
+    await users.goto(siteId)
+    await users.openRemoveUserAccess(inviteeEmail)
+    await users.cancelRemoveUser()
+
+    await users.expectUserInTable(inviteeEmail)
+    await users.expectUserRole(inviteeEmail, "Editor")
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
+  })
 })

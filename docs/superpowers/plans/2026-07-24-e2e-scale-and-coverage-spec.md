@@ -460,8 +460,8 @@ Use existing `SitePO.openSettingsSection()`. Each mutating file provisions its o
 
 | File | Tests |
 |------|-------|
-| `user/edit-user-role.test.ts` | Admin promotes Editor → Publisher, demotes Publisher → Editor, promotes to Admin (with warning) via `EditUserModal` |
-| `user/remove-user.test.ts` | Admin removes collaborator via `RemoveUserModal` |
+| `user/edit-user-role.test.ts` | Admin promotes Editor → Publisher, demotes Publisher → Editor, promotes to Admin (with warning) via `EditUserModal`; cancel edit preserves role |
+| `user/remove-user.test.ts` | Admin removes collaborator via `RemoveUserModal`; cancel remove preserves permission |
 | `user/resend-invite.test.ts` | Admin resends invite to pending user; Resend invite hidden for logged-in users |
 | `user/user-permissions.test.ts` | Publisher/Editor: disabled add button, read-only copy, no row actions |
 | `user/invite-duplicate.test.ts` | Duplicate invite shows error; DB role unchanged |
