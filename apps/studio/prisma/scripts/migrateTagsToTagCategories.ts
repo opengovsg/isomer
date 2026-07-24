@@ -21,20 +21,28 @@
  *     never trigger a publish — a draft may hold unrelated pending edits
  *     that aren't ready to ship.
  *
- * Not idempotent: this is a one-time migration intended to run exactly
- * once per site, against sites whose legacy `tags` have not yet been
- * ported into `tagCategories`/`tagged`. Re-running it against an
- * already-migrated site will double-append groups and re-tag every item.
+ * Idempotent via label: before writing, each candidate group label (derived
+ * from legacy tag categories) is checked against the Index's existing
+ * `tagCategories` (draft or published). If any candidate label already has a
+ * matching group, the whole collection is skipped (`"already-migrated"`) —
+ * covers re-runs and collections a human has already migrated in Studio.
+ * Risk accepted: a human-created group with a matching label is also
+ * skipped, so its legacy tags would not be migrated for that collection.
  *
  * Display: each newly created group is written with `display: "pills"`
  * (the historical default for tag filters).
  *
+ * Site selection (edit the constants below):
+ *   - SITE_IDS_INCLUDE empty → all sites; non-empty → only those IDs
+ *   - SITE_IDS_EXCLUDE → removed from the resolved set (either way)
+ * The resolved list is printed and must be confirmed before any writes.
+ *
  * Usage:
  *   cd apps/studio
- *   source .env && pnpm exec tsx prisma/scripts/migrateTagsToTagCategories.ts --site-id 123 [--dry-run]
+ *   source .env && pnpm exec tsx prisma/scripts/migrateTagsToTagCategories.ts [--dry-run]
  */
 import type { UnwrapTagged } from "type-fest"
-import { input } from "@inquirer/prompts"
+import { confirm, input } from "@inquirer/prompts"
 import { randomUUID } from "crypto"
 import { fileURLToPath } from "url"
 import { parseArgs } from "util"
@@ -46,6 +54,16 @@ import {
   sql,
   type Transaction,
 } from "~/server/modules/database"
+
+// ---------------------------------------------------------------------------
+// Site selection — edit these before running
+// ---------------------------------------------------------------------------
+
+/** Empty = all sites. Non-empty = only these site IDs. */
+const SITE_IDS_INCLUDE: number[] = []
+
+/** Removed from the resolved set (after include / all-sites expansion). */
+const SITE_IDS_EXCLUDE: number[] = []
 
 // Mirrors TAG_CATEGORY_DISPLAY_OPTIONS in
 // packages/components/src/types/constants.ts — kept local so tsx does not
@@ -295,6 +313,37 @@ export const verifyUser = async (userId: string) => {
   return user
 }
 
+export const resolveSiteIds = async ({
+  include,
+  exclude,
+}: {
+  include: number[]
+  exclude: number[]
+}): Promise<number[]> => {
+  const excludeSet = new Set(exclude)
+  const rows =
+    include.length === 0
+      ? await db.selectFrom("Site").select("id").execute()
+      : await db
+          .selectFrom("Site")
+          .where("id", "in", include)
+          .select("id")
+          .execute()
+
+  if (include.length > 0) {
+    const found = new Set(rows.map((r) => r.id))
+    const missing = include.filter((id) => !found.has(id))
+    if (missing.length > 0) {
+      throw new Error(`Site ID(s) not found: ${missing.join(", ")}`)
+    }
+  }
+
+  return rows
+    .map((r) => r.id)
+    .filter((id) => !excludeSet.has(id))
+    .sort((a, b) => a - b)
+}
+
 const getIndexPageRow = (collectionId: string, siteId: number) =>
   db
     .selectFrom("Resource as r")
@@ -367,11 +416,14 @@ const publishNewContent = async <T>(
   {
     resourceId,
     previousVersionNum,
+    previousPublishedVersionId,
     publisherId,
     content,
   }: {
     resourceId: string
     previousVersionNum: number
+    /** `Resource.publishedVersionId` as read earlier — guards against a concurrent publish. */
+    previousPublishedVersionId: string | null
     publisherId: string
     content: T
   },
@@ -398,11 +450,26 @@ const publishNewContent = async <T>(
     .returning("id")
     .executeTakeFirstOrThrow()
 
-  await tx
+  // Optimistic-concurrency guard: only repoint publishedVersionId if it still
+  // matches what we read before computing previousVersionNum. If a human
+  // editor or scheduled publish committed a newer Version in the meantime,
+  // this matches zero rows and we abort rather than silently clobber it.
+  const result = await tx
     .updateTable("Resource")
     .set({ publishedVersionId: newVersion.id })
     .where("id", "=", resourceId)
-    .execute()
+    .where(
+      "publishedVersionId",
+      previousPublishedVersionId === null ? "is" : "=",
+      previousPublishedVersionId,
+    )
+    .executeTakeFirst()
+
+  if (result.numUpdatedRows === BigInt(0)) {
+    throw new Error(
+      `Concurrent publish detected on resource ${resourceId} — publishedVersionId changed since it was read. Aborting.`,
+    )
+  }
 }
 
 const appendTagGroups = (
@@ -410,9 +477,24 @@ const appendTagGroups = (
   groups: TagCategoryGroup[],
 ): TagCategoryGroup[] => [...(tagCategories ?? []), ...groups]
 
+/** Trim + lowercase — matches Studio tag-option duplicate rules. */
+const normalizedGroupLabel = (label: string): string =>
+  label.trim().toLowerCase()
+
+/** True if any existing group's label matches one of the candidate labels — the migration's skip signal. */
+export const hasMatchingTagGroup = (
+  tagCategories: TagCategoryGroup[] | undefined,
+  candidateLabels: string[],
+): boolean => {
+  const candidateSet = new Set(candidateLabels.map(normalizedGroupLabel))
+  return (tagCategories ?? []).some((group) =>
+    candidateSet.has(normalizedGroupLabel(group.label)),
+  )
+}
+
 export interface CollectionMigrationResult {
   collectionId: string
-  status: MigrationPlan["status"] | "no-index"
+  status: MigrationPlan["status"] | "no-index" | "already-migrated"
   groups: { label: string; options: string[] }[]
   itemsUpdated: number
   versionsCreated: number
@@ -451,6 +533,31 @@ export const migrateCollection = async ({
       publishedTagged: row.publishedContent?.page.tagged,
     })),
   })
+
+  // Risk accepted: skip when any candidate group label already matches an
+  // existing group (draft or published). Covers re-runs and Studio-migrated
+  // collections, but also skips a human-created group sharing that label.
+  if (plan.status === "migrated") {
+    const candidateLabels = plan.groups.map((g) => g.label)
+    const alreadyMigrated =
+      hasMatchingTagGroup(
+        indexRow.draftContent?.page.tagCategories,
+        candidateLabels,
+      ) ||
+      hasMatchingTagGroup(
+        indexRow.publishedContent?.page.tagCategories,
+        candidateLabels,
+      )
+    if (alreadyMigrated) {
+      return {
+        collectionId,
+        status: "already-migrated",
+        groups: [],
+        itemsUpdated: 0,
+        versionsCreated: 0,
+      }
+    }
+  }
 
   const groups =
     plan.status === "migrated"
@@ -505,6 +612,7 @@ export const migrateCollection = async ({
       await publishNewContent(tx, {
         resourceId: indexRow.resourceId,
         previousVersionNum: indexRow.publishedVersionNum,
+        previousPublishedVersionId: indexRow.publishedVersionId,
         publisherId: requirePublisherId(),
         content: {
           ...indexRow.publishedContent,
@@ -539,6 +647,7 @@ export const migrateCollection = async ({
         await publishNewContent(tx, {
           resourceId: row.resourceId,
           previousVersionNum: row.publishedVersionNum,
+          previousPublishedVersionId: row.publishedVersionId,
           publisherId: requirePublisherId(),
           content: {
             ...row.publishedContent,
@@ -604,35 +713,82 @@ const formatResult = (
       return `skipped ${prefix}: no legacy tags found on any item`
     case "no-index":
       return `skipped ${prefix}: no Index page (or content) found`
+    case "already-migrated":
+      return `skipped ${prefix}: Index already has a matching tagCategories group`
     default:
       return `${prefix}: unknown status ${String(result.status satisfies never)}`
   }
+}
+
+const formatSiteSelection = ({
+  include,
+  exclude,
+  resolved,
+}: {
+  include: number[]
+  exclude: number[]
+  resolved: number[]
+}): string => {
+  const includeLabel =
+    include.length === 0 ? "(empty → all sites)" : include.join(", ")
+  const excludeLabel = exclude.length === 0 ? "(empty)" : exclude.join(", ")
+  return [
+    `SITE_IDS_INCLUDE: ${includeLabel}`,
+    `SITE_IDS_EXCLUDE: ${excludeLabel}`,
+    `Resolved site IDs (${resolved.length}): ${resolved.length === 0 ? "(none)" : resolved.join(", ")}`,
+  ].join("\n")
 }
 
 // ---------------------------------------------------------------------------
 // CLI entrypoint
 // ---------------------------------------------------------------------------
 
-export const main = async (argv: string[] = process.argv.slice(2)) => {
+export const main = async (
+  argv: string[] = process.argv.slice(2),
+  {
+    siteIdsInclude = SITE_IDS_INCLUDE,
+    siteIdsExclude = SITE_IDS_EXCLUDE,
+  }: {
+    siteIdsInclude?: number[]
+    siteIdsExclude?: number[]
+  } = {},
+) => {
   const { values } = parseArgs({
     args: argv,
     options: {
-      "site-id": { type: "string" },
       "dry-run": { type: "boolean", default: false },
     },
   })
 
-  const siteIdStr = values["site-id"]
-  if (!siteIdStr || !/^\d+$/.test(siteIdStr)) {
-    console.error(
-      "Usage: tsx migrateTagsToTagCategories.ts --site-id <numeric id> [--dry-run]",
-    )
+  const dryRun = values["dry-run"] === true
+  const resolvedSiteIds = await resolveSiteIds({
+    include: siteIdsInclude,
+    exclude: siteIdsExclude,
+  })
+
+  const selectionSummary = formatSiteSelection({
+    include: siteIdsInclude,
+    exclude: siteIdsExclude,
+    resolved: resolvedSiteIds,
+  })
+  console.log(`\n${selectionSummary}\n`)
+
+  if (resolvedSiteIds.length === 0) {
+    console.error("No sites to migrate after applying include/exclude.")
     process.exitCode = 1
     return
   }
 
-  const siteId = Number(siteIdStr)
-  const dryRun = values["dry-run"] === true
+  const proceed = await confirm({
+    message: dryRun
+      ? `Dry-run migration for ${resolvedSiteIds.length} site(s)?`
+      : `Migrate tags → tagCategories for ${resolvedSiteIds.length} site(s)?`,
+    default: false,
+  })
+  if (!proceed) {
+    console.log("Aborted. No changes written.")
+    return
+  }
 
   let publisherId: string | null = null
   if (!dryRun) {
@@ -646,10 +802,30 @@ export const main = async (argv: string[] = process.argv.slice(2)) => {
   }
 
   console.log(
-    `${dryRun ? "[DRY RUN] " : ""}Migrating tags → tagCategories for site ${siteId}…`,
+    `\n${dryRun ? "[DRY RUN] " : ""}Migrating tags → tagCategories for ${resolvedSiteIds.length} site(s)…`,
   )
-  const results = await migrateSite({ siteId, dryRun, publisherId })
-  console.log(`\nDone. ${results.length} collection(s) processed.`)
+
+  let succeeded = 0
+  const failedSiteIds: number[] = []
+  for (const siteId of resolvedSiteIds) {
+    try {
+      const results = await migrateSite({ siteId, dryRun, publisherId })
+      console.log(`[site ${siteId}] ${results.length} collection(s) processed`)
+      succeeded++
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      console.error(`[site ${siteId}] FAILED: ${message}`)
+      failedSiteIds.push(siteId)
+    }
+  }
+
+  console.log(
+    `\nDone. ${succeeded} site(s) succeeded, ${failedSiteIds.length} site(s) failed.`,
+  )
+  if (failedSiteIds.length > 0) {
+    console.error(`Failed site IDs: ${failedSiteIds.join(", ")}`)
+    process.exitCode = 1
+  }
 }
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url)

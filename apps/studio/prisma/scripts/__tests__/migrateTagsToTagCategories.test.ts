@@ -2,7 +2,7 @@ import type { UnwrapTagged } from "type-fest"
 
 vi.mock("@inquirer/prompts")
 
-import { input } from "@inquirer/prompts"
+import { confirm, input } from "@inquirer/prompts"
 import {
   db,
   jsonb,
@@ -24,10 +24,12 @@ import {
   buildMigrationPlan,
   buildTagGroupsFromLegacyTags,
   collateLegacyTags,
+  hasMatchingTagGroup,
   main,
   migrateCollection,
   migrateSite,
   resolveOptionIdsFromLegacyTags,
+  resolveSiteIds,
   type LegacyTag,
   type TagCategoryGroup,
   verifyUser,
@@ -237,6 +239,21 @@ describe("appendTaggedMany / resolveOptionIdsFromLegacyTags", () => {
         optionIdByCategoryAndLabel,
       ),
     ).toEqual(["t-health", "t-news", "r-north"])
+  })
+})
+
+describe("hasMatchingTagGroup", () => {
+  it("returns false for undefined/empty tagCategories", () => {
+    expect(hasMatchingTagGroup(undefined, ["Topic"])).toBe(false)
+    expect(hasMatchingTagGroup([], ["Topic"])).toBe(false)
+  })
+
+  it("matches an existing group label case-insensitively, trimmed", () => {
+    const tagCategories: TagCategoryGroup[] = [
+      { id: "g-1", label: " Topic ", options: [] },
+    ]
+    expect(hasMatchingTagGroup(tagCategories, ["topic"])).toBe(true)
+    expect(hasMatchingTagGroup(tagCategories, ["Region"])).toBe(false)
   })
 })
 
@@ -713,6 +730,48 @@ describe("migrateCollection / migrateSite", () => {
     })
   })
 
+  it("skips a collection whose Index already has a matching tagCategories group (idempotent re-run)", async () => {
+    // Arrange
+    const { collection } = await setupCollection({ siteId })
+    const existingTopicGroup: TagCategoryGroup = {
+      id: "topic-1",
+      label: "Topic",
+      display: "pills",
+      options: [{ id: "t-1", label: "Health" }],
+    }
+    const { blob: indexBlob } = await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      tagCategories: [existingTopicGroup],
+    })
+    const { blob: itemBlob } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      tags: [{ category: "Topic", selected: ["Health"] }],
+    })
+
+    // Act
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
+
+    // Assert
+    expect(result).toEqual({
+      collectionId: collection.id,
+      status: "already-migrated",
+      groups: [],
+      itemsUpdated: 0,
+      versionsCreated: 0,
+    })
+    const indexContentAfter = await getBlobContent(indexBlob.id)
+    expect(indexContentAfter.page.tagCategories).toEqual([existingTopicGroup])
+    const itemContent = await getBlobContent(itemBlob.id)
+    expect(itemContent.page.tagged).toEqual([])
+  })
+
   it("skips items without usable tags without failing the migration", async () => {
     // Arrange
     const { collection } = await setupCollection({ siteId })
@@ -781,6 +840,37 @@ describe("migrateCollection / migrateSite", () => {
   })
 })
 
+describe("resolveSiteIds", () => {
+  beforeEach(async () => {
+    await resetTables("Resource", "Blob", "Version", "Site", "Navbar", "Footer")
+  })
+
+  it("returns all sites when include is empty, minus exclude", async () => {
+    const { site: siteA } = await setupSite()
+    const { site: siteB } = await setupSite()
+
+    await expect(
+      resolveSiteIds({ include: [], exclude: [siteB.id] }),
+    ).resolves.toEqual([siteA.id])
+  })
+
+  it("returns only included sites minus exclude", async () => {
+    const { site: siteA } = await setupSite()
+    const { site: siteB } = await setupSite()
+    await setupSite()
+
+    await expect(
+      resolveSiteIds({ include: [siteA.id, siteB.id], exclude: [siteB.id] }),
+    ).resolves.toEqual([siteA.id])
+  })
+
+  it("throws when an include id does not exist", async () => {
+    await expect(
+      resolveSiteIds({ include: [999_999], exclude: [] }),
+    ).rejects.toThrow("Site ID(s) not found: 999999")
+  })
+})
+
 describe("verifyUser", () => {
   beforeEach(async () => {
     await resetTables("Resource", "Blob", "Version", "Site", "Navbar", "Footer")
@@ -806,10 +896,16 @@ describe("main (CLI entrypoint)", () => {
     const { site } = await setupSite()
     siteId = site.id
     vi.mocked(input).mockReset()
+    vi.mocked(confirm).mockReset()
+    vi.mocked(confirm).mockResolvedValue(true)
   })
 
   it("does not prompt for a publisher id in --dry-run mode", async () => {
-    await main(["--site-id", String(siteId), "--dry-run"])
+    await main(["--dry-run"], {
+      siteIdsInclude: [siteId],
+      siteIdsExclude: [],
+    })
+    expect(confirm).toHaveBeenCalledTimes(1)
     expect(input).not.toHaveBeenCalled()
   })
 
@@ -817,16 +913,38 @@ describe("main (CLI entrypoint)", () => {
     const user = await setupUser({})
     vi.mocked(input).mockResolvedValue(user.id)
 
-    await main(["--site-id", String(siteId)])
+    await main([], { siteIdsInclude: [siteId], siteIdsExclude: [] })
 
+    expect(confirm).toHaveBeenCalledTimes(1)
     expect(input).toHaveBeenCalledTimes(1)
   })
 
   it("rejects when the prompted publisher id does not exist", async () => {
     vi.mocked(input).mockResolvedValue("no-such-user")
 
-    await expect(main(["--site-id", String(siteId)])).rejects.toThrow(
-      "User no-such-user not found",
-    )
+    await expect(
+      main([], { siteIdsInclude: [siteId], siteIdsExclude: [] }),
+    ).rejects.toThrow("User no-such-user not found")
+  })
+
+  it("aborts without migrating when confirm is declined", async () => {
+    vi.mocked(confirm).mockResolvedValue(false)
+
+    await main([], { siteIdsInclude: [siteId], siteIdsExclude: [] })
+
+    expect(input).not.toHaveBeenCalled()
+  })
+
+  it("processes every included site and skips excluded ones", async () => {
+    const { site: otherSite } = await setupSite()
+
+    await main(["--dry-run"], {
+      siteIdsInclude: [siteId, otherSite.id],
+      siteIdsExclude: [otherSite.id],
+    })
+
+    // dry-run mode never prompts for a publisher id, regardless of site count
+    expect(confirm).toHaveBeenCalledTimes(1)
+    expect(input).not.toHaveBeenCalled()
   })
 })
