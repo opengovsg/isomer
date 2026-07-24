@@ -143,6 +143,14 @@ export class UsersPO {
     await this.page.getByRole("button", { name: "Remove user" }).click()
   }
 
+  async cancelRemoveUser() {
+    await this.page.getByRole("button", { name: "No, cancel" }).click()
+  }
+
+  async cancelEditUser() {
+    await this.page.getByRole("button", { name: "Cancel" }).click()
+  }
+
   async expectRemovedFromSiteToast(email: string) {
     await expect(
       this.page.getByText(`Removed ${email} from site.`),
