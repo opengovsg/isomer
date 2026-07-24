@@ -33,4 +33,18 @@ export class CollectionLinkPO {
     await this.page.getByRole("button", { name: "Save" }).click()
     await expect(this.page.getByText("Link updated!")).toBeVisible()
   }
+
+  async reload() {
+    await this.page.reload()
+  }
+
+  async expectSummary(summary: string) {
+    await expect(this.summaryField()).toHaveValue(summary)
+  }
+
+  async expectExternalLinkButton(linkText: string) {
+    await expect(
+      this.page.getByRole("button", { name: linkText }),
+    ).toBeVisible()
+  }
 }
