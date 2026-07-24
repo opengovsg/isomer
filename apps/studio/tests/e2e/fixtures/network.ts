@@ -34,7 +34,7 @@ export const resetGrowthBookPage = async (page: Page) => {
   await page.goto("about:blank")
 }
 
-type GrowthBookFeaturesResponse = {
+interface GrowthBookFeaturesResponse {
   features: Record<string, { defaultValue?: unknown; rules?: unknown[] }>
 }
 
