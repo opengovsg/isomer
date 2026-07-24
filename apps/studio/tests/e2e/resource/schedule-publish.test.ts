@@ -6,6 +6,7 @@ import { DashboardPO } from "../fixtures/dashboard.po"
 import { openSeededPageEditor } from "../fixtures/helpers"
 import {
   expectPageScheduledAt,
+  expectPageScheduledBy,
   seedFolderWithPage,
 } from "../fixtures/page-seed"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
@@ -43,6 +44,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.expectScheduledSuccessfully()
     await editor.expectCancelScheduleVisible()
     await expectPageScheduledAt(seededPage.id).not.toBeNull()
+    await expectPageScheduledBy(seededPage.id).not.toBeNull()
 
     const dashboard = new DashboardPO(page)
     await dashboard.gotoSite(siteId)
@@ -52,6 +54,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     await editor.cancelSchedule()
     await editor.expectPublishButtonVisible()
     await expectPageScheduledAt(seededPage.id).toBeNull()
+    await expectPageScheduledBy(seededPage.id).toBeNull()
   })
 })
 
