@@ -62,6 +62,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
 
     // Assert
     await dashboard.expectScheduledBadge(DEFAULT_PAGE_TITLE)
+    await expectResourceScheduledAt(seededPage.id).not.toBeNull()
+    await expectResourceScheduledBy(seededPage.id).not.toBeNull()
   })
 
   test("publisher can cancel schedule and clear DB schedule fields", async ({

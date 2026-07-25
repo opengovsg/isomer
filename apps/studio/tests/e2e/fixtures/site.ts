@@ -106,3 +106,15 @@ export const setSiteCodeBuildId = async (
     .where("id", "=", siteId)
     .execute()
 }
+
+/**
+ * Clear CodeBuild id so `publishSite` returns early without calling AWS. Use
+ * after the godmode publishing page has loaded (button already rendered).
+ */
+export const clearSiteCodeBuildId = async (siteId: number): Promise<void> => {
+  await db
+    .updateTable("Site")
+    .set({ codeBuildId: null })
+    .where("id", "=", siteId)
+    .execute()
+}

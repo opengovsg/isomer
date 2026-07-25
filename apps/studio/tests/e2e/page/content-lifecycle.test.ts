@@ -13,7 +13,10 @@ import {
   expectResourceState,
   seedFolderWithPage,
 } from "../fixtures/page-seed"
-import { getResourceByTitle } from "../fixtures/resource.db"
+import {
+  getResourceByTitle,
+  getResourceDraftBlobContent,
+} from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -68,6 +71,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Act
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
+    await expect
+      .poll(() => getResourceDraftBlobContent(seededPage.id))
+      .toContain(editedText)
     await editor.clickPublish()
     await editor.expectPublishedToast()
 

@@ -4,7 +4,11 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { CollectionLinkPO } from "../fixtures/collection-link.po"
-import { seedCollection, seedCollectionLink } from "../fixtures/page-seed"
+import {
+  expectResourceDraftBlobContains,
+  seedCollection,
+  seedCollectionLink,
+} from "../fixtures/page-seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -44,6 +48,8 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await linkEditor.save()
 
     // Assert
+    await expectResourceDraftBlobContains(collectionLink.id, summary)
+    await expectResourceDraftBlobContains(collectionLink.id, linkHref)
     await linkEditor.reload()
     await linkEditor.expectLoaded()
     await linkEditor.expectSummary(summary)

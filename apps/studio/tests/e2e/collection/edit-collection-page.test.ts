@@ -4,7 +4,10 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { openSeededPageEditor } from "../fixtures/helpers"
-import { seedCollectionWithPage } from "../fixtures/page-seed"
+import {
+  expectResourceDraftBlobContains,
+  seedCollectionWithPage,
+} from "../fixtures/page-seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -33,6 +36,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await editor.editArticleHeaderSummary(editedSummary)
 
     // Assert
+    await expectResourceDraftBlobContains(collectionPage.id, editedSummary)
     await editor.reload()
     await editor.expectLoaded()
     await editor.expectArticleHeaderSummary(editedSummary)
