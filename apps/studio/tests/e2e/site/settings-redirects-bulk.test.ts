@@ -60,15 +60,9 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     )
 
     // Assert
-    await expect(expectLiveRedirectCount(siteId)).resolves.toBe(
-      BULK_REDIRECT_COUNT,
-    )
-    await expect(expectRedirectDestination(siteId, "bulk-one")).resolves.toBe(
-      "/dest-one",
-    )
-    await expect(expectRedirectDestination(siteId, "bulk-two")).resolves.toBe(
-      "/dest-two",
-    )
+    await expectLiveRedirectCount(siteId).toBe(BULK_REDIRECT_COUNT)
+    await expectRedirectDestination(siteId, "bulk-one").toBe("/dest-one")
+    await expectRedirectDestination(siteId, "bulk-two").toBe("/dest-two")
     await expect(site.redirectPathText("/bulk-one")).toBeVisible()
     await expect(site.redirectPathText("/bulk-two")).toBeVisible()
   })

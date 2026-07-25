@@ -43,9 +43,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expect(expectRedirectDestination(siteId, source)).resolves.toBe(
-      destination,
-    )
+    await expectRedirectDestination(siteId, source).toBe(destination)
     await expect(site.redirectPathText(`/${source}`)).toBeVisible()
   })
 
@@ -64,7 +62,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expect(expectRedirectDeleted(siteId, source)).resolves.toBe(true)
+    await expectRedirectDeleted(siteId, source).toBe(true)
     await site.reloadSettingsSection("redirects")
     await expect(site.deleteRedirectButton(source)).not.toBeVisible()
   })
@@ -83,10 +81,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.cancelDeleteRedirect(source)
 
     // Assert
-    await expect(expectRedirectDestination(siteId, source)).resolves.toBe(
-      destination,
-    )
-    await expect(expectLiveRedirectCount(siteId)).resolves.toBe(1)
+    await expectRedirectDestination(siteId, source).toBe(destination)
+    await expectLiveRedirectCount(siteId).toBe(1)
     await expect(site.redirectPathText(`/${source}`)).toBeVisible()
   })
 })

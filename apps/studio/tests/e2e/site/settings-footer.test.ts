@@ -38,7 +38,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expect(expectFooterContains(siteId, updatedLabel)).resolves.toBe(true)
+    await expectFooterContains(siteId, updatedLabel).toBe(true)
     await site.reloadSettingsSection("footer")
     await expect(site.footerLinkButton(updatedLabel)).toBeVisible()
   })

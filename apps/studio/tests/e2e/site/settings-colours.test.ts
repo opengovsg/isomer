@@ -40,7 +40,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expect(expectSiteThemeBrandColour(siteId)).resolves.toBe("#ff0000")
+    await expectSiteThemeBrandColour(siteId).toBe("#ff0000")
     await site.reloadSettingsSection("colours")
     await expect(site.mainBrandColourField()).toHaveValue("ff0000")
   })
@@ -59,8 +59,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Assert
     await expect(site.mainBrandColourField()).toHaveValue("00405f")
-    await expect(expectSiteThemeBrandColour(siteId)).resolves.toBe(
-      DEFAULT_BRAND_COLOUR,
-    )
+    await expectSiteThemeBrandColour(siteId).toBe(DEFAULT_BRAND_COLOUR)
   })
 })
