@@ -1,8 +1,13 @@
 import { z } from "zod"
 import { RESERVED_SOURCE_PREFIXES } from "~/constants/redirect"
 
-import { generateBigIntSchema } from "./common"
-import { offsetPaginationSchema } from "./pagination"
+import { generateBigIntSchema } from "../common"
+import { offsetPaginationSchema } from "../pagination"
+import {
+  normalizeRedirectPath,
+  normalizeRedirectSource,
+  trimSlashes,
+} from "./utils"
 
 // A redirect is published as an S3 object whose key is
 // `${siteName}/${buildNumber}/latest/${source}/index.html` (see
@@ -84,29 +89,6 @@ export type RedirectKind = "exact" | "wildcard"
 // everything else is an exact path.
 export const redirectKind = (source: string): RedirectKind =>
   source.endsWith("/*") ? "wildcard" : "exact"
-
-// Strips slashes from both ends of a path so "/foo/", "foo" and "foo//"
-// all normalise to the same inner segments before validation.
-const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, "")
-
-// Normalises a path to a single leading slash, no trailing slash, collapsed
-// runs ("/foo/", "foo", "foo//" -> "/foo"). Exported so the server can compare
-// a destination path against stored sources, persisted in this form.
-export const normalizeRedirectPath = (value: string) =>
-  `/${trimSlashes(value).replace(/\/{2,}/g, "/")}`
-
-// Sources are additionally lowercased — page permalinks are lowercase-only, so
-// a source must lowercase to compare against (and not shadow) a real page. A
-// trailing "/*" wildcard is normalised on its path part and re-appended, so
-// "/News/Press/*" -> "/news/press/*". Exported so the server's source/loop
-// guards and the build's manifest key compare the same way.
-export const normalizeRedirectSource = (value: string): string => {
-  const isWildcard = value.endsWith("/*")
-  const path = normalizeRedirectPath(
-    isWildcard ? value.slice(0, -2) : value,
-  ).toLowerCase()
-  return isWildcard ? `${path}/*` : path
-}
 
 // True when the (normalised) source falls under a reserved prefix — the prefix
 // itself or anything nested beneath it.
