@@ -9,7 +9,7 @@ import {
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { createPageViaWizard } from "../fixtures/helpers"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE_TITLE = () => `E2E Test Page ${crypto.randomUUID().slice(0, 8)}`
@@ -21,10 +21,6 @@ test.beforeAll(async () => {
     roles: [RoleType.Admin, RoleType.Editor, RoleType.Publisher],
   })
   siteId = site.siteId
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 const createSeedFolder = () =>
