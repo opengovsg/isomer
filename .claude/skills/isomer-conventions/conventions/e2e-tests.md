@@ -71,7 +71,9 @@ repeat the gate — add new Publish-gated sections to `PUBLISH_GATED_SECTIONS` t
 
 ## Role projects and tags (PR-3)
 
-Playwright config defines one project per role plus `unauthenticated` (smoke) and `singpass`. Role projects set `storageState` and filter with `grep: /@role\b/`.
+Playwright config has one `unauthenticated` project (`smoke.test.ts`, `singpass.test.ts`) and one project per role. Role projects set `storageState` and filter with `grep: /@role\b/`.
+
+`singpass.test.ts` sits in `unauthenticated` (no cookies). Each test is `test.skip` in that file. Drop `.skip` locally when you want to run against Mockpass. There is no separate singpass project.
 
 ```ts
 import { roleTag } from "../fixtures/auth"

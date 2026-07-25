@@ -47,11 +47,12 @@ encapsulate.
 
 Auth is wired through Playwright **projects**, not per-file `test.use({ storageState })`.
 
-| Project                                                        | How tests are selected            | Auth                         |
-| -------------------------------------------------------------- | --------------------------------- | ---------------------------- |
-| `unauthenticated`                                              | `testMatch: /smoke\.test\.ts/`    | none                         |
-| `singpass`                                                     | `testMatch: /singpass\.test\.ts/` | none (suite skipped)         |
-| `admin`, `editor`, `publisher`, `nomember`, `core`, `migrator` | `grep: /@role\b/`                 | `storageState` for that role |
+| Project                                                        | How tests are selected                     | Auth                         |
+| -------------------------------------------------------------- | ------------------------------------------ | ---------------------------- |
+| `unauthenticated`                                              | `testMatch: /(smoke\|singpass)\.test\.ts/` | none                         |
+| `admin`, `editor`, `publisher`, `nomember`, `core`, `migrator` | `grep: /@role\b/`                          | `storageState` for that role |
+
+`singpass.test.ts` is matched by `unauthenticated`. Every test in that file is `test.skip`. Remove `.skip` in the file to run them locally.
 
 **New tests must use `roleTag(...)` on `test.describe`**, not `test.use({ storageState })`:
 
@@ -85,7 +86,7 @@ E2E covers user-visible behavior. Integration tests cover server-side correctnes
 
 ## Known footguns
 
-- **`singpass.test.ts`'s `beforeEach` blanks every user's `name`/`phone`/`singpassUuid`** in the shared test DB. Because tests share a database, a suite that runs after it sees blanked profiles. Tests that need a non-empty profile (to skip the welcome modal) must re-populate it in their own `beforeEach`. See `site/settings-agency.test.ts` for the pattern.
+- When `singpass.test.ts` runs, its `beforeEach` clears `name`, `phone`, and `singpassUuid` on users in the shared test DB. Later suites can see blank profiles. Call `ensureUserOnboarded` in your own `beforeEach` when you need a filled profile. See `site/settings-agency.test.ts`.
 - **`storage-state/` is gitignored but persists across local runs**. If you switch your local DB target away from the test DB, delete the cookie jars before running again: `rm apps/studio/tests/e2e/storage-state/*.json` (the `.gitignore` is preserved).
 
 ## Open follow-ups

@@ -29,13 +29,7 @@ export default defineConfig({
   projects: [
     {
       name: "unauthenticated",
-      testMatch: /smoke\.test\.ts/,
-      use: { ...baseUse },
-    },
-    // singpass.test.ts stays skipped; isolated project so it never runs under role greps
-    {
-      name: "singpass",
-      testMatch: /singpass\.test\.ts/,
+      testMatch: /(smoke|singpass)\.test\.ts/,
       use: { ...baseUse },
     },
     ...ROLES.map((role) => ({
