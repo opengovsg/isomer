@@ -2,7 +2,7 @@ import { test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import {
   deleteIsomerAdmin,
   deleteUsersByEmailPattern,
@@ -28,7 +28,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test.afterAll(async () => {
     await deleteIsomerAdmin(isomerAdminUserId)
     await deleteUsersByEmailPattern("e2e-isomer-admin-%@open.gov.sg")
-    await teardownE2ESite(siteId)
   })
 
   test.beforeEach(async () => {
