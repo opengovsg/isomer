@@ -44,8 +44,8 @@ Enforceable conventions (PO rules, DB layers, smells) live in `.claude/skills/is
 
 1. Identify the router's `__tests__/<module>.router.test.ts` file.
 2. For each `describe` block, identify the user-facing UI surface (settings page, dashboard view, modal, …).
-3. Write **one happy-path test per surface** (drive the UI, assert toast + persisted state).
-4. Write **one permission-gate test per surface** for the most restrictive role boundary that has UI signal.
+3. Add e2e coverage for user-visible flows on that surface (UI actions, toasts, persisted state).
+4. Add permission tests where the UI shows a signal (hidden control, redirect, disabled action) — not every surface needs a dedicated gate test if another file already covers that boundary.
 5. Do **not** translate validation-error or audit-log scenarios — those stay in integration tests.
 
 ## Page objects
