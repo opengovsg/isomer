@@ -1,5 +1,6 @@
-import type { Locator, Page } from "@playwright/test"
 import type { UUID } from "crypto"
+import { expect, type Locator, type Page } from "@playwright/test"
+import { env } from "~/env.mjs"
 
 import { overwriteToken } from "../utils"
 
@@ -64,5 +65,68 @@ export class LoginPage {
     const filledUuid = uuid || crypto.randomUUID()
     await this.uuidInput.fill(filledUuid)
     await this.secondaryLoginButton.click()
+  }
+
+  async gotoSignIn() {
+    await this.page.goto("/sign-in")
+  }
+
+  async gotoNotFound() {
+    return this.page.goto("/not-found")
+  }
+
+  studioTitle() {
+    return this.page.getByText("Isomer Studio").first()
+  }
+
+  async expectStudioTitleVisible() {
+    await expect(this.studioTitle()).toBeVisible()
+  }
+
+  signInButton() {
+    return this.page.getByRole("button", { name: "Sign in" })
+  }
+
+  async expectOtpVisible() {
+    await expect(this.page.getByText("Enter OTP")).toBeVisible()
+  }
+
+  continueToStudioLink() {
+    return this.page.getByRole("link", {
+      name: "Continue to Isomer Studio",
+    })
+  }
+
+  async clickContinueToStudio() {
+    await expect(this.continueToStudioLink()).toBeVisible()
+    await this.continueToStudioLink().click()
+  }
+
+  welcomeModal() {
+    return this.page.getByRole("dialog", { name: "Welcome to Studio" })
+  }
+
+  async expectWelcomeModalVisible() {
+    await expect(this.welcomeModal()).toBeVisible()
+  }
+
+  async expectSitesHeadingVisible() {
+    await expect(
+      this.page.getByRole("heading", { name: "Your sites" }),
+    ).toBeVisible()
+  }
+
+  async expectNoSitesAccessTextVisible() {
+    await expect(
+      this.page.getByText("You don't have access to any sites yet."),
+    ).toBeInViewport()
+  }
+
+  async waitForSingpassErrorUrl() {
+    await this.page.waitForURL("**/singpass?error=true")
+  }
+
+  async waitForAppHomeUrl() {
+    await this.page.waitForURL(env.NEXT_PUBLIC_APP_URL!)
   }
 }

@@ -1,14 +1,23 @@
 import { expect, test } from "@playwright/test"
 
+import { LoginPage } from "./fixtures/login"
+
 test("go to /sign-in", async ({ page }) => {
-  await page.goto("/sign-in")
+  const loginPage = new LoginPage(page)
 
-  const text = page.getByText(`Isomer Studio`).first()
+  // Act
+  await loginPage.gotoSignIn()
 
-  await expect(text).toBeVisible()
+  // Assert
+  await loginPage.expectStudioTitleVisible()
 })
 
 test("test 404", async ({ page }) => {
-  const res = await page.goto("/not-found")
+  const loginPage = new LoginPage(page)
+
+  // Act
+  const res = await loginPage.gotoNotFound()
+
+  // Assert
   expect(res?.status()).toBe(404)
 })

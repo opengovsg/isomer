@@ -150,3 +150,37 @@ export const getE2EUserId = async (email: string) => {
     .executeTakeFirstOrThrow()
   return user.id
 }
+
+/** Reset user onboarding/singpass state before singpass e2e tests. */
+export const resetSingpassTestUsers = () =>
+  db
+    .updateTable("User")
+    .set({
+      name: "",
+      phone: "",
+      singpassUuid: null,
+    })
+    .where((eb) =>
+      eb("name", "!=", "")
+        .or("phone", "!=", "")
+        .or("singpassUuid", "is not", null),
+    )
+    .execute()
+
+export const setUserSingpassUuid = (email: string, uuid: string) =>
+  db
+    .updateTable("User")
+    .set({ singpassUuid: uuid })
+    .where("email", "=", email)
+    .execute()
+
+export const insertUserWithoutSites = (email: string) =>
+  db
+    .insertInto("User")
+    .values({
+      email,
+      id: crypto.randomUUID().toString(),
+      name: "",
+      phone: "",
+    })
+    .execute()
