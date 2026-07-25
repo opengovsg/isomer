@@ -20,10 +20,13 @@ export class CollectionLinkPO {
     await this.summaryField().fill(summary)
   }
 
-  async addExternalLink(linkText: string, url: string) {
+  /**
+   * This control (`BaseLinkControl`) renders with `showLinkText: false`, so
+   * the "Add link" dialog only has a destination field — no link text input.
+   */
+  async addExternalLink(url: string) {
     await this.page.getByRole("button", { name: "Link something..." }).click()
     const dialog = this.page.getByRole("dialog")
-    await dialog.getByLabel("Link text").fill(linkText)
     await dialog.getByText("External", { exact: true }).click()
     await dialog.getByPlaceholder("www.isomer.gov.sg").fill(url)
     await dialog.getByRole("button", { name: "Add link" }).click()
@@ -42,9 +45,7 @@ export class CollectionLinkPO {
     await expect(this.summaryField()).toHaveValue(summary)
   }
 
-  async expectExternalLinkButton(linkText: string) {
-    await expect(
-      this.page.getByRole("button", { name: linkText }),
-    ).toBeVisible()
+  async expectExternalLinkHref(href: string) {
+    await expect(this.page.getByText(href, { exact: true })).toBeVisible()
   }
 }

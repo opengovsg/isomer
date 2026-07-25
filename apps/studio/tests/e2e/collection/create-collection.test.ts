@@ -48,10 +48,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await createCollectionViaWizard(page, { siteId, title })
 
     // Assert
+    // NOTE: creating a collection also creates an IndexPage child with the
+    // same title, so we must filter by type to find the collection itself.
     const created = await db
       .selectFrom("Resource")
       .where("siteId", "=", siteId)
       .where("title", "=", title)
+      .where("type", "=", ResourceType.Collection)
       .select(["id", "type"])
       .executeTakeFirst()
     expect(created).toBeTruthy()

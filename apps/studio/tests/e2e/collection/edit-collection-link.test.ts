@@ -27,7 +27,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     page,
   }) => {
     const summary = `E2E link summary ${crypto.randomUUID().slice(0, 8)}`
-    const linkText = "External resource"
+    const linkHref = "https://example.com"
     const linkEditor = new CollectionLinkPO(page)
 
     // Arrange
@@ -40,13 +40,13 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
 
     // Act
     await linkEditor.fillSummary(summary)
-    await linkEditor.addExternalLink(linkText, "example.com")
+    await linkEditor.addExternalLink("example.com")
     await linkEditor.save()
 
     // Assert
     await linkEditor.reload()
     await linkEditor.expectLoaded()
     await linkEditor.expectSummary(summary)
-    await linkEditor.expectExternalLinkButton(linkText)
+    await linkEditor.expectExternalLinkHref(linkHref)
   })
 })

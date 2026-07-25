@@ -42,7 +42,13 @@ export class DashboardPO {
   }
 
   async cancelCreateCollectionModal() {
-    await this.page.getByRole("button", { name: "Close" }).click()
+    // The modal has two "Close"-named buttons: the icon-only `ModalCloseButton`
+    // (aria-label only, no visible text) and this footer action button. Filter
+    // by visible text to target the footer button specifically.
+    await this.page
+      .getByRole("button", { name: "Close" })
+      .filter({ hasText: "Close" })
+      .click()
     await expect(
       this.page.getByText("Create a new collection"),
     ).not.toBeVisible()
