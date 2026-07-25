@@ -247,8 +247,6 @@ jobs:
               languages: js
               service: isomer-studio
               api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
-      - name: Seed testing db
-        run: pnpm exec turbo db:seed
       - name: Run Playwright tests
         run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
 
