@@ -5,7 +5,7 @@ import { LoginPage } from "./fixtures/login"
 import {
   ensureUserOnboarded,
   insertUserWithoutSites,
-  resetSingpassTestUsers,
+  resetUserSingpassState,
   setUserSingpassUuid,
 } from "./fixtures/user"
 
@@ -19,13 +19,10 @@ const test = base.extend<LoginPageFixture>({
   },
 })
 
-base.beforeEach(async () => {
-  await resetSingpassTestUsers()
-})
-
 test.skip("first login with singpass should succeed", async ({ loginPage }) => {
   // Arrange
   const editorEmail = "editor@open.gov.sg"
+  await resetUserSingpassState(editorEmail)
   await loginPage.gotoSignIn()
 
   // Act

@@ -151,20 +151,12 @@ export const getE2EUserId = async (email: string) => {
   return user.id
 }
 
-/** Reset user onboarding/singpass state before singpass e2e tests. */
-export const resetSingpassTestUsers = () =>
+/** Clear name, phone, and singpassUuid for one user (singpass first-login flows). */
+export const resetUserSingpassState = (email: string) =>
   db
     .updateTable("User")
-    .set({
-      name: "",
-      phone: "",
-      singpassUuid: null,
-    })
-    .where((eb) =>
-      eb("name", "!=", "")
-        .or("phone", "!=", "")
-        .or("singpassUuid", "is not", null),
-    )
+    .set({ name: "", phone: "", singpassUuid: null })
+    .where("email", "=", email)
     .execute()
 
 export const setUserSingpassUuid = (email: string, uuid: string) =>

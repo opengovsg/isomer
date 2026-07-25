@@ -86,7 +86,6 @@ E2E covers user-visible behavior. Integration tests cover server-side correctnes
 
 ## Known footguns
 
-- When `singpass.test.ts` runs, its `beforeEach` clears `name`, `phone`, and `singpassUuid` on users in the shared test DB. Later suites can see blank profiles. Call `ensureUserOnboarded` in your own `beforeEach` when you need a filled profile. See `site/settings-agency.test.ts`.
 - **`storage-state/` is gitignored but persists across local runs**. If you switch your local DB target away from the test DB, delete the cookie jars before running again: `rm apps/studio/tests/e2e/storage-state/*.json` (the `.gitignore` is preserved).
 
 ## Open follow-ups
