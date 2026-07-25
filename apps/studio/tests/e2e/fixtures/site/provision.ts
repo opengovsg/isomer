@@ -51,11 +51,7 @@ const ROOT_PAGE_ROLE_PRIORITY: Role[] = [
   RoleType.Publisher,
 ]
 
-// Each requested role grants its own fixed TEST_EMAILS user (admin/editor/
-// publisher are separate accounts) that role on this site — never multiple
-// roles to one user. This lets a single test file switch `storageState`
-// between those canonical users to exercise several permission levels
-// against the same freshly-provisioned site.
+// One TEST_EMAILS user per role on this site. Tests swap storageState on the same site.
 export const provisionE2ESite = async (opts: {
   roles: [Role, ...Role[]]
 }): Promise<ProvisionedSite> => {
@@ -94,7 +90,7 @@ export const provisionE2ESite = async (opts: {
   return { siteId: site.id, siteName: site.name }
 }
 
-/** Set CodeBuild project id so the godmode publishing table shows a Publish action. */
+/** Fake CodeBuild id so godmode publishing shows a Publish button. */
 export const setSiteCodeBuildId = async (
   siteId: number,
   codeBuildId: string,
@@ -106,10 +102,7 @@ export const setSiteCodeBuildId = async (
     .execute()
 }
 
-/**
- * Clear CodeBuild id so `publishSite` returns early without calling AWS. Use
- * after the godmode publishing page has loaded (button already rendered).
- */
+/** Null codeBuildId so publishSite skips AWS. Call after the Publish button renders. */
 export const clearSiteCodeBuildId = async (siteId: number): Promise<void> => {
   await db
     .updateTable("Site")

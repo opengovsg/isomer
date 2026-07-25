@@ -5,6 +5,6 @@ import { getActiveUserPermissionOnSite, getUserRoleOnSite } from "./db"
 export const expectUserRoleOnSite = (siteId: number, email: string) =>
   expect.poll(() => getUserRoleOnSite(siteId, email))
 
-/** Active sitewide permission absent (e.g. after remove-user). */
+/** No active sitewide permission (e.g. after remove-user). */
 export const expectUserAbsentOnSite = (siteId: number, email: string) =>
   expect.poll(() => getActiveUserPermissionOnSite(siteId, email))

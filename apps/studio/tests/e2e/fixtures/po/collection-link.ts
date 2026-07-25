@@ -20,10 +20,7 @@ export class CollectionLinkPO {
     await this.summaryField().fill(summary)
   }
 
-  /**
-   * This control (`BaseLinkControl`) renders with `showLinkText: false`, so
-   * the "Add link" dialog only has a destination field — no link text input.
-   */
+  // BaseLinkControl has showLinkText: false. Dialog has URL only.
   async addExternalLink(url: string) {
     await this.page.getByRole("button", { name: "Link something..." }).click()
     const dialog = this.page.getByRole("dialog")

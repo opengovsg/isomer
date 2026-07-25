@@ -1,6 +1,5 @@
 import { expect, type Page } from "@playwright/test"
 
-/** PageSettingsModal — opened from the dashboard resource menu. */
 export class PageSettingsPO {
   constructor(private readonly page: Page) {}
 
@@ -33,9 +32,8 @@ export class PageSettingsPO {
   }
 
   async closeWithoutSaving() {
-    // The modal's `X` icon button shares the "Close" accessible name (via
-    // aria-label) with this footer button, but only this one has "Close" as
-    // its actual text content.
+    // Icon Close and footer Close share the same accessible name.
+    // filter({ hasText: "Close" }) picks the footer.
     await this.page
       .getByRole("button", { name: "Close" })
       .filter({ hasText: "Close" })

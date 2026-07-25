@@ -3,10 +3,7 @@ import { db } from "~/server/modules/database"
 const E2E_USER_NAME = "test-e2e"
 const E2E_USER_PHONE = "82345678"
 
-/** Delete listed users and their permission/admin rows.
- * Exact emails only; a LIKE on e2e-invitee-% can wipe another test's user
- * when fullyParallel is on.
- */
+/** Exact emails only. LIKE e2e-invitee-% can delete another parallel test's user. */
 export const deleteUsersByEmail = async (...emails: (string | undefined)[]) => {
   const list = emails.filter((email): email is string => !!email)
   if (list.length === 0) return
@@ -24,7 +21,7 @@ export const deleteUsersByEmail = async (...emails: (string | undefined)[]) => {
   await db.deleteFrom("User").where("id", "in", ids).execute()
 }
 
-/** Skip the welcome modal by ensuring name + phone are set on the user. */
+/** Set name + phone so the welcome modal does not block tests. */
 export const ensureUserOnboarded = (email: string) =>
   db
     .updateTable("User")
@@ -32,7 +29,7 @@ export const ensureUserOnboarded = (email: string) =>
     .where("email", "=", email)
     .execute()
 
-/** Clear name, phone, and singpassUuid for one user (singpass first-login flows). */
+/** Reset singpass first-login state for one user. */
 export const resetUserSingpassState = (email: string) =>
   db
     .updateTable("User")

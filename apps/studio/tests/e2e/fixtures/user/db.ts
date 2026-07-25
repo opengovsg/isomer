@@ -21,7 +21,7 @@ export const getUserRoleOnSite = async (siteId: number, email: string) => {
   return row?.role ?? null
 }
 
-/** Active sitewide permission row, if any. */
+/** Sitewide permission row, if any. */
 export const getActiveUserPermissionOnSite = async (
   siteId: number,
   email: string,

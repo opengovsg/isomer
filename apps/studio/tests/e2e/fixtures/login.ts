@@ -32,8 +32,6 @@ export class LoginPage {
   }
 
   async fillToken(email: string) {
-    // NOTE: The function for verification of otp does a comparison between the hash of the submitted token
-    // and the VerificationToken.token in db.
     const token = await overwriteToken({
       factory: () => "123456",
       identifier: email,
@@ -41,29 +39,24 @@ export class LoginPage {
     await this.tokenInput.fill(token)
   }
 
-  // NOTE: Handles login at the mockpass page and redirects to studio
+  // Mockpass has two "Login" buttons. secondaryLoginButton is the profile
+  // confirm step; getByRole("button", { name: "Login" }) matches both.
+  private async clickMockpassSecondaryLogin() {
+    await this.secondaryLoginButton.click()
+  }
+
   async defaultMockpassLogin() {
     await this.singpassButton.click()
     await this.singpassLoginButton.click()
-    // NOTE: There are 2 login buttons on mockpass -
-    // the first button, once clicked, brings you to a second profile selection component
-    // that also has a login button.
-    // Both of the buttons have the same `name` for `getByRole`, so we have to use a new locator
-    // that doesn't conflict with the original button's locator.
-    await this.secondaryLoginButton.click()
+    await this.clickMockpassSecondaryLogin()
   }
 
   async mockpassLoginWith(uuid?: UUID) {
     await this.singpassButton.click()
     await this.singpassLoginButton.click()
-    // NOTE: There are 2 login buttons on mockpass -
-    // the first button, once clicked, brings you to a second profile selection component
-    // that also has a login button.
-    // Both of the buttons have the same `name` for `getByRole`, so we have to use a new locator
-    // that doesn't conflict with the original button's locator.
     const filledUuid = uuid || crypto.randomUUID()
     await this.uuidInput.fill(filledUuid)
-    await this.secondaryLoginButton.click()
+    await this.clickMockpassSecondaryLogin()
   }
 
   async gotoSignIn() {

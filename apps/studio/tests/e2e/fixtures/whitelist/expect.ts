@@ -2,7 +2,7 @@ import { expect } from "@playwright/test"
 
 import { getWhitelistExpiry } from "./db"
 
-/** Vendor whitelist row with a future expiry (90-day vendor access). */
+/** Vendor email whitelisted with expiry still in the future. */
 export const expectWhitelistedVendorEmail = (email: string) =>
   expect.poll(async () => {
     const expiry = await getWhitelistExpiry(email)

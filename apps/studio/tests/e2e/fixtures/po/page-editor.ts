@@ -8,13 +8,7 @@ export class PageEditorPO {
     await this.page.waitForURL(new RegExp(`/sites/${siteId}/pages/${pageId}`))
   }
 
-  /**
-   * Freeze the clock at a fixed early-morning time so the "Quick select a
-   * time?" presets (00:00/09:00/13:00/17:00) are always available: they're
-   * hidden once every preset for the day has already passed, which made
-   * schedule-publish flows fail deterministically whenever the suite ran
-   * late in the day (real time was in the past relative to those presets).
-   */
+  // Fix clock at 00:01 so schedule presets haven't expired. Late-day CI was flaky.
   async installFixedClockForSchedulePresets() {
     await this.page.clock.install({
       time: new Date("2099-01-01T00:01:00+08:00"),
@@ -31,11 +25,7 @@ export class PageEditorPO {
     await this.page.reload()
   }
 
-  /**
-   * Opens a root-drawer block by its accessible name, then fills the first
-   * textbox in the block editor. Label examples: "Content page header",
-   * "Test block" (seeded prose preview text).
-   */
+  // Open block drawer by accessible name; fill the first textbox.
   async fillBlock(label: string, text: string) {
     await this.page
       .getByRole("button", { name: new RegExp(label, "i") })
