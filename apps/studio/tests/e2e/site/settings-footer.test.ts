@@ -34,7 +34,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     await site.editFooterLinkLabel("About us", updatedLabel)
-    await site.clickPublish({ force: true })
+    await site.clickPublish()
     await site.expectChangesPublishedToast()
 
     // Assert

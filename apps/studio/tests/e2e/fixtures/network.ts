@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test"
+import crypto from "crypto"
 
 /** Mock S3 PUT and asset CDN GET so logo upload E2E can complete without real storage. */
 export const mockAssetUploadRoutes = async (page: Page) => {
@@ -25,12 +26,67 @@ export const mockAssetUploadRoutes = async (page: Page) => {
       return
     }
 
-    await route.continue()
+    // Defer to the hostname-specific handler above for GETs to the assets
+    // host — route.continue() would instead send them straight to the real
+    // (nonexistent) network host, since it never re-checks earlier handlers.
+    await route.fallback()
   })
 }
 
-/** Drop the in-memory GrowthBook singleton before the next app navigation. */
+/**
+ * Intercept the `asset.getPresignedPutUrl` tRPC mutation and fulfil it with a
+ * synthetic upload target on the host `mockAssetUploadRoutes` already fakes
+ * out. Real presigning calls the AWS SDK's credential provider chain, which
+ * needs a live AWS/R2 session or SSO login that isn't available in CI or on
+ * a machine with an expired SSO session — so this replaces the server
+ * round-trip entirely rather than relying on presigning itself to succeed.
+ */
+export const mockPresignedPutUrl = async (page: Page) => {
+  await page.route("**/api/trpc/asset.getPresignedPutUrl*", async (route) => {
+    const input = route.request().postDataJSON() as {
+      json: { fileName: string }
+    }
+    // Mirror the real key shape (server/modules/asset/asset.service.ts
+    // getFileKey): the UI reads the uploaded filename back off the last path
+    // segment, so it must match what was actually uploaded, not a random one.
+    const fileKey = `e2e-mock/${crypto.randomUUID()}/${input.json.fileName}`
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        result: {
+          data: {
+            json: {
+              fileKey,
+              uploadConfig: {
+                presignedPutUrl: `https://user-content.example.com/${fileKey}`,
+                contentType: "image/png",
+                contentDisposition: "inline",
+              },
+            },
+          },
+        },
+      }),
+    })
+  })
+}
+
+/**
+ * Drop the in-memory GrowthBook singleton before the next app navigation, and
+ * clear its localStorage feature cache ("gbFeaturesCache"). The GrowthBook JS
+ * SDK reuses that cache instead of re-fetching when it isn't stale — and
+ * Playwright's auth storage state bakes in whatever was cached during the
+ * login flow in global-setup, so without this every test would silently see
+ * the real (unpatched) feature set instead of a route-mocked one.
+ */
 export const resetGrowthBookPage = async (page: Page) => {
+  await page.addInitScript(() => {
+    try {
+      window.localStorage.removeItem("gbFeaturesCache")
+    } catch {
+      // localStorage may be unavailable (e.g. on about:blank); ignore.
+    }
+  })
   await page.goto("about:blank")
 }
 

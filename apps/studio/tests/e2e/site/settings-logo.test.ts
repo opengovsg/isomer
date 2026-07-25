@@ -4,7 +4,7 @@ import { fileURLToPath } from "url"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { mockAssetUploadRoutes } from "../fixtures/network"
+import { mockAssetUploadRoutes, mockPresignedPutUrl } from "../fixtures/network"
 import { resetSiteLogoSettings } from "../fixtures/reset"
 import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
 import { expectSiteLogoUrl } from "../fixtures/site-expect"
@@ -30,6 +30,7 @@ test.afterAll(async () => {
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeEach(async ({ page }) => {
     await mockAssetUploadRoutes(page)
+    await mockPresignedPutUrl(page)
     await ensureUserOnboarded(TEST_EMAILS.admin)
     await resetSiteLogoSettings(siteId)
   })

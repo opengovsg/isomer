@@ -40,9 +40,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expectSiteThemeBrandColour(siteId).toBe("#ff0000")
+    // "ff0000" fails the app's WCAG contrast check (see
+    // src/features/settings/utils.ts passesContrastCheck), so the palette
+    // generator substitutes the closest passing shade instead of storing the
+    // raw input verbatim.
+    await expectSiteThemeBrandColour(siteId).toBe("#b30000")
     await site.reloadSettingsSection("colours")
-    await expect(site.mainBrandColourField()).toHaveValue("ff0000")
+    await expect(site.mainBrandColourField()).toHaveValue("b30000")
   })
 
   test("admin unpublished colour change is discarded on reload", async ({

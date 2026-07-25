@@ -27,7 +27,7 @@ const SECTION_VISIBLE_ELEMENT: Record<
   colours: (site) => site.mainBrandColourField(),
   footer: (site) => site.footerLinkButton("About us"),
   integrations: (site) => site.gtmIdField(),
-  logo: (site) => site.logoUploadInput(),
+  logo: (site) => site.logoUploadGroup(),
   navbar: (site) => site.navbarItemText("Expandable nav item"),
   notification: (site) => site.notificationBannerToggle(),
   redirects: (site) => site.redirectSourceField(),

@@ -34,7 +34,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     await site.editNavbarItemLabel("Expandable nav item", updatedLabel)
-    await site.clickPublish({ force: true })
+    await site.clickPublish()
     await site.expectChangesPublishedToast()
 
     // Assert
