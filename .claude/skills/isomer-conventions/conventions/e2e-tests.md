@@ -5,8 +5,7 @@ type: best-practice
 ---
 
 Living reference for `apps/studio/tests/e2e/`. Update this file only when the stack
-introduces a **new reusable pattern** — not when merely adding test cases. See
-`docs/superpowers/plans/2026-07-24-e2e-scale-and-coverage-spec.md`.
+introduces a **new reusable pattern** — not when merely adding test cases.
 
 ## File layout
 
@@ -16,13 +15,13 @@ introduces a **new reusable pattern** — not when merely adding test cases. See
 
 ## Helpers vs page objects
 
-| Layer | File | Use for |
-|-------|------|---------|
-| **Helpers** | `fixtures/helpers.ts` | Multi-step flows crossing pages or modals (wizard, invite) |
-| **Page objects** | `fixtures/*.po.ts` | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …) |
-| **DB setup** | `fixtures/reset.ts`, `fixtures/site.ts` | Non-UI reset and site lifecycle |
+| Layer             | File                                                                                       | Use for                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| **Helpers**       | `fixtures/helpers.ts`                                                                      | Multi-step flows crossing pages or modals (wizard, invite)                       |
+| **Page objects**  | `fixtures/*.po.ts`                                                                         | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …)                |
+| **DB setup**      | `fixtures/reset.ts`, `fixtures/site.ts`                                                    | Non-UI reset and site lifecycle                                                  |
 | **DB assertions** | `fixtures/*.db.ts`, `fixtures/site-expect.ts`, `fixtures/page-seed.ts`, `fixtures/user.ts` | Query/poll helpers that fetch or wait on persisted state for a test to assert on |
-| **Network mocks** | `fixtures/network.ts` | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach` |
+| **Network mocks** | `fixtures/network.ts`                                                                      | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach`                   |
 
 ## Welcome modal
 
@@ -87,11 +86,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
 Use `roleTag(...)` (typed from `ROLES`) — not a raw `"@admin"` string. Multi-role files should map over `ROLES` with an exhaustive `Record<Role, …>` when every role must be classified (see `site/admin.test.ts`).
 
-| Do | Don't |
-|----|-------|
-| `{ tag: roleTag("admin") }` on each role `describe` | `test.use({ storageState: storageStateFor(...) })` |
-| Put smoke in `smoke.test.ts` (no role tag) | Mix unauthenticated smoke into role-tagged files |
-| Run `pnpm exec playwright test --project=admin` to filter | Rely on file path alone for role selection |
+| Do                                                        | Don't                                              |
+| --------------------------------------------------------- | -------------------------------------------------- |
+| `{ tag: roleTag("admin") }` on each role `describe`       | `test.use({ storageState: storageStateFor(...) })` |
+| Put smoke in `smoke.test.ts` (no role tag)                | Mix unauthenticated smoke into role-tagged files   |
+| Run `pnpm exec playwright test --project=admin` to filter | Rely on file path alone for role selection         |
 
 ## Page objects (PR-4)
 
@@ -99,14 +98,14 @@ Page objects live in `fixtures/*.po.ts` and wrap locators + actions for **one** 
 surface. **All `page.*` Playwright calls belong in `fixtures/*.po.ts` or
 `fixtures/helpers.ts` — not in `*.test.ts` files.**
 
-| PO | File | Surface |
-|----|------|---------|
-| `SitePO` | `site.po.ts` | Site settings |
-| `DashboardPO` | `dashboard.po.ts` | Site dashboard / resource table |
-| `PageEditorPO` | `page-editor.po.ts` | Page edit + publish chrome |
-| `PageSettingsPO` | `page-settings.po.ts` | Page settings modal |
-| `FolderSettingsPO` | `folder-settings.po.ts` | Folder settings modal |
-| `UsersPO` | `users.po.ts` | Users / collaborators page |
+| PO                 | File                    | Surface                         |
+| ------------------ | ----------------------- | ------------------------------- |
+| `SitePO`           | `site.po.ts`            | Site settings                   |
+| `DashboardPO`      | `dashboard.po.ts`       | Site dashboard / resource table |
+| `PageEditorPO`     | `page-editor.po.ts`     | Page edit + publish chrome      |
+| `PageSettingsPO`   | `page-settings.po.ts`   | Page settings modal             |
+| `FolderSettingsPO` | `folder-settings.po.ts` | Folder settings modal           |
+| `UsersPO`          | `users.po.ts`           | Users / collaborators page      |
 
 Rules:
 
@@ -174,10 +173,10 @@ test file only constructs the PO and asserts outcomes.
 
 **Allowlist** (the only `page.*` permitted in test files):
 
-| Call | Why |
-|------|-----|
-| `async ({ page })` fixture destructuring | Playwright test signature |
-| `new SomePO(page)` | PO construction |
+| Call                                     | Why                                                                                          |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `async ({ page })` fixture destructuring | Playwright test signature                                                                    |
+| `new SomePO(page)`                       | PO construction                                                                              |
 | Documented infra exceptions in this file | e.g. `resetGrowthBookPage(page)` in `fixtures/network.ts` before GrowthBook-gated navigation |
 
 Everything else — `page.goto`, `page.getByRole`, `page.getByLabel`, `page.locator`,
