@@ -139,6 +139,35 @@ export const failTagOptionsUsageCount = async (page: Page) => {
 }
 
 /**
+ * Stub `site.publish` so godmode publishing E2E can assert the success toast
+ * without calling AWS CodeBuild (no credentials in the test env).
+ */
+export const mockGodmodeSitePublish = async (page: Page) => {
+  await page.route("**/api/trpc/**", async (route) => {
+    const url = route.request().url()
+    if (!url.includes("site.publish")) {
+      await route.continue()
+      return
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        result: {
+          data: {
+            json: null,
+            meta: {
+              values: ["undefined"],
+            },
+          },
+        },
+      }),
+    })
+  })
+}
+
+/**
  * Override one offline GrowthBook flag on the already-loaded page.
  * The test build's client is created by `createOfflineGrowthBook` and does
  * not fetch the CDN.
