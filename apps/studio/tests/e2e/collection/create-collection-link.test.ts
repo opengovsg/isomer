@@ -1,12 +1,13 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { CollectionLinkPO } from "../fixtures/collection-link.po"
 import { createCollectionLinkViaWizard } from "../fixtures/helpers"
 import { seedCollection } from "../fixtures/page-seed"
+import { deleteResourcesByTitlePrefix } from "../fixtures/reset"
+import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -31,11 +32,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test.afterEach(async () => {
-    await db
-      .deleteFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "like", "E2E Collection Link %")
-      .execute()
+    await deleteResourcesByTitlePrefix(siteId, "E2E Collection Link ")
   })
 
   test("admin can create a collection link via the wizard", async ({
@@ -52,11 +49,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await new CollectionLinkPO(page).expectLoaded()
 
     // Assert
-    const created = await db
-      .selectFrom("Resource")
-      .where("id", "=", linkId)
-      .select(["title", "type", "state", "parentId"])
-      .executeTakeFirst()
+    const created = await getResource(linkId)
     expect(created?.title).toBe(title)
     expect(created?.type).toBe("CollectionLink")
     expect(created?.state).toBe("Draft")
@@ -70,11 +63,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   })
 
   test.afterEach(async () => {
-    await db
-      .deleteFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "like", "E2E Collection Link %")
-      .execute()
+    await deleteResourcesByTitlePrefix(siteId, "E2E Collection Link ")
   })
 
   test("editor can create a collection link via the wizard", async ({
@@ -91,11 +80,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await new CollectionLinkPO(page).expectLoaded()
 
     // Assert
-    const created = await db
-      .selectFrom("Resource")
-      .where("id", "=", linkId)
-      .select(["type", "parentId"])
-      .executeTakeFirst()
+    const created = await getResource(linkId)
     expect(created?.type).toBe("CollectionLink")
     expect(created?.parentId).toBe(collectionId)
   })

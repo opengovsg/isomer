@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
@@ -8,6 +7,10 @@ import { DashboardPO } from "../fixtures/dashboard.po"
 import { createPageViaWizard } from "../fixtures/helpers"
 import { PageEditorPO } from "../fixtures/page-editor.po"
 import { seedFolder } from "../fixtures/page-seed"
+import {
+  deleteResourceById,
+  deleteResourcesByTitlePrefix,
+} from "../fixtures/reset"
 import { getResourceByTitle } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -23,20 +26,13 @@ test.beforeAll(async () => {
   siteId = site.siteId
 })
 
-const deleteFolder = (folderId: string) =>
-  db.deleteFrom("Resource").where("id", "=", folderId).execute()
-
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
   test.afterEach(async () => {
-    await db
-      .deleteFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "like", "E2E Test Page %")
-      .execute()
+    await deleteResourcesByTitlePrefix(siteId, "E2E Test Page ")
   })
 
   test("admin can create a new page via the wizard", async ({ page }) => {
@@ -105,7 +101,7 @@ test.describe(
     })
 
     test.afterEach(async () => {
-      await deleteFolder(folderId)
+      await deleteResourceById(folderId)
     })
 
     test("admin can create a new page inside a folder", async ({ page }) => {
@@ -143,7 +139,7 @@ test.describe(
     })
 
     test.afterEach(async () => {
-      await deleteFolder(folderId)
+      await deleteResourceById(folderId)
     })
 
     test("publisher can create a new page inside a folder", async ({
@@ -183,7 +179,7 @@ test.describe(
     })
 
     test.afterEach(async () => {
-      await deleteFolder(folderId)
+      await deleteResourceById(folderId)
     })
 
     test("editor can create a new page inside a folder", async ({ page }) => {

@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { createFolderViaWizard } from "../fixtures/helpers"
+import { deleteResourcesByTitlePrefix } from "../fixtures/reset"
 import { getResourceByTitle } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -24,19 +24,19 @@ test.describe("create folder", { tag: roleTag("admin") }, () => {
   })
 
   test.afterEach(async () => {
-    await db
-      .deleteFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "like", "E2E Test Folder %")
-      .execute()
+    await deleteResourcesByTitlePrefix(siteId, "E2E Test Folder ")
   })
 
   test("admin can create a folder via the Create new wizard", async ({
     page,
   }) => {
+    // Arrange
     const title = UNIQUE_TITLE()
+
+    // Act
     await createFolderViaWizard(page, { siteId, title })
 
+    // Assert
     const created = await getResourceByTitle({ siteId, title })
     expect(created).toBeTruthy()
     expect(created?.type).toBe("Folder")
