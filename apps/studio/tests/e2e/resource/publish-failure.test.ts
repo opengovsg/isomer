@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { normalizeRedirectSource } from "~/schemas/redirect"
+import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 import { db } from "~/server/modules/database"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
