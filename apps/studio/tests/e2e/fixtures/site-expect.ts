@@ -1,7 +1,7 @@
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import { expect } from "@playwright/test"
-import { normalizeRedirectSource } from "~/schemas/redirect"
+import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 import { db } from "~/server/modules/database"
 
 export const expectSiteName = (siteId: number) =>
