@@ -38,7 +38,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expect(expectNavbarContains(siteId, updatedLabel)).resolves.toBe(true)
+    await expectNavbarContains(siteId, updatedLabel).toBe(true)
     await site.reloadSettingsSection("navbar")
     await expect(site.navbarItemText(updatedLabel)).toBeVisible()
   })
