@@ -1,38 +1,23 @@
-import { expect, test, type Page } from "@playwright/test"
+import { test } from "@playwright/test"
 
 import { roleTag } from "../fixtures/auth"
+import { GodmodePO } from "../fixtures/godmode.po"
 
-const GODMODE_ROUTES = [
-  { path: "/godmode/create-site", heading: "Create a new site" },
-  { path: "/godmode/publishing", heading: "Publishing" },
-  { path: "/godmode/whitelist", heading: "Whitelist" },
+const RESTRICTED_GODMODE_PATHS = [
+  "/godmode",
+  "/godmode/create-site",
+  "/godmode/publishing",
+  "/godmode/whitelist",
 ] as const
 
-const expectRedirectToDashboard = async (page: Page, path: string) => {
-  await page.goto(path)
-  await page.waitForURL("/")
-  await expect(page).toHaveURL(/\/$/)
-}
-
 test.describe("core", { tag: roleTag("core") }, () => {
-  test("core admin can access all godmode routes", async ({ page }) => {
-    // Act
-    await page.goto("/godmode")
+  test("core admin can access the godmode hub", async ({ page }) => {
+    const godmode = new GodmodePO(page)
 
-    // Assert
-    await expect(page.getByRole("heading", { name: /God Mode/ })).toBeVisible()
-    await expect(
-      page.getByRole("link", { name: "Create a new site" }),
-    ).toBeVisible()
-    await expect(page.getByRole("link", { name: "Publishing" })).toBeVisible()
-    await expect(page.getByRole("link", { name: "Whitelist" })).toBeVisible()
-
-    for (const route of GODMODE_ROUTES) {
-      await page.goto(route.path)
-      await expect(
-        page.getByRole("heading", { name: route.heading }),
-      ).toBeVisible()
-    }
+    await godmode.gotoHub()
+    await godmode.expectHubLinkVisible("Create a new site")
+    await godmode.expectHubLinkVisible("Publishing")
+    await godmode.expectHubLinkVisible("Whitelist")
   })
 })
 
@@ -40,33 +25,26 @@ test.describe("migrator", { tag: roleTag("migrator") }, () => {
   test("migrator can only access whitelist godmode routes", async ({
     page,
   }) => {
-    // Act
-    await page.goto("/godmode")
+    const godmode = new GodmodePO(page)
 
-    // Assert
-    await expect(page.getByRole("heading", { name: /God Mode/ })).toBeVisible()
-    await expect(page.getByRole("link", { name: "Whitelist" })).toBeVisible()
-    await expect(
-      page.getByRole("link", { name: "Create a new site" }),
-    ).not.toBeVisible()
-    await expect(
-      page.getByRole("link", { name: "Publishing" }),
-    ).not.toBeVisible()
+    await godmode.gotoHub()
+    await godmode.expectHubLinkVisible("Whitelist")
+    await godmode.expectHubLinkHidden("Create a new site")
+    await godmode.expectHubLinkHidden("Publishing")
 
-    await page.goto("/godmode/whitelist")
-    await expect(page.getByRole("heading", { name: "Whitelist" })).toBeVisible()
+    await godmode.gotoWhitelist()
 
-    await expectRedirectToDashboard(page, "/godmode/create-site")
-    await expectRedirectToDashboard(page, "/godmode/publishing")
+    await godmode.expectRedirectToDashboard("/godmode/create-site")
+    await godmode.expectRedirectToDashboard("/godmode/publishing")
   })
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test("site admin without godmode access is redirected", async ({ page }) => {
-    // Act / Assert
-    await expectRedirectToDashboard(page, "/godmode")
-    for (const route of GODMODE_ROUTES) {
-      await expectRedirectToDashboard(page, route.path)
+    const godmode = new GodmodePO(page)
+
+    for (const path of RESTRICTED_GODMODE_PATHS) {
+      await godmode.expectRedirectToDashboard(path)
     }
   })
 })
