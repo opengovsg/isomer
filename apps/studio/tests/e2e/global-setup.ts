@@ -5,7 +5,7 @@ import { db, sql } from "~/server/modules/database"
 
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
 import { LoginPage } from "./fixtures/login"
-import { seedRolesForE2E } from "./fixtures/seed"
+import { seedRolesForE2E } from "./fixtures/role.seed"
 
 // The e2e suite's DATABASE_URL points at a `test` database that has no
 // purpose other than e2e fixtures (a separate logical database from local

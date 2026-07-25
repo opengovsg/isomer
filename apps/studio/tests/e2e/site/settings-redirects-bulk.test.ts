@@ -12,7 +12,7 @@ import { provisionE2ESite } from "../fixtures/site"
 import {
   expectLiveRedirectCount,
   expectRedirectDestination,
-} from "../fixtures/site-expect"
+} from "../fixtures/site.expect"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 

@@ -7,13 +7,15 @@ import { DashboardPO } from "../fixtures/dashboard.po"
 import {
   expectResourceAbsent,
   expectResourcePresent,
+} from "../fixtures/resource.expect"
+import {
   seedCollectionWithLink,
   seedCollectionWithPage,
   seedFolderWithChildPage,
   seedFolderWithPage,
   seedRootCollection,
   seedRootPage,
-} from "../fixtures/page-seed"
+} from "../fixtures/resource.seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 

@@ -2,18 +2,21 @@
 
 ## Fixtures
 
-| Module                       | Purpose                                                        |
-| ---------------------------- | -------------------------------------------------------------- |
-| `fixtures/user.ts`           | `ensureUserOnboarded(email)` — skip welcome modal              |
-| `fixtures/reset.ts`          | Site-scoped DB reset helpers (`resetSiteAgencySettings`, etc.) |
-| `fixtures/helpers.ts`        | Shared UI flows (create page/folder, invite user)              |
-| `fixtures/auth.ts`           | Role storage-state paths and `TEST_EMAILS`                     |
-| `fixtures/seed.ts`           | Idempotent E2E role seeding                                    |
-| `fixtures/site.po.ts`        | Site settings page object                                      |
-| `fixtures/dashboard.po.ts`   | Site dashboard / resource table page object                    |
-| `fixtures/page-editor.po.ts` | Page editor / publish page object                              |
-| `fixtures/users.po.ts`       | Users / collaborators page object                              |
-| `fixtures/godmode.po.ts`     | God Mode admin surfaces (create site, publishing, whitelist)   |
+| Module                       | Purpose                                                            |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `fixtures/user.ts`           | `ensureUserOnboarded(email)` — skip welcome modal                  |
+| `fixtures/reset.ts`          | Site-scoped DB reset helpers (`resetSiteAgencySettings`, etc.)     |
+| `fixtures/helpers.ts`        | Shared UI flows (create page/folder, invite user)                  |
+| `fixtures/auth.ts`           | Role storage-state paths and `TEST_EMAILS`                         |
+| `fixtures/role.seed.ts`      | Global E2E role seeding (`seedRolesForE2E`)                        |
+| `fixtures/site.ts`           | Per-test site provisioning (`provisionE2ESite`)                    |
+| `fixtures/*.db.ts`           | Read queries, no `expect()` (`resource.db.ts`, `whitelist.db.ts`)  |
+| `fixtures/*.expect.ts`       | `expect.poll` assertion helpers (`site-expect.ts`, `page-seed.ts`) |
+| `fixtures/site.po.ts`        | Site settings page object                                          |
+| `fixtures/dashboard.po.ts`   | Site dashboard / resource table page object                        |
+| `fixtures/page-editor.po.ts` | Page editor / publish page object                                  |
+| `fixtures/users.po.ts`       | Users / collaborators page object                                  |
+| `fixtures/godmode.po.ts`     | God Mode admin surfaces (create site, publishing, whitelist)       |
 
 ## Structure
 

@@ -9,14 +9,14 @@ import {
   openSeededPageEditor,
 } from "../fixtures/helpers"
 import {
-  SEEDED_PROSE_BLOCK_LABEL,
-  expectResourceState,
-  seedFolderWithPage,
-} from "../fixtures/page-seed"
-import {
   getResourceByTitle,
   getResourceDraftBlobContent,
 } from "../fixtures/resource.db"
+import { expectResourceState } from "../fixtures/resource.expect"
+import {
+  SEEDED_PROSE_BLOCK_LABEL,
+  seedFolderWithPage,
+} from "../fixtures/resource.seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 

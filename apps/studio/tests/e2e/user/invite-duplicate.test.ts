@@ -4,12 +4,9 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
 import { provisionE2ESite } from "../fixtures/site"
-import {
-  deleteUsersByEmail,
-  ensureUserOnboarded,
-  expectUserRoleOnSite,
-  uniqueInviteeEmail,
-} from "../fixtures/user"
+import { deleteUsersByEmail, ensureUserOnboarded } from "../fixtures/user"
+import { expectUserRoleOnSite } from "../fixtures/user.expect"
+import { uniqueInviteeEmail } from "../fixtures/user.seed"
 import { UsersPO } from "../fixtures/users.po"
 
 let siteId: number

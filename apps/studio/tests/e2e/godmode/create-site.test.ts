@@ -3,7 +3,7 @@ import crypto from "crypto"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { GodmodePO } from "../fixtures/godmode.po"
-import { expectSiteName } from "../fixtures/site-expect"
+import { expectSiteName } from "../fixtures/site.expect"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 test.describe("core", { tag: roleTag("core") }, () => {

@@ -4,7 +4,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { resetSiteIntegrations } from "../fixtures/reset"
 import { provisionE2ESite } from "../fixtures/site"
-import { expectSiteGtmId } from "../fixtures/site-expect"
+import { expectSiteGtmId } from "../fixtures/site.expect"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 

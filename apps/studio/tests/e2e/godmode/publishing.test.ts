@@ -8,7 +8,7 @@ import {
   provisionE2ESite,
   setSiteCodeBuildId,
 } from "../fixtures/site"
-import { expectSitePublishAuditLog } from "../fixtures/site-expect"
+import { expectSitePublishAuditLog } from "../fixtures/site.expect"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number

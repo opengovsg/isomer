@@ -4,11 +4,11 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { openSeededPageEditor } from "../fixtures/helpers"
+import { getResourceDraftBlobContent } from "../fixtures/resource.db"
 import {
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
-} from "../fixtures/page-seed"
-import { getResourceDraftBlobContent } from "../fixtures/resource.db"
+} from "../fixtures/resource.seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 

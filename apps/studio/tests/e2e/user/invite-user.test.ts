@@ -4,16 +4,14 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
 import { provisionE2ESite } from "../fixtures/site"
-import {
-  deleteUsersByEmail,
-  deleteWhitelistedVendorEmails,
-  ensureUserOnboarded,
-  expectUserRoleOnSite,
-  uniqueInviteeEmail,
-  uniqueVendorEmail,
-  whitelistVendorEmail,
-} from "../fixtures/user"
+import { deleteUsersByEmail, ensureUserOnboarded } from "../fixtures/user"
+import { expectUserRoleOnSite } from "../fixtures/user.expect"
+import { uniqueInviteeEmail, uniqueVendorEmail } from "../fixtures/user.seed"
 import { UsersPO } from "../fixtures/users.po"
+import {
+  deleteWhitelistedVendorEmails,
+  whitelistVendorEmail,
+} from "../fixtures/whitelist.seed"
 
 let siteId: number
 let inviteeEmail: string | undefined

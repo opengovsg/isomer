@@ -7,8 +7,8 @@ import { openSeededPageEditor } from "../fixtures/helpers"
 import {
   expectResourceScheduledAt,
   expectResourceScheduledBy,
-  seedFolderWithPage,
-} from "../fixtures/page-seed"
+} from "../fixtures/resource.expect"
+import { seedFolderWithPage } from "../fixtures/resource.seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 

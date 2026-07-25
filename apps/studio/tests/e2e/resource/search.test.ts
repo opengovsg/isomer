@@ -9,7 +9,7 @@ import {
   seedCollectionWithPage,
   seedFolder,
   seedRootPage,
-} from "../fixtures/page-seed"
+} from "../fixtures/resource.seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 

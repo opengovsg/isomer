@@ -19,9 +19,19 @@ introduces a **new reusable pattern** — not when merely adding test cases.
 | ----------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
 | **Helpers**       | `fixtures/helpers.ts`                                                                      | Multi-step flows crossing pages or modals (wizard, invite)                       |
 | **Page objects**  | `fixtures/*.po.ts`                                                                         | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …)                |
-| **DB setup**      | `fixtures/reset.ts`, `fixtures/site.ts`                                                    | Non-UI reset and site lifecycle                                                  |
-| **DB assertions** | `fixtures/*.db.ts`, `fixtures/site-expect.ts`, `fixtures/page-seed.ts`, `fixtures/user.ts` | Query/poll helpers that fetch or wait on persisted state for a test to assert on |
+| **DB fixtures**   | `fixtures/*.seed.ts`, `fixtures/*.db.ts`, `fixtures/*.expect.ts`, `fixtures/reset.ts`      | Arrange, read queries, poll assertions, and site-scoped reset (see table below)  |
 | **Network mocks** | `fixtures/network.ts`                                                                      | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach`                   |
+
+### DB fixture naming
+
+| Suffix        | Purpose                          |
+| ------------- | -------------------------------- |
+| `*.seed.ts`   | Arrange inserts/setup            |
+| `*.db.ts`     | Read queries, no `expect()`      |
+| `*.expect.ts` | `expect.poll` assertion helpers  |
+
+One file per entity: `resource`, `site`, `user`, `whitelist`, `role`.
+`role.seed.ts` holds global role seeding (`seedRolesForE2E`) run from `global-setup.ts`.
 
 ## Welcome modal
 
@@ -127,7 +137,8 @@ When a test needs to verify persisted state (e.g. "the created page has state
 Draft"), the raw query lives in `fixtures/<entity>.db.ts` — one file per DB
 entity, mirroring `*.po.ts` per UI surface. The test file imports the query
 helper and keeps the `expect(...)` calls itself (Assert stays in the test; the
-fixture only fetches data).
+fixture only fetches data). Async poll assertions belong in
+`fixtures/<entity>.expect.ts`.
 
 ```ts
 // fixtures/resource.db.ts
@@ -149,18 +160,18 @@ Rules:
 - Query helpers return raw rows/values — no `expect()` inside `fixtures/*.db.ts`
 - One file per entity (`resource.db.ts`, `user.db.ts`), not per test
 - Setup/teardown mutations (inserts/deletes for fixtures, not assertions) stay
-  under the existing DB setup convention (`reset.ts`, `site.ts`) — this only
-  covers read queries used to verify an action's effect
+  in `fixtures/*.seed.ts` or `fixtures/reset.ts` — `*.db.ts` is read-only
 
-## DB assertions (`fixtures/page-seed.ts`)
+## DB assertions (`fixtures/*.expect.ts`)
 
 After UI mutations (delete, move, rename, publish), assert persisted state via
-`expect.poll` helpers in `page-seed.ts` — not inline `db.selectFrom(...)` in test
-files. Examples:
+`expect.poll` helpers in `fixtures/<entity>.expect.ts` — not inline
+`db.selectFrom(...)` in test files. Examples:
 
 - `expectResourceAbsent` / `expectResourcePresent` — row existence
 - `expectResourceParentId` — move outcomes
 - `expectResourceTitle` — title changes (pages, folders, collections)
+- `expectSiteName`, `expectSiteGtmId` — site settings outcomes
 
 Use Playwright's default poll timeout unless a specific surface needs more.
 
@@ -210,6 +221,6 @@ crosses surfaces/modals).
 - `test.use({ storageState: storageStateFor(...) })` in a test file → use `{ tag: roleTag(...) }` on `test.describe` instead
 - Raw `{ tag: "@admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
 - Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
-- Inline `db.selectFrom("Resource")` in `*.test.ts` → use `page-seed.ts` poll helpers
+- Inline `db.selectFrom("Resource")` in `*.test.ts` → use `fixtures/*.expect.ts` poll helpers
 - Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`
 - Any `page.<method>(` in `*.test.ts` outside the allowlist above → move to the relevant `*.po.ts` or `helpers.ts`

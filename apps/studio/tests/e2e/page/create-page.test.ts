@@ -6,12 +6,12 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { createPageViaWizard } from "../fixtures/helpers"
 import { PageEditorPO } from "../fixtures/page-editor.po"
-import { seedFolder } from "../fixtures/page-seed"
 import {
   deleteResourceById,
   deleteResourcesByTitlePrefix,
 } from "../fixtures/reset"
 import { getResourceByTitle } from "../fixtures/resource.db"
+import { seedFolder } from "../fixtures/resource.seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 

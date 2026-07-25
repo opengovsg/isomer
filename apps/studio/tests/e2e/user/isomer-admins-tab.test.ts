@@ -3,11 +3,8 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { provisionE2ESite } from "../fixtures/site"
-import {
-  deleteUsersByEmail,
-  ensureUserOnboarded,
-  seedIsomerAdminOnSite,
-} from "../fixtures/user"
+import { deleteUsersByEmail, ensureUserOnboarded } from "../fixtures/user"
+import { seedIsomerAdminOnSite } from "../fixtures/user.seed"
 import { UsersPO } from "../fixtures/users.po"
 
 let siteId: number

@@ -4,14 +4,15 @@ import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
+import { PageSettingsPO } from "../fixtures/page-settings.po"
 import {
   expectResourcePermalink,
   expectResourceTitle,
-  seedRootPage,
-} from "../fixtures/page-seed"
-import { PageSettingsPO } from "../fixtures/page-settings.po"
+} from "../fixtures/resource.expect"
+import { seedRootPage } from "../fixtures/resource.seed"
 import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
+import { ensureUserOnboarded } from "../fixtures/user"
+import { getE2EUserId } from "../fixtures/user.db"
 
 let siteId: number
 

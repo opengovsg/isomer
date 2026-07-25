@@ -4,13 +4,13 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
+import { expectResourceParentId } from "../fixtures/resource.expect"
 import {
-  expectResourceParentId,
   seedFolder,
   seedRootCollection,
   seedRootPage,
   seedTwoCollections,
-} from "../fixtures/page-seed"
+} from "../fixtures/resource.seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 

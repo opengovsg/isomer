@@ -4,10 +4,8 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { openSeededPageEditor } from "../fixtures/helpers"
-import {
-  expectResourceDraftBlobContains,
-  seedCollectionWithPage,
-} from "../fixtures/page-seed"
+import { expectResourceDraftBlobContains } from "../fixtures/resource.expect"
+import { seedCollectionWithPage } from "../fixtures/resource.seed"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 

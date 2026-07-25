@@ -1,0 +1,123 @@
+import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
+import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
+import { normalizeRedirectSource } from "~/schemas/redirect/utils"
+import { db } from "~/server/modules/database"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
+
+export const getSiteName = async (siteId: number) => {
+  const row = await db
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .select("name")
+    .executeTakeFirst()
+  return row?.name ?? null
+}
+
+export const getSiteThemeBrandColour = async (siteId: number) => {
+  const row = await db
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .select("theme")
+    .executeTakeFirst()
+  const theme = row?.theme as IsomerSiteThemeProps | null
+  return theme?.colors?.brand?.canvas?.inverse ?? null
+}
+
+export const getSiteGtmId = async (siteId: number) => {
+  const row = await db
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .select("config")
+    .executeTakeFirst()
+  const config = row?.config as IsomerSiteConfigProps & {
+    siteGtmId?: string
+  }
+  return config?.siteGtmId ?? null
+}
+
+export const getSiteLogoUrl = async (siteId: number) => {
+  const row = await db
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .select("config")
+    .executeTakeFirst()
+  const config = row?.config as IsomerSiteConfigProps
+  return config?.logoUrl ?? null
+}
+
+export const getSiteNotificationTitle = async (siteId: number) => {
+  const row = await db
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .select("config")
+    .executeTakeFirst()
+  const config = row?.config as {
+    notification?: { title?: string }
+  }
+  return config?.notification?.title ?? null
+}
+
+export const getNavbarContentJson = async (siteId: number) => {
+  const row = await db
+    .selectFrom("Navbar")
+    .where("siteId", "=", siteId)
+    .select("content")
+    .executeTakeFirst()
+  return JSON.stringify(row?.content ?? {})
+}
+
+export const getFooterContentJson = async (siteId: number) => {
+  const row = await db
+    .selectFrom("Footer")
+    .where("siteId", "=", siteId)
+    .select("content")
+    .executeTakeFirst()
+  return JSON.stringify(row?.content ?? {})
+}
+
+export const getRedirectDestination = async (
+  siteId: number,
+  source: string,
+) => {
+  const normalized = normalizeRedirectSource(source)
+  const row = await db
+    .selectFrom("Redirect")
+    .where("siteId", "=", siteId)
+    .where("source", "=", normalized)
+    .where("deletedAt", "is", null)
+    .select("destination")
+    .executeTakeFirst()
+  return row?.destination ?? null
+}
+
+export const getLiveRedirectCount = async (siteId: number) => {
+  const row = await db
+    .selectFrom("Redirect")
+    .where("siteId", "=", siteId)
+    .where("deletedAt", "is", null)
+    .select((eb) => eb.fn.countAll<number>().as("count"))
+    .executeTakeFirst()
+  return Number(row?.count ?? 0)
+}
+
+export const isRedirectLive = async (siteId: number, source: string) => {
+  const normalized = normalizeRedirectSource(source)
+  const row = await db
+    .selectFrom("Redirect")
+    .where("siteId", "=", siteId)
+    .where("source", "=", normalized)
+    .where("deletedAt", "is", null)
+    .select("id")
+    .executeTakeFirst()
+  return row !== undefined
+}
+
+export const hasSitePublishAuditLog = async (siteId: number) => {
+  const row = await db
+    .selectFrom("AuditLog")
+    .where("siteId", "=", siteId)
+    .where("eventType", "=", AuditLogEvent.Publish)
+    .select("id")
+    .executeTakeFirst()
+  return row !== undefined
+}

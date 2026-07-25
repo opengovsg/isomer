@@ -5,13 +5,16 @@ import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { openSeededPageEditor } from "../fixtures/helpers"
 import {
-  SEEDED_PROSE_BLOCK_LABEL,
   expectResourceDraftBlobId,
   expectResourceState,
+} from "../fixtures/resource.expect"
+import {
+  SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
-} from "../fixtures/page-seed"
+} from "../fixtures/resource.seed"
 import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
+import { ensureUserOnboarded } from "../fixtures/user"
+import { getE2EUserId } from "../fixtures/user.db"
 
 let siteId: number
 
