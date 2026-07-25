@@ -6,7 +6,7 @@ import { DashboardPO } from "../fixtures/dashboard.po"
 import { openSeededPageEditor } from "../fixtures/helpers"
 import { seedFolderWithPage } from "../fixtures/page-seed"
 import { getResource } from "../fixtures/resource.db"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 const DEFAULT_PAGE_TITLE = "E2E Seed Page"
@@ -18,10 +18,6 @@ test.beforeAll(async () => {
     roles: [RoleType.Publisher, RoleType.Editor],
   })
   siteId = site.siteId
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 test.describe("publisher", { tag: roleTag("publisher") }, () => {
