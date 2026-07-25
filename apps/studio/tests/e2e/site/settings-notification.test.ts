@@ -37,9 +37,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expect(expectSiteNotificationTitle(siteId)).resolves.toBe(
-      notificationTitle,
-    )
+    await expectSiteNotificationTitle(siteId).toBe(notificationTitle)
     await site.reloadSettingsSection("notification")
     await expect(site.notificationBannerToggle()).toBeChecked()
     await expect(site.notificationTitleField()).toHaveValue(notificationTitle)

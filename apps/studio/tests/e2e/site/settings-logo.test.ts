@@ -47,7 +47,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expect(expectSiteLogoUrl(siteId)).resolves.toMatch(/.+/)
+    await expectSiteLogoUrl(siteId).toMatch(/.+/)
     await site.reloadSettingsSection("logo")
     await expect(site.logoFilenameText(LOGO_FILENAME)).toBeVisible()
   })
