@@ -24,16 +24,33 @@ export const uniqueLoggedInUserEmail = () =>
 export const uniqueIsomerAdminEmail = () =>
   `e2e-isomer-admin-${crypto.randomUUID().slice(0, 8)}@open.gov.sg`
 
-export const deleteUsersByEmailPattern = async (emailPattern: string) => {
+/** Delete listed users and their permission/admin rows.
+ * Exact emails only; a LIKE on e2e-invitee-% can wipe another test's user
+ * when fullyParallel is on.
+ */
+export const deleteUsersByEmail = async (...emails: (string | undefined)[]) => {
+  const list = emails.filter((email): email is string => !!email)
+  if (list.length === 0) return
+
   const users = await db
     .selectFrom("User")
-    .where("email", "like", emailPattern)
+    .where("email", "in", list)
     .select(["id"])
     .execute()
   if (users.length === 0) return
+
   const ids = users.map((u) => u.id)
+  await db.deleteFrom("IsomerAdmin").where("userId", "in", ids).execute()
   await db.deleteFrom("ResourcePermission").where("userId", "in", ids).execute()
   await db.deleteFrom("User").where("id", "in", ids).execute()
+}
+
+export const deleteWhitelistedVendorEmails = async (
+  ...emails: (string | undefined)[]
+) => {
+  const list = emails.filter((email): email is string => !!email)
+  if (list.length === 0) return
+  await db.deleteFrom("Whitelist").where("email", "in", list).execute()
 }
 
 export const whitelistVendorEmail = async (email: string) => {
@@ -49,9 +66,6 @@ export const whitelistVendorEmail = async (email: string) => {
     )
     .execute()
 }
-
-export const deleteWhitelistedVendorsByPattern = (emailPattern: string) =>
-  db.deleteFrom("Whitelist").where("email", "like", emailPattern).execute()
 
 export const seedLoggedInEditorOnSite = async ({
   siteId,
@@ -92,9 +106,6 @@ export const seedIsomerAdminOnSite = async ({
     .execute()
   return { email, userId: user.id }
 }
-
-export const deleteIsomerAdmin = (userId: string) =>
-  db.deleteFrom("IsomerAdmin").where("userId", "=", userId).execute()
 
 export const expectUserRoleOnSite = (siteId: number, email: string) =>
   expect.poll(async () => {

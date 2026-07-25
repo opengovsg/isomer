@@ -5,7 +5,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { inviteCollaborator } from "../fixtures/helpers"
 import { provisionE2ESite } from "../fixtures/site"
 import {
-  deleteUsersByEmailPattern,
+  deleteUsersByEmail,
   ensureUserOnboarded,
   expectUserRoleOnSite,
   seedLoggedInEditorOnSite,
@@ -14,6 +14,8 @@ import {
 import { UsersPO } from "../fixtures/users.po"
 
 let siteId: number
+let inviteeEmail: string | undefined
+let loggedInEmail: string | undefined
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeAll(async () => {
@@ -26,12 +28,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test.afterEach(async () => {
-    await deleteUsersByEmailPattern("e2e-invitee-%@open.gov.sg")
-    await deleteUsersByEmailPattern("e2e-logged-in-%@open.gov.sg")
+    await deleteUsersByEmail(inviteeEmail, loggedInEmail)
   })
 
   test("admin can resend an invite to a pending user", async ({ page }) => {
-    const inviteeEmail = uniqueInviteeEmail()
+    inviteeEmail = uniqueInviteeEmail()
 
     // Arrange
     await inviteCollaborator(page, {
@@ -55,6 +56,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   }) => {
     // Arrange
     const { email } = await seedLoggedInEditorOnSite({ siteId })
+    loggedInEmail = email
     await expectUserRoleOnSite(siteId, email).toBe("Editor")
     const users = new UsersPO(page)
     await users.goto(siteId)

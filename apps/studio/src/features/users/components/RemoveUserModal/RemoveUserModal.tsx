@@ -35,8 +35,10 @@ export const RemoveUserModal = () => {
   const { mutate, isPending } = trpc.user.delete.useMutation({
     onSettled: onClose,
     onSuccess: async (result) => {
-      await utils.user.list.invalidate()
-      await utils.user.count.invalidate()
+      await Promise.all([
+        utils.user.list.invalidate(),
+        utils.user.count.invalidate(),
+      ])
       toast({
         status: "success",
         title: `Removed ${result.email} from site.`,

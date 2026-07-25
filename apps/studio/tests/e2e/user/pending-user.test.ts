@@ -5,7 +5,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { inviteCollaborator } from "../fixtures/helpers"
 import { provisionE2ESite } from "../fixtures/site"
 import {
-  deleteUsersByEmailPattern,
+  deleteUsersByEmail,
   ensureUserOnboarded,
   expectUserRoleOnSite,
   uniqueInviteeEmail,
@@ -13,6 +13,7 @@ import {
 import { UsersPO } from "../fixtures/users.po"
 
 let siteId: number
+let inviteeEmail: string
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeAll(async () => {
@@ -25,13 +26,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test.afterEach(async () => {
-    await deleteUsersByEmailPattern("e2e-invitee-%@open.gov.sg")
+    await deleteUsersByEmail(inviteeEmail)
   })
 
   test("pending invitee shows Waiting to accept invite in the table", async ({
     page,
   }) => {
-    const inviteeEmail = uniqueInviteeEmail()
+    inviteeEmail = uniqueInviteeEmail()
 
     // Arrange
     await inviteCollaborator(page, {
