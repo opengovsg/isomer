@@ -8,7 +8,7 @@ import { DashboardPO } from "../fixtures/dashboard.po"
 import { createCollectionPageViaWizard } from "../fixtures/helpers"
 import { PageEditorPO } from "../fixtures/page-editor.po"
 import { seedCollection } from "../fixtures/page-seed"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE_TITLE = () =>
@@ -24,10 +24,6 @@ test.beforeAll(async () => {
   siteId = site.siteId
   const { collection } = await seedCollection({ siteId })
   collectionId = collection.id
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {

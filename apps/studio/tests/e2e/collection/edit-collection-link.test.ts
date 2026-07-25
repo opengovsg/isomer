@@ -5,7 +5,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { CollectionLinkPO } from "../fixtures/collection-link.po"
 import { seedCollection, seedCollectionLink } from "../fixtures/page-seed"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
@@ -16,10 +16,6 @@ test.beforeAll(async () => {
   siteId = site.siteId
   const { collection } = await seedCollection({ siteId })
   collectionId = collection.id
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 test.describe("editor", { tag: roleTag("editor") }, () => {
