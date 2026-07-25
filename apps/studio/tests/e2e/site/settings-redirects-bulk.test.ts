@@ -8,7 +8,7 @@ import {
   resetGrowthBookPage,
 } from "../fixtures/network"
 import { resetSiteRedirects } from "../fixtures/reset"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import {
   expectLiveRedirectCount,
   expectRedirectDestination,
@@ -29,10 +29,6 @@ let siteId: number
 test.beforeAll(async () => {
   const site = await provisionE2ESite({ roles: [RoleType.Admin] })
   siteId = site.siteId
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
