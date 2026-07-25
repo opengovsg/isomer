@@ -95,7 +95,7 @@ export const provisionE2ESite = async (opts: {
   return { siteId: site.id, siteName: site.name }
 }
 
-export const teardownE2ESite = async (siteId: number): Promise<void> => {
+const deleteE2ESiteData = async (siteId: number): Promise<void> => {
   await db.transaction().execute(async (tx) => {
     const resources = await tx
       .selectFrom("Resource")
@@ -171,4 +171,32 @@ export const teardownE2ESite = async (siteId: number): Promise<void> => {
     await tx.deleteFrom("Footer").where("siteId", "=", siteId).execute()
     await tx.deleteFrom("Site").where("id", "=", siteId).execute()
   })
+}
+
+// No-op: per-test teardown was removed in favour of sweepStaleE2ESites, since
+// deleting a single site's AuditLog rows mid-run could race another
+// connection still inserting AuditLog rows for that same site, occasionally
+// tripping the AuditLog_siteId_fkey constraint. Kept exported so existing
+// `afterAll` call sites across test files don't need to change.
+// oxlint-disable-next-line @typescript-eslint/no-empty-function
+export const teardownE2ESite = async (_siteId: number): Promise<void> => {}
+
+// Sweeps sites left behind by previous E2E runs. Scoped to both the test
+// site name prefix and a 10-minute age cutoff so it never touches a site
+// that could still be mid-flight in the current run.
+export const sweepStaleE2ESites = async (): Promise<void> => {
+  const staleSites = await db
+    .selectFrom("Site")
+    .where("name", "like", "Ministry of Testing and Development %")
+    .where("createdAt", "<", sql<Date>`now() - interval '10 minutes'`)
+    .select("id")
+    .execute()
+
+  for (const { id } of staleSites) {
+    try {
+      await deleteE2ESiteData(id)
+    } catch (error) {
+      console.warn(`sweepStaleE2ESites: failed to delete site ${id}`, error)
+    }
+  }
 }
