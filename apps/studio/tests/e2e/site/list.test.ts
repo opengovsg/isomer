@@ -2,19 +2,13 @@ import { expect, test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor } from "../fixtures/auth"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 
-let siteId: number
 let siteName: string
 
 test.beforeAll(async () => {
   const site = await provisionE2ESite({ roles: [RoleType.Editor] })
-  siteId = site.siteId
   siteName = site.siteName
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 test.describe("editor", () => {

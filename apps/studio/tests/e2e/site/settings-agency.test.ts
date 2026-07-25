@@ -3,7 +3,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, storageStateFor } from "../fixtures/auth"
 import { resetSiteAgencySettings } from "../fixtures/reset"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -18,10 +18,6 @@ test.beforeAll(async () => {
   })
   siteId = site.siteId
   siteName = site.siteName
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 test.beforeEach(async () => {
