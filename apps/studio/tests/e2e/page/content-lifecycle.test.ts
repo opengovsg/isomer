@@ -3,8 +3,16 @@ import crypto from "crypto"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { createFolderViaWizard, createPageViaWizard } from "../fixtures/helpers"
-import { PageEditorPO } from "../fixtures/page-editor.po"
+import {
+  createFolderViaWizard,
+  createPageViaWizard,
+  openSeededPageEditor,
+} from "../fixtures/helpers"
+import {
+  SEEDED_PROSE_BLOCK_LABEL,
+  expectResourceState,
+  seedFolderWithPage,
+} from "../fixtures/page-seed"
 import { getResourceByTitle } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
@@ -28,13 +36,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
   })
 
-  test("admin can create, edit, and publish a page inside a folder", async ({
+  test("admin can create folder and page via wizard in folder", async ({
     page,
   }) => {
     // Arrange
     const folderTitle = UNIQUE_FOLDER()
     const pageTitle = UNIQUE_TITLE()
-    const editedText = `Lifecycle ${crypto.randomUUID().slice(0, 8)}`
 
     // Act
     const { folderId } = await createFolderViaWizard(page, {
@@ -47,16 +54,25 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       siteId,
     })
 
-    const editor = new PageEditorPO(page)
-    await editor.expectLoaded()
-    await editor.addAndFillTextBlock(editedText)
+    // Assert
+    const resource = await getResourceByTitle({ siteId, title: pageTitle })
+    expect(resource?.state).toBe(ResourceState.Draft)
+    expect(resource?.parentId).toBe(folderId)
+  })
 
+  test("admin can edit and publish seeded page in folder", async ({ page }) => {
+    // Arrange
+    const editedText = `Lifecycle ${crypto.randomUUID().slice(0, 8)}`
+    const { page: seededPage } = await seedFolderWithPage({ siteId })
+
+    // Act
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+    await editor.editProseBlock(SEEDED_PROSE_BLOCK_LABEL, editedText)
     await editor.clickPublish()
     await editor.expectPublishedToast()
 
     // Assert
-    const resource = await getResourceByTitle({ siteId, title: pageTitle })
-    expect(resource?.state).toBe(ResourceState.Published)
-    expect(resource?.parentId).toBe(folderId)
+    await expectResourceState(seededPage.id).toBe(ResourceState.Published)
+    await editor.expectBlockPreview(editedText)
   })
 })
