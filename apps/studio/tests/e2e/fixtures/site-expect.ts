@@ -3,6 +3,7 @@ import type { IsomerSiteThemeProps } from "@opengovsg/isomer-components"
 import { expect } from "@playwright/test"
 import { normalizeRedirectSource } from "~/schemas/redirect/utils"
 import { db } from "~/server/modules/database"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 export const expectSiteName = (siteId: number) =>
   expect.poll(async () => {
@@ -117,4 +118,15 @@ export const expectRedirectDeleted = (siteId: number, source: string) =>
       .select("id")
       .executeTakeFirst()
     return row === undefined
+  })
+
+export const expectSitePublishAuditLog = (siteId: number) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("AuditLog")
+      .where("siteId", "=", siteId)
+      .where("eventType", "=", AuditLogEvent.Publish)
+      .select("id")
+      .executeTakeFirst()
+    return row !== undefined
   })
