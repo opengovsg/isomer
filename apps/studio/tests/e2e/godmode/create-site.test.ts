@@ -3,6 +3,7 @@ import crypto from "crypto"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { GodmodePO } from "../fixtures/godmode.po"
+import { expectSiteName } from "../fixtures/site-expect"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 test.describe("core", { tag: roleTag("core") }, () => {
@@ -25,5 +26,6 @@ test.describe("core", { tag: roleTag("core") }, () => {
     await godmode.expectSiteCreatedToast(siteName)
     const siteId = await godmode.expectRedirectToCreatedSite()
     expect(siteId).toBeGreaterThan(0)
+    await expectSiteName(siteId).toBe(siteName)
   })
 })
