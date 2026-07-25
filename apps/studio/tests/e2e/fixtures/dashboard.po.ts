@@ -212,15 +212,6 @@ export class DashboardPO {
     ).not.toBeVisible()
   }
 
-  async selectMoveToSiteRoot() {
-    const backButton = this.page.getByRole("button", {
-      name: "Back to parent folder",
-    })
-    while (await backButton.isVisible()) {
-      await backButton.click()
-    }
-  }
-
   async openSearch() {
     await this.page.getByRole("button", { name: "search-button" }).click()
     await expect(
