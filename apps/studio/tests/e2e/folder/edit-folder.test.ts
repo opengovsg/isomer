@@ -6,7 +6,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { FolderSettingsPO } from "../fixtures/folder-settings.po"
 import { expectResourceTitle, seedFolder } from "../fixtures/page-seed"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
@@ -16,10 +16,6 @@ test.beforeAll(async () => {
     roles: [RoleType.Admin, RoleType.Editor],
   })
   siteId = site.siteId
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
