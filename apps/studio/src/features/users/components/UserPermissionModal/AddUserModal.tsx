@@ -83,16 +83,14 @@ export const AddUserModal = () => {
   )
 
   const { mutate: createUser, isPending } = trpc.user.create.useMutation({
-    onSuccess: async (createdUsers) => {
+    onSuccess: (createdUsers) => {
       posthog.capture("site_user_invited", {
         site_id: siteId,
         invited_user_count: createdUsers.length,
         role: getValues("role"),
       })
-      await Promise.all([
-        utils.user.list.invalidate(),
-        utils.user.count.invalidate(),
-      ])
+      void utils.user.list.invalidate()
+      void utils.user.count.invalidate()
       toast({
         status: "success",
         description: `Sent invite to ${createdUsers.length === 1 ? createdUsers[0]?.email : createdUsers.length + " users"}. They'll receive an email in a few minutes.`,
