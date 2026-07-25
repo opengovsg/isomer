@@ -13,17 +13,6 @@ export type SettingsSection =
 export class SitePO {
   constructor(private readonly page: Page) {}
 
-  async openSite(siteName: string) {
-    await this.page.goto("/")
-    await this.page.getByRole("link", { name: siteName }).click()
-    await this.page.waitForURL(/\/sites\/\d+$/)
-  }
-
-  async openSettings() {
-    await this.page.getByRole("link", { name: "Settings" }).click()
-    await this.page.waitForURL(/\/sites\/\d+\/settings\//)
-  }
-
   async gotoSettingsSection(siteId: number, section: SettingsSection) {
     await this.page.goto(`/sites/${siteId}/settings/${section}`)
     await this.page.waitForURL(new RegExp(`/settings/${section}$`))

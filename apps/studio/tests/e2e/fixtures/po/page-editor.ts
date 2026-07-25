@@ -43,19 +43,6 @@ export class PageEditorPO {
     await this.saveBlockChanges()
   }
 
-  async addTextBlock() {
-    await this.page.getByRole("button", { name: "Add block" }).click()
-    await this.page
-      .getByRole("button", { name: /^Text Add text, links, lists/i })
-      .click()
-  }
-
-  async addAndFillTextBlock(text: string) {
-    await this.addTextBlock()
-    await this.page.getByRole("textbox").first().fill(text)
-    await this.saveBlockChanges()
-  }
-
   async expectBlockPreview(text: string) {
     await expect(
       this.page.getByRole("button", { name: new RegExp(text, "i") }),
@@ -119,11 +106,6 @@ export class PageEditorPO {
     await expect(
       this.page.getByRole("button", { name: "More options" }),
     ).not.toBeVisible()
-  }
-
-  async openMetaSettingsTab() {
-    await this.page.getByRole("link", { name: "Meta Settings" }).click()
-    await this.page.waitForURL(/\/pages\/\d+\/settings$/)
   }
 
   async openScheduleModal() {
