@@ -41,7 +41,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expect(expectSiteName(siteId)).resolves.toBe(renamedSiteName)
+    await expectSiteName(siteId).toBe(renamedSiteName)
     await site.reloadSettingsSection("agency")
     await expect(site.siteNameField()).toHaveValue(renamedSiteName)
   })
