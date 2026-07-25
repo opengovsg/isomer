@@ -352,3 +352,53 @@ export const expectResourceTitle = (resourceId: string) =>
       .executeTakeFirst()
     return row?.title ?? null
   })
+
+export const expectResourceState = (resourceId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("state")
+      .executeTakeFirst()
+    return row?.state ?? null
+  })
+
+export const expectResourceDraftBlobId = (resourceId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("draftBlobId")
+      .executeTakeFirst()
+    return row?.draftBlobId ?? null
+  })
+
+export const expectResourcePermalink = (resourceId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("permalink")
+      .executeTakeFirst()
+    return row?.permalink ?? null
+  })
+
+export const expectResourceScheduledAt = (resourceId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("scheduledAt")
+      .executeTakeFirst()
+    return row?.scheduledAt ?? null
+  })
+
+export const expectResourceScheduledBy = (resourceId: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Resource")
+      .where("id", "=", resourceId)
+      .select("scheduledBy")
+      .executeTakeFirst()
+    return row?.scheduledBy ?? null
+  })
