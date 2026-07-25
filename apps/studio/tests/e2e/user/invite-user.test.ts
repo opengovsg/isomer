@@ -5,8 +5,8 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
 import { provisionE2ESite } from "../fixtures/site"
 import {
-  deleteUsersByEmailPattern,
-  deleteWhitelistedVendorsByPattern,
+  deleteUsersByEmail,
+  deleteWhitelistedVendorEmails,
   ensureUserOnboarded,
   expectUserRoleOnSite,
   uniqueInviteeEmail,
@@ -16,6 +16,8 @@ import {
 import { UsersPO } from "../fixtures/users.po"
 
 let siteId: number
+let inviteeEmail: string | undefined
+let vendorEmail: string | undefined
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.describe.configure({ mode: "serial" })
@@ -30,13 +32,12 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test.afterEach(async () => {
-    await deleteUsersByEmailPattern("e2e-invitee-%@open.gov.sg")
-    await deleteUsersByEmailPattern("e2e-vendor-%@vendor.example.com")
-    await deleteWhitelistedVendorsByPattern("e2e-vendor-%@vendor.example.com")
+    await deleteUsersByEmail(inviteeEmail, vendorEmail)
+    await deleteWhitelistedVendorEmails(vendorEmail)
   })
 
   test("admin can invite a new collaborator as Editor", async ({ page }) => {
-    const inviteeEmail = uniqueInviteeEmail()
+    inviteeEmail = uniqueInviteeEmail()
 
     // Arrange / Act
     await inviteCollaborator(page, {
@@ -50,7 +51,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test("admin can invite a new collaborator as Publisher", async ({ page }) => {
-    const inviteeEmail = uniqueInviteeEmail()
+    inviteeEmail = uniqueInviteeEmail()
 
     // Arrange / Act
     await inviteCollaborator(page, {
@@ -64,7 +65,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test("admin can invite a new collaborator as Admin", async ({ page }) => {
-    const inviteeEmail = uniqueInviteeEmail()
+    inviteeEmail = uniqueInviteeEmail()
 
     // Arrange / Act
     await inviteCollaborator(page, {
@@ -80,7 +81,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can invite a whitelisted vendor collaborator as Admin", async ({
     page,
   }) => {
-    const vendorEmail = uniqueVendorEmail()
+    vendorEmail = uniqueVendorEmail()
 
     // Arrange
     await whitelistVendorEmail(vendorEmail)
@@ -112,7 +113,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin cannot invite a non-whitelisted vendor collaborator", async ({
     page,
   }) => {
-    const vendorEmail = uniqueVendorEmail()
+    vendorEmail = uniqueVendorEmail()
     const users = new UsersPO(page)
 
     // Arrange / Act
@@ -127,7 +128,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin cannot invite a non-whitelisted vendor collaborator, even as Admin", async ({
     page,
   }) => {
-    const vendorEmail = uniqueVendorEmail()
+    vendorEmail = uniqueVendorEmail()
     const users = new UsersPO(page)
 
     // Arrange / Act

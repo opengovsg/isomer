@@ -5,7 +5,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { inviteCollaborator } from "../fixtures/helpers"
 import { provisionE2ESite } from "../fixtures/site"
 import {
-  deleteUsersByEmailPattern,
+  deleteUsersByEmail,
   ensureUserOnboarded,
   expectUserAbsentOnSite,
   expectUserRoleOnSite,
@@ -14,6 +14,7 @@ import {
 import { UsersPO } from "../fixtures/users.po"
 
 let siteId: number
+let inviteeEmail: string
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test.beforeAll(async () => {
@@ -26,13 +27,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test.afterEach(async () => {
-    await deleteUsersByEmailPattern("e2e-invitee-%@open.gov.sg")
+    await deleteUsersByEmail(inviteeEmail)
   })
 
   test("admin can remove a collaborator via RemoveUserModal", async ({
     page,
   }) => {
-    const inviteeEmail = uniqueInviteeEmail()
+    inviteeEmail = uniqueInviteeEmail()
 
     // Arrange
     await inviteCollaborator(page, {
@@ -58,7 +59,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   test("admin can cancel RemoveUserModal without removing the collaborator", async ({
     page,
   }) => {
-    const inviteeEmail = uniqueInviteeEmail()
+    inviteeEmail = uniqueInviteeEmail()
 
     // Arrange
     await inviteCollaborator(page, {
