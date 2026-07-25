@@ -126,6 +126,10 @@ export class LoginPage {
   }
 
   async waitForAppHomeUrl() {
-    await this.page.waitForURL(env.NEXT_PUBLIC_APP_URL!)
+    const appUrl = env.NEXT_PUBLIC_APP_URL
+    if (!appUrl) {
+      throw new Error("NEXT_PUBLIC_APP_URL is required for e2e singpass tests")
+    }
+    await this.page.waitForURL(appUrl)
   }
 }
