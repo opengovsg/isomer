@@ -4,239 +4,126 @@ category: Testing
 type: best-practice
 ---
 
-Living reference for `apps/studio/tests/e2e/`. Update this file only when the stack
-introduces a **new reusable pattern** — not when merely adding test cases.
+Living reference for `apps/studio/tests/e2e/`. Update when the stack introduces a
+**new reusable pattern** — not when merely adding test cases.
+
+Fixture import paths and onboarding: `apps/studio/tests/e2e/README.md`.
 
 ## File layout
 
 - `tests/e2e/<module>/<surface>.test.ts` — one file per UI surface
 - `fixtures/` — shared infrastructure; import via `~e2e/fixtures/<subpath>` (no root barrel)
-- Import `test` / `expect` from `@playwright/test` directly (no `fixtures/test.ts` re-export)
+- Import `test` / `expect` from `@playwright/test` directly
 
-### Fixture import paths (`~e2e/*` alias)
+## Fixture layers
 
-| Subpath | Contents |
-| ------- | -------- |
-| `~e2e/fixtures/auth` | `TEST_EMAILS`, `roleTag`, storage state |
-| `~e2e/fixtures/helpers` | Cross-surface UI flows |
-| `~e2e/fixtures/po` | Page objects |
-| `~e2e/fixtures/resource` | `seed.ts`, `db.ts`, `expect.ts` |
-| `~e2e/fixtures/site` | `provision.ts`, `db.ts`, `expect.ts` |
-| `~e2e/fixtures/user` | `seed.ts`, `db.ts`, `expect.ts`, `mutations.ts` |
-| `~e2e/fixtures/whitelist` | `seed.ts`, `db.ts`, `expect.ts` |
-| `~e2e/fixtures/role` | Global role seeding |
-| `~e2e/fixtures/reset` | Site-scoped teardown helpers |
-| `~e2e/fixtures/network` | Route stubs |
-| `~e2e/fixtures/login` | Login page object |
+| Layer             | Import from                                      | Use for                                                         |
+| ----------------- | ------------------------------------------------ | --------------------------------------------------------------- |
+| **Helpers**       | `~e2e/fixtures/helpers`                          | Multi-step flows crossing pages or modals                       |
+| **Page objects**  | `~e2e/fixtures/po`                               | Locators + actions on one UI surface                            |
+| **DB fixtures**   | `~e2e/fixtures/<entity>`, `~e2e/fixtures/reset`    | Arrange, read queries, poll assertions, site-scoped reset       |
+| **Network mocks** | `~e2e/fixtures/network`                          | Route stubs (S3 upload, GrowthBook) in `beforeEach`             |
 
-## Helpers vs page objects
+Entity folders (`resource/`, `site/`, `user/`, `whitelist/`, `role/`) use:
 
-| Layer             | Import from                                                                                | Use for                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| **Helpers**       | `~e2e/fixtures/helpers`                                                                    | Multi-step flows crossing pages or modals (wizard, invite)                       |
-| **Page objects**  | `~e2e/fixtures/po`                                                                         | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …)                |
-| **DB fixtures**   | `~e2e/fixtures/<entity>`, `~e2e/fixtures/reset`                                            | Arrange, read queries, poll assertions, and site-scoped reset (see table below)  |
-| **Network mocks** | `~e2e/fixtures/network`                                                                    | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach`                   |
+| File        | Purpose                          |
+| ----------- | -------------------------------- |
+| `seed.ts`   | Arrange inserts/setup            |
+| `db.ts`     | Read queries, no `expect()`      |
+| `expect.ts` | `expect.poll` assertion helpers  |
 
-### DB fixture naming
-
-| Suffix        | Purpose                          |
-| ------------- | -------------------------------- |
-| `*.seed.ts`   | Arrange inserts/setup            |
-| `*.db.ts`     | Read queries, no `expect()`      |
-| `*.expect.ts` | `expect.poll` assertion helpers  |
-
-One folder per entity under `fixtures/<entity>/` with `seed.ts`, `db.ts`, `expect.ts` as needed.
-`fixtures/role/seed.ts` holds global role seeding (`seedRolesForE2E`) run from `global-setup.ts`.
+`role/seed.ts` runs global role seeding (`seedRolesForE2E`) from `global-setup.ts`.
 
 ## Welcome modal
 
-Call `ensureUserOnboarded(TEST_EMAILS.<role>)` in `beforeEach` so the welcome modal
-does not block tests (singpass global-setup can blank profiles).
+Call `ensureUserOnboarded(TEST_EMAILS.<role>)` in `beforeEach` so the welcome modal does not block tests.
 
-## Test pattern
+## Per-site isolation
 
-Per UI surface: **one happy-path** + **one permission-gate** where the UI shows a
-signal (hidden button, redirect, disabled control). Do not translate audit-log or
-validation-edge-case scenarios — those stay in integration tests.
-
-## Per-site isolation (PR-2)
-
-Every test file gets a dedicated site via `provisionE2ESite` in `beforeAll` —
-including read-only tests. There is no per-test/per-site teardown: the whole
-e2e database is wiped and re-seeded once at the start of each run
-(`resetE2EDatabase()` in `global-setup.ts`), so sites created during a run
-simply accumulate until the next run resets everything. Never assert on seed
-site names or hardcode a site ID — `seedRolesForE2E()` self-provisions its own
-site via `setupSite()` for the shared `TEST_EMAILS` users' permissions; there
-is no fixed "Sample Site"/site ID `1` for e2e to depend on.
+Every test file gets a dedicated site via `provisionE2ESite` in `beforeAll`. The e2e database is wiped once per run in `global-setup.ts` — no per-test site teardown.
 
 ```ts
 let siteId: number
-let siteName: string
 
 test.beforeAll(async () => {
   const site = await provisionE2ESite({ roles: [RoleType.Editor] })
   siteId = site.siteId
-  siteName = site.siteName
 })
 ```
 
 - Grant roles with `provisionE2ESite({ roles: [...] })` — maps to `TEST_EMAILS`
-- Assert on the returned `siteName` / `siteId`, not Prisma seed fixtures
-- Use `resetSite*` helpers from `fixtures/reset.ts` in `beforeEach` for idempotent state
-- `provisionE2ESite` creates a root page + search page so the site dashboard loads
-- Do not add a `teardownE2ESite`/per-test cleanup call — it doesn't exist; cleanup is run-scoped, not test-scoped
+- Assert on returned `siteId` / `siteName`, not hardcoded seed site names or IDs
+- Use `resetSite*` from `~e2e/fixtures/reset` in `beforeEach` for idempotent settings state
+- `provisionE2ESite` creates root + search pages so the dashboard loads
 
-## Settings publisher gate (PR-7)
+## Settings publisher gate
 
-Publisher permission gates for settings Publish buttons live in **one** file:
-`site/settings-permissions.test.ts`. Individual settings happy-path files do not
-repeat the gate — add new Publish-gated sections to `PUBLISH_GATED_SECTIONS` there.
+Publisher permission gates for settings Publish buttons live in **one** file: `site/settings-permissions.test.ts`. Add new Publish-gated sections to `PUBLISH_GATED_SECTIONS` there — do not repeat gates in individual settings happy-path files.
 
-## Role projects and tags (PR-3)
+## Role projects and tags
 
-Playwright config has one `unauthenticated` project (`smoke.test.ts`, `singpass.test.ts`) and one project per role. Role projects set `storageState` and filter with `grep: /@role\b/`.
-
-`singpass.test.ts` sits in `unauthenticated` (no cookies). Each test is `test.skip` in that file. Drop `.skip` locally when you want to run against Mockpass. There is no separate singpass project.
-
-```ts
-import { roleTag } from "~e2e/fixtures/auth"
-
-test.describe("admin", { tag: roleTag("admin") }, () => {
-  test("...", async ({ page }) => {
-    /* cookies come from the admin project — do not call test.use({ storageState }) */
-  })
-})
-```
-
-Use `roleTag(...)` (typed from `ROLES`) — not a raw `"@admin"` string. Multi-role files should map over `ROLES` with an exhaustive `Record<Role, …>` when every role must be classified (see `site/admin.test.ts`).
+One `unauthenticated` project (`smoke.test.ts`, `singpass.test.ts`) and one project per role. Role projects set `storageState` and filter with `grep: /@role\b/`.
 
 | Do                                                        | Don't                                              |
 | --------------------------------------------------------- | -------------------------------------------------- |
 | `{ tag: roleTag("admin") }` on each role `describe`       | `test.use({ storageState: storageStateFor(...) })` |
-| Put smoke in `smoke.test.ts` (no role tag)                | Mix unauthenticated smoke into role-tagged files   |
-| Run `pnpm exec playwright test --project=admin` to filter | Rely on file path alone for role selection         |
+| `roleTag(...)` typed from `ROLES`                         | Raw `{ tag: "@admin" }` strings                    |
+| Smoke in `smoke.test.ts` (no role tag)                    | Unauthenticated smoke in role-tagged files         |
 
-## Page objects (PR-4)
+## Page objects
 
-Page objects live in `fixtures/*.po.ts` and wrap locators + actions for **one** UI
-surface. **All `page.*` Playwright calls belong in `fixtures/*.po.ts` or
-`fixtures/helpers.ts` — not in `*.test.ts` files.**
+POs live in `fixtures/po/` (`import from "~e2e/fixtures/po"`). One PO per UI surface; multi-surface flows stay in `helpers.ts`.
 
-| PO                 | File                    | Surface                         |
-| ------------------ | ----------------------- | ------------------------------- |
-| `SitePO`           | `site.po.ts`            | Site settings                   |
-| `DashboardPO`      | `dashboard.po.ts`       | Site dashboard / resource table |
-| `PageEditorPO`     | `page-editor.po.ts`     | Page edit + publish chrome      |
-| `PageSettingsPO`   | `page-settings.po.ts`   | Page settings modal             |
-| `FolderSettingsPO` | `folder-settings.po.ts` | Folder settings modal           |
-| `UsersPO`          | `users.po.ts`           | Users / collaborators page      |
+| PO                 | File (`fixtures/po/`) | Surface                    |
+| ------------------ | --------------------- | -------------------------- |
+| `SitePO`           | `site-settings.ts`    | Site settings              |
+| `DashboardPO`      | `dashboard.ts`        | Site dashboard / resources |
+| `PageEditorPO`     | `page-editor.ts`      | Page edit + publish        |
+| `PageSettingsPO`   | `page-settings.ts`    | Page settings modal        |
+| `FolderSettingsPO` | `folder-settings.ts`  | Folder settings modal      |
+| `UsersPO`          | `users.ts`            | Collaborators page         |
 
-Rules:
+Constructor takes `Page`. No DB setup in POs.
 
-- Constructor takes `Page`; methods are async actions or locator getters
-- Keep multi-step flows that cross surfaces (create wizard, invite) in
-  `helpers.ts` — helpers may call POs for the surface-specific steps
-- Do not put DB setup in POs — use `provisionE2ESite` / integration seed helpers
+### `page.*` in test files
 
-```ts
-const dashboard = new DashboardPO(page)
-await dashboard.gotoSite(siteId)
-await dashboard.openCreateMenu()
-await dashboard.clickCreateFolder()
-```
+**Smell:** any `page.<method>(` in `tests/e2e/**/*.test.ts` outside the allowlist.
 
-## DB assertion helpers (PR-5)
+**Allowlist:**
 
-When a test needs to verify persisted state (e.g. "the created page has state
-Draft"), the raw query lives in `fixtures/<entity>.db.ts` — one file per DB
-entity, mirroring `*.po.ts` per UI surface. The test file imports the query
-helper and keeps the `expect(...)` calls itself (Assert stays in the test; the
-fixture only fetches data). Async poll assertions belong in
-`fixtures/<entity>.expect.ts`.
+| Call                                     | Why                                      |
+| ---------------------------------------- | ---------------------------------------- |
+| `async ({ page })` fixture destructuring | Playwright test signature                |
+| `new SomePO(page)`                       | PO construction                          |
+| Documented infra exceptions in this file | e.g. `resetGrowthBookPage(page)` before GrowthBook-gated navigation |
 
-```ts
-// fixtures/resource.db.ts
-export const getResourceByTitle = (opts: { siteId: number; title: string }) =>
-  db
-    .selectFrom("Resource")
-    .where("siteId", "=", opts.siteId)
-    .where("title", "=", opts.title)
-    .select(["id", "state", "type", "parentId"])
-    .executeTakeFirst()
-
-// tests/e2e/page/create-page.test.ts
-const created = await getResourceByTitle({ siteId, title })
-expect(created?.state).toBe("Draft")
-```
-
-Rules:
-
-- Query helpers return raw rows/values — no `expect()` inside `fixtures/*.db.ts`
-- One file per entity (`resource.db.ts`, `user.db.ts`), not per test
-- Setup/teardown mutations (inserts/deletes for fixtures, not assertions) stay
-  in `fixtures/*.seed.ts` or `fixtures/reset.ts` — `*.db.ts` is read-only
-
-## DB assertions (`fixtures/*.expect.ts`)
-
-After UI mutations (delete, move, rename, publish), assert persisted state via
-`expect.poll` helpers in `fixtures/<entity>.expect.ts` — not inline
-`db.selectFrom(...)` in test files. Examples:
-
-- `expectResourceAbsent` / `expectResourcePresent` — row existence
-- `expectResourceParentId` — move outcomes
-- `expectResourceTitle` — title changes (pages, folders, collections)
-- `expectSiteName`, `expectSiteGtmId` — site settings outcomes
-
-Use Playwright's default poll timeout unless a specific surface needs more.
-
-### `page.*` boundary
-
-**Smell:** any `page.<method>(` in `tests/e2e/**/*.test.ts`.
-
-**Blessed:** the same call lives on the PO (or a helper) for that surface; the
-test file only constructs the PO and asserts outcomes.
-
-**Allowlist** (the only `page.*` permitted in test files):
-
-| Call                                     | Why                                                                                          |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `async ({ page })` fixture destructuring | Playwright test signature                                                                    |
-| `new SomePO(page)`                       | PO construction                                                                              |
-| Documented infra exceptions in this file | e.g. `resetGrowthBookPage(page)` in `fixtures/network.ts` before GrowthBook-gated navigation |
-
-Everything else — `page.goto`, `page.getByRole`, `page.getByLabel`, `page.locator`,
-`page.click`, `page.fill`, `page.waitForURL`, etc. — belongs in the relevant
-`*.po.ts` or `helpers.ts`. When a PO method does not exist yet, add it there
-first, then call it from the test.
-
-**How to detect:**
+Everything else (`page.goto`, `getByRole`, `waitForURL`, …) belongs in `fixtures/po/` or `fixtures/helpers.ts`. Add the PO/helper method first, then call it from the test.
 
 ```bash
 rg 'page\.\w+\(' apps/studio/tests/e2e --glob '*.test.ts'
 ```
 
-Review each match against the allowlist above. A hit that is not allowlisted is a
-violation — extract it to the PO for that UI surface (or to `helpers.ts` if it
-crosses surfaces/modals).
+Review each match against the allowlist.
 
-### Site settings (`SitePO`) — examples
+## DB assertions
 
-- `gotoSettingsSection(siteId, section)` — deep-link navigation
-- `clickPublish({ force: true })` — header Publish; `force` when FormBuilder
-  inline editors overlay the button (navbar/footer rows)
-- `logoUploadInput()` — scopes past the separate favicon control
-- GrowthBook-gated UI: `enableGrowthBookFeature` in `beforeEach`, then
-  `resetGrowthBookPage(page)` from `fixtures/network.ts` before the first app navigation
+- **One-shot reads:** query in `fixtures/<entity>/db.ts`, `expect()` in the test
+- **Poll after mutations:** `expect.poll` helpers in `fixtures/<entity>/expect.ts` — not inline `db.selectFrom(...)` in tests
 
-## How to detect violations
+Rules:
 
-- Asserting "Sample Site", hardcoding a site ID, or calling `teardownE2ESite`/`getSeedSiteId()` (neither exists anymore) → use `provisionE2ESite` and assert on the returned site
-- Duplicated wizard/invite flows in test files → move to `helpers.ts` or a PO
-- `test.use({ storageState: storageStateFor(...) })` in a test file → use `{ tag: roleTag(...) }` on `test.describe` instead
-- Raw `{ tag: "@admin" }` → use `roleTag("admin")` so unknown roles fail typecheck
-- Inline `db.selectFrom(...)` (or Prisma query) in a test file feeding an `expect()` → extract the query into `fixtures/<entity>.db.ts`
-- Inline `db.selectFrom("Resource")` in `*.test.ts` → use `fixtures/*.expect.ts` poll helpers
-- Raw `page.waitForURL(...)` for dashboard navigation → use `DashboardPO.expectOnFolder` / `expectOnCollection` / `expectOnPageEditor`
-- Any `page.<method>(` in `*.test.ts` outside the allowlist above → move to the relevant `*.po.ts` or `helpers.ts`
+- `*.db.ts` is read-only — no `expect()` inside
+- Setup/teardown mutations go in `seed.ts` or `~e2e/fixtures/reset`
+
+Examples: `expectResourceAbsent`, `expectResourceTitle`, `expectSiteName`, `expectUserRoleOnSite`.
+
+## Violation smells
+
+| Smell | Fix |
+| ----- | --- |
+| Hardcoded site ID or seed site name | `provisionE2ESite` + assert returned `siteId` |
+| Duplicated wizard/invite flow in a test | `helpers.ts` or PO |
+| `test.use({ storageState })` | `{ tag: roleTag(...) }` on `describe` |
+| Inline `db.selectFrom` in `*.test.ts` | `fixtures/<entity>/db.ts` or `expect.ts` |
+| `page.waitForURL` for dashboard nav | `DashboardPO.expectOnFolder` / `expectOnPageEditor` |
+| Any other `page.*` in `*.test.ts` | PO or helper for that surface |

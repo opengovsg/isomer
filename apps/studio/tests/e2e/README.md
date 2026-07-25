@@ -1,8 +1,15 @@
 # E2E Tests
 
+Run from `apps/studio`:
+
+```bash
+pnpm test:e2e                              # all projects
+pnpm exec playwright test --project=admin  # one role
+```
+
 ## Fixtures
 
-Import via the `~e2e/*` path alias (see `apps/studio/tsconfig.json`). Use **subpath barrels** — there is no root `fixtures/index.ts`.
+Import via the `~e2e/*` path alias (`apps/studio/tsconfig.json`). Use **subpath barrels** — there is no root `fixtures/index.ts`.
 
 | Import path               | Purpose                                       |
 | ------------------------- | --------------------------------------------- |
@@ -29,7 +36,9 @@ import { ensureUserOnboarded } from "~e2e/fixtures/user"
 
 - `fixtures/` — entity folders (`resource/`, `site/`, `user/`, …), `po/`, and cross-cutting files (`auth.ts`, `helpers.ts`, …).
 - `storage-state/` — gitignored; populated by `global-setup.ts` with one signed-in cookie jar per role.
-- `<module>/` — one directory per backend router module (`site/`, `page/`, `resource/`, …). Each file inside covers a single UI surface (e.g. `site/settings-agency.test.ts`).
+- `<module>/` — one directory per backend router module (`site/`, `page/`, `resource/`, …). Each file covers a single UI surface (e.g. `site/settings-agency.test.ts`).
+
+Enforceable conventions (PO rules, DB layers, smells) live in `.claude/skills/isomer-conventions/conventions/e2e-tests.md`.
 
 ## Adding tests for a new module
 
@@ -39,66 +48,35 @@ import { ensureUserOnboarded } from "~e2e/fixtures/user"
 4. Write **one permission-gate test per surface** for the most restrictive role boundary that has UI signal.
 5. Do **not** translate validation-error or audit-log scenarios — those stay in integration tests.
 
-## Page objects vs. generic Playwright calls
+## Page objects
 
-A page object method wraps `page.goto`/`page.waitForURL` **only when it's the
-canonical entry point onto that PO's surface**, reused across tests (e.g.
-`SitePO.gotoSettings`, `DashboardPO.gotoSite`, `UsersPO.goto`). These exist so
-every test lands on the surface the same way, and so a route change is a
-one-line fix instead of a multi-file find-and-replace.
+All Playwright `page.*` calls live in `fixtures/po/` or `fixtures/helpers.ts` — not in `*.test.ts`. Test files construct POs and assert outcomes. See conventions doc for the allowlist and detection command.
 
-Generic, one-off Playwright calls — `page.reload()`, ad hoc `page.goto(...)`
-to a path with no dedicated PO, a `page.waitForURL(...)` just confirming
-state after an action — stay inline in the test as plain `page.*` calls.
-Wrapping them in a PO method adds a layer with no app-specific knowledge to
-encapsulate.
+## Role projects
 
-## Role projects and `@role` tags
-
-Auth is wired through Playwright **projects**, not per-file `test.use({ storageState })`.
+Auth uses Playwright **projects**, not per-file `test.use({ storageState })`.
 
 | Project                                                        | How tests are selected                     | Auth                         |
 | -------------------------------------------------------------- | ------------------------------------------ | ---------------------------- |
 | `unauthenticated`                                              | `testMatch: /(smoke\|singpass)\.test\.ts/` | none                         |
 | `admin`, `editor`, `publisher`, `nomember`, `core`, `migrator` | `grep: /@role\b/`                          | `storageState` for that role |
 
-`singpass.test.ts` is matched by `unauthenticated`. Every test in that file is `test.skip`. Remove `.skip` in the file to run them locally.
+`singpass.test.ts` is matched by `unauthenticated`. Every test in that file is `test.skip` — remove `.skip` locally to run against Mockpass.
 
-**New tests must use `roleTag(...)` on `test.describe`**, not `test.use({ storageState })`:
-
-```ts
-import { roleTag } from "~e2e/fixtures/auth"
-
-test.describe("admin", { tag: roleTag("admin") }, () => {
-  test("...", async ({ page }) => {
-    /* project supplies admin cookies */
-  })
-})
-
-test.describe("publisher", { tag: roleTag("publisher") }, () => {
-  test("...", async ({ page }) => {
-    /* ... */
-  })
-})
-```
-
-`roleTag` is typed against `ROLES` in `fixtures/auth.ts`, so an unknown role fails at compile time.
-
-Run a single role: `pnpm exec playwright test --project=admin`.
+Tag each role `describe` with `roleTag(...)` from `~e2e/fixtures/auth` (typed from `ROLES`). Do not use `test.use({ storageState })` or raw `"@admin"` strings.
 
 ## Why storage-state, not per-test login
 
-OTP + Mockpass adds ~4s per login. Without storage state, a 10-test suite spends 40s on auth alone. Global-setup signs in each role once at startup (in parallel); role projects reuse cookies via project `storageState`.
+OTP + Mockpass adds ~4s per login. Global-setup signs in each role once at startup; role projects reuse cookies via project `storageState`.
 
 ## Why we still keep integration tests
 
-E2E covers user-visible behavior. Integration tests cover server-side correctness: audit log shape, GTM ID validation, role-boundary 401/403/404 codes, SearchSG side effects. We need both layers. Translating every integration scenario to e2e would triple CI time without adding meaningful signal.
+E2E covers user-visible behavior. Integration tests cover server-side correctness (audit logs, validation codes, side effects). Both layers are needed.
 
 ## Known footguns
 
-- **`storage-state/` is gitignored but persists across local runs**. If you switch your local DB target away from the test DB, delete the cookie jars before running again: `rm apps/studio/tests/e2e/storage-state/*.json` (the `.gitignore` is preserved).
+- **`storage-state/` is gitignored but persists across local runs**. If you switch your local DB target away from the test DB, delete the cookie jars: `rm apps/studio/tests/e2e/storage-state/*.json`.
 
 ## Open follow-ups
 
-- **Admin dashboard bypass in `settings-agency.test.ts`.** Resolved — tests navigate directly to the provisioned site settings URL.
-- **`.chakra-switch` selector in `settings-notification.test.ts`.** Couples the test to Chakra UI's class naming. Right fix is upstream: add an `aria-label` to the Switch in the FormBuilder render path for optional object groups, then update the locator to `getByRole("switch", { name: ... })`.
+- **`.chakra-switch` in `settings-notification.test.ts`.** Couples the test to Chakra class naming. Upstream fix: add an `aria-label` on the Switch in FormBuilder, then use `getByRole("switch", { name: ... })`.
