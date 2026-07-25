@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test"
 import { db } from "~/server/modules/database"
 
-import { getResourceDraftBlobContent } from "./resource.db"
+import { getResourceDraftBlobContent } from "./db"
 
 export const expectResourceAbsent = (resourceId: string) =>
   expect.poll(async () => {

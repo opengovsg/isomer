@@ -1,6 +1,6 @@
 import { expect } from "@playwright/test"
 
-import { getWhitelistExpiry } from "./whitelist.db"
+import { getWhitelistExpiry } from "./db"
 
 /** Vendor whitelist row with a future expiry (90-day vendor access). */
 export const expectWhitelistedVendorEmail = (email: string) =>

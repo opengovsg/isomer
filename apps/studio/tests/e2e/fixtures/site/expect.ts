@@ -12,7 +12,7 @@ import {
   getSiteThemeBrandColour,
   hasSitePublishAuditLog,
   isRedirectLive,
-} from "./site.db"
+} from "./db"
 
 export const expectSiteName = (siteId: number) =>
   expect.poll(() => getSiteName(siteId))

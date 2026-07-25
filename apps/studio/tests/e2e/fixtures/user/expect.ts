@@ -1,6 +1,6 @@
 import { expect } from "@playwright/test"
 
-import { getActiveUserPermissionOnSite, getUserRoleOnSite } from "./user.db"
+import { getActiveUserPermissionOnSite, getUserRoleOnSite } from "./db"
 
 export const expectUserRoleOnSite = (siteId: number, email: string) =>
   expect.poll(() => getUserRoleOnSite(siteId, email))
