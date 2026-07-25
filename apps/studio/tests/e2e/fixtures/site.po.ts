@@ -40,7 +40,22 @@ export class SitePO {
     // Labels sourced from apps/studio/src/features/settings/SettingsSidenav/SettingsSidenav.tsx
     const label = SETTINGS_SECTION_LABELS[section]
     await this.page.getByRole("link", { name: label }).click()
-    await this.page.waitForURL(new RegExp(`/settings/${section}$`))
+
+    const urlPattern = new RegExp(`/settings/${section}$`)
+    const confirmLeaveButton = this.page.getByRole("button", {
+      name: "Yes, leave this page",
+    })
+    // A settings page can be considered "dirty" (form state briefly out of
+    // sync with the server) right after mount, which triggers the same
+    // "leave without saving?" confirmation a real user would see. Confirm it
+    // if it shows up instead of hanging on a route change that never fires.
+    const dismissIfShown = confirmLeaveButton
+      .waitFor({ state: "visible" })
+      .then(() => confirmLeaveButton.click())
+      .catch(() => undefined)
+
+    await Promise.race([this.page.waitForURL(urlPattern), dismissIfShown])
+    await this.page.waitForURL(urlPattern)
   }
 
   /**
@@ -66,19 +81,27 @@ export class SitePO {
   }
 
   notificationBannerToggle() {
-    return this.page.getByRole("switch")
+    // Chakra v2's Switch exposes an implicit ARIA `checkbox` role, not `switch`.
+    return this.page.getByRole("checkbox")
   }
 
   notificationTitleField() {
     return this.page.getByLabel("Notification title")
   }
 
-  /** Logo file input on the logos and favicon settings page. */
+  /** Logo upload section container on the logos and favicon settings page. */
+  logoUploadGroup() {
+    return this.page.getByRole("group").filter({ hasText: /^Logo/ })
+  }
+
+  /**
+   * Logo file input on the logos and favicon settings page. Visually hidden
+   * by design (Attachment renders a styled dropzone over it) — usable with
+   * setInputFiles(), but never assert toBeVisible() on it directly. Use
+   * logoUploadGroup() for visibility checks instead.
+   */
   logoUploadInput() {
-    return this.page
-      .getByRole("group")
-      .filter({ hasText: /^Logo/ })
-      .getByTestId("file-upload")
+    return this.logoUploadGroup().getByTestId("file-upload")
   }
 
   logoFilenameText(filename: string) {
@@ -138,7 +161,9 @@ export class SitePO {
   }
 
   async enableNotificationBanner() {
-    await this.notificationBannerToggle().click()
+    // The switch input is visually hidden (pointer-events: none) inside its
+    // wrapping <label>; click the label itself, as a real user would.
+    await this.notificationBannerToggle().locator("xpath=..").click()
   }
 
   async fillNotificationTitle(title: string) {
@@ -152,11 +177,17 @@ export class SitePO {
   async editFooterLinkLabel(linkButtonName: string, newLabel: string) {
     await this.footerLinkButton(linkButtonName).click()
     await this.page.getByLabel("Link label").fill(newLabel)
+    // The edit panel overlays the header Publish button until dismissed.
+    await this.page.getByRole("button", { name: "Back to footer" }).click()
   }
 
   async editNavbarItemLabel(itemName: string, newLabel: string) {
     await this.navbarItemText(itemName).click()
     await this.page.getByLabel("Menu item label").fill(newLabel)
+    // The edit panel overlays the header Publish button until dismissed.
+    await this.page
+      .getByRole("button", { name: "Back to navigation bar" })
+      .click()
   }
 
   async addRedirect(source: string, destination: string) {
@@ -173,6 +204,10 @@ export class SitePO {
   async cancelDeleteRedirect(source: string) {
     await this.deleteRedirectButton(source).click()
     await this.page.getByRole("button", { name: "No, keep redirect" }).click()
+    // Wait for the confirmation dialog to fully close — otherwise its body
+    // text (which repeats the redirect path) still matches locators scoped
+    // to the whole page, causing strict-mode violations in callers.
+    await this.page.getByLabel("Delete redirect?").waitFor({ state: "hidden" })
   }
 
   async bulkUploadRedirectsCsv(csvContent: string, expectedCount: number) {
@@ -206,12 +241,9 @@ export class SitePO {
     await this.notificationTitleField().waitFor({ state: "visible" })
   }
 
-  /**
-   * Click the settings Publish button. Pass `{ force: true }` when a FormBuilder
-   * inline editor (navbar/footer link rows) overlays the header button.
-   */
-  async clickPublish(options?: { force?: boolean }) {
-    await this.publishButton().click(options)
+  /** Click the settings Publish button. */
+  async clickPublish() {
+    await this.publishButton().click()
   }
 
   /**
