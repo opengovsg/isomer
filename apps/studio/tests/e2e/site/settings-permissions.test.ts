@@ -69,7 +69,7 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
   test("editor can view agency settings but not publish", async ({ page }) => {
     const site = new SitePO(page)
 
-    // Arrange
+    // Act
     await site.gotoSettingsSection(siteId, "agency")
 
     // Assert
