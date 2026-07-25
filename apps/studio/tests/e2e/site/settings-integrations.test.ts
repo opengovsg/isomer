@@ -37,7 +37,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.expectChangesPublishedToast()
 
     // Assert
-    await expect(expectSiteGtmId(siteId)).resolves.toBe("GTM-TESTE2E01")
+    await expectSiteGtmId(siteId).toBe("GTM-TESTE2E01")
     await site.reloadSettingsSection("integrations")
     await expect(site.gtmIdField()).toHaveValue("GTM-TESTE2E01")
   })
@@ -56,6 +56,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Assert
     await expect(site.gtmIdField()).toHaveValue("")
-    await expect(expectSiteGtmId(siteId)).resolves.toBeNull()
+    await expectSiteGtmId(siteId).toBeNull()
   })
 })
