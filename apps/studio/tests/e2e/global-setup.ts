@@ -6,6 +6,7 @@ import { db } from "~/server/modules/database"
 import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
 import { LoginPage } from "./fixtures/login"
 import { seedRolesForE2E } from "./fixtures/seed"
+import { sweepStaleE2ESites } from "./fixtures/site"
 
 const setSingpassUuidFor = async (email: string, uuid: string) => {
   await db
@@ -41,6 +42,7 @@ const globalSetup = async (config: FullConfig) => {
   const baseURL = config.projects[0]?.use.baseURL ?? "http://127.0.0.1:3000"
 
   await seedRolesForE2E()
+  await sweepStaleE2ESites()
 
   for (const role of ROLES) {
     await signInOnce(role, baseURL)
