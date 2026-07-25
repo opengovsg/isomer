@@ -95,10 +95,7 @@ export class UsersPO {
     ).toBeDisabled()
   }
 
-  /**
-   * Opens the row actions menu for the user whose email is shown in the table.
-   * Locates by email (stable) rather than display name (local-part for invites).
-   */
+  // Locate row by email. Display name is unstable for pending invites.
   async openUserMenu(email: string) {
     const row = this.page.getByRole("row").filter({ hasText: email })
     await row.getByRole("button", { name: /Options for/ }).click()
