@@ -89,8 +89,10 @@ export const AddUserModal = () => {
         invited_user_count: createdUsers.length,
         role: getValues("role"),
       })
-      await utils.user.list.invalidate()
-      await utils.user.count.invalidate()
+      await Promise.all([
+        utils.user.list.invalidate(),
+        utils.user.count.invalidate(),
+      ])
       toast({
         status: "success",
         description: `Sent invite to ${createdUsers.length === 1 ? createdUsers[0]?.email : createdUsers.length + " users"}. They'll receive an email in a few minutes.`,
