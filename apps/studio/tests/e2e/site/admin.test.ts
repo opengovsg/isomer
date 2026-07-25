@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
-import { ROLES, roleTag, type Role } from "../fixtures/auth"
+import { ROLES, roleTag, TEST_EMAILS, type Role } from "../fixtures/auth"
 import { provisionE2ESite } from "../fixtures/site"
+import { SiteAdminPO } from "../fixtures/site-admin.po"
+import { ensureUserOnboarded } from "../fixtures/user"
 
 /** Exhaustive over `Role` — adding a ROLES entry fails typecheck until classified. */
 const siteAdminAccessByRole = {
@@ -26,49 +28,44 @@ test.beforeAll(async () => {
 for (const role of ROLES) {
   if (siteAdminAccessByRole[role] === "allowed") {
     test.describe(role, { tag: roleTag(role) }, () => {
-      test("can view the site admin config page", async ({ page }) => {
-        await page.goto(`/sites/${siteId}/admin`)
-        await page.waitForURL(/\/admin$/)
+      test.beforeEach(async () => {
+        await ensureUserOnboarded(TEST_EMAILS[role])
+      })
 
-        await expect(page.getByText("Manage site configurations")).toBeVisible()
-        await expect(
-          page.getByText("Site config", { exact: true }),
-        ).toBeVisible()
-        await expect(
-          page.getByText("Site theme", { exact: true }),
-        ).toBeVisible()
-        await expect(
-          page.getByText("Site navbar", { exact: true }),
-        ).toBeVisible()
-        await expect(
-          page.getByText("Site footer", { exact: true }),
-        ).toBeVisible()
-        await expect(
-          page.getByRole("button", { name: "Save settings" }),
-        ).toBeVisible()
+      test("can view the site admin config page", async ({ page }) => {
+        const siteAdmin = new SiteAdminPO(page)
+
+        // Arrange
+        // (site provisioned in beforeAll)
+
+        // Act
+        await siteAdmin.goto(siteId)
+
+        // Assert
+        await siteAdmin.expectLoaded()
       })
     })
   } else {
     test.describe(role, { tag: roleTag(role) }, () => {
+      test.beforeEach(async () => {
+        await ensureUserOnboarded(TEST_EMAILS[role])
+      })
+
       test("is redirected away from the site admin config page", async ({
         page,
       }) => {
-        const adminResponsePromise = page.waitForResponse((response) => {
-          const url = new URL(response.url())
-          return (
-            url.pathname === `/sites/${siteId}/admin` &&
-            response.request().isNavigationRequest()
-          )
-        })
+        const siteAdmin = new SiteAdminPO(page)
 
-        await page.goto(`/sites/${siteId}/admin`)
-        const adminResponse = await adminResponsePromise
+        // Arrange
+        // (user lacks site admin access)
 
+        // Act
+        const adminResponse =
+          await siteAdmin.gotoAndAwaitNavigationResponse(siteId)
+
+        // Assert
         expect(adminResponse.status()).toBe(307)
-        await expect(page).toHaveURL(new RegExp(`/sites/${siteId}$`))
-        await expect(
-          page.getByText("Manage site configurations"),
-        ).not.toBeVisible()
+        await siteAdmin.expectRedirectedToSiteDashboard(siteId)
       })
     })
   }
