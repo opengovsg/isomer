@@ -9,7 +9,7 @@ import {
   seedFolderWithPage,
 } from "../fixtures/page-seed"
 import { getResource } from "../fixtures/resource.db"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
 
 let siteId: number
@@ -19,10 +19,6 @@ test.beforeAll(async () => {
     roles: [RoleType.Publisher, RoleType.Editor],
   })
   siteId = site.siteId
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 test.describe("publisher", { tag: roleTag("publisher") }, () => {
