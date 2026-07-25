@@ -3,7 +3,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import type { SettingsSection } from "../fixtures/site.po"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -25,10 +25,6 @@ test.beforeAll(async () => {
     roles: [RoleType.Publisher, RoleType.Editor],
   })
   siteId = site.siteId
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 test.describe("publisher", { tag: roleTag("publisher") }, () => {
