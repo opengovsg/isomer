@@ -2,7 +2,7 @@ import { test } from "@playwright/test"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { provisionE2ESite, teardownE2ESite } from "../fixtures/site"
+import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 import { UsersPO } from "../fixtures/users.po"
 
@@ -13,10 +13,6 @@ test.beforeAll(async () => {
     roles: [RoleType.Admin, RoleType.Editor, RoleType.Publisher],
   })
   siteId = site.siteId
-})
-
-test.afterAll(async () => {
-  await teardownE2ESite(siteId)
 })
 
 test.describe("publisher", { tag: roleTag("publisher") }, () => {
