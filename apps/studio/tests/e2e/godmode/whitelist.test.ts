@@ -7,6 +7,7 @@ import {
   ensureUserOnboarded,
   uniqueVendorEmail,
 } from "../fixtures/user"
+import { expectWhitelistedVendorEmail } from "../fixtures/whitelist.db"
 
 let vendorEmails: string[] = []
 
@@ -32,5 +33,8 @@ test.describe("migrator", { tag: roleTag("migrator") }, () => {
 
     // Assert
     await godmode.expectWhitelistSuccessToast(0, vendorEmails.length)
+    for (const email of vendorEmails) {
+      await expectWhitelistedVendorEmail(email).toBe(true)
+    }
   })
 })
