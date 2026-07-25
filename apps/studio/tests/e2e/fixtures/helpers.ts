@@ -2,9 +2,7 @@ import { type Page } from "@playwright/test"
 import { db } from "~/server/modules/database"
 import { ResourceType, type RoleType } from "~prisma/generated/generatedEnums"
 
-import { DashboardPO } from "./dashboard.po"
-import { PageEditorPO } from "./page-editor.po"
-import { UsersPO } from "./users.po"
+import { DashboardPO, PageEditorPO, UsersPO } from "./po"
 
 export const openSeededPageEditor = async (
   page: Page,

@@ -1,24 +1,21 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import {
   createFolderViaWizard,
   createPageViaWizard,
   openSeededPageEditor,
-} from "../fixtures/helpers"
+} from "~e2e/fixtures/helpers"
 import {
+  expectResourceState,
   getResourceByTitle,
   getResourceDraftBlobContent,
-} from "../fixtures/resource.db"
-import { expectResourceState } from "../fixtures/resource.expect"
-import {
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
-} from "../fixtures/resource.seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 const UNIQUE_TITLE = () =>
   `E2E Lifecycle Page ${crypto.randomUUID().slice(0, 8)}`

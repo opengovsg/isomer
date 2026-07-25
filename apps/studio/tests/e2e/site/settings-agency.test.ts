@@ -1,12 +1,10 @@
 import { expect, test } from "@playwright/test"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { SitePO } from "~e2e/fixtures/po"
+import { resetSiteAgencySettings } from "~e2e/fixtures/reset"
+import { expectSiteName, provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { resetSiteAgencySettings } from "../fixtures/reset"
-import { provisionE2ESite } from "../fixtures/site"
-import { expectSiteName } from "../fixtures/site.expect"
-import { SitePO } from "../fixtures/site.po"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 let siteName: string

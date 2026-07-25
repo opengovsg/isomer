@@ -1,18 +1,15 @@
 import { test } from "@playwright/test"
 import crypto from "crypto"
-import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { PageSettingsPO } from "../fixtures/page-settings.po"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { DashboardPO, PageSettingsPO } from "~e2e/fixtures/po"
 import {
   expectResourcePermalink,
   expectResourceTitle,
-} from "../fixtures/resource.expect"
-import { seedRootPage } from "../fixtures/resource.seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
-import { getE2EUserId } from "../fixtures/user.db"
+  seedRootPage,
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded, getE2EUserId } from "~e2e/fixtures/user"
+import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 

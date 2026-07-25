@@ -1,19 +1,16 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { createPageViaWizard } from "../fixtures/helpers"
-import { PageEditorPO } from "../fixtures/page-editor.po"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { createPageViaWizard } from "~e2e/fixtures/helpers"
+import { DashboardPO, PageEditorPO } from "~e2e/fixtures/po"
 import {
   deleteResourceById,
   deleteResourcesByTitlePrefix,
-} from "../fixtures/reset"
-import { getResourceByTitle } from "../fixtures/resource.db"
-import { seedFolder } from "../fixtures/resource.seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/reset"
+import { getResourceByTitle, seedFolder } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 const UNIQUE_TITLE = () => `E2E Test Page ${crypto.randomUUID().slice(0, 8)}`
 

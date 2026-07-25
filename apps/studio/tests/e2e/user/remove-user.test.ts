@@ -1,16 +1,16 @@
 import { test } from "@playwright/test"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { inviteCollaborator } from "../fixtures/helpers"
-import { provisionE2ESite } from "../fixtures/site"
-import { deleteUsersByEmail, ensureUserOnboarded } from "../fixtures/user"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { inviteCollaborator } from "~e2e/fixtures/helpers"
+import { UsersPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
 import {
+  deleteUsersByEmail,
+  ensureUserOnboarded,
   expectUserAbsentOnSite,
   expectUserRoleOnSite,
-} from "../fixtures/user.expect"
-import { uniqueInviteeEmail } from "../fixtures/user.seed"
-import { UsersPO } from "../fixtures/users.po"
+  uniqueInviteeEmail,
+} from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 let inviteeEmail: string

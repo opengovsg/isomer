@@ -10,17 +10,33 @@ introduces a **new reusable pattern** — not when merely adding test cases.
 ## File layout
 
 - `tests/e2e/<module>/<surface>.test.ts` — one file per UI surface
-- `fixtures/` — shared infrastructure (auth, seed, helpers, page objects)
+- `fixtures/` — shared infrastructure; import via `~e2e/fixtures/<subpath>` (no root barrel)
 - Import `test` / `expect` from `@playwright/test` directly (no `fixtures/test.ts` re-export)
+
+### Fixture import paths (`~e2e/*` alias)
+
+| Subpath | Contents |
+| ------- | -------- |
+| `~e2e/fixtures/auth` | `TEST_EMAILS`, `roleTag`, storage state |
+| `~e2e/fixtures/helpers` | Cross-surface UI flows |
+| `~e2e/fixtures/po` | Page objects |
+| `~e2e/fixtures/resource` | `seed.ts`, `db.ts`, `expect.ts` |
+| `~e2e/fixtures/site` | `provision.ts`, `db.ts`, `expect.ts` |
+| `~e2e/fixtures/user` | `seed.ts`, `db.ts`, `expect.ts`, `mutations.ts` |
+| `~e2e/fixtures/whitelist` | `seed.ts`, `db.ts`, `expect.ts` |
+| `~e2e/fixtures/role` | Global role seeding |
+| `~e2e/fixtures/reset` | Site-scoped teardown helpers |
+| `~e2e/fixtures/network` | Route stubs |
+| `~e2e/fixtures/login` | Login page object |
 
 ## Helpers vs page objects
 
-| Layer             | File                                                                                       | Use for                                                                          |
+| Layer             | Import from                                                                                | Use for                                                                          |
 | ----------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| **Helpers**       | `fixtures/helpers.ts`                                                                      | Multi-step flows crossing pages or modals (wizard, invite)                       |
-| **Page objects**  | `fixtures/*.po.ts`                                                                         | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …)                |
-| **DB fixtures**   | `fixtures/*.seed.ts`, `fixtures/*.db.ts`, `fixtures/*.expect.ts`, `fixtures/reset.ts`      | Arrange, read queries, poll assertions, and site-scoped reset (see table below)  |
-| **Network mocks** | `fixtures/network.ts`                                                                      | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach`                   |
+| **Helpers**       | `~e2e/fixtures/helpers`                                                                    | Multi-step flows crossing pages or modals (wizard, invite)                       |
+| **Page objects**  | `~e2e/fixtures/po`                                                                         | Locators + actions on one UI surface (`SitePO`, `DashboardPO`, …)                |
+| **DB fixtures**   | `~e2e/fixtures/<entity>`, `~e2e/fixtures/reset`                                            | Arrange, read queries, poll assertions, and site-scoped reset (see table below)  |
+| **Network mocks** | `~e2e/fixtures/network`                                                                    | Route stubs (S3 upload, GrowthBook flags) used in `beforeEach`                   |
 
 ### DB fixture naming
 
@@ -30,8 +46,8 @@ introduces a **new reusable pattern** — not when merely adding test cases.
 | `*.db.ts`     | Read queries, no `expect()`      |
 | `*.expect.ts` | `expect.poll` assertion helpers  |
 
-One file per entity: `resource`, `site`, `user`, `whitelist`, `role`.
-`role.seed.ts` holds global role seeding (`seedRolesForE2E`) run from `global-setup.ts`.
+One folder per entity under `fixtures/<entity>/` with `seed.ts`, `db.ts`, `expect.ts` as needed.
+`fixtures/role/seed.ts` holds global role seeding (`seedRolesForE2E`) run from `global-setup.ts`.
 
 ## Welcome modal
 
@@ -85,7 +101,7 @@ Playwright config has one `unauthenticated` project (`smoke.test.ts`, `singpass.
 `singpass.test.ts` sits in `unauthenticated` (no cookies). Each test is `test.skip` in that file. Drop `.skip` locally when you want to run against Mockpass. There is no separate singpass project.
 
 ```ts
-import { roleTag } from "../fixtures/auth"
+import { roleTag } from "~e2e/fixtures/auth"
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test("...", async ({ page }) => {

@@ -6,13 +6,12 @@ import {
   setupSite,
 } from "tests/integration/helpers/seed"
 import { db } from "~/server/modules/database"
+import { TEST_EMAILS } from "~e2e/fixtures/auth"
 import {
   ResourceState,
   ResourceType,
   RoleType,
 } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS } from "./auth"
 
 export interface ProvisionedSite {
   siteId: number

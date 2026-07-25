@@ -1,17 +1,20 @@
 import { test } from "@playwright/test"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { inviteCollaborator, openInviteModal } from "../fixtures/helpers"
-import { provisionE2ESite } from "../fixtures/site"
-import { deleteUsersByEmail, ensureUserOnboarded } from "../fixtures/user"
-import { expectUserRoleOnSite } from "../fixtures/user.expect"
-import { uniqueInviteeEmail, uniqueVendorEmail } from "../fixtures/user.seed"
-import { UsersPO } from "../fixtures/users.po"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { inviteCollaborator, openInviteModal } from "~e2e/fixtures/helpers"
+import { UsersPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import {
+  deleteUsersByEmail,
+  ensureUserOnboarded,
+  expectUserRoleOnSite,
+  uniqueInviteeEmail,
+  uniqueVendorEmail,
+} from "~e2e/fixtures/user"
 import {
   deleteWhitelistedVendorEmails,
   whitelistVendorEmail,
-} from "../fixtures/whitelist.seed"
+} from "~e2e/fixtures/whitelist"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 let inviteeEmail: string | undefined

@@ -1,8 +1,7 @@
 import type { UUID } from "crypto"
 import { expect, type Locator, type Page } from "@playwright/test"
 import { env } from "~/env.mjs"
-
-import { overwriteToken } from "../utils"
+import { overwriteToken } from "~e2e/utils"
 
 export class LoginPage {
   readonly page: Page

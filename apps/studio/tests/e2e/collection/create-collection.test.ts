@@ -1,17 +1,16 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { createCollectionViaWizard } from "../fixtures/helpers"
-import { deleteCollectionsByTitlePrefix } from "../fixtures/reset"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { createCollectionViaWizard } from "~e2e/fixtures/helpers"
+import { DashboardPO } from "~e2e/fixtures/po"
+import { deleteCollectionsByTitlePrefix } from "~e2e/fixtures/reset"
 import {
   getResourceByTitle,
   getResourceByTitleAndType,
-} from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
 
 const UNIQUE_TITLE = () =>
   `E2E Test Collection ${crypto.randomUUID().slice(0, 8)}`

@@ -2,25 +2,32 @@
 
 ## Fixtures
 
-| Module                       | Purpose                                                            |
-| ---------------------------- | ------------------------------------------------------------------ |
-| `fixtures/user.ts`           | `ensureUserOnboarded(email)` — skip welcome modal                  |
-| `fixtures/reset.ts`          | Site-scoped DB reset helpers (`resetSiteAgencySettings`, etc.)     |
-| `fixtures/helpers.ts`        | Shared UI flows (create page/folder, invite user)                  |
-| `fixtures/auth.ts`           | Role storage-state paths and `TEST_EMAILS`                         |
-| `fixtures/role.seed.ts`      | Global E2E role seeding (`seedRolesForE2E`)                        |
-| `fixtures/site.ts`           | Per-test site provisioning (`provisionE2ESite`)                    |
-| `fixtures/*.db.ts`           | Read queries, no `expect()` (`resource.db.ts`, `whitelist.db.ts`)  |
-| `fixtures/*.expect.ts`       | `expect.poll` assertion helpers (`site-expect.ts`, `page-seed.ts`) |
-| `fixtures/site.po.ts`        | Site settings page object                                          |
-| `fixtures/dashboard.po.ts`   | Site dashboard / resource table page object                        |
-| `fixtures/page-editor.po.ts` | Page editor / publish page object                                  |
-| `fixtures/users.po.ts`       | Users / collaborators page object                                  |
-| `fixtures/godmode.po.ts`     | God Mode admin surfaces (create site, publishing, whitelist)       |
+Import via the `~e2e/*` path alias (see `apps/studio/tsconfig.json`). Use **subpath barrels** — there is no root `fixtures/index.ts`.
+
+| Import path               | Purpose                                       |
+| ------------------------- | --------------------------------------------- |
+| `~e2e/fixtures/auth`      | `TEST_EMAILS`, `roleTag`, storage state paths |
+| `~e2e/fixtures/helpers`   | Multi-step UI flows (wizards, invite)         |
+| `~e2e/fixtures/login`     | `LoginPage` (smoke / singpass)                |
+| `~e2e/fixtures/network`   | Route stubs (S3 upload, GrowthBook)           |
+| `~e2e/fixtures/reset`     | Site-scoped DB reset / cleanup helpers        |
+| `~e2e/fixtures/po`        | Page objects (`DashboardPO`, `SitePO`, …)     |
+| `~e2e/fixtures/resource`  | Resource seed / db / expect                   |
+| `~e2e/fixtures/site`      | Site provision, db queries, expect polls      |
+| `~e2e/fixtures/user`      | User seed / db / expect / mutations           |
+| `~e2e/fixtures/whitelist` | Whitelist seed / db / expect                  |
+| `~e2e/fixtures/role`      | Global role seeding (`seedRolesForE2E`)       |
+
+```ts
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { DashboardPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+```
 
 ## Structure
 
-- `fixtures/` — reusable test infrastructure (login flow, page objects, role storage state).
+- `fixtures/` — entity folders (`resource/`, `site/`, `user/`, …), `po/`, and cross-cutting files (`auth.ts`, `helpers.ts`, …).
 - `storage-state/` — gitignored; populated by `global-setup.ts` with one signed-in cookie jar per role.
 - `<module>/` — one directory per backend router module (`site/`, `page/`, `resource/`, …). Each file inside covers a single UI surface (e.g. `site/settings-agency.test.ts`).
 
@@ -34,7 +41,7 @@
 
 ## Page objects vs. generic Playwright calls
 
-A `.po.ts` method wraps `page.goto`/`page.waitForURL` **only when it's the
+A page object method wraps `page.goto`/`page.waitForURL` **only when it's the
 canonical entry point onto that PO's surface**, reused across tests (e.g.
 `SitePO.gotoSettings`, `DashboardPO.gotoSite`, `UsersPO.goto`). These exist so
 every test lands on the surface the same way, and so a route change is a
@@ -60,7 +67,7 @@ Auth is wired through Playwright **projects**, not per-file `test.use({ storageS
 **New tests must use `roleTag(...)` on `test.describe`**, not `test.use({ storageState })`:
 
 ```ts
-import { roleTag } from "../fixtures/auth"
+import { roleTag } from "~e2e/fixtures/auth"
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
   test("...", async ({ page }) => {

@@ -1,15 +1,13 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { createCollectionLinkViaWizard } from "~e2e/fixtures/helpers"
+import { CollectionLinkPO } from "~e2e/fixtures/po"
+import { deleteResourcesByTitlePrefix } from "~e2e/fixtures/reset"
+import { getResource, seedCollection } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { CollectionLinkPO } from "../fixtures/collection-link.po"
-import { createCollectionLinkViaWizard } from "../fixtures/helpers"
-import { deleteResourcesByTitlePrefix } from "../fixtures/reset"
-import { getResource } from "../fixtures/resource.db"
-import { seedCollection } from "../fixtures/resource.seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE_TITLE = () =>
   `E2E Collection Link ${crypto.randomUUID().slice(0, 8)}`

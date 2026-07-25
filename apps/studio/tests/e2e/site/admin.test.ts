@@ -1,10 +1,9 @@
 import { expect, test } from "@playwright/test"
+import { type Role, ROLES, roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { SiteAdminPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { ROLES, roleTag, TEST_EMAILS, type Role } from "../fixtures/auth"
-import { provisionE2ESite } from "../fixtures/site"
-import { SiteAdminPO } from "../fixtures/site-admin.po"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 /** Exhaustive over `Role` — adding a ROLES entry fails typecheck until classified. */
 const siteAdminAccessByRole = {

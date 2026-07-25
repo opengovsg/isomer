@@ -1,14 +1,12 @@
 import { expect, test as base } from "@playwright/test"
 import crypto from "crypto"
-
-import { LoginPage } from "./fixtures/login"
+import { LoginPage } from "~e2e/fixtures/login"
 import {
   ensureUserOnboarded,
+  insertUserWithoutSites,
   resetUserSingpassState,
   setUserSingpassUuid,
-} from "./fixtures/user"
-import { insertUserWithoutSites } from "./fixtures/user.seed"
-
+} from "~e2e/fixtures/user"
 interface LoginPageFixture {
   loginPage: LoginPage
 }

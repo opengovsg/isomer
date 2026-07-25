@@ -1,9 +1,8 @@
 import { createId } from "@paralleldrive/cuid2"
 import { setUpWhitelist, setupSite } from "tests/integration/helpers/seed"
 import { db } from "~/server/modules/database"
+import { TEST_EMAILS } from "~e2e/fixtures/auth"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS } from "./auth"
 
 /**
  * Idempotent: inserts user if missing, then ensures a ResourcePermission

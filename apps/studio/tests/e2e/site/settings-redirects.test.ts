@@ -1,17 +1,16 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { resetSiteRedirects } from "../fixtures/reset"
-import { provisionE2ESite } from "../fixtures/site"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { SitePO } from "~e2e/fixtures/po"
+import { resetSiteRedirects } from "~e2e/fixtures/reset"
 import {
   expectLiveRedirectCount,
   expectRedirectDeleted,
   expectRedirectDestination,
-} from "../fixtures/site.expect"
-import { SitePO } from "../fixtures/site.po"
-import { ensureUserOnboarded } from "../fixtures/user"
+  provisionE2ESite,
+} from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 

@@ -1,15 +1,14 @@
 import { test } from "@playwright/test"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { GodmodePO } from "../fixtures/godmode.po"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { GodmodePO } from "~e2e/fixtures/po"
 import {
   clearSiteCodeBuildId,
+  expectSitePublishAuditLog,
   provisionE2ESite,
   setSiteCodeBuildId,
-} from "../fixtures/site"
-import { expectSitePublishAuditLog } from "../fixtures/site.expect"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 

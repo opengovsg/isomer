@@ -1,6 +1,5 @@
 import { defineConfig, devices } from "@playwright/test"
-
-import { ROLES, storageStateFor } from "./tests/e2e/fixtures/auth"
+import { ROLES, storageStateFor } from "~e2e/fixtures/auth"
 
 const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000"
 

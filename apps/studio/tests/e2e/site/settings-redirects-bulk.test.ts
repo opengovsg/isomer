@@ -1,20 +1,19 @@
 import { expect, test } from "@playwright/test"
 import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import {
   enableGrowthBookFeature,
   resetGrowthBookPage,
-} from "../fixtures/network"
-import { resetSiteRedirects } from "../fixtures/reset"
-import { provisionE2ESite } from "../fixtures/site"
+} from "~e2e/fixtures/network"
+import { SitePO } from "~e2e/fixtures/po"
+import { resetSiteRedirects } from "~e2e/fixtures/reset"
 import {
   expectLiveRedirectCount,
   expectRedirectDestination,
-} from "../fixtures/site.expect"
-import { SitePO } from "../fixtures/site.po"
-import { ensureUserOnboarded } from "../fixtures/user"
+  provisionE2ESite,
+} from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 const VALID_BULK_REDIRECTS_CSV = [
   "When someone visits,Redirect them to",

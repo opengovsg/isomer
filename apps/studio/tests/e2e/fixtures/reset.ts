@@ -3,7 +3,7 @@ import { sql } from "kysely"
 import { db, jsonb } from "~/server/modules/database"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
-export { ensureUserOnboarded } from "./user"
+export { ensureUserOnboarded } from "./user/mutations"
 
 const DEFAULT_AGENCY_SITE_NAME = "Isomer"
 
