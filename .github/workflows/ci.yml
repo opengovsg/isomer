@@ -89,9 +89,7 @@ jobs:
       - parallel:
           - name: Install Playwright (Chromium)
             # Required by the vitest "browser" project (Vitest Browser Mode).
-            uses: ./.github/actions/playwright-install
-            with:
-              filter: isomer-studio
+            run: pnpm --filter isomer-studio exec playwright install chromium
           - name: Generate Prisma client
             # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
             run: pnpm exec turbo run generate --filter=isomer-studio
@@ -122,9 +120,7 @@ jobs:
       - parallel:
           - name: Install Playwright (Chromium)
             # Required by the vitest "browser" project (Vitest Browser Mode).
-            uses: ./.github/actions/playwright-install
-            with:
-              filter: "@opengovsg/isomer-components"
+            run: pnpm --filter @opengovsg/isomer-components exec playwright install chromium
           - name: Configure Datadog Test Visibility
             uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
             with:
@@ -280,9 +276,7 @@ jobs:
           path: apps/studio/.next
       - parallel:
           - name: Install Playwright (Chromium)
-            uses: ./.github/actions/playwright-install
-            with:
-              filter: isomer-studio
+            run: pnpm --filter isomer-studio exec playwright install chromium
           - name: Generate Prisma client
             run: pnpm exec turbo run generate --filter=isomer-studio
           - name: Start test containers
@@ -294,10 +288,9 @@ jobs:
               service: isomer-studio
               api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Run Playwright tests
-        working-directory: apps/studio
-        # start-server-and-test invokes `test:e2e` by name, so shard args must be inlined here
-        run: pnpm exec dotenv -e .env.test -- start-server-and-test start http://127.0.0.1:3000 "pnpm exec playwright test --shard=${{ matrix.shard }}/${{ matrix.total_shards }}"
+        run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
         env:
+          E2E_SHARD: ${{ matrix.shard }}/${{ matrix.total_shards }}
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
 

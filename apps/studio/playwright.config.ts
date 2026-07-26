@@ -3,6 +3,25 @@ import { ROLES, storageStateFor } from "~e2e/fixtures/auth"
 
 const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000"
 
+function parseE2eShard(shard: string | undefined) {
+  if (!shard) return undefined
+
+  const match = /^(\d+)\/(\d+)$/.exec(shard)
+  if (!match) {
+    throw new Error(
+      `Invalid E2E_SHARD "${shard}" (expected "current/total", e.g. "1/2")`,
+    )
+  }
+
+  const current = Number(match[1])
+  const total = Number(match[2])
+  if (current < 1 || total < 1 || current > total) {
+    throw new Error(`Invalid E2E_SHARD "${shard}"`)
+  }
+
+  return { current, total }
+}
+
 const opts = {
   // launch headless on CI, in browser locally
   headless: !!process.env.CI || !!process.env.PLAYWRIGHT_HEADLESS,
@@ -26,6 +45,7 @@ export default defineConfig({
   fullyParallel: true, // run tests fully in parallel
   forbidOnly: !!process.env.CI, // prevent .only in CI
   retries: process.env.CI ? 1 : 0, // retry needed for CI for "on-first-retry" for video
+  shard: parseE2eShard(process.env.E2E_SHARD),
   workers: process.env.CI ? 2 : undefined, // 2 workers on CI, auto locally
   globalSetup: "./tests/e2e/global-setup.ts",
   projects: [
