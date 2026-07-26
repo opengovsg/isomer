@@ -240,9 +240,6 @@ jobs:
       - name: Build Studio app
         # Loose env mode required for env vars to be passed to the run
         run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
-        env:
-          # Skip standalone file-tracing; E2E uses `next start`, not start:standalone
-          E2E_BUILD: true
       - name: Remove Next.js build cache from artifact
         run: rm -rf apps/studio/.next/cache
       - name: Upload E2E build
