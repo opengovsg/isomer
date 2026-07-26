@@ -13,7 +13,9 @@ const baseUse = {
   ...devices["Desktop Chrome"],
   baseURL: baseUrl,
   headless: opts.headless,
-  video: "retain-on-failure" as const,
+  video: process.env.CI
+    ? ("on-first-retry" as const)
+    : ("retain-on-failure" as const),
 }
 
 export default defineConfig({
@@ -23,6 +25,7 @@ export default defineConfig({
   timeout: 35e3,
   fullyParallel: true, // run tests fully in parallel
   forbidOnly: !!process.env.CI, // prevent .only in CI
+  retries: process.env.CI ? 1 : 0, // retry needed for CI for "on-first-retry" for video
   workers: process.env.CI ? 2 : undefined, // 2 workers on CI, auto locally
   globalSetup: "./tests/e2e/global-setup.ts",
   projects: [
