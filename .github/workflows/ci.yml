@@ -249,7 +249,7 @@ jobs:
               # Skip standalone file-tracing; E2E uses `next start`, not start:standalone
               E2E_BUILD: true
           - name: Start test containers
-            run: pnpm run setup:test
+            run: pnpm exec turbo setup:test --filter=isomer-studio
           - name: Configure Datadog Test Visibility
             uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
             with:
@@ -260,7 +260,7 @@ jobs:
         run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
 
       - name: Stop test containers
-        run: pnpm run teardown
+        run: pnpm exec turbo teardown --filter=isomer-studio
 
       - name: Upload test results
         if: ${{ !cancelled() }}
