@@ -250,6 +250,8 @@ jobs:
         with:
           name: e2e-studio-build-${{ github.run_id }}
           path: apps/studio/.next
+          # `.next` is a dot-directory; upload-artifact v4+ skips hidden paths by default
+          include-hidden-files: true
           retention-days: 1
           if-no-files-found: error
 
