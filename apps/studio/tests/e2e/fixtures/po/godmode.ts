@@ -61,11 +61,19 @@ export class GodmodePO {
   }
 
   async gotoPublishing() {
+    // The page renders one Publish button per site, gated on the client-side
+    // listAllSites query. With many sites this response can land just after the
+    // default assertion timeout, so wait for the data before asserting on rows.
+    const sitesLoaded = this.page.waitForResponse(
+      (response) =>
+        response.url().includes("site.listAllSites") && response.ok(),
+    )
     await this.page.goto("/godmode/publishing")
     await this.page.waitForURL(/\/godmode\/publishing$/)
     await expect(
       this.page.getByRole("heading", { name: "Publishing" }),
     ).toBeVisible()
+    await sitesLoaded
   }
 
   async expectPublishButtonVisibleForSite(siteId: number) {
