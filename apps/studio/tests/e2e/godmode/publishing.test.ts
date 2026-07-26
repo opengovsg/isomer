@@ -28,8 +28,9 @@ test.describe("core", { tag: roleTag("core") }, () => {
 
     // Arrange
     await godmode.gotoPublishing()
+    await godmode.expectPublishButtonVisibleForSite(siteId)
 
-    // Act — clear CodeBuild id after the page loads so publishSite skips AWS
+    // Act — clear CodeBuild id after the button renders so publishSite skips AWS
     await clearSiteCodeBuildId(siteId)
     await godmode.clickPublishForSite(siteId)
 

@@ -68,9 +68,19 @@ export class GodmodePO {
     ).toBeVisible()
   }
 
+  async expectPublishButtonVisibleForSite(siteId: number) {
+    await expect(this.publishButtonForSite(siteId)).toBeVisible()
+  }
+
   async clickPublishForSite(siteId: number) {
-    const row = this.page.getByRole("row").filter({ hasText: String(siteId) })
-    await row.getByRole("button", { name: "Publish" }).click()
+    await this.publishButtonForSite(siteId).click()
+  }
+
+  private publishButtonForSite(siteId: number) {
+    return this.page
+      .getByRole("row")
+      .filter({ hasText: new RegExp(`\\b${siteId}\\b`) })
+      .getByRole("button", { name: "Publish" })
   }
 
   async expectSitePublishedToast() {
