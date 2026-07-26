@@ -68,6 +68,7 @@ const server = z
   .object({
     DATABASE_URL: z.string().url(),
     CI: z.coerce.boolean().default(false),
+    E2E_BUILD: z.coerce.boolean().default(false),
     NODE_ENV: z.enum(["development", "test", "production"]),
     OTP_EXPIRY: z.coerce.number().positive().optional().default(600),
     // WARNING: Setting this bypasses OTP security. For preview environments only — never set in staging or production.
@@ -146,6 +147,7 @@ const processEnv = {
   DATABASE_URL: process.env.DATABASE_URL,
   DD_DELETION_EMAIL: process.env.DD_DELETION_EMAIL,
   CI: process.env.CI,
+  E2E_BUILD: process.env.E2E_BUILD,
   NODE_ENV: process.env.NODE_ENV,
   OTP_EXPIRY: process.env.OTP_EXPIRY,
   POSTMAN_API_KEY: process.env.POSTMAN_API_KEY,

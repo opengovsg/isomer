@@ -138,14 +138,22 @@ const ContentSecurityPolicy = `
 /**
  * @link https://nextjs.org/docs/api-reference/next.config.js/introduction
  */
+const isE2eBuild = env.E2E_BUILD
+
 /** @type {import("next").NextConfig} */
 const config = {
-  output: "standalone",
-  // Pin the tracing root so the standalone layout is always
-  // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
-  // Without this, Next infers the workspace root from the outermost lockfile, which varies by
-  // environment (e.g. nested git worktrees) and silently shifts the server.js path.
-  outputFileTracingRoot: new URL("../..", import.meta.url).pathname,
+  ...(isE2eBuild
+    ? {
+        // E2E CI uses `next start`, not the standalone server — skip file-tracing work.
+      }
+    : {
+        output: "standalone",
+        // Pin the tracing root so the standalone layout is always
+        // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
+        // Without this, Next infers the workspace root from the outermost lockfile, which varies by
+        // environment (e.g. nested git worktrees) and silently shifts the server.js path.
+        outputFileTracingRoot: new URL("../..", import.meta.url).pathname,
+      }),
   reactStrictMode: true,
   logging: {
     browserToTerminal: false,
@@ -154,7 +162,8 @@ const config = {
   // Next resolves them the same from the app root as from the workspace package (pnpm); otherwise
   // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
-  productionBrowserSourceMaps: true,
+  // We don't need source maps for E2E CI because we use `next start`, not the standalone server.
+  productionBrowserSourceMaps: !env.E2E_BUILD,
   /** We already do typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [
