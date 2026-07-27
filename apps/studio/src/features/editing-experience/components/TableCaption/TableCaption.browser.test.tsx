@@ -243,8 +243,14 @@ describe("TableCaption", () => {
       content: [tableContent("Old caption")],
     })
 
+<<<<<<< HEAD
     // Act
     await userEvent.click(await getCaptionButton("Edit table caption"))
+=======
+    const input = await getCaptionInput()
+    await userEvent.click(input)
+    await userEvent.type(input, "Live")
+>>>>>>> 9e5b37638 (refactor(TableCaption, TableDragHandles): improve layout handling and test coverage)
 
     const textarea = await screen.findByPlaceholderText(
       "This is the caption for your table",

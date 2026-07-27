@@ -1,5 +1,6 @@
 import type { TableProps } from "~/interfaces"
 import { useId } from "react"
+import { getTableCellBackgroundColorHex } from "~/constants/tableCellBackgroundColor"
 import { tv } from "~/lib/tv"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
@@ -41,6 +42,13 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
               return (
                 <tr key={index} className="text-left">
                   {row.content.map((cell, cellIndex) => {
+                    const backgroundColor =
+                      cell.type === "tableCell"
+                        ? getTableCellBackgroundColorHex(
+                            cell.attrs?.backgroundColor,
+                          )
+                        : undefined
+
                     return (
                       <TableCellTag
                         key={cellIndex}
@@ -49,6 +57,9 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                         className={tableCellStyles({
                           isHeader: cell.type === "tableHeader",
                         })}
+                        style={
+                          backgroundColor ? { backgroundColor } : undefined
+                        }
                       >
                         {cell.content.map((cellContent, index) => {
                           switch (cellContent.type) {
