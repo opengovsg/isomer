@@ -33,7 +33,7 @@ export class UsersPO {
   }
 
   async selectInviteRole(role: string) {
-    await this.page.getByRole("button", { name: role, exact: true }).click()
+    await this.page.getByRole("button", { name: `${role} role` }).click()
   }
 
   async fillInviteForm(email: string, role: string) {
@@ -47,7 +47,7 @@ export class UsersPO {
 
   async expectInviteRoleEnabled(role: string) {
     await expect(
-      this.page.getByRole("button", { name: role, exact: true }),
+      this.page.getByRole("button", { name: `${role} role` }),
     ).toBeEnabled()
   }
 

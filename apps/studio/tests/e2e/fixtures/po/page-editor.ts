@@ -18,14 +18,12 @@ export class PageEditorPO {
     await this.page.reload()
   }
 
+  // Open block drawer by accessible name; fill the first textbox.
   async fillBlock(label: string, text: string) {
     await this.page
       .getByRole("button", { name: new RegExp(label, "i") })
       .click({ force: true })
-    const drawer = this.page.locator("form").filter({
-      has: this.page.getByRole("button", { name: "Save changes" }),
-    })
-    await drawer.getByRole("textbox").first().fill(text)
+    await this.page.getByRole("textbox").first().fill(text)
   }
 
   async saveBlockChanges() {
@@ -124,10 +122,11 @@ export class PageEditorPO {
       .getByRole("button", { name: "Select from date picker." })
       .click()
     await this.page.getByRole("button", { name: "Today" }).click()
-    // Quick-select badge; at 00:01 the 00:00 preset is filtered out, 9:00 AM remains.
+    // First quick-select badge after midnight presets are filtered out.
     await this.page
       .locator("form")
-      .getByText("9:00 AM", { exact: true })
+      .getByText(/\d{1,2}:\d{2} (AM|PM)/)
+      .first()
       .click()
     await this.page.getByRole("button", { name: "Schedule publish" }).click()
   }
