@@ -266,12 +266,21 @@ export const TableBubbleMenu: Story = {
 
     const editor = getEditorFromCanvas(canvasElement)
     // Default insertTable is 3x3 with a header row; cells 3–5 are the first body row.
-    editor.commands.setCellSelection({
-      anchorCell: nthCellPos(editor, 3),
-      headCell: nthCellPos(editor, 5),
-    })
+    editor
+      .chain()
+      .focus()
+      .setCellSelection({
+        anchorCell: nthCellPos(editor, 3),
+        headCell: nthCellPos(editor, 5),
+      })
+      .run()
 
     const portals = withinPortals(canvasElement)
+    // Row/column actions live behind the portaled pencil trigger — click to open.
+    await userEvent.click(
+      await portals.findByRole("button", { name: "Table actions" }),
+    )
+
     await waitFor(() =>
       expect(portals.getByText("Delete row")).toBeInTheDocument(),
     )
