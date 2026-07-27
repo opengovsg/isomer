@@ -151,6 +151,27 @@ describe("TableCaption", () => {
     expect(captionText).toHaveStyle({ wordBreak: "break-word" })
   })
 
+  it("shows the default placeholder caption for newly inserted tables", async () => {
+    const { getEditor } = renderHarness({ type: "prose", content: [] })
+
+    await waitFor(() => {
+      expect(getEditor()).toBeDefined()
+    })
+
+    getEditor()!
+      .chain()
+      .focus()
+      .insertTable({ rows: 2, cols: 2, withHeaderRow: true })
+      .run()
+
+    await waitFor(() => {
+      expect(screen.getByText(DEFAULT_TABLE_CAPTION)).toBeInTheDocument()
+    })
+    expect(
+      await screen.findByRole("button", { name: "Add table caption" }),
+    ).toHaveTextContent("Add caption")
+  })
+
   it("opens the table settings modal and saves a new caption", async () => {
     const { getEditor } = renderHarness({
       type: "prose",
