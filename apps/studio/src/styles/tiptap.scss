@@ -149,6 +149,11 @@ $max-depth: 13;
       border-left-width: 2px;
     }
 
+    // Row/column and multi-cell selections dim text outside the selection.
+    .dimmedCell > * {
+      opacity: 0.5;
+    }
+
     td,
     th {
       border: 1px solid #d6d6d6;
