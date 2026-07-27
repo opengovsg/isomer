@@ -39,7 +39,6 @@ import {
   deleteUserPermission,
   getUsersQuery,
   updateUserDetails,
-  validateEmailRoleCombination,
 } from "./user.service"
 
 const throwSingpassDisabledError = () => {
@@ -305,8 +304,6 @@ export const userRouter = router({
           message: "User not found",
         })
       }
-
-      validateEmailRoleCombination({ email: user.email, role })
 
       const updatedUserPermission = await updateUserSitewidePermission({
         byUserId: ctx.user.id,

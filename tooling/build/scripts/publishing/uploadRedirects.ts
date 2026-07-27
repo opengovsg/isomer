@@ -1,19 +1,74 @@
-import { spawn } from "child_process"
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import * as fs from "fs"
-import * as os from "os"
-import * as path from "path"
+import { parseArgs } from "node:util"
 import { argv } from "process"
 import { pathToFileURL } from "url"
 
-const REDIRECTS_JSON = process.env.REDIRECTS_JSON
-const S3_BUCKET = process.env.S3_BUCKET_NAME
-const SITE_NAME = process.env.SITE_NAME
-const BUILD_NUMBER = process.env.CODEBUILD_BUILD_NUMBER
-const CONCURRENCY = 20
+const DEFAULT_CONCURRENCY = 20
+
+const uploadCliOptions = {
+  "redirects-json": { type: "string" },
+  "s3-bucket-name": { type: "string" },
+  "site-name": { type: "string" },
+  "build-number": { type: "string" },
+  concurrency: { type: "string" },
+} as const
 
 interface Redirect {
   source: string
   destination: string
+}
+
+export interface UploadConfig {
+  redirectsJson: string
+  s3BucketName: string
+  siteName: string
+  buildNumber: string
+  concurrency: number
+}
+
+export function parseUploadCliArgs(args: readonly string[] = argv) {
+  return parseArgs({
+    args: args.slice(2),
+    options: uploadCliOptions,
+    strict: false,
+  }).values
+}
+
+/** Prefer CLI / S3_SYNC_CONCURRENCY from publisher.sh; fall back if unset/invalid. */
+export function resolveConcurrency(
+  raw: string | undefined = process.env.S3_SYNC_CONCURRENCY,
+): number {
+  const parsed = raw === undefined ? NaN : Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed) || parsed < 1) return DEFAULT_CONCURRENCY
+  return parsed
+}
+
+/** CLI flags from publisher.sh take precedence; env vars remain for local runs. */
+export function resolveUploadConfig(
+  args: readonly string[] = argv,
+): UploadConfig | null {
+  const values = parseUploadCliArgs(args)
+
+  const redirectsJson = values["redirects-json"] ?? process.env.REDIRECTS_JSON
+  const s3BucketName = values["s3-bucket-name"] ?? process.env.S3_BUCKET_NAME
+  const siteName = values["site-name"] ?? process.env.SITE_NAME
+  const buildNumber =
+    values["build-number"] ?? process.env.CODEBUILD_BUILD_NUMBER
+
+  if (!redirectsJson || !s3BucketName || !siteName || !buildNumber) {
+    return null
+  }
+
+  return {
+    redirectsJson,
+    s3BucketName,
+    siteName,
+    buildNumber,
+    concurrency: resolveConcurrency(
+      values.concurrency ?? process.env.S3_SYNC_CONCURRENCY,
+    ),
+  }
 }
 
 // Returns the normalised S3 key segment, or null if the source is unsafe/empty.
@@ -44,47 +99,39 @@ export function normalizeSource(source: string): string | null {
   return trimmed
 }
 
-const EMPTY_FILE = path.join(os.tmpdir(), "isomer-redirect-empty")
+async function uploadOne(
+  client: S3Client,
+  config: UploadConfig,
+  source: string,
+  destination: string,
+): Promise<void> {
+  // Mirror the CloudFront redirect function's assumption (see
+  // generateRedirectFnCode in isomer-next-infra): if the last 5 characters
+  // contain a ".", the source is treated as a file path and used as-is.
+  // Otherwise it is a directory path and resolves to its "/index.html" object.
+  const isPotentialFilePath = source.slice(-5).includes(".")
+  const key = isPotentialFilePath ? source : `${source}/index.html`
 
-function uploadOne(source: string, destination: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    // Mirror the CloudFront redirect function's assumption (see
-    // generateRedirectFnCode in isomer-next-infra): if the last 5 characters
-    // contain a ".", the source is treated as a file path and used as-is.
-    // Otherwise it is a directory path and resolves to its "/index.html" object.
-    const isPotentialFilePath = source.slice(-5).includes(".")
-    const key = isPotentialFilePath ? source : `${source}/index.html`
-    const proc = spawn("aws", [
-      "s3",
-      "cp",
-      "--only-show-errors",
-      EMPTY_FILE,
-      `s3://${S3_BUCKET}/${SITE_NAME}/${BUILD_NUMBER}/latest/${key}`,
-      "--content-type",
-      "text/html",
-      "--cache-control",
-      "max-age=600",
-      // JSON form avoids shorthand parsing of commas/equals in destination URLs.
-      "--metadata",
-      JSON.stringify({ "redirect-destination": destination }),
-    ])
-    let stderr = ""
-    proc.stderr.on("data", (d) => {
-      stderr += d.toString()
-    })
-    proc.on("close", (code) => {
-      if (code === 0) resolve()
-      else
-        reject(
-          new Error(`aws s3 cp exited ${code} for ${source}: ${stderr.trim()}`),
-        )
-    })
-    proc.on("error", reject)
-  })
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.s3BucketName,
+      Key: `${config.siteName}/${config.buildNumber}/latest/${key}`,
+      // Empty Buffer (not "") so the SDK knows Content-Length upfront and
+      // does not warn about a stream of unknown length.
+      Body: Buffer.alloc(0),
+      ContentLength: 0,
+      ContentType: "text/html",
+      CacheControl: "max-age=600",
+      // Becomes x-amz-meta-redirect-destination on the object.
+      Metadata: { "redirect-destination": destination },
+    }),
+  )
 }
 
 // Worker-pool: each worker pulls from the shared queue until it is empty.
 async function runWithConcurrency(
+  client: S3Client,
+  config: UploadConfig,
   items: Redirect[],
   limit: number,
 ): Promise<{ failed: number }> {
@@ -95,7 +142,7 @@ async function runWithConcurrency(
       const r = queue.shift()
       if (!r) break
       try {
-        await uploadOne(r.source, r.destination)
+        await uploadOne(client, config, r.source, r.destination)
       } catch (err) {
         console.error("Redirect upload failed:", err)
         failed++
@@ -109,14 +156,19 @@ async function runWithConcurrency(
 }
 
 async function main(): Promise<void> {
-  if (!REDIRECTS_JSON || !S3_BUCKET || !SITE_NAME || !BUILD_NUMBER) {
+  const config = resolveUploadConfig()
+  if (!config) {
     throw new Error(
-      "Missing required env vars: REDIRECTS_JSON, S3_BUCKET_NAME, SITE_NAME, CODEBUILD_BUILD_NUMBER",
+      "Missing required inputs: --redirects-json, --s3-bucket-name, --site-name, --build-number (or the matching env vars)",
     )
   }
 
-  const raw: Redirect[] = JSON.parse(fs.readFileSync(REDIRECTS_JSON, "utf-8"))
-  console.log(`Loaded ${raw.length} redirect row(s) from ${REDIRECTS_JSON}`)
+  const raw: Redirect[] = JSON.parse(
+    fs.readFileSync(config.redirectsJson, "utf-8"),
+  )
+  console.log(
+    `Loaded ${raw.length} redirect row(s) from ${config.redirectsJson}`,
+  )
 
   const seen = new Set<string>()
   const valid: Redirect[] = []
@@ -146,12 +198,19 @@ async function main(): Promise<void> {
     return
   }
 
-  fs.writeFileSync(EMPTY_FILE, "")
+  // Region/credentials come from the environment (CodeBuild IAM role +
+  // AWS_REGION), same as `aws s3 cp` previously.
+  const client = new S3Client({})
 
   console.log(
-    `Uploading ${valid.length} redirect(s) with concurrency ${CONCURRENCY}...`,
+    `Uploading ${valid.length} redirect(s) with concurrency ${config.concurrency}...`,
   )
-  const { failed } = await runWithConcurrency(valid, CONCURRENCY)
+  const { failed } = await runWithConcurrency(
+    client,
+    config,
+    valid,
+    config.concurrency,
+  )
   console.log(`Uploaded ${valid.length - failed}/${valid.length} redirects.`)
   if (failed > 0) process.exit(1)
 }
