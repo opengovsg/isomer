@@ -1,15 +1,6 @@
-import type { TableCellBackgroundColorToken } from "@opengovsg/isomer-components"
 import type { Editor } from "@tiptap/react"
-import type { MutableRefObject, ReactElement, ReactNode } from "react"
-import {
-  Box,
-  Divider,
-  Flex,
-  Icon,
-  Portal,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import type { ReactElement, ReactNode } from "react"
+import { Box, Divider, Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
 import {
   TABLE_CELL_BACKGROUND_COLORS,
@@ -26,12 +17,11 @@ import {
 } from "@tiptap/pm/tables"
 import { useEditorState } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
-import { memo, useCallback, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useEffect } from "react"
 import {
   BiCopy,
   BiDownArrowAlt,
   BiLeftArrowAlt,
-  BiPencil,
   BiRightArrowAlt,
   BiTrash,
   BiUpArrowAlt,
@@ -48,6 +38,7 @@ import {
   IconSplitCell,
 } from "~/components/icons"
 
+import type { TableBubbleMenuAnchor } from "./TableBubbleMenu.types"
 import { clearSelectedCells } from "./TableBubbleMenu.clear"
 import {
   duplicateSelectedColumns,
@@ -65,10 +56,10 @@ import {
   getUniformBodyCellBackgroundColor,
   setSelectedBodyCellsBackgroundColor,
 } from "./tableCellBackgroundColor"
-import { useTableBubbleMenuTriggerCorner } from "./useTableBubbleMenuTriggerCorner"
 
 export interface TableBubbleMenuProps {
   editor: Editor
+  anchor?: TableBubbleMenuAnchor
 }
 
 // Single-cell selections: an ordinary body cell shows the menu for background
@@ -178,10 +169,6 @@ const moveRow = (editor: Editor, direction: "up" | "down") => {
     )
     view.dispatch(tr)
   })
-  // Unlike every sibling action, this dispatches its own transaction instead
-  // of `.chain().focus()...run()` — restore focus explicitly so a real
-  // mousedown-triggered blur doesn't strand it on the button.
-  editor.commands.focus()
 }
 
 const moveColumn = (editor: Editor, direction: "left" | "right") => {
@@ -224,10 +211,6 @@ const moveColumn = (editor: Editor, direction: "left" | "right") => {
     )
     view.dispatch(tr)
   })
-  // Unlike every sibling action, this dispatches its own transaction instead
-  // of `.chain().focus()...run()` — restore focus explicitly so a real
-  // mousedown-triggered blur doesn't strand it on the button.
-  editor.commands.focus()
 }
 
 const ActionButton = ({
@@ -245,26 +228,14 @@ const ActionButton = ({
     colorScheme="neutral"
     onMouseDown={(event) => event.preventDefault()}
     onClick={onClick}
-    // TipTap toolbar pattern: preventDefault on mousedown so the click does
-    // not steal focus (and thus CellSelection) from the editor.
-    onMouseDown={(event) => event.preventDefault()}
+    leftIcon={icon}
     w="100%"
-    h="auto"
-    minH="unset"
-    px="0.75rem"
-    py="0.625rem"
-    color="base.content.strong"
     textAlign="left"
     sx={{
       justifyContent: "flex-start",
     }}
   >
-    <Flex as="span" align="center" gap="0.5rem">
-      {icon}
-      <Text as="span" textStyle="body-2" color="base.content.strong">
-        {label}
-      </Text>
-    </Flex>
+    {label}
   </Button>
 )
 
@@ -333,11 +304,9 @@ const ColourSwatch = ({
 const BackgroundColourSection = ({
   editor,
   selection,
-  onSetColor,
 }: {
   editor: Editor
   selection: CellSelection
-  onSetColor: (color: TableCellBackgroundColorToken | null) => void
 }) => {
   const activeColor = getUniformBodyCellBackgroundColor(selection)
 
@@ -350,7 +319,7 @@ const BackgroundColourSection = ({
           backgroundColor="base.canvas.default"
           isActive={activeColor === null}
           hasSlash
-          onClick={() => onSetColor(null)}
+          onClick={() => setSelectedBodyCellsBackgroundColor(editor, null)}
         />
         {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
           <ColourSwatch
@@ -358,7 +327,7 @@ const BackgroundColourSection = ({
             label={colourSwatchLabel(color)}
             backgroundColor={TABLE_CELL_BACKGROUND_COLORS[color]}
             isActive={activeColor === color}
-            onClick={() => onSetColor(color)}
+            onClick={() => setSelectedBodyCellsBackgroundColor(editor, color)}
           />
         ))}
       </Flex>
@@ -369,8 +338,8 @@ const BackgroundColourSection = ({
 // Label + switch — one control for set/unset instead of separate action
 // buttons. TipTap toolbar pattern: preventDefault on mousedown so the click
 // does not steal focus (and thus CellSelection) from the editor.
-// Text uses the same body-2 sizing as ActionButton; Switch `sm` is the
-// smallest size in the design system.
+// Text uses the same subhead-2 sizing as ActionButton (Button size="xs");
+// Switch `sm` is the smallest size in the design system.
 const HeaderToggle = ({
   label,
   isChecked,
@@ -385,13 +354,11 @@ const HeaderToggle = ({
     minH="2.25rem"
     align="center"
     justify="space-between"
-    px="0.75rem"
+    px="15px"
     gap="0.5rem"
     onMouseDown={(event) => event.preventDefault()}
   >
-    <Text textStyle="body-2" color="base.content.strong">
-      {label}
-    </Text>
+    <Text textStyle="subhead-2">{label}</Text>
     <Switch
       size="sm"
       isChecked={isChecked}
@@ -410,24 +377,27 @@ const RowSelectionActions = ({
   editor: Editor
   rect: SelectionRect
 }) => {
-  const includesHeaderRow = selectionIncludesHeaderRow(rect)
-  const canMoveUp = rect.top > 0 && !includesHeaderRow
-  const canMoveDown = rect.bottom < rect.map.height && !includesHeaderRow
+  const canMoveUp = rect.top > 0
+  const canMoveDown = rect.bottom < rect.map.height
   // TipTap's toggleHeaderRow always rewrites the first table row only — show
   // the switch for that exact row, not for a multi-row selection that merely
   // overlaps it.
   const showHeaderToggle = rect.top === 0 && rect.bottom === 1
+  const includesHeaderRow = selectionIncludesHeaderRow(rect)
 
   return (
     <>
       {showHeaderToggle && (
-        <ActionGroup>
-          <HeaderToggle
-            label="Header row"
-            isChecked={includesHeaderRow}
-            onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
-          />
-        </ActionGroup>
+        <>
+          <ActionGroup>
+            <HeaderToggle
+              label="Header row"
+              isChecked={includesHeaderRow}
+              onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
+            />
+          </ActionGroup>
+          <ActionDivider />
+        </>
       )}
       <ActionGroup>
         <ActionButton
@@ -450,28 +420,40 @@ const RowSelectionActions = ({
           icon={<BiX fontSize="1rem" />}
           onClick={() => clearSelectedCells({ editor })}
         />
-        {canMoveUp && (
-          <ActionButton
-            label="Move up"
-            icon={<BiUpArrowAlt fontSize="1rem" />}
-            onClick={() => moveRow(editor, "up")}
-          />
-        )}
-        {canMoveDown && (
-          <ActionButton
-            label="Move down"
-            icon={<BiDownArrowAlt fontSize="1rem" />}
-            onClick={() => moveRow(editor, "down")}
-          />
-        )}
-        {!includesHeaderRow && (
-          <ActionButton
-            label="Delete row"
-            icon={<IconDelRow boxSize="1rem" />}
-            onClick={() => editor.chain().focus().deleteRow().run()}
-          />
-        )}
       </ActionGroup>
+      {(canMoveUp || canMoveDown) && (
+        <>
+          <ActionDivider />
+          <ActionGroup>
+            {canMoveUp && (
+              <ActionButton
+                label="Move up"
+                icon={<BiUpArrowAlt fontSize="1rem" />}
+                onClick={() => moveRow(editor, "up")}
+              />
+            )}
+            {canMoveDown && (
+              <ActionButton
+                label="Move down"
+                icon={<BiDownArrowAlt fontSize="1rem" />}
+                onClick={() => moveRow(editor, "down")}
+              />
+            )}
+          </ActionGroup>
+        </>
+      )}
+      {!includesHeaderRow && (
+        <>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Delete row"
+              icon={<IconDelRow boxSize="1rem" />}
+              onClick={() => editor.chain().focus().deleteRow().run()}
+            />
+          </ActionGroup>
+        </>
+      )}
     </>
   )
 }
@@ -483,24 +465,27 @@ const ColumnSelectionActions = ({
   editor: Editor
   rect: SelectionRect
 }) => {
-  const includesHeaderColumn = selectionIncludesHeaderColumn(rect)
-  const canMoveLeft = rect.left > 0 && !includesHeaderColumn
-  const canMoveRight = rect.right < rect.map.width && !includesHeaderColumn
+  const canMoveLeft = rect.left > 0
+  const canMoveRight = rect.right < rect.map.width
   // TipTap's toggleHeaderColumn always rewrites the first table column only —
   // show the switch for that exact column, not for a multi-column selection
   // that merely overlaps it.
   const showHeaderToggle = rect.left === 0 && rect.right === 1
+  const includesHeaderColumn = selectionIncludesHeaderColumn(rect)
 
   return (
     <>
       {showHeaderToggle && (
-        <ActionGroup>
-          <HeaderToggle
-            label="Header column"
-            isChecked={includesHeaderColumn}
-            onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
-          />
-        </ActionGroup>
+        <>
+          <ActionGroup>
+            <HeaderToggle
+              label="Header column"
+              isChecked={includesHeaderColumn}
+              onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
+            />
+          </ActionGroup>
+          <ActionDivider />
+        </>
       )}
       <ActionGroup>
         <ActionButton
@@ -523,28 +508,40 @@ const ColumnSelectionActions = ({
           icon={<BiX fontSize="1rem" />}
           onClick={() => clearSelectedCells({ editor })}
         />
-        {canMoveLeft && (
-          <ActionButton
-            label="Move left"
-            icon={<BiLeftArrowAlt fontSize="1rem" />}
-            onClick={() => moveColumn(editor, "left")}
-          />
-        )}
-        {canMoveRight && (
-          <ActionButton
-            label="Move right"
-            icon={<BiRightArrowAlt fontSize="1rem" />}
-            onClick={() => moveColumn(editor, "right")}
-          />
-        )}
-        {!includesHeaderColumn && (
-          <ActionButton
-            label="Delete column"
-            icon={<IconDelCol boxSize="1rem" />}
-            onClick={() => editor.chain().focus().deleteColumn().run()}
-          />
-        )}
       </ActionGroup>
+      {(canMoveLeft || canMoveRight) && (
+        <>
+          <ActionDivider />
+          <ActionGroup>
+            {canMoveLeft && (
+              <ActionButton
+                label="Move left"
+                icon={<BiLeftArrowAlt fontSize="1rem" />}
+                onClick={() => moveColumn(editor, "left")}
+              />
+            )}
+            {canMoveRight && (
+              <ActionButton
+                label="Move right"
+                icon={<BiRightArrowAlt fontSize="1rem" />}
+                onClick={() => moveColumn(editor, "right")}
+              />
+            )}
+          </ActionGroup>
+        </>
+      )}
+      {!includesHeaderColumn && (
+        <>
+          <ActionDivider />
+          <ActionGroup>
+            <ActionButton
+              label="Delete column"
+              icon={<IconDelCol boxSize="1rem" />}
+              onClick={() => editor.chain().focus().deleteColumn().run()}
+            />
+          </ActionGroup>
+        </>
+      )}
     </>
   )
 }
@@ -575,43 +572,19 @@ const TableSelectionActions = ({
       )
     case "table":
       return (
-        <ActionGroup>
-          <ActionButton
-            label="Clear contents"
-            icon={<BiX fontSize="1rem" />}
-            onClick={() => clearSelectedCells({ editor })}
-          />
-          <ActionButton
-            label="Delete table"
-            icon={<BiTrash fontSize="1rem" />}
-            onClick={() => editor.chain().focus().deleteTable().run()}
-          />
-        </ActionGroup>
+        <ActionButton
+          label="Delete table"
+          icon={<BiTrash fontSize="1rem" />}
+          onClick={() => editor.chain().focus().deleteTable().run()}
+        />
       )
     case "multi-cell":
       return (
-        <ActionGroup>
-          <ActionButton
-            label="Clear contents"
-            icon={<BiX fontSize="1rem" />}
-            onClick={() => clearSelectedCells({ editor })}
-          />
-          <ActionButton
-            label="Merge cells"
-            icon={<IconMergeCells boxSize="1rem" />}
-            onClick={() => editor.chain().focus().mergeCells().run()}
-          />
-        </ActionGroup>
-      )
-    case "single-cell":
-      return (
-        <ActionGroup>
-          <ActionButton
-            label="Clear contents"
-            icon={<BiX fontSize="1rem" />}
-            onClick={() => clearSelectedCells({ editor })}
-          />
-        </ActionGroup>
+        <ActionButton
+          label="Merge cells"
+          icon={<IconMergeCells boxSize="1rem" />}
+          onClick={() => editor.chain().focus().mergeCells().run()}
+        />
       )
     case "single-cell":
       return (
@@ -643,16 +616,13 @@ const TableSelectionActions = ({
   }
 }
 
-// `useTextEditor` runs with `shouldRerenderOnTransaction: true`, so every
-// transaction re-renders every editor consumer, including this component. If
-// the `shouldShow` prop passed to `<BubbleMenu>` were a fresh closure on each
-// render, TipTap's BubbleMenu would treat it as changed props and re-register
-// its plugin, which dispatches a transaction — which triggers another
-// re-render, forever. The prop must keep the same function identity across
-// renders (below, `TableBubbleMenu`'s `shouldShow` is a `useCallback` with no
-// deps) — that's what breaks the loop. This helper is a plain module-level
-// function for the same reason: no per-render identity to keep stable. See
-// .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
+// Stable module-level references. `useTextEditor` runs with
+// `shouldRerenderOnTransaction: true`, so every transaction re-renders every
+// editor consumer, including this component. If `shouldShow` / `options` /
+// `appendTo` were fresh values on each render, TipTap's BubbleMenu would
+// treat them as changed props and dispatch an options-update transaction —
+// which triggers another re-render. Keeping these stable breaks that loop.
+// See .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
 //
 // CellSelections with table actions (row/column/table/merge/split) or body-cell
 // colour show the menu. A plain text cursor inside a cell must not.
@@ -661,19 +631,17 @@ const TableSelectionActions = ({
 // Also stay hidden while prosemirror-tables is mid cell-drag
 // (`tableEditingKey` is set in mousemove, cleared to null on mouseup) so the
 // menu only settles after the drag commits — not for every intermediate rect.
-const TABLE_BUBBLE_MENU_TRIGGER_SELECTOR = "[data-table-bubble-menu-trigger]"
-const TABLE_BUBBLE_MENU_SELECTOR = "[data-table-bubble-menu]"
-
-const isTableBubbleMenuTriggerFocused = () =>
-  document.activeElement?.closest(TABLE_BUBBLE_MENU_TRIGGER_SELECTOR) != null
-
-const isEditorModalOpen = () =>
-  document.querySelector('[role="dialog"][aria-modal="true"]') != null
-
-const hasActionableTableSelection = (
-  editor: Editor,
-  view: Editor["view"],
-): boolean => {
+const shouldShowTableBubbleMenu = ({
+  editor,
+  view,
+  element,
+  anchor,
+}: {
+  editor: Editor
+  view: Editor["view"]
+  element: HTMLElement
+  anchor?: TableBubbleMenuAnchor
+}) => {
   if (tableEditingKey.getState(view.state) != null) return false
 
   const { kind, hasBodyCell } = detectSelectionType(editor)
@@ -681,23 +649,14 @@ const hasActionableTableSelection = (
   // Ordinary single cells only surface when colour can apply (body cells).
   if (kind === "single-cell" && !hasBodyCell) return false
 
-  return true
-}
-
-const shouldShowTableBubbleMenu = ({
-  editor,
-  view,
-  element,
-}: {
-  editor: Editor
-  view: Editor["view"]
-  element: HTMLElement
-}) => {
-  if (!hasActionableTableSelection(editor, view)) return false
-  if (isEditorModalOpen()) return false
+  // An optional anchor can defer showing until its reference is mounted,
+  // avoiding a one-frame jump from the default selection-box position.
+  if (anchor?.shouldWaitForReference()) {
+    return false
+  }
 
   const isChildOfMenu = element.contains(document.activeElement)
-  return view.hasFocus() || isChildOfMenu || isTableBubbleMenuTriggerFocused()
+  return view.hasFocus() || isChildOfMenu
 }
 
 // Immediate show/hide once `shouldShow` flips — TipTap's default 250ms delay
@@ -709,11 +668,25 @@ const TABLE_BUBBLE_MENU_UPDATE_DELAY = 0
 // anchors inside EditorContent and the menu gets clipped above the selection).
 // Do NOT appendTo document.body — TipTap's blur handler treats any body focus
 // target as "inside the menu" via parentNode.contains and hangs FocusLock.
+//
+// `bottom-start` keeps an optional custom reference visible above the menu;
+// `flip: false` prevents Floating UI from changing sides between position
+// passes while that reference mounts.
 const TABLE_BUBBLE_MENU_OPTIONS = {
   strategy: "fixed" as const,
-  placement: "top" as const,
+  placement: "bottom-start" as const,
   offset: 8,
+  flip: false,
 }
+
+// Applied to TipTap's floating root (`menuEl`), not just the inner surface.
+// It must stack above sibling table overlays and `.selectedCell::after`.
+// 1000 matches Chakra's `dropdown` token.
+export const TABLE_BUBBLE_MENU_Z_INDEX = 1000
+
+const TABLE_BUBBLE_MENU_STYLE = {
+  zIndex: TABLE_BUBBLE_MENU_Z_INDEX,
+} as const
 
 // Stable explicit plugin key so we can nudge TipTap's show/hide when
 // `tableEditingKey` flips without a selection/doc change (mouseup only clears
@@ -721,15 +694,30 @@ const TABLE_BUBBLE_MENU_OPTIONS = {
 // would otherwise never re-run `shouldShow`).
 const TABLE_BUBBLE_MENU_PLUGIN_KEY = new PluginKey("tableBubbleMenu")
 
+/** Hide the table bubble menu while an external interaction is in flight. */
+export const hideTableBubbleMenu = (editor: Editor) => {
+  editor.view.dispatch(
+    editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
+  )
+}
+
 // TipTap's `show` meta runs `updatePosition()` *before* `show()`, and
 // `updatePosition` no-ops while `!isVisible` — so a bare `show` meta leaves
 // the menu unpositioned (often effectively invisible). Show first, then
 // position.
-const revealTableBubbleMenuActions = (editor: Editor, isActivated: boolean) => {
-  if (!isActivated || !hasActionableTableSelection(editor, editor.view)) {
-    editor.view.dispatch(
-      editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
-    )
+export const revealTableBubbleMenu = (
+  editor: Editor,
+  anchor?: TableBubbleMenuAnchor,
+) => {
+  if (
+    !shouldShowTableBubbleMenu({
+      editor,
+      view: editor.view,
+      element: editor.view.dom,
+      anchor,
+    })
+  ) {
+    hideTableBubbleMenu(editor)
     return
   }
   editor.view.dispatch(
@@ -740,9 +728,128 @@ const revealTableBubbleMenuActions = (editor: Editor, isActivated: boolean) => {
   )
 }
 
+const dispatchUpdatePosition = (editor: Editor) => {
+  editor.view.dispatch(
+    editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "updatePosition"),
+  )
+}
+
+const TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR = "data-table-bubble-menu-staging"
+const TABLE_BUBBLE_MENU_INSTANCE_ATTR = "data-table-bubble-menu-instance"
+const tableBubbleMenuInstanceIds = new WeakMap<Editor, string>()
+let nextTableBubbleMenuInstanceId = 0
+
+const getTableBubbleMenuInstanceId = (editor: Editor): string => {
+  const existing = tableBubbleMenuInstanceIds.get(editor)
+  if (existing) return existing
+  const id = `table-bubble-menu-${nextTableBubbleMenuInstanceId++}`
+  tableBubbleMenuInstanceIds.set(editor, id)
+  return id
+}
+
+/** Force the floating root hidden while we wait for a correct anchor/layout. */
+const beginBubbleMenuStagingHidden = (editor: Editor) => {
+  const instanceId = getTableBubbleMenuInstanceId(editor)
+  if (
+    document.querySelector(
+      `style[${TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR}="${instanceId}"]`,
+    )
+  ) {
+    return
+  }
+  const style = document.createElement("style")
+  style.setAttribute(TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR, instanceId)
+  // Beat TipTap's inline `visibility: visible` from `updatePosition`.
+  style.textContent = `[${TABLE_BUBBLE_MENU_INSTANCE_ATTR}="${instanceId}"]{visibility:hidden!important}`
+  document.head.appendChild(style)
+}
+
+const endBubbleMenuStagingHidden = (editor: Editor) => {
+  const instanceId = getTableBubbleMenuInstanceId(editor)
+  document
+    .querySelector(
+      `style[${TABLE_BUBBLE_MENU_STAGING_STYLE_ATTR}="${instanceId}"]`,
+    )
+    ?.remove()
+}
+
+const afterNextPaint = (fn: () => void) => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(fn)
+  })
+}
+
+/**
+ * Reveal once an optional custom reference is laid out, while keeping the
+ * menu forced-hidden until Floating UI has a real size and a second position
+ * pass. Returns a cancel function for the in-flight rAF chain.
+ */
+const revealTableBubbleMenuWhenReferenced = (
+  editor: Editor,
+  anchor?: TableBubbleMenuAnchor,
+): (() => void) => {
+  let cancelled = false
+  const maxAttempts = 12
+
+  const unveil = () => {
+    if (cancelled) return
+    endBubbleMenuStagingHidden(editor)
+  }
+
+  const tryReveal = (attemptsLeft: number) => {
+    if (cancelled || editor.isDestroyed) {
+      endBubbleMenuStagingHidden(editor)
+      return
+    }
+    const { kind } = detectSelectionType(editor)
+    if (kind === "none") {
+      endBubbleMenuStagingHidden(editor)
+      return
+    }
+
+    if (anchor?.shouldWaitForReference()) {
+      if (attemptsLeft > 0) {
+        requestAnimationFrame(() => tryReveal(attemptsLeft - 1))
+        return
+      }
+      endBubbleMenuStagingHidden(editor)
+      return
+    }
+
+    // Keep hidden while TipTap shows + positions (possibly with 0 menu size).
+    beginBubbleMenuStagingHidden(editor)
+    revealTableBubbleMenu(editor, anchor)
+    afterNextPaint(() => {
+      if (cancelled || editor.isDestroyed) {
+        endBubbleMenuStagingHidden(editor)
+        return
+      }
+      // Second pass once content has a measurable size, still staged-hidden.
+      dispatchUpdatePosition(editor)
+      afterNextPaint(() => {
+        if (cancelled || editor.isDestroyed) {
+          endBubbleMenuStagingHidden(editor)
+          return
+        }
+        dispatchUpdatePosition(editor)
+        // TipTap's computePosition is async — wait one more frame after the
+        // last updatePosition dispatch before unveiling.
+        afterNextPaint(unveil)
+      })
+    })
+  }
+
+  beginBubbleMenuStagingHidden(editor)
+  requestAnimationFrame(() => tryReveal(maxAttempts))
+  return () => {
+    cancelled = true
+    endBubbleMenuStagingHidden(editor)
+  }
+}
+
 const useTableBubbleMenuDragSync = (
   editor: Editor,
-  isActivatedRef: MutableRefObject<boolean>,
+  anchor?: TableBubbleMenuAnchor,
 ) => {
   useEffect(() => {
     const onTransaction = ({
@@ -760,201 +867,72 @@ const useTableBubbleMenuDragSync = (
           )
           return
         }
-        revealTableBubbleMenuActions(editor, isActivatedRef.current)
+        revealTableBubbleMenu(editor, anchor)
       })
     }
     editor.on("transaction", onTransaction)
     return () => {
       editor.off("transaction", onTransaction)
     }
-  }, [editor, isActivatedRef])
+  }, [anchor, editor])
 }
 
-const TableBubbleMenuTrigger = ({
-  corner,
-  isActivated,
-  onToggle,
-}: {
-  corner: { x: number; y: number }
-  isActivated: boolean
-  onToggle: () => void
-}) => (
-  <Portal>
-    <Flex
-      as="button"
-      type="button"
-      aria-label="Table actions"
-      aria-pressed={isActivated}
-      data-table-bubble-menu-trigger
-      // Exempts this portaled button from Chakra Modal's FocusLock (e.g.
-      // Table Settings): react-focus-lock lets focus move freely to/from any
-      // element bearing this attribute instead of pulling it back into the
-      // modal.
-      data-no-focus-lock
-      position="fixed"
-      left={`${corner.x}px`}
-      top={`${corner.y}px`}
-      zIndex="dropdown"
-      transform="translate(-50%, -50%)"
-      p="0.5rem"
-      borderRadius="full"
-      cursor="pointer"
-      bg={isActivated ? "interaction.main.default" : "base.canvas.default"}
-      boxShadow="0 0 10px 0 rgba(191, 191, 191, 0.50)"
-      transition="background-color 0.15s, box-shadow 0.15s, filter 0.15s"
-      sx={{
-        _hover: isActivated
-          ? {
-              filter: "brightness(0.92)",
-              boxShadow: "0 0 12px 0 rgba(191, 191, 191, 0.65)",
-            }
-          : {
-              bg: "interaction.main-subtle.default",
-              boxShadow: "0 0 12px 0 rgba(191, 191, 191, 0.65)",
-            },
-      }}
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={onToggle}
-    >
-      <Icon
-        as={BiPencil}
-        fontSize="0.75rem"
-        color={isActivated ? "white" : "interaction.main.default"}
-      />
-    </Flex>
-  </Portal>
-)
-
+// memo: parent Editor re-renders on every TipTap transaction, including the
+// blur/focus meta transactions Chakra Modal FocusLock generates. TipTap's
+// BubbleMenu React wrapper re-runs useMenuElementProps on each render (fresh
+// restProps object) and fights FocusLock → tab hang when opening Table
+// Settings. Skipping parent-driven re-renders breaks that loop.
+//
+// Re-render only on selectionUpdate/update (not blur/focus meta) so kind and
+// move-edge affordances stay correct without FocusLock thrash.
 export const TableBubbleMenu = memo(function TableBubbleMenu({
   editor,
+  anchor,
 }: TableBubbleMenuProps) {
-  // TipTap's selector replaces manual event subscriptions. Document identity
-  // represents `update`; Selection.eq represents `selectionUpdate`. Include
-  // `isFocused` so the pencil trigger reappears when focus returns without a
-  // selection change. Meta-only blur/focus transactions compare equal on doc
-  // + selection and therefore do not re-render.
-  const { kind, hasBodyCell, selection, isFocused, isDragging } =
-    useEditorState({
-      editor,
-      selector: ({ editor: currentEditor }) => {
-        const detection = detectSelectionType(currentEditor)
-        return {
-          kind: detection.kind,
-          hasBodyCell: detection.hasBodyCell,
-          doc: currentEditor.state.doc,
-          selection: currentEditor.state.selection,
-          isFocused: currentEditor.isFocused,
-          isDragging: tableEditingKey.getState(currentEditor.state) != null,
-        }
-      },
-      equalityFn: (previous, next) =>
-        next !== null &&
-        previous.doc === next.doc &&
-        previous.selection.eq(next.selection) &&
-        previous.isFocused === next.isFocused &&
-        previous.isDragging === next.isDragging,
-    })
-
-  const showTrigger = kind !== "none" && !isDragging && isFocused
-
-  const corner = useTableBubbleMenuTriggerCorner(editor, showTrigger)
-
-  // Single source of truth for activation: `isActivatedRef` is what
-  // `shouldShow`/drag-sync read (they need a value that's always current,
-  // not one captured at some past render), and `isActivated` is only for
-  // triggering a re-render of the trigger button's appearance. `setActivated`
-  // keeps both in step from one call, so there's no second call site to
-  // forget.
-  const isActivatedRef = useRef(false)
-  const [isActivated, setIsActivatedState] = useState(false)
-  const setActivated = useCallback((value: boolean) => {
-    isActivatedRef.current = value
-    setIsActivatedState(value)
-  }, [])
-
-  const resetActivation = useCallback(() => {
-    setActivated(false)
-  }, [setActivated])
-
-  // A new CellSelection deactivates the menu so the pencil trigger reappears
-  // without the action list until the user clicks again. Setting a
-  // background colour mutates the doc under the same selection (so this
-  // effect would otherwise fire and close the swatch panel on every click) —
-  // skipNextSelectionResetRef lets that one action opt out.
-  const skipNextSelectionResetRef = useRef(false)
-  useEffect(() => {
-    if (skipNextSelectionResetRef.current) {
-      skipNextSelectionResetRef.current = false
-      return
-    }
-
-    resetActivation()
-    editor.view.dispatch(
-      editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
-    )
-  }, [editor, resetActivation, selection])
-
-  useEffect(() => {
-    const onBlur = ({ event }: { event?: FocusEvent }) => {
-      const relatedTarget = event?.relatedTarget
-      if (
-        relatedTarget instanceof Element &&
-        (relatedTarget.closest(TABLE_BUBBLE_MENU_TRIGGER_SELECTOR) ||
-          relatedTarget.closest(TABLE_BUBBLE_MENU_SELECTOR))
-      ) {
-        return
-      }
-      resetActivation()
-    }
-    editor.on("blur", onBlur)
-    return () => {
-      editor.off("blur", onBlur)
-    }
-  }, [editor, resetActivation])
-
-  const deactivateMenu = useCallback(() => {
-    resetActivation()
-    editor.view.dispatch(
-      editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
-    )
-  }, [editor, resetActivation])
-
-  const toggleMenu = useCallback(() => {
-    if (isActivatedRef.current) {
-      deactivateMenu()
-      return
-    }
-    setActivated(true)
-    // Clicking the portaled trigger blurs the editor; refocus so BubbleMenu's
-    // own blur handler and shouldShow keep the action menu visible.
-    editor.commands.focus()
-    revealTableBubbleMenuActions(editor, true)
-  }, [deactivateMenu, editor, setActivated])
-
-  // Stable across renders (see `shouldShowTableBubbleMenu` above for why that
-  // matters) without a module-level store: closing over `isActivatedRef`
-  // instead of a WeakMap keyed by editor scopes activation to this component
-  // instance, so a second mount for the same editor can't clobber it.
   const shouldShow = useCallback(
-    ({
-      editor: shouldShowEditor,
-      view,
-      element,
-    }: {
-      editor: Editor
-      view: Editor["view"]
-      element: HTMLElement
-    }) =>
-      shouldShowTableBubbleMenu({ editor: shouldShowEditor, view, element }) &&
-      isActivatedRef.current,
-    [],
+    (props: Parameters<typeof shouldShowTableBubbleMenu>[0]) =>
+      shouldShowTableBubbleMenu({ ...props, anchor }),
+    [anchor],
   )
+
+  // TipTap's selector replaces manual event subscriptions. Document identity
+  // represents `update`; Selection.eq represents `selectionUpdate`. Meta-only
+  // blur/focus transactions compare equal and therefore do not re-render.
+  const { kind, hasBodyCell, selectionAnchor, selectionHead } = useEditorState({
+    editor,
+    selector: ({ editor: currentEditor }) => {
+      const detection = detectSelectionType(currentEditor)
+      return {
+        kind: detection.kind,
+        hasBodyCell: detection.hasBodyCell,
+        doc: currentEditor.state.doc,
+        selection: currentEditor.state.selection,
+        // Primitives ensure a custom reference can update when the selection
+        // changes without changing `kind`.
+        selectionAnchor: currentEditor.state.selection.anchor,
+        selectionHead: currentEditor.state.selection.head,
+      }
+    },
+    equalityFn: (previous, next) =>
+      next !== null &&
+      previous.doc === next.doc &&
+      previous.selection.eq(next.selection),
+  })
 
   // TipTap early-returns when selection/doc are unchanged, so mouseup's
   // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
   // (or an explicit hide while selecting) force hide/reveal.
-  useTableBubbleMenuDragSync(editor, isActivatedRef)
+  useTableBubbleMenuDragSync(editor, anchor)
 
+  // Wait for an optional reference (and a post-show layout pass) before
+  // locking Floating UI's position. selectionAnchor/Head re-run when the
+  // reference changes even if `kind` is unchanged.
+  useEffect(() => {
+    if (kind === "none") return
+    return revealTableBubbleMenuWhenReferenced(editor, anchor)
+  }, [anchor, editor, kind, selectionAnchor, selectionHead])
+
+  const selection = editor.state.selection
   const canSetBackgroundColour =
     (kind === "multi-cell" ||
       kind === "row" ||
@@ -967,55 +945,37 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   const hasSelectionActions = kind !== "none" && kind !== "single-cell"
 
   return (
-    <>
-      {showTrigger && corner && (
-        <TableBubbleMenuTrigger
-          corner={corner}
-          isActivated={isActivated}
-          onToggle={toggleMenu}
-        />
-      )}
-      <BubbleMenu
-        editor={editor}
-        pluginKey={TABLE_BUBBLE_MENU_PLUGIN_KEY}
-        shouldShow={shouldShow}
-        updateDelay={TABLE_BUBBLE_MENU_UPDATE_DELAY}
-        options={TABLE_BUBBLE_MENU_OPTIONS}
-        // Forwarded onto BubbleMenuPlugin's own tabIndex=0 element. Exempts
-        // it from Chakra Modal's FocusLock (e.g. Table Settings) so the
-        // trap can stay enabled without the two fighting over focus.
-        data-no-focus-lock
+    <BubbleMenu
+      editor={editor}
+      pluginKey={TABLE_BUBBLE_MENU_PLUGIN_KEY}
+      shouldShow={shouldShow}
+      updateDelay={TABLE_BUBBLE_MENU_UPDATE_DELAY}
+      options={TABLE_BUBBLE_MENU_OPTIONS}
+      getReferencedVirtualElement={anchor?.getReferencedVirtualElement}
+      style={TABLE_BUBBLE_MENU_STYLE}
+      data-table-bubble-menu=""
+      data-table-bubble-menu-instance={getTableBubbleMenuInstanceId(editor)}
+    >
+      <VStack
+        align="stretch"
+        textAlign="left"
+        position="relative"
+        bg="base.canvas.default"
+        boxShadow="md"
+        borderRadius="md"
+        border="1px solid"
+        borderColor="base.divider.medium"
+        p="0.375rem"
+        gap="0"
       >
-        <VStack
-          align="stretch"
-          textAlign="left"
-          position="relative"
-          zIndex="dropdown"
-          data-table-bubble-menu
-          bg="base.canvas.default"
-          boxShadow="sm"
-          borderRadius="0.25rem"
-          border="1px solid"
-          borderColor="base.divider.medium"
-          py="0.5rem"
-          gap="0"
-        >
-          <TableSelectionActions editor={editor} kind={kind} />
-          {canSetBackgroundColour && (
-            <>
-              {hasSelectionActions && <ActionDivider />}
-              <BackgroundColourSection
-                editor={editor}
-                selection={selection}
-                onSetColor={(color) => {
-                  skipNextSelectionResetRef.current = true
-                  setSelectedBodyCellsBackgroundColor(editor, color)
-                }}
-              />
-            </>
-          )}
-        </VStack>
-      </BubbleMenu>
-    </>
+        <TableSelectionActions editor={editor} kind={kind} />
+        {canSetBackgroundColour && (
+          <>
+            {hasSelectionActions && <ActionDivider />}
+            <BackgroundColourSection editor={editor} selection={selection} />
+          </>
+        )}
+      </VStack>
+    </BubbleMenu>
   )
 })

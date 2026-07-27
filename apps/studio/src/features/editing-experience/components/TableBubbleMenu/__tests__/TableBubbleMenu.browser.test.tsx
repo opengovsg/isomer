@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
 
-import { TableBubbleMenu } from "../TableBubbleMenu"
+import { TABLE_BUBBLE_MENU_Z_INDEX, TableBubbleMenu } from "./TableBubbleMenu"
 
 const SEED_CONTENT: JSONContent = {
   type: "prose",
@@ -78,15 +78,6 @@ const selectCells = (editor: Editor, startIndex: number, endIndex: number) => {
     // A real pointer selection focuses the editor. Make that precondition
     // explicit instead of relying on menu rendering to steal focus.
     editor.chain().focus().setCellSelection({ anchorCell, headCell }).run()
-  })
-}
-
-const activateTableBubbleMenu = async (
-  findByRole: (role: string, options: { name: string }) => Promise<HTMLElement>,
-) => {
-  const trigger = await findByRole("button", { name: "Table actions" })
-  act(() => {
-    trigger.click()
   })
 }
 
@@ -175,30 +166,31 @@ describe("TableBubbleMenu", () => {
     cleanup()
   })
 
-  it("stacks the menu above the selected-cell highlight", async () => {
-    const { editor, findByText, findByRole, container } = await renderHarness()
+  it("stacks the menu above the table caption, selection, and drag handles", async () => {
+    const { editor, findByText, container } = await renderHarness()
 
     selectCells(editor, 3, 5)
-    await activateTableBubbleMenu(findByRole)
 
     const action = await findByText("Add row above")
-    const menuSurface = action.closest("button")?.parentElement?.parentElement
+    // Button → ActionGroup → menu VStack → TipTap floating root (where z-index
+    // must live so the portal stacks above all sibling table overlays).
+    const menuRoot =
+      action.closest("button")?.parentElement?.parentElement?.parentElement
     const selectedCell = container.querySelector(".selectedCell")
 
-    expect(menuSurface).not.toBeNull()
+    expect(menuRoot).not.toBeNull()
     expect(selectedCell).not.toBeNull()
 
-    const menuZIndex = Number(getComputedStyle(menuSurface!).zIndex)
-    // The `.selectedCell::after` highlight in tiptap.scss uses z-index: 2.
-    expect(menuZIndex).toBeGreaterThan(2)
+    const menuZIndex = Number(getComputedStyle(menuRoot!).zIndex)
+    // TableCaption is z-index 1; selection/drag overlays reach z-index 3.
+    expect(menuZIndex).toBe(TABLE_BUBBLE_MENU_Z_INDEX)
+    expect(menuZIndex).toBeGreaterThan(3)
   })
 
   it("shows row actions (including Delete row) when a body row is selected", async () => {
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
 
     selectCells(editor, 3, 5) // the full body row (not the first row)
-    await activateTableBubbleMenu(findByRole)
 
     expect(queryByText("Header row")).toBeNull()
     expect(await findByText("Add row above")).toBeTruthy()
@@ -213,34 +205,28 @@ describe("TableBubbleMenu", () => {
 
     // Body row — not the top row
     selectCells(editor, 3, 5)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
 
     // Exact header / top row
     selectCells(editor, 0, 2)
-    await activateTableBubbleMenu(findByRole)
     expect(await findByRole("checkbox", { name: "Header row" })).toBeChecked()
 
     // Top row + body row — overlaps the top row but is not exactly it
     selectCells(editor, 0, 5)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
 
     // Middle column — not the leftmost column
     selectCells(editor, 1, 7)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()
 
     // Exact leftmost column
     selectCells(editor, 0, 6)
-    await activateTableBubbleMenu(findByRole)
     expect(
       await findByRole("checkbox", { name: "Header column" }),
     ).not.toBeChecked()
 
     // Leftmost + next column — overlaps leftmost but is not exactly it
     selectCells(editor, 0, 7)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()
   })
 
@@ -248,7 +234,6 @@ describe("TableBubbleMenu", () => {
     const { editor, findByRole, findByText } = await renderHarness()
 
     selectCells(editor, 0, 2) // header row (includes first row)
-    await activateTableBubbleMenu(findByRole)
     const rowToggle = await findByRole("checkbox", { name: "Header row" })
     const addRow = await findByText("Add row above")
     expect(
@@ -257,7 +242,6 @@ describe("TableBubbleMenu", () => {
     ).toBeTruthy()
 
     selectCells(editor, 0, 6) // leftmost column (includes first column)
-    await activateTableBubbleMenu(findByRole)
     const colToggle = await findByRole("checkbox", { name: "Header column" })
     const addCol = await findByText("Add column left")
     expect(
@@ -267,46 +251,39 @@ describe("TableBubbleMenu", () => {
   })
 
   it("hides Move left/right (and up/down) when the selection is already at that edge", async () => {
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
 
     // Leftmost column (A): cells 0, 3, 6
     selectCells(editor, 0, 6)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByText("Move left")).toBeNull()
     expect(await findByText("Move right")).toBeTruthy()
 
     // Rightmost column (C): cells 2, 5, 8
     selectCells(editor, 2, 8)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByText("Move right")).toBeNull()
     expect(await findByText("Move left")).toBeTruthy()
 
     // Leftmost two columns (A+B): anchor header A → bottom of B
     selectCells(editor, 0, 7)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByText("Move left")).toBeNull()
     expect(await findByText("Move right")).toBeTruthy()
 
     // Bottom body row
     selectCells(editor, 6, 8)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByText("Move down")).toBeNull()
     expect(await findByText("Move up")).toBeTruthy()
 
     // Header row (top)
     selectCells(editor, 0, 2)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByText("Move up")).toBeNull()
-    expect(queryByText("Move down")).toBeNull()
+    expect(await findByText("Move down")).toBeTruthy()
   })
 
   it("moves a multi-column selection as a block (A,B → right becomes C,A,B)", async () => {
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText } = await renderHarness()
 
     // Full columns A+B
     selectCells(editor, 0, 7)
-    await activateTableBubbleMenu(findByRole)
     expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
 
     const moveRight = await findByText("Move right")
@@ -318,14 +295,12 @@ describe("TableBubbleMenu", () => {
   })
 
   it("duplicates a body row immediately below with the same cell content", async () => {
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText } = await renderHarness()
 
     // First body row: cells 3–5 ("Row 1, A/B/C")
     selectCells(editor, 3, 5)
     expect(tableRowCount(editor)).toBe(3)
     expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
-    await activateTableBubbleMenu(findByRole)
-
     const duplicate = await findByText("Duplicate row")
     act(() => {
       duplicate.click()
@@ -338,13 +313,11 @@ describe("TableBubbleMenu", () => {
   })
 
   it("duplicates a multi-row selection as a contiguous block", async () => {
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText } = await renderHarness()
 
     // Both body rows: cells 3–8
     selectCells(editor, 3, 8)
     expect(tableRowCount(editor)).toBe(3)
-    await activateTableBubbleMenu(findByRole)
-
     const duplicate = await findByText("Duplicate row")
     act(() => {
       duplicate.click()
@@ -358,14 +331,12 @@ describe("TableBubbleMenu", () => {
   })
 
   it("duplicates a column immediately to the right with the same cell content", async () => {
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText } = await renderHarness()
 
     // Column B: header cell 1 + body cells 4 and 7
     selectCells(editor, 1, 7)
     expect(tableColumnCount(editor)).toBe(3)
     expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
-    await activateTableBubbleMenu(findByRole)
-
     const duplicate = await findByText("Duplicate column")
     act(() => {
       duplicate.click()
@@ -387,13 +358,11 @@ describe("TableBubbleMenu", () => {
   })
 
   it("duplicates a multi-column selection as a contiguous block", async () => {
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText } = await renderHarness()
 
     // Columns A+B
     selectCells(editor, 0, 7)
     expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
-    await activateTableBubbleMenu(findByRole)
-
     const duplicate = await findByText("Duplicate column")
     act(() => {
       duplicate.click()
@@ -410,12 +379,10 @@ describe("TableBubbleMenu", () => {
   })
 
   it("clears every cell in a selected row without removing the row", async () => {
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText } = await renderHarness()
 
     selectCells(editor, 3, 5)
     expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
-    await activateTableBubbleMenu(findByRole)
-
     const clearRow = await findByText("Clear contents")
     act(() => {
       clearRow.click()
@@ -427,13 +394,11 @@ describe("TableBubbleMenu", () => {
   })
 
   it("clears every cell in a selected column without removing the column", async () => {
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText } = await renderHarness()
 
     selectCells(editor, 1, 7)
     expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
     expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
-    await activateTableBubbleMenu(findByRole)
-
     const clearColumn = await findByText("Clear contents")
     act(() => {
       clearColumn.click()
@@ -446,13 +411,10 @@ describe("TableBubbleMenu", () => {
   })
 
   it("clears header row content while keeping the header row", async () => {
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
 
     selectCells(editor, 0, 2)
     expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
-    await activateTableBubbleMenu(findByRole)
-
     const clearRow = await findByText("Clear contents")
     act(() => {
       clearRow.click()
@@ -463,136 +425,75 @@ describe("TableBubbleMenu", () => {
 
     // Header axes withhold Delete row even after clearing.
     selectCells(editor, 0, 2)
-    await activateTableBubbleMenu(findByRole)
     expect(await findByText("Clear contents")).toBeTruthy()
     expect(queryByText("Delete row")).toBeNull()
   })
 
-  it("withholds Delete and Move when selection includes header row", async () => {
+  it("excludes Delete row when the selection includes the header row", async () => {
     const { editor, findByText, findByRole, queryByText, queryByRole } =
       await renderHarness()
 
     selectCells(editor, 0, 2) // the full header row
-    await activateTableBubbleMenu(findByRole)
 
     const headerToggle = await findByRole("checkbox", { name: "Header row" })
     expect(headerToggle).toBeChecked()
     expect(await findByText("Add row above")).toBeTruthy()
     expect(await findByText("Add row below")).toBeTruthy()
+    expect(await findByText("Move down")).toBeTruthy()
+    // Header axes withhold Delete — unset the header first, then delete as a
+    // body row/column — including when the selection also spans body rows.
     expect(queryByText("Delete row")).toBeNull()
     expect(queryByText("Move up")).toBeNull()
-    expect(queryByText("Move down")).toBeNull()
 
+    // Header row + first body row: still withhold Delete, but the Header
+    // switch is only for the exact top row.
     selectCells(editor, 0, 5)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
     expect(queryByText("Delete row")).toBeNull()
-    expect(queryByText("Move up")).toBeNull()
-    expect(queryByText("Move down")).toBeNull()
   })
 
-  it("withholds Delete and Move when selection includes header column", async () => {
+  it("excludes Delete column when the selection includes a header column", async () => {
     const { editor, findByText, findByRole, queryByText, queryByRole } =
       await renderHarness()
 
     // Seed table has a header row only — leftmost column is still deletable.
     selectCells(editor, 0, 6)
-    await activateTableBubbleMenu(findByRole)
     expect(
       await findByRole("checkbox", { name: "Header column" }),
     ).not.toBeChecked()
     expect(await findByText("Delete column")).toBeTruthy()
-    expect(await findByText("Move right")).toBeTruthy()
 
     act(() => {
       editor.chain().focus().toggleHeaderColumn().run()
     })
 
     selectCells(editor, 0, 6) // header column alone
-    await activateTableBubbleMenu(findByRole)
     expect(
       await findByRole("checkbox", { name: "Header column" }),
     ).toBeChecked()
     expect(queryByText("Delete column")).toBeNull()
-    expect(queryByText("Move left")).toBeNull()
-    expect(queryByText("Move right")).toBeNull()
 
+    // Header column + next column: still withhold Delete; Header switch only
+    // for the exact leftmost column.
     selectCells(editor, 0, 7)
-    await activateTableBubbleMenu(findByRole)
     expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()
     expect(queryByText("Delete column")).toBeNull()
-    expect(queryByText("Move left")).toBeNull()
-    expect(queryByText("Move right")).toBeNull()
   })
 
-  it("shows Clear contents and Merge cells for an irregular multi-cell selection", async () => {
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+  it("shows only Merge cells for an irregular multi-cell selection", async () => {
+    const { editor, findByText, queryByText } = await renderHarness()
 
     selectCells(editor, 3, 7) // an irregular 2x2-ish block, not a full row/column
-    await activateTableBubbleMenu(findByRole)
 
-    expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
     expect(queryByText("Delete row")).toBeNull()
     expect(queryByText("Delete column")).toBeNull()
-  })
-
-  it("clears every cell in a multi-cell block without removing cells", async () => {
-    const { editor, findByText, findByRole } = await renderHarness()
-
-    selectCells(editor, 3, 7)
-    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
-    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
-    await activateTableBubbleMenu(findByRole)
-
-    const clearBlock = await findByText("Clear contents")
-    act(() => {
-      clearBlock.click()
-    })
-
-    expect(tableRowCount(editor)).toBe(3)
-    expect(tableColumnCount(editor)).toBe(3)
-    expect(rowTextsAt(editor, 1)).toEqual(["", "", "Row 1, C"])
-    expect(rowTextsAt(editor, 2)).toEqual(["", "", "Row 2, C"])
-  })
-
-  it("shows Clear contents and Delete table for a whole-table selection", async () => {
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
-
-    selectCells(editor, 0, 8)
-    await activateTableBubbleMenu(findByRole)
-
-    expect(await findByText("Clear contents")).toBeTruthy()
-    expect(await findByText("Delete table")).toBeTruthy()
-    expect(queryByText("Merge cells")).toBeNull()
-    expect(queryByText("Delete row")).toBeNull()
-  })
-
-  it("clears every cell in a whole-table selection without removing the table", async () => {
-    const { editor, findByText, findByRole } = await renderHarness()
-
-    selectCells(editor, 0, 8)
-    await activateTableBubbleMenu(findByRole)
-
-    const clearTable = await findByText("Clear contents")
-    act(() => {
-      clearTable.click()
-    })
-
-    expect(tableRowCount(editor)).toBe(3)
-    expect(tableColumnCount(editor)).toBe(3)
-    expect(firstRowTexts(editor)).toEqual(["", "", ""])
-    expect(rowTextsAt(editor, 1)).toEqual(["", "", ""])
-    expect(rowTextsAt(editor, 2)).toEqual(["", "", ""])
   })
 
   it("applies a background colour from the inline swatches", async () => {
     // Arrange
     const { editor, findByRole, findByText, container } = await renderHarness()
     selectCells(editor, 3, 7)
-    await activateTableBubbleMenu(findByRole)
 
     // Act — label is plain text; swatches sit underneath and are immediately
     // available (no navigate-away submenu).
@@ -616,12 +517,10 @@ describe("TableBubbleMenu", () => {
 
   it("hides Background colour for a header row selection", async () => {
     // Arrange
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
 
     // Act
     selectCells(editor, 0, 2)
-    await activateTableBubbleMenu(findByRole)
     await findByText("Add row above")
 
     // Assert
@@ -630,11 +529,10 @@ describe("TableBubbleMenu", () => {
 
   it("shows Background colour for a body row selection", async () => {
     // Arrange
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText } = await renderHarness()
 
     // Act
     selectCells(editor, 3, 5)
-    await activateTableBubbleMenu(findByRole)
 
     // Assert
     expect(await findByText("Background colour")).toBeTruthy()
@@ -644,7 +542,6 @@ describe("TableBubbleMenu", () => {
     // Arrange
     const { editor, findByText, findByRole } = await renderHarness()
     selectCells(editor, 3, 7)
-    await activateTableBubbleMenu(findByRole)
 
     // Assert — colour section is inline; row/merge actions stay visible
     expect(await findByText("Merge cells")).toBeTruthy()
@@ -654,10 +551,8 @@ describe("TableBubbleMenu", () => {
 
   it("shows actions again after the menu hides during cell drag", async () => {
     // Arrange
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
     selectCells(editor, 3, 7)
-    await activateTableBubbleMenu(findByRole)
     expect(await findByText("Merge cells")).toBeTruthy()
     expect(await findByText("Background colour")).toBeTruthy()
 
@@ -680,38 +575,15 @@ describe("TableBubbleMenu", () => {
   })
 
   it("shows no menu content for a plain cursor outside any selection", async () => {
-    const { queryByText, queryByRole } = await renderHarness()
+    const { queryByText } = await renderHarness()
 
     expect(queryByText("Delete table")).toBeNull()
     expect(queryByText("Merge cells")).toBeNull()
     expect(queryByText("Add row above")).toBeNull()
-    expect(queryByRole("button", { name: "Table actions" })).toBeNull()
-  })
-
-  it("shows the pencil trigger without the action menu until it is activated", async () => {
-    const { editor, findByRole, findByText, queryByText } =
-      await renderHarness()
-
-    selectCells(editor, 3, 5)
-
-    const trigger = await findByRole("button", { name: "Table actions" })
-    expect(trigger).toHaveAttribute("aria-pressed", "false")
-    expect(queryByText("Delete row")).toBeNull()
-
-    await activateTableBubbleMenu(findByRole)
-
-    expect(trigger).toHaveAttribute("aria-pressed", "true")
-    expect(await findByText("Delete row")).toBeTruthy()
-
-    await activateTableBubbleMenu(findByRole)
-
-    expect(trigger).toHaveAttribute("aria-pressed", "false")
-    expect(queryByText("Delete row")).toBeNull()
   })
 
   it("shows Split cell for a merged cell, and Background colour for an ordinary body cell", async () => {
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
 
     // Merge two adjacent body cells into one, then re-select just that
     // resulting cell — structural action is Split; colour still applies.
@@ -720,16 +592,13 @@ describe("TableBubbleMenu", () => {
       editor.chain().focus().mergeCells().run()
     })
     selectCells(editor, 3, 3)
-    await activateTableBubbleMenu(findByRole)
 
-    expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Split cell")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
     expect(await findByText("Background colour")).toBeTruthy()
 
     // An ordinary (never-merged) body cell shows colour only.
     selectCells(editor, 6, 6)
-    await activateTableBubbleMenu(findByRole)
     expect(await findByText("Background colour")).toBeTruthy()
     expect(queryByText("Split cell")).toBeNull()
     expect(queryByText("Merge cells")).toBeNull()
@@ -741,12 +610,11 @@ describe("TableBubbleMenu", () => {
   })
 
   it("clears a single selected cell without removing the cell", async () => {
-    const { editor, findByText, findByRole } = await renderHarness()
+    const { editor, findByText } = await renderHarness()
 
     selectCells(editor, 6, 6)
     expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
 
-    await activateTableBubbleMenu(findByRole)
     const clearCell = await findByText("Clear contents")
     act(() => {
       clearCell.click()
@@ -775,11 +643,9 @@ describe("TableBubbleMenu", () => {
 
   it("hides when focus moves outside the editor (e.g. Table Settings modal)", async () => {
     // TipTap's blur handler hides the menu when focus leaves the editor.
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
 
     selectCells(editor, 3, 5)
-    await activateTableBubbleMenu(findByRole)
     expect(await findByText("Delete row")).toBeTruthy()
 
     act(() => {
@@ -802,11 +668,9 @@ describe("TableBubbleMenu", () => {
     // Hang path: Modal FocusLock ↔ TipTap blur/focus meta transactions
     // re-render BubbleMenu; useMenuElementProps rebinds listeners each
     // render. memo + selection-only kind updates must keep this finite.
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
 
     selectCells(editor, 3, 5)
-    await activateTableBubbleMenu(findByRole)
     expect(await findByText("Delete row")).toBeTruthy()
 
     const outside = document.createElement("button")
@@ -847,11 +711,9 @@ describe("TableBubbleMenu", () => {
     // prosemirror-tables sets `tableEditingKey` for the duration of a cell
     // drag (mousemove) and clears it on mouseup. The menu must not appear for
     // intermediate selection rects during that window.
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
+    const { editor, findByText, queryByText } = await renderHarness()
 
     selectCells(editor, 3, 5)
-    await activateTableBubbleMenu(findByRole)
     expect(await findByText("Delete row")).toBeTruthy()
 
     act(() => {
@@ -872,7 +734,6 @@ describe("TableBubbleMenu", () => {
     act(() => {
       editor.view.dispatch(editor.state.tr.setMeta(tableEditingKey, -1))
     })
-    await activateTableBubbleMenu(findByRole)
     expect(await findByText("Merge cells")).toBeTruthy()
   })
 })
