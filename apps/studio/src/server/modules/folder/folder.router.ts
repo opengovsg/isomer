@@ -239,6 +239,23 @@ export const folderRouter = router({
             })
           }
 
+          // Capture the folder's CURRENT full permalink BEFORE the update below
+          // rewrites Resource.permalink — getResourceFullPermalink walks the live
+          // tree, so reading it afterwards would return the NEW path and the
+          // redirect would be a no-op. Only needed on an actual permalink change
+          // with the advanced-redirects flag on.
+          const willCreateRedirect =
+            !!permalink &&
+            permalink !== oldResource.permalink &&
+            ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY)
+          const oldFullPermalink = willCreateRedirect
+            ? await getResourceFullPermalink(
+                Number(siteId),
+                Number(resourceId),
+                tx,
+              )
+            : null
+
           const newResource = await tx
             .updateTable("Resource")
             .where("Resource.id", "=", oldResource.id)
@@ -287,38 +304,25 @@ export const folderRouter = router({
           })
 
           // A renamed folder/collection changes every descendant's URL — preserve
-          // them with one wildcard redirect ("/old-folder/*"). Gated behind the
-          // advanced-redirects flag so it stays dark until the edge resolver ships.
-          if (
-            oldResource.permalink !== newResource.permalink &&
-            ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY)
-          ) {
-            const oldFullPermalink = await getResourceFullPermalink(
-              Number(siteId),
-              Number(resourceId),
-              tx,
-            )
-            if (oldFullPermalink !== null) {
-              // Only the last path segment changed, so swap it to derive the new
-              // full permalink without re-walking the ancestor chain.
-              const newFullPermalink =
-                oldFullPermalink.slice(
-                  0,
-                  oldFullPermalink.lastIndexOf("/") + 1,
-                ) + newResource.permalink
-              await applyFolderPermalinkChangeRedirects(tx, {
+          // them with one wildcard redirect ("/old-folder/*"). oldFullPermalink
+          // was captured pre-update; only the last path segment changed, so swap
+          // it to derive the new full permalink without re-walking the tree.
+          if (willCreateRedirect && oldFullPermalink !== null) {
+            const newFullPermalink =
+              oldFullPermalink.slice(0, oldFullPermalink.lastIndexOf("/") + 1) +
+              newResource.permalink
+            await applyFolderPermalinkChangeRedirects(tx, {
+              siteId: Number(siteId),
+              oldFullPermalink,
+              newFullPermalink,
+              resourceId,
+              hasLiveContent: await hasPublishedDescendant(tx, {
                 siteId: Number(siteId),
-                oldFullPermalink,
-                newFullPermalink,
                 resourceId,
-                hasLiveContent: await hasPublishedDescendant(tx, {
-                  siteId: Number(siteId),
-                  resourceId,
-                }),
-                shouldCreateRedirect,
-                byUserId: user.id,
-              })
-            }
+              }),
+              shouldCreateRedirect,
+              byUserId: user.id,
+            })
           }
 
           return newResource
