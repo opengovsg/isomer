@@ -613,6 +613,16 @@ const TableSelectionActions = ({
           />
         </ActionGroup>
       )
+    case "single-cell":
+      return (
+        <ActionGroup>
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={() => clearSelectedCells({ editor })}
+          />
+        </ActionGroup>
+      )
     case "merged-cell":
       return (
         <ActionGroup>
