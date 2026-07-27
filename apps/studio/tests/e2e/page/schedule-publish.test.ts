@@ -85,6 +85,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       page,
       siteId,
       seededPage.id,
+      { scheduleClock: true },
     )
     await editorAfterSchedule.cancelSchedule()
 
