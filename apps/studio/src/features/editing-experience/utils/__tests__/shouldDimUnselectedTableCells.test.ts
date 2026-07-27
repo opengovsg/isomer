@@ -20,7 +20,7 @@ describe("shouldDimUnselectedTableCells", () => {
           width: 4,
           height: 3,
           // One cell node spans this 2×2 block (offsets repeat in TableMap).
-          map: [0, 1, 2, 3, 4, 5, 5, 6, 8, 9, 10, 11],
+          map: [0, 1, 2, 3, 4, 5, 5, 6, 8, 5, 5, 11],
         },
       }),
     ).toBe(false)
