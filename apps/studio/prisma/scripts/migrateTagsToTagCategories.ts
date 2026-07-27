@@ -170,7 +170,8 @@ export const collateLegacyTags = (
   const mappings = new Map<string, Set<string>>()
   for (const [categoryKey, optionByKey] of optionsByCategoryKey) {
     if (optionByKey.size === 0) continue
-    const categoryLabel = categoryByKey.get(categoryKey)!
+    const categoryLabel = categoryByKey.get(categoryKey)
+    if (!categoryLabel) continue
     mappings.set(categoryLabel, new Set(optionByKey.values()))
   }
 
@@ -1084,7 +1085,7 @@ export const migrateCollection = async ({
       indexRow.draftUpdatedAt &&
       hasDraftIndexChanges
     ) {
-      await updateDraftBlobInPlace(tx, {
+      await updateDraftBlobInPlace<CollectionIndexContent>(tx, {
         resourceId: indexRow.resourceId,
         expectedDraftBlobId: indexRow.draftBlobId,
         expectedUpdatedAt: indexRow.draftUpdatedAt,
@@ -1150,7 +1151,7 @@ export const migrateCollection = async ({
         row.draftBlobId &&
         row.draftUpdatedAt
       ) {
-        await updateDraftBlobInPlace(tx, {
+        await updateDraftBlobInPlace<CollectionItemContent>(tx, {
           resourceId: row.resourceId,
           expectedDraftBlobId: row.draftBlobId,
           expectedUpdatedAt: row.draftUpdatedAt,
