@@ -36,10 +36,7 @@ export class PageEditorPO {
     await this.page
       .getByRole("button", { name: new RegExp(label, "i") })
       .click({ force: true })
-    const drawer = this.page.locator("form").filter({
-      has: this.page.getByRole("button", { name: "Save changes" }),
-    })
-    await drawer.getByRole("textbox").first().fill(text)
+    await this.page.getByRole("textbox").first().fill(text)
   }
 
   async saveBlockChanges() {
