@@ -2002,4 +2002,47 @@ describe("redirect.router", async () => {
       expect(count).toBe(0)
     })
   })
+
+  describe("create — wildcard sources", () => {
+    it("stores a wildcard whose internal destination becomes a page reference", async () => {
+      // Arrange
+      const { page } = await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "new-section",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      await caller.create({
+        siteId,
+        source: "/old-section/*",
+        destination: "/new-section",
+      })
+
+      // Assert — the destination resolves to a [resource:…] reference so it
+      // follows the page if its permalink changes; the "/*" stays in the source.
+      const row = await db
+        .selectFrom("Redirect")
+        .select(["source", "destination"])
+        .where("siteId", "=", siteId)
+        .where("source", "=", "/old-section/*")
+        .executeTakeFirstOrThrow()
+      expect(row.source).toBe("/old-section/*")
+      expect(row.destination).toBe(`[resource:${siteId}:${page.id}]`)
+    })
+
+    it("does not block a wildcard source as if it shadowed a published page", async () => {
+      // Arrange — there is no published page at "/anything/*" (the literal path
+      // with "/*" can never match any real resource), so the create must succeed.
+      await expect(
+        caller.create({
+          siteId,
+          source: "/anything/*",
+          destination: "/home",
+        }),
+      ).resolves.toBeDefined()
+    })
+  })
 })
