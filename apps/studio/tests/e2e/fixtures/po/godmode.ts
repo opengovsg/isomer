@@ -124,7 +124,7 @@ export class GodmodePO {
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
-type ListAllSitesRow = {
+interface ListAllSitesRow {
   id: number
   codeBuildId: string | null
 }
