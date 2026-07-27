@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest"
 import { isSiteNotificationActive } from "../isSiteNotificationActive"
 
 describe("isSiteNotificationActive", () => {
+  it("returns false when notification is undefined", () => {
+    expect(isSiteNotificationActive(undefined)).toBe(false)
+  })
+
   describe("when type is omitted (backward compatibility)", () => {
     it("returns true when title is non-empty", () => {
       // Arrange

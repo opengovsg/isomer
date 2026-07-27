@@ -70,8 +70,7 @@ const NotificationSettingsPage: NextPageWithLayout = () => {
   })
 
   const [state, setState] = useState<Notification>(
-    previousNotification.notification &&
-      isSiteNotificationActive(previousNotification.notification)
+    isSiteNotificationActive(previousNotification.notification)
       ? previousNotification
       : {},
   )

@@ -28,7 +28,7 @@ export const Skeleton = ({
 
         {site.isGovernment && <Masthead isStaging={isStaging} />}
 
-        {site.notification && isSiteNotificationActive(site.notification) && (
+        {isSiteNotificationActive(site.notification) && (
           <Notification {...site.notification} site={site} />
         )}
 
