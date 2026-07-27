@@ -44,7 +44,7 @@ const SingleTableCaption = ({ caption, onEdit }: SingleTableCaptionProps) => {
   const label = hasCaption ? "Edit" : "Add caption"
 
   return (
-    <Flex align="flex-start" justify="space-between" gap="0.5rem" w="100%">
+    <Flex align="center" justify="space-between" gap="0.25rem" w="100%">
       <Text
         flex="1"
         minW={0}
@@ -67,6 +67,7 @@ const SingleTableCaption = ({ caption, onEdit }: SingleTableCaptionProps) => {
         }
         color="interaction.links.default"
         textStyle="caption-1"
+        padding="0.5rem"
         flexShrink={0}
         onClick={onEdit}
         aria-label={hasCaption ? "Edit table caption" : "Add table caption"}
