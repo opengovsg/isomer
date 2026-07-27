@@ -52,7 +52,6 @@ describe("getCollectionPages", () => {
     date = "2021-01-01",
     image,
     firstImage,
-    category,
     tagged,
   }: {
     id: string
@@ -60,7 +59,6 @@ describe("getCollectionPages", () => {
     date?: string
     image?: { src: string; alt: string }
     firstImage?: { src: string; alt: string }
-    category?: string
     tagged?: string[]
   }): IsomerSitemap => ({
     id,
@@ -70,7 +68,6 @@ describe("getCollectionPages", () => {
     lastModified: date,
     layout: "article",
     date,
-    category,
     tagged,
     image,
     firstImage,

@@ -125,14 +125,16 @@ const TaggedSchema = Type.Optional(
   }),
 )
 
-const categorySchemaObject = Type.Object({
-  category: Type.String({
-    title: "Article category",
-    format: "hidden", // We will properly deprecate this key during the post-launch cleanup. Hiding it in Studio UI in the meantime.
-    description:
-      "The category is used for filtering in the parent collection page",
-  }),
-})
+// DEPRECATED: legacy `page.category` — migrated to a "Category" tag group in
+// `tagCategories`/`tagged`. Do not re-add; see ADR 0003.
+// const categorySchemaObject = Type.Object({
+//   category: Type.String({
+//     title: "Article category",
+//     format: "hidden",
+//     description:
+//       "The category is used for filtering in the parent collection page",
+//   }),
+// })
 
 const dateSchemaObject = Type.Object({
   date: Type.Optional(
@@ -144,7 +146,6 @@ const dateSchemaObject = Type.Object({
 })
 
 const BaseRefPageSchema = Type.Composite([
-  categorySchemaObject,
   Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   imageSchemaObject,
@@ -167,23 +168,20 @@ const BaseRefPageSchema = Type.Composite([
   }),
 ])
 
-// NOTE: old tag schema that we should migrate away
-// because we sit on the `tag` key,
-// we cannot reuse it for our new tags
-const TagSchema = Type.Object({
-  selected: Type.Array(Type.String()),
-  category: Type.String(),
-})
-const TagsSchema = Type.Object(
-  {
-    tags: Type.Optional(Type.Array(TagSchema, { format: "hidden" })),
-  },
-  // NOTE: we need to hide this because it's not supposed to be visible to our end user
-  { format: "hidden" },
-)
+// DEPRECATED: legacy `page.tags` ({ category, selected[] }) — migrated to
+// `tagCategories`/`tagged`. Do not re-add; see ADR 0003.
+// const TagSchema = Type.Object({
+//   selected: Type.Array(Type.String()),
+//   category: Type.String(),
+// })
+// const TagsSchema = Type.Object(
+//   {
+//     tags: Type.Optional(Type.Array(TagSchema, { format: "hidden" })),
+//   },
+//   { format: "hidden" },
+// )
 
 export const ArticlePagePageSchema = Type.Composite([
-  categorySchemaObject,
   Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   Type.Object({
@@ -335,7 +333,6 @@ export const CollectionPagePageSchema = Type.Intersect([
     ),
   }),
   TagCategoriesSchema,
-  TagsSchema,
 ])
 
 export const ContentPagePageSchema = Type.Composite([
@@ -385,23 +382,16 @@ type BasePageAdditionalProps = BaseItemAdditionalProps & {
   language?: "en"
 }
 
-interface ArticlePageAdditionalProps {
-  tags?: CollectionPagePageProps["tags"]
-}
-
 // NOTE: derived from `tagCategories` + `tagged` at render time (see
-// `getPillAndPlaintextTags`), not a JSON schema field itself. `id` is the tag
-// category's uuid, used as a stable React key — optional since the legacy
-// `tags` fallback predates tag category uuids.
+// `getPillAndPlaintextTags`), not a JSON schema field itself.
 export interface TagGroup {
-  id?: string
+  id: string
   category: string
   selected: string[]
 }
 
 export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
-  BasePageAdditionalProps &
-  ArticlePageAdditionalProps
+  BasePageAdditionalProps
 export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
   BasePageAdditionalProps
 export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &

@@ -34,7 +34,13 @@ const ARTICLE = {
       },
     ],
   },
-  plaintextTags: [{ category: "Category", selected: ["NParks Happenings"] }],
+  plaintextTags: [
+    {
+      id: "story-cat-1",
+      category: "Category",
+      selected: ["NParks Happenings"],
+    },
+  ],
   title:
     "Man sentenced to 24 months' imprisonment for smuggling 34.7 kg of rhinoceros horns",
   date: "1 May 2024",
@@ -57,8 +63,12 @@ export const MultiplePlaintextGroups: Story = {
   args: {
     ...ARTICLE,
     plaintextTags: [
-      { category: "Category", selected: ["NParks Happenings"] },
-      { category: "Region", selected: ["Wildlife"] },
+      {
+        id: "story-cat-1",
+        category: "Category",
+        selected: ["NParks Happenings"],
+      },
+      { id: "story-region-1", category: "Region", selected: ["Wildlife"] },
     ],
   },
 }
@@ -71,6 +81,7 @@ export const ArticleWithTags: Story = {
     // that they aren't duplicated as a pill.
     pillTags: [
       {
+        id: "story-tags-1",
         category: "Tags",
         selected: ["NParks Happenings", "Wild dinosaur"],
       },

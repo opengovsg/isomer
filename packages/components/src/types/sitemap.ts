@@ -10,7 +10,8 @@ interface IsomerBaseSitemap {
   summary: string
   lastModified: string
   permalink: string
-  category?: string
+  // DEPRECATED: legacy `page.category` — migrated to tag categories. Do not re-add.
+  // category?: string
   // TODO: we should aim to separate BaseSiteMap into different types
   // so that the properties that are exclusive to, for example, `CollectionCard`
   // will only be available there
