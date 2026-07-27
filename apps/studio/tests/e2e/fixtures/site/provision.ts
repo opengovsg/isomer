@@ -90,7 +90,9 @@ export const provisionE2ESite = async (opts: {
   return { siteId: site.id, siteName: site.name }
 }
 
-/** Fake CodeBuild id so godmode publishing shows a Publish button. */
+export const e2eCodeBuildIdForSite = (siteId: number) =>
+  `e2e-codebuild-${siteId}`
+
 export const setSiteCodeBuildId = async (
   siteId: number,
   codeBuildId: string,

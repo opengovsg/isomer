@@ -1,4 +1,5 @@
-import { expect, type Page } from "@playwright/test"
+import { expect, type Page, type Response } from "@playwright/test"
+import { e2eCodeBuildIdForSite } from "~e2e/fixtures/site"
 
 export class GodmodePO {
   constructor(private readonly page: Page) {}
@@ -60,13 +61,10 @@ export class GodmodePO {
     return Number(match[1])
   }
 
-  async gotoPublishing() {
-    // The page renders one Publish button per site, gated on the client-side
-    // listAllSites query. With many sites this response can land just after the
-    // default assertion timeout, so wait for the data before asserting on rows.
-    const sitesLoaded = this.page.waitForResponse(
-      (response) =>
-        response.url().includes("site.listAllSites") && response.ok(),
+  async gotoPublishing(siteId: number) {
+    const codeBuildId = e2eCodeBuildIdForSite(siteId)
+    const sitesLoaded = this.page.waitForResponse((response) =>
+      responseIncludesPublishableSite(response, siteId, codeBuildId),
     )
     await this.page.goto("/godmode/publishing")
     await this.page.waitForURL(/\/godmode\/publishing$/)
@@ -74,14 +72,11 @@ export class GodmodePO {
       this.page.getByRole("heading", { name: "Publishing" }),
     ).toBeVisible()
     await sitesLoaded
+    await this.expectPublishButtonVisibleForSite(siteId)
   }
 
   async expectPublishButtonVisibleForSite(siteId: number) {
-    const button = this.publishButtonForSite(siteId)
-    // listAllSites can resolve before React paints the table in CI.
-    await expect
-      .poll(async () => button.isVisible(), { timeout: 15_000 })
-      .toBe(true)
+    await expect(this.publishButtonForSite(siteId)).toBeVisible()
   }
 
   async clickPublishForSite(siteId: number) {
@@ -89,10 +84,9 @@ export class GodmodePO {
   }
 
   private publishButtonForSite(siteId: number) {
-    // Tests seed a unique codeBuildId; it's more specific than site id alone.
     return this.page
       .getByRole("row")
-      .filter({ hasText: `e2e-codebuild-${siteId}` })
+      .filter({ hasText: e2eCodeBuildIdForSite(siteId) })
       .getByRole("button", { name: "Publish" })
   }
 
@@ -129,3 +123,30 @@ export class GodmodePO {
 
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+type ListAllSitesRow = {
+  id: number
+  codeBuildId: string | null
+}
+
+const responseIncludesPublishableSite = async (
+  response: Response,
+  siteId: number,
+  codeBuildId: string,
+) => {
+  if (!response.url().includes("site.listAllSites") || !response.ok()) {
+    return false
+  }
+
+  const body = (await response.json()) as {
+    result?: { data?: { json?: ListAllSitesRow[] } }
+  }
+  const sites = body.result?.data?.json
+  if (!Array.isArray(sites)) {
+    return false
+  }
+
+  return sites.some(
+    (site) => site.id === siteId && site.codeBuildId === codeBuildId,
+  )
+}
