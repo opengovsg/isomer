@@ -1,12 +1,11 @@
 import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
-import type { PropsWithChildren, RefObject } from "react"
+import type { PropsWithChildren } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
-import { useMemo, useRef } from "react"
+import { useMemo } from "react"
 import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
-import { TableCaption } from "~/features/editing-experience/components/TableCaption/TableCaption"
 
 const EditorContainer = ({
   children,
@@ -46,23 +45,9 @@ const EditorContainer = ({
 
 const EditorContentWrapper = ({
   editor,
-  containerRef,
-  showTableExtras,
-}: Pick<EditorContentProps, "editor"> & {
-  containerRef: RefObject<HTMLDivElement>
-  showTableExtras?: boolean
-}) => {
+}: Pick<EditorContentProps, "editor">) => {
   return (
-    // `TableCaption`'s captions are absolutely positioned relative to
-    // whichever element `containerRef` points to, computed from that
-    // element's own bounding box — so `position: relative` + `containerRef`
-    // must sit on the direct parent of the rendered table content, not on
-    // `EditorContent` itself. `EditorContent` manages its inner DOM node
-    // imperatively for ProseMirror (see `@tiptap/react`'s `EditorContent`
-    // source) and doesn't render a `children` prop, so `TableCaption` can't
-    // be nested inside it — it has to be a sibling within this wrapper.
     <Box
-      ref={containerRef}
       position="relative"
       w="100%"
       flex="1 1 auto"
@@ -78,9 +63,6 @@ const EditorContentWrapper = ({
         onClick={() => editor?.chain().focus().run()}
         cursor="text"
       />
-      {showTableExtras && (
-        <TableCaption editor={editor} containerRef={containerRef} />
-      )}
     </Box>
   )
 }
@@ -94,9 +76,10 @@ interface EditorProps {
    * `useTextEditor`/`TiptapTextEditor` and
    * `useAccordionEditor`/`TiptapAccordionEditor` — see
    * `hooks/useTextEditor/useTextEditor.ts`) should set this. It mounts the
-   * contextual table bubble menu and inline table captions; editors without
-   * table extensions (Prose, Callout, SimpleProse) have no table nodes for
-   * either to react to, so there's nothing for them to mount.
+   * contextual table bubble menu; editors without table extensions (Prose,
+   * Callout, SimpleProse) have no table nodes for it to react to, so there's
+   * nothing for it to mount. Inline table captions need no wiring here — they
+   * are rendered by the `table` node view itself (`TableNodeView`).
    */
   showTableExtras?: boolean
 }
@@ -106,17 +89,11 @@ export const Editor = ({
   isNested,
   showTableExtras,
 }: EditorProps) => {
-  const containerRef = useRef<HTMLDivElement>(null)
-
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
       {showTableExtras && <TableBubbleMenu editor={editor} />}
-      <EditorContentWrapper
-        editor={editor}
-        containerRef={containerRef}
-        showTableExtras={showTableExtras}
-      />
+      <EditorContentWrapper editor={editor} />
     </EditorContainer>
   )
 }

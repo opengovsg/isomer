@@ -1,4 +1,3 @@
-import type { Editor } from "@tiptap/react"
 import {
   FormControl,
   HStack,
@@ -17,12 +16,10 @@ import {
   ModalCloseButton,
   Textarea,
 } from "@opengovsg/design-system-react"
-import { useEffect } from "react"
 import { z } from "zod"
 import {
   CAPTION_MAX_LENGTH,
   normalizeTableCaptionForEdit,
-  setTableCaptionAtPos,
 } from "~/features/editing-experience/components/TableCaption/utils"
 import { useZodForm } from "~/lib/form"
 
@@ -38,46 +35,32 @@ const tableSettingsSchema = z.object({
 })
 
 interface TableSettingsModalProps {
-  editor: Editor
-  /** ProseMirror document position of the `table` node being edited. */
-  tablePos: number
+  /** The table's current caption, used to seed the form. */
+  caption: string
   isOpen: boolean
   onClose: () => void
+  onSave: (caption: string) => void
 }
 
 export const TableSettingsModal = ({
-  editor,
-  tablePos,
+  caption: currentCaption,
   isOpen,
   onClose,
+  onSave,
 }: TableSettingsModalProps): JSX.Element => {
   const {
     register,
     watch,
     formState: { errors, isValid },
-    setValue,
     handleSubmit,
   } = useZodForm({
     schema: tableSettingsSchema,
     defaultValues: {
-      caption: "",
+      caption: normalizeTableCaptionForEdit(currentCaption),
     },
   })
 
   const caption = watch("caption")
-
-  useEffect(() => {
-    if (!isOpen) return
-
-    const node = editor.state.doc.nodeAt(tablePos)
-    const currentCaption =
-      node?.type.name === "table"
-        ? ((node.attrs.caption as string | undefined) ?? "")
-        : ""
-    setValue("caption", normalizeTableCaptionForEdit(currentCaption))
-    // only done once per every time the modal is opened
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, tablePos])
 
   return (
     // trapFocus=false: with TableBubbleMenu mounted, Chakra's FocusLock and
@@ -125,7 +108,7 @@ export const TableSettingsModal = ({
               type="submit"
               isDisabled={!isValid}
               onClick={handleSubmit(({ caption }) => {
-                setTableCaptionAtPos(editor, tablePos, caption)
+                onSave(caption)
                 onClose()
               })}
             >
