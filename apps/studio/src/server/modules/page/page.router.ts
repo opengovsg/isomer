@@ -47,7 +47,7 @@ import {
 
 import { logResourceEvent } from "../audit/audit.service"
 import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
-import { db, jsonb, sql } from "../database"
+import { db, jsonb } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
