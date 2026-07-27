@@ -77,7 +77,11 @@ export class GodmodePO {
   }
 
   async expectPublishButtonVisibleForSite(siteId: number) {
-    await expect(this.publishButtonForSite(siteId)).toBeVisible()
+    const button = this.publishButtonForSite(siteId)
+    // listAllSites can resolve before React paints the table in CI.
+    await expect
+      .poll(async () => button.isVisible(), { timeout: 15_000 })
+      .toBe(true)
   }
 
   async clickPublishForSite(siteId: number) {
@@ -85,9 +89,10 @@ export class GodmodePO {
   }
 
   private publishButtonForSite(siteId: number) {
+    // Tests seed a unique codeBuildId; it's more specific than site id alone.
     return this.page
       .getByRole("row")
-      .filter({ hasText: new RegExp(`\\b${siteId}\\b`) })
+      .filter({ hasText: `e2e-codebuild-${siteId}` })
       .getByRole("button", { name: "Publish" })
   }
 

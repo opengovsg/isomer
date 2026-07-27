@@ -8,13 +8,6 @@ export class PageEditorPO {
     await this.page.waitForURL(new RegExp(`/sites/${siteId}/pages/${pageId}`))
   }
 
-  // Fix clock at 00:01 so schedule presets haven't expired. Late-day CI was flaky.
-  async installFixedClockForSchedulePresets() {
-    await this.page.clock.install({
-      time: new Date("2099-01-01T00:01:00+08:00"),
-    })
-  }
-
   async expectLoaded() {
     await expect(
       this.page.getByRole("link", { name: "Meta Settings" }),

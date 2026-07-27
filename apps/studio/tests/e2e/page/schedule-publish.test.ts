@@ -34,8 +34,9 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     const { page: seededPage } = await seedFolderWithPage({ siteId })
 
     // Act
-    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
-    await editor.installFixedClockForSchedulePresets()
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id, {
+      scheduleClock: true,
+    })
     await editor.openScheduleModal()
     await editor.schedulePublishForToday()
     await editor.expectScheduledSuccessfully()
@@ -49,8 +50,9 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher sees scheduled badge on dashboard", async ({ page }) => {
     // Arrange
     const { folder, page: seededPage } = await seedFolderWithPage({ siteId })
-    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
-    await editor.installFixedClockForSchedulePresets()
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id, {
+      scheduleClock: true,
+    })
     await editor.openScheduleModal()
     await editor.schedulePublishForToday()
     await editor.expectScheduledSuccessfully()
@@ -70,8 +72,9 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   }) => {
     // Arrange
     const { page: seededPage } = await seedFolderWithPage({ siteId })
-    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
-    await editor.installFixedClockForSchedulePresets()
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id, {
+      scheduleClock: true,
+    })
     await editor.openScheduleModal()
     await editor.schedulePublishForToday()
     await editor.expectScheduledSuccessfully()
