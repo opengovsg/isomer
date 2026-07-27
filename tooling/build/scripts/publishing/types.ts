@@ -10,10 +10,11 @@ export interface Resource extends Omit<DbResource, "parentId"> {
   fullPermalink: string
 }
 
-interface Tag {
-  selected: string[]
-  category: string
-}
+// DEPRECATED: legacy resolved tags format — migrated to tagCategories/tagged.
+// interface Tag {
+//   selected: string[]
+//   category: string
+// }
 
 interface Tagged {
   label: string
@@ -38,7 +39,8 @@ export type SitemapEntry = Pick<
   lastModified: string
   layout: string
   summary: string
-  category?: string
+  // DEPRECATED: legacy page.category — migrated to tag categories. Do not re-add.
+  // category?: string
   date?: string
   image?: {
     src?: string
@@ -50,8 +52,9 @@ export type SitemapEntry = Pick<
   }
   ref?: string
   children?: SitemapEntry[]
-  tags?: Tag[]
-  tagged?: Tagged[]
+  // DEPRECATED: legacy page.tags — migrated to tagCategories/tagged. Do not re-add.
+  // tags?: Tag[]
+  tagged?: string[]
   collectionPagePageProps?: CollectionPagePageProps
 }
 

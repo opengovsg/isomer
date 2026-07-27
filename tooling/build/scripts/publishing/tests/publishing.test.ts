@@ -29,7 +29,6 @@ interface SitemapEntry {
   lastModified: string
   layout: string
   summary: string
-  category?: string
   date?: string
   image?: { src?: string; alt?: string }
   firstImage?: { src?: string; alt?: string }
@@ -194,14 +193,12 @@ describe("sitemap.json", () => {
       layout: "link",
       ref: "https://example.com",
       date: "01/01/2026",
-      category: "Press releases",
       summary: "An external link",
     })
     expect(news?.children?.[1]).toMatchObject({
       type: ResourceType.CollectionPage,
       layout: "article",
       date: "15/01/2026",
-      category: "Press releases",
       summary: "Zebra article summary",
       image: { src: "/images/zebra.png", alt: "A zebra" },
     })

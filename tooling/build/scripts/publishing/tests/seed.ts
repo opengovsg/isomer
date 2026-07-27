@@ -298,7 +298,6 @@ export const seedPublishingSite = async () => {
       layout: "article",
       page: {
         date: "15/01/2026",
-        category: "Press releases",
         articlePageHeader: { summary: "Zebra article summary" },
         image: { src: "/images/zebra.png", alt: "A zebra" },
       },
@@ -317,7 +316,6 @@ export const seedPublishingSite = async () => {
       page: {
         ref: "https://example.com",
         date: "01/01/2026",
-        category: "Press releases",
         description: "An external link",
       },
       content: [],
