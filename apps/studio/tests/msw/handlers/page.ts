@@ -267,7 +267,6 @@ export const pageHandlers = {
             page: {
               date: "04/01/2024",
               title: "Mock story book page",
-              category: "I love stories",
               permalink: "/debug",
               lastModified: "2025-02-05T03:22:09.593Z",
               articlePageHeader: {
@@ -749,7 +748,6 @@ export const pageHandlers = {
             page: {
               date: "11-09-2024",
               title: "article layout",
-              category: "Feature Articles",
               articlePageHeader: { summary: "" },
             },
             layout: "article",
@@ -907,7 +905,6 @@ export const pageHandlers = {
             page: {
               date: "11-09-2024",
               title: "article layout",
-              category: "Feature Articles",
               articlePageHeader: { summary: "" },
             },
             layout: "index",
@@ -1010,7 +1007,6 @@ export const pageHandlers = {
             page: {
               date: "11-09-2024",
               title: "article layout",
-              category: "Feature Articles",
               articlePageHeader: { summary: "" },
             },
             layout: "index",
@@ -1104,7 +1100,6 @@ export const pageHandlers = {
             page: {
               date: "11-09-2024",
               title: "article layout",
-              category: "Feature Articles",
               subtitle: "This is a subtitle for the collection page",
             },
             layout: "collection",
@@ -1143,7 +1138,6 @@ export const pageHandlers = {
             page: {
               date: "11-09-2024",
               title: "article layout",
-              category: "Feature Articles",
               subtitle: "This is a subtitle for the collection page",
               tagCategories: [
                 {
@@ -1248,7 +1242,6 @@ export const pageHandlers = {
             page: {
               date: "11-09-2024",
               title: "article layout",
-              category: "Feature Articles",
               articlePageHeader: { summary: "" },
             },
             childpages: {
