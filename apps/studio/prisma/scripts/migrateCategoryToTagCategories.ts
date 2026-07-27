@@ -19,6 +19,10 @@
  *   - Draft-side changes mutate the draft Blob's content in place, and
  *     never trigger a publish — a draft may hold unrelated pending edits
  *     that aren't ready to ship.
+ * Risk accepted: draft writes have no OCC guard — a concurrent publish could
+ * promote the blob to live before the in-place update lands. Same mitigation
+ * as migrateTagsToTagCategories.ts: run manually off-hours with no active
+ * editors or scheduled publishes.
  *
  * Idempotent via label: if the Index already has a tagCategories group
  * labeled "Category" (draft or published), the collection is skipped.
@@ -354,6 +358,7 @@ const getItemRows = (
     ])
     .execute()
 
+/** Blind in-place draft write — see file header for accepted publish race. */
 const updateBlobContent = <T>(
   tx: Transaction<DB>,
   blobId: string,

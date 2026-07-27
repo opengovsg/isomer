@@ -32,6 +32,11 @@
  *
  * Draft writes use optimistic concurrency (`Blob.updatedAt` + `Resource.draftBlobId`
  * guards) so concurrent Studio saves/publishes abort rather than clobber edits.
+ * Risk accepted: the two draft guards are checked separately, so a publish that
+ * lands between them can still promote the blob to live while `updatedAt` is
+ * unchanged (Studio publish reuses the draft blob row). This script is run
+ * manually off-hours with no active editors or scheduled publishes — that
+ * operational window is the mitigation, not an atomic join on update.
  *
  * Display: each newly created group is written with `display: "pills"`
  * (the historical default for tag filters).
@@ -689,6 +694,14 @@ const getItemRows = (collectionId: string, siteId: number) =>
     ])
     .execute()
 
+/**
+ * In-place draft write with OCC. `draftBlobId` and `updatedAt` are checked in
+ * separate steps — a publish that commits between them reuses this blob row
+ * (clears `draftBlobId`, leaves `updatedAt` untouched) and the update can
+ * still succeed on now-live content. Accepted for manual off-hours runs with
+ * no concurrent Studio activity; harden with a single UPDATE … FROM Resource
+ * if this ever needs to run under load.
+ */
 const updateDraftBlobInPlace = async <T>(
   tx: Transaction<DB>,
   {
