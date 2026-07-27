@@ -1,5 +1,6 @@
 import type { Node } from "@tiptap/pm/model"
-import type { TableMap } from "@tiptap/pm/tables"
+import type { EditorState } from "@tiptap/pm/state"
+import { CellSelection, selectedRect, type TableMap } from "@tiptap/pm/tables"
 
 export type SelectionKind =
   | "none"
@@ -147,6 +148,27 @@ export const getRowMovePlan = (
 
 // Column movement mirrors row movement. `left` is included and `right` is
 // excluded; the adjacent column is moved across the selected block.
+// Document position of the bottom-right perimeter cell in a CellSelection.
+// Used to anchor the table action trigger at the selection's outer corner.
+export const getBottomRightCellDocumentPos = (
+  state: EditorState,
+): number | null => {
+  const { selection } = state
+  if (!(selection instanceof CellSelection)) return null
+
+  const rect = selectedRect(state)
+  let bottomRightPos: number | null = null
+
+  selection.forEachCell((node, pos) => {
+    const cellRect = rect.map.findCell(pos - rect.tableStart)
+    if (cellRect.right === rect.right && cellRect.bottom === rect.bottom) {
+      bottomRightPos = pos
+    }
+  })
+
+  return bottomRightPos
+}
+
 export const getColumnMovePlan = (
   {
     left,
