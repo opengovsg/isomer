@@ -7,7 +7,6 @@ import { Divider } from "../Divider"
 import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
-import { getPublishedTableCaption } from "./Table.utils"
 
 const tableCellStyles = tv({
   base: "max-w-40 break-words border border-base-divider-medium px-4 py-3 align-top [&_li]:mb-4 [&_li]:mt-0 [&_li]:pl-1 [&_ol]:mt-0 [&_ol]:ps-5 [&_ul]:mt-0 [&_ul]:ps-5",
@@ -21,21 +20,18 @@ const tableCellStyles = tv({
 
 export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
   const tableDescriptionId = useId()
-  const displayCaption = getPublishedTableCaption(caption)
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
-      {displayCaption && (
-        <BaseParagraph
-          id={tableDescriptionId}
-          content={displayCaption}
-          className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
-        />
-      )}
+      <BaseParagraph
+        id={tableDescriptionId}
+        content={caption}
+        className="prose-label-md-regular text-base-content-subtle [&:not(:last-child)]:mb-0"
+      />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
           className="w-full border-collapse border-spacing-0 border border-base-divider-medium"
-          aria-describedby={displayCaption ? tableDescriptionId : undefined}
+          aria-describedby={tableDescriptionId}
         >
           <tbody>
             {content.map((row, index) => {
