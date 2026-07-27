@@ -560,12 +560,17 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete row")).toBeNull()
   })
 
-  it("shows Split cell for a single cell that came from a merge, and nothing for an ordinary single cell", async () => {
-    const { editor, findByText, findByRole, queryByText, queryByRole } =
+  it("shows Clear contents for a single cell, and Clear plus Split for a merged single cell", async () => {
+    const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
 
-    // Merge two adjacent body cells into one, then re-select just that
-    // resulting cell — the only single-cell case with a bubble menu.
+    selectCells(editor, 6, 6)
+    await activateTableBubbleMenu(findByRole)
+
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(queryByText("Split cell")).toBeNull()
+    expect(queryByText("Merge cells")).toBeNull()
+
     selectCells(editor, 3, 4)
     act(() => {
       editor.chain().focus().mergeCells().run()
@@ -573,14 +578,26 @@ describe("TableBubbleMenu", () => {
     selectCells(editor, 3, 3)
     await activateTableBubbleMenu(findByRole)
 
+    expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Split cell")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
+  })
 
-    // An ordinary (never-merged) single cell still shows no menu at all.
+  it("clears a single selected cell without removing the cell", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
     selectCells(editor, 6, 6)
-    expect(queryByText("Split cell")).toBeNull()
-    expect(queryByText("Merge cells")).toBeNull()
-    expect(queryByRole("button", { name: "Table actions" })).toBeNull()
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+
+    await activateTableBubbleMenu(findByRole)
+    const clearCell = await findByText("Clear contents")
+    act(() => {
+      clearCell.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(rowTextsAt(editor, 2)).toEqual(["", "Row 2, B", "Row 2, C"])
+    expect(await findByText("Clear contents")).toBeTruthy()
   })
 
   it("does not show Superscript/Subscript when the text cursor is inside a cell", async () => {
