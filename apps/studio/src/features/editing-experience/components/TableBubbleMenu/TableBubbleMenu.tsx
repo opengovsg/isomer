@@ -328,7 +328,7 @@ const RowSelectionActions = ({
         <ActionButton
           label="Clear contents"
           icon={<BiX fontSize="1rem" />}
-          onClick={() => clearSelectedCells(editor)}
+          onClick={() => clearSelectedCells({ editor })}
         />
         {canMoveUp && (
           <ActionButton
@@ -401,7 +401,7 @@ const ColumnSelectionActions = ({
         <ActionButton
           label="Clear contents"
           icon={<BiX fontSize="1rem" />}
-          onClick={() => clearSelectedCells(editor)}
+          onClick={() => clearSelectedCells({ editor })}
         />
         {canMoveLeft && (
           <ActionButton
