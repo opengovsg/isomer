@@ -15,7 +15,7 @@ interface GetPillAndPlaintextTagsResult {
 
 // NOTE: Shared by getCollectionItems (cards) and Article (article header) so both
 // split `tagged` into pill/plaintext groups the same way, in a single pass over
-// `tagCategories` rather than filtering + `getTagsFromTagged`-ing it twice.
+// `tagCategories`.
 export const getPillAndPlaintextTags = (
   tagged: ArticlePagePageProps["tagged"],
   tagCategories: CollectionPagePageProps["tagCategories"],
