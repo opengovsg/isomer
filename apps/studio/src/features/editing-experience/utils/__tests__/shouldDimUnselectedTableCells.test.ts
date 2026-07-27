@@ -2,9 +2,30 @@ import { describe, expect, it } from "vitest"
 
 import { shouldDimUnselectedTableCells } from "../shouldDimUnselectedTableCells"
 
-const tableMap = { width: 4, height: 3 }
+const tableMap = {
+  width: 4,
+  height: 3,
+  map: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+}
 
 describe("shouldDimUnselectedTableCells", () => {
+  it("is false for a single merged-cell selection", () => {
+    expect(
+      shouldDimUnselectedTableCells({
+        left: 1,
+        top: 1,
+        right: 3,
+        bottom: 3,
+        map: {
+          width: 4,
+          height: 3,
+          // One cell node spans this 2×2 block (offsets repeat in TableMap).
+          map: [0, 1, 2, 3, 4, 5, 5, 6, 8, 9, 10, 11],
+        },
+      }),
+    ).toBe(false)
+  })
+
   it("is false for a single-cell selection", () => {
     expect(
       shouldDimUnselectedTableCells({
