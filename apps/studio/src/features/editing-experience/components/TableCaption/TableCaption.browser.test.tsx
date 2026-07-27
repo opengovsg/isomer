@@ -3,13 +3,12 @@ import type { Editor as TiptapEditor } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen, waitFor } from "@testing-library/react"
 import { EditorContent } from "@tiptap/react"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
 
-import { TableCaption } from "./TableCaption"
 import { DEFAULT_TABLE_CAPTION, LEGACY_DEFAULT_TABLE_CAPTION } from "./utils"
 
 const tableContent = (caption: string) => ({
@@ -43,17 +42,13 @@ const Harness = ({
   const [content, setContent] = useState<JSONContent | undefined>(
     initialContent,
   )
-  const containerRef = useRef<HTMLDivElement>(null)
   const editor = useTextEditor({ data: content, handleChange: setContent })
 
   if (editor) onEditorReady?.(editor)
 
-  return (
-    <div ref={containerRef} style={{ position: "relative" }}>
-      <TableCaption editor={editor} containerRef={containerRef} />
-      <EditorContent editor={editor} />
-    </div>
-  )
+  // Captions are rendered by the `table` node view, so mounting the editor
+  // content is all that is needed here.
+  return <EditorContent editor={editor} />
 }
 
 const renderHarness = (initialContent: JSONContent) => {
@@ -116,8 +111,10 @@ describe("TableCaption", () => {
     })
 
     // Assert
-    expect(screen.getByText(LEGACY_DEFAULT_TABLE_CAPTION)).toBeInTheDocument()
-    expect(screen.getByText(DEFAULT_TABLE_CAPTION)).toBeInTheDocument()
+    expect(
+      await screen.findByText(LEGACY_DEFAULT_TABLE_CAPTION),
+    ).toBeInTheDocument()
+    expect(await screen.findByText(DEFAULT_TABLE_CAPTION)).toBeInTheDocument()
 
     const buttons = await screen.findAllByRole("button", {
       name: "Add table caption",
@@ -136,7 +133,7 @@ describe("TableCaption", () => {
     })
 
     // Assert
-    const captionText = screen.getByText("Existing caption")
+    const captionText = await screen.findByText("Existing caption")
     expect(captionText).toBeInTheDocument()
     expect(await getCaptionButton("Edit table caption")).toHaveTextContent(
       "Edit",
@@ -304,7 +301,7 @@ describe("TableCaption", () => {
       ],
     })
 
-    expect(screen.getByText("First table caption")).toBeInTheDocument()
+    expect(await screen.findByText("First table caption")).toBeInTheDocument()
     const addSecond = await screen.findByRole("button", {
       name: "Add table caption",
     })
@@ -326,8 +323,13 @@ describe("TableCaption", () => {
       ])
     })
     expect(screen.getByText("Second table caption")).toBeInTheDocument()
-    expect(
-      await screen.findByRole("button", { name: "Edit table caption" }),
-    ).toHaveTextContent("Edit")
+    // Both tables now carry a real caption, so both controls read "Edit".
+    const editButtons = await screen.findAllByRole("button", {
+      name: "Edit table caption",
+    })
+    expect(editButtons).toHaveLength(2)
+    for (const editButton of editButtons) {
+      expect(editButton).toHaveTextContent("Edit")
+    }
   })
 })

@@ -23,7 +23,8 @@ import { TableHeader } from "@tiptap/extension-table-header"
 import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
-import { textblockTypeInputRule } from "@tiptap/react"
+import { ReactNodeViewRenderer, textblockTypeInputRule } from "@tiptap/react"
+import { TableNodeView } from "~/features/editing-experience/components/TableCaption/TableNodeView"
 import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 
 import {
@@ -120,6 +121,17 @@ export const IsomerTable = Table.extend({
         default: DEFAULT_TABLE_CAPTION,
       },
     }
+  },
+  // Replaces TipTap's built-in `TableView` so the caption renders above the
+  // table as part of the node itself. `contentDOMElementTag: "tbody"` keeps the
+  // structure ProseMirror expects — `<table><tbody>` with the rows inside the
+  // tbody. Column resizing is off (`resizable` defaults to false), so there is
+  // no `<colgroup>` to maintain: widths come from `table-layout: fixed` in
+  // `styles/tiptap.scss`, as before.
+  addNodeView() {
+    return ReactNodeViewRenderer(TableNodeView, {
+      contentDOMElementTag: "tbody",
+    })
   },
   addKeyboardShortcuts() {
     return {
