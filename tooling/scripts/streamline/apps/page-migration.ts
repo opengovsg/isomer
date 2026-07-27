@@ -177,18 +177,36 @@ const buildAssetsMap = (
   return assetsMap;
 };
 
+// Fetches a URL to disk. Returns true on a 2xx write, false otherwise.
+const fetchToFile = async (
+  url: string,
+  destination: string,
+): Promise<boolean> => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return false;
+    const buffer = Buffer.from(await response.arrayBuffer());
+    await fs.promises.writeFile(destination, buffer);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 // Resolves the bytes for a single asset and writes it to its mapped location.
 // Returns true on success, false if the asset could not be resolved.
 const downloadAsset = async ({
   assetPath,
   mappedPath,
   site,
+  domain,
   useStagingBranch,
   assetsDir,
 }: {
   assetPath: string;
   mappedPath: string;
   site: string;
+  domain: string;
   useStagingBranch: boolean;
   assetsDir: string;
 }): Promise<boolean> => {
@@ -212,28 +230,26 @@ const downloadAsset = async ({
     return false;
   }
 
-  // Everything else is fetched from the Classic repo on GitHub.
+  // Classic /files/ (and images) are served behind Jekyll permalinks, so the
+  // live site serves them at the referenced path even when the raw GitHub repo
+  // does not. Try the live domain first, then fall back to raw GitHub.
+  // encodeURI turns spaces into %20 while leaving @, (, ) and other path
+  // characters intact, matching how the live site addresses these files.
+  const encodedPath = encodeURI(assetPath);
   const branch = useStagingBranch ? "staging" : "master";
-  const encoded = assetPath
-    .replace(/^\//, "")
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
-  const url = `https://raw.githubusercontent.com/isomerpages/${site}/${branch}/${encoded}`;
+  const candidateUrls = [
+    `${domain}${encodedPath}`,
+    `https://raw.githubusercontent.com/isomerpages/${site}/${branch}${encodedPath}`,
+  ];
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.warn(`  Failed to download ${assetPath} (HTTP ${response.status})`);
-      return false;
-    }
-    const buffer = Buffer.from(await response.arrayBuffer());
-    await fs.promises.writeFile(destination, buffer);
-    return true;
-  } catch (error) {
-    console.warn(`  Error downloading ${assetPath}:`, error);
-    return false;
+  for (const url of candidateUrls) {
+    if (await fetchToFile(url, destination)) return true;
   }
+
+  console.warn(
+    `  Failed to download ${assetPath} (tried live site and GitHub raw)`,
+  );
+  return false;
 };
 
 // ---------------------------------------------------------------------------
@@ -264,7 +280,11 @@ const savePageJson = async (
   permalink: string,
   content: any,
 ) => {
-  const relative = permalink === "" || permalink === "/" ? "index" : permalink;
+  // Strip surrounding slashes so a section landing page such as
+  // "/who-we-are/press-centre/media-releases/" does not resolve to an empty
+  // basename (which would produce a ".json" file with no name).
+  const cleaned = permalink.replace(/^\/+|\/+$/g, "");
+  const relative = cleaned === "" ? "index" : cleaned;
   const filePath = path.join(pagesDir, relative);
   await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
 
@@ -473,6 +493,7 @@ export const migrateIndividualPages = async () => {
       assetPath,
       mappedPath,
       site,
+      domain,
       useStagingBranch,
       assetsDir,
     });
@@ -485,31 +506,36 @@ export const migrateIndividualPages = async () => {
   console.log("\nStudiofying pages and writing output...");
   const unresolvedNotes: Record<string, string[]> = {};
   for (const page of convertedWithContent) {
-    const studiofied = JSON.parse(
-      studioifyContent(
-        JSON.stringify(page.content),
-        siteId!,
-        assetsMap,
-        resourcesMap,
-      ),
-    );
-    await savePageJson(pagesDir, page.permalink, studiofied);
-
-    const unresolved = findUnresolvedInternalLinks(studiofied, resourcesMap);
-    const notes: string[] = [];
-    if (unresolved.length > 0) {
-      notes.push(
-        `Unresolved internal links (no matching Studio page): ${unresolved.join(" ")}`,
+    try {
+      const studiofied = JSON.parse(
+        studioifyContent(
+          JSON.stringify(page.content),
+          siteId!,
+          assetsMap,
+          resourcesMap,
+        ),
       );
-    }
-    // Flag any assets used by this page that failed to download.
-    const pageAssets = collectAssetReferences([page]);
-    const pageBroken = [...pageAssets].filter((a) => brokenAssets.has(a));
-    if (pageBroken.length > 0) {
-      notes.push(`Broken/missing assets: ${pageBroken.join(" ")}`);
-    }
-    if (notes.length > 0) {
-      unresolvedNotes[page.report.permalink ?? ""] = notes;
+      await savePageJson(pagesDir, page.permalink, studiofied);
+
+      const unresolved = findUnresolvedInternalLinks(studiofied, resourcesMap);
+      const notes: string[] = [];
+      if (unresolved.length > 0) {
+        notes.push(
+          `Unresolved internal links (no matching Studio page): ${unresolved.join(" ")}`,
+        );
+      }
+      // Flag any assets used by this page that failed to download.
+      const pageAssets = collectAssetReferences([page]);
+      const pageBroken = [...pageAssets].filter((a) => brokenAssets.has(a));
+      if (pageBroken.length > 0) {
+        notes.push(`Broken/missing assets: ${pageBroken.join(" ")}`);
+      }
+      if (notes.length > 0) {
+        unresolvedNotes[page.report.permalink ?? ""] = notes;
+      }
+    } catch (error) {
+      // Don't let one bad page abort the whole run.
+      console.error(`  Failed to write page ${page.permalink}:`, error);
     }
   }
 
