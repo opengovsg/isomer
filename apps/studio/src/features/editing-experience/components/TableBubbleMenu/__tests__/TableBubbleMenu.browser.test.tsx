@@ -409,6 +409,59 @@ describe("TableBubbleMenu", () => {
     ])
   })
 
+  it("clears every cell in a selected row without removing the row", async () => {
+    const { editor, findByText } = await renderHarness()
+
+    selectCells(editor, 3, 5)
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+
+    const clearRow = await findByText("Clear contents")
+    act(() => {
+      clearRow.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(rowTextsAt(editor, 1)).toEqual(["", "", ""])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+    expect(await findByText("Clear contents")).toBeTruthy()
+  })
+
+  it("clears every cell in a selected column without removing the column", async () => {
+    const { editor, findByText } = await renderHarness()
+
+    selectCells(editor, 1, 7)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+
+    const clearColumn = await findByText("Clear contents")
+    act(() => {
+      clearColumn.click()
+    })
+
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "", "Column C"])
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "", "Row 2, C"])
+    expect(await findByText("Clear contents")).toBeTruthy()
+  })
+
+  it("clears header row content while keeping the header row", async () => {
+    const { editor, findByText } = await renderHarness()
+
+    selectCells(editor, 0, 2)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
+
+    const clearRow = await findByText("Clear contents")
+    act(() => {
+      clearRow.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["", "", ""])
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(await findByText("Delete row")).toBeNull()
+  })
+
   it("withholds Delete and Move when selection includes header row", async () => {
     const { editor, findByText, findByRole, queryByText, queryByRole } =
       await renderHarness()

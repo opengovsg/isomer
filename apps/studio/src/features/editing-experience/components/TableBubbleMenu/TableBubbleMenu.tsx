@@ -22,6 +22,7 @@ import {
   BiRightArrowAlt,
   BiTrash,
   BiUpArrowAlt,
+  BiX,
 } from "react-icons/bi"
 import {
   IconAddColLeft,
@@ -34,6 +35,7 @@ import {
   IconSplitCell,
 } from "~/components/icons"
 
+import { clearSelectedCells } from "./TableBubbleMenu.clear"
 import {
   duplicateSelectedColumns,
   duplicateSelectedRows,
@@ -323,6 +325,11 @@ const RowSelectionActions = ({
           icon={<BiCopy fontSize="1rem" />}
           onClick={() => duplicateSelectedRows(editor)}
         />
+        <ActionButton
+          label="Clear contents"
+          icon={<BiX fontSize="1rem" />}
+          onClick={() => clearSelectedCells(editor)}
+        />
         {canMoveUp && (
           <ActionButton
             label="Move up"
@@ -390,6 +397,11 @@ const ColumnSelectionActions = ({
           label="Duplicate column"
           icon={<BiCopy fontSize="1rem" />}
           onClick={() => duplicateSelectedColumns(editor)}
+        />
+        <ActionButton
+          label="Clear contents"
+          icon={<BiX fontSize="1rem" />}
+          onClick={() => clearSelectedCells(editor)}
         />
         {canMoveLeft && (
           <ActionButton
