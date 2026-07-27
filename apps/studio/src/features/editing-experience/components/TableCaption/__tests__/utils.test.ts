@@ -14,6 +14,7 @@ import {
 
 describe("isPlaceholderTableCaption", () => {
   it("treats empty and default captions as placeholders", () => {
+    // Arrange / Act / Assert
     expect(isPlaceholderTableCaption("")).toBe(true)
     expect(isPlaceholderTableCaption("   ")).toBe(true)
     expect(isPlaceholderTableCaption(DEFAULT_TABLE_CAPTION)).toBe(true)
@@ -21,25 +22,33 @@ describe("isPlaceholderTableCaption", () => {
   })
 
   it("treats real captions as non-placeholder", () => {
-    expect(isPlaceholderTableCaption("Quarterly revenue")).toBe(false)
+    // Arrange / Act
+    const result = isPlaceholderTableCaption("Quarterly revenue")
+
+    // Assert
+    expect(result).toBe(false)
   })
 })
 
 describe("normalizeTableCaptionForEdit", () => {
   it("returns an empty string for placeholder captions", () => {
+    // Arrange / Act / Assert
     expect(normalizeTableCaptionForEdit(DEFAULT_TABLE_CAPTION)).toBe("")
     expect(normalizeTableCaptionForEdit(LEGACY_DEFAULT_TABLE_CAPTION)).toBe("")
   })
 
   it("returns the caption unchanged when it is real content", () => {
-    expect(normalizeTableCaptionForEdit("Quarterly revenue")).toBe(
-      "Quarterly revenue",
-    )
+    // Arrange / Act
+    const result = normalizeTableCaptionForEdit("Quarterly revenue")
+
+    // Assert
+    expect(result).toBe("Quarterly revenue")
   })
 })
 
 describe("getDisplayTableCaption", () => {
   it("returns placeholder defaults for unfilled captions", () => {
+    // Arrange / Act / Assert
     expect(getDisplayTableCaption("")).toBe(DEFAULT_TABLE_CAPTION)
     expect(getDisplayTableCaption(DEFAULT_TABLE_CAPTION)).toBe(
       DEFAULT_TABLE_CAPTION,
@@ -50,36 +59,57 @@ describe("getDisplayTableCaption", () => {
   })
 
   it("returns the caption unchanged when it is real content", () => {
-    expect(getDisplayTableCaption("Quarterly revenue")).toBe(
-      "Quarterly revenue",
-    )
+    // Arrange / Act
+    const result = getDisplayTableCaption("Quarterly revenue")
+
+    // Assert
+    expect(result).toBe("Quarterly revenue")
   })
 })
 
 describe("clampCaptionLength", () => {
   it("returns the value unchanged when under the limit", () => {
-    expect(clampCaptionLength("short")).toBe("short")
+    // Arrange / Act
+    const result = clampCaptionLength("short")
+
+    // Assert
+    expect(result).toBe("short")
   })
 
   it("truncates at CAPTION_MAX_LENGTH", () => {
+    // Arrange
     const value = "a".repeat(CAPTION_MAX_LENGTH + 50)
-    expect(clampCaptionLength(value)).toBe("a".repeat(CAPTION_MAX_LENGTH))
-    expect(clampCaptionLength(value)).toHaveLength(CAPTION_MAX_LENGTH)
+
+    // Act
+    const result = clampCaptionLength(value)
+
+    // Assert
+    expect(result).toBe("a".repeat(CAPTION_MAX_LENGTH))
+    expect(result).toHaveLength(CAPTION_MAX_LENGTH)
   })
 })
 
 describe("resolveCaptionOnBlur", () => {
   it("returns the trimmed draft when non-empty", () => {
-    expect(resolveCaptionOnBlur("  hello  ", "baseline")).toBe("hello")
+    // Arrange / Act
+    const result = resolveCaptionOnBlur("  hello  ", "baseline")
+
+    // Assert
+    expect(result).toBe("hello")
   })
 
   it("restores the baseline when the draft is empty or whitespace-only", () => {
+    // Arrange / Act / Assert
     expect(resolveCaptionOnBlur("", "Kept caption")).toBe("Kept caption")
     expect(resolveCaptionOnBlur("   ", "Kept caption")).toBe("Kept caption")
   })
 
   it("allows clearing when the baseline was already empty", () => {
-    expect(resolveCaptionOnBlur("", "")).toBe("")
+    // Arrange / Act
+    const result = resolveCaptionOnBlur("", "")
+
+    // Assert
+    expect(result).toBe("")
   })
 })
 
@@ -110,6 +140,7 @@ describe("computeCaptionLayout", () => {
   })
 
   it("defaults gapPx to CAPTION_TABLE_GAP_PX", () => {
+    // Arrange / Act
     const { marginTop } = computeCaptionLayout({
       tableRect: { top: 0, left: 0, width: 100 },
       containerRect: { top: 0, left: 0 },
@@ -118,6 +149,8 @@ describe("computeCaptionLayout", () => {
       captionHeight: 10,
       currentMarginTop: 0,
     })
+
+    // Assert
     expect(marginTop).toBe(10 + CAPTION_TABLE_GAP_PX)
   })
 
@@ -204,11 +237,18 @@ describe("computeCaptionLayout", () => {
 
 describe("captionRectsEqual", () => {
   it("returns false when previous is null", () => {
-    expect(captionRectsEqual(null, { top: 0, left: 0, width: 100 })).toBe(false)
+    // Arrange / Act
+    const result = captionRectsEqual(null, { top: 0, left: 0, width: 100 })
+
+    // Assert
+    expect(result).toBe(false)
   })
 
   it("returns true only when all fields match", () => {
+    // Arrange
     const rect = { top: 1, left: 2, width: 3 }
+
+    // Arrange / Act / Assert
     expect(captionRectsEqual(rect, { top: 1, left: 2, width: 3 })).toBe(true)
     expect(captionRectsEqual(rect, { top: 9, left: 2, width: 3 })).toBe(false)
   })
