@@ -91,6 +91,7 @@ export const PlaceholderCaption: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
+    // Assert
     await expect(
       await canvas.findByText(DEFAULT_TABLE_CAPTION),
     ).toBeInTheDocument()
@@ -105,6 +106,7 @@ export const LegacyPlaceholderCaption: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
+    // Assert
     await expect(
       await canvas.findByText(LEGACY_DEFAULT_TABLE_CAPTION),
     ).toBeInTheDocument()
@@ -119,6 +121,7 @@ export const PopulatedCaption: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
+    // Assert
     await expect(
       await canvas.findByText("Figure 1: Quarterly revenue by department"),
     ).toBeInTheDocument()
@@ -133,6 +136,7 @@ export const TwoTables: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
+    // Assert
     await expect(
       await canvas.findByText("First table — quarterly revenue"),
     ).toBeInTheDocument()
@@ -154,6 +158,7 @@ export const EditCaptionViaModal: Story = {
     const canvas = within(canvasElement)
     const body = within(canvasElement.ownerDocument.body)
 
+    // Act
     await userEvent.click(
       await canvas.findByRole("button", { name: "Add table caption" }),
     )
@@ -164,6 +169,7 @@ export const EditCaptionViaModal: Story = {
     await userEvent.type(textarea, "Revenue breakdown by quarter")
     await userEvent.click(body.getByRole("button", { name: "Save changes" }))
 
+    // Assert
     await waitFor(async () => {
       await expect(
         canvas.getByText("Revenue breakdown by quarter"),
