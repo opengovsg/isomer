@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   buildManifest,
@@ -166,5 +166,21 @@ describe("buildManifest", () => {
 
   it("returns an empty redirects map for an empty input", () => {
     expect(buildManifest([])).toEqual({ version: 1, redirects: {} })
+  })
+
+  describe("duplicate sources", () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it("keeps the first destination and warns instead of silently overwriting", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
+      const result = buildManifest([
+        { source: "/news/*", destination: "/newsroom" },
+        { source: "/news/*", destination: "/second-wins-if-not-guarded" },
+      ])
+      expect(result.redirects["/news/*"]).toBe("/newsroom")
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("/news/*"))
+    })
   })
 })

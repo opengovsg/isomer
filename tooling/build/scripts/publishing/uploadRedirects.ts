@@ -129,7 +129,18 @@ export function buildManifest(entries: Redirect[]): {
   redirects: Record<string, string>
 } {
   const redirects: Record<string, string> = {}
-  for (const { source, destination } of entries) redirects[source] = destination
+  for (const { source, destination } of entries) {
+    // Keep the first destination and warn on a repeat, mirroring the exact-path
+    // dedup above — silently overwriting would let a later row change a wildcard's
+    // target with no signal in the build log.
+    if (Object.prototype.hasOwnProperty.call(redirects, source)) {
+      console.warn(
+        `Skipping duplicate wildcard source in manifest: ${source} (keeping first destination "${redirects[source]}")`,
+      )
+      continue
+    }
+    redirects[source] = destination
+  }
   return { version: MANIFEST_VERSION, redirects }
 }
 
