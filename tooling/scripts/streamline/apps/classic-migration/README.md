@@ -49,7 +49,7 @@ Prerequisites are the same as the full-site flow (OGP VPN + `npm run jump:prod` 
 - **Studio site ID** — used both for the `/<site-id>/<uuid>/<filename>` asset structure and to look up the site's existing resources for internal-link resolution
 - **Branch** (`master` or `staging`)
 - **Target domain** (e.g. `www.example.gov.sg`), used for link cleanup and as the asset download fallback
-- **Markdown paths** — repo-relative paths (comma / space / newline separated), e.g. `_about/history.md pages/contact-us.md`
+- **Markdown paths** — repo-relative paths, **comma-separated**, e.g. `_about/history.md, pages/contact-us.md`. Paths may contain spaces (only commas and newlines separate entries), so `_about/my page.md, pages/contact us.md` works.
 
 Output is written to `page-conversion-output/<repo>/`:
 

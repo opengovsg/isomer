@@ -38,7 +38,9 @@ interface ConvertedPage {
 
 const parsePagePaths = (raw: string): string[] =>
   raw
-    .split(/[\s,]+/)
+    // Split on commas and newlines only (never spaces) so that individual
+    // paths are free to contain spaces, e.g. "_about/my page.md".
+    .split(/[,\n\r]+/)
     .map((p) => p.trim())
     .filter((p) => p.length > 0)
     // Normalise away any accidental leading "./" or "/"
@@ -403,7 +405,7 @@ export const migrateIndividualPages = async () => {
 
   const pagesRaw = await input({
     message:
-      "Markdown paths (repo-relative, comma/space/newline separated):",
+      "Markdown paths (repo-relative, comma-separated; paths may contain spaces):",
     required: true,
     validate: (v) => parsePagePaths(v).length > 0 || "Enter at least one path",
   });
