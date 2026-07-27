@@ -1,6 +1,6 @@
 import type { Editor as TiptapEditor } from "@tiptap/react"
 import type { RefObject } from "react"
-import { Box, Icon, Text, useDisclosure } from "@chakra-ui/react"
+import { Box, Flex, Icon, Text, useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { useEditorState } from "@tiptap/react"
 import { useLayoutEffect, useRef, useState } from "react"
@@ -12,6 +12,7 @@ import {
   captionRectsEqual,
   computeCaptionLayout,
   getTableInstances,
+  isPlaceholderTableCaption,
   type CaptionLayoutRect,
 } from "./utils"
 
@@ -32,27 +33,52 @@ interface SingleTableCaptionProps {
 }
 
 /**
- * Right-aligned caption control for a single table instance. Opens the table
- * settings modal on click — "Add caption" when empty, "Edit" when a caption
- * already exists.
+ * Read-only caption line for a single table instance with a right-aligned
+ * control that opens the table settings modal — "Add caption" for placeholder
+ * defaults, "Edit" when a real caption exists.
  */
 const SingleTableCaption = ({ caption, onEdit }: SingleTableCaptionProps) => {
-  const label = caption ? "Edit" : "Add caption"
+  const hasCaption = !isPlaceholderTableCaption(caption)
+  const label = hasCaption ? "Edit" : "Add caption"
 
   return (
-    <Box textAlign="right">
-      <Button
-        variant="link"
-        gap="0.25rem"
-        onClick={onEdit}
-        aria-label={caption ? "Edit table caption" : "Add table caption"}
-      >
-        <Icon as={BiPencil} color="interaction.links.default" boxSize="1rem" />
-        <Text textStyle="caption-1" color="interaction.links.default">
-          {label}
+    <Flex
+      align="flex-start"
+      justify={hasCaption ? "space-between" : "flex-end"}
+      gap="0.5rem"
+      w="100%"
+    >
+      {hasCaption && (
+        <Text
+          flex="1"
+          minW={0}
+          textStyle="body-2"
+          color="base.content.strong"
+          whiteSpace="normal"
+          wordBreak="break-word"
+        >
+          {caption}
         </Text>
+      )}
+      <Button
+        variant="clear"
+        size="xs"
+        leftIcon={
+          <Icon
+            as={BiPencil}
+            color="interaction.links.default"
+            boxSize="1rem"
+          />
+        }
+        color="interaction.links.default"
+        textStyle="caption-1"
+        flexShrink={0}
+        onClick={onEdit}
+        aria-label={hasCaption ? "Edit table caption" : "Add table caption"}
+      >
+        {label}
       </Button>
-    </Box>
+    </Flex>
   )
 }
 
@@ -91,7 +117,8 @@ interface TableCaptionSlotProps extends SingleTableCaptionProps {
  * browser hasn't flushed layout yet, and (since deps may not change again)
  * that zero rect would never get recomputed. Re-measuring runs on every
  * editor transaction so a caption stays correctly positioned and sized as
- * rows/columns are added, removed, or reordered.
+ * rows/columns are added, removed, or reordered, or as the caption wraps
+ * to more/fewer lines.
  *
  * `rect` stays as React state: it is DOM layout measurement, not editor JSON.
  */
@@ -147,7 +174,7 @@ const TableCaptionSlot = ({
       resizeObserver.disconnect()
       tableDom.style.marginTop = previousMarginTop
     }
-  }, [editor, pos, containerRef])
+  }, [editor, pos, containerRef, caption])
 
   return (
     <Box

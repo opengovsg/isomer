@@ -4,8 +4,38 @@ import {
   captionRectsEqual,
   clampCaptionLength,
   computeCaptionLayout,
+  DEFAULT_TABLE_CAPTION,
+  isPlaceholderTableCaption,
+  LEGACY_DEFAULT_TABLE_CAPTION,
+  normalizeTableCaptionForEdit,
   resolveCaptionOnBlur,
 } from "../utils"
+
+describe("isPlaceholderTableCaption", () => {
+  it("treats empty and default captions as placeholders", () => {
+    expect(isPlaceholderTableCaption("")).toBe(true)
+    expect(isPlaceholderTableCaption("   ")).toBe(true)
+    expect(isPlaceholderTableCaption(DEFAULT_TABLE_CAPTION)).toBe(true)
+    expect(isPlaceholderTableCaption(LEGACY_DEFAULT_TABLE_CAPTION)).toBe(true)
+  })
+
+  it("treats real captions as non-placeholder", () => {
+    expect(isPlaceholderTableCaption("Quarterly revenue")).toBe(false)
+  })
+})
+
+describe("normalizeTableCaptionForEdit", () => {
+  it("returns an empty string for placeholder captions", () => {
+    expect(normalizeTableCaptionForEdit(DEFAULT_TABLE_CAPTION)).toBe("")
+    expect(normalizeTableCaptionForEdit(LEGACY_DEFAULT_TABLE_CAPTION)).toBe("")
+  })
+
+  it("returns the caption unchanged when it is real content", () => {
+    expect(normalizeTableCaptionForEdit("Quarterly revenue")).toBe(
+      "Quarterly revenue",
+    )
+  })
+})
 
 describe("clampCaptionLength", () => {
   it("returns the value unchanged when under the limit", () => {

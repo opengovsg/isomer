@@ -24,6 +24,7 @@ import { Text } from "@tiptap/extension-text"
 import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule } from "@tiptap/react"
+import { DEFAULT_TABLE_CAPTION } from "~/features/editing-experience/components/TableCaption/utils"
 
 import {
   createTableSelectionBorderPlugin,
@@ -116,7 +117,7 @@ export const IsomerTable = Table.extend({
   addAttributes() {
     return {
       caption: {
-        default: "Table caption",
+        default: DEFAULT_TABLE_CAPTION,
       },
     }
   },
