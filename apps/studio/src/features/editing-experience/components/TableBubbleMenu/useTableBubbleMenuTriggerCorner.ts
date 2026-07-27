@@ -52,7 +52,13 @@ export const useTableBubbleMenuTriggerCorner = (
       return
     }
 
+    let rafId = 0
+    let cancelled = false
+
     const updateCorner = () => {
+      rafId = 0
+      if (cancelled || editor.isDestroyed) return
+
       const rect = getBottomRightCellRect(editor.view, editor.state)
       if (!rect) {
         setCorner(null)
@@ -62,7 +68,8 @@ export const useTableBubbleMenuTriggerCorner = (
     }
 
     const scheduleUpdate = () => {
-      requestAnimationFrame(updateCorner)
+      if (rafId) cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(updateCorner)
     }
 
     scheduleUpdate()
@@ -75,6 +82,8 @@ export const useTableBubbleMenuTriggerCorner = (
     editor.on("focus", scheduleUpdate)
 
     return () => {
+      cancelled = true
+      if (rafId) cancelAnimationFrame(rafId)
       scrollTarget.removeEventListener("scroll", scheduleUpdate)
       window.removeEventListener("resize", scheduleUpdate)
       editor.off("selectionUpdate", scheduleUpdate)
