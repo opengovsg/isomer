@@ -1,3 +1,4 @@
+import type { GetServerSideProps } from "next"
 import {
   Button,
   Center,
@@ -13,19 +14,20 @@ import {
   Textarea,
   useToast,
 } from "@opengovsg/design-system-react"
-import { useRouter } from "next/router"
+import { getIronSession } from "iron-session"
 import { useState } from "react"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UnsavedSettingModal } from "~/features/editing-experience/components/UnsavedSettingModal"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useNavigationEffect } from "~/hooks/useNavigationEffect"
-import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { type NextPageWithLayout } from "~/lib/types"
+import { type SessionData } from "~/lib/types/session"
 import { setSiteConfigByAdminSchema } from "~/schemas/site"
+import { generateSessionOptions } from "~/server/modules/auth/session"
+import { isActiveIsomerAdmin } from "~/server/modules/permissions/permissions.service"
 import { SiteBasicLayout } from "~/templates/layouts/SiteBasicLayout"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
@@ -41,23 +43,52 @@ const SUPPORTED_SITE_CONFIG_TYPES = [
   "footer",
 ] as const
 
-const SiteAdminPage: NextPageWithLayout = () => {
-  const toast = useToast()
-  const router = useRouter()
-  const trpcUtils = trpc.useUtils()
-  const { siteId } = useQueryParse(siteAdminSchema)
-  const { isAdmin: isUserIsomerAdmin, isLoading } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
+interface SiteAdminPageProps {
+  siteId: number
+}
 
-  if (!isLoading && !isUserIsomerAdmin) {
-    toast({
-      title: "You do not have permission to access this page.",
-      status: "error",
-      ...BRIEF_TOAST_SETTINGS,
-    })
-    void router.push(`/sites/${siteId}`)
+export const getServerSideProps: GetServerSideProps<
+  SiteAdminPageProps
+> = async ({ params, req, res }) => {
+  const parsedParams = siteAdminSchema.safeParse(params)
+
+  if (!parsedParams.success) {
+    return { notFound: true }
   }
+
+  const { siteId } = parsedParams.data
+  const session = await getIronSession<SessionData>(
+    req,
+    res,
+    generateSessionOptions(),
+  )
+
+  const isUserIsomerAdmin =
+    !!session.userId &&
+    (await isActiveIsomerAdmin(session.userId, [
+      IsomerAdminRole.Core,
+      IsomerAdminRole.Migrator,
+    ]))
+
+  if (!isUserIsomerAdmin) {
+    return {
+      redirect: {
+        destination: `/sites/${siteId}`,
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: {
+      siteId,
+    },
+  }
+}
+
+const SiteAdminPage: NextPageWithLayout<SiteAdminPageProps> = ({ siteId }) => {
+  const toast = useToast()
+  const trpcUtils = trpc.useUtils()
 
   const [previousConfig] = trpc.site.getConfig.useSuspenseQuery({
     id: siteId,

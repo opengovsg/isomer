@@ -1,13 +1,15 @@
 import type { AllCardProps } from "~/interfaces"
 import type { IsomerSitemap, IsomerSiteProps } from "~/types"
-import type { CollectionPagePageProps } from "~/types/page"
+import type {
+  CollectionPageCategoryOption,
+  CollectionPagePageProps,
+} from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
+import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
 
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
-
-const CATEGORY_OTHERS = "Others"
 
 interface GetItemImageProps {
   showThumbnail: CollectionPagePageProps["showThumbnail"]
@@ -70,6 +72,7 @@ export type GetCollectionItemsProps = Pick<
   permalink: string
   sortBy?: CollectionPagePageProps["defaultSortBy"]
   sortDirection?: CollectionPagePageProps["defaultSortDirection"]
+  categoryOptions?: CollectionPageCategoryOption[]
 }
 
 export const getCollectionItems = ({
@@ -81,6 +84,7 @@ export const getCollectionItems = ({
   showDate,
   showThumbnail,
   tagCategories,
+  categoryOptions,
 }: GetCollectionItemsProps): AllCardProps[] => {
   let currSitemap: IsomerSitemap = site.siteMap
   const permalinkParts = permalink.split("/")
@@ -128,7 +132,11 @@ export const getCollectionItems = ({
       id: item.permalink,
       date,
       lastModified: item.lastModified,
-      category: item.category || CATEGORY_OTHERS,
+      category: resolveCategoryLabel({
+        categoryId: item.categoryId,
+        category: item.category,
+        categoryOptions,
+      }),
       title: item.title,
       description: item.summary,
       image,

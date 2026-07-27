@@ -124,13 +124,17 @@ const CategoriesSchema = Type.Object({
     ),
   ),
 })
+
+export type CollectionPageCategoryOption = NonNullable<
+  Static<typeof CategoriesSchema>["categoryOptions"]
+>[number]
+
 const TaggedSchema = Type.Optional(
   // NOTE: This stores the `uuid` of the tag option
   Type.Array(TagOptionUuidSchema, {
     // NOTE: we need a custom format because this cannot just be a simple drop down
     // as we need to reference the existing data that is pointing to this
     format: "tagged",
-    description: "To add new options, contact your site owner(s).",
   }),
 )
 
@@ -224,7 +228,6 @@ export const COLLECTION_VARIANT_OPTIONS = {
 const COLLECTION_PAGE_SORT_BY = {
   date: "date",
   title: "title",
-  category: "category",
 } as const
 
 const COLLECTION_PAGE_SORT_DIRECTION = {
@@ -266,8 +269,6 @@ export const CollectionPagePageSchema = Type.Intersect([
           }),
           Type.Literal("title-asc", { title: "By title, A → Z" }),
           Type.Literal("title-desc", { title: "By title, Z → A" }),
-          Type.Literal("category-asc", { title: "By category, A → Z" }),
-          Type.Literal("category-desc", { title: "By category, Z → A" }),
         ],
         {
           title: "Sort items by",
@@ -283,7 +284,6 @@ export const CollectionPagePageSchema = Type.Intersect([
         [
           Type.Literal(COLLECTION_PAGE_SORT_BY.date, { title: "Date" }),
           Type.Literal(COLLECTION_PAGE_SORT_BY.title, { title: "Title" }),
-          Type.Literal(COLLECTION_PAGE_SORT_BY.category, { title: "Category" }),
         ],
         {
           title: "Default sort by",

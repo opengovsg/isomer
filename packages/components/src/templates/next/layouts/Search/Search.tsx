@@ -1,6 +1,7 @@
 import { type SearchPageSchemaType } from "~/types"
 
 import { Skeleton } from "../Skeleton"
+import { EgazetteAlgoliaSearch } from "./EgazetteAlgoliaSearch"
 import { SearchSG } from "./SearchSG"
 
 export const SearchLayout = ({ site, page, layout }: SearchPageSchemaType) => {
@@ -12,6 +13,10 @@ export const SearchLayout = ({ site, page, layout }: SearchPageSchemaType) => {
       {/* SearchSG-powered search */}
       {site.search?.type === "searchSG" && clientId && (
         <SearchSG clientId={clientId} />
+      )}
+      {/* Algolia-powered egazette search */}
+      {site.search?.type === "egazette-algolia" && (
+        <EgazetteAlgoliaSearch config={site.search} />
       )}
     </Skeleton>
   )

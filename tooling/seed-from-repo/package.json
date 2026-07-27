@@ -53,6 +53,7 @@
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
     "@types/pg": "catalog:",
     "@types/request": "catalog:"
   }

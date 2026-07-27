@@ -667,3 +667,38 @@ export const OrderedList100Items: Story = {
     ],
   },
 }
+
+export const VideoEmbed: Story = {
+  name: "VideoEmbed",
+  parameters: {
+    // Delay the Chromatic snapshot so iframes have time to load and don’t appear as white blocks.
+    chromatic: { delay: 10000 },
+  },
+  args: {
+    ...generateArgs({
+      summary:
+        "Showing how video embeds render within an article page layout, including a vertical Facebook Reel.",
+    }),
+    content: [
+      {
+        type: "prose",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "Facebook Reels are vertical (9:16) videos. They render in a width-capped portrait box, centred within the article content column, so they are not clipped.",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "video",
+        title: "Facebook Reel",
+        url: "https://www.facebook.com/plugins/video.php?height=476&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F3028033664054832%2F&show_text=false&width=267&t=0",
+      },
+    ],
+  },
+}

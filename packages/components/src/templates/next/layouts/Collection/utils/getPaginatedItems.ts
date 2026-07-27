@@ -5,7 +5,7 @@ export const getPaginatedItems = (
   itemsPerPage: number,
   currPage: number,
 ) => {
-  const normalizedCurrPage = Math.max(1, currPage)
+  const normalizedCurrPage = Math.max(1, isNaN(currPage) ? 1 : currPage)
 
   return items.slice(
     (normalizedCurrPage - 1) * itemsPerPage,

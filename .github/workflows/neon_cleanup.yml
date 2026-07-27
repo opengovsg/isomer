@@ -1,0 +1,18 @@
+name: Delete Neon Branch
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete-neon-branch:
+    # Additional guard to ensure main is never deleted
+    if: github.head_ref != 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: neondatabase/delete-branch-action@4468d825d5a88ef4012f1705a82f02ec3072f776
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          branch: preview/${{ github.head_ref }}
+          # Note: This points to neon project-scoped api key: isomer-studio-postgres
+          api_key: ${{ secrets.NEON_API_KEY }}

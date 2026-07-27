@@ -8,6 +8,7 @@ import type {
 import { useMemo, useState } from "react"
 import { useDebounce } from "~/hooks/useDebounce"
 import { useDgsData } from "~/hooks/useDgsData"
+import { isCkanInternalColumn } from "~/utils/dgs"
 
 import { PAGINATION_MAX_ITEMS } from "../shared/constants"
 import { SearchableTableClientUI } from "../shared/SearchableTableClientUI"
@@ -63,7 +64,12 @@ export const DynamicDGSSearchableTable = ({
     fetchAll: false,
   })
 
-  const items = records?.map((record) => Object.values(record)) ?? []
+  const items =
+    records?.map((record) =>
+      Object.entries(record)
+        .filter(([key]) => !isCkanInternalColumn(key))
+        .map(([, value]) => value),
+    ) ?? []
 
   const isInitiallyEmpty =
     typeof total === "number" && (total === 0 || maxNoOfColumns === 0)

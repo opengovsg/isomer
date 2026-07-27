@@ -1,6 +1,7 @@
 import { type ArticlePageSchemaType } from "~/types"
 import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
 import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
+import { resolveCategoryLabel } from "~/utils/resolveCategoryLabel"
 
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
@@ -30,13 +31,24 @@ export const ArticleLayout = ({
       ? getTagsFromTagged(tagged, parent.collectionPagePageProps?.tagCategories)
       : tags
 
+  const categoryOptions =
+    parent?.layout === "collection"
+      ? parent.collectionPagePageProps?.categoryOptions
+      : undefined
+
+  const resolvedCategory = resolveCategoryLabel({
+    categoryId: page.categoryId,
+    category: page.category,
+    categoryOptions,
+  })
+
   return (
     <Skeleton site={site} page={page} layout={layout}>
       <div className="mx-auto flex max-w-[47.8rem] flex-col gap-7 px-6 md:px-10">
         <ArticlePageHeader
           {...page.articlePageHeader}
           breadcrumb={breadcrumb}
-          category={page.category}
+          category={resolvedCategory}
           title={page.title}
           date={page.date}
           tags={resolvedTags}

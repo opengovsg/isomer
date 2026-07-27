@@ -58,3 +58,9 @@ export const TYPE_TO_ICON: Record<
   dynamiccomponentlist: BiListUl,
   childrenpages: BiListUl,
 }
+
+export const PUBLISHED_AFTER_EDITING_EVENT = "published-after-editing"
+export const LEFT_EDITOR_AFTER_EDITING_EVENT = "left-editor-after-editing"
+export type ContentEditSurveyEvent =
+  | typeof PUBLISHED_AFTER_EDITING_EVENT
+  | typeof LEFT_EDITOR_AFTER_EDITING_EVENT

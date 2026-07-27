@@ -20,13 +20,13 @@ jobs:
     steps:
       - name: Optimize CI
         id: check_skip
-        uses: withgraphite/graphite-ci-action@9bc969adfd43bb790da3b64b543c78c75cef9689
+        uses: withgraphite/graphite-ci-action@402a89bc8aa6db18ae1f9c61953d001d5f9d828f
         with:
           graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -36,24 +36,24 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Lint
-        run: pnpm run lint && pnpm run lint:ws
-
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5
-        with:
-          dockerfile: "./apps/studio/Dockerfile"
-          failure-threshold: "error"
+      - parallel:
+          - name: Lint
+            run: pnpm run lint && pnpm run lint:ws
+          - name: Lint Dockerfile
+            uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5
+            with:
+              dockerfile: "./apps/studio/Dockerfile"
+              failure-threshold: "error"
 
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -64,7 +64,7 @@ jobs:
   typecheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -72,32 +72,61 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
 
-  unit-integration-tests:
-    name: Unit & integration tests
+  test-studio:
+    name: Test Studio (${{ matrix.shard }}/${{ matrix.total_shards }})
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
+    strategy:
+      fail-fast: false # so that we can run all shards and one shard can fail without failing the entire job
+      matrix:
+        shard: [1, 2] # extend this if we need to run more shards concurrently
+        total_shards: [2]
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Install dependencies
-        # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
-        run: pnpm exec turbo run generate --filter=isomer-studio
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
-        with:
-          languages: js
-          service: isomer-studio
-          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - parallel:
+          - name: Install Playwright (Chromium)
+            # Required by the vitest "browser" project (Vitest Browser Mode).
+            run: pnpm --filter isomer-studio exec playwright install chromium
+          - name: Install dependencies
+            # Not using test:unit dependency in Turbo because Datadog Test Visibility requires only the test suite to be run
+            run: pnpm exec turbo run generate --filter=isomer-studio
+          - name: Configure Datadog Test Visibility
+            uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+            with:
+              languages: js
+              service: isomer-studio
+              api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Studio
         # Loose env mode required for env vars to be passed to the run
-        run: pnpm exec turbo test-ci:unit --filter=isomer-studio --env-mode=loose
+        run: pnpm exec turbo test-ci:unit --filter=isomer-studio --env-mode=loose -- --shard=${{ matrix.shard }}/${{ matrix.total_shards }}
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           # Set timezone to Singapore to ensure that the tests are run in the correct timezone
           TZ: Asia/Singapore
+
+  test-components:
+    name: Test Components
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Setup
+        uses: ./.github/actions/setup
+      - parallel:
+          - name: Install Playwright (Chromium)
+            # Required by the vitest "browser" project (Vitest Browser Mode).
+            run: pnpm --filter @opengovsg/isomer-components exec playwright install chromium
+          - name: Configure Datadog Test Visibility
+            uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+            with:
+              languages: js
+              service: isomer-studio
+              api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Components
         run: pnpm exec turbo test-ci:unit --filter=@opengovsg/isomer-components --env-mode=loose
         env:
@@ -105,10 +134,51 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           # Set timezone to Singapore to ensure that the tests are run in the correct timezone
           TZ: Asia/Singapore
+
+  test-validators:
+    name: Test Validators
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+        with:
+          languages: js
+          service: isomer-studio
+          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test Validators
         run: pnpm exec turbo test-ci:unit --filter=@isomer/validators --env-mode=loose
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+          TZ: Asia/Singapore
+
+  test-pgboss:
+    name: Test pgboss
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Setup
+        uses: ./.github/actions/setup
+      - parallel:
+          - name: Start test containers
+            run: pnpm exec turbo run setup:test --filter=@isomer/pgboss
+          - name: Configure Datadog Test Visibility
+            uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+            with:
+              languages: js
+              service: isomer-pgboss
+              api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+      - name: Test pgboss
+        run: pnpm exec turbo test-ci:unit --filter=@isomer/pgboss --env-mode=loose
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+          TZ: Asia/Singapore
 
   publishing-script-tests:
     name: Publishing script tests
@@ -116,7 +186,7 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Setup
         uses: ./.github/actions/setup
       - name: Configure Datadog Test Visibility
@@ -133,57 +203,88 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           # Set timezone to Singapore to ensure that the tests are run in the correct timezone
           TZ: Asia/Singapore
+      - name: Test full template build from publishing script output
+        run: pnpm exec turbo test-ci:build --filter=publishing --env-mode=loose
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
+          TZ: Asia/Singapore
 
   end-to-end-tests:
     name: End-to-end tests
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Install Playwright (Chromium)
-        run: pnpm --filter isomer-studio exec playwright install chromium
       - name: Load .env file
         uses: opengovsg/dotenv@eff1dce037c4c0143cc4180a810511024c2560c0 # v2
         with:
           path: apps/studio
           mode: test
       - name: Next.js cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
-            ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+            ${{ github.workspace }}/apps/studio/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-
-      - name: Build Studio app
-        # Loose env mode required for env vars to be passed to the run
-        run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
-      - name: Start test containers
-        run: pnpm run setup:test
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
-        with:
-          languages: js
-          service: isomer-studio
-          api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
+            ${{ runner.os }}-nextjs-
+      - parallel:
+          - name: Install Playwright (Chromium)
+            run: pnpm --filter isomer-studio exec playwright install chromium
+          - name: Build Studio app
+            # Loose env mode required for env vars to be passed to the run
+            run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
+          - name: Start test containers
+            run: pnpm run setup:test
+          - name: Configure Datadog Test Visibility
+            uses: datadog/test-visibility-github-action@4e7afb05b464fd349275e41e65a7f4de83e7f46b # v2.10.0
+            with:
+              languages: js
+              service: isomer-studio
+              api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Seed testing db
         run: pnpm exec turbo db:seed
       - name: Run Playwright tests
         run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
-        env:
-          # Required to allow Datadog to trace Playwright tests
-          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
 
       - name: Stop test containers
         run: pnpm run teardown
 
       - name: Upload test results
         if: ${{ !cancelled() }}
+        id: upload-test-results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: test results
+          # Unique per run so that re-runs from the same PR don't collide.
+          name: e2e-test-results-${{ github.run_id }}
           path: apps/studio/tests/e2e/test-results
           retention-days: 7
+          if-no-files-found: warn
+
+      # Posting a PR comment requires write access, but GitHub restricts
+      # GITHUB_TOKEN to read-only for `pull_request` events from forks — no
+      # `permissions:` declaration overrides this. The actual comment is posted
+      # by post-pr-comment.yml, which uses a `workflow_run` trigger and runs in
+      # the base-repo context where write access is available. We pass the PR
+      # number and artifact URL through a small artifact because the two
+      # workflows run in separate contexts and can't share environment variables.
+      - name: Save E2E comment metadata
+        if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.upload-test-results.outputs.artifact-url != '' }}
+        run: |
+          mkdir -p /tmp/e2e-metadata
+          echo "${{ github.event.pull_request.number }}" > /tmp/e2e-metadata/pr-number.txt
+          echo "${{ steps.upload-test-results.outputs.artifact-url }}" > /tmp/e2e-metadata/artifact-url.txt
+
+      - name: Upload E2E comment metadata
+        if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.upload-test-results.outputs.artifact-url != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-comment-metadata
+          path: /tmp/e2e-metadata/
+          retention-days: 1
+          if-no-files-found: error

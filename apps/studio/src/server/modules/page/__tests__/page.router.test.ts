@@ -22,6 +22,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { normalizeRedirectPath } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import {
   AuditLogEvent,
@@ -32,7 +33,11 @@ import {
 import type { User } from "../../database"
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
 import { db, jsonb } from "../../database"
-import { getBlobOfResource, getPageById } from "../../resource/resource.service"
+import {
+  getBlobOfResource,
+  getPageById,
+  getResourceFullPermalink,
+} from "../../resource/resource.service"
 import { pageRouter } from "../page.router"
 import { createDefaultPage } from "../page.service"
 
@@ -769,6 +774,177 @@ describe("page.router", async () => {
     })
   })
 
+  describe("getCategoryOptions", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.getCategoryOptions({ siteId: 1, pageId: 1 })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have read access to the site", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.CollectionPage,
+      })
+
+      // Act
+      const result = caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should return 200", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      expect(result.categoryOptions).toEqual([])
+    })
+
+    it("should throw 404 when the resource has no parent collection", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.RootPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "Page not found",
+        }),
+      )
+    })
+
+    it("should throw 400 when the resource's parent is not a Collection", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder()
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Page is not a child of a Collection",
+        }),
+      )
+    })
+
+    it("should return category options from the published collection index blob", async () => {
+      // Arrange
+      const { collection, site } = await setupCollection()
+      const { blob: indexBlob } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: user.id,
+      })
+      await db
+        .updateTable("Blob")
+        .where("id", "=", indexBlob.id)
+        .set({
+          content: jsonb({
+            ...indexBlob.content,
+            page: {
+              ...indexBlob.content.page,
+              categoryOptions: [
+                {
+                  id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                  label: "Alpha",
+                },
+                {
+                  id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                  label: "Beta",
+                },
+              ],
+            },
+          }),
+        })
+        .execute()
+
+      const { page: collectionPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.CollectionPage,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.getCategoryOptions({
+        siteId: site.id,
+        pageId: Number(collectionPage.id),
+      })
+
+      // Assert
+      expect(result.categoryOptions).toEqual([
+        { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", label: "Alpha" },
+        { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", label: "Beta" },
+      ])
+    })
+  })
+
   describe("readPage", () => {
     it("should throw 401 if not logged in", async () => {
       const unauthedSession = applySession()
@@ -1373,7 +1549,7 @@ describe("page.router", async () => {
           layout: "content",
           page: pick(page, ["title", "permalink"]),
           version: "0.1.0",
-        } as UpdatePageOutput["content"]),
+        } satisfies UpdatePageOutput["content"]),
       }
     }
 
@@ -2052,6 +2228,260 @@ describe("page.router", async () => {
         .execute()
       expect(auditLogs.length).toEqual(1)
     })
+
+    it("should block the first publish when a live redirect occupies the page's URL", async () => {
+      // Arrange — a draft page whose URL already has a live redirect
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: normalizeRedirectPath(fullPermalink!),
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act
+      const result = caller.publishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert — blocked, and nothing published
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "CONFLICT",
+          message: `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
+        }),
+      )
+      const versions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versions.length).toEqual(0)
+    })
+
+    it("should allow publishing when a redirect exists at a different path", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/some-unrelated-path",
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — published normally
+      const versions = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versions.length).toEqual(1)
+    })
+
+    it("should not block re-publishing an already-published page whose URL has a redirect", async () => {
+      // Arrange — an already-published page (the source-guard gap aside, this
+      // can happen via imported data). Only the first publish is gated.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: normalizeRedirectPath(fullPermalink!),
+          destination: "https://www.example.gov.sg",
+        })
+        .execute()
+
+      // Act / Assert — re-publish is not blocked
+      await expect(
+        caller.publishPage({ siteId: site.id, pageId: Number(page.id) }),
+      ).resolves.toBeUndefined()
+    })
+
+    it("should back-fill a literal redirect destination into a reference on first publish", async () => {
+      // Arrange — a draft page, plus a redirect whose destination is the page's
+      // literal path (created before the page was live). Publishing the page
+      // should rewrite that literal into a [resource:...] reference so the
+      // redirect follows the page's future moves.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(page.id),
+      )
+      const literalDestination = normalizeRedirectPath(fullPermalink!)
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: literalDestination,
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — the literal destination is now a reference to the page
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual(`[resource:${site.id}:${page.id}]`)
+
+      // Assert — a RedirectDelete entry records the literal form being retired
+      const deleteEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectDelete")
+        .executeTakeFirstOrThrow()
+      expect(deleteEntry.userId).toBe(session.userId)
+      const deleteDelta = deleteEntry.delta as {
+        before: { destination: string; deletedAt: string | null }
+        after: { destination: string; deletedAt: string | null }
+      }
+      expect(deleteDelta.before.destination).toBe(literalDestination)
+      expect(deleteDelta.before.deletedAt).toBeNull()
+      expect(deleteDelta.after.destination).toBe(literalDestination)
+      expect(deleteDelta.after.deletedAt).not.toBeNull()
+
+      // Assert — a RedirectCreate entry records the reference form being adopted
+      const createEntry = await db
+        .selectFrom("AuditLog")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("eventType", "=", "RedirectCreate")
+        .executeTakeFirstOrThrow()
+      expect(createEntry.userId).toBe(session.userId)
+      const createDelta = createEntry.delta as {
+        before: null
+        after: { destination: string }
+      }
+      expect(createDelta.before).toBeNull()
+      expect(createDelta.after.destination).toBe(
+        `[resource:${site.id}:${page.id}]`,
+      )
+    })
+
+    it("should leave a literal redirect to a different path untouched on publish", async () => {
+      // Arrange — a redirect pointing at some other path must not be rewritten
+      // when an unrelated page is published.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: "/some-other-page",
+        })
+        .execute()
+
+      // Act
+      await caller.publishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — destination is unchanged
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual("/some-other-page")
+    })
+
+    it("should back-fill a literal redirect to a folder URL into a container reference when the folder's index page is first published", async () => {
+      // Arrange — a folder served by its (draft) IndexPage, plus a redirect
+      // whose destination is the folder's literal path. The IndexPage renders at
+      // the folder's URL, so publishing it should rewrite the literal into a
+      // reference to the CONTAINER (folder), not the index page itself.
+      const { site, folder } = await setupFolder({ permalink: "guides" })
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const fullPermalink = await getResourceFullPermalink(
+        site.id,
+        Number(folder.id),
+      )
+      await db
+        .insertInto("Redirect")
+        .values({
+          siteId: site.id,
+          source: "/old-url",
+          destination: normalizeRedirectPath(fullPermalink!),
+        })
+        .execute()
+
+      // Act — publish the folder's index page (first publish)
+      await caller.publishPage({
+        siteId: site.id,
+        pageId: Number(indexPage.id),
+      })
+
+      // Assert — the literal destination now references the folder, so it will
+      // follow the folder's future renames
+      const redirect = await db
+        .selectFrom("Redirect")
+        .selectAll()
+        .where("siteId", "=", site.id)
+        .where("source", "=", "/old-url")
+        .executeTakeFirstOrThrow()
+      expect(redirect.destination).toEqual(`[resource:${site.id}:${folder.id}]`)
+    })
   })
 
   describe("updateMeta", () => {
@@ -2124,6 +2554,183 @@ describe("page.router", async () => {
   })
 
   describe("updateSettings", () => {
+    describe("redirect on settings change", () => {
+      const liveRedirects = (siteId: number) =>
+        db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", siteId)
+          .where("deletedAt", "is", null)
+          .execute()
+
+      const setupPublishedPage = async (permalink: string) => {
+        const { site, page } = await setupPageResource({
+          resourceType: ResourceType.Page,
+          permalink,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        return { site, page }
+      }
+
+      it("creates a redirect from the old URL when the permalink changes", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        const redirects = await liveRedirects(site.id)
+        expect(redirects).toHaveLength(1)
+        expect(redirects[0]!.source).toBe("/old-page")
+        expect(redirects[0]!.destination).toBe(
+          `[resource:${site.id}:${page.id}]`,
+        )
+      })
+
+      it("does not create a redirect for a title-only change", async () => {
+        const { site, page } = await setupPublishedPage("stay")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Renamed title only",
+          permalink: "stay",
+          shouldCreateRedirect: true,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("does not create a redirect when shouldCreateRedirect is false", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: false,
+        })
+
+        expect(await liveRedirects(site.id)).toHaveLength(0)
+      })
+
+      it("blocks renaming a published page onto a path a live redirect points elsewhere from", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A live redirect already occupies the new URL, pointing elsewhere —
+        // renaming the page onto it would shadow the page.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-page",
+            destination: "https://example.gov.sg/elsewhere",
+          })
+          .execute()
+
+        const result = caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: false,
+        })
+
+        // Assert — blocked, and the whole edit is rolled back (permalink unchanged).
+        await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+        const unchanged = await db
+          .selectFrom("Resource")
+          .select("permalink")
+          .where("id", "=", String(page.id))
+          .executeTakeFirstOrThrow()
+        expect(unchanged.permalink).toBe("old-page")
+      })
+
+      it("reclaims a redirect pointing back at the page when the URL is renamed onto it", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A redirect at the URL the page is about to occupy, pointing back at it
+        // — this is the reclaim case, not a shadow, so the rename is allowed.
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-page",
+            destination: `[resource:${site.id}:${page.id}]`,
+          })
+          .execute()
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        // The self-pointing redirect at /new-page is reclaimed (soft-deleted)...
+        const reclaimed = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/new-page")
+          .executeTakeFirstOrThrow()
+        expect(reclaimed.deletedAt).not.toBeNull()
+        // ...and the old URL gets its own redirect.
+        const live = await liveRedirects(site.id)
+        expect(live).toHaveLength(1)
+        expect(live[0]!.source).toBe("/old-page")
+      })
+
+      it("revives a soft-deleted redirect at the old URL instead of duplicating it", async () => {
+        const { site, page } = await setupPublishedPage("old-page")
+        // A previously soft-deleted redirect already occupies the old source
+        // (e.g. it was deleted earlier). The upsert should revive this row, not
+        // insert a second one at the same (siteId, source).
+        const stale = await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/old-page",
+            destination: "https://example.gov.sg/stale",
+            deletedAt: new Date(),
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow()
+
+        await caller.updateSettings({
+          siteId: site.id,
+          pageId: Number(page.id),
+          type: "Page",
+          title: "Contact us",
+          permalink: "new-page",
+          shouldCreateRedirect: true,
+        })
+
+        // Exactly one row at the old source — the stale one, revived in place.
+        const rows = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .where("source", "=", "/old-page")
+          .execute()
+        expect(rows).toHaveLength(1)
+        expect(rows[0]!.id).toBe(stale.id)
+        expect(rows[0]!.deletedAt).toBeNull()
+        expect(rows[0]!.destination).toBe(`[resource:${site.id}:${page.id}]`)
+      })
+    })
+
     it("should throw 401 if not logged in update", async () => {
       // Arrange
       const unauthedSession = applySession()
@@ -2187,8 +2794,9 @@ describe("page.router", async () => {
         ...expectedSettings,
       })
 
-      // Assert
-      await assertAuditLogRows(2)
+      // Assert — only a ResourceUpdate entry; an unpublished page has no live
+      // presence, so no implicit publish happens.
+      await assertAuditLogRows(1)
       const actualResource = await db
         .selectFrom("Resource")
         .where("id", "=", page.id)
@@ -2202,7 +2810,62 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(result).toMatchObject(actualResource)
       expect(result).toMatchObject(expectedSettings)
-      await assertAuditLogRows(2)
+    })
+
+    it("should not log a Publish event when updating settings of an unpublished page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Title",
+        permalink: "new-permalink",
+      })
+
+      // Assert
+      const publishLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Publish)
+        .selectAll()
+        .execute()
+      expect(publishLogs).toHaveLength(0)
+    })
+
+    it("should log a Publish event when updating settings of a published page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Title",
+        permalink: "new-permalink",
+      })
+
+      // Assert
+      const publishLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Publish)
+        .selectAll()
+        .execute()
+      expect(publishLogs).toHaveLength(1)
     })
 
     it("should update root page settings successfully", async () => {

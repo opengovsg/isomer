@@ -81,13 +81,21 @@ For an agent to read a frame reliably:
 - **Components used in the frame must exist in our design library** or be flagged as "new primitive — needs eng review" in the description.
 - **Spacing/sizing should reference tokens** when present. If a value is hardcoded, the agent will ask before using a magic number.
 
+## PR review
+
+There is no automated review bot. Risk tiering and review grading are done via the `pr-review` skill, which reads `docs/risk-taxonomy.md` (file-glob rules, reversibility modifiers, hot paths) and diffs the current branch against `main`. It posts a single informational comment — it never approves, requests changes, or merges.
+
+For a full human-authority review (the typical "review this PR" ask), use the `review-pr` skill instead; `pr-review` is for automation-style grading only.
+
+All PRs require human approval before merge, regardless of risk tier.
+
 ## GitHub PR conventions
 
 When the agent opens a PR, it must:
 
 1. Link the originating Linear ticket in the PR body (first line: `Closes ENG-123`).
 2. Tag the PR with `ai-authored` (label).
-3. Add a risk tier label (`risk:low` / `risk:medium` / `risk:high`) determined by the `pr-review` skill.
+3. Add a risk tier label (`risk:low` / `risk:medium` / `risk:high`) per `docs/risk-taxonomy.md` — run the `pr-review` skill to compute it, or apply manually.
 4. Use a stacked branch via Graphite when the change spans more than one concern (see [CONTRIBUTING.md](../CONTRIBUTING.md#stacked-prs-with-graphite)).
 5. Include a **Root cause** section (bugs) or **Approach** section (features) in the PR body.
 

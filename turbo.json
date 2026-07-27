@@ -20,7 +20,10 @@
     "SEARCHSG_API_KEY",
     "S3_GAZETTE_BUCKET_NAME",
     "S3_GAZETTE_DOMAIN_NAME",
-    "DD_DELETION_EMAIL"
+    "DD_DELETION_EMAIL",
+    "ALGOLIA_APP_ID",
+    "ALGOLIA_API_KEY",
+    "ALGOLIA_INDEX_NAME"
   ],
   "tasks": {
     "build": {

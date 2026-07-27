@@ -7,10 +7,18 @@ const getSanitizedLinkHref = (url?: string) => {
     return undefined
   }
 
-  const elem = DOMPurify.sanitize(`<a href="${url}"></a>`, {
-    RETURN_DOM_FRAGMENT: true,
-  })
-  const sanitizedUrl = elem.firstElementChild?.getAttribute("href")
+  // We use DOMPurify to create the document fragment as Node.js has no browser 'document' object.
+  const fragment = DOMPurify.sanitize("<a></a>", { RETURN_DOM_FRAGMENT: true })
+  const anchor = fragment.firstElementChild
+
+  if (!anchor) {
+    return undefined
+  }
+
+  anchor.setAttribute("href", url)
+  DOMPurify.sanitize(anchor, { IN_PLACE: true })
+
+  const sanitizedUrl = anchor.getAttribute("href")
 
   if (sanitizedUrl === null) {
     return undefined

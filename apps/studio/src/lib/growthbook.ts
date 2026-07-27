@@ -1,4 +1,5 @@
 import type { GrowthBook } from "@growthbook/growthbook-react"
+import { env } from "~/env.mjs"
 
 export const ENABLE_CODEBUILD_JOBS = "enable-codebuild-jobs"
 export const ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY =
@@ -14,7 +15,12 @@ export const IS_SINGPASS_ENABLED_FEATURE_KEY = "is-singpass-enabled"
 export const IS_HOMEPAGE_ANTI_SCAM_BANNER_ENABLED_FEATURE_KEY =
   "homepage-antiscam-banner-enabled"
 export const EGAZETTE_INFO_FEATURE_KEY = "egazette-info"
-export const IS_REDIRECTIONS_ENABLED_FEATURE_KEY = "is-redirections-enabled"
+export const IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY =
+  "is-advanced-redirects-enabled"
+// When OFF (default): gazette ingestion targets Algolia directly.
+// When ON: gazette ingestion is routed to SearchSG instead.
+export const ENABLE_SEARCHSG_GAZETTE_INGESTION =
+  "enable-searchsg-gazette-ingestion"
 
 export const IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE = true
 
@@ -25,7 +31,21 @@ interface GetIsSingpassEnabledProps {
 export const getIsSingpassEnabled = ({
   gb,
 }: GetIsSingpassEnabledProps): boolean => {
+  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) return false
   return gb.getFeatureValue(
+    IS_SINGPASS_ENABLED_FEATURE_KEY,
+    IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
+  )
+}
+
+// Whether singpass-off side effects (e.g. login alert email) should activate.
+// False when SingPass is skipped (preview) even though SingPass is also
+// disabled there.
+export const getIsSingpassDisabledInNonPreview = ({
+  gb,
+}: GetIsSingpassEnabledProps): boolean => {
+  if (env.NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS) return false
+  return !gb.getFeatureValue(
     IS_SINGPASS_ENABLED_FEATURE_KEY,
     IS_SINGPASS_ENABLED_FEATURE_KEY_FALLBACK_VALUE,
   )

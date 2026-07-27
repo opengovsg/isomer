@@ -7,6 +7,8 @@ packages:
   - "tooling/build/amplify"
   - "tooling/build/1password"
   - "tooling/build/scripts/publishing"
+  # Bruno API collections, not an npm package
+  - "!tooling/bruno"
 
 linkWorkspacePackages: true
 
@@ -52,107 +54,110 @@ allowBuilds:
   ssh2: false
 
 patchedDependencies:
-  next@16.2.6: patches/next@16.2.6.patch
+  next@16.2.11: patches/next@16.2.11.patch
 
 catalog:
+  # v4 is pinned deliberately: the legacy egazette integration uses the v4 client API
+  # (algoliasearch(appId, key).initIndex(name), index.saveObjects, index.deleteBy).
+  # v5 changed the client API — do not "upgrade" this without reviewing egazette compatibility.
+  algoliasearch: ^4.24.0
   ajv: ^8.20.0
-  autoprefixer: ^10.4.21
-  axios: ^1.16.1
+  autoprefixer: ^10.5.4
+  axios: ^1.18.1
   bootstrap-icons: ^1.13.1
   browserslist-useragent-regexp: ^4.1.4
   cheerio: ^1.0.0
-  chromatic: ^17.3.0
+  chromatic: ^18.0.1
   clean-webpack-plugin: ^4.0.0
   dayjs: ^1.11.21
   date-fns: ^4.4.0
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
   jsdom: ^29.1.1
-  happy-dom: ^20.10.2
-  isomorphic-dompurify: ^3.15.0
+  isomorphic-dompurify: ^3.19.0
   mockdate: ^3.0.5
-  msw: ^2.14.6
+  msw: ^2.15.0
   msw-storybook-addon: ^2.0.7
   msw-trpc: ^2.0.1
-  node-mocks-http: ^1.16.2
-  npm-run-all2: ^9.0.1
+  node-mocks-http: ^1.18.1
+  npm-run-all2: ^9.0.2
   "@octokit/rest": ^22.0.0
   "@inquirer/prompts": ^8.5.2
   "@opengovsg/design-system-react": ^1.31.0
   "@opengovsg/starter-kitty-validators": ^1.3.0
   "@paralleldrive/cuid2": ^3.3.0
-  "@sinclair/typebox": ^0.33.12
+  "@sinclair/typebox": ^0.33.24
   "@tanstack/react-table": ^8.21.2
   "@testing-library/react": ^16.3.2
-  pg: ^8.21.0
+  pg: ^8.22.0
   pino: ^10.3.1
   pino-pretty: ^13.0.0
-  postcss: ^8.5.15
-  postcss-preset-env: ^11.2.1
-  react-icons: ^5.2.0
+  postcss: ^8.5.12
+  postcss-preset-env: ^11.3.2
+  react-icons: ^5.7.0
   rimraf: ^6.1.3
-  sherif: ^1.11.1
-  start-server-and-test: ^3.0.5
+  react-instantsearch: ^7.39.0
+  sherif: ^1.12.0
+  start-server-and-test: ^3.0.11
   tailwindcss: ^3.4.4
-  testcontainers: ^12.0.1
-  tsc-alias: ^1.8.17
-  "@typescript/native-preview": 7.0.0-dev.20260608.1
-  type-fest: ^5.7.0
-  tsx: ^4.22.3
-  turbo: ^2.9.16
+  testcontainers: ^12.0.3
+  tsc-alias: ^1.9.0
+  "@typescript/native-preview": 7.0.0-dev.20260707.2
+  type-fest: ^5.8.0
+  tsx: ^4.23.1
+  turbo: ^2.10.5
   typescript: ^6.0.3
   usehooks-ts: ^3.1.1
-  webpack-cli: ^7.0.3
+  webpack-cli: ^7.2.1
   webpack-glob-entries: ^1.0.1
   zod: ^4.4.3
   "@types/lodash-es": ^4.17.12
   "@types/lunr": ^2.3.7
-  "@types/node": ^25.9.2
+  "@types/node": ^26.1.1
   "@types/papaparse": ^5.5.0
   "@types/pg": ^8.15.4
   "@types/request": ^2.48.12
   "@types/validator": ^13.15.2
   "@1password/sdk": ^0.4.0
-  "@datadog/browser-rum": ^7.2.0
+  "@datadog/browser-rum": ^7.5.0
   "@fontsource/ibm-plex-mono": ^5.1.1
-  "@formkit/auto-animate": ^0.9.0
+  "@formkit/auto-animate": ^0.10.0
   "@headlessui/react": ^2.2.10
   "@hello-pangea/dnd": ^18.0.1
   "@hookform/resolvers": ^5.4.0
-  "@intercom/messenger-js-sdk": ^0.0.19
-  "@playwright/test": ^1.60.0
+  "@intercom/messenger-js-sdk": ^0.0.20
   "@uidotdev/usehooks": ^2.4.1
   ajv-errors: ^3.0.0
   chakra-react-select: ^5.1.1
   commander: ^15.0.0
   date-fns-tz: ^3.1.3
-  dd-trace: ^5.102.0
+  dd-trace: ^6.2.0
   exponential-backoff: ^3.1.2
-  filenamify: ^7.0.1
+  filenamify: ^7.0.2
   flat: ^6.0.1
   inter-ui: ^4.1.1
   interweave: ^13.1.0
   interweave-ssr: ^2.0.0
   iron-session: ^8.0.4
   jose: ^6.2.3
-  jotai: ^2.20.0
+  jotai: ^2.20.2
   js-md5: ^0.8.3
-  kysely: ^0.29.2
+  kysely: ^0.29.3
   lodash-es: ^4.18.1
   minisearch: ^7.1.2
-  nanoid: ^5.1.11
-  next: 16.2.6
+  nanoid: ^6.0.0
+  next: 16.2.11
   openid-client: ^5.7.1
-  oxfmt: ^0.53.0
-  oxlint: ^1.68.0
-  oxlint-tsgolint: ^0.23.0
-  papaparse: ^5.5.3
-  pg-boss: ^12.3.0
+  oxfmt: ^0.59.0
+  oxlint: ^1.74.0
+  oxlint-tsgolint: ^0.25.0
+  papaparse: ^5.5.4
+  pg-boss: ^12.26.0
   postcss-load-config: ^6.0.1
-  rate-limiter-flexible: ^11.1.0
-  react-error-boundary: ^5.0.0
+  rate-limiter-flexible: ^11.2.0
+  react-error-boundary: ^6.1.2
   react-frame-component: ^5.2.7
-  react-hook-form: ^7.77.0
+  react-hook-form: ^7.81.0
   react-markdown: ^10.1.0
   rehype-external-links: ^3.0.0
   sass: ^1.100.0
@@ -160,31 +165,31 @@ catalog:
   tailwind-merge: ^2.4.0
   tailwind-variants: ^3.2.2
   tailwindcss-react-aria-components: ^1.1.4
-  tiptap-text-direction: ^0.4.0
+  tiptap-text-direction: ^0.5.0
   transliteration: ^2.6.1
   validator: ^13.15.35
-  wretch: ^3.0.7
+  wretch: ^3.0.9
 
 catalogs:
   atlaskitPragmaticDnd:
-    "@atlaskit/pragmatic-drag-and-drop": ^1.8.1
-    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^1.2.0
+    "@atlaskit/pragmatic-drag-and-drop": ^2.0.1
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": ^2.0.0
   "aws-sdk":
-    "@aws-sdk/client-acm": ^3.1060.0
-    "@aws-sdk/client-amplify": ^3.1060.0
-    "@aws-sdk/client-cloudfront": ^3.1060.0
-    "@aws-sdk/client-codebuild": ^3.1060.0
-    "@aws-sdk/client-s3": ^3.1060.0
-    "@aws-sdk/s3-request-presigner": ^3.1060.0
-    "@aws-sdk/credential-providers": ^3.1060.0
+    "@aws-sdk/client-acm": ^3.1086.0
+    "@aws-sdk/client-amplify": ^3.1086.0
+    "@aws-sdk/client-cloudfront": ^3.1086.0
+    "@aws-sdk/client-codebuild": ^3.1086.0
+    "@aws-sdk/client-s3": ^3.1086.0
+    "@aws-sdk/s3-request-presigner": ^3.1086.0
+    "@aws-sdk/credential-providers": ^3.1086.0
   babel:
-    "@babel/plugin-transform-class-properties": ^7.29.7
-    "@babel/plugin-transform-object-rest-spread": ^7.29.7
-    "@babel/preset-env": ^7.29.7
-    "@babel/preset-typescript": ^7.29.7
+    "@babel/plugin-transform-class-properties": ^8.0.1
+    "@babel/plugin-transform-object-rest-spread": ^8.0.1
+    "@babel/preset-env": ^8.0.2
+    "@babel/preset-typescript": ^8.0.1
   casl:
-    "@casl/ability": ^7.0.0
-    "@casl/react": ^7.0.0
+    "@casl/ability": ^7.0.1
+    "@casl/react": ^7.0.1
   chakra:
     "@chakra-ui/anatomy": ^2.3.4
     "@chakra-ui/cli": ^2.5.8
@@ -196,13 +201,16 @@ catalogs:
     "@growthbook/growthbook": ^1.2.0
     "@growthbook/growthbook-react": ^1.2.0
   jsonforms:
-    "@jsonforms/core": ^3.5.1
-    "@jsonforms/react": ^3.5.1
+    "@jsonforms/core": ^3.8.0
+    "@jsonforms/react": ^3.8.0
+  playwright:
+    "@playwright/test": ^1.61.1
+    playwright: ^1.61.1
   prisma:
     "@prisma/adapter-pg": 7.8.0
     "@prisma/client": 7.8.0
     prisma: 7.8.0
-    prisma-json-types-generator: 5.0.0
+    prisma-json-types-generator: 5.1.1
     prisma-kysely: 3.1.1
   react:
     react: ^18.3.1
@@ -218,58 +226,64 @@ catalogs:
     "@react-aria/utils": ^3.34.1
     "@react-stately/checkbox": ^3.8.1
     "@react-stately/toggle": ^3.10.1
+  # Pinned (not a caret range) to keep pnpm from resolving to 10.5.x: Storybook
+  # 10.5's instrumented HTMLElement.prototype.focus getter breaks
+  # @zag-js/focus-visible's assumption that `focus` is a plain function
+  # (used internally by Chakra/@opengovsg/design-system-react), throwing
+  # "Illegal invocation" and crashing any story that opens a Chakra Menu.
+  # Unpin once fixed upstream.
   storybook:
-    storybook: ^10.4.2
-    "@storybook/addon-a11y": ^10.4.2
-    "@storybook/addon-docs": ^10.4.2
-    "@storybook/addon-links": ^10.4.2
-    "@storybook/addon-themes": ^10.4.2
-    "@storybook/nextjs": ^10.4.2
-    "@storybook/react-vite": ^10.4.2
-    eslint-plugin-storybook: ^10.4.2
-    storybook-addon-pseudo-states: ^10.4.1
+    storybook: 10.4.6
+    "@storybook/addon-a11y": 10.4.6
+    "@storybook/addon-docs": 10.4.6
+    "@storybook/addon-links": 10.4.6
+    "@storybook/addon-themes": 10.4.6
+    "@storybook/nextjs": 10.4.6
+    "@storybook/react-vite": 10.4.6
+    eslint-plugin-storybook: 10.4.6
+    storybook-addon-pseudo-states: 10.4.6
   tanstack-query:
-    "@tanstack/query-devtools": ^5.101.0
-    "@tanstack/react-query": ^5.101.0
-    "@tanstack/react-query-devtools": ^5.101.0
+    "@tanstack/query-devtools": ^5.101.1
+    "@tanstack/react-query": ^5.101.1
+    "@tanstack/react-query-devtools": ^5.101.1
   tiptap:
-    "@tiptap/core": ^3.23.4
-    "@tiptap/extension-bold": ^3.23.4
-    "@tiptap/extension-bullet-list": ^3.23.4
-    "@tiptap/extension-character-count": ^3.23.4
-    "@tiptap/extension-document": ^3.23.4
-    "@tiptap/extension-dropcursor": ^3.23.4
-    "@tiptap/extension-gapcursor": ^3.23.4
-    "@tiptap/extension-hard-break": ^3.23.4
-    "@tiptap/extension-heading": ^3.23.4
-    "@tiptap/extension-history": ^3.23.4
-    "@tiptap/extension-horizontal-rule": ^3.23.4
-    "@tiptap/extension-image": ^3.23.4
-    "@tiptap/extension-italic": ^3.23.4
-    "@tiptap/extension-link": ^3.23.4
-    "@tiptap/extension-list-item": ^3.23.4
-    "@tiptap/extension-ordered-list": ^3.23.4
-    "@tiptap/extension-paragraph": ^3.23.4
-    "@tiptap/extension-strike": ^3.23.4
-    "@tiptap/extension-subscript": ^3.23.4
-    "@tiptap/extension-superscript": ^3.23.4
-    "@tiptap/extension-table": ^3.23.4
-    "@tiptap/extension-table-cell": ^3.23.4
-    "@tiptap/extension-table-header": ^3.23.4
-    "@tiptap/extension-table-row": ^3.23.4
-    "@tiptap/extension-text": ^3.23.4
-    "@tiptap/extension-underline": ^3.23.4
-    "@tiptap/html": ^3.23.4
-    "@tiptap/pm": ^3.23.4
-    "@tiptap/react": ^3.23.4
+    "@tiptap/core": ^3.27.4
+    "@tiptap/extension-bold": ^3.27.4
+    "@tiptap/extension-bullet-list": ^3.27.4
+    "@tiptap/extension-character-count": ^3.27.4
+    "@tiptap/extension-document": ^3.27.4
+    "@tiptap/extension-dropcursor": ^3.27.4
+    "@tiptap/extension-gapcursor": ^3.27.4
+    "@tiptap/extension-hard-break": ^3.27.4
+    "@tiptap/extension-heading": ^3.27.4
+    "@tiptap/extension-history": ^3.27.4
+    "@tiptap/extension-horizontal-rule": ^3.27.4
+    "@tiptap/extension-image": ^3.27.4
+    "@tiptap/extension-italic": ^3.27.4
+    "@tiptap/extension-link": ^3.27.4
+    "@tiptap/extension-list-item": ^3.27.4
+    "@tiptap/extension-ordered-list": ^3.27.4
+    "@tiptap/extension-paragraph": ^3.27.4
+    "@tiptap/extension-strike": ^3.27.4
+    "@tiptap/extension-subscript": ^3.27.4
+    "@tiptap/extension-superscript": ^3.27.4
+    "@tiptap/extension-table": ^3.27.4
+    "@tiptap/extension-table-cell": ^3.27.4
+    "@tiptap/extension-table-header": ^3.27.4
+    "@tiptap/extension-table-row": ^3.27.4
+    "@tiptap/extension-text": ^3.27.4
+    "@tiptap/extension-underline": ^3.27.4
+    "@tiptap/html": ^3.27.4
+    "@tiptap/pm": ^3.27.4
+    "@tiptap/react": ^3.27.4
   trpc:
-    "@trpc/client": ^11.17.0
-    "@trpc/next": ^11.17.0
-    "@trpc/react-query": ^11.17.0
-    "@trpc/server": ^11.17.0
+    "@trpc/client": ^11.18.0
+    "@trpc/next": ^11.18.0
+    "@trpc/react-query": ^11.18.0
+    "@trpc/server": ^11.18.0
   vitest:
-    "@vitejs/plugin-react": ^6.0.2
-    "@vitest/coverage-istanbul": ^4.1.7
-    vite: ^8.0.16
-    vite-tsconfig-paths: ^6.1.1
-    vitest: ^4.1.7
+    "@vitejs/plugin-react": ^6.0.3
+    "@vitest/browser-playwright": ^4.1.9
+    "@vitest/coverage-istanbul": ^4.1.10
+    vite: ^8.1.4
+    vitest: ^4.1.10

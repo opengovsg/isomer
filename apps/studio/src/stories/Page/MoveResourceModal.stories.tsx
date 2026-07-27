@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import { userEvent, within } from "storybook/test"
 import { pageHandlers } from "tests/msw/handlers/page"
+import { redirectHandlers } from "tests/msw/handlers/redirect"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import SitePage from "~/pages/sites/[siteId]"
 
@@ -69,6 +70,7 @@ export const SingleClick: Story = {
       handlers: [
         ...SHARED_HANDLERS,
         resourceHandlers.getBatchAncestryWithSelf.foldersOnly(),
+        redirectHandlers.getBySource.none(),
       ],
     },
   },
@@ -158,5 +160,22 @@ export const SearchNoResults: Story = {
     await SearchTemplate.play?.(context)
 
     await userEvent.keyboard("deiofrehioferhfioehfe")
+  },
+}
+
+// Selecting a destination reveals the redirect option; a redirect already at
+// the new URL surfaces a shadow warning.
+export const RedirectShadowWarning: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        ...SHARED_HANDLERS,
+        resourceHandlers.getBatchAncestryWithSelf.foldersOnly(),
+        redirectHandlers.getBySource.existing(),
+      ],
+    },
+  },
+  play: async (context) => {
+    await SingleClick.play?.(context)
   },
 }

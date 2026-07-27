@@ -19,6 +19,7 @@ export {
   fetchDgsFileDownloadUrl,
   fetchDgsMetadata,
   getDgsIdFromDgsLink,
+  DGS_REQUEST_MAX_BYTES,
 } from "./dgs"
 export { fetchFileMetadata } from "./fetchFileMetadata"
 export { formatBytes } from "./formatBytes"

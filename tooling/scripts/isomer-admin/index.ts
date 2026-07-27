@@ -7,6 +7,7 @@ import { exportSiteJsons } from "./apps/export-site-jsons"
 import { extractFolderJsons } from "./apps/extract-folder-jsons"
 import { findInvalidSchema } from "./apps/find-invalid-schema"
 import { importFolderJsons } from "./apps/import-folder-jsons"
+import { publishSiteResources } from "./apps/publish-site-resources"
 import { rebuildAllCodebuildProjects } from "./apps/rebuild-all-codebuild-projects"
 
 const main = async () => {
@@ -49,6 +50,12 @@ const main = async () => {
         value: "import-folder-jsons",
       },
       {
+        name: "Publish site resources",
+        description:
+          "Publish all draft resources for a given site ID in the database.",
+        value: "publish-site-resources",
+      },
+      {
         name: "Rebuild all CodeBuild projects",
         description:
           "List AWS CodeBuild projects and start builds for each project with resumable batching.",
@@ -75,6 +82,9 @@ const main = async () => {
       break
     case "import-folder-jsons":
       await importFolderJsons()
+      break
+    case "publish-site-resources":
+      await publishSiteResources()
       break
     case "rebuild-all-codebuild-projects":
       await rebuildAllCodebuildProjects()

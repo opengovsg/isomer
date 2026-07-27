@@ -1,6 +1,12 @@
 import { Text, Flex, VStack } from "@chakra-ui/react"
 
-export const EmptyCategory = ({ title }: { title: string }) => {
+export const EmptyCategory = ({
+  title,
+  description = "Users will choose from this list when creating new items.",
+}: {
+  title: string
+  description?: string
+}) => {
   return (
     <Flex
       alignItems="center"
@@ -24,7 +30,7 @@ export const EmptyCategory = ({ title }: { title: string }) => {
           textColor="base.content.default"
           textAlign="center"
         >
-          Users will choose from this list when creating new items.
+          {description}
         </Text>
       </VStack>
     </Flex>

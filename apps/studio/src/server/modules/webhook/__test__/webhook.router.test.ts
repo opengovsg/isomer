@@ -17,6 +17,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import {
   sendFailedPublishEmail,
   sendSuccessfulPublishEmail,
@@ -125,6 +126,41 @@ describe("webhook.router", async () => {
         expect.objectContaining({
           status: "SUCCEEDED",
           emailSent: true,
+        }),
+      )
+    })
+    it("does not send a success email to toppan users", async () => {
+      // Arrange
+      const toppanUser = await setupUser({
+        email: `toppan-user${TOPPAN_EMAIL_DOMAIN}`,
+      })
+      const { codebuildJob } = await setupCodeBuildJob({
+        userId: toppanUser.id,
+        arn: "build/test-id",
+        startedAt: FIXED_NOW,
+        isScheduled: true,
+      })
+      const caller = getCallerWithMockGrowthbook(session)
+
+      // Act
+      await caller.updateCodebuildWebhook({
+        projectName: "test-project",
+        arn: "build/test-id", // saved in the db
+        status: "SUCCEEDED",
+      })
+
+      // Assert
+      expect(sendSuccessfulPublishEmail).not.toHaveBeenCalled()
+      // the build status should still be updated, but no email should be sent
+      const job = await db
+        .selectFrom("CodeBuildJobs")
+        .where("buildId", "=", codebuildJob.buildId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(job).toEqual(
+        expect.objectContaining({
+          status: "SUCCEEDED",
+          emailSent: false, // emailSent should remain false
         }),
       )
     })

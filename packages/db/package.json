@@ -19,7 +19,7 @@
     "migrate:create": "dotenv -e ../../apps/studio/.env -- prisma migrate dev --create-only",
     "migrate:custom": "dotenv -e ../../apps/studio/.env -- tsx prisma/custom/install.ts",
     "migrate:dev": "dotenv -e ../../apps/studio/.env -- prisma migrate dev",
-    "migrate:reset": "dotenv -e ../../apps/studio/.env -- prisma migrate reset --skip-seed",
+    "migrate:reset": "dotenv -e ../../apps/studio/.env -- prisma migrate reset",
     "typecheck": "tsgo"
   },
   "dependencies": {

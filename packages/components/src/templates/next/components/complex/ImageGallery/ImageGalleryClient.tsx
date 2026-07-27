@@ -64,11 +64,10 @@ export const ImageGalleryClient = ({
     maxPreviewImages,
   })
 
-  // In production static export, useMediaQuery causes a hydration mismatch that React
-  // silently swallows — the DOM keeps the server-rendered state (3 previews) and never
-  // updates until a user interaction forces a re-render. To ensure the initial HTML is
-  // correct for all screen sizes, we compute preview indices for both breakpoints and
-  // use CSS responsive classes to show/hide the extras (see `visibility` TV variant).
+  // `useBreakpoint` starts from the SSR-safe mobile value, so relying on it here
+  // would show 3 previews on the first desktop paint before updating after mount.
+  // Compute both breakpoint variants and let CSS show/hide the extras so static
+  // exports are visually correct on first paint (see `visibility` TV variant).
   const previewIndicesForSmMd = getPreviewIndices({
     numberOfImages: images.length,
     currentIndex,

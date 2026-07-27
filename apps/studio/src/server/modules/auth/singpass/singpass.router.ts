@@ -36,7 +36,7 @@ export const singpassRouter = router({
         `Starting Singpass login flow: ${landingUrl.toString()}`,
       )
 
-      const { authorizationUrl, session } = getAuthorizationUrl()
+      const { authorizationUrl, session } = await getAuthorizationUrl()
 
       // Reset session state
       ctx.session.destroy()

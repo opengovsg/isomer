@@ -22,6 +22,7 @@ import {
   getLocalisedSitemap,
   getNavBar,
   getPageById,
+  getSearchResults,
   getSiteResourceById,
   getWithFullPermalink,
   updateBlobById,
@@ -1697,7 +1698,28 @@ describe("resource.service", () => {
     })
   })
 
-  describe.skip("getSearchResults", () => {})
+  describe("getSearchResults", () => {
+    it("returns an empty array when given no resourceTypes", async () => {
+      //Arrange
+      const { site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+
+      //Search with no resourceTypes
+      const result = await getSearchResults({
+        siteId: site.id,
+        resourceTypes: [],
+        query: "test",
+        limit: 10,
+        offset: 0,
+      })
+
+      //Should return empty array, with totalCount 0
+      expect(result.resources).toEqual([])
+      expect(result.totalCount).toEqual(0)
+    })
+  })
+
   describe.skip("getSearchRecentlyEdited", () => {})
   describe.skip("getSearchWithResourceIds", () => {})
 })

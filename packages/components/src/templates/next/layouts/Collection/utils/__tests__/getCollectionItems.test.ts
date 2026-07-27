@@ -1,4 +1,5 @@
 import type { IsomerSitemap } from "~/types"
+import type { CollectionPageCategoryOption } from "~/types/page"
 import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers/generateSiteConfig"
 
@@ -322,6 +323,146 @@ describe("getCollectionItems", () => {
       expect(result[1]!.isContainNeeded).toBe(false)
       expect(result[2]!.image).toEqual(SITE_LOGO_FALLBACK)
       expect(result[2]!.isContainNeeded).toBe(true)
+    })
+  })
+
+  describe("categoryId resolution", () => {
+    const CATEGORY_OPTIONS: CollectionPageCategoryOption[] = [
+      { id: "cat-uuid-1", label: "Policy" },
+      { id: "cat-uuid-2", label: "Research" },
+      { id: "cat-uuid-3", label: "News" },
+    ]
+
+    it("should resolve categoryId to the matching label from categoryOptions", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ categoryId: "cat-uuid-2", category: "legacy" }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        categoryOptions: CATEGORY_OPTIONS,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.category).toBe("Research")
+    })
+
+    it("should fall back to legacy category string when no categoryId is present", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ category: "Legacy Category" }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        categoryOptions: CATEGORY_OPTIONS,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.category).toBe("Legacy Category")
+    })
+
+    it("should fall back to 'Others' when item has neither categoryId nor category", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ categoryId: undefined, category: undefined }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        categoryOptions: CATEGORY_OPTIONS,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.category).toBe("Others")
+    })
+
+    it("should fall back to category string when categoryId does not match any option", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({
+          categoryId: "unknown-uuid",
+          category: "Legacy Fallback",
+        }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        categoryOptions: CATEGORY_OPTIONS,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.category).toBe("Legacy Fallback")
+    })
+
+    it("should fall back to 'Others' when categoryId does not match any option and category is also absent", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({
+          categoryId: "unknown-uuid",
+          category: undefined,
+        }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        categoryOptions: CATEGORY_OPTIONS,
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.category).toBe("Others")
+    })
+
+    it("should use legacy category string when no categoryOptions are passed", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ categoryId: "cat-uuid-1", category: "Legacy" }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        // categoryOptions intentionally omitted
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.category).toBe("Legacy")
+    })
+
+    it("should fall back to 'Others' when no categoryOptions and no category string", () => {
+      // Arrange
+      const site = createSiteWithChildren([
+        createArticleChild({ category: undefined }),
+      ])
+
+      // Act
+      const result = getCollectionItems({
+        site,
+        permalink: "/collection",
+        // categoryOptions intentionally omitted
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]!.category).toBe("Others")
     })
   })
 })

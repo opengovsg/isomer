@@ -148,7 +148,7 @@ const conditionalMockDateDecorator: Decorator = (story, context) => {
   if (date !== undefined) {
     mockdate.set(date)
   }
-  return story() as JSX.Element
+  return story()
 }
 
 const decorators: Decorator[] = [
@@ -160,7 +160,7 @@ const decorators: Decorator[] = [
       default: theme,
     },
     Provider: ThemeProvider,
-  }) as Decorator, // FIXME: Remove this cast when types are fixed
+  }),
   LoginStateDecorator,
   conditionalMockDateDecorator,
 ]

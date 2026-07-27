@@ -42,6 +42,7 @@ export const useAssetUpload = ({
       return src
     } catch (e) {
       console.error(e)
+      throw e
     } finally {
       setIsLoading(false)
     }

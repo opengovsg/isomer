@@ -4,7 +4,6 @@ export const IMAGE_ACCEPTED_MIME_TYPE_MAPPING: Record<string, string> = {
   ".png": "image/png",
   ".gif": "image/gif",
   ".svg": "image/svg+xml",
-  ".tiff": "image/tiff",
   ".bmp": "image/bmp",
   ".webp": "image/webp",
   ".avif": "image/avif",

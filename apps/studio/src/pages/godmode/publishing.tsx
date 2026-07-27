@@ -1,3 +1,4 @@
+import type { GetServerSideProps } from "next"
 import {
   Box,
   Breadcrumb,
@@ -15,53 +16,49 @@ import {
 } from "@chakra-ui/react"
 import { useToast } from "@opengovsg/design-system-react"
 import NextLink from "next/link"
-import { useRouter } from "next/router"
+import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { requireGodModeAdmin } from "~/features/godmode/serverSideProps"
 import { type NextPageWithLayout } from "~/lib/types"
 import { AuthenticatedLayout } from "~/templates/layouts/AuthenticatedLayout"
 import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
+export const getServerSideProps: GetServerSideProps = (context) =>
+  requireGodModeAdmin(context, [IsomerAdminRole.Core])
+
 const GodModePublishingPage: NextPageWithLayout = () => {
   const toast = useToast()
-  const router = useRouter()
-  const { isAdmin: isUserIsomerAdmin, isLoading: isAdminCheckLoading } =
-    useIsUserIsomerAdmin({
-      roles: [IsomerAdminRole.Core],
-    })
-
-  if (!isAdminCheckLoading && !isUserIsomerAdmin) {
-    toast({
-      title: "You do not have permission to access this page.",
-      status: "error",
-      ...BRIEF_TOAST_SETTINGS,
-    })
-    void router.push(`/`)
-  }
+  const [publishingSiteIds, setPublishingSiteIds] = useState<Set<number>>(
+    new Set(),
+  )
 
   const { data: sites = [] } = trpc.site.listAllSites.useQuery()
 
-  const { mutate: publishOneSite, isPending: isPublishingOneSite } =
-    trpc.site.publish.useMutation({
-      onSuccess: () => {
-        toast({
-          title: "Site published successfully",
-          status: "success",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-      onError: (error) => {
-        toast({
-          title: "Failed to publish site",
-          description: error.message,
-          status: "error",
-          ...BRIEF_TOAST_SETTINGS,
-        })
-      },
-    })
-
-  const isLoading = isPublishingOneSite
+  const { mutate: publishOneSite } = trpc.site.publish.useMutation({
+    onSettled: (_, __, { siteId }) => {
+      setPublishingSiteIds((prev) => {
+        const next = new Set(prev)
+        next.delete(siteId)
+        return next
+      })
+    },
+    onSuccess: () => {
+      toast({
+        title: "Site published successfully",
+        status: "success",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to publish site",
+        description: error.message,
+        status: "error",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+    },
+  })
 
   return (
     <Flex flexDir="column" py="2rem" maxW="57rem" mx="auto" width="100%">
@@ -116,8 +113,14 @@ const GodModePublishingPage: NextPageWithLayout = () => {
                     <Button
                       size="xs"
                       colorScheme="blue"
-                      onClick={() => publishOneSite({ siteId: site.id })}
-                      isLoading={isLoading}
+                      onClick={() => {
+                        setPublishingSiteIds((prev) =>
+                          new Set(prev).add(site.id),
+                        )
+                        publishOneSite({ siteId: site.id })
+                      }}
+                      isLoading={publishingSiteIds.has(site.id)}
+                      isDisabled={publishingSiteIds.has(site.id)}
                     >
                       Publish
                     </Button>

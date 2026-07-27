@@ -70,7 +70,7 @@ export const GazetteSubcategoriesProvider = ({
           })
         }
 
-        case "Legislation Supplements": {
+        case "Legislative Supplements": {
           return filter(subcategories, ({ label }) => {
             return legislativeSupplementsSubcategoriesKeys.some(
               (key) => key === label,

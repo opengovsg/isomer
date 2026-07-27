@@ -1,0 +1,31 @@
+meta {
+  name: Auth Token
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/auth/token
+  body: none
+  auth: none
+}
+
+headers {
+  User-Agent: {{userAgent}}
+  Authorization: Basic {{searchsgApiKey}}
+}
+
+script:post-response {
+  bru.setEnvVar("accessToken", res.body.accessToken);
+  bru.setEnvVar("tokenType", res.body.tokenType);
+}
+
+docs {
+  Authenticates with the SearchSG Admin API using a pre-encoded Basic auth credential.
+
+  `searchsgApiKey` is the full base64 string (not plain user:pass) — sourced from
+  1Password "Isomer Next" or AWS Secrets Manager at `/searchsg/api-key`.
+
+  On success the post-response script writes `accessToken` and `tokenType` into the
+  environment so all subsequent requests authenticate automatically.
+}

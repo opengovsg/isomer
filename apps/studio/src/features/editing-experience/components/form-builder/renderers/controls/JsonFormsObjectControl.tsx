@@ -82,7 +82,7 @@ function JsonFormsObjectControl({
                 </Text>
 
                 {description && (
-                  <Text textStyle="body-2" textColor="base.content.strong">
+                  <Text textStyle="body-2" textColor="base.content.medium">
                     {description}
                   </Text>
                 )}

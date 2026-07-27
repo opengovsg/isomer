@@ -5,29 +5,24 @@ import {
   Flex,
   HStack,
   Icon,
+  Skeleton,
   Stack,
   Text,
   VStack,
 } from "@chakra-ui/react"
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import {
-  composePaths,
-  createDefaultValue,
-  rankWith,
-  schemaMatches,
-} from "@jsonforms/core"
+import { composePaths, rankWith, schemaMatches } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
 import { Button, Infobox } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
-import { useMemo, useState } from "react"
-import {
-  BiDotsHorizontalRounded,
-  BiGridVertical,
-  BiInfoCircle,
-  BiPurchaseTag,
-} from "react-icons/bi"
+import { Suspense, useMemo, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
+import { BiInfoCircle, BiPurchaseTag } from "react-icons/bi"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
+import { pageSchema } from "~/features/editing-experience/schema"
 import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
+import { useQueryParse } from "~/hooks/useQueryParse"
+import { trpc } from "~/utils/trpc"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { DrawerHeader } from "../../../Drawer/DrawerHeader"
@@ -42,7 +37,37 @@ import { useBuilderErrors } from "../../ErrorProvider"
 import { useArray } from "../../hooks/useArray"
 import { useDeleteTarget } from "../../hooks/useDeleteTarget"
 import { useDuplicateLabels } from "../../hooks/useDuplicateLabels"
+import { createDefaultCategoryOption } from "./constants"
 import { hasBlankOptionLabel } from "./utils/hasBlankOptionLabel"
+
+/** Matches category option rows from JsonForms (`categoryOptions` array on collection index). */
+type CategoryOptionItem = Partial<{
+  id: string
+  label: string
+}>
+
+function CategoryOptionUsageCount({
+  siteId,
+  indexPageId,
+  categoryId,
+}: {
+  siteId: number
+  indexPageId: number
+  categoryId: string
+}) {
+  const [{ count }] =
+    trpc.collection.getCategoryOptionUsageCount.useSuspenseQuery({
+      siteId,
+      indexPageId,
+      categoryId,
+    })
+
+  return (
+    <>
+      {count} {count === 1 ? "item" : "items"}
+    </>
+  )
+}
 
 interface CategoryOptionsExpandedEditorProps extends ArrayLayoutProps {
   duplicateOptionIndices: Set<number>
@@ -70,6 +95,7 @@ function CategoryOptionsExpandedEditor({
   } = props
   const { hasErrorAt } = useBuilderErrors()
   const { core } = useJsonForms()
+  const { pageId, siteId } = useQueryParse(pageSchema)
 
   const arrayResult = useArray({
     data,
@@ -103,13 +129,30 @@ function CategoryOptionsExpandedEditor({
     isRemoveItemDisabled,
     resolveTarget: (index) => {
       const item = get(core?.data, composePaths(path, `${index}`)) as
-        | { label?: string; id?: string }
+        | CategoryOptionItem
         | undefined
       return {
         label: item?.label?.trim() ?? "",
+        categoryId: item?.id?.trim() ?? "",
       }
     },
   })
+
+  const handleDeleteOption = (index: number) => {
+    const item = get(core?.data, composePaths(path, `${index}`)) as
+      | CategoryOptionItem
+      | undefined
+    const categoryId = item?.id?.trim()
+
+    // New item without a persisted id — remove immediately, no modal needed.
+    if (!categoryId) {
+      if (!removeItems || isRemoveItemDisabled) return
+      removeItems(path, [index])()
+      return
+    }
+
+    openDeleteModal(index)
+  }
 
   const isBlankLabelAt = (index: number) => {
     const item = get(core?.data, composePaths(path, `${index}`)) as
@@ -123,11 +166,14 @@ function CategoryOptionsExpandedEditor({
       <VStack align="stretch" spacing={0} w="full">
         <Infobox
           width="100%"
-          size="md"
+          size="sm"
           variant="warning"
           mb="1.25rem"
           border="1px solid"
           borderColor="utility.feedback.warning"
+          borderRadius="0.25rem"
+          px="0.625rem"
+          py="0.5rem"
         >
           <Text textStyle="body-2" color="base.content.strong">
             This is the default filter, so you can't change its name or make it
@@ -141,7 +187,7 @@ function CategoryOptionsExpandedEditor({
                 {label}
               </Text>
               <AddItemButton
-                onClick={addItem(path, createDefaultValue(schema, rootSchema))}
+                onClick={addItem(path, createDefaultCategoryOption())}
                 isDisabled={isAddItemDisabled}
               >
                 Add option
@@ -223,7 +269,7 @@ function CategoryOptionsExpandedEditor({
                                   noun="option"
                                   index={index}
                                   isDisabled={isRemoveItemDisabled}
-                                  onDelete={() => openDeleteModal(index)}
+                                  onDelete={() => handleDeleteOption(index)}
                                 />
                               </DraggableTagButton.Trailing>
                             </DraggableTagButton.Root>
@@ -247,9 +293,28 @@ function CategoryOptionsExpandedEditor({
           noun="option"
           warningBody={
             <Text textStyle="body-2">
-              {/* TODO: replace XX with usage count from backend */}
-              This option is being used in XX items. To undo this change, you
-              will need to create and re-assign this option to all items.
+              This option is being used in{" "}
+              <ErrorBoundary fallbackRender={() => <>—</>}>
+                <Suspense
+                  fallback={
+                    <Skeleton
+                      as="span"
+                      display="inline-block"
+                      verticalAlign="middle"
+                      height="1em"
+                      width="2ch"
+                    />
+                  }
+                >
+                  <CategoryOptionUsageCount
+                    siteId={siteId}
+                    indexPageId={pageId}
+                    categoryId={deleteTarget.categoryId}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+              {". "}To undo this change, you will need to create and re-assign
+              this option to all items.
             </Text>
           }
           onClose={closeDeleteModal}
@@ -266,16 +331,20 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
   const { hasErrorAt } = useBuilderErrors()
   const [expandedOpen, setExpandedOpen] = useState(false)
 
+  const items = useMemo(
+    () => get(core?.data, path) as { label?: string }[] | undefined,
+    [core?.data, path],
+  )
+
   const duplicateOptionIndices = useDuplicateLabels(path)
 
-  const cannotLeaveExpandedCategoryOptions = useMemo(() => {
-    const items = get(core?.data, path) as { label?: string }[] | undefined
-    return (
+  const cannotLeaveExpandedCategoryOptions = useMemo(
+    () =>
       hasBlankOptionLabel(items) ||
       duplicateOptionIndices.size > 0 ||
-      hasErrorAt(path)
-    )
-  }, [core?.data, path, duplicateOptionIndices, hasErrorAt])
+      hasErrorAt(path),
+    [items, path, duplicateOptionIndices, hasErrorAt],
+  )
 
   const handleCloseExpandedCategoryOptions = () => {
     if (cannotLeaveExpandedCategoryOptions) return
@@ -333,8 +402,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
         {duplicateOptionIndices.size > 0 && (
           <DuplicateLabelError noun="option" />
         )}
-        {/* Offsets the bottom margin the JsonForms control wrapper injects above this row. */}
-        <Box w="full" mt="-1.25rem">
+        <Box w="full">
           <Box my="0.25rem" w="full">
             <HStack
               spacing={0}
@@ -375,25 +443,6 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                 />
               )}
               <HStack flex={1} align="stretch" spacing={0} minW={0} w="100%">
-                <Flex
-                  flexShrink={0}
-                  align="center"
-                  alignSelf="stretch"
-                  pl="0.5rem"
-                  pr="0.25rem"
-                  cursor="not-allowed"
-                  pointerEvents="none"
-                  userSelect="none"
-                  aria-hidden
-                  py="0.5rem"
-                >
-                  <Icon
-                    as={BiGridVertical}
-                    fontSize="1.5rem"
-                    color="interaction.support.disabled"
-                    aria-hidden
-                  />
-                </Flex>
                 <chakra.button
                   type="button"
                   flex={1}
@@ -403,8 +452,7 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                   cursor="pointer"
                   layerStyle="focusRing"
                   textAlign="start"
-                  pl="0.25rem"
-                  pr="1rem"
+                  px="1rem"
                   onClick={() => setExpandedOpen(true)}
                   disabled={!enabled}
                   py="0.5rem"
@@ -435,13 +483,6 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                         <Text textStyle="subhead-2" textAlign="start">
                           Category
                         </Text>
-                        <Text
-                          as="span"
-                          textStyle="subhead-2"
-                          color="interaction.support.placeholder"
-                        >
-                          (Default)
-                        </Text>
                       </HStack>
                       <Text textStyle="caption-2" color="base.content.medium">
                         {data === 0
@@ -468,31 +509,6 @@ function JsonFormsCategoryOptionsArrayLayoutInner(props: ArrayLayoutProps) {
                     </Stack>
                   </HStack>
                 </chakra.button>
-                <Flex
-                  alignItems="center"
-                  flexShrink={0}
-                  p="0.5rem"
-                  pointerEvents="none"
-                  userSelect="none"
-                  aria-hidden
-                >
-                  <Flex
-                    align="center"
-                    justifyContent="center"
-                    h="2.125rem"
-                    w="2.125rem"
-                    minH="2.125rem"
-                    minW="2.125rem"
-                    p="0.25rem"
-                  >
-                    <Icon
-                      as={BiDotsHorizontalRounded}
-                      fontSize="1.5rem"
-                      color="interaction.support.disabled"
-                      aria-hidden
-                    />
-                  </Flex>
-                </Flex>
               </HStack>
             </HStack>
           </Box>
@@ -520,7 +536,14 @@ const JsonFormsCategoryOptionsControl = (props: ArrayLayoutProps) => {
     return null
   }
 
-  return <JsonFormsCategoryOptionsArrayLayout {...props} />
+  return (
+    <VStack align="start" spacing="1rem" w="full">
+      <Text textStyle="subhead-2" textColor="base.content.strong">
+        Default Filter
+      </Text>
+      <JsonFormsCategoryOptionsArrayLayout {...props} />
+    </VStack>
+  )
 }
 
 export default JsonFormsCategoryOptionsControl

@@ -10,6 +10,7 @@ import { folderRouter } from "./folder/folder.router"
 import { gazetteRouter } from "./gazette/gazette.router"
 import { meRouter } from "./me/me.router"
 import { pageRouter } from "./page/page.router"
+import { redirectRouter } from "./redirect/redirect.router"
 import { resourceRouter } from "./resource/resource.router"
 import { siteRouter } from "./site/site.router"
 import { userRouter } from "./user/user.router"
@@ -26,6 +27,7 @@ export const appRouter = router({
   collection: collectionRouter,
   gazette: gazetteRouter,
   site: siteRouter,
+  redirect: redirectRouter,
   resource: resourceRouter,
   user: userRouter,
   whitelist: whitelistRouter,

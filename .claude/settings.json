@@ -33,6 +33,8 @@
       "Bash(gh pr list:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
+      "Bash(gh pr comment:*)",
+      "Bash(gh pr review:*)",
       "Bash(docker start:*)",
       "Bash(pnpm run test:*)",
       "Bash(pnpm run test:unit:*)",

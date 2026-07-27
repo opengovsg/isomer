@@ -5,12 +5,12 @@ import { getSiteTheme, updateSiteConfigWithSearch } from "site"
 
 import { env } from "./env"
 
-const BASE_SEARCHSG_URL = "https://api.services.search.gov.sg/admin/v1"
+const ADMIN_BASE = "https://api.services.search.gov.sg/admin"
 const ISOMER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) isomer"
 
 const SearchSgApi = {
-  auth: `${BASE_SEARCHSG_URL}/auth/token`,
-  create: `${BASE_SEARCHSG_URL}/bootstrap/applications`,
+  auth: `${ADMIN_BASE}/v1/auth/token`,
+  create: `${ADMIN_BASE}/v2/bootstrap`,
 }
 
 interface GenerateRequestDataParams {
@@ -26,37 +26,38 @@ const generateRequestData = ({
   primary,
 }: GenerateRequestDataParams) => {
   return {
-    agencyId: 31,
-    name,
-    tenant: {
+    project: {
+      agencyId: 31,
+      projectName: name,
       adminList: ["isomer@open.gov.sg"],
     },
     index: {
-      dataSource: {
+      indexType: "websiteSearch",
+      indexName: name,
+      dataSources: {
         web: [
           {
-            domain,
-            documentIndexConfig: {
-              indexWhitelist: [],
-              indexBlacklist: [],
-            },
+            startingUrl: domain,
+            documentIndexConfig: { indexWhitelist: [], indexBlacklist: [] },
           },
         ],
         api: [],
+        pushApi: { enabled: false },
       },
     },
-    application: {
-      siteDomain,
-      environment: "production",
-      config: {
-        search: {
-          theme: {
-            primary,
-            fontFamily: "Inter",
+    sites: [
+      {
+        siteName: name,
+        siteDomain,
+        environment: "production",
+        apps: [
+          {
+            appType: "websiteSearch",
+            config: { theme: { primary, fontFamily: "Inter" } },
           },
-        },
+        ],
       },
-    },
+    ],
   }
 }
 
@@ -87,7 +88,7 @@ export const createSearchSgClientForGithub = async ({
     name,
   })
 
-  const applicationId = await createSearchSgClient({
+  const siteClientId = await createSearchSgClient({
     dataDomain,
     displayedName,
     domain,
@@ -97,11 +98,15 @@ export const createSearchSgClientForGithub = async ({
   siteConfig.site.url = `https://${domain}`
   siteConfig.site.search = {
     type: "searchSG",
-    clientId: applicationId,
+    clientId: siteClientId,
   }
 
   await updateSiteConfig(repo, siteConfig, sha)
   await addSearchJson(repo)
+}
+
+interface SearchSgBootstrapResponse {
+  data: { sites: { siteClientId: string }[] }
 }
 
 interface SearchSgConfig {
@@ -131,30 +136,34 @@ const createSearchSgClient = async ({
     },
   )
 
-  const data = generateRequestData({
+  const requestData = generateRequestData({
     domain: dataDomain,
     name: displayedName,
     siteDomain: domain,
     primary,
   })
 
-  const {
-    data: {
-      data: {
-        application: { applicationId },
+  const { data } = await axios.post<SearchSgBootstrapResponse>(
+    SearchSgApi.create,
+    requestData,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": ISOMER_UA,
+        Authorization: `${tokenType} ${accessToken}`,
       },
     },
-  } = await axios.post(SearchSgApi.create, data, {
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": ISOMER_UA,
-      Authorization: `${tokenType} ${accessToken}`,
-    },
-  })
+  )
 
-  console.log("Created search sg application with id:", applicationId)
+  if (!data.data.sites[0]) {
+    throw new Error("SearchSG bootstrap response missing sites[0]")
+  }
 
-  return applicationId
+  const { siteClientId } = data.data.sites[0]
+
+  console.log("Created search sg site with siteClientId:", siteClientId)
+
+  return siteClientId
 }
 
 export const createSearchSgClientForStudio = async ({
@@ -169,7 +178,7 @@ export const createSearchSgClientForStudio = async ({
     name,
   })
 
-  const applicationId = await createSearchSgClient({
+  const siteClientId = await createSearchSgClient({
     dataDomain,
     displayedName,
     domain,
@@ -178,7 +187,7 @@ export const createSearchSgClientForStudio = async ({
 
   const url = `https://${domain}`
 
-  await updateSiteConfigWithSearch(siteId, url, applicationId)
+  await updateSiteConfigWithSearch(siteId, url, siteClientId)
 }
 
 const askForDomainAndName = async ({

@@ -17,5 +17,10 @@ const breakpoints = {
  */
 export const useBreakpoint = (breakpoint: keyof typeof breakpoints) => {
   const breakpointQuery = breakpoints[breakpoint]
-  return useMediaQuery(`(min-width: ${breakpointQuery})`)
+  // initializeWithValue: false keeps the initial client render in sync with
+  // SSR output (both start as false), preventing React hydration mismatches
+  // in components like PaginationControls that derive DOM structure from this.
+  return useMediaQuery(`(min-width: ${breakpointQuery})`, {
+    initializeWithValue: false,
+  })
 }

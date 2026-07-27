@@ -124,6 +124,10 @@ export const getRootPageSchema = z.object({
 
 export const basePageSettingsSchema = basePageSchema.extend({
   title: pageTitleSchema,
+  // Create a redirect from the page's old URL when its permalink changes (acted
+  // on only for Page/CollectionPage). On the base so the union destructures
+  // cleanly. Defaults on, matching the checkbox's default-checked state.
+  shouldCreateRedirect: z.boolean().optional().default(true),
 })
 
 const rootPageSettingsSchema = basePageSettingsSchema.extend({

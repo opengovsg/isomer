@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -8,12 +8,12 @@ import { userHandlers } from "tests/msw/handlers/user"
 import SitePage from "~/pages/sites/[siteId]"
 import { ResetUpdateProfileModalDecorator } from "~/stories/decorators"
 
-const COMMON_HANDLERS = [
-  meHandlers.me(),
-  resourceHandlers.getRolesFor.admin(),
-  sitesHandlers.getSiteName.default(),
-  pageHandlers.getRootPage.default(),
-]
+const COMMON_HANDLERS = {
+  me: meHandlers.me(),
+  roles: resourceHandlers.getRolesFor.admin(),
+  siteName: sitesHandlers.getSiteName.default(),
+  rootPage: pageHandlers.getRootPage.default(),
+}
 
 const meta: Meta<typeof SitePage> = {
   title: "Pages/Profile Management/Profile Modal",
@@ -31,13 +31,13 @@ const meta: Meta<typeof SitePage> = {
       },
     },
   },
-  decorators: [ResetUpdateProfileModalDecorator],
 }
 
 export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
+  decorators: [ResetUpdateProfileModalDecorator],
   play: async (context) => {
     const screen = within(context.canvasElement)
     const testUserSelector = await screen.findByText(/TU/i)
@@ -52,7 +52,29 @@ export const Default: Story = {
   },
 }
 
+export const Required: Story = {
+  parameters: {
+    msw: {
+      handlers: {
+        ...COMMON_HANDLERS,
+        me: meHandlers.notOnboarded(),
+      },
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body)
+    const modalHeader = await screen.findByText(
+      "Welcome to Studio! Tell us about yourself.",
+    )
+
+    await waitFor(() => expect(modalHeader).toBeVisible())
+    await userEvent.keyboard("{Escape}")
+    await waitFor(() => expect(modalHeader).toBeVisible())
+  },
+}
+
 export const Unfilled: Story = {
+  decorators: [ResetUpdateProfileModalDecorator],
   play: async (context) => {
     const { canvasElement } = context
     await Default.play?.(context)
@@ -80,6 +102,7 @@ export const Unfilled: Story = {
 }
 
 export const PhoneNumberNot8Digits: Story = {
+  decorators: [ResetUpdateProfileModalDecorator],
   play: async (context) => {
     const { canvasElement } = context
     await Default.play?.(context)
@@ -97,6 +120,7 @@ export const PhoneNumberNot8Digits: Story = {
 }
 
 export const NonSingaporePhone: Story = {
+  decorators: [ResetUpdateProfileModalDecorator],
   play: async (context) => {
     const { canvasElement } = context
     await Default.play?.(context)
@@ -114,9 +138,13 @@ export const NonSingaporePhone: Story = {
 }
 
 export const Loading: Story = {
+  decorators: [ResetUpdateProfileModalDecorator],
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, userHandlers.updateDetails.loading()],
+      handlers: {
+        ...COMMON_HANDLERS,
+        updateDetails: userHandlers.updateDetails.loading(),
+      },
     },
   },
   play: async (context) => {
@@ -131,9 +159,13 @@ export const Loading: Story = {
 }
 
 export const Success: Story = {
+  decorators: [ResetUpdateProfileModalDecorator],
   parameters: {
     msw: {
-      handlers: [...COMMON_HANDLERS, userHandlers.updateDetails.success()],
+      handlers: {
+        ...COMMON_HANDLERS,
+        updateDetails: userHandlers.updateDetails.success(),
+      },
     },
   },
   play: async (context) => {

@@ -1,4 +1,5 @@
 import { pick } from "lodash-es"
+import { env } from "~/env.mjs"
 
 import type { Logger } from "@isomer/logging"
 
@@ -22,6 +23,11 @@ export const publishSite = async (
   logger: Logger<string>,
   { siteId, codebuildJob }: PublishSiteArgs,
 ) => {
+  if (env.NEXT_PUBLIC_APP_ENV === "preview") {
+    logger.info({ siteId }, "Preview env: skipping CodeBuild publish")
+    return
+  }
+
   // Step 1: Get the CodeBuild ID associated with the site
   const site = await getSiteNameAndCodeBuildId(siteId)
   const { codeBuildId } = site

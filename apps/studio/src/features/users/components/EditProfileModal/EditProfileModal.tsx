@@ -106,7 +106,12 @@ export const EditProfileModal = () => {
   })
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      closeOnEsc={isOnboarded}
+      closeOnOverlayClick={isOnboarded}
+    >
       <ModalOverlay>
         <ModalContent>
           {isOnboarded ? (

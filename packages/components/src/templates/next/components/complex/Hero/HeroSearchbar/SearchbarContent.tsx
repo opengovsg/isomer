@@ -22,6 +22,9 @@ const SearchInputBox = ({ search }: SearchInputBoxProps) => {
       return (
         <LocalSearchInputBox searchUrl={search.searchUrl} {...commonProps} />
       )
+    case "egazette-algolia":
+      // Egazette Algolia search runs on a dedicated search page, not from the Hero searchbar.
+      return null
     default:
       const _exhaustiveCheck: never = search
       return null

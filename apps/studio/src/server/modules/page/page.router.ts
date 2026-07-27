@@ -19,7 +19,7 @@ import {
 } from "~/features/mail/service"
 import {
   ENABLE_CODEBUILD_JOBS,
-  IS_SINGPASS_ENABLED_FEATURE_KEY,
+  getIsSingpassDisabledInNonPreview,
 } from "~/lib/growthbook"
 import {
   basePageSchema,
@@ -50,6 +50,7 @@ import { alertPublishWhenSingpassDisabled } from "../auth/email/email.service"
 import { db, jsonb, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
+import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
   createResourceWithBlob,
   getBlobOfResource,
@@ -65,7 +66,11 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import { getSiteConfig } from "../site/site.service"
-import { createDefaultPage, createFolderIndexPage } from "./page.service"
+import {
+  createDefaultPage,
+  createFolderIndexPage,
+  getCategoryOptionsForPage,
+} from "./page.service"
 
 const schemaValidator = ajv.compile<IsomerSchema>(schema)
 
@@ -193,6 +198,18 @@ export const pageRouter = router({
         .filter((c) => !!c && !!c.trim())
 
       return { categories }
+    }),
+
+  getCategoryOptions: protectedProcedure
+    .input(basePageSchema)
+    .query(async ({ ctx, input: { pageId, siteId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "read",
+        userId: ctx.user.id,
+      })
+
+      return getCategoryOptionsForPage({ pageId, siteId })
     }),
 
   readPage: protectedProcedure
@@ -658,7 +675,7 @@ export const pageRouter = router({
           },
         })
         // Send publish alert emails to all site admins minus the current user if Singpass has been disabled
-        if (!gb.isOn(IS_SINGPASS_ENABLED_FEATURE_KEY)) {
+        if (getIsSingpassDisabledInNonPreview({ gb })) {
           await alertPublishWhenSingpassDisabled({
             siteId,
             resourceId: String(pageId),
@@ -764,7 +781,14 @@ export const pageRouter = router({
     .mutation(
       async ({
         ctx,
-        input: { pageId, siteId, title, type: _pageType, ...settings },
+        input: {
+          pageId,
+          siteId,
+          title,
+          type,
+          shouldCreateRedirect,
+          ...settings
+        },
       }) => {
         await bulkValidateUserPermissionsForResources({
           siteId,
@@ -851,9 +875,40 @@ export const pageRouter = router({
               eventType: AuditLogEvent.ResourceUpdate,
             })
 
+            // Keep redirects consistent when a Page/CollectionPage URL changes
+            // (a title-only edit leaves the permalink untouched).
+            if (
+              (type === ResourceType.Page ||
+                type === ResourceType.CollectionPage) &&
+              updatedResource.permalink !== resource.permalink
+            ) {
+              const parentFullPermalink = resource.parentId
+                ? await getResourceFullPermalink(
+                    siteId,
+                    Number(resource.parentId),
+                  )
+                : null
+              const oldFullPermalink = `${parentFullPermalink ?? ""}/${resource.permalink}`
+              const newFullPermalink = `${parentFullPermalink ?? ""}/${updatedResource.permalink}`
+
+              await applyPermalinkChangeRedirects(tx, {
+                siteId,
+                oldFullPermalink,
+                newFullPermalink,
+                resourceId: String(pageId),
+                isPublished: updatedResource.publishedVersionId !== null,
+                shouldCreateRedirect,
+                byUserId: ctx.user.id,
+              })
+            }
+
             // We do an implicit publish so that we can make the changes to the
-            // page settings immediately visible on the end site
-            await publishResource(ctx.user.id, updatedResource, ctx.logger)
+            // page settings immediately visible on the end site. A page that
+            // has never been published has no live presence, so skip the site
+            // rebuild and Publish audit entry for it.
+            if (updatedResource.publishedVersionId !== null) {
+              await publishResource(ctx.user.id, updatedResource, ctx.logger)
+            }
 
             return pick(updatedResource, [
               "id",

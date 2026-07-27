@@ -31,8 +31,7 @@ interface BuilderResult {
   content: unknown[]
 }
 
-const asResult = (s: IsomerSchema): BuilderResult =>
-  s as unknown as BuilderResult
+const asResult = (s: IsomerSchema): BuilderResult => s
 
 const proseBlock: IsomerComponent = {
   type: "prose",

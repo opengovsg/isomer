@@ -1,4 +1,4 @@
-import { flatMap, groupBy } from "lodash-es"
+import { groupBy } from "lodash-es"
 
 function normalizedLabelKey(label: string | undefined): string {
   return (label ?? "").trim().toLowerCase()
@@ -16,7 +16,7 @@ export function indicesWithDuplicateLabels(
   })
 
   return new Set(
-    flatMap(Object.values(groupBy(withKey, "key")), (group) =>
+    Object.values(groupBy(withKey, "key")).flatMap((group) =>
       group.length > 1 ? group.map((e) => e.index) : [],
     ),
   )

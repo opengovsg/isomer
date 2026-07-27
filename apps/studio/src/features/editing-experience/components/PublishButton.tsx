@@ -23,6 +23,8 @@ import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
+import { PUBLISHED_AFTER_EDITING_EVENT } from "../constants"
+import { useFireContentEditSurveyEvent } from "../hooks/useContentEditSurvey"
 import { PublishingModal, ScheduledPublishingModal } from "./PublishingModal"
 import { CancelSchedulePublishIndicator } from "./PublishingModal/CancelSchedulePublishIndicator"
 
@@ -38,6 +40,7 @@ const SuspendablePublishButton = ({
 }: PublishButtonProps): JSX.Element => {
   const toast = useToast()
   const utils = trpc.useUtils()
+  const fireContentEditSurveyEvent = useFireContentEditSurveyEvent()
   // the current disclosures for the publish modals
   const publishNowDisclosure = useDisclosure()
   const scheduledPublishingDisclosure = useDisclosure()
@@ -46,15 +49,20 @@ const SuspendablePublishButton = ({
   const isChangesPendingPublish = !!currPage.draftBlobId
 
   const { mutate, isPending } = trpc.page.publishPage.useMutation({
-    onSettled: async () => {
-      await utils.page.readPage.refetch({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
-      await utils.site.getLocalisedSitemap.invalidate({
-        resourceId: pageId,
-        siteId,
-      })
+    onSettled: () => {
+      void Promise.all([
+        utils.page.readPage.refetch({ pageId, siteId }),
+        utils.page.getCategories.invalidate(),
+        utils.page.getCategoryOptions.invalidate(),
+        utils.collection.getCategoryOptionUsageCount.invalidate(),
+        utils.site.getLocalisedSitemap.invalidate({
+          resourceId: pageId,
+          siteId,
+        }),
+      ])
     },
     onSuccess: () => {
+      fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
       toast({
         status: "success",
         title: "Page published successfully",
@@ -64,9 +72,14 @@ const SuspendablePublishButton = ({
     },
     onError: (error) => {
       console.error(`Error occurred when publishing page: ${error.message}`)
+      // The publish-block throws CONFLICT with an actionable message naming the
+      // redirect to remove — surface it verbatim, not the generic failure copy.
       toast({
         status: "error",
-        title: "Failed to publish page. Please contact Isomer support.",
+        title:
+          error.data?.code === "CONFLICT"
+            ? error.message
+            : "Failed to publish page. Please contact Isomer support.",
         ...BRIEF_TOAST_SETTINGS,
       })
     },
@@ -74,12 +87,12 @@ const SuspendablePublishButton = ({
 
   return (
     <Can do="publish" on="Resource" passThrough>
-      {(allowed) => (
+      {({ isAllowed }) => (
         <TouchableTooltip
           hidden={isChangesPendingPublish}
           label="All changes have been published"
         >
-          {allowed && (
+          {isAllowed && (
             <>
               {/* Render the modal conditionally to ensure the schema resets when the modal is opened/closed */}
               {scheduledPublishingDisclosure.isOpen && (

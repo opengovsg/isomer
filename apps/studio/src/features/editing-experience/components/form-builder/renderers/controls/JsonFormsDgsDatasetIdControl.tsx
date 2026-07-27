@@ -25,6 +25,7 @@ import {
 } from "@opengovsg/design-system-react"
 import {
   DGS_DATASET_ID_FORMAT,
+  DGS_REQUEST_MAX_BYTES,
   useDgsMetadata,
 } from "@opengovsg/isomer-components"
 import { useDebounce } from "@uidotdev/usehooks"
@@ -76,7 +77,12 @@ const DgsDatasetIdModal = ({
     enabled: !!datasetId,
   })
   const format = metadata?.format
-  const isValidDataset = format === "CSV"
+  // Datasets above 4MB require server-side search via the DGS "q" parameter,
+  // but not all datasets support "q". Disable until DGS rolls out OR filters
+  // or an equivalent that works universally.
+  const isDatasetTooLarge =
+    metadata?.size !== undefined && metadata.size > DGS_REQUEST_MAX_BYTES
+  const isValidDataset = format === "CSV" && !isDatasetTooLarge
 
   const isLoading = isValidatingDataset || isDebouncing
 
@@ -111,13 +117,16 @@ const DgsDatasetIdModal = ({
 
     setError("datasetId", {
       type: "manual",
-      message: format
-        ? "You can only link CSV datasets. Please check the dataset ID and try again."
-        : "This doesn’t look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
+      message: isDatasetTooLarge
+        ? "This dataset exceeds the 4MB size limit and cannot be used. Please use a smaller dataset."
+        : format
+          ? "You can only link CSV datasets. Please check the dataset ID and try again."
+          : "This doesn’t look like a valid link from data.gov.sg. Check that you have the correct link and try again.",
     })
   }, [
     datasetId,
     isValidDataset,
+    isDatasetTooLarge,
     format,
     isValidatingDataset,
     setError,

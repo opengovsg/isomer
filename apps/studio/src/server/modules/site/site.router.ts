@@ -42,6 +42,7 @@ import {
   getNotification,
   getSiteConfig,
   getSiteTheme,
+  resolveEgazetteAlgoliaSearchConfig,
   setSiteNotification,
   validateUserPermissionsForSite,
 } from "./site.service"
@@ -135,7 +136,9 @@ export const siteRouter = router({
         const searchConfig =
           rest.search?.type === "searchSG" && config.search?.type === "searchSG"
             ? { ...rest.search, clientId: config.search.clientId }
-            : rest.search
+            : // egazette-algolia is admin-managed; site admins cannot switch
+              // to/from it or tamper with its Algolia credentials.
+              resolveEgazetteAlgoliaSearchConfig(config.search, rest.search)
 
         const updatedSite = await tx
           .updateTable("Site")
@@ -214,9 +217,16 @@ export const siteRouter = router({
           })
         }
 
+        // egazette-algolia is admin-managed; site admins cannot switch to/from
+        // it or tamper with its Algolia credentials.
+        const search = resolveEgazetteAlgoliaSearchConfig(
+          site.config.search,
+          data.search,
+        )
+
         const updatedSite = await tx
           .updateTable("Site")
-          .set({ config: jsonb(data) })
+          .set({ config: jsonb({ ...data, search }) })
           .where("id", "=", siteId)
           .returningAll()
           .executeTakeFirstOrThrow()
@@ -555,12 +565,10 @@ export const siteRouter = router({
         action: "update",
       })
 
-      const site = await db.transaction().execute(async () => {
-        return await setSiteNotification({
-          siteId,
-          userId: ctx.user.id,
-          notification,
-        })
+      const site = await setSiteNotification({
+        siteId,
+        userId: ctx.user.id,
+        notification,
       })
 
       await publishSiteConfig(ctx.user.id, { site }, ctx.logger)

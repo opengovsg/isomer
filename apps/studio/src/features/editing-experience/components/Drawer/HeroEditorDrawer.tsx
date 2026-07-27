@@ -23,6 +23,15 @@ import FormBuilder from "../form-builder/FormBuilder"
 import { uploadModifiedAssets } from "../utils"
 import { DrawerHeader } from "./DrawerHeader"
 
+// NOTE: Must be module-scoped so the schema identity is stable across renders.
+// getComponentSchema returns a fresh object per call; passing a new schema to
+// JsonForms on every render makes its internal resync effect fire on each
+// parent re-render, replacing in-progress form state with the (stale) data
+// prop. Async writes (e.g. uploaded image src, which arrives ~10ms later via
+// JsonForms' debounced onChange) get silently erased before reaching us.
+const heroSchema = getComponentSchema({ component: "hero" })
+const validateHeroFn = ajv.compile<IsomerComponent>(heroSchema)
+
 export default function HeroEditorDrawer(): JSX.Element {
   const {
     isOpen: isDiscardChangesModalOpen,
@@ -40,9 +49,6 @@ export default function HeroEditorDrawer(): JSX.Element {
     setModifiedAssets,
   } = useEditorDrawerContext()
   const toast = useToast()
-
-  const subSchema = getComponentSchema({ component: "hero" })
-  const validateFn = ajv.compile<IsomerComponent>(subSchema)
 
   const { pageId, siteId } = useQueryParse(pageSchema)
   const utils = trpc.useUtils()
@@ -67,6 +73,8 @@ export default function HeroEditorDrawer(): JSX.Element {
 
   const handleSaveChanges = useCallback(async () => {
     let newPageState = previewPageState
+
+    let assetsToDelete: string[] = []
 
     if (modifiedAssets.length > 0) {
       const updatedBlocks = Array.from(previewPageState.content)
@@ -108,24 +116,15 @@ export default function HeroEditorDrawer(): JSX.Element {
         return
       }
 
-      // Delete the original assets for those that have been modified
-      // This is done by deleting the file key stored in the src attribute, as
-      // it would have been replaced by new file keys after uploading
-      const assetsToDelete = modifiedAssets
-        .map(({ src }) => src?.slice(1))
-        .filter((src) => src !== PLACEHOLDER_IMAGE_FILENAME)
-        .reduce<string[]>((acc, curr) => {
-          if (curr !== undefined) {
-            acc.push(curr)
-          }
-          return acc
-        }, [])
-
-      deleteAssets({
-        siteId,
-        resourceId: String(pageId),
-        fileKeys: assetsToDelete,
-      })
+      // Collect the original asset keys so they can be deleted after the page
+      // save succeeds.
+      assetsToDelete = modifiedAssets.reduce<string[]>((acc, { src }) => {
+        const fileKey = src?.slice(1)
+        if (fileKey !== undefined && fileKey !== PLACEHOLDER_IMAGE_FILENAME) {
+          acc.push(fileKey)
+        }
+        return acc
+      }, [])
     }
 
     mutate(
@@ -140,6 +139,13 @@ export default function HeroEditorDrawer(): JSX.Element {
           setPreviewPageState(newPageState)
           setSavedPageState(newPageState)
           setDrawerState({ state: "root" })
+          if (assetsToDelete.length > 0) {
+            deleteAssets({
+              siteId,
+              resourceId: String(pageId),
+              fileKeys: assetsToDelete,
+            })
+          }
         },
       },
     )
@@ -206,8 +212,8 @@ export default function HeroEditorDrawer(): JSX.Element {
           <Box px="1.5rem" py="1rem" flex={1} overflow="auto">
             <Box mb="1rem">
               <FormBuilder<IsomerComponent>
-                schema={subSchema}
-                validateFn={validateFn}
+                schema={heroSchema}
+                validateFn={validateHeroFn}
                 data={previewPageState.content[0]}
                 handleChange={handleChange}
               />
