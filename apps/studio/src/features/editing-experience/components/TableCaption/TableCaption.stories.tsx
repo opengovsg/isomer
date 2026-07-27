@@ -7,7 +7,7 @@ import { TiptapProseEditor } from "~/features/editing-experience/components/form
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 
 import { TableCaption } from "./TableCaption"
-import { DEFAULT_TABLE_CAPTION, LEGACY_DEFAULT_TABLE_CAPTION } from "./utils"
+import { DEFAULT_TABLE_CAPTION } from "./utils"
 
 const tableContent = (caption: string) => ({
   type: "table",
@@ -35,26 +35,9 @@ const SINGLE_TABLE_PLACEHOLDER_CAPTION: JSONContent = {
   content: [tableContent(DEFAULT_TABLE_CAPTION)],
 }
 
-const SINGLE_TABLE_LEGACY_PLACEHOLDER_CAPTION: JSONContent = {
-  type: "prose",
-  content: [tableContent(LEGACY_DEFAULT_TABLE_CAPTION)],
-}
-
 const SINGLE_TABLE_WITH_CAPTION: JSONContent = {
   type: "prose",
   content: [tableContent("Figure 1: Quarterly revenue by department")],
-}
-
-const TWO_TABLES: JSONContent = {
-  type: "prose",
-  content: [
-    tableContent("First table — quarterly revenue"),
-    {
-      type: "paragraph",
-      content: [{ type: "text", text: "Some text between the two tables." }],
-    },
-    tableContent(DEFAULT_TABLE_CAPTION),
-  ],
 }
 
 const TableCaptionHarness = ({
@@ -101,21 +84,6 @@ export const PlaceholderCaption: Story = {
   },
 }
 
-export const LegacyPlaceholderCaption: Story = {
-  args: { initialContent: SINGLE_TABLE_LEGACY_PLACEHOLDER_CAPTION },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    // Assert
-    await expect(
-      await canvas.findByText(LEGACY_DEFAULT_TABLE_CAPTION),
-    ).toBeInTheDocument()
-    await expect(
-      await canvas.findByRole("button", { name: "Add table caption" }),
-    ).toBeInTheDocument()
-  },
-}
-
 export const PopulatedCaption: Story = {
   args: { initialContent: SINGLE_TABLE_WITH_CAPTION },
   play: async ({ canvasElement }) => {
@@ -128,27 +96,6 @@ export const PopulatedCaption: Story = {
     await expect(
       await canvas.findByRole("button", { name: "Edit table caption" }),
     ).toHaveTextContent("Edit")
-  },
-}
-
-export const TwoTables: Story = {
-  args: { initialContent: TWO_TABLES },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    // Assert
-    await expect(
-      await canvas.findByText("First table — quarterly revenue"),
-    ).toBeInTheDocument()
-    await expect(
-      await canvas.findByText(DEFAULT_TABLE_CAPTION),
-    ).toBeInTheDocument()
-    await expect(
-      await canvas.findByRole("button", { name: "Add table caption" }),
-    ).toBeInTheDocument()
-    await expect(
-      await canvas.findByRole("button", { name: "Edit table caption" }),
-    ).toBeInTheDocument()
   },
 }
 
