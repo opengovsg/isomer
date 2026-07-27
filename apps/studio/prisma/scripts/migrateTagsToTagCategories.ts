@@ -370,6 +370,29 @@ const taggedArraysEqual = (
   return a.every((id, index) => id === next[index])
 }
 
+const countItemsWithTagChanges = (
+  itemUpdates: ItemTagUpdate[],
+  itemRows: Awaited<ReturnType<typeof getItemRows>>,
+): number => {
+  const itemRowByResourceId = new Map(
+    itemRows.map((row) => [row.resourceId, row]),
+  )
+
+  return new Set(
+    itemUpdates
+      .filter((update) => {
+        const row = itemRowByResourceId.get(update.resourceId)
+        if (!row) return false
+        const currentTagged =
+          update.state === "draft"
+            ? row.draftContent?.page.tagged
+            : row.publishedContent?.page.tagged
+        return !taggedArraysEqual(currentTagged, update.tagged)
+      })
+      .map((update) => update.resourceId),
+  ).size
+}
+
 export const buildItemUpdates = ({
   items,
   draftOptionIdByCategoryAndLabel,
@@ -529,55 +552,86 @@ export const applyGroupOptionPatches = (
   })
 }
 
+const buildSideOptionIdLookup = ({
+  tagCategories,
+  groupsToAdd,
+  optionPatches,
+}: {
+  tagCategories?: TagCategoryGroup[]
+  groupsToAdd: TagCategoryGroup[]
+  optionPatches: TagCategoryGroupOptionPatch[]
+}): Map<string, Map<string, string>> =>
+  mergeOptionIdLookups(
+    mergeOptionIdLookups(
+      buildOptionIdLookupFromTagCategories(tagCategories),
+      buildOptionIdLookupFromTagGroups(groupsToAdd),
+    ),
+    buildOptionIdLookupFromOptionPatches(optionPatches),
+  )
+
 export const reconcileMigrationWork = ({
   plan,
   draftTagCategories,
   publishedTagCategories,
+  hasDraftIndex = true,
+  hasPublishedIndex = true,
   items,
   generateId = randomUUID,
 }: {
   plan: Extract<MigrationPlan, { status: "migrated" }>
   draftTagCategories?: TagCategoryGroup[]
   publishedTagCategories?: TagCategoryGroup[]
+  /** False when the Index has no draft blob — groups/patches for that side are not written. */
+  hasDraftIndex?: boolean
+  /** False when the Index has no published blob — groups/patches for that side are not written. */
+  hasPublishedIndex?: boolean
   items: MigrationPlanItem[]
   generateId?: () => string
 }): ReconciledMigrationWork => {
-  const draftGroupsToAdd = filterGroupsToAdd(draftTagCategories, plan.groups)
-  const publishedGroupsToAdd = filterGroupsToAdd(
-    publishedTagCategories,
-    plan.groups,
-  )
+  const draftGroupsToAdd = hasDraftIndex
+    ? filterGroupsToAdd(draftTagCategories, plan.groups)
+    : []
+  const publishedGroupsToAdd = hasPublishedIndex
+    ? filterGroupsToAdd(publishedTagCategories, plan.groups)
+    : []
 
-  const draftGroupOptionPatches = buildGroupOptionPatches({
-    existingTagCategories: draftTagCategories,
-    candidateGroups: plan.groups,
-    generateId,
+  const draftGroupOptionPatches = hasDraftIndex
+    ? buildGroupOptionPatches({
+        existingTagCategories: draftTagCategories,
+        candidateGroups: plan.groups,
+        generateId,
+      })
+    : []
+  const publishedGroupOptionPatches = hasPublishedIndex
+    ? buildGroupOptionPatches({
+        existingTagCategories: publishedTagCategories,
+        candidateGroups: plan.groups,
+        generateId,
+      })
+    : []
+
+  const draftOptionIdByCategoryAndLabel = buildSideOptionIdLookup({
+    tagCategories: draftTagCategories,
+    groupsToAdd: draftGroupsToAdd,
+    optionPatches: draftGroupOptionPatches,
   })
-  const publishedGroupOptionPatches = buildGroupOptionPatches({
-    existingTagCategories: publishedTagCategories,
-    candidateGroups: plan.groups,
-    generateId,
+  const publishedOptionIdByCategoryAndLabel = buildSideOptionIdLookup({
+    tagCategories: publishedTagCategories,
+    groupsToAdd: publishedGroupsToAdd,
+    optionPatches: publishedGroupOptionPatches,
   })
 
-  const draftOptionIdByCategoryAndLabel = mergeOptionIdLookups(
-    mergeOptionIdLookups(
-      buildOptionIdLookupFromTagCategories(draftTagCategories),
-      buildOptionIdLookupFromTagGroups(draftGroupsToAdd),
-    ),
-    buildOptionIdLookupFromOptionPatches(draftGroupOptionPatches),
-  )
-  const publishedOptionIdByCategoryAndLabel = mergeOptionIdLookups(
-    mergeOptionIdLookups(
-      buildOptionIdLookupFromTagCategories(publishedTagCategories),
-      buildOptionIdLookupFromTagGroups(publishedGroupsToAdd),
-    ),
-    buildOptionIdLookupFromOptionPatches(publishedGroupOptionPatches),
-  )
-
+  // When the Index lacks a side, tagCategories for that side are never written.
+  // Item tagging on the missing side must reuse the other side's option ids so
+  // tagged UUIDs always resolve against an Index that actually received them.
   const itemUpdates = buildItemUpdates({
     items,
-    draftOptionIdByCategoryAndLabel,
-    publishedOptionIdByCategoryAndLabel,
+    draftOptionIdByCategoryAndLabel: hasDraftIndex
+      ? draftOptionIdByCategoryAndLabel
+      : publishedOptionIdByCategoryAndLabel,
+    publishedOptionIdByCategoryAndLabel: hasPublishedIndex
+      ? publishedOptionIdByCategoryAndLabel
+      : draftOptionIdByCategoryAndLabel,
   })
 
   const itemByResourceId = new Map(items.map((item) => [item.resourceId, item]))
@@ -956,10 +1010,19 @@ export const migrateCollection = async ({
   }
 
   if (plan.status === "migrated") {
+    const hasDraftIndex = Boolean(
+      indexRow.draftContent && indexRow.draftBlobId && indexRow.draftUpdatedAt,
+    )
+    const hasPublishedIndex = Boolean(
+      indexRow.publishedContent && indexRow.publishedVersionNum != null,
+    )
+
     reconciled = reconcileMigrationWork({
       plan,
       draftTagCategories: indexRow.draftContent?.page.tagCategories,
       publishedTagCategories: indexRow.publishedContent?.page.tagCategories,
+      hasDraftIndex,
+      hasPublishedIndex,
       items: itemInputs,
     })
 
@@ -976,8 +1039,10 @@ export const migrateCollection = async ({
 
   const groups =
     plan.status === "migrated" ? summarizeMigrationGroups(reconciled) : []
-  const itemsUpdated = new Set(reconciled.itemUpdates.map((u) => u.resourceId))
-    .size
+  const itemsUpdated = countItemsWithTagChanges(
+    reconciled.itemUpdates,
+    itemRows,
+  )
   // New Versions this run will (or, in dry-run, would) create — the index's
   // published side plus one per item published-side update.
   const versionsCreated =

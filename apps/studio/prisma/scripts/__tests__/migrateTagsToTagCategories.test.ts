@@ -438,6 +438,76 @@ describe("reconcileMigrationWork", () => {
     ])
     expect(reconciled.isFullyMigrated).toBe(false)
   })
+
+  it("reuses the published index lookup for draft items when the index has no draft side", () => {
+    const existingTopicGroup: TagCategoryGroup = {
+      id: "topic-1",
+      label: "Topic",
+      display: "pills",
+      options: [{ id: "t-health", label: "Health" }],
+    }
+    const items = [
+      {
+        resourceId: "1",
+        draftTags: [{ category: "Topic", selected: ["Health"] }],
+      },
+    ]
+    const plan = buildMigrationPlan({ items, generateId: () => "unused" })
+    if (plan.status !== "migrated") throw new Error("expected migrated plan")
+
+    const reconciled = reconcileMigrationWork({
+      plan,
+      draftTagCategories: undefined,
+      publishedTagCategories: [existingTopicGroup],
+      hasDraftIndex: false,
+      hasPublishedIndex: true,
+      items,
+    })
+
+    expect(reconciled.draftGroupsToAdd).toEqual([])
+    expect(reconciled.itemUpdates).toEqual([
+      {
+        resourceId: "1",
+        state: "draft",
+        tagged: ["t-health"],
+      },
+    ])
+  })
+
+  it("reuses the draft index lookup for published items when the index has no published side", () => {
+    const existingTopicGroup: TagCategoryGroup = {
+      id: "topic-1",
+      label: "Topic",
+      display: "pills",
+      options: [{ id: "t-health", label: "Health" }],
+    }
+    const items = [
+      {
+        resourceId: "1",
+        publishedTags: [{ category: "Topic", selected: ["Health"] }],
+      },
+    ]
+    const plan = buildMigrationPlan({ items, generateId: () => "unused" })
+    if (plan.status !== "migrated") throw new Error("expected migrated plan")
+
+    const reconciled = reconcileMigrationWork({
+      plan,
+      publishedTagCategories: undefined,
+      draftTagCategories: [existingTopicGroup],
+      hasDraftIndex: true,
+      hasPublishedIndex: false,
+      items,
+    })
+
+    expect(reconciled.publishedGroupsToAdd).toEqual([])
+    expect(reconciled.itemUpdates).toEqual([
+      {
+        resourceId: "1",
+        state: "published",
+        tagged: ["t-health"],
+      },
+    ])
+  })
 })
 
 describe("buildGroupOptionPatches / applyGroupOptionPatches", () => {
@@ -1039,6 +1109,42 @@ describe("migrateCollection / migrateSite", () => {
 
     const newsItemContent = await getBlobContent(newsItemBlob.id)
     expect(newsItemContent.page.tagged).toEqual([newsOptionId])
+  })
+
+  it("tags draft-only items with option ids from a published-only index", async () => {
+    const user = await setupUser({})
+    const { collection } = await setupCollection({ siteId })
+    const existingTopicGroup: TagCategoryGroup = {
+      id: "topic-1",
+      label: "Topic",
+      display: "pills",
+      options: [{ id: "t-health", label: "Health" }],
+    }
+    await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      tagCategories: [existingTopicGroup],
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const { blob: itemBlob } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      tags: [{ category: "Topic", selected: ["Health"] }],
+    })
+
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
+
+    expect(result.status).toBe("migrated")
+    expect(result.itemsUpdated).toBe(1)
+
+    const itemContent = await getBlobContent(itemBlob.id)
+    expect(itemContent.page.tagged).toEqual(["t-health"])
   })
 
   it("skips items without usable tags without failing the migration", async () => {
