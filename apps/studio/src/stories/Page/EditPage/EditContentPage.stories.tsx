@@ -253,7 +253,12 @@ export const TableBubbleMenu: Story = {
     const canvas = within(canvasElement)
     await AddTextBlock.play?.(context)
 
+    // Clicking "Table" only opens the size-picker popover — a cell still
+    // needs to be picked to actually insert a table (see TableSizePicker.tsx).
     await userEvent.click(canvas.getByRole("button", { name: /^table$/i }))
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /^3 by 3 table$/i }),
+    )
 
     await waitFor(() =>
       expect(canvasElement.querySelector("table")).toBeTruthy(),
