@@ -296,6 +296,56 @@ const getLiveRedirectBySource = (
     .where("deletedAt", "is", null)
     .executeTakeFirst()
 
+// Redirect sources that would intercept a request to `permalink`, most specific
+// first: the exact path, then each ancestor wildcard ("/a/b/*", then "/a/*") —
+// mirroring the edge resolver's deepest-first prefix walk. The root wildcard is
+// impossible (the schema rejects it), so the shallowest candidate is a
+// single-segment "/seg/*". Exported for unit testing.
+export const shadowingSourceCandidates = (permalink: string): string[] => {
+  const source = normalizeRedirectSource(permalink)
+  const segments = source.split("/").filter((segment) => segment.length > 0)
+  const candidates = [source]
+  for (let depth = segments.length - 1; depth >= 1; depth--) {
+    candidates.push(`/${segments.slice(0, depth).join("/")}/*`)
+  }
+  return candidates
+}
+
+// Finds the live redirect that would shadow `permalink` — an exact-source match
+// or the deepest matching ancestor wildcard — optionally ignoring one whose
+// destination is `excludeDestination` (the redirect pointing back at the page
+// itself, which is the reclaim case, not a shadow). Returns the
+// highest-precedence match (exact beats wildcard; deeper wildcard beats
+// shallower) or null. Wildcard awareness keeps a page from silently landing
+// under a "/section/*" redirect that would redirect it away.
+const findShadowingRedirect = async (
+  dbInstance: SafeKysely,
+  {
+    siteId,
+    permalink,
+    excludeDestination,
+  }: { siteId: number; permalink: string; excludeDestination?: string },
+) => {
+  const candidates = shadowingSourceCandidates(permalink)
+  let query = dbInstance
+    .selectFrom("Redirect")
+    .selectAll()
+    .where("siteId", "=", siteId)
+    .where("source", "in", candidates)
+    .where("deletedAt", "is", null)
+  if (excludeDestination !== undefined) {
+    query = query.where("destination", "!=", excludeDestination)
+  }
+  const rows = await query.execute()
+  const bySource = new Map(rows.map((row) => [row.source, row]))
+  // candidates are ordered most-specific first, so the first hit wins.
+  for (const candidate of candidates) {
+    const match = bySource.get(candidate)
+    if (match) return match
+  }
+  return null
+}
+
 // Resolves a stored destination to a comparable/displayable path: a reference
 // to the page's current permalink, a literal path normalised, an external URL
 // (or a reference to a missing page) verbatim.
@@ -1444,14 +1494,22 @@ export const createRedirectForPermalinkChange = async (
     oldFullPermalink,
     resourceId,
     byUserId,
+    wildcard = false,
   }: {
     siteId: number
     oldFullPermalink: string
     resourceId: string
     byUserId: string
+    // When true, store a trailing-"/*" wildcard covering the old subtree (used
+    // by folder/collection moves so one rule redirects every descendant). The
+    // destination reference resolves to the resource's new permalink and the
+    // edge resolver appends the matched remainder.
+    wildcard?: boolean
   },
 ) => {
-  const source = normalizeRedirectSource(oldFullPermalink)
+  const source = normalizeRedirectSource(
+    wildcard ? `${oldFullPermalink}/*` : oldFullPermalink,
+  )
   const destination = getReferenceLink({
     siteId: String(siteId),
     resourceId: String(resourceId),
@@ -1511,18 +1569,15 @@ export const assertPermalinkNotShadowed = async (
     siteId: String(siteId),
     resourceId: String(resourceId),
   })
-  const shadowing = await tx
-    .selectFrom("Redirect")
-    .select("Redirect.id")
-    .where("Redirect.siteId", "=", siteId)
-    .where("Redirect.source", "=", normalizeRedirectSource(newFullPermalink))
-    .where("Redirect.destination", "!=", reference)
-    .where("Redirect.deletedAt", "is", null)
-    .executeTakeFirst()
+  const shadowing = await findShadowingRedirect(tx, {
+    siteId,
+    permalink: newFullPermalink,
+    excludeDestination: reference,
+  })
   if (shadowing) {
     throw new TRPCError({
       code: "CONFLICT",
-      message: `A redirect already exists at ${newFullPermalink}. Remove it on the Redirections page first.`,
+      message: `A redirect at ${shadowing.source} already covers ${newFullPermalink}. Remove it on the Redirections page first.`,
     })
   }
 }
@@ -1638,6 +1693,62 @@ export const applyPermalinkChangeRedirects = async (
   }
 }
 
+// Folder/collection variant of applyPermalinkChangeRedirects. A folder has no URL
+// of its own to redirect, but its move/rename changes every descendant's URL, so
+// one wildcard redirect ("/old-folder/*" -> the folder reference) preserves them
+// all at once. `hasLiveContent` is the folder analogue of a page's `isPublished`
+// — true when at least one descendant is published — so we don't mint redirects
+// for a subtree that was never reachable. Runs in the caller's transaction and
+// publishes nothing.
+export const applyFolderPermalinkChangeRedirects = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    oldFullPermalink,
+    newFullPermalink,
+    resourceId,
+    hasLiveContent,
+    shouldCreateRedirect,
+    byUserId,
+  }: {
+    siteId: number
+    oldFullPermalink: string
+    newFullPermalink: string
+    resourceId: string
+    hasLiveContent: boolean
+    shouldCreateRedirect: boolean
+    byUserId: string
+  },
+) => {
+  if (oldFullPermalink === newFullPermalink) {
+    return
+  }
+  // Mirror the page guard: a live folder must not land on a path a redirect
+  // already covers (exact or wildcard). Throwing rolls back the enclosing move.
+  if (hasLiveContent) {
+    await assertPermalinkNotShadowed(tx, {
+      siteId,
+      newFullPermalink,
+      resourceId,
+    })
+  }
+  await clearReclaimedRedirect(tx, {
+    siteId,
+    newFullPermalink,
+    resourceId,
+    byUserId,
+  })
+  if (shouldCreateRedirect && hasLiveContent) {
+    await createRedirectForPermalinkChange(tx, {
+      siteId,
+      oldFullPermalink,
+      resourceId,
+      byUserId,
+      wildcard: true,
+    })
+  }
+}
+
 export const deleteRedirect = async ({
   siteId,
   id,
@@ -1706,9 +1817,9 @@ export const getRedirectBySource = async ({
   destination: string
   destinationResourceId: number | null
 } | null> => {
-  const redirect = await getLiveRedirectBySource(db, {
+  const redirect = await findShadowingRedirect(db, {
     siteId,
-    source: normalizeRedirectSource(source),
+    permalink: source,
   })
   if (!redirect) {
     return null

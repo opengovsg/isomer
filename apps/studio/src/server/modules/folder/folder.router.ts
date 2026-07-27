@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   createFolderSchema,
   editFolderSchema,
@@ -21,7 +22,12 @@ import {
 import { PG_ERROR_CODES } from "../database/constants"
 import { createFolderIndexPage } from "../page/page.service"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
-import { publishResource } from "../resource/resource.service"
+import { applyFolderPermalinkChangeRedirects } from "../redirect/redirect.service"
+import {
+  getResourceFullPermalink,
+  hasPublishedDescendant,
+  publishResource,
+} from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
 export const folderRouter = router({
@@ -198,7 +204,10 @@ export const folderRouter = router({
   editFolder: protectedProcedure
     .input(editFolderSchema)
     .mutation(
-      async ({ ctx, input: { resourceId, permalink, title, siteId } }) => {
+      async ({
+        ctx,
+        input: { resourceId, permalink, title, siteId, shouldCreateRedirect },
+      }) => {
         await bulkValidateUserPermissionsForResources({
           siteId: Number(siteId),
           action: "update",
@@ -276,6 +285,41 @@ export const folderRouter = router({
             },
             by: user,
           })
+
+          // A renamed folder/collection changes every descendant's URL — preserve
+          // them with one wildcard redirect ("/old-folder/*"). Gated behind the
+          // advanced-redirects flag so it stays dark until the edge resolver ships.
+          if (
+            oldResource.permalink !== newResource.permalink &&
+            ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY)
+          ) {
+            const oldFullPermalink = await getResourceFullPermalink(
+              Number(siteId),
+              Number(resourceId),
+              tx,
+            )
+            if (oldFullPermalink !== null) {
+              // Only the last path segment changed, so swap it to derive the new
+              // full permalink without re-walking the ancestor chain.
+              const newFullPermalink =
+                oldFullPermalink.slice(
+                  0,
+                  oldFullPermalink.lastIndexOf("/") + 1,
+                ) + newResource.permalink
+              await applyFolderPermalinkChangeRedirects(tx, {
+                siteId: Number(siteId),
+                oldFullPermalink,
+                newFullPermalink,
+                resourceId,
+                hasLiveContent: await hasPublishedDescendant(tx, {
+                  siteId: Number(siteId),
+                  resourceId,
+                }),
+                shouldCreateRedirect,
+                byUserId: user.id,
+              })
+            }
+          }
 
           return newResource
         })

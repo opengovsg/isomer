@@ -793,6 +793,26 @@ export const getDescendantResourceIds = async (
   return rows.map((row) => String(row.id))
 }
 
+// True when `resourceId` or any descendant is published — the folder analogue of
+// a page's `publishedVersionId !== null`, used to decide whether a folder/
+// collection move or rename should preserve its old URLs with a redirect (there
+// is nothing to preserve for a subtree that was never live).
+export const hasPublishedDescendant = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<boolean> => {
+  const ids = await getDescendantResourceIds(trx, { siteId, resourceId })
+  if (ids.length === 0) return false
+  const published = await trx
+    .selectFrom("Resource")
+    .select("Resource.id")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.id", "in", ids)
+    .where("Resource.publishedVersionId", "is not", null)
+    .executeTakeFirst()
+  return published !== undefined
+}
+
 // Resolves a full permalink path (e.g. "/foo/bar") to the resource that serves
 // it, walking permalink segments from the site's root page. A Folder/Collection
 // is resolved to its IndexPage child, since that is what actually renders at the
