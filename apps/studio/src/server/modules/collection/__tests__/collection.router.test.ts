@@ -2222,7 +2222,7 @@ describe("collection.router", async () => {
       expect(result[0]).toMatchObject({ id: TAG_CATEGORY_ID, label: "Topic" })
     })
 
-    it("should return empty array when collection has no published version", async () => {
+    it("should return draft tag categories when collection index is not published", async () => {
       // Arrange
       const { collection, site, indexBlob } =
         await setupCollectionWithIndexPage()
@@ -2245,8 +2245,10 @@ describe("collection.router", async () => {
         resourceId: Number(collectionPage.id),
       })
 
-      // Assert: always published-only, no draft fallback
-      expect(result).toHaveLength(0)
+      // Assert: editor flows read draft index config so required-tag validation
+      // matches unpublished filter changes.
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({ id: TAG_CATEGORY_ID, label: "Topic" })
     })
   })
 })

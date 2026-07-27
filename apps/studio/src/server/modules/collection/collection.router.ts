@@ -527,14 +527,12 @@ export const collectionRouter = router({
         return getCollectionTagsForResource({
           siteId,
           collectionId,
-          isPublishedOnly: true,
         })
       }
       if (resourceId !== undefined) {
         return getCollectionTagsForResource({
           siteId,
           resourceId,
-          isPublishedOnly: true,
         })
       }
       throw new TRPCError({

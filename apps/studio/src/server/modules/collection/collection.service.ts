@@ -96,7 +96,7 @@ export const getCollectionTagsForResource = async ({
 
   return isPublishedOnly
     ? (row.publishedContent?.page.tagCategories ?? [])
-    : (row.publishedContent?.page.tagCategories ??
-        row.draftContent?.page.tagCategories ??
+    : (row.draftContent?.page.tagCategories ??
+        row.publishedContent?.page.tagCategories ??
         [])
 }
