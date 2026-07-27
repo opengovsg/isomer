@@ -425,7 +425,6 @@ export const collectionPageBlobContent = (
   layout: "article",
   page: {
     date: "01/01/2026",
-    category: "Feature Articles",
     articlePageHeader: {
       summary: "A concise summary of the main points regarding this article.",
     },

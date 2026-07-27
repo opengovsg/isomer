@@ -5,6 +5,7 @@ import type {
   IsomerComponent,
   IsomerSchema,
 } from "@opengovsg/isomer-components"
+import { randomUUID } from "crypto"
 
 // Mirrors PageEditor/constants — kept local so tsx does not load the full
 // @opengovsg/isomer-components bundle (its dist still has unresolved `~` paths).
@@ -35,6 +36,30 @@ export const CONTENT_TYPES = new Set<string>(CONTENT_BLOCK_TYPES)
 export const CONTENT_ONLY_TYPES = new Set(
   [...CONTENT_TYPES].filter((t) => !ARTICLE_TYPES.has(t)),
 )
+
+export interface DefaultCategoryTagging {
+  tagCategoryId: string
+  tagOptionId: string
+  label: string
+}
+
+export const createDefaultCategoryTagging = (
+  label: string,
+): DefaultCategoryTagging => ({
+  tagCategoryId: randomUUID(),
+  tagOptionId: randomUUID(),
+  label,
+})
+
+const buildTagCategoriesFromDefaultCategory = (
+  tagging: DefaultCategoryTagging,
+) => [
+  {
+    id: tagging.tagCategoryId,
+    label: "Category",
+    options: [{ id: tagging.tagOptionId, label: tagging.label }],
+  },
+]
 
 export interface PagePlan {
   resourceId: string
@@ -147,6 +172,7 @@ export const asPageBlob = (s: IsomerSchema): PageBlob => {
 export const buildCollectionIndexBlob = (
   current: IndexBlob,
   folderTitle: string,
+  tagging: DefaultCategoryTagging,
 ): IsomerSchema =>
   ({
     ...current,
@@ -155,6 +181,7 @@ export const buildCollectionIndexBlob = (
       title: folderTitle,
       subtitle: current.page.contentPageHeader.summary,
       sortOrder: "date-desc",
+      tagCategories: buildTagCategoriesFromDefaultCategory(tagging),
       ...optionalPageImage(current.page),
     },
     content: [],
@@ -162,15 +189,18 @@ export const buildCollectionIndexBlob = (
 
 export const buildArticleBlob = (
   current: PageBlob,
-  defaultCategory: string,
+  tagging: DefaultCategoryTagging,
 ): IsomerSchema => {
   if (current.layout === "article") {
+    const { category: _legacyCategory, ...pageWithoutCategory } =
+      current.page as typeof current.page & { category?: string }
+
     return {
       ...current,
       layout: "article",
       page: {
-        ...current.page,
-        category: defaultCategory,
+        ...pageWithoutCategory,
+        tagged: [tagging.tagOptionId],
       },
       content: current.content,
     } as unknown as IsomerSchema
@@ -180,7 +210,7 @@ export const buildArticleBlob = (
     ...current,
     layout: "article",
     page: {
-      category: defaultCategory,
+      tagged: [tagging.tagOptionId],
       articlePageHeader: {
         summary: current.page.contentPageHeader.summary,
       },

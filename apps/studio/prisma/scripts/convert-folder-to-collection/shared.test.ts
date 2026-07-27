@@ -105,7 +105,7 @@ const makeConversionPlan = (): ConversionPlan => ({
         layout: "article",
         version: "0.1.0",
         page: {
-          category: "Feature Articles",
+          tagged: ["00000000-0000-4000-8000-000000000001"],
           articlePageHeader: { summary: "Summary A" },
         },
         content: [{ type: "prose", content: [] }],
@@ -130,7 +130,7 @@ const makeConversionPlan = (): ConversionPlan => ({
         layout: "article",
         version: "0.1.0",
         page: {
-          category: "Feature Articles",
+          tagged: ["00000000-0000-4000-8000-000000000002"],
           articlePageHeader: { summary: "Summary B" },
         },
         content: [{ type: "infobar", title: "CTA", description: "x" }],
@@ -317,7 +317,7 @@ describe("updateBlobById", () => {
   const nextContent = {
     layout: "article",
     version: "0.1.0",
-    page: { category: "News", articlePageHeader: { summary: "x" } },
+    page: { tagged: [], articlePageHeader: { summary: "x" } },
     content: [],
   } as unknown as IsomerSchema
 

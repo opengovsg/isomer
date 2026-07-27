@@ -23,6 +23,7 @@ import {
   asPageBlob,
   buildArticleBlob,
   buildCollectionIndexBlob,
+  createDefaultCategoryTagging,
   findDisallowedBlocks,
   type ConversionPlan,
   type PagePlan,
@@ -77,13 +78,14 @@ const buildConversionPlan = async (
 
   const indexBlob = await getBlobOfResource({ db, resourceId: indexPage.id })
   const indexCurrent = asIndexBlob(indexBlob.content)
+  const tagging = createDefaultCategoryTagging(defaultCategory)
   const indexPagePlan: PagePlan = {
     resourceId: indexPage.id,
     title: indexPage.title,
     permalink: indexPage.permalink,
     currentBlobId: indexBlob.id,
     currentBlob: indexBlob.content,
-    nextBlob: buildCollectionIndexBlob(indexCurrent, folder.title),
+    nextBlob: buildCollectionIndexBlob(indexCurrent, folder.title, tagging),
     disallowedBlocks: [],
   }
 
@@ -97,7 +99,7 @@ const buildConversionPlan = async (
       permalink: child.permalink,
       currentBlobId: blob.id,
       currentBlob: blob.content,
-      nextBlob: buildArticleBlob(current, defaultCategory),
+      nextBlob: buildArticleBlob(current, tagging),
       disallowedBlocks: findDisallowedBlocks(current.content),
     })
   }

@@ -14,6 +14,7 @@ import {
   buildConversionReport,
   CONTENT_ONLY_TYPES,
   CONTENT_TYPES,
+  createDefaultCategoryTagging,
   findDisallowedBlocks,
   toFolderPlan,
   type ArticleBlob,
@@ -21,6 +22,8 @@ import {
   type ConversionPlan,
   type IndexBlob,
 } from "./helpers"
+
+const TEST_TAGGING = createDefaultCategoryTagging("Feature Articles")
 
 // Shape used purely for asserting on builder output without TypeScript
 // narrowing on the `IsomerSchema` union for every property access.
@@ -99,7 +102,7 @@ const makeContentBlob = (
   }) as unknown as ContentBlob
 
 const makeArticleBlob = (
-  overrides?: PageOverrides & { category?: string; date?: string },
+  overrides?: PageOverrides & { tagged?: string[]; date?: string },
   content: IsomerComponent[] = [],
 ): ArticleBlob =>
   ({
@@ -107,7 +110,7 @@ const makeArticleBlob = (
     layout: "article",
     page: {
       title: "Article",
-      category: overrides?.category ?? "News",
+      tagged: overrides?.tagged ?? [TEST_TAGGING.tagOptionId],
       date: overrides?.date ?? "1 Jan 2024",
       articlePageHeader: {
         summary: overrides?.summary ?? "Article summary",
@@ -424,7 +427,9 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "Summary text" })
 
     // Act
-    const result = asResult(buildCollectionIndexBlob(current, "Folder Title"))
+    const result = asResult(
+      buildCollectionIndexBlob(current, "Folder Title", TEST_TAGGING),
+    )
 
     // Assert
     expect(result.layout).toBe("collection")
@@ -432,6 +437,15 @@ describe("buildCollectionIndexBlob", () => {
       title: "Folder Title",
       subtitle: "Summary text",
       sortOrder: "date-desc",
+      tagCategories: [
+        {
+          id: TEST_TAGGING.tagCategoryId,
+          label: "Category",
+          options: [
+            { id: TEST_TAGGING.tagOptionId, label: TEST_TAGGING.label },
+          ],
+        },
+      ],
     })
   })
 
@@ -441,7 +455,9 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "x", image })
 
     // Act
-    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
+    const result = asResult(
+      buildCollectionIndexBlob(current, "Folder", TEST_TAGGING),
+    )
 
     // Assert
     expect(result.page.image).toEqual(image)
@@ -452,7 +468,9 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "x" })
 
     // Act
-    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
+    const result = asResult(
+      buildCollectionIndexBlob(current, "Folder", TEST_TAGGING),
+    )
 
     // Assert
     expect("image" in result.page).toBe(false)
@@ -466,7 +484,9 @@ describe("buildCollectionIndexBlob", () => {
     } as unknown as IndexBlob
 
     // Act
-    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
+    const result = asResult(
+      buildCollectionIndexBlob(current, "Folder", TEST_TAGGING),
+    )
 
     // Assert
     expect(result.content).toEqual([])
@@ -477,7 +497,9 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "x" })
 
     // Act
-    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
+    const result = asResult(
+      buildCollectionIndexBlob(current, "Folder", TEST_TAGGING),
+    )
 
     // Assert
     expect(result.version).toBe("0.1.0")
@@ -488,7 +510,9 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "x" })
 
     // Act
-    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
+    const result = asResult(
+      buildCollectionIndexBlob(current, "Folder", TEST_TAGGING),
+    )
 
     // Assert
     expect("contentPageHeader" in result.page).toBe(false)
@@ -499,7 +523,9 @@ describe("buildCollectionIndexBlob", () => {
     const current = makeIndexBlob({ summary: "x" })
 
     // Act
-    const result = asResult(buildCollectionIndexBlob(current, "Folder Title"))
+    const result = asResult(
+      buildCollectionIndexBlob(current, "Folder Title", TEST_TAGGING),
+    )
 
     // Assert
     expect(result.page.title).toBe("Folder Title")
@@ -516,7 +542,9 @@ describe("buildCollectionIndexBlob", () => {
     } as unknown as IndexBlob
 
     // Act
-    const result = asResult(buildCollectionIndexBlob(current, "Folder"))
+    const result = asResult(
+      buildCollectionIndexBlob(current, "Folder", TEST_TAGGING),
+    )
 
     // Assert
     expect(result.page.sortOrder).toBe("date-desc")
@@ -531,7 +559,7 @@ describe("buildCollectionIndexBlob", () => {
     const snapshot = structuredClone(current)
 
     // Act
-    buildCollectionIndexBlob(current, "Folder")
+    buildCollectionIndexBlob(current, "Folder", TEST_TAGGING)
 
     // Assert
     expect(current).toEqual(snapshot)
@@ -544,7 +572,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob({ summary: "Article summary" })
 
     // Act
-    const result = asResult(buildArticleBlob(current, "News"))
+    const result = asResult(buildArticleBlob(current, TEST_TAGGING))
 
     // Assert
     expect(result.layout).toBe("article")
@@ -553,15 +581,17 @@ describe("buildArticleBlob", () => {
     })
   })
 
-  it("applies the supplied default category", () => {
+  it("applies the supplied default category as tagged option ids", () => {
     // Arrange
     const current = makeContentBlob()
+    const tagging = createDefaultCategoryTagging("Feature Articles")
 
     // Act
-    const result = asResult(buildArticleBlob(current, "Feature Articles"))
+    const result = asResult(buildArticleBlob(current, tagging))
 
     // Assert
-    expect(result.page.category).toBe("Feature Articles")
+    expect(result.page.tagged).toEqual([tagging.tagOptionId])
+    expect("category" in result.page).toBe(false)
   })
 
   it("preserves the image when present on the source page", () => {
@@ -570,7 +600,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob({ summary: "x", image })
 
     // Act
-    const result = asResult(buildArticleBlob(current, "cat"))
+    const result = asResult(buildArticleBlob(current, TEST_TAGGING))
 
     // Assert
     expect(result.page.image).toEqual(image)
@@ -581,7 +611,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob({ summary: "x" })
 
     // Act
-    const result = asResult(buildArticleBlob(current, "cat"))
+    const result = asResult(buildArticleBlob(current, TEST_TAGGING))
 
     // Assert
     expect("image" in result.page).toBe(false)
@@ -596,7 +626,7 @@ describe("buildArticleBlob", () => {
     ])
 
     // Act
-    const result = asResult(buildArticleBlob(current, "cat"))
+    const result = asResult(buildArticleBlob(current, TEST_TAGGING))
 
     // Assert
     expect(result.content).toEqual([proseBlock, infobarBlock, infocardsBlock])
@@ -607,7 +637,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob()
 
     // Act
-    const result = asResult(buildArticleBlob(current, "cat"))
+    const result = asResult(buildArticleBlob(current, TEST_TAGGING))
 
     // Assert
     expect(result.version).toBe("0.1.0")
@@ -618,7 +648,7 @@ describe("buildArticleBlob", () => {
     const current = makeContentBlob({ summary: "x" })
 
     // Act
-    const result = asResult(buildArticleBlob(current, "cat"))
+    const result = asResult(buildArticleBlob(current, TEST_TAGGING))
 
     // Assert
     expect("contentPageHeader" in result.page).toBe(false)
@@ -633,30 +663,39 @@ describe("buildArticleBlob", () => {
     const snapshot = structuredClone(current)
 
     // Act
-    buildArticleBlob(current, "News")
+    buildArticleBlob(current, createDefaultCategoryTagging("News"))
 
     // Assert
     expect(current).toEqual(snapshot)
   })
 
-  it("updates category on an already-article blob while preserving article fields", () => {
+  it("replaces legacy category with tagged on an already-article blob while preserving article fields", () => {
     // Arrange
-    const current = makeArticleBlob({
-      summary: "Existing summary",
-      category: "Old Category",
-      date: "15 May 2024",
-    })
+    const current = {
+      ...makeArticleBlob({
+        summary: "Existing summary",
+        date: "15 May 2024",
+      }),
+      page: {
+        ...makeArticleBlob({
+          summary: "Existing summary",
+          date: "15 May 2024",
+        }).page,
+        category: "Old Category",
+      },
+    } as unknown as ArticleBlob
 
     // Act
-    const result = asResult(buildArticleBlob(current, "Feature Articles"))
+    const result = asResult(buildArticleBlob(current, TEST_TAGGING))
 
     // Assert
     expect(result.layout).toBe("article")
     expect(result.page).toMatchObject({
-      category: "Feature Articles",
+      tagged: [TEST_TAGGING.tagOptionId],
       date: "15 May 2024",
       articlePageHeader: { summary: "Existing summary" },
     })
+    expect("category" in result.page).toBe(false)
     expect("contentPageHeader" in result.page).toBe(false)
   })
 })

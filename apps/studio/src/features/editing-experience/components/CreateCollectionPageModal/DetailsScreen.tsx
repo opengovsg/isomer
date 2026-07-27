@@ -233,7 +233,6 @@ export const CreateCollectionPageDetailsScreen = () => {
                 )}
               </FormControl>
             </Stack>
-            {/* TODO: Add category */}
           </Stack>
           <Flex gridColumn="5 / 13">
             <PreviewLayout />
