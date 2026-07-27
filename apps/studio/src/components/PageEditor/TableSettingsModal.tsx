@@ -21,6 +21,7 @@ import { useEffect } from "react"
 import { z } from "zod"
 import {
   CAPTION_MAX_LENGTH,
+  normalizeTableCaptionForEdit,
   setTableCaptionAtPos,
 } from "~/features/editing-experience/components/TableCaption/utils"
 import { useZodForm } from "~/lib/form"
@@ -73,7 +74,7 @@ export const TableSettingsModal = ({
       node?.type.name === "table"
         ? ((node.attrs.caption as string | undefined) ?? "")
         : ""
-    setValue("caption", currentCaption)
+    setValue("caption", normalizeTableCaptionForEdit(currentCaption))
     // only done once per every time the modal is opened
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, tablePos])
