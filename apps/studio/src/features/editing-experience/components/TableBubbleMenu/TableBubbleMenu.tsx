@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/react"
 import type { ReactElement, ReactNode } from "react"
-import { Divider, Flex, Text, VStack } from "@chakra-ui/react"
+import { Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
 import { PluginKey } from "@tiptap/pm/state"
 import {
@@ -200,14 +200,23 @@ const ActionButton = ({
     variant="clear"
     colorScheme="neutral"
     onClick={onClick}
-    leftIcon={icon}
     w="100%"
+    h="auto"
+    minH="unset"
+    px="0.75rem"
+    py="0.625rem"
+    color="base.content.strong"
     textAlign="left"
     sx={{
       justifyContent: "flex-start",
     }}
   >
-    {label}
+    <Flex as="span" align="center" gap="0.5rem">
+      {icon}
+      <Text as="span" textStyle="body-2" color="base.content.strong">
+        {label}
+      </Text>
+    </Flex>
   </Button>
 )
 
@@ -217,15 +226,11 @@ const ActionGroup = ({ children }: { children: ReactNode }) => (
   </VStack>
 )
 
-const ActionDivider = () => (
-  <Divider borderColor="base.divider.medium" my="0.25rem" opacity={1} />
-)
-
 // Label + switch — one control for set/unset instead of separate action
 // buttons. TipTap toolbar pattern: preventDefault on mousedown so the click
 // does not steal focus (and thus CellSelection) from the editor.
-// Text uses the same subhead-2 sizing as ActionButton (Button size="xs");
-// Switch `sm` is the smallest size in the design system.
+// Text uses the same body-2 sizing as ActionButton; Switch `sm` is the
+// smallest size in the design system.
 const HeaderToggle = ({
   label,
   isChecked,
@@ -240,11 +245,13 @@ const HeaderToggle = ({
     minH="2.25rem"
     align="center"
     justify="space-between"
-    px="15px"
+    px="0.75rem"
     gap="0.5rem"
     onMouseDown={(event) => event.preventDefault()}
   >
-    <Text textStyle="subhead-2">{label}</Text>
+    <Text textStyle="body-2" color="base.content.strong">
+      {label}
+    </Text>
     <Switch
       size="sm"
       isChecked={isChecked}
@@ -274,16 +281,13 @@ const RowSelectionActions = ({
   return (
     <>
       {showHeaderToggle && (
-        <>
-          <ActionGroup>
-            <HeaderToggle
-              label="Header row"
-              isChecked={includesHeaderRow}
-              onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
-            />
-          </ActionGroup>
-          <ActionDivider />
-        </>
+        <ActionGroup>
+          <HeaderToggle
+            label="Header row"
+            isChecked={includesHeaderRow}
+            onToggle={() => editor.chain().focus().toggleHeaderRow().run()}
+          />
+        </ActionGroup>
       )}
       <ActionGroup>
         <ActionButton
@@ -296,40 +300,28 @@ const RowSelectionActions = ({
           icon={<IconAddRowBelow boxSize="1rem" />}
           onClick={() => editor.chain().focus().addRowAfter().run()}
         />
+        {canMoveUp && (
+          <ActionButton
+            label="Move up"
+            icon={<BiUpArrowAlt fontSize="1rem" />}
+            onClick={() => moveRow(editor, "up")}
+          />
+        )}
+        {canMoveDown && (
+          <ActionButton
+            label="Move down"
+            icon={<BiDownArrowAlt fontSize="1rem" />}
+            onClick={() => moveRow(editor, "down")}
+          />
+        )}
+        {!includesHeaderRow && (
+          <ActionButton
+            label="Delete row"
+            icon={<IconDelRow boxSize="1rem" />}
+            onClick={() => editor.chain().focus().deleteRow().run()}
+          />
+        )}
       </ActionGroup>
-      {(canMoveUp || canMoveDown) && (
-        <>
-          <ActionDivider />
-          <ActionGroup>
-            {canMoveUp && (
-              <ActionButton
-                label="Move up"
-                icon={<BiUpArrowAlt fontSize="1rem" />}
-                onClick={() => moveRow(editor, "up")}
-              />
-            )}
-            {canMoveDown && (
-              <ActionButton
-                label="Move down"
-                icon={<BiDownArrowAlt fontSize="1rem" />}
-                onClick={() => moveRow(editor, "down")}
-              />
-            )}
-          </ActionGroup>
-        </>
-      )}
-      {!includesHeaderRow && (
-        <>
-          <ActionDivider />
-          <ActionGroup>
-            <ActionButton
-              label="Delete row"
-              icon={<IconDelRow boxSize="1rem" />}
-              onClick={() => editor.chain().focus().deleteRow().run()}
-            />
-          </ActionGroup>
-        </>
-      )}
     </>
   )
 }
@@ -352,16 +344,13 @@ const ColumnSelectionActions = ({
   return (
     <>
       {showHeaderToggle && (
-        <>
-          <ActionGroup>
-            <HeaderToggle
-              label="Header column"
-              isChecked={includesHeaderColumn}
-              onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
-            />
-          </ActionGroup>
-          <ActionDivider />
-        </>
+        <ActionGroup>
+          <HeaderToggle
+            label="Header column"
+            isChecked={includesHeaderColumn}
+            onToggle={() => editor.chain().focus().toggleHeaderColumn().run()}
+          />
+        </ActionGroup>
       )}
       <ActionGroup>
         <ActionButton
@@ -374,40 +363,28 @@ const ColumnSelectionActions = ({
           icon={<IconAddColRight boxSize="1rem" />}
           onClick={() => editor.chain().focus().addColumnAfter().run()}
         />
+        {canMoveLeft && (
+          <ActionButton
+            label="Move left"
+            icon={<BiLeftArrowAlt fontSize="1rem" />}
+            onClick={() => moveColumn(editor, "left")}
+          />
+        )}
+        {canMoveRight && (
+          <ActionButton
+            label="Move right"
+            icon={<BiRightArrowAlt fontSize="1rem" />}
+            onClick={() => moveColumn(editor, "right")}
+          />
+        )}
+        {!includesHeaderColumn && (
+          <ActionButton
+            label="Delete column"
+            icon={<IconDelCol boxSize="1rem" />}
+            onClick={() => editor.chain().focus().deleteColumn().run()}
+          />
+        )}
       </ActionGroup>
-      {(canMoveLeft || canMoveRight) && (
-        <>
-          <ActionDivider />
-          <ActionGroup>
-            {canMoveLeft && (
-              <ActionButton
-                label="Move left"
-                icon={<BiLeftArrowAlt fontSize="1rem" />}
-                onClick={() => moveColumn(editor, "left")}
-              />
-            )}
-            {canMoveRight && (
-              <ActionButton
-                label="Move right"
-                icon={<BiRightArrowAlt fontSize="1rem" />}
-                onClick={() => moveColumn(editor, "right")}
-              />
-            )}
-          </ActionGroup>
-        </>
-      )}
-      {!includesHeaderColumn && (
-        <>
-          <ActionDivider />
-          <ActionGroup>
-            <ActionButton
-              label="Delete column"
-              icon={<IconDelCol boxSize="1rem" />}
-              onClick={() => editor.chain().focus().deleteColumn().run()}
-            />
-          </ActionGroup>
-        </>
-      )}
     </>
   )
 }
@@ -618,11 +595,11 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
         position="relative"
         zIndex="dropdown"
         bg="base.canvas.default"
-        boxShadow="md"
-        borderRadius="md"
+        boxShadow="sm"
+        borderRadius="0.25rem"
         border="1px solid"
         borderColor="base.divider.medium"
-        p="0.375rem"
+        py="0.5rem"
         gap="0"
       >
         <TableSelectionActions editor={editor} kind={kind} />
