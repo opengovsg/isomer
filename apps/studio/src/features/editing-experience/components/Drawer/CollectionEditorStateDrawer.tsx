@@ -91,14 +91,14 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     if (canManageFilters) {
       return drawerStateType === "display"
         ? {
-            exclude: ["tagCategories", "tags"],
+            exclude: ["tagCategories"],
           }
         : {
-            include: ["tagCategories", "tags"],
+            include: ["tagCategories"],
           }
     }
     return {
-      exclude: ["tagCategories", "tags"],
+      exclude: ["tagCategories"],
     }
   }, [drawerStateType, canManageFilters])
 

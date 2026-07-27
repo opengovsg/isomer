@@ -155,47 +155,6 @@ export const pageRouter = router({
         .execute()
     }),
 
-  getCategories: protectedProcedure
-    .input(basePageSchema)
-    .query(async ({ ctx, input: { pageId, siteId } }) => {
-      await bulkValidateUserPermissionsForResources({
-        siteId,
-        action: "read",
-        userId: ctx.user.id,
-      })
-
-      const { parentId } = await db
-        .selectFrom("Resource")
-        .where("siteId", "=", siteId)
-        .where("id", "=", String(pageId))
-        .select("parentId")
-        .executeTakeFirstOrThrow()
-
-      const blobs = await db
-        .selectFrom("Resource as r")
-        .leftJoin("Blob as b", "r.draftBlobId", "b.id")
-        .leftJoin("Version as v", "r.publishedVersionId", "v.id")
-        .leftJoin("Blob as vb", "v.blobId", "vb.id")
-        .where("r.siteId", "=", siteId)
-        .where("r.parentId", "=", String(parentId))
-        .select((eb) => {
-          return eb.fn
-            .coalesce(
-              sql<string>`b.content->'page'->>'category'`,
-              sql<string>`vb.content->'page'->>'category'`,
-            )
-            .as("category")
-        })
-        .distinct()
-        .execute()
-
-      const categories = blobs
-        .map((blob) => blob.category)
-        .filter((c) => !!c && !!c.trim())
-
-      return { categories }
-    }),
-
   readPage: protectedProcedure
     .input(basePageSchema)
     .output(readPageOutputSchema)
