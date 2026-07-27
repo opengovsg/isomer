@@ -107,7 +107,8 @@ export const createCollectionPageFormSchema = z
         siteId: true,
       })
       .extend({
-        category: z.string().optional(),
+        // DEPRECATED: legacy category — use tag categories on the collection index.
+        // category: z.string().optional(),
       }),
   )
 

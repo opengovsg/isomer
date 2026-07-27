@@ -119,7 +119,6 @@ const getSitemapTreeFromArray = (
         summary: resource.summary ?? "",
         lastModified: resource.updatedAt.toISOString(),
         permalink,
-        category: resource.category ?? "Others",
         tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
         image: {
@@ -137,9 +136,9 @@ const getSitemapTreeFromArray = (
         summary: resource.summary ?? "",
         lastModified: resource.updatedAt.toISOString(),
         permalink,
-        category: resource.category ?? "Others",
         tagged: parseTagged(resource.tagged),
         date: resource.date ?? "",
+        category: resource.category,
         image: {
           src: resource.thumbnail ?? "",
           alt: "",
@@ -219,7 +218,6 @@ export const overwriteCollectionChildrenForCollectionBlock = (
           permalink: "/",
           layout: ISOMER_USABLE_PAGE_LAYOUTS.Article,
           lastModified: new Date().toISOString(),
-          category: "Category of article",
           ref: "/",
           image: {
             src: `${env.NEXT_PUBLIC_APP_URL}/assets/collectionblock_studio_preview.svg`,

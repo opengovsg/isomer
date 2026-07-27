@@ -15,9 +15,6 @@ export const createCollectionPageJson = ({}: {
     layout: "article",
     page: {
       date: format(new Date(), "dd/MM/yyyy"),
-      // TODO: this is actually supposed to be passed from the frontend
-      // which is not done at present
-      category: "Feature Articles",
       articlePageHeader: {
         summary: "A concise summary of the main points regarding this article.",
       },

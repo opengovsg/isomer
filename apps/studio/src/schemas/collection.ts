@@ -37,19 +37,13 @@ const slashDateSchema = z
 
 export const editLinkSchema = z.object({
   date: slashDateSchema.optional(),
-  category: z.string().optional(), // DEPRECATED — do not re-add; see ADR 0003
+  // eGazette collection links still persist supplement type here. Not the ADR
+  // 0003 article filter field; see LinkRefPageSchema.
+  category: z.string().optional(),
   linkId: z.number().min(1),
   siteId: z.number().min(1),
   description: z.string().optional(),
   ref: z.string().min(1),
-  tags: z
-    .array(
-      z.object({
-        category: z.string(),
-        selected: z.array(z.string()).optional(),
-      }),
-    )
-    .optional(),
   tagged: z.array(z.string()).optional(),
   image: z
     .object({

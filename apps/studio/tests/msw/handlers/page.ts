@@ -72,15 +72,6 @@ const pageListQuery = (wait?: DelayMode | number) => {
 }
 
 export const pageHandlers = {
-  getCategories: {
-    default: () => {
-      return trpcMsw.page.getCategories.query(() => {
-        return {
-          categories: ["Category 1", "Category 2", "Category 3"],
-        }
-      })
-    },
-  },
   getCollectionTags: {
     default: () => {
       return trpcMsw.collection.getCollectionTags.query(() => {

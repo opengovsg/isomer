@@ -428,9 +428,11 @@ export const getLocalisedSitemap = async (
   const thumbnailSql = sql<string>`
         published.content->'page'->'image'->> 'src'
     `.as("thumbnail")
+  // eGazette collection links still store supplement type on page.category
+  // (ADR 0003). Article category was migrated to tagCategories/tagged.
   const categorySql = sql<string>`
     CASE
-      WHEN (published.content ->> 'layout') IN ('article','link')
+      WHEN (published.content ->> 'layout') = 'link'
       THEN (published.content -> 'page' ->> 'category')
       ELSE ''
     END
