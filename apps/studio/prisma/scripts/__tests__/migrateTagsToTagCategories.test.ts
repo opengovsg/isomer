@@ -1065,16 +1065,101 @@ describe("migrateCollection / migrateSite", () => {
     })
 
     // Act
-    const results = await migrateSite({
+    const siteResult = await migrateSite({
       siteId,
       dryRun: false,
       publisherId: null,
     })
 
     // Assert
-    expect(results).toHaveLength(1)
-    expect(results[0]!.collectionId).toBe(collectionA.id)
-    expect(results[0]!.status).toBe("migrated")
+    expect(siteResult.status).toBe("succeeded")
+    expect(siteResult.collections).toHaveLength(1)
+    expect(siteResult.collections[0]!.collectionId).toBe(collectionA.id)
+    expect(siteResult.collections[0]!.status).toBe("migrated")
+  })
+
+  it("migrateSite continues after one collection fails and reports partial success", async () => {
+    // Arrange — collection A (draft) succeeds; B (published) fails without publisherId; C (draft) succeeds
+    const user = await setupUser({})
+    const { collection: collectionA } = await setupCollection({
+      siteId,
+      permalink: "collection-a",
+    })
+    const { blob: indexBlobA } = await setupCollectionIndexPage({
+      collectionId: collectionA.id,
+      siteId,
+    })
+    await setupCollectionPage({
+      siteId,
+      parentId: collectionA.id,
+      tags: [{ category: "Topic", selected: ["Health"] }],
+    })
+
+    const { collection: collectionB } = await setupCollection({
+      siteId,
+      permalink: "collection-b",
+    })
+    await setupCollectionIndexPage({
+      collectionId: collectionB.id,
+      siteId,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    await setupCollectionPage({
+      siteId,
+      parentId: collectionB.id,
+      permalink: "page-b",
+      tags: [{ category: "Topic", selected: ["News"] }],
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+
+    const { collection: collectionC } = await setupCollection({
+      siteId,
+      permalink: "collection-c",
+    })
+    const { blob: indexBlobC } = await setupCollectionIndexPage({
+      collectionId: collectionC.id,
+      siteId,
+    })
+    await setupCollectionPage({
+      siteId,
+      parentId: collectionC.id,
+      permalink: "page-c",
+      tags: [{ category: "Region", selected: ["North"] }],
+    })
+
+    // Act — missing publisherId forces a throw on collection B's published write
+    const siteResult = await migrateSite({
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
+
+    // Assert
+    expect(siteResult.status).toBe("partial")
+    expect(siteResult.collections).toHaveLength(3)
+
+    const resultA = siteResult.collections.find(
+      (r) => r.collectionId === collectionA.id,
+    )
+    const resultB = siteResult.collections.find(
+      (r) => r.collectionId === collectionB.id,
+    )
+    const resultC = siteResult.collections.find(
+      (r) => r.collectionId === collectionC.id,
+    )
+
+    expect(resultA?.status).toBe("migrated")
+    expect(resultB?.status).toBe("failed")
+    expect(resultB?.error).toMatch(/publisherId is required/)
+    expect(resultC?.status).toBe("migrated")
+
+    const indexContentA = await getBlobContent(indexBlobA.id)
+    expect(indexContentA.page.tagCategories).toHaveLength(1)
+
+    const indexContentC = await getBlobContent(indexBlobC.id)
+    expect(indexContentC.page.tagCategories).toHaveLength(1)
   })
 })
 

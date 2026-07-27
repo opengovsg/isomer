@@ -46,6 +46,11 @@
  *   - SITE_IDS_EXCLUDE → removed from the resolved set (either way)
  * The resolved list is printed and must be confirmed before any writes.
  *
+ * Each collection runs in its own transaction. A per-collection failure (e.g.
+ * optimistic-concurrency abort when a Studio user is mid-edit) does not block
+ * other collections on the same site. A local log file records per-collection
+ * and per-site outcomes for manual retry.
+ *
  * Usage:
  *   cd apps/studio
  *   source .env && pnpm exec tsx prisma/scripts/migrateTagsToTagCategories.ts [--dry-run]
@@ -53,6 +58,7 @@
 import type { UnwrapTagged } from "type-fest"
 import { confirm, input } from "@inquirer/prompts"
 import { randomUUID } from "crypto"
+import path from "path"
 import { fileURLToPath } from "url"
 import { parseArgs } from "util"
 import {
@@ -63,6 +69,8 @@ import {
   sql,
   type Transaction,
 } from "~/server/modules/database"
+
+import { FileLogger } from "./FileLogger"
 
 // ---------------------------------------------------------------------------
 // Site selection — edit these before running
@@ -881,10 +889,18 @@ export const hasMatchingTagGroup = (
 
 export interface CollectionMigrationResult {
   collectionId: string
-  status: MigrationPlan["status"] | "no-index" | "already-migrated"
+  title?: string
+  status: MigrationPlan["status"] | "no-index" | "already-migrated" | "failed"
+  error?: string
   groups: { label: string; options: string[] }[]
   itemsUpdated: number
   versionsCreated: number
+}
+
+export interface SiteMigrationResult {
+  siteId: number
+  status: "succeeded" | "partial" | "failed" | "dry-run"
+  collections: CollectionMigrationResult[]
 }
 
 export const migrateCollection = async ({
@@ -1106,15 +1122,57 @@ export const migrateCollection = async ({
   }
 }
 
+type MigrationLogger = Pick<FileLogger, "info" | "error">
+
+const logLine = (
+  logger: MigrationLogger | undefined,
+  line: string,
+  level: "info" | "error" = "info",
+) => {
+  console.log(line)
+  if (level === "error") {
+    logger?.error(line)
+  } else {
+    logger?.info(line)
+  }
+}
+
+const summarizeSiteStatus = (
+  collections: CollectionMigrationResult[],
+  dryRun: boolean,
+): SiteMigrationResult["status"] => {
+  if (dryRun) return "dry-run"
+  const failures = collections.filter((c) => c.status === "failed")
+  if (failures.length === 0) return "succeeded"
+  const successes = collections.filter((c) => c.status !== "failed")
+  if (successes.length === 0) return "failed"
+  return "partial"
+}
+
+const formatSiteOutcome = (siteResult: SiteMigrationResult): string => {
+  const { siteId, status, collections } = siteResult
+  const migrated = collections.filter((c) => c.status === "migrated").length
+  const skipped = collections.filter(
+    (c) =>
+      c.status === "no-tags" ||
+      c.status === "no-index" ||
+      c.status === "already-migrated",
+  ).length
+  const failed = collections.filter((c) => c.status === "failed").length
+  return `[site ${siteId}] ${status}: ${migrated} migrated, ${skipped} skipped, ${failed} failed (${collections.length} total)`
+}
+
 export const migrateSite = async ({
   siteId,
   dryRun,
   publisherId,
+  logger,
 }: {
   siteId: number
   dryRun: boolean
   publisherId: string | null
-}): Promise<CollectionMigrationResult[]> => {
+  logger?: MigrationLogger
+}): Promise<SiteMigrationResult> => {
   const collections = await db
     .selectFrom("Resource")
     .where("type", "=", ResourceType.Collection)
@@ -1122,18 +1180,45 @@ export const migrateSite = async ({
     .select(["id", "title"])
     .execute()
 
+  logLine(
+    logger,
+    `[site ${siteId}] starting (${collections.length} collection(s)${dryRun ? ", dry-run" : ""})`,
+  )
+
   const results: CollectionMigrationResult[] = []
   for (const collection of collections) {
-    const result = await migrateCollection({
-      collectionId: collection.id,
-      siteId,
-      dryRun,
-      publisherId,
-    })
-    results.push(result)
-    console.log(formatResult(result, collection.title, dryRun))
+    try {
+      const result = await migrateCollection({
+        collectionId: collection.id,
+        siteId,
+        dryRun,
+        publisherId,
+      })
+      results.push({ ...result, title: collection.title })
+      logLine(logger, formatResult(result, collection.title, dryRun))
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      const failed: CollectionMigrationResult = {
+        collectionId: collection.id,
+        title: collection.title,
+        status: "failed",
+        error: message,
+        groups: [],
+        itemsUpdated: 0,
+        versionsCreated: 0,
+      }
+      results.push(failed)
+      logLine(logger, formatResult(failed, collection.title, dryRun), "error")
+    }
   }
-  return results
+
+  const siteResult: SiteMigrationResult = {
+    siteId,
+    status: summarizeSiteStatus(results, dryRun),
+    collections: results,
+  }
+  logLine(logger, formatSiteOutcome(siteResult))
+  return siteResult
 }
 
 const formatResult = (
@@ -1154,6 +1239,8 @@ const formatResult = (
       return `skipped ${prefix}: no Index page (or content) found`
     case "already-migrated":
       return `skipped ${prefix}: Index already has a matching tagCategories group`
+    case "failed":
+      return `FAILED ${prefix}: ${result.error ?? "unknown error"}`
     default:
       return `${prefix}: unknown status ${String(result.status satisfies never)}`
   }
@@ -1187,9 +1274,11 @@ export const main = async (
   {
     siteIdsInclude = SITE_IDS_INCLUDE,
     siteIdsExclude = SITE_IDS_EXCLUDE,
+    logger,
   }: {
     siteIdsInclude?: number[]
     siteIdsExclude?: number[]
+    logger?: MigrationLogger
   } = {},
 ) => {
   const { values } = parseArgs({
@@ -1240,29 +1329,57 @@ export const main = async (
     await verifyUser(publisherId)
   }
 
-  console.log(
+  const scriptDir = path.dirname(fileURLToPath(import.meta.url))
+  const logPath = path.join(
+    scriptDir,
+    `migrateTagsToTagCategories-${new Date().toISOString().replace(/[:.]/g, "-")}.log`,
+  )
+  const fileLogger = logger ?? new FileLogger(logPath)
+  if (!logger) {
+    console.log(`Logging to ${logPath}`)
+  }
+  fileLogger.info(selectionSummary)
+  fileLogger.info(
+    `${dryRun ? "[DRY RUN] " : ""}Starting migration for ${resolvedSiteIds.length} site(s)`,
+  )
+
+  logLine(
+    fileLogger,
     `\n${dryRun ? "[DRY RUN] " : ""}Migrating tags → tagCategories for ${resolvedSiteIds.length} site(s)…`,
   )
 
-  let succeeded = 0
-  const failedSiteIds: number[] = []
+  const siteResults: SiteMigrationResult[] = []
   for (const siteId of resolvedSiteIds) {
-    try {
-      const results = await migrateSite({ siteId, dryRun, publisherId })
-      console.log(`[site ${siteId}] ${results.length} collection(s) processed`)
-      succeeded++
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      console.error(`[site ${siteId}] FAILED: ${message}`)
-      failedSiteIds.push(siteId)
-    }
+    const result = await migrateSite({
+      siteId,
+      dryRun,
+      publisherId,
+      logger: fileLogger,
+    })
+    siteResults.push(result)
   }
 
-  console.log(
-    `\nDone. ${succeeded} site(s) succeeded, ${failedSiteIds.length} site(s) failed.`,
+  const succeeded = siteResults.filter((r) => r.status === "succeeded").length
+  const partial = siteResults.filter((r) => r.status === "partial").length
+  const failed = siteResults.filter((r) => r.status === "failed").length
+  const dryRunCount = siteResults.filter((r) => r.status === "dry-run").length
+
+  const summary = dryRun
+    ? `Done. Dry-run complete for ${dryRunCount} site(s).`
+    : `Done. ${succeeded} site(s) succeeded, ${partial} site(s) partial, ${failed} site(s) failed.`
+  logLine(fileLogger, `\n${summary}`)
+
+  const failedCollections = siteResults.flatMap((site) =>
+    site.collections
+      .filter((c) => c.status === "failed")
+      .map((c) => `${site.siteId}/${c.collectionId}`),
   )
-  if (failedSiteIds.length > 0) {
-    console.error(`Failed site IDs: ${failedSiteIds.join(", ")}`)
+  if (failedCollections.length > 0) {
+    logLine(
+      fileLogger,
+      `Failed collections (retry manually): ${failedCollections.join(", ")}`,
+      "error",
+    )
     process.exitCode = 1
   }
 }
