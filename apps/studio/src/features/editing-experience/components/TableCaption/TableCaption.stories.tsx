@@ -1,12 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import type { JSONContent } from "@tiptap/react"
 import { Box } from "@chakra-ui/react"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { expect, userEvent, waitFor, within } from "storybook/test"
 import { TiptapProseEditor } from "~/features/editing-experience/components/form-builder/renderers/TipTapEditor"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 
-import { TableCaption } from "./TableCaption"
 import { DEFAULT_TABLE_CAPTION } from "./utils"
 
 const tableContent = (caption: string) => ({
@@ -48,15 +47,11 @@ const TableCaptionHarness = ({
   const [content, setContent] = useState<JSONContent | undefined>(
     initialContent,
   )
-  const containerRef = useRef<HTMLDivElement>(null)
   const editor = useTextEditor({ data: content, handleChange: setContent })
 
   return (
     <Box p="3rem" maxW="48rem" mx="auto">
-      <Box ref={containerRef} position="relative">
-        <TableCaption editor={editor} containerRef={containerRef} />
-        <TiptapProseEditor editor={editor} />
-      </Box>
+      <TiptapProseEditor editor={editor} />
     </Box>
   )
 }
