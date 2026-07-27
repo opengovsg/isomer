@@ -11,6 +11,7 @@ import {
   CAPTION_TABLE_GAP_PX,
   captionRectsEqual,
   computeCaptionLayout,
+  getDisplayTableCaption,
   getTableInstances,
   isPlaceholderTableCaption,
   type CaptionLayoutRect,
@@ -39,27 +40,21 @@ interface SingleTableCaptionProps {
  */
 const SingleTableCaption = ({ caption, onEdit }: SingleTableCaptionProps) => {
   const hasCaption = !isPlaceholderTableCaption(caption)
+  const displayCaption = getDisplayTableCaption(caption)
   const label = hasCaption ? "Edit" : "Add caption"
 
   return (
-    <Flex
-      align="flex-start"
-      justify={hasCaption ? "space-between" : "flex-end"}
-      gap="0.5rem"
-      w="100%"
-    >
-      {hasCaption && (
-        <Text
-          flex="1"
-          minW={0}
-          textStyle="body-2"
-          color="base.content.strong"
-          whiteSpace="normal"
-          wordBreak="break-word"
-        >
-          {caption}
-        </Text>
-      )}
+    <Flex align="flex-start" justify="space-between" gap="0.5rem" w="100%">
+      <Text
+        flex="1"
+        minW={0}
+        textStyle="caption-2"
+        color={hasCaption ? "base.content.default" : "base.content.medium"}
+        whiteSpace="normal"
+        wordBreak="break-word"
+      >
+        {displayCaption}
+      </Text>
       <Button
         variant="clear"
         size="xs"

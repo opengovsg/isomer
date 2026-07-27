@@ -5,6 +5,7 @@ import {
   clampCaptionLength,
   computeCaptionLayout,
   DEFAULT_TABLE_CAPTION,
+  getDisplayTableCaption,
   isPlaceholderTableCaption,
   LEGACY_DEFAULT_TABLE_CAPTION,
   normalizeTableCaptionForEdit,
@@ -32,6 +33,24 @@ describe("normalizeTableCaptionForEdit", () => {
 
   it("returns the caption unchanged when it is real content", () => {
     expect(normalizeTableCaptionForEdit("Quarterly revenue")).toBe(
+      "Quarterly revenue",
+    )
+  })
+})
+
+describe("getDisplayTableCaption", () => {
+  it("returns placeholder defaults for unfilled captions", () => {
+    expect(getDisplayTableCaption("")).toBe(DEFAULT_TABLE_CAPTION)
+    expect(getDisplayTableCaption(DEFAULT_TABLE_CAPTION)).toBe(
+      DEFAULT_TABLE_CAPTION,
+    )
+    expect(getDisplayTableCaption(LEGACY_DEFAULT_TABLE_CAPTION)).toBe(
+      LEGACY_DEFAULT_TABLE_CAPTION,
+    )
+  })
+
+  it("returns the caption unchanged when it is real content", () => {
+    expect(getDisplayTableCaption("Quarterly revenue")).toBe(
       "Quarterly revenue",
     )
   })
