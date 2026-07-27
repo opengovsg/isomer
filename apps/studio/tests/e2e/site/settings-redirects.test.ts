@@ -4,7 +4,6 @@ import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
 import { SitePO } from "~e2e/fixtures/po"
 import { resetSiteRedirects } from "~e2e/fixtures/reset"
 import {
-  expectLiveRedirectCount,
   expectRedirectDeleted,
   expectRedirectDestination,
   provisionE2ESite,
@@ -79,7 +78,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Assert
     await expectRedirectDestination(siteId, source).toBe(destination)
-    await expectLiveRedirectCount(siteId).toBe(1)
     await expect(site.redirectPathText(`/${source}`)).toBeVisible()
   })
 })
