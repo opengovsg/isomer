@@ -37,6 +37,7 @@ export {
   NotificationSettingsSchema,
   type NotificationProps,
   type NotificationClientProps,
+  type SiteNotificationConfig,
 } from "./Notification"
 export type { SearchProps } from "./Search"
 export {
