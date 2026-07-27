@@ -4,7 +4,6 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 import { createBannerGbParameters } from "~/stories/utils/growthbook"
 import { ResourceState } from "~prisma/generated/generatedEnums"
@@ -62,7 +61,7 @@ export const EditFixedBlockState: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
-      name: /Collection settings/i,
+      name: /Collection display/i,
     })
     await userEvent.click(button)
   },
@@ -110,9 +109,6 @@ export const WithBanner: Story = {
 }
 
 export const NewCollectionIndexEditingExperienceAsAdmin: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await canvas.findByText(/Manage Collection/i)
@@ -122,7 +118,6 @@ export const NewCollectionIndexEditingExperienceAsAdmin: Story = {
 
 export const NewCollectionIndexEditingExperienceAsEditor: Story = {
   parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
       handlers: [resourceHandlers.getRolesFor.editor(), ...COMMON_HANDLERS],
     },
@@ -138,9 +133,6 @@ export const NewCollectionIndexEditingExperienceAsEditor: Story = {
 }
 
 export const NewCollectionIndexEditingExperienceForDisplay: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await canvas.findByText(/Manage Collection/i)
@@ -148,9 +140,6 @@ export const NewCollectionIndexEditingExperienceForDisplay: Story = {
 }
 
 export const NewCollectionIndexEditingExperienceForFilters: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {

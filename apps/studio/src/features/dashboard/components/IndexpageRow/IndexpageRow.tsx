@@ -11,7 +11,6 @@ import { useEffect } from "react"
 import { BiChevronRight } from "react-icons/bi"
 import { DraftIndicator } from "~/components/DraftIndicator"
 import { LiveStatusBadges } from "~/components/LiveStatusBadges"
-import { useNewCollectionTagsManagement } from "~/hooks/useNewCollectionTagsManagement"
 import { trpc } from "~/utils/trpc"
 
 import type { IndexpageRowProps } from "./types"
@@ -49,8 +48,6 @@ export const IndexpageRow = ({
     resourceId,
   ])
 
-  const isNewCollectionTagsManagementEnabled = useNewCollectionTagsManagement()
-
   return (
     <Skeleton w="full" isLoaded={!isPending && !!data}>
       <HStack
@@ -85,10 +82,7 @@ export const IndexpageRow = ({
           {/* as a relative time. */}
           {/* we also need to give the user who did the update */}
           <Text textStyle="caption-2" textColor="base.content.medium">
-            {getIndexPageSubtitle({
-              type,
-              isNewCollectionTagsManagementEnabled,
-            })}
+            {getIndexPageSubtitle({ type })}
           </Text>
         </VStack>
         <Text
