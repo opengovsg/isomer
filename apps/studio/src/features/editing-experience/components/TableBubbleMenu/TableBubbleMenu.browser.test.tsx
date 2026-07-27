@@ -3,10 +3,10 @@
 // the `*.browser.test.{ts,tsx}` convention in apps/studio/vitest.config.ts.
 import type { Editor, JSONContent } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
-import { act, render, waitFor } from "@testing-library/react"
+import { act, cleanup, render, waitFor } from "@testing-library/react"
 import { tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
 
@@ -134,6 +134,10 @@ const firstRowTexts = (editor: Editor): string[] => {
 }
 
 describe("TableBubbleMenu", () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   it("stacks the menu above the selected-cell highlight", async () => {
     const { editor, findByText, findByRole, container } = await renderHarness()
 
