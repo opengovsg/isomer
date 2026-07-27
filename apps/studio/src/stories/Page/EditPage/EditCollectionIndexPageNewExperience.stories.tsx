@@ -5,7 +5,6 @@ import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
-import { IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import EditPage from "~/pages/sites/[siteId]/pages/[pageId]"
 
 const COMMON_HANDLERS = [
@@ -55,12 +54,9 @@ const meta: Meta<typeof EditPage> = {
 export default meta
 type Story = StoryObj<typeof EditPage>
 
-const newCollectionFiltersParameters = {
-  growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-} satisfies Story["parameters"]
+const newCollectionFiltersParameters = {} satisfies Story["parameters"]
 
 const zeroTagOptionsUsageParameters = {
-  growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
   msw: {
     handlers: [
       ...COMMON_HANDLERS.slice(0, -1),
@@ -238,9 +234,7 @@ async function playOpenDeleteFilterModal(canvasElement: HTMLElement) {
 }
 
 export const ManageCollection: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-  },
+  parameters: {},
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await canvas.findByText(/Manage Collection/i)
@@ -254,7 +248,6 @@ export const ManageCollection: Story = {
 /** Editors can open Collection display but cannot manage Filters. */
 export const ManageCollectionAsEditor: Story = {
   parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
       handlers: [resourceHandlers.getRolesFor.editor(), ...COMMON_HANDLERS],
     },
@@ -272,9 +265,7 @@ export const ManageCollectionAsEditor: Story = {
 }
 
 export const CollectionDisplay: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-  },
+  parameters: {},
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = await canvas.findByRole("button", {
@@ -430,7 +421,6 @@ export const FiltersDeleteFilterModalZeroUsage: Story = {
 
 export const FiltersDeleteFilterModalManyOptions: Story = {
   parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
       handlers: [
         pageHandlers.readPageAndBlob.collectionWithManyFilterOptions(),
@@ -458,7 +448,6 @@ export const FiltersDeleteFilterModalManyOptions: Story = {
 
 export const CollectionDisplaySaveToast: Story = {
   parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
     msw: {
       handlers: COMMON_HANDLERS,
     },
@@ -485,9 +474,7 @@ export const CollectionDisplaySaveToast: Story = {
 }
 
 export const ManageFiltersSaveToast: Story = {
-  parameters: {
-    growthbook: [[IS_NEW_COLLECTION_TAGS_MANAGEMENT_ENABLED_FEATURE_KEY, true]],
-  },
+  parameters: {},
   play: async ({ canvasElement }) => {
     await playOpenManageFilters(canvasElement)
     const canvas = within(canvasElement)
