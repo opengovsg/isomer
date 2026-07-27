@@ -54,9 +54,8 @@ export interface TableBubbleMenuProps {
   editor: Editor
 }
 
-// A single selected cell that came from a previous merge (colspan/rowspan >
-// 1) is the only single-cell case that shows a bubble menu — "Split cell" is
-// its sole way back. Ordinary single cells stay menu-less.
+// Single-cell selections show Clear contents; merged single cells also offer
+// Split cell to undo the merge.
 //
 // NOTE: this can't be driven off `selectedRect`'s width/height — those are in
 // TableMap grid units, which count a colspan-2 cell as spanning 2 columns
@@ -469,13 +468,30 @@ const TableSelectionActions = ({
           onClick={() => editor.chain().focus().mergeCells().run()}
         />
       )
+    case "single-cell":
+      return (
+        <ActionGroup>
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={() => clearSelectedCells({ editor })}
+          />
+        </ActionGroup>
+      )
     case "merged-cell":
       return (
-        <ActionButton
-          label="Split cell"
-          icon={<IconSplitCell boxSize="1rem" />}
-          onClick={() => editor.chain().focus().splitCell().run()}
-        />
+        <ActionGroup>
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={() => clearSelectedCells({ editor })}
+          />
+          <ActionButton
+            label="Split cell"
+            icon={<IconSplitCell boxSize="1rem" />}
+            onClick={() => editor.chain().focus().splitCell().run()}
+          />
+        </ActionGroup>
       )
     default:
       return null
@@ -493,8 +509,8 @@ const TableSelectionActions = ({
 // function for the same reason: no per-render identity to keep stable. See
 // .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
 //
-// Only CellSelections that have table actions (row/column/table/merge/split)
-// show the menu. A plain text cursor inside a cell must not.
+// Only CellSelections that have table actions show the menu. A plain text
+// cursor inside a cell must not.
 // Require editor (or menu) focus — TipTap's default shouldShow does this.
 //
 // Also stay hidden while prosemirror-tables is mid cell-drag
@@ -516,7 +532,7 @@ const hasActionableTableSelection = (
   if (tableEditingKey.getState(view.state) != null) return false
 
   const kind = detectSelectionType(editor)
-  return kind !== "none" && kind !== "single-cell"
+  return kind !== "none"
 }
 
 const shouldShowTableBubbleMenu = ({
@@ -685,8 +701,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       previous.isDragging === next.isDragging,
   })
 
-  const showTrigger =
-    kind !== "none" && kind !== "single-cell" && !isDragging && isFocused
+  const showTrigger = kind !== "none" && !isDragging && isFocused
 
   const corner = useTableBubbleMenuTriggerCorner(editor, showTrigger)
 
