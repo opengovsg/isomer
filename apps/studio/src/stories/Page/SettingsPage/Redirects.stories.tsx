@@ -207,6 +207,34 @@ export const BulkUploadWithErrors: Story = {
   },
 }
 
+// Advanced flag on: wildcard source typed — shows the live preview help text.
+export const AdvancedWildcardPreview: Story = {
+  parameters: {
+    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
+    msw: {
+      handlers: [
+        redirectHandlers.list.default(),
+        redirectHandlers.count.default(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body)
+    const sourceInput = await screen.findByPlaceholderText(
+      "redirect-from or path/*",
+    )
+    await userEvent.type(sourceInput, "old-news/*")
+    await userEvent.type(
+      screen.getByPlaceholderText("/path-to-page or https://www.google.com"),
+      "/newsroom",
+    )
+    await expect(
+      await screen.findByText(/old-news\/example → \/newsroom\/example/),
+    ).toBeVisible()
+  },
+}
+
 // A redirect that loops back shows the error inline on the destination.
 export const RedirectLoopError: Story = {
   parameters: {

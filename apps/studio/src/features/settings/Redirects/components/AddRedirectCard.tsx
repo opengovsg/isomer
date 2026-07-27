@@ -14,6 +14,7 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   Link,
   useToast,
@@ -27,11 +28,33 @@ import {
 } from "~/constants/toast"
 import { useIsAdvancedRedirectsEnabled } from "~/hooks/useIsAdvancedRedirectsEnabled"
 import { useZodForm } from "~/lib/form"
+import { normalizeRedirectSource, redirectKind } from "~/schemas/redirect"
 
 import { useCreateRedirect } from "../api"
 import { addRedirectSchema, type AddRedirectInput } from "../types"
 import { BulkUploadRedirectsModal } from "./BulkUploadRedirectsModal"
 import { SelectDestinationPageModal } from "./SelectDestinationPageModal"
+
+const safeNormalize = (raw: string): string | null => {
+  try {
+    return normalizeRedirectSource(raw)
+  } catch {
+    return null
+  }
+}
+
+// Renders how a wildcard carries the matched remainder onto the destination,
+// e.g. "/old/*" + "/dest" -> "/old/example → /dest/example".
+const buildWildcardPreview = (
+  normalizedSource: string,
+  destination: string,
+): string => {
+  const prefix = normalizedSource.slice(0, -2) // strip trailing "/*"
+  const base = destination.endsWith("/")
+    ? destination.slice(0, -1)
+    : destination
+  return `${prefix}/example → ${base}/example`
+}
 
 interface AddRedirectCardProps {
   siteId: number
@@ -69,6 +92,18 @@ export const AddRedirectCard = ({
 
   const [source, destination] = watch(["source", "destination"])
   const isAddDisabled = !source?.trim() || !destination?.trim()
+
+  const normalizedSource = source?.trim() ? safeNormalize(source) : null
+  const kind = normalizedSource ? redirectKind(normalizedSource) : "exact"
+
+  // Live preview: /old/* + /dest → /old/example → /dest/example
+  const wildcardPreview =
+    isAdvancedRedirectsEnabled &&
+    kind === "wildcard" &&
+    normalizedSource &&
+    destination
+      ? buildWildcardPreview(normalizedSource, destination)
+      : null
 
   // The "Redirect to a page on your site..." dropdown only surfaces while the
   // destination field is focused (per the design).
@@ -190,13 +225,24 @@ export const AddRedirectCard = ({
               /
             </InputLeftAddon>
             <Input
-              placeholder="redirect-from"
+              placeholder={
+                isAdvancedRedirectsEnabled
+                  ? "redirect-from or path/*"
+                  : "redirect-from"
+              }
               {...register("source", {
                 onChange: clearFieldFeedback("source"),
               })}
             />
           </InputGroup>
           <FormErrorMessage>{errors.source?.message}</FormErrorMessage>
+          {isAdvancedRedirectsEnabled && !errors.source && (
+            <FormHelperText fontSize="xs" color="base.content.medium">
+              {wildcardPreview
+                ? `e.g. ${wildcardPreview}`
+                : "Add /* at the end to redirect a whole section (e.g. /old-news/*)."}
+            </FormHelperText>
+          )}
         </FormControl>
 
         <Box flexShrink={0}>
