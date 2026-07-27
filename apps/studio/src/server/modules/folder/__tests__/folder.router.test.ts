@@ -918,6 +918,48 @@ describe("folder.router", async () => {
           .execute()
         expect(redirects).toHaveLength(0)
       })
+
+      it("allows moving a folder back to its old path, reclaiming its own wildcard", async () => {
+        // Arrange — first move /old-folder -> /new-folder creates the wildcard
+        // /old-folder/* -> folder.
+        enableAdvancedRedirects()
+        const { site, folder } = await setupFolderWithPublishedChild()
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+        const folderRef = getReferenceLink({
+          siteId: String(site.id),
+          resourceId: folder.id,
+        })
+
+        // Act — roll back /new-folder -> /old-folder. The folder's own
+        // /old-folder/* wildcard from the first move must be reclaimed, not
+        // treated as a descendant shadow that blocks the move.
+        const result = caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "old folder",
+          permalink: "old-folder",
+        })
+
+        // Assert — the rollback succeeds and the folder is back at /old-folder.
+        await expect(result).resolves.toMatchObject({ permalink: "old-folder" })
+
+        // The old-folder wildcard is reclaimed (no live redirect at /old-folder/*),
+        // and a fresh /new-folder/* wildcard preserves the vacated path.
+        const live = await db
+          .selectFrom("Redirect")
+          .select(["source", "destination"])
+          .where("siteId", "=", site.id)
+          .where("deletedAt", "is", null)
+          .execute()
+        expect(live).toEqual([
+          { source: "/new-folder/*", destination: folderRef },
+        ])
+      })
     })
   })
 

@@ -1619,30 +1619,19 @@ const assertDescendantsNotShadowed = async (
   }
 }
 
-// When a permalink change lands a page on a path whose redirect points back at
-// that same page (a self-shadow/loop), soft-delete it — the page reclaims its
-// URL. Scoped to redirects referencing THIS page; one pointing elsewhere is
-// blocked by assertPermalinkNotShadowed instead.
-export const clearReclaimedRedirect = async (
+// Soft-deletes the live redirect at `source` whose destination is `reference`
+// (the resource reclaiming its own URL), audits the delete, and returns the
+// updated row — or null when there is nothing to reclaim. Shared by the exact
+// (page) and wildcard (folder) reclaim paths so both delete + audit identically.
+const softDeleteReclaimedRedirect = async (
   tx: Transaction<DB>,
   {
     siteId,
-    newFullPermalink,
-    resourceId,
+    source,
+    reference,
     byUserId,
-  }: {
-    siteId: number
-    newFullPermalink: string
-    resourceId: string
-    byUserId: string
-  },
+  }: { siteId: number; source: string; reference: string; byUserId: string },
 ) => {
-  const source = normalizeRedirectSource(newFullPermalink)
-  const reference = getReferenceLink({
-    siteId: String(siteId),
-    resourceId: String(resourceId),
-  })
-
   const reclaimed = await tx
     .selectFrom("Redirect")
     .selectAll()
@@ -1670,6 +1659,65 @@ export const clearReclaimedRedirect = async (
   })
   return after
 }
+
+// When a permalink change lands a page on a path whose redirect points back at
+// that same page (a self-shadow/loop), soft-delete it — the page reclaims its
+// URL. Scoped to redirects referencing THIS page; one pointing elsewhere is
+// blocked by assertPermalinkNotShadowed instead.
+export const clearReclaimedRedirect = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    newFullPermalink,
+    resourceId,
+    byUserId,
+  }: {
+    siteId: number
+    newFullPermalink: string
+    resourceId: string
+    byUserId: string
+  },
+) =>
+  softDeleteReclaimedRedirect(tx, {
+    siteId,
+    source: normalizeRedirectSource(newFullPermalink),
+    reference: getReferenceLink({
+      siteId: String(siteId),
+      resourceId: String(resourceId),
+    }),
+    byUserId,
+  })
+
+// Folder analogue of clearReclaimedRedirect. A folder move that lands back on a
+// path this same folder previously vacated finds its own "/new/*" -> folder
+// wildcard (minted by the earlier move) still live. That is a reclaim — the
+// subtree serves directly again — not a shadow, so soft-delete it. Must run
+// BEFORE assertDescendantsNotShadowed, otherwise the descendant guard sees the
+// wildcard (whose destination is the folder, not the descendant) and wrongly
+// blocks the move.
+const clearReclaimedFolderWildcard = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    newFullPermalink,
+    resourceId,
+    byUserId,
+  }: {
+    siteId: number
+    newFullPermalink: string
+    resourceId: string
+    byUserId: string
+  },
+) =>
+  softDeleteReclaimedRedirect(tx, {
+    siteId,
+    source: normalizeRedirectSource(`${newFullPermalink}/*`),
+    reference: getReferenceLink({
+      siteId: String(siteId),
+      resourceId: String(resourceId),
+    }),
+    byUserId,
+  })
 
 // Single entry point both permalink-change flows (move and rename) call to keep
 // redirects consistent. Owns the ordering the flows depend on so they can't
@@ -1766,6 +1814,16 @@ export const applyFolderPermalinkChangeRedirects = async (
   // is not enough — each published descendant's NEW URL must also be clear of an
   // existing redirect, or the relocated page would be shadowed away.
   if (hasLiveContent) {
+    // Reclaim this folder's own "/new/*" wildcard first (left by an earlier move
+    // that vacated this path), so a move back onto it clears the redirect
+    // instead of tripping the descendant guard below on the folder's own
+    // wildcard.
+    await clearReclaimedFolderWildcard(tx, {
+      siteId,
+      newFullPermalink,
+      resourceId,
+      byUserId,
+    })
     await assertPermalinkNotShadowed(tx, {
       siteId,
       newFullPermalink,
