@@ -80,7 +80,9 @@ export class GodmodePO {
   }
 
   async clickPublishForSite(siteId: number) {
-    await this.publishButtonForSite(siteId).click()
+    // force: true — clearSiteCodeBuildId can trigger a refetch that hides
+    // the button before the click lands; the row was already validated.
+    await this.publishButtonForSite(siteId).click({ force: true })
   }
 
   private publishButtonForSite(siteId: number) {
@@ -105,7 +107,9 @@ export class GodmodePO {
   }
 
   async fillVendorEmails(emails: string[]) {
-    await this.page.locator("textarea").nth(1).fill(emails.join("\n"))
+    await this.page
+      .locator('h1:has-text("Vendors (90 day expiry)") + textarea')
+      .fill(emails.join("\n"))
   }
 
   async clickWhitelistSubmit() {
