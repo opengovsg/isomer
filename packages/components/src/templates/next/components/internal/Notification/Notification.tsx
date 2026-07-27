@@ -1,5 +1,7 @@
-import type { ReactNode } from "react"
-import type { NotificationProps } from "~/interfaces/internal/Notification"
+import type {
+  NotificationProps,
+  NotificationTitleContentConfig,
+} from "~/interfaces/internal/Notification"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
 import { Prose } from "../../native/Prose"
@@ -8,37 +10,31 @@ import { BaseParagraph } from "../BaseParagraph"
 import { antiScamSiteNotification } from "./antiScamSiteNotification"
 import { NotificationClient } from "./NotificationClient"
 
-export const Notification = (props: NotificationProps) => {
-  const { type, LinkComponent, site } = props
-
-  let title: string
-  let body: ReactNode
-
+export const Notification = ({ type, site, ...props }: NotificationProps) => {
   if (type === "antiscam") {
-    title = antiScamSiteNotification.title
-    body = (
-      <BaseParagraph
-        content={getTextAsHtml({
-          site,
-          content: antiScamSiteNotification.content,
-        })}
-        className="prose-body-base"
-      />
-    )
-  } else {
-    const { content } = props
-    title = props.title
-    body =
-      content instanceof Array ? (
+    return (
+      <NotificationClient title={antiScamSiteNotification.title}>
         <BaseParagraph
-          content={getTextAsHtml({ site, content })}
+          content={getTextAsHtml({
+            site,
+            content: antiScamSiteNotification.content,
+          })}
           className="prose-body-base"
         />
-      ) : (
-        !!content &&
-        hasContent(content.content) && <Prose {...content} site={site} />
-      )
+      </NotificationClient>
+    )
   }
 
+  const { title, content } = props as NotificationTitleContentConfig
+  const body =
+    content instanceof Array ? (
+      <BaseParagraph
+        content={getTextAsHtml({ site, content })}
+        className="prose-body-base"
+      />
+    ) : (
+      !!content &&
+      hasContent(content.content) && <Prose {...content} site={site} />
+    )
   return <NotificationClient title={title}>{body}</NotificationClient>
 }
