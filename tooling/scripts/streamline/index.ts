@@ -6,6 +6,7 @@ import { siteLaunchFirstWindow } from "./apps/launch-first";
 import { siteLaunchSecondWindow } from "./apps/launch-second";
 import { migrateClassicToNext } from "./apps/classic-migration";
 import { graftFolderIntoSite } from "./apps/graft-folder";
+import { migrateIndividualPages } from "./apps/page-migration";
 
 const main = async () => {
   const script = await select<StreamlineScriptType>({
@@ -45,6 +46,12 @@ const main = async () => {
           "Insert a folder of Studio-format JSON under an existing Folder/Collection.",
         value: "graft-folder-into-site",
       },
+      {
+        name: "Script 7: Convert individual Classic pages",
+        description:
+          "Convert specific Classic pages to Studio format and collect the assets they use.",
+        value: "convert-classic-pages",
+      },
     ],
   });
 
@@ -66,6 +73,9 @@ const main = async () => {
       break;
     case "graft-folder-into-site":
       await graftFolderIntoSite();
+      break;
+    case "convert-classic-pages":
+      await migrateIndividualPages();
       break;
     default:
       const _: never = script;

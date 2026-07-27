@@ -154,6 +154,25 @@ export const prepareSite = async (
     site: siteName,
     useStagingBranch,
   });
+
+  // Check if the site already exists (identified by codeBuildId)
+  const existingSite = await client.query(
+    `SELECT id FROM public."Site" WHERE "codeBuildId" = $1`,
+    [siteName],
+  );
+
+  if (existingSite.rows.length > 0) {
+    // Site already exists: reuse it and clear out its existing resources
+    const siteId = existingSite.rows[0].id as number;
+    console.log(
+      `Site ${siteName} already exists with ID ${siteId}, deleting all its resources`,
+    );
+    await client.query(`DELETE FROM public."Resource" WHERE "siteId" = $1`, [
+      siteId,
+    ]);
+    return siteId;
+  }
+
   const result = await client.query(
     `INSERT INTO public."Site" (name, "codeBuildId", config, theme) VALUES ($1, $2, $3, $4) RETURNING id`,
     [siteHumanReadableName, siteName, {}, {}],
@@ -445,7 +464,7 @@ async function importNavbar(client: Client, siteId: number, siteName: string) {
   const navbar = fs.readFileSync(navbarPath, "utf-8");
 
   await client.query(
-    `INSERT INTO public."Navbar" ("siteId", content) VALUES ($1, $2)`,
+    `INSERT INTO public."Navbar" ("siteId", content) VALUES ($1, $2) ON CONFLICT ("siteId") DO UPDATE SET content = EXCLUDED.content`,
     [siteId, navbar],
   );
 }
@@ -463,7 +482,7 @@ async function importFooter(client: Client, siteId: number, siteName: string) {
   const footer = fs.readFileSync(footerPath, "utf-8");
 
   await client.query(
-    `INSERT INTO public."Footer" ("siteId", content) VALUES ($1, $2)`,
+    `INSERT INTO public."Footer" ("siteId", content) VALUES ($1, $2) ON CONFLICT ("siteId") DO UPDATE SET content = EXCLUDED.content`,
     [siteId, footer],
   );
 }
@@ -702,7 +721,7 @@ async function updateSiteConfig(
   }
 }
 
-function studioifyContent(
+export function studioifyContent(
   content: string,
   siteId: number,
   assetsMap: Record<string, string>,

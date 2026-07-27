@@ -36,3 +36,26 @@ Once everything is set up, verify that you are able to connect to the bastion ho
 2. In one terminal instance, run `npm run jump:prod` to create an SSH tunnel to the production RDS database using the bastion host. If successful, you should be able to see a shell session started on the bastion host.
 3. Add the repos that you wish to migrate inside `config.ts`, following the requirements of the `MigrationRequest` type. The documentation of each property is provided in the `types.ts` file.
 4. In a new terminal instance, run `npm run start`.
+
+### Converting individual pages only
+
+The full-site migration above converts an entire site. When you only need to convert **specific pages** (for example, a handful of pages a site owner wants moved into an existing Studio site), use **Script 7: Convert individual Classic pages** in the streamline menu (`../../page-migration.ts`).
+
+Unlike the full-site flow, it does not write into Studio. It converts only the pages you list, downloads only the assets those pages actually reference, and writes everything to a conversion output folder for you to paste into Studio and upload to S3 manually.
+
+Prerequisites are the same as the full-site flow (OGP VPN + `npm run jump:prod` tunnel for the resource-map query, and the usual `.env`). Run the streamline menu (`npm run streamline` from `tooling/scripts`) and select Script 7. You will be prompted for:
+
+- **Classic GitHub repo name** (under `isomerpages`, e.g. `moe-peircesec`)
+- **Studio site ID** — used both for the `/<site-id>/<uuid>/<filename>` asset structure and to look up the site's existing resources for internal-link resolution
+- **Branch** (`master` or `staging`)
+- **Target domain** (e.g. `www.example.gov.sg`), used for link cleanup and as the asset download fallback
+- **Markdown paths** — repo-relative paths (comma / space / newline separated), e.g. `_about/history.md pages/contact-us.md`
+
+Output is written to `page-conversion-output/<repo>/`:
+
+- `pages/<permalink>.json` — the studiofied pages, ready to paste into Studio
+- `assets/<site-id>/<uuid>/<filename>` — upload the **contents of `assets/`** to S3, preserving the folder structure
+- `asset-mappings-<repo>.csv` — original → new asset paths (with a `BROKEN` marker for any that could not be downloaded)
+- `migrated-pages-<repo>.csv` — per-page status, review items, broken-asset notes, and any internal links that had no matching Studio page
+
+Pages under a Jekyll `_posts/` folder are converted as resource-room articles; all other pages are converted as content pages. Internal links are rewritten to `[resource:<siteId>:<resourceId>]` only for pages that already exist in the target Studio site; unresolved links are left as-is and listed in the report.

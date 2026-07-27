@@ -4,7 +4,8 @@ export type StreamlineScriptType =
   | "verify-dns-records"
   | "site-launch-1st-window"
   | "site-launch-2nd-window"
-  | "graft-folder-into-site";
+  | "graft-folder-into-site"
+  | "convert-classic-pages";
 
 // Represents a single site as part of the onboarding batch
 export interface OnboardingSite {
