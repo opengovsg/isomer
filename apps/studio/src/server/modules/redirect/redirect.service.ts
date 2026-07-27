@@ -47,6 +47,7 @@ import { AuditLogEvent, db } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
   getDescendantResourceIds,
+  getPublishedDescendantResourceIds,
   getResourceByFullPermalink,
   getResourceFullPermalinks,
   getResourceIdByPermalink,
@@ -1582,6 +1583,42 @@ export const assertPermalinkNotShadowed = async (
   }
 }
 
+// Folder analogue of the root guard above: a move/rename relocates every
+// descendant, so each published descendant's NEW full permalink must also be
+// clear of an existing redirect. Runs AFTER Resource.permalink is updated in the
+// same transaction, so reading the descendants' permalinks through `tx` yields
+// their new paths. Each is checked with its own resourceId excluded, so a
+// redirect pointing back at that same descendant (a reclaim) doesn't count as a
+// shadow — matching assertPermalinkNotShadowed's per-resource semantics.
+const assertDescendantsNotShadowed = async (
+  tx: Transaction<DB>,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+) => {
+  const descendantIds = await getPublishedDescendantResourceIds(tx, {
+    siteId,
+    resourceId,
+  })
+  if (descendantIds.length === 0) {
+    return
+  }
+  const permalinks = await getResourceFullPermalinks(
+    siteId,
+    descendantIds.map(Number),
+    tx,
+  )
+  for (const descendantId of descendantIds) {
+    const newFullPermalink = permalinks.get(Number(descendantId))
+    if (newFullPermalink === undefined) {
+      continue
+    }
+    await assertPermalinkNotShadowed(tx, {
+      siteId,
+      newFullPermalink,
+      resourceId: descendantId,
+    })
+  }
+}
+
 // When a permalink change lands a page on a path whose redirect points back at
 // that same page (a self-shadow/loop), soft-delete it — the page reclaims its
 // URL. Scoped to redirects referencing THIS page; one pointing elsewhere is
@@ -1725,12 +1762,16 @@ export const applyFolderPermalinkChangeRedirects = async (
   }
   // Mirror the page guard: a live folder must not land on a path a redirect
   // already covers (exact or wildcard). Throwing rolls back the enclosing move.
+  // A folder move relocates every descendant too, so the root permalink alone
+  // is not enough — each published descendant's NEW URL must also be clear of an
+  // existing redirect, or the relocated page would be shadowed away.
   if (hasLiveContent) {
     await assertPermalinkNotShadowed(tx, {
       siteId,
       newFullPermalink,
       resourceId,
     })
+    await assertDescendantsNotShadowed(tx, { siteId, resourceId })
   }
   await clearReclaimedRedirect(tx, {
     siteId,
@@ -1810,6 +1851,12 @@ export const deleteRedirect = async ({
 // `destinationResourceId` is the referenced resource (null for literal/external
 // destinations) so the caller can tell whether the redirect points back at the
 // page being edited (which would be reclaimed on save, not a real warning).
+//
+// NOTE: despite the name, this returns the highest-precedence redirect that
+// would INTERCEPT `source` (via findShadowingRedirect) — an exact-source match
+// OR the deepest matching ancestor wildcard ("/news/*" for "/news/2024") — not
+// strictly a redirect whose stored source equals `source`. Callers must not
+// assume exact-match semantics.
 export const getRedirectBySource = async ({
   siteId,
   source,
