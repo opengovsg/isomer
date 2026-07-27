@@ -92,6 +92,8 @@ describe("TableCaption", () => {
   it("renders an Add caption button when the table has no caption", async () => {
     renderHarness({ type: "prose", content: [tableContent("")] })
 
+    const captionText = await screen.findByText(DEFAULT_TABLE_CAPTION)
+    expect(captionText).toBeInTheDocument()
     expect(await getCaptionButton("Add table caption")).toHaveTextContent(
       "Add caption",
     )
@@ -110,6 +112,9 @@ describe("TableCaption", () => {
       ],
     })
 
+    expect(screen.getByText(LEGACY_DEFAULT_TABLE_CAPTION)).toBeInTheDocument()
+    expect(screen.getByText(DEFAULT_TABLE_CAPTION)).toBeInTheDocument()
+
     const buttons = await screen.findAllByRole("button", {
       name: "Add table caption",
     })
@@ -125,7 +130,8 @@ describe("TableCaption", () => {
       content: [tableContent("Existing caption")],
     })
 
-    expect(screen.getByText("Existing caption")).toBeInTheDocument()
+    const captionText = screen.getByText("Existing caption")
+    expect(captionText).toBeInTheDocument()
     expect(await getCaptionButton("Edit table caption")).toHaveTextContent(
       "Edit",
     )

@@ -22,6 +22,14 @@ export const isPlaceholderTableCaption = (caption: string): boolean => {
 export const normalizeTableCaptionForEdit = (caption: string): string =>
   isPlaceholderTableCaption(caption) ? "" : caption
 
+/** Caption text shown inline in the editor for placeholder and real values. */
+export const getDisplayTableCaption = (caption: string): string => {
+  if (!isPlaceholderTableCaption(caption)) return caption
+
+  const trimmed = caption.trim()
+  return trimmed === "" ? DEFAULT_TABLE_CAPTION : trimmed
+}
+
 export interface TableInstance {
   /** ProseMirror document position of the `table` node. */
   pos: number
