@@ -44,15 +44,16 @@ const safeNormalize = (raw: string): string | null => {
 }
 
 // Renders how a wildcard carries the matched remainder onto the destination,
-// e.g. "/old/*" + "/dest" -> "/old/example → /dest/example".
+// e.g. "/old/*" + "/dest" -> "/old/example → /dest/example". The destination is
+// trimmed first so the preview matches the value the schema submits (it trims),
+// rather than reflecting stray leading/trailing whitespace as the user types.
 const buildWildcardPreview = (
   normalizedSource: string,
   destination: string,
 ): string => {
   const prefix = normalizedSource.slice(0, -2) // strip trailing "/*"
-  const base = destination.endsWith("/")
-    ? destination.slice(0, -1)
-    : destination
+  const trimmed = destination.trim()
+  const base = trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed
   return `${prefix}/example → ${base}/example`
 }
 
