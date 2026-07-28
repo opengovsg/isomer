@@ -2,6 +2,7 @@ import type { RawBuilder } from "kysely"
 import type { IsoMonth } from "~/schemas/audit"
 import { addDays, addMonths, format, startOfMonth } from "date-fns"
 import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz"
+import { Transform } from "node:stream"
 import Papa from "papaparse"
 
 import type { AccessReportRow, AuditReportQueryParams } from "./audit.types"
@@ -138,10 +139,10 @@ export const getExportRange = (
  * Internal Isomer admins (rows in the `IsomerAdmin` table) are excluded,
  * matching the script (PR #2612).
  */
-export const getAccessReportRows = async ({
+export const accessReportQuery = ({
   siteId,
   auditLogDateRange,
-}: AuditReportQueryParams): Promise<AccessReportRow[]> => {
+}: AuditReportQueryParams) => {
   const { rangeEnd } = getExportRange(auditLogDateRange)
 
   return (
@@ -172,8 +173,18 @@ export const getAccessReportRows = async ({
           eb("rp.deletedAt", ">=", rangeEnd),
         ]),
       )
-      .execute()
   )
+}
+
+// Buffered convenience over `accessReportQuery` — materialises every row into
+// an array. The fulfilment path streams the builder instead (see
+// `processAuditLogExportRequest`); this wrapper is the shape the query tests
+// assert against, and keeps `AccessReportRow` inferred from a single source.
+export const getAccessReportRows = async ({
+  siteId,
+  auditLogDateRange,
+}: AuditReportQueryParams): Promise<AccessReportRow[]> => {
+  return accessReportQuery({ siteId, auditLogDateRange }).execute()
 }
 
 // NOTE: Only use these in the context of `getActivityReportRows`; they are
@@ -236,7 +247,7 @@ const AUDIT_LOGS_EVENTS_QUERIES: Record<
  * calendar-date bounds are converted to SGT-midnight instants via
  * `getExportRange`.
  */
-export const getActivityReportRows = async ({
+export const activityReportQuery = ({
   siteId,
   auditLogDateRange,
 }: AuditReportQueryParams) => {
@@ -415,7 +426,16 @@ export const getActivityReportRows = async ({
     .where("al.createdAt", ">=", rangeStart)
     .where("al.createdAt", "<", rangeEnd)
     .orderBy("al.createdAt", "asc")
-    .execute()
+}
+
+// Buffered convenience over `activityReportQuery` (mirrors
+// `getAccessReportRows`): the fulfilment path streams the builder, while the
+// query tests assert against this materialised array.
+export const getActivityReportRows = async ({
+  siteId,
+  auditLogDateRange,
+}: AuditReportQueryParams) => {
+  return activityReportQuery({ siteId, auditLogDateRange }).execute()
 }
 
 // Inferred from the query so the row shape (including the quoted-key columns
@@ -450,11 +470,61 @@ export const getStringifiedValue = (value: unknown): string => {
   return JSON.stringify(value)
 }
 
+// Papa emits CRLF between records and no trailing newline; a single record
+// carries no line ending. We serialise ONE line at a time (header or data row)
+// and join them ourselves so the buffered `toCsv` and the streaming
+// `createCsvTransform` below share identical field-quoting/escaping.
+const CSV_LINE_SEPARATOR = "\r\n"
+
+const toCsvLine = (fields: string[]): string =>
+  Papa.unparse([fields], { header: false })
+
+// Header labels are the row keys with quotes stripped (string-alias columns
+// like `"Event type"` keep their quotes in the runtime key; method-aliased
+// columns like `Description` do not).
+const csvHeaderFields = (row: Record<string, unknown>): string[] =>
+  Object.keys(row).map((key) => key.replaceAll('"', ""))
+
+// Values in insertion (select-list) order, each stringified consistently.
+const csvDataFields = (row: Record<string, unknown>): string[] =>
+  Object.values(row).map((value) => getStringifiedValue(value))
+
+// Buffered serializer. Header derived from the first row's keys; empty string
+// for zero rows (an empty export is an empty file). This is the format
+// specification the streaming transform reuses via the shared helpers above,
+// so its unit test also pins the streamed output byte-for-byte.
 export const toCsv = (rows: Record<string, unknown>[]): string => {
-  return Papa.unparse({
-    fields: Object.keys(rows[0] ?? {}).map((key) => key.replaceAll('"', "")),
-    data: rows.map((row) =>
-      Object.values(row).map((value) => getStringifiedValue(value)),
-    ),
+  const first = rows[0]
+  if (first === undefined) {
+    return ""
+  }
+  const lines = [
+    toCsvLine(csvHeaderFields(first)),
+    ...rows.map((row) => toCsvLine(csvDataFields(row))),
+  ]
+  return lines.join(CSV_LINE_SEPARATOR)
+}
+
+// Streaming counterpart of `toCsv`: consumes report rows in object mode and
+// emits CSV text, so a large export is never fully materialised in memory.
+// Output is byte-for-byte identical to `toCsv` over the same rows — header
+// from the first row's keys, CRLF-separated, no trailing newline, and no
+// output at all for an empty stream.
+export const createCsvTransform = (): Transform => {
+  let headerWritten = false
+  return new Transform({
+    writableObjectMode: true,
+    transform(row: Record<string, unknown>, _encoding, callback) {
+      try {
+        if (!headerWritten) {
+          this.push(toCsvLine(csvHeaderFields(row)))
+          headerWritten = true
+        }
+        this.push(CSV_LINE_SEPARATOR + toCsvLine(csvDataFields(row)))
+        callback()
+      } catch (error) {
+        callback(error as Error)
+      }
+    },
   })
 }

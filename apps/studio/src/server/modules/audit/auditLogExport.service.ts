@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { addDays, format, parseISO } from "date-fns"
 import { sql } from "kysely"
+import { Readable } from "node:stream"
 import { env } from "~/env.mjs"
 import {
   sendAuditLogExportFailedEmail,
@@ -25,12 +26,12 @@ import type { BaseLogger } from "@isomer/logging"
 import { AuditLogExportReportType, db } from "../database"
 import { logAuditLogExportEvent } from "./audit.service"
 import {
-  getAccessReportRows,
-  getActivityReportRows,
+  accessReportQuery,
+  activityReportQuery,
+  createCsvTransform,
   getExportRange,
   getMonthDateRange,
   parseAuditLogDateRange,
-  toCsv,
 } from "./auditLogExport.query"
 import { sealAuditLogExportToken } from "./auditLogExportToken"
 
@@ -223,6 +224,11 @@ const MAX_ATTEMPTS = 3
 // Number of Pending requests claimed per cron sweep. Keeps each minute's run
 // bounded so one large backlog cannot monopolise the worker.
 const BATCH_SIZE = 20
+
+// Rows are pulled from Postgres in cursor batches of this size (via Kysely's
+// `.stream()`) and piped straight through CSV serialisation into the S3
+// multipart upload, so a large export never fully materialises in memory.
+const STREAM_CHUNK_SIZE = 500
 
 // A row is moved to `Processing` the moment a sweep claims it, and only moved
 // back to `Pending` by the in-process `catch`. If the worker is killed or
@@ -429,32 +435,47 @@ export const processAuditLogExportRequest = async (
       }
     }
 
-    // Step 4: no reusable artifact — run the row's single report query,
-    // serialise to CSV (always — header-only CSV for zero rows), and upload.
-    // `Both` requests were fanned out into two rows at request time, so one
-    // row is always exactly one report.
+    // Step 4: no reusable artifact — run the row's single report query and
+    // stream it straight to S3: Postgres cursor → CSV transform → multipart
+    // upload, so a large export never buffers fully in memory. An empty result
+    // yields an empty object (matching the former buffered behaviour). `Both`
+    // requests were fanned out into two rows at request time, so one row is
+    // always exactly one report.
     if (objectKey === null) {
-      // The CSV's contents are frozen the moment the report query runs, so
-      // the completeness instant is captured HERE — before querying — not
-      // when the job finishes. This is what makes the reuse predicate above
-      // sound.
+      // The CSV's contents are frozen the moment the report query's cursor
+      // starts reading, so the completeness instant is captured HERE —
+      // before the stream is built or consumed — not when the job finishes.
+      // This is what makes the reuse predicate above sound.
       queriedAt = new Date()
-      const rows =
+      const queryParams = {
+        siteId: request.siteId,
+        auditLogDateRange: request.auditLogDateRange,
+      }
+      const rowStream = Readable.from(
         report.kind === "Access"
-          ? await getAccessReportRows({
-              siteId: request.siteId,
-              auditLogDateRange: request.auditLogDateRange,
-            })
-          : await getActivityReportRows({
-              siteId: request.siteId,
-              auditLogDateRange: request.auditLogDateRange,
-            })
+          ? accessReportQuery(queryParams).stream(STREAM_CHUNK_SIZE)
+          : activityReportQuery(queryParams).stream(STREAM_CHUNK_SIZE),
+      )
+      const csvStream = createCsvTransform()
+      // `.pipe` does not forward source errors, so a failing query/cursor would
+      // otherwise leave `csvStream` open and hang the upload. Destroying it with
+      // the error surfaces on the upload, which rejects into this attempt's
+      // catch for a retry.
+      rowStream.on("error", (error) => csvStream.destroy(error))
+      rowStream.pipe(csvStream)
 
-      const csv = toCsv(rows)
       const rangeSlug = getRangeSlug(request.auditLogDateRange)
       objectKey = `audit-log-exports/${request.siteId}/${requestId}/${report.kind.toLowerCase()}-${rangeSlug}.csv`
 
-      await uploadAuditLogExport({ key: objectKey, body: csv })
+      try {
+        await uploadAuditLogExport({ key: objectKey, body: csvStream })
+      } finally {
+        // Tear the cursor down even if the upload consumer bailed early (or
+        // never read the stream), so a failed/short-circuited upload never
+        // leaks the underlying DB connection. A no-op once the stream has
+        // already ended on the success path.
+        rowStream.destroy()
+      }
     }
 
     // Both paths converge here. We do NOT presign the S3 object now: a SigV4

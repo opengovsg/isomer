@@ -9,6 +9,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 
 import { AuditLogEvent, db, jsonb, RoleType } from "../../database"
 import {
+  createCsvTransform,
   formatAuditLogDateRange,
   getAccessReportRows,
   getActivityReportRows,
@@ -1119,6 +1120,52 @@ describe("auditLogExport.query", () => {
 
     it("returns an empty string for no rows", () => {
       expect(toCsv([])).toBe("")
+    })
+  })
+
+  describe("createCsvTransform", () => {
+    // Drive rows through the streaming serializer and collect the emitted CSV
+    // text, so we can assert it byte-for-byte against the buffered `toCsv`.
+    const collect = async (
+      rows: Record<string, unknown>[],
+    ): Promise<string> => {
+      const transform = createCsvTransform()
+      const chunks: string[] = []
+      transform.on("data", (chunk: Buffer | string) =>
+        chunks.push(chunk.toString()),
+      )
+      for (const row of rows) {
+        transform.write(row)
+      }
+      transform.end()
+      await new Promise<void>((resolve, reject) => {
+        transform.on("end", resolve)
+        transform.on("error", reject)
+      })
+      return chunks.join("")
+    }
+
+    it("streams byte-for-byte the same CSV as the buffered toCsv", async () => {
+      const rows = [
+        {
+          Email: "a@agency.gov.sg",
+          Role: "Admin",
+          "Date added": new Date("2024-02-15T00:00:00Z"),
+          "Last login": null,
+        },
+        {
+          Email: "b@agency.gov.sg",
+          Role: "Editor",
+          "Date added": new Date("2024-02-16T00:00:00Z"),
+          "Last login": new Date("2024-03-01T00:00:00Z"),
+        },
+      ]
+
+      expect(await collect(rows)).toBe(toCsv(rows))
+    })
+
+    it("emits nothing for an empty stream (matches toCsv([]))", async () => {
+      expect(await collect([])).toBe("")
     })
   })
 })

@@ -15,8 +15,21 @@ tokens), ADR 0007 (dedicated studio assets bucket).
     point) with the `expire-audit-log-exports` lifecycle rule (7 days, prefix
     `audit-log-exports/`)
   - ECS task-role policy: `s3:ListBucket` on the bucket, `s3:GetObject` +
-    `s3:PutObject` on its objects
+    `s3:PutObject` + `s3:AbortMultipartUpload` on its objects
   - SSM parameter `/s3/studio-assets/bucket`
+- [ ] **Multipart-upload IAM** — exports are streamed to S3 via
+      `@aws-sdk/lib-storage` (`Upload`), which switches to a multipart upload
+      once a CSV exceeds one part (~5 MB) and, by default, calls
+      `AbortMultipartUpload` to clean up if an upload errors mid-flight.
+      `CreateMultipartUpload`/`UploadPart`/`CompleteMultipartUpload` are all
+      authorised by `s3:PutObject`, but the abort needs the **separate
+      `s3:AbortMultipartUpload`** action — without it a failed large upload
+      fails its own cleanup (AccessDenied masks the real error) and leaves
+      orphaned parts. Add it to the task-role object policy (above). Also add an
+      `AbortIncompleteMultipartUpload` lifecycle rule (e.g. 1 day, prefix
+      `audit-log-exports/`) alongside the existing `expire-audit-log-exports`
+      rule so any orphaned parts are swept even if a role ever lacks the abort
+      permission.
 - [ ] Verify the SSM parameter exists in the target env before the app deploy —
       the new task definition reads it as a secret; ECS tasks **fail to start**
       if it is unresolvable.

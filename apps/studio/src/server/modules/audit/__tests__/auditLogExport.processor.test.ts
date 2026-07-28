@@ -152,7 +152,17 @@ describe("auditLogExport processor", () => {
     )
     vi.clearAllMocks()
     mockGetStudioAssetsBucketName.mockReturnValue("test-audit-bucket")
-    mockUploadAuditLogExport.mockResolvedValue(undefined)
+    // The real upload consumes the streamed CSV body; the mock must drain it
+    // too so the underlying Postgres cursor is fully read and its connection
+    // released. Otherwise an unconsumed stream would leave the cursor dangling
+    // across tests and could exhaust the pool.
+    mockUploadAuditLogExport.mockImplementation(async ({ body }) => {
+      if (typeof body !== "string" && Symbol.asyncIterator in Object(body)) {
+        for await (const _chunk of body as AsyncIterable<unknown>) {
+          // drain
+        }
+      }
+    })
     // By default every candidate artifact still exists in S3.
     mockGetFileSize.mockResolvedValue(1024)
     mockSendAuditLogExportReadyEmail.mockResolvedValue(undefined)
