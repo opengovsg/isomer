@@ -7,8 +7,7 @@ import { Divider } from "../Divider"
 import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
-import { getTableColumnCount } from "./getTableColumnCount"
-import { hasPhantomColumns } from "./hasPhantomColumns"
+import { resolveTableLayout } from "./resolveTableLayout"
 
 const tableStyles = tv({
   base: "w-full border-collapse border-spacing-0 border border-base-divider-medium",
@@ -31,12 +30,7 @@ const tableCellStyles = tv({
 
 export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
   const tableDescriptionId = useId()
-  // Only pin equal-width tracks when auto layout would collapse a phantom
-  // column; otherwise keep content-based column sizing for existing tables.
-  const shouldUseFixedLayout = hasPhantomColumns(content)
-  const columnCount = shouldUseFixedLayout ? getTableColumnCount(content) : 0
-  const columnWidthPercent =
-    columnCount > 0 ? `${100 / columnCount}%` : undefined
+  const layout = resolveTableLayout(content)
 
   return (
     <div className="flex flex-col gap-4 [&:not(:first-child)]:mt-7">
@@ -47,13 +41,13 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
       />
       <div className="overflow-x-auto" tabIndex={0}>
         <table
-          className={tableStyles({ isFixedLayout: shouldUseFixedLayout })}
+          className={tableStyles({ isFixedLayout: layout.kind === "fixed" })}
           aria-describedby={tableDescriptionId}
         >
-          {shouldUseFixedLayout && columnCount > 0 && (
+          {layout.kind === "fixed" && (
             <colgroup>
-              {Array.from({ length: columnCount }, (_, index) => (
-                <col key={index} style={{ width: columnWidthPercent }} />
+              {layout.columnWidths.map((width, index) => (
+                <col key={index} style={{ width }} />
               ))}
             </colgroup>
           )}
