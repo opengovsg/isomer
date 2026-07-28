@@ -278,9 +278,12 @@ const main = async () => {
 
       if (!destSiteId) {
         console.log(`Creating new site in ${destEnv}...`);
+        // Site.name is unique per environment, so same-env duplicates need a distinct name.
+        const newSiteName =
+          sourceEnv === destEnv ? `${siteName} (Copy)` : siteName;
         const res = await destClient.query(
           `INSERT INTO "Site" (name, config, theme) VALUES ($1, '{}', '{}') RETURNING id`,
-          [siteName]
+          [newSiteName]
         );
         finalDestSiteId = res.rows[0].id;
         console.log(`Created new site with ID ${finalDestSiteId}`);
