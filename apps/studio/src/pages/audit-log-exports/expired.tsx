@@ -28,9 +28,8 @@ const AuditLogExportExpired = () => {
             site&apos;s settings.
           </Text>
         </Stack>
-        <RestrictedMiniFooter
-        // This component can only be used if this is an application created by OGP.
-        />
+        {/* This component can only be used if this is an application created by OGP. */}
+        <RestrictedMiniFooter />
       </Stack>
     </Flex>
   )

@@ -81,7 +81,7 @@ export const unsealAuditLogExportToken = async (
   }
   if (
     typeof payload.requestId !== "string" ||
-    !/^\d+$/.test(payload.requestId)
+    !/^[1-9]\d*$/.test(payload.requestId)
   ) {
     return null
   }
