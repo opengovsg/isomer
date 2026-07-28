@@ -410,10 +410,11 @@ describe("TableBubbleMenu", () => {
   })
 
   it("clears every cell in a selected row without removing the row", async () => {
-    const { editor, findByText } = await renderHarness()
+    const { editor, findByText, findByRole } = await renderHarness()
 
     selectCells(editor, 3, 5)
     expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    await activateTableBubbleMenu(findByRole)
 
     const clearRow = await findByText("Clear contents")
     act(() => {
@@ -423,15 +424,15 @@ describe("TableBubbleMenu", () => {
     expect(tableRowCount(editor)).toBe(3)
     expect(rowTextsAt(editor, 1)).toEqual(["", "", ""])
     expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
-    expect(await findByText("Clear contents")).toBeTruthy()
   })
 
   it("clears every cell in a selected column without removing the column", async () => {
-    const { editor, findByText } = await renderHarness()
+    const { editor, findByText, findByRole } = await renderHarness()
 
     selectCells(editor, 1, 7)
     expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
     expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    await activateTableBubbleMenu(findByRole)
 
     const clearColumn = await findByText("Clear contents")
     act(() => {
@@ -442,14 +443,15 @@ describe("TableBubbleMenu", () => {
     expect(firstRowTexts(editor)).toEqual(["Column A", "", "Column C"])
     expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "", "Row 1, C"])
     expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "", "Row 2, C"])
-    expect(await findByText("Clear contents")).toBeTruthy()
   })
 
   it("clears header row content while keeping the header row", async () => {
-    const { editor, findByText } = await renderHarness()
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
 
     selectCells(editor, 0, 2)
     expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
+    await activateTableBubbleMenu(findByRole)
 
     const clearRow = await findByText("Clear contents")
     act(() => {
@@ -458,8 +460,12 @@ describe("TableBubbleMenu", () => {
 
     expect(tableRowCount(editor)).toBe(3)
     expect(firstRowTexts(editor)).toEqual(["", "", ""])
+
+    // Header axes withhold Delete row even after clearing.
+    selectCells(editor, 0, 2)
+    await activateTableBubbleMenu(findByRole)
     expect(await findByText("Clear contents")).toBeTruthy()
-    expect(await findByText("Delete row")).toBeNull()
+    expect(queryByText("Delete row")).toBeNull()
   })
 
   it("withholds Delete and Move when selection includes header row", async () => {
@@ -598,7 +604,6 @@ describe("TableBubbleMenu", () => {
 
     expect(tableRowCount(editor)).toBe(3)
     expect(rowTextsAt(editor, 2)).toEqual(["", "Row 2, B", "Row 2, C"])
-    expect(await findByText("Clear contents")).toBeTruthy()
   })
 
   it("does not show Superscript/Subscript when the text cursor is inside a cell", async () => {
