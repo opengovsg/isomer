@@ -83,6 +83,8 @@ describe("asset.service", () => {
     })
 
     it("should preserve titles with path separators instead of truncating them", () => {
+      // content-disposition runs path.basename internally, which would truncate
+      // "A/B\\C" to "C"; path separators must be replaced before it is called.
       const result = getContentDispositionForTitle("A/B\\C", "1/abc/doc.pdf")
       expect(result).toBe(`inline; filename="A-B-C.pdf"`)
     })

@@ -75,8 +75,9 @@ export const getContentDispositionForTitle = (
   key: string,
 ): string => {
   const extension = getExtensionFromFilename(getFilenameFromKey(key))
-  // Strip path separators so a title like "A/B" can't be misread as a path
-  // segment in the resulting filename.
+  // content-disposition runs path.basename on the filename, which would
+  // truncate a title containing "/" or "\" (e.g. "A/B" -> "B"). Replace path
+  // separators up front so the full title survives in the download filename.
   const filename = `${title}${extension}`.replace(/[/\\]/g, "-")
   return createContentDisposition(filename, { type: "inline" })
 }
