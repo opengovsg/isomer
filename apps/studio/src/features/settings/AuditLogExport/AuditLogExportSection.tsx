@@ -58,6 +58,24 @@ export const AuditLogExportSection = ({
     setMonth(monthOptions[0]?.value ?? "")
   }
 
+  // The requested report type derived from the two card selections. Undefined
+  // until the user picks at least one log type, which keeps the submit button
+  // disabled and mirrors the design's initial empty state.
+  const reportType = useMemo<
+    AuditLogExportRequestedReportType | undefined
+  >(() => {
+    if (isAccessSelected && isActivitySelected) {
+      return AuditLogExportRequestedReportType.Both
+    }
+    if (isAccessSelected) {
+      return AuditLogExportRequestedReportType.Access
+    }
+    if (isActivitySelected) {
+      return AuditLogExportRequestedReportType.Activity
+    }
+    return undefined
+  }, [isAccessSelected, isActivitySelected])
+
   const { mutate: createExportRequest, isPending } =
     trpc.audit.createExportRequest.useMutation({
       onSuccess: () => {
@@ -93,17 +111,6 @@ export const AuditLogExportSection = ({
     })
 
   if (!canManageUsers) return null
-
-  // Undefined until the user picks at least one log type, which keeps the
-  // submit button disabled and mirrors the design's initial empty state.
-  const reportType =
-    isAccessSelected && isActivitySelected
-      ? AuditLogExportRequestedReportType.Both
-      : isAccessSelected
-        ? AuditLogExportRequestedReportType.Access
-        : isActivitySelected
-          ? AuditLogExportRequestedReportType.Activity
-          : undefined
 
   const onSubmit = () => {
     if (!reportType) return

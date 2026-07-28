@@ -6,6 +6,7 @@ import { PermissionsBoundary } from "~/components/AuthWrappers"
 import { FullscreenSpinner } from "~/components/FullscreenSpinner"
 import { siteSchema } from "~/features/editing-experience/schema"
 import { AuditLogExportSection } from "~/features/settings/AuditLogExport"
+import { getAgencySettingsHref } from "~/features/settings/constants"
 import { UserManagementContext } from "~/features/users"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
@@ -34,7 +35,7 @@ const AuditLogExportSettingsPage: NextPageWithLayout = () => {
   // is enforced independently by the mutation.
   useEffect(() => {
     if (!isRolesPending && !canManageUsers) {
-      void router.replace(`/sites/${siteId}/settings/agency`)
+      void router.replace(getAgencySettingsHref(siteId))
     }
   }, [isRolesPending, canManageUsers, router, siteId])
 
