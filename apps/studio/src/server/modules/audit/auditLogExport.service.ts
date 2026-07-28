@@ -156,7 +156,7 @@ export const createAuditLogExportRequest = async ({
               userId,
               auditLogDateRange,
               reportType: dbReportType,
-              status: "Pending",
+              status: AuditLogExportStatus.Pending,
               attempts: 0,
             })
             .returningAll()
@@ -321,25 +321,27 @@ export const processAuditLogExportRequest = async (
     return
   }
 
+  // Step 2: load the site (for a display name) and the requesting user (for the
+  // recipient email). Loaded before the try so the failure-email path below can
+  // reuse them instead of re-querying. The row was just claimed and both are
+  // FK-backed, so these never miss in practice.
+  const site = await db
+    .selectFrom("Site")
+    .where("id", "=", request.siteId)
+    .select(["id", "name", "config"])
+    .executeTakeFirstOrThrow()
+
+  const user = await db
+    .selectFrom("User")
+    .where("id", "=", request.userId)
+    .select(["id", "email"])
+    .executeTakeFirstOrThrow()
+
+  const siteConfig = site.config as { siteName?: string } | null
+  const siteName = siteConfig?.siteName || site.name
+  const recipientEmail = user.email
+
   try {
-    // Step 2: load the site (for a display name) and the requesting user
-    // (for the recipient email).
-    const site = await db
-      .selectFrom("Site")
-      .where("id", "=", request.siteId)
-      .select(["id", "name", "config"])
-      .executeTakeFirstOrThrow()
-
-    const user = await db
-      .selectFrom("User")
-      .where("id", "=", request.userId)
-      .select(["id", "email"])
-      .executeTakeFirstOrThrow()
-
-    const siteConfig = site.config as { siteName?: string } | null
-    const siteName = siteConfig?.siteName || site.name
-    const recipientEmail = user.email
-
     // Step 3 + 4: run the row's single report query, serialise to CSV
     // (always — header-only CSV for zero rows), upload, and sign a download
     // URL. `Both` requests were fanned out into two rows at request time, so
@@ -429,24 +431,11 @@ export const processAuditLogExportRequest = async (
       .execute()
 
     try {
-      const failed = await db
-        .selectFrom("AuditLogExportRequest")
-        .innerJoin("Site", "Site.id", "AuditLogExportRequest.siteId")
-        .innerJoin("User", "User.id", "AuditLogExportRequest.userId")
-        .where("AuditLogExportRequest.id", "=", requestId)
-        .select([
-          "User.email as recipientEmail",
-          "Site.name as siteName",
-          "Site.config as config",
-          "AuditLogExportRequest.auditLogDateRange as auditLogDateRange",
-        ])
-        .executeTakeFirstOrThrow()
-
-      const failedConfig = failed.config as { siteName?: string } | null
+      // Reuse the site/user already loaded above instead of re-querying.
       await sendAuditLogExportFailedEmail({
-        recipientEmail: failed.recipientEmail,
-        siteName: failedConfig?.siteName || failed.siteName,
-        month: getExportPeriodLabel(failed.auditLogDateRange),
+        recipientEmail,
+        siteName,
+        month: getExportPeriodLabel(request.auditLogDateRange),
       })
     } catch (emailError) {
       // The row is already Failed; a failed failure-email must not throw.
