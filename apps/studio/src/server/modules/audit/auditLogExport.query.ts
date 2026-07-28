@@ -48,6 +48,8 @@ export const parseAuditLogDateRange = (
   return { lowerInclusive: match[1], upperExclusive: match[2] }
 }
 
+const ISO_MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/ // yyyy-MM pattern
+
 /**
  * Convert a `yyyy-MM` month (interpreted in Singapore time) into the stored
  * daterange string, `[YYYY-MM-DD,YYYY-MM-DD)` over SGT calendar dates.
@@ -62,18 +64,12 @@ export const parseAuditLogDateRange = (
  * (no internal clock reads) for testability.
  */
 export const getMonthDateRange = (month: IsoMonth, now: Date): string => {
-  const [year, monthIndex] = month.split("-").map(Number)
-  if (
-    year === undefined ||
-    monthIndex === undefined ||
-    Number.isNaN(year) ||
-    Number.isNaN(monthIndex) ||
-    monthIndex < 1 ||
-    monthIndex > 12
-  ) {
-    // oxlint-disable-next-line @typescript-eslint/restrict-template-expressions
+  if (!ISO_MONTH_REGEX.test(month)) {
     throw new Error(`Invalid month, expected "yyyy-MM" but got: ${month}`)
   }
+  // Safe after the regex test above: the pattern guarantees exactly two numeric
+  // segments in `yyyy-MM` form.
+  const [year, monthIndex] = month.split("-").map(Number) as [number, number]
 
   // A UTC instant mid-month falls inside the target month in every timezone,
   // so we can derive the SGT month start from it without boundary surprises.
