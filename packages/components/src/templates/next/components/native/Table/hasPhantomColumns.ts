@@ -4,7 +4,7 @@ import { getTableColumnCount } from "./getTableColumnCount"
 
 type TableRows = TableProps["content"]
 
-type CellSpan = {
+interface CellSpan {
   colspan: number
 }
 
