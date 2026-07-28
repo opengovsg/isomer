@@ -18,8 +18,9 @@ type TableRows = TableProps["content"]
  *   Row 2: [----cols 1–2----] [col3]   (rowspan into row 3)
  *   Row 3:                    [col3]
  *
- * We use the returned count to emit N equal-width `<col>` elements so every
- * logical track keeps a non-zero share of the table width.
+ * When `hasPhantomColumns` is true, the renderer uses this count to emit N
+ * equal-width `<col>` elements under `table-layout: fixed` so every logical
+ * track keeps a non-zero share of the table width.
  */
 export const getTableColumnCount = (rows: TableRows): number => {
   if (rows.length === 0) {

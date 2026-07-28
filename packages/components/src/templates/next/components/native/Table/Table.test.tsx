@@ -73,7 +73,7 @@ const staggeredMergesContent = [
 ]
 
 describe("Table colgroup", () => {
-  it("emits three equal-width cols for staggered merges with a phantom middle column", () => {
+  it("uses fixed equal-width cols for staggered merges with a phantom middle column", () => {
     // Arrange / Act
     const html = renderToStaticMarkup(
       <Table
@@ -87,7 +87,7 @@ describe("Table colgroup", () => {
     )
 
     // Assert
-    expect(html).toContain('class="w-full table-fixed')
+    expect(html).toContain("table-fixed")
     expect(html).toContain("<colgroup>")
     const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
       (match) => match[1],
@@ -97,7 +97,7 @@ describe("Table colgroup", () => {
     expect(html).toContain('rowspan="2"')
   })
 
-  it("emits two cols for a plain 2-column table", () => {
+  it("keeps auto layout and omits colgroup for a plain 2-column table", () => {
     // Arrange / Act
     const html = renderToStaticMarkup(
       <Table
@@ -132,10 +132,73 @@ describe("Table colgroup", () => {
       />,
     )
 
-    // Assert — do not invent a third column
-    const colWidths = [...html.matchAll(/<col style="width:([^"]+)"\/?>/g)].map(
-      (match) => match[1],
+    // Assert — content-based sizing for ordinary tables
+    expect(html).not.toContain("table-fixed")
+    expect(html).not.toContain("<colgroup>")
+    expect(html).not.toMatch(/<col[\s>]/)
+  })
+
+  it("keeps auto layout when a header span still has exclusive body cells", () => {
+    // Arrange / Act
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Full-width header" }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableHeader",
+                attrs: { colspan: 3 },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Title" }],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableCell",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "A" }],
+                  },
+                ],
+              },
+              {
+                type: "tableCell",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "B" }],
+                  },
+                ],
+              },
+              {
+                type: "tableCell",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "C" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
     )
-    expect(colWidths).toEqual(["50%", "50%"])
+
+    // Assert
+    expect(html).not.toContain("table-fixed")
+    expect(html).not.toContain("<colgroup>")
   })
 })

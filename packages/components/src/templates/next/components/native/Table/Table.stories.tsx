@@ -2128,8 +2128,9 @@ export const ListInTable: Story = {
 /**
  * Staggered merges where no cell occupies column 2 alone:
  * row1 merges cols 2–3, row2 merges cols 1–2 (rowspan 2).
- * Without an explicit <colgroup>, auto layout collapses the middle
- * column to zero width and the table appears to have only 2 columns.
+ * Without fixed layout + an explicit <colgroup>, auto layout collapses
+ * the middle column to zero width and the table appears to have only 2
+ * columns. Ordinary tables skip this path so content still drives widths.
  */
 export const StaggeredMergesPhantomColumn: Story = {
   args: {
