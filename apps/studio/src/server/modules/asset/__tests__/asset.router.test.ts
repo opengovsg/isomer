@@ -177,9 +177,7 @@ describe("asset.router", async () => {
         Bucket: expect.any(String),
         Key: expect.stringContaining("test-image.png"),
         ContentType: "image/png",
-        ContentDisposition: expect.stringMatching(
-          /^inline; filename\*=UTF-8''.+/,
-        ),
+        ContentDisposition: expect.stringMatching(/^inline; filename=".+"/),
         ContentLength: fileSize,
       })
     })
@@ -208,9 +206,7 @@ describe("asset.router", async () => {
         uploadConfig: {
           presignedPutUrl: "https://example.com/signed-url",
           contentType: "application/pdf",
-          contentDisposition: expect.stringMatching(
-            /^inline; filename\*=UTF-8''.+/,
-          ),
+          contentDisposition: expect.stringMatching(/^inline; filename=".+"/),
         },
       })
     })
