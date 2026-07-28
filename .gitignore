@@ -47,6 +47,8 @@ dist/
 # env file
 .env
 .env.local.*
+.env.*
+**/.env.*
 
 # Compiled components package
 **/*.tgz
