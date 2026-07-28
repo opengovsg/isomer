@@ -240,8 +240,8 @@ catalogs:
       specifier: ^29.1.1
       version: 29.1.1
     kysely:
-      specifier: ^0.29.3
-      version: 0.29.3
+      specifier: ^0.29.4
+      version: 0.29.4
     lodash-es:
       specifier: ^4.18.1
       version: 4.18.1
@@ -905,7 +905,7 @@ importers:
         version: 29.1.1(@noble/hashes@2.2.0)
       kysely:
         specifier: 'catalog:'
-        version: 0.29.3
+        version: 0.29.4
       lodash-es:
         specifier: 'catalog:'
         version: 4.18.1
@@ -1364,7 +1364,7 @@ importers:
         version: 7.9.0(prisma@7.9.0(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(magicast@0.5.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@6.0.3))(typescript@6.0.3)
       kysely:
         specifier: 'catalog:'
-        version: 0.29.3
+        version: 0.29.4
       pg:
         specifier: 'catalog:'
         version: 8.22.0
@@ -9471,8 +9471,8 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
 
-  kysely@0.29.3:
-    resolution: {integrity: sha512-VHtBdW6XB/pgoTSqraM3UAa2rYoYdNXqnNPpX+8XXP+cwYbVEFuAp3HyPt1vpNfU9l7Y2kpUrA9QDPsy8uUqOQ==}
+  kysely@0.29.4:
+    resolution: {integrity: sha512-y5mVgQNkMbs1eK9Xyc0pmNdabN2wHhRYY/5r4W5HrUT1rYCEPeVNSj1RUJeSDKT3U0p+mXCvLgkrFuIafYI6BA==}
     engines: {node: '>=22.0.0'}
 
   langbase@1.2.4:
@@ -20652,7 +20652,7 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  kysely@0.29.3: {}
+  kysely@0.29.4: {}
 
   langbase@1.2.4(react@18.3.1)(ws@8.21.1):
     dependencies:
