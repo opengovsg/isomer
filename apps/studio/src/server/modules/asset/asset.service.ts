@@ -2,6 +2,7 @@ import type { z } from "zod"
 import type { getPresignedPutUrlSchema } from "~/schemas/asset"
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import contentDisposition from "content-disposition"
 import { randomUUID } from "crypto"
 import filenamify from "filenamify"
 import { env } from "~/env.mjs"
@@ -61,8 +62,7 @@ export const getContentTypeFromKey = (key: string): string => {
  * Build Content-Disposition for signed upload (inline; filename for download hint).
  */
 export const getContentDispositionForKey = (key: string): string => {
-  const encoded = encodeURIComponent(getFilenameFromKey(key))
-  return `inline; filename*=UTF-8''${encoded}`
+  return contentDisposition(getFilenameFromKey(key), { type: "inline" })
 }
 
 /**
@@ -75,8 +75,7 @@ export const getContentDispositionForTitle = (
   key: string,
 ): string => {
   const extension = getExtensionFromFilename(getFilenameFromKey(key))
-  const encoded = encodeURIComponent(`${title}${extension}`)
-  return `inline; filename*=UTF-8''${encoded}`
+  return contentDisposition(`${title}${extension}`, { type: "inline" })
 }
 
 // Permissions for assets share the same permissions as resources preferentially

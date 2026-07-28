@@ -292,7 +292,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       expect(s3Lib.setAssetAsPublished).toHaveBeenCalledWith(
         expect.objectContaining({
           Key: expectedObjectGroup,
-          ContentDisposition: `inline; filename*=UTF-8''${encodeURIComponent("Document Title.pdf")}`,
+          ContentDisposition: `inline; filename="Document Title.pdf"`,
         }),
       )
     })
@@ -715,7 +715,7 @@ describe("schedulePushDocumentJobHandler", async () => {
       // gazette title (extension carried over from the key).
       expect(s3Lib.setAssetAsPublished).toHaveBeenCalledWith(
         expect.objectContaining({
-          ContentDisposition: `inline; filename*=UTF-8''${encodeURIComponent("Document Title.pdf")}`,
+          ContentDisposition: `inline; filename="Document Title.pdf"`,
         }),
       )
     })
