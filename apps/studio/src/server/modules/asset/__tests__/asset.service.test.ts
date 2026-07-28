@@ -82,6 +82,13 @@ describe("asset.service", () => {
       expect(result).toBe(`inline; filename="My Title"`)
     })
 
+    it("should preserve titles with path separators instead of truncating them", () => {
+      // content-disposition runs path.basename internally, which would truncate
+      // "A/B\\C" to "C"; path separators must be replaced before it is called.
+      const result = getContentDispositionForTitle("A/B\\C", "1/abc/doc.pdf")
+      expect(result).toBe(`inline; filename="A-B-C.pdf"`)
+    })
+
     it("should emit valid headers for titles with RFC 5987 attr-chars ' ( ) *", () => {
       // encodeURIComponent leaves ' ( ) * unescaped, which is invalid inside a
       // filename* ext-value; the content-disposition package keeps them in a
