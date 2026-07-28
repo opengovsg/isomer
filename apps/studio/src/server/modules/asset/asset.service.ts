@@ -75,7 +75,11 @@ export const getContentDispositionForTitle = (
   key: string,
 ): string => {
   const extension = getExtensionFromFilename(getFilenameFromKey(key))
-  return contentDisposition(`${title}${extension}`, { type: "inline" })
+  // content-disposition runs path.basename on the filename, which would
+  // truncate a title containing "/" or "\" (e.g. "A/B" -> "B"). Replace path
+  // separators up front so the full title survives in the download filename.
+  const filename = `${title}${extension}`.replace(/[/\\]/g, "-")
+  return contentDisposition(filename, { type: "inline" })
 }
 
 // Permissions for assets share the same permissions as resources preferentially
