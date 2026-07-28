@@ -49,7 +49,7 @@ describe("asset.service", () => {
   describe("getContentDispositionForKey", () => {
     it("should return inline with filename from key segment", () => {
       const result = getContentDispositionForKey("1/abc-uuid/test.png")
-      expect(result).toBe(`inline; filename=test.png`)
+      expect(result).toBe(`inline; filename="test.png"`)
     })
 
     it("should encode non-latin1 characters via RFC 5987 with a latin1 fallback", () => {
@@ -84,7 +84,7 @@ describe("asset.service", () => {
 
     it("should preserve titles with path separators instead of truncating them", () => {
       const result = getContentDispositionForTitle("A/B\\C", "1/abc/doc.pdf")
-      expect(result).toBe(`inline; filename=A-B-C.pdf`)
+      expect(result).toBe(`inline; filename="A-B-C.pdf"`)
     })
 
     it("should emit valid headers for titles with RFC 5987 attr-chars ' ( ) *", () => {
