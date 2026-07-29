@@ -306,13 +306,16 @@ export const buildMigrationPlan = ({
 // DB access
 // ---------------------------------------------------------------------------
 
-export const verifyUser = async (userId: string) => {
+export const lookupUserByEmail = async (email: string) => {
+  const normalizedEmail = email.trim().toLowerCase()
   const user = await db
     .selectFrom("User")
-    .where("id", "=", userId)
+    .where("email", "=", normalizedEmail)
     .select("id")
     .executeTakeFirst()
-  if (!user) throw new Error(`User ${userId} not found`)
+  if (!user) {
+    throw new Error(`User with email ${normalizedEmail} not found`)
+  }
   return user
 }
 
@@ -958,10 +961,12 @@ export const main = async (
     siteIdsInclude = SITE_IDS_INCLUDE,
     siteIdsExclude = SITE_IDS_EXCLUDE,
     logger,
+    lookupUser = lookupUserByEmail,
   }: {
     siteIdsInclude?: number[]
     siteIdsExclude?: number[]
     logger?: MigrationLogger
+    lookupUser?: typeof lookupUserByEmail
   } = {},
 ) => {
   const { values } = parseArgs({
@@ -1003,13 +1008,12 @@ export const main = async (
 
   let publisherId: string | null = null
   if (!dryRun) {
-    const rawUserId = await input({
+    const rawEmail = await input({
       message:
-        "User ID to record as publisher for the new Version rows this migration creates",
-      validate: (v) => v.trim().length > 0 || "User ID is required",
+        "Email to record as publisher for the new Version rows this migration creates",
+      validate: (v) => v.trim().length > 0 || "Email is required",
     })
-    publisherId = rawUserId.trim()
-    await verifyUser(publisherId)
+    publisherId = (await lookupUser(rawEmail)).id
   }
 
   const scriptDir = path.dirname(fileURLToPath(import.meta.url))
