@@ -396,7 +396,7 @@ describe("buildMigrationPlan", () => {
     ])
   })
 
-  it("reuses an existing group and only tags target item states", () => {
+  it("reuses an existing group and only tags present item sides", () => {
     // Arrange
     const existingGroup: TagCategoryGroup = {
       id: "category-group",
@@ -411,6 +411,8 @@ describe("buildMigrationPlan", () => {
       items: [
         {
           resourceId: "1",
+          hasDraft: false,
+          hasPublished: true,
           draftCategory: "Guides",
           draftTagged: ["guides-option"],
           publishedCategory: "Guides",
@@ -418,7 +420,6 @@ describe("buildMigrationPlan", () => {
         },
       ],
       existingGroup,
-      targetStates: new Set(["published"]),
     })
 
     // Assert
@@ -435,7 +436,35 @@ describe("buildMigrationPlan", () => {
     })
   })
 
-  it("copies an existing group when the target side has no legacy categories", () => {
+  it("skips item updates when tagged is already correct", () => {
+    // Arrange
+    const existingGroup: TagCategoryGroup = {
+      id: "category-group",
+      label: "Category",
+      options: [{ id: "guides-option", label: "Guides" }],
+    }
+
+    // Act
+    const plan = buildMigrationPlan({
+      items: [
+        {
+          resourceId: "1",
+          publishedCategory: "Guides",
+          publishedTagged: ["guides-option"],
+        },
+      ],
+      existingGroup,
+    })
+
+    // Assert
+    expect(plan).toEqual({
+      status: "migrated",
+      group: existingGroup,
+      itemUpdates: [],
+    })
+  })
+
+  it("copies an existing group when there are no legacy categories", () => {
     // Arrange
     const existingGroup: TagCategoryGroup = {
       id: "category-group",
@@ -447,7 +476,6 @@ describe("buildMigrationPlan", () => {
     const plan = buildMigrationPlan({
       items: [],
       existingGroup,
-      targetStates: new Set(["draft"]),
     })
 
     // Assert
@@ -458,7 +486,7 @@ describe("buildMigrationPlan", () => {
     })
   })
 
-  it("extends an existing group for categories found only on a target side", () => {
+  it("extends an existing group for categories found only on one item side", () => {
     // Arrange
     const existingGroup: TagCategoryGroup = {
       id: "category-group",
@@ -468,9 +496,15 @@ describe("buildMigrationPlan", () => {
 
     // Act
     const plan = buildMigrationPlan({
-      items: [{ resourceId: "1", draftCategory: "Forms" }],
+      items: [
+        {
+          resourceId: "1",
+          hasDraft: true,
+          hasPublished: false,
+          draftCategory: "Forms",
+        },
+      ],
       existingGroup,
-      targetStates: new Set(["draft"]),
       generateId: () => "forms-option",
     })
 
@@ -976,7 +1010,7 @@ describe("migrateCollection / migrateSite", () => {
     })
   })
 
-  it("skips a collection whose Index already has a Category group (idempotent re-run)", async () => {
+  it("skips a collection whose Index and items are already migrated (idempotent re-run)", async () => {
     // Arrange
     const { collection } = await setupCollection({ siteId })
     const existingCategoryGroup: TagCategoryGroup = {
@@ -995,6 +1029,7 @@ describe("migrateCollection / migrateSite", () => {
       siteId,
       parentId: collection.id,
       category: "Guides",
+      tagged: ["c-1"],
     })
 
     // Act
@@ -1018,7 +1053,60 @@ describe("migrateCollection / migrateSite", () => {
       existingCategoryGroup,
     ])
     const itemContent = await getBlobContent(itemBlob.id)
-    expect(itemContent.page.tagged).toEqual([])
+    expect(itemContent.page.tagged).toEqual(["c-1"])
+  })
+
+  it("tags item drafts when the Index has no draft blob", async () => {
+    // Arrange
+    const user = await setupUser({})
+    const { collection } = await setupCollection({ siteId })
+    const { page: indexPage } = await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const { page: itemPage } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      category: "Guides",
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const itemDraftBlob = await addStaleDraft(
+      itemPage.id,
+      collectionPageBlobContent([], "Forms"),
+    )
+
+    // Act
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: user.id,
+    })
+
+    // Assert
+    expect(result.status).toBe("migrated")
+    expect(result.categories).toEqual(["Forms", "Guides"])
+
+    const indexResource = await getResource(indexPage.id)
+    const publishedIndexVersion = await getVersion(
+      indexResource.publishedVersionId!,
+    )
+    const indexTagCategories = (
+      await getBlobContent(publishedIndexVersion.blobId)
+    ).page.tagCategories
+    expect(
+      indexTagCategories?.[0]?.options.map((option) => option.label),
+    ).toEqual(["Forms", "Guides"])
+
+    expect((await getBlobContent(itemDraftBlob.id)).page.tagged).toHaveLength(1)
+    expect((await getBlobContent(itemDraftBlob.id)).page.tagged?.[0]).toBe(
+      indexTagCategories?.[0]?.options.find(
+        (option) => option.label === "Forms",
+      )?.id,
+    )
   })
 
   it("migrates only the published side when only the draft Index has Category", async () => {
