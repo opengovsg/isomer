@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 
 // Package names survive in webpack chunk module paths even after minification.
-const ALGOLIA_MARKERS = ["react-instantsearch", "algoliasearch"] as const
+export const ALGOLIA_MARKERS = ["react-instantsearch", "algoliasearch"] as const
 
 export const scanBundleForAlgolia = (outDir: string) => {
   const staticDir = join(outDir, "_next/static")
@@ -27,7 +27,7 @@ export const scanBundleForAlgolia = (outDir: string) => {
   }
 
   return {
-    found: matchedMarkers.size > 0,
+    found: ALGOLIA_MARKERS.every((marker) => matchedMarkers.has(marker)),
     matchedMarkers: [...matchedMarkers],
   }
 }

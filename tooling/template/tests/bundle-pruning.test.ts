@@ -6,7 +6,7 @@ import {
   withTemplateConfig,
   writeTemplateConfig,
 } from "./helpers/buildTemplate"
-import { scanBundleForAlgolia } from "./helpers/scanBundle"
+import { ALGOLIA_MARKERS, scanBundleForAlgolia } from "./helpers/scanBundle"
 
 describe("template (bundle pruning)", () => {
   let originalConfig: string
@@ -27,7 +27,7 @@ describe("template (bundle pruning)", () => {
     const result = scanBundleForAlgolia(outDir)
 
     // Assert
-    expect(result.found, result.matchedMarkers.join(", ")).toBe(false)
+    expect(result.matchedMarkers, result.matchedMarkers.join(", ")).toEqual([])
   })
 
   it("includes Algolia search deps for egazette-algolia sites", () => {
@@ -48,6 +48,11 @@ describe("template (bundle pruning)", () => {
     const result = scanBundleForAlgolia(outDir)
 
     // Assert
-    expect(result.found, result.matchedMarkers.join(", ")).toBe(true)
+    for (const marker of ALGOLIA_MARKERS) {
+      expect(
+        result.matchedMarkers.includes(marker),
+        `expected bundle to include ${marker}`,
+      ).toBe(true)
+    }
   })
 })
