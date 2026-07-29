@@ -10,9 +10,6 @@ const OUT_DIR = join(TEMPLATE_DIR, "out")
 const CONFIG_PATH = join(TEMPLATE_DIR, "data", "config.json")
 const FIXTURES_DIR = join(TEMPLATE_DIR, "tests", "fixtures")
 
-let originalConfig: string | null = null
-let componentsBuilt = false
-
 const run = (command: string, args: string[], cwd: string, timeout: number) => {
   const result = spawnSync(command, args, {
     cwd,
@@ -32,43 +29,30 @@ const run = (command: string, args: string[], cwd: string, timeout: number) => {
   }
 }
 
-const ensureComponentsBuilt = () => {
-  if (componentsBuilt) return
-
+export const buildComponents = () => {
   run(
     "pnpm",
     ["--filter", "@opengovsg/isomer-components", "run", "build:module"],
     WORKSPACE_ROOT,
     300_000,
   )
-  componentsBuilt = true
 }
 
-export const restoreTemplateConfig = () => {
-  if (originalConfig === null) return
-  writeFileSync(CONFIG_PATH, originalConfig, "utf-8")
-  originalConfig = null
+export const readTemplateConfig = () => readFileSync(CONFIG_PATH, "utf-8")
+
+export const writeTemplateConfig = (config: string) => {
+  writeFileSync(CONFIG_PATH, config, "utf-8")
 }
 
-export const buildTemplate = ({
-  configFixture,
-}: {
-  configFixture?: string
-} = {}) => {
-  ensureComponentsBuilt()
-
-  originalConfig ??= readFileSync(CONFIG_PATH, "utf-8")
-
-  if (configFixture) {
-    const fixturePath = join(FIXTURES_DIR, `config.${configFixture}.json`)
-    if (!existsSync(fixturePath)) {
-      throw new Error(`Missing config fixture: ${fixturePath}`)
-    }
-    writeFileSync(CONFIG_PATH, readFileSync(fixturePath, "utf-8"), "utf-8")
-  } else {
-    writeFileSync(CONFIG_PATH, originalConfig, "utf-8")
+export const readConfigFixture = (name: string) => {
+  const fixturePath = join(FIXTURES_DIR, `config.${name}.json`)
+  if (!existsSync(fixturePath)) {
+    throw new Error(`Missing config fixture: ${fixturePath}`)
   }
+  return readFileSync(fixturePath, "utf-8")
+}
 
+export const buildTemplate = () => {
   rmSync(join(TEMPLATE_DIR, ".next"), { recursive: true, force: true })
   rmSync(OUT_DIR, { recursive: true, force: true })
 

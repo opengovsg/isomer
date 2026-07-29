@@ -1,11 +1,24 @@
-import { afterAll, describe, expect, it } from "vitest"
+import { afterEach, beforeAll, describe, expect, it } from "vitest"
 
-import { buildTemplate, restoreTemplateConfig } from "./helpers/buildTemplate"
+import {
+  buildComponents,
+  buildTemplate,
+  readConfigFixture,
+  readTemplateConfig,
+  writeTemplateConfig,
+} from "./helpers/buildTemplate"
 import { scanBundleForAlgolia } from "./helpers/scanBundle"
 
-describe.sequential("template bundle pruning", () => {
-  afterAll(() => {
-    restoreTemplateConfig()
+describe("template bundle pruning", () => {
+  let originalConfig: string
+
+  beforeAll(() => {
+    buildComponents()
+    originalConfig = readTemplateConfig()
+  })
+
+  afterEach(() => {
+    writeTemplateConfig(originalConfig)
   })
 
   it("excludes Algolia search deps for non-egazette sites", () => {
@@ -21,7 +34,8 @@ describe.sequential("template bundle pruning", () => {
 
   it("includes Algolia search deps for egazette-algolia sites", () => {
     // Arrange
-    const outDir = buildTemplate({ configFixture: "egazette-algolia" })
+    writeTemplateConfig(readConfigFixture("egazette-algolia"))
+    const outDir = buildTemplate()
 
     // Act
     const result = scanBundleForAlgolia(outDir)
