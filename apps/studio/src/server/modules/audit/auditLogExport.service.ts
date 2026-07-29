@@ -62,6 +62,27 @@ const REPORT_TYPES_BY_REQUESTED_TYPE: Record<
   ],
 }
 
+// The single report each row produces. `Both` is fanned out into two rows at
+// request time (see REPORT_TYPES_BY_REQUESTED_TYPE), so every row here maps to
+// exactly one report — one CSV, one download link, one email. Also used to
+// name the specific report type in a CONFLICT error message.
+const REPORT_BY_TYPE = {
+  [AuditLogExportReportType.Access]: {
+    kind: AuditLogExportReportType.Access,
+    label: "access",
+  },
+  [AuditLogExportReportType.Activity]: {
+    kind: AuditLogExportReportType.Activity,
+    label: "audit",
+  },
+} as const
+
+// Named per report type so a `Both` request that partially conflicts (e.g.
+// access is already in flight but activity is not) tells the user which one,
+// rather than a generic message that leaves them guessing.
+const getInFlightConflictMessage = (reportType: AuditLogExportReportType) =>
+  `An ${REPORT_BY_TYPE[reportType].label} log export for this period is already being generated`
+
 export const createAuditLogExportRequest = async ({
   siteId,
   userId,
@@ -110,20 +131,19 @@ export const createAuditLogExportRequest = async ({
       .where("auditLogDateRange", "=", auditLogDateRange)
       .where("reportType", "in", [...reportTypes])
       .where("status", "in", IN_FLIGHT_STATUSES)
-      .select("id")
+      .select(["id", "reportType"])
       .executeTakeFirst()
 
     if (existing) {
       throw new TRPCError({
         code: "CONFLICT",
-        message:
-          "An export for this period and report type is already being generated",
+        message: getInFlightConflictMessage(existing.reportType),
       })
     }
 
-    try {
-      const inserted = []
-      for (const dbReportType of reportTypes) {
+    const inserted = []
+    for (const dbReportType of reportTypes) {
+      try {
         inserted.push(
           await tx
             .insertInto("AuditLogExportRequest")
@@ -138,31 +158,32 @@ export const createAuditLogExportRequest = async ({
             .returningAll()
             .executeTakeFirstOrThrow(),
         )
+      } catch (error) {
+        // Race-loser path: a concurrent request inserted an in-flight row for
+        // this exact (siteId, userId, range, dbReportType) between our SELECT
+        // and this INSERT, so the partial unique index rejected ours.
+        // Translate that into the same friendly CONFLICT as the fast-path,
+        // naming this specific report type; throwing aborts the transaction,
+        // so earlier fan-out inserts in this loop roll back too
+        // (all-or-nothing). Any other error (and any TRPCError thrown above)
+        // is re-thrown as-is.
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          error.code === PG_ERROR_CODES.uniqueViolation
+        ) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: getInFlightConflictMessage(dbReportType),
+          })
+        }
+        throw error
       }
-      // Return every inserted row (one for Access/Activity, two for Both).
-      // The UI ignores the payload, so the array shape is chosen purely to
-      // reflect the fan-out honestly.
-      return inserted
-    } catch (error) {
-      // Race-loser path: a concurrent request inserted an in-flight row
-      // between our SELECT and INSERT, so the partial unique index rejected
-      // ours. Translate that into the same friendly CONFLICT as the fast-path;
-      // throwing aborts the transaction, so earlier fan-out inserts roll back
-      // too (all-or-nothing). Any other error (and any TRPCError thrown above)
-      // is re-thrown as-is.
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        error.code === PG_ERROR_CODES.uniqueViolation
-      ) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message:
-            "An export for this period and report type is already being generated",
-        })
-      }
-      throw error
     }
+    // Return every inserted row (one for Access/Activity, two for Both).
+    // The UI ignores the payload, so the array shape is chosen purely to
+    // reflect the fan-out honestly.
+    return inserted
   })
 }
 
@@ -195,20 +216,6 @@ const BATCH_SIZE = 20
 // so a still-running worker's claim will never be stolen mid-flight, while a
 // genuinely dead worker's rows are recovered within a couple of sweeps.
 const PROCESSING_LEASE_MS = 15 * 60 * 1000
-
-// The single report each row produces. `Both` is fanned out into two rows at
-// request time (see REPORT_TYPES_BY_REQUESTED_TYPE), so every row here maps to
-// exactly one report — one CSV, one download link, one email.
-const REPORT_BY_TYPE = {
-  [AuditLogExportReportType.Access]: {
-    kind: AuditLogExportReportType.Access,
-    label: "access",
-  },
-  [AuditLogExportReportType.Activity]: {
-    kind: AuditLogExportReportType.Activity,
-    label: "audit",
-  },
-} as const
 
 /**
  * Human-readable label for an export's period (e.g. "June 2026") for the email

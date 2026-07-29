@@ -61,18 +61,23 @@ const makeUniqueViolation = () => {
 
 const VALID_MONTH = getCurrentSingaporeMonth()
 
-const EXPECTED_CONFLICT = {
+// The CONFLICT message names the specific report type that's already in
+// flight, so a partially-conflicting `Both` request tells the user which
+// half — see getInFlightConflictMessage in the service.
+const conflictFor = (reportType: "Access" | "Activity") => ({
   code: "CONFLICT",
   message:
-    "An export for this period and report type is already being generated",
-}
+    reportType === "Access"
+      ? "An access log export for this period is already being generated"
+      : "An audit log export for this period is already being generated",
+})
 
 // One scripted outcome per INSERT the service issues, in order.
 type InsertStep = { ok: true } | { ok: false; error: Error }
 
 interface TxScript {
   // What the in-flight fast-path SELECT resolves with (default: no row).
-  existing?: { id: string }
+  existing?: { id: string; reportType: "Access" | "Activity" }
   inserts?: InsertStep[]
 }
 
@@ -154,7 +159,7 @@ describe("createAuditLogExportRequest — atomic dedupe + fan-out", () => {
     })
 
     // Assert: the caller gets the friendly CONFLICT, identical to the fast-path.
-    await expect(result).rejects.toMatchObject(EXPECTED_CONFLICT)
+    await expect(result).rejects.toMatchObject(conflictFor("Access"))
     await expect(result).rejects.toBeInstanceOf(TRPCError)
   })
 
@@ -212,8 +217,10 @@ describe("createAuditLogExportRequest — atomic dedupe + fan-out", () => {
   })
 
   it("throws CONFLICT when the SECOND insert of a Both request hits 23505, rethrowing out of the transaction so nothing commits", async () => {
-    // Arrange: the Access insert wins but the Activity insert loses a race
-    // against a concurrent in-flight Activity request.
+    // Arrange: the fan-out order for `Both` is [Activity, Access] (see
+    // REPORT_TYPES_BY_REQUESTED_TYPE), so the Activity insert wins but the
+    // Access insert loses a race against a concurrent in-flight Access
+    // request.
     const tx = makeTx({
       inserts: [{ ok: true }, { ok: false, error: makeUniqueViolation() }],
     })
@@ -228,18 +235,23 @@ describe("createAuditLogExportRequest — atomic dedupe + fan-out", () => {
     })
 
     // Assert: the CONFLICT propagates out of the transaction callback — that
-    // rethrow is what makes kysely roll back the already-issued Access insert
-    // (all-or-nothing). Only the first insert ever succeeded in-transaction.
-    await expect(result).rejects.toMatchObject(EXPECTED_CONFLICT)
+    // rethrow is what makes kysely roll back the already-issued Activity
+    // insert (all-or-nothing). Only the first insert ever succeeded
+    // in-transaction, and the message names Access — the report type that
+    // actually lost the race.
+    await expect(result).rejects.toMatchObject(conflictFor("Access"))
     await expect(result).rejects.toBeInstanceOf(TRPCError)
     expect(tx.insertedValues).toHaveLength(1)
-    expect(tx.insertedValues[0]).toMatchObject({ reportType: "Access" })
+    expect(tx.insertedValues[0]).toMatchObject({ reportType: "Activity" })
   })
 
   it("throws CONFLICT from the fast-path SELECT for a single report type without attempting any insert", async () => {
     // Arrange: the SELECT already sees an in-flight row for the same
     // (siteId, userId, range, reportType).
-    const tx = makeTx({ existing: { id: "existing-row" }, inserts: [] })
+    const tx = makeTx({
+      existing: { id: "existing-row", reportType: "Activity" },
+      inserts: [],
+    })
     useTx(tx)
 
     // Act
@@ -250,8 +262,9 @@ describe("createAuditLogExportRequest — atomic dedupe + fan-out", () => {
       reportType: "Activity",
     })
 
-    // Assert: friendly CONFLICT, and no INSERT was ever issued.
-    await expect(result).rejects.toMatchObject(EXPECTED_CONFLICT)
+    // Assert: friendly CONFLICT naming the conflicting report type, and no
+    // INSERT was ever issued.
+    await expect(result).rejects.toMatchObject(conflictFor("Activity"))
     await expect(result).rejects.toBeInstanceOf(TRPCError)
     expect(tx.insertedValues).toHaveLength(0)
   })
