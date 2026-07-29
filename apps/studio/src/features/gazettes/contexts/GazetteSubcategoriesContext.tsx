@@ -4,14 +4,17 @@ import { createContext, useContext, useMemo } from "react"
 import { trpc } from "~/utils/trpc"
 
 import type { GazettesCategory } from "../types"
-import { GAZETTE_SUBCATEGORY_LABEL } from "../constants"
 import {
+  GAZETTE_CATEGORY_LABEL,
+  GAZETTE_SUBCATEGORY_LABEL,
   governmentGazetteSubcategoriesKeys,
   legislativeSupplementsSubcategoriesKeys,
   otherSupplementsSubcategoriesKeys,
 } from "../constants"
 
 interface GazetteSubcategoriesContextValue {
+  categories: { label: string; value: string }[]
+  categoryMap: Record<string, string>
   subcategories: { label: string; value: string }[]
   subcategoryMap: Record<string, string>
   getSubcategoriesForCategory: (category: GazettesCategory) => {
@@ -39,9 +42,22 @@ export const GazetteSubcategoriesProvider = ({
   })
 
   const value = useMemo(() => {
+    const categoryCategory = tagCategories?.find(
+      (cat) => cat.label === GAZETTE_CATEGORY_LABEL,
+    )
     const subcategoryCategory = tagCategories?.find(
       (cat) => cat.label === GAZETTE_SUBCATEGORY_LABEL,
     )
+
+    const categories =
+      categoryCategory?.options?.map((option) => ({
+        label: option.label,
+        value: option.id,
+      })) ?? []
+
+    const categoryMap = Object.fromEntries(
+      categories.map(({ value, label }) => [value, label]),
+    ) as Record<string, string>
 
     const subcategories =
       subcategoryCategory?.options?.map((option) => ({
@@ -79,7 +95,13 @@ export const GazetteSubcategoriesProvider = ({
         }
       }
     }
-    return { subcategories, subcategoryMap, getSubcategoriesForCategory }
+    return {
+      categories,
+      categoryMap,
+      subcategories,
+      subcategoryMap,
+      getSubcategoriesForCategory,
+    }
   }, [tagCategories])
 
   return (

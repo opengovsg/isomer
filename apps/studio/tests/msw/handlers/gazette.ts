@@ -2,7 +2,9 @@ import type { RouterOutput } from "~/utils/trpc"
 import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import {
+  GAZETTE_CATEGORY_LABEL,
   GAZETTE_SUBCATEGORY_LABEL,
+  GazetteCategories,
   governmentGazetteSubcategories,
 } from "~/features/gazettes/constants"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
@@ -115,6 +117,15 @@ export const DEFAULT_GAZETTE_ITEMS: RouterOutput["gazette"]["list"] = [
 ]
 
 const GAZETTE_TAG_CATEGORIES = [
+  {
+    label: GAZETTE_CATEGORY_LABEL,
+    id: "1e02b2c3-58cc-4372-a567-f47ac10b3d46",
+    display: DEFAULT_TAG_CATEGORY_DISPLAY,
+    options: Object.values(GazetteCategories).map((label, index) => ({
+      label,
+      id: `6ba7b810-9dad-11d1-80b4-00c04fd4310${String(index).padStart(2, "0")}`,
+    })),
+  },
   {
     label: GAZETTE_SUBCATEGORY_LABEL,
     id: "0e02b2c3-58cc-4372-a567-f47ac10b3d47",
