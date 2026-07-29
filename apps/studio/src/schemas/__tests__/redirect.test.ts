@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  bulkRedirectsCsvSchema,
   createRedirectSchema,
+  MAX_BULK_REDIRECT_CSV_BYTES,
   MAX_REDIRECT_DESTINATION_LENGTH,
   MAX_REDIRECT_SOURCE_LENGTH,
 } from "../redirect"
@@ -570,5 +572,35 @@ describe("createRedirectSchema", () => {
       // Assert
       expect(result.success).toBe(true)
     })
+  })
+})
+
+describe("bulkRedirectsCsvSchema", () => {
+  it("accepts a small valid CSV", () => {
+    // Arrange / Act
+    const result = bulkRedirectsCsvSchema.safeParse({
+      siteId: 1,
+      csv: "When someone visits,Redirect them to\n/old,/new",
+    })
+
+    // Assert
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects a CSV over the byte limit even when under the UTF-16 length limit", () => {
+    // Arrange: "字" is one UTF-16 code unit but three UTF-8 bytes, so this string
+    // stays under the code-unit ceiling while its byte size exceeds the cap — the
+    // limit must be enforced in bytes, not code units.
+    const csv = "字".repeat(400_000)
+    expect(csv.length).toBeLessThanOrEqual(MAX_BULK_REDIRECT_CSV_BYTES)
+    expect(new TextEncoder().encode(csv).length).toBeGreaterThan(
+      MAX_BULK_REDIRECT_CSV_BYTES,
+    )
+
+    // Act
+    const result = bulkRedirectsCsvSchema.safeParse({ siteId: 1, csv })
+
+    // Assert
+    expect(result.success).toBe(false)
   })
 })

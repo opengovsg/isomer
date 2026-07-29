@@ -32,7 +32,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { addUserModalAtom, DEFAULT_ADD_USER_MODAL_STATE } from "../../atoms"
 import { SingpassConditionalTooltip } from "../SingpassConditionalTooltip"
-import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
+import { AddAdminWarning } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
@@ -206,12 +206,7 @@ export const AddUserModal = () => {
               )}
             </FormControl>
             <VStack gap="1rem" w="100%">
-              <FormControl
-                isRequired
-                isInvalid={
-                  watch("role") === RoleType.Admin && isNonGovEmailInput
-                }
-              >
+              <FormControl isRequired>
                 <FormLabel
                   description={
                     <Text>
@@ -235,17 +230,11 @@ export const AddUserModal = () => {
                       isSelected={watch("role") === role}
                       onClick={() => setValue("role", role)}
                       permissionLabels={permissionLabels}
-                      isDisabled={role === RoleType.Admin && isNonGovEmailInput}
                     />
                   ))}
                 </HStack>
               </FormControl>
-              {watch("role") === RoleType.Admin && !isNonGovEmailInput && (
-                <AddAdminWarning />
-              )}
-              {watch("role") === RoleType.Admin && isNonGovEmailInput && (
-                <NonGovEmailCannotBeAdmin />
-              )}
+              {watch("role") === RoleType.Admin && <AddAdminWarning />}
             </VStack>
           </VStack>
         </ModalBody>
@@ -267,7 +256,6 @@ export const AddUserModal = () => {
                 email === "" ||
                 additionalEmailError ||
                 email !== debouncedEmail || // check if email has changed
-                (watch("role") === RoleType.Admin && isNonGovEmailInput) ||
                 !isSingpassEnabled
               }
             >

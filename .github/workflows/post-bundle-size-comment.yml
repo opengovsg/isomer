@@ -1,0 +1,127 @@
+name: Post bundle size comment
+
+# Why a separate workflow instead of a job inside bundle-size.yml?
+#
+# GitHub hard-restricts the GITHUB_TOKEN to read-only for `pull_request`
+# events triggered by a fork, regardless of what the `permissions:` block
+# declares. Posting a PR comment requires write access, so this step would
+# always 403 on fork PRs if it ran inside bundle-size.yml.
+#
+# The `workflow_run` trigger is the official GitHub workaround: it fires after
+# the target workflow completes but runs in the BASE repo's context, so
+# GITHUB_TOKEN always has the permissions declared below — even when the
+# triggering PR came from a fork.
+#
+# Listening to "bundle-size" specifically (rather than the full "CI"
+# workflow) means this fires as soon as that job completes, instead of
+# waiting on ci.yml's slower jobs (end-to-end-tests, test-studio, etc).
+#
+# This job downloads a small metadata artifact written by bundle-size.yml,
+# since the two workflows run in separate contexts and can't share
+# environment variables.
+#
+# That artifact is untrusted: bundle-size.yml runs with the PR's own
+# (possibly forked, possibly modified) workflow file, so anything it writes
+# is attacker-controlled. This job therefore treats values.env as data only —
+# never `source`d or otherwise executed, only parsed after validating every
+# value is a plain non-negative integer — and never runs a script the
+# artifact supplied. comment-template-bundle-size.sh instead comes from this
+# job's own checkout of the trusted base-repo ref.
+on:
+  workflow_run:
+    workflows: ["bundle-size"]
+    types: [completed]
+
+permissions:
+  contents: read # needed by actions/checkout to fetch the trusted comment script
+  actions: read # needed by actions/download-artifact to access a different run's artifacts
+  pull-requests: read # needed to resolve the PR number from the trusted workflow_run head ref
+  issues: write # GitHub routes PR comments through the issues API endpoint
+
+jobs:
+  post-bundle-size-comment:
+    # Only run for PR triggers; push runs on main/staging/production don't have
+    # a PR to comment on.
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: .github/scripts
+
+      # Does NOT trust the artifact's PR_NUMBER (see below) as the PR to
+      # comment on: bundle-size.yml runs with the PR's own (possibly forked,
+      # possibly modified) workflow file, so a malicious PR could upload
+      # PR_NUMBER=<any issue> and redirect this privileged comment elsewhere.
+      # head_sha/head_repository/head_branch instead come from the
+      # workflow_run event payload itself, populated by GitHub's own
+      # infrastructure — a fork can't forge these by editing its workflow.
+      - name: Resolve PR from trusted workflow_run head ref
+        id: pr
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          result-encoding: string
+          script: |
+            const headSha = context.payload.workflow_run.head_sha
+            const headRepo = context.payload.workflow_run.head_repository
+            const headBranch = context.payload.workflow_run.head_branch
+            if (!headSha || !headRepo?.owner?.login || !headBranch) {
+              core.warning("Missing workflow_run head metadata; skipping.")
+              return ""
+            }
+            const headRef = `${headRepo.owner.login}:${headBranch}`
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              head: headRef,
+            })
+            const matches = pulls.filter((p) => p.head.sha === headSha)
+            if (matches.length !== 1) {
+              core.warning(
+                `Expected exactly 1 open PR for ${headRef}@${headSha}, found ${matches.length}; skipping.`,
+              )
+              return ""
+            }
+            return String(matches[0].number)
+
+      - name: Download bundle size metadata
+        id: download
+        # Absent when components-bundle-size was skipped (no component changes
+        # or optimizer short-circuit); gate subsequent steps on outcome.
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: bundle-size-metadata
+          path: /tmp/bundle-size-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      # Every expected key is a plain non-negative integer (a byte count or a
+      # PR number) — reject anything else instead of trusting it, so a
+      # malicious values.env (e.g. `PR_TOTAL=1; curl ...`) fails here rather
+      # than executing. GITHUB_ENV, not `source`: the file is data, never a
+      # script. PR_NUMBER is skipped entirely: it's still untrusted even
+      # though it's a plain integer (see "Resolve PR" above), so it must never
+      # reach GITHUB_ENV, let alone override the trusted value set below.
+      - name: Validate and load bundle size metadata
+        id: metadata
+        if: steps.download.outcome == 'success'
+        run: |
+          set -euo pipefail
+          while IFS= read -r line; do
+            [ -z "$line" ] && continue
+            if [[ ! "$line" =~ ^[A-Z_]+=[0-9]+$ ]]; then
+              echo "::error::Unexpected content in values.env, refusing to load it"
+              exit 1
+            fi
+            [[ "$line" == PR_NUMBER=* ]] && continue
+            echo "$line" >> "$GITHUB_ENV"
+          done < /tmp/bundle-size-metadata/values.env
+
+      - name: Post bundle size comment
+        if: steps.metadata.outcome == 'success' && steps.pr.outputs.result != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.pr.outputs.result }}
+        run: bash .github/scripts/comment-template-bundle-size.sh
