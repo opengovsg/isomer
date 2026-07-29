@@ -2,6 +2,10 @@ import { TRPCError } from "@trpc/server"
 import { resetTables } from "tests/integration/helpers/db"
 import { setupIsomerAdmin, setupUser } from "tests/integration/helpers/seed"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  GAZETTE_CATEGORY_LABEL,
+  GAZETTE_SUBCATEGORY_LABEL,
+} from "~/features/gazettes/constants"
 import * as s3Lib from "~/lib/s3"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
@@ -19,6 +23,7 @@ import {
   copyFileWithNewName,
   getPresignedPutUrl,
   removeGazetteFromAlgolia,
+  resolveGazetteTagLabels,
 } from "../gazette.service"
 
 describe("gazette.service", () => {
@@ -71,6 +76,61 @@ describe("gazette.service", () => {
       await expect(
         assertGazetteAccess("11111111-1111-1111-1111-111111111111"),
       ).rejects.toThrowError(new TRPCError({ code: "INTERNAL_SERVER_ERROR" }))
+    })
+  })
+
+  describe("resolveGazetteTagLabels", () => {
+    const TAG_CATEGORIES = [
+      {
+        label: GAZETTE_CATEGORY_LABEL,
+        options: [
+          { id: "cat-gov", label: "Government Gazette" },
+          { id: "cat-leg", label: "Legislative Supplements" },
+        ],
+      },
+      {
+        label: GAZETTE_SUBCATEGORY_LABEL,
+        options: [
+          { id: "sub-notices", label: "Notices under other Acts" },
+          { id: "sub-appointments", label: "Appointments" },
+        ],
+      },
+    ]
+
+    it("resolves both labels when tagged contains one uuid from each tagCategory", () => {
+      const result = resolveGazetteTagLabels({
+        tagged: ["sub-appointments", "cat-gov"],
+        tagCategories: TAG_CATEGORIES,
+      })
+
+      expect(result).toEqual({
+        categoryLabel: "Government Gazette",
+        subcategoryLabel: "Appointments",
+      })
+    })
+
+    it("leaves categoryLabel undefined when tagged has no matching category option", () => {
+      const result = resolveGazetteTagLabels({
+        tagged: ["sub-notices"],
+        tagCategories: TAG_CATEGORIES,
+      })
+
+      expect(result).toEqual({
+        categoryLabel: undefined,
+        subcategoryLabel: "Notices under other Acts",
+      })
+    })
+
+    it("returns both undefined when tagCategories has no matching labels", () => {
+      const result = resolveGazetteTagLabels({
+        tagged: ["cat-gov", "sub-notices"],
+        tagCategories: [],
+      })
+
+      expect(result).toEqual({
+        categoryLabel: undefined,
+        subcategoryLabel: undefined,
+      })
     })
   })
 

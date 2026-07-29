@@ -4,7 +4,11 @@ import filenamify from "filenamify"
 import { PdfReader } from "pdfreader"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { env } from "~/env.mjs"
-import { GazetteCategories } from "~/features/gazettes/constants"
+import {
+  GAZETTE_CATEGORY_LABEL,
+  GAZETTE_SUBCATEGORY_LABEL,
+  GazetteCategories,
+} from "~/features/gazettes/constants"
 import { deleteObjectsFromSearchIndexByFilter } from "~/lib/algolia"
 import { createBaseLogger } from "~/lib/logger"
 import {
@@ -494,6 +498,47 @@ export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
     { count: documents.length },
     "Successfully pushed documents for ingestion",
   )
+}
+
+export interface GazetteTagCategoryOption {
+  id: string
+  label: string
+}
+
+export interface GazetteTagCategory {
+  label: string
+  options: GazetteTagCategoryOption[]
+}
+
+/**
+ * Resolves the human-readable category and subcategory labels for a gazette
+ * item's `tagged` uuids by matching each against the tagCategory whose
+ * `label` is `GAZETTE_CATEGORY_LABEL` / `GAZETTE_SUBCATEGORY_LABEL`.
+ * Matches by option-uuid membership, not by array position, since `tagged`
+ * holds one uuid per tagCategory in no particular order.
+ */
+export const resolveGazetteTagLabels = ({
+  tagged,
+  tagCategories,
+}: {
+  tagged: string[]
+  tagCategories: GazetteTagCategory[]
+}): { categoryLabel?: string; subcategoryLabel?: string } => {
+  const categoryTagCategory = tagCategories.find(
+    (tagCategory) => tagCategory.label === GAZETTE_CATEGORY_LABEL,
+  )
+  const subcategoryTagCategory = tagCategories.find(
+    (tagCategory) => tagCategory.label === GAZETTE_SUBCATEGORY_LABEL,
+  )
+
+  const categoryLabel = categoryTagCategory?.options.find((option) =>
+    tagged.includes(option.id),
+  )?.label
+  const subcategoryLabel = subcategoryTagCategory?.options.find((option) =>
+    tagged.includes(option.id),
+  )?.label
+
+  return { categoryLabel, subcategoryLabel }
 }
 
 /**

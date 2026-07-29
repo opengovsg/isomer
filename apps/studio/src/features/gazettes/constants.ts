@@ -14,6 +14,8 @@ export const GAZETTE_CATEGORIES: { label: string; value: string }[] =
     value: category,
   }))
 
+export const GAZETTE_CATEGORY_LABEL = "Category"
+
 export const GAZETTE_SUBCATEGORY_LABEL = "Sub-category"
 
 export const governmentGazetteSubcategories = {
