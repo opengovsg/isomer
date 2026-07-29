@@ -32,6 +32,21 @@ export interface SearchRecord {
   [key: string]: unknown
 }
 
+/**
+ * Derive a gazette's objectGroup — the S3 key (no leading slash), shared by
+ * every Search Record belonging to that gazette — from its page ref.
+ */
+export const objectGroupFromRef = (ref: string): string => ref.slice(1)
+
+/**
+ * Algolia filter expression matching every Search Record sharing a gazette's
+ * objectGroup. Wrapped in double quotes because objectGroup contains forward
+ * slashes and a dot (e.g. "2026/cat/sub/file.pdf") which Algolia's filter
+ * parser would otherwise mis-tokenise.
+ */
+export const buildGazetteObjectGroupFilter = (objectGroup: string): string =>
+  `objectGroup:"${objectGroup}"`
+
 export interface BuildGazetteSearchRecordsParams {
   parsedText: string
   objectGroup: string

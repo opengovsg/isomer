@@ -38,12 +38,15 @@ import { confirm, input } from "@inquirer/prompts"
 import fs from "fs"
 
 import {
+  buildGazetteObjectGroupFilter,
   buildGazetteSearchRecords,
   createAlgoliaClient,
+  objectGroupFromRef,
   parseFullTextFromPDF,
 } from "@isomer/algolia"
 
 import { withDbClient } from "../utils/db"
+import { isGazettePageContent, parseResourceIdsCsv } from "../utils/gazette"
 
 // Row returned by the resource lookup. content is the coalesced published /
 // draft blob content (published preferred). scheduledAt is the gazette's
@@ -57,36 +60,12 @@ interface GazetteResourceRow {
   scheduledAt: string | null
 }
 
-// Minimal shape of the gazette blob content the script reads.
-interface GazettePageContent {
-  page: {
-    ref: string
-    category: string
-    tagged: string[]
-    description?: string
-  }
-}
-
 // Minimal shape of the parent IndexPage published blob, used to map a tag id
 // to its human-readable subcategory label.
 interface IndexPageContent {
   page: {
     tagCategories: { options: { id: string; label: string }[] }[]
   }
-}
-
-const isGazettePageContent = (
-  content: unknown,
-): content is GazettePageContent => {
-  if (typeof content !== "object" || content === null) return false
-  const page = (content as { page?: unknown }).page
-  if (typeof page !== "object" || page === null) return false
-  const p = page as Record<string, unknown>
-  return (
-    typeof p.ref === "string" &&
-    typeof p.category === "string" &&
-    Array.isArray(p.tagged)
-  )
 }
 
 const isIndexPageContent = (content: unknown): content is IndexPageContent => {
@@ -189,21 +168,9 @@ export const repairGazetteSearchRecords = async (): Promise<void> => {
     )
     return
   }
-  const resourceIdsInput = fs.readFileSync(inputCsvPath, "utf-8")
-  // Accept newlines, commas and/or whitespace as separators. Resource IDs are
-  // numeric (BigInt primary keys), so keep only digit-only tokens — this also
-  // ignores any header line. Strip leading zeros so the tokens match the
-  // canonical decimal form Postgres returns for BigInt ids (an ID pasted as
-  // "007" must still find row "7").
-  const resourceIds = [
-    ...new Set(
-      resourceIdsInput
-        .split(/[\s,]+/)
-        .map((id) => id.trim())
-        .filter((id) => id !== "" && /^\d+$/.test(id))
-        .map((id) => id.replace(/^0+(?=\d)/, "")),
-    ),
-  ]
+  const resourceIds = parseResourceIdsCsv(
+    fs.readFileSync(inputCsvPath, "utf-8"),
+  )
 
   if (resourceIds.length === 0) {
     console.error(`No valid resource IDs found in ${inputCsvPath}.`)
@@ -264,9 +231,7 @@ export const repairGazetteSearchRecords = async (): Promise<void> => {
         id: row.id,
         title: row.title,
         ref,
-        // objectGroup is the S3 key (no leading slash), matching egazette's
-        // objectKey convention.
-        objectGroup: ref.slice(1),
+        objectGroup: objectGroupFromRef(ref),
         category,
         tagged,
         description,
@@ -370,7 +335,7 @@ export const repairGazetteSearchRecords = async (): Promise<void> => {
         // submission order, so the delete always completes before the save —
         // there is no race between the two.
         await deleteObjectsFromSearchIndexByFilter(
-          `objectGroup:"${gazette.objectGroup}"`,
+          buildGazetteObjectGroupFilter(gazette.objectGroup),
         )
         await saveObjectsToSearchIndex(records)
 
