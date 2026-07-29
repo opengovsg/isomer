@@ -25,7 +25,7 @@ const EGAZETTE_COMPLIANCE_HOLD_IN_DAYS = 10000
 // Unlike Key params (which the SDK URL-encodes), CopySource is sent verbatim
 // as the x-amz-copy-source header, so keys with spaces or reserved characters
 // (e.g. "2026/Government Gazette/...") must be encoded per path segment here.
-const getEncodedCopySource = (Bucket?: string, Key?: string) =>
+const getEncodedCopySource = (Bucket: string, Key: string) =>
   `${Bucket}/${Key?.split("/").map(encodeURIComponent).join("/")}`
 
 // R2 credentials are only set for preview, but the choice of backend is
@@ -171,6 +171,9 @@ export const setAssetAsPublished = async ({
   // lock every test upload. The GuardDuty malware-scan tag check is also
   // moot, since GuardDuty is an AWS-only service that never scans R2 objects.
   if (isR2Configured) return
+  if (!Bucket) throw new Error("Bucket must be defined")
+  if (!Key) throw new Error("Key must be defined")
+
   const objectTag = await storage.send(
     new GetObjectTaggingCommand({
       Bucket,
@@ -275,6 +278,8 @@ export const copyFile = async ({
   SourceKey: string
   DestKey: string
 }) => {
+  if (!Bucket) throw new Error("Bucket must be defined")
+
   return storage.send(
     new CopyObjectCommand({
       Bucket,
