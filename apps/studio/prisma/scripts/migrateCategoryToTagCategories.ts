@@ -168,8 +168,21 @@ export const appendTagged = (
   return [...current, optionId]
 }
 
+export const taggedArraysEqual = (
+  current: string[] | undefined,
+  next: string[],
+): boolean => {
+  const left = current ?? []
+  if (left.length !== next.length) return false
+  return left.every((value, index) => value === next[index])
+}
+
 export interface MigrationPlanItem {
   resourceId: string
+  /** When false, skip draft-side category collection and tagging. Defaults to true. */
+  hasDraft?: boolean
+  /** When false, skip published-side category collection and tagging. Defaults to true. */
+  hasPublished?: boolean
   draftCategory?: string
   draftTagged?: string[]
   publishedCategory?: string
@@ -195,19 +208,21 @@ export type MigrationPlan =
 export const buildMigrationPlan = ({
   items,
   existingGroup,
-  targetStates = new Set<MigrationState>(["draft", "published"]),
   generateId = randomUUID,
 }: {
   items: MigrationPlanItem[]
   existingGroup?: TagCategoryGroup
-  targetStates?: ReadonlySet<MigrationState>
   generateId?: () => string
 }): MigrationPlan => {
   const categories = deriveDistinctCategories(
-    items.flatMap((item) => [
-      ...(targetStates.has("draft") ? [item.draftCategory] : []),
-      ...(targetStates.has("published") ? [item.publishedCategory] : []),
-    ]),
+    items.flatMap((item) => {
+      const includeDraft = item.hasDraft ?? true
+      const includePublished = item.hasPublished ?? true
+      return [
+        ...(includeDraft ? [item.draftCategory] : []),
+        ...(includePublished ? [item.publishedCategory] : []),
+      ]
+    }),
   )
   if (categories.length === 0 && !existingGroup) {
     return { status: "no-categories", itemUpdates: [] }
@@ -239,6 +254,8 @@ export const buildMigrationPlan = ({
   const itemUpdates = items.flatMap(
     ({
       resourceId,
+      hasDraft,
+      hasPublished,
       draftCategory,
       draftTagged,
       publishedCategory,
@@ -246,29 +263,35 @@ export const buildMigrationPlan = ({
     }): ItemTagUpdate[] => {
       const updates: ItemTagUpdate[] = []
 
-      if (targetStates.has("draft")) {
+      if (hasDraft ?? true) {
         const draftOptionId = draftCategory
           ? optionIdByLabel.get(normalizedCategoryKey(draftCategory))
           : undefined
         if (draftOptionId) {
-          updates.push({
-            resourceId,
-            state: "draft",
-            tagged: appendTagged(draftTagged, draftOptionId),
-          })
+          const tagged = appendTagged(draftTagged, draftOptionId)
+          if (!taggedArraysEqual(draftTagged, tagged)) {
+            updates.push({
+              resourceId,
+              state: "draft",
+              tagged,
+            })
+          }
         }
       }
 
-      if (targetStates.has("published")) {
+      if (hasPublished ?? true) {
         const publishedOptionId = publishedCategory
           ? optionIdByLabel.get(normalizedCategoryKey(publishedCategory))
           : undefined
         if (publishedOptionId) {
-          updates.push({
-            resourceId,
-            state: "published",
-            tagged: appendTagged(publishedTagged, publishedOptionId),
-          })
+          const tagged = appendTagged(publishedTagged, publishedOptionId)
+          if (!taggedArraysEqual(publishedTagged, tagged)) {
+            updates.push({
+              resourceId,
+              state: "published",
+              tagged,
+            })
+          }
         }
       }
 
@@ -693,20 +716,10 @@ export const migrateCollection = async ({
       }
     }
 
-    const targetStates = new Set<MigrationState>()
-    if (indexRow.draftContent && !draftGroup) targetStates.add("draft")
+    const indexTargetStates = new Set<MigrationState>()
+    if (indexRow.draftContent && !draftGroup) indexTargetStates.add("draft")
     if (indexRow.publishedContent && !publishedGroup) {
-      targetStates.add("published")
-    }
-
-    if (targetStates.size === 0) {
-      return {
-        collectionId,
-        status: "already-migrated",
-        categories: [],
-        itemsUpdated: 0,
-        versionsCreated: 0,
-      }
+      indexTargetStates.add("published")
     }
 
     const itemRows = await getItemRows(executor, collectionId, siteId)
@@ -715,16 +728,27 @@ export const migrateCollection = async ({
     const plan = buildMigrationPlan({
       items: itemRows.map((row) => ({
         resourceId: row.resourceId,
+        hasDraft: row.draftContent != null,
+        hasPublished: row.publishedContent != null,
         draftCategory: row.draftContent?.page.category,
         draftTagged: row.draftContent?.page.tagged,
         publishedCategory: row.publishedContent?.page.category,
         publishedTagged: row.publishedContent?.page.tagged,
       })),
       existingGroup,
-      targetStates,
     })
 
-    const indexStatesToUpdate = new Set(targetStates)
+    if (plan.status === "no-categories") {
+      return {
+        collectionId,
+        status: "no-categories",
+        categories: [],
+        itemsUpdated: 0,
+        versionsCreated: 0,
+      }
+    }
+
+    const indexStatesToUpdate = new Set(indexTargetStates)
     if (
       plan.status === "migrated" &&
       existingGroup &&
@@ -734,18 +758,25 @@ export const migrateCollection = async ({
       if (publishedGroup) indexStatesToUpdate.add("published")
     }
 
-    const categories =
-      plan.status === "migrated" ? plan.group.options.map((o) => o.label) : []
+    if (indexStatesToUpdate.size === 0 && plan.itemUpdates.length === 0) {
+      return {
+        collectionId,
+        status: "already-migrated",
+        categories: [],
+        itemsUpdated: 0,
+        versionsCreated: 0,
+      }
+    }
+
+    const categories = plan.group.options.map((o) => o.label)
     const itemsUpdated = new Set(plan.itemUpdates.map((u) => u.resourceId)).size
     // New Versions this run will (or, in dry-run, would) create — the index's
     // published side plus one per item published-side update.
     const versionsCreated =
-      plan.status === "migrated"
-        ? (indexStatesToUpdate.has("published") ? 1 : 0) +
-          plan.itemUpdates.filter((u) => u.state === "published").length
-        : 0
+      (indexStatesToUpdate.has("published") ? 1 : 0) +
+      plan.itemUpdates.filter((u) => u.state === "published").length
 
-    if (plan.status !== "migrated" || dryRun) {
+    if (dryRun) {
       return {
         collectionId,
         status: plan.status,
