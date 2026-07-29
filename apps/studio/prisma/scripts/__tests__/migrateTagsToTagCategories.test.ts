@@ -27,6 +27,7 @@ import {
   buildTagGroupsFromLegacyTags,
   collateLegacyTags,
   filterGroupsToAdd,
+  filterItemUpdatesWithChanges,
   hasMatchingTagGroup,
   main,
   migrateCollection,
@@ -34,6 +35,8 @@ import {
   reconcileMigrationWork,
   resolveOptionIdsFromLegacyTags,
   resolveSiteIds,
+  type ItemTaggedState,
+  type ItemTagUpdate,
   type LegacyTag,
   type ReconciledMigrationWork,
   type TagCategoryGroup,
@@ -727,6 +730,63 @@ describe("filterGroupsToAdd", () => {
     expect(filterGroupsToAdd(existing, candidates).map((g) => g.label)).toEqual(
       ["Region"],
     )
+  })
+})
+
+describe("filterItemUpdatesWithChanges", () => {
+  const taggedState = (
+    resourceId: string,
+    tagged: { draft?: string[]; published?: string[] },
+  ): ItemTaggedState => ({
+    resourceId,
+    draftContent: tagged.draft ? { page: { tagged: tagged.draft } } : null,
+    publishedContent: tagged.published
+      ? { page: { tagged: tagged.published } }
+      : null,
+  })
+
+  it("drops updates whose side already carries exactly the expected tagged array", () => {
+    // The published side is already tagged, the draft side is not. Counting the
+    // published update would report a Version the write loop never creates.
+    const itemUpdates: ItemTagUpdate[] = [
+      { resourceId: "1", state: "draft", tagged: ["opt-news"] },
+      { resourceId: "1", state: "published", tagged: ["opt-news"] },
+    ]
+    const rows = [taggedState("1", { draft: [], published: ["opt-news"] })]
+
+    expect(filterItemUpdatesWithChanges(itemUpdates, rows)).toEqual([
+      { resourceId: "1", state: "draft", tagged: ["opt-news"] },
+    ])
+  })
+
+  it("keeps updates that append to, reorder, or populate an empty tagged array", () => {
+    const itemUpdates: ItemTagUpdate[] = [
+      { resourceId: "append", state: "published", tagged: ["a", "b"] },
+      { resourceId: "reorder", state: "published", tagged: ["a", "b"] },
+      { resourceId: "empty", state: "published", tagged: ["a"] },
+    ]
+    const rows = [
+      taggedState("append", { published: ["a"] }),
+      taggedState("reorder", { published: ["b", "a"] }),
+      // No `tagged` key at all — treated as empty, not as "already equal".
+      {
+        resourceId: "empty",
+        draftContent: null,
+        publishedContent: { page: {} },
+      },
+    ]
+
+    expect(
+      filterItemUpdatesWithChanges(itemUpdates, rows).map((u) => u.resourceId),
+    ).toEqual(["append", "reorder", "empty"])
+  })
+
+  it("drops updates with no matching item row", () => {
+    const itemUpdates: ItemTagUpdate[] = [
+      { resourceId: "missing", state: "published", tagged: ["a"] },
+    ]
+
+    expect(filterItemUpdatesWithChanges(itemUpdates, [])).toEqual([])
   })
 })
 

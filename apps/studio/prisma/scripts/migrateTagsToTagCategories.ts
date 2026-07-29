@@ -382,28 +382,40 @@ const taggedArraysEqual = (
   return a.every((id, index) => id === next[index])
 }
 
-const countItemsWithTagChanges = (
+/** The `tagged` state an item update is compared against, per side. */
+export interface ItemTaggedState {
+  resourceId: string
+  draftContent: CollectionItemContent | null
+  publishedContent: CollectionItemContent | null
+}
+
+/**
+ * Drops updates whose side already carries exactly the expected `tagged` array
+ * (and updates with no matching row). Single source of truth for "will this
+ * update actually write?" — the reported counts and the write loop must agree,
+ * or the logs claim versions that were never created.
+ */
+export const filterItemUpdatesWithChanges = (
   itemUpdates: ItemTagUpdate[],
-  itemRows: Awaited<ReturnType<typeof getItemRows>>,
-): number => {
+  itemRows: ItemTaggedState[],
+): ItemTagUpdate[] => {
   const itemRowByResourceId = new Map(
     itemRows.map((row) => [row.resourceId, row]),
   )
 
-  return new Set(
-    itemUpdates
-      .filter((update) => {
-        const row = itemRowByResourceId.get(update.resourceId)
-        if (!row) return false
-        const currentTagged =
-          update.state === "draft"
-            ? row.draftContent?.page.tagged
-            : row.publishedContent?.page.tagged
-        return !taggedArraysEqual(currentTagged, update.tagged)
-      })
-      .map((update) => update.resourceId),
-  ).size
+  return itemUpdates.filter((update) => {
+    const row = itemRowByResourceId.get(update.resourceId)
+    if (!row) return false
+    const currentTagged =
+      update.state === "draft"
+        ? row.draftContent?.page.tagged
+        : row.publishedContent?.page.tagged
+    return !taggedArraysEqual(currentTagged, update.tagged)
+  })
 }
+
+const countDistinctResources = (itemUpdates: ItemTagUpdate[]): number =>
+  new Set(itemUpdates.map((update) => update.resourceId)).size
 
 export const buildItemUpdates = ({
   items,
@@ -1093,12 +1105,16 @@ export const migrateCollection = async ({
 
   const groups =
     plan.status === "migrated" ? summarizeMigrationGroups(reconciled) : []
-  const itemsUpdated = countItemsWithTagChanges(
+  // Updates that will actually write. Anything already carrying the expected
+  // `tagged` array is dropped here rather than in the write loop, so the
+  // reported counts below can never claim work the loop then skips.
+  const itemUpdatesToWrite = filterItemUpdatesWithChanges(
     reconciled.itemUpdates,
     itemRows,
   )
+  const itemsUpdated = countDistinctResources(itemUpdatesToWrite)
   // New Versions this run will (or, in dry-run, would) create — the index's
-  // published side plus one per item published-side update.
+  // published side plus one per item published-side write.
   const versionsCreated =
     plan.status === "migrated"
       ? (indexRow.publishedContent &&
@@ -1106,7 +1122,7 @@ export const migrateCollection = async ({
           reconciled.publishedGroupOptionPatches.length > 0)
           ? 1
           : 0) +
-        reconciled.itemUpdates.filter((u) => u.state === "published").length
+        itemUpdatesToWrite.filter((u) => u.state === "published").length
       : 0
 
   if (plan.status !== "migrated" || dryRun) {
@@ -1186,17 +1202,10 @@ export const migrateCollection = async ({
     const itemRowByResourceId = new Map(
       itemRows.map((row) => [row.resourceId, row]),
     )
-    for (const update of reconciled.itemUpdates) {
+    // Already filtered to updates that change something — see itemUpdatesToWrite.
+    for (const update of itemUpdatesToWrite) {
       const row = itemRowByResourceId.get(update.resourceId)
       if (!row) continue
-
-      const currentTagged =
-        update.state === "draft"
-          ? row.draftContent?.page.tagged
-          : row.publishedContent?.page.tagged
-      if (taggedArraysEqual(currentTagged, update.tagged)) {
-        continue
-      }
 
       if (
         update.state === "draft" &&
