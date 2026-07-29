@@ -59,7 +59,7 @@ before re-submitting.
 
 1. Collect the resource IDs of the affected gazettes (Isomer `Resource.id`,
    not the egazette notification number). From `tooling/scripts`, write them
-   to `isomer-admin/input/resource-ids.csv`, one per line (commas also
+   to `./input/resource-ids.csv`, one per line (commas also
    accepted; header lines are ignored; leading zeros are stripped
    automatically).
 2. Run the admin CLI:
