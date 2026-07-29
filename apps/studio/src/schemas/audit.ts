@@ -8,9 +8,44 @@ import {
 } from "date-fns"
 import { formatInTimeZone } from "date-fns-tz"
 import { z } from "zod"
+import {
+  FutureMonthError,
+  MonthRangeError,
+} from "~/server/modules/audit/audit.errors"
 import { AuditLogExportReportType } from "~prisma/generated/generatedEnums"
 
 const SINGAPORE_TIME_ZONE = "Asia/Singapore"
+
+export const validateIsNotFutureMonth = (
+  requestedMonth: string,
+): FutureMonthError | true => {
+  const currentMonth = getCurrentSingaporeMonth()
+  const requestedMonthDate = parseISO(`${requestedMonth}-01`)
+  const currentMonthDate = parseISO(`${currentMonth}-01`)
+  if (
+    !isSameMonth(requestedMonthDate, currentMonthDate) &&
+    isAfter(requestedMonthDate, currentMonthDate)
+  ) {
+    return new FutureMonthError(requestedMonth)
+  }
+
+  return true
+}
+
+export const validateIsMonthInPastYear = (
+  requestedMonth: string,
+): boolean | MonthRangeError => {
+  const parsed = parseISO(`${requestedMonth}-01`)
+  const earliest = parseISO(
+    `${getEarliestExportableMonth(getCurrentSingaporeMonth())}-01`,
+  )
+
+  if (!isSameMonth(parsed, earliest) && isBefore(parsed, earliest)) {
+    return new MonthRangeError(requestedMonth)
+  }
+
+  return true
+}
 
 // What the user may ask for. `Both` is UX vocabulary only — the service
 // fans it out into two AuditLogExportRequest rows (Access + Activity);
@@ -112,9 +147,8 @@ export const createAuditLogExportRequestSchema = z.object({
     })
     .refine(
       (month) => {
-        const parsed = parseISO(`${month}-01`)
-        const current = parseISO(`${getCurrentSingaporeMonth()}-01`)
-        return isSameMonth(parsed, current) || isBefore(parsed, current)
+        const possibleError = validateIsNotFutureMonth(month)
+        return possibleError === true
       },
       {
         message:
@@ -123,11 +157,8 @@ export const createAuditLogExportRequestSchema = z.object({
     )
     .refine(
       (month) => {
-        const parsed = parseISO(`${month}-01`)
-        const earliest = parseISO(
-          `${getEarliestExportableMonth(getCurrentSingaporeMonth())}-01`,
-        )
-        return isSameMonth(parsed, earliest) || isAfter(parsed, earliest)
+        const possibleError = validateIsMonthInPastYear(month)
+        return possibleError === true
       },
       { message: "You can only export audit logs from the past 12 months" },
     )

@@ -1,12 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import {
-  addDays,
-  format,
-  isAfter,
-  isBefore,
-  isSameMonth,
-  parseISO,
-} from "date-fns"
+import { addDays, format, parseISO } from "date-fns"
 import { sql } from "kysely"
 import {
   sendAuditLogExportFailedEmail,
@@ -22,8 +15,8 @@ import {
 import {
   AuditLogExportRequestedReportType,
   type CreateAuditLogExportRequestInput,
-  getCurrentSingaporeMonth,
-  getEarliestExportableMonth,
+  validateIsMonthInPastYear,
+  validateIsNotFutureMonth,
 } from "~/schemas/audit"
 
 import type { BaseLogger } from "@isomer/logging"
@@ -75,33 +68,13 @@ export const createAuditLogExportRequest = async ({
   month,
   reportType,
 }: CreateAuditLogExportRequestProps) => {
-  // Reject months outside the allowed window (in Singapore time). This mirrors
-  // the schema's window refinements as defense-in-depth, and uses the same
-  // date-fns comparators (parseISO + isBefore/isAfter/isSameMonth) so the
-  // comparison style stays consistent with schemas/audit.ts.
-  const currentMonth = getCurrentSingaporeMonth()
-  const requestedMonthDate = parseISO(`${month}-01`)
-  const currentMonthDate = parseISO(`${currentMonth}-01`)
-  if (
-    !isSameMonth(requestedMonthDate, currentMonthDate) &&
-    isAfter(requestedMonthDate, currentMonthDate)
-  ) {
+  const possibleError =
+    validateIsNotFutureMonth(month) ?? validateIsMonthInPastYear(month)
+  if (possibleError !== true) {
+    logger.warn(possibleError)
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "You cannot export audit logs for a month that is in the future",
-    })
-  }
-
-  const earliestMonthDate = parseISO(
-    `${getEarliestExportableMonth(currentMonth)}-01`,
-  )
-  if (
-    !isSameMonth(requestedMonthDate, earliestMonthDate) &&
-    isBefore(requestedMonthDate, earliestMonthDate)
-  ) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "You can only export audit logs from the past 12 months",
+      message: possibleError.message,
     })
   }
 
