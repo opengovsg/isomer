@@ -222,6 +222,16 @@ describe("hasCategoryGroup", () => {
     ).toBe(true)
   })
 
+  it("matches Category labels using Studio's trimmed, case-insensitive duplicate rules", () => {
+    const categoryGroup: TagCategoryGroup = {
+      id: "cat-1",
+      label: " category ",
+      options: [{ id: "c-1", label: "Guides" }],
+    }
+
+    expect(hasCategoryGroup([categoryGroup])).toBe(true)
+  })
+
   it("returns false when other groups exist but none are labeled Category", () => {
     expect(
       hasCategoryGroup([

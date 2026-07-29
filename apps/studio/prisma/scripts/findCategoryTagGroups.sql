@@ -1,9 +1,10 @@
 -- Audit: Collection Index pages (draft or published) that already have a
--- tagCategories group labeled "Category".
+-- tagCategories group with a trimmed, case-insensitive "Category" label.
 --
 -- Run before migrateCategoryToTagCategories.ts. An empty result means the
 -- label-based skip guard is safe for that database (no pre-existing
--- "Category" groups that would be mistaken for a completed migration).
+-- "Category"-equivalent groups that would be mistaken for a completed
+-- migration).
 --
 -- Optional: uncomment the siteId filter to scope to one site.
 
@@ -39,6 +40,6 @@ CROSS JOIN LATERAL jsonb_array_elements(
   END
 ) AS tag_group
 WHERE index_page.type = 'IndexPage'
-  AND tag_group->>'label' = 'Category'
+  AND LOWER(TRIM(tag_group->>'label')) = 'category'
   -- AND index_page."siteId" = 123
 ORDER BY index_page."siteId", collection.title, blob_side.state;

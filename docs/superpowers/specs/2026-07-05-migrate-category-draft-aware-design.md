@@ -15,7 +15,7 @@ This design makes both the Index page and every Collection Item's draft and publ
 
 ## Goals
 
-- A category value in *either* a draft or published `category` field gets an option slot in the Index's new "Category" tagCategories group.
+- A category value in _either_ a draft or published `category` field gets an option slot in the Index's new "Category" tagCategories group.
 - Both the draft and published blob (whichever exist) for the Index and for every Item get updated, each self-consistent with its own `category` value.
 - Published-side changes go through proper version history (new Blob + new Version + bumped `publishedVersionId`), not an in-place rewrite of a historical Blob row.
 - Draft-side changes never trigger a publish — a draft may contain unrelated pending edits that aren't ready to ship.
@@ -71,9 +71,9 @@ Every new `Version` row requires a valid `publishedBy` user id (NOT NULL FK to `
 
 ### 6. Idempotency
 
-Idempotent via label: before building a plan, `migrateCollection` checks `hasCategoryGroup` against both the draft and published `tagCategories` for the Index. If either side already has a group labeled "Category", the collection is skipped entirely (status `"already-migrated"`, no writes) — this covers both re-runs and collections a human has already migrated in Studio.
+Idempotent via label: before building a plan, `migrateCollection` checks `hasCategoryGroup` against both the draft and published `tagCategories` for the Index. If either side already has a group whose trimmed, case-insensitive label matches "Category", the collection is skipped entirely (status `"already-migrated"`, no writes) — this covers both re-runs and collections a human has already migrated in Studio while matching Studio's duplicate-label rules.
 
-Risk accepted: a human-created group with that exact label is also skipped, so its legacy `category` values would not be migrated. Operators must audit for pre-existing "Category" groups with `findCategoryTagGroups.sql` before the first run against an environment.
+Risk accepted: a human-created group with an equivalent label is also skipped, so its legacy `category` values would not be migrated. Operators must audit for pre-existing "Category"-equivalent groups with `findCategoryTagGroups.sql` before the first run against an environment.
 
 `no-categories` remains a separate status (no item has any category value on either side, on a Collection that passed the label check) — that's a data condition, not an idempotency check.
 

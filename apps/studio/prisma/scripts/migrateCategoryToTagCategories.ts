@@ -21,9 +21,9 @@
  *     that aren't ready to ship.
  *
  * Idempotent via label: if the Index already has a tagCategories group
- * labeled "Category" (draft or published), the collection is skipped.
- * Risk accepted: a human-created group with that exact label is also
- * skipped (legacy `category` values would not be migrated). Audit with
+ * labeled "Category" (trimmed and case-insensitive, draft or published), the
+ * collection is skipped. Risk accepted: a human-created equivalent label is
+ * also skipped (legacy `category` values would not be migrated). Audit with
  * `findCategoryTagGroups.sql` before running against an environment.
  *
  * Risk accepted: items with an empty legacy category (common for Collection
@@ -442,11 +442,15 @@ const appendCategoryGroup = (
   group,
 ]
 
-/** True if any group is labeled "Category" — the migration's skip signal. */
+/** True if any group has a label equivalent to "Category" under Studio's duplicate rules. */
 export const hasCategoryGroup = (
   tagCategories: TagCategoryGroup[] | undefined,
 ): boolean =>
-  (tagCategories ?? []).some((group) => group.label === CATEGORY_GROUP_LABEL)
+  (tagCategories ?? []).some(
+    (group) =>
+      normalizedCategoryKey(group.label) ===
+      normalizedCategoryKey(CATEGORY_GROUP_LABEL),
+  )
 
 export interface CollectionMigrationResult {
   collectionId: string
@@ -585,9 +589,9 @@ export const migrateCollection = async ({
       }
     }
 
-    // Risk accepted: skip when any "Category" group exists (draft or published).
-    // That covers re-runs and Studio-migrated collections, but also skips a
-    // human-created group with the same label. Confirmed empty via
+    // Risk accepted: skip when an equivalent "Category" group exists on either
+    // side. That covers re-runs and Studio-migrated collections, but also skips
+    // a human-created group with the same normalized label. Confirmed empty via
     // findCategoryTagGroups.sql before first run on each environment.
     if (
       hasCategoryGroup(indexRow.draftContent?.page.tagCategories) ||
