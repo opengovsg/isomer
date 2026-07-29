@@ -25,12 +25,12 @@ import {
   buildMigrationPlan,
   deriveDistinctCategories,
   hasCategoryGroup,
+  lookupUserByEmail,
   main,
   migrateCollection,
   migrateSite,
   resolveSiteIds,
   type TagCategoryGroup,
-  verifyUser,
 } from "../migrateCategoryToTagCategories"
 
 const setupCollectionIndexPage = async ({
@@ -1528,27 +1528,6 @@ describe("resolveSiteIds", () => {
   })
 })
 
-describe("verifyUser", () => {
-  beforeEach(async () => {
-    await resetTables("Resource", "Blob", "Version", "Site", "Navbar", "Footer")
-  })
-
-  it("resolves when the user exists", async () => {
-    // Arrange
-    const user = await setupUser({})
-
-    // Act + Assert
-    await expect(verifyUser(user.id)).resolves.toEqual({ id: user.id })
-  })
-
-  it("throws when the user does not exist", async () => {
-    // Act + Assert
-    await expect(verifyUser("no-such-user")).rejects.toThrow(
-      "User no-such-user not found",
-    )
-  })
-})
-
 describe("main (CLI entrypoint)", () => {
   let siteId: number
 
@@ -1561,7 +1540,7 @@ describe("main (CLI entrypoint)", () => {
     vi.mocked(confirm).mockResolvedValue(true)
   })
 
-  it("does not prompt for a publisher id in --dry-run mode", async () => {
+  it("does not prompt for a publisher email in --dry-run mode", async () => {
     // Act
     await main(["--dry-run"], {
       siteIdsInclude: [siteId],
@@ -1574,26 +1553,36 @@ describe("main (CLI entrypoint)", () => {
     expect(input).not.toHaveBeenCalled()
   })
 
-  it("prompts for and verifies a publisher id outside --dry-run mode", async () => {
+  it("prompts for and verifies a publisher email outside --dry-run mode", async () => {
     // Arrange
     const user = await setupUser({})
-    vi.mocked(input).mockResolvedValue(user.id)
+    vi.mocked(input).mockResolvedValue(user.email)
+    const lookupUser = vi
+      .fn(lookupUserByEmail)
+      .mockResolvedValue({ id: user.id })
 
     // Act
     await main([], {
       siteIdsInclude: [siteId],
       siteIdsExclude: [],
       logger: { info: vi.fn(), error: vi.fn() },
+      lookupUser,
     })
 
     // Assert
     expect(confirm).toHaveBeenCalledTimes(1)
     expect(input).toHaveBeenCalledTimes(1)
+    expect(lookupUser).toHaveBeenCalledWith(user.email)
   })
 
-  it("rejects when the prompted publisher id does not exist", async () => {
+  it("rejects when the prompted publisher email does not exist", async () => {
     // Arrange
-    vi.mocked(input).mockResolvedValue("no-such-user")
+    vi.mocked(input).mockResolvedValue("missing@agency.gov.sg")
+    const lookupUser = vi
+      .fn(lookupUserByEmail)
+      .mockRejectedValue(
+        new Error("User with email missing@agency.gov.sg not found"),
+      )
 
     // Act + Assert
     await expect(
@@ -1601,8 +1590,10 @@ describe("main (CLI entrypoint)", () => {
         siteIdsInclude: [siteId],
         siteIdsExclude: [],
         logger: { info: vi.fn(), error: vi.fn() },
+        lookupUser,
       }),
-    ).rejects.toThrow("User no-such-user not found")
+    ).rejects.toThrow("User with email missing@agency.gov.sg not found")
+    expect(lookupUser).toHaveBeenCalledWith("missing@agency.gov.sg")
   })
 
   it("aborts without migrating when confirm is declined", async () => {
