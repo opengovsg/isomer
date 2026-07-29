@@ -222,6 +222,16 @@ describe("hasCategoryGroup", () => {
     ).toBe(true)
   })
 
+  it("matches Category labels using Studio's trimmed, case-insensitive duplicate rules", () => {
+    const categoryGroup: TagCategoryGroup = {
+      id: "cat-1",
+      label: " category ",
+      options: [{ id: "c-1", label: "Guides" }],
+    }
+
+    expect(hasCategoryGroup([categoryGroup])).toBe(true)
+  })
+
   it("returns false when other groups exist but none are labeled Category", () => {
     expect(
       hasCategoryGroup([
@@ -385,6 +395,104 @@ describe("buildMigrationPlan", () => {
       { resourceId: "2", state: "draft", tagged: ["id-1"] },
     ])
   })
+
+  it("reuses an existing group and only tags target item states", () => {
+    // Arrange
+    const existingGroup: TagCategoryGroup = {
+      id: "category-group",
+      label: "Category",
+      isRequired: true,
+      display: "plaintext",
+      options: [{ id: "guides-option", label: "Guides" }],
+    }
+
+    // Act
+    const plan = buildMigrationPlan({
+      items: [
+        {
+          resourceId: "1",
+          draftCategory: "Guides",
+          draftTagged: ["guides-option"],
+          publishedCategory: "Guides",
+          publishedTagged: [],
+        },
+      ],
+      existingGroup,
+      targetStates: new Set(["published"]),
+    })
+
+    // Assert
+    expect(plan).toEqual({
+      status: "migrated",
+      group: existingGroup,
+      itemUpdates: [
+        {
+          resourceId: "1",
+          state: "published",
+          tagged: ["guides-option"],
+        },
+      ],
+    })
+  })
+
+  it("copies an existing group when the target side has no legacy categories", () => {
+    // Arrange
+    const existingGroup: TagCategoryGroup = {
+      id: "category-group",
+      label: "Category",
+      options: [{ id: "guides-option", label: "Guides" }],
+    }
+
+    // Act
+    const plan = buildMigrationPlan({
+      items: [],
+      existingGroup,
+      targetStates: new Set(["draft"]),
+    })
+
+    // Assert
+    expect(plan).toEqual({
+      status: "migrated",
+      group: existingGroup,
+      itemUpdates: [],
+    })
+  })
+
+  it("extends an existing group for categories found only on a target side", () => {
+    // Arrange
+    const existingGroup: TagCategoryGroup = {
+      id: "category-group",
+      label: "Category",
+      options: [{ id: "guides-option", label: "Guides" }],
+    }
+
+    // Act
+    const plan = buildMigrationPlan({
+      items: [{ resourceId: "1", draftCategory: "Forms" }],
+      existingGroup,
+      targetStates: new Set(["draft"]),
+      generateId: () => "forms-option",
+    })
+
+    // Assert
+    expect(plan).toEqual({
+      status: "migrated",
+      group: {
+        ...existingGroup,
+        options: [
+          { id: "guides-option", label: "Guides" },
+          { id: "forms-option", label: "Forms" },
+        ],
+      },
+      itemUpdates: [
+        {
+          resourceId: "1",
+          state: "draft",
+          tagged: ["forms-option"],
+        },
+      ],
+    })
+  })
 })
 
 // Group B: integration tests requiring a real DB
@@ -546,6 +654,53 @@ describe("migrateCollection / migrateSite", () => {
     const itemResource = await getResource(itemPage.id)
     expect(itemResource.publishedVersionId).toBeNull()
     expect(itemResource.draftBlobId).toBe(itemBlob.id)
+  })
+
+  it("preserves explicit filter displays while defaulting legacy filters to pills", async () => {
+    // Arrange
+    const { collection } = await setupCollection({ siteId })
+    const existingTagCategories: TagCategoryGroup[] = [
+      {
+        id: "topic-1",
+        label: "Topic",
+        display: "plaintext",
+        options: [{ id: "t-1", label: "Health" }],
+      },
+      {
+        id: "region-1",
+        label: "Region",
+        options: [{ id: "r-1", label: "Central" }],
+      },
+    ]
+    const { blob: indexBlob } = await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      tagCategories: existingTagCategories,
+    })
+    await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      category: "Guides",
+    })
+
+    // Act
+    await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
+
+    // Assert
+    const indexContentAfter = await getBlobContent(indexBlob.id)
+    expect(indexContentAfter.page.tagCategories).toEqual([
+      existingTagCategories[0],
+      { ...existingTagCategories[1], display: "pills" },
+      expect.objectContaining({
+        label: "Category",
+        display: "plaintext",
+      }),
+    ])
   })
 
   it("migrates a published collection via a new Version, without touching draftBlobId", async () => {
@@ -864,6 +1019,250 @@ describe("migrateCollection / migrateSite", () => {
     ])
     const itemContent = await getBlobContent(itemBlob.id)
     expect(itemContent.page.tagged).toEqual([])
+  })
+
+  it("migrates only the published side when only the draft Index has Category", async () => {
+    // Arrange
+    const user = await setupUser({})
+    const { collection } = await setupCollection({ siteId })
+    const existingCategoryGroup: TagCategoryGroup = {
+      id: "category-group",
+      label: "Category",
+      isRequired: true,
+      display: "plaintext",
+      options: [{ id: "guides-option", label: "Guides" }],
+    }
+    const { page: indexPage } = await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const indexDraftBlob = await addStaleDraft(
+      indexPage.id,
+      indexContent([existingCategoryGroup]),
+    )
+    const { page: itemPage } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      category: "Guides",
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const itemDraftBlob = await addStaleDraft(
+      itemPage.id,
+      collectionPageBlobContent(["guides-option"], "Guides"),
+    )
+
+    // Act
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: user.id,
+    })
+
+    // Assert
+    expect(result.status).toBe("migrated")
+    expect(result.versionsCreated).toBe(2)
+    expect(
+      (await getBlobContent(indexDraftBlob.id)).page.tagCategories,
+    ).toEqual([existingCategoryGroup])
+    expect((await getBlobContent(itemDraftBlob.id)).page.tagged).toEqual([
+      "guides-option",
+    ])
+
+    const indexResource = await getResource(indexPage.id)
+    const publishedIndexVersion = await getVersion(
+      indexResource.publishedVersionId!,
+    )
+    expect(
+      (await getBlobContent(publishedIndexVersion.blobId)).page.tagCategories,
+    ).toEqual([existingCategoryGroup])
+
+    const itemResource = await getResource(itemPage.id)
+    const publishedItemVersion = await getVersion(
+      itemResource.publishedVersionId!,
+    )
+    expect(
+      (await getBlobContent(publishedItemVersion.blobId)).page.tagged,
+    ).toEqual(["guides-option"])
+  })
+
+  it("migrates only the draft side when only the published Index has Category", async () => {
+    // Arrange
+    const user = await setupUser({})
+    const { collection } = await setupCollection({ siteId })
+    const existingCategoryGroup: TagCategoryGroup = {
+      id: "category-group",
+      label: "Category",
+      isRequired: true,
+      display: "plaintext",
+      options: [{ id: "guides-option", label: "Guides" }],
+    }
+    const { page: indexPage } = await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      tagCategories: [existingCategoryGroup],
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const originalIndexVersionId = indexPage.publishedVersionId
+    const indexDraftBlob = await addStaleDraft(indexPage.id, indexContent())
+    const { page: itemPage } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      category: "Guides",
+      tagged: ["guides-option"],
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const originalItemVersionId = itemPage.publishedVersionId
+    const itemDraftBlob = await addStaleDraft(
+      itemPage.id,
+      collectionPageBlobContent([], "Guides"),
+    )
+
+    // Act
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: user.id,
+    })
+
+    // Assert
+    expect(result.status).toBe("migrated")
+    expect(result.versionsCreated).toBe(0)
+    expect(
+      (await getBlobContent(indexDraftBlob.id)).page.tagCategories,
+    ).toEqual([existingCategoryGroup])
+    expect((await getBlobContent(itemDraftBlob.id)).page.tagged).toEqual([
+      "guides-option",
+    ])
+    expect((await getResource(indexPage.id)).publishedVersionId).toBe(
+      originalIndexVersionId,
+    )
+    expect((await getResource(itemPage.id)).publishedVersionId).toBe(
+      originalItemVersionId,
+    )
+  })
+
+  it("adds target-only options to both copies of a reused Category group", async () => {
+    // Arrange
+    const user = await setupUser({})
+    const { collection } = await setupCollection({ siteId })
+    const existingCategoryGroup: TagCategoryGroup = {
+      id: "category-group",
+      label: "Category",
+      options: [{ id: "guides-option", label: "Guides" }],
+    }
+    const { page: indexPage } = await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      tagCategories: [existingCategoryGroup],
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const indexDraftBlob = await addStaleDraft(indexPage.id, indexContent())
+    const { page: itemPage } = await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      category: "Guides",
+      tagged: ["guides-option"],
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const itemDraftBlob = await addStaleDraft(
+      itemPage.id,
+      collectionPageBlobContent([], "Forms"),
+    )
+
+    // Act
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: user.id,
+    })
+
+    // Assert
+    expect(result.versionsCreated).toBe(1)
+    const draftGroups = (await getBlobContent(indexDraftBlob.id)).page
+      .tagCategories
+    expect(draftGroups).toHaveLength(1)
+    expect(draftGroups?.[0]).toEqual({
+      ...existingCategoryGroup,
+      options: [
+        existingCategoryGroup.options[0],
+        { id: expect.any(String), label: "Forms" },
+      ],
+    })
+
+    const indexResource = await getResource(indexPage.id)
+    const publishedIndexVersion = await getVersion(
+      indexResource.publishedVersionId!,
+    )
+    const publishedGroups = (await getBlobContent(publishedIndexVersion.blobId))
+      .page.tagCategories
+    expect(publishedGroups).toEqual(draftGroups)
+    expect((await getBlobContent(itemDraftBlob.id)).page.tagged).toEqual([
+      draftGroups?.[0]?.options[1]?.id,
+    ])
+    expect((await getResource(itemPage.id)).publishedVersionId).toBe(
+      itemPage.publishedVersionId,
+    )
+  })
+
+  it("reports conflicting Category groups without changing either side", async () => {
+    // Arrange
+    const user = await setupUser({})
+    const { collection } = await setupCollection({ siteId })
+    const publishedGroup: TagCategoryGroup = {
+      id: "published-category-group",
+      label: "Category",
+      options: [{ id: "published-guides-option", label: "Guides" }],
+    }
+    const draftGroup: TagCategoryGroup = {
+      id: "draft-category-group",
+      label: "Category",
+      options: [{ id: "draft-guides-option", label: "Guides" }],
+    }
+    const { page: indexPage } = await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      tagCategories: [publishedGroup],
+      state: ResourceState.Published,
+      userId: user.id,
+    })
+    const originalPublishedVersionId = indexPage.publishedVersionId
+    const indexDraftBlob = await addStaleDraft(
+      indexPage.id,
+      indexContent([draftGroup]),
+    )
+
+    // Act
+    const result = await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: user.id,
+    })
+
+    // Assert
+    expect(result).toEqual({
+      collectionId: collection.id,
+      status: "conflicting-category-groups",
+      categories: [],
+      itemsUpdated: 0,
+      versionsCreated: 0,
+    })
+    expect(
+      (await getBlobContent(indexDraftBlob.id)).page.tagCategories,
+    ).toEqual([draftGroup])
+    expect((await getResource(indexPage.id)).publishedVersionId).toBe(
+      originalPublishedVersionId,
+    )
   })
 
   it("skips items whose legacy category is empty on both sides, without failing the migration", async () => {

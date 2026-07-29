@@ -45,3 +45,23 @@ _Avoid_: survey cooldown, quarter (the period is configurable, not fixed)
 
 **Isomer Admin**: A user with the Core or Migrator role. The only role that can manage taxonomy (create, edit, delete Tag Categories and Tag Options) via the Manage Filters panel.
 _Avoid_: admin, site admin (different concept — refers to site-level admin permissions)
+
+### Redirects
+
+**Redirect**: A rule that sends a visitor from an old path on this site to another location. Created and published by a site admin; publishing rebuilds the site so the rule goes live.
+_Avoid_: forward, rewrite, alias
+
+**Source**: The old on-site path a Redirect matches — what comes *behind* the domain (e.g. `/contact-us`). Always a path, never a full URL. Shown to editors as **"When someone visits"**.
+_Avoid_: from, origin, old URL (it is a path, not a URL)
+
+**Destination**: Where a Redirect sends the visitor — an on-site path, an external `https://` URL, or a Page reference. Shown to editors as **"Redirect them to"**.
+_Avoid_: to, target, new URL
+
+**Page reference**: A Destination that points at a specific page rather than a fixed path, so the Redirect keeps working when that page is moved or renamed. Used when the destination path matches a live published page.
+_Avoid_: internal link, resource link
+
+**Redirects template**: The downloadable `.csv` skeleton (header row: "When someone visits", "Redirect them to") an editor fills in for a Bulk upload. The errors file returned after validation is this same shape plus an explanation column, so it can be corrected and re-uploaded directly.
+_Avoid_: sample file, example CSV
+
+**Bulk upload**: Creating many Redirects at once by uploading a filled-in Redirects template — every row is validated, and the whole batch publishes in one step.
+_Avoid_: import, mass create, batch add

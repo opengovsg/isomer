@@ -117,7 +117,6 @@ $max-depth: 13;
     width: 100%;
 
     .selectedCell:after {
-      background: rgba(200, 200, 255, 0.2);
       border-color: #2164da;
       border-style: solid;
       border-width: 0;
@@ -164,6 +163,7 @@ $max-depth: 13;
     }
 
     th {
+      background-color: #f8f9f9;
       color: #323232;
       font-weight: bold;
       text-align: left;

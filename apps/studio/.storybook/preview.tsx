@@ -1,6 +1,7 @@
 import "@fontsource/ibm-plex-mono"
 import type { EnvContextReturn } from "~/components/AppProviders"
 import "inter-ui/inter.css"
+import "~/styles/tiptap.scss"
 import type { AppRouter } from "~/server/modules/_app"
 import { Skeleton, Stack } from "@chakra-ui/react"
 import { GrowthBookProvider } from "@growthbook/growthbook-react"
