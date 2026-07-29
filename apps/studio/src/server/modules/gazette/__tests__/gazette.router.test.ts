@@ -193,7 +193,8 @@ describe("gazette.router", async () => {
         title: "Notice 123",
         permalink: crypto.randomUUID(),
         ref: "/1/abc/notice-123.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "Notif #123",
         tagged: ["sub-1"],
@@ -251,7 +252,8 @@ describe("gazette.router", async () => {
           title: "Notice 123",
           permalink: crypto.randomUUID(),
           ref: "/1/abc/notice.pdf",
-          category: "Government Gazette",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
           date: "30/04/2026",
           tagged: ["sub-1"],
           scheduledAt: PAST_DATE,
@@ -279,7 +281,8 @@ describe("gazette.router", async () => {
         title: "First Notice",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid1/duplicate-file.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
@@ -293,7 +296,8 @@ describe("gazette.router", async () => {
           title: "Second Notice",
           permalink: crypto.randomUUID(),
           ref: "/sites/1/gazettes/uuid2/duplicate-file.pdf", // Same filename
-          category: "Government Gazette",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
           date: "30/04/2026",
           tagged: ["sub-1"],
           scheduledAt: PAST_DATE,
@@ -317,7 +321,8 @@ describe("gazette.router", async () => {
         title: "First Notice",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid1/first-file.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "N-2026-001",
         tagged: ["sub-1"],
@@ -332,7 +337,8 @@ describe("gazette.router", async () => {
           title: "Second Notice",
           permalink: crypto.randomUUID(),
           ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
-          category: "Government Gazette",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
           date: "30/04/2026",
           description: "N-2026-001", // Same notification number
           tagged: ["sub-1"],
@@ -356,7 +362,8 @@ describe("gazette.router", async () => {
         title: "First Supplement",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid1/first-file.pdf",
-        category: "Legislative Supplements",
+        categoryId: "cat-leg",
+        categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001",
         tagged: ["Acts Supplement"],
@@ -371,7 +378,8 @@ describe("gazette.router", async () => {
           title: "Second Supplement",
           permalink: crypto.randomUUID(),
           ref: "/sites/1/gazettes/uuid2/second-file.pdf", // Different filename
-          category: "Legislative Supplements",
+          categoryId: "cat-leg",
+          categoryLabel: "Legislative Supplements",
           date: "30/04/2026",
           description: "N-2026-001", // Same notification number
           tagged: ["Acts Supplement"], // Same subcategory
@@ -395,7 +403,8 @@ describe("gazette.router", async () => {
         title: "First Supplement",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid1/first-file.pdf",
-        category: "Legislative Supplements",
+        categoryId: "cat-leg",
+        categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001",
         tagged: ["Acts Supplement"],
@@ -411,7 +420,8 @@ describe("gazette.router", async () => {
         title: "Second Supplement",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid2/second-file.pdf",
-        category: "Legislative Supplements",
+        categoryId: "cat-leg",
+        categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001", // Same notification number
         tagged: ["Bills Supplement"], // Different subcategory
@@ -438,7 +448,8 @@ describe("gazette.router", async () => {
         title: "Original",
         permalink: crypto.randomUUID(),
         ref: "/1/abc/notice.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "old-desc",
         tagged: ["sub-1"],
@@ -455,7 +466,8 @@ describe("gazette.router", async () => {
         gazetteId: Number(gazetteId),
         title: "Renamed",
         newRef: "/1/abc/replacement.pdf",
-        category: "Other Supplements",
+        categoryId: "cat-oth",
+        categoryLabel: "Other Supplements",
         date: "30/04/2026",
         description: "new-desc",
         tagged: ["sub-2"],
@@ -480,16 +492,14 @@ describe("gazette.router", async () => {
         blob.content as {
           page?: {
             ref?: string
-            category?: string
             description?: string
             tagged?: string[]
           }
         } | null
       )?.page
       expect(page?.ref).toBe("/1/abc/replacement.pdf")
-      expect(page?.category).toBe("Other Supplements")
       expect(page?.description).toBe("new-desc")
-      expect(page?.tagged).toEqual(["sub-2"])
+      expect(page?.tagged).toEqual(["cat-oth", "sub-2"])
 
       // The superseded file (a different key) is soft-deleted after commit.
       expect(markFileAsDeleted).toHaveBeenCalledExactlyOnceWith({
@@ -508,7 +518,8 @@ describe("gazette.router", async () => {
         title: "Original",
         permalink: crypto.randomUUID(),
         ref: "/2026/Government Gazette/sub-1/notice.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
@@ -523,7 +534,8 @@ describe("gazette.router", async () => {
         gazetteId: Number(gazetteId),
         title: "Original",
         newRef: "/2026/Government Gazette/sub-1/notice.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
@@ -569,7 +581,8 @@ describe("gazette.router", async () => {
         siteId: site.id,
         gazetteId: Number(collectionLink.id),
         title: "ImmediatePublish",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
@@ -595,7 +608,8 @@ describe("gazette.router", async () => {
         title: "First Notice",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid1/existing-file.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
@@ -608,7 +622,8 @@ describe("gazette.router", async () => {
         title: "Second Notice",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid2/different-file.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
@@ -621,7 +636,8 @@ describe("gazette.router", async () => {
           gazetteId: Number(gazetteId),
           title: "Second Notice",
           newRef: "/sites/1/gazettes/uuid3/existing-file.pdf", // Same filename as first
-          category: "Government Gazette",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
           date: "30/04/2026",
           tagged: ["sub-1"],
           scheduledAt: PAST_DATE,
@@ -645,7 +661,8 @@ describe("gazette.router", async () => {
         title: "First Notice",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid1/first-file.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "N-2026-001",
         tagged: ["sub-1"],
@@ -659,7 +676,8 @@ describe("gazette.router", async () => {
         title: "Second Notice",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid2/second-file.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "N-2026-002",
         tagged: ["sub-1"],
@@ -672,7 +690,8 @@ describe("gazette.router", async () => {
           siteId: site.id,
           gazetteId: Number(gazetteId),
           title: "Second Notice",
-          category: "Government Gazette",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
           date: "30/04/2026",
           description: "N-2026-001", // Same notification number as first
           tagged: ["sub-1"],
@@ -695,7 +714,8 @@ describe("gazette.router", async () => {
         title: "Original",
         permalink: crypto.randomUUID(),
         ref: "/sites/1/gazettes/uuid1/file.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "N-2026-001",
         tagged: ["sub-1"],
@@ -708,7 +728,8 @@ describe("gazette.router", async () => {
         siteId: site.id,
         gazetteId: Number(gazetteId),
         title: "Renamed",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "N-2026-001", // Unchanged
         tagged: ["sub-1"],
@@ -739,7 +760,8 @@ describe("gazette.router", async () => {
         title: "About to cancel",
         permalink: crypto.randomUUID(),
         ref: "/1/abc/about-to-cancel.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
@@ -863,7 +885,8 @@ describe("gazette.router", async () => {
         title: "S3 will fail",
         permalink: crypto.randomUUID(),
         ref: "/1/abc/s3-fail.pdf",
-        category: "Government Gazette",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
         date: "30/04/2026",
         tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
@@ -1005,7 +1028,8 @@ describe("gazette.router", async () => {
           content: {
             page: {
               ref: "/test-bucket/gazette.pdf",
-              category: "Government Gazette",
+              categoryId: "cat-gov",
+              categoryLabel: "Government Gazette",
               tagged: ["sub-1"],
             },
           } as never,

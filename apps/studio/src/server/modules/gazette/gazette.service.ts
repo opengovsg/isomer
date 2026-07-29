@@ -549,7 +549,8 @@ export const resolveGazetteTagLabels = ({
  * numbers are unique within the category, not the subcategory.
  *
  * Gazette metadata lives in the resource's draft (or published) blob:
- * `content.page.{description,category,date,tagged}`. `date` is stored as a
+ * `content.page.{description,date,tagged}`, where `tagged` holds one uuid
+ * per tagCategory (category + subcategory). `date` is stored as a
  * "dd/MM/yyyy" string, so the year is its third "/"-delimited segment.
  * Deleted gazettes are hard-deleted, so no soft-delete filter is needed.
  */
@@ -559,8 +560,9 @@ export const hasDuplicateNotificationNumber = async ({
   parentId,
   notificationNumber,
   publishDate,
-  category,
-  subCategory,
+  categoryLabel,
+  categoryId,
+  subcategoryId,
   excludeId,
 }: {
   trx?: Kysely<DB> | Transaction<DB>
@@ -568,15 +570,19 @@ export const hasDuplicateNotificationNumber = async ({
   parentId: string | null
   notificationNumber: string
   publishDate: string
-  category: string
-  subCategory: string
+  categoryLabel: string
+  categoryId: string
+  subcategoryId: string
   excludeId?: string
 }): Promise<boolean> => {
-  const isGovernmentGazette = category === GazetteCategories.GovernmentGazettes
+  const isGovernmentGazette =
+    categoryLabel === GazetteCategories.GovernmentGazettes
   // publishDate is a "dd/MM/yyyy" string — the year is the last segment.
   const publishYear = publishDate.split("/").at(-1)
 
   const content = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`
+  const taggedContains = (id: string) =>
+    sql<boolean>`${content}->'page'->'tagged' @> ${JSON.stringify([id])}::jsonb`
 
   let query = trx
     .selectFrom("Resource")
@@ -589,7 +595,7 @@ export const hasDuplicateNotificationNumber = async ({
     .where(
       sql<boolean>`${content}->'page'->>'description' = ${notificationNumber}`,
     )
-    .where(sql<boolean>`${content}->'page'->>'category' = ${category}`)
+    .where(taggedContains(categoryId))
     .where(
       sql<boolean>`split_part(${content}->'page'->>'date', '/', 3) = ${publishYear}`,
     )
@@ -597,9 +603,7 @@ export const hasDuplicateNotificationNumber = async ({
 
   // Government gazettes are unique within category, not subcategory.
   if (!isGovernmentGazette) {
-    query = query.where(
-      sql<boolean>`${content}->'page'->'tagged'->>0 = ${subCategory}`,
-    )
+    query = query.where(taggedContains(subcategoryId))
   }
 
   if (excludeId) {

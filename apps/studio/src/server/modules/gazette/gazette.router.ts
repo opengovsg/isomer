@@ -47,7 +47,7 @@ import {
 
 interface GazetteBlobInputs {
   ref: string
-  category: string
+  categoryId: string
   date: string
   description?: string
   tagged: string[]
@@ -57,9 +57,13 @@ interface GazetteBlobInputs {
 // the components package. We deliberately do NOT add gazette-only fields like
 // `fileSize` here — the file size is read from S3 at list time instead, since
 // the page is bounded to ~25 rows and S3 HEAD scales to thousands of QPS.
+//
+// `categoryId` and `tagged` (the subcategory uuid) are merged into a single
+// `tagged` array on write — the persisted shape has no standalone `category`
+// key, matching the generic tagCategories/tagged model used elsewhere.
 const buildGazetteBlobContent = ({
   ref,
-  category,
+  categoryId,
   date,
   description,
   tagged,
@@ -70,10 +74,9 @@ const buildGazetteBlobContent = ({
     page: {
       ...base.page,
       ref,
-      category,
       date,
       description,
-      tagged,
+      tagged: [categoryId, ...tagged],
     },
   }
 }
@@ -207,7 +210,8 @@ export const gazetteRouter = router({
           title,
           permalink,
           ref,
-          category,
+          categoryId,
+          categoryLabel,
           date,
           description,
           tagged,
@@ -230,7 +234,8 @@ export const gazetteRouter = router({
 
         const blobContent = buildGazetteBlobContent({
           ref,
-          category,
+          categoryId,
+          categoryLabel,
           date,
           description,
           tagged,
@@ -265,8 +270,9 @@ export const gazetteRouter = router({
               parentId: String(collectionId),
               notificationNumber: description,
               publishDate: date,
-              category,
-              subCategory: tagged[0] ?? "",
+              categoryLabel,
+              categoryId,
+              subcategoryId: tagged[0] ?? "",
             }))
           ) {
             throw new TRPCError({
@@ -382,7 +388,8 @@ export const gazetteRouter = router({
           title,
           newRef,
           desiredFileName,
-          category,
+          categoryId,
+          categoryLabel,
           date,
           description,
           tagged,
@@ -482,7 +489,7 @@ export const gazetteRouter = router({
 
         const newBlobContent = buildGazetteBlobContent({
           ref: finalRef,
-          category,
+          categoryId,
           date,
           description,
           tagged,
@@ -519,8 +526,9 @@ export const gazetteRouter = router({
                 parentId: existingResource.parentId,
                 notificationNumber: description,
                 publishDate: date,
-                category,
-                subCategory: tagged[0] ?? "",
+                categoryLabel,
+                categoryId,
+                subcategoryId: tagged[0] ?? "",
                 excludeId: String(gazetteId),
               }))
             ) {
