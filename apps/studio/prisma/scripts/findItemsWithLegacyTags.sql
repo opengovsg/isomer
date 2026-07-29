@@ -1,16 +1,18 @@
 -- Audit: Collection Items (draft or published) that still carry usable legacy
--- `page.tags` values (`{ category: string, selected: string[] }[]`).
+-- `page.tags` values (`{ category: string, selected: string[] }[]`) on a side
+-- whose `page.tagged` is empty or missing.
 --
 -- Run before migrateTagsToTagCategories.ts to inventory items whose legacy tag
--- data the migration will read. "Usable" matches collateLegacyTags in that
--- script: a non-empty trimmed category AND at least one non-empty trimmed
--- selected value. Empty arrays, missing fields, and entries with only blank
--- strings are excluded.
+-- data the migration still needs to backfill. "Usable" matches collateLegacyTags
+-- in that script: a non-empty trimmed category AND at least one non-empty
+-- trimmed selected value. Empty arrays, missing fields, and entries with only
+-- blank strings are excluded.
 --
--- migrateTagsToTagCategories.ts copies these values into `tagCategories` on
--- the Index and appends matching option UUIDs to each item's `tagged` array.
--- The legacy `tags` field is left untouched — this query will still return
--- rows after a successful migration until a later cleanup removes `tags`.
+-- Sides with a non-empty `tagged` array are excluded — that implies the item
+-- side has already been migrated (including via migrateCategoryToTagCategories.ts).
+-- The legacy `tags` field is left untouched by migrateTagsToTagCategories.ts,
+-- so migrated sides may still carry `tags` in blob content but will not appear
+-- here.
 --
 -- Pair with findCollectionsWithLegacyTags.sql for a per-collection roll-up, and
 -- findDivergentTagOptionIds.sql for cross-side option-id divergence on the
@@ -64,6 +66,11 @@ WHERE item.type IN ('CollectionPage', 'CollectionLink')
     ) AS selected_value
     WHERE NULLIF(TRIM(tag_entry->>'category'), '') IS NOT NULL
       AND NULLIF(TRIM(selected_value), '') IS NOT NULL
+  )
+  AND (
+    blob_side.content->'page'->'tagged' IS NULL
+    OR jsonb_typeof(blob_side.content->'page'->'tagged') = 'null'
+    OR blob_side.content->'page'->'tagged' = '[]'::jsonb
   )
   -- AND item."siteId" = 123
 ORDER BY
