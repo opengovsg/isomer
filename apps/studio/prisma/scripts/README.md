@@ -45,6 +45,8 @@
 3. Idempotent per group label — only missing tag category groups are appended on each Index side; missing options are added to an existing group when legacy tags reference labels not yet present. Item `tagged` UUIDs are still backfilled when a group already exists. A collection is skipped only when every side is fully up to date.
 4. Site selection: edit `SITE_IDS_INCLUDE` / `SITE_IDS_EXCLUDE` at the top of the script. Empty include = all sites; exclude is always subtracted. The resolved list is printed and must be confirmed before proceeding.
 5. Pre-flight audit (optional but recommended):
+   - `psql "$DATABASE_URL" -f prisma/scripts/findCollectionsWithLegacyTags.sql` — per-collection roll-up of items that still carry usable legacy `page.tags`.
+   - `psql "$DATABASE_URL" -f prisma/scripts/findItemsWithLegacyTags.sql` — item-level detail (draft/published sides) for the same inventory.
    - `psql "$DATABASE_URL" -f prisma/scripts/findDivergentTagOptionIds.sql` — Indexes where draft and published already carry the same option label under different ids. The migration deliberately leaves that divergence alone and tags each side with its own id, which only breaks if someone later publishes the draft Index (publish swaps live `tagCategories` wholesale without republishing items). `published_items_orphaned_on_index_publish` is the blast radius; an empty result means the behavior costs nothing in that environment.
 6. Invoke with optional `--dry-run` to preview without writing:
    `source .env && pnpm exec tsx prisma/scripts/migrateTagsToTagCategories.ts --dry-run`
