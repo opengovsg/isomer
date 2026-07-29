@@ -40,9 +40,9 @@
  * on that path.
  *
  * Display: the new "Category" group is written with `display: "plaintext"`.
- * Every pre-existing group on the same Index is stamped with an explicit
- * `display: "pills"` — the rendering behaviour they already had by default —
- * since the `display` field postdates those groups and they don't have it set.
+ * Pre-existing groups without a `display` are stamped with `"pills"` — the
+ * rendering behaviour they already had by default — while explicit display
+ * values are preserved.
  *
  * Site selection (edit the constants below):
  *   - SITE_IDS_INCLUDE empty → all sites; non-empty → only those IDs
@@ -437,7 +437,7 @@ const appendCategoryGroup = (
 ): TagCategoryGroup[] => [
   ...(tagCategories ?? []).map((existing) => ({
     ...existing,
-    display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+    display: existing.display ?? TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
   })),
   group,
 ]

@@ -548,6 +548,53 @@ describe("migrateCollection / migrateSite", () => {
     expect(itemResource.draftBlobId).toBe(itemBlob.id)
   })
 
+  it("preserves explicit filter displays while defaulting legacy filters to pills", async () => {
+    // Arrange
+    const { collection } = await setupCollection({ siteId })
+    const existingTagCategories: TagCategoryGroup[] = [
+      {
+        id: "topic-1",
+        label: "Topic",
+        display: "plaintext",
+        options: [{ id: "t-1", label: "Health" }],
+      },
+      {
+        id: "region-1",
+        label: "Region",
+        options: [{ id: "r-1", label: "Central" }],
+      },
+    ]
+    const { blob: indexBlob } = await setupCollectionIndexPage({
+      collectionId: collection.id,
+      siteId,
+      tagCategories: existingTagCategories,
+    })
+    await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      category: "Guides",
+    })
+
+    // Act
+    await migrateCollection({
+      collectionId: collection.id,
+      siteId,
+      dryRun: false,
+      publisherId: null,
+    })
+
+    // Assert
+    const indexContentAfter = await getBlobContent(indexBlob.id)
+    expect(indexContentAfter.page.tagCategories).toEqual([
+      existingTagCategories[0],
+      { ...existingTagCategories[1], display: "pills" },
+      expect.objectContaining({
+        label: "Category",
+        display: "plaintext",
+      }),
+    ])
+  })
+
   it("migrates a published collection via a new Version, without touching draftBlobId", async () => {
     // Arrange
     const user = await setupUser({})
