@@ -309,6 +309,7 @@ export const processAuditLogExportRequest = async (
         eb.and([
           eb("status", "=", "Processing"),
           eb("updatedAt", "<", staleCutoff),
+          eb("AuditLogExportRequest.attempts", "<", MAX_ATTEMPTS),
         ]),
       ]),
     )
