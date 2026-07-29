@@ -307,11 +307,20 @@ export const processAuditLogExportRequest = async (
 
   const user = await db
     .selectFrom("User")
-    .where("id", "=", request.userId)
-    .select(["id", "email"])
-    .executeTakeFirstOrThrow()
+    .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
+    .where("User.id", "=", request.userId)
+    .where("ResourcePermission.userId", "=", request.userId)
+    .where("ResourcePermission.role", "=", "Admin")
+    .where("ResourcePermission.siteId", "=", site.id)
+    .select(["User.id", "User.email"])
+    .executeTakeFirst()
 
-  const siteConfig = site.config as { siteName?: string } | null
+  // NOTE: Early return - this is technically not a failure
+  // because it means that the user has been removed from the site
+  // as an admin between the job creation and fulfillment time
+  if (!user) return
+
+  const siteConfig = site.config
   const siteName = siteConfig?.siteName || site.name
   const recipientEmail = user.email
 
