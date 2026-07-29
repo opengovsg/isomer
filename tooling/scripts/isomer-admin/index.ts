@@ -10,6 +10,7 @@ import { createContentFromLocal } from "./apps/create-content-from-local"
 import { importFolderJsons } from "./apps/import-folder-jsons"
 import { publishSiteResources } from "./apps/publish-site-resources"
 import { rebuildAllCodebuildProjects } from "./apps/rebuild-all-codebuild-projects"
+import { removeGazetteSearchRecords } from "./apps/remove-gazette-search-records"
 import { repairGazetteSearchRecords } from "./apps/repair-gazette-search-records"
 
 const main = async () => {
@@ -70,6 +71,12 @@ const main = async () => {
         value: "rebuild-all-codebuild-projects",
       },
       {
+        name: "Remove gazette search records",
+        description:
+          "Remove Search Records from Algolia for gazette resource IDs (incident response).",
+        value: "remove-gazette-search-records",
+      },
+      {
         name: "Repair gazette search records",
         description:
           "Re-submit Search Records to Algolia for gazette resource IDs (incident response).",
@@ -105,6 +112,9 @@ const main = async () => {
       break
     case "rebuild-all-codebuild-projects":
       await rebuildAllCodebuildProjects()
+      break
+    case "remove-gazette-search-records":
+      await removeGazetteSearchRecords()
       break
     case "repair-gazette-search-records":
       await repairGazetteSearchRecords()

@@ -16,6 +16,11 @@ import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import {
+  buildGazetteObjectGroupFilter,
+  objectGroupFromRef,
+} from "@isomer/algolia"
+
+import {
   generateTagsQueryString,
   getContentDispositionForKey,
   getContentTypeFromKey,
@@ -300,9 +305,11 @@ export interface PushDocument {
  * which Algolia's filter parser would otherwise mis-tokenise.
  */
 export const removeGazetteFromAlgolia = async (ref: string): Promise<void> => {
-  const objectGroup = ref.slice(1)
+  const objectGroup = objectGroupFromRef(ref)
   try {
-    await deleteObjectsFromSearchIndexByFilter(`objectGroup:"${objectGroup}"`)
+    await deleteObjectsFromSearchIndexByFilter(
+      buildGazetteObjectGroupFilter(objectGroup),
+    )
   } catch (error) {
     logger.warn({ error, objectGroup }, "Failed to remove gazette from Algolia")
     throw new TRPCError({
