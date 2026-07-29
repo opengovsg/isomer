@@ -267,7 +267,6 @@ export const gazetteRouter = router({
         const blobContent = buildGazetteBlobContent({
           ref,
           categoryId,
-          categoryLabel,
           date,
           description,
           tagged,
