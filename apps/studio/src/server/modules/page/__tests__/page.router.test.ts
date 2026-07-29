@@ -2794,8 +2794,9 @@ describe("page.router", async () => {
         ...expectedSettings,
       })
 
-      // Assert
-      await assertAuditLogRows(2)
+      // Assert — only a ResourceUpdate entry; an unpublished page has no live
+      // presence, so no implicit publish happens.
+      await assertAuditLogRows(1)
       const actualResource = await db
         .selectFrom("Resource")
         .where("id", "=", page.id)
@@ -2809,7 +2810,62 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
       expect(result).toMatchObject(actualResource)
       expect(result).toMatchObject(expectedSettings)
-      await assertAuditLogRows(2)
+    })
+
+    it("should not log a Publish event when updating settings of an unpublished page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({ resourceType: "Page" })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Title",
+        permalink: "new-permalink",
+      })
+
+      // Assert
+      const publishLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Publish)
+        .selectAll()
+        .execute()
+      expect(publishLogs).toHaveLength(0)
+    })
+
+    it("should log a Publish event when updating settings of a published page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.updateSettings({
+        siteId: site.id,
+        pageId: Number(page.id),
+        type: "Page",
+        title: "New Title",
+        permalink: "new-permalink",
+      })
+
+      // Assert
+      const publishLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Publish)
+        .selectAll()
+        .execute()
+      expect(publishLogs).toHaveLength(1)
     })
 
     it("should update root page settings successfully", async () => {
