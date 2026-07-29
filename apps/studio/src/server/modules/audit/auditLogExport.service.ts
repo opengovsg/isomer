@@ -69,7 +69,7 @@ export const createAuditLogExportRequest = async ({
   reportType,
 }: CreateAuditLogExportRequestProps) => {
   const possibleError =
-    validateIsNotFutureMonth(month) ?? validateIsMonthInPastYear(month)
+    validateIsNotFutureMonth(month) || validateIsMonthInPastYear(month)
   if (possibleError !== true) {
     logger.warn(possibleError)
     throw new TRPCError({
