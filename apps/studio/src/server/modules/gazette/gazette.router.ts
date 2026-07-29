@@ -4,6 +4,10 @@ import filenamify from "filenamify"
 import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazette"
 import { env } from "~/env.mjs"
 import {
+  GAZETTE_CATEGORY_LABEL,
+  GazetteCategories,
+} from "~/features/gazettes/constants"
+import {
   sendGazetteDeletionEmail,
   sendScheduledPageEmail,
 } from "~/features/mail/service"
@@ -22,7 +26,10 @@ import { protectedProcedure, router } from "~/server/trpc"
 
 import { validateUserPermissionsForAsset } from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
-import { createCollectionLinkJson } from "../collection/collection.service"
+import {
+  createCollectionLinkJson,
+  getCollectionTagsForResource,
+} from "../collection/collection.service"
 import { AuditLogEvent, db, jsonb, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
@@ -92,6 +99,26 @@ export const gazetteRouter = router({
         userId: ctx.user.id,
       })
 
+      const collectionTagCategories = await getCollectionTagsForResource({
+        collectionId,
+        siteId,
+      })
+      const categoryTagCategory = collectionTagCategories.find(
+        (tagCategory) => tagCategory.label === GAZETTE_CATEGORY_LABEL,
+      )
+      const categoryIdByLabel = Object.fromEntries(
+        (categoryTagCategory?.options ?? []).map((option) => [
+          option.label,
+          option.id,
+        ]),
+      )
+      const governmentGazetteId =
+        categoryIdByLabel[GazetteCategories.GovernmentGazettes]
+      const legislativeSupplementsId =
+        categoryIdByLabel[GazetteCategories.LegislativeSupplements]
+      const otherSupplementsId =
+        categoryIdByLabel[GazetteCategories.OtherSupplements]
+
       const results = await db
         .selectFrom("Resource")
         .leftJoin("Blob as DraftBlob", "Resource.draftBlobId", "DraftBlob.id")
@@ -119,16 +146,21 @@ export const gazetteRouter = router({
             END`,
           "asc",
         )
-        // 2. Category priority from blob content
+        // 2. Category priority from blob content — matches by uuid
+        // containment against `tagged` since category is no longer a plain
+        // string field. Falls through to the `else` bucket (harmlessly) if a
+        // category's uuid is unresolved, e.g. the tagCategory isn't seeded.
         .orderBy((eb) => {
-          const categoryExpr = sql<string>`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'category'`
+          const taggedExpr = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->'tagged'`
+          const contains = (id: string | undefined) =>
+            sql<boolean>`${taggedExpr} @> ${JSON.stringify([id ?? null])}::jsonb`
           return eb
             .case()
-            .when(categoryExpr, "=", "Government Gazette")
+            .when(contains(governmentGazetteId))
             .then(1)
-            .when(categoryExpr, "=", "Legislative Supplements")
+            .when(contains(legislativeSupplementsId))
             .then(2)
-            .when(categoryExpr, "=", "Other Supplements")
+            .when(contains(otherSupplementsId))
             .then(3)
             .else(4)
             .end()
