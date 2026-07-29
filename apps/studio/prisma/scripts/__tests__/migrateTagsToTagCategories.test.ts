@@ -40,7 +40,7 @@ import {
   type LegacyTag,
   type ReconciledMigrationWork,
   type TagCategoryGroup,
-  verifyUser,
+  lookupUserByEmail,
 } from "../migrateTagsToTagCategories"
 
 const setupCollectionIndexPage = async ({
@@ -1518,19 +1518,28 @@ describe("resolveSiteIds", () => {
   })
 })
 
-describe("verifyUser", () => {
+describe("lookupUserByEmail", () => {
   beforeEach(async () => {
     await resetTables("Resource", "Blob", "Version", "Site", "Navbar", "Footer")
   })
 
   it("resolves when the user exists", async () => {
-    const user = await setupUser({})
-    await expect(verifyUser(user.id)).resolves.toEqual({ id: user.id })
+    const user = await setupUser({ email: "publisher@agency.gov.sg" })
+    await expect(lookupUserByEmail("publisher@agency.gov.sg")).resolves.toEqual(
+      { id: user.id },
+    )
+  })
+
+  it("normalizes email before lookup", async () => {
+    const user = await setupUser({ email: "publisher@agency.gov.sg" })
+    await expect(
+      lookupUserByEmail("  Publisher@Agency.gov.sg  "),
+    ).resolves.toEqual({ id: user.id })
   })
 
   it("throws when the user does not exist", async () => {
-    await expect(verifyUser("no-such-user")).rejects.toThrow(
-      "User no-such-user not found",
+    await expect(lookupUserByEmail("missing@agency.gov.sg")).rejects.toThrow(
+      "User with email missing@agency.gov.sg not found",
     )
   })
 })
@@ -1547,7 +1556,7 @@ describe("main (CLI entrypoint)", () => {
     vi.mocked(confirm).mockResolvedValue(true)
   })
 
-  it("does not prompt for a publisher id in --dry-run mode", async () => {
+  it("does not prompt for a publisher email in --dry-run mode", async () => {
     await main(["--dry-run"], {
       siteIdsInclude: [siteId],
       siteIdsExclude: [],
@@ -1556,9 +1565,9 @@ describe("main (CLI entrypoint)", () => {
     expect(input).not.toHaveBeenCalled()
   })
 
-  it("prompts for and verifies a publisher id outside --dry-run mode", async () => {
-    const user = await setupUser({})
-    vi.mocked(input).mockResolvedValue(user.id)
+  it("prompts for and looks up a publisher by email outside --dry-run mode", async () => {
+    const user = await setupUser({ email: "publisher@agency.gov.sg" })
+    vi.mocked(input).mockResolvedValue(user.email)
 
     await main([], { siteIdsInclude: [siteId], siteIdsExclude: [] })
 
@@ -1566,12 +1575,12 @@ describe("main (CLI entrypoint)", () => {
     expect(input).toHaveBeenCalledTimes(1)
   })
 
-  it("rejects when the prompted publisher id does not exist", async () => {
-    vi.mocked(input).mockResolvedValue("no-such-user")
+  it("rejects when the prompted publisher email does not exist", async () => {
+    vi.mocked(input).mockResolvedValue("missing@agency.gov.sg")
 
     await expect(
       main([], { siteIdsInclude: [siteId], siteIdsExclude: [] }),
-    ).rejects.toThrow("User no-such-user not found")
+    ).rejects.toThrow("User with email missing@agency.gov.sg not found")
   })
 
   it("aborts without migrating when confirm is declined", async () => {
@@ -1590,7 +1599,7 @@ describe("main (CLI entrypoint)", () => {
       siteIdsExclude: [otherSite.id],
     })
 
-    // dry-run mode never prompts for a publisher id, regardless of site count
+    // dry-run mode never prompts for a publisher email, regardless of site count
     expect(confirm).toHaveBeenCalledTimes(1)
     expect(input).not.toHaveBeenCalled()
   })
