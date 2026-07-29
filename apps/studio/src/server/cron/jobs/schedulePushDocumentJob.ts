@@ -12,6 +12,7 @@ import {
   generateDocumentId,
   parseFullTextFromPDF,
   pushDocumentsForIngestion,
+  resolveGazetteTagLabels,
 } from "~/server/modules/gazette/gazette.service"
 
 import { registerPgbossJob } from "@isomer/pgboss"
@@ -25,7 +26,6 @@ const logger = createBaseLogger({ path: "cron:schedulePushDocumentJob" })
 const pushDocumentContentSchema = z.object({
   page: z.object({
     ref: z.string(),
-    category: z.string(),
     tagged: z.array(z.string()),
     description: z.string().optional(),
   }),
@@ -36,6 +36,7 @@ const collectionIndexPageContentSchema = z.object({
   page: z.object({
     tagCategories: z.array(
       z.object({
+        label: z.string(),
         options: z.array(z.object({ id: z.string(), label: z.string() })),
       }),
     ),
@@ -65,11 +66,11 @@ const extractResourceData = async ({
   ref: string
   objectGroup: string
   fileUrl: string
+  categoryLabel: string | undefined
   subcategoryLabel: string | undefined
   pdfTextContent: string
   parsedPage: {
     ref: string
-    category: string
     tagged: string[]
     description?: string
   }
@@ -109,7 +110,7 @@ const extractResourceData = async ({
     Bucket: env.S3_GAZETTE_BUCKET_NAME,
   })
 
-  // NOTE: Derive the subcategory from the tagged mapping
+  // NOTE: Derive the category and subcategory labels from the tagged uuids
   const indexParsed =
     collectionIndexPageContentSchema.safeParse(indexPageContent)
   if (!indexParsed.success) {
@@ -121,13 +122,10 @@ const extractResourceData = async ({
       `Failed to parse index page content for resource ${resourceId}`,
     )
   }
-  const { tagCategories } = indexParsed.data.page
-  // reduce the tag category options into a single array then we find
-  const options =
-    tagCategories?.map((category) => category.options).flat() ?? []
-  const subcategory = options.find(
-    (option) => option.id === parsed.data.page.tagged[0],
-  )
+  const { categoryLabel, subcategoryLabel } = resolveGazetteTagLabels({
+    tagged: parsed.data.page.tagged,
+    tagCategories: indexParsed.data.page.tagCategories,
+  })
 
   const pdfTextContent = await parseFullTextFromPDF(blob)
 
@@ -135,7 +133,8 @@ const extractResourceData = async ({
     ref,
     objectGroup,
     fileUrl,
-    subcategoryLabel: subcategory?.label,
+    categoryLabel,
+    subcategoryLabel,
     pdfTextContent,
     parsedPage: parsed.data.page,
   }
@@ -202,7 +201,7 @@ export const schedulePushDocumentJobHandler = async () => {
             })
             if (extracted === null) return null
 
-            const { ref, pdfTextContent, subcategoryLabel, parsedPage } =
+            const { ref, pdfTextContent, categoryLabel, subcategoryLabel } =
               extracted
 
             return {
@@ -215,7 +214,7 @@ export const schedulePushDocumentJobHandler = async () => {
               url: encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`),
               date: scheduledAt.toISOString(),
               categories: subcategoryLabel ? [subcategoryLabel] : [],
-              contentType: parsedPage.category,
+              contentType: categoryLabel ?? "",
             }
           } catch (error) {
             logger.error({ error, resourceId }, "Failed to process document")
@@ -260,6 +259,7 @@ export const schedulePushDocumentJobHandler = async () => {
           const {
             objectGroup,
             fileUrl,
+            categoryLabel,
             subcategoryLabel,
             pdfTextContent,
             parsedPage,
@@ -269,7 +269,7 @@ export const schedulePushDocumentJobHandler = async () => {
             parsedText: pdfTextContent,
             objectGroup,
             title,
-            category: parsedPage.category,
+            category: categoryLabel ?? "",
             subCategory: subcategoryLabel ?? "",
             notificationNum: parsedPage.description,
             fileUrl,

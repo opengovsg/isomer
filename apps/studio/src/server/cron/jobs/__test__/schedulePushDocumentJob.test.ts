@@ -5,6 +5,10 @@ import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
+import {
+  GAZETTE_CATEGORY_LABEL,
+  GAZETTE_SUBCATEGORY_LABEL,
+} from "~/features/gazettes/constants"
 import * as s3Lib from "~/lib/s3"
 import * as gazetteService from "~/server/modules/gazette/gazette.service"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -43,20 +47,18 @@ const urlToString = (input: Parameters<typeof fetch>[0]): string =>
       : input.url
 
 // Replace the document blob's content with a shape the worker accepts.
-// The worker's Zod parse inspects `page.ref`, `page.category`, and
-// `page.tagged`, so we cast around the broader BlobJsonContent typing for
-// the sake of the fixture.
+// The worker's Zod parse inspects `page.ref` and `page.tagged`, so we cast
+// around the broader BlobJsonContent typing for the sake of the fixture.
 const setBlobContentForPushDocument = async (
   blobId: bigint | string,
   ref: string,
-  category: string,
   tagged: string[] = [],
   description?: string,
 ) => {
   await db
     .updateTable("Blob")
     .set({
-      content: { page: { ref, category, tagged, description } } as never,
+      content: { page: { ref, tagged, description } } as never,
     })
     .where("id", "=", String(blobId))
     .execute()
@@ -90,7 +92,9 @@ const seedDocumentReadyForIngestion = async ({
     permalink: "index",
   })
 
-  // Set the IndexPage blob content to the expected shape.
+  // Set the IndexPage blob content to the expected shape: two tagCategories,
+  // one for category and one for subcategory, each with a `label` used to
+  // disambiguate which resolved option is which.
   await db
     .updateTable("Blob")
     .set({
@@ -99,6 +103,11 @@ const seedDocumentReadyForIngestion = async ({
         page: {
           tagCategories: [
             {
+              label: GAZETTE_CATEGORY_LABEL,
+              options: [{ id: "cat-1", label: category }],
+            },
+            {
+              label: GAZETTE_SUBCATEGORY_LABEL,
               options: [{ id: "tag-1", label: "Public" }],
             },
           ],
@@ -139,8 +148,7 @@ const seedDocumentReadyForIngestion = async ({
   await setBlobContentForPushDocument(
     blob.id,
     ref,
-    category,
-    ["tag-1"],
+    ["cat-1", "tag-1"],
     description,
   )
 
@@ -522,12 +530,10 @@ describe("schedulePushDocumentJobHandler", async () => {
         .values({ content: {} as never })
         .returning("id")
         .executeTakeFirstOrThrow()
-      await setBlobContentForPushDocument(
-        draftBlob.id,
-        draftRef,
-        "Government Gazettes",
-        ["tag-1"],
-      )
+      await setBlobContentForPushDocument(draftBlob.id, draftRef, [
+        "cat-1",
+        "tag-1",
+      ])
       await db
         .updateTable("Resource")
         .set({ publishedVersionId: version.id, draftBlobId: draftBlob.id })
