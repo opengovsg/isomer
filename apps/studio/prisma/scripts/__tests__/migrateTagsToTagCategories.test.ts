@@ -35,6 +35,7 @@ import {
   resolveOptionIdsFromLegacyTags,
   resolveSiteIds,
   type LegacyTag,
+  type ReconciledMigrationWork,
   type TagCategoryGroup,
   verifyUser,
 } from "../migrateTagsToTagCategories"
@@ -414,26 +415,27 @@ describe("reconcileMigrationWork", () => {
       draftTagCategories: [existingTopicGroup],
       publishedTagCategories: undefined,
       items,
-      generateId,
     })
 
+    // "News" is minted once by the plan (new-id-2) and reused for the draft
+    // patch — not regenerated.
     expect(reconciled.draftGroupsToAdd).toEqual([])
     expect(reconciled.draftGroupOptionPatches).toEqual([
       {
         groupLabel: "Topic",
-        optionsToAdd: [{ id: "new-id-3", label: "News" }],
+        optionsToAdd: [{ id: "new-id-2", label: "News" }],
       },
     ])
     expect(reconciled.itemUpdates).toEqual([
       {
         resourceId: "1",
         state: "draft",
-        tagged: ["t-health", "new-id-3"],
+        tagged: ["t-health", "new-id-2"],
       },
       {
         resourceId: "2",
         state: "draft",
-        tagged: ["new-id-3"],
+        tagged: ["new-id-2"],
       },
     ])
     expect(reconciled.isFullyMigrated).toBe(false)
@@ -508,6 +510,161 @@ describe("reconcileMigrationWork", () => {
       },
     ])
   })
+
+  // An option id that differs between draft and published leaves each side
+  // internally consistent, but publishing the draft index later replaces the
+  // live tagCategories wholesale and orphans the ids on already-published items
+  // (which this migration does not republish). One id per label, both sides.
+  describe("cross-side option id convergence", () => {
+    const itemTaggedBySide = (reconciled: ReconciledMigrationWork) =>
+      Object.fromEntries(
+        reconciled.itemUpdates.map((update) => [update.state, update.tagged]),
+      )
+
+    it("reuses the draft's existing option id on the published side when only draft has it", () => {
+      const draftGroup: TagCategoryGroup = {
+        id: "g-1",
+        label: "Topic",
+        display: "pills",
+        options: [
+          { id: "t-health", label: "Health" },
+          { id: "t-news-from-draft", label: "News" },
+        ],
+      }
+      const publishedGroup: TagCategoryGroup = {
+        id: "g-1",
+        label: "Topic",
+        display: "pills",
+        options: [{ id: "t-health", label: "Health" }],
+      }
+      const items = [
+        {
+          resourceId: "1",
+          draftTags: [{ category: "Topic", selected: ["News"] }],
+          publishedTags: [{ category: "Topic", selected: ["News"] }],
+        },
+      ]
+      let counter = 0
+      const plan = buildMigrationPlan({
+        items,
+        generateId: () => `plan-id-${counter++}`,
+      })
+      if (plan.status !== "migrated") throw new Error("expected migrated plan")
+
+      const reconciled = reconcileMigrationWork({
+        plan,
+        draftTagCategories: [draftGroup],
+        publishedTagCategories: [publishedGroup],
+        items,
+      })
+
+      expect(reconciled.draftGroupsToAdd).toEqual([])
+      expect(reconciled.publishedGroupsToAdd).toEqual([])
+      expect(reconciled.draftGroupOptionPatches).toEqual([])
+      expect(reconciled.publishedGroupOptionPatches).toEqual([
+        {
+          groupLabel: "Topic",
+          optionsToAdd: [{ id: "t-news-from-draft", label: "News" }],
+        },
+      ])
+      expect(itemTaggedBySide(reconciled)).toEqual({
+        draft: ["t-news-from-draft"],
+        published: ["t-news-from-draft"],
+      })
+    })
+
+    it("shares ids when a label lands as a whole group on one side and an option patch on the other", () => {
+      const draftGroup: TagCategoryGroup = {
+        id: "g-1",
+        label: "Topic",
+        display: "pills",
+        options: [{ id: "t-health", label: "Health" }],
+      }
+      const items = [
+        {
+          resourceId: "1",
+          draftTags: [{ category: "Topic", selected: ["Health", "News"] }],
+          publishedTags: [{ category: "Topic", selected: ["Health", "News"] }],
+        },
+      ]
+      let counter = 0
+      const plan = buildMigrationPlan({
+        items,
+        generateId: () => `plan-id-${counter++}`,
+      })
+      if (plan.status !== "migrated") throw new Error("expected migrated plan")
+
+      const reconciled = reconcileMigrationWork({
+        plan,
+        draftTagCategories: [draftGroup],
+        publishedTagCategories: undefined,
+        items,
+      })
+
+      // Draft already has the group, so it only needs "News" appended. Published
+      // has no group at all, so it receives the whole group — and that group must
+      // carry draft's existing "Health" id plus the same "News" id draft is
+      // getting, not a second pair.
+      expect(reconciled.draftGroupOptionPatches).toEqual([
+        {
+          groupLabel: "Topic",
+          optionsToAdd: [{ id: "plan-id-2", label: "News" }],
+        },
+      ])
+      expect(reconciled.publishedGroupsToAdd).toEqual([
+        {
+          id: "plan-id-0",
+          label: "Topic",
+          display: "pills",
+          options: [
+            { id: "t-health", label: "Health" },
+            { id: "plan-id-2", label: "News" },
+          ],
+        },
+      ])
+      expect(itemTaggedBySide(reconciled)).toEqual({
+        draft: ["t-health", "plan-id-2"],
+        published: ["t-health", "plan-id-2"],
+      })
+    })
+
+    it("leaves divergence that predates this script untouched, resolving each side to its own id", () => {
+      const withNewsId = (optionId: string): TagCategoryGroup => ({
+        id: "g-1",
+        label: "Topic",
+        display: "pills",
+        options: [{ id: optionId, label: "News" }],
+      })
+      const items = [
+        {
+          resourceId: "1",
+          draftTags: [{ category: "Topic", selected: ["News"] }],
+          publishedTags: [{ category: "Topic", selected: ["News"] }],
+        },
+      ]
+      const plan = buildMigrationPlan({ items, generateId: () => "unused" })
+      if (plan.status !== "migrated") throw new Error("expected migrated plan")
+
+      const reconciled = reconcileMigrationWork({
+        plan,
+        draftTagCategories: [withNewsId("t-news-draft")],
+        publishedTagCategories: [withNewsId("t-news-published")],
+        items,
+      })
+
+      // Both sides already carry "News", so neither needs an addition and the
+      // canonical map goes unused. Reconciling the two ids would mean rewriting
+      // references this script does not own.
+      expect(reconciled.draftGroupsToAdd).toEqual([])
+      expect(reconciled.publishedGroupsToAdd).toEqual([])
+      expect(reconciled.draftGroupOptionPatches).toEqual([])
+      expect(reconciled.publishedGroupOptionPatches).toEqual([])
+      expect(itemTaggedBySide(reconciled)).toEqual({
+        draft: ["t-news-draft"],
+        published: ["t-news-published"],
+      })
+    })
+  })
 })
 
 describe("buildGroupOptionPatches / applyGroupOptionPatches", () => {
@@ -525,8 +682,8 @@ describe("buildGroupOptionPatches / applyGroupOptionPatches", () => {
         label: "Topic",
         display: "pills",
         options: [
-          { id: "unused-health", label: "Health" },
-          { id: "unused-news", label: "News" },
+          { id: "candidate-health", label: "Health" },
+          { id: "candidate-news", label: "News" },
         ],
       },
     ]
@@ -534,13 +691,14 @@ describe("buildGroupOptionPatches / applyGroupOptionPatches", () => {
     const patches = buildGroupOptionPatches({
       existingTagCategories: existing,
       candidateGroups: candidate,
-      generateId: () => "t-news",
     })
 
+    // The candidate's option id is carried through rather than regenerated, so
+    // the same label resolves to the same id on whichever side needs it.
     expect(patches).toEqual([
       {
         groupLabel: "Topic",
-        optionsToAdd: [{ id: "t-news", label: "News" }],
+        optionsToAdd: [{ id: "candidate-news", label: "News" }],
       },
     ])
     expect(applyGroupOptionPatches(existing, patches)).toEqual([
@@ -549,7 +707,7 @@ describe("buildGroupOptionPatches / applyGroupOptionPatches", () => {
         label: "Topic",
         options: [
           { id: "t-health", label: "Health" },
-          { id: "t-news", label: "News" },
+          { id: "candidate-news", label: "News" },
         ],
       },
     ])

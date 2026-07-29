@@ -30,6 +30,17 @@
  * (`"already-migrated"`) only when every side is up to date and every item
  * already carries the expected option UUIDs.
  *
+ * One option UUID per label across both sides: an option id is minted once and
+ * reused wherever that (category, option) label needs writing, whether it lands
+ * as part of a whole new group on one side and an option patch on the other, or
+ * already exists on one side and is missing from the other. Two ids for one
+ * label would each be internally consistent, but publishing the draft index
+ * later replaces the live `tagCategories` wholesale — orphaning the id carried
+ * by already-published items, which this migration does not republish.
+ * Divergence that predates this script (both sides already carry the label with
+ * different ids) is left alone: each side keeps resolving to its own id, and
+ * reconciling it would mean rewriting references this script does not own.
+ *
  * Draft writes use optimistic concurrency (`Blob.updatedAt` + `Resource.draftBlobId`
  * guards) so concurrent Studio saves/publishes abort rather than clobber edits.
  * Risk accepted: the two draft guards are checked separately, so a publish that
@@ -465,34 +476,34 @@ export const findMatchingTagGroup = (
       normalizedGroupLabel(candidateLabel),
   )
 
+/**
+ * Options present on the candidate group but not on the existing one. The
+ * candidate's option ids are carried through verbatim — never regenerated —
+ * so the same label resolves to the same id on whichever side needs it. See
+ * `canonicalizeGroupOptionIds` for why that matters across draft/published.
+ */
 export const computeMissingOptionsForGroup = ({
   existingGroup,
   candidateGroup,
-  generateId = randomUUID,
 }: {
   existingGroup: TagCategoryGroup
   candidateGroup: TagCategoryGroup
-  generateId?: () => string
 }): TagCategoryOption[] => {
   const existingOptionKeys = new Set(
     existingGroup.options.map((option) => normalizedGroupLabel(option.label)),
   )
 
-  return candidateGroup.options
-    .filter(
-      (option) => !existingOptionKeys.has(normalizedGroupLabel(option.label)),
-    )
-    .map((option) => ({ id: generateId(), label: option.label }))
+  return candidateGroup.options.filter(
+    (option) => !existingOptionKeys.has(normalizedGroupLabel(option.label)),
+  )
 }
 
 export const buildGroupOptionPatches = ({
   existingTagCategories,
   candidateGroups,
-  generateId = randomUUID,
 }: {
   existingTagCategories?: TagCategoryGroup[]
   candidateGroups: TagCategoryGroup[]
-  generateId?: () => string
 }): TagCategoryGroupOptionPatch[] => {
   const patches: TagCategoryGroupOptionPatch[] = []
 
@@ -506,7 +517,6 @@ export const buildGroupOptionPatches = ({
     const optionsToAdd = computeMissingOptionsForGroup({
       existingGroup: existing,
       candidateGroup: candidate,
-      generateId,
     })
     if (optionsToAdd.length === 0) continue
 
@@ -515,6 +525,34 @@ export const buildGroupOptionPatches = ({
 
   return patches
 }
+
+/**
+ * Rewrites each candidate option's id to the canonical id for its
+ * (category, option) label pair, leaving labels untouched.
+ *
+ * Both sides derive their work from the same candidate groups, so making the
+ * candidates canonical is what keeps a label's id identical on draft and
+ * published. Without it, a label appended as part of a whole group on one side
+ * and as an option patch on the other would get two different ids: each side is
+ * internally consistent, but publishing the draft index later replaces the live
+ * `tagCategories` wholesale and orphans the ids on already-published items,
+ * which are not republished.
+ */
+export const canonicalizeGroupOptionIds = (
+  groups: TagCategoryGroup[],
+  canonicalOptionIds: Map<string, Map<string, string>>,
+): TagCategoryGroup[] =>
+  groups.map((group) => {
+    const byLabel = canonicalOptionIds.get(normalizedGroupLabel(group.label))
+    if (!byLabel) return group
+    return {
+      ...group,
+      options: group.options.map((option) => ({
+        ...option,
+        id: byLabel.get(normalizedGroupLabel(option.label)) ?? option.id,
+      })),
+    }
+  })
 
 export const buildOptionIdLookupFromOptionPatches = (
   patches: TagCategoryGroupOptionPatch[],
@@ -577,7 +615,6 @@ export const reconcileMigrationWork = ({
   hasDraftIndex = true,
   hasPublishedIndex = true,
   items,
-  generateId = randomUUID,
 }: {
   plan: Extract<MigrationPlan, { status: "migrated" }>
   draftTagCategories?: TagCategoryGroup[]
@@ -587,27 +624,43 @@ export const reconcileMigrationWork = ({
   /** False when the Index has no published blob — groups/patches for that side are not written. */
   hasPublishedIndex?: boolean
   items: MigrationPlanItem[]
-  generateId?: () => string
 }): ReconciledMigrationWork => {
+  // One canonical id per (category, option) label across BOTH sides. Ids that
+  // already exist on either side win over the plan's freshly minted ones, so a
+  // side missing a label reuses the other side's id instead of inventing a
+  // second one. Draft is seeded first, but that only decides the winner when a
+  // label is absent from one side — when both sides already carry it with
+  // different ids (pre-existing divergence), neither side needs an addition and
+  // this map goes unused, leaving that divergence untouched.
+  const canonicalOptionIds = mergeOptionIdLookups(
+    mergeOptionIdLookups(
+      buildOptionIdLookupFromTagCategories(draftTagCategories),
+      buildOptionIdLookupFromTagCategories(publishedTagCategories),
+    ),
+    buildOptionIdLookupFromTagGroups(plan.groups),
+  )
+  const candidateGroups = canonicalizeGroupOptionIds(
+    plan.groups,
+    canonicalOptionIds,
+  )
+
   const draftGroupsToAdd = hasDraftIndex
-    ? filterGroupsToAdd(draftTagCategories, plan.groups)
+    ? filterGroupsToAdd(draftTagCategories, candidateGroups)
     : []
   const publishedGroupsToAdd = hasPublishedIndex
-    ? filterGroupsToAdd(publishedTagCategories, plan.groups)
+    ? filterGroupsToAdd(publishedTagCategories, candidateGroups)
     : []
 
   const draftGroupOptionPatches = hasDraftIndex
     ? buildGroupOptionPatches({
         existingTagCategories: draftTagCategories,
-        candidateGroups: plan.groups,
-        generateId,
+        candidateGroups,
       })
     : []
   const publishedGroupOptionPatches = hasPublishedIndex
     ? buildGroupOptionPatches({
         existingTagCategories: publishedTagCategories,
-        candidateGroups: plan.groups,
-        generateId,
+        candidateGroups,
       })
     : []
 
