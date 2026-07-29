@@ -226,7 +226,7 @@ jobs:
           TZ: Asia/Singapore
 
   test-template:
-    name: Test Template bundle pruning
+    name: Test Template (Bundle Pruning)
     needs: [optimize_ci, changes]
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.template_or_components == 'true'

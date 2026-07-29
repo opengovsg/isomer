@@ -9,7 +9,7 @@ import {
 } from "./helpers/buildTemplate"
 import { scanBundleForAlgolia } from "./helpers/scanBundle"
 
-describe("template bundle pruning", () => {
+describe("template (bundle pruning)", () => {
   let originalConfig: string
 
   beforeAll(() => {
