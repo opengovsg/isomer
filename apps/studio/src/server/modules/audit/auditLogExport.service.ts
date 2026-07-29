@@ -68,8 +68,11 @@ export const createAuditLogExportRequest = async ({
   month,
   reportType,
 }: CreateAuditLogExportRequestProps) => {
+  const futureMonthCheck = validateIsNotFutureMonth(month)
   const possibleError =
-    validateIsNotFutureMonth(month) || validateIsMonthInPastYear(month)
+    futureMonthCheck !== true
+      ? futureMonthCheck
+      : validateIsMonthInPastYear(month)
   if (possibleError !== true) {
     logger.warn(possibleError)
     throw new TRPCError({
@@ -436,6 +439,13 @@ export const processAuditLogExportRequest = async (
  * `Processing` past their lease (PROCESSING_LEASE_MS) — abandoned claims from a
  * worker that died between the claim and the in-process catch. Per-row errors
  * are caught so a single bad row never aborts the rest of the batch.
+ *
+ * Stale `Processing` rows that have already exhausted `MAX_ATTEMPTS` are
+ * excluded here, mirroring the claim guard in `processAuditLogExportRequest`:
+ * such a row can never actually be claimed, so selecting it would only waste
+ * a batch slot on a guaranteed no-op — and with `BATCH_SIZE` candidates
+ * ordered oldest-first, enough exhausted rows would starve newer `Pending`
+ * exports out of every sweep.
  */
 export const processPendingAuditLogExports = async (): Promise<void> => {
   // A single cutoff instant for the whole sweep: the batch selector and the
@@ -450,6 +460,7 @@ export const processPendingAuditLogExports = async (): Promise<void> => {
         eb.and([
           eb("status", "=", AuditLogExportStatus.Processing),
           eb("updatedAt", "<", staleCutoff),
+          eb("attempts", "<", MAX_ATTEMPTS),
         ]),
       ]),
     )

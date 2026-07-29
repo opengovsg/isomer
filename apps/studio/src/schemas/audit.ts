@@ -34,7 +34,7 @@ export const validateIsNotFutureMonth = (
 
 export const validateIsMonthInPastYear = (
   requestedMonth: string,
-): boolean | MonthRangeError => {
+): true | MonthRangeError => {
   const parsed = parseISO(`${requestedMonth}-01`)
   const earliest = parseISO(
     `${getEarliestExportableMonth(getCurrentSingaporeMonth())}-01`,
