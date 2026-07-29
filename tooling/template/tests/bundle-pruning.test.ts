@@ -2,8 +2,8 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest"
 
 import {
   buildTemplate,
-  readConfigFixture,
   readTemplateConfig,
+  withTemplateConfig,
   writeTemplateConfig,
 } from "./helpers/buildTemplate"
 import { scanBundleForAlgolia } from "./helpers/scanBundle"
@@ -32,7 +32,16 @@ describe("template (bundle pruning)", () => {
 
   it("includes Algolia search deps for egazette-algolia sites", () => {
     // Arrange
-    writeTemplateConfig(readConfigFixture("egazette-algolia"))
+    writeTemplateConfig(
+      withTemplateConfig(originalConfig, (config) => {
+        ;(config.site as Record<string, unknown>).search = {
+          type: "egazette-algolia",
+          appId: "1V7DZGZJKK",
+          searchApiKey: "bbc5751b3f9b7fdfc08c99712adfa397",
+          indexName: "staging_ogp_egazettes_index",
+        }
+      }),
+    )
     const outDir = buildTemplate()
 
     // Act

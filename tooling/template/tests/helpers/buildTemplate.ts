@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process"
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { readFileSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -7,8 +7,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const TEMPLATE_DIR = join(__dirname, "..", "..")
 const OUT_DIR = join(TEMPLATE_DIR, "out")
 const CONFIG_PATH = join(TEMPLATE_DIR, "data", "config.json")
-const FIXTURES_DIR = join(TEMPLATE_DIR, "tests", "fixtures")
-
 const run = (command: string, args: string[], cwd: string, timeout: number) => {
   const result = spawnSync(command, args, {
     cwd,
@@ -34,12 +32,13 @@ export const writeTemplateConfig = (config: string) => {
   writeFileSync(CONFIG_PATH, config, "utf-8")
 }
 
-export const readConfigFixture = (name: string) => {
-  const fixturePath = join(FIXTURES_DIR, `config.${name}.json`)
-  if (!existsSync(fixturePath)) {
-    throw new Error(`Missing config fixture: ${fixturePath}`)
-  }
-  return readFileSync(fixturePath, "utf-8")
+export const withTemplateConfig = (
+  baseConfig: string,
+  update: (config: Record<string, unknown>) => void,
+) => {
+  const config = JSON.parse(baseConfig) as Record<string, unknown>
+  update(config)
+  return `${JSON.stringify(config, null, 2)}\n`
 }
 
 export const buildTemplate = () => {
