@@ -41,13 +41,10 @@
  * different ids) is left alone: each side keeps resolving to its own id, and
  * reconciling it would mean rewriting references this script does not own.
  *
- * Draft writes use optimistic concurrency (`Blob.updatedAt` + `Resource.draftBlobId`
- * guards) so concurrent Studio saves/publishes abort rather than clobber edits.
- * Risk accepted: the two draft guards are checked separately, so a publish that
- * lands between them can still promote the blob to live while `updatedAt` is
- * unchanged (Studio publish reuses the draft blob row). This script is run
- * manually off-hours with no active editors or scheduled publishes — that
- * operational window is the mitigation, not an atomic join on update.
+ * Risk accepted: draft writes have no OCC guard — a concurrent publish could
+ * promote the blob to live before the in-place update lands. Same mitigation
+ * as migrateCategoryToTagCategories.ts: run manually off-hours with no active
+ * editors or scheduled publishes.
  *
  * Display: each newly created group is written with `display: "pills"`
  * (the historical default for tag filters).
@@ -57,9 +54,8 @@
  *   - SITE_IDS_EXCLUDE → removed from the resolved set (either way)
  * The resolved list is printed and must be confirmed before any writes.
  *
- * Each collection runs in its own transaction. A per-collection failure (e.g.
- * optimistic-concurrency abort when a Studio user is mid-edit) does not block
- * other collections on the same site. A local log file records per-collection
+ * Each collection runs in its own transaction. A per-collection failure does
+ * not block other collections on the same site. A local log file records per-collection
  * and per-site outcomes for manual retry.
  *
  * Usage:
@@ -784,7 +780,6 @@ const getIndexPageRow = (collectionId: string, siteId: number) =>
       "r.publishedVersionId",
       "v.blobId as publishedBlobId",
       "v.versionNum as publishedVersionNum",
-      sql<Date | null>`"draftBlob"."updatedAt"`.as("draftUpdatedAt"),
       sql<CollectionIndexContent | null>`"draftBlob"."content"`.as(
         "draftContent",
       ),
@@ -812,7 +807,6 @@ const getItemRows = (collectionId: string, siteId: number) =>
       "r.publishedVersionId",
       "v.blobId as publishedBlobId",
       "v.versionNum as publishedVersionNum",
-      sql<Date | null>`"draftBlob"."updatedAt"`.as("draftUpdatedAt"),
       sql<CollectionItemContent | null>`"draftBlob"."content"`.as(
         "draftContent",
       ),
@@ -822,47 +816,19 @@ const getItemRows = (collectionId: string, siteId: number) =>
     ])
     .execute()
 
-/**
- * In-place draft write with OCC. `draftBlobId` and `updatedAt` are checked in
- * separate steps — a publish that commits between them reuses this blob row
- * (clears `draftBlobId`, leaves `updatedAt` untouched) and the update can
- * still succeed on now-live content. Accepted for manual off-hours runs with
- * no concurrent Studio activity; harden with a single UPDATE … FROM Resource
- * if this ever needs to run under load.
- */
-const updateDraftBlobInPlace = async <T>(
+/** Blind in-place draft write — see file header for accepted publish race. */
+const updateDraftBlobContent = async <T>(
   tx: Transaction<DB>,
-  {
-    resourceId,
-    expectedDraftBlobId,
-    expectedUpdatedAt,
-    mergeContent,
-  }: {
-    resourceId: string
-    expectedDraftBlobId: string
-    expectedUpdatedAt: Date
-    mergeContent: (current: T) => T
-  },
+  blobId: string,
+  mergeContent: (current: T) => T,
 ) => {
-  const resource = await tx
-    .selectFrom("Resource")
-    .where("id", "=", resourceId)
-    .select("draftBlobId")
-    .executeTakeFirst()
-
-  if (resource?.draftBlobId !== expectedDraftBlobId) {
-    throw new Error(
-      `Concurrent publish detected on resource ${resourceId} — draftBlobId changed since it was read. Aborting.`,
-    )
-  }
-
   const currentBlob = await tx
     .selectFrom("Blob")
-    .where("id", "=", expectedDraftBlobId)
-    .select(["content", "updatedAt"])
+    .where("id", "=", blobId)
+    .select("content")
     .executeTakeFirstOrThrow()
 
-  const result = await tx
+  await tx
     .updateTable("Blob")
     .set({
       content: jsonb(
@@ -871,15 +837,8 @@ const updateDraftBlobInPlace = async <T>(
         ) as unknown as UnwrapTagged<PrismaJson.BlobJsonContent>,
       ),
     })
-    .where("id", "=", expectedDraftBlobId)
-    .where("updatedAt", "=", expectedUpdatedAt)
-    .executeTakeFirst()
-
-  if (result.numUpdatedRows === BigInt(0)) {
-    throw new Error(
-      `Concurrent draft edit detected on resource ${resourceId} — Blob.updatedAt changed since it was read. Aborting.`,
-    )
-  }
+    .where("id", "=", blobId)
+    .execute()
 }
 
 /** Publishes new content as a brand-new Version — never rewrites a historical Blob. */
@@ -1076,9 +1035,7 @@ export const migrateCollection = async ({
   }
 
   if (plan.status === "migrated") {
-    const hasDraftIndex = Boolean(
-      indexRow.draftContent && indexRow.draftBlobId && indexRow.draftUpdatedAt,
-    )
+    const hasDraftIndex = Boolean(indexRow.draftContent && indexRow.draftBlobId)
     const hasPublishedIndex = Boolean(
       indexRow.publishedContent && indexRow.publishedVersionNum != null,
     )
@@ -1148,17 +1105,11 @@ export const migrateCollection = async ({
     const hasDraftIndexChanges =
       reconciled.draftGroupsToAdd.length > 0 ||
       reconciled.draftGroupOptionPatches.length > 0
-    if (
-      indexRow.draftContent &&
-      indexRow.draftBlobId &&
-      indexRow.draftUpdatedAt &&
-      hasDraftIndexChanges
-    ) {
-      await updateDraftBlobInPlace<CollectionIndexContent>(tx, {
-        resourceId: indexRow.resourceId,
-        expectedDraftBlobId: indexRow.draftBlobId,
-        expectedUpdatedAt: indexRow.draftUpdatedAt,
-        mergeContent: (current) => ({
+    if (indexRow.draftContent && indexRow.draftBlobId && hasDraftIndexChanges) {
+      await updateDraftBlobContent<CollectionIndexContent>(
+        tx,
+        indexRow.draftBlobId,
+        (current) => ({
           ...current,
           page: {
             ...current.page,
@@ -1169,7 +1120,7 @@ export const migrateCollection = async ({
             }),
           },
         }),
-      })
+      )
     }
 
     const hasPublishedIndexChanges =
@@ -1207,21 +1158,15 @@ export const migrateCollection = async ({
       const row = itemRowByResourceId.get(update.resourceId)
       if (!row) continue
 
-      if (
-        update.state === "draft" &&
-        row.draftContent &&
-        row.draftBlobId &&
-        row.draftUpdatedAt
-      ) {
-        await updateDraftBlobInPlace<CollectionItemContent>(tx, {
-          resourceId: row.resourceId,
-          expectedDraftBlobId: row.draftBlobId,
-          expectedUpdatedAt: row.draftUpdatedAt,
-          mergeContent: (current) => ({
+      if (update.state === "draft" && row.draftContent && row.draftBlobId) {
+        await updateDraftBlobContent<CollectionItemContent>(
+          tx,
+          row.draftBlobId,
+          (current) => ({
             ...current,
             page: { ...current.page, tagged: update.tagged },
           }),
-        })
+        )
       } else if (
         update.state === "published" &&
         row.publishedContent &&
