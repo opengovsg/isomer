@@ -1,6 +1,42 @@
 import { describe, expect, it } from "vitest"
 
-import { normalizeSource, resolveConcurrency } from "../uploadRedirects"
+import {
+  normalizeSource,
+  parseUploadCliArgs,
+  resolveConcurrency,
+  resolveUploadConfig,
+} from "../uploadRedirects"
+
+const baseArgs = [
+  "node",
+  "uploadRedirects.ts",
+  "--redirects-json",
+  "/tmp/redirects.json",
+  "--s3-bucket-name",
+  "my-bucket",
+  "--site-name",
+  "my-site",
+  "--build-number",
+  "42",
+  "--concurrency",
+  "100",
+] as const
+
+describe("parseUploadCliArgs", () => {
+  it("parses publisher flags from argv", () => {
+    expect(parseUploadCliArgs([...baseArgs])).toEqual({
+      "redirects-json": "/tmp/redirects.json",
+      "s3-bucket-name": "my-bucket",
+      "site-name": "my-site",
+      "build-number": "42",
+      concurrency: "100",
+    })
+  })
+
+  it("returns empty values when flags are absent", () => {
+    expect(parseUploadCliArgs(["node", "uploadRedirects.ts"])).toEqual({})
+  })
+})
 
 describe("resolveConcurrency", () => {
   it("uses S3_SYNC_CONCURRENCY when it is a positive integer", () => {
@@ -13,6 +49,22 @@ describe("resolveConcurrency", () => {
     expect(resolveConcurrency("0")).toBe(20)
     expect(resolveConcurrency("-1")).toBe(20)
     expect(resolveConcurrency("nope")).toBe(20)
+  })
+})
+
+describe("resolveUploadConfig", () => {
+  it("reads all publisher inputs from argv", () => {
+    expect(resolveUploadConfig([...baseArgs])).toEqual({
+      redirectsJson: "/tmp/redirects.json",
+      s3BucketName: "my-bucket",
+      siteName: "my-site",
+      buildNumber: "42",
+      concurrency: 100,
+    })
+  })
+
+  it("returns null when required inputs are missing", () => {
+    expect(resolveUploadConfig(["node", "uploadRedirects.ts"])).toBeNull()
   })
 })
 

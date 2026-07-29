@@ -1,0 +1,94 @@
+name: pr-breakdown
+
+# Named without whitespace (rather than e.g. "PR diff breakdown") so it's
+# easy to grep/reference by exact string — update-pr-description.yml's
+# `workflow_run.workflows` list below must match this name exactly.
+#
+# Split out of ci.yml so that update-pr-description.yml (which only needs
+# this job's artifact) can fire via `workflow_run` as soon as this fast job
+# finishes, instead of waiting on ci.yml's slower jobs (end-to-end-tests,
+# test-studio, etc). See update-pr-description.yml for why a `workflow_run`
+# trigger is needed at all.
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  optimize_ci:
+    runs-on: ubuntu-latest # or whichever runner you use for your CI
+    outputs:
+      skip: ${{ steps.check_skip.outputs.skip }}
+    steps:
+      - name: Optimize CI
+        id: check_skip
+        uses: withgraphite/graphite-ci-action@402a89bc8aa6db18ae1f9c61953d001d5f9d828f
+        with:
+          graphite_token: ${{ secrets.GRAPHITE_CI_OPTIMIZER_TOKEN }}
+
+  pr-breakdown:
+    name: PR diff breakdown
+    needs: optimize_ci
+    runs-on: ubuntu-latest
+    if: needs.optimize_ci.outputs.skip == 'false'
+    permissions:
+      contents: read
+    steps:
+      # Non-default fetch-depth is required, not just convenient: the default
+      # checkout resolves the PR's synthetic merge ref (refs/pull/N/merge),
+      # whose two parents are the real base and head commits — fork or not,
+      # GitHub materializes that ref server-side, so this is also what makes
+      # the head commit fetchable at all for fork PRs (origin is the base
+      # repo; a fork's head SHA isn't otherwise fetchable from it directly).
+      # Extra depth pulls ancestor history for both parents, which is what
+      # lets classify-pr-diff.mjs's three-dot diff find the real merge-base
+      # instead of diffing straight against base's current tip.
+      #
+      # Full history (0) rather than a bounded depth: a bounded fetch trades
+      # a small, currently-negligible cost saving for a real failure mode —
+      # any PR whose merge-base sits further back than the bound hard-fails
+      # this step with "no merge base found," with no continue-on-error, on
+      # every subsequent push to that PR. Full history has no such cliff; at
+      # this repo's current size (~80MB of history) the extra clone cost is
+      # a few seconds at most. This does mean the clone cost grows with the
+      # repo's total lifetime history, not with this one PR's size — worth
+      # revisiting if that ever becomes an actual bottleneck.
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Classify changed files
+        run: node .github/scripts/classify-pr-diff.mjs > /tmp/pr-breakdown-body.md
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+      - name: Add to step summary
+        run: cat /tmp/pr-breakdown-body.md >> "$GITHUB_STEP_SUMMARY"
+
+      # Same fork-PR restriction as post-pr-comment.yml's jobs: this job
+      # can't edit the PR directly, so it hands the body off as an artifact
+      # for update-pr-description.yml to pick up in the base-repo context.
+      #
+      # Deliberately NOT including a pr-number.txt here: this step runs with
+      # the PR's own (possibly forked, possibly modified) version of this
+      # workflow file, so anything it writes is attacker-controlled. The
+      # consuming job derives the PR number itself from the trusted
+      # workflow_run event payload instead of trusting a number from this
+      # artifact — see update-pr-description.yml.
+      #
+      # base-ref.txt IS included, but only ever used downstream as a
+      # tie-breaker among candidates already independently constrained by
+      # trusted fields (fork+branch+exact head commit) — never as the
+      # source of truth for which PR to edit. See update-pr-description.yml.
+      - name: Save PR breakdown metadata
+        run: |
+          mkdir -p /tmp/pr-breakdown-metadata
+          cp /tmp/pr-breakdown-body.md /tmp/pr-breakdown-metadata/body.md
+          echo "${{ github.event.pull_request.base.ref }}" > /tmp/pr-breakdown-metadata/base-ref.txt
+
+      - name: Upload PR breakdown metadata
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pr-breakdown-metadata
+          path: /tmp/pr-breakdown-metadata/
+          retention-days: 1

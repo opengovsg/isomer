@@ -1,32 +1,17 @@
-// NOTE: algoliasearch v4 is used deliberately — the legacy egazette integration
-// uses the v4 client API (algoliasearch(appId, key).initIndex(name),
-// index.saveObjects, index.deleteBy). v5 changed the client API; do not
-// upgrade without reviewing egazette compatibility.
-import algoliasearch from "algoliasearch"
 import { env } from "~/env.mjs"
 
-const index = algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY).initIndex(
-  env.ALGOLIA_INDEX_NAME,
-)
+import { createAlgoliaClient } from "@isomer/algolia"
 
 /**
- * Upsert records into the search index. Each record must carry an `objectID`.
- * Calling this with the same `objectID` overwrites the existing record cleanly.
+ * Studio adapter for `@isomer/algolia`: reads validated env and binds a single
+ * client to the gazette search index. Import the functions from here rather
+ * than instantiating another client.
  */
-export const saveObjectsToSearchIndex = async (
-  objects: readonly ({ objectID: string } & Record<string, unknown>)[],
-) => {
-  await index.saveObjects(objects)
-}
-
-/**
- * Delete all records matching the given Algolia filter expression.
- * Example: `deleteObjectsFromSearchIndexByFilter('objectGroup:"year/cat/sub/file.pdf"')`.
- *
- * NOTE: `objectGroup` must be registered as `filterOnly(objectGroup)` in
- * `attributesForFaceting` in the Algolia dashboard before this is used —
- * otherwise deleteBy silently matches nothing.
- */
-export const deleteObjectsFromSearchIndexByFilter = async (filters: string) => {
-  await index.deleteBy({ filters })
-}
+export const {
+  saveObjectsToSearchIndex,
+  deleteObjectsFromSearchIndexByFilter,
+} = createAlgoliaClient({
+  appId: env.ALGOLIA_APP_ID,
+  apiKey: env.ALGOLIA_API_KEY,
+  indexName: env.ALGOLIA_INDEX_NAME,
+})

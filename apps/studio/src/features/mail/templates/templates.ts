@@ -1,5 +1,4 @@
 import { toZonedTime } from "date-fns-tz"
-import { escape } from "lodash-es"
 import { ISOMER_SUPPORT_EMAIL, ISOMER_SUPPORT_LINK } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { formatScheduledAtDate } from "~/lib/dates"
@@ -10,9 +9,9 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import type {
   AccountDeactivationEmailTemplateData,
   AccountDeactivationWarningEmailTemplateData,
-  BaseEmailTemplateData,
   CancelSchedulePageTemplateData,
   EmailTemplate,
+  EmailTemplateFunction,
   FailedPublishTemplateData,
   GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
@@ -22,8 +21,7 @@ import type {
   SchedulePageTemplateData,
   SuccessfulPublishTemplateData,
 } from "./types"
-
-const escapeHtml = (value: string | undefined): string => escape(value ?? "")
+import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
 
 const constructStudioRedirect = () =>
   `<a target="_blank" href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}">${escapeHtml(env.NEXT_PUBLIC_APP_URL?.replace("https://", ""))}</a>`
@@ -32,22 +30,19 @@ export const gazetteDeletionTemplate = (
   data: GazetteDeletionEmailTemplateData,
 ) => {
   const { fileId, gazetteTitle } = data
-  const escapedFileId = escapeHtml(fileId)
-  const escapedGazetteTitle = escapeHtml(gazetteTitle)
 
-  // NOTE: Greeting is intentionally not personalised — this email is sent
-  // once with all site admins on it (primary recipient + cc).
+  // Greeting is not personalised. This email goes to all site admins (to + cc).
   return {
-    subject: `[Isomer Studio] The gazette with file id: ${escapedFileId} and title: ${escapedGazetteTitle} has been deleted`,
+    subject: `[Isomer Studio] The gazette with file id: ${fileId} and title: ${gazetteTitle} has been deleted`,
     body: `<p>Hi everyone,</p>
-<p>The gazette ${escapedGazetteTitle} has been deleted from your site and removed from the search results</p>
+<p>The gazette ${gazetteTitle} has been deleted from your site and removed from the search results</p>
 <p>If you believe this was a mistake or need assistance, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }
 }
 
-export const invitationTemplate = (
+const invitationTemplate = (
   data: InvitationEmailTemplateData,
 ): EmailTemplate => {
   let roleAction: string
@@ -69,14 +64,10 @@ export const invitationTemplate = (
 
   const { inviterName, recipientEmail, siteName, role, isSingpassEnabled } =
     data
-  const escapedInviterName = escapeHtml(inviterName)
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
-  const escapedSiteName = escapeHtml(siteName)
-  const escapedRole = escapeHtml(role)
 
   const emailBodyParts = [
-    `<p>Hi ${escapedRecipientEmail},</p>
-<p>${escapedInviterName} has invited you to edit ${escapedSiteName} on Isomer Studio as ${escapedRole}. As a ${escapedRole}, you can ${roleAction}.</p>
+    `<p>Hi ${recipientEmail},</p>
+<p>${inviterName} has invited you to edit ${siteName} on Isomer Studio as ${role}. As a ${role}, you can ${roleAction}.</p>
 <p></p>
 <p>To start editing, log in to Isomer Studio and activate your account: ${constructStudioRedirect()}</p>`,
     ...(isSingpassEnabled
@@ -99,10 +90,9 @@ const loginAlertTemplate = (
   data: LoginAlertEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
   return {
     subject: `[Isomer Studio] Successful Login to Your Account`,
-    body: `<p>Hi ${escapedRecipientEmail},</p>
+    body: `<p>Hi ${recipientEmail},</p>
 <p>We wanted to let you know that your account was accessed successfully.</p>
 <p>If this was you, no action is needed.</p>
 <p><strong>Note:</strong> You're receiving this notification because your account was logged into during a Singpass authentication outage. If you are not the one who logged in, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
@@ -115,11 +105,10 @@ const schedulePageTemplate = (
   data: SchedulePageTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, scheduledAt, resource } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
-  const studioResourceUrl = escapeHtml(getStudioResourceUrl(resource))
+  const studioResourceUrl = getStudioResourceUrl(resource)
   return {
     subject: `[Isomer Studio] You scheduled a page to be published`,
-    body: `<p>Hi ${escapedRecipientEmail},</p>
+    body: `<p>Hi ${recipientEmail},</p>
     <p>You’ve scheduled a page to be published at a later time. Your page will publish at: <strong>${formatScheduledAtDate(toZonedTime(scheduledAt, "Asia/Singapore"), false)} (SGT)</strong>.</p>
     <p>Log in to Isomer Studio at ${studioResourceUrl} to modify or cancel your schedule.</p>
     <p>Best,</p>
@@ -131,13 +120,11 @@ const cancelSchedulePageTemplate = (
   data: CancelSchedulePageTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, resource } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
-  const escapedResourceTitle = escapeHtml(resource.title)
-  const studioResourceUrl = escapeHtml(getStudioResourceUrl(resource))
+  const studioResourceUrl = getStudioResourceUrl(resource)
   return {
     subject: `[Isomer Studio] Schedule to publish was cancelled`,
-    body: `<p>Hi ${escapedRecipientEmail},</p>
-    <p>Your schedule to publish "${escapedResourceTitle}" has been cancelled. The page is now in draft mode.</p>
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>Your schedule to publish "${resource.title}" has been cancelled. The page is now in draft mode.</p>
     <p>Log in to Isomer Studio at ${studioResourceUrl} to manage changes to your page.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
@@ -148,15 +135,13 @@ const failedPublishTemplate = (
   data: FailedPublishTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, isScheduled, resource } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
-  const escapedResourceTitle = escapeHtml(resource.title)
-  const studioResourceUrl = escapeHtml(getStudioResourceUrl(resource))
+  const studioResourceUrl = getStudioResourceUrl(resource)
   switch (isScheduled) {
     case true:
       return {
         subject: `[Isomer Studio] We couldn’t publish your page that was scheduled`,
-        body: `<p>Hi ${escapedRecipientEmail},</p>
-        <p>We couldn’t publish the page ${escapedResourceTitle} that you scheduled.</p>
+        body: `<p>Hi ${recipientEmail},</p>
+        <p>We couldn’t publish the page ${resource.title} that you scheduled.</p>
         <p>Please log in to Isomer Studio at ${studioResourceUrl} and try publishing the page again.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
@@ -164,8 +149,8 @@ const failedPublishTemplate = (
     case false:
       return {
         subject: `[Isomer Studio] We couldn’t publish your page`,
-        body: `<p>Hi ${escapedRecipientEmail},</p>
-        <p>We couldn’t publish the page ${escapedResourceTitle} that you tried to publish.</p>
+        body: `<p>Hi ${recipientEmail},</p>
+        <p>We couldn’t publish the page ${resource.title} that you tried to publish.</p>
         <p>Please log in to Isomer Studio at ${studioResourceUrl} and try publishing the page again.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
@@ -177,15 +162,13 @@ const successfulPublishTemplate = (
   data: SuccessfulPublishTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, resource, ...rest } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
-  const escapedResourceTitle = escapeHtml(resource.title)
-  const studioResourceUrl = escapeHtml(getStudioResourceUrl(resource))
+  const studioResourceUrl = getStudioResourceUrl(resource)
   switch (rest.isScheduled) {
     case true:
       return {
         subject: `[Isomer Studio] Your scheduled page was published`,
-        body: `<p>Hi ${escapedRecipientEmail},</p>
-        <p>Your page ${escapedResourceTitle} was successfully published as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
+        body: `<p>Hi ${recipientEmail},</p>
+        <p>Your page ${resource.title} was successfully published as scheduled. It will be live on your site in approximately 5-10 minutes.</p>
         <p> You can view or edit your published content on Isomer Studio at ${studioResourceUrl}.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
@@ -193,8 +176,8 @@ const successfulPublishTemplate = (
     case false:
       return {
         subject: `[Isomer Studio] Changes you published are now live`,
-        body: `<p>Hi ${escapedRecipientEmail},</p>
-        <p>Your changes to page ${escapedResourceTitle} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
+        body: `<p>Hi ${recipientEmail},</p>
+        <p>Your changes to page ${resource.title} have been successfully published and will be live on your site in approximately 5-10 minutes.</p>
         <p> You can view or edit your published content on Isomer Studio at ${studioResourceUrl}.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
@@ -206,15 +189,12 @@ const publishAlertContentPublisherTemplate = (
   data: PublishAlertContentPublisherEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, siteName, resource } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
-  const escapedResourceTitle = escapeHtml(resource.title)
-  const escapedSiteName = escapeHtml(siteName)
-  const studioResourceUrl = escapeHtml(getStudioResourceUrl(resource))
+  const studioResourceUrl = getStudioResourceUrl(resource)
 
   return {
-    subject: `[Isomer Studio] ${resource.title} has been published`,
-    body: `<p>Hi ${escapedRecipientEmail},</p>
-    <p>You have successfully published "${escapedResourceTitle}" on ${escapedSiteName}. You can access your published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
+    subject: `[Isomer Studio] ${unescapeHtml(resource.title)} has been published`,
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>You have successfully published "${resource.title}" on ${siteName}. You can access your published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
     <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. If you didn't authorize this publication, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
@@ -225,65 +205,58 @@ const publishAlertSiteAdminTemplate = (
   data: PublishAlertSiteAdminEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, publisherEmail, siteName, resource } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
-  const escapedPublisherEmail = escapeHtml(publisherEmail)
-  const escapedResourceTitle = escapeHtml(resource.title)
-  const escapedSiteName = escapeHtml(siteName)
-  const studioResourceUrl = escapeHtml(getStudioResourceUrl(resource))
+  const studioResourceUrl = getStudioResourceUrl(resource)
 
   return {
-    subject: `[Isomer Studio] ${resource.title} has been published`,
-    body: `<p>Hi ${escapedRecipientEmail},</p>
-    <p>${escapedPublisherEmail} has published "${escapedResourceTitle}" on ${escapedSiteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
+    subject: `[Isomer Studio] ${unescapeHtml(resource.title)} has been published`,
+    body: `<p>Hi ${recipientEmail},</p>
+    <p>${publisherEmail} has published "${resource.title}" on ${siteName}. You can view the published content on Isomer Studio at <a href="${studioResourceUrl}">${studioResourceUrl}</a>.</p>
     <p><strong>Note:</strong> You're receiving this notification because content was published during a Singpass authentication outage. As a site admin, we want to keep you informed of all publishing activities. If you have any concerns, please contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> immediately.</p>
     <p>Best,</p>
     <p>Isomer team</p>`,
   }
 }
 
-export const accountDeactivationWarningTemplate = (
+const accountDeactivationWarningTemplate = (
   data: AccountDeactivationWarningEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, siteNames, inHowManyDays } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
   return {
     subject: `[Isomer Studio] Account deactivation warning - ${inHowManyDays} days remaining`,
-    body: `<p>Hi ${escapedRecipientEmail},</p>
+    body: `<p>Hi ${recipientEmail},</p>
 <p>We noticed you haven’t logged in for a while. To keep your account active, please log in within the next ${inHowManyDays} days at ${constructStudioRedirect()}.</p>
 <p>This is a standard security measure to protect your sites and data.</p>
 <p>If your account becomes deactivated, you will lose access to the following sites:</p>
-<ul>${siteNames.map((site) => `<li>${escapeHtml(site)}</li>`).join("")}</ul>
+<ul>${siteNames.map((site) => `<li>${site}</li>`).join("")}</ul>
 <p>Your content will still be preserved, but you won’t be able to access or manage these sites unless your account is reactivated.</p>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }
 }
 
-export const accountDeactivationTemplate = (
+const accountDeactivationTemplate = (
   data: AccountDeactivationEmailTemplateData,
 ): EmailTemplate => {
   const { recipientEmail, sitesAndAdmins } = data
-  const escapedRecipientEmail = escapeHtml(recipientEmail)
 
   const siteSpecificInstructions = sitesAndAdmins
     .map(({ siteName, adminEmails }) => {
-      const escapedSiteName = escapeHtml(siteName)
       if (adminEmails.length > 0) {
         return `
-          <p><b>${escapedSiteName}</b></p>
+          <p><b>${siteName}</b></p>
           <p>To regain access, please contact one of your site's administrators:</p>
-          <ul>${adminEmails.map((email) => `<li>${escapeHtml(email)}</li>`).join("")}</ul>
+          <ul>${adminEmails.map((email) => `<li>${email}</li>`).join("")}</ul>
         `
       }
       return `
-        <p><b>${escapedSiteName}</b></p>
+        <p><b>${siteName}</b></p>
         <p>There are no administrators for this site. To be added back, please send an email to <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a> with your line manager in CC for approval.</p>
       `
     })
     .join("")
 
   const emailBody = [
-    `<p>Hi ${escapedRecipientEmail},</p>`,
+    `<p>Hi ${recipientEmail},</p>`,
     `<p>Your Isomer Studio account has been removed as you have not logged in for over ${MAX_DAYS_FROM_LAST_LOGIN} days. This is a standard security measure to protect your site data.</p>`,
     `<p>Your content and previous contributions have been preserved. Your site(s) will continue to be accessible to visitors, and all your work remains intact.</p>`,
     `<p>To regain access to your site(s), please follow the instructions below:</p>`,
@@ -298,11 +271,7 @@ export const accountDeactivationTemplate = (
   }
 }
 
-type EmailTemplateFunction<
-  T extends BaseEmailTemplateData = BaseEmailTemplateData,
-> = (data: T) => EmailTemplate
-
-export const templates = {
+const _templates = {
   invitation:
     invitationTemplate satisfies EmailTemplateFunction<InvitationEmailTemplateData>,
   loginAlert:
@@ -326,3 +295,5 @@ export const templates = {
   gazetteDeletion:
     gazetteDeletionTemplate satisfies EmailTemplateFunction<GazetteDeletionEmailTemplateData>,
 } as const
+
+export const templates = escapeTemplateArguments(_templates)
