@@ -271,16 +271,16 @@ export const processAuditLogExportRequest = async (
   const request = await db
     .updateTable("AuditLogExportRequest")
     .set({
-      status: "Processing",
+      status: AuditLogExportStatus.Processing,
       updatedAt: new Date(),
       attempts: sql<number>`attempts + 1`,
     })
     .where("id", "=", requestId)
     .where((eb) =>
       eb.or([
-        eb("status", "=", "Pending"),
+        eb("status", "=", AuditLogExportStatus.Pending),
         eb.and([
-          eb("status", "=", "Processing"),
+          eb("status", "=", AuditLogExportStatus.Processing),
           eb("updatedAt", "<", staleCutoff),
           eb("AuditLogExportRequest.attempts", "<", MAX_ATTEMPTS),
         ]),
@@ -359,7 +359,7 @@ export const processAuditLogExportRequest = async (
     await db
       .updateTable("AuditLogExportRequest")
       .set({
-        status: "Done",
+        status: AuditLogExportStatus.Done,
         objectKey,
         errorMessage: null,
         updatedAt: new Date(),
@@ -384,7 +384,7 @@ export const processAuditLogExportRequest = async (
       await db
         .updateTable("AuditLogExportRequest")
         .set({
-          status: "Pending",
+          status: AuditLogExportStatus.Pending,
           errorMessage,
           updatedAt: new Date(),
         })
@@ -397,7 +397,7 @@ export const processAuditLogExportRequest = async (
     await db
       .updateTable("AuditLogExportRequest")
       .set({
-        status: "Failed",
+        status: AuditLogExportStatus.Failed,
         errorMessage,
         updatedAt: new Date(),
       })
@@ -437,9 +437,9 @@ export const processPendingAuditLogExports = async (): Promise<void> => {
     .selectFrom("AuditLogExportRequest")
     .where((eb) =>
       eb.or([
-        eb("status", "=", "Pending"),
+        eb("status", "=", AuditLogExportStatus.Pending),
         eb.and([
-          eb("status", "=", "Processing"),
+          eb("status", "=", AuditLogExportStatus.Processing),
           eb("updatedAt", "<", staleCutoff),
         ]),
       ]),
