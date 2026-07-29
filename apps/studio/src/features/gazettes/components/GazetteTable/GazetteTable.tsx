@@ -15,6 +15,7 @@ import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 
 import type { GazetteTableData } from "./types"
+import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 import { ModifyGazetteModal } from "../ModifyGazetteModal/ModifyGazetteModal"
 import { ViewGazetteModal } from "../ViewGazetteModal"
 import { CategoryCell } from "./CategoryCell"
@@ -89,6 +90,11 @@ export const GazetteTable = ({
   collectionId: number
 }): JSX.Element => {
   const columns = useMemo(() => getColumns(siteId), [siteId])
+  const { categories } = useGazetteSubcategoriesContext()
+  const categoryIds = useMemo(
+    () => new Set(categories.map(({ value }) => value)),
+    [categories],
+  )
   const { isOpen, onOpen, onClose } = useDisclosure()
   const {
     isOpen: isViewOpen,
@@ -127,18 +133,20 @@ export const GazetteTable = ({
     data:
       resources?.map((resource) => {
         const page = resource.content?.page as {
-          category?: string
           description?: string
           ref?: string
           tagged?: string[]
         }
+        const tagged = page?.tagged ?? []
+        const categoryId = tagged.find((id) => categoryIds.has(id)) ?? ""
+        const subcategoryId = tagged.find((id) => id !== categoryId) ?? ""
 
         return {
           id: resource.id,
           title: resource.title,
           notificationNo: page?.description ?? null,
-          category: page?.category ?? "",
-          subcategory: page?.tagged?.[0] ?? "",
+          category: categoryId,
+          subcategory: subcategoryId,
           status: resource.state === "Published" ? "published" : "scheduled",
           fileId: page?.ref?.split("/").pop() ?? "",
           fileKey: page?.ref ?? null,

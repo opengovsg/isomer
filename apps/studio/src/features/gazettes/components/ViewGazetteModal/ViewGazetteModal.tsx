@@ -57,7 +57,7 @@ export const ViewGazetteModal = ({
   data,
   initialView = "view",
 }: ViewGazetteModalProps): JSX.Element => {
-  const { subcategoryMap } = useGazetteSubcategoriesContext()
+  const { categoryMap, subcategoryMap } = useGazetteSubcategoriesContext()
 
   const canDelete = data.publishedAt
     ? differenceInMinutes(new Date(), data.publishedAt) <=
@@ -65,6 +65,7 @@ export const ViewGazetteModal = ({
     : false
 
   const subcategoryLabel = subcategoryMap[data.subcategory] ?? data.subcategory
+  const categoryLabel = categoryMap[data.category] ?? data.category
 
   const [view, setView] = useState<ModalView>(initialView)
   const [isConfirmed, setIsConfirmed] = useState(false)
@@ -120,7 +121,7 @@ export const ViewGazetteModal = ({
                 <DataField label="Title" value={data.title} />
 
                 <HStack spacing="2.5rem" w="100%" alignItems="flex-start">
-                  <DataField label="Category" value={data.category} />
+                  <DataField label="Category" value={categoryLabel} />
                   <DataField label="Subcategory" value={subcategoryLabel} />
                 </HStack>
 
@@ -187,7 +188,7 @@ export const ViewGazetteModal = ({
                   <DeleteDataField label="Title" value={data.title} />
                   <DeleteDataField
                     label="Category / Subcategory"
-                    value={`${data.category} / ${subcategoryLabel}`}
+                    value={`${categoryLabel} / ${subcategoryLabel}`}
                   />
                   {data.notificationNumber && (
                     <DeleteDataField

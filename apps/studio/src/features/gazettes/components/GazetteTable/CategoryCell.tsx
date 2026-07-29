@@ -11,12 +11,12 @@ export const CategoryCell = ({
   category,
   subcategory,
 }: CategoryCellProps): JSX.Element => {
-  const { subcategoryMap } = useGazetteSubcategoriesContext()
+  const { categoryMap, subcategoryMap } = useGazetteSubcategoriesContext()
 
   return (
     <VStack spacing="0.25rem" align="start">
       <Text textStyle="subhead-2" color="base.content.strong">
-        {category}
+        {categoryMap[category] ?? category}
       </Text>
       <Text textStyle="caption-2" color="base.content.medium" fontSize="sm">
         {subcategoryMap[subcategory] ?? subcategory}
