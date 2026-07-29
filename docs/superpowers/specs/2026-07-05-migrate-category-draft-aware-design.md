@@ -34,7 +34,7 @@ For a given Collection, gather every Item's `category` value from **both** its d
 
 ### 2. Building the new group
 
-Since no collection has been migrated before, there is no existing "Category" group to reconcile against. Build exactly **one** fresh group via `buildCategoryTagGroup`:
+When no present Index side has a "Category" group, build exactly **one** fresh group via `buildCategoryTagGroup`:
 
 ```ts
 { id: <uuid>, label: "Category", isRequired: true, options: [{ id: <uuid>, label }, ...] }
@@ -42,19 +42,23 @@ Since no collection has been migrated before, there is no existing "Category" gr
 
 This single object (with its generated ids) is reused verbatim for every blob it gets written into, so an option label always resolves to the same id everywhere — draft and published Index, and every Item's `tagged` reference.
 
+When exactly one present Index side already has a "Category" group, use it as the canonical group instead. Preserve its group and option IDs, then append options for target-side legacy categories that are not represented yet. If both present sides already have groups, section 6's matching/conflict rules apply.
+
 ### 3. Index page writes
 
 Handled independently per side; both can happen in the same run:
 
-- **Published side** (if a published version exists): read the current published content and its `Version.versionNum`. Append the new group to the **end** of its existing `tagCategories` array. Insert a new `Blob` row with that content, insert a new `Version` row (`versionNum: previous + 1`, `publishedBy: <operator-supplied user id>`), and update `Resource.publishedVersionId` to point at it. `draftBlobId` and `state` are untouched.
-- **Draft side** (if a draft blob exists): append the same group to the end of its own existing `tagCategories` array (which may differ from the published array's prior contents) and `UPDATE Blob.content` **in place** on that row. No new Version, no Resource changes — this must not publish anything.
+- **Published side** (when selected for an update): read the current published content and its `Version.versionNum`. Insert or replace the canonical group in `tagCategories`. Insert a new `Blob` row with that content, insert a new `Version` row (`versionNum: previous + 1`, `publishedBy: <operator-supplied user id>`), and update `Resource.publishedVersionId` to point at it. `draftBlobId` and `state` are untouched.
+- **Draft side** (when selected for an update): insert or replace the same canonical group in its own `tagCategories` array (which may differ from the published array's prior contents) and `UPDATE Blob.content` **in place** on that row. No new Version, no Resource changes — this must not publish anything.
 - If the Index has no content on either side, the collection is skipped (`no-index`), same as today.
+
+Normally, a side is selected only when it lacks the group. If the canonical group gains options from that missing side, the side that supplied the original group is also selected so both Index copies expose the same option IDs.
 
 ### 4. Item writes
 
 Same per-side independence, applied to every Collection Item:
 
-- For each side (draft / published) that has a `category` value, look up its option id from the group built in step 2, and append it into that side's own `tagged` array (preserving whatever's already there).
+- For each target side (draft / published) that has a `category` value, look up its option id from the group built in step 2, and append it into that side's own `tagged` array (preserving whatever's already there). A target side is a present Index side that lacked the group before this run.
 - Published-side tagging: new Blob + new Version + bumped `publishedVersionId`, mirroring the Index's published write.
 - Draft-side tagging: in-place `Blob.content` update, mirroring the Index's draft write.
 - An item's draft and published `category` can differ (or exist on only one side) — each side is tagged strictly from its own value, so no cross-contamination.
@@ -71,11 +75,20 @@ Every new `Version` row requires a valid `publishedBy` user id (NOT NULL FK to `
 
 ### 6. Idempotency
 
-Idempotent via label: before building a plan, `migrateCollection` checks `hasCategoryGroup` against both the draft and published `tagCategories` for the Index. If either side already has a group whose trimmed, case-insensitive label matches "Category", the collection is skipped entirely (status `"already-migrated"`, no writes) — this covers both re-runs and collections a human has already migrated in Studio while matching Studio's duplicate-label rules.
+Idempotency is checked per present Index side. `migrateCollection` skips the collection only when every present draft or published side already has a group whose trimmed, case-insensitive label matches "Category".
 
-Risk accepted: a human-created group with an equivalent label is also skipped, so its legacy `category` values would not be migrated. Operators must audit for pre-existing "Category"-equivalent groups with `findCategoryTagGroups.sql` before the first run against an environment.
+- If neither side has the group, the script builds one group and migrates both present sides as described above.
+- If exactly one side has the group, the script reuses its group and option IDs, adds options for legacy categories found only on the missing side, and migrates only item states whose Index side was missing the group. When new options are added, both Index copies receive the extended canonical group.
+- If both sides have matching group and option IDs, the collection is an idempotent re-run and returns `"already-migrated"`.
+- If both sides have conflicting group or option IDs, the collection returns `"conflicting-category-groups"` without writes. The script does not guess how to merge them.
 
-`no-categories` remains a separate status (no item has any category value on either side, on a Collection that passed the label check) — that's a data condition, not an idempotency check.
+A human-created equivalent label is still treated as an existing migration group. Before running against an environment:
+
+1. Run `findCategoryTagGroups.sql` to inspect all pre-existing equivalent groups.
+2. Run `findAsymmetricCategoryTagGroups.sql`. An empty result proves that no Index with both sides present has Category on only one side.
+3. Run `findUntaggedWithLegacyCategory.sql` separately. The asymmetric audit does not prove that item `tagged` IDs match the Index options.
+
+`no-categories` remains a separate status when no existing group is available and no target item side has a legacy category value.
 
 ### 7. Transaction scope
 
@@ -106,8 +119,8 @@ These remain process/runbook requirements, not something the script fully enforc
 
 - `MigrationPlanItem`: `{ resourceId, draftCategory?, draftTagged?, publishedCategory?, publishedTagged? }` (only the fields for states that exist) instead of `{ resourceId, category? }`.
 - `MigrationPlan.itemUpdates`: `{ resourceId, state: "draft" | "published", tagged: string[] }[]` instead of `{ resourceId, tagged: string[] }[]`.
-- `MigrationPlan`: gains `group` (the shared new group) and `indexUpdates: { state: "draft" | "published" }[]` (which side(s) need writing) instead of a single `newTagCategories` array.
-- `MigrationPlan.status`: `"migrated" | "no-categories"`, built only after a collection has passed the `hasCategoryGroup` skip check. `CollectionMigrationResult.status` widens this with `"no-index"` and `"already-migrated"` for the two skip paths that short-circuit before a plan is built.
+- `MigrationPlan`: carries `group` (the shared canonical group) and side-filtered `itemUpdates`. `migrateCollection` separately tracks which Index states need writing.
+- `MigrationPlan.status`: `"migrated" | "no-categories"`. `CollectionMigrationResult.status` widens this with `"no-index"`, `"already-migrated"`, and `"conflicting-category-groups"` for paths that short-circuit before writes.
 - DB read helpers (`getIndexPageRow`, `getItemRows`) need to additionally select `Version.versionNum` so the new-version insert can compute `versionNum: previous + 1`.
 
 ## Testing
@@ -116,6 +129,7 @@ New/changed coverage needed, replacing anything that tested idempotency or the o
 
 - Pure function tests (`buildMigrationPlan` and friends): item with diverging draft vs. published category; item with a category only in draft and no published content; item with a category only in published and a draft that lacks one; group always appended as the last element of an existing `tagCategories` array.
 - Integration tests: Index with both draft and published blobs, both get the group written (published via new Version, draft in place); Index published-only; Index draft-only (no publish should occur); an item's published-side write correctly bumps `versionNum` and `publishedVersionId` while leaving `draftBlobId` alone; an item's draft-side write mutates content in place without touching `publishedVersionId`; `versionsCreated` is asserted alongside `itemsUpdated` on the published and divergence fixtures.
+- SQL audit test: `findAsymmetricCategoryTagGroups.sql` returns both asymmetric directions, excludes symmetric Indexes, and excludes an Index with only one present side.
 - `main` is exported (accepting an optional `argv` override for testability) and covered directly: `input()` from `@inquirer/prompts` is asserted not called in `--dry-run`, called and its result passed through `verifyUser` outside `--dry-run`, and the promise rejects when the prompted user id doesn't exist. `verifyUser` itself has direct found/not-found coverage.
-- Keep: a test asserting re-running against an already-migrated collection (one with an existing "Category" group, draft or published) makes no changes — idempotency via `hasCategoryGroup` label-skip is in scope.
+- Keep: a test asserting re-running a collection where every present Index side has the same "Category" group makes no changes. Add asymmetric tests proving that only missing sides and their item states are migrated, plus a conflict test proving divergent existing mappings are reported without writes.
 - Not covered (accepted gap): the concurrency scenarios in [Operational prerequisites](#9-operational-prerequisites) — no test exercises a concurrent publish or draft save racing the migration, since there's no code-level mitigation to verify yet.

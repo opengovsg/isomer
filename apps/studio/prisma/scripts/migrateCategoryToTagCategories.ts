@@ -20,11 +20,12 @@
  *     never trigger a publish — a draft may hold unrelated pending edits
  *     that aren't ready to ship.
  *
- * Idempotent via label: if the Index already has a tagCategories group
- * labeled "Category" (trimmed and case-insensitive, draft or published), the
- * collection is skipped. Risk accepted: a human-created equivalent label is
- * also skipped (legacy `category` values would not be migrated). Audit with
- * `findCategoryTagGroups.sql` before running against an environment.
+ * Idempotent per Index side: a present draft or published side is skipped when
+ * it already has a tagCategories group labeled "Category" (trimmed and
+ * case-insensitive). If only one side has the group, its group and option IDs
+ * are reused for the missing side. Conflicting groups on two present sides are
+ * reported without writing either side. A human-created equivalent label is
+ * still treated as migrated; audit with `findCategoryTagGroups.sql`.
  *
  * Risk accepted: items with an empty legacy category (common for Collection
  * Links, which default to `category: ""`) are left with empty `tagged` even
@@ -175,9 +176,11 @@ export interface MigrationPlanItem {
   publishedTagged?: string[]
 }
 
+export type MigrationState = "draft" | "published"
+
 export interface ItemTagUpdate {
   resourceId: string
-  state: "draft" | "published"
+  state: MigrationState
   tagged: string[]
 }
 
@@ -191,19 +194,44 @@ export type MigrationPlan =
 
 export const buildMigrationPlan = ({
   items,
+  existingGroup,
+  targetStates = new Set<MigrationState>(["draft", "published"]),
   generateId = randomUUID,
 }: {
   items: MigrationPlanItem[]
+  existingGroup?: TagCategoryGroup
+  targetStates?: ReadonlySet<MigrationState>
   generateId?: () => string
 }): MigrationPlan => {
   const categories = deriveDistinctCategories(
-    items.flatMap((item) => [item.draftCategory, item.publishedCategory]),
+    items.flatMap((item) => [
+      ...(targetStates.has("draft") ? [item.draftCategory] : []),
+      ...(targetStates.has("published") ? [item.publishedCategory] : []),
+    ]),
   )
-  if (categories.length === 0) {
+  if (categories.length === 0 && !existingGroup) {
     return { status: "no-categories", itemUpdates: [] }
   }
 
-  const group = buildCategoryTagGroup({ categories, generateId })
+  const existingOptionKeys = new Set(
+    existingGroup?.options.map((option) =>
+      normalizedCategoryKey(option.label),
+    ) ?? [],
+  )
+  const group = existingGroup
+    ? {
+        ...existingGroup,
+        options: [
+          ...existingGroup.options,
+          ...categories
+            .filter(
+              (category) =>
+                !existingOptionKeys.has(normalizedCategoryKey(category)),
+            )
+            .map((label) => ({ id: generateId(), label })),
+        ],
+      }
+    : buildCategoryTagGroup({ categories, generateId })
   const optionIdByLabel = new Map(
     group.options.map((o) => [normalizedCategoryKey(o.label), o.id]),
   )
@@ -218,26 +246,30 @@ export const buildMigrationPlan = ({
     }): ItemTagUpdate[] => {
       const updates: ItemTagUpdate[] = []
 
-      const draftOptionId = draftCategory
-        ? optionIdByLabel.get(normalizedCategoryKey(draftCategory))
-        : undefined
-      if (draftOptionId) {
-        updates.push({
-          resourceId,
-          state: "draft",
-          tagged: appendTagged(draftTagged, draftOptionId),
-        })
+      if (targetStates.has("draft")) {
+        const draftOptionId = draftCategory
+          ? optionIdByLabel.get(normalizedCategoryKey(draftCategory))
+          : undefined
+        if (draftOptionId) {
+          updates.push({
+            resourceId,
+            state: "draft",
+            tagged: appendTagged(draftTagged, draftOptionId),
+          })
+        }
       }
 
-      const publishedOptionId = publishedCategory
-        ? optionIdByLabel.get(normalizedCategoryKey(publishedCategory))
-        : undefined
-      if (publishedOptionId) {
-        updates.push({
-          resourceId,
-          state: "published",
-          tagged: appendTagged(publishedTagged, publishedOptionId),
-        })
+      if (targetStates.has("published")) {
+        const publishedOptionId = publishedCategory
+          ? optionIdByLabel.get(normalizedCategoryKey(publishedCategory))
+          : undefined
+        if (publishedOptionId) {
+          updates.push({
+            resourceId,
+            state: "published",
+            tagged: appendTagged(publishedTagged, publishedOptionId),
+          })
+        }
       }
 
       return updates
@@ -431,31 +463,72 @@ const publishNewContent = async <T>(
   }
 }
 
-const appendCategoryGroup = (
+const upsertCategoryGroup = (
   tagCategories: TagCategoryGroup[] | undefined,
   group: TagCategoryGroup,
-): TagCategoryGroup[] => [
-  ...(tagCategories ?? []).map((existing) => ({
-    ...existing,
-    display: existing.display ?? TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-  })),
-  group,
-]
+): TagCategoryGroup[] => {
+  let replaced = false
+  const groups = (tagCategories ?? []).map((existing) => {
+    if (
+      normalizedCategoryKey(existing.label) ===
+      normalizedCategoryKey(CATEGORY_GROUP_LABEL)
+    ) {
+      replaced = true
+      return group
+    }
+    return {
+      ...existing,
+      display: existing.display ?? TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+    }
+  })
+  return replaced ? groups : [...groups, group]
+}
 
-/** True if any group has a label equivalent to "Category" under Studio's duplicate rules. */
-export const hasCategoryGroup = (
+/** Finds a group whose label is equivalent to "Category" under Studio's duplicate rules. */
+export const findCategoryGroup = (
   tagCategories: TagCategoryGroup[] | undefined,
-): boolean =>
-  (tagCategories ?? []).some(
+): TagCategoryGroup | undefined =>
+  (tagCategories ?? []).find(
     (group) =>
       normalizedCategoryKey(group.label) ===
       normalizedCategoryKey(CATEGORY_GROUP_LABEL),
   )
 
+export const hasCategoryGroup = (
+  tagCategories: TagCategoryGroup[] | undefined,
+): boolean => findCategoryGroup(tagCategories) !== undefined
+
+const haveMatchingCategoryMappings = (
+  first: TagCategoryGroup,
+  second: TagCategoryGroup,
+): boolean => {
+  if (
+    first.id !== second.id ||
+    first.options.length !== second.options.length
+  ) {
+    return false
+  }
+  const firstOptionIdByLabel = new Map(
+    first.options.map((option) => [
+      normalizedCategoryKey(option.label),
+      option.id,
+    ]),
+  )
+  return second.options.every(
+    (option) =>
+      firstOptionIdByLabel.get(normalizedCategoryKey(option.label)) ===
+      option.id,
+  )
+}
+
 export interface CollectionMigrationResult {
   collectionId: string
   title?: string
-  status: MigrationPlan["status"] | "no-index" | "already-migrated"
+  status:
+    | MigrationPlan["status"]
+    | "no-index"
+    | "already-migrated"
+    | "conflicting-category-groups"
   categories: string[]
   itemsUpdated: number
   versionsCreated: number
@@ -473,6 +546,7 @@ interface CollectionWriteContext {
   itemRows: Awaited<ReturnType<typeof getItemRows>>
   group: TagCategoryGroup
   itemUpdates: ItemTagUpdate[]
+  indexStatesToUpdate: ReadonlySet<MigrationState>
   publisherId: string | null
 }
 
@@ -483,6 +557,7 @@ const applyCollectionWrites = async (
     itemRows,
     group,
     itemUpdates,
+    indexStatesToUpdate,
     publisherId,
   }: CollectionWriteContext,
 ) => {
@@ -495,12 +570,16 @@ const applyCollectionWrites = async (
     return publisherId
   }
 
-  if (indexRow.draftContent && indexRow.draftBlobId) {
+  if (
+    indexStatesToUpdate.has("draft") &&
+    indexRow.draftContent &&
+    indexRow.draftBlobId
+  ) {
     await updateBlobContent(tx, indexRow.draftBlobId, {
       ...indexRow.draftContent,
       page: {
         ...indexRow.draftContent.page,
-        tagCategories: appendCategoryGroup(
+        tagCategories: upsertCategoryGroup(
           indexRow.draftContent.page.tagCategories,
           group,
         ),
@@ -508,7 +587,11 @@ const applyCollectionWrites = async (
     })
   }
 
-  if (indexRow.publishedContent && indexRow.publishedVersionNum != null) {
+  if (
+    indexStatesToUpdate.has("published") &&
+    indexRow.publishedContent &&
+    indexRow.publishedVersionNum != null
+  ) {
     await publishNewContent(tx, {
       resourceId: indexRow.resourceId,
       previousVersionNum: indexRow.publishedVersionNum,
@@ -518,7 +601,7 @@ const applyCollectionWrites = async (
         ...indexRow.publishedContent,
         page: {
           ...indexRow.publishedContent.page,
-          tagCategories: appendCategoryGroup(
+          tagCategories: upsertCategoryGroup(
             indexRow.publishedContent.page.tagCategories,
             group,
           ),
@@ -589,14 +672,34 @@ export const migrateCollection = async ({
       }
     }
 
-    // Risk accepted: skip when an equivalent "Category" group exists on either
-    // side. That covers re-runs and Studio-migrated collections, but also skips
-    // a human-created group with the same normalized label. Confirmed empty via
-    // findCategoryTagGroups.sql before first run on each environment.
+    const draftGroup = findCategoryGroup(
+      indexRow.draftContent?.page.tagCategories,
+    )
+    const publishedGroup = findCategoryGroup(
+      indexRow.publishedContent?.page.tagCategories,
+    )
+
     if (
-      hasCategoryGroup(indexRow.draftContent?.page.tagCategories) ||
-      hasCategoryGroup(indexRow.publishedContent?.page.tagCategories)
+      draftGroup &&
+      publishedGroup &&
+      !haveMatchingCategoryMappings(draftGroup, publishedGroup)
     ) {
+      return {
+        collectionId,
+        status: "conflicting-category-groups",
+        categories: [],
+        itemsUpdated: 0,
+        versionsCreated: 0,
+      }
+    }
+
+    const targetStates = new Set<MigrationState>()
+    if (indexRow.draftContent && !draftGroup) targetStates.add("draft")
+    if (indexRow.publishedContent && !publishedGroup) {
+      targetStates.add("published")
+    }
+
+    if (targetStates.size === 0) {
       return {
         collectionId,
         status: "already-migrated",
@@ -607,6 +710,7 @@ export const migrateCollection = async ({
     }
 
     const itemRows = await getItemRows(executor, collectionId, siteId)
+    const existingGroup = draftGroup ?? publishedGroup
 
     const plan = buildMigrationPlan({
       items: itemRows.map((row) => ({
@@ -616,7 +720,19 @@ export const migrateCollection = async ({
         publishedCategory: row.publishedContent?.page.category,
         publishedTagged: row.publishedContent?.page.tagged,
       })),
+      existingGroup,
+      targetStates,
     })
+
+    const indexStatesToUpdate = new Set(targetStates)
+    if (
+      plan.status === "migrated" &&
+      existingGroup &&
+      plan.group.options.length > existingGroup.options.length
+    ) {
+      if (draftGroup) indexStatesToUpdate.add("draft")
+      if (publishedGroup) indexStatesToUpdate.add("published")
+    }
 
     const categories =
       plan.status === "migrated" ? plan.group.options.map((o) => o.label) : []
@@ -625,7 +741,7 @@ export const migrateCollection = async ({
     // published side plus one per item published-side update.
     const versionsCreated =
       plan.status === "migrated"
-        ? (indexRow.publishedContent ? 1 : 0) +
+        ? (indexStatesToUpdate.has("published") ? 1 : 0) +
           plan.itemUpdates.filter((u) => u.state === "published").length
         : 0
 
@@ -644,6 +760,7 @@ export const migrateCollection = async ({
       itemRows,
       group: plan.group,
       itemUpdates: plan.itemUpdates,
+      indexStatesToUpdate,
       publisherId,
     })
 
@@ -774,6 +891,8 @@ const formatResult = (
       return `skipped ${prefix}: no Index page (or content) found`
     case "already-migrated":
       return `skipped ${prefix}: Index already has a "Category" tagCategories group`
+    case "conflicting-category-groups":
+      return `skipped ${prefix}: draft and published Indexes have conflicting "Category" group or option IDs`
     default:
       return `${prefix}: unknown status ${String(result.status satisfies never)}`
   }

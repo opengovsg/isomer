@@ -1,10 +1,10 @@
 -- Audit: Collection Index pages (draft or published) that already have a
 -- tagCategories group with a trimmed, case-insensitive "Category" label.
 --
--- Run before migrateCategoryToTagCategories.ts. An empty result means the
--- label-based skip guard is safe for that database (no pre-existing
--- "Category"-equivalent groups that would be mistaken for a completed
--- migration).
+-- Run before migrateCategoryToTagCategories.ts to inventory existing groups.
+-- The migration reuses a group found on only one present Index side and reports
+-- conflicting groups found on both sides. Run
+-- findAsymmetricCategoryTagGroups.sql to isolate the one-sided cases.
 --
 -- Optional: uncomment the siteId filter to scope to one site.
 
