@@ -1,7 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest"
 
 import {
-  buildComponents,
   buildTemplate,
   readConfigFixture,
   readTemplateConfig,
@@ -13,7 +12,6 @@ describe("template (bundle pruning)", () => {
   let originalConfig: string
 
   beforeAll(() => {
-    buildComponents()
     originalConfig = readTemplateConfig()
   })
 

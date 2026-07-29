@@ -5,7 +5,6 @@ import { fileURLToPath } from "node:url"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const TEMPLATE_DIR = join(__dirname, "..", "..")
-const WORKSPACE_ROOT = join(TEMPLATE_DIR, "..", "..")
 const OUT_DIR = join(TEMPLATE_DIR, "out")
 const CONFIG_PATH = join(TEMPLATE_DIR, "data", "config.json")
 const FIXTURES_DIR = join(TEMPLATE_DIR, "tests", "fixtures")
@@ -27,15 +26,6 @@ const run = (command: string, args: string[], cwd: string, timeout: number) => {
       `${command} ${args.join(" ")} exited with ${result.status} (${result.error}):\n${result.stdout}\n${result.stderr}`,
     )
   }
-}
-
-export const buildComponents = () => {
-  run(
-    "pnpm",
-    ["--filter", "@opengovsg/isomer-components", "run", "build:module"],
-    WORKSPACE_ROOT,
-    300_000,
-  )
 }
 
 export const readTemplateConfig = () => readFileSync(CONFIG_PATH, "utf-8")
