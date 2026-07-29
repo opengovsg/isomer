@@ -241,7 +241,7 @@ jobs:
           service: isomer-template
           api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Test template bundle pruning
-        run: pnpm exec turbo test-ci:unit --filter=isomer-base-template --env-mode=loose
+        run: pnpm exec turbo test-ci:e2e --filter=isomer-base-template --env-mode=loose
         env:
           # Required to allow Datadog to trace Vitest tests
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
