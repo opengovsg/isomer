@@ -42,7 +42,7 @@ Never write your own auth middleware in a router. If you need a new auth shape, 
 
 ### Permission checks belong in the service
 
-- Routers wire input → service. The service performs the permission check (`bulkValidateUserPermissionsForResources` and friends) **before** mutating.
+- Routers wire input → service. The router performs the permission check (`bulkValidateUserPermissionsForResources` and friends) **before** mutating and calling services.
 - Do not gate purely on the existence of a session — that only proves the caller is logged in, not authorised for the resource.
 
 ### Audit-log every state change
