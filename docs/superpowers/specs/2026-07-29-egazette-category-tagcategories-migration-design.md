@@ -28,18 +28,11 @@ This spec migrates `category` onto the same tagCategories model, so egazette ite
 
 ### 2. Shared resolver
 
-Introduce `resolveGazetteTagLabels(tagged, tagCategories)`:
+**Refined during implementation planning:** rather than threading a flattened `tagged` array through every consumer and re-deriving which uuid is "category" vs "subcategory" everywhere (the original framing below), the write path keeps `categoryId`/`categoryLabel` as distinct, already-disambiguated values end-to-end (client form → mutation input → dedup query), merging into one `tagged` array only at the point of blob persistence. This avoids adding a new DB round-trip to the write path and sidesteps the disambiguation problem entirely for every consumer that already knows which value is which. A generic resolver is still genuinely needed in exactly one place — the ingestion cron job (`schedulePushDocumentJob.ts`), which only has a flat `tagged` array plus the collection's `tagCategories` to work with, no separately-tracked ids. `GazetteTable.tsx`'s display path also needs a membership split (it only has `tagged` + the context's known option-id sets), but that's a one-line `.find()` against already-resolved lists, not worth a shared abstraction.
 
-```
-{ categoryId, categoryLabel, subcategoryId, subcategoryLabel }
-```
+`resolveGazetteTagLabels({ tagged, tagCategories }): { categoryLabel?, subcategoryLabel? }`, implemented server-side in `gazette.service.ts`:
 
-For each tagCategory, filter its `options` by `tagged.includes(option.id)`, and route the result to `categoryLabel`/`subcategoryLabel` based on which tagCategory's `label` it came from (`GAZETTE_CATEGORY_LABEL` / `GAZETTE_SUBCATEGORY_LABEL`). Needed in two runtime shapes:
-
-- **Client**: resolves from the `trpc.collection.getCollectionTags` result already fetched by `GazetteSubcategoriesContext`.
-- **Server**: resolves from a fetched blob/index-page's `tagCategories` (already fetched by `schedulePushDocumentJob.ts` for subcategory today).
-
-The matching logic is identical in both; only the input shape differs. Implement as one small pure function reused by a thin client wrapper and a thin server wrapper, rather than two independent implementations.
+For each tagCategory, filter its `options` by `tagged.includes(option.id)`, and route the result to `categoryLabel`/`subcategoryLabel` based on which tagCategory's `label` it came from (`GAZETTE_CATEGORY_LABEL` / `GAZETTE_SUBCATEGORY_LABEL`). Used by the ingestion cron job only — see the implementation plan for why other consumers don't need it.
 
 ### 3. Studio UI (client) changes
 
