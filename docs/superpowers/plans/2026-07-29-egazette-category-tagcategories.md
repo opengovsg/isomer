@@ -1848,7 +1848,7 @@ to:
       ])
 ```
 
-Update the assertion in the "dispatches a due row to Algolia and deletes it" test — change:
+The assertion in the "dispatches a due row to Algolia and deletes it" test —
 
 ```ts
       expect(records[0]).toMatchObject({
@@ -1860,21 +1860,7 @@ Update the assertion in the "dispatches a due row to Algolia and deletes it" tes
       })
 ```
 
-to (unchanged assertion values — `category` fixture param is still `"Government Gazettes"` for this test, now flowing through the `cat-1` option's label instead of a raw string field):
-
-```ts
-      expect(records[0]).toMatchObject({
-        objectGroup: expectedObjectGroup,
-        objectID: `${expectedObjectGroup}-text-0`,
-        title: "Document Title",
-        category: "Government Gazettes",
-        subCategory: "Public",
-      })
-```
-
-(no change needed to this specific assertion block — leave as-is)
-
-Update the SearchSG assertion — change:
+— and the SearchSG assertion —
 
 ```ts
       expect(body.documentsToAdd[0]).toMatchObject({
@@ -1885,7 +1871,7 @@ Update the SearchSG assertion — change:
       })
 ```
 
-leave unchanged (same reasoning — the label flows through by the same name, just via a different code path).
+both require NO code changes. `category`/`contentType` still resolve to `"Government Gazettes"` — it's now the label of the `cat-1` option (seeded in Step 4 above) instead of a raw string field, but the fixture passes the same literal string, so these assertions keep passing unmodified. Do not edit these two blocks; they're called out here only so their continued presence is understood, not treated as a leftover of the old field.
 
 - [ ] **Step 5: Run the cron job test suite**
 
