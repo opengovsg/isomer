@@ -90,7 +90,7 @@ const ModifyGazetteModalContent = ({
   const [hasFile, setHasFile] = useState(!!initialData.fileId)
 
   const toast = useToast()
-  const { subcategoryMap } = useGazetteSubcategoriesContext()
+  const { categoryMap, subcategoryMap } = useGazetteSubcategoriesContext()
   const utils = trpc.useUtils()
 
   const { mutateAsync: uploadFile, isPending: isUploading } =
@@ -135,13 +135,15 @@ const ModifyGazetteModalContent = ({
 
       const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
 
+      const categoryLabel = categoryMap[data.category] ?? data.category
+
       if (newFile) {
         const { path } = await uploadFile({
           file: newFile,
           fileName: data.fileId,
           scheduledAt,
           year: data.publishDate.getFullYear(),
-          category: data.category,
+          category: categoryLabel,
           subcategory: subcategoryMap[data.subcategory] ?? data.subcategory,
         })
         newRef = path
@@ -155,7 +157,8 @@ const ModifyGazetteModalContent = ({
         title: data.title,
         newRef,
         desiredFileName,
-        category: data.category,
+        categoryId: data.category,
+        categoryLabel,
         date: format(data.publishDate, "dd/MM/yyyy"),
         description: data.notificationNumber,
         tagged: [data.subcategory],

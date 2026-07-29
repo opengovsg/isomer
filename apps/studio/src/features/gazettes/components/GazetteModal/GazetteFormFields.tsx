@@ -20,7 +20,6 @@ import { TimeSelect } from "~/components/Select/TimeSelect"
 import { MAX_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
 import type { GazettesCategory } from "../../types"
-import { GAZETTE_CATEGORIES } from "../../constants"
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 import { toFileId } from "../../utils/toFileId"
 
@@ -65,8 +64,10 @@ export const GazetteFormFields = ({
       ? buildPlaceholderFile(initialFileName, initialFileSize)
       : undefined,
   )
-  const { getSubcategoriesForCategory } = useGazetteSubcategoriesContext()
+  const { categories, categoryMap, getSubcategoriesForCategory } =
+    useGazetteSubcategoriesContext()
   const category = useWatch({ control, name: "category" })
+  const categoryLabel = categoryMap[category] ?? category
 
   return (
     <VStack alignItems="flex-start" spacing="0.75rem">
@@ -95,7 +96,7 @@ export const GazetteFormFields = ({
                 setValue("subcategory", "", { shouldValidate: true })
               }}
               name="category"
-              items={GAZETTE_CATEGORIES}
+              items={categories}
               isClearable={false}
             />
           )}
@@ -116,7 +117,9 @@ export const GazetteFormFields = ({
             <SingleSelect
               value={value}
               name="subcategory"
-              items={getSubcategoriesForCategory(category as GazettesCategory)}
+              items={getSubcategoriesForCategory(
+                categoryLabel as GazettesCategory,
+              )}
               isClearable={false}
               onChange={onChange}
             />

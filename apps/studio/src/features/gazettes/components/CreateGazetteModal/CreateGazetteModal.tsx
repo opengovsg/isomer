@@ -15,6 +15,7 @@ import {
 import { format, parse } from "date-fns"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { GazetteCategories } from "~/features/gazettes/constants"
 import { useUploadGazetteMutation } from "~/hooks/useUploadGazetteMutation"
 import { useZodForm } from "~/lib/form"
 import { createGazetteSchema } from "~/schemas/gazette"
@@ -57,7 +58,8 @@ const CreateGazetteModalContent = ({
 }: Pick<CreateGazetteModalProps, "onClose" | "siteId" | "collectionId">) => {
   const [file, setFile] = useState<File | undefined>()
   const toast = useToast()
-  const { subcategoryMap } = useGazetteSubcategoriesContext()
+  const { categories, categoryMap, subcategoryMap } =
+    useGazetteSubcategoriesContext()
 
   const {
     register,
@@ -68,7 +70,10 @@ const CreateGazetteModalContent = ({
   } = useZodForm({
     defaultValues: {
       title: "",
-      category: "Government Gazette",
+      category:
+        categories.find(
+          ({ label }) => label === GazetteCategories.GovernmentGazettes,
+        )?.value ?? "",
       subcategory: "",
       notificationNumber: "",
       publishDate: new Date(),
@@ -105,12 +110,14 @@ const CreateGazetteModalContent = ({
     const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
 
     try {
+      const categoryLabel = categoryMap[data.category] ?? data.category
+
       const { path: ref } = await uploadFile({
         file,
         fileName: data.fileId,
         scheduledAt,
         year: data.publishDate.getFullYear(),
-        category: data.category,
+        category: categoryLabel,
         subcategory: subcategoryMap[data.subcategory] ?? data.subcategory,
       })
 
@@ -120,7 +127,8 @@ const CreateGazetteModalContent = ({
         title: data.title,
         permalink: crypto.randomUUID(),
         ref,
-        category: data.category,
+        categoryId: data.category,
+        categoryLabel,
         date: format(data.publishDate, "dd/MM/yyyy"),
         description: data.notificationNumber,
         tagged: [data.subcategory],
