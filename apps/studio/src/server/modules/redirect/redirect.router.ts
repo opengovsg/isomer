@@ -1,4 +1,5 @@
 import {
+  bulkRedirectsCsvSchema,
   countRedirectsByDestinationSchema,
   countRedirectsSchema,
   createRedirectSchema,
@@ -11,6 +12,8 @@ import { protectedProcedure, router } from "~/server/trpc"
 
 import { validateUserPermissionsForSite } from "../site/site.service"
 import {
+  bulkCreateRedirects,
+  bulkValidateRedirects,
   countRedirects,
   countRedirectsPointingToResource,
   createRedirect,
@@ -103,6 +106,42 @@ export const redirectRouter = router({
       })
 
       return countRedirectsPointingToResource(input)
+    }),
+
+  // Validates a whole uploaded CSV without writing anything, so the bulk-upload
+  // modal can show row errors or a ready-to-publish preview. A mutation (not a
+  // query) purely so the CSV rides in the POST body — a query serialises its
+  // input into the request URL, which the server/proxy rejects once the file
+  // nears the size cap (a connection reset). Still read-only and gated on "read"
+  // like the single-redirect `validate` preflight above.
+  bulkValidate: protectedProcedure
+    .input(bulkRedirectsCsvSchema)
+    .mutation(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        siteId: input.siteId,
+        userId: ctx.user.id,
+        action: "read",
+      })
+
+      return bulkValidateRedirects(input)
+    }),
+
+  // Commits a validated batch: re-validates server-side, inserts every row in
+  // one transaction, and publishes once. Site-admin only like `create`.
+  bulkCreate: protectedProcedure
+    .input(bulkRedirectsCsvSchema)
+    .mutation(async ({ ctx, input }) => {
+      await validateUserPermissionsForSite({
+        siteId: input.siteId,
+        userId: ctx.user.id,
+        action: "create",
+      })
+
+      return bulkCreateRedirects({
+        ...input,
+        byUserId: ctx.user.id,
+        logger: ctx.logger,
+      })
     }),
 
   // create/delete publish immediately (no separate publish step). Site-wide
