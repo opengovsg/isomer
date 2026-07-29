@@ -1556,7 +1556,15 @@ describe("main (CLI entrypoint)", () => {
   let siteId: number
 
   beforeEach(async () => {
-    await resetTables("Resource", "Blob", "Version", "Site", "Navbar", "Footer")
+    await resetTables(
+      "Resource",
+      "Blob",
+      "Version",
+      "Site",
+      "Navbar",
+      "Footer",
+      "User",
+    )
     const { site } = await setupSite()
     siteId = site.id
     vi.mocked(input).mockReset()
