@@ -1520,7 +1520,15 @@ describe("resolveSiteIds", () => {
 
 describe("lookupUserByEmail", () => {
   beforeEach(async () => {
-    await resetTables("Resource", "Blob", "Version", "Site", "Navbar", "Footer")
+    await resetTables(
+      "Resource",
+      "Blob",
+      "Version",
+      "Site",
+      "Navbar",
+      "Footer",
+      "User",
+    )
   })
 
   it("resolves when the user exists", async () => {
@@ -1566,7 +1574,7 @@ describe("main (CLI entrypoint)", () => {
   })
 
   it("prompts for and looks up a publisher by email outside --dry-run mode", async () => {
-    const user = await setupUser({ email: "publisher@agency.gov.sg" })
+    const user = await setupUser({})
     vi.mocked(input).mockResolvedValue(user.email)
 
     await main([], { siteIdsInclude: [siteId], siteIdsExclude: [] })
