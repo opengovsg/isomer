@@ -108,10 +108,11 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   )
 
   const handleSaveChanges = useCallback(() => {
-    const hadNoTagsBefore = !(savedPageState.page as CollectionPagePageProps)
-      .tagCategories?.length
-    const hasTagsNow = !!(previewPageState.page as CollectionPagePageProps)
-      .tagCategories?.length
+    const savedTags = (savedPageState.page as CollectionPagePageProps)
+      .tagCategories
+    const previewTags = (previewPageState.page as CollectionPagePageProps)
+      .tagCategories
+    const tagCategoriesChanged = !isEqual(savedTags, previewTags)
 
     setSavedPageState(previewPageState)
     mutate(
@@ -123,14 +124,15 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
       {
         onSuccess: () => {
           setDrawerState({ state: "root" })
-          if (hadNoTagsBefore && hasTagsNow) {
-            trackEvent("first_tag_added")
+          if (drawerStateType === "filter" && tagCategoriesChanged) {
+            trackEvent("first_tag_edited")
             triggerCollectionTagCsatSurveyOnce({ userId: me.id })
           }
         },
       },
     )
   }, [
+    drawerStateType,
     mutate,
     pageId,
     previewPageState,
