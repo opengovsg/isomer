@@ -17,6 +17,7 @@ import {
 } from "@chakra-ui/react"
 import {
   Button,
+  Checkbox,
   FormErrorMessage,
   FormHelperText,
   FormLabel,
@@ -28,6 +29,7 @@ import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
+import { useIsAdvancedRedirectsEnabled } from "~/hooks/useIsAdvancedRedirectsEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
@@ -106,11 +108,13 @@ const SuspendableModalContent = ({
       siteId,
       resourceId: Number(folderId),
     })
+  const isAdvancedRedirectsEnabled = useIsAdvancedRedirectsEnabled()
   const { register, handleSubmit, watch, control, formState } = useZodForm({
     mode: "onChange",
     defaultValues: {
       title: originalTitle,
       permalink: originalPermalink,
+      shouldCreateRedirect: true,
     },
     schema: baseEditFolderSchema.omit({ siteId: true, resourceId: true }),
   })
@@ -239,6 +243,29 @@ const SuspendableModalContent = ({
                 characters left
               </FormHelperText>
             </FormControl>
+            {isAdvancedRedirectsEnabled && permalink !== originalPermalink && (
+              <FormControl>
+                <Controller
+                  control={control}
+                  name="shouldCreateRedirect"
+                  render={({ field: { value, onChange, ref, ...field } }) => (
+                    <Checkbox
+                      alignItems="flex-start"
+                      size="sm"
+                      isChecked={!!value}
+                      onChange={(e) => onChange(e.target.checked)}
+                      ref={ref}
+                      {...field}
+                    >
+                      <Text textStyle="body-2" color="base.content.strong">
+                        Redirect visitors from everything under the old URL to
+                        the new location.
+                      </Text>
+                    </Checkbox>
+                  )}
+                />
+              </FormControl>
+            )}
           </VStack>
         </ModalBody>
         <ModalFooter>

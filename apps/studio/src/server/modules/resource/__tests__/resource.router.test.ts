@@ -2,6 +2,8 @@ import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
+import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
+import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -23,6 +25,7 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
@@ -2075,6 +2078,107 @@ describe("resource.router", async () => {
         expect(redirects[0]!.destination).toBe(
           `[resource:${site.id}:${page.id}]`,
         )
+      })
+
+      describe("folder/collection", () => {
+        const enableAdvancedRedirects = () => {
+          mockGrowthBook.setForcedFeatures(
+            new Map([
+              ...mockFeatureFlags,
+              [IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY, true],
+            ]),
+          )
+        }
+
+        afterEach(() => {
+          // Restore the baseline forced features so the flag doesn't leak.
+          mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+        })
+
+        // A folder ("/dest/src-folder") with one published child page,
+        // alongside a sibling destination folder ("/dest") to move it into.
+        const setupMoveWithPublishedChild = async () => {
+          const { site, rootPage, folder: destinationFolder } = await setup()
+          const { folder: sourceFolder } = await setupFolder({
+            siteId: site.id,
+            parentId: rootPage.id,
+            permalink: "src-folder",
+          })
+          await setupPageResource({
+            siteId: site.id,
+            resourceType: ResourceType.Page,
+            parentId: sourceFolder.id,
+            permalink: "child",
+            state: ResourceState.Published,
+            userId: session.userId,
+          })
+          return { site, rootPage, sourceFolder, destinationFolder }
+        }
+
+        it("creates a wildcard redirect from the old path for a published folder", async () => {
+          enableAdvancedRedirects()
+          const { site, sourceFolder, destinationFolder } =
+            await setupMoveWithPublishedChild()
+
+          await caller.move({
+            siteId: site.id,
+            movedResourceId: sourceFolder.id,
+            destinationResourceId: destinationFolder.id,
+            shouldCreateRedirect: true,
+          })
+
+          const redirects = await liveRedirects(site.id)
+          expect(redirects).toHaveLength(1)
+          expect(redirects[0]!.source).toBe("/src-folder/*")
+          expect(redirects[0]!.destination).toBe(
+            `[resource:${site.id}:${sourceFolder.id}]`,
+          )
+        })
+
+        it("does not create a redirect when the advanced flag is off", async () => {
+          // Arrange — flag left at its (off) baseline.
+          const { site, sourceFolder, destinationFolder } =
+            await setupMoveWithPublishedChild()
+
+          await caller.move({
+            siteId: site.id,
+            movedResourceId: sourceFolder.id,
+            destinationResourceId: destinationFolder.id,
+            shouldCreateRedirect: true,
+          })
+
+          expect(await liveRedirects(site.id)).toHaveLength(0)
+        })
+
+        it("still blocks the move when a descendant would be shadowed, even with the flag off", async () => {
+          // Only redirect CREATION is gated behind the flag; validating
+          // against an already-existing redirect must not be.
+          const { site, rootPage, sourceFolder, destinationFolder } =
+            await setupMoveWithPublishedChild()
+          await db
+            .insertInto("Redirect")
+            .values({
+              siteId: site.id,
+              source: "/dest/src-folder/child",
+              destination: "https://example.gov.sg/elsewhere",
+            })
+            .execute()
+
+          const result = caller.move({
+            siteId: site.id,
+            movedResourceId: sourceFolder.id,
+            destinationResourceId: destinationFolder.id,
+            shouldCreateRedirect: false,
+          })
+
+          await expect(result).rejects.toMatchObject({ code: "CONFLICT" })
+          const stillThere = await db
+            .selectFrom("Resource")
+            .select("parentId")
+            .where("id", "=", sourceFolder.id)
+            .executeTakeFirstOrThrow()
+          expect(String(stillThere.parentId)).toBe(String(rootPage.id))
+        })
       })
     })
   })

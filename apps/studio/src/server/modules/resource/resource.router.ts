@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash-es"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
+import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -39,6 +40,7 @@ import {
   getResourcePermission,
 } from "../permissions/permissions.service"
 import {
+  applyFolderPermalinkChangeRedirects,
   applyPermalinkChangeRedirects,
   softDeleteRedirectsPointingToResource,
 } from "../redirect/redirect.service"
@@ -52,6 +54,7 @@ import {
   getSearchResults,
   getSearchWithResourceIds,
   getWithFullPermalink,
+  hasPublishedDescendant,
   publishResource,
 } from "./resource.service"
 
@@ -548,8 +551,8 @@ export const resourceRouter = router({
               by: user,
             })
 
-            // Keep redirects consistent with the new URL — Page/CollectionPage
-            // only (folders/collection links have no URL of their own).
+            // Keep redirects consistent with the new URL. Page/CollectionPage
+            // get a single exact redirect for their own URL.
             if (
               (toMove.type === ResourceType.Page ||
                 toMove.type === ResourceType.CollectionPage) &&
@@ -562,6 +565,33 @@ export const resourceRouter = router({
                 resourceId: movedResourceId,
                 isPublished: toMove.publishedVersionId !== null,
                 shouldCreateRedirect,
+                byUserId: user.id,
+              })
+            }
+
+            // A Folder/Collection has no URL of its own, but the move changes
+            // every descendant's URL — preserve them with one wildcard redirect
+            // ("/old-folder/*"), and validate no descendant lands on a URL an
+            // existing redirect already covers. Shadow validation always runs on
+            // a move; only redirect creation is gated behind the advanced-
+            // redirects flag so it stays dark until the edge resolver ships.
+            if (
+              (toMove.type === ResourceType.Folder ||
+                toMove.type === ResourceType.Collection) &&
+              oldFullPermalink !== null
+            ) {
+              await applyFolderPermalinkChangeRedirects(tx, {
+                siteId,
+                oldFullPermalink,
+                newFullPermalink,
+                resourceId: movedResourceId,
+                shouldCreateRedirect:
+                  shouldCreateRedirect &&
+                  ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY),
+                hasLiveContent: await hasPublishedDescendant(tx, {
+                  siteId,
+                  resourceId: movedResourceId,
+                }),
                 byUserId: user.id,
               })
             }
