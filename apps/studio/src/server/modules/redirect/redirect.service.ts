@@ -301,7 +301,9 @@ const getLiveRedirectBySource = (
 // first: the exact path, then each ancestor wildcard ("/a/b/*", then "/a/*") —
 // mirroring the edge resolver's deepest-first prefix walk. The root wildcard is
 // impossible (the schema rejects it), so the shallowest candidate is a
-// single-segment "/seg/*". Exported for unit testing.
+// single-segment "/seg/*". Deduped: when `permalink` is itself already a
+// wildcard source, the exact-path entry and the first ancestor produced by the
+// loop are the same string. Exported for unit testing.
 export const shadowingSourceCandidates = (permalink: string): string[] => {
   const source = normalizeRedirectSource(permalink)
   const segments = source.split("/").filter((segment) => segment.length > 0)
@@ -309,13 +311,16 @@ export const shadowingSourceCandidates = (permalink: string): string[] => {
   for (let depth = segments.length - 1; depth >= 1; depth--) {
     candidates.push(`/${segments.slice(0, depth).join("/")}/*`)
   }
-  return candidates
+  return [...new Set(candidates)]
 }
 
 // Finds the live redirect that would shadow `permalink` — an exact-source match
-// or the deepest matching ancestor wildcard — optionally ignoring one whose
-// destination is `excludeDestination` (the redirect pointing back at the page
-// itself, which is the reclaim case, not a shadow). Returns the
+// or the deepest matching ancestor wildcard — optionally ignoring an
+// EXACT-source match whose destination is `excludeDestination` (the redirect
+// pointing back at the page itself, which is the reclaim case, not a shadow).
+// Never excludes an ancestor wildcard match this way: a wildcard's destination
+// is the containing folder, not this page, so a wildcard sharing the excluded
+// reference is still a real shadow, not a reclaim. Returns the
 // highest-precedence match (exact beats wildcard; deeper wildcard beats
 // shallower) or null. Wildcard awareness keeps a page from silently landing
 // under a "/section/*" redirect that would redirect it away.
@@ -328,19 +333,22 @@ const findShadowingRedirect = async (
   }: { siteId: number; permalink: string; excludeDestination?: string },
 ) => {
   const candidates = shadowingSourceCandidates(permalink)
-  let query = dbInstance
+  const [exactSource, ...wildcardCandidates] = candidates
+  const rows = await dbInstance
     .selectFrom("Redirect")
     .selectAll()
     .where("siteId", "=", siteId)
     .where("source", "in", candidates)
     .where("deletedAt", "is", null)
-  if (excludeDestination !== undefined) {
-    query = query.where("destination", "!=", excludeDestination)
-  }
-  const rows = await query.execute()
+    .execute()
   const bySource = new Map(rows.map((row) => [row.source, row]))
+
+  const exactMatch = exactSource ? bySource.get(exactSource) : undefined
+  if (exactMatch && exactMatch.destination !== excludeDestination) {
+    return exactMatch
+  }
   // candidates are ordered most-specific first, so the first hit wins.
-  for (const candidate of candidates) {
+  for (const candidate of wildcardCandidates) {
     const match = bySource.get(candidate)
     if (match) return match
   }
@@ -1589,10 +1597,16 @@ export const assertPermalinkNotShadowed = async (
 // same transaction, so reading the descendants' permalinks through `tx` yields
 // their new paths. Each is checked with its own resourceId excluded, so a
 // redirect pointing back at that same descendant (a reclaim) doesn't count as a
-// shadow — matching assertPermalinkNotShadowed's per-resource semantics.
+// shadow — matching assertPermalinkNotShadowed's per-resource semantics. That
+// reclaimed redirect is a live self-loop otherwise, so clear it the same way
+// the single-resource path does via clearReclaimedRedirect.
 const assertDescendantsNotShadowed = async (
   tx: Transaction<DB>,
-  { siteId, resourceId }: { siteId: number; resourceId: string },
+  {
+    siteId,
+    resourceId,
+    byUserId,
+  }: { siteId: number; resourceId: string; byUserId: string },
 ) => {
   const descendantIds = await getPublishedDescendantResourceIds(tx, {
     siteId,
@@ -1615,6 +1629,12 @@ const assertDescendantsNotShadowed = async (
       siteId,
       newFullPermalink,
       resourceId: descendantId,
+    })
+    await clearReclaimedRedirect(tx, {
+      siteId,
+      newFullPermalink,
+      resourceId: descendantId,
+      byUserId,
     })
   }
 }
@@ -1829,7 +1849,7 @@ export const applyFolderPermalinkChangeRedirects = async (
       newFullPermalink,
       resourceId,
     })
-    await assertDescendantsNotShadowed(tx, { siteId, resourceId })
+    await assertDescendantsNotShadowed(tx, { siteId, resourceId, byUserId })
   }
   await clearReclaimedRedirect(tx, {
     siteId,
