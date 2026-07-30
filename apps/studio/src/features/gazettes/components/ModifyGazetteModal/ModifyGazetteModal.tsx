@@ -126,6 +126,16 @@ const ModifyGazetteModalContent = ({
   })
 
   const onSubmit = handleSubmit(async (data) => {
+    const categoryLabel = categoryMap[data.category]
+    if (!categoryLabel) {
+      toast({
+        status: "error",
+        title: "Unable to resolve category — please refresh and try again",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+      return
+    }
+
     try {
       // If the user attached a fresh file, upload first and pass the new key
       // to the server. If only the filename changed, hand `desiredFileName` to
@@ -134,8 +144,6 @@ const ModifyGazetteModalContent = ({
       let desiredFileName: string | undefined
 
       const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
-
-      const categoryLabel = categoryMap[data.category] ?? data.category
 
       if (newFile) {
         const { path } = await uploadFile({

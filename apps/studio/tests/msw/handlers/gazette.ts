@@ -123,7 +123,7 @@ const GAZETTE_TAG_CATEGORIES = [
     display: DEFAULT_TAG_CATEGORY_DISPLAY,
     options: Object.values(GazetteCategories).map((label, index) => ({
       label,
-      id: `6ba7b810-9dad-11d1-80b4-00c04fd4310${String(index).padStart(2, "0")}`,
+      id: `6ba7b810-9dad-11d1-80b4-00c04fd431${String(index).padStart(2, "0")}`,
     })),
   },
   {

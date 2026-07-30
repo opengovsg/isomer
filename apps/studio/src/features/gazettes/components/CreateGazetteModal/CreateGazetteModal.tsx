@@ -107,11 +107,19 @@ const CreateGazetteModalContent = ({
       return
     }
 
+    const categoryLabel = categoryMap[data.category]
+    if (!categoryLabel) {
+      toast({
+        status: "error",
+        title: "Unable to resolve category — please refresh and try again",
+        ...BRIEF_TOAST_SETTINGS,
+      })
+      return
+    }
+
     const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
 
     try {
-      const categoryLabel = categoryMap[data.category] ?? data.category
-
       const { path: ref } = await uploadFile({
         file,
         fileName: data.fileId,

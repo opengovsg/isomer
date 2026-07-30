@@ -90,7 +90,7 @@ export const GazetteTable = ({
   collectionId: number
 }): JSX.Element => {
   const columns = useMemo(() => getColumns(siteId), [siteId])
-  const { categoryMap } = useGazetteSubcategoriesContext()
+  const { categoryMap, subcategoryMap } = useGazetteSubcategoriesContext()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const {
     isOpen: isViewOpen,
@@ -135,7 +135,7 @@ export const GazetteTable = ({
         }
         const tagged = page?.tagged ?? []
         const categoryId = tagged.find((id) => categoryMap[id]) ?? ""
-        const subcategoryId = tagged.find((id) => !categoryMap[id]) ?? ""
+        const subcategoryId = tagged.find((id) => subcategoryMap[id]) ?? ""
 
         return {
           id: resource.id,

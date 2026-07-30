@@ -93,6 +93,9 @@ export const GazetteSubcategoriesProvider = ({
             )
           })
         }
+        default: {
+          return []
+        }
       }
     }
     return {

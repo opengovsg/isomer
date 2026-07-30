@@ -76,10 +76,11 @@ const buildGazetteBlobContent = ({
   tagged,
 }: GazetteBlobInputs) => {
   const base = createCollectionLinkJson({ type: ResourceType.CollectionLink })
+  const { category: _category, ...basePage } = base.page
   return {
     ...base,
     page: {
-      ...base.page,
+      ...basePage,
       ref,
       date,
       description,
