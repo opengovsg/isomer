@@ -24,3 +24,11 @@
 
 1. This script updates all users of a site to have a specific `RoleType`
 2. Edit the `siteId` and `role` at the end of the script
+
+## Replace notification banners with anti-scam variant
+
+1. Run a dry run first to review affected sites:
+   `source .env && pnpm exec tsx prisma/scripts/replace-notification-with-antiscam/replaceNotificationWithAntiscam.ts --dry-run`
+2. Optionally scope to one site with `--site-id <id>`
+3. Apply (you will be prompted for your Studio email):
+   `source .env && pnpm exec tsx prisma/scripts/replace-notification-with-antiscam/replaceNotificationWithAntiscam.ts`
