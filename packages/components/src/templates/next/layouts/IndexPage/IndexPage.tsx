@@ -1,77 +1,12 @@
 import type { IndexPageSchemaType } from "~/types"
-import { DEFAULT_CHILDREN_PAGES_BLOCK } from "~/interfaces/complex/ChildrenPages/constants"
-import { tv } from "~/lib/tv"
-import { getBreadcrumbFromSiteMap } from "~/utils/getBreadcrumbFromSiteMap"
-import { getTableOfContents } from "~/utils/getTableOfContents"
-import { getTransformedPageContent } from "~/utils/getTransformedPageContent"
 
-import { ContentPageHeader } from "../../components/internal/ContentPageHeader"
-import { TableOfContents } from "../../components/internal/TableOfContents"
 import { renderPageContent } from "../../render"
-import { Skeleton } from "../Skeleton"
+import { IndexPageLayoutSkeleton } from "../IndexPageSkeleton"
 
-const createIndexPageLayoutStyles = tv({
-  slots: {
-    container:
-      "mx-auto grid max-w-screen-xl grid-cols-12 px-6 py-12 md:px-10 md:py-16 lg:gap-10",
-    siderailContainer: "relative col-span-3 hidden lg:block",
-    content: "col-span-12 break-words lg:col-span-8",
-  },
-})
+export { ensureChildrenPagesBlock } from "./ensureChildrenPagesBlock"
 
-const compoundStyles = createIndexPageLayoutStyles()
-
-export const ensureChildrenPagesBlock = (
-  content: IndexPageSchemaType["content"],
-): IndexPageSchemaType["content"] => {
-  const hasChildrenPagesBlock = content.some(
-    ({ type }) => type === "childrenpages",
-  )
-
-  return hasChildrenPagesBlock
-    ? content
-    : [...content, DEFAULT_CHILDREN_PAGES_BLOCK]
-}
-
-export const IndexPageLayout = ({
-  site,
-  page,
-  layout,
-  content,
-}: IndexPageSchemaType) => {
-  const breadcrumb = getBreadcrumbFromSiteMap(
-    site.siteMap,
-    page.permalink.split("/").slice(1),
-  )
-
-  const pageContent = ensureChildrenPagesBlock(content)
-  // auto-inject ids for heading level 2 blocks if does not exist
-  const transformedContent = getTransformedPageContent(pageContent)
-  const tableOfContents = getTableOfContents(site, transformedContent)
-
+export const IndexPageLayout = (props: IndexPageSchemaType) => {
   return (
-    <Skeleton site={site} page={page} layout={layout}>
-      <ContentPageHeader
-        {...page.contentPageHeader}
-        colorScheme="inverse"
-        title={page.title}
-        breadcrumb={breadcrumb}
-        site={site}
-        lastUpdated={page.lastModified}
-      />
-      <div className={compoundStyles.container()}>
-        <div className={compoundStyles.content()}>
-          {tableOfContents.length > 1 && (
-            <TableOfContents items={tableOfContents} />
-          )}
-          {renderPageContent({
-            content: transformedContent,
-            layout,
-            site,
-            permalink: page.permalink,
-          })}
-        </div>
-      </div>
-    </Skeleton>
+    <IndexPageLayoutSkeleton {...props} renderPageContent={renderPageContent} />
   )
 }

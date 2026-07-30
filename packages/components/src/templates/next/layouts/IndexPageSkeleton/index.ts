@@ -1,0 +1,1 @@
+export { IndexPageLayoutSkeleton } from "./IndexPageSkeleton"

@@ -5,6 +5,8 @@
     "build:template": {
       "dependsOn": ["@opengovsg/isomer-components#build:module"]
     },
+    "test:watch": {},
+    "test-ci:unit": {},
     "test-ci:e2e": {
       "dependsOn": ["@opengovsg/isomer-components#build:module"]
     }
