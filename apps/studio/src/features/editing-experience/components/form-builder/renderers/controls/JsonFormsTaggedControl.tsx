@@ -78,6 +78,7 @@ const SuspendableJsonFormsTaggedControl = ({
 
             return (
               <FormControl
+                key={label}
                 isRequired={tagIsRequired ?? false}
                 isInvalid={isInvalid}
                 gap="0.5rem"
