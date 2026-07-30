@@ -38,6 +38,7 @@ const ContentSecurityPolicy = `
     https://www.googletagmanager.com
     https://td.doubleclick.net
     https://www.onemap.gov.sg
+    https://mobile.onemap.gov.sg
     https://www.youtube-nocookie.com
     https://player.vimeo.com
     https://m.facebook.com
