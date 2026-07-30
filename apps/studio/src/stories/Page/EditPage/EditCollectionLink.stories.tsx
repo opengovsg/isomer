@@ -1,23 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { userEvent, waitFor, within } from "storybook/test"
+import { userEvent, within } from "storybook/test"
 import { collectionHandlers } from "tests/msw/handlers/collection"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import CollectionLinkPage from "~/pages/sites/[siteId]/links/[linkId]"
-import {
-  createBannerGbParameters,
-  createDropdownGbParameters,
-} from "~/stories/utils/growthbook"
+import { createBannerGbParameters } from "~/stories/utils/growthbook"
 import { ResourceState } from "~prisma/generated/generatedEnums"
 
 const COMMON_HANDLERS = [
   meHandlers.me(),
   pageHandlers.listWithoutRoot.default(),
   pageHandlers.getRootPage.default(),
-  pageHandlers.getCategories.default(),
-  pageHandlers.getCategoryOptions.default(),
   pageHandlers.countWithoutRoot.default(),
   sitesHandlers.getLocalisedSitemap.default(),
   sitesHandlers.getTheme.default(),
@@ -65,24 +60,6 @@ export default meta
 export const Default: Story = {}
 
 type Story = StoryObj<typeof CollectionLinkPage>
-export const Dropdown: Story = {
-  parameters: {
-    growthbook: [createDropdownGbParameters("1")],
-    msw: {
-      handlers: [pageHandlers.getCollectionTags.empty(), ...COMMON_HANDLERS],
-    },
-  },
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement)
-    // waitFor used as we can override the default timeout of findByRole (1000ms)
-    // this is needed as growthbook might take more than 1000ms to initialise
-    const button = await waitFor(() => screen.findByRole("combobox"), {
-      timeout: 5000,
-    })
-    await userEvent.click(button)
-  },
-}
-
 export const WithThumbnail: Story = {
   parameters: {
     msw: {

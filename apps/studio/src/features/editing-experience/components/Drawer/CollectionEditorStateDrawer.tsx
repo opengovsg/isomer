@@ -13,13 +13,12 @@ import { isEmpty, isEqual } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useMe } from "~/features/me/api"
-import { useIsUserIsomerAdmin } from "~/hooks/useIsUserIsomerAdmin"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { trackEvent, triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
 import { pageSchema } from "../../schema"
 import {
@@ -47,9 +46,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const { me } = useMe()
-  const { isAdmin: isUserIsomerAdmin } = useIsUserIsomerAdmin({
-    roles: [IsomerAdminRole.Core, IsomerAdminRole.Migrator],
-  })
+  const canManageFilters = useCanManageCollectionFilters()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
   const utils = trpc.useUtils()
@@ -65,7 +62,6 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     onSuccess: async () => {
       await utils.page.readPageAndBlob.invalidate({ pageId, siteId })
       await utils.page.readPage.invalidate({ pageId, siteId })
-      await utils.page.getCategories.invalidate({ pageId, siteId })
       toast({
         status: "success",
         title:
@@ -78,19 +74,19 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   })
 
   const schemaFields = useMemo(() => {
-    if (isUserIsomerAdmin) {
+    if (canManageFilters) {
       return drawerStateType === "display"
         ? {
-            exclude: ["tagCategories", "tags", "categoryOptions"],
+            exclude: ["tagCategories", "tags"],
           }
         : {
-            include: ["tagCategories", "tags", "categoryOptions"],
+            include: ["tagCategories", "tags"],
           }
     }
     return {
-      exclude: ["tagCategories", "tags", "categoryOptions"],
+      exclude: ["tagCategories", "tags"],
     }
-  }, [drawerStateType, isUserIsomerAdmin])
+  }, [drawerStateType, canManageFilters])
 
   const metadataSchema = getScopedSchema({
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,

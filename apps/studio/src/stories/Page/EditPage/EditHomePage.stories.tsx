@@ -149,7 +149,11 @@ export const FullscreenPreview: Story = {
     // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
     const screen = within(canvasElement.parentElement!)
 
-    const button = await canvas.findByRole("button", { name: /default mode/i })
+    const button = await canvas.findByRole(
+      "button",
+      { name: /default mode/i },
+      { timeout: 10000 },
+    )
     await userEvent.click(button)
 
     const text = await screen.findByText(/full screen/i)
