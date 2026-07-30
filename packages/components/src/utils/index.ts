@@ -37,5 +37,5 @@ export {
   TRIMMED_NON_EMPTY_STRING_REGEX,
   GTM_ID_STRING_REGEX,
 } from "./validation"
-
+export { isSiteNotificationActive } from "./isSiteNotificationActive"
 export { createChildrenPagesComparator } from "./createChildrenPagesComparator"

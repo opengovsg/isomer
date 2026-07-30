@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { NotificationProps } from "~/interfaces"
 import { generateSiteConfig } from "~/stories/helpers"
 
+import { withChromaticModes } from "@isomer/storybook-config"
+
 import { Notification } from "./Notification"
 
 const meta: Meta<NotificationProps> = {
@@ -9,9 +11,11 @@ const meta: Meta<NotificationProps> = {
   component: Notification,
   argTypes: {},
   parameters: {
+    layout: "fullscreen",
     themes: {
       themeOverride: "Isomer Next",
     },
+    chromatic: withChromaticModes(["desktop", "tablet", "mobile"]),
   },
   args: {
     site: generateSiteConfig(),
@@ -125,5 +129,11 @@ export const LongContent: Story = {
         },
       ],
     },
+  },
+}
+
+export const Antiscam: Story = {
+  args: {
+    type: "antiscam",
   },
 }
