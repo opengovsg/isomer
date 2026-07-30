@@ -15,10 +15,13 @@ import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useMe } from "~/features/me/api"
+import { useLocalStorage } from "~/hooks/useLocalStorage"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import {
-  trackFirstTagEditedOnce,
-  triggerCollectionTagCsatSurveyOnce,
+  getCollectionTagCsatSurveyStorageKey,
+  getFirstTagEditedTrackedStorageKey,
+  startCollectionTagCsatSurvey,
+  trackEvent,
 } from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
@@ -49,6 +52,14 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
   } = useEditorDrawerContext()
 
   const { me } = useMe()
+  const [hasTrackedFirstTagEdit, setHasTrackedFirstTagEdit] = useLocalStorage(
+    getFirstTagEditedTrackedStorageKey({ userId: me.id }),
+    false,
+  )
+  const [hasShownTagCsatSurvey, setHasShownTagCsatSurvey] = useLocalStorage(
+    getCollectionTagCsatSurveyStorageKey({ userId: me.id }),
+    false,
+  )
   const canManageFilters = useCanManageCollectionFilters()
   const { pageId, siteId } = useQueryParse(pageSchema)
   const toast = useToast()
@@ -117,22 +128,31 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
         onSuccess: () => {
           setDrawerState({ state: "root" })
           if (drawerStateType === "filter" && tagCategoriesChanged) {
-            trackFirstTagEditedOnce({ userId: me.id })
-            triggerCollectionTagCsatSurveyOnce({ userId: me.id })
+            if (!hasTrackedFirstTagEdit) {
+              trackEvent("first_tag_edited")
+              setHasTrackedFirstTagEdit(true)
+            }
+            if (!hasShownTagCsatSurvey) {
+              startCollectionTagCsatSurvey()
+              setHasShownTagCsatSurvey(true)
+            }
           }
         },
       },
     )
   }, [
     drawerStateType,
+    hasShownTagCsatSurvey,
+    hasTrackedFirstTagEdit,
     mutate,
     pageId,
     previewPageState,
     savedPageState,
     setDrawerState,
+    setHasShownTagCsatSurvey,
+    setHasTrackedFirstTagEdit,
     setSavedPageState,
     siteId,
-    me.id,
   ])
 
   const handleChange = (data: unknown) => {
