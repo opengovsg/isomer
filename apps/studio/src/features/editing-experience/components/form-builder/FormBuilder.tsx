@@ -17,10 +17,6 @@ import {
   jsonFormsArrayControlTester,
   JsonFormsBooleanControl,
   jsonFormsBooleanControlTester,
-  JsonFormsCategoryControl,
-  jsonFormsCategoryControlTester,
-  JsonFormsCategoryIdControl,
-  jsonFormsCategoryIdControlTester,
   JsonFormsChildrenPagesLayoutControl,
   jsonFormsChildrenPagesLayoutControlTester,
   JsonFormsChildrenPagesOrderingControl,
@@ -47,6 +43,8 @@ import {
   jsonFormsHiddenControlTester,
   JsonFormsImageControl,
   jsonFormsImageControlTester,
+  JsonFormsImageRadioControl,
+  jsonFormsImageRadioControlTester,
   JsonFormsIntegerControl,
   jsonFormsIntegerControlTester,
   JsonFormsLinkArrayControl,
@@ -77,8 +75,6 @@ import {
   jsonFormsSocialMediaControlTester,
   JsonFormsTagCategoriesControl,
   jsonFormsTagCategoriesControlTester,
-  JsonFormsCategoryOptionsControl,
-  jsonFormsCategoryOptionsControlTester,
   JsonFormsTagCategoryOptionsControl,
   jsonFormsTagCategoryOptionsControlTester,
   JsonFormsTaggedControl,
@@ -115,10 +111,6 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   {
     tester: jsonFormsTagCategoriesControlTester,
     renderer: JsonFormsTagCategoriesControl,
-  },
-  {
-    tester: jsonFormsCategoryOptionsControlTester,
-    renderer: JsonFormsCategoryOptionsControl,
   },
   {
     tester: jsonFormsTagCategoryOptionsControlTester,
@@ -162,6 +154,10 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
   },
   { tester: jsonFormsHiddenControlTester, renderer: JsonFormsHiddenControl },
   { tester: jsonFormsIntegerControlTester, renderer: JsonFormsIntegerControl },
+  {
+    tester: jsonFormsImageRadioControlTester,
+    renderer: JsonFormsImageRadioControl,
+  },
   { tester: jsonFormsImageControlTester, renderer: JsonFormsImageControl },
   { tester: jsonFormsLinkControlTester, renderer: JsonFormsLinkControl },
   { tester: jsonFormsEnumControlTester, renderer: JsonFormsEnumControl },
@@ -207,14 +203,6 @@ export const renderers: JsonFormsRendererRegistryEntry[] = [
     // we render null so that the users don't get visual noise
     tester: rankWith(JSON_FORMS_RANKING.Catchall, () => true),
     renderer: () => null,
-  },
-  {
-    tester: jsonFormsCategoryControlTester,
-    renderer: JsonFormsCategoryControl,
-  },
-  {
-    tester: jsonFormsCategoryIdControlTester,
-    renderer: JsonFormsCategoryIdControl,
   },
   {
     tester: jsonFormsCollectionDropdownControlTester,

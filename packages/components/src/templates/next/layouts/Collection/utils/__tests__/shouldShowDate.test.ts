@@ -10,13 +10,11 @@ describe("shouldShowDate", () => {
         title: "Item 1",
         description: "Description 1",
         date: new Date("2023-01-01"),
-        category: "category1",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
         description: "Description 2",
         date: undefined,
-        category: "category2",
       } as ProcessedCollectionCardProps,
     ]
 
@@ -29,13 +27,11 @@ describe("shouldShowDate", () => {
         title: "Item 1",
         description: "Description 1",
         date: undefined,
-        category: "category1",
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
         description: "Description 2",
         date: undefined,
-        category: "category2",
       } as ProcessedCollectionCardProps,
     ]
 

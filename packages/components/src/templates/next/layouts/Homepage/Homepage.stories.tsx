@@ -7,6 +7,7 @@ import {
   withSearchSgSetup,
 } from "~/stories/decorators"
 import { generateSiteConfig } from "~/stories/helpers"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -52,6 +53,10 @@ const meta: Meta<typeof HomepageLayout> = {
 export default meta
 type Story = StoryObj<typeof HomepageLayout>
 
+// Category is now an ordinary tagCategories group — the option a card is
+// tagged with is what CollectionBlock displays under its title.
+const HOMEPAGE_CATEGORY_OPTION_ID = "homepage-category-option"
+
 const generateArgs = ({
   heroProps,
   isDarkVariant = false,
@@ -78,12 +83,28 @@ const generateArgs = ({
             summary:
               "Clarifying widespread or common misperceptions of Government policy, or inaccurate assertions on matters of public concern that can harm Singapore's social fabric.",
             lastModified: "2021-01-01",
+            collectionPagePageProps: {
+              tagCategories: [
+                {
+                  label: "Category",
+                  id: "category-group",
+                  isRequired: true,
+                  display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+                  options: [
+                    {
+                      label: "yes i am a category",
+                      id: HOMEPAGE_CATEGORY_OPTION_ID,
+                    },
+                  ],
+                },
+              ],
+            },
             children: [
               {
                 id: "3",
                 title:
                   "Date of Government Gazette Notification on Dissolution of Parliament",
-                category: "yes i am a category",
+                tagged: [HOMEPAGE_CATEGORY_OPTION_ID],
                 permalink: "/collection-1/item-1",
                 layout: "article",
                 summary: "",
@@ -99,7 +120,7 @@ const generateArgs = ({
                 id: "4",
                 title:
                   "Impact of Foreign Professionals on our Economy and Society",
-                category: "yes i am a category",
+                tagged: [HOMEPAGE_CATEGORY_OPTION_ID],
                 permalink: "/collection-1/item-2",
                 layout: "article",
                 summary: "",
@@ -114,7 +135,7 @@ const generateArgs = ({
               {
                 id: "5",
                 title: "Where does Government revenue come from?",
-                category: "yes i am a category",
+                tagged: [HOMEPAGE_CATEGORY_OPTION_ID],
                 permalink: "/collection-1/item-3",
                 layout: "article",
                 summary: "",

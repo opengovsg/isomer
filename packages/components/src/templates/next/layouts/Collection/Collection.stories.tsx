@@ -3,6 +3,7 @@ import type { CollectionPageSchemaType, IsomerSitemap } from "~/types"
 import { flatten, times } from "lodash-es"
 import { expect, userEvent, within } from "storybook/test"
 import { generateSiteConfig } from "~/stories/helpers"
+import { TAG_CATEGORY_DISPLAY_OPTIONS } from "~/types/constants"
 
 import { withChromaticModes } from "@isomer/storybook-config"
 
@@ -20,14 +21,6 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
         "We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months. We’ve looked at how people’s spending correlates with how much microscopic plastic they consumed over the months.",
       date: "07/05/2024",
       category: "Category Name",
-      tags: [
-        {
-          category:
-            "Testing a long filter label to test how it wraps or truncates",
-          values: ["Test"],
-          selected: ["Test"],
-        },
-      ],
     },
     {
       id: `${index}`,
@@ -45,14 +38,6 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       category: "Category Name",
       ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
       fileDetails: { type: "png", size: "1.2MB" },
-      tags: [
-        {
-          category:
-            "Testing a long filter label to test how it wraps or truncates",
-          values: ["Test"],
-          selected: ["Test"],
-        },
-      ],
     },
     {
       id: `${index}`,
@@ -65,20 +50,6 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
       date: "12/08/2023",
       category: "Category Name",
       ref: "https://guide.isomer.gov.sg",
-      tags: [
-        {
-          category:
-            "Testing a long filter label to test how it wraps or truncates",
-          values: [
-            "This is a very long tag that should be reflowed on smaller screens maybe",
-          ],
-          selected: [
-            "Test",
-            "This is a very long tag that should be reflowed on smaller screens maybe",
-            "This is a second long link that should eat into the image area so that we can see how it looks",
-          ],
-        },
-      ],
     },
   ]),
 )
@@ -86,9 +57,11 @@ const COLLECTION_ITEMS: IsomerSitemap[] = flatten(
 const generateArgs = ({
   collectionItems = COLLECTION_ITEMS,
   variant = "collection",
+  tagCategories,
 }: {
   collectionItems?: IsomerSitemap[]
   variant?: CollectionPageSchemaType["page"]["variant"]
+  tagCategories?: CollectionPageSchemaType["page"]["tagCategories"]
 } = {}): CollectionPageSchemaType => {
   return {
     layout: "collection",
@@ -110,22 +83,6 @@ const generateArgs = ({
             layout: "collection",
             summary: "",
             children: collectionItems,
-            tags: [
-              { category: "tag", selected: ["A tag"] },
-              { category: "tagged", selected: ["tagged"] },
-              {
-                category: "long",
-                selected: [
-                  "This is a very long tag that should be reflowed on smaller screens maybe",
-                ],
-              },
-              {
-                category: "very long",
-                selected: [
-                  "This is a second long link that should eat into the image area so that we can see how it looks",
-                ],
-              },
-            ],
           },
         ],
       },
@@ -140,6 +97,7 @@ const generateArgs = ({
       subtitle:
         "Since this page type supports text-heavy articles that are primarily for reading and absorbing information, the max content width on desktop is kept even smaller than its General Content Page counterpart.",
       variant,
+      tagCategories,
     },
     content: [],
   }
@@ -202,8 +160,24 @@ export const NoResults: Story = {
   },
 }
 
+// Category is now an ordinary tagCategories group — an item is tagged with
+// an option UUID rather than carrying a plain `category` string.
+const CATEGORY_NAME_2_OPTION_ID = "category-name-2"
+const CATEGORY_TAG_CATEGORY: NonNullable<
+  CollectionPageSchemaType["page"]["tagCategories"]
+> = [
+  {
+    label: "Category",
+    id: "category-group",
+    isRequired: true,
+    display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+    options: [{ label: "Category Name 2", id: CATEGORY_NAME_2_OPTION_ID }],
+  },
+]
+
 export const FilteredEmptyResults: Story = {
   args: generateArgs({
+    tagCategories: CATEGORY_TAG_CATEGORY,
     collectionItems: [
       ...COLLECTION_ITEMS,
       {
@@ -215,7 +189,7 @@ export const FilteredEmptyResults: Story = {
         summary:
           "This is supposed to be a description of the hero banner that Isomer uses on their official website.",
         date: "2025-05-07",
-        category: "Category Name 2",
+        tagged: [CATEGORY_NAME_2_OPTION_ID],
         ref: "https://www.isomer.gov.sg/images/Homepage/hero%20banner_10.png",
         fileDetails: {
           type: "png",
@@ -280,12 +254,25 @@ export const AllResultsNoDate: Story = {
   },
 }
 
+const THE_ONLY_CATEGORY_OPTION_ID = "the-only-category"
+
 export const AllResultsSameCategory: Story = {
   name: "Should show category filter even if all items have same category",
   args: generateArgs({
+    tagCategories: [
+      {
+        label: "Category",
+        id: "category-group",
+        isRequired: true,
+        display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+        options: [
+          { label: "The only category", id: THE_ONLY_CATEGORY_OPTION_ID },
+        ],
+      },
+    ],
     collectionItems: COLLECTION_ITEMS.map((item) => ({
       ...item,
-      category: "The only category",
+      tagged: [THE_ONLY_CATEGORY_OPTION_ID],
     })),
   }),
   play: async ({ canvasElement }) => {
@@ -313,6 +300,38 @@ export const AllResultsSameYear: Story = {
   },
 }
 
+const itemsWithNoFilterableAttributes = COLLECTION_ITEMS.map((item) => ({
+  ...item,
+  date: undefined,
+  tags: undefined,
+}))
+
+export const NoFiltersCollectionCard: Story = {
+  name: "No Filters (Collection Card)",
+  args: generateArgs({
+    collectionItems: itemsWithNoFilterableAttributes,
+    variant: "collection",
+  }),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+
+    const yearFilter = screen.queryByText(/Year/i)
+    await expect(yearFilter).not.toBeInTheDocument()
+
+    const filtersHeading = screen.queryByRole("heading", { name: /Filters/i })
+    await expect(filtersHeading).not.toBeInTheDocument()
+  },
+}
+
+export const NoFiltersBlogCard: Story = {
+  name: "No Filters (Blog Card)",
+  args: generateArgs({
+    collectionItems: itemsWithNoFilterableAttributes,
+    variant: "blog",
+  }),
+  play: NoFiltersCollectionCard.play,
+}
+
 export const FileCard: Story = {
   args: generateArgs({
     collectionItems: [COLLECTION_ITEMS[1]] as IsomerSitemap[],
@@ -332,65 +351,4 @@ export const Blog: Story = {
     collectionItems: COLLECTION_ITEMS,
     variant: "blog",
   }),
-}
-
-const CATEGORY_OPTIONS = [
-  { id: "cat-uuid-policy", label: "Policy" },
-  { id: "cat-uuid-research", label: "Research" },
-  { id: "cat-uuid-news", label: "News" },
-]
-
-const CATEGORY_ID_ITEMS: IsomerSitemap[] = [
-  {
-    id: "ci-1",
-    title: "A Policy article",
-    permalink: "/publications/policy-article",
-    lastModified: "",
-    layout: "article",
-    summary:
-      "This article uses a categoryId UUID instead of a category string.",
-    date: "2024-03-01",
-    categoryId: "cat-uuid-policy",
-  },
-  {
-    id: "ci-2",
-    title: "A Research article",
-    permalink: "/publications/research-article",
-    lastModified: "",
-    layout: "article",
-    summary: "This article is tagged with the Research category via UUID.",
-    date: "2024-06-15",
-    categoryId: "cat-uuid-research",
-  },
-  {
-    id: "ci-3",
-    title: "A News article",
-    permalink: "/publications/news-article",
-    lastModified: "",
-    layout: "article",
-    summary: "This article is tagged with the News category via UUID.",
-    date: "2024-09-20",
-    categoryId: "cat-uuid-news",
-  },
-  {
-    id: "ci-4",
-    title: "Another Policy article",
-    permalink: "/publications/policy-article-2",
-    lastModified: "",
-    layout: "article",
-    summary: "A second Policy article to show the count in the filter.",
-    date: "2024-11-01",
-    categoryId: "cat-uuid-policy",
-  },
-]
-
-export const WithCategoryIdItems: Story = {
-  name: "With categoryId items (resolved labels in filter)",
-  args: {
-    ...generateArgs({ collectionItems: CATEGORY_ID_ITEMS }),
-    page: {
-      ...generateArgs({ collectionItems: CATEGORY_ID_ITEMS }).page,
-      categoryOptions: CATEGORY_OPTIONS,
-    },
-  },
 }
