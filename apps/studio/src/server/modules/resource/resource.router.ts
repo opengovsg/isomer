@@ -571,25 +571,27 @@ export const resourceRouter = router({
 
             // A Folder/Collection has no URL of its own, but the move changes
             // every descendant's URL — preserve them with one wildcard redirect
-            // ("/old-folder/*"). Gated behind the advanced-redirects flag so it
-            // stays dark until the edge resolver ships (otherwise the flag being
-            // off in the UI still defaults shouldCreateRedirect to true here).
+            // ("/old-folder/*"), and validate no descendant lands on a URL an
+            // existing redirect already covers. Shadow validation always runs on
+            // a move; only redirect creation is gated behind the advanced-
+            // redirects flag so it stays dark until the edge resolver ships.
             if (
               (toMove.type === ResourceType.Folder ||
                 toMove.type === ResourceType.Collection) &&
-              oldFullPermalink !== null &&
-              ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY)
+              oldFullPermalink !== null
             ) {
               await applyFolderPermalinkChangeRedirects(tx, {
                 siteId,
                 oldFullPermalink,
                 newFullPermalink,
                 resourceId: movedResourceId,
+                shouldCreateRedirect:
+                  shouldCreateRedirect &&
+                  ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY),
                 hasLiveContent: await hasPublishedDescendant(tx, {
                   siteId,
                   resourceId: movedResourceId,
                 }),
-                shouldCreateRedirect,
                 byUserId: user.id,
               })
             }

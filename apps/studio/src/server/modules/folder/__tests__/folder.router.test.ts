@@ -866,6 +866,40 @@ describe("folder.router", async () => {
         expect(redirects).toHaveLength(0)
       })
 
+      it("still blocks the rename when a descendant would be shadowed, even with the advanced flag off", async () => {
+        // Arrange — flag left at its (off) baseline. Only redirect CREATION is
+        // gated behind the flag; validating against an already-existing
+        // redirect must not be.
+        const { site, folder } = await setupFolderWithPublishedChild()
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-folder/child",
+            destination: "/somewhere-else",
+          })
+          .execute()
+
+        // Act
+        const result = caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+
+        // Assert
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "CONFLICT" }),
+        )
+        const unchanged = await db
+          .selectFrom("Resource")
+          .select("permalink")
+          .where("id", "=", folder.id)
+          .executeTakeFirstOrThrow()
+        expect(unchanged.permalink).toBe("old-folder")
+      })
+
       it("does not create a redirect when the folder has no published descendant", async () => {
         // Arrange — the only child is a draft, so nothing is live to preserve.
         enableAdvancedRedirects()

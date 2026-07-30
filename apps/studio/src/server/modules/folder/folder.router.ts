@@ -242,13 +242,13 @@ export const folderRouter = router({
           // Capture the folder's CURRENT full permalink BEFORE the update below
           // rewrites Resource.permalink — getResourceFullPermalink walks the live
           // tree, so reading it afterwards would return the NEW path and the
-          // redirect would be a no-op. Only needed on an actual permalink change
-          // with the advanced-redirects flag on.
-          const willCreateRedirect =
-            !!permalink &&
-            permalink !== oldResource.permalink &&
-            ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY)
-          const oldFullPermalink = willCreateRedirect
+          // redirect would be a no-op. Needed on any actual permalink change so
+          // the descendant shadow guard below always runs — the flag only gates
+          // whether a redirect gets CREATED, not whether the move is validated
+          // against redirects that already exist.
+          const permalinkChanged =
+            !!permalink && permalink !== oldResource.permalink
+          const oldFullPermalink = permalinkChanged
             ? await getResourceFullPermalink(
                 Number(siteId),
                 Number(resourceId),
@@ -307,7 +307,10 @@ export const folderRouter = router({
           // them with one wildcard redirect ("/old-folder/*"). oldFullPermalink
           // was captured pre-update; only the last path segment changed, so swap
           // it to derive the new full permalink without re-walking the tree.
-          if (willCreateRedirect && oldFullPermalink !== null) {
+          // Shadow validation always runs on a permalink change; only redirect
+          // creation is gated behind the flag (dark-launched until the edge
+          // resolver ships).
+          if (permalinkChanged && oldFullPermalink !== null) {
             const newFullPermalink =
               oldFullPermalink.slice(0, oldFullPermalink.lastIndexOf("/") + 1) +
               newResource.permalink
@@ -320,7 +323,9 @@ export const folderRouter = router({
                 siteId: Number(siteId),
                 resourceId,
               }),
-              shouldCreateRedirect,
+              shouldCreateRedirect:
+                shouldCreateRedirect &&
+                ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY),
               byUserId: user.id,
             })
           }
