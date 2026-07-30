@@ -47,10 +47,14 @@ const safeNormalize = (raw: string): string | null => {
 // e.g. "/old/*" + "/dest" -> "/old/example → /dest/example". The destination is
 // trimmed first so the preview matches the value the schema submits (it trims),
 // rather than reflecting stray leading/trailing whitespace as the user types.
+// Returns null for a non-wildcard source instead of trusting the caller's
+// `kind === "wildcard"` check, so the "/*" strip below can never run on a
+// source that doesn't have it.
 const buildWildcardPreview = (
   normalizedSource: string,
   destination: string,
-): string => {
+): string | null => {
+  if (!normalizedSource.endsWith("/*")) return null
   const prefix = normalizedSource.slice(0, -2) // strip trailing "/*"
   const trimmed = destination.trim()
   const base = trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed
@@ -94,7 +98,8 @@ export const AddRedirectCard = ({
   const [source, destination] = watch(["source", "destination"])
   const isAddDisabled = !source?.trim() || !destination?.trim()
 
-  const normalizedSource = source?.trim() ? safeNormalize(source) : null
+  const trimmedSource = source?.trim()
+  const normalizedSource = trimmedSource ? safeNormalize(trimmedSource) : null
   const kind = normalizedSource ? redirectKind(normalizedSource) : "exact"
 
   // Live preview: /old/* + /dest → /old/example → /dest/example
