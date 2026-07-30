@@ -1,6 +1,7 @@
 import type { KyselyConfig, KyselyPlugin, LogConfig } from "kysely"
 import { PostgresDialect } from "kysely"
 import pg from "pg"
+import Cursor from "pg-cursor"
 
 import type { DB } from "./generated/generatedTypes"
 import { Kysely } from "./kysely"
@@ -24,6 +25,7 @@ export const createDb = ({
 }: CreateDbConfig): Kysely<DB> => {
   const dialect = new PostgresDialect({
     pool: pool ?? new pg.Pool({ connectionString }),
+    cursor: Cursor,
   })
 
   const config: KyselyConfig = {

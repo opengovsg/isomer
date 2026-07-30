@@ -1,3 +1,5 @@
+import type { AuditLogExportRequestedReportType } from "~/schemas/audit"
+
 import type {
   AuditLogEvent,
   Blob,
@@ -383,6 +385,43 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
       ipAddress: ip,
       siteId,
       metadata,
+    })
+    .execute()
+}
+
+// One event per export ASK (not per fanned-out request row): the delta
+// captures what the user asked for, so `reportType` is the REQUESTED type —
+// including "Both", which exists only as input vocabulary and never as a DB
+// row. Recorded on every ask, even one that was idempotent-accepted because
+// an identical request was already in flight (ADR docs/adr/0005).
+interface AuditLogExportCreateDelta {
+  before: null
+  after: {
+    auditLogDateRange: string
+    reportType: AuditLogExportRequestedReportType
+  }
+}
+
+interface AuditLogExportEventLogProps {
+  eventType: Extract<AuditLogEvent, "AuditLogExportCreate">
+  delta: AuditLogExportCreateDelta
+  by: User
+  ip?: string
+  siteId: Site["id"]
+}
+
+export const logAuditLogExportEvent: AuditLogger<
+  AuditLogExportEventLogProps
+> = async (tx, { eventType, delta, by, ip, siteId }) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({
+      siteId,
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+      metadata: {},
     })
     .execute()
 }
