@@ -16,7 +16,10 @@ import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useCanManageCollectionFilters } from "~/features/editing-experience/hooks/canManageCollectionFilters"
 import { useMe } from "~/features/me/api"
 import { useQueryParse } from "~/hooks/useQueryParse"
-import { trackEvent, triggerCollectionTagCsatSurveyOnce } from "~/lib/intercom"
+import {
+  trackFirstTagEditedOnce,
+  triggerCollectionTagCsatSurveyOnce,
+} from "~/lib/intercom"
 import { ajv } from "~/utils/ajv"
 import { trpc } from "~/utils/trpc"
 
@@ -114,7 +117,7 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
         onSuccess: () => {
           setDrawerState({ state: "root" })
           if (drawerStateType === "filter" && tagCategoriesChanged) {
-            trackEvent("first_tag_edited")
+            trackFirstTagEditedOnce({ userId: me.id })
             triggerCollectionTagCsatSurveyOnce({ userId: me.id })
           }
         },
