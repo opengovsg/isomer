@@ -1,3 +1,4 @@
+import { formatInTimeZone } from "date-fns-tz"
 import { PdfReader } from "pdfreader"
 
 /**
@@ -125,14 +126,19 @@ export const buildGazetteSearchRecords = ({
     chunks.push(match[0])
   }
 
-  // Derive SG-local date fields from scheduledAt.
-  // Asia/Singapore is pinned explicitly because gazette publish dates are
-  // always expressed in Singapore time (SGT = UTC+8); using the server's
-  // local time would produce wrong year/month/day for any deployment outside
-  // the SGT zone.
-  const publishDate = scheduledAt.toLocaleDateString("en-SG", {
-    timeZone: "Asia/Singapore",
-  })
+  // Derive SG-local date fields from scheduledAt. publishDate (and the
+  // day/month/year parsed out of it) are canonical stored/filtered Algolia
+  // fields, so the DD/MM/YYYY shape must be deterministic across runtimes.
+  // formatInTimeZone uses an explicit format token in an explicit timezone —
+  // Asia/Singapore is pinned because gazette publish dates are always in
+  // Singapore time (SGT = UTC+8), and a locale-based toLocaleDateString("en-SG")
+  // can silently fall back to en-US on a minimal-ICU runtime and swap the
+  // day/month order.
+  const publishDate = formatInTimeZone(
+    scheduledAt,
+    "Asia/Singapore",
+    "dd/MM/yyyy",
+  )
   const [day, month, year] = publishDate.split("/").map(Number) as [
     number,
     number,

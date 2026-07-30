@@ -159,6 +159,21 @@ export const repairGazetteSearchRecords = async (): Promise<void> => {
     validate: (value) => Boolean(value.trim()) || "AWS region is required.",
   })
 
+  // The repair queries the database directly (behind the bastion in
+  // prod/staging), so bail early with a clear message if the operator hasn't
+  // opened the tunnel — otherwise they'd hit an opaque connection error deep
+  // into the run.
+  const dbTunnelReady = await confirm({
+    message: "Have you run `pnpm run db:connect` to open the DB tunnel?",
+    default: false,
+  })
+  if (!dbTunnelReady) {
+    console.log(
+      "Aborted. Run `pnpm run db:connect` from the repo root, then re-run this script.",
+    )
+    return
+  }
+
   // Read the resource IDs from the input CSV (same ./input convention as the
   // other file-driven admin scripts).
   const inputCsvPath = "./input/resource-ids.csv"
