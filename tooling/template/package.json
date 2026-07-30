@@ -13,8 +13,10 @@
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
     "start": "next start",
-    "test-ci:unit": "vitest run",
-    "test:unit": "vitest run",
+    "test-ci:e2e": "vitest run --project e2e",
+    "test-ci:unit": "vitest run --project unit",
+    "test:e2e": "pnpm exec turbo test-ci:e2e --filter=isomer-base-template --env-mode=loose",
+    "test:unit": "vitest run --project unit",
     "test:watch": "vitest watch",
     "typecheck": "tsgo --noEmit"
   },

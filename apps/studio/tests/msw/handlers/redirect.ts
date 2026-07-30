@@ -44,6 +44,52 @@ export const redirectHandlers = {
         throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
       }),
   },
+  bulkValidate: {
+    // Every row passes — drives the ready-to-publish preview.
+    allValid: () =>
+      trpcMsw.redirect.bulkValidate.mutation(() => ({
+        fileError: null,
+        rows: [
+          {
+            rowNumber: 2,
+            source: "/old-one",
+            destination: "/new-one",
+            error: null,
+          },
+          {
+            rowNumber: 3,
+            source: "/old-two",
+            destination: "https://www.example.gov.sg",
+            error: null,
+          },
+        ],
+        validCount: 2,
+        errorCount: 0,
+      })),
+    // A mix of a failing and a passing row — drives the errors screen.
+    withErrors: () =>
+      trpcMsw.redirect.bulkValidate.mutation(() => ({
+        fileError: null,
+        rows: [
+          {
+            rowNumber: 2,
+            source: "/loop-a",
+            destination: "/loop-b",
+            error: "This will trap visitors in a never-ending loop.",
+          },
+          { rowNumber: 3, source: "/ok", destination: "/fine", error: null },
+        ],
+        validCount: 1,
+        errorCount: 1,
+      })),
+  },
+  bulkCreate: {
+    success: (publishedCount = 2) =>
+      trpcMsw.redirect.bulkCreate.mutation(() => ({
+        ok: true as const,
+        publishedCount,
+      })),
+  },
   getBySource: {
     // The URL is not a redirect source — no settings warning shown.
     none: () => trpcMsw.redirect.getBySource.query(() => null),
