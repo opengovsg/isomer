@@ -137,7 +137,7 @@ const FixedBlock = () => {
             description="Define and manage filters for this Collection."
             icon={BiSlider}
           />
-        </CanManageCollectionFilters>{" "}
+        </CanManageCollectionFilters>
       </>
     )
   }
