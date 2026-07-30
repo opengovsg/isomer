@@ -2033,9 +2033,9 @@ describe("redirect.router", async () => {
       expect(row.destination).toBe(`[resource:${siteId}:${page.id}]`)
     })
 
-    it("does not block a wildcard source as if it shadowed a published page", async () => {
-      // Arrange — there is no published page at "/anything/*" (the literal path
-      // with "/*" can never match any real resource), so the create must succeed.
+    it("does not block a wildcard source when nothing lives under its prefix", async () => {
+      // Arrange — no resource sits at "/anything" at all, so nothing can be
+      // published under it either; the create must succeed.
       await expect(
         caller.create({
           siteId,
@@ -2043,6 +2043,56 @@ describe("redirect.router", async () => {
           destination: "/home",
         }),
       ).resolves.toBeDefined()
+    })
+
+    it("blocks a wildcard source when a published page already exists under its prefix", async () => {
+      // Arrange — "/news/story" is published, so "/news" is a live folder.
+      // "/news/*" would shadow it: the edge resolver's prefix walk would
+      // intercept "/news/story" and redirect it away instead of serving it.
+      const { folder } = await setupFolder({ siteId, permalink: "news" })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "story",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/news/*",
+        destination: "/home",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({
+        code: "PRECONDITION_FAILED",
+      })
+    })
+
+    it("blocks a wildcard source when the prefix itself is a published page", async () => {
+      // Arrange
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        permalink: "news",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+
+      // Act
+      const result = caller.create({
+        siteId,
+        source: "/news/*",
+        destination: "/home",
+      })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({
+        code: "PRECONDITION_FAILED",
+      })
     })
   })
 })
