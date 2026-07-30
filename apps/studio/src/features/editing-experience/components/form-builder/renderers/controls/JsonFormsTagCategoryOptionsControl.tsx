@@ -46,7 +46,7 @@ function DeleteOptionWarningBody({
   return (
     <Text textStyle="body-1" color="base.content.strong">
       {count > 0
-        ? `This option is being used in ${count === 1 ? "1 item" : `${count} items`}.`
+        ? `This option is being used in ${count === 1 ? "1 item" : `${count} items`}. `
         : ""}
       {DELETE_OPTION_UNDO_TEXT}
     </Text>
