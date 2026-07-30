@@ -328,7 +328,22 @@ export const processAuditLogExportRequest = async (
   // NOTE: Early return - this is technically not a failure
   // because it means that the user has been removed from the site
   // as an admin between the job creation and fulfillment time
-  if (!user) return
+  if (!user) {
+    logger.warn(
+      { requestId, userId: request.userId },
+      "User no longer exists or is not an admin",
+    )
+    await db
+      .updateTable("AuditLogExportRequest")
+      .set({
+        status: AuditLogExportStatus.Failed,
+        errorMessage: "User no longer exists or is not an admin",
+        updatedAt: new Date(),
+      })
+      .where("id", "=", requestId)
+      .execute()
+    return
+  }
 
   const siteConfig = site.config
   const siteName = siteConfig?.siteName || site.name
