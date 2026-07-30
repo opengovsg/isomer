@@ -1598,8 +1598,15 @@ export const assertPermalinkNotShadowed = async (
 // their new paths. Each is checked with its own resourceId excluded, so a
 // redirect pointing back at that same descendant (a reclaim) doesn't count as a
 // shadow — matching assertPermalinkNotShadowed's per-resource semantics. That
-// reclaimed redirect is a live self-loop otherwise, so clear it the same way
-// the single-resource path does via clearReclaimedRedirect.
+// reclaimed redirect is a live self-loop otherwise, so it's cleared the same
+// way the single-resource path does via clearReclaimedRedirect.
+//
+// Batched into a constant number of queries regardless of descendant count —
+// one candidate lookup, one soft-delete, one audit insert (each chunked, like
+// the bulk-upload path) — rather than looping assertPermalinkNotShadowed +
+// clearReclaimedRedirect per descendant. A folder with hundreds of published
+// descendants would otherwise run thousands of sequential round trips inside
+// this one transaction, holding its locks far longer than needed.
 const assertDescendantsNotShadowed = async (
   tx: Transaction<DB>,
   {
@@ -1620,22 +1627,106 @@ const assertDescendantsNotShadowed = async (
     descendantIds.map(Number),
     tx,
   )
-  for (const descendantId of descendantIds) {
+  const descendants = descendantIds.flatMap((descendantId) => {
     const newFullPermalink = permalinks.get(Number(descendantId))
     if (newFullPermalink === undefined) {
-      continue
+      return []
     }
-    await assertPermalinkNotShadowed(tx, {
-      siteId,
-      newFullPermalink,
-      resourceId: descendantId,
-    })
-    await clearReclaimedRedirect(tx, {
-      siteId,
-      newFullPermalink,
-      resourceId: descendantId,
-      byUserId,
-    })
+    return [
+      {
+        newFullPermalink,
+        reference: getReferenceLink({
+          siteId: String(siteId),
+          resourceId: String(descendantId),
+        }),
+        candidates: shadowingSourceCandidates(newFullPermalink),
+      },
+    ]
+  })
+  if (descendants.length === 0) {
+    return
+  }
+
+  const allCandidates = [
+    ...new Set(descendants.flatMap(({ candidates }) => candidates)),
+  ]
+  const rows = (
+    await Promise.all(
+      chunk(allCandidates, BULK_REDIRECT_INSERT_CHUNK_SIZE).map((batch) =>
+        tx
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", siteId)
+          .where("source", "in", batch)
+          .where("deletedAt", "is", null)
+          .execute(),
+      ),
+    )
+  ).flat()
+  const bySource = new Map(rows.map((row) => [row.source, row]))
+
+  // Highest-precedence match first (exact wins over an ancestor wildcard, a
+  // deeper wildcard over a shallower one) — mirrors findShadowingRedirect, but
+  // against the single prefetched map instead of a query per descendant.
+  for (const { newFullPermalink, reference, candidates } of descendants) {
+    const [exactSource, ...wildcardCandidates] = candidates
+    const exactMatch = exactSource ? bySource.get(exactSource) : undefined
+    const shadowing =
+      exactMatch && exactMatch.destination !== reference
+        ? exactMatch
+        : wildcardCandidates
+            .map((candidate) => bySource.get(candidate))
+            .find((match) => match !== undefined)
+    if (shadowing) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: `A redirect at ${shadowing.source} already covers ${newFullPermalink}. Remove it on the Redirections page first.`,
+      })
+    }
+  }
+
+  // A descendant reclaiming its own URL (its exact-source redirect points back
+  // at itself) is a self-loop otherwise — soft-delete every one in one update
+  // plus one audit insert, instead of a select+update+insert per descendant.
+  const reclaimed = descendants.flatMap(({ candidates, reference }) => {
+    const exactSource = candidates[0]
+    const match = exactSource ? bySource.get(exactSource) : undefined
+    return match && match.destination === reference ? [match] : []
+  })
+  if (reclaimed.length === 0) {
+    return
+  }
+  const byUser = await getByUser(byUserId)
+  const reclaimedIds = reclaimed.map((row) => row.id)
+  const afterRows = (
+    await Promise.all(
+      chunk(reclaimedIds, BULK_REDIRECT_INSERT_CHUNK_SIZE).map((batch) =>
+        tx
+          .updateTable("Redirect")
+          .set({ deletedAt: dbNow })
+          .where("id", "in", batch)
+          .returningAll()
+          .execute(),
+      ),
+    )
+  ).flat()
+  const beforeById = new Map(reclaimed.map((row) => [row.id, row]))
+  const auditValues = afterRows.flatMap((after) => {
+    const before = beforeById.get(after.id)
+    return before
+      ? [
+          {
+            siteId,
+            eventType: AuditLogEvent.RedirectDelete,
+            delta: { before, after },
+            userId: byUser.id,
+            metadata: {},
+          },
+        ]
+      : []
+  })
+  for (const batch of chunk(auditValues, BULK_REDIRECT_INSERT_CHUNK_SIZE)) {
+    await tx.insertInto("AuditLog").values(batch).execute()
   }
 }
 
