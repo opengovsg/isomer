@@ -26,7 +26,7 @@ export function useCollectionTags({
 export function useSuspenseCollectionTags({
   resourceId,
   siteId,
-}: UseCollectionTagsInput) {
+}: Omit<UseCollectionTagsInput, "enabled">) {
   return trpc.collection.getCollectionTags.useSuspenseQuery({
     resourceId,
     siteId,

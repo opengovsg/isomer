@@ -27,11 +27,13 @@ interface ImageRadioSchema {
 interface ImageRadioOptionProps extends UseRadioProps {
   image: string
   isSelected: boolean
+  ariaLabel: string
 }
 
 const ImageRadioOption = ({
   image,
   isSelected,
+  ariaLabel,
   ...rest
 }: ImageRadioOptionProps) => {
   const { getInputProps, getRadioProps } = useRadio(rest)
@@ -39,7 +41,7 @@ const ImageRadioOption = ({
 
   return (
     <Box as="label" cursor="pointer" width="100%" lineHeight={0}>
-      <input {...getInputProps()} />
+      <input {...getInputProps()} aria-label={ariaLabel} />
       <Box
         {...getRadioProps()}
         position="relative"
@@ -124,6 +126,9 @@ function JsonFormsImageRadioControl({
                 {...getRadioProps({ value: option.value })}
                 image={option.image}
                 isSelected={isSelected}
+                ariaLabel={
+                  option.value.charAt(0).toUpperCase() + option.value.slice(1)
+                }
               />
             )
           })}

@@ -51,7 +51,7 @@ function FilterUsageInfobox({
   return (
     <Text textStyle="body-1" color="base.content.strong">
       {count > 0
-        ? `It’s being used on ${count === 1 ? "1 item" : `${count} items`}.`
+        ? `It’s being used on ${count === 1 ? "1 item" : `${count} items`}. `
         : ""}
       {DELETE_FILTER_UNDO_TEXT}
     </Text>
