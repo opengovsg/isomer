@@ -13,9 +13,10 @@ export const getTagFilters = (
   // Hence, we store a map here of the category (eg: Body parts)
   // to the number of occurences of each value (eg: { Brain: 3, Leg: 2 })
   //
-  // NOTE: Tag category `display` (pills vs plaintext) is not attached to
-  // Filter objects. The sidebar always uses checkboxes; `display` is consumed
-  // by card/article tag rendering (PillTags / PlaintextTags) from tagCategories.
+  // NOTE: Tag category `display` (pills vs plaintext) is attached to each
+  // Filter below for consumers that need it, but the sidebar itself always
+  // renders checkboxes regardless of `display` — that value only changes
+  // card/article tag rendering (PillTags / PlaintextTags).
   const tagCategoryLabels = new Map<string, Map<string, number>>()
 
   items.forEach(({ tags }) => {
