@@ -6,17 +6,22 @@ import { trpc, type RouterOutput } from "~/utils/trpc"
 
 export type CollectionTags = RouterOutput["collection"]["getCollectionTags"]
 
-interface UseCollectionTagsInput {
+interface UseCollectionTagsQueryInput {
   resourceId: number
   siteId: number
   enabled?: boolean
+}
+
+interface UseCollectionTagsSuspenseInput {
+  resourceId: number
+  siteId: number
 }
 
 export function useCollectionTags({
   resourceId,
   siteId,
   enabled = true,
-}: UseCollectionTagsInput) {
+}: UseCollectionTagsQueryInput) {
   return trpc.collection.getCollectionTags.useQuery(
     { resourceId, siteId },
     { enabled },
@@ -26,7 +31,7 @@ export function useCollectionTags({
 export function useSuspenseCollectionTags({
   resourceId,
   siteId,
-}: UseCollectionTagsInput) {
+}: UseCollectionTagsSuspenseInput) {
   return trpc.collection.getCollectionTags.useSuspenseQuery({
     resourceId,
     siteId,
