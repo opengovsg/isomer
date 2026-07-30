@@ -245,16 +245,25 @@ const SuspendableModalContent = ({
             </FormControl>
             {isAdvancedRedirectsEnabled && permalink !== originalPermalink && (
               <FormControl>
-                <Checkbox
-                  alignItems="flex-start"
-                  size="sm"
-                  {...register("shouldCreateRedirect")}
-                >
-                  <Text textStyle="body-2" color="base.content.strong">
-                    Redirect visitors from everything under the old URL to the
-                    new location.
-                  </Text>
-                </Checkbox>
+                <Controller
+                  control={control}
+                  name="shouldCreateRedirect"
+                  render={({ field: { value, onChange, ref, ...field } }) => (
+                    <Checkbox
+                      alignItems="flex-start"
+                      size="sm"
+                      isChecked={!!value}
+                      onChange={(e) => onChange(e.target.checked)}
+                      ref={ref}
+                      {...field}
+                    >
+                      <Text textStyle="body-2" color="base.content.strong">
+                        Redirect visitors from everything under the old URL to
+                        the new location.
+                      </Text>
+                    </Checkbox>
+                  )}
+                />
               </FormControl>
             )}
           </VStack>
