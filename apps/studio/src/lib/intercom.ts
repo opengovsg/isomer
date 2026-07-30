@@ -26,6 +26,25 @@ export const trackEvent = (eventName: string): void => {
   trackEventSdk(eventName)
 }
 
+interface TrackEventOnceProps {
+  eventName: string
+  userId: string
+}
+
+const trackEventOnce = ({ eventName, userId }: TrackEventOnceProps): void => {
+  const key = `intercom_event_${eventName}_${userId}_tracked`
+  if (localStorage.getItem(key)) return
+
+  trackEvent(eventName)
+  localStorage.setItem(key, "1")
+}
+
+export const trackFirstTagEditedOnce = ({
+  userId,
+}: Omit<TrackEventOnceProps, "eventName">): void => {
+  trackEventOnce({ eventName: "first_tag_edited", userId })
+}
+
 interface TriggerSurveyOnceProps {
   surveyId: string
   userId: string
