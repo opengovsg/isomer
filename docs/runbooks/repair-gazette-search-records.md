@@ -52,8 +52,8 @@ before re-submitting.
    ```sh
    pnpm run db:connect   # from repo root; prompts for AWS profile per env
    ```
-   Leave that session running — the script will ask "Have you ran
-   `pnpm run db:connect`?" and exits if you say no.
+   Leave that session running — the script queries the database directly and
+   prompts "Have you run `pnpm run db:connect`?", aborting if you answer no.
 
 ## Steps
 
@@ -71,7 +71,7 @@ before re-submitting.
 4. Answer the prompts:
    - AWS profile (blank uses your current default credentials).
    - AWS region of the gazette S3 bucket (defaults to `ap-southeast-1`).
-   - Confirm you've run `pnpm run db:connect`.
+   - Confirm you've run `pnpm run db:connect` (answering no aborts the run).
 5. The script resolves each ID and prints:
    - Any IDs it's skipping, with a reason (not found / not a gazette page /
      no publish timestamp).
@@ -111,7 +111,7 @@ failed, out of T attempted`). Failures are logged inline and don't stop
 | ID skipped: "no publish timestamp (scheduledAt) found" | Resource has neither `Resource.scheduledAt` nor a published `Version.publishedAt` — it likely isn't actually published yet. |
 | "no Search Records built (empty PDF text); skipping"   | PDF parsed to empty text — check the PDF itself in S3 (corrupt upload, scanned image with no text layer).                   |
 | Repair "succeeds" but records still missing/duplicated | Re-check the Algolia facet prerequisite above — `deleteBy` matches nothing if `objectGroup` isn't `filterOnly`.             |
-| Script exits at the `db:connect` prompt                | Tunnel isn't up — run `pnpm run db:connect` from repo root first.                                                           |
+| Script aborts at the `db:connect` prompt               | Tunnel isn't up — run `pnpm run db:connect` from repo root first, and leave it running.                                    |
 
 ## Related docs
 
