@@ -319,9 +319,11 @@ export const processAuditLogExportRequest = async (
     .selectFrom("User")
     .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
     .where("User.id", "=", request.userId)
+    .where("User.deletedAt", "is", null)
     .where("ResourcePermission.userId", "=", request.userId)
     .where("ResourcePermission.role", "=", "Admin")
     .where("ResourcePermission.siteId", "=", site.id)
+    .where("ResourcePermission.deletedAt", "is", null)
     .select(["User.id", "User.email"])
     .executeTakeFirst()
 
