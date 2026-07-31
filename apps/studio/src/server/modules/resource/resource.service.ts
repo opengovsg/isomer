@@ -729,7 +729,9 @@ export const getResourcePermalinkTree = async (
           .where("Resource.siteId", "=", siteId)
           .where("Resource.id", "=", String(resourceId))
           .select(defaultResourceSelect)
-          .unionAll((fb) =>
+          // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
+          // a cycle can't drive the recursion forever.
+          .union((fb) =>
             fb
               // Recursive case: Get all the ancestors of the resource
               .selectFrom("Resource")

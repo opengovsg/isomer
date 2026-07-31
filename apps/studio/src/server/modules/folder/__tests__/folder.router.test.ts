@@ -565,7 +565,11 @@ describe("folder.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      await db.updateTable("Resource").set({ parentId: page.id }).execute()
+      await db
+        .updateTable("Resource")
+        .set({ parentId: page.id })
+        .where("id", "=", folder.id)
+        .execute()
       const permalink = "tempora-link"
 
       // Act
