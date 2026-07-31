@@ -878,6 +878,7 @@ describe("collection.router", async () => {
     })
 
     it("should sort case-insensitively when orderBy is permalink-asc", async () => {
+      // Arrange
       const { collection, site } = await setupCollection()
       await setupEditorPermissions({ userId: session.userId, siteId: site.id })
 

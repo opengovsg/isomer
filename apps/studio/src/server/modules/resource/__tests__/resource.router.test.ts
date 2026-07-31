@@ -2675,6 +2675,7 @@ describe("resource.router", async () => {
     })
 
     it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
+      // Arrange
       const { site } = await setupSite()
       await setupEditorPermissions({
         siteId: site.id,
@@ -2700,11 +2701,13 @@ describe("resource.router", async () => {
         permalink: "bravo",
       })
 
+      // Act
       const result = await caller.listWithoutRoot({
         siteId: site.id,
         orderBy: "permalink-asc",
       })
 
+      // Assert
       expect(result.map((r) => r.permalink)).toEqual([
         "alpha",
         "bravo",
@@ -2713,6 +2716,7 @@ describe("resource.router", async () => {
     })
 
     it("should sort folder children by permalink ascending when orderBy is permalink-asc", async () => {
+      // Arrange
       const { folder, site } = await setupFolder({
         permalink: "parent-folder",
         title: "Parent folder",
@@ -2744,12 +2748,14 @@ describe("resource.router", async () => {
         permalink: "bravo",
       })
 
+      // Act
       const result = await caller.listWithoutRoot({
         siteId: site.id,
         resourceId: Number(folder.id),
         orderBy: "permalink-asc",
       })
 
+      // Assert
       expect(result.map((r) => r.permalink)).toEqual([
         "alpha",
         "bravo",
