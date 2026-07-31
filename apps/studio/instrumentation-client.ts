@@ -20,6 +20,6 @@ if (!posthogProjectToken || !posthogHost) {
     ...(env.NEXT_PUBLIC_APP_URL
       ? { tracing_headers: [new URL(env.NEXT_PUBLIC_APP_URL).hostname] }
       : {}),
-    debug: env.NODE_ENV === "development",
+    debug: env.NEXT_PUBLIC_APP_ENV === "development",
   })
 }
