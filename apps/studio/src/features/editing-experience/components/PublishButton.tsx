@@ -17,8 +17,8 @@ import {
   TouchableTooltip,
   useToast,
 } from "@opengovsg/design-system-react"
-import { BiChevronDown, BiTimeFive } from "react-icons/bi"
 import posthog from "posthog-js"
+import { BiChevronDown, BiTimeFive } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"

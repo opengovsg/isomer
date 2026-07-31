@@ -14,18 +14,18 @@ PostHog product analytics was initialized for the Studio browser, authenticated 
 
 These captures are placed in successful mutation handlers. The run reviewed the call sites and event plan, but did **not** observe events arriving in PostHog; event delivery remains unconfirmed.
 
-| Event | What it measures | File |
-|---|---|---|
-| `folder_created` | A user successfully creates a folder. | `src/features/editing-experience/components/CreateFolderModal/CreateFolderModal.tsx` |
-| `collection_created` | A user successfully creates a collection. | `src/features/editing-experience/components/CreateCollectionModal/CreateCollectionModal.tsx` |
-| `page_created` | A user successfully creates a page. | `src/features/editing-experience/components/CreatePageModal/CreatePageWizardContext.tsx` |
-| `collection_page_created` | A user successfully creates a collection page. | `src/features/editing-experience/components/CreateCollectionPageModal/CreateCollectionPageWizardContext.tsx` |
-| `page_published` | A user successfully publishes a page immediately. | `src/features/editing-experience/components/PublishButton.tsx` |
-| `gazette_created` | A user successfully creates a Gazette entry. | `src/features/gazettes/components/CreateGazetteModal/CreateGazetteModal.tsx` |
-| `redirect_created` | A user successfully creates a redirect. | `src/features/settings/Redirects/components/AddRedirectCard.tsx` |
-| `site_user_invited` | A user successfully sends an invitation to a site collaborator. | `src/features/users/components/UserPermissionModal/AddUserModal.tsx` |
-| `site_user_removed` | A user successfully removes a collaborator from a site. | `src/features/users/components/RemoveUserModal/RemoveUserModal.tsx` |
-| `resource_deleted` | A user successfully deletes a page, collection, or folder. | `src/features/dashboard/components/DeleteResourceModal/DeleteResourceModal.tsx` |
+| Event                     | What it measures                                                | File                                                                                                         |
+| ------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `folder_created`          | A user successfully creates a folder.                           | `src/features/editing-experience/components/CreateFolderModal/CreateFolderModal.tsx`                         |
+| `collection_created`      | A user successfully creates a collection.                       | `src/features/editing-experience/components/CreateCollectionModal/CreateCollectionModal.tsx`                 |
+| `page_created`            | A user successfully creates a page.                             | `src/features/editing-experience/components/CreatePageModal/CreatePageWizardContext.tsx`                     |
+| `collection_page_created` | A user successfully creates a collection page.                  | `src/features/editing-experience/components/CreateCollectionPageModal/CreateCollectionPageWizardContext.tsx` |
+| `page_published`          | A user successfully publishes a page immediately.               | `src/features/editing-experience/components/PublishButton.tsx`                                               |
+| `gazette_created`         | A user successfully creates a Gazette entry.                    | `src/features/gazettes/components/CreateGazetteModal/CreateGazetteModal.tsx`                                 |
+| `redirect_created`        | A user successfully creates a redirect.                         | `src/features/settings/Redirects/components/AddRedirectCard.tsx`                                             |
+| `site_user_invited`       | A user successfully sends an invitation to a site collaborator. | `src/features/users/components/UserPermissionModal/AddUserModal.tsx`                                         |
+| `site_user_removed`       | A user successfully removes a collaborator from a site.         | `src/features/users/components/RemoveUserModal/RemoveUserModal.tsx`                                          |
+| `resource_deleted`        | A user successfully deletes a page, collection, or folder.      | `src/features/dashboard/components/DeleteResourceModal/DeleteResourceModal.tsx`                              |
 
 Scheduled publishing and bulk redirect publishing were intentionally not instrumented. No server-side PostHog captures were implemented.
 
