@@ -21,6 +21,7 @@ import {
   ModalCloseButton,
   useToast,
 } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
@@ -92,6 +93,10 @@ const CreateCollectionModalContent = ({
   const { mutate, isPending } = trpc.collection.create.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
+      posthog.capture("collection_created", {
+        site_id: siteId,
+        has_parent_folder: !!parentFolderId,
+      })
       await utils.resource.listWithoutRoot.invalidate()
       await utils.resource.countWithoutRoot.invalidate()
       await utils.resource.getChildrenOf.invalidate()

@@ -18,6 +18,9 @@ export const useMe = () => {
     (redirectToSignIn = true) => {
       return logoutMutation.mutate(undefined, {
         onSuccess: () => {
+          void import("posthog-js").then(({ default: posthog }) => {
+            posthog.reset()
+          })
           void gb.setAttributes({})
           removeLoginStateFlag()
           if (redirectToSignIn) {
