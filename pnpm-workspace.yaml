@@ -52,7 +52,7 @@ allowBuilds:
   protobufjs: false
   sharp: false
   ssh2: false
-  core-js: set this to true or false
+  core-js: false
 
 patchedDependencies:
   next@16.2.11: patches/next@16.2.11.patch
