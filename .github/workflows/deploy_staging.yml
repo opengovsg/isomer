@@ -50,3 +50,6 @@ jobs:
       # Leaving this unset makes NEXT_PUBLIC_INTERCOM_APP_ID empty on staging,
       # which the Intercom wrapper (apps/studio/src/lib/intercom.ts) treats
       # as "not configured" and logs to the console instead.
+      posthog-host: "https://us.i.posthog.com"
+      posthog-assets-host: "https://us-assets.i.posthog.com"
+      posthog-project-token: "phc_uZuYdUk5MvkoNAzxvh9TXdGXXjSL684XAHBjR5r74Ra8"
