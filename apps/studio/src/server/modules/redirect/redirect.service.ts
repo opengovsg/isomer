@@ -272,8 +272,12 @@ export const resolveRedirectReferences = async ({
   })
 }
 
-const getByUser = async (byUserId: string) =>
-  db
+// Takes the caller's executor (tx when called inside an open transaction) so a
+// callsite mid-transaction doesn't open a second connection against the global
+// pool — that second connection can block indefinitely behind locks the open
+// transaction itself holds, hanging until the outer transaction commits.
+const getByUser = async (dbInstance: SafeKysely, byUserId: string) =>
+  dbInstance
     .selectFrom("User")
     .selectAll()
     .where("id", "=", byUserId)
@@ -605,7 +609,7 @@ export const createRedirect = async ({
   byUserId: string
   logger: Logger<string>
 }) => {
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(db, byUserId)
 
   const created = await db
     .transaction()
@@ -1257,7 +1261,7 @@ export const bulkCreateRedirects = async ({
   byUserId: string
   logger: Logger<string>
 }): Promise<BulkCreateRedirectsResult> => {
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(db, byUserId)
 
   const { fileError, rows } = await runBulkValidation(siteId, csv)
   if (fileError !== null || rows.some((row) => row.error !== null)) {
@@ -1523,7 +1527,7 @@ export const createRedirectForPermalinkChange = async (
     siteId: String(siteId),
     resourceId: String(resourceId),
   })
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(tx, byUserId)
 
   const existing = await tx
     .selectFrom("Redirect")
@@ -1696,7 +1700,7 @@ const assertDescendantsNotShadowed = async (
   if (reclaimed.length === 0) {
     return
   }
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(tx, byUserId)
   const reclaimedIds = reclaimed.map((row) => row.id)
   const afterRows = (
     await Promise.all(
@@ -1755,7 +1759,7 @@ const softDeleteReclaimedRedirect = async (
     return null
   }
 
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(tx, byUserId)
   const after = await tx
     .updateTable("Redirect")
     .set({ deletedAt: dbNow })
@@ -1968,7 +1972,7 @@ export const deleteRedirect = async ({
   byUserId: string
   logger: Logger<string>
 }): Promise<void> => {
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(db, byUserId)
 
   await db.transaction().execute(async (tx) => {
     const before = await tx
@@ -2122,7 +2126,7 @@ export const softDeleteRedirectsPointingToResource = async (
     return []
   }
 
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(tx, byUserId)
   // Soft-delete the whole set in one statement, then emit a per-redirect audit
   // entry (mirroring deleteRedirect) by pairing each before-row with its
   // committed after-row.
