@@ -25,7 +25,7 @@ const BUCKET_GLOBS = {
   // are the exception: verified with `git check-ignore` that neither is
   // actually covered by .gitignore, despite living next to dirs that are.
   ignore: ["pnpm-lock.yaml", "packages/db/src/generated/**", "apps/studio/src/theme/generated/**"],
-  doc: [".claude/**", "**/*.md", "**/*.mdx"],
+  doc: [".claude/skills/**", "**/*.md", "**/*.mdx"],
   test: [
     "**/__tests__/**",
     "**/*.test.ts",
