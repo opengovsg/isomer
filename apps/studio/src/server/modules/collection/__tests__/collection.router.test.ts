@@ -838,6 +838,83 @@ describe("collection.router", async () => {
       expect(titles).toEqual(["apple", "Banana", "cherry"])
     })
 
+    it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
+      // Arrange: titles are intentionally out of permalink order
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Zulu",
+        permalink: "charlie",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Alpha",
+        permalink: "alpha",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Mike",
+        permalink: "bravo",
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        orderBy: "permalink-asc",
+      })
+
+      // Assert
+      const permalinks = result.map((r) => r.permalink)
+      expect(permalinks).toEqual(["alpha", "bravo", "charlie"])
+    })
+
+    it("should sort case-insensitively when orderBy is permalink-asc", async () => {
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Page C",
+        permalink: "Cherry",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Page A",
+        permalink: "apple",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Page B",
+        permalink: "Banana",
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        orderBy: "permalink-asc",
+      })
+
+      // Assert
+      const permalinks = result.map((r) => r.permalink)
+      expect(permalinks).toEqual(["apple", "Banana", "Cherry"])
+    })
+
     it("should sort by updatedAt descending when orderBy is updated-desc", async () => {
       // Arrange
       const { collection, site } = await setupCollection()

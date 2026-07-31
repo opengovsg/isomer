@@ -76,6 +76,10 @@ export const applyResourceOrderBy = <O>(
       return query
         .orderBy(sql`lower("Resource"."title")`, "asc")
         .orderBy("Resource.id", "asc")
+    case "permalink-asc":
+      return query
+        .orderBy(sql`lower("Resource"."permalink")`, "asc")
+        .orderBy("Resource.id", "asc")
     case "updated-desc":
     default:
       return query
