@@ -52,7 +52,7 @@ jobs:
       # a few seconds at most. This does mean the clone cost grows with the
       # repo's total lifetime history, not with this one PR's size — worth
       # revisiting if that ever becomes an actual bottleneck.
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
