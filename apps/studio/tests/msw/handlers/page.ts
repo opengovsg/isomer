@@ -252,7 +252,7 @@ export const pageHandlers = {
   },
   updateSettings: {
     collection: () => {
-      trpcMsw.page.updateSettings.mutation(() => {
+      return trpcMsw.page.updateSettings.mutation(() => {
         return {
           id: "1",
           title: "Press Releases",
