@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "algoliasearch": "catalog:",
+    "content-disposition": "catalog:",
     "date-fns-tz": "catalog:",
     "pdfreader": "^3.0.8",
     "vitest": "catalog:vitest"

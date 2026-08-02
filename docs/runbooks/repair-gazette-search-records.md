@@ -81,6 +81,8 @@ gazette(s)?`). Answering no aborts with no changes made.
 7. The script processes gazettes **serially** (Algolia is rate-limited).
    For each one it:
    - Fetches the live PDF from S3.
+   - Rewrites the object's `Content-Disposition` so it downloads under the
+     gazette's title instead of its raw S3 key (skipped if already correct).
    - Strips the `scheduledAt` object tag so the PDF stays publicly viewable
      (it does **not** re-apply the compliance object-lock retention — that's
      intentional, see the script's header comment).

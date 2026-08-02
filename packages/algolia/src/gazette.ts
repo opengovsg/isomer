@@ -1,3 +1,4 @@
+import { create as createContentDisposition } from "content-disposition"
 import { formatInTimeZone } from "date-fns-tz"
 import { PdfReader } from "pdfreader"
 
@@ -47,6 +48,32 @@ export const objectGroupFromRef = (ref: string): string => ref.slice(1)
  */
 export const buildGazetteObjectGroupFilter = (objectGroup: string): string =>
   `objectGroup:"${objectGroup}"`
+
+const getExtensionFromKey = (key: string): string => {
+  const filename = key.split("/").pop() ?? ""
+  return filename.includes(".")
+    ? filename.substring(filename.lastIndexOf("."))
+    : ""
+}
+
+/**
+ * Build Content-Disposition using a human-readable title as the download
+ * filename, keeping the key's extension so the saved file still opens in
+ * the right application. Shared by the ingestion cron and the repair admin
+ * script, which both need to rewrite a gazette object's disposition on
+ * publish/republish.
+ */
+export const getContentDispositionForTitle = (
+  title: string,
+  key: string,
+): string => {
+  const extension = getExtensionFromKey(key)
+  // content-disposition runs path.basename on the filename, which would
+  // truncate a title containing "/" or "\" (e.g. "A/B" -> "B"). Replace path
+  // separators up front so the full title survives in the download filename.
+  const filename = `${title}${extension}`.replace(/[/\\]/g, "-")
+  return createContentDisposition(filename, { type: "inline" })
+}
 
 export interface BuildGazetteSearchRecordsParams {
   parsedText: string
