@@ -1141,6 +1141,9 @@ importers:
       algoliasearch:
         specifier: 'catalog:'
         version: 4.27.0
+      content-disposition:
+        specifier: 'catalog:'
+        version: 0.5.4
       date-fns-tz:
         specifier: 'catalog:'
         version: 3.2.0(date-fns@4.4.0)

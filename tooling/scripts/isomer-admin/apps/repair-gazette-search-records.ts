@@ -1,6 +1,8 @@
 import {
+  CopyObjectCommand,
   GetObjectCommand,
   GetObjectTaggingCommand,
+  HeadObjectCommand,
   PutObjectTaggingCommand,
   S3Client,
 } from "@aws-sdk/client-s3"
@@ -41,6 +43,7 @@ import {
   buildGazetteObjectGroupFilter,
   buildGazetteSearchRecords,
   createAlgoliaClient,
+  getContentDispositionForTitle,
   objectGroupFromRef,
   parseFullTextFromPDF,
 } from "@isomer/algolia"
@@ -110,6 +113,42 @@ const getPdfBytes = async (
     throw new Error(`Empty S3 object body for key ${key}`)
   }
   return byteArr
+}
+
+const getEncodedCopySource = (bucket: string, key: string) =>
+  `${bucket}/${key.split("/").map(encodeURIComponent).join("/")}`
+
+// Rewrite the object's Content-Disposition so downloads are named after the
+// gazette title rather than the raw S3 key — the repair-tool equivalent of
+// Studio's setAssetAsPublished disposition rewrite. S3 object metadata is
+// immutable, so this requires a self-copy with MetadataDirective REPLACE,
+// which drops all existing metadata; ContentType is read back and
+// re-supplied, and object tags carry over via the default TaggingDirective
+// (COPY).
+const rewriteContentDisposition = async (
+  client: S3Client,
+  bucket: string,
+  key: string,
+  title: string,
+): Promise<void> => {
+  const contentDisposition = getContentDispositionForTitle(title, key)
+  const head = await client.send(
+    new HeadObjectCommand({ Bucket: bucket, Key: key }),
+  )
+  // Skip the (paid) self-copy when the disposition is already correct, e.g.
+  // on a re-run of the repair after an earlier attempt already rewrote it.
+  if (head.ContentDisposition === contentDisposition) return
+  await client.send(
+    new CopyObjectCommand({
+      Bucket: bucket,
+      CopySource: getEncodedCopySource(bucket, key),
+      Key: key,
+      MetadataDirective: "REPLACE",
+      ContentType: head.ContentType,
+      Metadata: head.Metadata,
+      ContentDisposition: contentDisposition,
+    }),
+  )
 }
 
 // Strip the `scheduledAt` object tag so the PDF is publicly viewable — the
@@ -317,8 +356,11 @@ export const repairGazetteSearchRecords = async (): Promise<void> => {
         const key = gazette.objectGroup
         const pdfBytes = await getPdfBytes(s3, bucket, key)
 
-        // Strip the scheduledAt tag so the PDF is publicly viewable. Always
-        // done, mirroring the cron's unconditional setAssetAsPublished call.
+        // Rewrite Content-Disposition and strip the scheduledAt tag so the
+        // PDF is publicly viewable and downloads under the gazette's title.
+        // Always done, mirroring the cron's unconditional
+        // setAssetAsPublished call.
+        await rewriteContentDisposition(s3, bucket, key, gazette.title)
         await stripScheduledAtTag(s3, bucket, key)
 
         const parsedText = await parseFullTextFromPDF(pdfBytes)

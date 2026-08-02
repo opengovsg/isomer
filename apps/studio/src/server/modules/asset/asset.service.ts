@@ -65,23 +65,6 @@ export const getContentDispositionForKey = (key: string): string => {
   return contentDisposition(getFilenameFromKey(key), { type: "inline" })
 }
 
-/**
- * Build Content-Disposition using a human-readable title as the download
- * filename, keeping the key's extension so the saved file still opens in
- * the right application.
- */
-export const getContentDispositionForTitle = (
-  title: string,
-  key: string,
-): string => {
-  const extension = getExtensionFromFilename(getFilenameFromKey(key))
-  // content-disposition runs path.basename on the filename, which would
-  // truncate a title containing "/" or "\" (e.g. "A/B" -> "B"). Replace path
-  // separators up front so the full title survives in the download filename.
-  const filename = `${title}${extension}`.replace(/[/\\]/g, "-")
-  return contentDisposition(filename, { type: "inline" })
-}
-
 // Permissions for assets share the same permissions as resources preferentially
 // because the underlying assumption is that the asset is tied to the resource,
 // otherwise it will default to the root level permissions of the site
