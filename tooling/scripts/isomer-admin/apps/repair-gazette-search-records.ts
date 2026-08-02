@@ -144,9 +144,15 @@ const rewriteContentDisposition = async (
       CopySource: getEncodedCopySource(bucket, key),
       Key: key,
       MetadataDirective: "REPLACE",
-      ContentType: head.ContentType,
-      Metadata: head.Metadata,
       ContentDisposition: contentDisposition,
+      // Only re-supply ContentType/Metadata when HeadObject actually
+      // returned them. Passing an explicit `undefined` value (rather than
+      // omitting the key) for these fields is a known aws-sdk-js-v3
+      // SignatureDoesNotMatch trigger on CopyObjectCommand.
+      ...(head.ContentType ? { ContentType: head.ContentType } : {}),
+      ...(head.Metadata && Object.keys(head.Metadata).length > 0
+        ? { Metadata: head.Metadata }
+        : {}),
     }),
   )
 }
