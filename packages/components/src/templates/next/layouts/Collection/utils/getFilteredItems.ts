@@ -1,11 +1,7 @@
 import type { ProcessedCollectionCardProps } from "~/interfaces"
 
 import type { AppliedFilter } from "../../../types/Filter"
-import {
-  FILTER_ID_CATEGORY,
-  FILTER_ID_YEAR,
-  NO_SPECIFIED_YEAR_FILTER_ID,
-} from "./constants"
+import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
 
 export const getFilteredItems = (
   items: ProcessedCollectionCardProps[],
@@ -22,20 +18,7 @@ export const getFilteredItems = (
       return false
     }
 
-    // Step 2: Remove items that do not match the applied category filters
-    const categoryFilter = appliedFilters.find(
-      (filter) => filter.id === FILTER_ID_CATEGORY,
-    )
-    if (
-      categoryFilter &&
-      !categoryFilter.items.some(
-        (filterItem) => filterItem.id === item.category.toLowerCase(),
-      )
-    ) {
-      return false
-    }
-
-    // Step 3: Remove items that do not match the applied year filters
+    // Step 2: Remove items that do not match the applied year filters
     const yearFilter = appliedFilters.find(
       (filter) => filter.id === FILTER_ID_YEAR,
     )
@@ -53,10 +36,10 @@ export const getFilteredItems = (
     }
 
     const remainingFilters = appliedFilters.filter(
-      ({ id }) => id !== FILTER_ID_CATEGORY && id !== FILTER_ID_YEAR,
+      ({ id }) => id !== FILTER_ID_YEAR,
     )
 
-    // Step 4: Compute set intersection between remaining filters and the set of items.
+    // Step 3: Compute set intersection between remaining filters and the set of items.
     // Take note that we use OR between items within the same filter and AND between filters.
     return remainingFilters
       .map(({ items: activeFilters, id }) => {
