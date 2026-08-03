@@ -158,6 +158,11 @@ const config = {
   productionBrowserSourceMaps: true,
   /** We already do typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
+  // TypeScript 7 no longer ships the compiler API Next.js used internally;
+  // this runs the local `tsc` CLI instead. Requires Next.js >=16.2.12.
+  experimental: {
+    useTypeScriptCli: true,
+  },
   transpilePackages: [
     "@isomer/algolia",
     "@isomer/logging",

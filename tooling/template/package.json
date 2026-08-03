@@ -14,7 +14,7 @@
     "start": "next start",
     "test-ci:e2e": "vitest run",
     "test:e2e": "pnpm exec turbo test-ci:e2e --filter=isomer-base-template --env-mode=loose",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@isomer/validators": "workspace:*",
@@ -35,7 +35,6 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
-    "@typescript/native-preview": "catalog:",
     "vitest": "catalog:vitest"
   }
 }
