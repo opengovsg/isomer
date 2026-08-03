@@ -31,6 +31,7 @@ export const generateImageAltText = async (imageUrl: string) => {
   try {
     const response = await generateText({
       model: chatModel,
+      allowSystemInMessages: true,
       messages: [
         {
           role: "system",
@@ -77,6 +78,7 @@ export const generatePageSummary = async (
   try {
     const response = await generateText({
       model: chatModel,
+      allowSystemInMessages: true,
       messages: [
         {
           role: "system",
