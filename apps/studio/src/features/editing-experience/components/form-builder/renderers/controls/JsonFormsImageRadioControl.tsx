@@ -43,7 +43,6 @@ interface ImageRadioOptionSchema {
 
 interface ImageRadioSchema {
   oneOf?: ImageRadioOptionSchema[]
-  anyOf?: ImageRadioOptionSchema[]
   format?: string
 }
 
@@ -97,16 +96,12 @@ const ImageRadioOption = ({
   )
 }
 
-const getImageRadioOptions = (schema: ControlProps["schema"]) => {
-  const imageRadioSchema = schema as ImageRadioSchema
-  const options = imageRadioSchema.oneOf ?? imageRadioSchema.anyOf ?? []
-
-  return options.map((option) => ({
+const getImageRadioOptions = (schema: ControlProps["schema"]) =>
+  ((schema as ImageRadioSchema).oneOf ?? []).map((option) => ({
     value: option.const,
     image: option.image,
     label: option.title ?? option.const,
   }))
-}
 
 export const jsonFormsImageRadioControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageRadioControl,
