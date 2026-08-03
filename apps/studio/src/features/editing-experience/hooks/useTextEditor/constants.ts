@@ -167,7 +167,7 @@ export const IsomerTable = Table.extend({
 
     const handleBackspace = () =>
       deleteEmptyTextblockBeforeTable(this.editor) ||
-      deleteTableWhenAllCellsSelected?.() ||
+      deleteTableWhenAllCellsSelected?.({ editor: this.editor }) ||
       false
 
     return {
