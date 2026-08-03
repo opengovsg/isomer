@@ -1,12 +1,9 @@
 import {
-  CAPTION_MAX_LENGTH,
-  clampCaptionLength,
   DEFAULT_TABLE_CAPTION,
   getDisplayTableCaption,
   isPlaceholderTableCaption,
   LEGACY_DEFAULT_TABLE_CAPTION,
   normalizeTableCaptionForEdit,
-  resolveCaptionOnBlur,
 } from "../utils"
 
 describe("isPlaceholderTableCaption", () => {
@@ -61,51 +58,5 @@ describe("getDisplayTableCaption", () => {
 
     // Assert
     expect(result).toBe("Quarterly revenue")
-  })
-})
-
-describe("clampCaptionLength", () => {
-  it("returns the value unchanged when under the limit", () => {
-    // Arrange / Act
-    const result = clampCaptionLength("short")
-
-    // Assert
-    expect(result).toBe("short")
-  })
-
-  it("truncates at CAPTION_MAX_LENGTH", () => {
-    // Arrange
-    const value = "a".repeat(CAPTION_MAX_LENGTH + 50)
-
-    // Act
-    const result = clampCaptionLength(value)
-
-    // Assert
-    expect(result).toBe("a".repeat(CAPTION_MAX_LENGTH))
-    expect(result).toHaveLength(CAPTION_MAX_LENGTH)
-  })
-})
-
-describe("resolveCaptionOnBlur", () => {
-  it("returns the trimmed draft when non-empty", () => {
-    // Arrange / Act
-    const result = resolveCaptionOnBlur("  hello  ", "baseline")
-
-    // Assert
-    expect(result).toBe("hello")
-  })
-
-  it("restores the baseline when the draft is empty or whitespace-only", () => {
-    // Arrange / Act / Assert
-    expect(resolveCaptionOnBlur("", "Kept caption")).toBe("Kept caption")
-    expect(resolveCaptionOnBlur("   ", "Kept caption")).toBe("Kept caption")
-  })
-
-  it("allows clearing when the baseline was already empty", () => {
-    // Arrange / Act
-    const result = resolveCaptionOnBlur("", "")
-
-    // Assert
-    expect(result).toBe("")
   })
 })

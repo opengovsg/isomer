@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from "react"
 import {
   FormControl,
   HStack,
@@ -16,6 +17,7 @@ import {
   ModalCloseButton,
   Textarea,
 } from "@opengovsg/design-system-react"
+import { useRef } from "react"
 import { z } from "zod"
 import {
   CAPTION_MAX_LENGTH,
@@ -28,11 +30,15 @@ const tableSettingsSchema = z.object({
     .string({
       error: "Enter a caption for this table",
     })
+    .trim()
     .min(1, { message: "Enter a caption for this table" })
     .max(CAPTION_MAX_LENGTH, {
       message: `Table caption should be shorter than ${CAPTION_MAX_LENGTH} characters.`,
     }),
 })
+
+const FOCUSABLE_SELECTOR =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
 interface TableSettingsModalProps {
   /** The table's current caption, used to seed the form. */
@@ -61,16 +67,36 @@ export const TableSettingsModal = ({
   })
 
   const caption = watch("caption")
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  // Chakra's FocusLock (trapFocus) fights TipTap's BubbleMenu (tabIndex=0 +
+  // blur/focus handlers) when the editor blurs into this modal, hanging the
+  // tab — so the built-in trap is disabled and this handler manually cycles
+  // Tab/Shift+Tab within the modal content instead.
+  const trapTabWithinContent = (event: KeyboardEvent) => {
+    if (event.key !== "Tab" || !contentRef.current) return
+
+    const focusable =
+      contentRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+    if (focusable.length === 0) return
+
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last?.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first?.focus()
+    }
+  }
 
   return (
-    // trapFocus=false: with TableBubbleMenu mounted, Chakra's FocusLock and
-    // TipTap's BubbleMenu (tabIndex=0 + blur/focus handlers) fight when the
-    // editor blurs into this modal — hanging the tab. Keep autoFocus so the
-    // textarea still receives focus; just don't run the focus trap.
     <Modal isOpen={isOpen} onClose={onClose} trapFocus={false}>
       <ModalOverlay />
 
-      <ModalContent>
+      <ModalContent ref={contentRef} onKeyDown={trapTabWithinContent}>
         <ModalHeader mr="3.5rem">Table settings</ModalHeader>
         <ModalCloseButton size="lg" />
 

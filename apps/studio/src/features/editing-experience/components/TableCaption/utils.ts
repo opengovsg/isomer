@@ -26,22 +26,3 @@ export const getDisplayTableCaption = (caption: string): string => {
   const trimmed = caption.trim()
   return trimmed === "" ? DEFAULT_TABLE_CAPTION : trimmed
 }
-
-/**
- * Clamp caption input to the configured max length.
- */
-export const clampCaptionLength = (value: string): string =>
-  value.slice(0, CAPTION_MAX_LENGTH)
-
-/**
- * Value to persist when the caption field blurs / commits.
- * Empty (after trim) captions are not persisted — restore the baseline
- * captured when focus began.
- */
-export const resolveCaptionOnBlur = (
-  draft: string,
-  baseline: string,
-): string => {
-  const trimmed = draft.trim()
-  return trimmed ? trimmed : baseline
-}

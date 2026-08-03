@@ -1,7 +1,7 @@
 import { Flex, Icon, Text, useDisclosure } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { BiPencil } from "react-icons/bi"
-import { TableSettingsModal } from "~/components/PageEditor/TableSettingsModal"
+import { TableSettingsModal } from "~/features/editing-experience/components/TableSettingsModal/TableSettingsModal"
 
 import { getDisplayTableCaption, isPlaceholderTableCaption } from "./utils"
 
