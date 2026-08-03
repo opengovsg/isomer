@@ -32,8 +32,7 @@ ENV NEXT_PUBLIC_INTERCOM_APP_ID=$NEXT_PUBLIC_INTERCOM_APP_ID
 ENV KEEP_ALIVE_TIMEOUT 70000
 
 FROM base AS builder
-RUN apk update
-RUN apk add --no-cache libc6-compat
+RUN apk update && apk add --no-cache libc6-compat
 
 # Set working directory
 WORKDIR /app
@@ -51,8 +50,7 @@ RUN turbo prune isomer-studio --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
-RUN apk update
-RUN apk add --no-cache libc6-compat
+RUN apk update && apk add --no-cache libc6-compat
 WORKDIR /app
 
 RUN corepack enable && corepack install -g pnpm@11.5.1
