@@ -2,7 +2,8 @@
 import type { Decorator, Preview } from "@storybook/react-vite"
 import { withThemeByDataAttribute } from "@storybook/addon-themes"
 import mockdate from "mockdate"
-import { initialize, mswLoader } from "msw-storybook-addon"
+import { mswLoader } from "msw-storybook-addon/csf3"
+import { setupWorker } from "msw/browser"
 import { MINIMAL_VIEWPORTS } from "storybook/viewport"
 import "bootstrap-icons/font/bootstrap-icons.css"
 
@@ -78,13 +79,14 @@ const CUSTOM_GSIB_VIEWPORTS = {
   },
 }
 
-// Initialize MSW
-initialize({
-  onUnhandledRequest: "bypass",
-})
-
 const preview: Preview = {
-  loaders: [mswLoader],
+  loaders: [
+    mswLoader(async () => {
+      const worker = setupWorker()
+      await worker.start({ onUnhandledRequest: "bypass" })
+      return worker
+    }),
+  ],
 
   parameters: {
     viewport: {

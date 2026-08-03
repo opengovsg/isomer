@@ -18,7 +18,8 @@ import { httpLink } from "@trpc/client"
 import { createTRPCReact } from "@trpc/react-query"
 import { merge } from "lodash-es"
 import mockdate from "mockdate"
-import { initialize, mswLoader } from "msw-storybook-addon"
+import { mswLoader } from "msw-storybook-addon/csf3"
+import { setupWorker } from "msw/browser"
 import { useCallback, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import superjson from "superjson"
@@ -32,11 +33,6 @@ import { createMockGrowthBook } from "~/stories/utils/growthbook"
 import { theme } from "~/theme"
 
 import { viewport, withChromaticModes } from "@isomer/storybook-config"
-
-// Initialize MSW
-initialize({
-  onUnhandledRequest: "bypass",
-})
 
 const trpc = createTRPCReact<AppRouter>()
 
@@ -167,7 +163,13 @@ const decorators: Decorator[] = [
 ]
 
 const preview: Preview = {
-  loaders: [mswLoader],
+  loaders: [
+    mswLoader(async () => {
+      const worker = setupWorker()
+      await worker.start({ onUnhandledRequest: "bypass" })
+      return worker
+    }),
+  ],
   decorators,
   parameters: {
     // More on how to position stories at: https://storybook.js.org/docs/react/configure/story-layout
