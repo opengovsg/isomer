@@ -89,7 +89,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
             minW={minWidth}
             maxW={maxWidth}
             // border={0}
-            placeholder={`Search pages, collections, or folders by name. e.g. "Speech by Minister"`}
+            placeholder={`Search pages, collections, or folders by name or URL. e.g. "Speech by Minister"`}
           />
         </ModalHeader>
         {renderModalBody()}
@@ -107,7 +107,7 @@ export const SearchModal = ({ siteId, isOpen, onClose }: SearchModalProps) => {
         >
           <Text textStyle="caption-2" textColor="base.content.medium">
             {matchedResources.length === 0
-              ? "Tip: Type in the full title to get the most accurate search results."
+              ? "Tip: Type in the full title or URL to get the most accurate search results."
               : "Scroll to see more results. Too many results? Try typing something longer."}
           </Text>
           <CommandKey boxShadow="sm" />

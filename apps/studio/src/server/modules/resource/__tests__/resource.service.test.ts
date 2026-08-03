@@ -1699,6 +1699,15 @@ describe("resource.service", () => {
   })
 
   describe("getSearchResults", () => {
+    const searchPages = (siteId: number, query: string) =>
+      getSearchResults({
+        siteId,
+        resourceTypes: [ResourceType.Page],
+        query,
+        limit: 10,
+        offset: 0,
+      })
+
     it("returns an empty array when given no resourceTypes", async () => {
       //Arrange
       const { site } = await setupPageResource({
@@ -1717,6 +1726,85 @@ describe("resource.service", () => {
       //Should return empty array, with totalCount 0
       expect(result.resources).toEqual([])
       expect(result.totalCount).toEqual(0)
+    })
+
+    it("continues to match resources by title", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        title: "Speech by Minister",
+        permalink: "unrelated-path",
+      })
+
+      const result = await searchPages(site.id, "minister")
+
+      expect(result.resources.map(({ id }) => id)).toEqual([page.id])
+    })
+
+    it("matches an exact permalink", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        title: "Annual publications",
+        permalink: "annual-reports",
+      })
+
+      const result = await searchPages(site.id, "annual-reports")
+
+      expect(result.resources.map(({ id }) => id)).toEqual([page.id])
+    })
+
+    it("matches a partial full path", async () => {
+      const { site, folder } = await setupFolder({
+        title: "Department information",
+        permalink: "departments",
+      })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        title: "Get in touch",
+        permalink: "contact-us",
+      })
+
+      const result = await searchPages(site.id, "departments/cont")
+
+      expect(result.resources.map(({ id }) => id)).toEqual([page.id])
+    })
+
+    it("matches paths case-insensitively", async () => {
+      const { site, folder } = await setupFolder({
+        title: "Department information",
+        permalink: "departments",
+      })
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        title: "Get in touch",
+        permalink: "contact-us",
+      })
+
+      const result = await searchPages(site.id, "/DEPARTMENTS/CONTACT-US")
+
+      expect(result.resources.map(({ id }) => id)).toEqual([page.id])
+    })
+
+    it("excludes resources with unrelated paths", async () => {
+      const { site, folder } = await setupFolder({
+        title: "Department information",
+        permalink: "departments",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.Page,
+        title: "Get in touch",
+        permalink: "contact-us",
+      })
+
+      const result = await searchPages(site.id, "services/payments")
+
+      expect(result.resources).toEqual([])
+      expect(result.totalCount).toBe(0)
     })
   })
 
