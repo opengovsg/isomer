@@ -170,6 +170,72 @@ describe("permissions.service", () => {
       expect(canMoveFrom).toBe(expected)
       expect(canMoveTo).toBe(false)
     })
+
+    it("should allow editors to unpublish non-root resources", () => {
+      // Arrange
+      const page = { parentId: "2" }
+      const expected = true
+      const perms = buildPermissions(RoleType.Editor)
+
+      // Act
+      const canUnpublish = perms.can("unpublish", page)
+
+      // Assert
+      expect(canUnpublish).toBe(expected)
+    })
+
+    it("should disallow editors from unpublishing root resources", () => {
+      // Arrange
+      const rootPage = { parentId: null }
+      const perms = buildPermissions(RoleType.Editor)
+
+      // Act
+      const canUnpublish = perms.can("unpublish", rootPage)
+
+      // Assert
+      expect(canUnpublish).toBe(false)
+    })
+
+    it("should allow publishers to unpublish non-root resources", () => {
+      // Arrange
+      const page = { parentId: "2" }
+      const expected = true
+      const perms = buildPermissions(RoleType.Publisher)
+
+      // Act
+      const canUnpublish = perms.can("unpublish", page)
+
+      // Assert
+      expect(canUnpublish).toBe(expected)
+    })
+
+    it("should disallow publishers from unpublishing root resources", () => {
+      // Arrange
+      const rootPage = { parentId: null }
+      const perms = buildPermissions(RoleType.Publisher)
+
+      // Act
+      const canUnpublish = perms.can("unpublish", rootPage)
+
+      // Assert
+      expect(canUnpublish).toBe(false)
+    })
+
+    it("should allow admins to unpublish any resource, including root resources", () => {
+      // Arrange
+      const page = { parentId: "2" }
+      const rootPage = { parentId: null }
+      const expected = true
+      const perms = buildPermissions(RoleType.Admin)
+
+      // Act
+      const canUnpublishPage = perms.can("unpublish", page)
+      const canUnpublishRootPage = perms.can("unpublish", rootPage)
+
+      // Assert
+      expect(canUnpublishPage).toBe(expected)
+      expect(canUnpublishRootPage).toBe(expected)
+    })
   })
 
   describe("buildUserManagementPermissions", () => {

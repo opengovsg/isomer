@@ -14,6 +14,14 @@ const giveBasePermissions = (
   })
   builder.can("move", "Resource", { parentId: { $ne: null } })
 
+  // NOTE: this "unpublish" action is deliberately a base permission, not
+  // Publisher-gated: Editors must be able to complete the whole unlock ->
+  // edit -> re-archive cycle without a Publisher. It gates both the heavy
+  // Unpublish mutation and the light ArchiveDraft mutation (archiving an
+  // unlocked Draft page back to Archived) — both reuse this same rule
+  // rather than needing their own.
+  builder.can("unpublish", "Resource", { parentId: { $ne: null } })
+
   // NOTE: For root resources, they can only update and read
   builder.can("update", "Resource", { parentId: { $eq: null } })
   builder.can("read", "Resource", { parentId: { $eq: null } })
