@@ -4,17 +4,13 @@ import { env } from "~/env.mjs"
 const posthogProjectToken = env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
 const posthogHost = env.NEXT_PUBLIC_POSTHOG_HOST
 
-if (!posthogProjectToken || !posthogHost) {
-  if (env.NEXT_PUBLIC_APP_ENV !== "production") {
-    throw new Error(
-      !posthogProjectToken
-        ? "NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN is configured"
-        : "NEXT_PUBLIC_POSTHOG_HOST variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once NEXT_PUBLIC_POSTHOG_HOST is configured",
-    )
-  }
-} else {
+// env.mjs enforces that both vars are set in staging/production, so a missing
+// value here just means analytics is unconfigured for this environment (dev,
+// test, preview, ...) — treat it as a no-op rather than blocking app boot.
+if (posthogProjectToken && posthogHost) {
   posthog.init(posthogProjectToken, {
     api_host: posthogHost,
+    asset_host: env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST,
     defaults: "2026-01-30",
     capture_exceptions: true,
     ...(env.NEXT_PUBLIC_APP_URL

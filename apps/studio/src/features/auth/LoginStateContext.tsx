@@ -57,6 +57,15 @@ const PostHogIdentity = () => {
   const identifiedUserId = useRef<string | undefined>(undefined)
 
   useEffect(() => {
+    // Logout resets PostHog's identity independently (see useMe's `logout`),
+    // so clear our own guard too — otherwise a same-user relogin sees
+    // `identifiedUserId.current` still set and skips re-identifying,
+    // leaving subsequent events anonymous.
+    if (!hasLoginStateFlag) {
+      identifiedUserId.current = undefined
+      return
+    }
+
     if (!user || identifiedUserId.current === user.id) return
 
     void import("posthog-js").then(({ default: posthog }) => {
@@ -70,7 +79,7 @@ const PostHogIdentity = () => {
       })
       identifiedUserId.current = user.id
     })
-  }, [user])
+  }, [user, hasLoginStateFlag])
 
   return null
 }
