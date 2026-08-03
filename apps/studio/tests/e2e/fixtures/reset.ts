@@ -1,8 +1,9 @@
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import { sql } from "kysely"
 import { db, jsonb } from "~/server/modules/database"
+import { ResourceType } from "~prisma/generated/generatedEnums"
 
-export { ensureUserOnboarded } from "./user"
+export { ensureUserOnboarded } from "./user/mutations"
 
 const DEFAULT_AGENCY_SITE_NAME = "Isomer"
 
@@ -193,3 +194,37 @@ export const resetSiteLogoSettings = async (siteId: number) => {
 /** Remove all redirects for a site (used between mutating redirect tests). */
 export const resetSiteRedirects = (siteId: number) =>
   db.deleteFrom("Redirect").where("siteId", "=", siteId).execute()
+
+/** Delete Resource rows whose title starts with the given prefix. */
+export const deleteResourcesByTitlePrefix = (
+  siteId: number,
+  titlePrefix: string,
+) =>
+  db
+    .deleteFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "like", `${titlePrefix}%`)
+    .execute()
+
+/** Delete Collection resources (and their children) whose title starts with the given prefix. */
+export const deleteCollectionsByTitlePrefix = async (
+  siteId: number,
+  titlePrefix: string,
+) => {
+  const collections = await db
+    .selectFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "like", `${titlePrefix}%`)
+    .where("type", "=", ResourceType.Collection)
+    .select("id")
+    .execute()
+
+  for (const { id } of collections) {
+    await db.deleteFrom("Resource").where("parentId", "=", id).execute()
+    await db.deleteFrom("Resource").where("id", "=", id).execute()
+  }
+}
+
+/** Delete a single Resource row by id. */
+export const deleteResourceById = (resourceId: string) =>
+  db.deleteFrom("Resource").where("id", "=", resourceId).execute()

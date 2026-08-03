@@ -1,14 +1,15 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
 import crypto from "crypto"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { DashboardPO, PageSettingsPO } from "~e2e/fixtures/po"
+import {
+  expectResourcePermalink,
+  expectResourceTitle,
+  seedRootPage,
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded, getE2EUserId } from "~e2e/fixtures/user"
 import { ResourceState, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { seedRootPage } from "../fixtures/page-seed"
-import { PageSettingsPO } from "../fixtures/page-settings.po"
-import { getResource } from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded, getE2EUserId } from "../fixtures/user"
 
 let siteId: number
 
@@ -46,9 +47,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.saveDraft()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.title)
-      .toBe(newTitle)
+    await expectResourceTitle(seededPage.id).toBe(newTitle)
   })
 
   test("admin does not see redirect option when changing permalink on a draft page", async ({
@@ -73,9 +72,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.closeWithoutSaving()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.permalink)
-      .toBe(seededPage.permalink)
+    await expectResourcePermalink(seededPage.id).toBe(seededPage.permalink)
   })
 
   test("admin sees redirect option when changing permalink on a published page", async ({
@@ -103,9 +100,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await settings.saveAndPublish()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.permalink)
-      .toBe(newPermalink)
+    await expectResourcePermalink(seededPage.id).toBe(newPermalink)
   })
 })
 
@@ -137,8 +132,6 @@ test.describe("editor", { tag: roleTag("editor") }, () => {
     await settings.saveDraft()
 
     // Assert
-    await expect
-      .poll(async () => (await getResource(seededPage.id))?.title)
-      .toBe(newTitle)
+    await expectResourceTitle(seededPage.id).toBe(newTitle)
   })
 })

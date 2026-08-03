@@ -13,17 +13,6 @@ export type SettingsSection =
 export class SitePO {
   constructor(private readonly page: Page) {}
 
-  async openSite(siteName: string) {
-    await this.page.goto("/")
-    await this.page.getByRole("link", { name: siteName }).click()
-    await this.page.waitForURL(/\/sites\/\d+$/)
-  }
-
-  async openSettings() {
-    await this.page.getByRole("link", { name: "Settings" }).click()
-    await this.page.waitForURL(/\/sites\/\d+\/settings\//)
-  }
-
   async gotoSettingsSection(siteId: number, section: SettingsSection) {
     await this.page.goto(`/sites/${siteId}/settings/${section}`)
     await this.page.waitForURL(new RegExp(`/settings/${section}$`))
@@ -35,9 +24,7 @@ export class SitePO {
   }
 
   async openSettingsSection(section: SettingsSection) {
-    // Settings landing redirects to /agency. To reach other sections we
-    // navigate via the settings side-nav (label === section name, title-cased).
-    // Labels sourced from apps/studio/src/features/settings/SettingsSidenav/SettingsSidenav.tsx
+    // Side-nav labels from SettingsSidenav.tsx. /settings redirects to /agency.
     const label = SETTINGS_SECTION_LABELS[section]
     await this.page.getByRole("link", { name: label }).click()
 
@@ -45,10 +32,7 @@ export class SitePO {
     const confirmLeaveButton = this.page.getByRole("button", {
       name: "Yes, leave this page",
     })
-    // A settings page can be considered "dirty" (form state briefly out of
-    // sync with the server) right after mount, which triggers the same
-    // "leave without saving?" confirmation a real user would see. Confirm it
-    // if it shows up instead of hanging on a route change that never fires.
+    // Dirty form on mount can block nav. Click through if the prompt appears.
     const dismissIfShown = confirmLeaveButton
       .waitFor({ state: "visible" })
       .then(() => confirmLeaveButton.click())
@@ -58,12 +42,7 @@ export class SitePO {
     await this.page.waitForURL(urlPattern)
   }
 
-  /**
-   * The SettingsHeader-rendered Publish button. Settings forms use "Publish"
-   * (see src/features/settings/SettingsHeader.tsx). Non-settings surfaces
-   * (page editor, resource modals) use different verbs — add a separate
-   * helper for those rather than overloading this one.
-   */
+  // Settings Publish only. Page editor and modals use different button labels.
   publishButton() {
     return this.page.getByRole("button", { name: "Publish" })
   }
@@ -81,7 +60,7 @@ export class SitePO {
   }
 
   notificationBannerToggle() {
-    // Chakra v2's Switch exposes an implicit ARIA `checkbox` role, not `switch`.
+    // Chakra Switch exposes role=checkbox, not switch.
     return this.page.getByRole("checkbox")
   }
 
@@ -89,17 +68,11 @@ export class SitePO {
     return this.page.getByLabel("Notification title")
   }
 
-  /** Logo upload section container on the logos and favicon settings page. */
   logoUploadGroup() {
     return this.page.getByRole("group").filter({ hasText: /^Logo/ })
   }
 
-  /**
-   * Logo file input on the logos and favicon settings page. Visually hidden
-   * by design (Attachment renders a styled dropzone over it) — usable with
-   * setInputFiles(), but never assert toBeVisible() on it directly. Use
-   * logoUploadGroup() for visibility checks instead.
-   */
+  // Hidden under the dropzone. setInputFiles works; assert logoUploadGroup instead.
   logoUploadInput() {
     return this.logoUploadGroup().getByTestId("file-upload")
   }
@@ -161,8 +134,7 @@ export class SitePO {
   }
 
   async enableNotificationBanner() {
-    // The switch input is visually hidden (pointer-events: none) inside its
-    // wrapping <label>; click the label itself, as a real user would.
+    // Input has pointer-events: none. Click the wrapping label.
     await this.notificationBannerToggle().locator("xpath=..").click()
   }
 
@@ -177,14 +149,14 @@ export class SitePO {
   async editFooterLinkLabel(linkButtonName: string, newLabel: string) {
     await this.footerLinkButton(linkButtonName).click()
     await this.page.getByLabel("Link label").fill(newLabel)
-    // The edit panel overlays the header Publish button until dismissed.
+    // Edit panel covers Publish until dismissed.
     await this.page.getByRole("button", { name: "Back to footer" }).click()
   }
 
   async editNavbarItemLabel(itemName: string, newLabel: string) {
     await this.navbarItemText(itemName).click()
     await this.page.getByLabel("Menu item label").fill(newLabel)
-    // The edit panel overlays the header Publish button until dismissed.
+    // Edit panel covers Publish until dismissed.
     await this.page
       .getByRole("button", { name: "Back to navigation bar" })
       .click()
@@ -204,9 +176,7 @@ export class SitePO {
   async cancelDeleteRedirect(source: string) {
     await this.deleteRedirectButton(source).click()
     await this.page.getByRole("button", { name: "No, keep redirect" }).click()
-    // Wait for the confirmation dialog to fully close — otherwise its body
-    // text (which repeats the redirect path) still matches locators scoped
-    // to the whole page, causing strict-mode violations in callers.
+    // Wait for dialog teardown or redirect path text collides in strict mode.
     await this.page.getByLabel("Delete redirect?").waitFor({ state: "hidden" })
   }
 
@@ -241,16 +211,11 @@ export class SitePO {
     await this.notificationTitleField().waitFor({ state: "visible" })
   }
 
-  /** Click the settings Publish button. */
   async clickPublish() {
     await this.publishButton().click()
   }
 
-  /**
-   * The toast that appears after a successful Publish on a settings page.
-   * The text "Changes published" is settings-specific; do not reuse for
-   * other success paths without verifying their toast copy.
-   */
+  // Toast copy is "Changes published". Other surfaces use different strings.
   async expectChangesPublishedToast() {
     await this.page
       .getByText("Changes published")
@@ -259,15 +224,14 @@ export class SitePO {
   }
 }
 
-// Labels come from SIDENAV_ITEMS in:
-// apps/studio/src/features/settings/SettingsSidenav/SettingsSidenav.tsx
+// Labels from SettingsSidenav.tsx SIDENAV_ITEMS
 const SETTINGS_SECTION_LABELS: Record<SettingsSection, string> = {
   agency: "Name and agency",
   colours: "Colours",
   footer: "Footer",
   integrations: "Integrations",
-  logo: "Logos and favicon", // spec said "Logo" — actual label is "Logos and favicon"
-  navbar: "Navigation bar", // spec said "Navbar" — actual label is "Navigation bar"
-  notification: "Notification banner", // spec said "Notification" — actual label is "Notification banner"
+  logo: "Logos and favicon", // not "Logo"
+  navbar: "Navigation bar", // not "Navbar"
+  notification: "Notification banner", // not "Notification"
   redirects: "Redirects",
 }

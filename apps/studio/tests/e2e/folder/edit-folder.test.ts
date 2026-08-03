@@ -1,13 +1,11 @@
 import { test } from "@playwright/test"
 import crypto from "crypto"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { DashboardPO, FolderSettingsPO } from "~e2e/fixtures/po"
+import { expectResourceTitle, seedFolder } from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { FolderSettingsPO } from "../fixtures/folder-settings.po"
-import { expectResourceTitle, seedFolder } from "../fixtures/page-seed"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 let siteId: number
 

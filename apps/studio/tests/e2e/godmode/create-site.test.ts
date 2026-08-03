@@ -1,10 +1,9 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { GodmodePO } from "../fixtures/godmode.po"
-import { expectSiteName } from "../fixtures/site-expect"
-import { ensureUserOnboarded } from "../fixtures/user"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { GodmodePO } from "~e2e/fixtures/po"
+import { expectSiteName } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 
 test.describe("core", { tag: roleTag("core") }, () => {
   test.beforeEach(async () => {

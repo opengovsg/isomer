@@ -1,4 +1,5 @@
-import { expect, type Page } from "@playwright/test"
+import { expect, type Page, type Response } from "@playwright/test"
+import { e2eCodeBuildIdForSite } from "~e2e/fixtures/site"
 
 export class GodmodePO {
   constructor(private readonly page: Page) {}
@@ -60,17 +61,33 @@ export class GodmodePO {
     return Number(match[1])
   }
 
-  async gotoPublishing() {
+  async gotoPublishing(siteId: number) {
+    const codeBuildId = e2eCodeBuildIdForSite(siteId)
+    const sitesLoaded = this.page.waitForResponse((response) =>
+      responseIncludesPublishableSite(response, siteId, codeBuildId),
+    )
     await this.page.goto("/godmode/publishing")
     await this.page.waitForURL(/\/godmode\/publishing$/)
     await expect(
       this.page.getByRole("heading", { name: "Publishing" }),
     ).toBeVisible()
+    await sitesLoaded
+    await this.expectPublishButtonVisibleForSite(siteId)
+  }
+
+  async expectPublishButtonVisibleForSite(siteId: number) {
+    await expect(this.publishButtonForSite(siteId)).toBeVisible()
   }
 
   async clickPublishForSite(siteId: number) {
-    const row = this.page.getByRole("row").filter({ hasText: String(siteId) })
-    await row.getByRole("button", { name: "Publish" }).click()
+    await this.publishButtonForSite(siteId).click()
+  }
+
+  private publishButtonForSite(siteId: number) {
+    return this.page
+      .getByRole("row")
+      .filter({ hasText: e2eCodeBuildIdForSite(siteId) })
+      .getByRole("button", { name: "Publish" })
   }
 
   async expectSitePublishedToast() {
@@ -106,3 +123,30 @@ export class GodmodePO {
 
 const escapeRegExp = (value: string) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+interface ListAllSitesRow {
+  id: number
+  codeBuildId: string | null
+}
+
+const responseIncludesPublishableSite = async (
+  response: Response,
+  siteId: number,
+  codeBuildId: string,
+) => {
+  if (!response.url().includes("site.listAllSites") || !response.ok()) {
+    return false
+  }
+
+  const body = (await response.json()) as {
+    result?: { data?: { json?: ListAllSitesRow[] } }
+  }
+  const sites = body.result?.data?.json
+  if (!Array.isArray(sites)) {
+    return false
+  }
+
+  return sites.some(
+    (site) => site.id === siteId && site.codeBuildId === codeBuildId,
+  )
+}

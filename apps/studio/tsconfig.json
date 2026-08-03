@@ -17,6 +17,7 @@
     "incremental": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
+      "~e2e/*": ["./tests/e2e/*"],
       "~/*": ["./src/*"],
       "~prisma/generated/prisma/*": [
         "../../packages/db/prisma/generated/prisma/*"

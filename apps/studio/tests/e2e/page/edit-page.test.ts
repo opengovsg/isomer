@@ -1,16 +1,15 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { openSeededPageEditor } from "../fixtures/helpers"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { openSeededPageEditor } from "~e2e/fixtures/helpers"
 import {
+  getResourceDraftBlobContent,
   SEEDED_PROSE_BLOCK_LABEL,
   seedFolderWithPage,
-} from "../fixtures/page-seed"
-import { getResourceDraftBlobContent } from "../fixtures/resource.db"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 

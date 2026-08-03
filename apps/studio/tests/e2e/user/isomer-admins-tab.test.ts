@@ -1,14 +1,13 @@
 import { test } from "@playwright/test"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { provisionE2ESite } from "../fixtures/site"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { UsersPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
 import {
   deleteUsersByEmail,
   ensureUserOnboarded,
   seedIsomerAdminOnSite,
-} from "../fixtures/user"
-import { UsersPO } from "../fixtures/users.po"
+} from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 let isomerAdminEmail: string

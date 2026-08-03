@@ -1,5 +1,4 @@
 import type { UnwrapTagged } from "type-fest"
-import { expect } from "@playwright/test"
 import crypto from "crypto"
 import {
   setupCollection,
@@ -12,10 +11,10 @@ import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import { db, jsonb } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
-/** Prose preview label from the default integration seed blob. */
+/** Prose preview label in the default integration seed blob. */
 export const SEEDED_PROSE_BLOCK_LABEL = "Test block"
 
-/** Matches `createCollectionIndexJson` in `collection.service.ts`. */
+/** Same shape as createCollectionIndexJson in collection.service.ts. */
 const collectionIndexBlobContent = (
   title: string,
 ): UnwrapTagged<PrismaJson.BlobJsonContent> => ({
@@ -30,12 +29,7 @@ const collectionIndexBlobContent = (
   version: "0.1.0",
 })
 
-/**
- * `setupCollection` only inserts the bare Collection resource. In the real
- * `collection.create` flow, an `IndexPage` child is also created and is
- * required by `getPublishedIndexBlobByParentId` whenever a collection item
- * (page/link) is rendered — without it, the editor throws NOT_FOUND.
- */
+/** setupCollection skips IndexPage. Collection items 404 without it. */
 const seedCollectionIndexPage = async ({
   siteId,
   collectionId,
@@ -312,43 +306,3 @@ export const seedCollectionLink = async ({
   })
   return { collectionLink }
 }
-
-export const expectResourceAbsent = (resourceId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", resourceId)
-      .select("id")
-      .executeTakeFirst()
-    return row?.id ?? null
-  })
-
-export const expectResourcePresent = (resourceId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", resourceId)
-      .select("id")
-      .executeTakeFirst()
-    return row?.id ?? null
-  })
-
-export const expectResourceParentId = (resourceId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", resourceId)
-      .select("parentId")
-      .executeTakeFirst()
-    return row?.parentId ?? null
-  })
-
-export const expectResourceTitle = (resourceId: string) =>
-  expect.poll(async () => {
-    const row = await db
-      .selectFrom("Resource")
-      .where("id", "=", resourceId)
-      .select("title")
-      .executeTakeFirst()
-    return row?.title ?? null
-  })

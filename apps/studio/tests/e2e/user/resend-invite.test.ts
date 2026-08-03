@@ -1,17 +1,16 @@
 import { test } from "@playwright/test"
-import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { inviteCollaborator } from "../fixtures/helpers"
-import { provisionE2ESite } from "../fixtures/site"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { inviteCollaborator } from "~e2e/fixtures/helpers"
+import { UsersPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
 import {
   deleteUsersByEmail,
   ensureUserOnboarded,
   expectUserRoleOnSite,
   seedLoggedInEditorOnSite,
   uniqueInviteeEmail,
-} from "../fixtures/user"
-import { UsersPO } from "../fixtures/users.po"
+} from "~e2e/fixtures/user"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 let siteId: number
 let inviteeEmail: string | undefined
@@ -49,6 +48,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Assert
     await users.expectResendInviteToast(inviteeEmail)
+    await expectUserRoleOnSite(siteId, inviteeEmail).toBe("Editor")
   })
 
   test("admin does not see Resend invite for a user who has logged in", async ({

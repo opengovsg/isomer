@@ -1,8 +1,9 @@
-import { expect, test } from "@playwright/test"
+import { test } from "@playwright/test"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { SitesListPO } from "~e2e/fixtures/po"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { RoleType } from "~prisma/generated/generatedEnums"
-
-import { roleTag } from "../fixtures/auth"
-import { provisionE2ESite } from "../fixtures/site"
 
 let siteName: string
 
@@ -12,25 +13,43 @@ test.beforeAll(async () => {
 })
 
 test.describe("editor", { tag: roleTag("editor") }, () => {
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.editor)
+  })
+
   test("editor sees their provisioned site on the dashboard", async ({
     page,
   }) => {
-    await page.goto("/")
+    const sitesList = new SitesListPO(page)
 
-    await expect(
-      page.getByRole("heading", { name: "Your sites" }),
-    ).toBeVisible()
-    await expect(page.getByRole("link", { name: siteName })).toBeVisible()
+    // Arrange
+    // (site provisioned in beforeAll)
+
+    // Act
+    await sitesList.goto()
+
+    // Assert
+    await sitesList.expectHeadingVisible()
+    await sitesList.expectSiteLinkVisible(siteName)
   })
 })
 
 test.describe("nomember", { tag: roleTag("nomember") }, () => {
-  test("user with no permissions sees empty state", async ({ page }) => {
-    await page.goto("/")
+  test.beforeEach(async () => {
+    await ensureUserOnboarded(TEST_EMAILS.nomember)
+  })
 
-    await expect(
-      page.getByText("You don't have access to any sites yet."),
-    ).toBeVisible()
-    await expect(page.getByRole("link", { name: siteName })).not.toBeVisible()
+  test("user with no permissions sees empty state", async ({ page }) => {
+    const sitesList = new SitesListPO(page)
+
+    // Arrange
+    // (user has no site access)
+
+    // Act
+    await sitesList.goto()
+
+    // Assert
+    await sitesList.expectEmptyState()
+    await sitesList.expectSiteLinkHidden(siteName)
   })
 })

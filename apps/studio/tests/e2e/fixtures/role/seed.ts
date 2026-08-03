@@ -1,19 +1,11 @@
 import { createId } from "@paralleldrive/cuid2"
 import { setUpWhitelist, setupSite } from "tests/integration/helpers/seed"
 import { db } from "~/server/modules/database"
+import { TEST_EMAILS } from "~e2e/fixtures/auth"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
-import { TEST_EMAILS } from "./auth"
-
-/**
- * Idempotent: inserts user if missing, then ensures a ResourcePermission
- * with `role` on `siteId` exists (re-activating if soft-deleted).
- *
- * The unique constraint on ResourcePermission is
- * (userId, siteId, resourceId, deletedAt) NULLS NOT DISTINCT.
- * We conflict on that constraint so that a second run with deletedAt=NULL
- * is a no-op (we just update the role to the desired value).
- */
+/** Idempotent user + sitewide permission. ON CONFLICT on
+ *  (userId, siteId, resourceId, deletedAt). */
 const ensureUserWithRole = async (
   email: string,
   role: (typeof RoleType)[keyof typeof RoleType] | null,
@@ -36,9 +28,7 @@ const ensureUserWithRole = async (
     .executeTakeFirstOrThrow()
 
   if (role === null) {
-    // The e2e suite relies on this user being permissionless. A prior run or
-    // manual debugging may have granted them a ResourcePermission, so remove
-    // any that exist to guarantee a clean, access-free state.
+    // nomember must stay permissionless. Strip stray grants from prior runs.
     await db
       .deleteFrom("ResourcePermission")
       .where("userId", "=", user.id)
@@ -55,9 +45,7 @@ const ensureUserWithRole = async (
       resourceId: null,
     })
     .onConflict((oc) =>
-      // Unique constraint: (userId, siteId, resourceId, deletedAt) NULLS NOT DISTINCT
-      // When inserting with deletedAt=NULL, a conflict means an active row already
-      // exists. We update the role to ensure it matches what we expect.
+      // Active row exists; update role to match.
       oc
         .columns(["userId", "siteId", "resourceId", "deletedAt"])
         .doUpdateSet({ role }),
@@ -84,12 +72,7 @@ const ensureGodModeAdmin = async (
 }
 
 export const seedRolesForE2E = async () => {
-  // protectedProcedure's authMiddleware requires the caller's email to be
-  // whitelisted (see whitelist.service.ts's isEmailWhitelisted), so every
-  // TEST_EMAILS user (all @open.gov.sg) needs this domain whitelisted for
-  // any tRPC call to succeed across the whole e2e suite. prisma/seed.ts
-  // used to provide this row via CI's now-removed "Seed testing db" step;
-  // it's self-provisioned here instead.
+  // tRPC auth checks email whitelist. Seed @open.gov.sg for all TEST_EMAILS users.
   await setUpWhitelist({ email: "@open.gov.sg" })
 
   const { site } = await setupSite()

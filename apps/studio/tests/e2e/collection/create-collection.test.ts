@@ -1,13 +1,16 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
-import { db } from "~/server/modules/database"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { createCollectionViaWizard } from "~e2e/fixtures/helpers"
+import { DashboardPO } from "~e2e/fixtures/po"
+import { deleteCollectionsByTitlePrefix } from "~e2e/fixtures/reset"
+import {
+  getResourceByTitle,
+  getResourceByTitleAndType,
+} from "~e2e/fixtures/resource"
+import { provisionE2ESite } from "~e2e/fixtures/site"
+import { ensureUserOnboarded } from "~e2e/fixtures/user"
 import { ResourceType, RoleType } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { DashboardPO } from "../fixtures/dashboard.po"
-import { createCollectionViaWizard } from "../fixtures/helpers"
-import { provisionE2ESite } from "../fixtures/site"
-import { ensureUserOnboarded } from "../fixtures/user"
 
 const UNIQUE_TITLE = () =>
   `E2E Test Collection ${crypto.randomUUID().slice(0, 8)}`
@@ -25,18 +28,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
   })
 
   test.afterEach(async () => {
-    const collections = await db
-      .selectFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "like", "E2E Test Collection %")
-      .where("type", "=", ResourceType.Collection)
-      .select("id")
-      .execute()
-
-    for (const { id } of collections) {
-      await db.deleteFrom("Resource").where("parentId", "=", id).execute()
-      await db.deleteFrom("Resource").where("id", "=", id).execute()
-    }
+    await deleteCollectionsByTitlePrefix(siteId, "E2E Test Collection ")
   })
 
   test("admin can create a collection via the Create new wizard", async ({
@@ -50,13 +42,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Assert
     // NOTE: creating a collection also creates an IndexPage child with the
     // same title, so we must filter by type to find the collection itself.
-    const created = await db
-      .selectFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "=", title)
-      .where("type", "=", ResourceType.Collection)
-      .select(["id", "type"])
-      .executeTakeFirst()
+    const created = await getResourceByTitleAndType({
+      siteId,
+      title,
+      type: ResourceType.Collection,
+    })
     expect(created).toBeTruthy()
     expect(created?.type).toBe("Collection")
   })
@@ -76,12 +66,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await dashboard.cancelCreateCollectionModal()
 
     // Assert
-    const created = await db
-      .selectFrom("Resource")
-      .where("siteId", "=", siteId)
-      .where("title", "=", title)
-      .select("id")
-      .executeTakeFirst()
+    const created = await getResourceByTitle({ siteId, title })
     expect(created).toBeUndefined()
   })
 })

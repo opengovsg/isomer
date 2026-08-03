@@ -6,13 +6,12 @@ import {
   setupSite,
 } from "tests/integration/helpers/seed"
 import { db } from "~/server/modules/database"
+import { TEST_EMAILS } from "~e2e/fixtures/auth"
 import {
   ResourceState,
   ResourceType,
   RoleType,
 } from "~prisma/generated/generatedEnums"
-
-import { TEST_EMAILS } from "./auth"
 
 export interface ProvisionedSite {
   siteId: number
@@ -52,11 +51,7 @@ const ROOT_PAGE_ROLE_PRIORITY: Role[] = [
   RoleType.Publisher,
 ]
 
-// Each requested role grants its own fixed TEST_EMAILS user (admin/editor/
-// publisher are separate accounts) that role on this site — never multiple
-// roles to one user. This lets a single test file switch `storageState`
-// between those canonical users to exercise several permission levels
-// against the same freshly-provisioned site.
+// One TEST_EMAILS user per role on this site. Tests swap storageState on the same site.
 export const provisionE2ESite = async (opts: {
   roles: [Role, ...Role[]]
 }): Promise<ProvisionedSite> => {
@@ -95,7 +90,10 @@ export const provisionE2ESite = async (opts: {
   return { siteId: site.id, siteName: site.name }
 }
 
-/** Set CodeBuild project id so the godmode publishing table shows a Publish action. */
+export const e2eCodeBuildIdForSite = (siteId: number) =>
+  `e2e-codebuild-${siteId}`
+
+/** Fake CodeBuild id so godmode publishing shows a Publish button. */
 export const setSiteCodeBuildId = async (
   siteId: number,
   codeBuildId: string,
@@ -103,6 +101,15 @@ export const setSiteCodeBuildId = async (
   await db
     .updateTable("Site")
     .set({ codeBuildId })
+    .where("id", "=", siteId)
+    .execute()
+}
+
+/** Null codeBuildId so publishSite skips AWS. Call after the Publish button renders. */
+export const clearSiteCodeBuildId = async (siteId: number): Promise<void> => {
+  await db
+    .updateTable("Site")
+    .set({ codeBuildId: null })
     .where("id", "=", siteId)
     .execute()
 }

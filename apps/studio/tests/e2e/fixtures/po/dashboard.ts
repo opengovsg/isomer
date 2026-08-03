@@ -42,9 +42,8 @@ export class DashboardPO {
   }
 
   async cancelCreateCollectionModal() {
-    // The modal has two "Close"-named buttons: the icon-only `ModalCloseButton`
-    // (aria-label only, no visible text) and this footer action button. Filter
-    // by visible text to target the footer button specifically.
+    // Icon Close and footer Close share the same accessible name.
+    // filter({ hasText: "Close" }) picks the footer.
     await this.page
       .getByRole("button", { name: "Close" })
       .filter({ hasText: "Close" })
@@ -146,7 +145,7 @@ export class DashboardPO {
     )
   }
 
-  /** Collection table uses the same options menu as the resource table. */
+  // Same options menu as the resource table.
   async openCollectionResourceMenu(title: string) {
     await this.openResourceMenu(title)
   }

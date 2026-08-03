@@ -1,13 +1,11 @@
 import { test } from "@playwright/test"
-
-import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import { GodmodePO } from "../fixtures/godmode.po"
+import { roleTag, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { GodmodePO } from "~e2e/fixtures/po"
+import { ensureUserOnboarded, uniqueVendorEmail } from "~e2e/fixtures/user"
 import {
   deleteWhitelistedVendorEmails,
-  ensureUserOnboarded,
-  uniqueVendorEmail,
-} from "../fixtures/user"
-import { expectWhitelistedVendorEmail } from "../fixtures/whitelist.db"
+  expectWhitelistedVendorEmail,
+} from "~e2e/fixtures/whitelist"
 
 let vendorEmails: string[] = []
 

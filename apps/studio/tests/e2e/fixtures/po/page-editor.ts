@@ -18,11 +18,7 @@ export class PageEditorPO {
     await this.page.reload()
   }
 
-  /**
-   * Opens a root-drawer block by its accessible name, then fills the first
-   * textbox in the block editor. Label examples: "Content page header",
-   * "Test block" (seeded prose preview text).
-   */
+  // Open block drawer by accessible name; fill the first textbox.
   async fillBlock(label: string, text: string) {
     await this.page
       .getByRole("button", { name: new RegExp(label, "i") })
@@ -37,19 +33,6 @@ export class PageEditorPO {
 
   async editProseBlock(previewLabel: string, text: string) {
     await this.fillBlock(previewLabel, text)
-    await this.saveBlockChanges()
-  }
-
-  async addTextBlock() {
-    await this.page.getByRole("button", { name: "Add block" }).click()
-    await this.page
-      .getByRole("button", { name: /^Text Add text, links, lists/i })
-      .click()
-  }
-
-  async addAndFillTextBlock(text: string) {
-    await this.addTextBlock()
-    await this.page.getByRole("textbox").first().fill(text)
     await this.saveBlockChanges()
   }
 
@@ -116,11 +99,6 @@ export class PageEditorPO {
     await expect(
       this.page.getByRole("button", { name: "More options" }),
     ).not.toBeVisible()
-  }
-
-  async openMetaSettingsTab() {
-    await this.page.getByRole("link", { name: "Meta Settings" }).click()
-    await this.page.waitForURL(/\/pages\/\d+\/settings$/)
   }
 
   async openScheduleModal() {

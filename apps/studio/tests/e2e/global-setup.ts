@@ -2,17 +2,13 @@ import type { FullConfig } from "@playwright/test"
 import { chromium } from "@playwright/test"
 import crypto from "crypto"
 import { db, sql } from "~/server/modules/database"
+import { ROLES, storageStateFor, TEST_EMAILS } from "~e2e/fixtures/auth"
+import { LoginPage } from "~e2e/fixtures/login"
+import { seedRolesForE2E } from "~e2e/fixtures/role"
 
-import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
-import { LoginPage } from "./fixtures/login"
-import { seedRolesForE2E } from "./fixtures/seed"
-
-// The e2e suite's DATABASE_URL points at a `test` database that has no
-// purpose other than e2e fixtures (a separate logical database from local
-// dev's `app` database, inside the same docker-compose Postgres container),
-// so wiping it completely at the start of every run is safe. The table list
-// is derived dynamically from information_schema so this doesn't silently
-// go stale as the schema evolves.
+// DATABASE_URL targets the isolated `test` DB, not local `app`. TRUNCATE on
+// startup is safe. Read table names from information_schema so new tables get
+// wiped without updating this list.
 const resetE2EDatabase = async (): Promise<void> => {
   const { rows: tables } = await sql<{
     table_name: string
