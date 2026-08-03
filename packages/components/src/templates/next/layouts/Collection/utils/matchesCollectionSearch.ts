@@ -1,8 +1,4 @@
-/**
- * Normalizes collection item titles/descriptions and user search input so that
- * visually equivalent text matches during substring search.
- */
-export const normalizeCollectionSearchText = (text: string): string => {
+const normalizeCollectionSearchText = (text: string): string => {
   return (
     text
       .normalize("NFKC")

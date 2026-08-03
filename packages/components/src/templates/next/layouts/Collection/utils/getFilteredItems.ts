@@ -2,7 +2,7 @@ import type { ProcessedCollectionCardProps } from "~/interfaces"
 
 import type { AppliedFilter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
-import { matchesCollectionSearch } from "./normalizeCollectionSearchText"
+import { matchesCollectionSearch } from "./matchesCollectionSearch"
 
 export const getFilteredItems = (
   items: ProcessedCollectionCardProps[],
