@@ -12,10 +12,12 @@ import * as calloutVariantPreviews from "~/components/icons/callout/variant"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ImageRadioIndicator } from "./ImageRadioIndicator"
-import {
-  getImageRadioColumnCount,
-  isImageRadioFormat,
-} from "./utils/imageRadio"
+
+const isImageRadioFormat = (format: unknown): boolean =>
+  format === "image-radio/1col" || format === "image-radio/2col"
+
+const getImageRadioColumnCount = (format: string): 1 | 2 =>
+  format === "image-radio/1col" ? 1 : 2
 
 const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "tagcategory/pills": IconTagCategoryPills,
@@ -121,7 +123,7 @@ function JsonFormsImageRadioControl({
   required,
 }: ControlProps): JSX.Element {
   const options = getImageRadioOptions(schema)
-  const columnCount = getImageRadioColumnCount(schema.format ?? "")
+  const columnCount = getImageRadioColumnCount(schema.format as string)
 
   // Use Chakra's useRadioGroup instead of design-system Radio.RadioGroup.
   // Design-system Radio applies container padding and label margin (for the
