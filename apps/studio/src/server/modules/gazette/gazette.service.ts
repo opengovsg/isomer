@@ -686,30 +686,12 @@ export const hasDuplicateNotificationNumber = async ({
     categoryId,
     tagCategories,
   )
-  const resolvedSubcategoryLabel = resolveGazetteSubcategoryLabel(
-    subcategoryId,
-    tagCategories,
-  )
   const isGovernmentGazette =
     resolvedCategoryLabel === GazetteCategories.GovernmentGazettes
   // publishDate is a "dd/MM/yyyy" string — the year is the last segment.
   const publishYear = publishDate.split("/").at(-1)
 
   const content = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`
-
-  // Rows created before the tagCategories migration have no uuid in
-  // `tagged` for the category/subcategory — they instead store the plain
-  // label in `page.category` (and the subcategory label as `tagged[0]`).
-  // Match either shape so duplicate detection still works for those
-  // legacy rows during the migration window.
-  const matchesCategory = (id: string, label: string | undefined) =>
-    label === undefined
-      ? taggedContains(content, id)
-      : sql<boolean>`(${taggedContains(content, id)} OR ${content}->'page'->>'category' = ${label})`
-  const matchesSubcategory = (id: string, label: string | undefined) =>
-    label === undefined
-      ? taggedContains(content, id)
-      : sql<boolean>`(${taggedContains(content, id)} OR ${content}->'page'->'tagged'->>0 = ${label})`
 
   let query = trx
     .selectFrom("Resource")
@@ -722,7 +704,7 @@ export const hasDuplicateNotificationNumber = async ({
     .where(
       sql<boolean>`${content}->'page'->>'description' = ${notificationNumber}`,
     )
-    .where(matchesCategory(categoryId, resolvedCategoryLabel))
+    .where(taggedContains(content, categoryId))
     .where(
       sql<boolean>`split_part(${content}->'page'->>'date', '/', 3) = ${publishYear}`,
     )
@@ -730,9 +712,7 @@ export const hasDuplicateNotificationNumber = async ({
 
   // Government gazettes are unique within category, not subcategory.
   if (!isGovernmentGazette) {
-    query = query.where(
-      matchesSubcategory(subcategoryId, resolvedSubcategoryLabel),
-    )
+    query = query.where(taggedContains(content, subcategoryId))
   }
 
   if (excludeId) {
