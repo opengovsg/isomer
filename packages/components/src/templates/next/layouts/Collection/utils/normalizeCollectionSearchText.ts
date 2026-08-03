@@ -14,18 +14,3 @@ export const normalizeCollectionSearchText = (text: string): string => {
       .replace(/\s*([()])\s*/g, "$1")
   )
 }
-
-interface MatchesCollectionSearchOptions {
-  text: string
-  normalizedSearchValue: string
-}
-
-export const matchesCollectionSearch = ({
-  text,
-  normalizedSearchValue,
-}: MatchesCollectionSearchOptions): boolean => {
-  if (normalizedSearchValue === "") {
-    return true
-  }
-  return normalizeCollectionSearchText(text).includes(normalizedSearchValue)
-}

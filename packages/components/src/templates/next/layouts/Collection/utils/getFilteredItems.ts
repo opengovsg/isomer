@@ -2,10 +2,7 @@ import type { ProcessedCollectionCardProps } from "~/interfaces"
 
 import type { AppliedFilter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
-import {
-  matchesCollectionSearch,
-  normalizeCollectionSearchText,
-} from "./matchesCollectionSearch"
+import { normalizeCollectionSearchText } from "./normalizeCollectionSearchText"
 
 export const getFilteredItems = (
   items: ProcessedCollectionCardProps[],
@@ -19,14 +16,12 @@ export const getFilteredItems = (
     // Step 1: Filter based on search value
     if (
       normalizedSearchValue !== "" &&
-      !matchesCollectionSearch({
-        text: item.title,
+      !normalizeCollectionSearchText(item.title).includes(
         normalizedSearchValue,
-      }) &&
-      !matchesCollectionSearch({
-        text: item.description ?? "",
+      ) &&
+      !normalizeCollectionSearchText(item.description ?? "").includes(
         normalizedSearchValue,
-      })
+      )
     ) {
       return false
     }
