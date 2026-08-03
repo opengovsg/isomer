@@ -5,6 +5,11 @@ import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 import {
+  IconCalloutGoodToKnow,
+  IconCalloutInformation,
+  IconCalloutNote,
+  IconCalloutUrgent,
+  IconCalloutWarning,
   IconTagCategoryPills,
   IconTagCategoryPlaintext,
 } from "~/components/icons"
@@ -15,6 +20,11 @@ import { ImageRadioIndicator } from "./ImageRadioIndicator"
 const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "tagcategory/pills": IconTagCategoryPills,
   "tagcategory/plaintext": IconTagCategoryPlaintext,
+  "callout/information": IconCalloutInformation,
+  "callout/goodToKnow": IconCalloutGoodToKnow,
+  "callout/warning": IconCalloutWarning,
+  "callout/urgent": IconCalloutUrgent,
+  "callout/note": IconCalloutNote,
 }
 
 interface ImageRadioSchema {
@@ -82,7 +92,11 @@ const getImageRadioOptions = (schema: ControlProps["schema"]) =>
 
 export const jsonFormsImageRadioControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageRadioControl,
-  schemaMatches((schema) => schema.format === "image-radio"),
+  schemaMatches(
+    (schema) =>
+      schema.format === "image-radio/1col" ||
+      schema.format === "image-radio/2col",
+  ),
 )
 
 function JsonFormsImageRadioControl({
@@ -114,7 +128,7 @@ function JsonFormsImageRadioControl({
         <Box
           {...getRootProps()}
           display="grid"
-          gridTemplateColumns="repeat(2, 1fr)"
+          gridTemplateColumns={`repeat(${schema.format === "image-radio/1col" ? 1 : 2}, 1fr)`}
           gap="1rem"
         >
           {options.map((option) => {
