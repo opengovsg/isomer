@@ -50,6 +50,17 @@ describe("normalizeCollectionSearchText", () => {
     expect(result).toBe("management(fm)")
   })
 
+  it("removes zero-width spaces", () => {
+    // Arrange
+    const text = "MANAGEMENT\u200b(FM)"
+
+    // Act
+    const result = normalizeCollectionSearchText(text)
+
+    // Assert
+    expect(result).toBe("management(fm)")
+  })
+
   it("treats missing space before parentheses as equivalent to spaced text", () => {
     // Arrange
     const withSpace = normalizeCollectionSearchText("MANAGEMENT (FM)")
