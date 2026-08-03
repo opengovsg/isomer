@@ -61,6 +61,72 @@ export const createFolderViaWizard = async (
   return { folderId: folder.id }
 }
 
+export const createCollectionViaWizard = async (
+  page: Page,
+  { siteId, title }: { siteId: number; title: string },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoSite(siteId)
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreateCollection()
+  await dashboard.fillCollectionWizard(title)
+
+  const collection = await db
+    .selectFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "=", title)
+    .where("type", "=", ResourceType.Collection)
+    .select("id")
+    .executeTakeFirstOrThrow()
+
+  return { collectionId: collection.id }
+}
+
+export const createCollectionPageViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    title,
+  }: { siteId: number; collectionId: string; title: string },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoCollection(siteId, collectionId)
+  await dashboard.clickAddCollectionItem()
+  await dashboard.proceedToCollectionItemDetails()
+  await dashboard.fillCollectionPageWizard(title)
+
+  await page.waitForURL(new RegExp(`/sites/${siteId}/pages/\\d+$`))
+  const pageId = page.url().match(/\/pages\/(\d+)$/)?.[1]
+  if (!pageId) {
+    throw new Error(`Expected page editor URL after wizard, got ${page.url()}`)
+  }
+  return { pageId }
+}
+
+export const createCollectionLinkViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    title,
+  }: { siteId: number; collectionId: string; title: string },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoCollection(siteId, collectionId)
+  await dashboard.clickAddCollectionItem()
+  await dashboard.selectCollectionItemType("Link or file")
+  await dashboard.proceedToCollectionItemDetails()
+  await dashboard.fillCollectionLinkWizard(title)
+
+  await page.waitForURL(new RegExp(`/sites/${siteId}/links/\\d+$`))
+  const linkId = page.url().match(/\/links\/(\d+)$/)?.[1]
+  if (!linkId) {
+    throw new Error(`Expected link editor URL after wizard, got ${page.url()}`)
+  }
+  return { linkId }
+}
+
 export const openInviteModal = async (page: Page, siteId: number) => {
   const users = new UsersPO(page)
   await users.goto(siteId)

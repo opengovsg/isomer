@@ -1,3 +1,4 @@
+import type { UnwrapTagged } from "type-fest"
 import { expect } from "@playwright/test"
 import crypto from "crypto"
 import {
@@ -7,11 +8,63 @@ import {
   setupFolder,
   setupPageResource,
 } from "tests/integration/helpers/seed"
-import { db } from "~/server/modules/database"
+import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { db, jsonb } from "~/server/modules/database"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
 /** Prose preview label from the default integration seed blob. */
 export const SEEDED_PROSE_BLOCK_LABEL = "Test block"
+
+/** Matches `createCollectionIndexJson` in `collection.service.ts`. */
+const collectionIndexBlobContent = (
+  title: string,
+): UnwrapTagged<PrismaJson.BlobJsonContent> => ({
+  layout: "collection",
+  page: {
+    title,
+    subtitle:
+      "Read up-to-date news articles, speeches, and press releases here.",
+    sortOrder: "date-desc",
+  },
+  content: [],
+  version: "0.1.0",
+})
+
+/**
+ * `setupCollection` only inserts the bare Collection resource. In the real
+ * `collection.create` flow, an `IndexPage` child is also created and is
+ * required by `getPublishedIndexBlobByParentId` whenever a collection item
+ * (page/link) is rendered — without it, the editor throws NOT_FOUND.
+ */
+const seedCollectionIndexPage = async ({
+  siteId,
+  collectionId,
+  title,
+}: {
+  siteId: number
+  collectionId: string
+  title: string
+}) => {
+  const blob = await db
+    .insertInto("Blob")
+    .values({ content: jsonb(collectionIndexBlobContent(title)) })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+
+  await db
+    .insertInto("Resource")
+    .values({
+      title,
+      permalink: INDEX_PAGE_PERMALINK,
+      siteId,
+      parentId: collectionId,
+      draftBlobId: blob.id,
+      type: ResourceType.IndexPage,
+      state: ResourceState.Draft,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
 
 export const seedFolder = async ({
   siteId,
@@ -120,6 +173,11 @@ export const seedCollectionWithPage = async ({
     title: collectionTitle,
     permalink: `e2e-collection-${suffix}`,
   })
+  await seedCollectionIndexPage({
+    siteId,
+    collectionId: collection.id,
+    title: collectionTitle,
+  })
   const { page } = await setupCollectionPage({
     siteId,
     parentId: collection.id,
@@ -146,10 +204,20 @@ export const seedTwoCollections = async ({
     title: sourceCollectionTitle,
     permalink: `e2e-src-collection-${suffix}`,
   })
+  await seedCollectionIndexPage({
+    siteId,
+    collectionId: sourceCollection.id,
+    title: sourceCollectionTitle,
+  })
   const { collection: destCollection } = await setupCollection({
     siteId,
     title: destCollectionTitle,
     permalink: `e2e-dest-collection-${suffix}`,
+  })
+  await seedCollectionIndexPage({
+    siteId,
+    collectionId: destCollection.id,
+    title: destCollectionTitle,
   })
   const { page: collectionPage } = await setupCollectionPage({
     siteId,
@@ -175,6 +243,11 @@ export const seedCollectionWithLink = async ({
     title: collectionTitle,
     permalink: `e2e-collection-${suffix}`,
   })
+  await seedCollectionIndexPage({
+    siteId,
+    collectionId: collection.id,
+    title: collectionTitle,
+  })
   const { collectionLink } = await setupCollectionLink({
     siteId,
     collectionId: collection.id,
@@ -198,6 +271,46 @@ export const seedRootCollection = async ({
     permalink: `e2e-root-collection-${suffix}`,
   })
   return { collection }
+}
+
+export const seedCollection = async ({
+  siteId,
+  collectionTitle = "E2E Seed Collection",
+}: {
+  siteId: number
+  collectionTitle?: string
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { collection } = await setupCollection({
+    siteId,
+    title: collectionTitle,
+    permalink: `e2e-collection-${suffix}`,
+  })
+  await seedCollectionIndexPage({
+    siteId,
+    collectionId: collection.id,
+    title: collectionTitle,
+  })
+  return { collection }
+}
+
+export const seedCollectionLink = async ({
+  siteId,
+  collectionId,
+  linkTitle = "E2E Collection Link",
+}: {
+  siteId: number
+  collectionId: string
+  linkTitle?: string
+}) => {
+  const suffix = crypto.randomUUID().slice(0, 8)
+  const { collectionLink } = await setupCollectionLink({
+    siteId,
+    collectionId,
+    title: linkTitle,
+    permalink: `e2e-collection-link-${suffix}`,
+  })
+  return { collectionLink }
 }
 
 export const expectResourceAbsent = (resourceId: string) =>

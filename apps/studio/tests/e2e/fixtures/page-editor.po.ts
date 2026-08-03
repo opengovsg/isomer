@@ -59,6 +59,21 @@ export class PageEditorPO {
     ).toBeVisible()
   }
 
+  async editArticleHeaderSummary(summary: string) {
+    await this.page
+      .getByRole("button", { name: "Article page header" })
+      .click({ force: true })
+    await this.page.getByLabel("Article summary").fill(summary)
+    await this.saveBlockChanges()
+  }
+
+  async expectArticleHeaderSummary(summary: string) {
+    await this.page
+      .getByRole("button", { name: "Article page header" })
+      .click({ force: true })
+    await expect(this.page.getByLabel("Article summary")).toHaveValue(summary)
+  }
+
   async clickPublish() {
     await this.page
       .getByRole("button", { name: "Publish", exact: true })
