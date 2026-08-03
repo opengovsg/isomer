@@ -21,6 +21,11 @@ const nextConfig = {
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   // No need as this only runs for packages of versions that passes in CI
   typescript: { ignoreBuildErrors: true },
+  // TypeScript 7 no longer ships the compiler API Next.js used internally;
+  // this runs the local `tsc` CLI instead. Requires Next.js >=16.2.12.
+  experimental: {
+    useTypeScriptCli: true,
+  },
   webpack(config, { webpack }) {
     // Site doesn't use egazette's Algolia-powered search: replace the module with a
     // null-stub so `algoliasearch`/`react-instantsearch` never enter the client bundle.
