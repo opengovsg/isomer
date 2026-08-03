@@ -12,7 +12,7 @@ describe("matchesCollectionSearch", () => {
     const search = "  guide to isomer  "
 
     // Act
-    const result = matchesCollectionSearch(title, search)
+    const result = matchesCollectionSearch({ text: title, searchValue: search })
 
     // Assert
     expect(result).toBe(true)
@@ -24,7 +24,10 @@ describe("matchesCollectionSearch", () => {
       "CIRCULAR ON NEW FEEDBACK CHANNEL ON PUBLIC SECTOR FACILITIES MANAGEMENT (FM)"
 
     // Act
-    const result = matchesCollectionSearch(circularTitle, search)
+    const result = matchesCollectionSearch({
+      text: circularTitle,
+      searchValue: search,
+    })
 
     // Assert
     expect(result).toBe(true)
@@ -37,7 +40,7 @@ describe("matchesCollectionSearch", () => {
     const search = "management (FM)"
 
     // Act
-    const result = matchesCollectionSearch(title, search)
+    const result = matchesCollectionSearch({ text: title, searchValue: search })
 
     // Assert
     expect(result).toBe(true)
@@ -50,7 +53,7 @@ describe("matchesCollectionSearch", () => {
       "CIRCULAR ON NEW FEEDBACK CHANNEL ON PUBLIC SECTOR FACILITIES MANAGEMENT (FM)"
 
     // Act
-    const result = matchesCollectionSearch(title, search)
+    const result = matchesCollectionSearch({ text: title, searchValue: search })
 
     // Assert
     expect(result).toBe(true)
@@ -63,7 +66,7 @@ describe("matchesCollectionSearch", () => {
       "CIRCULAR ON NEW FEEDBACK CHANNEL ON PUBLIC SECTOR FACILITIES MANAGEMENT (FM)"
 
     // Act
-    const result = matchesCollectionSearch(title, search)
+    const result = matchesCollectionSearch({ text: title, searchValue: search })
 
     // Assert
     expect(result).toBe(true)
@@ -76,7 +79,7 @@ describe("matchesCollectionSearch", () => {
       "CIRCULAR ON NEW FEEDBACK CHANNEL ON PUBLIC SECTOR FACILITIES MANAGEMENT (FM)"
 
     // Act
-    const result = matchesCollectionSearch(title, search)
+    const result = matchesCollectionSearch({ text: title, searchValue: search })
 
     // Assert
     expect(result).toBe(true)
@@ -88,7 +91,7 @@ describe("matchesCollectionSearch", () => {
     const search = "management (FM)"
 
     // Act
-    const result = matchesCollectionSearch(title, search)
+    const result = matchesCollectionSearch({ text: title, searchValue: search })
 
     // Assert
     expect(result).toBe(true)
@@ -100,7 +103,7 @@ describe("matchesCollectionSearch", () => {
     const search = "management (FM)"
 
     // Act
-    const result = matchesCollectionSearch(title, search)
+    const result = matchesCollectionSearch({ text: title, searchValue: search })
 
     // Assert
     expect(result).toBe(true)
@@ -111,7 +114,10 @@ describe("matchesCollectionSearch", () => {
     const search = "completely unrelated query"
 
     // Act
-    const result = matchesCollectionSearch(circularTitle, search)
+    const result = matchesCollectionSearch({
+      text: circularTitle,
+      searchValue: search,
+    })
 
     // Assert
     expect(result).toBe(false)

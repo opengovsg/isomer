@@ -19,16 +19,14 @@ export const getFilteredItems = (
     // Step 1: Filter based on search value
     if (
       normalizedSearchValue !== "" &&
-      !matchesCollectionSearch(
-        item.title,
-        searchValue,
+      !matchesCollectionSearch({
+        text: item.title,
         normalizedSearchValue,
-      ) &&
-      !matchesCollectionSearch(
-        item.description ?? "",
-        searchValue,
+      }) &&
+      !matchesCollectionSearch({
+        text: item.description ?? "",
         normalizedSearchValue,
-      )
+      })
     ) {
       return false
     }
