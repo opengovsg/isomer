@@ -17,9 +17,6 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ImageRadioIndicator } from "./ImageRadioIndicator"
 
-const getImageRadioColumnCount = (format: string): 1 | 2 =>
-  format === "image-radio/1col" ? 1 : 2
-
 const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "tagcategory/pills": IconTagCategoryPills,
   "tagcategory/plaintext": IconTagCategoryPlaintext,
@@ -112,7 +109,6 @@ function JsonFormsImageRadioControl({
   required,
 }: ControlProps): JSX.Element {
   const options = getImageRadioOptions(schema)
-  const columnCount = getImageRadioColumnCount(schema.format as string)
 
   // Use Chakra's useRadioGroup instead of design-system Radio.RadioGroup.
   // Design-system Radio applies container padding and label margin (for the
@@ -132,7 +128,7 @@ function JsonFormsImageRadioControl({
         <Box
           {...getRootProps()}
           display="grid"
-          gridTemplateColumns={`repeat(${columnCount}, 1fr)`}
+          gridTemplateColumns={`repeat(${schema.format === "image-radio/1col" ? 1 : 2}, 1fr)`}
           gap="1rem"
         >
           {options.map((option) => {
