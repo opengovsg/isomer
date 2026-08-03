@@ -6,9 +6,11 @@ import {
   PopoverBody,
   PopoverContent,
   PopoverTrigger,
+  useDisclosure,
+  useOutsideClick,
 } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import { BiChevronDown, BiChevronUp } from "react-icons/bi"
 
 import type { MenubarNestedItem } from "./types"
@@ -22,46 +24,47 @@ export interface MenubarHorizontalListProps {
   isHidden?: () => boolean
 }
 
-// Split out of MenubarHorizontalList so the outside-click effect below can
-// live in a real component instead of Popover's render-prop callback (hooks
-// can't run inside a plain callback).
-const HorizontalListPopoverContent = ({
-  isOpen,
-  onClose,
+export const MenubarHorizontalList = ({
+  isHidden,
   label,
   defaultIcon,
   items,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  label: string
-  defaultIcon: IconType
-  items: MenubarNestedItem[]
-}) => {
-  const triggerRef = useRef<HTMLDivElement>(null)
+}: MenubarHorizontalListProps): JSX.Element | null => {
+  const { isOpen, onClose, onOpen } = useDisclosure()
   const contentRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const handlePointerDown = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (
-        triggerRef.current?.contains(target) ||
-        contentRef.current?.contains(target)
-      ) {
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  // closeOnBlur=false pairs with mousedown preventDefault below — otherwise
+  // focus stays in the editor and Chakra dismisses the popover immediately.
+  // useOutsideClick restores click-outside dismissal without relying on blur.
+  // Exclude the trigger so a click re-opens via PopoverTrigger toggle instead of
+  // closing on mousedown then opening again on click.
+  useOutsideClick({
+    ref: contentRef,
+    handler: (event) => {
+      if (triggerRef.current?.contains(event.target as Node)) {
         return
       }
       onClose()
-    }
-    document.addEventListener("mousedown", handlePointerDown)
-    return () => document.removeEventListener("mousedown", handlePointerDown)
-  }, [isOpen, onClose])
+    },
+    enabled: isOpen,
+  })
 
+  if (isHidden?.()) {
+    return null
+  }
   return (
-    <>
+    <Popover
+      placement="bottom"
+      closeOnBlur={false}
+      isLazy
+      isOpen={isOpen}
+      onClose={onClose}
+      onOpen={onOpen}
+    >
       <PopoverTrigger>
-        <HStack ref={triggerRef}>
+        <HStack>
           <Button
+            ref={triggerRef}
             variant="clear"
             colorScheme="neutral"
             px={0}
@@ -108,35 +111,6 @@ const HorizontalListPopoverContent = ({
           </HStack>
         </PopoverBody>
       </PopoverContent>
-    </>
-  )
-}
-
-export const MenubarHorizontalList = ({
-  isHidden,
-  label,
-  defaultIcon,
-  items,
-}: MenubarHorizontalListProps): JSX.Element | null => {
-  if (isHidden?.()) {
-    return null
-  }
-  return (
-    // closeOnBlur=false pairs with mousedown preventDefault below — otherwise
-    // focus stays in the editor and Chakra dismisses the popover immediately.
-    // That also disables Chakra's own outside-click handling (it's gated on
-    // closeOnBlur too); HorizontalListPopoverContent reimplements just that
-    // part.
-    <Popover placement="bottom" closeOnBlur={false} isLazy>
-      {({ isOpen, onClose }) => (
-        <HorizontalListPopoverContent
-          isOpen={isOpen}
-          onClose={onClose}
-          label={label}
-          defaultIcon={defaultIcon}
-          items={items}
-        />
-      )}
     </Popover>
   )
 }

@@ -48,17 +48,22 @@ const EditorContentWrapper = ({
 }: Pick<EditorContentProps, "editor">) => {
   return (
     <Box
-      as={EditorContent}
-      editor={editor}
+      position="relative"
       w="100%"
-      p="1rem"
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
-      backgroundColor="white"
-      onClick={() => editor?.chain().focus().run()}
-      cursor="text"
-    />
+    >
+      <Box
+        as={EditorContent}
+        editor={editor}
+        w="100%"
+        p="1rem"
+        backgroundColor="white"
+        onClick={() => editor?.chain().focus().run()}
+        cursor="text"
+      />
+    </Box>
   )
 }
 
@@ -67,8 +72,14 @@ interface EditorProps {
   editor: TiptapEditor
   isNested?: boolean
   /**
-   * Mount the contextual table bubble menu. Only set on editors whose
-   * extensions include tables (`TiptapTextEditor`, `TiptapAccordionEditor`).
+   * Only editors whose extensions include tables (currently
+   * `useTextEditor`/`TiptapTextEditor` and
+   * `useAccordionEditor`/`TiptapAccordionEditor` — see
+   * `hooks/useTextEditor/useTextEditor.ts`) should set this. It mounts the
+   * contextual table bubble menu; editors without table extensions (Prose,
+   * Callout, SimpleProse) have no table nodes for it to react to, so there's
+   * nothing for it to mount. Inline table captions need no wiring here — they
+   * are rendered by the `table` node view itself (`TableNodeView`).
    */
   showTableExtras?: boolean
 }

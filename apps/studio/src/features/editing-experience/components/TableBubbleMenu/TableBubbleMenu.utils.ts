@@ -108,9 +108,38 @@ export interface TableMovePlan {
   span: number
 }
 
-// Bounds are half-open: `top` is included and `bottom` is excluded. TipTap's
-// row mover operates on one row, so moving a block means moving its adjacent
-// neighbour past the block and then reselecting the block at `newStart`.
+// Bounds are half-open: `start` is included and `end` is excluded. TipTap's
+// row/column mover operates on a single index, so moving a block means moving
+// its adjacent neighbour past the block and then reselecting the block at
+// `newStart`. Row and column movement are the same algorithm along different
+// axes — `getRowMovePlan`/`getColumnMovePlan` below just name the axis.
+const getAxisMovePlan = (
+  { start, end, extent }: { start: number; end: number; extent: number },
+  direction: "backward" | "forward",
+): TableMovePlan | null => {
+  const span = end - start
+
+  if (direction === "backward") {
+    // Move the neighbour before the block to the block's final index.
+    if (start === 0) return null
+    return {
+      from: start - 1,
+      to: end - 1,
+      newStart: start - 1,
+      span,
+    }
+  }
+
+  // Move the neighbour after the block to the block's first index.
+  if (end >= extent) return null
+  return {
+    from: end,
+    to: start,
+    newStart: start + 1,
+    span,
+  }
+}
+
 export const getRowMovePlan = (
   {
     top,
@@ -122,35 +151,31 @@ export const getRowMovePlan = (
     tableHeight: number
   },
   direction: "up" | "down",
-): TableMovePlan | null => {
-  const span = bottom - top
+): TableMovePlan | null =>
+  getAxisMovePlan(
+    { start: top, end: bottom, extent: tableHeight },
+    direction === "up" ? "backward" : "forward",
+  )
 
-  if (direction === "up") {
-    // Move the row above to the block's final row.
-    if (top === 0) return null
-    return {
-      from: top - 1,
-      to: bottom - 1,
-      newStart: top - 1,
-      span,
-    }
-  }
+export const getColumnMovePlan = (
+  {
+    left,
+    right,
+    tableWidth,
+  }: {
+    left: number
+    right: number
+    tableWidth: number
+  },
+  direction: "left" | "right",
+): TableMovePlan | null =>
+  getAxisMovePlan(
+    { start: left, end: right, extent: tableWidth },
+    direction === "left" ? "backward" : "forward",
+  )
 
-  // Move the row below to the block's first row.
-  if (bottom >= tableHeight) return null
-  return {
-    from: bottom,
-    to: top,
-    newStart: top + 1,
-    span,
-  }
-}
-
-// Table selection helpers:
-// - getBottomRightCellDocumentPos: document position of the bottom-right perimeter
-//   cell in a CellSelection (anchors the table action trigger).
-// - getColumnMovePlan: column movement mirrors row movement; `left` included and
-//   `right` excluded; the adjacent column is moved across the selected block.
+// Document position of the bottom-right perimeter cell in a CellSelection.
+// Used to anchor the table action trigger at the selection's outer corner.
 export const getBottomRightCellDocumentPos = (
   state: EditorState,
 ): number | null => {
@@ -168,39 +193,4 @@ export const getBottomRightCellDocumentPos = (
   })
 
   return bottomRightPos
-}
-
-export const getColumnMovePlan = (
-  {
-    left,
-    right,
-    tableWidth,
-  }: {
-    left: number
-    right: number
-    tableWidth: number
-  },
-  direction: "left" | "right",
-): TableMovePlan | null => {
-  const span = right - left
-
-  if (direction === "left") {
-    // Move the column on the left to the block's final column.
-    if (left === 0) return null
-    return {
-      from: left - 1,
-      to: right - 1,
-      newStart: left - 1,
-      span,
-    }
-  }
-
-  // Move the column on the right to the block's first column.
-  if (right >= tableWidth) return null
-  return {
-    from: right,
-    to: left,
-    newStart: left + 1,
-    span,
-  }
 }

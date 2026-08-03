@@ -68,6 +68,16 @@ const selectBlockAndDispatch = (
   editor.commands.focus()
 }
 
+// A placeholder empty cell for a slot covered by a span that started before
+// the duplicated row/column — same shape whichever axis is being duplicated.
+const createSpannedPlaceholderCell = (sourceCell: Node): Node | null =>
+  sourceCell.type.createAndFill({
+    ...sourceCell.attrs,
+    rowspan: 1,
+    colspan: 1,
+    colwidth: null,
+  })
+
 // Insert a copy of `sourceRow` at row index `insertAt`. Cells that span into
 // the insert slot from above expand their rowspan (same as addRow); every other
 // column gets a rowspan-1 clone of the source cell's type and content.
@@ -116,13 +126,8 @@ const insertDuplicateRow = (
 
     const sourceCellRect = map.findCell(sourcePos)
     if (sourceCellRect.top !== sourceRow) {
-      // Covered by a rowspan that started above — placeholder empty cell.
-      const placeholder = sourceCell.type.createAndFill({
-        ...sourceCell.attrs,
-        rowspan: 1,
-        colspan: 1,
-        colwidth: null,
-      })
+      // Covered by a rowspan that started above.
+      const placeholder = createSpannedPlaceholderCell(sourceCell)
       if (placeholder) cells.push(placeholder)
       col += 1
       continue
@@ -194,12 +199,8 @@ const insertDuplicateColumn = (
     const rowspan = sourceCell.attrs.rowspan as number
 
     if (sourceCellRect.left !== sourceCol) {
-      const placeholder = sourceCell.type.createAndFill({
-        ...sourceCell.attrs,
-        rowspan: 1,
-        colspan: 1,
-        colwidth: null,
-      })
+      // Covered by a colspan that started to the left.
+      const placeholder = createSpannedPlaceholderCell(sourceCell)
       if (placeholder) {
         tr.insert(tableStart + insertPos, placeholder)
       }

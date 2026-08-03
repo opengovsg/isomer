@@ -1,4 +1,4 @@
-import type { Editor } from "@tiptap/react"
+import type { KeyboardEvent } from "react"
 import {
   FormControl,
   HStack,
@@ -17,61 +17,86 @@ import {
   ModalCloseButton,
   Textarea,
 } from "@opengovsg/design-system-react"
-import { useEffect } from "react"
+import { useRef } from "react"
 import { z } from "zod"
+import {
+  CAPTION_MAX_LENGTH,
+  normalizeTableCaptionForEdit,
+} from "~/features/editing-experience/components/TableCaption/utils"
 import { useZodForm } from "~/lib/form"
 
-const MAX_CAPTION_LENGTH = 200
 const tableSettingsSchema = z.object({
   caption: z
     .string({
       error: "Enter a caption for this table",
     })
+    .trim()
     .min(1, { message: "Enter a caption for this table" })
-    .max(MAX_CAPTION_LENGTH, {
-      message: `Table caption should be shorter than ${MAX_CAPTION_LENGTH} characters.`,
+    .max(CAPTION_MAX_LENGTH, {
+      message: `Table caption should be shorter than ${CAPTION_MAX_LENGTH} characters.`,
     }),
 })
 
+const FOCUSABLE_SELECTOR =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
 interface TableSettingsModalProps {
-  editor: Editor
+  /** The table's current caption, used to seed the form. */
+  caption: string
   isOpen: boolean
   onClose: () => void
+  onSave: (caption: string) => void
 }
 
 export const TableSettingsModal = ({
-  editor,
+  caption: currentCaption,
   isOpen,
   onClose,
+  onSave,
 }: TableSettingsModalProps): JSX.Element => {
   const {
     register,
     watch,
     formState: { errors, isValid },
-    setValue,
     handleSubmit,
   } = useZodForm({
     schema: tableSettingsSchema,
     defaultValues: {
-      caption: "",
+      caption: normalizeTableCaptionForEdit(currentCaption),
     },
   })
 
   const caption = watch("caption")
+  const contentRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    // set default values here instead
-    const { caption } = editor.getAttributes("table")
-    setValue("caption", String(caption || ""))
-    // only done once per every time the modal is opened
-    // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen])
+  // Chakra's FocusLock (trapFocus) fights TipTap's BubbleMenu (tabIndex=0 +
+  // blur/focus handlers) when the editor blurs into this modal, hanging the
+  // tab — so the built-in trap is disabled and this handler manually cycles
+  // Tab/Shift+Tab within the modal content instead.
+  const trapTabWithinContent = (event: KeyboardEvent) => {
+    if (event.key !== "Tab" || !contentRef.current) return
+
+    const focusable =
+      contentRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+    if (focusable.length === 0) return
+
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last?.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first?.focus()
+    }
+  }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} trapFocus={false}>
       <ModalOverlay />
 
-      <ModalContent>
+      <ModalContent ref={contentRef} onKeyDown={trapTabWithinContent}>
         <ModalHeader mr="3.5rem">Table settings</ModalHeader>
         <ModalCloseButton size="lg" />
 
@@ -93,7 +118,7 @@ export const TableSettingsModal = ({
               <FormErrorMessage>{errors.caption.message}</FormErrorMessage>
             ) : (
               <FormHelperText mt="0.5rem" color="base.content.medium">
-                {MAX_CAPTION_LENGTH - caption.length} characters left
+                {CAPTION_MAX_LENGTH - caption.length} characters left
               </FormHelperText>
             )}
           </FormControl>
@@ -106,15 +131,11 @@ export const TableSettingsModal = ({
             </Button>
             <Button
               variant="solid"
-              type="submit"
+              type="button"
               isDisabled={!isValid}
               onClick={handleSubmit(({ caption }) => {
+                onSave(caption)
                 onClose()
-                editor
-                  .chain()
-                  .focus()
-                  .updateAttributes("table", { caption })
-                  .run()
               })}
             >
               Save changes

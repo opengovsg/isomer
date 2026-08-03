@@ -5,9 +5,11 @@ import {
   PopoverBody,
   PopoverContent,
   PopoverTrigger,
+  useDisclosure,
+  useOutsideClick,
 } from "@chakra-ui/react"
 import { IconButton } from "@opengovsg/design-system-react"
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import { BiDotsHorizontalRounded } from "react-icons/bi"
 
 import type { MenubarNestedItem } from "./types"
@@ -18,39 +20,43 @@ export interface MenubarOverflowListProps {
   items: MenubarNestedItem[]
 }
 
-// Split out of MenubarOverflowList so the outside-click effect below can
-// live in a real component instead of Popover's render-prop callback (hooks
-// can't run inside a plain callback).
-const OverflowListPopoverContent = ({
-  isOpen,
-  onClose,
+export const MenubarOverflowList = ({
   items,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  items: MenubarNestedItem[]
-}) => {
-  const triggerRef = useRef<HTMLButtonElement>(null)
+}: MenubarOverflowListProps): JSX.Element | null => {
+  const { isOpen, onClose, onOpen } = useDisclosure()
   const contentRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const handlePointerDown = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (
-        triggerRef.current?.contains(target) ||
-        contentRef.current?.contains(target)
-      ) {
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  // TipTap toolbar pattern: preventDefault on mousedown so the trigger
+  // does not steal focus from the editor. Pair with closeOnBlur=false —
+  // otherwise focus never enters the popover and closeOnBlur immediately
+  // dismisses (or fights) the open state. useOutsideClick restores
+  // click-outside dismissal without relying on blur.
+  // Exclude the trigger so a click re-opens via PopoverTrigger toggle instead of
+  // closing on mousedown then opening again on click.
+  useOutsideClick({
+    ref: contentRef,
+    handler: (event) => {
+      if (triggerRef.current?.contains(event.target as Node)) {
         return
       }
       onClose()
-    }
-    document.addEventListener("mousedown", handlePointerDown)
-    return () => document.removeEventListener("mousedown", handlePointerDown)
-  }, [isOpen, onClose])
+    },
+    enabled: isOpen,
+  })
 
+  const visibleItems = items.filter((item) => !item.isHidden?.())
+  if (visibleItems.length === 0) {
+    return null
+  }
   return (
-    <>
+    <Popover
+      placement="bottom"
+      closeOnBlur={false}
+      isLazy
+      isOpen={isOpen}
+      onClose={onClose}
+      onOpen={onOpen}
+    >
       <PopoverTrigger>
         <IconButton
           ref={triggerRef}
@@ -78,7 +84,7 @@ const OverflowListPopoverContent = ({
       <PopoverContent ref={contentRef} w="fit-content">
         <PopoverBody>
           <HStack>
-            {items.map((subItem, index) => (
+            {visibleItems.map((subItem, index) => (
               <MenuItem
                 key={index}
                 icon={subItem.icon}
@@ -93,32 +99,6 @@ const OverflowListPopoverContent = ({
           </HStack>
         </PopoverBody>
       </PopoverContent>
-    </>
-  )
-}
-
-export const MenubarOverflowList = ({
-  items,
-}: MenubarOverflowListProps): JSX.Element | null => {
-  const visibleItems = items.filter((item) => !item.isHidden?.())
-  if (visibleItems.length === 0) {
-    return null
-  }
-  return (
-    // TipTap toolbar pattern: preventDefault on mousedown so the trigger
-    // does not steal focus from the editor. Pair with closeOnBlur=false —
-    // otherwise focus never enters the popover and closeOnBlur immediately
-    // dismisses (or fights) the open state. That also disables Chakra's own
-    // outside-click handling (it's gated on closeOnBlur too);
-    // OverflowListPopoverContent reimplements just that part.
-    <Popover placement="bottom" closeOnBlur={false} isLazy>
-      {({ isOpen, onClose }) => (
-        <OverflowListPopoverContent
-          isOpen={isOpen}
-          onClose={onClose}
-          items={visibleItems}
-        />
-      )}
     </Popover>
   )
 }
