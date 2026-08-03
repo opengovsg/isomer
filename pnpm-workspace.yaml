@@ -202,8 +202,8 @@ catalogs:
     "@jsonforms/core": ^3.8.0
     "@jsonforms/react": ^3.8.0
   playwright:
-    "@playwright/test": ^1.61.1
-    playwright: ^1.61.1
+    "@playwright/test": ^1.62.0
+    playwright: ^1.62.0
   prisma:
     "@prisma/adapter-pg": 7.9.0
     "@prisma/client": 7.9.0
