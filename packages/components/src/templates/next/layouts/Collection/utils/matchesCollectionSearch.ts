@@ -1,4 +1,4 @@
-const normalizeCollectionSearchText = (text: string): string => {
+export const normalizeCollectionSearchText = (text: string): string => {
   return (
     text
       .normalize("NFKC")
@@ -14,18 +14,13 @@ const normalizeCollectionSearchText = (text: string): string => {
   )
 }
 
-/** Normalizes a user search query once per filter pass; reuse via `matchesCollectionSearch`. */
-export const prepareCollectionSearchQuery = (searchValue: string): string => {
-  return normalizeCollectionSearchText(searchValue)
-}
-
 export const matchesCollectionSearch = (
   text: string,
   searchValue: string,
-  preparedSearchQuery?: string,
+  normalizedSearchValue?: string,
 ): boolean => {
   const normalizedSearch =
-    preparedSearchQuery ?? normalizeCollectionSearchText(searchValue)
+    normalizedSearchValue ?? normalizeCollectionSearchText(searchValue)
   if (normalizedSearch === "") {
     return true
   }

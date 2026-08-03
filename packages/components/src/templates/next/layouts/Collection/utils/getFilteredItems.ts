@@ -4,7 +4,7 @@ import type { AppliedFilter } from "../../../types/Filter"
 import { FILTER_ID_YEAR, NO_SPECIFIED_YEAR_FILTER_ID } from "./constants"
 import {
   matchesCollectionSearch,
-  prepareCollectionSearchQuery,
+  normalizeCollectionSearchText,
 } from "./matchesCollectionSearch"
 
 export const getFilteredItems = (
@@ -12,18 +12,22 @@ export const getFilteredItems = (
   appliedFilters: AppliedFilter[],
   searchValue: string,
 ): ProcessedCollectionCardProps[] => {
-  const preparedSearchQuery =
-    searchValue !== "" ? prepareCollectionSearchQuery(searchValue) : ""
+  const normalizedSearchValue =
+    searchValue !== "" ? normalizeCollectionSearchText(searchValue) : ""
 
   return items.filter((item) => {
     // Step 1: Filter based on search value
     if (
-      preparedSearchQuery !== "" &&
-      !matchesCollectionSearch(item.title, searchValue, preparedSearchQuery) &&
+      normalizedSearchValue !== "" &&
+      !matchesCollectionSearch(
+        item.title,
+        searchValue,
+        normalizedSearchValue,
+      ) &&
       !matchesCollectionSearch(
         item.description ?? "",
         searchValue,
-        preparedSearchQuery,
+        normalizedSearchValue,
       )
     ) {
       return false
