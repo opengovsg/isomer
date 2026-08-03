@@ -3,6 +3,7 @@ export { BlockquoteSchema, type BlockquoteProps } from "./Blockquote"
 export { LogoCloudSchema, type LogoCloudProps } from "./LogoCloud"
 export {
   CalloutSchema,
+  CALLOUT_VARIANT_OPTIONS,
   DEFAULT_CALLOUT_VARIANT,
   type CalloutProps,
   type CalloutVariant,

@@ -6,6 +6,7 @@ import {
   ArticlePageHeaderSchema,
   ContentPageHeaderSchema,
   generateImageSrcSchema,
+  IMAGE_RADIO_2COL_FORMAT,
   SearchableTableSchema,
 } from "~/interfaces"
 import { imageSchemaObject } from "~/schemas/internal"
@@ -79,7 +80,7 @@ const TagCategorySchema = Type.Composite([
           },
         ],
         title: "Show as",
-        format: "image-radio",
+        format: IMAGE_RADIO_2COL_FORMAT,
       }),
     ),
   }),
