@@ -14,22 +14,30 @@ interface CellSpan {
   colspan: number
 }
 
+export interface PhantomColumnsResult {
+  hasPhantomColumns: boolean
+  columnCount: number
+}
+
 /**
- * True when at least one logical column is never occupied by a `colspan={1}`
- * cell — a "phantom" track that only exists inside wider spans.
+ * `hasPhantomColumns` is true when at least one logical column is never
+ * occupied by a `colspan={1}` cell — a "phantom" track that only exists
+ * inside wider spans.
  *
  * Under `table-layout: auto` with no `<colgroup>`, browsers can collapse those
  * tracks to zero width (see `getTableColumnCount`). Callers use this to gate
  * fixed equal-width column tracks so ordinary tables keep content-based sizing.
+ * `columnCount` is returned alongside so callers building the fixed layout
+ * don't need to recompute it.
  */
-export const hasPhantomColumns = (rows: TableRows): boolean => {
+export const checkPhantomColumns = (rows: TableRows): PhantomColumnsResult => {
   if (rows.length === 0 || rows.length > MAX_TABLE_ROWS) {
-    return false
+    return { hasPhantomColumns: false, columnCount: 0 }
   }
 
   const columnCount = getTableColumnCount(rows)
   if (columnCount <= 1 || columnCount > MAX_TABLE_COLUMNS) {
-    return false
+    return { hasPhantomColumns: false, columnCount }
   }
 
   // grid[row][col] = the cell (by colspan) covering that slot, once placed.
@@ -84,5 +92,8 @@ export const hasPhantomColumns = (rows: TableRows): boolean => {
     }
   }
 
-  return hasExclusiveCell.some((hasExclusive) => !hasExclusive)
+  return {
+    hasPhantomColumns: hasExclusiveCell.some((hasExclusive) => !hasExclusive),
+    columnCount,
+  }
 }
