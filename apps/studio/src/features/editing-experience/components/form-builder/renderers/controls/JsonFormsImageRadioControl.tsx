@@ -30,13 +30,11 @@ const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "callout/note": IconCalloutNote,
 }
 
-interface ImageRadioOptionSchema {
-  const: string
-  image: string
-}
-
 interface ImageRadioSchema {
-  oneOf?: ImageRadioOptionSchema[]
+  oneOf?: {
+    const: string
+    image: string
+  }[]
 }
 
 interface ImageRadioOptionProps extends UseRadioProps {
