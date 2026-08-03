@@ -973,7 +973,7 @@ describe("page.router", async () => {
         siteId: site.id,
       })
       const expected = {
-        ...pick(page, ["permalink", "title", "type"]),
+        ...pick(page, ["permalink", "title", "type", "state"]),
         navbar: omit(navbar, ["createdAt", "updatedAt"]),
         footer: omit(footer, ["createdAt", "updatedAt"]),
         content: blob.content,
@@ -1554,6 +1554,207 @@ describe("page.router", async () => {
             resource: omit(publishedPageToUpdate, ["updatedAt", "createdAt"]),
           },
         },
+      })
+    })
+
+    it("should throw PRECONDITION_FAILED and block edits if the page is archived", async () => {
+      // Arrange
+      const { page: archivedPage } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Archived,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: archivedPage.siteId,
+      })
+      const pageUpdateArgs = createPageUpdateArgs(archivedPage)
+
+      // Act
+      const result = caller.updatePageBlob(pageUpdateArgs)
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            'This page is archived and can\'t be edited. Use "Edit this page" first.',
+        }),
+      )
+      await assertAuditLogRows()
+    })
+
+    it("should allow edits on a draft page", async () => {
+      // Arrange
+      const { page: draftPage } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Draft,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: draftPage.siteId,
+      })
+      const pageUpdateArgs = createPageUpdateArgs(draftPage)
+
+      // Act
+      const result = caller.updatePageBlob(pageUpdateArgs)
+
+      // Assert
+      await expect(result).resolves.not.toThrow()
+    })
+
+    it("should allow edits on a published page", async () => {
+      // Arrange
+      const { page: publishedPage } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: publishedPage.siteId,
+      })
+      const pageUpdateArgs = createPageUpdateArgs(publishedPage)
+
+      // Act
+      const result = caller.updatePageBlob(pageUpdateArgs)
+
+      // Assert
+      await expect(result).resolves.not.toThrow()
+    })
+  })
+
+  describe("editThisPage", () => {
+    it("should throw 401 if not logged in", async () => {
+      // Arrange
+      const { page: archivedPage } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Archived,
+      })
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      // Act
+      const result = unauthedCaller.editThisPage({
+        pageId: Number(archivedPage.id),
+        siteId: archivedPage.siteId,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+      await assertAuditLogRows()
+    })
+
+    it("should throw 403 if user does not have update access to the page", async () => {
+      // Arrange
+      const { page: archivedPage } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Archived,
+      })
+
+      // Act
+      const result = caller.editThisPage({
+        pageId: Number(archivedPage.id),
+        siteId: archivedPage.siteId,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+      await assertAuditLogRows()
+    })
+
+    it("should return 404 if page does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.editThisPage({
+        pageId: 999999,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "NOT_FOUND", message: "Resource not found" }),
+      )
+      await assertAuditLogRows()
+    })
+
+    it("should reject a call on a page that is not currently archived", async () => {
+      // Arrange
+      const { page: draftPage } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Draft,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: draftPage.siteId,
+      })
+
+      // Act
+      const result = caller.editThisPage({
+        pageId: Number(draftPage.id),
+        siteId: draftPage.siteId,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unable to edit a page that is not archived",
+        }),
+      )
+      await assertAuditLogRows()
+    })
+
+    it("should flip an archived page's state to draft, leaving publishedVersionId and draftBlobId untouched, and log the audit event", async () => {
+      // Arrange
+      const { page: archivedPage } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Archived,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: archivedPage.siteId,
+      })
+      expect(archivedPage.publishedVersionId).toBeNull()
+      expect(archivedPage.draftBlobId).not.toBeNull()
+
+      // Act
+      const result = await caller.editThisPage({
+        pageId: Number(archivedPage.id),
+        siteId: archivedPage.siteId,
+      })
+
+      // Assert
+      expect(result.state).toEqual(ResourceState.Draft)
+      expect(result.publishedVersionId).toBeNull()
+      expect(result.draftBlobId).toEqual(archivedPage.draftBlobId)
+
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", archivedPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(actual.state).toEqual(ResourceState.Draft)
+      expect(actual.publishedVersionId).toBeNull()
+      expect(actual.draftBlobId).toEqual(archivedPage.draftBlobId)
+
+      await assertAuditLogRows(1)
+      const auditLog = await db.selectFrom("AuditLog").selectAll().execute()
+      expect(auditLog[0]).toMatchObject({
+        eventType: "ResourceUpdate",
       })
     })
   })
@@ -2640,6 +2841,9 @@ describe("page.router", async () => {
         .executeTakeFirstOrThrow()
 
       await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+      // "Edit this page": unlock the now-Archived page before editing it,
+      // per the updatePageBlob guard this PR adds.
+      await caller.editThisPage({ siteId: site.id, pageId: Number(page.id) })
 
       const newContent = {
         content: [

@@ -26,6 +26,7 @@ import {
   basePageSchema,
   createIndexPageSchema,
   createPageSchema,
+  editThisPageSchema,
   getPrefillSchema,
   getRootPageSchema,
   listPagesSchema,
@@ -243,7 +244,7 @@ export const pageRouter = router({
           })
         }
 
-        const { title, type, permalink, content, updatedAt } = page
+        const { title, type, permalink, content, updatedAt, state } = page
 
         if (
           type !== ResourceType.Page &&
@@ -273,6 +274,7 @@ export const pageRouter = router({
           title,
           type,
           updatedAt,
+          state,
           ...siteMeta,
         }
       })
@@ -511,6 +513,21 @@ export const pageRouter = router({
         })
       }
 
+      if (resource.state === ResourceState.Archived) {
+        // Should be impossible; log drift, don't let it change the outcome.
+        if (resource.publishedVersionId !== null) {
+          ctx.logger.error(
+            { resourceId: input.pageId },
+            "Resource is Archived but publishedVersionId is not null — state/relational drift detected",
+          )
+        }
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            'This page is archived and can\'t be edited. Use "Edit this page" first.',
+        })
+      }
+
       const by = await db
         .selectFrom("User")
         .where("id", "=", ctx.user.id)
@@ -543,6 +560,77 @@ export const pageRouter = router({
       })
 
       return input
+    }),
+
+  // The only exit from Archived: flips state to Draft only, nothing else.
+  editThisPage: protectedProcedure
+    .input(editThisPageSchema)
+    .mutation(async ({ input, ctx }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId: input.siteId,
+        action: "update",
+        userId: ctx.user.id,
+      })
+
+      const resource = await getPageById(db, {
+        resourceId: input.pageId,
+        siteId: input.siteId,
+      })
+
+      if (!resource) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Resource not found",
+        })
+      }
+
+      if (resource.state !== ResourceState.Archived) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unable to edit a page that is not archived",
+        })
+      }
+
+      const by = await db
+        .selectFrom("User")
+        .where("id", "=", ctx.user.id)
+        .selectAll()
+        .executeTakeFirstOrThrow(
+          () =>
+            new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Please ensure that you are authenticated",
+            }),
+        )
+
+      const updatedResource = await db.transaction().execute(async (tx) => {
+        const updated = await updatePageById(
+          {
+            id: input.pageId,
+            siteId: input.siteId,
+            state: ResourceState.Draft,
+          },
+          tx,
+        )
+
+        if (!updated) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to unlock page for editing",
+          })
+        }
+
+        await logResourceEvent(tx, {
+          siteId: input.siteId,
+          by,
+          delta: { before: resource, after: updated },
+          eventType: AuditLogEvent.ResourceUpdate,
+        })
+
+        return updated
+      })
+
+      return updatedResource
     }),
 
   createPage: protectedProcedure

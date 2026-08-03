@@ -198,3 +198,6 @@ export const getPrefillSchema = z.object({
   siteId: z.number().min(1),
   resourceId: z.string().regex(/^\d+$/),
 })
+
+// "Edit this page": the only exit from Archived (Archived -> Draft).
+export const editThisPageSchema = basePageSchema
