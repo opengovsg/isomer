@@ -1,7 +1,6 @@
 import type { TableProps } from "~/interfaces"
 
 import {
-  MAX_TABLE_COLUMNS,
   MAX_TABLE_ROWS,
   normalizeColspan,
   normalizeRowspan,
