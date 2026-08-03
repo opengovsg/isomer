@@ -20,6 +20,7 @@ import * as algoliaLib from "~/lib/algolia"
 import {
   assertGazetteAccess,
   assertGazetteCategoryInput,
+  assertGazetteSubcategoryInput,
   buildGazetteSearchRecords,
   copyFileWithNewName,
   getPresignedPutUrl,
@@ -180,6 +181,38 @@ describe("gazette.service", () => {
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Category label does not match the selected category",
+        }),
+      )
+    })
+  })
+
+  describe("assertGazetteSubcategoryInput", () => {
+    const TAG_CATEGORIES = [
+      {
+        label: GAZETTE_SUBCATEGORY_LABEL,
+        options: [{ id: "sub-1", label: "Public" }],
+      },
+    ]
+
+    it("does not throw for a subcategory id that resolves to a real option", () => {
+      expect(() =>
+        assertGazetteSubcategoryInput({
+          subcategoryId: "sub-1",
+          tagCategories: TAG_CATEGORIES,
+        }),
+      ).not.toThrow()
+    })
+
+    it("throws when the subcategory id does not resolve to any option", () => {
+      expect(() =>
+        assertGazetteSubcategoryInput({
+          subcategoryId: "invalid-subcat-uuid",
+          tagCategories: TAG_CATEGORIES,
+        }),
+      ).toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Subcategory is not a valid option for this collection",
         }),
       )
     })

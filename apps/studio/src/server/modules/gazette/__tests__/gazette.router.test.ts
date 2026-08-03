@@ -314,6 +314,33 @@ describe("gazette.router", async () => {
       )
     })
 
+    it("rejects a subcategory id that isn't a real option for this collection", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Act & Assert
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Notice 123",
+          permalink: crypto.randomUUID(),
+          ref: "/1/abc/notice-123.pdf",
+          categoryId: "cat-leg",
+          categoryLabel: "Legislative Supplements",
+          date: "30/04/2026",
+          description: "Notif #123",
+          tagged: ["invalid-subcat-uuid"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Subcategory is not a valid option for this collection",
+        }),
+      )
+    })
+
     it("rejects a non-Toppan, non-admin caller before any DB writes", async () => {
       // Arrange
       const user = await setupUser({
@@ -449,7 +476,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["Acts Supplement"],
+        tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
       })
 
@@ -465,7 +492,7 @@ describe("gazette.router", async () => {
           categoryLabel: "Legislative Supplements",
           date: "30/04/2026",
           description: "N-2026-001", // Same notification number
-          tagged: ["Acts Supplement"], // Same subcategory
+          tagged: ["sub-1"], // Same subcategory
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -490,7 +517,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["Acts Supplement"],
+        tagged: ["sub-1"],
         scheduledAt: PAST_DATE,
       })
 
@@ -507,7 +534,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001", // Same notification number
-        tagged: ["Bills Supplement"], // Different subcategory
+        tagged: ["sub-2"], // Different subcategory
         scheduledAt: PAST_DATE,
       })
 
@@ -522,6 +549,44 @@ describe("gazette.router", async () => {
   })
 
   describe("update", () => {
+    it("rejects a subcategory id that isn't a real option for this collection", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Original",
+        permalink: crypto.randomUUID(),
+        ref: "/1/abc/notice.pdf",
+        categoryId: "cat-leg",
+        categoryLabel: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "old-desc",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert
+      await expect(
+        caller.update({
+          siteId: site.id,
+          gazetteId: Number(gazetteId),
+          title: "Original",
+          categoryId: "cat-leg",
+          categoryLabel: "Legislative Supplements",
+          date: "30/04/2026",
+          description: "old-desc",
+          tagged: ["invalid-subcat-uuid"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Subcategory is not a valid option for this collection",
+        }),
+      )
+    })
+
     it("rewrites the blob metadata and the resource title", async () => {
       // Arrange
       const { site, collection, user } = await seedToppanWithCollection()

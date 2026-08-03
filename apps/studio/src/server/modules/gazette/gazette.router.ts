@@ -41,6 +41,7 @@ import {
 } from "../resource/resource.service"
 import {
   assertGazetteCategoryInput,
+  assertGazetteSubcategoryInput,
   findCollectionLinkWithFilename,
   hasDuplicateNotificationNumber,
   assertGazetteAccess,
@@ -67,17 +68,20 @@ const loadCollectionTagCategoriesForCategoryInput = async ({
   collectionId,
   categoryId,
   categoryLabel,
+  subcategoryId,
 }: {
   siteId: number
   collectionId: number
   categoryId: string
   categoryLabel: string
+  subcategoryId: string
 }) => {
   const tagCategories = await getCollectionTagsForResource({
     collectionId,
     siteId,
   })
   assertGazetteCategoryInput({ categoryId, categoryLabel, tagCategories })
+  assertGazetteSubcategoryInput({ subcategoryId, tagCategories })
   return tagCategories
 }
 
@@ -290,6 +294,7 @@ export const gazetteRouter = router({
             collectionId,
             categoryId,
             categoryLabel,
+            subcategoryId: tagged[0] ?? "",
           },
         )
 
@@ -493,6 +498,7 @@ export const gazetteRouter = router({
             collectionId: Number(existingResource.parentId),
             categoryId,
             categoryLabel,
+            subcategoryId: tagged[0] ?? "",
           },
         )
 

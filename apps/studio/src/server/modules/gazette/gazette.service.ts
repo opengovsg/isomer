@@ -607,6 +607,28 @@ export const assertGazetteCategoryInput = ({
   }
 }
 
+// Unlike category, the client only submits a subcategory id (no label to
+// cross-check) — so this only confirms the id resolves to a real option,
+// rather than duplicating the label-match check above.
+export const assertGazetteSubcategoryInput = ({
+  subcategoryId,
+  tagCategories,
+}: {
+  subcategoryId: string
+  tagCategories: GazetteTagCategory[]
+}): void => {
+  const resolvedLabel = resolveGazetteSubcategoryLabel(
+    subcategoryId,
+    tagCategories,
+  )
+  if (!resolvedLabel) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Subcategory is not a valid option for this collection",
+    })
+  }
+}
+
 /**
  * Fallback when tagged uuids cannot be resolved against the index-page
  * taxonomy: derive labels from the S3 ref shape
