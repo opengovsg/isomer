@@ -62,6 +62,10 @@ const selectBlockAndDispatch = (
     )
   }
   editor.view.dispatch(tr)
+  // Unlike every sibling action, this dispatches its own transaction instead
+  // of `.chain().focus()...run()` — restore focus explicitly so a real
+  // mousedown-triggered blur doesn't strand it on the button.
+  editor.commands.focus()
 }
 
 // Insert a copy of `sourceRow` at row index `insertAt`. Cells that span into
