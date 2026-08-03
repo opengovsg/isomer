@@ -146,10 +146,11 @@ export const getRowMovePlan = (
   }
 }
 
-// Column movement mirrors row movement. `left` is included and `right` is
-// excluded; the adjacent column is moved across the selected block.
-// Document position of the bottom-right perimeter cell in a CellSelection.
-// Used to anchor the table action trigger at the selection's outer corner.
+// Table selection helpers:
+// - getBottomRightCellDocumentPos: document position of the bottom-right perimeter
+//   cell in a CellSelection (anchors the table action trigger).
+// - getColumnMovePlan: column movement mirrors row movement; `left` included and
+//   `right` excluded; the adjacent column is moved across the selected block.
 export const getBottomRightCellDocumentPos = (
   state: EditorState,
 ): number | null => {
