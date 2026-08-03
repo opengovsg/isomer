@@ -318,16 +318,31 @@ export const shadowingSourceCandidates = (permalink: string): string[] => {
   return [...new Set(candidates)]
 }
 
-// Finds the live redirect that would shadow `permalink` — an exact-source match
-// or the deepest matching ancestor wildcard — optionally ignoring an
-// EXACT-source match whose destination is `excludeDestination` (the redirect
-// pointing back at the page itself, which is the reclaim case, not a shadow).
-// Never excludes an ancestor wildcard match this way: a wildcard's destination
-// is the containing folder, not this page, so a wildcard sharing the excluded
-// reference is still a real shadow, not a reclaim. Returns the
-// highest-precedence match (exact beats wildcard; deeper wildcard beats
-// shallower) or null. Wildcard awareness keeps a page from silently landing
-// under a "/section/*" redirect that would redirect it away.
+// First hit in `candidates` (most-specific first) that `bySource` has, so exact
+// beats wildcard and deeper wildcard beats shallower. `excludeDestination` skips
+// only an EXACT match pointing back at the resource itself (the reclaim case) —
+// a wildcard points at the containing folder, so it stays a real shadow.
+const resolveShadowingMatch = <
+  T extends { source: string; destination: string },
+>(
+  candidates: string[],
+  bySource: Map<string, T>,
+  excludeDestination?: string,
+): T | null => {
+  const [exactSource, ...wildcardCandidates] = candidates
+  const exactMatch = exactSource ? bySource.get(exactSource) : undefined
+  if (exactMatch && exactMatch.destination !== excludeDestination) {
+    return exactMatch
+  }
+  for (const candidate of wildcardCandidates) {
+    const match = bySource.get(candidate)
+    if (match) return match
+  }
+  return null
+}
+
+// Finds the live redirect that would shadow `permalink` — see
+// resolveShadowingMatch for the precedence/exclusion semantics.
 const findShadowingRedirect = async (
   dbInstance: SafeKysely,
   {
@@ -337,7 +352,6 @@ const findShadowingRedirect = async (
   }: { siteId: number; permalink: string; excludeDestination?: string },
 ) => {
   const candidates = shadowingSourceCandidates(permalink)
-  const [exactSource, ...wildcardCandidates] = candidates
   const rows = await dbInstance
     .selectFrom("Redirect")
     .selectAll()
@@ -346,17 +360,7 @@ const findShadowingRedirect = async (
     .where("deletedAt", "is", null)
     .execute()
   const bySource = new Map(rows.map((row) => [row.source, row]))
-
-  const exactMatch = exactSource ? bySource.get(exactSource) : undefined
-  if (exactMatch && exactMatch.destination !== excludeDestination) {
-    return exactMatch
-  }
-  // candidates are ordered most-specific first, so the first hit wins.
-  for (const candidate of wildcardCandidates) {
-    const match = bySource.get(candidate)
-    if (match) return match
-  }
-  return null
+  return resolveShadowingMatch(candidates, bySource, excludeDestination)
 }
 
 // Resolves a stored destination to a comparable/displayable path: a reference
@@ -614,18 +618,10 @@ export const createRedirect = async ({
   const created = await db
     .transaction()
     .execute(async (tx) => {
-      // Bound the wait for the lock so a stalled holder can't block this write
-      // indefinitely; the wait aborts as a retryable CONFLICT (see the .catch).
-      await sql`SET LOCAL lock_timeout = ${sql.lit(REDIRECT_LOCK_TIMEOUT_MS)}`.execute(
-        tx,
-      )
-      // Serialise redirect writes for this site (the same lock bulkCreateRedirects
-      // takes), so a single create and a concurrent bulk create can't each miss
-      // the other's uncommitted row in the loop/shadow guards below and both
-      // publish a loop. Released automatically at commit/rollback.
-      await sql`SELECT pg_advisory_xact_lock(${REDIRECT_WRITE_LOCK_NAMESPACE}, ${siteId})`.execute(
-        tx,
-      )
+      // So a single create and a concurrent bulk create can't each miss the
+      // other's uncommitted row in the loop/shadow guards below and both publish
+      // a loop. The timed-out wait aborts as a CONFLICT (see the .catch).
+      await acquireRedirectWriteLock(tx, siteId)
 
       // Reject creating over a live redirect. A soft-deleted row for the same
       // source still holds the (siteId, source) unique constraint and is revived
@@ -782,6 +778,22 @@ const rethrowLockTimeoutAsConflict = (error: unknown): never => {
     })
   }
   throw error
+}
+
+// Taken by every redirect mutation path before its check-then-write, so a
+// concurrent write can't land on a source another path already read past — the
+// unique constraint only catches two writes racing to the SAME source. Callers
+// turn a timed-out wait into a CONFLICT via rethrowLockTimeoutAsConflict.
+const acquireRedirectWriteLock = async (
+  tx: Transaction<DB>,
+  siteId: number,
+): Promise<void> => {
+  await sql`SET LOCAL lock_timeout = ${sql.lit(REDIRECT_LOCK_TIMEOUT_MS)}`.execute(
+    tx,
+  )
+  await sql`SELECT pg_advisory_xact_lock(${REDIRECT_WRITE_LOCK_NAMESPACE}, ${siteId})`.execute(
+    tx,
+  )
 }
 
 // Thrown inside the bulk insert when a source stopped being publishable between
@@ -1294,20 +1306,13 @@ export const bulkCreateRedirects = async ({
 
   try {
     const created = await db.transaction().execute(async (tx) => {
-      // Bound the wait for the lock so a stalled holder can't block this write
-      // indefinitely; the wait aborts as a retryable CONFLICT (see the catch).
-      await sql`SET LOCAL lock_timeout = ${sql.lit(REDIRECT_LOCK_TIMEOUT_MS)}`.execute(
-        tx,
-      )
-      // Serialise redirect writes for this site: two concurrent bulk creates
-      // could otherwise each miss the other's uncommitted rows in the rechecks
-      // below (READ COMMITTED doesn't see them) and both publish — e.g. one
-      // inserting /a -> /b while the other inserts /b -> /a, forming a loop. The
-      // xact lock makes the later transaction wait, so its recheck sees the
-      // committed rows and aborts. Released automatically at commit/rollback.
-      await sql`SELECT pg_advisory_xact_lock(${REDIRECT_WRITE_LOCK_NAMESPACE}, ${siteId})`.execute(
-        tx,
-      )
+      // Two concurrent bulk creates could otherwise each miss the other's
+      // uncommitted rows in the rechecks below (READ COMMITTED doesn't see them)
+      // and both publish — e.g. one inserting /a -> /b while the other inserts
+      // /b -> /a, forming a loop. The xact lock makes the later transaction
+      // wait, so its recheck sees the committed rows and aborts. The timed-out
+      // wait aborts as a CONFLICT (see the catch).
+      await acquireRedirectWriteLock(tx, siteId)
 
       // Re-read every existing row (live or soft-deleted) for these sources
       // first, so each audit entry's `before` is the real committed row. Chunked
@@ -1651,6 +1656,9 @@ const assertDescendantsNotShadowed = async (
     return
   }
 
+  // Most candidates have no row at all, so `rows` is expected to be far shorter
+  // than `allCandidates`. Keying by `source` is unambiguous: @@unique([siteId,
+  // source]) allows only one row per source, even across soft-deletes.
   const allCandidates = [
     ...new Set(descendants.flatMap(({ candidates }) => candidates)),
   ]
@@ -1669,18 +1677,8 @@ const assertDescendantsNotShadowed = async (
   ).flat()
   const bySource = new Map(rows.map((row) => [row.source, row]))
 
-  // Highest-precedence match first (exact wins over an ancestor wildcard, a
-  // deeper wildcard over a shallower one) — mirrors findShadowingRedirect, but
-  // against the single prefetched map instead of a query per descendant.
   for (const { newFullPermalink, reference, candidates } of descendants) {
-    const [exactSource, ...wildcardCandidates] = candidates
-    const exactMatch = exactSource ? bySource.get(exactSource) : undefined
-    const shadowing =
-      exactMatch && exactMatch.destination !== reference
-        ? exactMatch
-        : wildcardCandidates
-            .map((candidate) => bySource.get(candidate))
-            .find((match) => match !== undefined)
+    const shadowing = resolveShadowingMatch(candidates, bySource, reference)
     if (shadowing) {
       throw new TRPCError({
         code: "CONFLICT",
@@ -1865,6 +1863,8 @@ export const applyPermalinkChangeRedirects = async (
     return
   }
 
+  await acquireRedirectWriteLock(tx, siteId).catch(rethrowLockTimeoutAsConflict)
+
   // A published page must not land on a path a live redirect already points
   // elsewhere from — it would be shadowed (mirror of the publish-block). The
   // throw rolls back the enclosing move/rename.
@@ -1923,6 +1923,7 @@ export const applyFolderPermalinkChangeRedirects = async (
   if (oldFullPermalink === newFullPermalink) {
     return
   }
+  await acquireRedirectWriteLock(tx, siteId).catch(rethrowLockTimeoutAsConflict)
   // Mirror the page guard: a live folder must not land on a path a redirect
   // already covers (exact or wildcard). Throwing rolls back the enclosing move.
   // A folder move relocates every descendant too, so the root permalink alone
