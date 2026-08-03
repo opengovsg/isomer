@@ -34,7 +34,7 @@ describe("Table layout", () => {
     // Arrange / Act
     const { table } = renderTable(denseThreeColumnTable)
 
-    // Assert — auto layout: long Description should dominate narrow Year
+    // Assert
     expect(table.className).not.toContain("table-fixed")
     expect(table.querySelector("colgroup")).toBeNull()
 
@@ -47,7 +47,7 @@ describe("Table layout", () => {
     // Arrange / Act
     const { table } = renderTable(staggeredPhantomMerge)
 
-    // Assert — fixed layout: H1 ≈ ⅓, merged H2+H3 ≈ ⅔ of table width
+    // Assert
     expect(table.className).toContain("table-fixed")
     expect(table.querySelectorAll("col")).toHaveLength(3)
 

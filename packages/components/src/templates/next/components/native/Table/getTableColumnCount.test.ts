@@ -7,11 +7,8 @@ describe("getTableColumnCount", () => {
     // Arrange
     const rows: [] = []
 
-    // Act
-    const count = getTableColumnCount(rows)
-
-    // Assert
-    expect(count).toBe(0)
+    // Act / Assert
+    expect(getTableColumnCount(rows)).toBe(0)
   })
 
   it("counts columns in a plain rectangular table", () => {
@@ -88,7 +85,7 @@ describe("getTableColumnCount", () => {
   })
 
   it("keeps 3 columns for staggered merges with a phantom middle column", () => {
-    // Arrange — row1 merges cols 2–3; row2 merges cols 1–2 (rowspan 2); row3 only has col 3
+    // Arrange
     const rows = [
       {
         type: "tableRow" as const,
@@ -302,13 +299,8 @@ describe("getTableColumnCount", () => {
     expect(getTableColumnCount(rows)).toBe(2)
   })
 
-  it("resolves a large table with a rowspan without quadratic/cubic blowup", () => {
-    // Arrange — 1000 rows x 1000 cells, with row 0's first cell spanning into
-    // row 1 (rowspan: 2). A history-rescanning implementation must, for every
-    // one of the ~1000 later rows, re-walk up to 1000 earlier rows of ~1000
-    // cells each to find which still cover it — ~10^9 operations, which took
-    // over 15s in manual testing. A sweep that tracks active rowspan credit
-    // incrementally does the same work in a few milliseconds.
+  it("resolves a large table with a rowspan without quadratic blowup", () => {
+    // Arrange: 1000×1000 cells; row 0 cell 0 has rowspan 2. Naive rescans are ~10^9 ops.
     const paragraph = {
       type: "paragraph" as const,
       content: [{ type: "text" as const, text: "" }],

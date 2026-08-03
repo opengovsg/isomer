@@ -1,19 +1,11 @@
 /**
- * Upper bound on logical columns the layout resolver will reason about.
- * `hasPhantomColumns` allocates O(rows × columns), and `colspan`/`rowspan`
- * arrive from Tiptap, which copies them verbatim off pasted HTML with no
- * validation — so these values are untrusted at this boundary regardless of
- * the schema.
- *
- * 64 is an arbitrary cap — large enough for real tables, small enough to keep
- * phantom-grid allocation bounded.
+ * Max logical columns for layout analysis (`hasPhantomColumns` is O(rows × cols)).
+ * Tiptap copies colspan/rowspan verbatim from pasted HTML, so treat them as untrusted.
+ * 64 is arbitrary: enough for real tables, small enough to bound grid allocation.
  */
 export const MAX_TABLE_COLUMNS = 64
 
-/**
- * Upper bound on rows the phantom-grid resolver will walk.
- * `hasPhantomColumns` allocates O(rows × columns); this is an arbitrary cap.
- */
+/** Max rows `hasPhantomColumns` will walk. Arbitrary cap on grid allocation. */
 export const MAX_TABLE_ROWS = 1000
 
 const normalizeBoundedSpan = (value: unknown, max: number): number => {
@@ -22,10 +14,10 @@ const normalizeBoundedSpan = (value: unknown, max: number): number => {
   return span < 1 ? 1 : Math.min(span, max)
 }
 
-/** Coerce an untrusted colspan to a usable positive integer. */
+/** Clamp untrusted colspan to [1, MAX_TABLE_COLUMNS]. */
 export const normalizeColspan = (value: unknown): number =>
   normalizeBoundedSpan(value, MAX_TABLE_COLUMNS)
 
-/** Coerce an untrusted rowspan to a usable positive integer. */
+/** Clamp untrusted rowspan to [1, MAX_TABLE_ROWS]. */
 export const normalizeRowspan = (value: unknown): number =>
   normalizeBoundedSpan(value, MAX_TABLE_ROWS)

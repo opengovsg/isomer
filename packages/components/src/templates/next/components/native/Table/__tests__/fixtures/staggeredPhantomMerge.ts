@@ -2,8 +2,7 @@ import type { TableProps } from "~/interfaces"
 
 export const staggeredPhantomMerge: Pick<TableProps, "attrs" | "content"> = {
   attrs: {
-    caption:
-      "Staggered merges — logical 3 columns (middle column must not collapse)",
+    caption: "Staggered merges (3 logical columns)",
   },
   content: [
     {

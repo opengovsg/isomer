@@ -1,7 +1,7 @@
 import type { TableProps } from "~/interfaces"
 
 const longDescription =
-  "The Ministry will progressively expand the programme across all towns over the next three years, working closely with grassroots organisations and residents to ensure that feedback is incorporated at every stage of implementation."
+  "The Ministry will progressively expand the programme across all towns over the next three years, working with grassroots organisations and residents."
 
 export const denseThreeColumnTable: Pick<TableProps, "attrs" | "content"> = {
   attrs: {

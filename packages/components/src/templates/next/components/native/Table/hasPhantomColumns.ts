@@ -20,15 +20,10 @@ export interface PhantomColumnsResult {
 }
 
 /**
- * `hasPhantomColumns` is true when at least one logical column is never
- * occupied by a `colspan={1}` cell — a "phantom" track that only exists
- * inside wider spans.
- *
- * Under `table-layout: auto` with no `<colgroup>`, browsers can collapse those
- * tracks to zero width (see `getTableColumnCount`). Callers use this to gate
- * fixed equal-width column tracks so ordinary tables keep content-based sizing.
- * `columnCount` is returned alongside so callers building the fixed layout
- * don't need to recompute it.
+ * True when some logical column never has a `colspan={1}` cell on its own.
+ * Under `table-layout: auto` with no `<colgroup>`, browsers can zero-width
+ * those tracks (see `getTableColumnCount`). Returns `columnCount` so fixed
+ * layout callers do not recompute it.
  */
 export const checkPhantomColumns = (rows: TableRows): PhantomColumnsResult => {
   if (rows.length === 0 || rows.length > MAX_TABLE_ROWS) {
@@ -54,8 +49,7 @@ export const checkPhantomColumns = (rows: TableRows): PhantomColumnsResult => {
 
     let columnIndex = 0
     for (const cell of row.content) {
-      // Slots already filled by an earlier cell's rowspan are omitted from
-      // this row's JSON — skip them so we place at the next free column.
+      // Rowspan slots omitted from this row's JSON; skip to the next free column.
       while (columnIndex < columnCount && grid[rowIndex]?.[columnIndex]) {
         columnIndex += 1
       }

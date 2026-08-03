@@ -137,10 +137,12 @@ describe("resolveTableLayout", () => {
       { rows: [row(cell("1e9"))] as unknown as TableRows, kind: "auto" },
     ]
 
-    // Act / Assert
     for (const { rows, kind } of hostileCases) {
-      expect(() => resolveTableLayout(rows)).not.toThrow()
-      expect(resolveTableLayout(rows).kind).toBe(kind)
+      // Act
+      const layout = resolveTableLayout(rows)
+
+      // Assert
+      expect(layout.kind).toBe(kind)
     }
   })
 })

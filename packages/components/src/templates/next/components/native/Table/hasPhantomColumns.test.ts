@@ -87,7 +87,7 @@ describe("hasPhantomColumns", () => {
   })
 
   it("returns true for staggered merges with a phantom middle column", () => {
-    // Arrange — row1 merges cols 2–3; row2 merges cols 1–2 (rowspan 2); row3 only has col 3
+    // Arrange
     const rows = [
       {
         type: "tableRow" as const,
@@ -161,7 +161,7 @@ describe("hasPhantomColumns", () => {
   })
 
   it("returns false when a full-width header span still has exclusive body cells", () => {
-    // Arrange — header colspan 4, but each body column has its own cell
+    // Arrange
     const rows = [
       {
         type: "tableRow" as const,
