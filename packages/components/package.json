@@ -32,10 +32,10 @@
   "scripts": {
     "build": "run-p build:* && pnpm pack",
     "build-storybook": "storybook build",
-    "build:module": "tsc -p tsconfig.module.build.json && tsc-alias -p tsconfig.module.build.json",
+    "build:module": "NODE_OPTIONS= tsc -p tsconfig.module.build.json && NODE_OPTIONS= tsc-alias -p tsconfig.module.build.json",
     "chromatic": "pnpm exec chromatic --project-token=$CHROMATIC_PROJECT_TOKEN",
     "clean": "git clean -xdf .turbo node_modules dist",
-    "dev": "tsc -w",
+    "dev": "NODE_OPTIONS= tsc -w",
     "format": "oxfmt --check . --ignore-path ../../.gitignore",
     "format:fix": "oxfmt --write . --ignore-path ../../.gitignore",
     "lint": "oxlint --type-aware .",
