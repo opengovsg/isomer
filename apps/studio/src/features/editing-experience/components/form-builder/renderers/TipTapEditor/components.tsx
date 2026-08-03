@@ -1,11 +1,21 @@
 import type { BoxProps } from "@chakra-ui/react"
 import type { EditorContentProps, Editor as TiptapEditor } from "@tiptap/react"
-import type { PropsWithChildren } from "react"
+import type { PropsWithChildren, RefObject } from "react"
 import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
+import type { TableBubbleMenuAnchor } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu.types"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
-import { useMemo } from "react"
-import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
+import { useCallback, useMemo, useRef } from "react"
+import {
+  hideTableBubbleMenu,
+  revealTableBubbleMenu,
+  TableBubbleMenu,
+} from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
+import { TableDragHandles } from "~/features/editing-experience/components/TableDragHandles/TableDragHandles"
+import {
+  createTableDragHandlesBubbleMenuAnchor,
+  TABLE_EDITOR_OVERLAYS_ATTR,
+} from "~/features/editing-experience/components/TableDragHandles/TableDragHandles.bubbleMenu"
 
 const EditorContainer = ({
   children,
@@ -45,14 +55,35 @@ const EditorContainer = ({
 
 const EditorContentWrapper = ({
   editor,
-}: Pick<EditorContentProps, "editor">) => {
+  containerRef,
+  showTableExtras,
+  tableBubbleMenuAnchor,
+}: Pick<EditorContentProps, "editor"> & {
+  containerRef: RefObject<HTMLDivElement>
+  showTableExtras?: boolean
+  tableBubbleMenuAnchor?: TableBubbleMenuAnchor
+}) => {
+  const handleTableDragStateChange = useCallback(
+    (isDragging: boolean) => {
+      if (!editor || editor.isDestroyed) return
+      if (isDragging) {
+        hideTableBubbleMenu(editor)
+        return
+      }
+      revealTableBubbleMenu(editor, tableBubbleMenuAnchor)
+    },
+    [editor, tableBubbleMenuAnchor],
+  )
+
   return (
     <Box
+      ref={containerRef}
       position="relative"
       w="100%"
       flex="1 1 auto"
       overflowX="hidden"
       overflowY="auto"
+      {...{ [TABLE_EDITOR_OVERLAYS_ATTR]: "" }}
     >
       <Box
         as={EditorContent}
@@ -63,6 +94,13 @@ const EditorContentWrapper = ({
         onClick={() => editor?.chain().focus().run()}
         cursor="text"
       />
+      {showTableExtras && (
+        <TableDragHandles
+          editor={editor}
+          containerRef={containerRef}
+          onDragStateChange={handleTableDragStateChange}
+        />
+      )}
     </Box>
   )
 }
@@ -76,10 +114,11 @@ interface EditorProps {
    * `useTextEditor`/`TiptapTextEditor` and
    * `useAccordionEditor`/`TiptapAccordionEditor` — see
    * `hooks/useTextEditor/useTextEditor.ts`) should set this. It mounts the
-   * contextual table bubble menu; editors without table extensions (Prose,
-   * Callout, SimpleProse) have no table nodes for it to react to, so there's
-   * nothing for it to mount. Inline table captions need no wiring here — they
-   * are rendered by the `table` node view itself (`TableNodeView`).
+   * contextual table bubble menu and row/column drag handles; editors without
+   * table extensions (Prose, Callout, SimpleProse) have no table nodes for
+   * them to react to, so there's nothing for them to mount. Inline table
+   * captions need no wiring here — they are rendered by the `table` node view
+   * itself (`TableNodeView`).
    */
   showTableExtras?: boolean
 }
@@ -89,11 +128,27 @@ export const Editor = ({
   isNested,
   showTableExtras,
 }: EditorProps) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const tableBubbleMenuAnchor = useMemo(
+    () =>
+      showTableExtras
+        ? createTableDragHandlesBubbleMenuAnchor(editor)
+        : undefined,
+    [editor, showTableExtras],
+  )
+
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
-      {showTableExtras && <TableBubbleMenu editor={editor} />}
-      <EditorContentWrapper editor={editor} />
+      {showTableExtras && (
+        <TableBubbleMenu editor={editor} anchor={tableBubbleMenuAnchor} />
+      )}
+      <EditorContentWrapper
+        editor={editor}
+        containerRef={containerRef}
+        showTableExtras={showTableExtras}
+        tableBubbleMenuAnchor={tableBubbleMenuAnchor}
+      />
     </EditorContainer>
   )
 }
