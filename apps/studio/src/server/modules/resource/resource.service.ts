@@ -38,7 +38,11 @@ import type {
   User,
 } from "../database"
 import type { SearchResultResource } from "./resource.types"
-import { logPublishEvent, logRedirectEvent } from "../audit/audit.service"
+import {
+  logPublishEvent,
+  logRedirectEvent,
+  logResourceEvent,
+} from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
 import { db, jsonb, ResourceState, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
@@ -1342,6 +1346,224 @@ export const publishPageResource = async ({
           }
         : undefined,
     })
+}
+
+type PreserveContent = "draft" | "published"
+
+interface UnpublishPageResourceArgs {
+  logger: Logger<string>
+  userId: string
+  siteId: number
+  resourceId: string
+  // Required if a WIP draft already exists: "published" overwrites it,
+  // "draft" keeps it. Ignored (and optional) if there's no draft to choose
+  // between.
+  preserveContent?: PreserveContent
+  sitePublish?: {
+    enableCodebuildJobs: boolean
+    isScheduled: boolean
+  }
+}
+
+/**
+ * Takes a live page down: `Published` -> `Archived`, then rebuilds the site.
+ * Heavy path — see `archiveDraftResource` for the light `Draft` -> `Archived`
+ * counterpart.
+ */
+export const unpublishPageResource = async ({
+  logger,
+  siteId,
+  resourceId,
+  userId,
+  preserveContent,
+  sitePublish,
+}: UnpublishPageResourceArgs) => {
+  await db.transaction().execute(async (tx) => {
+    // TODO: unlocked read — races with concurrent publish/unpublish/archive
+    // on the same resource (same known gap as publishPageResource).
+    const resource = await getPageById(tx, {
+      resourceId: Number(resourceId),
+      siteId,
+    })
+
+    if (!resource) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message:
+          "Please ensure you are attempting to unpublish a page that exists",
+      })
+    }
+
+    if (!resource.publishedVersionId) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message:
+          "This page is not currently published, so there is nothing to unpublish.",
+      })
+    }
+
+    // A WIP draft already existing means there's a real choice to make
+    // between keeping it or the published version — require the caller to
+    // have made that choice explicitly rather than silently picking one.
+    if (resource.draftBlobId && !preserveContent) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message:
+          "This page has unsaved draft changes. Please confirm whether to keep the draft or the published version before unpublishing.",
+      })
+    }
+
+    // Applied choice, for the audit log — "n/a" when there was no draft to
+    // choose between (preserveContent is ignored in that case regardless of
+    // what was passed in).
+    let appliedPreserveContent: PreserveContent | "n/a"
+    let newDraftBlobId = resource.draftBlobId
+
+    if (!resource.draftBlobId || preserveContent === "published") {
+      appliedPreserveContent = resource.draftBlobId ? "published" : "n/a"
+
+      const publishedVersion = await tx
+        .selectFrom("Version")
+        .where("id", "=", resource.publishedVersionId)
+        .select("blobId")
+        .executeTakeFirstOrThrow()
+
+      // Clone (never reference) the published Version's blob content into a
+      // NEW `Blob` row, and point `draftBlobId` at that new row.
+      //
+      // This is NOT `draftBlobId = publishedVersion.blobId`. `updateBlobById`
+      // mutates whatever blob `draftBlobId` currently points at IN PLACE
+      // whenever `draftBlobId` is already set — it only creates a fresh blob
+      // when `draftBlobId` was null. Pointing `draftBlobId` straight at the
+      // Version's `blobId` would mean the very next edit (via "Edit this
+      // page") silently rewrites that Version's supposedly-immutable
+      // content — real data corruption. `Version.blobId` is also `@unique`,
+      // so republishing without editing would additionally hit a constraint
+      // violation trying to insert a new Version reusing that blobId.
+      const publishedBlob = await tx
+        .selectFrom("Blob")
+        .where("id", "=", publishedVersion.blobId)
+        .select("content")
+        .executeTakeFirstOrThrow()
+
+      const clonedBlob = await tx
+        .insertInto("Blob")
+        .values({ content: jsonb(publishedBlob.content) })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+
+      newDraftBlobId = clonedBlob.id
+    } else {
+      // preserveContent === "draft": leave the existing WIP draft's blob
+      // untouched, don't backfill from the published content at all.
+      appliedPreserveContent = "draft"
+    }
+
+    const updatedResource = await updatePageById(
+      {
+        id: Number(resource.id),
+        siteId,
+        publishedVersionId: null,
+        draftBlobId: newDraftBlobId,
+        state: ResourceState.Archived,
+      },
+      tx,
+    )
+
+    if (!updatedResource) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to unpublish page",
+      })
+    }
+
+    await logResourceEvent(tx, {
+      siteId,
+      by: await getUserById(userId),
+      delta: { before: resource, after: updatedResource },
+      eventType: AuditLogEvent.Unpublish,
+      metadata: { preserveContent: appliedPreserveContent },
+    })
+  })
+
+  // Outside the transaction: rebuild the site so the page actually drops
+  // from deployed output.
+  if (sitePublish)
+    await publishSite(logger, {
+      siteId,
+      codebuildJob: sitePublish.enableCodebuildJobs
+        ? {
+            resourceWithUserIds: [{ resourceId, userId }],
+            isScheduled: sitePublish.isScheduled,
+          }
+        : undefined,
+    })
+}
+
+interface ArchiveDraftResourceArgs {
+  userId: string
+  siteId: number
+  resourceId: string
+}
+
+/**
+ * Shelves a `Draft` page that was never live: `Draft` -> `Archived`. Covers
+ * both "archive a never-published draft" and "cancel Edit this page" —
+ * identical mutation either way, since there's no live state to protect and
+ * nothing to publish. Only flips `state`; `draftBlobId`/`publishedVersionId`
+ * are left untouched, and there's no site rebuild since nothing was ever
+ * live. See `unpublishPageResource` for the heavy `Published` -> `Archived`
+ * counterpart.
+ */
+export const archiveDraftResource = async ({
+  userId,
+  siteId,
+  resourceId,
+}: ArchiveDraftResourceArgs) => {
+  await db.transaction().execute(async (tx) => {
+    const resource = await getPageById(tx, {
+      resourceId: Number(resourceId),
+      siteId,
+    })
+
+    if (!resource) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message:
+          "Please ensure you are attempting to archive a page that exists",
+      })
+    }
+
+    if (resource.state !== ResourceState.Draft) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: "Only a Draft page can be archived this way.",
+      })
+    }
+
+    const updatedResource = await updatePageById(
+      {
+        id: Number(resource.id),
+        siteId,
+        state: ResourceState.Archived,
+      },
+      tx,
+    )
+
+    if (!updatedResource) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to archive page",
+      })
+    }
+
+    await logResourceEvent(tx, {
+      siteId,
+      by: await getUserById(userId),
+      delta: { before: resource, after: updatedResource },
+      eventType: AuditLogEvent.ArchiveDraft,
+    })
+  })
 }
 
 /**

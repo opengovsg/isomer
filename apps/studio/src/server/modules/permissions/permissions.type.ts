@@ -38,7 +38,7 @@ export interface BulkPermissionsProps extends Omit<
   PermissionsProps,
   "resourceId"
 > {
-  action: CrudResourceActions | "publish"
+  action: CrudResourceActions | "publish" | "unpublish"
   siteId: Site["id"]
   resourceIds?: (string | null)[]
 }

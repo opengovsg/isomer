@@ -22,6 +22,7 @@ import {
   getIsSingpassDisabledInNonPreview,
 } from "~/lib/growthbook"
 import {
+  archiveDraftSchema,
   basePageSchema,
   createIndexPageSchema,
   createPageSchema,
@@ -32,6 +33,7 @@ import {
   publishPageSchema,
   readPageOutputSchema,
   reorderBlobSchema,
+  unpublishPageSchema,
   updatePageBlobSchema,
   updatePageMetaSchema,
 } from "~/schemas/page"
@@ -52,6 +54,7 @@ import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
 import { applyPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
+  archiveDraftResource,
   createResourceWithBlob,
   getBlobOfResource,
   getFooter,
@@ -62,6 +65,7 @@ import {
   getResourcePermalinkTree,
   publishPageResource,
   publishResource,
+  unpublishPageResource,
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
@@ -669,6 +673,53 @@ export const pageRouter = router({
         }
       },
     ),
+
+  // Takes a live page down: Published -> Archived.
+  unpublishPage: protectedProcedure
+    .input(unpublishPageSchema)
+    .mutation(
+      async ({
+        ctx: { user, gb, logger },
+        input: { siteId, pageId, preserveContent },
+      }) => {
+        await bulkValidateUserPermissionsForResources({
+          siteId,
+          action: "unpublish",
+          resourceIds: [String(pageId)],
+          userId: user.id,
+        })
+        await unpublishPageResource({
+          logger,
+          siteId,
+          resourceId: String(pageId),
+          userId: user.id,
+          preserveContent,
+          sitePublish: {
+            isScheduled: false,
+            enableCodebuildJobs: gb.isOn(ENABLE_CODEBUILD_JOBS),
+          },
+        })
+      },
+    ),
+
+  // Shelves a Draft page that was never live: Draft -> Archived. Same
+  // permission as unpublishPage — Editors must be able to complete the whole
+  // unlock -> edit -> re-archive cycle without a Publisher.
+  archiveDraft: protectedProcedure
+    .input(archiveDraftSchema)
+    .mutation(async ({ ctx: { user }, input: { siteId, pageId } }) => {
+      await bulkValidateUserPermissionsForResources({
+        siteId,
+        action: "unpublish",
+        resourceIds: [String(pageId)],
+        userId: user.id,
+      })
+      await archiveDraftResource({
+        siteId,
+        resourceId: String(pageId),
+        userId: user.id,
+      })
+    }),
 
   updateMeta: protectedProcedure
     .input(updatePageMetaSchema)

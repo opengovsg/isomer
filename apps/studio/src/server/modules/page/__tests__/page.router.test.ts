@@ -14,6 +14,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupBlob,
   setupCollection,
   setupEditorPermissions,
   setupFolder,
@@ -2310,6 +2311,547 @@ describe("page.router", async () => {
         .where("source", "=", "/old-url")
         .executeTakeFirstOrThrow()
       expect(redirect.destination).toEqual(`[resource:${site.id}:${folder.id}]`)
+    })
+  })
+
+  describe("unpublishPage", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.unpublishPage({ siteId: 1, pageId: 1 })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user has no permissions on the site at all", async () => {
+      // Arrange — `unpublish` is a base permission (Editor/Publisher/Admin all
+      // have it), so the only way to lack it is to have no role at all.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should reject unpublishing a page with no publishedVersionId (never published)", async () => {
+      // Arrange — a fresh draft page has a `draftBlobId` but `publishedVersionId`
+      // is null, so there is genuinely nothing to unpublish.
+      const { site, folder } = await setupFolder({})
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This page is not currently published, so there is nothing to unpublish.",
+        }),
+      )
+    })
+
+    it("should reject unpublishing a page that is already Archived (publishedVersionId already null)", async () => {
+      // Arrange — an already-archived page also has publishedVersionId null,
+      // and must be rejected the same way as a never-published page.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Archived,
+        userId: session.userId ?? undefined,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "This page is not currently published, so there is nothing to unpublish.",
+        }),
+      )
+    })
+
+    it("should unpublish a published page: null publishedVersionId, a NEW draft blob (not the Version's), Archived state, Unpublish event, and an untouched Version", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({})
+      const { page, blob } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      // Base permission — an Editor (not just a Publisher) should be able to
+      // unpublish, per the "unlock -> edit -> re-lock" cycle this exists for.
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const originalVersion = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(originalVersion.blobId).toEqual(blob.id)
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — resource shape
+      const updatedResource = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      expect(updatedResource?.publishedVersionId).toBeNull()
+      expect(updatedResource?.state).toEqual(ResourceState.Archived)
+      expect(updatedResource?.draftBlobId).not.toBeNull()
+      // The core regression this design exists to prevent: draftBlobId must
+      // be a brand NEW blob, never the Version's own blobId.
+      expect(updatedResource?.draftBlobId).not.toEqual(originalVersion.blobId)
+
+      // Assert — the new draft blob is a clone of the Version's content
+      const newDraftBlob = await db
+        .selectFrom("Blob")
+        .where("id", "=", updatedResource!.draftBlobId!)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(newDraftBlob.content).toEqual(blob.content)
+
+      // Assert — the Version row itself is untouched: same count, same blob,
+      // same (unmutated) content
+      const versionsAfter = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .execute()
+      expect(versionsAfter).toHaveLength(1)
+      expect(versionsAfter[0]!.blobId).toEqual(originalVersion.blobId)
+      const originalBlobAfter = await db
+        .selectFrom("Blob")
+        .where("id", "=", originalVersion.blobId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(originalBlobAfter.content).toEqual(blob.content)
+
+      // Assert — audit event
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Unpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(1)
+      expect(auditLogs[0]!.userId).toEqual(session.userId)
+      // No WIP draft existed, so preserveContent is n/a regardless of what
+      // (if anything) was passed in.
+      expect(auditLogs[0]!.metadata).toEqual({ preserveContent: "n/a" })
+    })
+
+    it("should reject unpublishing without preserveContent when a WIP draft already exists", async () => {
+      // Arrange — a page that's live, with a separate in-progress draft
+      // already sitting in draftBlobId (edited via "Edit this page" without
+      // republishing yet).
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      const wipDraftBlob = await setupBlob()
+      await db
+        .updateTable("Resource")
+        .where("id", "=", page.id)
+        .set({ draftBlobId: wipDraftBlob.id })
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "CONFLICT",
+          message:
+            "This page has unsaved draft changes. Please confirm whether to keep the draft or the published version before unpublishing.",
+        }),
+      )
+      // Nothing changed on the rejected attempt
+      const unchanged = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      expect(unchanged?.draftBlobId).toEqual(wipDraftBlob.id)
+      expect(unchanged?.state).toEqual(ResourceState.Published)
+    })
+
+    it("should overwrite the WIP draft with the published content when preserveContent is 'published'", async () => {
+      // Arrange
+      const { site, page, blob } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      const wipDraftBlob = await setupBlob()
+      await db
+        .updateTable("Resource")
+        .where("id", "=", page.id)
+        .set({ draftBlobId: wipDraftBlob.id })
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+        preserveContent: "published",
+      })
+
+      // Assert — draftBlobId is a NEW blob (not the WIP one), cloned from
+      // the published content
+      const updatedResource = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      expect(updatedResource?.draftBlobId).not.toEqual(wipDraftBlob.id)
+      const newDraftBlob = await db
+        .selectFrom("Blob")
+        .where("id", "=", updatedResource!.draftBlobId!)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(newDraftBlob.content).toEqual(blob.content)
+
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Unpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs[0]!.metadata).toEqual({ preserveContent: "published" })
+    })
+
+    it("should leave the WIP draft untouched when preserveContent is 'draft'", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      const wipDraftBlob = await setupBlob()
+      await db
+        .updateTable("Resource")
+        .where("id", "=", page.id)
+        .set({ draftBlobId: wipDraftBlob.id })
+        .execute()
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+        preserveContent: "draft",
+      })
+
+      // Assert — draftBlobId is the SAME WIP blob, untouched; only
+      // publishedVersionId/state changed
+      const updatedResource = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      expect(updatedResource?.draftBlobId).toEqual(wipDraftBlob.id)
+      expect(updatedResource?.publishedVersionId).toBeNull()
+      expect(updatedResource?.state).toEqual(ResourceState.Archived)
+
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Unpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs[0]!.metadata).toEqual({ preserveContent: "draft" })
+    })
+
+    it("should not corrupt the original Version's blob when the discarded draft created by unpublishing is later edited", async () => {
+      // Arrange — the core data-integrity regression this design exists for:
+      // editing the NEW draft left behind by unpublish must never touch the
+      // original (immutable) Version's blob content.
+      const { site, page, blob } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupAdminPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const originalVersion = await db
+        .selectFrom("Version")
+        .where("resourceId", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      const newContent = {
+        content: [
+          {
+            type: "prose" as const,
+            content: [
+              {
+                type: "paragraph" as const,
+                content: [
+                  { type: "text" as const, text: "Edited after unpublish" },
+                ],
+              },
+            ],
+          },
+        ],
+        layout: "content" as const,
+        page: pick(page, ["title", "permalink"]),
+        version: "0.1.0" as const,
+      }
+
+      // Act — edit the new draft via the existing edit-content path
+      await caller.updatePageBlob({
+        pageId: Number(page.id),
+        siteId: site.id,
+        content: JSON.stringify(newContent),
+      })
+
+      // Assert — the draft blob picked up the edit...
+      const updatedResource = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      const draftBlobAfterEdit = await db
+        .selectFrom("Blob")
+        .where("id", "=", updatedResource!.draftBlobId!)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(draftBlobAfterEdit.content).toEqual(newContent)
+
+      // ...but the original Version's blob content is untouched
+      const originalBlobAfterEdit = await db
+        .selectFrom("Blob")
+        .where("id", "=", originalVersion.blobId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(originalBlobAfterEdit.content).toEqual(blob.content)
+      expect(originalBlobAfterEdit.content).not.toEqual(newContent)
+    })
+  })
+
+  describe("archiveDraft", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.archiveDraft({ siteId: 1, pageId: 1 })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user has no permissions on the site at all", async () => {
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        userId: session.userId ?? undefined,
+      })
+
+      const result = caller.archiveDraft({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should reject archiving a page that is currently Published", async () => {
+      // Arrange — must never silently archive a live page: that would flip
+      // state without clearing publishedVersionId or rebuilding the site.
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      const result = caller.archiveDraft({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Only a Draft page can be archived this way.",
+        }),
+      )
+      const unchanged = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      expect(unchanged?.state).toEqual(ResourceState.Published)
+      expect(unchanged?.publishedVersionId).not.toBeNull()
+    })
+
+    it("should archive a never-published Draft page, leaving draftBlobId untouched and logging ArchiveDraft", async () => {
+      // Arrange — a fresh Draft page, never published, no confirmation
+      // needed since there's no live state or WIP edits to protect.
+      const { site, folder } = await setupFolder({})
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const before = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.archiveDraft({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — only `state` changes
+      const after = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      expect(after?.state).toEqual(ResourceState.Archived)
+      expect(after?.draftBlobId).toEqual(before?.draftBlobId)
+      expect(after?.publishedVersionId).toBeNull()
+
+      const archiveDraftLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.ArchiveDraft)
+        .selectAll()
+        .execute()
+      expect(archiveDraftLogs).toHaveLength(1)
+    })
+
+    it("should archive a Draft page reached via 'Edit this page' post-unpublish, without touching the existing draftBlobId or requiring confirmation ('cancel edit' case)", async () => {
+      // Arrange — publish, then unpublish once (leaves a backfilled
+      // `draftBlobId`), then simulate the E4 "Edit this page" flip back to
+      // Draft (still holding that draftBlobId) — same mutation, no
+      // gating logic needed to distinguish this from a never-published Draft.
+      const { site, folder } = await setupFolder({})
+      const { page } = await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+      const afterUnpublish = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      const draftBlobId = afterUnpublish!.draftBlobId!
+      expect(draftBlobId).not.toBeNull()
+
+      // Simulate "Edit this page" (E4): flips state back to Draft, leaving
+      // draftBlobId as-is.
+      await db
+        .updateTable("Resource")
+        .where("id", "=", page.id)
+        .set({ state: ResourceState.Draft })
+        .execute()
+
+      // Act — no confirmation param exists on this mutation at all
+      await caller.archiveDraft({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — state flips back to Archived, draftBlobId is the SAME row
+      // (not overwritten, unlike unpublishPage's copy-on-write backfill)
+      const final = await getPageById(db, {
+        resourceId: Number(page.id),
+        siteId: site.id,
+      })
+      expect(final?.state).toEqual(ResourceState.Archived)
+      expect(final?.publishedVersionId).toBeNull()
+      expect(final?.draftBlobId).toEqual(draftBlobId)
+
+      const archiveDraftLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.ArchiveDraft)
+        .selectAll()
+        .execute()
+      expect(archiveDraftLogs).toHaveLength(1)
+
+      const unpublishLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Unpublish)
+        .selectAll()
+        .execute()
+      expect(unpublishLogs).toHaveLength(1)
     })
   })
 

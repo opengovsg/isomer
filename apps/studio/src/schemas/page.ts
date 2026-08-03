@@ -90,6 +90,21 @@ export const publishPageSchema = z.object({
   siteId: z.number().min(1),
 })
 
+// Takes a live page down: Published -> Archived.
+export const unpublishPageSchema = z.object({
+  pageId: z.number().min(1),
+  siteId: z.number().min(1),
+  // Required if an in-progress draft exists: keep it, or overwrite with the
+  // published content. Ignorable otherwise.
+  preserveContent: z.enum(["draft", "published"]).optional(),
+})
+
+// Shelves a Draft page that was never live: Draft -> Archived.
+export const archiveDraftSchema = z.object({
+  pageId: z.number().min(1),
+  siteId: z.number().min(1),
+})
+
 export const createCollectionPageFormSchema = z
   .discriminatedUnion("type", [
     z.object({

@@ -56,6 +56,19 @@ interface ResourceEventDeltaMap {
         before: WithoutMeta<PushDocumentJob>
         after: null
       }
+  // Forward unpublish: Published -> Archived. `before`/`after` are full
+  // resource snapshots so the delta captures the state/publishedVersionId/
+  // draftBlobId changes together, same shape as ResourceUpdate.
+  Unpublish: {
+    before: FullResource
+    after: FullResource
+  }
+  // Shelving a Draft page (never-published, or unlocked via "Edit this
+  // page" and backed out of) without ever publishing: Draft -> Archived.
+  ArchiveDraft: {
+    before: FullResource
+    after: FullResource
+  }
 }
 
 interface BaseResourceEventLogProps {
