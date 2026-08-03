@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 
-import { matchesCollectionSearch } from "../matchesCollectionSearch"
+import {
+  matchesCollectionSearch,
+  normalizeCollectionSearchText,
+} from "../matchesCollectionSearch"
 
 describe("matchesCollectionSearch", () => {
   const circularTitle =
@@ -12,7 +15,10 @@ describe("matchesCollectionSearch", () => {
     const search = "  guide to isomer  "
 
     // Act
-    const result = matchesCollectionSearch({ text: title, searchValue: search })
+    const result = matchesCollectionSearch({
+      text: title,
+      normalizedSearchValue: normalizeCollectionSearchText(search),
+    })
 
     // Assert
     expect(result).toBe(true)
@@ -26,7 +32,7 @@ describe("matchesCollectionSearch", () => {
     // Act
     const result = matchesCollectionSearch({
       text: circularTitle,
-      searchValue: search,
+      normalizedSearchValue: normalizeCollectionSearchText(search),
     })
 
     // Assert
@@ -40,7 +46,10 @@ describe("matchesCollectionSearch", () => {
     const search = "management (FM)"
 
     // Act
-    const result = matchesCollectionSearch({ text: title, searchValue: search })
+    const result = matchesCollectionSearch({
+      text: title,
+      normalizedSearchValue: normalizeCollectionSearchText(search),
+    })
 
     // Assert
     expect(result).toBe(true)
@@ -53,7 +62,10 @@ describe("matchesCollectionSearch", () => {
       "CIRCULAR ON NEW FEEDBACK CHANNEL ON PUBLIC SECTOR FACILITIES MANAGEMENT (FM)"
 
     // Act
-    const result = matchesCollectionSearch({ text: title, searchValue: search })
+    const result = matchesCollectionSearch({
+      text: title,
+      normalizedSearchValue: normalizeCollectionSearchText(search),
+    })
 
     // Assert
     expect(result).toBe(true)
@@ -66,7 +78,10 @@ describe("matchesCollectionSearch", () => {
       "CIRCULAR ON NEW FEEDBACK CHANNEL ON PUBLIC SECTOR FACILITIES MANAGEMENT (FM)"
 
     // Act
-    const result = matchesCollectionSearch({ text: title, searchValue: search })
+    const result = matchesCollectionSearch({
+      text: title,
+      normalizedSearchValue: normalizeCollectionSearchText(search),
+    })
 
     // Assert
     expect(result).toBe(true)
@@ -79,7 +94,10 @@ describe("matchesCollectionSearch", () => {
       "CIRCULAR ON NEW FEEDBACK CHANNEL ON PUBLIC SECTOR FACILITIES MANAGEMENT (FM)"
 
     // Act
-    const result = matchesCollectionSearch({ text: title, searchValue: search })
+    const result = matchesCollectionSearch({
+      text: title,
+      normalizedSearchValue: normalizeCollectionSearchText(search),
+    })
 
     // Assert
     expect(result).toBe(true)
@@ -91,7 +109,10 @@ describe("matchesCollectionSearch", () => {
     const search = "management (FM)"
 
     // Act
-    const result = matchesCollectionSearch({ text: title, searchValue: search })
+    const result = matchesCollectionSearch({
+      text: title,
+      normalizedSearchValue: normalizeCollectionSearchText(search),
+    })
 
     // Assert
     expect(result).toBe(true)
@@ -103,7 +124,10 @@ describe("matchesCollectionSearch", () => {
     const search = "management (FM)"
 
     // Act
-    const result = matchesCollectionSearch({ text: title, searchValue: search })
+    const result = matchesCollectionSearch({
+      text: title,
+      normalizedSearchValue: normalizeCollectionSearchText(search),
+    })
 
     // Assert
     expect(result).toBe(true)
@@ -116,7 +140,7 @@ describe("matchesCollectionSearch", () => {
     // Act
     const result = matchesCollectionSearch({
       text: circularTitle,
-      searchValue: search,
+      normalizedSearchValue: normalizeCollectionSearchText(search),
     })
 
     // Assert

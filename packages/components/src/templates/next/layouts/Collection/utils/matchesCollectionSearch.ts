@@ -17,22 +17,15 @@ export const normalizeCollectionSearchText = (text: string): string => {
 
 interface MatchesCollectionSearchOptions {
   text: string
-  searchValue?: string
-  normalizedSearchValue?: string
+  normalizedSearchValue: string
 }
 
 export const matchesCollectionSearch = ({
   text,
-  searchValue,
   normalizedSearchValue,
 }: MatchesCollectionSearchOptions): boolean => {
-  const normalizedSearch =
-    normalizedSearchValue ??
-    (searchValue !== undefined
-      ? normalizeCollectionSearchText(searchValue)
-      : "")
-  if (normalizedSearch === "") {
+  if (normalizedSearchValue === "") {
     return true
   }
-  return normalizeCollectionSearchText(text).includes(normalizedSearch)
+  return normalizeCollectionSearchText(text).includes(normalizedSearchValue)
 }
