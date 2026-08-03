@@ -256,7 +256,7 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Move down")).toBeNull()
     expect(await findByText("Move up")).toBeTruthy()
 
-    // Header row (top) — move is withheld when the selection overlaps the header.
+    // Header row (top)
     selectCells(editor, 0, 2)
     await activateTableBubbleMenu(findByRole)
     expect(queryByText("Move up")).toBeNull()
@@ -279,7 +279,7 @@ describe("TableBubbleMenu", () => {
     expect(firstRowTexts(editor)).toEqual(["Column C", "Column A", "Column B"])
   })
 
-  it("excludes Delete row and Move up/down when the selection includes the header row", async () => {
+  it("withholds Delete and Move when selection includes header row", async () => {
     const { editor, findByText, findByRole, queryByText, queryByRole } =
       await renderHarness()
 
@@ -290,15 +290,10 @@ describe("TableBubbleMenu", () => {
     expect(headerToggle).toBeChecked()
     expect(await findByText("Add row above")).toBeTruthy()
     expect(await findByText("Add row below")).toBeTruthy()
-    // Header axes withhold Delete and Move — unset the header first, then
-    // delete or reorder as a body row/column — including when the selection
-    // also spans body rows.
     expect(queryByText("Delete row")).toBeNull()
     expect(queryByText("Move up")).toBeNull()
     expect(queryByText("Move down")).toBeNull()
 
-    // Header row + first body row: still withhold Delete and Move, but the
-    // Header switch is only for the exact top row.
     selectCells(editor, 0, 5)
     await activateTableBubbleMenu(findByRole)
     expect(queryByRole("checkbox", { name: "Header row" })).toBeNull()
@@ -307,7 +302,7 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Move down")).toBeNull()
   })
 
-  it("excludes Delete column and Move left/right when the selection includes a header column", async () => {
+  it("withholds Delete and Move when selection includes header column", async () => {
     const { editor, findByText, findByRole, queryByText, queryByRole } =
       await renderHarness()
 
@@ -333,8 +328,6 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Move left")).toBeNull()
     expect(queryByText("Move right")).toBeNull()
 
-    // Header column + next column: still withhold Delete and Move; Header
-    // switch only for the exact leftmost column.
     selectCells(editor, 0, 7)
     await activateTableBubbleMenu(findByRole)
     expect(queryByRole("checkbox", { name: "Header column" })).toBeNull()

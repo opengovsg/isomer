@@ -466,8 +466,6 @@ const TABLE_BUBBLE_MENU_SELECTOR = "[data-table-bubble-menu]"
 const isTableBubbleMenuTriggerFocused = () =>
   document.activeElement?.closest(TABLE_BUBBLE_MENU_TRIGGER_SELECTOR) != null
 
-// Chakra modals (e.g. Table settings) use FocusLock. While one is open, keep
-// the BubbleMenu hidden so its tabbable surface does not fight the trap.
 const isEditorModalOpen = () =>
   document.querySelector('[role="dialog"][aria-modal="true"]') != null
 
