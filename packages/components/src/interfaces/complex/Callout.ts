@@ -4,7 +4,7 @@ import { Type } from "@sinclair/typebox"
 
 import { CalloutProseSchema } from "../native/Prose"
 
-export const CALLOUT_VARIANT_OPTIONS = {
+const CALLOUT_VARIANT_OPTIONS = {
   Information: "information",
   GoodToKnow: "goodToKnow",
   Warning: "warning",

@@ -8,13 +8,11 @@ import {
   IconTagCategoryPills,
   IconTagCategoryPlaintext,
 } from "~/components/icons"
-import {
-  goodToKnow,
-  information,
-  note,
-  urgent,
-  warning,
-} from "~/components/icons/callout/variant"
+import { StyleCardGoodToKnow } from "~/components/icons/callout/variant/goodToKnow"
+import { StyleCardInformation } from "~/components/icons/callout/variant/information"
+import { StyleCardNote } from "~/components/icons/callout/variant/note"
+import { StyleCardUrgent } from "~/components/icons/callout/variant/urgent"
+import { StyleCardWarning } from "~/components/icons/callout/variant/warning"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ImageRadioIndicator } from "./ImageRadioIndicator"
@@ -28,22 +26,20 @@ const getImageRadioColumnCount = (format: string): 1 | 2 =>
 const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "tagcategory/pills": IconTagCategoryPills,
   "tagcategory/plaintext": IconTagCategoryPlaintext,
-  "callout/information": information,
-  "callout/goodToKnow": goodToKnow,
-  "callout/warning": warning,
-  "callout/urgent": urgent,
-  "callout/note": note,
+  "callout/information": StyleCardInformation,
+  "callout/goodToKnow": StyleCardGoodToKnow,
+  "callout/warning": StyleCardWarning,
+  "callout/urgent": StyleCardUrgent,
+  "callout/note": StyleCardNote,
 }
 
 interface ImageRadioOptionSchema {
   const: string
   image: string
-  title?: string
 }
 
 interface ImageRadioSchema {
   oneOf?: ImageRadioOptionSchema[]
-  format?: string
 }
 
 interface ImageRadioOptionProps extends UseRadioProps {
@@ -100,7 +96,6 @@ const getImageRadioOptions = (schema: ControlProps["schema"]) =>
   ((schema as ImageRadioSchema).oneOf ?? []).map((option) => ({
     value: option.const,
     image: option.image,
-    label: option.title ?? option.const,
   }))
 
 export const jsonFormsImageRadioControlTester: RankedTester = rankWith(
@@ -150,7 +145,9 @@ function JsonFormsImageRadioControl({
                 {...getRadioProps({ value: option.value })}
                 image={option.image}
                 isSelected={isSelected}
-                ariaLabel={option.label}
+                ariaLabel={
+                  option.value.charAt(0).toUpperCase() + option.value.slice(1)
+                }
               />
             )
           })}

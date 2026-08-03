@@ -1,10 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
 import {
-  CALLOUT_VARIANT_OPTIONS,
-  DEFAULT_CALLOUT_VARIANT,
+  CalloutSchema,
   DEFAULT_TAG_CATEGORY_DISPLAY,
   TAG_CATEGORY_DISPLAY_OPTIONS,
-  type CalloutVariant,
   type TagCategoryDisplay,
 } from "@opengovsg/isomer-components"
 import { Type } from "@sinclair/typebox"
@@ -37,35 +35,7 @@ const twoColumnSchema = Type.Object({
   }),
 })
 
-const oneColumnSchema = Type.Object({
-  variant: Type.Unsafe<CalloutVariant>({
-    oneOf: [
-      {
-        const: CALLOUT_VARIANT_OPTIONS.Information,
-        image: "callout/information",
-      },
-      {
-        const: CALLOUT_VARIANT_OPTIONS.GoodToKnow,
-        image: "callout/goodToKnow",
-      },
-      {
-        const: CALLOUT_VARIANT_OPTIONS.Warning,
-        image: "callout/warning",
-      },
-      {
-        const: CALLOUT_VARIANT_OPTIONS.Urgent,
-        image: "callout/urgent",
-      },
-      {
-        const: CALLOUT_VARIANT_OPTIONS.Note,
-        image: "callout/note",
-      },
-    ],
-    title: "Message type",
-    format: "image-radio/1col",
-    default: DEFAULT_CALLOUT_VARIANT,
-  }),
-})
+const oneColumnSchema = Type.Pick(CalloutSchema, ["variant"])
 
 export const TwoColumns: Story = {
   args: {
@@ -91,6 +61,6 @@ export const OneColumn: Story = {
 export const OneColumnWarningSelected: Story = {
   args: {
     schema: oneColumnSchema,
-    data: { variant: CALLOUT_VARIANT_OPTIONS.Warning },
+    data: { variant: "warning" },
   },
 }
