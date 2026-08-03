@@ -272,13 +272,13 @@ const RowSelectionActions = ({
   editor: Editor
   rect: SelectionRect
 }) => {
-  const canMoveUp = rect.top > 0
-  const canMoveDown = rect.bottom < rect.map.height
+  const includesHeaderRow = selectionIncludesHeaderRow(rect)
+  const canMoveUp = rect.top > 0 && !includesHeaderRow
+  const canMoveDown = rect.bottom < rect.map.height && !includesHeaderRow
   // TipTap's toggleHeaderRow always rewrites the first table row only — show
   // the switch for that exact row, not for a multi-row selection that merely
   // overlaps it.
   const showHeaderToggle = rect.top === 0 && rect.bottom === 1
-  const includesHeaderRow = selectionIncludesHeaderRow(rect)
 
   return (
     <>
@@ -302,14 +302,14 @@ const RowSelectionActions = ({
           icon={<IconAddRowBelow boxSize="1rem" />}
           onClick={() => editor.chain().focus().addRowAfter().run()}
         />
-        {canMoveUp && !includesHeaderRow && (
+        {canMoveUp && (
           <ActionButton
             label="Move up"
             icon={<BiUpArrowAlt fontSize="1rem" />}
             onClick={() => moveRow(editor, "up")}
           />
         )}
-        {canMoveDown && !includesHeaderRow && (
+        {canMoveDown && (
           <ActionButton
             label="Move down"
             icon={<BiDownArrowAlt fontSize="1rem" />}
@@ -335,13 +335,13 @@ const ColumnSelectionActions = ({
   editor: Editor
   rect: SelectionRect
 }) => {
-  const canMoveLeft = rect.left > 0
-  const canMoveRight = rect.right < rect.map.width
+  const includesHeaderColumn = selectionIncludesHeaderColumn(rect)
+  const canMoveLeft = rect.left > 0 && !includesHeaderColumn
+  const canMoveRight = rect.right < rect.map.width && !includesHeaderColumn
   // TipTap's toggleHeaderColumn always rewrites the first table column only —
   // show the switch for that exact column, not for a multi-column selection
   // that merely overlaps it.
   const showHeaderToggle = rect.left === 0 && rect.right === 1
-  const includesHeaderColumn = selectionIncludesHeaderColumn(rect)
 
   return (
     <>
@@ -365,14 +365,14 @@ const ColumnSelectionActions = ({
           icon={<IconAddColRight boxSize="1rem" />}
           onClick={() => editor.chain().focus().addColumnAfter().run()}
         />
-        {canMoveLeft && !includesHeaderColumn && (
+        {canMoveLeft && (
           <ActionButton
             label="Move left"
             icon={<BiLeftArrowAlt fontSize="1rem" />}
             onClick={() => moveColumn(editor, "left")}
           />
         )}
-        {canMoveRight && !includesHeaderColumn && (
+        {canMoveRight && (
           <ActionButton
             label="Move right"
             icon={<BiRightArrowAlt fontSize="1rem" />}
