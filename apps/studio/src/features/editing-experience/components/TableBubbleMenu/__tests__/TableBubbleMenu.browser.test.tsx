@@ -525,16 +525,67 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Move right")).toBeNull()
   })
 
-  it("shows only Merge cells for an irregular multi-cell selection", async () => {
+  it("shows Clear contents and Merge cells for an irregular multi-cell selection", async () => {
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
 
     selectCells(editor, 3, 7) // an irregular 2x2-ish block, not a full row/column
     await activateTableBubbleMenu(findByRole)
 
+    expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
     expect(queryByText("Delete row")).toBeNull()
     expect(queryByText("Delete column")).toBeNull()
+  })
+
+  it("clears every cell in a multi-cell block without removing cells", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 3, 7)
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+    await activateTableBubbleMenu(findByRole)
+
+    const clearBlock = await findByText("Clear contents")
+    act(() => {
+      clearBlock.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(rowTextsAt(editor, 1)).toEqual(["", "", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["", "", "Row 2, C"])
+  })
+
+  it("shows Clear contents and Delete table for a whole-table selection", async () => {
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+
+    selectCells(editor, 0, 8)
+    await activateTableBubbleMenu(findByRole)
+
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(await findByText("Delete table")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
+    expect(queryByText("Delete row")).toBeNull()
+  })
+
+  it("clears every cell in a whole-table selection without removing the table", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 0, 8)
+    await activateTableBubbleMenu(findByRole)
+
+    const clearTable = await findByText("Clear contents")
+    act(() => {
+      clearTable.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["", "", ""])
+    expect(rowTextsAt(editor, 1)).toEqual(["", "", ""])
+    expect(rowTextsAt(editor, 2)).toEqual(["", "", ""])
   })
 
   it("shows no menu content for a plain cursor outside any selection", async () => {

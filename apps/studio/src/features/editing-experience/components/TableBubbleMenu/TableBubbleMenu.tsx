@@ -454,19 +454,33 @@ const TableSelectionActions = ({
       )
     case "table":
       return (
-        <ActionButton
-          label="Delete table"
-          icon={<BiTrash fontSize="1rem" />}
-          onClick={() => editor.chain().focus().deleteTable().run()}
-        />
+        <ActionGroup>
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={() => clearSelectedCells({ editor })}
+          />
+          <ActionButton
+            label="Delete table"
+            icon={<BiTrash fontSize="1rem" />}
+            onClick={() => editor.chain().focus().deleteTable().run()}
+          />
+        </ActionGroup>
       )
     case "multi-cell":
       return (
-        <ActionButton
-          label="Merge cells"
-          icon={<IconMergeCells boxSize="1rem" />}
-          onClick={() => editor.chain().focus().mergeCells().run()}
-        />
+        <ActionGroup>
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={() => clearSelectedCells({ editor })}
+          />
+          <ActionButton
+            label="Merge cells"
+            icon={<IconMergeCells boxSize="1rem" />}
+            onClick={() => editor.chain().focus().mergeCells().run()}
+          />
+        </ActionGroup>
       )
     case "single-cell":
       return (
