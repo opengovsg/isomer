@@ -22,6 +22,7 @@ import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
 
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
+import { useResolveGazetteCategoryLabel } from "../../hooks/useResolveGazetteCategoryLabel"
 import { GazetteFormFields } from "../GazetteModal"
 
 type CreateGazetteModalProps = Pick<
@@ -58,8 +59,8 @@ const CreateGazetteModalContent = ({
 }: Pick<CreateGazetteModalProps, "onClose" | "siteId" | "collectionId">) => {
   const [file, setFile] = useState<File | undefined>()
   const toast = useToast()
-  const { categories, categoryMap, subcategoryMap } =
-    useGazetteSubcategoriesContext()
+  const { categories, subcategoryMap } = useGazetteSubcategoriesContext()
+  const resolveCategoryLabel = useResolveGazetteCategoryLabel()
 
   const {
     register,
@@ -107,13 +108,8 @@ const CreateGazetteModalContent = ({
       return
     }
 
-    const categoryLabel = categoryMap[data.category]
+    const categoryLabel = resolveCategoryLabel(data.category)
     if (!categoryLabel) {
-      toast({
-        status: "error",
-        title: "Unable to resolve category — please refresh and try again",
-        ...BRIEF_TOAST_SETTINGS,
-      })
       return
     }
 

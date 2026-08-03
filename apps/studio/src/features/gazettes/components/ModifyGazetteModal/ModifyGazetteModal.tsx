@@ -25,6 +25,7 @@ import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
 
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
+import { useResolveGazetteCategoryLabel } from "../../hooks/useResolveGazetteCategoryLabel"
 import { GazetteFormFields } from "../GazetteModal"
 
 interface ModifyGazetteInitialData {
@@ -90,7 +91,8 @@ const ModifyGazetteModalContent = ({
   const [hasFile, setHasFile] = useState(!!initialData.fileId)
 
   const toast = useToast()
-  const { categoryMap, subcategoryMap } = useGazetteSubcategoriesContext()
+  const { subcategoryMap } = useGazetteSubcategoriesContext()
+  const resolveCategoryLabel = useResolveGazetteCategoryLabel()
   const utils = trpc.useUtils()
 
   const { mutateAsync: uploadFile, isPending: isUploading } =
@@ -126,13 +128,8 @@ const ModifyGazetteModalContent = ({
   })
 
   const onSubmit = handleSubmit(async (data) => {
-    const categoryLabel = categoryMap[data.category]
+    const categoryLabel = resolveCategoryLabel(data.category)
     if (!categoryLabel) {
-      toast({
-        status: "error",
-        title: "Unable to resolve category — please refresh and try again",
-        ...BRIEF_TOAST_SETTINGS,
-      })
       return
     }
 

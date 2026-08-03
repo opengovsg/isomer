@@ -1,4 +1,4 @@
-import type { Kysely, Transaction } from "kysely"
+import type { Kysely, RawBuilder, Transaction } from "kysely"
 import { TRPCError } from "@trpc/server"
 import filenamify from "filenamify"
 import { PdfReader } from "pdfreader"
@@ -511,6 +511,21 @@ export interface GazetteTagCategory {
 }
 
 /**
+ * Builds a jsonb-containment predicate matching a resource whose
+ * `page.tagged` array contains the given option uuid. `content` is the
+ * COALESCE(DraftBlob.content, PublishedBlob.content) sql fragment shared by
+ * gazette queries — pass the same fragment used to build the rest of the
+ * query so the predicate composes into it. `id` may be `undefined` (e.g. an
+ * option that couldn't be resolved) — the predicate then harmlessly matches
+ * nothing rather than throwing.
+ */
+export const taggedContains = (
+  content: RawBuilder<unknown>,
+  id: string | undefined,
+): RawBuilder<boolean> =>
+  sql<boolean>`${content}->'page'->'tagged' @> ${JSON.stringify([id ?? null])}::jsonb`
+
+/**
  * Resolves the human-readable category and subcategory labels for a gazette
  * item's `tagged` uuids by matching each against the tagCategory whose
  * `label` is `GAZETTE_CATEGORY_LABEL` / `GAZETTE_SUBCATEGORY_LABEL`.
@@ -541,16 +556,32 @@ export const resolveGazetteTagLabels = ({
   return { categoryLabel, subcategoryLabel }
 }
 
+const resolveGazetteOptionLabel = (
+  optionId: string,
+  tagCategories: GazetteTagCategory[],
+  tagCategoryLabel: string,
+): string | undefined => {
+  const tagCategory = tagCategories.find(
+    (candidate) => candidate.label === tagCategoryLabel,
+  )
+  return tagCategory?.options.find((option) => option.id === optionId)?.label
+}
+
 export const resolveGazetteCategoryLabel = (
   categoryId: string,
   tagCategories: GazetteTagCategory[],
-): string | undefined => {
-  const categoryTagCategory = tagCategories.find(
-    (tagCategory) => tagCategory.label === GAZETTE_CATEGORY_LABEL,
+): string | undefined =>
+  resolveGazetteOptionLabel(categoryId, tagCategories, GAZETTE_CATEGORY_LABEL)
+
+export const resolveGazetteSubcategoryLabel = (
+  subcategoryId: string,
+  tagCategories: GazetteTagCategory[],
+): string | undefined =>
+  resolveGazetteOptionLabel(
+    subcategoryId,
+    tagCategories,
+    GAZETTE_SUBCATEGORY_LABEL,
   )
-  return categoryTagCategory?.options.find((option) => option.id === categoryId)
-    ?.label
-}
 
 export const assertGazetteCategoryInput = ({
   categoryId,
@@ -633,14 +664,30 @@ export const hasDuplicateNotificationNumber = async ({
     categoryId,
     tagCategories,
   )
+  const resolvedSubcategoryLabel = resolveGazetteSubcategoryLabel(
+    subcategoryId,
+    tagCategories,
+  )
   const isGovernmentGazette =
     resolvedCategoryLabel === GazetteCategories.GovernmentGazettes
   // publishDate is a "dd/MM/yyyy" string — the year is the last segment.
   const publishYear = publishDate.split("/").at(-1)
 
   const content = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`
-  const taggedContains = (id: string) =>
-    sql<boolean>`${content}->'page'->'tagged' @> ${JSON.stringify([id])}::jsonb`
+
+  // Rows created before the tagCategories migration have no uuid in
+  // `tagged` for the category/subcategory — they instead store the plain
+  // label in `page.category` (and the subcategory label as `tagged[0]`).
+  // Match either shape so duplicate detection still works for those
+  // legacy rows during the migration window.
+  const matchesCategory = (id: string, label: string | undefined) =>
+    label === undefined
+      ? taggedContains(content, id)
+      : sql<boolean>`(${taggedContains(content, id)} OR ${content}->'page'->>'category' = ${label})`
+  const matchesSubcategory = (id: string, label: string | undefined) =>
+    label === undefined
+      ? taggedContains(content, id)
+      : sql<boolean>`(${taggedContains(content, id)} OR ${content}->'page'->'tagged'->>0 = ${label})`
 
   let query = trx
     .selectFrom("Resource")
@@ -653,7 +700,7 @@ export const hasDuplicateNotificationNumber = async ({
     .where(
       sql<boolean>`${content}->'page'->>'description' = ${notificationNumber}`,
     )
-    .where(taggedContains(categoryId))
+    .where(matchesCategory(categoryId, resolvedCategoryLabel))
     .where(
       sql<boolean>`split_part(${content}->'page'->>'date', '/', 3) = ${publishYear}`,
     )
@@ -661,7 +708,9 @@ export const hasDuplicateNotificationNumber = async ({
 
   // Government gazettes are unique within category, not subcategory.
   if (!isGovernmentGazette) {
-    query = query.where(taggedContains(subcategoryId))
+    query = query.where(
+      matchesSubcategory(subcategoryId, resolvedSubcategoryLabel),
+    )
   }
 
   if (excludeId) {

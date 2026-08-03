@@ -51,6 +51,7 @@ import {
   markFileAsDeleted,
   removeGazetteFromAlgolia,
   removeGazetteFromSearchIndex,
+  taggedContains,
 } from "./gazette.service"
 
 interface GazetteBlobInputs {
@@ -172,16 +173,14 @@ export const gazetteRouter = router({
         // string field. Falls through to the `else` bucket (harmlessly) if a
         // category's uuid is unresolved, e.g. the tagCategory isn't seeded.
         .orderBy((eb) => {
-          const taggedExpr = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->'tagged'`
-          const contains = (id: string | undefined) =>
-            sql<boolean>`${taggedExpr} @> ${JSON.stringify([id ?? null])}::jsonb`
+          const content = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`
           return eb
             .case()
-            .when(contains(governmentGazetteId))
+            .when(taggedContains(content, governmentGazetteId))
             .then(1)
-            .when(contains(legislativeSupplementsId))
+            .when(taggedContains(content, legislativeSupplementsId))
             .then(2)
-            .when(contains(otherSupplementsId))
+            .when(taggedContains(content, otherSupplementsId))
             .then(3)
             .else(4)
             .end()

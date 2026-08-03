@@ -134,9 +134,12 @@ const extractResourceData = async ({
   let categoryLabel = resolvedCategoryLabel
   let subcategoryLabel = resolvedSubcategoryLabel
 
-  if (!categoryLabel) {
+  // Each label falls back to the S3 ref independently — a resolvable
+  // category shouldn't suppress the subcategory fallback (and vice versa)
+  // when only one of the two tagged uuids fails to resolve.
+  if (!categoryLabel || !subcategoryLabel) {
     const fromRef = resolveGazetteLabelsFromRef(ref)
-    categoryLabel = fromRef.categoryLabel
+    categoryLabel = categoryLabel ?? fromRef.categoryLabel
     subcategoryLabel = subcategoryLabel ?? fromRef.subcategoryLabel
   }
 
