@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { Table } from "./Table"
-import { MAX_TABLE_COLUMNS } from "./tableLayoutLimits"
+import { MAX_TABLE_COLUMNS, MAX_TABLE_ROWS } from "./tableLayoutLimits"
 
 const staggeredMergesContent = [
   {
@@ -232,8 +232,40 @@ describe("Table colgroup", () => {
 
     // Assert
     expect(html).toContain(`colSpan="${MAX_TABLE_COLUMNS}"`)
-    expect(html).toContain(`rowspan="${MAX_TABLE_COLUMNS}"`)
+    expect(html).toContain(`rowspan="${MAX_TABLE_ROWS}"`)
     expect(html).not.toContain('colSpan="1000000"')
     expect(html).not.toContain('rowspan="1000000"')
+  })
+
+  it("preserves legitimate rowspans above the column cap", () => {
+    // Arrange / Act
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Long rowspan" }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableCell",
+                attrs: { colspan: 1, rowspan: 65 },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "A" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    // Assert
+    expect(html).toContain('rowspan="65"')
+    expect(html).not.toContain('rowspan="64"')
   })
 })

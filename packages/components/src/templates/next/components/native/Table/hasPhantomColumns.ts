@@ -4,7 +4,8 @@ import { getTableColumnCount } from "./getTableColumnCount"
 import {
   MAX_TABLE_COLUMNS,
   MAX_TABLE_ROWS,
-  normalizeSpan,
+  normalizeColspan,
+  normalizeRowspan,
 } from "./tableLayoutLimits"
 
 type TableRows = TableProps["content"]
@@ -54,8 +55,8 @@ export const hasPhantomColumns = (rows: TableRows): boolean => {
         break
       }
 
-      const colspan = normalizeSpan(cell.attrs?.colspan)
-      const rowspan = normalizeSpan(cell.attrs?.rowspan)
+      const colspan = normalizeColspan(cell.attrs?.colspan)
+      const rowspan = normalizeRowspan(cell.attrs?.rowspan)
       const span = { colspan }
 
       for (let rowOffset = 0; rowOffset < rowspan; rowOffset += 1) {

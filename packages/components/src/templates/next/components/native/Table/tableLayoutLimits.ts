@@ -16,9 +16,16 @@ export const MAX_TABLE_COLUMNS = 64
  */
 export const MAX_TABLE_ROWS = 1000
 
-/** Coerce an untrusted span attribute to a usable positive integer. */
-export const normalizeSpan = (value: unknown): number => {
+const normalizeBoundedSpan = (value: unknown, max: number): number => {
   if (typeof value !== "number" || !Number.isFinite(value)) return 1
   const span = Math.floor(value)
-  return span < 1 ? 1 : Math.min(span, MAX_TABLE_COLUMNS)
+  return span < 1 ? 1 : Math.min(span, max)
 }
+
+/** Coerce an untrusted colspan to a usable positive integer. */
+export const normalizeColspan = (value: unknown): number =>
+  normalizeBoundedSpan(value, MAX_TABLE_COLUMNS)
+
+/** Coerce an untrusted rowspan to a usable positive integer. */
+export const normalizeRowspan = (value: unknown): number =>
+  normalizeBoundedSpan(value, MAX_TABLE_ROWS)

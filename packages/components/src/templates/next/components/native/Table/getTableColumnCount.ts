@@ -1,6 +1,11 @@
 import type { TableProps } from "~/interfaces"
 
-import { MAX_TABLE_COLUMNS, normalizeSpan } from "./tableLayoutLimits"
+import {
+  MAX_TABLE_COLUMNS,
+  MAX_TABLE_ROWS,
+  normalizeColspan,
+  normalizeRowspan,
+} from "./tableLayoutLimits"
 
 type TableRows = TableProps["content"]
 
@@ -48,17 +53,17 @@ export const getTableColumnCount = (rows: TableRows): number => {
     // Example: a cell at row 0 with rowspan 2 covers a slot in row 1 even
     // though row 1's JSON has no entry for that column.
     if (hasRowSpan) {
-      // Rowspan is capped at MAX_TABLE_COLUMNS, so only rows in this window
+      // Rowspan is capped at MAX_TABLE_ROWS, so only rows in this window
       // can still cover `rowIndex`.
-      const earliestCoveringRow = Math.max(0, rowIndex - MAX_TABLE_COLUMNS)
+      const earliestCoveringRow = Math.max(0, rowIndex - MAX_TABLE_ROWS)
       for (let earlier = earliestCoveringRow; earlier < rowIndex; earlier++) {
         const earlierRow = rows[earlier]
         if (!earlierRow) {
           continue
         }
         for (const cell of earlierRow.content) {
-          const rowspan = normalizeSpan(cell.attrs?.rowspan)
-          const colspan = normalizeSpan(cell.attrs?.colspan)
+          const rowspan = normalizeRowspan(cell.attrs?.rowspan)
+          const colspan = normalizeColspan(cell.attrs?.colspan)
           // Cell started at `earlier` and extends `rowspan` rows → covers
           // indices [earlier, earlier + rowspan). Include it if this row
           // falls in that half-open range.
@@ -71,8 +76,8 @@ export const getTableColumnCount = (rows: TableRows): number => {
 
     // Add this row's own cells (each may span multiple columns).
     for (const cell of row.content) {
-      const colspan = normalizeSpan(cell.attrs?.colspan)
-      const rowspan = normalizeSpan(cell.attrs?.rowspan)
+      const colspan = normalizeColspan(cell.attrs?.colspan)
+      const rowspan = normalizeRowspan(cell.attrs?.rowspan)
       rowWidth += colspan
       if (rowspan > 1) {
         hasRowSpan = true

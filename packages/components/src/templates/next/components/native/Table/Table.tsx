@@ -8,7 +8,7 @@ import { OrderedList } from "../OrderedList"
 import { Paragraph } from "../Paragraph"
 import { UnorderedList } from "../UnorderedList"
 import { resolveTableLayout } from "./resolveTableLayout"
-import { normalizeSpan } from "./tableLayoutLimits"
+import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
 
 const tableStyles = tv({
   base: "w-full border-collapse border-spacing-0 border border-base-divider-medium",
@@ -63,8 +63,8 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                     return (
                       <TableCellTag
                         key={cellIndex}
-                        colSpan={normalizeSpan(cell.attrs?.colspan)}
-                        rowSpan={normalizeSpan(cell.attrs?.rowspan)}
+                        colSpan={normalizeColspan(cell.attrs?.colspan)}
+                        rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
                         className={tableCellStyles({
                           isHeader: cell.type === "tableHeader",
                         })}
