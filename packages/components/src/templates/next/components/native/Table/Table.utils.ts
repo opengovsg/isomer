@@ -7,5 +7,7 @@ export const PLACEHOLDER_TABLE_CAPTIONS = new Set([
 ])
 
 /** Returns the caption to render on published sites, or null for placeholders. */
-export const getPublishedTableCaption = (caption: string): string | null =>
-  PLACEHOLDER_TABLE_CAPTIONS.has(caption.trim()) ? null : caption
+export const getPublishedTableCaption = (caption: string): string | null => {
+  const trimmed = caption.trim()
+  return PLACEHOLDER_TABLE_CAPTIONS.has(trimmed) ? null : trimmed
+}

@@ -15,4 +15,10 @@ describe("getPublishedTableCaption", () => {
       "Quarterly revenue by department",
     )
   })
+
+  it("trims leading/trailing whitespace from real content", () => {
+    expect(getPublishedTableCaption("  Quarterly revenue  ")).toBe(
+      "Quarterly revenue",
+    )
+  })
 })

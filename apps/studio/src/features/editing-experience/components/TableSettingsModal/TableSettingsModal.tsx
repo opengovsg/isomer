@@ -131,7 +131,7 @@ export const TableSettingsModal = ({
             </Button>
             <Button
               variant="solid"
-              type="submit"
+              type="button"
               isDisabled={!isValid}
               onClick={handleSubmit(({ caption }) => {
                 onSave(caption)
