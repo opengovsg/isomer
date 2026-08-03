@@ -2325,11 +2325,13 @@ describe("resource.router", async () => {
     ] as const
 
     const testListComparable = (
-      a: { updatedAt: Date; title: string },
-      b: { updatedAt: Date; title: string },
+      a: { updatedAt: Date; id: string },
+      b: { updatedAt: Date; id: string },
     ) => {
       if (b.updatedAt.valueOf() === a.updatedAt.valueOf()) {
-        return a.title.localeCompare(b.title)
+        // Tie-broken by id, matching applyResourceOrderBy - title isn't
+        // unique, so it can't guarantee deterministic pagination.
+        return Number(a.id) - Number(b.id)
       }
       return b.updatedAt.valueOf() - a.updatedAt.valueOf()
     }
@@ -2564,6 +2566,112 @@ describe("resource.router", async () => {
         .sort(testListComparable)
         .slice(0, 10)
       expect(expected).toMatchObject(result)
+    })
+
+    it("should return deterministic paginated results when items share the same updatedAt and title", async () => {
+      // Arrange: Create 4 pages with identical title and updatedAt to trigger
+      // non-deterministic ordering without a tie-breaker. Regression test for
+      // the same pagination bug fixed for collection.list (see #1824).
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      const sharedTitle = "Identical title"
+      const permalinks = ["page-1", "page-2", "page-3", "page-4"]
+      const pages = await Promise.all(
+        permalinks.map((permalink) =>
+          setupPageResource({
+            siteId: site.id,
+            resourceType: "Page",
+            title: sharedTitle,
+            permalink,
+          }),
+        ),
+      )
+
+      const sharedUpdatedAt = new Date("2024-01-01T00:00:00.000Z")
+      await db
+        .updateTable("Resource")
+        .set({ updatedAt: sharedUpdatedAt })
+        .where(
+          "id",
+          "in",
+          pages.map(({ page }) => page.id),
+        )
+        .execute()
+
+      // Act
+      const page1First = await caller.listWithoutRoot({
+        siteId: site.id,
+        limit: 2,
+        offset: 0,
+      })
+      const page1Second = await caller.listWithoutRoot({
+        siteId: site.id,
+        limit: 2,
+        offset: 0,
+      })
+      const page2Result = await caller.listWithoutRoot({
+        siteId: site.id,
+        limit: 2,
+        offset: 2,
+      })
+
+      // Assert: repeated calls to the same page return identical results
+      expect(page1First.map((r) => r.id)).toEqual(page1Second.map((r) => r.id))
+
+      // Assert: no duplicate IDs across pages
+      const page1Ids = new Set(page1First.map((r) => r.id))
+      const page2Ids = new Set(page2Result.map((r) => r.id))
+      const overlap = [...page1Ids].filter((id) => page2Ids.has(id))
+      expect(overlap).toHaveLength(0)
+
+      // Assert: all 4 items are returned across pages (none skipped)
+      const allIds = new Set([...page1Ids, ...page2Ids])
+      const expectedIds = new Set(pages.map(({ page }) => page.id))
+      expect(allIds).toEqual(expectedIds)
+    })
+
+    it("should sort case-insensitively when orderBy is title-asc", async () => {
+      // Arrange: titles chosen so a case-sensitive (byte-order) sort would
+      // put "Banana" before "apple" - a naive `title asc` would return
+      // ["Banana", "apple", "cherry"], which isn't what a user means by
+      // "Alphabetical".
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "cherry",
+        permalink: "cherry",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "apple",
+        permalink: "apple",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Banana",
+        permalink: "banana",
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        orderBy: "title-asc",
+      })
+
+      // Assert
+      expect(result.map((r) => r.title)).toEqual(["apple", "Banana", "cherry"])
     })
 
     it("should throw 403 if user does not have read access to site", async () => {

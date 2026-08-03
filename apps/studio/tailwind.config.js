@@ -9,6 +9,11 @@ export default {
     "../../node_modules/@opengovsg/isomer-components/dist/**/*.{js,mjs,cjs}",
     "../../node_modules/@opengovsg/isomer-components/src/**/*.{js,ts,jsx,tsx}",
   ],
+  // Prevents Tailwind's content scanner from matching redirect-related
+  // "[resource:...]" strings (source comments, test fixtures) as
+  // arbitrary-property utilities. "[resource:...]" isn't valid CSS (oxfmt
+  // >=0.57.0 rejects it); "[resource:some-resource]" is valid but stray noise.
+  blocklist: ["[resource:...]", "[resource:some-resource]"],
   presets: [
     //   // Note: This is here temporarily until we can figure out how to load the
     //   // presets dynamically depending on the template being used.

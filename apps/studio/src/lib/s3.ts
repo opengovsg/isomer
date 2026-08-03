@@ -50,10 +50,16 @@ export const generateSignedPutUrl = async ({
   Key,
   ContentType,
   ContentDisposition,
+  ContentLength,
   Tagging,
 }: Pick<
   PutObjectCommandInput,
-  "Bucket" | "Key" | "ContentType" | "ContentDisposition" | "Tagging"
+  | "Bucket"
+  | "Key"
+  | "ContentType"
+  | "ContentDisposition"
+  | "ContentLength"
+  | "Tagging"
 >): Promise<string> => {
   return getSignedUrl(
     storage,
@@ -62,12 +68,17 @@ export const generateSignedPutUrl = async ({
       Key,
       ContentType,
       ContentDisposition,
+      ContentLength,
       Tagging,
     }),
     {
       expiresIn: 60 * 5, // 5 minutes
-      // Sign these headers so S3 rejects PUTs with different values (prevents type-confusion XSS)
-      signableHeaders: new Set(["content-type", "content-disposition"]),
+      // Sign these headers so S3 rejects PUTs with different values (prevents type-confusion XSS and enforces exact upload size)
+      signableHeaders: new Set([
+        "content-type",
+        "content-disposition",
+        "content-length",
+      ]),
     },
   )
 }

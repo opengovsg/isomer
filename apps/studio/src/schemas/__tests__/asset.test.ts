@@ -1,9 +1,14 @@
 import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { describe, expect, it } from "vitest"
-import { FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING } from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+import {
+  FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  MAX_FILE_SIZE_BYTES,
+  MAX_IMG_FILE_SIZE_BYTES,
+} from "~/lib/fileUpload"
 
 import {
   deleteAssetsSchema,
+  fileNameAndSizeSchema,
   getPresignedPutUrlSchema,
   MAX_DELETE_FILE_KEYS,
 } from "../asset"
@@ -12,6 +17,7 @@ describe("getPresignedPutUrlSchema", () => {
   const validBaseData = {
     siteId: 1,
     resourceId: "test-resource-id",
+    fileSize: 1,
   }
 
   describe("fileName validation", () => {
@@ -270,6 +276,61 @@ describe("getPresignedPutUrlSchema", () => {
         expect(result.success).toBe(false)
       })
     })
+  })
+
+  describe("fileSize validation", () => {
+    it.each([
+      [
+        "images larger than the image limit",
+        "test.png",
+        MAX_IMG_FILE_SIZE_BYTES + 1,
+        "File size must not exceed 5 MB",
+      ],
+      [
+        "documents larger than the file limit",
+        "test.pdf",
+        MAX_FILE_SIZE_BYTES + 1,
+        "File size must not exceed 50 MB",
+      ],
+    ])("should reject %s", (_label, fileName, fileSize, message) => {
+      const result = getPresignedPutUrlSchema.safeParse({
+        ...validBaseData,
+        fileName,
+        fileSize,
+      })
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues[0]?.path).toEqual(["fileSize"])
+        expect(result.error.issues[0]?.message).toBe(message)
+      }
+    })
+  })
+})
+
+describe("fileNameAndSizeSchema", () => {
+  it("should validate a file without site or resource identifiers", () => {
+    const result = fileNameAndSizeSchema.safeParse({
+      fileName: "test.png",
+      fileSize: 1,
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it("should apply the file type-specific size limit", () => {
+    const result = fileNameAndSizeSchema.safeParse({
+      fileName: "test.png",
+      fileSize: MAX_IMG_FILE_SIZE_BYTES + 1,
+    })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues[0]?.path).toEqual(["fileSize"])
+      expect(result.error.issues[0]?.message).toBe(
+        "File size must not exceed 5 MB",
+      )
+    }
   })
 })
 

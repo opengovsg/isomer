@@ -68,6 +68,7 @@ describe("asset.router", async () => {
         siteId: 1,
         resourceId: "1",
         fileName: "test.png",
+        fileSize: 1,
       })
 
       // Assert
@@ -87,6 +88,7 @@ describe("asset.router", async () => {
         siteId: site.id + 1,
         resourceId: page.id,
         fileName: "test.png",
+        fileSize: 1,
       })
 
       // Assert
@@ -112,6 +114,7 @@ describe("asset.router", async () => {
         siteId: site.id,
         resourceId: page.id,
         fileName: "test.png",
+        fileSize: 1,
       })
 
       // Assert
@@ -142,6 +145,7 @@ describe("asset.router", async () => {
         siteId: site.id,
         resourceId: page.id,
         fileName: "test.png",
+        fileSize: 1,
       })
 
       // Assert
@@ -158,12 +162,14 @@ describe("asset.router", async () => {
         userId: session.userId,
       })
       const fileName = "test-image.png"
+      const fileSize = 1234
 
       // Act
       await caller.getPresignedPutUrl({
         siteId: site.id,
         resourceId: page.id,
         fileName,
+        fileSize,
       })
 
       // Assert: backend-derived ContentType and ContentDisposition are signed (not client-controlled)
@@ -174,6 +180,7 @@ describe("asset.router", async () => {
         ContentDisposition: expect.stringMatching(
           /^inline; filename\*=UTF-8''.+/,
         ),
+        ContentLength: fileSize,
       })
     })
 
@@ -192,6 +199,7 @@ describe("asset.router", async () => {
         siteId: site.id,
         resourceId: page.id,
         fileName: "doc.pdf",
+        fileSize: 1,
       })
 
       // Assert
@@ -222,6 +230,7 @@ describe("asset.router", async () => {
         siteId: site.id,
         resourceId: page.id,
         fileName: "test.svg",
+        fileSize: 1,
       })
 
       // Assert

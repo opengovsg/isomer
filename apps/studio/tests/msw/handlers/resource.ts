@@ -33,7 +33,7 @@ export const resourceHandlers = {
             title: item.title,
             permalink: item.permalink,
             parentId: item.parentId,
-            type: item.type as "Page" | "CollectionLink" | "CollectionPage",
+            type: item.type,
             // ID must be unique so infinite loop won't occur
             id: `${resourceId}-${item.title}-${item.id}`,
           }))

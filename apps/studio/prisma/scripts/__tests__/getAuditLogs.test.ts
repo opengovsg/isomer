@@ -472,6 +472,72 @@ describe("getAuditLogQuery", () => {
       expect(rows[0]!.Description).toBe("Site configuration has been updated")
     })
 
+    it("RedirectCreate: correct description for a newly created redirect", async () => {
+      // Arrange
+      await insertAuditLog({
+        eventType: AuditLogEvent.RedirectCreate,
+        userId: user.id,
+        siteId,
+        delta: {
+          before: null,
+          after: { source: "/old", destination: "/new" },
+        },
+        createdAt: MID_MONTH,
+      })
+
+      // Act
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
+
+      // Assert
+      expect(rows[0]!.Description).toBe(
+        'Redirect from "/old" to "/new" created',
+      )
+    })
+
+    it("RedirectCreate: correct description when reviving a soft-deleted redirect", async () => {
+      // Arrange
+      await insertAuditLog({
+        eventType: AuditLogEvent.RedirectCreate,
+        userId: user.id,
+        siteId,
+        delta: {
+          before: { source: "/old", destination: "/stale" },
+          after: { source: "/old", destination: "/new" },
+        },
+        createdAt: MID_MONTH,
+      })
+
+      // Act
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
+
+      // Assert
+      expect(rows[0]!.Description).toBe(
+        'Redirect from "/old" to "/new" revived (was: "/stale")',
+      )
+    })
+
+    it("RedirectDelete: correct description", async () => {
+      // Arrange
+      await insertAuditLog({
+        eventType: AuditLogEvent.RedirectDelete,
+        userId: user.id,
+        siteId,
+        delta: {
+          before: { source: "/old", destination: "/new" },
+          after: { source: "/old", destination: "/new" },
+        },
+        createdAt: MID_MONTH,
+      })
+
+      // Act
+      const rows = await getEventsRows({ siteId, monthYear: TEST_MONTH })
+
+      // Assert
+      expect(rows[0]!.Description).toBe(
+        'Redirect from "/old" to "/new" deleted',
+      )
+    })
+
     it("PermissionCreate: resolves target user email via left join", async () => {
       // Arrange
       const targetUser = await setupUser({ email: "target@agency.gov.sg" })

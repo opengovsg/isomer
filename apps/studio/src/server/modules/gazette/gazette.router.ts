@@ -445,7 +445,12 @@ export const gazetteRouter = router({
         if (newRef) {
           newFilename = newRef.split("/").pop()
           finalRef = newRef
-          if (existingRef) oldRefToCleanUp = existingRef.replace(/^\//, "")
+          // S3 keys are deterministic (year/category/subcategory/filename), so
+          // a re-upload that keeps the same metadata lands on the SAME key as
+          // the existing ref — cleaning up would tombstone the live file.
+          if (existingRef && existingRef !== newRef) {
+            oldRefToCleanUp = existingRef.replace(/^\//, "")
+          }
         } else if (
           desiredFileName &&
           existingRef &&
@@ -774,6 +779,7 @@ export const gazetteRouter = router({
           tags,
           siteId,
           fileName,
+          fileSize,
           resourceId,
         },
       }) => {
@@ -791,6 +797,7 @@ export const gazetteRouter = router({
         const { presignedPutUrl, contentType, contentDisposition } =
           await getPresignedPutUrl({
             key: fileKey,
+            fileSize,
             tags,
           })
 

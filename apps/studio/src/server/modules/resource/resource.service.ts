@@ -1,11 +1,15 @@
-import type { SelectExpression } from "kysely"
+import type { SelectExpression, SelectQueryBuilder } from "kysely"
 import type { UnwrapTagged } from "type-fest"
-import type { ResourceItemContent } from "~/schemas/resource"
+import type {
+  ResourceItemContent,
+  ResourceOrderByOption,
+} from "~/schemas/resource"
 import {
   createChildrenPagesComparator,
   type IsomerSitemap,
 } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
+import chunk from "lodash-es/chunk"
 import get from "lodash-es/get"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
 import {
@@ -59,6 +63,26 @@ export const defaultResourceSelect = [
   "Resource.scheduledAt",
   "Resource.scheduledBy",
 ] satisfies SelectExpression<DB, "Resource">[]
+
+// Shared by any query listing rows from the `Resource` table (e.g. folder/root
+// listings, collection item listings) so they sort identically and paginate
+// deterministically. `id` is used as the final tie-breaker
+export const applyResourceOrderBy = <O>(
+  query: SelectQueryBuilder<DB, "Resource", O>,
+  orderBy: ResourceOrderByOption,
+): SelectQueryBuilder<DB, "Resource", O> => {
+  switch (orderBy) {
+    case "title-asc":
+      return query
+        .orderBy(sql`lower("Resource"."title")`, "asc")
+        .orderBy("Resource.id", "asc")
+    case "updated-desc":
+    default:
+      return query
+        .orderBy("Resource.updatedAt", "desc")
+        .orderBy("Resource.id", "asc")
+  }
+}
 
 const defaultResourceWithBlobSelect = [
   ...defaultResourceSelect,
@@ -415,13 +439,6 @@ export const getLocalisedSitemap = async (
       ELSE ''
     END
 `.as("content")
-  const categoryIdSql = sql<string | null>`
-    CASE
-      WHEN (published.content ->> 'layout') IN ('article','link')
-      THEN (published.content -> 'page' ->> 'categoryId')
-      ELSE NULL
-    END
-`.as("categoryId")
   const taggedSql = sql<string | null>`
     CASE
       WHEN (published.content ->> 'layout') IN ('article','link')
@@ -451,7 +468,6 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
-          categoryIdSql,
           taggedSql,
           ...defaultResourceSelect,
         ])
@@ -471,7 +487,6 @@ export const getLocalisedSitemap = async (
               eb.cast<string>(eb.val(""), "text").as("category"),
               eb.cast<string>(eb.val(""), "text").as("date"),
               eb.cast<string>(eb.val(""), "text").as("content"),
-              eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
@@ -500,7 +515,6 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
-          categoryIdSql,
           taggedSql,
           ...defaultResourceSelect,
         ]),
@@ -524,7 +538,6 @@ export const getLocalisedSitemap = async (
           categorySql,
           dateSql,
           contentSql,
-          eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
           eb.cast<string | null>(eb.val(null), "text").as("tagged"),
           ...defaultResourceSelect,
         ])
@@ -551,7 +564,6 @@ export const getLocalisedSitemap = async (
               categorySql,
               dateSql,
               contentSql,
-              eb.cast<string | null>(eb.val(null), "text").as("categoryId"),
               eb.cast<string | null>(eb.val(null), "text").as("tagged"),
               ...defaultResourceSelect,
             ]),
@@ -565,7 +577,6 @@ export const getLocalisedSitemap = async (
       "category",
       "date",
       "content",
-      "categoryId",
       "tagged",
       ...defaultResourceSelect,
     ])
@@ -578,7 +589,6 @@ export const getLocalisedSitemap = async (
           "category",
           "date",
           "content",
-          "categoryId",
           "tagged",
           ...defaultResourceSelect,
         ]),
@@ -592,7 +602,6 @@ export const getLocalisedSitemap = async (
           "category",
           "date",
           "content",
-          "categoryId",
           "tagged",
           ...defaultResourceSelect,
         ]),
@@ -1061,9 +1070,14 @@ export const getResourceIdsByPermalinks = async (
   )
   const allSegments = [...new Set([...segmentsByPath.values()].flat())]
 
-  // One query for every candidate segment across all paths, plus the root page
-  // only when a bare "/" path is present — two round-trips regardless of N.
-  const [root, candidates] = await Promise.all([
+  // Chunk the candidate lookup so a large bulk upload (many distinct segments)
+  // can't push the IN (...) past Postgres' 65535 bind-parameter cap and fail the
+  // whole query. Well under the cap; candidates from every chunk are merged.
+  const SEGMENT_LOOKUP_CHUNK_SIZE = 20_000
+
+  // One query per candidate-segment chunk across all paths, plus the root page
+  // only when a bare "/" path is present.
+  const [root, candidateChunks] = await Promise.all([
     needsRoot
       ? db
           .selectFrom("Resource")
@@ -1073,15 +1087,33 @@ export const getResourceIdsByPermalinks = async (
           .select("Resource.id")
           .executeTakeFirst()
       : Promise.resolve(undefined),
-    allSegments.length > 0
-      ? db
+    Promise.all(
+      chunk(allSegments, SEGMENT_LOOKUP_CHUNK_SIZE).map((segments) =>
+        db
           .selectFrom("Resource")
           .where("Resource.siteId", "=", siteId)
-          .where("Resource.permalink", "in", allSegments)
+          .where("Resource.permalink", "in", segments)
           .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
-          .execute()
-      : Promise.resolve([]),
+          .execute(),
+      ),
+    ),
   ])
+  const candidates = candidateChunks.flat()
+
+  // Index candidates by (parentId, permalink) so each segment step is an O(1)
+  // lookup. A linear `candidates.find` per segment is O(segments * candidates),
+  // which a large bulk upload against a resource-heavy site pushes into hundreds
+  // of millions of comparisons — enough to block the event loop. The "/"
+  // separator is safe: a parentId is only digits, so the concatenation is
+  // injective — the first "/" always delimits parentId from permalink.
+  const idByParentAndPermalink = new Map<string, string>()
+  for (const candidate of candidates) {
+    const key = `${candidate.parentId ?? ""}/${candidate.permalink}`
+    // Keep the first match, mirroring the previous `Array.find` semantics.
+    if (!idByParentAndPermalink.has(key)) {
+      idByParentAndPermalink.set(key, String(candidate.id))
+    }
+  }
 
   for (const [path, segments] of segmentsByPath) {
     if (segments.length === 0) {
@@ -1094,16 +1126,13 @@ export const getResourceIdsByPermalinks = async (
     let leafId: number | null = null
     let resolved = true
     for (const segment of segments) {
-      const match = candidates.find(
-        (candidate) =>
-          candidate.permalink === segment && candidate.parentId === parentId,
-      )
-      if (!match) {
+      const matchId = idByParentAndPermalink.get(`${parentId ?? ""}/${segment}`)
+      if (matchId === undefined) {
         resolved = false
         break
       }
-      leafId = Number(match.id)
-      parentId = String(match.id)
+      leafId = Number(matchId)
+      parentId = matchId
     }
     result.set(path, resolved ? leafId : null)
   }

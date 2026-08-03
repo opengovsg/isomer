@@ -12,6 +12,8 @@
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
     "start": "next start",
+    "test-ci:e2e": "vitest run",
+    "test:e2e": "pnpm exec turbo test-ci:e2e --filter=isomer-base-template --env-mode=loose",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -32,6 +34,7 @@
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:react",
-    "@types/react-dom": "catalog:react"
+    "@types/react-dom": "catalog:react",
+    "vitest": "catalog:vitest"
   }
 }

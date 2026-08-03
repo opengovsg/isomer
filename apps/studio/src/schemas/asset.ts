@@ -2,8 +2,11 @@ import { IMAGE_ACCEPTED_MIME_TYPE_MAPPING } from "@opengovsg/isomer-components"
 import { z } from "zod"
 import {
   FILE_UPLOAD_ACCEPTED_MIME_TYPE_MAPPING,
+  MAX_FILE_SIZE_BYTES,
+  MAX_IMG_FILE_SIZE_BYTES,
   MAX_SVG_FILE_SIZE_BYTES,
-} from "~/features/editing-experience/components/form-builder/renderers/controls/constants"
+} from "~/lib/fileUpload"
+import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 
 // Combine allowed extensions from existing constants
 const ALLOWED_EXTENSIONS = [
@@ -15,7 +18,63 @@ const fileNameStartingCharRefine = (s: string) => /^[a-zA-Z0-9\-_]/.test(s)
 const fileNameStartingCharMessage =
   "File name must start with a letter, number, hyphen, or underscore"
 
-export const getPresignedPutUrlSchema = z.object({
+const fileNameSchema = z
+  .string({
+    error: "Missing file name",
+  })
+  .refine(fileNameStartingCharRefine, {
+    message: fileNameStartingCharMessage,
+  })
+  .refine(
+    (fileName) => {
+      if (!fileName.includes(".")) {
+        return false
+      }
+
+      const extension = fileName
+        .toLowerCase()
+        .substring(fileName.lastIndexOf("."))
+
+      // SVGs must go through the dedicated uploadSvg endpoint which
+      // sanitizes the content server-side before uploading to S3.
+      // The presigned PUT path never sees the file bytes, so it cannot
+      // validate or strip embedded scripts/event handlers.
+      if (extension === ".svg") return false
+
+      return ALLOWED_EXTENSIONS.includes(extension)
+    },
+    {
+      message: "File type not allowed. Please upload a supported file type.",
+    },
+  )
+
+const fileSizeSchema = z
+  .number({ error: "Missing file size" })
+  .int()
+  .min(1, { message: "File size must be greater than 0 bytes" })
+
+// Cross-field: the size limit that applies to `fileSize` depends on `fileName`'s
+// extension, so it can't be expressed as a per-field constraint. Shared between
+// `getPresignedPutUrlSchema` and `fileNameAndSizeSchema` so both stay in sync.
+const fileSizeRefine = (
+  { fileName, fileSize }: { fileName: string; fileSize: number },
+  ctx: z.RefinementCtx,
+) => {
+  const extension = fileName.toLowerCase().substring(fileName.lastIndexOf("."))
+  const maxFileSize =
+    extension in IMAGE_ACCEPTED_MIME_TYPE_MAPPING
+      ? MAX_IMG_FILE_SIZE_BYTES
+      : MAX_FILE_SIZE_BYTES
+  if (fileSize <= maxFileSize) return
+
+  ctx.addIssue({
+    code: "custom",
+    path: ["fileSize"],
+    message: `File size must not exceed ${formatFileSizeLimit({ bytes: maxFileSize })}`,
+  })
+}
+
+const getPresignedPutUrlBaseSchema = z.object({
   siteId: z.number().min(1),
   tags: z
     .array(
@@ -26,40 +85,20 @@ export const getPresignedPutUrlSchema = z.object({
     )
     .optional(),
   resourceId: z.string().optional(),
-  fileName: z
-    .string({
-      error: "Missing file name",
-    })
-    .refine(fileNameStartingCharRefine, {
-      message: fileNameStartingCharMessage,
-    })
-    // Check if extension is in allowed list (whitelist approach)
-    // To ensure we don't allow any other file types that can have security implications
-    .refine(
-      (fileName) => {
-        // Must have an extension
-        if (!fileName.includes(".")) {
-          return false
-        }
-
-        // Check if extension is in allowed list (whitelist approach)
-        const extension = fileName
-          .toLowerCase()
-          .substring(fileName.lastIndexOf("."))
-
-        // SVGs must go through the dedicated uploadSvg endpoint which
-        // sanitizes the content server-side before uploading to S3.
-        // The presigned PUT path never sees the file bytes, so it cannot
-        // validate or strip embedded scripts/event handlers.
-        if (extension === ".svg") return false
-
-        return ALLOWED_EXTENSIONS.includes(extension)
-      },
-      {
-        message: "File type not allowed. Please upload a supported file type.",
-      },
-    ),
+  fileSize: fileSizeSchema,
+  fileName: fileNameSchema,
 })
+
+export const getPresignedPutUrlSchema =
+  getPresignedPutUrlBaseSchema.superRefine(fileSizeRefine)
+
+// Subset of getPresignedPutUrlSchema for client-side pre-upload validation
+// (previewing fileName/fileSize errors before the mutation fires). Picked from
+// the same unrefined base so field shapes can't drift from the full schema,
+// and doesn't require siteId/resourceId, which the size/name check never uses.
+export const fileNameAndSizeSchema = getPresignedPutUrlBaseSchema
+  .pick({ fileName: true, fileSize: true })
+  .superRefine(fileSizeRefine)
 
 export const uploadSvgSchema = z.object({
   siteId: z.number().min(1),

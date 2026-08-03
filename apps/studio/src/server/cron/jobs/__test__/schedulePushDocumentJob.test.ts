@@ -108,8 +108,10 @@ const seedDocumentReadyForIngestion = async ({
     .where("id", "=", String(indexBlob.id))
     .execute()
 
-  // A published Version for the IndexPage.
-  await db
+  // A published Version for the IndexPage. Publishing sets
+  // publishedVersionId on the Resource (see version.service.ts), and the
+  // handler resolves the index page blob through it.
+  const indexVersion = await db
     .insertInto("Version")
     .values({
       versionNum: 1,
@@ -117,6 +119,12 @@ const seedDocumentReadyForIngestion = async ({
       blobId: indexBlob.id,
       publishedBy,
     })
+    .returning("id")
+    .executeTakeFirstOrThrow()
+  await db
+    .updateTable("Resource")
+    .set({ publishedVersionId: indexVersion.id })
+    .where("id", "=", indexPage.id)
     .execute()
 
   // Child page that points at the PDF asset.
@@ -205,7 +213,7 @@ describe("schedulePushDocumentJobHandler", async () => {
     // Two sequential fetches: auth token, then ingest POST.
     vi.spyOn(global, "fetch").mockImplementation(
       // eslint-disable-next-line @typescript-eslint/require-await
-      (async (input: Parameters<typeof fetch>[0]) => {
+      async (input: Parameters<typeof fetch>[0]) => {
         const u = urlToString(input)
         if (u.endsWith("/v1/auth/token")) {
           return new Response(
@@ -217,7 +225,7 @@ describe("schedulePushDocumentJobHandler", async () => {
           return new Response("{}", { status: 200 })
         }
         throw new Error(`Unexpected fetch: ${u}`)
-      }) as typeof fetch,
+      },
     )
   })
 

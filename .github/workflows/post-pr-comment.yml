@@ -1,4 +1,4 @@
-name: Post E2E video comment
+name: Post PR comments
 
 # Why a separate workflow instead of steps inside ci.yml?
 #
@@ -12,21 +12,19 @@ name: Post E2E video comment
 # GITHUB_TOKEN always has the permissions declared below — even when the
 # triggering PR came from a fork.
 #
-# The PR number and artifact URL can't be read from the triggering run's
-# environment (different context), so ci.yml writes them into a small artifact
-# ("e2e-comment-metadata") that this workflow downloads before posting.
+# This job downloads a small metadata artifact written by ci.yml, since the
+# two workflows run in separate contexts and can't share environment variables.
 on:
   workflow_run:
     workflows: ["CI"]
     types: [completed]
 
 permissions:
-  actions: read # needed by `gh run download` to access the Actions artifacts API
-  pull-requests: write
+  actions: read # needed by actions/download-artifact to access a different run's artifacts
   issues: write # GitHub routes PR comments through the issues API endpoint
 
 jobs:
-  post-comment:
+  post-e2e-comment:
     # Only run for PR triggers; push runs on main/staging/production don't have
     # a PR to comment on.
     if: github.event.workflow_run.event == 'pull_request'
@@ -39,13 +37,12 @@ jobs:
         # lets subsequent steps gate on `steps.download.outcome` instead of
         # failing the whole job.
         continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh run download ${{ github.event.workflow_run.id }} \
-            --name e2e-comment-metadata \
-            --dir /tmp/e2e-metadata \
-            --repo ${{ github.repository }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: e2e-comment-metadata
+          path: /tmp/e2e-metadata
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Read metadata
         if: steps.download.outcome == 'success'

@@ -46,6 +46,7 @@ export const useUploadGazetteMutation = ({
             siteId,
             resourceId,
             fileName: fileName ?? file.name,
+            fileSize: file.size,
             year,
             category,
             subcategory,

@@ -81,7 +81,7 @@ export function SearchField({
         )}
         onFocus={() => setIsFocusWithin(true)}
         onBlur={(e) => {
-          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          if (!e.currentTarget.contains(e.relatedTarget)) {
             setIsFocusWithin(false)
           }
         }}

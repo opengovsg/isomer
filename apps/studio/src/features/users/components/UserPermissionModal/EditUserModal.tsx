@@ -15,13 +15,12 @@ import {
 } from "@chakra-ui/react"
 import { FormLabel, useToast } from "@opengovsg/design-system-react"
 import { useAtomValue, useSetAtom } from "jotai"
-import { useEffect, useMemo } from "react"
+import { useEffect } from "react"
 import { z as zod } from "zod"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
 import { useZodForm } from "~/lib/form"
 import { updateUserInputSchema } from "~/schemas/user"
-import { isGovEmail } from "~/utils/email"
 import { trpc } from "~/utils/trpc"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
@@ -30,7 +29,7 @@ import {
   updateUserModalAtom,
 } from "../../atoms"
 import { SingpassConditionalTooltip } from "../SingpassConditionalTooltip"
-import { AddAdminWarning, NonGovEmailCannotBeAdmin } from "./Banners"
+import { AddAdminWarning } from "./Banners"
 import { ISOMER_GUIDE_URL, ROLE_CONFIGS } from "./constants"
 import { RoleBox } from "./RoleBox"
 
@@ -93,8 +92,6 @@ export const EditUserModal = () => {
 
   const selectedRole = watch("role")
 
-  const isNonGovEmailInput = useMemo(() => !isGovEmail(email), [email])
-
   return (
     <Modal isOpen={!!siteId && !!userId} onClose={onClose}>
       <ModalOverlay />
@@ -133,17 +130,11 @@ export const EditUserModal = () => {
                       isSelected={selectedRole === role}
                       onClick={() => setValue("role", role)}
                       permissionLabels={permissionLabels}
-                      isDisabled={role === RoleType.Admin && isNonGovEmailInput}
                     />
                   ))}
                 </HStack>
               </FormControl>
-              {selectedRole === RoleType.Admin && !isNonGovEmailInput && (
-                <AddAdminWarning />
-              )}
-              {selectedRole === RoleType.Admin && isNonGovEmailInput && (
-                <NonGovEmailCannotBeAdmin />
-              )}
+              {selectedRole === RoleType.Admin && <AddAdminWarning />}
             </VStack>
           </VStack>
         </ModalBody>

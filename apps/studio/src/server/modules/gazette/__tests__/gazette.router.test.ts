@@ -445,6 +445,10 @@ describe("gazette.router", async () => {
         scheduledAt: PAST_DATE,
       })
 
+      const markFileAsDeleted = vi
+        .spyOn(gazetteService, "markFileAsDeleted")
+        .mockResolvedValue(undefined)
+
       // Act
       await caller.update({
         siteId: site.id,
@@ -486,6 +490,60 @@ describe("gazette.router", async () => {
       expect(page?.category).toBe("Other Supplements")
       expect(page?.description).toBe("new-desc")
       expect(page?.tagged).toEqual(["sub-2"])
+
+      // The superseded file (a different key) is soft-deleted after commit.
+      expect(markFileAsDeleted).toHaveBeenCalledExactlyOnceWith({
+        key: "1/abc/notice.pdf",
+      })
+    })
+
+    it("does not soft-delete the S3 object when the new ref matches the existing ref", async () => {
+      // Arrange: S3 keys are deterministic (year/category/subcategory/filename),
+      // so re-uploading a replacement file without changing its metadata lands
+      // on the SAME key — cleanup must be skipped or it tombstones the live file.
+      const { site, collection } = await seedToppanWithCollection()
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Original",
+        permalink: crypto.randomUUID(),
+        ref: "/2026/Government Gazette/sub-1/notice.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+      const markFileAsDeleted = vi
+        .spyOn(gazetteService, "markFileAsDeleted")
+        .mockResolvedValue(undefined)
+
+      // Act: re-upload to the same key
+      await caller.update({
+        siteId: site.id,
+        gazetteId: Number(gazetteId),
+        title: "Original",
+        newRef: "/2026/Government Gazette/sub-1/notice.pdf",
+        category: "Government Gazette",
+        date: "30/04/2026",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Assert: the gazette still points at the ref, and it was never tombstoned
+      expect(markFileAsDeleted).not.toHaveBeenCalled()
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const blob = await db
+        .selectFrom("Blob")
+        .where("id", "=", resource.draftBlobId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(
+        (blob.content as { page?: { ref?: string } } | null)?.page?.ref,
+      ).toBe("/2026/Government Gazette/sub-1/notice.pdf")
     })
 
     it("accepts a past scheduledAt on update (mirrors create's contract)", async () => {
@@ -842,6 +900,7 @@ describe("gazette.router", async () => {
         category: "Government Gazette",
         subcategory: "Public",
         fileName: "notice-1.pdf",
+        fileSize: 1234,
         tags: [{ key: "scheduledAt", value: "1700000000000" }],
       })
 
@@ -869,6 +928,7 @@ describe("gazette.router", async () => {
         category: "Government Gazette",
         subcategory: "Public",
         fileName: "notice-2.pdf",
+        fileSize: 1234,
       })
 
       const signerArgs = signedPutSpy.mock.calls[0]![0]
@@ -1069,9 +1129,9 @@ describe("gazette.router", async () => {
       expect(resource).toBeUndefined()
     })
 
-    it("rejects deletion after the 15-minute grace period", async () => {
+    it("rejects deletion after the 30-minute grace period", async () => {
       const { site, collection, user } = await seedToppanWithCollection()
-      const publishedAt = subMinutes(FIXED_NOW, 16) // 16 minutes ago
+      const publishedAt = subMinutes(FIXED_NOW, 31) // 31 minutes ago
 
       const { gazetteId } = await seedPublishedGazette({
         siteId: site.id,
@@ -1089,7 +1149,7 @@ describe("gazette.router", async () => {
         new TRPCError({
           code: "FORBIDDEN",
           message:
-            "Gazettes are unable to be deleted after the given grace period of 15 minutes",
+            "Gazettes are unable to be deleted after the given grace period of 30 minutes",
         }),
       )
 

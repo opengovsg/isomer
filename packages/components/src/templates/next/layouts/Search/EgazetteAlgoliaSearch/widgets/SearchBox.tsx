@@ -46,7 +46,7 @@ export const SearchBox = () => {
           if (timerRef.current) clearTimeout(timerRef.current)
           timerRef.current = setTimeout(() => refine(next), DEBOUNCE_MS)
         }}
-        className="prose-body-base h-12 w-full rounded border border-base-content-strong bg-white pl-10 pr-3 text-base-content placeholder:text-base-content-medium focus:outline-none focus:ring-2 focus:ring-utility-highlight"
+        className="prose-body-base h-12 w-full rounded border border-base-content-strong bg-white pl-10 pr-3 text-base-content placeholder:text-base-content-medium focus:outline-none focus:ring-2 focus:ring-utility-highlight [&::-webkit-search-cancel-button]:cursor-pointer"
       />
     </label>
   )
