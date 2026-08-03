@@ -55,11 +55,18 @@ const isValidGoogleMapsEmbedUrl = (urlObject: URL) => {
 }
 
 const isValidOneMapEmbedUrl = (urlObject: URL) => {
-  return (
-    urlObject.hostname === "www.onemap.gov.sg" &&
-    (urlObject.pathname === "/minimap/minimap.html" ||
-      urlObject.pathname === "/amm/amm.html")
-  )
+  if (urlObject.hostname === "www.onemap.gov.sg") {
+    return (
+      urlObject.pathname === "/minimap/minimap.html" ||
+      urlObject.pathname === "/amm/amm.html"
+    )
+  }
+
+  if (urlObject.hostname === "mobile.onemap.gov.sg") {
+    return urlObject.pathname.length > 1
+  }
+
+  return false
 }
 
 export const isValidOGPMapsEmbedUrl = (urlObject: URL) => {
@@ -93,7 +100,7 @@ export const isValidMapEmbedUrl = (url: string) => {
 export const MAPS_EMBED_URL_REGEXES = {
   googlemaps: "^https://www\\.google\\.com/maps(?:/d)?/embed(?:\\?.*)?$",
   onemap:
-    "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$",
+    "^https://www\\.onemap\\.gov\\.sg(/minimap/minimap\\.html|/amm/amm\\.html).*$|^https://mobile\\.onemap\\.gov\\.sg/.+$",
   ogpmaps: `^https://maps\\.gov\\.sg/.*$`,
 } as const
 
