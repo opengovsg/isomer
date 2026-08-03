@@ -47,6 +47,12 @@ model Version {
   publisher   User       @relation(fields: [publishedBy], references: [id])
 
   updatedAt DateTime @default(now()) @updatedAt
+
+  // Supports querying WHERE resourceId = $1 ORDER BY versionNum DESC LIMIT 1
+  // to find the latest version for a resource. Created CONCURRENTLY via a
+  // custom migration since Version is a large, append-only, platform-shared
+  // table (see prisma/custom/migration.sql).
+  @@index([resourceId, versionNum(sort: Desc)])
 }
 
 model Resource {
