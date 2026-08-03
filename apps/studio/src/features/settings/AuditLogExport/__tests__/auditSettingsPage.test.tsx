@@ -75,14 +75,19 @@ describe("AuditLogExportSettingsPage", () => {
   })
 
   it("renders the export section for admins", () => {
+    // Arrange / Act
     renderWith(adminAbility)
+
+    // Assert
     expect(screen.queryByRole("heading", { name: "Logs" })).not.toBeNull()
     expect(replace).not.toHaveBeenCalled()
   })
 
   it("redirects non-admins to the default settings page instead of showing a blank pane", async () => {
+    // Arrange / Act
     renderWith(editorAbility)
 
+    // Assert
     await waitFor(() =>
       expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`),
     )
@@ -90,9 +95,13 @@ describe("AuditLogExportSettingsPage", () => {
   })
 
   it("does not redirect while roles are still loading", () => {
+    // Arrange
     isRolesPending = true
+
+    // Act
     renderWith(editorAbility)
 
+    // Assert
     expect(replace).not.toHaveBeenCalled()
     expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
   })
