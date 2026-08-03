@@ -162,6 +162,13 @@ type DisplayableAuditLogEvent = Exclude<
   | "PermissionUpdate"
   | "SchedulePublish"
   | "CancelSchedulePublish"
+  // NOTE: unpublishing-feature events (E1-E4). Not yet surfaced in this
+  // reporting script — add display queries here when this report is
+  // extended to cover them.
+  | "Unpublish"
+  | "ArchiveDraft"
+  | "ScheduleUnpublish"
+  | "CancelScheduleUnpublish"
 >
 
 // NOTE: Only use these queries in the context of the getAuditLogQuery function,

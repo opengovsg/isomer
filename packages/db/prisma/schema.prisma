@@ -114,6 +114,7 @@ model Blob {
 enum ResourceState {
   Draft
   Published
+  Archived
 }
 
 enum ResourceType {
@@ -300,6 +301,10 @@ enum AuditLogEvent {
   NavbarUpdate
   RedirectCreate
   RedirectDelete
+  Unpublish
+  ArchiveDraft
+  ScheduleUnpublish
+  CancelScheduleUnpublish
 }
 
 model AuditLog {

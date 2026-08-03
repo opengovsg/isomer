@@ -1,6 +1,7 @@
 export const ResourceState = {
   Draft: "Draft",
   Published: "Published",
+  Archived: "Archived",
 } as const
 export type ResourceState = (typeof ResourceState)[keyof typeof ResourceState]
 export const ResourceType = {
@@ -47,6 +48,10 @@ export const AuditLogEvent = {
   NavbarUpdate: "NavbarUpdate",
   RedirectCreate: "RedirectCreate",
   RedirectDelete: "RedirectDelete",
+  Unpublish: "Unpublish",
+  ArchiveDraft: "ArchiveDraft",
+  ScheduleUnpublish: "ScheduleUnpublish",
+  CancelScheduleUnpublish: "CancelScheduleUnpublish",
 } as const
 export type AuditLogEvent = (typeof AuditLogEvent)[keyof typeof AuditLogEvent]
 export const BuildStatusType = {
