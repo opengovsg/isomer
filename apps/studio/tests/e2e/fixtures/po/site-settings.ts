@@ -98,7 +98,7 @@ export class SitePO {
   }
 
   redirectPathText(path: string) {
-    return this.page.getByText(path)
+    return this.page.getByText(path, { exact: true })
   }
 
   deleteRedirectButton(source: string) {

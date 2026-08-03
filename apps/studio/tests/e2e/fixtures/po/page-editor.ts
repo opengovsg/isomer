@@ -122,10 +122,11 @@ export class PageEditorPO {
       .getByRole("button", { name: "Select from date picker." })
       .click()
     await this.page.getByRole("button", { name: "Today" }).click()
+    // First quick-select badge after midnight presets are filtered out.
     await this.page
       .locator("form")
       .getByText(/\d{1,2}:\d{2} (AM|PM)/)
-      .last()
+      .first()
       .click()
     await this.page.getByRole("button", { name: "Schedule publish" }).click()
   }

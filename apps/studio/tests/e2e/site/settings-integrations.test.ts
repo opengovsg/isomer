@@ -14,6 +14,8 @@ test.beforeAll(async () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
+  test.describe.configure({ mode: "serial" })
+
   test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
     await resetSiteIntegrations(siteId)
