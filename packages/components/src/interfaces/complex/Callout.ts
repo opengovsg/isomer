@@ -2,7 +2,6 @@ import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
 
-import { IMAGE_RADIO_1COL_FORMAT } from "../format"
 import { CalloutProseSchema } from "../native/Prose"
 
 export const CALLOUT_VARIANT_OPTIONS = {
@@ -47,7 +46,7 @@ export const CalloutSchema = Type.Object(
         ],
         title: "Message type",
         default: DEFAULT_CALLOUT_VARIANT,
-        format: IMAGE_RADIO_1COL_FORMAT,
+        format: "image-radio/1col",
       }),
     ),
     content: CalloutProseSchema,

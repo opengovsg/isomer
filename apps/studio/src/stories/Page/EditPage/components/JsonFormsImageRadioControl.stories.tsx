@@ -3,8 +3,6 @@ import {
   CALLOUT_VARIANT_OPTIONS,
   DEFAULT_CALLOUT_VARIANT,
   DEFAULT_TAG_CATEGORY_DISPLAY,
-  IMAGE_RADIO_1COL_FORMAT,
-  IMAGE_RADIO_2COL_FORMAT,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   type CalloutVariant,
   type TagCategoryDisplay,
@@ -34,7 +32,7 @@ const twoColumnSchema = Type.Object({
       },
     ],
     title: "Show as",
-    format: IMAGE_RADIO_2COL_FORMAT,
+    format: "image-radio/2col",
     default: DEFAULT_TAG_CATEGORY_DISPLAY,
   }),
 })
@@ -64,7 +62,7 @@ const oneColumnSchema = Type.Object({
       },
     ],
     title: "Message type",
-    format: IMAGE_RADIO_1COL_FORMAT,
+    format: "image-radio/1col",
     default: DEFAULT_CALLOUT_VARIANT,
   }),
 })

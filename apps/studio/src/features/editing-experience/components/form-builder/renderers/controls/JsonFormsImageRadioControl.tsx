@@ -5,10 +5,6 @@ import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 import {
-  getImageRadioColumnCount,
-  isImageRadioFormat,
-} from "@opengovsg/isomer-components"
-import {
   IconTagCategoryPills,
   IconTagCategoryPlaintext,
 } from "~/components/icons"
@@ -16,6 +12,10 @@ import * as calloutVariantPreviews from "~/components/icons/callout/variant"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ImageRadioIndicator } from "./ImageRadioIndicator"
+import {
+  getImageRadioColumnCount,
+  isImageRadioFormat,
+} from "./utils/imageRadio"
 
 const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "tagcategory/pills": IconTagCategoryPills,
