@@ -257,4 +257,48 @@ describe("getTableColumnCount", () => {
     // Act / Assert
     expect(getTableColumnCount(rows)).toBe(2)
   })
+
+  it("counts columns for many rows with a rowspan without scanning every earlier row", () => {
+    // Arrange
+    const paragraph = {
+      type: "paragraph" as const,
+      content: [{ type: "text" as const, text: "" }],
+    }
+    const rows = Array.from({ length: 200 }, (_, rowIndex) => ({
+      type: "tableRow" as const,
+      content:
+        rowIndex === 0
+          ? [
+              {
+                type: "tableCell" as const,
+                attrs: { colspan: 1, rowspan: 2 },
+                content: [paragraph],
+              },
+              {
+                type: "tableCell" as const,
+                content: [paragraph],
+              },
+            ]
+          : rowIndex === 1
+            ? [
+                {
+                  type: "tableCell" as const,
+                  content: [paragraph],
+                },
+              ]
+            : [
+                {
+                  type: "tableCell" as const,
+                  content: [paragraph],
+                },
+                {
+                  type: "tableCell" as const,
+                  content: [paragraph],
+                },
+              ],
+    }))
+
+    // Act / Assert
+    expect(getTableColumnCount(rows)).toBe(2)
+  })
 })

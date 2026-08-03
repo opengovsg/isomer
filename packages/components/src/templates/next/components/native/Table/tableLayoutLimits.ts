@@ -10,6 +10,12 @@
  */
 export const MAX_TABLE_COLUMNS = 64
 
+/**
+ * Upper bound on rows the phantom-grid resolver will walk.
+ * `hasPhantomColumns` allocates O(rows × columns); this is an arbitrary cap.
+ */
+export const MAX_TABLE_ROWS = 1000
+
 /** Coerce an untrusted span attribute to a usable positive integer. */
 export const normalizeSpan = (value: unknown): number => {
   if (typeof value !== "number" || !Number.isFinite(value)) return 1

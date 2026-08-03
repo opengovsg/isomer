@@ -1,7 +1,11 @@
 import type { TableProps } from "~/interfaces"
 
 import { getTableColumnCount } from "./getTableColumnCount"
-import { MAX_TABLE_COLUMNS, normalizeSpan } from "./tableLayoutLimits"
+import {
+  MAX_TABLE_COLUMNS,
+  MAX_TABLE_ROWS,
+  normalizeSpan,
+} from "./tableLayoutLimits"
 
 type TableRows = TableProps["content"]
 
@@ -22,7 +26,8 @@ export const hasPhantomColumns = (rows: TableRows): boolean => {
   if (
     columnCount <= 1 ||
     columnCount > MAX_TABLE_COLUMNS ||
-    rows.length === 0
+    rows.length === 0 ||
+    rows.length > MAX_TABLE_ROWS
   ) {
     return false
   }

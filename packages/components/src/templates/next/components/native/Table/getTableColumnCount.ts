@@ -1,6 +1,6 @@
 import type { TableProps } from "~/interfaces"
 
-import { normalizeSpan } from "./tableLayoutLimits"
+import { MAX_TABLE_COLUMNS, normalizeSpan } from "./tableLayoutLimits"
 
 type TableRows = TableProps["content"]
 
@@ -48,7 +48,10 @@ export const getTableColumnCount = (rows: TableRows): number => {
     // Example: a cell at row 0 with rowspan 2 covers a slot in row 1 even
     // though row 1's JSON has no entry for that column.
     if (hasRowSpan) {
-      for (let earlier = 0; earlier < rowIndex; earlier++) {
+      // Rowspan is capped at MAX_TABLE_COLUMNS, so only rows in this window
+      // can still cover `rowIndex`.
+      const earliestCoveringRow = Math.max(0, rowIndex - MAX_TABLE_COLUMNS)
+      for (let earlier = earliestCoveringRow; earlier < rowIndex; earlier++) {
         const earlierRow = rows[earlier]
         if (!earlierRow) {
           continue
