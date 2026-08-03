@@ -311,6 +311,7 @@ export const DEFAULT_BLOCKS = {
         },
       ],
     },
+    variant: "vertical",
     links: [
       {
         title: "Enter a title for your first link.",
