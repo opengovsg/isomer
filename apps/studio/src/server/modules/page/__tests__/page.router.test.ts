@@ -22,7 +22,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
-import { normalizeRedirectPath } from "~/schemas/redirect"
+import { normalizeRedirectPath } from "~/schemas/redirect/utils"
 import { createCallerFactory } from "~/server/trpc"
 import {
   AuditLogEvent,

@@ -13,9 +13,49 @@ export type SettingsSection =
 export class SitePO {
   constructor(private readonly page: Page) {}
 
-  async gotoSettings(siteId: number, section: SettingsSection) {
+  async openSite(siteName: string) {
+    await this.page.goto("/")
+    await this.page.getByRole("link", { name: siteName }).click()
+    await this.page.waitForURL(/\/sites\/\d+$/)
+  }
+
+  async openSettings() {
+    await this.page.getByRole("link", { name: "Settings" }).click()
+    await this.page.waitForURL(/\/sites\/\d+\/settings\//)
+  }
+
+  async gotoSettingsSection(siteId: number, section: SettingsSection) {
     await this.page.goto(`/sites/${siteId}/settings/${section}`)
     await this.page.waitForURL(new RegExp(`/settings/${section}$`))
+  }
+
+  async reloadSettingsSection(section: SettingsSection) {
+    await this.page.reload()
+    await this.page.waitForURL(new RegExp(`/settings/${section}$`))
+  }
+
+  async openSettingsSection(section: SettingsSection) {
+    // Settings landing redirects to /agency. To reach other sections we
+    // navigate via the settings side-nav (label === section name, title-cased).
+    // Labels sourced from apps/studio/src/features/settings/SettingsSidenav/SettingsSidenav.tsx
+    const label = SETTINGS_SECTION_LABELS[section]
+    await this.page.getByRole("link", { name: label }).click()
+
+    const urlPattern = new RegExp(`/settings/${section}$`)
+    const confirmLeaveButton = this.page.getByRole("button", {
+      name: "Yes, leave this page",
+    })
+    // A settings page can be considered "dirty" (form state briefly out of
+    // sync with the server) right after mount, which triggers the same
+    // "leave without saving?" confirmation a real user would see. Confirm it
+    // if it shows up instead of hanging on a route change that never fires.
+    const dismissIfShown = confirmLeaveButton
+      .waitFor({ state: "visible" })
+      .then(() => confirmLeaveButton.click())
+      .catch(() => undefined)
+
+    await Promise.race([this.page.waitForURL(urlPattern), dismissIfShown])
+    await this.page.waitForURL(urlPattern)
   }
 
   /**
@@ -26,6 +66,184 @@ export class SitePO {
    */
   publishButton() {
     return this.page.getByRole("button", { name: "Publish" })
+  }
+
+  siteNameField() {
+    return this.page.getByLabel("Site name")
+  }
+
+  mainBrandColourField() {
+    return this.page.getByLabel("Main brand colour")
+  }
+
+  gtmIdField() {
+    return this.page.getByLabel("Google Tag Manager (GTM) ID")
+  }
+
+  notificationBannerToggle() {
+    // Chakra v2's Switch exposes an implicit ARIA `checkbox` role, not `switch`.
+    return this.page.getByRole("checkbox")
+  }
+
+  notificationTitleField() {
+    return this.page.getByLabel("Notification title")
+  }
+
+  /** Logo upload section container on the logos and favicon settings page. */
+  logoUploadGroup() {
+    return this.page.getByRole("group").filter({ hasText: /^Logo/ })
+  }
+
+  /**
+   * Logo file input on the logos and favicon settings page. Visually hidden
+   * by design (Attachment renders a styled dropzone over it) — usable with
+   * setInputFiles(), but never assert toBeVisible() on it directly. Use
+   * logoUploadGroup() for visibility checks instead.
+   */
+  logoUploadInput() {
+    return this.logoUploadGroup().getByTestId("file-upload")
+  }
+
+  logoFilenameText(filename: string) {
+    return this.page.getByText(filename)
+  }
+
+  footerLinkButton(name: string) {
+    return this.page.getByRole("button", { name })
+  }
+
+  navbarItemText(name: string) {
+    return this.page.getByText(name, { exact: true })
+  }
+
+  redirectSourceField() {
+    return this.page.getByPlaceholder("redirect-from")
+  }
+
+  redirectDestinationField() {
+    return this.page.getByPlaceholder("/path-to-page or https://www.google.com")
+  }
+
+  redirectPathText(path: string) {
+    return this.page.getByText(path)
+  }
+
+  deleteRedirectButton(source: string) {
+    return this.page.getByRole("button", {
+      name: `Delete redirect for /${source}`,
+    })
+  }
+
+  bulkUploadRedirectsButton() {
+    return this.page.getByRole("button", { name: /bulk upload with a \.csv/i })
+  }
+
+  bulkUploadRedirectsDialogTitle() {
+    return this.page.getByText("Bulk upload redirects")
+  }
+
+  bulkUploadDialogFileInput() {
+    return this.page.locator("[role='dialog'] input[type='file']")
+  }
+
+  async fillSiteName(name: string) {
+    await this.siteNameField().fill(name)
+  }
+
+  async setMainBrandColour(hex: string) {
+    const field = this.mainBrandColourField()
+    await field.clear()
+    await field.fill(hex)
+  }
+
+  async fillGtmId(id: string) {
+    await this.gtmIdField().fill(id)
+  }
+
+  async enableNotificationBanner() {
+    // The switch input is visually hidden (pointer-events: none) inside its
+    // wrapping <label>; click the label itself, as a real user would.
+    await this.notificationBannerToggle().locator("xpath=..").click()
+  }
+
+  async fillNotificationTitle(title: string) {
+    await this.notificationTitleField().fill(title)
+  }
+
+  async uploadLogo(filePath: string) {
+    await this.logoUploadInput().setInputFiles(filePath)
+  }
+
+  async editFooterLinkLabel(linkButtonName: string, newLabel: string) {
+    await this.footerLinkButton(linkButtonName).click()
+    await this.page.getByLabel("Link label").fill(newLabel)
+    // The edit panel overlays the header Publish button until dismissed.
+    await this.page.getByRole("button", { name: "Back to footer" }).click()
+  }
+
+  async editNavbarItemLabel(itemName: string, newLabel: string) {
+    await this.navbarItemText(itemName).click()
+    await this.page.getByLabel("Menu item label").fill(newLabel)
+    // The edit panel overlays the header Publish button until dismissed.
+    await this.page
+      .getByRole("button", { name: "Back to navigation bar" })
+      .click()
+  }
+
+  async addRedirect(source: string, destination: string) {
+    await this.redirectSourceField().fill(source)
+    await this.redirectDestinationField().fill(destination)
+    await this.page.getByRole("button", { name: "Add" }).click()
+  }
+
+  async deleteRedirect(source: string) {
+    await this.deleteRedirectButton(source).click()
+    await this.page.getByRole("button", { name: "Delete redirect" }).click()
+  }
+
+  async cancelDeleteRedirect(source: string) {
+    await this.deleteRedirectButton(source).click()
+    await this.page.getByRole("button", { name: "No, keep redirect" }).click()
+    // Wait for the confirmation dialog to fully close — otherwise its body
+    // text (which repeats the redirect path) still matches locators scoped
+    // to the whole page, causing strict-mode violations in callers.
+    await this.page.getByLabel("Delete redirect?").waitFor({ state: "hidden" })
+  }
+
+  async bulkUploadRedirectsCsv(csvContent: string, expectedCount: number) {
+    await this.bulkUploadRedirectsButton().click()
+    await this.bulkUploadRedirectsDialogTitle().waitFor({ state: "visible" })
+
+    await this.bulkUploadDialogFileInput().setInputFiles({
+      name: "redirects.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(csvContent),
+    })
+
+    await this.page.getByRole("button", { name: "Process redirects" }).click()
+    await this.page
+      .getByText(`All ${expectedCount} redirects are good to go.`)
+      .waitFor({ state: "visible" })
+
+    await this.page
+      .getByRole("button", { name: `Publish ${expectedCount} redirects` })
+      .click()
+    await this.page
+      .getByText(`${expectedCount} redirects published`)
+      .waitFor({ state: "visible" })
+  }
+
+  async expectLogoFilenameVisible(filename: string) {
+    await this.logoFilenameText(filename).waitFor({ state: "visible" })
+  }
+
+  async expectNotificationTitleFieldVisible() {
+    await this.notificationTitleField().waitFor({ state: "visible" })
+  }
+
+  /** Click the settings Publish button. */
+  async clickPublish() {
+    await this.publishButton().click()
   }
 
   /**
@@ -39,4 +257,17 @@ export class SitePO {
       .first()
       .waitFor({ state: "visible" })
   }
+}
+
+// Labels come from SIDENAV_ITEMS in:
+// apps/studio/src/features/settings/SettingsSidenav/SettingsSidenav.tsx
+const SETTINGS_SECTION_LABELS: Record<SettingsSection, string> = {
+  agency: "Name and agency",
+  colours: "Colours",
+  footer: "Footer",
+  integrations: "Integrations",
+  logo: "Logos and favicon", // spec said "Logo" — actual label is "Logos and favicon"
+  navbar: "Navigation bar", // spec said "Navbar" — actual label is "Navigation bar"
+  notification: "Notification banner", // spec said "Notification" — actual label is "Notification banner"
+  redirects: "Redirects",
 }
