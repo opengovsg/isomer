@@ -301,4 +301,39 @@ describe("getTableColumnCount", () => {
     // Act / Assert
     expect(getTableColumnCount(rows)).toBe(2)
   })
+
+  it("resolves a large table with a rowspan without quadratic/cubic blowup", () => {
+    // Arrange — 1000 rows x 1000 cells, with row 0's first cell spanning into
+    // row 1 (rowspan: 2). A history-rescanning implementation must, for every
+    // one of the ~1000 later rows, re-walk up to 1000 earlier rows of ~1000
+    // cells each to find which still cover it — ~10^9 operations, which took
+    // over 15s in manual testing. A sweep that tracks active rowspan credit
+    // incrementally does the same work in a few milliseconds.
+    const paragraph = {
+      type: "paragraph" as const,
+      content: [{ type: "text" as const, text: "" }],
+    }
+    const rowCount = 1000
+    const cellsPerRow = 1000
+    const rows = Array.from({ length: rowCount }, (_, rowIndex) => ({
+      type: "tableRow" as const,
+      content: Array.from({ length: cellsPerRow }, (_, cellIndex) => ({
+        type: "tableCell" as const,
+        attrs:
+          rowIndex === 0 && cellIndex === 0
+            ? { colspan: 1, rowspan: 2 }
+            : { colspan: 1, rowspan: 1 },
+        content: [paragraph],
+      })),
+    }))
+
+    // Act
+    const start = performance.now()
+    const count = getTableColumnCount(rows)
+    const elapsedMs = performance.now() - start
+
+    // Assert
+    expect(count).toBe(cellsPerRow + 1)
+    expect(elapsedMs).toBeLessThan(1000)
+  })
 })

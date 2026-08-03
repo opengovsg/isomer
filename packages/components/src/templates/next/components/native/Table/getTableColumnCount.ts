@@ -1,32 +1,23 @@
 import type { TableProps } from "~/interfaces"
 
-import {
-  MAX_TABLE_ROWS,
-  normalizeColspan,
-  normalizeRowspan,
-} from "./tableLayoutLimits"
+import { normalizeColspan, normalizeRowspan } from "./tableLayoutLimits"
 
 type TableRows = TableProps["content"]
 
 /**
- * Logical column count for a table, accounting for `colspan` / `rowspan`.
+ * Logical column count, accounting for `colspan` / `rowspan`.
+ * Same idea as ProseMirror `TableMap.findWidth`: per-row width is cell
+ * colspans plus rowspan carry; table width is the max across rows.
  *
- * Mirrors ProseMirror's `TableMap` / `findWidth` algorithm:
- * - Each row's width = sum of that row's cell colspans
- *   + columns still covered by earlier cells whose rowspan reaches this row
- * - The table's column count = max of those per-row widths
+ * Browsers with `table-layout: auto` and no `<colgroup>` can collapse phantom
+ * columns (tracks that only appear inside spans) to zero width:
  *
- * Why this exists: browsers with `table-layout: auto` and no `<colgroup>` can
- * collapse "phantom" columns — tracks that only ever appear inside spans — to
- * zero width. Example (logically 3 columns, but col 2 has no exclusive cell):
- *
- *   Row 1: [col1] [----cols 2–3----]
- *   Row 2: [----cols 1–2----] [col3]   (rowspan into row 3)
+ *   Row 1: [col1] [----cols 2-3----]
+ *   Row 2: [----cols 1-2----] [col3]   (rowspan into row 3)
  *   Row 3:                    [col3]
  *
- * When `hasPhantomColumns` is true, the renderer uses this count to emit N
- * equal-width `<col>` elements under `table-layout: fixed` so every logical
- * track keeps a non-zero share of the table width.
+ * When `hasPhantomColumns` is true, emit N equal-width `<col>` elements under
+ * `table-layout: fixed`.
  */
 export const getTableColumnCount = (rows: TableRows): number => {
   if (rows.length === 0) {
@@ -35,56 +26,43 @@ export const getTableColumnCount = (rows: TableRows): number => {
 
   // Running max of per-row widths; -1 means "not set yet"
   let width = -1
-  // Once any cell has rowspan > 1, later rows must credit columns still covered
-  // by that cell (those columns are omitted from the later row's `content`).
-  let hasRowSpan = false
+  // Total colspan of earlier cells whose rowspan still covers the row
+  // currently being processed. ProseMirror/TipTap omit those cells from the
+  // covered row's own `content`, so this is credited in on their behalf.
+  let activeCarry = 0
+  // rowIndex -> colspan to remove from `activeCarry` once that row is reached,
+  // i.e. the row where the covering cell's rowspan runs out. Keyed by row
+  // instead of rescanned from history so each cell is only visited once.
+  const carryExpiry = new Map<number, number>()
 
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+    const expiring = carryExpiry.get(rowIndex)
+    if (expiring !== undefined) {
+      activeCarry -= expiring
+      carryExpiry.delete(rowIndex)
+    }
+
     const row = rows[rowIndex]
     if (!row) {
       continue
     }
 
-    let rowWidth = 0
-
-    // Credit columns occupied by earlier cells whose rowspan still covers
-    // this row. ProseMirror/TipTap omit those cells from `row.content`.
-    // Example: a cell at row 0 with rowspan 2 covers a slot in row 1 even
-    // though row 1's JSON has no entry for that column.
-    if (hasRowSpan) {
-      // Rowspan is capped at MAX_TABLE_ROWS, so only rows in this window
-      // can still cover `rowIndex`.
-      const earliestCoveringRow = Math.max(0, rowIndex - MAX_TABLE_ROWS)
-      for (let earlier = earliestCoveringRow; earlier < rowIndex; earlier++) {
-        const earlierRow = rows[earlier]
-        if (!earlierRow) {
-          continue
-        }
-        for (const cell of earlierRow.content) {
-          const rowspan = normalizeRowspan(cell.attrs?.rowspan)
-          const colspan = normalizeColspan(cell.attrs?.colspan)
-          // Cell started at `earlier` and extends `rowspan` rows → covers
-          // indices [earlier, earlier + rowspan). Include it if this row
-          // falls in that half-open range.
-          if (earlier + rowspan > rowIndex) {
-            rowWidth += colspan
-          }
-        }
-      }
-    }
-
-    // Add this row's own cells (each may span multiple columns).
+    // Carry from earlier rows' rowspans, plus this row's own cells (each may
+    // span multiple columns).
+    let rowWidth = activeCarry
     for (const cell of row.content) {
       const colspan = normalizeColspan(cell.attrs?.colspan)
       const rowspan = normalizeRowspan(cell.attrs?.rowspan)
       rowWidth += colspan
       if (rowspan > 1) {
-        hasRowSpan = true
+        // Covers rows [rowIndex, rowIndex + rowspan); schedule carry expiry.
+        activeCarry += colspan
+        const expiryRow = rowIndex + rowspan
+        carryExpiry.set(expiryRow, (carryExpiry.get(expiryRow) ?? 0) + colspan)
       }
     }
 
-    // Irregular tables (mismatched row widths) take the max so we never
-    // under-count columns needed by the widest row.
+    // Mismatched row widths: take the max so the widest row wins.
     if (width === -1) {
       width = rowWidth
     } else if (width !== rowWidth) {
