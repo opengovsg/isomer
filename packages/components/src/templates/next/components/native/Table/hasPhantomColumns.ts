@@ -22,13 +22,12 @@ interface CellSpan {
  * fixed equal-width column tracks so ordinary tables keep content-based sizing.
  */
 export const hasPhantomColumns = (rows: TableRows): boolean => {
+  if (rows.length === 0 || rows.length > MAX_TABLE_ROWS) {
+    return false
+  }
+
   const columnCount = getTableColumnCount(rows)
-  if (
-    columnCount <= 1 ||
-    columnCount > MAX_TABLE_COLUMNS ||
-    rows.length === 0 ||
-    rows.length > MAX_TABLE_ROWS
-  ) {
+  if (columnCount <= 1 || columnCount > MAX_TABLE_COLUMNS) {
     return false
   }
 

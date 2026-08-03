@@ -1,6 +1,8 @@
+import type { TableProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
 
 import { hasPhantomColumns } from "./hasPhantomColumns"
+import { MAX_TABLE_ROWS } from "./tableLayoutLimits"
 
 describe("hasPhantomColumns", () => {
   it("returns false for an empty table", () => {
@@ -218,6 +220,27 @@ describe("hasPhantomColumns", () => {
         ],
       },
     ]
+
+    // Act / Assert
+    expect(hasPhantomColumns(rows)).toBe(false)
+  })
+
+  it("returns false for tables above MAX_TABLE_ROWS without scanning every row", () => {
+    // Arrange
+    const paragraph = {
+      type: "paragraph" as const,
+      content: [{ type: "text" as const, text: "" }],
+    }
+    const rows = Array.from({ length: MAX_TABLE_ROWS + 1 }, () => ({
+      type: "tableRow" as const,
+      content: [
+        {
+          type: "tableCell" as const,
+          attrs: { colspan: 1, rowspan: 2 },
+          content: [paragraph],
+        },
+      ],
+    })) as TableProps["content"]
 
     // Act / Assert
     expect(hasPhantomColumns(rows)).toBe(false)

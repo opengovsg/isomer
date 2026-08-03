@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import { generateSiteConfig } from "~/stories/helpers"
 
 import { Table } from "./Table"
+import { MAX_TABLE_COLUMNS } from "./tableLayoutLimits"
 
 const staggeredMergesContent = [
   {
@@ -200,5 +201,39 @@ describe("Table colgroup", () => {
     // Assert
     expect(html).not.toContain("table-fixed")
     expect(html).not.toContain("<colgroup>")
+  })
+
+  it("normalizes hostile colspan and rowspan in SSR output", () => {
+    // Arrange / Act
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Hostile spans" }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableCell",
+                attrs: { colspan: 1_000_000, rowspan: 1_000_000 },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "A" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    // Assert
+    expect(html).toContain(`colSpan="${MAX_TABLE_COLUMNS}"`)
+    expect(html).toContain(`rowspan="${MAX_TABLE_COLUMNS}"`)
+    expect(html).not.toContain('colSpan="1000000"')
+    expect(html).not.toContain('rowspan="1000000"')
   })
 })
