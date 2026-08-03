@@ -32,10 +32,22 @@ export const MenubarHorizontalList = ({
 }: MenubarHorizontalListProps): JSX.Element | null => {
   const { isOpen, onClose, onOpen } = useDisclosure()
   const contentRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   // closeOnBlur=false pairs with mousedown preventDefault below — otherwise
   // focus stays in the editor and Chakra dismisses the popover immediately.
   // useOutsideClick restores click-outside dismissal without relying on blur.
-  useOutsideClick({ ref: contentRef, handler: onClose, enabled: isOpen })
+  // Exclude the trigger so a click re-opens via PopoverTrigger toggle instead of
+  // closing on mousedown then opening again on click.
+  useOutsideClick({
+    ref: contentRef,
+    handler: (event) => {
+      if (triggerRef.current?.contains(event.target as Node)) {
+        return
+      }
+      onClose()
+    },
+    enabled: isOpen,
+  })
 
   if (isHidden?.()) {
     return null
@@ -52,6 +64,7 @@ export const MenubarHorizontalList = ({
       <PopoverTrigger>
         <HStack>
           <Button
+            ref={triggerRef}
             variant="clear"
             colorScheme="neutral"
             px={0}

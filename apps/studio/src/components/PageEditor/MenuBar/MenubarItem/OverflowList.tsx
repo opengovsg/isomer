@@ -25,12 +25,24 @@ export const MenubarOverflowList = ({
 }: MenubarOverflowListProps): JSX.Element | null => {
   const { isOpen, onClose, onOpen } = useDisclosure()
   const contentRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   // TipTap toolbar pattern: preventDefault on mousedown so the trigger
   // does not steal focus from the editor. Pair with closeOnBlur=false —
   // otherwise focus never enters the popover and closeOnBlur immediately
   // dismisses (or fights) the open state. useOutsideClick restores
   // click-outside dismissal without relying on blur.
-  useOutsideClick({ ref: contentRef, handler: onClose, enabled: isOpen })
+  // Exclude the trigger so a click re-opens via PopoverTrigger toggle instead of
+  // closing on mousedown then opening again on click.
+  useOutsideClick({
+    ref: contentRef,
+    handler: (event) => {
+      if (triggerRef.current?.contains(event.target as Node)) {
+        return
+      }
+      onClose()
+    },
+    enabled: isOpen,
+  })
 
   const visibleItems = items.filter((item) => !item.isHidden?.())
   if (visibleItems.length === 0) {
@@ -47,6 +59,7 @@ export const MenubarOverflowList = ({
     >
       <PopoverTrigger>
         <IconButton
+          ref={triggerRef}
           variant="clear"
           colorScheme="neutral"
           isActive={isOpen}
