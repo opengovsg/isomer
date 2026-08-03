@@ -1,6 +1,7 @@
 export const normalizeCollectionSearchText = (text: string): string => {
   return (
     text
+      // NFKC: map compatibility forms to their usual ASCII equivalents (e.g. fullwidth （FM） → (FM)).
       .normalize("NFKC")
       // Format characters (ZWSP, soft hyphens, BOM, etc.) pasted from PDFs/Word.
       .replace(/\p{Cf}/gu, "")
