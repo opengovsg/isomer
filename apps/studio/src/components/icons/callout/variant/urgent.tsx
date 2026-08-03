@@ -1,6 +1,6 @@
 import { chakra } from "@chakra-ui/react"
 
-export const StyleCardUrgent = chakra(
+export const IconCalloutUrgent = chakra(
   (props: React.SVGProps<SVGSVGElement>) => {
     return (
       <svg

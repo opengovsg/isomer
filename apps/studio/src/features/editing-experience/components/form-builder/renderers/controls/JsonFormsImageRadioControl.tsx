@@ -5,14 +5,14 @@ import { rankWith, schemaMatches } from "@jsonforms/core"
 import { withJsonFormsControlProps } from "@jsonforms/react"
 import { FormLabel } from "@opengovsg/design-system-react"
 import {
+  IconCalloutGoodToKnow,
+  IconCalloutInformation,
+  IconCalloutNote,
+  IconCalloutUrgent,
+  IconCalloutWarning,
   IconTagCategoryPills,
   IconTagCategoryPlaintext,
 } from "~/components/icons"
-import { StyleCardGoodToKnow } from "~/components/icons/callout/variant/goodToKnow"
-import { StyleCardInformation } from "~/components/icons/callout/variant/information"
-import { StyleCardNote } from "~/components/icons/callout/variant/note"
-import { StyleCardUrgent } from "~/components/icons/callout/variant/urgent"
-import { StyleCardWarning } from "~/components/icons/callout/variant/warning"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ImageRadioIndicator } from "./ImageRadioIndicator"
@@ -26,11 +26,11 @@ const getImageRadioColumnCount = (format: string): 1 | 2 =>
 const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "tagcategory/pills": IconTagCategoryPills,
   "tagcategory/plaintext": IconTagCategoryPlaintext,
-  "callout/information": StyleCardInformation,
-  "callout/goodToKnow": StyleCardGoodToKnow,
-  "callout/warning": StyleCardWarning,
-  "callout/urgent": StyleCardUrgent,
-  "callout/note": StyleCardNote,
+  "callout/information": IconCalloutInformation,
+  "callout/goodToKnow": IconCalloutGoodToKnow,
+  "callout/warning": IconCalloutWarning,
+  "callout/urgent": IconCalloutUrgent,
+  "callout/note": IconCalloutNote,
 }
 
 interface ImageRadioOptionSchema {
