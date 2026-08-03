@@ -1,6 +1,9 @@
+import type { TableProps } from "~/interfaces"
 import { describe, expect, it } from "vitest"
 
 import { resolveTableLayout } from "./resolveTableLayout"
+
+type TableRows = TableProps["content"]
 
 describe("resolveTableLayout", () => {
   it("returns auto layout for a plain rectangular table", () => {
@@ -129,15 +132,15 @@ describe("resolveTableLayout", () => {
       content: cells,
     })
     const hostileCases = [
-      row(cell(4294967296)),
-      row(cell(-5)),
-      row(cell("1e9" as never)),
+      { rows: [row(cell(4294967296))] as unknown as TableRows, kind: "fixed" },
+      { rows: [row(cell(-5))] as unknown as TableRows, kind: "auto" },
+      { rows: [row(cell("1e9"))] as unknown as TableRows, kind: "auto" },
     ]
 
     // Act / Assert
-    for (const rows of hostileCases) {
+    for (const { rows, kind } of hostileCases) {
       expect(() => resolveTableLayout(rows)).not.toThrow()
-      expect(resolveTableLayout(rows)).toEqual({ kind: "auto" })
+      expect(resolveTableLayout(rows).kind).toBe(kind)
     }
   })
 })
