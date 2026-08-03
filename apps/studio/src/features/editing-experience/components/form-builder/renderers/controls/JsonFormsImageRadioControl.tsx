@@ -8,7 +8,13 @@ import {
   IconTagCategoryPills,
   IconTagCategoryPlaintext,
 } from "~/components/icons"
-import * as calloutVariantPreviews from "~/components/icons/callout/variant"
+import {
+  goodToKnow,
+  information,
+  note,
+  urgent,
+  warning,
+} from "~/components/icons/callout/variant"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ImageRadioIndicator } from "./ImageRadioIndicator"
@@ -22,6 +28,11 @@ const getImageRadioColumnCount = (format: string): 1 | 2 =>
 const IMAGE_RADIO_ICONS: Record<string, typeof IconTagCategoryPills> = {
   "tagcategory/pills": IconTagCategoryPills,
   "tagcategory/plaintext": IconTagCategoryPlaintext,
+  "callout/information": information,
+  "callout/goodToKnow": goodToKnow,
+  "callout/warning": warning,
+  "callout/urgent": urgent,
+  "callout/note": note,
 }
 
 interface ImageRadioOptionSchema {
@@ -42,17 +53,6 @@ interface ImageRadioOptionProps extends UseRadioProps {
   ariaLabel: string
 }
 
-const getImageRadioIcon = (image: string) => {
-  if (image.startsWith("callout/")) {
-    const variant = image.slice(
-      "callout/".length,
-    ) as keyof typeof calloutVariantPreviews
-    return calloutVariantPreviews[variant]
-  }
-
-  return IMAGE_RADIO_ICONS[image]
-}
-
 const ImageRadioOption = ({
   image,
   isSelected,
@@ -60,7 +60,7 @@ const ImageRadioOption = ({
   ...rest
 }: ImageRadioOptionProps) => {
   const { getInputProps, getRadioProps } = useRadio(rest)
-  const ImageRadioIcon = getImageRadioIcon(image)
+  const ImageRadioIcon = IMAGE_RADIO_ICONS[image]
 
   return (
     <Box as="label" cursor="pointer" width="100%" lineHeight={0}>
