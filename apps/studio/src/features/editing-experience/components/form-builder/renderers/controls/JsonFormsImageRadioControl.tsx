@@ -17,9 +17,6 @@ import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
 import { ImageRadioIndicator } from "./ImageRadioIndicator"
 
-const isImageRadioFormat = (format: unknown): boolean =>
-  format === "image-radio/1col" || format === "image-radio/2col"
-
 const getImageRadioColumnCount = (format: string): 1 | 2 =>
   format === "image-radio/1col" ? 1 : 2
 
@@ -100,7 +97,11 @@ const getImageRadioOptions = (schema: ControlProps["schema"]) =>
 
 export const jsonFormsImageRadioControlTester: RankedTester = rankWith(
   JSON_FORMS_RANKING.ImageRadioControl,
-  schemaMatches((schema) => isImageRadioFormat(schema.format)),
+  schemaMatches(
+    (schema) =>
+      schema.format === "image-radio/1col" ||
+      schema.format === "image-radio/2col",
+  ),
 )
 
 function JsonFormsImageRadioControl({
