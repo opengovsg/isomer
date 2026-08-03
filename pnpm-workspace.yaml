@@ -205,9 +205,9 @@ catalogs:
     "@playwright/test": ^1.62.0
     playwright: ^1.62.0
   prisma:
-    "@prisma/adapter-pg": 7.9.0
-    "@prisma/client": 7.9.0
-    prisma: 7.9.0
+    "@prisma/adapter-pg": 7.9.1
+    "@prisma/client": 7.9.1
+    prisma: 7.9.1
     prisma-json-types-generator: 5.1.1
     prisma-kysely: 3.1.1
   react:
