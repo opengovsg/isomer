@@ -4,7 +4,6 @@ import { ResourceState } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely, Transaction } from "../database"
-import { db } from "../database"
 import { getPageById, updatePageById } from "../resource/resource.service"
 
 interface Version {
@@ -19,13 +18,6 @@ const defaultVersionSelect: SelectExpression<DB, "Version">[] = [
   "Version.blobId",
   "Version.publishedAt",
 ]
-
-const getVersionById = ({ versionId }: { versionId: string }) =>
-  db
-    .selectFrom("Version")
-    .where("Version.id", "=", versionId)
-    .select(defaultVersionSelect)
-    .executeTakeFirstOrThrow()
 
 // Latest `Version` for a resource, even if not currently published —
 // unlike `Resource.publishedVersionId`, this still finds history after unpublish.
@@ -100,12 +92,14 @@ export const incrementVersion = async ({
   // If there's no draft, we don't create a new version
   if (!page.draftBlobId) return null
 
+  // Derive from actual Version history, not publishedVersionId — the latter
+  // is null both pre-first-publish and post-unpublish, which would wrongly
+  // reset the version count on a republish after unpublishing.
   let newVersionNum = 1
   let previousVersion: Version | null = null
-  if (page.publishedVersionId) {
-    previousVersion = await getVersionById({
-      versionId: page.publishedVersionId,
-    })
+  const latestVersion = await getLatestVersionByResourceId(tx, { resourceId })
+  if (latestVersion) {
+    previousVersion = latestVersion
     newVersionNum = previousVersion.versionNum + 1
   }
 

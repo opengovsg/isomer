@@ -7,7 +7,10 @@ import {
 import { ResourceType } from "~prisma/generated/prisma/client"
 
 import { db, ResourceState } from "../../database"
-import { getLatestVersionByResourceId } from "../version.service"
+import {
+  getLatestVersionByResourceId,
+  incrementVersion,
+} from "../version.service"
 
 describe("version.service", () => {
   beforeEach(async () => {
@@ -196,6 +199,137 @@ describe("version.service", () => {
       // Assert
       expect(result?.resourceId).toBe(pageA.id)
       expect(result?.id).toBe(pageA.publishedVersionId)
+    })
+  })
+
+  describe("incrementVersion", () => {
+    it("should create versionNum 1 with a null previousVersion for a never-published resource", async () => {
+      // Arrange: a fresh draft resource, never published before.
+      const user = await setupUser({})
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Draft,
+        userId: user.id,
+      })
+      expect(page.publishedVersionId).toBeNull()
+
+      // Act
+      const result = await db.transaction().execute((tx) =>
+        incrementVersion({
+          siteId: site.id,
+          resourceId: page.id,
+          userId: user.id,
+          tx,
+        }),
+      )
+
+      // Assert
+      expect(result).not.toBeNull()
+      expect(result?.newVersion.versionNum).toBe(1)
+      expect(result?.previousVersion).toBeNull()
+    })
+
+    it("should increment versionNum and reference the prior version on a normal republish", async () => {
+      // Arrange: an already-published resource (versionNum 1), now edited
+      // again (has a new draft blob to publish).
+      const user = await setupUser({})
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: user.id,
+      })
+      const firstVersionId = page.publishedVersionId
+      expect(firstVersionId).not.toBeNull()
+
+      const newDraftBlob = await setupBlob()
+      const editedPage = await db
+        .updateTable("Resource")
+        .where("id", "=", page.id)
+        .set({ draftBlobId: newDraftBlob.id })
+        .returningAll()
+        .executeTakeFirstOrThrow()
+      expect(editedPage.draftBlobId).toBe(newDraftBlob.id)
+
+      // Act
+      const result = await db.transaction().execute((tx) =>
+        incrementVersion({
+          siteId: site.id,
+          resourceId: page.id,
+          userId: user.id,
+          tx,
+        }),
+      )
+
+      // Assert
+      expect(result).not.toBeNull()
+      expect(result?.newVersion.versionNum).toBe(2)
+      expect(result?.previousVersion?.id).toBe(firstVersionId)
+      expect(result?.previousVersion?.versionNum).toBe(1)
+    })
+
+    it("should continue the real version history (not reset to 1) when republishing after an unpublish", async () => {
+      // Arrange: Version history (1, 2, 3) but currently archived —
+      // publishedVersionId is null despite real history existing.
+      const user = await setupUser({})
+      const { page, site } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: user.id,
+      })
+
+      const secondBlob = await setupBlob()
+      await db
+        .insertInto("Version")
+        .values({
+          versionNum: 2,
+          resourceId: page.id,
+          blobId: secondBlob.id,
+          publishedBy: user.id,
+        })
+        .returning(["id", "versionNum"])
+        .executeTakeFirstOrThrow()
+
+      const thirdBlob = await setupBlob()
+      const thirdVersion = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 3,
+          resourceId: page.id,
+          blobId: thirdBlob.id,
+          publishedBy: user.id,
+        })
+        .returning(["id", "versionNum"])
+        .executeTakeFirstOrThrow()
+
+      // Simulate unpublishing followed by a fresh edit: `publishedVersionId`
+      // is cleared, and a new draft blob is set for the upcoming re-publish.
+      const draftBlob = await setupBlob()
+      await db
+        .updateTable("Resource")
+        .where("id", "=", page.id)
+        .set({
+          publishedVersionId: null,
+          state: ResourceState.Draft,
+          draftBlobId: draftBlob.id,
+        })
+        .executeTakeFirstOrThrow()
+
+      // Act
+      const result = await db.transaction().execute((tx) =>
+        incrementVersion({
+          siteId: site.id,
+          resourceId: page.id,
+          userId: user.id,
+          tx,
+        }),
+      )
+
+      // Assert: the bug would have produced versionNum 1 and a null
+      // previousVersion here, colliding with the existing history.
+      expect(result).not.toBeNull()
+      expect(result?.newVersion.versionNum).toBe(4)
+      expect(result?.previousVersion?.id).toBe(thirdVersion.id)
+      expect(result?.previousVersion?.versionNum).toBe(3)
     })
   })
 })
