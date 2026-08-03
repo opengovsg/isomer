@@ -111,4 +111,33 @@ describe("resolveTableLayout", () => {
       columnWidths: [`${100 / 3}%`, `${100 / 3}%`, `${100 / 3}%`],
     })
   })
+
+  it("returns auto layout for hostile colspan values without throwing", () => {
+    // Arrange
+    const cell = (colspan: unknown) => ({
+      type: "tableCell" as const,
+      attrs: colspan !== undefined ? { colspan } : undefined,
+      content: [
+        {
+          type: "paragraph" as const,
+          content: [{ type: "text" as const, text: "" }],
+        },
+      ],
+    })
+    const row = (...cells: ReturnType<typeof cell>[]) => ({
+      type: "tableRow" as const,
+      content: cells,
+    })
+    const hostileCases = [
+      row(cell(4294967296)),
+      row(cell(-5)),
+      row(cell("1e9" as never)),
+    ]
+
+    // Act / Assert
+    for (const rows of hostileCases) {
+      expect(() => resolveTableLayout(rows)).not.toThrow()
+      expect(resolveTableLayout(rows)).toEqual({ kind: "auto" })
+    }
+  })
 })

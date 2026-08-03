@@ -1,6 +1,7 @@
 import type { TableProps } from "~/interfaces"
 
 import { getTableColumnCount } from "./getTableColumnCount"
+import { MAX_TABLE_COLUMNS, normalizeSpan } from "./tableLayoutLimits"
 
 type TableRows = TableProps["content"]
 
@@ -18,7 +19,11 @@ interface CellSpan {
  */
 export const hasPhantomColumns = (rows: TableRows): boolean => {
   const columnCount = getTableColumnCount(rows)
-  if (columnCount <= 1 || rows.length === 0) {
+  if (
+    columnCount <= 1 ||
+    columnCount > MAX_TABLE_COLUMNS ||
+    rows.length === 0
+  ) {
     return false
   }
 
@@ -45,8 +50,8 @@ export const hasPhantomColumns = (rows: TableRows): boolean => {
         break
       }
 
-      const colspan = cell.attrs?.colspan ?? 1
-      const rowspan = cell.attrs?.rowspan ?? 1
+      const colspan = normalizeSpan(cell.attrs?.colspan)
+      const rowspan = normalizeSpan(cell.attrs?.rowspan)
       const span = { colspan }
 
       for (let rowOffset = 0; rowOffset < rowspan; rowOffset += 1) {

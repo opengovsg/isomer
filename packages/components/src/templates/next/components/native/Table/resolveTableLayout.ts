@@ -2,6 +2,7 @@ import type { TableProps } from "~/interfaces"
 
 import { getTableColumnCount } from "./getTableColumnCount"
 import { hasPhantomColumns } from "./hasPhantomColumns"
+import { MAX_TABLE_COLUMNS } from "./tableLayoutLimits"
 
 type TableRows = TableProps["content"]
 
@@ -20,6 +21,10 @@ export const resolveTableLayout = (rows: TableRows): TableLayout => {
   }
 
   const columnCount = getTableColumnCount(rows)
+  if (columnCount <= 1 || columnCount > MAX_TABLE_COLUMNS) {
+    return { kind: "auto" }
+  }
+
   const columnWidth = `${100 / columnCount}%`
 
   return {

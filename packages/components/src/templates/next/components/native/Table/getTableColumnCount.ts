@@ -1,5 +1,7 @@
 import type { TableProps } from "~/interfaces"
 
+import { normalizeSpan } from "./tableLayoutLimits"
+
 type TableRows = TableProps["content"]
 
 /**
@@ -52,8 +54,8 @@ export const getTableColumnCount = (rows: TableRows): number => {
           continue
         }
         for (const cell of earlierRow.content) {
-          const rowspan = cell.attrs?.rowspan ?? 1
-          const colspan = cell.attrs?.colspan ?? 1
+          const rowspan = normalizeSpan(cell.attrs?.rowspan)
+          const colspan = normalizeSpan(cell.attrs?.colspan)
           // Cell started at `earlier` and extends `rowspan` rows → covers
           // indices [earlier, earlier + rowspan). Include it if this row
           // falls in that half-open range.
@@ -66,8 +68,8 @@ export const getTableColumnCount = (rows: TableRows): number => {
 
     // Add this row's own cells (each may span multiple columns).
     for (const cell of row.content) {
-      const colspan = cell.attrs?.colspan ?? 1
-      const rowspan = cell.attrs?.rowspan ?? 1
+      const colspan = normalizeSpan(cell.attrs?.colspan)
+      const rowspan = normalizeSpan(cell.attrs?.rowspan)
       rowWidth += colspan
       if (rowspan > 1) {
         hasRowSpan = true
