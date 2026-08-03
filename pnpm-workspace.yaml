@@ -209,9 +209,6 @@ catalogs:
     prisma: 7.9.0
     prisma-json-types-generator: 5.1.1
     prisma-kysely: 3.1.1
-  # TS 6 for @isomer/db — prisma-json-types-generator and generate.cts need the compiler API
-  typescript6:
-    typescript: ^6.0.3
   react:
     react: ^18.3.1
     react-dom: ^18.3.1

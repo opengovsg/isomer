@@ -37,6 +37,6 @@
     "prisma-json-types-generator": "catalog:prisma",
     "prisma-kysely": "catalog:prisma",
     "tsx": "catalog:",
-    "typescript": "catalog:typescript6"
+    "typescript": "catalog:"
   }
 }
