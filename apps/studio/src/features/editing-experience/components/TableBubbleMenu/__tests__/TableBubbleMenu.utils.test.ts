@@ -8,7 +8,7 @@ import {
   selectionIncludesHeaderColumn,
   selectionIncludesHeaderRow,
   type TableHeaderOverlapRect,
-} from "./TableBubbleMenu.utils"
+} from "../TableBubbleMenu.utils"
 
 // Builds a rect whose map offsets are 0..n-1 and whose table.nodeAt(i) returns
 // the ith cell type — enough for the header-overlap helpers without a live editor.

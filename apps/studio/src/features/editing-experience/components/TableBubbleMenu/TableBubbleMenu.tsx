@@ -302,14 +302,14 @@ const RowSelectionActions = ({
           icon={<IconAddRowBelow boxSize="1rem" />}
           onClick={() => editor.chain().focus().addRowAfter().run()}
         />
-        {canMoveUp && (
+        {canMoveUp && !includesHeaderRow && (
           <ActionButton
             label="Move up"
             icon={<BiUpArrowAlt fontSize="1rem" />}
             onClick={() => moveRow(editor, "up")}
           />
         )}
-        {canMoveDown && (
+        {canMoveDown && !includesHeaderRow && (
           <ActionButton
             label="Move down"
             icon={<BiDownArrowAlt fontSize="1rem" />}
@@ -365,14 +365,14 @@ const ColumnSelectionActions = ({
           icon={<IconAddColRight boxSize="1rem" />}
           onClick={() => editor.chain().focus().addColumnAfter().run()}
         />
-        {canMoveLeft && (
+        {canMoveLeft && !includesHeaderColumn && (
           <ActionButton
             label="Move left"
             icon={<BiLeftArrowAlt fontSize="1rem" />}
             onClick={() => moveColumn(editor, "left")}
           />
         )}
-        {canMoveRight && (
+        {canMoveRight && !includesHeaderColumn && (
           <ActionButton
             label="Move right"
             icon={<BiRightArrowAlt fontSize="1rem" />}
@@ -466,6 +466,11 @@ const TABLE_BUBBLE_MENU_SELECTOR = "[data-table-bubble-menu]"
 const isTableBubbleMenuTriggerFocused = () =>
   document.activeElement?.closest(TABLE_BUBBLE_MENU_TRIGGER_SELECTOR) != null
 
+// Chakra modals (e.g. Table settings) use FocusLock. While one is open, keep
+// the BubbleMenu hidden so its tabbable surface does not fight the trap.
+const isEditorModalOpen = () =>
+  document.querySelector('[role="dialog"][aria-modal="true"]') != null
+
 const hasActionableTableSelection = (
   editor: Editor,
   view: Editor["view"],
@@ -486,6 +491,7 @@ const shouldShowTableBubbleMenu = ({
   element: HTMLElement
 }) => {
   if (!hasActionableTableSelection(editor, view)) return false
+  if (isEditorModalOpen()) return false
 
   const isChildOfMenu = element.contains(document.activeElement)
   return view.hasFocus() || isChildOfMenu || isTableBubbleMenuTriggerFocused()
