@@ -916,6 +916,48 @@ describe("collection.router", async () => {
       expect(permalinks).toEqual(["apple", "Banana", "Cherry"])
     })
 
+    it("should sort CollectionLinks by title and CollectionPages by permalink when orderBy is permalink-asc", async () => {
+      // Arrange: link permalink is hidden and random; ordering must use title
+      const { collection, site } = await setupCollection()
+      await setupEditorPermissions({ userId: session.userId, siteId: site.id })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Zulu",
+        permalink: "alpha",
+      })
+      await setupCollectionLink({
+        siteId: site.id,
+        collectionId: collection.id,
+        title: "Bravo",
+        permalink: "zzz-hidden-link-permalink",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: ResourceType.CollectionPage,
+        parentId: collection.id,
+        title: "Alpha",
+        permalink: "charlie",
+      })
+
+      // Act
+      const result = await caller.list({
+        siteId: site.id,
+        resourceId: Number(collection.id),
+        orderBy: "permalink-asc",
+      })
+
+      // Assert
+      expect(result.map((r) => r.title)).toEqual(["Zulu", "Bravo", "Alpha"])
+      expect(result.map((r) => r.type)).toEqual([
+        ResourceType.CollectionPage,
+        ResourceType.CollectionLink,
+        ResourceType.CollectionPage,
+      ])
+    })
+
     it("should sort by updatedAt descending when orderBy is updated-desc", async () => {
       // Arrange
       const { collection, site } = await setupCollection()
