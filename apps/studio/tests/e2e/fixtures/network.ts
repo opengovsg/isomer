@@ -94,6 +94,35 @@ interface GrowthBookFeaturesResponse {
   features: Record<string, { defaultValue?: unknown; rules?: unknown[] }>
 }
 
+/**
+ * Stub `site.publish` so godmode publishing E2E can assert the success toast
+ * without calling AWS CodeBuild (no credentials in the test env).
+ */
+export const mockGodmodeSitePublish = async (page: Page) => {
+  await page.route("**/api/trpc/**", async (route) => {
+    const url = route.request().url()
+    if (!url.includes("site.publish")) {
+      await route.continue()
+      return
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        result: {
+          data: {
+            json: null,
+            meta: {
+              values: ["undefined"],
+            },
+          },
+        },
+      }),
+    })
+  })
+}
+
 /** Patch a GrowthBook feature into the CDN features response before navigation. */
 export const enableGrowthBookFeature = async (
   page: Page,
