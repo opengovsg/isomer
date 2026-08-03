@@ -19,10 +19,13 @@ import * as algoliaLib from "~/lib/algolia"
 
 import {
   assertGazetteAccess,
+  assertGazetteCategoryInput,
   buildGazetteSearchRecords,
   copyFileWithNewName,
   getPresignedPutUrl,
   removeGazetteFromAlgolia,
+  resolveGazetteCategoryLabel,
+  resolveGazetteLabelsFromRef,
   resolveGazetteTagLabels,
 } from "../gazette.service"
 
@@ -131,6 +134,71 @@ describe("gazette.service", () => {
         categoryLabel: undefined,
         subcategoryLabel: undefined,
       })
+    })
+  })
+
+  describe("resolveGazetteCategoryLabel", () => {
+    const TAG_CATEGORIES = [
+      {
+        label: GAZETTE_CATEGORY_LABEL,
+        options: [
+          { id: "cat-gov", label: "Government Gazette" },
+          { id: "cat-leg", label: "Legislative Supplements" },
+        ],
+      },
+    ]
+
+    it("returns the label for a known category option id", () => {
+      expect(resolveGazetteCategoryLabel("cat-gov", TAG_CATEGORIES)).toBe(
+        "Government Gazette",
+      )
+    })
+
+    it("returns undefined for an unknown category option id", () => {
+      expect(resolveGazetteCategoryLabel("cat-unknown", TAG_CATEGORIES)).toBe(
+        undefined,
+      )
+    })
+  })
+
+  describe("assertGazetteCategoryInput", () => {
+    const TAG_CATEGORIES = [
+      {
+        label: GAZETTE_CATEGORY_LABEL,
+        options: [{ id: "cat-gov", label: "Government Gazette" }],
+      },
+    ]
+
+    it("throws when the submitted label does not match the category id", () => {
+      expect(() =>
+        assertGazetteCategoryInput({
+          categoryId: "cat-gov",
+          categoryLabel: "Legislative Supplements",
+          tagCategories: TAG_CATEGORIES,
+        }),
+      ).toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Category label does not match the selected category",
+        }),
+      )
+    })
+  })
+
+  describe("resolveGazetteLabelsFromRef", () => {
+    it("derives category and subcategory labels from the S3 key shape", () => {
+      expect(
+        resolveGazetteLabelsFromRef(
+          "/2026/Government Gazette/Public/notice-123.pdf",
+        ),
+      ).toEqual({
+        categoryLabel: "Government Gazette",
+        subcategoryLabel: "Public",
+      })
+    })
+
+    it("returns empty labels when the ref does not have enough segments", () => {
+      expect(resolveGazetteLabelsFromRef("/too/few/parts")).toEqual({})
     })
   })
 

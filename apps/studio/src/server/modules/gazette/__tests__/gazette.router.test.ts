@@ -15,10 +15,15 @@ import {
   setupCollection,
   setupCollectionLink,
   setupIsomerAdmin,
+  setupPageResource,
   setupUser,
 } from "tests/integration/helpers/seed"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { env } from "~/env.mjs"
+import {
+  GAZETTE_CATEGORY_LABEL,
+  GAZETTE_SUBCATEGORY_LABEL,
+} from "~/features/gazettes/constants"
 import * as mailService from "~/features/mail/service"
 import { ENABLE_SEARCHSG_GAZETTE_INGESTION } from "~/lib/growthbook"
 import * as s3Lib from "~/lib/s3"
@@ -40,6 +45,53 @@ import { gazetteRouter } from "../gazette.router"
 import * as gazetteService from "../gazette.service"
 
 const createCaller = createCallerFactory(gazetteRouter)
+
+const GAZETTE_TEST_TAG_CATEGORIES = [
+  {
+    label: GAZETTE_CATEGORY_LABEL,
+    options: [
+      { id: "cat-gov", label: "Government Gazette" },
+      { id: "cat-leg", label: "Legislative Supplements" },
+      { id: "cat-oth", label: "Other Supplements" },
+    ],
+  },
+  {
+    label: GAZETTE_SUBCATEGORY_LABEL,
+    options: [
+      { id: "sub-1", label: "Public" },
+      { id: "sub-2", label: "Extraordinary" },
+    ],
+  },
+]
+
+const seedGazetteCollectionTagCategories = async ({
+  siteId,
+  collectionId,
+}: {
+  siteId: number
+  collectionId: string
+}) => {
+  const { blob } = await setupPageResource({
+    resourceType: ResourceType.IndexPage,
+    siteId,
+    parentId: collectionId,
+    title: "Index",
+    permalink: "index",
+  })
+
+  await db
+    .updateTable("Blob")
+    .set({
+      content: {
+        layout: "collection",
+        page: { tagCategories: GAZETTE_TEST_TAG_CATEGORIES },
+        content: [],
+        version: "0.1.0",
+      } as never,
+    })
+    .where("id", "=", String(blob.id))
+    .execute()
+}
 
 describe("gazette.router", async () => {
   let caller: ReturnType<typeof createCaller>
@@ -88,6 +140,10 @@ describe("gazette.router", async () => {
     await setupAdminPermissions({
       userId: session.userId ?? undefined,
       siteId: site.id,
+    })
+    await seedGazetteCollectionTagCategories({
+      siteId: site.id,
+      collectionId: collection.id,
     })
     return { user, site, collection }
   }
@@ -229,6 +285,33 @@ describe("gazette.router", async () => {
       // Both audit entries (resource create + schedule publish) emitted.
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(2)
+    })
+
+    it("rejects a mismatched categoryId and categoryLabel pair", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Act & Assert
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Notice 123",
+          permalink: crypto.randomUUID(),
+          ref: "/1/abc/notice-123.pdf",
+          categoryId: "cat-gov",
+          categoryLabel: "Legislative Supplements",
+          date: "30/04/2026",
+          description: "Notif #123",
+          tagged: ["sub-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Category label does not match the selected category",
+        }),
+      )
     })
 
     it("rejects a non-Toppan, non-admin caller before any DB writes", async () => {

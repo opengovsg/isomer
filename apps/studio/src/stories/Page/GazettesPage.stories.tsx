@@ -4,11 +4,17 @@ import { expect, userEvent, within } from "storybook/test"
 import {
   createGazetteContent,
   createGazetteItem,
+  gazetteCategoryOptionId,
   gazetteHandlers,
+  gazetteSubcategoryOptionId,
 } from "tests/msw/handlers/gazette"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { userHandlers } from "tests/msw/handlers/user"
-import { governmentGazetteSubcategories } from "~/features/gazettes/constants"
+import {
+  GazetteCategories,
+  governmentGazetteSubcategories,
+  legislativeSupplementsSubcategories,
+} from "~/features/gazettes/constants"
 import GazettesPage from "~/pages/sites/[siteId]/gazettes"
 
 import { ADMIN_HANDLERS } from "../handlers"
@@ -80,9 +86,13 @@ export const EmptyNotificationNumber: Story = {
             title: "Notice with no notification number assigned",
             content: createGazetteContent({
               ref: "/gazettes/26gg0001.pdf",
-              category: "Government Gazette",
               description: "",
-              tagged: [governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS],
+              tagged: [
+                gazetteCategoryOptionId(GazetteCategories.GovernmentGazettes),
+                gazetteSubcategoryOptionId(
+                  governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS,
+                ),
+              ],
             }),
           }),
         ]),
@@ -106,9 +116,13 @@ export const OverflowingFileId: Story = {
               "Government Gazette Extraordinary Supplement - Section 64 Notice",
             content: createGazetteContent({
               ref: "/gazettes/26gg-government-gazette-extraordinary-supplement-section-64-revised-statutes-2024-09-12.pdf",
-              category: "Government Gazette",
               description: "2145",
-              tagged: [governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS],
+              tagged: [
+                gazetteCategoryOptionId(GazetteCategories.GovernmentGazettes),
+                gazetteSubcategoryOptionId(
+                  governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS,
+                ),
+              ],
             }),
           }),
         ]),
@@ -130,9 +144,15 @@ export const InlineExternalLinkIcon: Story = {
             title: "Bills Supplement - Companies (Amendment) Bill 2024",
             content: createGazetteContent({
               ref: "/gazettes/26gg-bills-supplement-companies-amendment.pdf",
-              category: "Legislative Supplements",
               description: "2199",
-              tagged: ["Bills Supplement"],
+              tagged: [
+                gazetteCategoryOptionId(
+                  GazetteCategories.LegislativeSupplements,
+                ),
+                gazetteSubcategoryOptionId(
+                  legislativeSupplementsSubcategories.BILLS_SUPPLEMENT,
+                ),
+              ],
             }),
           }),
         ]),

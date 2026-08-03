@@ -12,6 +12,7 @@ import {
   generateDocumentId,
   parseFullTextFromPDF,
   pushDocumentsForIngestion,
+  resolveGazetteLabelsFromRef,
   resolveGazetteTagLabels,
 } from "~/server/modules/gazette/gazette.service"
 
@@ -122,10 +123,30 @@ const extractResourceData = async ({
       `Failed to parse index page content for resource ${resourceId}`,
     )
   }
-  const { categoryLabel, subcategoryLabel } = resolveGazetteTagLabels({
+  const {
+    categoryLabel: resolvedCategoryLabel,
+    subcategoryLabel: resolvedSubcategoryLabel,
+  } = resolveGazetteTagLabels({
     tagged: parsed.data.page.tagged,
     tagCategories: indexParsed.data.page.tagCategories,
   })
+
+  let categoryLabel = resolvedCategoryLabel
+  let subcategoryLabel = resolvedSubcategoryLabel
+
+  if (!categoryLabel) {
+    const fromRef = resolveGazetteLabelsFromRef(ref)
+    categoryLabel = fromRef.categoryLabel
+    subcategoryLabel = subcategoryLabel ?? fromRef.subcategoryLabel
+  }
+
+  if (!categoryLabel) {
+    logger.warn(
+      { resourceId, ref, tagged: parsed.data.page.tagged },
+      "Could not resolve gazette category label — skipping ingestion for this resource",
+    )
+    return null
+  }
 
   const pdfTextContent = await parseFullTextFromPDF(blob)
 

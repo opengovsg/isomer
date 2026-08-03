@@ -710,6 +710,51 @@ describe("schedulePushDocumentJobHandler", async () => {
       expect(gazetteService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
     })
 
+    it("skips rows when the category label cannot be resolved from tagged uuids or the S3 ref", async () => {
+      // Arrange
+      const { resourceId } = await seedDocumentReadyForIngestion({
+        parentTitle: "Notices",
+        ref: "/file.pdf",
+        category: "Government Gazettes",
+        publishedBy: user.id,
+      })
+
+      const { draftBlobId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(resourceId))
+        .select("draftBlobId")
+        .executeTakeFirstOrThrow()
+
+      await setBlobContentForPushDocument(
+        draftBlobId!,
+        "/file.pdf",
+        ["missing-cat", "missing-sub"],
+        "1234",
+      )
+
+      await db
+        .insertInto("PushDocumentJob")
+        .values({
+          resourceId: String(resourceId),
+          scheduledAt: FIXED_NOW,
+          scheduledBy: user.id,
+        })
+        .execute()
+
+      // Act
+      await schedulePushDocumentJobHandler()
+
+      // Assert — no documents were pushed to SearchSG.
+      expect(global.fetch).not.toHaveBeenCalled()
+
+      // Row still cleaned up.
+      const remaining = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .execute()
+      expect(remaining).toHaveLength(0)
+    })
+
     it("skips rows scheduled for the future", async () => {
       // Arrange
       const { resourceId } = await seedDocumentReadyForIngestion({

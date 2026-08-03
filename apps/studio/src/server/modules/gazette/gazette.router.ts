@@ -40,6 +40,7 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import {
+  assertGazetteCategoryInput,
   findCollectionLinkWithFilename,
   hasDuplicateNotificationNumber,
   assertGazetteAccess,
@@ -58,6 +59,25 @@ interface GazetteBlobInputs {
   date: string
   description?: string
   tagged: string[]
+}
+
+const loadCollectionTagCategoriesForCategoryInput = async ({
+  siteId,
+  collectionId,
+  categoryId,
+  categoryLabel,
+}: {
+  siteId: number
+  collectionId: number
+  categoryId: string
+  categoryLabel: string
+}) => {
+  const tagCategories = await getCollectionTagsForResource({
+    collectionId,
+    siteId,
+  })
+  assertGazetteCategoryInput({ categoryId, categoryLabel, tagCategories })
+  return tagCategories
 }
 
 // Blob.content adheres to the PrismaJson.BlobJsonContent contract shared with
@@ -265,6 +285,15 @@ export const gazetteRouter = router({
           .selectAll()
           .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
 
+        const tagCategories = await loadCollectionTagCategoriesForCategoryInput(
+          {
+            siteId,
+            collectionId,
+            categoryId,
+            categoryLabel,
+          },
+        )
+
         const blobContent = buildGazetteBlobContent({
           ref,
           categoryId,
@@ -302,9 +331,9 @@ export const gazetteRouter = router({
               parentId: String(collectionId),
               notificationNumber: description,
               publishDate: date,
-              categoryLabel,
               categoryId,
               subcategoryId: tagged[0] ?? "",
+              tagCategories,
             }))
           ) {
             throw new TRPCError({
@@ -459,6 +488,15 @@ export const gazetteRouter = router({
               }),
           )
 
+        const tagCategories = await loadCollectionTagCategoriesForCategoryInput(
+          {
+            siteId,
+            collectionId: Number(existingResource.parentId),
+            categoryId,
+            categoryLabel,
+          },
+        )
+
         const existingBlob = await getBlobOfResource({
           db,
           resourceId: existingResource.id,
@@ -558,9 +596,9 @@ export const gazetteRouter = router({
                 parentId: existingResource.parentId,
                 notificationNumber: description,
                 publishDate: date,
-                categoryLabel,
                 categoryId,
                 subcategoryId: tagged[0] ?? "",
+                tagCategories,
                 excludeId: String(gazetteId),
               }))
             ) {

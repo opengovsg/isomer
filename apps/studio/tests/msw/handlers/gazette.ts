@@ -6,6 +6,8 @@ import {
   GAZETTE_SUBCATEGORY_LABEL,
   GazetteCategories,
   governmentGazetteSubcategories,
+  legislativeSupplementsSubcategories,
+  otherSupplementsSubcategories,
 } from "~/features/gazettes/constants"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -14,14 +16,44 @@ import { trpcMsw } from "../mockTrpc"
 
 interface GazetteContentInputs {
   ref: string
-  category: string
   description?: string
   tagged: string[]
 }
 
+const ALL_SUBCATEGORY_LABELS = [
+  ...Object.values(governmentGazetteSubcategories),
+  ...Object.values(legislativeSupplementsSubcategories),
+  ...Object.values(otherSupplementsSubcategories),
+]
+
+export const CATEGORY_OPTION_IDS = Object.fromEntries(
+  Object.values(GazetteCategories).map((label, index) => [
+    label,
+    `6ba7b810-9dad-11d1-80b4-00c04fd431${String(index).padStart(2, "0")}`,
+  ]),
+) as Record<(typeof GazetteCategories)[keyof typeof GazetteCategories], string>
+
+export const SUBCATEGORY_OPTION_IDS = Object.fromEntries(
+  ALL_SUBCATEGORY_LABELS.map((label, index) => [
+    label,
+    `6ba7b810-9dad-11d1-80b4-00c04fd430${String(index).padStart(2, "0")}`,
+  ]),
+) as Record<string, string>
+
+export const gazetteCategoryOptionId = (
+  category: (typeof GazetteCategories)[keyof typeof GazetteCategories],
+) => CATEGORY_OPTION_IDS[category]
+
+export const gazetteSubcategoryOptionId = (label: string): string => {
+  const id = SUBCATEGORY_OPTION_IDS[label]
+  if (!id) {
+    throw new Error(`Unknown subcategory label for MSW fixture: ${label}`)
+  }
+  return id
+}
+
 export const createGazetteContent = ({
   ref,
-  category,
   description,
   tagged,
 }: GazetteContentInputs) =>
@@ -30,7 +62,6 @@ export const createGazetteContent = ({
     page: {
       ref,
       date: "12/09/2024",
-      category,
       description,
       tagged,
     },
@@ -60,9 +91,13 @@ export const createGazetteItem = (
   fileSize: 123456,
   content: createGazetteContent({
     ref: "/gazettes/26gg5734.pdf",
-    category: "Government Gazette",
     description: "2145",
-    tagged: [governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS],
+    tagged: [
+      gazetteCategoryOptionId(GazetteCategories.GovernmentGazettes),
+      gazetteSubcategoryOptionId(
+        governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS,
+      ),
+    ],
   }),
   ...overrides,
 })
@@ -86,9 +121,13 @@ export const DEFAULT_GAZETTE_ITEMS: RouterOutput["gazette"]["list"] = [
     fileSize: 123456,
     content: createGazetteContent({
       ref: "/gazettes/26gg5734.pdf",
-      category: "Government Gazette",
       description: "2145",
-      tagged: [governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS],
+      tagged: [
+        gazetteCategoryOptionId(GazetteCategories.GovernmentGazettes),
+        gazetteSubcategoryOptionId(
+          governmentGazetteSubcategories.NOTICES_UNDER_OTHER_ACTS,
+        ),
+      ],
     }),
   },
   {
@@ -109,9 +148,11 @@ export const DEFAULT_GAZETTE_ITEMS: RouterOutput["gazette"]["list"] = [
     fileSize: 654321,
     content: createGazetteContent({
       ref: "/gazettes/26gg5701.pdf",
-      category: "Government Gazette",
       description: "2101",
-      tagged: [governmentGazetteSubcategories.APPOINTMENTS],
+      tagged: [
+        gazetteCategoryOptionId(GazetteCategories.GovernmentGazettes),
+        gazetteSubcategoryOptionId(governmentGazetteSubcategories.APPOINTMENTS),
+      ],
     }),
   },
 ]
@@ -130,12 +171,10 @@ const GAZETTE_TAG_CATEGORIES = [
     label: GAZETTE_SUBCATEGORY_LABEL,
     id: "0e02b2c3-58cc-4372-a567-f47ac10b3d47",
     display: DEFAULT_TAG_CATEGORY_DISPLAY,
-    options: Object.values(governmentGazetteSubcategories).map(
-      (label, index) => ({
-        label,
-        id: `6ba7b810-9dad-11d1-80b4-00c04fd430${String(index).padStart(2, "0")}`,
-      }),
-    ),
+    options: ALL_SUBCATEGORY_LABELS.map((label, index) => ({
+      label,
+      id: `6ba7b810-9dad-11d1-80b4-00c04fd430${String(index).padStart(2, "0")}`,
+    })),
   },
 ]
 

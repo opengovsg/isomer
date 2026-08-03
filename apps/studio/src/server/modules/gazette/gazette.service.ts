@@ -541,6 +541,60 @@ export const resolveGazetteTagLabels = ({
   return { categoryLabel, subcategoryLabel }
 }
 
+export const resolveGazetteCategoryLabel = (
+  categoryId: string,
+  tagCategories: GazetteTagCategory[],
+): string | undefined => {
+  const categoryTagCategory = tagCategories.find(
+    (tagCategory) => tagCategory.label === GAZETTE_CATEGORY_LABEL,
+  )
+  return categoryTagCategory?.options.find((option) => option.id === categoryId)
+    ?.label
+}
+
+export const assertGazetteCategoryInput = ({
+  categoryId,
+  categoryLabel,
+  tagCategories,
+}: {
+  categoryId: string
+  categoryLabel: string
+  tagCategories: GazetteTagCategory[]
+}): void => {
+  const resolvedLabel = resolveGazetteCategoryLabel(categoryId, tagCategories)
+  if (!resolvedLabel) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Category is not a valid option for this collection",
+    })
+  }
+  if (resolvedLabel !== categoryLabel) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Category label does not match the selected category",
+    })
+  }
+}
+
+/**
+ * Fallback when tagged uuids cannot be resolved against the index-page
+ * taxonomy: derive labels from the S3 ref shape
+ * `{year}/{category}/{subcategory}/{filename}.pdf`.
+ */
+export const resolveGazetteLabelsFromRef = (
+  ref: string,
+): { categoryLabel?: string; subcategoryLabel?: string } => {
+  const segments = ref.replace(/^\//, "").split("/")
+  if (segments.length < 4) {
+    return {}
+  }
+  const [, categoryLabel, subcategoryLabel] = segments
+  return {
+    categoryLabel: categoryLabel || undefined,
+    subcategoryLabel: subcategoryLabel || undefined,
+  }
+}
+
 /**
  * Detects whether another gazette in the same collection already uses the
  * given notification number. A gazette is a duplicate when it shares the
@@ -560,9 +614,9 @@ export const hasDuplicateNotificationNumber = async ({
   parentId,
   notificationNumber,
   publishDate,
-  categoryLabel,
   categoryId,
   subcategoryId,
+  tagCategories,
   excludeId,
 }: {
   trx?: Kysely<DB> | Transaction<DB>
@@ -570,13 +624,17 @@ export const hasDuplicateNotificationNumber = async ({
   parentId: string | null
   notificationNumber: string
   publishDate: string
-  categoryLabel: string
   categoryId: string
   subcategoryId: string
+  tagCategories: GazetteTagCategory[]
   excludeId?: string
 }): Promise<boolean> => {
+  const resolvedCategoryLabel = resolveGazetteCategoryLabel(
+    categoryId,
+    tagCategories,
+  )
   const isGovernmentGazette =
-    categoryLabel === GazetteCategories.GovernmentGazettes
+    resolvedCategoryLabel === GazetteCategories.GovernmentGazettes
   // publishDate is a "dd/MM/yyyy" string — the year is the last segment.
   const publishYear = publishDate.split("/").at(-1)
 
