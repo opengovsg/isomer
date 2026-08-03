@@ -1,20 +1,35 @@
-import { Box, Center, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react"
+import {
+  Box,
+  Center,
+  Flex,
+  FormControl,
+  HStack,
+  Icon,
+  Stack,
+  Text,
+} from "@chakra-ui/react"
 import {
   Button,
   Checkbox,
+  FormErrorMessage,
   Link,
   SingleSelect,
   useToast,
 } from "@opengovsg/design-system-react"
-import { useContext, useMemo, useState } from "react"
+import { useContext, useMemo } from "react"
+import { Controller } from "react-hook-form"
 import { BiCheckShield, BiHelpCircle, BiInfoCircle } from "react-icons/bi"
 import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UserManagementContext } from "~/features/users"
-import { AuditLogExportRequestedReportType } from "~/schemas/audit"
+import { useZodForm } from "~/lib/form"
+import {
+  AuditLogExportRequestedReportType,
+  createAuditLogExportRequestSchema,
+} from "~/schemas/audit"
 import { trpc } from "~/utils/trpc"
 
-import { getMonthOptions } from "./utils"
+import { getMonthOptions, toggleReportType } from "./utils"
 
 interface AuditLogExportSectionProps {
   siteId: number
@@ -47,40 +62,46 @@ export const AuditLogExportSection = ({
     return [{ ...current, label: CURRENT_MONTH_LABEL }, ...options.slice(1)]
   }, [])
 
-  // The two selectable cards map onto the report types the server accepts:
-  // "User access review logs" -> Access, "Audit logs" -> Activity, both -> Both.
-  const [isAccessSelected, setIsAccessSelected] = useState(false)
-  const [isActivitySelected, setIsActivitySelected] = useState(false)
-  const [month, setMonth] = useState(() => monthOptions[0]?.value ?? "")
+  // Form state lives in react-hook-form, validated by the same zod schema the
+  // tRPC procedure uses (minus `siteId`, which comes from props), so client
+  // and server validation cannot drift.
+  const form = useZodForm({
+    schema: createAuditLogExportRequestSchema.omit({ siteId: true }),
+    defaultValues: { month: monthOptions[0]?.value ?? "" },
+  })
 
-  const reset = () => {
-    setIsAccessSelected(false)
-    setIsActivitySelected(false)
-    setMonth(monthOptions[0]?.value ?? "")
+  // `reportType` has no default value, so it is undefined until the user picks
+  // at least one log type — widen the watched type accordingly. An undefined
+  // reportType keeps the submit button disabled, mirroring the design's
+  // initial empty state.
+  const reportType: AuditLogExportRequestedReportType | undefined =
+    form.watch("reportType")
+  const isAccessSelected =
+    reportType === AuditLogExportRequestedReportType.Access ||
+    reportType === AuditLogExportRequestedReportType.Both
+  const isActivitySelected =
+    reportType === AuditLogExportRequestedReportType.Activity ||
+    reportType === AuditLogExportRequestedReportType.Both
+
+  const onToggle = (
+    toggled:
+      | typeof AuditLogExportRequestedReportType.Access
+      | typeof AuditLogExportRequestedReportType.Activity,
+  ) => {
+    const next = toggleReportType(reportType, toggled)
+    if (next) {
+      form.setValue("reportType", next, { shouldValidate: true })
+    } else {
+      // Last selection cleared: drop the field back to its (absent) default so
+      // the schema's "Select a report type" requirement disables submit again.
+      form.resetField("reportType")
+    }
   }
-
-  // The requested report type derived from the two card selections. Undefined
-  // until the user picks at least one log type, which keeps the submit button
-  // disabled and mirrors the design's initial empty state.
-  const reportType = useMemo<
-    AuditLogExportRequestedReportType | undefined
-  >(() => {
-    if (isAccessSelected && isActivitySelected) {
-      return AuditLogExportRequestedReportType.Both
-    }
-    if (isAccessSelected) {
-      return AuditLogExportRequestedReportType.Access
-    }
-    if (isActivitySelected) {
-      return AuditLogExportRequestedReportType.Activity
-    }
-    return undefined
-  }, [isAccessSelected, isActivitySelected])
 
   const { mutate: createExportRequest, isPending } =
     trpc.audit.createExportRequest.useMutation({
       onSuccess: () => {
-        reset()
+        form.reset()
         toast({
           title: "Export requested",
           description:
@@ -113,10 +134,11 @@ export const AuditLogExportSection = ({
 
   if (!canManageUsers) return null
 
-  const onSubmit = () => {
-    if (!reportType) return
-    createExportRequest({ siteId, month, reportType })
-  }
+  // handleSubmit only fires once the schema passes (reportType picked, month
+  // valid), so the payload is exactly what the server-side `.input()` expects.
+  const onSubmit = form.handleSubmit((data) =>
+    createExportRequest({ siteId, ...data }),
+  )
 
   return (
     <Stack spacing="1.5rem" align="flex-start">
@@ -144,10 +166,7 @@ export const AuditLogExportSection = ({
         align="flex-start"
         w="full"
         maxW="37.5rem"
-        onSubmit={(e) => {
-          e.preventDefault()
-          onSubmit()
-        }}
+        onSubmit={onSubmit}
       >
         <Flex align="center" justify="space-between" w="full">
           <Text textStyle="subhead-1" color="base.content.strong">
@@ -171,14 +190,16 @@ export const AuditLogExportSection = ({
             title="User access review logs"
             description="Get a list of users with access to your site, their role, and last login."
             isSelected={isAccessSelected}
-            onToggle={() => setIsAccessSelected((prev) => !prev)}
+            onToggle={() => onToggle(AuditLogExportRequestedReportType.Access)}
           />
 
           <LogTypeCard
             title="Audit logs"
             description="Review login history and when content was created, edited, deleted, and published."
             isSelected={isActivitySelected}
-            onToggle={() => setIsActivitySelected((prev) => !prev)}
+            onToggle={() =>
+              onToggle(AuditLogExportRequestedReportType.Activity)
+            }
           >
             <Stack spacing="0.75rem" w="full">
               <Box maxW="18.25rem">
@@ -189,12 +210,23 @@ export const AuditLogExportSection = ({
                 >
                   For the month of
                 </Text>
-                <SingleSelect
+                <Controller
+                  control={form.control}
                   name="month"
-                  value={month}
-                  onChange={setMonth}
-                  items={monthOptions}
-                  isClearable={false}
+                  render={({ field, fieldState }) => (
+                    <FormControl isInvalid={!!fieldState.error}>
+                      <SingleSelect
+                        name="month"
+                        value={field.value}
+                        onChange={field.onChange}
+                        items={monthOptions}
+                        isClearable={false}
+                      />
+                      <FormErrorMessage>
+                        {fieldState.error?.message}
+                      </FormErrorMessage>
+                    </FormControl>
+                  )}
                 />
               </Box>
               <HStack spacing="0.25rem" align="center">
