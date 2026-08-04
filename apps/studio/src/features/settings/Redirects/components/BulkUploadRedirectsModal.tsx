@@ -36,9 +36,37 @@ import { formatFileSizeLimit } from "~/utils/formatFileSizeLimit"
 import { useBulkCreateRedirects, useBulkValidateRedirects } from "../api"
 
 type BulkValidation = RouterOutput["redirect"]["bulkValidate"]
+type FileRejections = NonNullable<AttachmentProps<false>["rejections"]>
 
 // Path to the header-only template shipped as a static public asset.
 const TEMPLATE_HREF = "/redirects-template.csv"
+
+// Validation is quick enough that the screen can change before the click
+// registers, so a process reads as "nothing happened" — worst on a re-upload
+// that lands back on the errors screen, which looks unchanged. Hold the spinner
+// to this floor so every run is visible; 2s registers without feeling sluggish.
+const MIN_PROCESSING_MS = 2000
+
+// Keyed by react-dropzone's ErrorCode values, inlined rather than imported since
+// react-dropzone is the design system's dependency and not one we declare. Same
+// voice as the parse-time file errors, since both render in the same place.
+const REJECTION_MESSAGES: Record<string, string | undefined> = {
+  "file-too-large": `This file is too big. Upload a file under ${formatFileSizeLimit({ bytes: MAX_BULK_REDIRECT_CSV_BYTES })} and try again.`,
+  "file-invalid-type":
+    "This file isn't a .csv. Upload a .csv file and try again.",
+  "too-many-files": "Upload one file at a time.",
+}
+
+// First mapped error wins, mirroring the dropzone's own ordering. Falls back to
+// the generic unreadable copy so an unmapped code can never leave the file on
+// screen with no explanation.
+const rejectionMessage = (rejection: FileRejections[number]): string => {
+  for (const { code } of rejection.errors) {
+    const message = REJECTION_MESSAGES[code]
+    if (message !== undefined) return message
+  }
+  return "We couldn't read this file. Upload a valid .csv file."
+}
 
 interface BulkUploadRedirectsModalProps {
   siteId: number
@@ -71,27 +99,31 @@ export const BulkUploadRedirectsModal = ({
   onClose,
 }: BulkUploadRedirectsModalProps): JSX.Element => {
   const toast = useToast(BRIEF_TOAST_SETTINGS)
-  const { validate, isPending: isValidating } = useBulkValidateRedirects(siteId)
+  const { validate } = useBulkValidateRedirects(siteId)
   const { mutateAsync: publish } = useBulkCreateRedirects()
 
   const [stage, setStage] = useState<Stage>("upload")
   const [file, setFile] = useState<File | null>(null)
   const [csv, setCsv] = useState<string | null>(null)
-  // A file-level problem caught in the browser (empty / missing column), shown
-  // inline under the chip before the user can process.
+  // A file-level problem caught in the browser (empty / missing column / too big
+  // / not a csv), shown inline under the chip before the user can process.
   const [fileError, setFileError] = useState<string | null>(null)
   const [validation, setValidation] = useState<BulkValidation | null>(null)
   const [showSlowMessage, setShowSlowMessage] = useState(false)
-  // Oversize / wrong-type files rejected by the dropzone; surfaced by Attachment.
-  const [rejections, setRejections] = useState<
-    AttachmentProps<false>["rejections"]
-  >([])
+  // Covers the validation request plus MIN_PROCESSING_MS, so the button keeps
+  // its spinner for the whole visible wait rather than the request alone.
+  const [isProcessing, setIsProcessing] = useState(false)
 
   // Tracks the most recently picked file. `file.text()` is async, so if the user
   // picks A then B before A finishes reading, A could resolve last — this lets
   // the handler drop the stale read instead of committing A's contents while the
   // chip shows B.
   const latestFileRef = useRef<File | null>(null)
+  // react-dropzone reports a rejected file through onRejection and then calls
+  // onChange(undefined) in the same event. Set while handling the rejection so
+  // that trailing reset can't wipe the chip and message we just put up; the next
+  // onChange(undefined) consumes it, so removing the file still clears.
+  const hasPendingRejectionRef = useRef(false)
 
   const resetState = () => {
     setStage("upload")
@@ -100,8 +132,9 @@ export const BulkUploadRedirectsModal = ({
     setFileError(null)
     setValidation(null)
     setShowSlowMessage(false)
-    setRejections([])
+    setIsProcessing(false)
     latestFileRef.current = null
+    hasPendingRejectionRef.current = false
   }
 
   // Start fresh every time the modal opens, so a previous run's file or errors
@@ -128,20 +161,25 @@ export const BulkUploadRedirectsModal = ({
 
   const handleFileChange = async (selected: File | undefined) => {
     if (!selected) {
+      // The reset that trails a rejection — keep what handleRejection just set.
+      if (hasPendingRejectionRef.current) {
+        hasPendingRejectionRef.current = false
+        return
+      }
       latestFileRef.current = null
       setFile(null)
       setCsv(null)
       setFileError(null)
       return
     }
+    hasPendingRejectionRef.current = false
     latestFileRef.current = selected
     setFile(selected)
-    // Clear the previous file's parsed csv, error, and any dropzone rejections
-    // synchronously, so nothing stale is shown or processed during the async
-    // read below (Process stays disabled until the new csv is parsed).
+    // Clear the previous file's parsed csv and error synchronously, so nothing
+    // stale is shown or processed during the async read below (Process stays
+    // disabled until the new csv is parsed).
     setCsv(null)
     setFileError(null)
-    setRejections([])
     try {
       const text = await selected.text()
       // A newer file was picked while this one was being read — drop the stale
@@ -156,6 +194,23 @@ export const BulkUploadRedirectsModal = ({
     }
   }
 
+  // Files the dropzone rejects (oversize, wrong type, more than one) never reach
+  // onChange, so fold them into the same chip-plus-inline-error the parse checks
+  // use. Attachment's own rejection UI keeps the picker open and puts the reason
+  // in a dismissable chip, which read as a different component for the same
+  // class of problem.
+  const handleRejection = (fileRejections: FileRejections) => {
+    const rejection = fileRejections[0]
+    if (!rejection) return
+    hasPendingRejectionRef.current = true
+    // Also marks any in-flight read of an earlier file stale, so it can't
+    // overwrite this message when it resolves.
+    latestFileRef.current = rejection.file
+    setFile(rejection.file)
+    setCsv(null)
+    setFileError(rejectionMessage(rejection))
+  }
+
   // Show the errors screen with a fresh, empty re-upload zone (the design's
   // "re-upload the file with fixes"), so the corrected file can be dropped in.
   const enterErrorsStage = (result: BulkValidation) => {
@@ -163,16 +218,23 @@ export const BulkUploadRedirectsModal = ({
     setFile(null)
     setCsv(null)
     setFileError(null)
-    setRejections([])
+    hasPendingRejectionRef.current = false
     setStage("errors")
   }
 
   const handleProcess = async () => {
     if (!csv) return
-    // Validation is quick, so the Process button's inline spinner (isValidating)
-    // is enough — no full-screen stage. Stay put so a failure keeps the file.
+    // Validation is quick, so the Process button's inline spinner is enough —
+    // no full-screen stage. Stay put so a failure keeps the file.
+    setIsProcessing(true)
+    // Started alongside the request rather than after it, so the floor and the
+    // validation overlap instead of adding up.
+    const loadingFloor = new Promise<void>((resolve) =>
+      setTimeout(resolve, MIN_PROCESSING_MS),
+    )
     try {
       const result = await validate(csv)
+      await loadingFloor
       if (result.fileError !== null || result.errorCount > 0) {
         enterErrorsStage(result)
         return
@@ -180,11 +242,14 @@ export const BulkUploadRedirectsModal = ({
       setValidation(result)
       setStage("success")
     } catch {
+      await loadingFloor
       toast({
         title: "We couldn't check your redirects",
         description: "Please try again.",
         status: "error",
       })
+    } finally {
+      setIsProcessing(false)
     }
   }
 
@@ -243,9 +308,8 @@ export const BulkUploadRedirectsModal = ({
             validRows={validRows}
             file={file}
             fileError={fileError}
-            rejections={rejections}
             onFileChange={handleFileChange}
-            onRejection={setRejections}
+            onRejection={handleRejection}
             onDownloadErrors={handleDownloadErrors}
           />
         </ModalBody>
@@ -261,7 +325,7 @@ export const BulkUploadRedirectsModal = ({
               <Button
                 onClick={() => void handleProcess()}
                 isDisabled={isProcessDisabled}
-                isLoading={isValidating}
+                isLoading={isProcessing}
               >
                 {isProcessDisabled
                   ? "Upload file to continue"
@@ -282,9 +346,8 @@ interface BulkUploadModalBodyProps {
   validRows: BulkValidation["rows"]
   file: File | null
   fileError: string | null
-  rejections: AttachmentProps<false>["rejections"]
   onFileChange: (selected: File | undefined) => void
-  onRejection: (rejections: AttachmentProps<false>["rejections"]) => void
+  onRejection: (rejections: FileRejections) => void
   onDownloadErrors: () => void
 }
 
@@ -297,7 +360,6 @@ const BulkUploadModalBody = ({
   validRows,
   file,
   fileError,
-  rejections,
   onFileChange,
   onRejection,
   onDownloadErrors,
@@ -442,7 +504,9 @@ const BulkUploadModalBody = ({
               multiple={false}
               value={file ?? undefined}
               onChange={(selected) => void onFileChange(selected)}
-              rejections={rejections}
+              // `rejections` is deliberately not passed: a rejected file is
+              // rendered as the attached chip with its reason in `fileError`
+              // below, so Attachment must not also render its own error chip.
               onRejection={onRejection}
               accept={[".csv", "text/csv"]}
               maxSize={MAX_BULK_REDIRECT_CSV_BYTES}
