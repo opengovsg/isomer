@@ -317,6 +317,7 @@ const LogTypeCard = ({
         alignItems="flex-start"
         _focusWithin={{ boxShadow: "none" }}
         p="1rem"
+        size="sm"
       >
         <Stack spacing="0.25rem" ml="0.25rem">
           <Text textStyle="subhead-2" color="base.content.strong">
