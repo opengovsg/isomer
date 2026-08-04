@@ -185,32 +185,23 @@ export const createAuditLogExportRequest = async ({
       .where("id", "=", userId)
       .selectAll()
       .executeTakeFirstOrThrow()
-    await logAuditLogExportEvent(tx, {
-      eventType: "AuditLogExportCreate",
-      by: requestedBy,
-      siteId,
-      ip,
-      delta: {
-        before: null,
-        after: {
-          auditLogDateRange,
-          reportType: AuditLogExportReportType.Access,
-        },
-      },
-    })
-    await logAuditLogExportEvent(tx, {
-      eventType: "AuditLogExportCreate",
-      by: requestedBy,
-      siteId,
-      ip,
-      delta: {
-        before: null,
-        after: {
-          auditLogDateRange,
-          reportType: AuditLogExportReportType.Activity,
-        },
-      },
-    })
+    await Promise.all(
+      reportTypes.map((reportType) => {
+        return logAuditLogExportEvent(tx, {
+          eventType: "AuditLogExportCreate",
+          by: requestedBy,
+          siteId,
+          ip,
+          delta: {
+            before: null,
+            after: {
+              auditLogDateRange,
+              reportType,
+            },
+          },
+        })
+      }),
+    )
 
     // Return every row backing this ask (one for Access/Activity, two for
     // Both) — existing in-flight rows and fresh inserts alike. The UI ignores
