@@ -6,6 +6,7 @@ import {
 } from "~/constants/misc"
 import { env } from "~/env.mjs"
 import { formatScheduledAtDate } from "~/lib/dates"
+import { ONE_MB_IN_BYTES } from "~/lib/fileUpload"
 import { MAX_DAYS_FROM_LAST_LOGIN } from "~/server/modules/user/constants"
 import { getStudioResourceUrl } from "~/utils/resources"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -33,8 +34,9 @@ import { escapeHtml, escapeTemplateArguments, unescapeHtml } from "../utils"
 const getDownloadLinkLabel = (
   label: AuditLogExportDownloadLink["label"],
   longMonth: string,
+  sizeInMb: string,
 ) => {
-  return `Download ${label} review logs for ${longMonth} [.csv]`
+  return `Download ${label} review logs for ${longMonth} [${sizeInMb}, .csv]`
 }
 
 const constructStudioRedirect = () =>
@@ -292,11 +294,11 @@ const accountDeactivationTemplate = (
 const auditLogExportReadyTemplate = (
   data: AuditLogExportReadyEmailTemplateData,
 ): EmailTemplate => {
-  const { recipientEmail, siteName, month, link } = data
+  const { recipientEmail, siteName, month, link, sizeInBytes } = data
 
   const logName = link.label === "access" ? "Access" : "Audit"
 
-  const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month)}</a>`
+  const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month, sizeInBytes ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2) : "- MB")}</a>`
 
   return {
     subject: `[Isomer] ${logName} logs for ${month} for your site (${unescapeHtml(siteName)}) is ready`,

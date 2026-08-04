@@ -76,6 +76,7 @@ export interface AuditLogExportReadyEmailTemplateData extends BaseEmailTemplateD
   month: string
   // Each export job produces exactly one report, so exactly one link.
   link: AuditLogExportDownloadLink
+  sizeInBytes: number | null
 }
 
 export interface AuditLogExportFailedEmailTemplateData extends BaseEmailTemplateData {

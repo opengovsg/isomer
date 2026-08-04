@@ -422,6 +422,11 @@ export const processAuditLogExportRequest = async (
     // query of its own), where delivery time is a sound completeness stamp
     // because reuse only ever hands out an already-complete artifact.
     let queriedAt: Date | null = null
+    // Bytes of the CSV this row delivers — reused from the artifact check
+    // below on the reuse path, or measured fresh after upload on the generate
+    // path. Purely for observability (logged ahead of the ready email);
+    // never persisted or emailed.
+    let objectSize: number | null = null
     if (objectKey !== null) {
       // The artifact row may outlive the S3 object (e.g. a future lifecycle
       // policy): verify the object still exists before promising it. Only a
@@ -432,6 +437,8 @@ export const processAuditLogExportRequest = async (
       const artifactSize = await getFileSize({ Bucket: bucket, Key: objectKey })
       if (artifactSize === null) {
         objectKey = null
+      } else {
+        objectSize = artifactSize
       }
     }
 
@@ -469,6 +476,7 @@ export const processAuditLogExportRequest = async (
 
       try {
         await uploadAuditLogExport({ key: objectKey, body: csvStream })
+        objectSize = await getFileSize({ Bucket: bucket, Key: objectKey })
       } finally {
         // Tear the cursor down even if the upload consumer bailed early (or
         // never read the stream), so a failed/short-circuited upload never
@@ -520,6 +528,11 @@ export const processAuditLogExportRequest = async (
       .where("id", "=", requestId)
       .execute()
 
+    logger.info(
+      { requestId, objectKey, bytes: objectSize },
+      "Audit log export CSV ready for delivery",
+    )
+
     // Step 6: one ready email with the single download link. A "Both" user
     // request is two independent rows, so it yields two independent emails —
     // no cross-job coordination.
@@ -528,6 +541,7 @@ export const processAuditLogExportRequest = async (
       siteName,
       month: getExportPeriodLabel(request.auditLogDateRange),
       link: { label: report.label, url },
+      sizeInBytes: objectSize,
     })
   } catch (error) {
     // Step 7: failure handling. The claim already charged this attempt, so
