@@ -17,6 +17,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { useAtom } from "jotai"
 import { upperFirst } from "lodash-es"
+import posthog from "posthog-js"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { isAllowedToHaveChildren } from "~/utils/resources"
@@ -107,6 +108,11 @@ const DeleteResourceModalContent = ({
   const { mutate, isPending } = trpc.resource.delete.useMutation({
     onSettled: onClose,
     onSuccess: async () => {
+      posthog.capture("resource_deleted", {
+        site_id: siteId,
+        resource_type: resourceType,
+        has_redirects: redirectCount > 0,
+      })
       // TODO: here and elsewhere, we should aim to simplify our query pattern
       // such that the invalidation logic is clear
       await utils.resource.listWithoutRoot.invalidate()

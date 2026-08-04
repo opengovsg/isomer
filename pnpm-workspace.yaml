@@ -52,6 +52,7 @@ allowBuilds:
   protobufjs: false
   sharp: false
   ssh2: false
+  core-js: false
 
 patchedDependencies:
   next@16.2.11: patches/next@16.2.11.patch
@@ -152,6 +153,8 @@ catalog:
   papaparse: ^5.5.4
   pg-boss: ^12.26.0
   postcss-load-config: ^6.0.1
+  posthog-js: ^1.407.2
+  posthog-node: ^5.46.1
   rate-limiter-flexible: ^11.2.0
   react-error-boundary: ^6.1.2
   react-frame-component: ^5.2.7

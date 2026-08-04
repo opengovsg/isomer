@@ -1,7 +1,15 @@
 import type { PropsWithChildren } from "react"
-import { createContext, useCallback, useContext } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+} from "react"
 import { LOGGED_IN_KEY } from "~/constants/localStorage"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
+import { withPosthog } from "~/lib/posthog"
+import { trpc } from "~/utils/trpc"
 
 interface LoginStateContextReturn {
   hasLoginStateFlag?: boolean
@@ -23,6 +31,7 @@ export const LoginStateProvider = ({ children }: PropsWithChildren) => {
 
   return (
     <LoginStateContext.Provider value={loginState}>
+      <PostHogIdentity />
       {children}
     </LoginStateContext.Provider>
   )
@@ -39,6 +48,41 @@ export const useLoginState = (): LoginStateContextReturn => {
     )
   }
   return context
+}
+
+const PostHogIdentity = () => {
+  const { hasLoginStateFlag } = useLoginState()
+  const { data: user } = trpc.me.get.useQuery(undefined, {
+    enabled: hasLoginStateFlag,
+  })
+  const identifiedUserId = useRef<string | undefined>(undefined)
+
+  useEffect(() => {
+    // Logout resets PostHog's identity independently (see useMe's `logout`),
+    // so clear our own guard too — otherwise a same-user relogin sees
+    // `identifiedUserId.current` still set and skips re-identifying,
+    // leaving subsequent events anonymous.
+    if (!hasLoginStateFlag) {
+      identifiedUserId.current = undefined
+      return
+    }
+
+    if (!user || identifiedUserId.current === user.id) return
+
+    void withPosthog((posthog) => {
+      if (identifiedUserId.current && identifiedUserId.current !== user.id) {
+        posthog.reset()
+      }
+
+      posthog.identify(user.id, {
+        email: user.email,
+        ...(user.name ? { name: user.name } : {}),
+      })
+      identifiedUserId.current = user.id
+    })
+  }, [user, hasLoginStateFlag])
+
+  return null
 }
 
 const useProvideLoginState = () => {

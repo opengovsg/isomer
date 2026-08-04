@@ -21,6 +21,7 @@ import {
 } from "@opengovsg/design-system-react"
 import { useDebounce } from "@uidotdev/usehooks"
 import { useAtomValue, useSetAtom } from "jotai"
+import posthog from "posthog-js"
 import { useCallback, useEffect, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useIsSingpassEnabled } from "~/hooks/useIsSingpassEnabled"
@@ -83,6 +84,11 @@ export const AddUserModal = () => {
 
   const { mutate: createUser, isPending } = trpc.user.create.useMutation({
     onSuccess: async (createdUsers) => {
+      posthog.capture("site_user_invited", {
+        site_id: siteId,
+        invited_user_count: createdUsers.length,
+        role: getValues("role"),
+      })
       await utils.user.list.invalidate()
       await utils.user.count.invalidate()
       toast({

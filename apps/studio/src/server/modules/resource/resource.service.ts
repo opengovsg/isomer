@@ -729,7 +729,9 @@ export const getResourcePermalinkTree = async (
           .where("Resource.siteId", "=", siteId)
           .where("Resource.id", "=", String(resourceId))
           .select(defaultResourceSelect)
-          .unionAll((fb) =>
+          // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
+          // a cycle can't drive the recursion forever.
+          .union((fb) =>
             fb
               // Recursive case: Get all the ancestors of the resource
               .selectFrom("Resource")
@@ -763,6 +765,28 @@ export const getResourceFullPermalink = async (
   return `/${permalinkTree.join("/")}`
 }
 
+// The `subtree` CTE shared by the walks below; callers continue with their own
+// `.selectFrom("subtree")`. `union` (not `unionAll`) dedupes rows so a malformed
+// parent chain with a cycle can't drive the recursion forever.
+const withResourceSubtree = (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+) =>
+  trx.withRecursive("subtree", (eb) =>
+    eb
+      .selectFrom("Resource")
+      .where("Resource.siteId", "=", siteId)
+      .where("Resource.id", "=", resourceId)
+      .select("Resource.id")
+      .union((fb) =>
+        fb
+          .selectFrom("Resource")
+          .innerJoin("subtree", "subtree.id", "Resource.parentId")
+          .where("Resource.siteId", "=", siteId)
+          .select("Resource.id"),
+      ),
+  )
+
 // Returns the id of `resourceId` plus every descendant in its subtree — the
 // rows a cascading delete (Resource.parentId is onDelete: Cascade) removes.
 // Accepts a tx so the delete path and the count path resolve the same set.
@@ -770,25 +794,49 @@ export const getDescendantResourceIds = async (
   trx: SafeKysely,
   { siteId, resourceId }: { siteId: number; resourceId: string },
 ): Promise<string[]> => {
-  const rows = await trx
-    .withRecursive("subtree", (eb) =>
-      eb
-        .selectFrom("Resource")
-        .where("Resource.siteId", "=", siteId)
-        .where("Resource.id", "=", resourceId)
-        .select("Resource.id")
-        // `union` (not `unionAll`) dedupes rows so a malformed parent chain with
-        // a cycle can't drive the recursion forever.
-        .union((fb) =>
-          fb
-            .selectFrom("Resource")
-            .innerJoin("subtree", "subtree.id", "Resource.parentId")
-            .where("Resource.siteId", "=", siteId)
-            .select("Resource.id"),
-        ),
-    )
+  const rows = await withResourceSubtree(trx, { siteId, resourceId })
     .selectFrom("subtree")
     .select("id")
+    .execute()
+  return rows.map((row) => String(row.id))
+}
+
+// True when `resourceId` or any descendant is published — the folder analogue of
+// a page's `publishedVersionId !== null`, used to decide whether a folder/
+// collection move or rename should preserve its old URLs with a redirect (there
+// is nothing to preserve for a subtree that was never live). Keys on
+// publishedVersionId, not `state`: nothing unpublishes a resource today, so the
+// two only ever change together (see version.service.ts).
+export const hasPublishedDescendant = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<boolean> => {
+  // Fold the published filter into the recursive walk and stop at the first
+  // hit — an existence check that never materialises the full subtree id list
+  // or issues a second `WHERE id IN (...)` query.
+  const published = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.publishedVersionId", "is not", null)
+    .select("Resource.id")
+    .executeTakeFirst()
+  return published !== undefined
+}
+
+// Ids of the published resources strictly within `resourceId`'s subtree (the
+// container itself is excluded — its own URL is validated separately). Used to
+// check that a folder move/rename doesn't drop a live descendant onto a path an
+// existing redirect already covers.
+export const getPublishedDescendantResourceIds = async (
+  trx: SafeKysely,
+  { siteId, resourceId }: { siteId: number; resourceId: string },
+): Promise<string[]> => {
+  const rows = await withResourceSubtree(trx, { siteId, resourceId })
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.id", "!=", resourceId)
+    .where("Resource.publishedVersionId", "is not", null)
+    .select("Resource.id")
     .execute()
   return rows.map((row) => String(row.id))
 }
@@ -888,6 +936,7 @@ export const getResourceByFullPermalink = async ({
 export const getResourceFullPermalinks = async (
   siteId: number,
   resourceIds: number[],
+  trx: SafeKysely = db,
 ): Promise<Map<number, string>> => {
   if (resourceIds.length === 0) {
     return new Map()
@@ -896,8 +945,9 @@ export const getResourceFullPermalinks = async (
   // One recursive walk collects every node on the requested ids' ancestor
   // chains. A node's permalink and parentId are intrinsic to its id (not to
   // which chain reached it), so a single id-keyed map lets each requested id
-  // walk from itself up to the root.
-  const rows = await db
+  // walk from itself up to the root. Pass a `trx` to read uncommitted changes
+  // (e.g. a rename mid-transaction) rather than the committed tree.
+  const rows = await trx
     .withRecursive("PermalinkChain", (eb) =>
       eb
         // Base case: the resources we want permalinks for
