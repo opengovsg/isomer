@@ -158,9 +158,15 @@ updates:
         patterns:
           - "github/codeql-action/*"
   - package-ecosystem: docker
-    directories:
-      - "/apps/studio"
-      - "/apps/studio/.devcontainer"
+    directory: "/apps/studio"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7 # to mitigate supply chain attacks
+
+  - package-ecosystem: docker
+    directory: "/apps/studio/.devcontainer"
     schedule:
       interval: monthly
     open-pull-requests-limit: 5
