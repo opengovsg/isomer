@@ -17,8 +17,8 @@ import {
   printSummary,
   runBackfill,
   validateOptionalNumericId,
+  verifyIsomerAdminByEmail,
   verifySite,
-  verifyUser,
 } from "./shared"
 
 const main = async () => {
@@ -65,15 +65,16 @@ const main = async () => {
     return
   }
 
-  const publisherIdInput = await input({
-    message: "User ID to record as publisher (Version.publishedBy)",
-    validate: (value) => value.trim().length > 0 || "User ID is required",
+  const publisherEmailInput = await input({
+    message: "IsomerAdmin email to record as publisher (Version.publishedBy)",
+    validate: (value) =>
+      value.trim().length > 0 || "Publisher email is required",
   })
-  const publisher = await verifyUser(publisherIdInput.trim())
+  const publisher = await verifyIsomerAdminByEmail(publisherEmailInput)
 
   const proceed = await confirm({
     message:
-      `Publish ${preview.report.totals.toPublish} index page(s) as ${publisher.email}?` +
+      `Publish ${preview.report.totals.toPublish} index page(s) as IsomerAdmin ${publisher.email}?` +
       ` Existing draft blobs are left untouched.`,
     default: false,
   })

@@ -21,7 +21,7 @@ export type PublishedIndexBlob = Omit<CollectionIndexTemplate, "page"> & {
 /** Where `page.title` came from. Recorded in the report. */
 export type TitleSource = "blob" | "resource" | "parent"
 
-export type SkipReason = "malformed-tag-categories" | "no-title"
+export type SkipReason = "no-title"
 
 /** The subset of a query row that classification reads. */
 export interface ClassifiableRow {
@@ -61,37 +61,19 @@ const readPage = (content: unknown): Record<string, unknown> | undefined =>
   isRecord(content) && isRecord(content.page) ? content.page : undefined
 
 /**
- * Shape gate only — deliberately does NOT normalise or stamp `display`, which is
- * optional with no JSON Schema default by design and is resolved at render time
- * by `resolveTagCategoryDisplay`.
+ * Copies `page.tagCategories` from the draft wholesale, with no shape
+ * validation — the app's own save path is what enforces the schema, so a
+ * draft blob that made it into the DB is trusted as-is. `null` and `undefined`
+ * both mean "absent", since the app itself uses them interchangeably.
  *
- * Returns `{ ok: false }` when the value is present but malformed, so the caller
- * skips rather than publishing garbage filters into a live blob.
+ * structuredClone so the written blob can never alias the row we read.
  */
 export const readTagCategories = (
   content: unknown,
-): { ok: true; value: TagCategories | undefined } | { ok: false } => {
+): TagCategories | undefined => {
   const raw = readPage(content)?.tagCategories
-  if (raw === undefined) return { ok: true, value: undefined }
-  if (!Array.isArray(raw)) return { ok: false }
-
-  const isValid = raw.every(
-    (category) =>
-      isRecord(category) &&
-      nonEmptyString(category.label) &&
-      typeof category.id === "string" &&
-      Array.isArray(category.options) &&
-      category.options.every(
-        (option) =>
-          isRecord(option) &&
-          typeof option.label === "string" &&
-          typeof option.id === "string",
-      ),
-  )
-  if (!isValid) return { ok: false }
-
-  // structuredClone so the written blob can never alias the row we read.
-  return { ok: true, value: structuredClone(raw) as TagCategories }
+  if (raw === undefined || raw === null) return undefined
+  return structuredClone(raw) as TagCategories
 }
 
 /**
@@ -140,8 +122,6 @@ export const buildPublishedIndexBlob = ({
 
 export const classifyRow = (row: ClassifiableRow): Outcome => {
   const tagCategories = readTagCategories(row.draftContent)
-  if (!tagCategories.ok)
-    return { kind: "skip", reason: "malformed-tag-categories" }
 
   const resolved = resolveTitle(row)
   if (!resolved) return { kind: "skip", reason: "no-title" }
@@ -158,10 +138,10 @@ export const classifyRow = (row: ClassifiableRow): Outcome => {
     kind: "publish",
     next: buildPublishedIndexBlob({
       title: resolved.title,
-      tagCategories: tagCategories.value,
+      tagCategories,
     }),
     titleSource: resolved.source,
-    tagCategoryCount: tagCategories.value?.length ?? 0,
+    tagCategoryCount: tagCategories?.length ?? 0,
     variantFlip,
   }
 }

@@ -49,11 +49,11 @@ For each `IndexPage` with `publishedVersionId IS NULL` whose parent is a `Collec
 3. Inserts that as a **new** `Blob` and a **new** `Version`, sets `Resource.publishedVersionId` and
    `state = Published`.
 
-A row is skipped only for `malformed-tag-categories` (publishing garbage filters into a live blob is
-worse than doing nothing) or `no-title` (nothing sensible to write). Everything else is published —
-a malformed or wrong-layout draft is not a reason to withhold a correct index page, since we fall
-back to `Resource.title` and write the canonical template regardless. Skipped rows are listed in the
-report.
+A row is skipped only for `no-title` (nothing sensible to write). `page.tagCategories` is carried
+over wholesale, with no shape validation — the app's own save path is what enforces the schema, so a
+draft blob that made it into the DB is trusted as-is. Everything else is published — a malformed or
+wrong-layout draft is not a reason to withhold a correct index page, since we fall back to
+`Resource.title` and write the canonical template regardless. Skipped rows are listed in the report.
 
 `draftBlobId` is **never touched** — the existing draft survives, so in-progress editor work is
 preserved and the dashboard keeps showing the page as having unpublished changes (that badge is
@@ -105,8 +105,8 @@ source .env && pnpm exec tsx prisma/scripts/publish-collection-index-pages/publi
 ```
 
 The script prompts for mode (`dry-run` / `apply`), an optional site ID (blank = all sites), and — in
-apply mode — a publisher user ID for `Version.publishedBy`. Apply mode always plans and prints the
-summary first, then asks for confirmation.
+apply mode — an **IsomerAdmin** email for `Version.publishedBy` (looked up and checked for an active
+`IsomerAdmin` row). Apply mode always plans and prints the summary first, then asks for confirmation.
 
 Recommended sequence per environment:
 
@@ -141,7 +141,8 @@ where r."type" = 'IndexPage'
 
 One file per run, in `.out/` (gitignored), named `<timestamp>-<scope>.report.json`. It holds the
 totals, `variantFlipCount`, every skipped row with its reason, and `publishedRows` — the rollback
-data.
+data. In apply mode the report is rewritten after every committed batch, so a mid-run failure still
+leaves rollback IDs on disk for rows already published.
 
 ## Rollback
 
@@ -166,7 +167,8 @@ The original draft blob was never modified, so there is nothing to restore.
   changes here — the collection URL already resolves via the stub.
 - **Chunked writes.** One transaction per 100 rows rather than one for the whole run: a global run
   would otherwise hold `Blob`/`Version` row locks for its whole duration. Safe to interrupt — a
-  partial run is resumable because published rows drop out of the target predicate.
+  partial run is resumable because published rows drop out of the target predicate, and the report
+  is flushed after each batch so rollback IDs for committed rows are already on disk.
 - **Idempotency is structural.** Setting `publishedVersionId` removes the row from the target query,
   so a second run selects zero rows. `publishNewBlobVersion` also re-asserts
   `publishedVersionId IS NULL` inside its transaction to cover the concurrent case.

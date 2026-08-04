@@ -99,32 +99,24 @@ describe("buildPublishedIndexBlob", () => {
 
 describe("readTagCategories", () => {
   it("returns undefined when the key is absent", () => {
-    expect(readTagCategories(draftBlob())).toEqual({
-      ok: true,
-      value: undefined,
-    })
+    expect(readTagCategories(draftBlob())).toBeUndefined()
+  })
+
+  it("returns undefined when the key is explicitly null", () => {
+    expect(
+      readTagCategories(draftBlob({ tagCategories: null })),
+    ).toBeUndefined()
   })
 
   it("clones so the result cannot alias the source row", () => {
     const source = [CATEGORY]
     const result = readTagCategories(draftBlob({ tagCategories: source }))
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
-    expect(result.value).toStrictEqual([CATEGORY])
-    expect(result.value).not.toBe(source)
+    expect(result).toStrictEqual([CATEGORY])
+    expect(result).not.toBe(source)
   })
 
-  it.each([
-    ["not an array", "nope"],
-    ["array of non-objects", ["nope"]],
-    ["category missing label", [{ id: CATEGORY.id, options: [] }]],
-    ["category with blank label", [{ ...CATEGORY, label: "   " }]],
-    ["category missing options", [{ label: "Category", id: CATEGORY.id }]],
-    ["option missing id", [{ ...CATEGORY, options: [{ label: "Speeches" }] }]],
-  ])("rejects malformed tagCategories: %s", (_name, tagCategories) => {
-    expect(readTagCategories(draftBlob({ tagCategories }))).toEqual({
-      ok: false,
-    })
+  it("copies whatever shape is present, with no validation", () => {
+    expect(readTagCategories(draftBlob({ tagCategories: "nope" }))).toBe("nope")
   })
 })
 
@@ -213,12 +205,6 @@ describe("classifyRow", () => {
     expect("meta" in outcome.next).toBe(false)
     expect(outcome.tagCategoryCount).toBe(1)
     expect(outcome.titleSource).toBe("blob")
-  })
-
-  it("skips malformed tagCategories rather than publishing garbage filters", () => {
-    expect(
-      classifyRow(row({ draftContent: draftBlob({ tagCategories: 5 }) })),
-    ).toEqual({ kind: "skip", reason: "malformed-tag-categories" })
   })
 
   it("skips when no title source has a value", () => {

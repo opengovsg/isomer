@@ -9,7 +9,7 @@ import {
   type Transaction,
 } from "~/server/modules/database"
 
-import type { PublishedIndexBlob, SkipReason } from "./helpers"
+import type { PublishedIndexBlob, SkipReason, TitleSource } from "./helpers"
 import { chunk, classifyRow } from "./helpers"
 import { findNeverPublishedCollectionIndexPages } from "./query"
 
@@ -32,14 +32,34 @@ export const verifySite = async (siteId: number) => {
   return site
 }
 
-export const verifyUser = async (userId: string) => {
+/**
+ * Resolves a publisher by email and requires an active IsomerAdmin row.
+ * Apply mode must not record an Editor-only user as `Version.publishedBy`.
+ */
+export const verifyIsomerAdminByEmail = async (email: string) => {
+  const normalised = email.trim().toLowerCase()
+  if (!normalised) throw new Error("Publisher email is required")
+
   const user = await db
     .selectFrom("User")
-    .where("id", "=", userId)
+    .where("email", "=", normalised)
     .select(["id", "email", "deletedAt"])
     .executeTakeFirst()
-  if (!user) throw new Error(`User ${userId} not found`)
-  if (user.deletedAt) throw new Error(`User ${userId} is deleted`)
+  if (!user) throw new Error(`User with email ${normalised} not found`)
+  if (user.deletedAt) throw new Error(`User ${normalised} is deleted`)
+
+  const now = new Date()
+  const admin = await db
+    .selectFrom("IsomerAdmin")
+    .where("userId", "=", user.id)
+    .where((eb) => eb.or([eb("expiry", "is", null), eb("expiry", ">", now)]))
+    .select("id")
+    .executeTakeFirst()
+  if (!admin) {
+    throw new Error(
+      `User ${normalised} is not an active IsomerAdmin — only IsomerAdmins may be recorded as publisher`,
+    )
+  }
   return user
 }
 
@@ -53,6 +73,8 @@ export interface PublishedRow {
   newBlobId: string
   newVersionId: string
   previousState: ResourceState | null
+  titleSource: TitleSource
+  tagCategoryCount: number
 }
 
 /**
@@ -81,14 +103,24 @@ export const publishNewBlobVersion = async (
     content: PublishedIndexBlob
     publisherId: string
   },
-): Promise<Omit<PublishedRow, "resourceId" | "siteId"> | { skipped: true }> => {
+): Promise<
+  | Omit<
+      PublishedRow,
+      "resourceId" | "siteId" | "titleSource" | "tagCategoryCount"
+    >
+  | { skipped: true }
+> => {
   // Re-assert the target predicate inside the transaction: refuse if the row got
-  // published between planning and writing.
+  // published between planning and writing. `forUpdate` takes a row lock so two
+  // concurrent invocations racing the same resourceId can't both read
+  // publishedVersionId as null and both insert a Blob + Version — the second
+  // blocks until the first commits, then sees the now-published row and skips.
   const fresh = await tx
     .selectFrom("Resource")
     .where("id", "=", resourceId)
     .where("siteId", "=", siteId)
     .select(["publishedVersionId", "state"])
+    .forUpdate()
     .executeTakeFirst()
 
   if (!fresh)
@@ -206,6 +238,11 @@ export const printSummary = (report: BackfillReport) => {
   }
 }
 
+const writeReport = (path: string, report: BackfillReport) => {
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, `${JSON.stringify(report, null, 2)}\n`)
+}
+
 // ---------------------------------------------------------------------------
 // Orchestration
 // ---------------------------------------------------------------------------
@@ -216,6 +253,8 @@ export const runBackfill = async ({
   publisherId,
   outDir = defaultOutDir(),
   at = new Date(),
+  batchSize = BATCH_SIZE,
+  onAfterBatch,
 }: {
   mode: Mode
   siteId?: number
@@ -224,6 +263,10 @@ export const runBackfill = async ({
   outDir?: string
   /** Injected so callers (and tests) control the run timestamp. */
   at?: Date
+  /** Override for tests — production always uses `BATCH_SIZE`. */
+  batchSize?: number
+  /** Test hook — fires after each batch commits and the report is flushed. */
+  onAfterBatch?: (batchIndex: number) => void | Promise<void>
 }): Promise<{ report: BackfillReport; path: string }> => {
   if (mode === "apply" && !publisherId) {
     throw new Error("apply mode requires a publisherId")
@@ -232,8 +275,12 @@ export const runBackfill = async ({
   const rows = await findNeverPublishedCollectionIndexPages({ siteId })
 
   const skippedRows: SkippedRow[] = []
-  const toPublish: { row: (typeof rows)[number]; next: PublishedIndexBlob }[] =
-    []
+  const toPublish: {
+    row: (typeof rows)[number]
+    next: PublishedIndexBlob
+    titleSource: TitleSource
+    tagCategoryCount: number
+  }[] = []
   let variantFlipCount = 0
 
   for (const row of rows) {
@@ -249,43 +296,19 @@ export const runBackfill = async ({
       continue
     }
     if (outcome.variantFlip) variantFlipCount += 1
-    toPublish.push({ row, next: outcome.next })
+    toPublish.push({
+      row,
+      next: outcome.next,
+      titleSource: outcome.titleSource,
+      tagCategoryCount: outcome.tagCategoryCount,
+    })
   }
 
   const publishedRows: PublishedRow[] = []
   let alreadyPublished = 0
+  const path = reportPath({ at, siteId, outDir })
 
-  // `publisherId &&` narrows it to string. The guard at the top already threw for
-  // apply-without-publisherId, so this can never silently skip the write.
-  if (mode === "apply" && publisherId) {
-    const batches = chunk(toPublish, BATCH_SIZE)
-    for (const [index, batch] of batches.entries()) {
-      await db.transaction().execute(async (tx) => {
-        for (const { row, next } of batch) {
-          const result = await publishNewBlobVersion(tx, {
-            resourceId: row.resourceId,
-            siteId: row.siteId,
-            content: next,
-            publisherId,
-          })
-          if ("skipped" in result) {
-            alreadyPublished += 1
-            continue
-          }
-          publishedRows.push({
-            resourceId: row.resourceId,
-            siteId: row.siteId,
-            ...result,
-          })
-        }
-      })
-      console.log(
-        `[batch ${index + 1}/${batches.length}] published ${publishedRows.length}/${toPublish.length}`,
-      )
-    }
-  }
-
-  const report: BackfillReport = {
+  const buildReport = (): BackfillReport => ({
     generatedAt: at.toISOString(),
     mode,
     scope: scopeLabel(siteId),
@@ -299,11 +322,47 @@ export const runBackfill = async ({
     variantFlipCount,
     skippedRows,
     publishedRows,
+  })
+
+  // `publisherId &&` narrows it to string. The guard at the top already threw for
+  // apply-without-publisherId, so this can never silently skip the write.
+  //
+  // Flush the report after every committed batch so a mid-run failure still
+  // leaves `publishedRows` on disk for rollback.
+  if (mode === "apply" && publisherId) {
+    const batches = chunk(toPublish, batchSize)
+    for (const [index, batch] of batches.entries()) {
+      await db.transaction().execute(async (tx) => {
+        for (const { row, next, titleSource, tagCategoryCount } of batch) {
+          const result = await publishNewBlobVersion(tx, {
+            resourceId: row.resourceId,
+            siteId: row.siteId,
+            content: next,
+            publisherId,
+          })
+          if ("skipped" in result) {
+            alreadyPublished += 1
+            continue
+          }
+          publishedRows.push({
+            resourceId: row.resourceId,
+            siteId: row.siteId,
+            titleSource,
+            tagCategoryCount,
+            ...result,
+          })
+        }
+      })
+      writeReport(path, buildReport())
+      console.log(
+        `[batch ${index + 1}/${batches.length}] published ${publishedRows.length}/${toPublish.length}`,
+      )
+      await onAfterBatch?.(index)
+    }
   }
 
-  const path = reportPath({ at, siteId, outDir })
-  mkdirSync(dirname(path), { recursive: true })
-  writeFileSync(path, `${JSON.stringify(report, null, 2)}\n`)
+  const report = buildReport()
+  writeReport(path, report)
 
   return { report, path }
 }

@@ -16,11 +16,16 @@ import {
   setupCollection,
   setupPageResource,
   setupFolder,
+  setupIsomerAdmin,
   setupSite,
   setupUser,
 } from "../../../../tests/integration/helpers/seed"
 import { findNeverPublishedCollectionIndexPages } from "../query"
-import { publishNewBlobVersion, runBackfill } from "../shared"
+import {
+  publishNewBlobVersion,
+  runBackfill,
+  verifyIsomerAdminByEmail,
+} from "../shared"
 
 const SITE_A = 301
 const SITE_B = 302
@@ -115,7 +120,14 @@ const getBlob = (id: string) =>
     .executeTakeFirstOrThrow()
 
 beforeEach(async () => {
-  await resetTables("Blob", "Resource", "Version", "Site", "User")
+  await resetTables(
+    "Blob",
+    "Resource",
+    "Version",
+    "Site",
+    "User",
+    "IsomerAdmin",
+  )
   // setupCollection FETCHES the site when given a siteId, so it must exist first.
   await setupSite(SITE_A)
   await setupSite(SITE_B)
@@ -295,23 +307,24 @@ describe("runBackfill apply", () => {
     expect(first && "display" in first).toBe(false)
   })
 
-  it("publishes healthy rows and skips malformed ones in the same run", async () => {
-    await seedTarget({ siteId: SITE_A, permalink: "good" })
+  it("publishes even when tagCategories is a malformed shape, copying it wholesale", async () => {
     await seedTarget({
       siteId: SITE_A,
-      permalink: "bad",
+      permalink: "odd-shape",
       blobContent: collectionIndexBlob({ tagCategories: "nope" }),
     })
 
     const { report } = await apply()
 
     expect(report.totals).toMatchObject({
-      eligible: 2,
+      eligible: 1,
       toPublish: 1,
-      skipped: 1,
+      skipped: 0,
       published: 1,
     })
-    expect(report.skippedRows[0]?.reason).toBe("malformed-tag-categories")
+    const published = await getBlob(report.publishedRows[0]!.newBlobId)
+    const { page } = published.content as { page: Record<string, unknown> }
+    expect(page.tagCategories).toBe("nope")
   })
 
   it("is idempotent — a second run finds nothing", async () => {
@@ -412,5 +425,88 @@ describe("runBackfill dry-run", () => {
     expect(written.mode).toBe("apply")
     expect(written.scope).toBe(`site-${SITE_A}`)
     expect(written.publishedRows[0]?.previousState).toBe(ResourceState.Draft)
+  })
+
+  it("keeps publishedRows on disk if a later batch fails", async () => {
+    const first = await seedTarget({ siteId: SITE_A, permalink: "first" })
+    const second = await seedTarget({ siteId: SITE_A, permalink: "second" })
+    const path = join(
+      outDir,
+      `2026-08-04T12-00-00-000Z-site-${SITE_A}.report.json`,
+    )
+
+    await expect(
+      runBackfill({
+        mode: "apply",
+        siteId: SITE_A,
+        publisherId,
+        outDir,
+        at: AT,
+        batchSize: 1,
+        onAfterBatch: async (batchIndex) => {
+          if (batchIndex !== 0) return
+          const flushed = JSON.parse(readFileSync(path, "utf-8")) as {
+            publishedRows: { resourceId: string }[]
+          }
+          const publishedId = flushed.publishedRows[0]?.resourceId
+          const remaining = [first, second].find(
+            (seed) => seed.indexPage.id !== publishedId,
+          )
+          await db
+            .deleteFrom("Resource")
+            .where("id", "=", remaining!.indexPage.id)
+            .execute()
+        },
+      }),
+    ).rejects.toThrow(/not found/)
+
+    const written = JSON.parse(readFileSync(path, "utf-8")) as {
+      publishedRows: { resourceId: string }[]
+    }
+    expect(written.publishedRows).toHaveLength(1)
+    expect(
+      (await getResource(written.publishedRows[0]!.resourceId))
+        .publishedVersionId,
+    ).not.toBeNull()
+  })
+})
+
+describe("verifyIsomerAdminByEmail", () => {
+  it("accepts an active IsomerAdmin", async () => {
+    const user = await setupUser({ email: "admin@open.gov.sg" })
+    await setupIsomerAdmin({ userId: user.id })
+
+    await expect(
+      verifyIsomerAdminByEmail("Admin@Open.gov.sg"),
+    ).resolves.toMatchObject({
+      id: user.id,
+      email: "admin@open.gov.sg",
+    })
+  })
+
+  it("rejects a user who is not an IsomerAdmin", async () => {
+    await setupUser({ email: "editor@agency.gov.sg" })
+
+    await expect(
+      verifyIsomerAdminByEmail("editor@agency.gov.sg"),
+    ).rejects.toThrow(/not an active IsomerAdmin/)
+  })
+
+  it("rejects an expired IsomerAdmin", async () => {
+    const user = await setupUser({ email: "expired@open.gov.sg" })
+    await setupIsomerAdmin({
+      userId: user.id,
+      expiry: new Date("2020-01-01T00:00:00.000Z"),
+    })
+
+    await expect(
+      verifyIsomerAdminByEmail("expired@open.gov.sg"),
+    ).rejects.toThrow(/not an active IsomerAdmin/)
+  })
+
+  it("rejects an unknown email", async () => {
+    await expect(
+      verifyIsomerAdminByEmail("missing@open.gov.sg"),
+    ).rejects.toThrow(/not found/)
   })
 })
