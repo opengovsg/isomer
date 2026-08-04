@@ -161,6 +161,7 @@ const GAZETTE_TAG_CATEGORIES = [
   {
     label: GAZETTE_CATEGORY_LABEL,
     id: "1e02b2c3-58cc-4372-a567-f47ac10b3d46",
+    isRequired: true,
     display: DEFAULT_TAG_CATEGORY_DISPLAY,
     options: Object.values(GazetteCategories).map((label, index) => ({
       label,
@@ -170,6 +171,7 @@ const GAZETTE_TAG_CATEGORIES = [
   {
     label: GAZETTE_SUBCATEGORY_LABEL,
     id: "0e02b2c3-58cc-4372-a567-f47ac10b3d47",
+    isRequired: true,
     display: DEFAULT_TAG_CATEGORY_DISPLAY,
     options: ALL_SUBCATEGORY_LABELS.map((label, index) => ({
       label,

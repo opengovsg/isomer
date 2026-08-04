@@ -1,4 +1,5 @@
 import type { ArticlePagePageProps } from "@opengovsg/isomer-components"
+import { resolveTagCategoryIsRequired } from "@opengovsg/isomer-components"
 
 import type { CollectionTags } from "../hooks/useCollectionTags"
 
@@ -8,7 +9,7 @@ export function validateRequiredTags(
 ) {
   const unfilledRequiredCategories = tags.filter(
     ({ isRequired, options }) =>
-      isRequired &&
+      resolveTagCategoryIsRequired(isRequired) &&
       options.length > 0 &&
       !options.some(({ id }) => tagged?.includes(id)),
   )

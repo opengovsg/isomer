@@ -15,6 +15,8 @@ import {
 } from "~/utils/validation"
 
 import {
+  DEFAULT_TAG_CATEGORY_DISPLAY,
+  DEFAULT_TAG_CATEGORY_IS_REQUIRED,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   type TagCategoryDisplay,
 } from "./constants"
@@ -47,41 +49,35 @@ const TagCategorySchema = Type.Composite([
     id: TagCategoryUuidSchema,
   }),
   Type.Object({
-    // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
-    // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
-    // same default to legacy rows that omit this key. New filters set `isRequired: true` in
-    // the tag-categories JsonForms control when adding an item.
-    isRequired: Type.Optional(
-      Type.Boolean({
-        title: "This filter is required",
-        description:
-          "Every item must have at least one option selected from this filter.",
-      }),
-    ),
+    // Required in schema (Studio JsonForms). Legacy published blobs may still
+    // omit it — runtime/publish must read via `?? DEFAULT_TAG_CATEGORY_IS_REQUIRED`.
+    // Schema `default` + AJV useDefaults backfills on edit in Studio.
+    isRequired: Type.Boolean({
+      title: "This filter is required",
+      description:
+        "Every item must have at least one option selected from this filter.",
+      default: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
+    }),
   }),
   Type.Object({
-    // Optional for backward compatibility. Missing/`undefined` must be read as
-    // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
-    // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
-    // same default to legacy rows that omit this key. New filters set
-    // `display: DEFAULT_TAG_CATEGORY_DISPLAY` in the tag-categories JsonForms control
-    // when adding an item.
-    display: Type.Optional(
-      Type.Unsafe<TagCategoryDisplay>({
-        oneOf: [
-          {
-            const: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-            image: "tagcategory/pills",
-          },
-          {
-            const: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-            image: "tagcategory/plaintext",
-          },
-        ],
-        title: "Show as",
-        format: "image-radio",
-      }),
-    ),
+    // Required in schema (Studio JsonForms). Legacy published blobs may still
+    // omit it — runtime/publish must read via `resolveTagCategoryDisplay`.
+    // Schema `default` + AJV useDefaults backfills on edit in Studio.
+    display: Type.Unsafe<TagCategoryDisplay>({
+      oneOf: [
+        {
+          const: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+          image: "tagcategory/pills",
+        },
+        {
+          const: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+          image: "tagcategory/plaintext",
+        },
+      ],
+      title: "Show as",
+      format: "image-radio",
+      default: DEFAULT_TAG_CATEGORY_DISPLAY,
+    }),
   }),
   Type.Object({
     options: Type.Array(

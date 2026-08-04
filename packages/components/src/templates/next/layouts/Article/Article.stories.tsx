@@ -662,6 +662,7 @@ export const TaggedArticleWithTagCategories: Story = {
                     {
                       label: "Tags",
                       id: "tags-group",
+                      isRequired: true,
                       display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
                       options: [
                         {
@@ -673,6 +674,7 @@ export const TaggedArticleWithTagCategories: Story = {
                     {
                       label: "Category",
                       id: "category-group",
+                      isRequired: true,
                       display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
                       options: [
                         {
@@ -684,6 +686,7 @@ export const TaggedArticleWithTagCategories: Story = {
                     {
                       label: "Region",
                       id: "region-group",
+                      isRequired: true,
                       display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
                       options: [
                         { label: "Wildlife", id: TAGGED_REGION_OPTION_ID },

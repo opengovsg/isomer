@@ -387,6 +387,7 @@ describe("getCollectionPages", () => {
             {
               label: "Category",
               id: "cat-1",
+              isRequired: true,
               display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
               options: [{ label: "Guides", id: "cat-opt-1" }],
             },

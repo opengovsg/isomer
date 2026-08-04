@@ -11,6 +11,7 @@ describe("getTagGroupsFromTagged", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
@@ -51,12 +52,14 @@ describe("getTagGroupsFromTagged", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [{ label: "Guides", id: "cat-opt-1" }],
       },
@@ -82,14 +85,14 @@ describe("getTagGroupsFromTagged", () => {
   })
 
   it("treats a group without a display value as pills, per the default", () => {
-    // Arrange
-    const tagCategories: CollectionPageSchemaType["page"]["tagCategories"] = [
+    // Arrange — legacy published blobs may omit schema-required fields
+    const tagCategories = [
       {
         label: "Topic",
         id: "topic-1",
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
-    ]
+    ] as CollectionPageSchemaType["page"]["tagCategories"]
 
     // Act
     const result = getTagGroupsFromTagged({
@@ -113,12 +116,14 @@ describe("getTagGroupsFromTagged", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [{ label: "Guides", id: "cat-opt-1" }],
       },
@@ -142,6 +147,7 @@ describe("getTagGroupsFromTagged", () => {
       {
         label: "Category",
         id: "cat-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [
           { label: "Guides", id: "cat-opt-1" },

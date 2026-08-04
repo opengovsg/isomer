@@ -1,3 +1,5 @@
+import { DEFAULT_TAG_CATEGORY_DISPLAY } from "@opengovsg/isomer-components"
+
 import type { CollectionTags } from "../../hooks/useCollectionTags"
 import { validateRequiredTags } from "../validateRequiredTags"
 
@@ -9,6 +11,7 @@ const requiredCategory: CollectionTags[number] = {
   id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
   label: "Topic",
   isRequired: true,
+  display: DEFAULT_TAG_CATEGORY_DISPLAY,
   options: [{ id: REQUIRED_OPTION_ID, label: "Technology" }],
 }
 
@@ -16,6 +19,7 @@ const optionalCategory: CollectionTags[number] = {
   id: "a58bd21c-69dd-5483-b678-1f13c3d4e580",
   label: "Region",
   isRequired: false,
+  display: DEFAULT_TAG_CATEGORY_DISPLAY,
   options: [{ id: OPTIONAL_OPTION_ID, label: "Central" }],
 }
 
@@ -23,6 +27,7 @@ const otherRequiredCategory: CollectionTags[number] = {
   id: "b69ce32d-7aee-6594-c789-2g24d4e5f691",
   label: "Type",
   isRequired: true,
+  display: DEFAULT_TAG_CATEGORY_DISPLAY,
   options: [{ id: OTHER_REQUIRED_OPTION_ID, label: "Notice" }],
 }
 
@@ -105,6 +110,7 @@ describe("validateRequiredTags", () => {
       id: "d81ef54f-9cgg-87b6-e9ab-4i46f6g7h813",
       label: "Deleted options",
       isRequired: true,
+      display: DEFAULT_TAG_CATEGORY_DISPLAY,
       options: [],
     }
 
@@ -119,13 +125,13 @@ describe("validateRequiredTags", () => {
     expect(result.unfilledRequiredCategories).toEqual([requiredCategory])
   })
 
-  it("treats isRequired as false when omitted on a category", () => {
-    // Arrange
-    const categoryWithoutRequiredFlag: CollectionTags[number] = {
+  it("treats isRequired as true when omitted on a category", () => {
+    // Arrange — legacy blobs may omit the key; runtime defaults to required
+    const categoryWithoutRequiredFlag = {
       id: "c70df43e-8bff-76a5-d89a-3h35e5f6g702",
       label: "Legacy",
       options: [{ id: OPTIONAL_OPTION_ID, label: "Legacy option" }],
-    }
+    } as CollectionTags[number]
 
     // Act
     const result = validateRequiredTags(
@@ -134,7 +140,9 @@ describe("validateRequiredTags", () => {
     )
 
     // Assert
-    expect(result.isValid).toBe(true)
-    expect(result.unfilledRequiredCategories).toEqual([])
+    expect(result.isValid).toBe(false)
+    expect(result.unfilledRequiredCategories).toEqual([
+      categoryWithoutRequiredFlag,
+    ])
   })
 })

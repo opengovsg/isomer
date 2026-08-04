@@ -88,6 +88,7 @@ export const pageHandlers = {
           {
             label: "Topic",
             id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+            isRequired: true,
             display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
@@ -101,12 +102,14 @@ export const pageHandlers = {
           {
             label: "Empty Category",
             id: "123e4567-e89b-12d3-a456-426614174000",
+            isRequired: true,
             display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [],
           },
           {
             label: "Industries",
             id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+            isRequired: true,
             display: DEFAULT_TAG_CATEGORY_DISPLAY,
             options: [
               {
