@@ -41,6 +41,13 @@ const resolveCell = (
   return { pos, node }
 }
 
+// Offset of the cell covering a grid slot within the table node. Prefer this
+// over TableMap.positionAt when restoring selection after rowspan/colspan
+// mutations — positionAt skips rowspan-covered slots and can resolve to the
+// wrong cell once the map has changed.
+const cellOffsetAtGrid = (map: TableMap, row: number, col: number): number =>
+  map.map[row * map.width + col]
+
 // Dispatch `tr` after reselecting the block described by `corners`, resolved
 // against the table's post-mutation TableInfo. Shared by
 // duplicateSelectedRows/Columns, which differ only in which corners to select.
@@ -242,13 +249,11 @@ export const duplicateSelectedRows = (editor: Editor): void => {
     tr = insertDuplicateRow(tr, info, sourceRow, rect.bottom)
   }
 
+  const dupTop = rect.bottom
+  const dupBottom = rect.bottom + span - 1
   selectBlockAndDispatch(editor, tr, tablePos, (info) => ({
-    anchor: info.map.positionAt(rect.bottom, 0, info.table),
-    head: info.map.positionAt(
-      rect.bottom + span - 1,
-      info.map.width - 1,
-      info.table,
-    ),
+    anchor: cellOffsetAtGrid(info.map, dupTop, 0),
+    head: cellOffsetAtGrid(info.map, dupBottom, info.map.width - 1),
   }))
 }
 
@@ -272,9 +277,11 @@ export const duplicateSelectedColumns = (editor: Editor): void => {
     }
   }
 
+  const dupLeft = rect.right
+  const dupRight = rect.right + span - 1
   // Bottom-left → top-right matches TipTap's full-column selection orientation.
   selectBlockAndDispatch(editor, tr, tablePos, (info) => ({
-    anchor: info.map.positionAt(info.map.height - 1, rect.right, info.table),
-    head: info.map.positionAt(0, rect.right + span - 1, info.table),
+    anchor: cellOffsetAtGrid(info.map, info.map.height - 1, dupLeft),
+    head: cellOffsetAtGrid(info.map, 0, dupRight),
   }))
 }

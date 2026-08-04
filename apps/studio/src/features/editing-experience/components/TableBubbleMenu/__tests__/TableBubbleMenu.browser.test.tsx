@@ -4,7 +4,7 @@
 import type { Editor, JSONContent } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { act, cleanup, render, waitFor } from "@testing-library/react"
-import { tableEditingKey } from "@tiptap/pm/tables"
+import { selectedRect, tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { afterEach, describe, expect, it } from "vitest"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
@@ -169,6 +169,8 @@ const tableColumnCount = (editor: Editor): number => {
   })
   return count
 }
+
+const selectedTableRect = (editor: Editor) => selectedRect(editor.state)
 
 describe("TableBubbleMenu", () => {
   afterEach(() => {
@@ -414,6 +416,40 @@ describe("TableBubbleMenu", () => {
       "Column A",
       "Column B",
       "Column C",
+    ])
+  })
+
+  it("reselects the duplicated column block when the selection intersects a colspan", async () => {
+    // Arrange — merge header B+C, then select those two columns (through the merge).
+    const { editor, findByText, findByRole } = await renderHarness()
+    selectCells(editor, 1, 2)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    selectCells(editor, 1, 7)
+    const beforeRect = selectedTableRect(editor)
+    expect(beforeRect.left).toBe(1)
+    expect(beforeRect.right).toBe(3)
+    await activateTableBubbleMenu(findByRole)
+
+    // Act
+    const duplicate = await findByText("Duplicate column")
+    act(() => {
+      duplicate.click()
+    })
+
+    // Assert — table grew by two columns and selection covers the new block only.
+    const rect = selectedTableRect(editor)
+    expect(rect.left).toBe(3)
+    expect(rect.right).toBe(5)
+    expect(rect.top).toBe(0)
+    expect(rect.bottom).toBe(3)
+    expect(rowTextsAt(editor, 1)).toEqual([
+      "Row 1, A",
+      "Row 1, B",
+      "Row 1, C",
+      "Row 1, B",
+      "Row 1, C",
     ])
   })
 
