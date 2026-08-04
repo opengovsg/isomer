@@ -1,7 +1,6 @@
-import type { AuditLogExportRequestedReportType } from "~/schemas/audit"
-
 import type {
   AuditLogEvent,
+  AuditLogExportReportType,
   Blob,
   DB,
   Footer,
@@ -398,7 +397,7 @@ interface AuditLogExportCreateDelta {
   before: null
   after: {
     auditLogDateRange: string
-    reportType: AuditLogExportRequestedReportType
+    reportType: AuditLogExportReportType
   }
 }
 

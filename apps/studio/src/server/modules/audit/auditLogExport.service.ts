@@ -178,10 +178,8 @@ export const createAuditLogExportRequest = async ({
       rows.push(await inFlightRowQuery.executeTakeFirstOrThrow())
     }
 
-    // Exactly ONE event per ask (not per fanned-out half), recorded even when
-    // every half was idempotent-accepted: the ask itself is the auditable act.
-    // The delta stores the REQUESTED report type — possibly "Both" — because
-    // that is what the user asked for; the fan-out is an implementation detail.
+    // NOTE: Audit log both events even when the User requested `Both`
+    // so that we avoid ambiguity down the line
     const requestedBy = await tx
       .selectFrom("User")
       .where("id", "=", userId)
@@ -194,7 +192,23 @@ export const createAuditLogExportRequest = async ({
       ip,
       delta: {
         before: null,
-        after: { auditLogDateRange, reportType },
+        after: {
+          auditLogDateRange,
+          reportType: AuditLogExportReportType.Access,
+        },
+      },
+    })
+    await logAuditLogExportEvent(tx, {
+      eventType: "AuditLogExportCreate",
+      by: requestedBy,
+      siteId,
+      ip,
+      delta: {
+        before: null,
+        after: {
+          auditLogDateRange,
+          reportType: AuditLogExportReportType.Activity,
+        },
       },
     })
 
