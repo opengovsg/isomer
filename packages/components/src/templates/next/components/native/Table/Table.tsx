@@ -40,12 +40,11 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
         >
           <tbody>
             {content.map((row, index) => {
-              const TableCellTag =
-                row.content[0]?.type === "tableHeader" ? "th" : "td"
-
               return (
                 <tr key={index} className="text-left">
                   {row.content.map((cell, cellIndex) => {
+                    const TableCellTag =
+                      cell.type === "tableHeader" ? "th" : "td"
                     const backgroundColor =
                       cell.type === "tableCell"
                         ? getTableCellBackgroundColorHex(

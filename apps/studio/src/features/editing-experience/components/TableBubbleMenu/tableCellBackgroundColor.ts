@@ -17,11 +17,12 @@ export const selectionHasBodyCell = (selection: CellSelection): boolean => {
   return hasBodyCell
 }
 
-// Shared token when every selected body cell agrees; otherwise null (cleared
-// or mixed). The colour panel only highlights a swatch on a uniform token.
+// Uniform token when every selected body cell agrees; null when all cleared;
+// undefined when colours disagree. The panel only highlights a swatch on a
+// uniform token.
 export const getUniformBodyCellBackgroundColor = (
   selection: CellSelection,
-): TableCellBackgroundColorToken | null => {
+): TableCellBackgroundColorToken | null | undefined => {
   let seen = false
   let color: TableCellBackgroundColorToken | null = null
   let isMixed = false
@@ -43,11 +44,10 @@ export const getUniformBodyCellBackgroundColor = (
 
     if (color !== cellColor) {
       isMixed = true
-      color = null
     }
   })
 
-  return color
+  return isMixed ? undefined : color
 }
 
 export const setSelectedBodyCellsBackgroundColor = (

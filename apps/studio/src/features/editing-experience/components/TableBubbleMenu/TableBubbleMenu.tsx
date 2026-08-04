@@ -243,7 +243,6 @@ const ActionButton = ({
     size="xs"
     variant="clear"
     colorScheme="neutral"
-    onMouseDown={(event) => event.preventDefault()}
     onClick={onClick}
     // TipTap toolbar pattern: preventDefault on mousedown so the click does
     // not steal focus (and thus CellSelection) from the editor.
@@ -331,11 +330,9 @@ const ColourSwatch = ({
 // Label + swatches inline — no navigate-away submenu. Text sizing matches
 // ActionButton (subhead-2); padding aligns with HeaderToggle / ActionButton.
 const BackgroundColourSection = ({
-  editor,
   selection,
   onSetColor,
 }: {
-  editor: Editor
   selection: CellSelection
   onSetColor: (color: TableCellBackgroundColorToken | null) => void
 }) => {
@@ -995,7 +992,6 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
             <>
               {hasSelectionActions && <ActionDivider />}
               <BackgroundColourSection
-                editor={editor}
                 selection={selection}
                 onSetColor={(color) => {
                   skipNextSelectionResetRef.current = true

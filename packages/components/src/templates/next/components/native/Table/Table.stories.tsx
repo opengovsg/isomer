@@ -2017,15 +2017,6 @@ export const WithBackgroundColours: Story = {
             content: [
               {
                 type: "paragraph",
-                content: [{ type: "text", text: "Grey" }],
-              },
-            ],
-          },
-          {
-            type: "tableHeader",
-            content: [
-              {
-                type: "paragraph",
                 content: [{ type: "text", text: "Blue" }],
               },
             ],
