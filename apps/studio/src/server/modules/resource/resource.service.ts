@@ -1529,7 +1529,7 @@ export const getSearchResults = async ({
   }
 
   const searchTerms = tokenizeSearchQuery(query)
-  const pathQuery = query.trim().replace(/^\/+/, "")
+const pathQuery = query.trim().replace(/^\/+/, "") || "."
   const resourcesMatchingFullPermalink = db
     .withRecursive("resourcePath", (eb) =>
       eb
