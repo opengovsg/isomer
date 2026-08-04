@@ -15,6 +15,7 @@ env:
 jobs:
   optimize_ci:
     runs-on: ubuntu-latest # or whichever runner you use for your CI
+    permissions: {} # only talks to Graphite's API via graphite_token; no GITHUB_TOKEN use
     outputs:
       skip: ${{ steps.check_skip.outputs.skip }}
     steps:
@@ -26,6 +27,8 @@ jobs:
   # Detect which areas changed so dependent jobs can opt out when irrelevant.
   changes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       template_or_components: ${{ steps.filter.outputs.template_or_components }}
     steps:
@@ -39,6 +42,8 @@ jobs:
               - 'tooling/template/**'
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -49,6 +54,8 @@ jobs:
         run: pnpm run build
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -66,6 +73,8 @@ jobs:
 
   format:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -77,6 +86,8 @@ jobs:
 
   supply-chain:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -97,6 +108,8 @@ jobs:
 
   typecheck:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -111,6 +124,8 @@ jobs:
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
+    permissions:
+      contents: read
     strategy:
       fail-fast: false # so that we can run all shards and one shard can fail without failing the entire job
       matrix:
@@ -149,6 +164,8 @@ jobs:
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup
@@ -176,6 +193,8 @@ jobs:
     needs: [optimize_ci, changes]
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.template_or_components == 'true'
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup
@@ -198,6 +217,8 @@ jobs:
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup
@@ -219,6 +240,8 @@ jobs:
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup
@@ -243,6 +266,8 @@ jobs:
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup
