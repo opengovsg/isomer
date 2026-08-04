@@ -8,6 +8,7 @@ import {
 } from "react"
 import { LOGGED_IN_KEY } from "~/constants/localStorage"
 import { useLocalStorage } from "~/hooks/useLocalStorage"
+import { withPosthog } from "~/lib/posthog"
 import { trpc } from "~/utils/trpc"
 
 interface LoginStateContextReturn {
@@ -68,7 +69,7 @@ const PostHogIdentity = () => {
 
     if (!user || identifiedUserId.current === user.id) return
 
-    void import("posthog-js").then(({ default: posthog }) => {
+    void withPosthog((posthog) => {
       if (identifiedUserId.current && identifiedUserId.current !== user.id) {
         posthog.reset()
       }

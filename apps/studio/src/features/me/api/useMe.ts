@@ -2,6 +2,7 @@ import { useGrowthBook } from "@growthbook/growthbook-react"
 import { useRouter } from "next/router"
 import { useCallback, useMemo } from "react"
 import { useLoginState } from "~/features/auth"
+import { withPosthog } from "~/lib/posthog"
 import { trpc } from "~/utils/trpc"
 
 import { isUserOnboarded } from "./isUserOnboarded"
@@ -18,9 +19,7 @@ export const useMe = () => {
     (redirectToSignIn = true) => {
       return logoutMutation.mutate(undefined, {
         onSuccess: () => {
-          void import("posthog-js").then(({ default: posthog }) => {
-            posthog.reset()
-          })
+          void withPosthog((posthog) => posthog.reset())
           void gb.setAttributes({})
           removeLoginStateFlag()
           if (redirectToSignIn) {
