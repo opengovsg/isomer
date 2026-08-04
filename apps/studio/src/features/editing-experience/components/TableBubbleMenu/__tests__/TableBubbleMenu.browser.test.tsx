@@ -617,8 +617,7 @@ describe("TableBubbleMenu", () => {
 
   it("deactivates the menu after a new selection when clicking the already-active swatch", async () => {
     // Arrange
-    const { editor, findByRole, findByText, queryByText, container } =
-      await renderHarness()
+    const { editor, findByRole, queryByText, container } = await renderHarness()
     selectCells(editor, 3, 5)
     await activateTableBubbleMenu(findByRole)
     const blueSwatch = await findByRole("button", { name: "Blue" })
