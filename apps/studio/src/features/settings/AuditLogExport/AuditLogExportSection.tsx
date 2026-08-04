@@ -38,7 +38,7 @@ interface AuditLogExportSectionProps {
 // Where "Which log do I need?" points. Feature-local because it is used in
 // exactly one place; the exact help-centre article can be swapped here.
 const WHICH_LOG_HELP_LINK =
-  " https://support.isomer.gov.sg/en/articles/16159428-audit-logs"
+  "https://support.isomer.gov.sg/en/articles/16159428-audit-logs"
 
 // Map the current (partial) month to a friendlier label than "July 2026", so
 // the picker reads the way the design does. The value is still the shared
