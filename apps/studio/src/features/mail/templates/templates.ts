@@ -36,7 +36,7 @@ const getDownloadLinkLabel = (
   longMonth: string,
   sizeInMb: string,
 ) => {
-  return `Download ${label} review logs for ${longMonth} [${sizeInMb}, .csv]`
+  return `Download ${label} review logs for ${longMonth} [.csv, ${sizeInMb}MB]`
 }
 
 const constructStudioRedirect = () =>
@@ -298,7 +298,7 @@ const auditLogExportReadyTemplate = (
 
   const logName = link.label === "access" ? "Access" : "Audit"
 
-  const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month, sizeInBytes ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2) : "- MB")}</a>`
+  const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month, sizeInBytes ? (sizeInBytes / ONE_MB_IN_BYTES).toFixed(2) : "-")}</a>`
 
   return {
     subject: `[Isomer] ${logName} logs for ${month} for your site (${unescapeHtml(siteName)}) is ready`,
