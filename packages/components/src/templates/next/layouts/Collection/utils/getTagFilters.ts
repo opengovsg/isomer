@@ -4,8 +4,6 @@ import { resolveTagCategoryDisplay } from "~/types/constants"
 
 import type { Filter, FilterItem } from "../../../types/Filter"
 
-const UNKNOWN_SORT_INDEX = Number.MAX_SAFE_INTEGER
-
 export const getTagFilters = (
   items: ProcessedCollectionCardProps[],
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"],
@@ -70,8 +68,8 @@ export const getTagFilters = (
   )
 
   const sortedFilters = filters.sort((a, b) => {
-    const indexA = tagCategoryLabelOrder.get(a.id) ?? UNKNOWN_SORT_INDEX
-    const indexB = tagCategoryLabelOrder.get(b.id) ?? UNKNOWN_SORT_INDEX
+    const indexA = tagCategoryLabelOrder.get(a.id) ?? Infinity
+    const indexB = tagCategoryLabelOrder.get(b.id) ?? Infinity
     return indexA - indexB
   })
 
@@ -84,8 +82,8 @@ export const getTagFilters = (
     return {
       ...filter,
       items: filter.items.sort((a, b) => {
-        const indexA = tagOptionLabelOrder.get(a.id) ?? UNKNOWN_SORT_INDEX
-        const indexB = tagOptionLabelOrder.get(b.id) ?? UNKNOWN_SORT_INDEX
+        const indexA = tagOptionLabelOrder.get(a.id) ?? Infinity
+        const indexB = tagOptionLabelOrder.get(b.id) ?? Infinity
         return indexA - indexB
       }),
     }
