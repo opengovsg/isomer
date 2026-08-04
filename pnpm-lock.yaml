@@ -927,6 +927,9 @@ importers:
       pg:
         specifier: 'catalog:'
         version: 8.22.0
+      pg-cursor:
+        specifier: 'catalog:'
+        version: 2.21.0(pg@8.22.0)
       posthog-js:
         specifier: 'catalog:'
         version: 1.408.1

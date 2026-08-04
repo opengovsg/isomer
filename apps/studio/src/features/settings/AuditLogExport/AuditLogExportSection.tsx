@@ -83,6 +83,11 @@ export const AuditLogExportSection = ({
     reportType === AuditLogExportRequestedReportType.Activity ||
     reportType === AuditLogExportRequestedReportType.Both
 
+  // The "to date" caveat only makes sense for the current (partial) month;
+  // past months in the picker are always complete calendar months.
+  const selectedMonth = form.watch("month")
+  const isCurrentMonthSelected = selectedMonth === monthOptions[0]?.value
+
   const onToggle = (
     toggled:
       | typeof AuditLogExportRequestedReportType.Access
@@ -216,11 +221,13 @@ export const AuditLogExportSection = ({
                   render={({ field, fieldState }) => (
                     <FormControl isInvalid={!!fieldState.error}>
                       <SingleSelect
+                        size="xs"
                         name="month"
                         value={field.value}
                         onChange={field.onChange}
                         items={monthOptions}
                         isClearable={false}
+                        isSearchable={false}
                       />
                       <FormErrorMessage>
                         {fieldState.error?.message}
@@ -229,18 +236,20 @@ export const AuditLogExportSection = ({
                   )}
                 />
               </Box>
-              <HStack spacing="0.25rem" align="center">
-                <Icon
-                  as={BiInfoCircle}
-                  boxSize="1rem"
-                  color="utility.feedback.info"
-                  flexShrink={0}
-                />
-                <Text textStyle="caption-2" color="base.content.default">
-                  This will include activities from 1st day of the month to
-                  date.
-                </Text>
-              </HStack>
+              {isCurrentMonthSelected && (
+                <HStack spacing="0.25rem" align="center">
+                  <Icon
+                    as={BiInfoCircle}
+                    boxSize="1rem"
+                    color="utility.feedback.info"
+                    flexShrink={0}
+                  />
+                  <Text textStyle="caption-2" color="base.content.default">
+                    This will include activities from 1st day of the month to
+                    date.
+                  </Text>
+                </HStack>
+              )}
             </Stack>
           </LogTypeCard>
         </Stack>
@@ -287,6 +296,7 @@ const LogTypeCard = ({
         isChecked={isSelected}
         onChange={onToggle}
         alignItems="flex-start"
+        _focusWithin={{ boxShadow: "none" }}
       >
         <Stack spacing="0.25rem" ml="0.25rem">
           <Text textStyle="subhead-2" color="base.content.strong">
@@ -300,7 +310,7 @@ const LogTypeCard = ({
       {/* The revealed content sits outside the checkbox label so interacting
           with it (e.g. opening the month dropdown) does not toggle selection. */}
       {isSelected && children && (
-        <Box mt="0.75rem" pl="2rem">
+        <Box mt="0.75rem" pl="3rem">
           {children}
         </Box>
       )}
