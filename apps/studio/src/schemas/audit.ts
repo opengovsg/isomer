@@ -126,6 +126,12 @@ export const getCurrentSingaporeMonth = (): IsoMonth =>
   // Same reasoning as above: "yyyy-MM" always zero-pads, so the cast is sound.
   formatInTimeZone(new Date(), SINGAPORE_TIME_ZONE, "yyyy-MM") as IsoMonth
 
+// Input for the query that tells the client how many months back the picker
+// may offer (see `getMaxExportableMonths` in auditLogExport.service.ts).
+export const getAuditLogExportWindowSchema = z.object({
+  siteId: z.number().int().positive(),
+})
+
 export const createAuditLogExportRequestSchema = z.object({
   // Accept a real number or a numeric form string (a native input yields e.g.
   // "1"), then convert to the numeric site ID the database and service contract

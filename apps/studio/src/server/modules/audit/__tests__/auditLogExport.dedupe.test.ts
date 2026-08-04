@@ -1,5 +1,7 @@
+import { subMonths } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getCurrentSingaporeMonth } from "~/schemas/audit"
+import { getCurrentSingaporeMonth, type IsoMonth } from "~/schemas/audit"
 
 // This file deliberately mocks the DB (unlike the sibling integration tests) so
 // it can drive the ONE code path that a real-Postgres test cannot deterministic-
@@ -52,6 +54,15 @@ const { createAuditLogExportRequest } =
   await import("../auditLogExport.service")
 
 const VALID_MONTH = getCurrentSingaporeMonth()
+// A month inside the export window but distinct from the current one, so
+// tests can tell apart a range built from the REQUESTED month (Activity)
+// from one always pinned to the CURRENT month (Access) — see
+// createAuditLogExportRequest's per-report-type range comment.
+const PAST_MONTH = formatInTimeZone(
+  subMonths(new Date(), 1),
+  "Asia/Singapore",
+  "yyyy-MM",
+) as IsoMonth
 
 // The requesting user, as the service's in-transaction `User` lookup returns
 // it (the actor of the AuditLogExportCreate event).
@@ -298,8 +309,10 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
       reportType: "Both",
     })
 
-    // Assert: one transaction, two rows — one per concrete DB report type,
-    // sharing the same (siteId, userId, auditLogDateRange).
+    // Assert: one transaction, two rows — one per concrete DB report type.
+    // Both happen to share the same auditLogDateRange here because the
+    // requested month IS the current month; see the next test for what
+    // happens when it isn't.
     expect(mockDb.transaction).toHaveBeenCalledTimes(1)
     expect(tx.insertedValues).toHaveLength(2)
     expect(tx.insertedValues.map((v) => v.reportType)).toEqual([
@@ -321,6 +334,37 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     // the REQUESTED type ("Both"), not the fanned-out halves.
     expect(result).toHaveLength(2)
     expectExportCreateEvent(tx, "Both")
+  })
+
+  it("pins Access to the current month even when a past month is requested for Activity", async () => {
+    // Arrange: a Both request for a past month. The Access card has no month
+    // picker in the UI at all, so its export must reflect CURRENT access
+    // regardless of whatever past month was picked for Activity.
+    const tx = makeTx({
+      selects: [undefined, undefined],
+      inserts: [{ outcome: "inserted" }, { outcome: "inserted" }],
+    })
+    useTx(tx)
+
+    // Act
+    await createAuditLogExportRequest({
+      siteId: 1,
+      userId: "user-1",
+      month: PAST_MONTH,
+      reportType: "Both",
+    })
+
+    // Assert: Activity's range starts in the requested (past) month; Access's
+    // starts in the current month instead — the two rows do NOT share a range.
+    const activityRange = tx.insertedValues.find(
+      (v) => v.reportType === "Activity",
+    )?.auditLogDateRange
+    const accessRange = tx.insertedValues.find(
+      (v) => v.reportType === "Access",
+    )?.auditLogDateRange
+    expect(activityRange).toMatch(new RegExp(`^\\[${PAST_MONTH}-01,`))
+    expect(accessRange).toMatch(new RegExp(`^\\[${VALID_MONTH}-01,`))
+    expect(accessRange).not.toBe(activityRange)
   })
 
   it("accepts a Both request whose second half loses its race, committing the first half AND the winner's half", async () => {

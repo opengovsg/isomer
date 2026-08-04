@@ -10,7 +10,11 @@ import { AuditLogExportSection } from "./AuditLogExportSection"
 // The section reads the site-admin ability built by UserManagementProvider
 // from the user's roles, so each story wires the `getRolesFor` handler that
 // makes the current user an Admin (the only role that may export).
-const COMMON_HANDLERS = [meHandlers.me(), resourceHandlers.getRolesFor.admin()]
+const COMMON_HANDLERS = [
+  meHandlers.me(),
+  resourceHandlers.getRolesFor.admin(),
+  auditHandlers.getExportWindow.default(),
+]
 
 const meta: Meta<typeof AuditLogExportSection> = {
   title: "Features/Settings/AuditLogExportSection",

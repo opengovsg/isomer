@@ -53,14 +53,26 @@ export const AuditLogExportSection = ({
 
   const toast = useToast(BRIEF_TOAST_SETTINGS)
 
+  // How many months back the picker may offer — the standard window, or fewer
+  // for a site younger than that (see `getAuditLogExportWindow`). Falls back
+  // to the full window while loading; `monthOptions[0]` (the current month,
+  // used as the form's default) is unaffected either way, since the cap only
+  // ever trims how far back the list goes.
+  const { data: exportWindow } = trpc.audit.getExportWindow.useQuery(
+    {
+      siteId,
+    },
+    { initialData: { maxMonths: 12 } },
+  )
+
   const monthOptions = useMemo(() => {
-    const options = getMonthOptions()
+    const options = getMonthOptions(undefined, exportWindow?.maxMonths)
     const [current] = options
     // `getMonthOptions` always returns at least the current month; relabel it
     // so the picker reads "Current month" rather than e.g. "July 2026".
     if (!current) return options
     return [{ ...current, label: CURRENT_MONTH_LABEL }, ...options.slice(1)]
-  }, [])
+  }, [exportWindow?.maxMonths])
 
   // Form state lives in react-hook-form, validated by the same zod schema the
   // tRPC procedure uses (minus `siteId`, which comes from props), so client
@@ -98,11 +110,13 @@ export const AuditLogExportSection = ({
     // (it's driven entirely by this checkbox cluster), so `resetField` is a
     // no-op for it — RHF only resets fields it finds in its internal registry.
     // `setValue` has no such guard, so use it for both the set and clear cases.
-    // The form type (drawn from the submission schema) requires a concrete
-    // report type, but the field is legitimately undefined until a card is
-    // picked — same widening as the `reportType` read above.
-    // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
-    form.setValue("reportType", next!, { shouldValidate: true })
+    // The schema requires `reportType` (so "Select a report type" fires), so
+    // RHF's inferred type excludes `undefined` — but clearing the last
+    // selection must still set it to unset, same widening as the `watch`
+    // above (line 77).
+    form.setValue("reportType", next as AuditLogExportRequestedReportType, {
+      shouldValidate: true,
+    })
   }
 
   const { mutate: createExportRequest, isPending } =

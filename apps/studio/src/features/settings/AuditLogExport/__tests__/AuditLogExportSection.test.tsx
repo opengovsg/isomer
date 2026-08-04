@@ -22,6 +22,12 @@ let capturedOptions:
 vi.mock("~/utils/trpc", () => ({
   trpc: {
     audit: {
+      // The full window, as if the site were old enough to offer it — the
+      // capped-window behaviour itself is covered by getMaxExportableMonths'
+      // and getMonthOptions' own unit tests.
+      getExportWindow: {
+        useQuery: () => ({ data: { maxMonths: 12 } }),
+      },
       createExportRequest: {
         useMutation: (options: typeof capturedOptions) => {
           capturedOptions = options

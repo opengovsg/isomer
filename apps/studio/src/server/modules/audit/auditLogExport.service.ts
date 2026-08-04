@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server"
-import { addDays, format, parseISO } from "date-fns"
+import { addDays, differenceInCalendarMonths, format, parseISO } from "date-fns"
+import { toZonedTime } from "date-fns-tz"
 import { sql } from "kysely"
 import { Readable } from "node:stream"
 import { env } from "~/env.mjs"
@@ -14,8 +15,10 @@ import {
   uploadAuditLogExport,
 } from "~/lib/s3"
 import {
+  AUDIT_LOG_EXPORT_MAX_MONTHS,
   AuditLogExportRequestedReportType,
   type CreateAuditLogExportRequestInput,
+  getCurrentSingaporeMonth,
   validateIsMonthInPastYear,
   validateIsNotFutureMonth,
 } from "~/schemas/audit"
@@ -100,10 +103,24 @@ export const createAuditLogExportRequest = async ({
     })
   }
 
-  // The month picker is the user-facing input, but requests are stored as a
-  // half-open SGT calendar-date range, `[YYYY-MM-DD,YYYY-MM-DD)` (see
-  // getMonthDateRange — a current-month request is clamped to today + 1).
-  const auditLogDateRange = getMonthDateRange(month, new Date())
+  // The month picker is the user-facing input, but it only ever applies to
+  // Activity ("Audit logs") — the Access ("User access review logs") card
+  // renders no month picker at all, so an Access export must always reflect
+  // CURRENT access, never whatever past month was picked for Activity in a
+  // "Both" ask. Both are stored as the same half-open SGT calendar-date range
+  // shape (see getMonthDateRange — a current-month request is clamped to
+  // today + 1); Access's range is simply always the current month's.
+  const now = new Date()
+  const auditLogDateRangeByReportType: Record<
+    AuditLogExportReportType,
+    string
+  > = {
+    [AuditLogExportReportType.Access]: getMonthDateRange(
+      getCurrentSingaporeMonth(),
+      now,
+    ),
+    [AuditLogExportReportType.Activity]: getMonthDateRange(month, now),
+  }
 
   // The concrete DB report types this request fans out to: one row for
   // Access/Activity, two rows for Both.
@@ -131,6 +148,7 @@ export const createAuditLogExportRequest = async ({
   return db.transaction().execute(async (tx) => {
     const rows = []
     for (const dbReportType of reportTypes) {
+      const auditLogDateRange = auditLogDateRangeByReportType[dbReportType]
       const inFlightRowQuery = tx
         .selectFrom("AuditLogExportRequest")
         .where("siteId", "=", siteId)
@@ -186,19 +204,23 @@ export const createAuditLogExportRequest = async ({
       .where("id", "=", userId)
       .selectAll()
       .executeTakeFirstOrThrow()
-    await logAuditLogExportEvent(tx, {
-      eventType: "AuditLogExportCreate",
-      by: requestedBy,
-      siteId,
-      ip,
-      delta: {
-        before: null,
-        after: {
-          auditLogDateRange,
-          reportType,
-        },
-      },
-    })
+    await Promise.all(
+      reportTypes.map((reportType) => {
+        return logAuditLogExportEvent(tx, {
+          eventType: "AuditLogExportCreate",
+          by: requestedBy,
+          siteId,
+          ip,
+          delta: {
+            before: null,
+            after: {
+              auditLogDateRange: auditLogDateRangeByReportType[reportType],
+              reportType,
+            },
+          },
+        })
+      }),
+    )
 
     // Return every row backing this ask (one for Access/Activity, two for
     // Both) — existing in-flight rows and fresh inserts alike. The UI ignores
@@ -206,6 +228,47 @@ export const createAuditLogExportRequest = async ({
     // honestly.
     return rows
   })
+}
+
+// The fixed business timezone for audit months — see the SGT rationale on
+// `getCurrentSingaporeMonth` in schemas/audit.ts.
+const SINGAPORE_TIME_ZONE = "Asia/Singapore"
+
+// How many months back the audit-log export picker/window may offer for a
+// site created on `siteCreatedAt`: the standard export window
+// (AUDIT_LOG_EXPORT_MAX_MONTHS), or fewer if the site is younger than that —
+// there is nothing to export before the site existed. Always at least 1 (the
+// current month), even if `siteCreatedAt` is unexpectedly in the future.
+// `toZonedTime` re-labels each instant with SGT wall-clock fields (same
+// technique as `getMonthDateRange` in auditLogExport.query.ts), so the plain
+// date-fns `differenceInCalendarMonths` below operates on SGT calendar
+// months regardless of the server's own timezone.
+export const getMaxExportableMonths = (
+  siteCreatedAt: Date,
+  now: Date = new Date(),
+): number => {
+  const zonedCreatedAt = toZonedTime(siteCreatedAt, SINGAPORE_TIME_ZONE)
+  const zonedNow = toZonedTime(now, SINGAPORE_TIME_ZONE)
+  // +1 to make the count inclusive of both the creation month and the
+  // current month (e.g. a site created this same calendar month -> 1).
+  const monthsSinceCreation =
+    differenceInCalendarMonths(zonedNow, zonedCreatedAt) + 1
+  return Math.min(AUDIT_LOG_EXPORT_MAX_MONTHS, Math.max(1, monthsSinceCreation))
+}
+
+// How many months back the export picker may offer for this site — the
+// standard window, or fewer if the site is younger than that (see
+// `getMaxExportableMonths`).
+export const getAuditLogExportWindow = async (
+  siteId: number,
+): Promise<{ maxMonths: number }> => {
+  const { createdAt } = await db
+    .selectFrom("Site")
+    .where("id", "=", siteId)
+    .select("createdAt")
+    .executeTakeFirstOrThrow()
+
+  return { maxMonths: getMaxExportableMonths(createdAt) }
 }
 
 // ---------------------------------------------------------------------------
