@@ -178,30 +178,26 @@ export const createAuditLogExportRequest = async ({
       rows.push(await inFlightRowQuery.executeTakeFirstOrThrow())
     }
 
-    // NOTE: Audit log both events even when the User requested `Both`
-    // so that we avoid ambiguity down the line
+    // ONE event per ask, not one per fanned-out row: the delta keeps the
+    // user's requested vocabulary ("Both" included), never the DB fan-out.
     const requestedBy = await tx
       .selectFrom("User")
       .where("id", "=", userId)
       .selectAll()
       .executeTakeFirstOrThrow()
-    await Promise.all(
-      reportTypes.map((reportType) => {
-        return logAuditLogExportEvent(tx, {
-          eventType: "AuditLogExportCreate",
-          by: requestedBy,
-          siteId,
-          ip,
-          delta: {
-            before: null,
-            after: {
-              auditLogDateRange,
-              reportType,
-            },
-          },
-        })
-      }),
-    )
+    await logAuditLogExportEvent(tx, {
+      eventType: "AuditLogExportCreate",
+      by: requestedBy,
+      siteId,
+      ip,
+      delta: {
+        before: null,
+        after: {
+          auditLogDateRange,
+          reportType,
+        },
+      },
+    })
 
     // Return every row backing this ask (one for Access/Activity, two for
     // Both) — existing in-flight rows and fresh inserts alike. The UI ignores

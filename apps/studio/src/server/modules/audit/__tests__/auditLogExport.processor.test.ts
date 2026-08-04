@@ -245,18 +245,13 @@ describe("auditLogExport processor", () => {
   })
 
   it("uploads a header-only CSV and sends the ready email when there are no results", async () => {
-    // Arrange: a site with no member permissions → empty access report.
+    // Arrange: the admin's permission is granted (MOCK_STORY_DATE) after
+    // AUDIT_LOG_DATE_RANGE's end, so the access report for that older range
+    // is empty — while the permission stays active (not deleted), so the
+    // admin is still found as a valid recipient for the ready email.
     const { site } = await setupSite()
     const admin = await setupUser({ email: "admin3@vendor.com.sg" })
     await setupAdminPermissions({ userId: admin.id, siteId: site.id })
-    // Revoke the admin's own permission so the access report is empty for this
-    // site (note: @open.gov.sg is excluded anyway, but vendor emails are not).
-    await db
-      .updateTable("ResourcePermission")
-      .set({ deletedAt: new Date("2020-01-01") })
-      .where("userId", "=", admin.id)
-      .where("siteId", "=", site.id)
-      .execute()
 
     const request = await seedRequest({
       siteId: site.id,

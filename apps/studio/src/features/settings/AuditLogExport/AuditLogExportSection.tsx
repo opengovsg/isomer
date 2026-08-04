@@ -98,7 +98,11 @@ export const AuditLogExportSection = ({
     // (it's driven entirely by this checkbox cluster), so `resetField` is a
     // no-op for it — RHF only resets fields it finds in its internal registry.
     // `setValue` has no such guard, so use it for both the set and clear cases.
-    form.setValue("reportType", next, { shouldValidate: true })
+    // The form type (drawn from the submission schema) requires a concrete
+    // report type, but the field is legitimately undefined until a card is
+    // picked — same widening as the `reportType` read above.
+    // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
+    form.setValue("reportType", next!, { shouldValidate: true })
   }
 
   const { mutate: createExportRequest, isPending } =
