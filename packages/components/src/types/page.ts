@@ -146,6 +146,7 @@ const dateSchemaObject = Type.Object({
 })
 
 const BaseRefPageSchema = Type.Composite([
+  // categorySchemaObject // DEPRECATED — do not re-add; see ADR 0003
   Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   imageSchemaObject,
@@ -182,12 +183,14 @@ const BaseRefPageSchema = Type.Composite([
 // )
 
 export const ArticlePagePageSchema = Type.Composite([
+  // categorySchemaObject // DEPRECATED — do not re-add; see ADR 0003
   Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,
   }),
   imageSchemaObject,
+  // TagsSchema // DEPRECATED — do not re-add; see ADR 0003
 ])
 
 export const COLLECTION_VARIANT_OPTIONS = {
