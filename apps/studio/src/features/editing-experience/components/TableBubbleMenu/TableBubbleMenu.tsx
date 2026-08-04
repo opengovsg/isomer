@@ -320,8 +320,14 @@ const ColourSwatch = ({
     minW="unset"
     flexShrink={0}
     borderRadius="0.25rem"
+    border="none"
     aria-label={label}
-    backgroundColor={isActive ? "interaction.muted.main.active" : "transparent"}
+    bg={isActive ? "interaction.muted.main.active" : "transparent"}
+    _hover={{
+      bg: isActive
+        ? "interaction.muted.main.active"
+        : "interaction.muted.main.hover",
+    }}
     onMouseDown={(event) => event.preventDefault()}
     onClick={onClick}
   >
@@ -965,10 +971,14 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // (or an explicit hide while selecting) force hide/reveal.
   useTableBubbleMenuDragSync(editor, isActivatedRef)
 
+  // Include header-row / header-column — those are full-axis header
+  // selections (all tableHeader cells), so the colour panel should show.
   const canSetBackgroundColour =
     (kind === "multi-cell" ||
       kind === "row" ||
+      kind === "header-row" ||
       kind === "column" ||
+      kind === "header-column" ||
       kind === "single-cell" ||
       kind === "merged-cell") &&
     selection instanceof CellSelection &&

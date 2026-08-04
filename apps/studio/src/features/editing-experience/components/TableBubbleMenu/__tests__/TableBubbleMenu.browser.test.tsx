@@ -641,12 +641,12 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete row")).toBeNull()
   })
 
-  it("shows Set background color with brand swatch for a header row selection", async () => {
+  it("shows Set background color with brand swatch for a full header row selection", async () => {
     // Arrange
     const { editor, findByText, findByRole, queryByRole } =
       await renderHarness()
 
-    // Act
+    // Act — cells 0–2 are the entire first row (kind: header-row)
     selectCells(editor, 0, 2)
     await activateTableBubbleMenu(findByRole)
     await findByText("Add row above")
