@@ -14,6 +14,7 @@ import { Button, Switch } from "@opengovsg/design-system-react"
 import {
   TABLE_CELL_BACKGROUND_COLORS,
   TABLE_CELL_BACKGROUND_COLOR_TOKENS,
+  TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN,
 } from "@opengovsg/isomer-components"
 import { PluginKey } from "@tiptap/pm/state"
 import {
@@ -62,8 +63,10 @@ import {
   type SelectionKind,
 } from "./TableBubbleMenu.utils"
 import {
-  getUniformBodyCellBackgroundColor,
-  setSelectedBodyCellsBackgroundColor,
+  getUniformSelectedCellBackgroundColor,
+  selectionCanSetBackgroundColour,
+  selectionHasOnlyHeaderCells,
+  setSelectedCellsBackgroundColor,
 } from "./tableCellBackgroundColor"
 import { useTableBubbleMenuTriggerCorner } from "./useTableBubbleMenuTriggerCorner"
 
@@ -280,9 +283,9 @@ const ActionDivider = () => (
 const colourSwatchLabel = (color: string) =>
   `${color.charAt(0).toUpperCase()}${color.slice(1)}`
 
-// Studio-only circle borders for the picker; published cells use fill only.
-const TABLE_CELL_BACKGROUND_COLOR_BORDERS: Record<
-  TableCellBackgroundColorToken,
+// Studio-only circle borders for palette swatches; published cells use fill.
+const TABLE_CELL_PALETTE_COLOR_BORDERS: Record<
+  (typeof TABLE_CELL_BACKGROUND_COLOR_TOKENS)[number],
   string
 > = {
   pink: "#F59BDD",
@@ -295,6 +298,12 @@ const TABLE_CELL_BACKGROUND_COLOR_BORDERS: Record<
 const NONE_COLOUR_SWATCH = {
   fill: "#F7F7F7",
   border: "#959595",
+} as const
+
+const BRAND_COLOUR_SWATCH = {
+  fill: TABLE_CELL_BACKGROUND_COLORS[TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN],
+  // Match the brand fill; the site theme var supplies the concrete colour.
+  border: TABLE_CELL_BACKGROUND_COLORS[TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN],
 } as const
 
 const COLOUR_SWATCH_CIRCLE_SIZE = "1.25rem"
@@ -346,7 +355,8 @@ const BackgroundColourSection = ({
   selection: CellSelection
   onSetColor: (color: TableCellBackgroundColorToken | null) => void
 }) => {
-  const activeColor = getUniformBodyCellBackgroundColor(selection)
+  const activeColor = getUniformSelectedCellBackgroundColor(selection)
+  const isHeaderSelection = selectionHasOnlyHeaderCells(selection)
 
   return (
     <VStack align="stretch" gap="0">
@@ -367,16 +377,26 @@ const BackgroundColourSection = ({
           isActive={activeColor === null}
           onClick={() => onSetColor(null)}
         />
-        {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
+        {isHeaderSelection ? (
           <ColourSwatch
-            key={color}
-            label={colourSwatchLabel(color)}
-            fill={TABLE_CELL_BACKGROUND_COLORS[color]}
-            borderColor={TABLE_CELL_BACKGROUND_COLOR_BORDERS[color]}
-            isActive={activeColor === color}
-            onClick={() => onSetColor(color)}
+            label="Brand"
+            fill={BRAND_COLOUR_SWATCH.fill}
+            borderColor={BRAND_COLOUR_SWATCH.border}
+            isActive={activeColor === TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN}
+            onClick={() => onSetColor(TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN)}
           />
-        ))}
+        ) : (
+          TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
+            <ColourSwatch
+              key={color}
+              label={colourSwatchLabel(color)}
+              fill={TABLE_CELL_BACKGROUND_COLORS[color]}
+              borderColor={TABLE_CELL_PALETTE_COLOR_BORDERS[color]}
+              isActive={activeColor === color}
+              onClick={() => onSetColor(color)}
+            />
+          ))
+        )}
       </Flex>
     </VStack>
   )
@@ -682,10 +702,8 @@ const hasActionableTableSelection = (
 ): boolean => {
   if (tableEditingKey.getState(view.state) != null) return false
 
-  const { kind, hasBodyCell } = detectSelectionType(editor)
+  const { kind } = detectSelectionType(editor)
   if (kind === "none") return false
-  // Ordinary single cells only surface when colour can apply (body cells).
-  if (kind === "single-cell" && !hasBodyCell) return false
 
   return true
 }
@@ -839,27 +857,25 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   // `isFocused` so the pencil trigger reappears when focus returns without a
   // selection change. Meta-only blur/focus transactions compare equal on doc
   // + selection and therefore do not re-render.
-  const { kind, hasBodyCell, selection, isFocused, isDragging } =
-    useEditorState({
-      editor,
-      selector: ({ editor: currentEditor }) => {
-        const detection = detectSelectionType(currentEditor)
-        return {
-          kind: detection.kind,
-          hasBodyCell: detection.hasBodyCell,
-          doc: currentEditor.state.doc,
-          selection: currentEditor.state.selection,
-          isFocused: currentEditor.isFocused,
-          isDragging: tableEditingKey.getState(currentEditor.state) != null,
-        }
-      },
-      equalityFn: (previous, next) =>
-        next !== null &&
-        previous.doc === next.doc &&
-        previous.selection.eq(next.selection) &&
-        previous.isFocused === next.isFocused &&
-        previous.isDragging === next.isDragging,
-    })
+  const { kind, selection, isFocused, isDragging } = useEditorState({
+    editor,
+    selector: ({ editor: currentEditor }) => {
+      const detection = detectSelectionType(currentEditor)
+      return {
+        kind: detection.kind,
+        doc: currentEditor.state.doc,
+        selection: currentEditor.state.selection,
+        isFocused: currentEditor.isFocused,
+        isDragging: tableEditingKey.getState(currentEditor.state) != null,
+      }
+    },
+    equalityFn: (previous, next) =>
+      next !== null &&
+      previous.doc === next.doc &&
+      previous.selection.eq(next.selection) &&
+      previous.isFocused === next.isFocused &&
+      previous.isDragging === next.isDragging,
+  })
 
   const showTrigger = kind !== "none" && !isDragging && isFocused
 
@@ -966,11 +982,10 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       kind === "row" ||
       kind === "column" ||
       kind === "single-cell" ||
-      kind === "merged-cell" ||
-      kind === "table") &&
-    hasBodyCell &&
-    selection instanceof CellSelection
-  // Single-cell still shows Clear contents above colour — skip the divider only.
+      kind === "merged-cell") &&
+    selection instanceof CellSelection &&
+    selectionCanSetBackgroundColour(selection)
+  // Single-cell selections only expose colour — skip the leading divider.
   const hasSelectionActions = kind !== "none" && kind !== "single-cell"
 
   return (
@@ -1014,9 +1029,8 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
               <BackgroundColourSection
                 selection={selection}
                 onSetColor={(color) => {
-                  if (setSelectedBodyCellsBackgroundColor(editor, color)) {
-                    skipNextSelectionResetRef.current = true
-                  }
+                  skipNextSelectionResetRef.current = true
+                  setSelectedCellsBackgroundColor(editor, color)
                 }}
               />
             </>

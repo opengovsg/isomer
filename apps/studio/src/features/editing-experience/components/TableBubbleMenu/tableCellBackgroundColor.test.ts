@@ -18,9 +18,9 @@ import {
   TableRow,
 } from "../../hooks/useTextEditor/constants"
 import {
-  getUniformBodyCellBackgroundColor,
+  selectionCanSetBackgroundColour,
   selectionHasBodyCell,
-  setSelectedBodyCellsBackgroundColor,
+  setSelectedCellsBackgroundColor,
 } from "./tableCellBackgroundColor"
 
 const cellAttrs = {
@@ -179,56 +179,30 @@ describe("selectionHasBodyCell", () => {
   })
 })
 
-describe("getUniformBodyCellBackgroundColor", () => {
-  it("returns the token shared by all selected body cells", () => {
-    // Arrange
-    const doc = createTableDoc([
-      [
-        { type: "tableCell", backgroundColor: "blue" },
-        { type: "tableCell", backgroundColor: "blue" },
-      ],
-    ])
-    const selection = selectCells(doc, 0, 1)
-
-    // Act
-    const result = getUniformBodyCellBackgroundColor(selection)
-
-    // Assert
-    expect(result).toBe("blue")
-  })
-
-  it("returns null when all selected body cells are cleared", () => {
-    // Arrange
+describe("selectionCanSetBackgroundColour", () => {
+  it("returns true for body-only selections", () => {
     const doc = createTableDoc([[{ type: "tableCell" }, { type: "tableCell" }]])
-    const selection = selectCells(doc, 0, 1)
-
-    // Act
-    const result = getUniformBodyCellBackgroundColor(selection)
-
-    // Assert
-    expect(result).toBeNull()
+    expect(selectionCanSetBackgroundColour(selectCells(doc, 0, 1))).toBe(true)
   })
 
-  it("returns undefined when selected body cells disagree", () => {
-    // Arrange
+  it("returns true for header-only selections", () => {
     const doc = createTableDoc([
-      [
-        { type: "tableCell", backgroundColor: "blue" },
-        { type: "tableCell", backgroundColor: "green" },
-      ],
+      [{ type: "tableHeader" }, { type: "tableHeader" }],
     ])
-    const selection = selectCells(doc, 0, 1)
+    expect(selectionCanSetBackgroundColour(selectCells(doc, 0, 1))).toBe(true)
+  })
 
-    // Act
-    const result = getUniformBodyCellBackgroundColor(selection)
-
-    // Assert
-    expect(result).toBeUndefined()
+  it("returns false for mixed header and body selections", () => {
+    const doc = createTableDoc([
+      [{ type: "tableHeader" }, { type: "tableHeader" }],
+      [{ type: "tableCell" }, { type: "tableCell" }],
+    ])
+    expect(selectionCanSetBackgroundColour(selectCells(doc, 0, 3))).toBe(false)
   })
 })
 
-describe("setSelectedBodyCellsBackgroundColor", () => {
-  it("sets only tableCell nodes in a mixed header and body selection", () => {
+describe("setSelectedCellsBackgroundColor", () => {
+  it("sets backgroundColor on every selected cell", () => {
     // Arrange
     const doc = createTableDoc([
       [{ type: "tableHeader" }, { type: "tableHeader" }],
@@ -247,20 +221,19 @@ describe("setSelectedBodyCellsBackgroundColor", () => {
     } as unknown as Editor
 
     // Act
-    const changed = setSelectedBodyCellsBackgroundColor(editor, "blue")
+    setSelectedCellsBackgroundColor(editor, "blue")
 
-    // Assert
-    expect(changed).toBe(true)
+    // Assert — schema allows any token on any cell; Studio only filters the UI
     expect(dispatched).toBeDefined()
     expect(readCellColors(dispatched?.doc ?? doc)).toEqual([
-      { type: "tableHeader", backgroundColor: null },
-      { type: "tableHeader", backgroundColor: null },
+      { type: "tableHeader", backgroundColor: "blue" },
+      { type: "tableHeader", backgroundColor: "blue" },
       { type: "tableCell", backgroundColor: "blue" },
       { type: "tableCell", backgroundColor: "blue" },
     ])
   })
 
-  it("clears backgroundColor on selected body cells", () => {
+  it("clears backgroundColor on selected cells", () => {
     // Arrange
     const doc = createTableDoc([
       [
@@ -281,23 +254,18 @@ describe("setSelectedBodyCellsBackgroundColor", () => {
     } as unknown as Editor
 
     // Act
-    const changed = setSelectedBodyCellsBackgroundColor(editor, null)
+    setSelectedCellsBackgroundColor(editor, null)
 
     // Assert
-    expect(changed).toBe(true)
     expect(readCellColors(dispatched?.doc ?? doc)).toEqual([
       { type: "tableCell", backgroundColor: null },
       { type: "tableCell", backgroundColor: null },
     ])
   })
 
-  it("returns false without dispatching when the colour is already applied", () => {
-    // Arrange
+  it("can set brand inverse on header cells", () => {
     const doc = createTableDoc([
-      [
-        { type: "tableCell", backgroundColor: "blue" },
-        { type: "tableCell", backgroundColor: "blue" },
-      ],
+      [{ type: "tableHeader" }, { type: "tableHeader" }],
     ])
     const selection = selectCells(doc, 0, 1)
     const state = EditorState.create({ doc, selection })
@@ -311,11 +279,11 @@ describe("setSelectedBodyCellsBackgroundColor", () => {
       },
     } as unknown as Editor
 
-    // Act
-    const changed = setSelectedBodyCellsBackgroundColor(editor, "blue")
+    setSelectedCellsBackgroundColor(editor, "brand.canvas.inverse")
 
-    // Assert
-    expect(changed).toBe(false)
-    expect(dispatched).toBeUndefined()
+    expect(readCellColors(dispatched?.doc ?? doc)).toEqual([
+      { type: "tableHeader", backgroundColor: "brand.canvas.inverse" },
+      { type: "tableHeader", backgroundColor: "brand.canvas.inverse" },
+    ])
   })
 })

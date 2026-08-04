@@ -168,6 +168,12 @@ $max-depth: 13;
       font-weight: bold;
       text-align: left;
     }
+
+    // Brand inverse token resolves via CSS var; force light text for contrast.
+    td[data-background-color="brand.canvas.inverse"],
+    th[data-background-color="brand.canvas.inverse"] {
+      color: #ffffff;
+    }
   }
 
   a {

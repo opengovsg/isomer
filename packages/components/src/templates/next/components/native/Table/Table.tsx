@@ -1,6 +1,9 @@
 import type { TableProps } from "~/interfaces"
 import { useId } from "react"
-import { getTableCellBackgroundColorHex } from "~/constants/tableCellBackgroundColor"
+import {
+  getTableCellBackgroundColorCss,
+  isTableCellBrandBackgroundColorToken,
+} from "~/constants/tableCellBackgroundColor"
 import { tv } from "~/lib/tv"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
@@ -16,6 +19,9 @@ const tableCellStyles = tv({
     isHeader: {
       true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
       false: "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm",
+    },
+    isBrandInverse: {
+      true: "text-base-content-inverse [&_ol]:text-base-content-inverse [&_p]:text-base-content-inverse",
     },
   },
 })
@@ -40,17 +46,18 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
         >
           <tbody>
             {content.map((row, index) => {
+              const TableCellTag =
+                row.content[0]?.type === "tableHeader" ? "th" : "td"
+
               return (
                 <tr key={index} className="text-left">
                   {row.content.map((cell, cellIndex) => {
-                    const TableCellTag =
-                      cell.type === "tableHeader" ? "th" : "td"
-                    const backgroundColor =
-                      cell.type === "tableCell"
-                        ? getTableCellBackgroundColorHex(
-                            cell.attrs?.backgroundColor,
-                          )
-                        : undefined
+                    const backgroundColor = getTableCellBackgroundColorCss(
+                      cell.attrs?.backgroundColor,
+                    )
+                    const isBrandInverse = isTableCellBrandBackgroundColorToken(
+                      cell.attrs?.backgroundColor,
+                    )
 
                     return (
                       <TableCellTag
@@ -59,6 +66,7 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
                         rowSpan={cell.attrs?.rowspan || 1}
                         className={tableCellStyles({
                           isHeader: cell.type === "tableHeader",
+                          isBrandInverse,
                         })}
                         style={
                           backgroundColor ? { backgroundColor } : undefined

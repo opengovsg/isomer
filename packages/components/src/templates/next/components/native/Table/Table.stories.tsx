@@ -2066,6 +2066,15 @@ export const WithBackgroundColours: Story = {
               },
             ],
           },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Brand" }],
+              },
+            ],
+          },
         ],
       },
       {
@@ -2127,6 +2136,91 @@ export const WithBackgroundColours: Story = {
               {
                 type: "paragraph",
                 content: [{ type: "text", text: "uncoloured" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "brand.canvas.inverse" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "brand.canvas.inverse" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            attrs: { backgroundColor: "brand.canvas.inverse" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Brand header" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            attrs: { backgroundColor: "brand.canvas.inverse" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Brand header" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            attrs: { backgroundColor: "brand.canvas.inverse" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Brand header" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            attrs: { backgroundColor: "brand.canvas.inverse" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Brand header" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            attrs: { backgroundColor: "brand.canvas.inverse" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Brand header" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            attrs: { backgroundColor: "brand.canvas.inverse" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Brand header" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            attrs: { backgroundColor: "brand.canvas.inverse" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Brand header" }],
               },
             ],
           },

@@ -566,7 +566,6 @@ describe("TableBubbleMenu", () => {
 
     expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Delete table")).toBeTruthy()
-    expect(await findByText("Background colour")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
     expect(queryByText("Delete row")).toBeNull()
   })
@@ -642,15 +641,31 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete row")).toBeNull()
   })
 
-  it("hides Set background color for a header row selection", async () => {
+  it("shows Set background color with brand swatch for a header row selection", async () => {
     // Arrange
-    const { editor, findByText, findByRole, queryByText } =
+    const { editor, findByText, findByRole, queryByRole } =
       await renderHarness()
 
     // Act
     selectCells(editor, 0, 2)
     await activateTableBubbleMenu(findByRole)
     await findByText("Add row above")
+
+    // Assert — headers only offer None + brand (site canvas.inverse)
+    expect(await findByText("Set background color")).toBeTruthy()
+    expect(await findByRole("button", { name: "Brand" })).toBeTruthy()
+    expect(queryByRole("button", { name: "Blue" })).toBeNull()
+  })
+
+  it("hides Set background color for a mixed header and body selection", async () => {
+    // Arrange — leftmost column spans header + body cells
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+
+    // Act
+    selectCells(editor, 0, 6)
+    await activateTableBubbleMenu(findByRole)
+    await findByText("Add column left")
 
     // Assert
     expect(queryByText("Set background color")).toBeNull()
@@ -762,9 +777,11 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Split cell")).toBeNull()
     expect(queryByText("Merge cells")).toBeNull()
 
-    // A single header cell has neither structural actions nor colour.
+    // A single header cell shows brand colour only (no structural actions).
     selectCells(editor, 0, 0)
-    expect(queryByText("Set background color")).toBeNull()
+    await activateTableBubbleMenu(findByRole)
+    expect(await findByText("Set background color")).toBeTruthy()
+    expect(await findByRole("button", { name: "Brand" })).toBeTruthy()
     expect(queryByText("Split cell")).toBeNull()
   })
 

@@ -17,18 +17,51 @@ export const selectionHasBodyCell = (selection: CellSelection): boolean => {
   return hasBodyCell
 }
 
-// Uniform token when every selected body cell agrees; null when all cleared;
-// undefined when colours disagree. The panel only highlights a swatch on a
-// uniform token.
-export const getUniformBodyCellBackgroundColor = (
+export const selectionHasHeaderCell = (selection: CellSelection): boolean => {
+  let hasHeaderCell = false
+
+  selection.forEachCell((node) => {
+    if (node.type.name === "tableHeader") {
+      hasHeaderCell = true
+    }
+  })
+
+  return hasHeaderCell
+}
+
+export const selectionHasOnlyHeaderCells = (
   selection: CellSelection,
-): TableCellBackgroundColorToken | null | undefined => {
+): boolean => {
+  let hasCell = false
+  let hasBodyCell = false
+
+  selection.forEachCell((node) => {
+    hasCell = true
+    if (node.type.name === "tableCell") {
+      hasBodyCell = true
+    }
+  })
+
+  return hasCell && !hasBodyCell
+}
+
+/** Colour picker only when the selection is all headers or all body cells. */
+export const selectionCanSetBackgroundColour = (
+  selection: CellSelection,
+): boolean =>
+  !(selectionHasHeaderCell(selection) && selectionHasBodyCell(selection))
+
+// Shared token when every selected cell agrees; otherwise null (cleared or
+// mixed). The colour panel only highlights a swatch on a uniform token.
+export const getUniformSelectedCellBackgroundColor = (
+  selection: CellSelection,
+): TableCellBackgroundColorToken | null => {
   let seen = false
   let color: TableCellBackgroundColorToken | null = null
   let isMixed = false
 
-  selection.forEachCell((node) => {
-    if (node.type.name !== "tableCell" || isMixed) return
+  selection.forEachCell((node, _pos) => {
+    if (isMixed) return
 
     const cellColor = isTableCellBackgroundColorToken(
       node.attrs.backgroundColor,
@@ -44,22 +77,22 @@ export const getUniformBodyCellBackgroundColor = (
 
     if (color !== cellColor) {
       isMixed = true
+      color = null
     }
   })
 
-  return isMixed ? undefined : color
+  return color
 }
 
-export const setSelectedBodyCellsBackgroundColor = (
+export const setSelectedCellsBackgroundColor = (
   editor: Editor,
   color: TableCellBackgroundColorToken | null,
-): boolean => {
+): void => {
   const { selection } = editor.state
-  if (!(selection instanceof CellSelection)) return false
+  if (!(selection instanceof CellSelection)) return
 
   const transaction = editor.state.tr
   selection.forEachCell((node, pos) => {
-    if (node.type.name !== "tableCell") return
     if (node.attrs.backgroundColor === color) return
 
     transaction.setNodeMarkup(pos, undefined, {
@@ -68,8 +101,7 @@ export const setSelectedBodyCellsBackgroundColor = (
     })
   })
 
-  if (!transaction.docChanged) return false
-
-  editor.view.dispatch(transaction)
-  return true
+  if (transaction.docChanged) {
+    editor.view.dispatch(transaction)
+  }
 }

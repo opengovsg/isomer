@@ -10,10 +10,18 @@ describe("TableBaseCellSchema", () => {
     )
   })
 
-  it("accepts a colour token", () => {
+  it("accepts a palette colour token", () => {
     expect(Value.Check(TableBaseCellSchema, { backgroundColor: "blue" })).toBe(
       true,
     )
+  })
+
+  it("accepts the brand canvas inverse colour token", () => {
+    expect(
+      Value.Check(TableBaseCellSchema, {
+        backgroundColor: "brand.canvas.inverse",
+      }),
+    ).toBe(true)
   })
 
   it("rejects an unknown colour token", () => {

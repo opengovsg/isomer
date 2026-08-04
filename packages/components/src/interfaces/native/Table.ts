@@ -1,7 +1,10 @@
 import type { Static } from "@sinclair/typebox"
 import type { IsomerSiteProps } from "~/types"
 import { Type } from "@sinclair/typebox"
-import { TABLE_CELL_BACKGROUND_COLOR_TOKENS } from "~/constants/tableCellBackgroundColor"
+import {
+  TABLE_CELL_BACKGROUND_COLOR_TOKENS,
+  TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN,
+} from "~/constants/tableCellBackgroundColor"
 
 import type { DividerProps } from "./Divider"
 import type { OrderedListProps } from "./OrderedList"
@@ -32,13 +35,14 @@ export const TableBaseCellSchema = Type.Object({
         ...TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((token) =>
           Type.Literal(token),
         ),
+        Type.Literal(TABLE_CELL_BRAND_BACKGROUND_COLOR_TOKEN),
         // TipTap persists the unset default as null on every cell in getJSON()
         Type.Null(),
       ],
       {
         title: "Table cell background colour",
         description:
-          "Semantic background colour token for a body cell. Header cells should not use this.",
+          "Semantic background colour token. Palette tokens resolve to fixed hexes; `brand.canvas.inverse` resolves to the site theme colour at render/build time. Studio restricts which options are offered by selection.",
       },
     ),
   ),
