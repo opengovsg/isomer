@@ -301,9 +301,9 @@ const auditLogExportReadyTemplate = (
   return {
     subject: `[Isomer] ${logName} logs for ${month} for your site (${siteName}) is ready`,
     body: `<p>Hi ${recipientEmail},</p>
-<p>You requested for audit logs for your site(s) for (${month}). This link will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
-<br/>
+<p>You requested for audit logs for your site(s) for ${month}. This link will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
 <p>${downloadLink}</p>
+<br/>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }
