@@ -90,7 +90,6 @@ catalog:
   "@sinclair/typebox": ^0.33.24
   "@tanstack/react-table": ^8.21.2
   "@testing-library/react": ^16.3.2
-  pg: ^8.22.0
   pino: ^10.3.1
   pino-pretty: ^13.0.0
   postcss: ^8.5.23
@@ -115,7 +114,6 @@ catalog:
   "@types/lodash-es": ^4.17.12
   "@types/node": ^26.1.1
   "@types/papaparse": ^5.5.0
-  "@types/pg": ^8.15.4
   "@types/request": ^2.48.12
   "@types/validator": ^13.15.2
   "@1password/sdk": ^0.4.0
@@ -207,6 +205,10 @@ catalogs:
   playwright:
     "@playwright/test": ^1.62.0
     playwright: ^1.62.0
+  pg:
+    pg: ^8.22.0
+    pg-cursor: ^2.21.0
+    "@types/pg": ^8.15.4
   prisma:
     "@prisma/adapter-pg": 7.9.1
     "@prisma/client": 7.9.1
