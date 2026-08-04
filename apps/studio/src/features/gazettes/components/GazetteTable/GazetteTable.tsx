@@ -134,8 +134,12 @@ export const GazetteTable = ({
           tagged?: string[]
         }
         const tagged = page?.tagged ?? []
-        const categoryId = tagged.find((id) => categoryMap[id]) ?? ""
-        const subcategoryId = tagged.find((id) => subcategoryMap[id]) ?? ""
+        // Resolved by option-uuid membership, never by index: `tagged` holds
+        // one uuid per tagCategory in no guaranteed order, so `tagged[0]` is
+        // the category for post-cutover rows and the subcategory for legacy
+        // ones. `null` when neither matches — see GazetteTableData.
+        const categoryId = tagged.find((id) => categoryMap[id]) ?? null
+        const subcategoryId = tagged.find((id) => subcategoryMap[id]) ?? null
 
         return {
           id: resource.id,

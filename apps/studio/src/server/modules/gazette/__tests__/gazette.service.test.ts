@@ -26,7 +26,6 @@ import {
   getPresignedPutUrl,
   removeGazetteFromAlgolia,
   resolveGazetteCategoryLabel,
-  resolveGazetteLabelsFromRef,
   resolveGazetteTagLabels,
 } from "../gazette.service"
 
@@ -111,6 +110,27 @@ describe("gazette.service", () => {
         categoryLabel: "Government Gazette",
         subcategoryLabel: "Appointments",
       })
+    })
+
+    // The order of `page.tagged` is not part of the contract: post-cutover
+    // rows are written [category, subcategory] while pre-cutover rows hold the
+    // subcategory alone, so any reader keying off an index is wrong. Both
+    // orderings must resolve identically.
+    it("resolves the same labels regardless of the order of tagged", () => {
+      const categoryFirst = resolveGazetteTagLabels({
+        tagged: ["cat-gov", "sub-appointments"],
+        tagCategories: TAG_CATEGORIES,
+      })
+      const subcategoryFirst = resolveGazetteTagLabels({
+        tagged: ["sub-appointments", "cat-gov"],
+        tagCategories: TAG_CATEGORIES,
+      })
+
+      expect(categoryFirst).toEqual({
+        categoryLabel: "Government Gazette",
+        subcategoryLabel: "Appointments",
+      })
+      expect(subcategoryFirst).toEqual(categoryFirst)
     })
 
     it("leaves categoryLabel undefined when tagged has no matching category option", () => {
@@ -201,6 +221,7 @@ describe("gazette.service", () => {
       expect(() =>
         assertGazetteSubcategoryInput({
           subcategoryId: "sub-1",
+          categoryId: "cat-gov",
           categoryLabel: "Government Gazette",
           tagCategories: TAG_CATEGORIES,
         }),
@@ -211,6 +232,7 @@ describe("gazette.service", () => {
       expect(() =>
         assertGazetteSubcategoryInput({
           subcategoryId: "invalid-subcat-uuid",
+          categoryId: "cat-gov",
           categoryLabel: "Government Gazette",
           tagCategories: TAG_CATEGORIES,
         }),
@@ -226,6 +248,7 @@ describe("gazette.service", () => {
       expect(() =>
         assertGazetteSubcategoryInput({
           subcategoryId: "sub-leg-1",
+          categoryId: "cat-gov",
           categoryLabel: "Government Gazette",
           tagCategories: TAG_CATEGORIES,
         }),
@@ -236,22 +259,24 @@ describe("gazette.service", () => {
         }),
       )
     })
-  })
 
-  describe("resolveGazetteLabelsFromRef", () => {
-    it("derives category and subcategory labels from the S3 key shape", () => {
-      expect(
-        resolveGazetteLabelsFromRef(
-          "/2026/Government Gazette/Public/notice-123.pdf",
-        ),
-      ).toEqual({
-        categoryLabel: "Government Gazette",
-        subcategoryLabel: "Public",
-      })
-    })
-
-    it("returns empty labels when the ref does not have enough segments", () => {
-      expect(resolveGazetteLabelsFromRef("/too/few/parts")).toEqual({})
+    // Completes the `page.tagged` invariant: the persisted array is exactly
+    // [categoryId, subcategoryId], so equal ids would write a duplicate entry
+    // that resolveGazetteTagLabels reads as both the category and subcategory.
+    it("throws when the subcategory id is the same as the category id", () => {
+      expect(() =>
+        assertGazetteSubcategoryInput({
+          subcategoryId: "sub-1",
+          categoryId: "sub-1",
+          categoryLabel: "Government Gazette",
+          tagCategories: TAG_CATEGORIES,
+        }),
+      ).toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Category and subcategory must be different tag options",
+        }),
+      )
     })
   })
 

@@ -26,12 +26,15 @@ import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazet
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
 
+import { GAZETTE_UNRESOLVED_TAG_LABEL } from "../../constants"
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 
 interface ViewGazetteData {
   title: string
-  category: string
-  subcategory: string
+  // Option uuids, or `null` when `page.tagged` held no uuid matching the
+  // collection's taxonomy — see GazetteTableData.
+  category: string | null
+  subcategory: string | null
   notificationNumber?: string
   fileId: string
   publishedAt: Date | null
@@ -64,8 +67,15 @@ export const ViewGazetteModal = ({
       ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
     : false
 
-  const subcategoryLabel = subcategoryMap[data.subcategory] ?? data.subcategory
-  const categoryLabel = categoryMap[data.category] ?? data.category
+  // Unresolved tags surface as an explicit "Unknown" rather than a blank or a
+  // raw uuid — this modal is read-only, so it is the one place a Toppan user
+  // can notice that a published gazette still carries the pre-cutover shape.
+  const subcategoryLabel = data.subcategory
+    ? (subcategoryMap[data.subcategory] ?? GAZETTE_UNRESOLVED_TAG_LABEL)
+    : GAZETTE_UNRESOLVED_TAG_LABEL
+  const categoryLabel = data.category
+    ? (categoryMap[data.category] ?? GAZETTE_UNRESOLVED_TAG_LABEL)
+    : GAZETTE_UNRESOLVED_TAG_LABEL
 
   const [view, setView] = useState<ModalView>(initialView)
   const [isConfirmed, setIsConfirmed] = useState(false)

@@ -710,11 +710,19 @@ describe("schedulePushDocumentJobHandler", async () => {
       expect(gazetteService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
     })
 
-    it("skips rows when the category label cannot be resolved from tagged uuids or the S3 ref", async () => {
+    // Strict cutover guard: the S3 ref here is deliberately WELL-FORMED
+    // (`/{year}/{category}/{subcategory}/{file}.pdf`), so the removed
+    // resolveGazetteLabelsFromRef fallback would have happily derived
+    // "Government Gazette" / "Advertisements" from it and ingested the row with
+    // labels that were never in `page.tagged`. Tagged uuids are now the only
+    // source of truth, so an unresolvable row must be skipped regardless of how
+    // parseable its object key looks.
+    it("skips rows whose tagged uuids do not resolve, even when the S3 ref would have yielded labels", async () => {
       // Arrange
+      const wellFormedRef = "/2026/Government Gazette/Advertisements/notice.pdf"
       const { resourceId } = await seedDocumentReadyForIngestion({
         parentTitle: "Notices",
-        ref: "/file.pdf",
+        ref: wellFormedRef,
         category: "Government Gazettes",
         publishedBy: user.id,
       })
@@ -727,7 +735,7 @@ describe("schedulePushDocumentJobHandler", async () => {
 
       await setBlobContentForPushDocument(
         draftBlobId!,
-        "/file.pdf",
+        wellFormedRef,
         ["missing-cat", "missing-sub"],
         "1234",
       )

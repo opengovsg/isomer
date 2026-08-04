@@ -60,7 +60,7 @@ interface GazetteBlobInputs {
   categoryId: string
   date: string
   description?: string
-  tagged: string[]
+  subcategoryId: string
 }
 
 const loadCollectionTagCategoriesForCategoryInput = async ({
@@ -83,6 +83,7 @@ const loadCollectionTagCategoriesForCategoryInput = async ({
   assertGazetteCategoryInput({ categoryId, categoryLabel, tagCategories })
   assertGazetteSubcategoryInput({
     subcategoryId,
+    categoryId,
     categoryLabel,
     tagCategories,
   })
@@ -94,15 +95,26 @@ const loadCollectionTagCategoriesForCategoryInput = async ({
 // `fileSize` here — the file size is read from S3 at list time instead, since
 // the page is bounded to ~25 rows and S3 HEAD scales to thousands of QPS.
 //
-// `categoryId` and `tagged` (the subcategory uuid) are merged into a single
-// `tagged` array on write — the persisted shape has no standalone `category`
-// key, matching the generic tagCategories/tagged model used elsewhere.
+// `categoryId` and `subcategoryId` are composed into a single `tagged` array
+// on write — the persisted shape has no standalone `category` key, matching
+// the generic tagCategories/tagged model used elsewhere. Both ids are
+// validated against the collection taxonomy before we get here, so `tagged`
+// always holds exactly one Category option and one Sub-category option.
+//
+// Readers must resolve these by option-uuid membership, never by index:
+// nothing about this array's order is part of the contract.
+//
+// NOTE: `category` is stripped from the base page because gazettes no longer
+// persist it. The key is still required by LinkRefPageSchema in
+// @opengovsg/isomer-components and still emitted by createCollectionLinkJson;
+// both are being deprecated in a downstream PR, at which point this strip and
+// the omission below can go away.
 const buildGazetteBlobContent = ({
   ref,
   categoryId,
   date,
   description,
-  tagged,
+  subcategoryId,
 }: GazetteBlobInputs) => {
   const base = createCollectionLinkJson({ type: ResourceType.CollectionLink })
   const { category: _category, ...basePage } = base.page
@@ -113,7 +125,7 @@ const buildGazetteBlobContent = ({
       ref,
       date,
       description,
-      tagged: [categoryId, ...tagged],
+      tagged: [categoryId, subcategoryId],
     },
   }
 }
@@ -274,7 +286,7 @@ export const gazetteRouter = router({
           categoryLabel,
           date,
           description,
-          tagged,
+          subcategoryId,
           scheduledAt,
         },
       }) => {
@@ -298,7 +310,7 @@ export const gazetteRouter = router({
             collectionId,
             categoryId,
             categoryLabel,
-            subcategoryId: tagged[0] ?? "",
+            subcategoryId,
           },
         )
 
@@ -307,7 +319,7 @@ export const gazetteRouter = router({
           categoryId,
           date,
           description,
-          tagged,
+          subcategoryId,
         })
 
         const created = await db.transaction().execute(async (tx) => {
@@ -340,7 +352,7 @@ export const gazetteRouter = router({
               notificationNumber: description,
               publishDate: date,
               categoryId,
-              subcategoryId: tagged[0] ?? "",
+              subcategoryId,
               tagCategories,
             }))
           ) {
@@ -461,7 +473,7 @@ export const gazetteRouter = router({
           categoryLabel,
           date,
           description,
-          tagged,
+          subcategoryId,
           scheduledAt,
         },
       }) => {
@@ -502,7 +514,7 @@ export const gazetteRouter = router({
             collectionId: Number(existingResource.parentId),
             categoryId,
             categoryLabel,
-            subcategoryId: tagged[0] ?? "",
+            subcategoryId,
           },
         )
 
@@ -571,7 +583,7 @@ export const gazetteRouter = router({
           categoryId,
           date,
           description,
-          tagged,
+          subcategoryId,
         })
 
         const { resource: updatedResource, scheduledAtChanged } = await db
@@ -606,7 +618,7 @@ export const gazetteRouter = router({
                 notificationNumber: description,
                 publishDate: date,
                 categoryId,
-                subcategoryId: tagged[0] ?? "",
+                subcategoryId,
                 tagCategories,
                 excludeId: String(gazetteId),
               }))

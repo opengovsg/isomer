@@ -24,14 +24,17 @@ import { useZodForm } from "~/lib/form"
 import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
 
-import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
-import { useResolveGazetteCategoryLabel } from "../../hooks/useResolveGazetteCategoryLabel"
+import { useResolveGazetteTagLabels } from "../../hooks/useResolveGazetteTagLabels"
 import { GazetteFormFields } from "../GazetteModal"
 
 interface ModifyGazetteInitialData {
   title: string
-  category: string
-  subcategory: string
+  // Option uuids, or `null` when `page.tagged` held no uuid matching the
+  // collection's taxonomy — see GazetteTableData. An unresolved value seeds the
+  // form empty, so the required-field validation forces a re-pick rather than
+  // letting an unrecognised tag round-trip back into the blob.
+  category: string | null
+  subcategory: string | null
   notificationNumber?: string
   publishDate: Date
   publishTime: string
@@ -91,8 +94,7 @@ const ModifyGazetteModalContent = ({
   const [hasFile, setHasFile] = useState(!!initialData.fileId)
 
   const toast = useToast()
-  const { subcategoryMap } = useGazetteSubcategoriesContext()
-  const resolveCategoryLabel = useResolveGazetteCategoryLabel()
+  const resolveTagLabels = useResolveGazetteTagLabels()
   const utils = trpc.useUtils()
 
   const { mutateAsync: uploadFile, isPending: isUploading } =
@@ -116,8 +118,8 @@ const ModifyGazetteModalContent = ({
   } = useZodForm({
     defaultValues: {
       title: initialData.title,
-      category: initialData.category,
-      subcategory: initialData.subcategory,
+      category: initialData.category ?? "",
+      subcategory: initialData.subcategory ?? "",
       notificationNumber: initialData.notificationNumber ?? "",
       publishDate: initialData.publishDate,
       publishTime: initialData.publishTime,
@@ -128,10 +130,14 @@ const ModifyGazetteModalContent = ({
   })
 
   const onSubmit = handleSubmit(async (data) => {
-    const categoryLabel = resolveCategoryLabel(data.category)
-    if (!categoryLabel) {
+    const labels = resolveTagLabels({
+      categoryId: data.category,
+      subcategoryId: data.subcategory,
+    })
+    if (!labels) {
       return
     }
+    const { categoryLabel, subcategoryLabel } = labels
 
     try {
       // If the user attached a fresh file, upload first and pass the new key
@@ -149,7 +155,7 @@ const ModifyGazetteModalContent = ({
           scheduledAt,
           year: data.publishDate.getFullYear(),
           category: categoryLabel,
-          subcategory: subcategoryMap[data.subcategory] ?? data.subcategory,
+          subcategory: subcategoryLabel,
         })
         newRef = path
       } else if (initialData.fileKey && initialData.fileId !== data.fileId) {
@@ -166,7 +172,7 @@ const ModifyGazetteModalContent = ({
         categoryLabel,
         date: format(data.publishDate, "dd/MM/yyyy"),
         description: data.notificationNumber,
-        tagged: [data.subcategory],
+        subcategoryId: data.subcategory,
         scheduledAt,
       })
 

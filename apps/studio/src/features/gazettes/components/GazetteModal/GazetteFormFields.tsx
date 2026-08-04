@@ -19,7 +19,6 @@ import { Controller, useWatch } from "react-hook-form"
 import { TimeSelect } from "~/components/Select/TimeSelect"
 import { MAX_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
-import type { GazettesCategory } from "../../types"
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 import { toFileId } from "../../utils/toFileId"
 
@@ -67,7 +66,12 @@ export const GazetteFormFields = ({
   const { categories, categoryMap, getSubcategoriesForCategory } =
     useGazetteSubcategoriesContext()
   const category = useWatch({ control, name: "category" })
-  const categoryLabel = categoryMap[category] ?? category
+  // No `?? category` fallback: an unresolved uuid is not a label, and passing
+  // one to getSubcategoriesForCategory yields an empty Subcategory dropdown
+  // with nothing to explain why. A gazette written before the tagCategories
+  // cutover lands here, so say so instead of rendering a dead dropdown.
+  const categoryLabel = categoryMap[category]
+  const isCategoryUnresolved = !!category && !categoryLabel
 
   return (
     <VStack alignItems="flex-start" spacing="0.75rem">
@@ -81,7 +85,10 @@ export const GazetteFormFields = ({
         )}
       </FormControl>
 
-      <FormControl isRequired isInvalid={!!errors.category}>
+      <FormControl
+        isRequired
+        isInvalid={!!errors.category || isCategoryUnresolved}
+      >
         <FormLabel color="base.content.strong" mb="0.5rem">
           Category
         </FormLabel>
@@ -101,8 +108,15 @@ export const GazetteFormFields = ({
             />
           )}
         />
-        {errors.category?.message && (
+        {errors.category?.message ? (
           <FormErrorMessage>{errors.category.message}</FormErrorMessage>
+        ) : (
+          isCategoryUnresolved && (
+            <FormErrorMessage>
+              This gazette's category is not one of this collection's options.
+              Pick a category to continue.
+            </FormErrorMessage>
+          )
         )}
       </FormControl>
 
@@ -117,9 +131,7 @@ export const GazetteFormFields = ({
             <SingleSelect
               value={value}
               name="subcategory"
-              items={getSubcategoriesForCategory(
-                categoryLabel as GazettesCategory,
-              )}
+              items={getSubcategoriesForCategory(categoryLabel)}
               isClearable={false}
               onChange={onChange}
             />

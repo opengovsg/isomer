@@ -2,7 +2,6 @@ import type { PropsWithChildren } from "react"
 import { createContext, useContext, useMemo } from "react"
 import { trpc } from "~/utils/trpc"
 
-import type { GazettesCategory } from "../types"
 import {
   GAZETTE_CATEGORY_LABEL,
   GAZETTE_SUBCATEGORY_LABEL,
@@ -14,7 +13,14 @@ interface GazetteSubcategoriesContextValue {
   categoryMap: Record<string, string>
   subcategories: { label: string; value: string }[]
   subcategoryMap: Record<string, string>
-  getSubcategoriesForCategory: (category: GazettesCategory) => {
+  /**
+   * `categoryLabel` is the *resolved* label for the selected category uuid, or
+   * `undefined` when the uuid isn't one of this collection's Category options.
+   * Callers must not coerce an unresolved uuid into this parameter — doing so
+   * silently yields an empty list, which renders as an empty dropdown with no
+   * indication that the category itself is the problem.
+   */
+  getSubcategoriesForCategory: (categoryLabel: string | undefined) => {
     label: string
     value: string
   }[]
@@ -66,9 +72,10 @@ export const GazetteSubcategoriesProvider = ({
       subcategories.map(({ value, label }) => [value, label]),
     ) as Record<string, string>
 
-    const getSubcategoriesForCategory = (category: GazettesCategory) => {
+    const getSubcategoriesForCategory = (categoryLabel: string | undefined) => {
+      if (!categoryLabel) return []
       const allowedLabels = new Set(
-        getAllowedSubcategoryLabelsForCategory(category),
+        getAllowedSubcategoryLabelsForCategory(categoryLabel),
       )
       return subcategories.filter(({ label }) => allowedLabels.has(label))
     }

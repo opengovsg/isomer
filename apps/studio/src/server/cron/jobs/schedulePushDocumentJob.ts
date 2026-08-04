@@ -12,7 +12,6 @@ import {
   generateDocumentId,
   parseFullTextFromPDF,
   pushDocumentsForIngestion,
-  resolveGazetteLabelsFromRef,
   resolveGazetteTagLabels,
 } from "~/server/modules/gazette/gazette.service"
 
@@ -123,30 +122,25 @@ const extractResourceData = async ({
       `Failed to parse index page content for resource ${resourceId}`,
     )
   }
-  const {
-    categoryLabel: resolvedCategoryLabel,
-    subcategoryLabel: resolvedSubcategoryLabel,
-  } = resolveGazetteTagLabels({
+  // Strict: the tagged uuids are the only source of truth for a gazette's
+  // category. There is deliberately no fallback to deriving labels from the S3
+  // ref shape (`{year}/{category}/{subcategory}/{file}.pdf`) — a row whose
+  // uuids don't resolve against the collection taxonomy still carries the
+  // pre-cutover shape and must be backfilled, not silently papered over with
+  // labels reverse-engineered from an object key.
+  const { categoryLabel, subcategoryLabel } = resolveGazetteTagLabels({
     tagged: parsed.data.page.tagged,
     tagCategories: indexParsed.data.page.tagCategories,
   })
 
-  let categoryLabel = resolvedCategoryLabel
-  let subcategoryLabel = resolvedSubcategoryLabel
-
-  // Each label falls back to the S3 ref independently — a resolvable
-  // category shouldn't suppress the subcategory fallback (and vice versa)
-  // when only one of the two tagged uuids fails to resolve.
-  if (!categoryLabel || !subcategoryLabel) {
-    const fromRef = resolveGazetteLabelsFromRef(ref)
-    categoryLabel = categoryLabel ?? fromRef.categoryLabel
-    subcategoryLabel = subcategoryLabel ?? fromRef.subcategoryLabel
-  }
-
+  // With the ref fallback gone this is the only straggler signal there is, and
+  // the job row is deleted regardless of outcome (see deleteProcessedJobs), so a
+  // row that lands here is NOT retried — it needs backfilling and then a manual
+  // re-ingest. Keep the message specific enough to act on from logs alone.
   if (!categoryLabel) {
     logger.warn(
       { resourceId, ref, tagged: parsed.data.page.tagged },
-      "Could not resolve gazette category label — skipping ingestion for this resource",
+      "Could not resolve gazette category from tagged uuids — skipping ingestion. This row predates the tagCategories cutover; backfill it and re-ingest manually",
     )
     return null
   }

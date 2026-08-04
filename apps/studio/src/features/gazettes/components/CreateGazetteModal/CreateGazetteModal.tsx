@@ -22,7 +22,7 @@ import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
 
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
-import { useResolveGazetteCategoryLabel } from "../../hooks/useResolveGazetteCategoryLabel"
+import { useResolveGazetteTagLabels } from "../../hooks/useResolveGazetteTagLabels"
 import { GazetteFormFields } from "../GazetteModal"
 
 type CreateGazetteModalProps = Pick<
@@ -59,8 +59,8 @@ const CreateGazetteModalContent = ({
 }: Pick<CreateGazetteModalProps, "onClose" | "siteId" | "collectionId">) => {
   const [file, setFile] = useState<File | undefined>()
   const toast = useToast()
-  const { categories, subcategoryMap } = useGazetteSubcategoriesContext()
-  const resolveCategoryLabel = useResolveGazetteCategoryLabel()
+  const { categories } = useGazetteSubcategoriesContext()
+  const resolveTagLabels = useResolveGazetteTagLabels()
 
   const {
     register,
@@ -108,10 +108,14 @@ const CreateGazetteModalContent = ({
       return
     }
 
-    const categoryLabel = resolveCategoryLabel(data.category)
-    if (!categoryLabel) {
+    const labels = resolveTagLabels({
+      categoryId: data.category,
+      subcategoryId: data.subcategory,
+    })
+    if (!labels) {
       return
     }
+    const { categoryLabel, subcategoryLabel } = labels
 
     const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
 
@@ -122,7 +126,7 @@ const CreateGazetteModalContent = ({
         scheduledAt,
         year: data.publishDate.getFullYear(),
         category: categoryLabel,
-        subcategory: subcategoryMap[data.subcategory] ?? data.subcategory,
+        subcategory: subcategoryLabel,
       })
 
       await createGazette({
@@ -135,7 +139,7 @@ const CreateGazetteModalContent = ({
         categoryLabel,
         date: format(data.publishDate, "dd/MM/yyyy"),
         description: data.notificationNumber,
-        tagged: [data.subcategory],
+        subcategoryId: data.subcategory,
         scheduledAt,
       })
 

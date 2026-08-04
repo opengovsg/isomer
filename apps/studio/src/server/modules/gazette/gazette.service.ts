@@ -615,13 +615,28 @@ export const assertGazetteCategoryInput = ({
 // pairs (e.g. Government Gazette + Acts Supplement).
 export const assertGazetteSubcategoryInput = ({
   subcategoryId,
+  categoryId,
   categoryLabel,
   tagCategories,
 }: {
   subcategoryId: string
+  categoryId: string
   categoryLabel: string
   tagCategories: GazetteTagCategory[]
 }): void => {
+  // Completes the `page.tagged` invariant: the persisted array is exactly
+  // [categoryId, subcategoryId], so it holds one Category option and one
+  // Sub-category option — provided the two ids differ. Equal ids would need
+  // one uuid to be an option under *both* tagCategories (a malformed
+  // taxonomy), which would otherwise pass both asserts and persist a
+  // duplicate entry that `resolveGazetteTagLabels` reads as both labels.
+  if (subcategoryId === categoryId) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Category and subcategory must be different tag options",
+    })
+  }
+
   const resolvedLabel = resolveGazetteSubcategoryLabel(
     subcategoryId,
     tagCategories,
@@ -639,25 +654,6 @@ export const assertGazetteSubcategoryInput = ({
       code: "BAD_REQUEST",
       message: "Subcategory is not valid for the selected category",
     })
-  }
-}
-
-/**
- * Fallback when tagged uuids cannot be resolved against the index-page
- * taxonomy: derive labels from the S3 ref shape
- * `{year}/{category}/{subcategory}/{filename}.pdf`.
- */
-export const resolveGazetteLabelsFromRef = (
-  ref: string,
-): { categoryLabel?: string; subcategoryLabel?: string } => {
-  const segments = ref.replace(/^\//, "").split("/")
-  if (segments.length < 4) {
-    return {}
-  }
-  const [, categoryLabel, subcategoryLabel] = segments
-  return {
-    categoryLabel: categoryLabel || undefined,
-    subcategoryLabel: subcategoryLabel || undefined,
   }
 }
 

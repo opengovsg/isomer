@@ -1,22 +1,31 @@
-// Single source of truth for gazette category values. The SingleSelect items
-// (`GAZETTE_CATEGORIES`) and the `GazettesCategory` union (see ./types) are both
-// derived from this, so a category only ever needs to be declared once here.
+// Single source of truth for the gazette category *labels*. These are the
+// labels the collection's "Category" tagCategory options are expected to carry,
+// and what `getAllowedSubcategoryLabelsForCategory` keys off.
+//
+// The Category form field is driven by the collection taxonomy (uuid values,
+// resolved via GazetteSubcategoriesContext), not by this object — a gazette's
+// category lives in `page.tagged` as an option uuid.
 export const GazetteCategories = {
   GovernmentGazettes: "Government Gazette",
   LegislativeSupplements: "Legislative Supplements",
   OtherSupplements: "Other Supplements",
 } as const
 
-// SingleSelect items — label and value are identical for gazette categories.
-export const GAZETTE_CATEGORIES: { label: string; value: string }[] =
-  Object.values(GazetteCategories).map((category) => ({
-    label: category,
-    value: category,
-  }))
-
 export const GAZETTE_CATEGORY_LABEL = "Category"
 
 export const GAZETTE_SUBCATEGORY_LABEL = "Sub-category"
+
+/**
+ * Rendered in place of a category/subcategory label when a gazette's
+ * `page.tagged` holds no uuid matching the collection's Category /
+ * Sub-category options — i.e. the row predates the tagCategories cutover and
+ * has not been backfilled yet.
+ *
+ * Shown explicitly rather than falling back to a blank cell or the raw uuid:
+ * a blank reads as "this gazette has no category" and a uuid reads as noise,
+ * so both hide stragglers from the people best placed to report them.
+ */
+export const GAZETTE_UNRESOLVED_TAG_LABEL = "Unknown"
 
 export const governmentGazetteSubcategories = {
   NOTICES_UNDER_OTHER_ACTS: "Notices under other Acts",

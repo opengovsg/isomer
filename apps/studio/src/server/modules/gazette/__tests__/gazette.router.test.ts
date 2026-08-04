@@ -256,7 +256,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "Notif #123",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -306,7 +306,7 @@ describe("gazette.router", async () => {
           categoryLabel: "Legislative Supplements",
           date: "30/04/2026",
           description: "Notif #123",
-          tagged: ["sub-1"],
+          subcategoryId: "sub-1",
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -333,7 +333,7 @@ describe("gazette.router", async () => {
           categoryLabel: "Legislative Supplements",
           date: "30/04/2026",
           description: "Notif #123",
-          tagged: ["invalid-subcat-uuid"],
+          subcategoryId: "invalid-subcat-uuid",
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -342,6 +342,107 @@ describe("gazette.router", async () => {
           message: "Subcategory is not a valid option for this collection",
         }),
       )
+    })
+
+    // Guards the pre-cutover failure mode: `tagged` used to be a positional
+    // array whose first element was "the subcategory", so a caller echoing the
+    // read shape ([categoryId, subcategoryId]) back at the server put a
+    // Category uuid in the subcategory slot. The wire contract is now two named
+    // ids, but a Category uuid can still be *sent* as subcategoryId — it has to
+    // be rejected, not persisted as a second category entry.
+    it("rejects a category uuid supplied as the subcategory id", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Act & Assert
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Notice 123",
+          permalink: crypto.randomUUID(),
+          ref: "/1/abc/notice-123.pdf",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
+          date: "30/04/2026",
+          description: "Notif #123",
+          subcategoryId: "cat-leg",
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Subcategory is not a valid option for this collection",
+        }),
+      )
+    })
+
+    it("rejects the category uuid repeated as the subcategory id", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Act & Assert
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Notice 123",
+          permalink: crypto.randomUUID(),
+          ref: "/1/abc/notice-123.pdf",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
+          date: "30/04/2026",
+          description: "Notif #123",
+          subcategoryId: "cat-gov",
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Category and subcategory must be different tag options",
+        }),
+      )
+    })
+
+    it("persists tagged as exactly [categoryId, subcategoryId] with no category key", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Act
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Notice 123",
+        permalink: crypto.randomUUID(),
+        ref: "/1/abc/notice-123.pdf",
+        categoryId: "cat-leg",
+        categoryLabel: "Legislative Supplements",
+        date: "30/04/2026",
+        description: "Notif #123",
+        subcategoryId: "sub-leg-1",
+        scheduledAt: PAST_DATE,
+      })
+
+      // Assert: exactly one Category option and one Sub-category option, and
+      // no standalone `category` key — the whole point of the cutover.
+      const resource = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(gazetteId))
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const blob = await db
+        .selectFrom("Blob")
+        .where("id", "=", resource.draftBlobId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      const page = (
+        blob.content as {
+          page?: { tagged?: string[]; category?: string }
+        } | null
+      )?.page
+
+      expect(page?.tagged).toEqual(["cat-leg", "sub-leg-1"])
+      expect(page).not.toHaveProperty("category")
     })
 
     it("rejects a subcategory that belongs to a different category", async () => {
@@ -361,7 +462,7 @@ describe("gazette.router", async () => {
           categoryLabel: "Government Gazette",
           date: "30/04/2026",
           description: "Notif #123",
-          tagged: ["sub-leg-1"],
+          subcategoryId: "sub-leg-1",
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -396,7 +497,7 @@ describe("gazette.router", async () => {
           categoryId: "cat-gov",
           categoryLabel: "Government Gazette",
           date: "30/04/2026",
-          tagged: ["sub-1"],
+          subcategoryId: "sub-1",
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -425,7 +526,7 @@ describe("gazette.router", async () => {
         categoryId: "cat-gov",
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -440,7 +541,7 @@ describe("gazette.router", async () => {
           categoryId: "cat-gov",
           categoryLabel: "Government Gazette",
           date: "30/04/2026",
-          tagged: ["sub-1"],
+          subcategoryId: "sub-1",
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -466,7 +567,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -482,7 +583,7 @@ describe("gazette.router", async () => {
           categoryLabel: "Government Gazette",
           date: "30/04/2026",
           description: "N-2026-001", // Same notification number
-          tagged: ["sub-1"],
+          subcategoryId: "sub-1",
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -507,7 +608,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["sub-leg-1"],
+        subcategoryId: "sub-leg-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -523,7 +624,7 @@ describe("gazette.router", async () => {
           categoryLabel: "Legislative Supplements",
           date: "30/04/2026",
           description: "N-2026-001", // Same notification number
-          tagged: ["sub-leg-1"], // Same subcategory
+          subcategoryId: "sub-leg-1", // Same subcategory
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -548,7 +649,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["sub-leg-1"],
+        subcategoryId: "sub-leg-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -565,7 +666,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001", // Same notification number
-        tagged: ["sub-leg-2"], // Different subcategory
+        subcategoryId: "sub-leg-2", // Different subcategory
         scheduledAt: PAST_DATE,
       })
 
@@ -593,7 +694,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "old-desc",
-        tagged: ["sub-leg-1"],
+        subcategoryId: "sub-leg-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -607,7 +708,7 @@ describe("gazette.router", async () => {
           categoryLabel: "Legislative Supplements",
           date: "30/04/2026",
           description: "old-desc",
-          tagged: ["invalid-subcat-uuid"],
+          subcategoryId: "invalid-subcat-uuid",
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -631,7 +732,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "old-desc",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -645,7 +746,7 @@ describe("gazette.router", async () => {
           categoryLabel: "Government Gazette",
           date: "30/04/2026",
           description: "old-desc",
-          tagged: ["sub-leg-1"],
+          subcategoryId: "sub-leg-1",
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -669,7 +770,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "old-desc",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -687,7 +788,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Other Supplements",
         date: "30/04/2026",
         description: "new-desc",
-        tagged: ["sub-oth-1"],
+        subcategoryId: "sub-oth-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -738,7 +839,7 @@ describe("gazette.router", async () => {
         categoryId: "cat-gov",
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
       const markFileAsDeleted = vi
@@ -754,7 +855,7 @@ describe("gazette.router", async () => {
         categoryId: "cat-gov",
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -801,7 +902,7 @@ describe("gazette.router", async () => {
         categoryId: "cat-gov",
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -828,7 +929,7 @@ describe("gazette.router", async () => {
         categoryId: "cat-gov",
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -842,7 +943,7 @@ describe("gazette.router", async () => {
         categoryId: "cat-gov",
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -856,7 +957,7 @@ describe("gazette.router", async () => {
           categoryId: "cat-gov",
           categoryLabel: "Government Gazette",
           date: "30/04/2026",
-          tagged: ["sub-1"],
+          subcategoryId: "sub-1",
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -882,7 +983,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -897,7 +998,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "N-2026-002",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -911,7 +1012,7 @@ describe("gazette.router", async () => {
           categoryLabel: "Government Gazette",
           date: "30/04/2026",
           description: "N-2026-001", // Same notification number as first
-          tagged: ["sub-1"],
+          subcategoryId: "sub-1",
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -935,7 +1036,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -949,7 +1050,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
         description: "N-2026-001", // Unchanged
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -980,7 +1081,7 @@ describe("gazette.router", async () => {
         categoryId: "cat-gov",
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 
@@ -1105,7 +1206,7 @@ describe("gazette.router", async () => {
         categoryId: "cat-gov",
         categoryLabel: "Government Gazette",
         date: "30/04/2026",
-        tagged: ["sub-1"],
+        subcategoryId: "sub-1",
         scheduledAt: PAST_DATE,
       })
 

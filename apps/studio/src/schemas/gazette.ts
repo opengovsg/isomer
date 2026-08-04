@@ -36,7 +36,15 @@ const gazetteMetadataSchema = z.object({
     .string()
     .regex(/^\d{2}\/\d{2}\/\d{4}$/, { message: "Date must be dd/MM/yyyy" }),
   description: z.string().optional(),
-  tagged: z.array(z.string()).min(1),
+  // Category and subcategory are named, single ids on the wire. The server
+  // composes them into `page.tagged` as `[categoryId, subcategoryId]`.
+  //
+  // Deliberately NOT a positional `tagged` array: `page.tagged` is now the
+  // sole source of truth for a gazette's category, so a caller must not get
+  // to choose how many — or which kind of — tag uuids land in it. An array
+  // whose first element is "the subcategory" by convention silently accepts
+  // a category uuid in that slot, and persists any extra ids unvalidated.
+  subcategoryId: z.string().min(1, { message: "Subcategory is required" }),
   scheduledAt: z.date(),
 })
 
