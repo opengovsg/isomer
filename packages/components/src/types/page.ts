@@ -383,7 +383,7 @@ type BasePageAdditionalProps = BaseItemAdditionalProps & {
 }
 
 // NOTE: derived from `tagCategories` + `tagged` at render time (see
-// `getPillAndPlaintextTags`), not a JSON schema field itself.
+// `getTagGroupsFromTagged`), not a JSON schema field itself.
 export interface TagGroup {
   id: string
   category: string

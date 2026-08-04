@@ -20,7 +20,7 @@ interface IsomerBaseSitemap {
   date?: string
   children?: IsomerSitemap[]
   // NOTE: the raw selections an editor made; combined with the parent Collection's
-  // `tagCategories` (see getPillAndPlaintextTags) to derive what's
+  // `tagCategories` (see getTagGroupsFromTagged) to derive what's
   // actually rendered. The legacy resolved `tags` field is no longer supported.
   tagged?: ArticlePagePageProps["tagged"]
 }

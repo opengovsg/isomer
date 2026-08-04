@@ -5,7 +5,7 @@ import { getIndexByPermalink } from "~/utils/getIndexByPermalink"
 import { ArticlePageHeader } from "../../components/internal/ArticlePageHeader"
 import { BackToTopLink } from "../../components/internal/BackToTopLink"
 import { renderPageContent } from "../../render"
-import { getPillAndPlaintextTags } from "../Collection/utils/getPillAndPlaintextTags"
+import { getTagGroupsFromTagged } from "../Collection/utils/getTagGroupsFromTagged"
 import { Skeleton } from "../Skeleton"
 
 export const ArticleLayout = ({
@@ -28,10 +28,10 @@ export const ArticleLayout = ({
 
   // NOTE: No longer falls back to the legacy `page.tags` field — Article Pages are
   // expected to carry `tagged` + the parent Collection's `tagCategories` going forward.
-  const { pillTags, plaintextTags } = getPillAndPlaintextTags(
-    page.tagged,
-    parentTagCategories,
-  )
+  const { pillTags, plaintextTags } = getTagGroupsFromTagged({
+    tagged: page.tagged,
+    tagCategories: parentTagCategories,
+  })
 
   return (
     <Skeleton site={site} page={page} layout={layout}>
