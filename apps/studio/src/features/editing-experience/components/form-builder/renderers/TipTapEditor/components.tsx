@@ -68,16 +68,13 @@ interface EditorProps {
   isNested?: boolean
 }
 
-const editorHasTableSupport = (editor: TiptapEditor) =>
-  editor.extensionManager.extensions.some((ext) => ext.name === "table")
-
 export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
-  const hasTableSupport = editorHasTableSupport(editor)
-
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
-      {hasTableSupport && <TableBubbleMenu editor={editor} />}
+      {editor.extensionManager.extensions.some(
+        (ext) => ext.name === "table",
+      ) && <TableBubbleMenu editor={editor} />}
       <EditorContentWrapper editor={editor} />
     </EditorContainer>
   )
