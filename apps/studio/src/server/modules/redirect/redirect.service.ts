@@ -32,6 +32,7 @@ import {
   isValidExternalDestination,
   normalizeRedirectPath,
   normalizeRedirectSource,
+  redirectKind,
   redirectRowSchema,
 } from "~/schemas/redirect"
 import { getReferenceLink } from "~/utils/link"
@@ -369,6 +370,93 @@ const getChainedRedirect = async (
   return { redirect, normalizedDestination, target, isLoop }
 }
 
+// True when a live (published) page already sits at `source` — the exact path
+// for an exact source, or anywhere at or beneath the prefix for a wildcard
+// source. A wildcard like "/news/*" must block on a live page at "/news"
+// itself OR nested under it (e.g. "/news/story"): the edge resolver's
+// prefix-walk would intercept every one of those paths and redirect them away
+// instead of serving them. Resolves a folder/collection to its index page (via
+// getResourceByFullPermalink), so a live container itself also counts.
+const hasLivePageAtSource = async (
+  siteId: number,
+  source: string,
+): Promise<boolean> => {
+  if (redirectKind(source) !== "wildcard") {
+    const pageAtSource = await getResourceByFullPermalink({
+      siteId,
+      fullPermalink: source,
+    })
+    return !!pageAtSource && pageAtSource.publishedVersionId !== null
+  }
+
+  const prefix = source.slice(0, -2) // strip trailing "/*"
+  const segments = prefix.split("/").filter(Boolean)
+  // The root wildcard ("/*") is already rejected by the schema, so this can't
+  // be empty in practice — guarded anyway since an empty prefix has no single
+  // resource to resolve below.
+  if (segments.length === 0) {
+    return false
+  }
+
+  // Walk the exact segment chain to the resource sitting AT the prefix (not
+  // resolved to an index page — its subtree is walked next), mirroring
+  // getResourceByFullPermalink's own segment walk.
+  const candidates = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.permalink", "in", segments)
+    .where("Resource.type", "not in", [
+      ResourceType.IndexPage,
+      ResourceType.FolderMeta,
+      ResourceType.CollectionMeta,
+    ])
+    .select(["id", "permalink", "parentId"])
+    .execute()
+  let parentId: string | null = null
+  let current: (typeof candidates)[number] | undefined
+  for (const segment of segments) {
+    current = candidates.find(
+      (candidate) =>
+        candidate.permalink === segment && candidate.parentId === parentId,
+    )
+    if (!current) {
+      // Nothing lives at the prefix, so nothing can be published under it.
+      return false
+    }
+    parentId = String(current.id)
+  }
+  if (!current) {
+    return false
+  }
+
+  // The prefix resource itself or anything nested beneath it being published
+  // is enough to shadow — walk its subtree for the first published hit rather
+  // than materialising every descendant.
+  const published = await db
+    .withRecursive("subtree", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", current.id)
+        .select("Resource.id")
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain
+        // with a cycle can't drive the recursion forever.
+        .union((fb) =>
+          fb
+            .selectFrom("Resource")
+            .innerJoin("subtree", "subtree.id", "Resource.parentId")
+            .where("Resource.siteId", "=", siteId)
+            .select("Resource.id"),
+        ),
+    )
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.publishedVersionId", "is not", null)
+    .select("Resource.id")
+    .executeTakeFirst()
+  return published !== undefined
+}
+
 // Preflight for redirect.create: returns blocking errors without mutating.
 // Advisory only — create re-enforces every error. Destination-liveness is no
 // longer warned here; the table flags not-yet-published destinations instead.
@@ -389,16 +477,9 @@ export const validateRedirect = async ({
     })
   }
 
-  // A redirect whose source is a published page's live URL would shadow that
-  // page, so block it. Resolves a folder/collection to its index page, so a
-  // live container is caught too. Only published resources block — an
-  // unpublished page isn't live yet, and publishing it later is guarded on the
-  // page side.
-  const pageAtSource = await getResourceByFullPermalink({
-    siteId,
-    fullPermalink: source,
-  })
-  if (pageAtSource && pageAtSource.publishedVersionId !== null) {
+  // A redirect whose source would shadow a published page — either the exact
+  // page or, for a wildcard, anything at/under its prefix — is blocked.
+  if (await hasLivePageAtSource(siteId, source)) {
     errors.push({
       code: RedirectValidationCode.SourceIsExistingPage,
       message: REDIRECT_MESSAGES.sourceIsExistingPage,
@@ -518,15 +599,12 @@ export const createRedirect = async ({
       }
 
       // Re-enforce the source-vs-published-page guard (a published page or live
-      // folder/collection at this URL would be shadowed). A page publish doesn't
-      // take the redirect lock, so this plain read can still race one going live
-      // — accepted, since a redirect shadowing a page is recoverable by deleting
+      // folder/collection at this URL — or, for a wildcard, anywhere at/under
+      // its prefix — would be shadowed). A page publish doesn't take the
+      // redirect lock, so this plain read can still race one going live —
+      // accepted, since a redirect shadowing a page is recoverable by deleting
       // it. PRECONDITION_FAILED keeps it distinct from the already-exists CONFLICT.
-      const pageAtSource = await getResourceByFullPermalink({
-        siteId,
-        fullPermalink: source,
-      })
-      if (pageAtSource && pageAtSource.publishedVersionId !== null) {
+      if (await hasLivePageAtSource(siteId, source)) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: REDIRECT_MESSAGES.sourceIsExistingPage,
@@ -909,7 +987,11 @@ const runBulkValidation = async (
     }
   }
 
-  // 4) Source shadows a live published page or container.
+  // 4) Source shadows a live published page or container — an exact source
+  // checks the literal path, a wildcard checks anywhere at/under its prefix
+  // (the same distinction hasLivePageAtSource makes for a single create).
+  // Batched across the whole file (one lookup for every exact source, one for
+  // every wildcard prefix's subtree) rather than a query per row.
   const sourcesToCheck = [
     ...new Set(
       rows.flatMap((row) =>
@@ -919,11 +1001,20 @@ const runBulkValidation = async (
       ),
     ),
   ]
-  if (sourcesToCheck.length > 0) {
-    const idByPermalink = await getResourceIdsByPermalinks(
-      siteId,
-      sourcesToCheck,
-    )
+  const exactSources: string[] = []
+  const wildcardPrefixBySource = new Map<string, string>()
+  for (const source of sourcesToCheck) {
+    if (redirectKind(source) === "wildcard") {
+      wildcardPrefixBySource.set(source, source.slice(0, -2))
+    } else {
+      exactSources.push(source)
+    }
+  }
+
+  const shadowedSources = new Set<string>()
+
+  if (exactSources.length > 0) {
+    const idByPermalink = await getResourceIdsByPermalinks(siteId, exactSources)
     const resourceIds = [...idByPermalink.values()].filter(
       (id): id is number => id !== null,
     )
@@ -931,14 +1022,75 @@ const runBulkValidation = async (
       siteId,
       resourceIds,
     )
-    for (const row of rows) {
-      if (row.error !== null || row.normalizedSource === null) {
-        continue
-      }
-      const resourceId = idByPermalink.get(row.normalizedSource) ?? null
+    for (const source of exactSources) {
+      const resourceId = idByPermalink.get(source) ?? null
       if (resourceId !== null && publishedState.get(resourceId)) {
-        row.error = REDIRECT_MESSAGES.sourceIsExistingPage
+        shadowedSources.add(source)
       }
+    }
+  }
+
+  const wildcardPrefixes = [...new Set(wildcardPrefixBySource.values())]
+  if (wildcardPrefixes.length > 0) {
+    // Resolve every wildcard's prefix to the (raw, non-index-page-substituted)
+    // resource sitting at that path, same as getResourceIdsByPermalinks
+    // resolves any other permalink — reused rather than re-walking segments.
+    const rootIdByPrefix = await getResourceIdsByPermalinks(
+      siteId,
+      wildcardPrefixes,
+    )
+    const rootIds = [...new Set(rootIdByPrefix.values())]
+      .filter((id): id is number => id !== null)
+      .map(String)
+    if (rootIds.length > 0) {
+      // One recursive walk covering every wildcard root at once, carrying each
+      // row's root id through the recursion so a published hit anywhere in a
+      // root's subtree (including the root itself) can be attributed back to
+      // it — the multi-root analogue of hasLivePageAtSource's single-prefix
+      // walk.
+      const shadowedRoots = await db
+        .withRecursive("subtree", (eb) =>
+          eb
+            .selectFrom("Resource")
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.id", "in", rootIds)
+            .select(["Resource.id as rootId", "Resource.id"])
+            .union((fb) =>
+              fb
+                .selectFrom("Resource")
+                .innerJoin("subtree", "subtree.id", "Resource.parentId")
+                .where("Resource.siteId", "=", siteId)
+                .select(["subtree.rootId", "Resource.id"]),
+            ),
+        )
+        .selectFrom("subtree")
+        .innerJoin("Resource", "Resource.id", "subtree.id")
+        .where("Resource.publishedVersionId", "is not", null)
+        .select("subtree.rootId")
+        .distinct()
+        .execute()
+      const shadowedRootIds = new Set(
+        shadowedRoots.map((row) => String(row.rootId)),
+      )
+      for (const [source, prefix] of wildcardPrefixBySource) {
+        const rootId = rootIdByPrefix.get(prefix)
+        if (
+          rootId !== null &&
+          rootId !== undefined &&
+          shadowedRootIds.has(String(rootId))
+        ) {
+          shadowedSources.add(source)
+        }
+      }
+    }
+  }
+
+  for (const row of rows) {
+    if (row.error !== null || row.normalizedSource === null) {
+      continue
+    }
+    if (shadowedSources.has(row.normalizedSource)) {
+      row.error = REDIRECT_MESSAGES.sourceIsExistingPage
     }
   }
 
