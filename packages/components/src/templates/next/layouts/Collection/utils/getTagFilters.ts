@@ -4,6 +4,8 @@ import { resolveTagCategoryDisplay } from "~/types/constants"
 
 import type { Filter, FilterItem } from "../../../types/Filter"
 
+const UNKNOWN_SORT_INDEX = Number.MAX_SAFE_INTEGER
+
 export const getTagFilters = (
   items: ProcessedCollectionCardProps[],
   tagCategories?: CollectionPageSchemaType["page"]["tagCategories"],
@@ -63,29 +65,29 @@ export const getTagFilters = (
     return filters
   }
 
-  const tagCategoryIds = tagCategories.map(({ label }) => label)
+  const tagCategoryLabelOrder = new Map(
+    tagCategories.map(({ label }, index) => [label, index]),
+  )
 
   const sortedFilters = filters.sort((a, b) => {
-    const indexA = tagCategoryIds.indexOf(a.id)
-    const indexB = tagCategoryIds.indexOf(b.id)
-
-    if (indexA === -1 && indexB === -1) return 0
-    if (indexA === -1) return 1
-    if (indexB === -1) return -1
-
+    const indexA = tagCategoryLabelOrder.get(a.id) ?? UNKNOWN_SORT_INDEX
+    const indexB = tagCategoryLabelOrder.get(b.id) ?? UNKNOWN_SORT_INDEX
     return indexA - indexB
   })
 
   return sortedFilters.map((filter) => {
     const category = tagCategories.find((cat) => cat.label === filter.id)
-    const tagOptionLabels =
-      category?.options?.map((option) => option.label) ?? []
+    const tagOptionLabelOrder = new Map(
+      category?.options?.map((option, index) => [option.label, index]) ?? [],
+    )
 
     return {
       ...filter,
-      items: filter.items.sort(
-        (a, b) => tagOptionLabels.indexOf(a.id) - tagOptionLabels.indexOf(b.id),
-      ),
+      items: filter.items.sort((a, b) => {
+        const indexA = tagOptionLabelOrder.get(a.id) ?? UNKNOWN_SORT_INDEX
+        const indexB = tagOptionLabelOrder.get(b.id) ?? UNKNOWN_SORT_INDEX
+        return indexA - indexB
+      }),
     }
   })
 }

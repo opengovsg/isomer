@@ -100,7 +100,7 @@ describe("getTagFilters", () => {
     ])
   })
 
-  it("orders items within a category by options order; unlisted come first", () => {
+  it("orders items within a category by options order; unlisted come last", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       {
@@ -153,9 +153,9 @@ describe("getTagFilters", () => {
         label: "Body parts",
         display: "pills",
         items: [
-          { id: "Arm", label: "Arm", count: 1 }, // Unlisted; comes first
           { id: "Heart", label: "Heart", count: 1 },
           { id: "Brain", label: "Brain", count: 1 },
+          { id: "Arm", label: "Arm", count: 1 }, // Unlisted; comes last
         ],
       },
       {

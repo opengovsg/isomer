@@ -122,7 +122,8 @@ const TaggedSchema = Type.Optional(
 )
 
 // DEPRECATED: legacy `page.category` — migrated to a "Category" tag group in
-// `tagCategories`/`tagged`. Do not re-add; see ADR 0003.
+// `tagCategories`/`tagged`. Do not re-add; see
+// docs/adr/0003-merge-category-into-tag-category.md.
 // const categorySchemaObject = Type.Object({
 //   category: Type.String({
 //     title: "Article category",
@@ -142,7 +143,8 @@ const dateSchemaObject = Type.Object({
 })
 
 const BaseRefPageSchema = Type.Composite([
-  // categorySchemaObject // DEPRECATED — do not re-add; see ADR 0003
+  // DEPRECATED: do not re-add; see docs/adr/0003-merge-category-into-tag-category.md
+  // categorySchemaObject
   Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   imageSchemaObject,
@@ -166,7 +168,8 @@ const BaseRefPageSchema = Type.Composite([
 ])
 
 // DEPRECATED: legacy `page.tags` ({ category, selected[] }) — migrated to
-// `tagCategories`/`tagged`. Do not re-add; see ADR 0003.
+// `tagCategories`/`tagged`. Do not re-add; see
+// docs/adr/0003-merge-category-into-tag-category.md.
 // const TagSchema = Type.Object({
 //   selected: Type.Array(Type.String()),
 //   category: Type.String(),
@@ -179,14 +182,16 @@ const BaseRefPageSchema = Type.Composite([
 // )
 
 export const ArticlePagePageSchema = Type.Composite([
-  // categorySchemaObject // DEPRECATED — do not re-add; see ADR 0003
+  // categorySchemaObject // DEPRECATED — do not re-add; see
+  // docs/adr/0003-merge-category-into-tag-category.md
   Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,
   }),
   imageSchemaObject,
-  // TagsSchema // DEPRECATED — do not re-add; see ADR 0003
+  // TagsSchema // DEPRECATED — do not re-add; see
+  // docs/adr/0003-merge-category-into-tag-category.md
 ])
 
 export const COLLECTION_VARIANT_OPTIONS = {
