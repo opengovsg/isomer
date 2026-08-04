@@ -94,13 +94,11 @@ export const AuditLogExportSection = ({
       | typeof AuditLogExportRequestedReportType.Activity,
   ) => {
     const next = toggleReportType(reportType, toggled)
-    if (next) {
-      form.setValue("reportType", next, { shouldValidate: true })
-    } else {
-      // Last selection cleared: drop the field back to its (absent) default so
-      // the schema's "Select a report type" requirement disables submit again.
-      form.resetField("reportType")
-    }
+    // `reportType` is never bound to a native input via `register`/`Controller`
+    // (it's driven entirely by this checkbox cluster), so `resetField` is a
+    // no-op for it — RHF only resets fields it finds in its internal registry.
+    // `setValue` has no such guard, so use it for both the set and clear cases.
+    form.setValue("reportType", next, { shouldValidate: true })
   }
 
   const { mutate: createExportRequest, isPending } =
@@ -282,7 +280,7 @@ const LogTypeCard = ({
   return (
     <Box
       w="full"
-      p="1rem"
+      overflow="hidden"
       borderWidth="1.5px"
       borderRadius="0.5rem"
       borderColor={
@@ -292,11 +290,14 @@ const LogTypeCard = ({
         isSelected ? "utility.feedback.info-subtle" : "base.canvas.default"
       }
     >
+      {/* Padding lives on the checkbox itself, not this wrapper, so its hover
+          fill reaches the card's edges instead of leaving a padding-sized gap. */}
       <Checkbox
         isChecked={isSelected}
         onChange={onToggle}
         alignItems="flex-start"
         _focusWithin={{ boxShadow: "none" }}
+        p="1rem"
       >
         <Stack spacing="0.25rem" ml="0.25rem">
           <Text textStyle="subhead-2" color="base.content.strong">
@@ -310,7 +311,7 @@ const LogTypeCard = ({
       {/* The revealed content sits outside the checkbox label so interacting
           with it (e.g. opening the month dropdown) does not toggle selection. */}
       {isSelected && children && (
-        <Box mt="0.75rem" pl="3rem">
+        <Box mt="0.75rem" pl="3rem" pr="1rem" pb="1rem">
           {children}
         </Box>
       )}
