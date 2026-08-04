@@ -1,8 +1,53 @@
-// Contract for brand header fills in the TipTap editor. Studio injects
-// `--color-brand-canvas-inverse` from the site theme; tiptap.scss must paint
-// that token as the cell background (with light text for contrast).
+// TipTap table cell backgrounds must match packages/components Table:
+// unset header → base-canvas-backdrop, unset body → base-canvas-alt;
+// brand.canvas.inverse resolves via site-theme CSS var with light text.
 import "~/styles/tiptap.scss"
 import { afterEach, describe, expect, it } from "vitest"
+
+// Mirrors Tailwind `bg-base-canvas-backdrop` / `bg-base-canvas-alt` from
+// packages/components Table cell defaults (preview-tw.css).
+const BASE_CANVAS_BACKDROP = "rgb(243, 244, 246)"
+const BASE_CANVAS_ALT = "rgb(249, 250, 251)"
+
+describe("tiptap default table cell backgrounds", () => {
+  afterEach(() => {
+    document.body.replaceChildren()
+  })
+
+  it("uses base-canvas-backdrop on header cells with no colour set", () => {
+    const root = document.createElement("div")
+    root.className = "tiptap"
+    root.innerHTML = `
+      <table>
+        <tr>
+          <th>Header</th>
+        </tr>
+      </table>
+    `
+    document.body.appendChild(root)
+
+    expect(getComputedStyle(root.querySelector("th")!).backgroundColor).toBe(
+      BASE_CANVAS_BACKDROP,
+    )
+  })
+
+  it("uses base-canvas-alt on body cells with no colour set", () => {
+    const root = document.createElement("div")
+    root.className = "tiptap"
+    root.innerHTML = `
+      <table>
+        <tr>
+          <td>Cell</td>
+        </tr>
+      </table>
+    `
+    document.body.appendChild(root)
+
+    expect(getComputedStyle(root.querySelector("td")!).backgroundColor).toBe(
+      BASE_CANVAS_ALT,
+    )
+  })
+})
 
 describe("tiptap brand.canvas.inverse cell styles", () => {
   afterEach(() => {
