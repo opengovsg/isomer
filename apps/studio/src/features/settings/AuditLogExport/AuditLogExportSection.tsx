@@ -114,7 +114,7 @@ export const AuditLogExportSection = ({
     // RHF's inferred type excludes `undefined` — but clearing the last
     // selection must still set it to unset, same widening as the `watch`
     // above (line 77).
-    form.setValue("reportType", next as AuditLogExportRequestedReportType, {
+    form.setValue("reportType", next!, {
       shouldValidate: true,
     })
   }

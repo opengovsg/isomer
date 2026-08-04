@@ -1062,7 +1062,7 @@ importers:
         specifier: catalog:pg
         version: 8.20.0
       '@types/pg-cursor':
-        specifier: 'catalog:'
+        specifier: catalog:pg
         version: 2.7.2
       '@types/react':
         specifier: catalog:react

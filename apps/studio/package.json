@@ -189,6 +189,7 @@
     "@types/node": "catalog:",
     "@types/papaparse": "catalog:",
     "@types/pg": "catalog:pg",
+    "@types/pg-cursor": "catalog:pg",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
     "@types/validator": "catalog:",
