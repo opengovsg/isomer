@@ -243,10 +243,10 @@ const ActionButton = ({
     size="xs"
     variant="clear"
     colorScheme="neutral"
-    onClick={onClick}
     // TipTap toolbar pattern: preventDefault on mousedown so the click does
     // not steal focus (and thus CellSelection) from the editor.
     onMouseDown={(event) => event.preventDefault()}
+    onClick={onClick}
     w="100%"
     h="auto"
     minH="unset"
@@ -280,55 +280,65 @@ const ActionDivider = () => (
 const colourSwatchLabel = (color: string) =>
   `${color.charAt(0).toUpperCase()}${color.slice(1)}`
 
+// Studio-only circle borders for the picker; published cells use fill only.
+const TABLE_CELL_BACKGROUND_COLOR_BORDERS: Record<
+  TableCellBackgroundColorToken,
+  string
+> = {
+  pink: "#F59BDD",
+  yellow: "#F8BE22",
+  green: "#7FB894",
+  blue: "#8C93E4",
+  purple: "#BE8CE4",
+}
+
+const NONE_COLOUR_SWATCH = {
+  fill: "#F7F7F7",
+  border: "#959595",
+} as const
+
+const COLOUR_SWATCH_CIRCLE_SIZE = "1.25rem"
+
 const ColourSwatch = ({
   label,
-  backgroundColor,
+  fill,
+  borderColor,
   isActive,
   onClick,
-  hasSlash = false,
 }: {
   label: string
-  backgroundColor: string
+  fill: string
+  borderColor: string
   isActive: boolean
   onClick: () => void
-  hasSlash?: boolean
 }) => (
   <Button
     variant="unstyled"
-    position="relative"
     display="inline-flex"
     alignItems="center"
     justifyContent="center"
-    boxSize="1.75rem"
-    minW="1.75rem"
-    minH="1.75rem"
-    p="0"
+    p="0.25rem"
+    h="auto"
+    minH="unset"
+    minW="unset"
     flexShrink={0}
-    borderRadius="full"
-    overflow="hidden"
+    borderRadius="0.25rem"
     aria-label={label}
-    backgroundColor={backgroundColor}
-    border="2px solid"
-    borderColor={isActive ? "interaction.main.default" : "base.divider.medium"}
+    backgroundColor={isActive ? "interaction.muted.main.active" : "transparent"}
     onMouseDown={(event) => event.preventDefault()}
     onClick={onClick}
   >
-    {hasSlash && (
-      <Box
-        as="span"
-        aria-hidden
-        position="absolute"
-        w="140%"
-        h="1.5px"
-        bg="base.divider.strong"
-        transform="rotate(-45deg)"
-      />
-    )}
+    <Box
+      as="span"
+      boxSize={COLOUR_SWATCH_CIRCLE_SIZE}
+      borderRadius="full"
+      backgroundColor={fill}
+      border="1px solid"
+      borderColor={borderColor}
+    />
   </Button>
 )
 
-// Label + swatches inline — no navigate-away submenu. Text sizing matches
-// ActionButton (subhead-2); padding aligns with HeaderToggle / ActionButton.
 const BackgroundColourSection = ({
   selection,
   onSetColor,
@@ -339,21 +349,30 @@ const BackgroundColourSection = ({
   const activeColor = getUniformBodyCellBackgroundColor(selection)
 
   return (
-    <VStack align="stretch" gap="0.375rem" px="15px" py="0.375rem">
-      <Text textStyle="subhead-2">Background colour</Text>
-      <Flex gap="0.375rem" align="center" wrap="wrap">
+    <VStack align="stretch" gap="0">
+      <Text
+        textStyle="caption-3"
+        color="base.content.medium"
+        pt="0.625rem"
+        pb="0.375rem"
+        px="0.75rem"
+      >
+        Set background color
+      </Text>
+      <Flex gap="0.5rem" align="center" wrap="wrap" px="0.75rem">
         <ColourSwatch
           label="None"
-          backgroundColor="base.canvas.default"
+          fill={NONE_COLOUR_SWATCH.fill}
+          borderColor={NONE_COLOUR_SWATCH.border}
           isActive={activeColor === null}
-          hasSlash
           onClick={() => onSetColor(null)}
         />
         {TABLE_CELL_BACKGROUND_COLOR_TOKENS.map((color) => (
           <ColourSwatch
             key={color}
             label={colourSwatchLabel(color)}
-            backgroundColor={TABLE_CELL_BACKGROUND_COLORS[color]}
+            fill={TABLE_CELL_BACKGROUND_COLORS[color]}
+            borderColor={TABLE_CELL_BACKGROUND_COLOR_BORDERS[color]}
             isActive={activeColor === color}
             onClick={() => onSetColor(color)}
           />

@@ -17,7 +17,7 @@ describe("TableBaseCellSchema", () => {
   })
 
   it("rejects an unknown colour token", () => {
-    expect(Value.Check(TableBaseCellSchema, { backgroundColor: "pink" })).toBe(
+    expect(Value.Check(TableBaseCellSchema, { backgroundColor: "red" })).toBe(
       false,
     )
   })

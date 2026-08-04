@@ -597,7 +597,7 @@ describe("TableBubbleMenu", () => {
 
     // Act — label is plain text; swatches sit underneath and are immediately
     // available (no navigate-away submenu).
-    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByText("Set background color")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
     const blueSwatch = await findByRole("button", { name: "Blue" })
     act(() => {
@@ -642,7 +642,7 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete row")).toBeNull()
   })
 
-  it("hides Background colour for a header row selection", async () => {
+  it("hides Set background color for a header row selection", async () => {
     // Arrange
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
@@ -653,10 +653,10 @@ describe("TableBubbleMenu", () => {
     await findByText("Add row above")
 
     // Assert
-    expect(queryByText("Background colour")).toBeNull()
+    expect(queryByText("Set background color")).toBeNull()
   })
 
-  it("shows Background colour for a body row selection", async () => {
+  it("shows Set background color for a body row selection", async () => {
     // Arrange
     const { editor, findByText, findByRole } = await renderHarness()
 
@@ -665,7 +665,7 @@ describe("TableBubbleMenu", () => {
     await activateTableBubbleMenu(findByRole)
 
     // Assert
-    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByText("Set background color")).toBeTruthy()
   })
 
   it("keeps action buttons and colour swatches visible together", async () => {
@@ -676,7 +676,7 @@ describe("TableBubbleMenu", () => {
 
     // Assert — colour section is inline; row/merge actions stay visible
     expect(await findByText("Merge cells")).toBeTruthy()
-    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByText("Set background color")).toBeTruthy()
     expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
   })
 
@@ -687,7 +687,7 @@ describe("TableBubbleMenu", () => {
     selectCells(editor, 3, 7)
     await activateTableBubbleMenu(findByRole)
     expect(await findByText("Merge cells")).toBeTruthy()
-    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByText("Set background color")).toBeTruthy()
 
     // Act
     act(() => {
@@ -704,7 +704,7 @@ describe("TableBubbleMenu", () => {
 
     // Assert
     expect(await findByText("Merge cells")).toBeTruthy()
-    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByText("Set background color")).toBeTruthy()
   })
 
   it("shows no menu content for a plain cursor outside any selection", async () => {
@@ -737,7 +737,7 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete row")).toBeNull()
   })
 
-  it("shows Split cell for a merged cell, and Background colour for an ordinary body cell", async () => {
+  it("shows Split cell for a merged cell, and Set background color for an ordinary body cell", async () => {
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
 
@@ -753,18 +753,18 @@ describe("TableBubbleMenu", () => {
     expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Split cell")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
-    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByText("Set background color")).toBeTruthy()
 
     // An ordinary (never-merged) body cell shows colour only.
     selectCells(editor, 6, 6)
     await activateTableBubbleMenu(findByRole)
-    expect(await findByText("Background colour")).toBeTruthy()
+    expect(await findByText("Set background color")).toBeTruthy()
     expect(queryByText("Split cell")).toBeNull()
     expect(queryByText("Merge cells")).toBeNull()
 
     // A single header cell has neither structural actions nor colour.
     selectCells(editor, 0, 0)
-    expect(queryByText("Background colour")).toBeNull()
+    expect(queryByText("Set background color")).toBeNull()
     expect(queryByText("Split cell")).toBeNull()
   })
 

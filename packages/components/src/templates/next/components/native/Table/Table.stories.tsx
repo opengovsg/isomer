@@ -2017,6 +2017,33 @@ export const WithBackgroundColours: Story = {
             content: [
               {
                 type: "paragraph",
+                content: [{ type: "text", text: "Pink" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Yellow" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Green" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
                 content: [{ type: "text", text: "Blue" }],
               },
             ],
@@ -2027,24 +2054,6 @@ export const WithBackgroundColours: Story = {
               {
                 type: "paragraph",
                 content: [{ type: "text", text: "Purple" }],
-              },
-            ],
-          },
-          {
-            type: "tableHeader",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Red" }],
-              },
-            ],
-          },
-          {
-            type: "tableHeader",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Green" }],
               },
             ],
           },
@@ -2064,6 +2073,36 @@ export const WithBackgroundColours: Story = {
         content: [
           {
             type: "tableCell",
+            attrs: { backgroundColor: "pink" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "pink" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "yellow" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "yellow" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "green" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "green" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
             attrs: { backgroundColor: "blue" },
             content: [
               {
@@ -2079,26 +2118,6 @@ export const WithBackgroundColours: Story = {
               {
                 type: "paragraph",
                 content: [{ type: "text", text: "purple" }],
-              },
-            ],
-          },
-          {
-            type: "tableCell",
-            attrs: { backgroundColor: "red" },
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "red" }],
-              },
-            ],
-          },
-          {
-            type: "tableCell",
-            attrs: { backgroundColor: "green" },
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "green" }],
               },
             ],
           },
