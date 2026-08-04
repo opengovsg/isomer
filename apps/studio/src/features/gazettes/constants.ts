@@ -64,3 +64,23 @@ export const otherSupplementsSubcategories = {
 export const otherSupplementsSubcategoriesKeys = Object.values(
   otherSupplementsSubcategories,
 )
+
+/**
+ * Allowed subcategory labels for a top-level gazette category.
+ * Shared by the Studio form filter and server create/update validation so
+ * pairing rules stay in one place.
+ */
+export const getAllowedSubcategoryLabelsForCategory = (
+  category: string,
+): readonly string[] => {
+  switch (category) {
+    case GazetteCategories.GovernmentGazettes:
+      return governmentGazetteSubcategoriesKeys
+    case GazetteCategories.LegislativeSupplements:
+      return legislativeSupplementsSubcategoriesKeys
+    case GazetteCategories.OtherSupplements:
+      return otherSupplementsSubcategoriesKeys
+    default:
+      return []
+  }
+}

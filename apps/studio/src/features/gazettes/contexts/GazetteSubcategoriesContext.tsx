@@ -1,5 +1,4 @@
 import type { PropsWithChildren } from "react"
-import { filter } from "lodash-es"
 import { createContext, useContext, useMemo } from "react"
 import { trpc } from "~/utils/trpc"
 
@@ -7,9 +6,7 @@ import type { GazettesCategory } from "../types"
 import {
   GAZETTE_CATEGORY_LABEL,
   GAZETTE_SUBCATEGORY_LABEL,
-  governmentGazetteSubcategoriesKeys,
-  legislativeSupplementsSubcategoriesKeys,
-  otherSupplementsSubcategoriesKeys,
+  getAllowedSubcategoryLabelsForCategory,
 } from "../constants"
 
 interface GazetteSubcategoriesContextValue {
@@ -70,33 +67,10 @@ export const GazetteSubcategoriesProvider = ({
     ) as Record<string, string>
 
     const getSubcategoriesForCategory = (category: GazettesCategory) => {
-      switch (category) {
-        case "Government Gazette": {
-          return filter(subcategories, ({ label }) => {
-            return governmentGazetteSubcategoriesKeys.some(
-              (key) => key === label,
-            )
-          })
-        }
-        case "Other Supplements": {
-          return filter(subcategories, ({ label }) => {
-            return otherSupplementsSubcategoriesKeys.some(
-              (key) => key === label,
-            )
-          })
-        }
-
-        case "Legislative Supplements": {
-          return filter(subcategories, ({ label }) => {
-            return legislativeSupplementsSubcategoriesKeys.some(
-              (key) => key === label,
-            )
-          })
-        }
-        default: {
-          return []
-        }
-      }
+      const allowedLabels = new Set(
+        getAllowedSubcategoryLabelsForCategory(category),
+      )
+      return subcategories.filter(({ label }) => allowedLabels.has(label))
     }
     return {
       categories,

@@ -8,6 +8,7 @@ import {
   GAZETTE_CATEGORY_LABEL,
   GAZETTE_SUBCATEGORY_LABEL,
   GazetteCategories,
+  getAllowedSubcategoryLabelsForCategory,
 } from "~/features/gazettes/constants"
 import { deleteObjectsFromSearchIndexByFilter } from "~/lib/algolia"
 import { createBaseLogger } from "~/lib/logger"
@@ -608,13 +609,17 @@ export const assertGazetteCategoryInput = ({
 }
 
 // Unlike category, the client only submits a subcategory id (no label to
-// cross-check) — so this only confirms the id resolves to a real option,
-// rather than duplicating the label-match check above.
+// cross-check). Confirm the id is a real Sub-category option *and* that its
+// label is allowed for the already-validated categoryLabel — the form filters
+// by the same mapping, but direct callers can otherwise persist mismatched
+// pairs (e.g. Government Gazette + Acts Supplement).
 export const assertGazetteSubcategoryInput = ({
   subcategoryId,
+  categoryLabel,
   tagCategories,
 }: {
   subcategoryId: string
+  categoryLabel: string
   tagCategories: GazetteTagCategory[]
 }): void => {
   const resolvedLabel = resolveGazetteSubcategoryLabel(
@@ -625,6 +630,14 @@ export const assertGazetteSubcategoryInput = ({
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Subcategory is not a valid option for this collection",
+    })
+  }
+
+  const allowedLabels = getAllowedSubcategoryLabelsForCategory(categoryLabel)
+  if (!allowedLabels.includes(resolvedLabel)) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Subcategory is not valid for the selected category",
     })
   }
 }

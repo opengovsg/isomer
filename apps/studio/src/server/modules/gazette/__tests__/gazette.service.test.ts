@@ -190,14 +190,18 @@ describe("gazette.service", () => {
     const TAG_CATEGORIES = [
       {
         label: GAZETTE_SUBCATEGORY_LABEL,
-        options: [{ id: "sub-1", label: "Public" }],
+        options: [
+          { id: "sub-1", label: "Advertisements" },
+          { id: "sub-leg-1", label: "Acts Supplement" },
+        ],
       },
     ]
 
-    it("does not throw for a subcategory id that resolves to a real option", () => {
+    it("does not throw for a subcategory id allowed under the selected category", () => {
       expect(() =>
         assertGazetteSubcategoryInput({
           subcategoryId: "sub-1",
+          categoryLabel: "Government Gazette",
           tagCategories: TAG_CATEGORIES,
         }),
       ).not.toThrow()
@@ -207,12 +211,28 @@ describe("gazette.service", () => {
       expect(() =>
         assertGazetteSubcategoryInput({
           subcategoryId: "invalid-subcat-uuid",
+          categoryLabel: "Government Gazette",
           tagCategories: TAG_CATEGORIES,
         }),
       ).toThrowError(
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Subcategory is not a valid option for this collection",
+        }),
+      )
+    })
+
+    it("throws when the subcategory belongs to a different category", () => {
+      expect(() =>
+        assertGazetteSubcategoryInput({
+          subcategoryId: "sub-leg-1",
+          categoryLabel: "Government Gazette",
+          tagCategories: TAG_CATEGORIES,
+        }),
+      ).toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Subcategory is not valid for the selected category",
         }),
       )
     })

@@ -81,7 +81,11 @@ const loadCollectionTagCategoriesForCategoryInput = async ({
     siteId,
   })
   assertGazetteCategoryInput({ categoryId, categoryLabel, tagCategories })
-  assertGazetteSubcategoryInput({ subcategoryId, tagCategories })
+  assertGazetteSubcategoryInput({
+    subcategoryId,
+    categoryLabel,
+    tagCategories,
+  })
   return tagCategories
 }
 

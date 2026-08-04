@@ -58,8 +58,11 @@ const GAZETTE_TEST_TAG_CATEGORIES = [
   {
     label: GAZETTE_SUBCATEGORY_LABEL,
     options: [
-      { id: "sub-1", label: "Public" },
-      { id: "sub-2", label: "Extraordinary" },
+      { id: "sub-1", label: "Advertisements" },
+      { id: "sub-2", label: "Tenders" },
+      { id: "sub-leg-1", label: "Acts Supplement" },
+      { id: "sub-leg-2", label: "Bills Supplement" },
+      { id: "sub-oth-1", label: "Trade Marks Supplement" },
     ],
   },
 ]
@@ -341,6 +344,34 @@ describe("gazette.router", async () => {
       )
     })
 
+    it("rejects a subcategory that belongs to a different category", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+
+      // Act & Assert: Acts Supplement is a valid Sub-category option, but only
+      // under Legislative Supplements — not Government Gazette.
+      await expect(
+        caller.create({
+          siteId: site.id,
+          collectionId: Number(collection.id),
+          title: "Notice 123",
+          permalink: crypto.randomUUID(),
+          ref: "/1/abc/notice-123.pdf",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
+          date: "30/04/2026",
+          description: "Notif #123",
+          tagged: ["sub-leg-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Subcategory is not valid for the selected category",
+        }),
+      )
+    })
+
     it("rejects a non-Toppan, non-admin caller before any DB writes", async () => {
       // Arrange
       const user = await setupUser({
@@ -476,7 +507,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["sub-1"],
+        tagged: ["sub-leg-1"],
         scheduledAt: PAST_DATE,
       })
 
@@ -492,7 +523,7 @@ describe("gazette.router", async () => {
           categoryLabel: "Legislative Supplements",
           date: "30/04/2026",
           description: "N-2026-001", // Same notification number
-          tagged: ["sub-1"], // Same subcategory
+          tagged: ["sub-leg-1"], // Same subcategory
           scheduledAt: PAST_DATE,
         }),
       ).rejects.toThrowError(
@@ -517,7 +548,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001",
-        tagged: ["sub-1"],
+        tagged: ["sub-leg-1"],
         scheduledAt: PAST_DATE,
       })
 
@@ -534,7 +565,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "N-2026-001", // Same notification number
-        tagged: ["sub-2"], // Different subcategory
+        tagged: ["sub-leg-2"], // Different subcategory
         scheduledAt: PAST_DATE,
       })
 
@@ -562,7 +593,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Legislative Supplements",
         date: "30/04/2026",
         description: "old-desc",
-        tagged: ["sub-1"],
+        tagged: ["sub-leg-1"],
         scheduledAt: PAST_DATE,
       })
 
@@ -583,6 +614,44 @@ describe("gazette.router", async () => {
         new TRPCError({
           code: "BAD_REQUEST",
           message: "Subcategory is not a valid option for this collection",
+        }),
+      )
+    })
+
+    it("rejects a subcategory that belongs to a different category", async () => {
+      // Arrange
+      const { site, collection } = await seedToppanWithCollection()
+      const { gazetteId } = await caller.create({
+        siteId: site.id,
+        collectionId: Number(collection.id),
+        title: "Original",
+        permalink: crypto.randomUUID(),
+        ref: "/1/abc/notice.pdf",
+        categoryId: "cat-gov",
+        categoryLabel: "Government Gazette",
+        date: "30/04/2026",
+        description: "old-desc",
+        tagged: ["sub-1"],
+        scheduledAt: PAST_DATE,
+      })
+
+      // Act & Assert
+      await expect(
+        caller.update({
+          siteId: site.id,
+          gazetteId: Number(gazetteId),
+          title: "Original",
+          categoryId: "cat-gov",
+          categoryLabel: "Government Gazette",
+          date: "30/04/2026",
+          description: "old-desc",
+          tagged: ["sub-leg-1"],
+          scheduledAt: PAST_DATE,
+        }),
+      ).rejects.toThrowError(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Subcategory is not valid for the selected category",
         }),
       )
     })
@@ -618,7 +687,7 @@ describe("gazette.router", async () => {
         categoryLabel: "Other Supplements",
         date: "30/04/2026",
         description: "new-desc",
-        tagged: ["sub-2"],
+        tagged: ["sub-oth-1"],
         scheduledAt: PAST_DATE,
       })
 
@@ -647,7 +716,7 @@ describe("gazette.router", async () => {
       )?.page
       expect(page?.ref).toBe("/1/abc/replacement.pdf")
       expect(page?.description).toBe("new-desc")
-      expect(page?.tagged).toEqual(["cat-oth", "sub-2"])
+      expect(page?.tagged).toEqual(["cat-oth", "sub-oth-1"])
 
       // The superseded file (a different key) is soft-deleted after commit.
       expect(markFileAsDeleted).toHaveBeenCalledExactlyOnceWith({
