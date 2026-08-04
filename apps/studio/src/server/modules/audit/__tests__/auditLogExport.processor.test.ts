@@ -197,6 +197,7 @@ describe("auditLogExport processor", () => {
     expect(updated.objectKey).toBe(expectedKey)
     // The generate path stamps completedAt too — it is what later identical
     // requests compare against the range end to qualify this row for reuse.
+    // Its value is captured BEFORE the report query, not at delivery.
     expect(updated.completedAt).not.toBeNull()
   })
 
@@ -440,8 +441,9 @@ describe("auditLogExport processor", () => {
   // Complete-Artifact reuse (ADR docs/adr/0005): an identical (site, range,
   // report type) request is fulfilled by re-delivering an existing Done row's
   // artifact — with a fresh signed URL and email — instead of regenerating,
-  // provided that artifact was completed AFTER the range fully elapsed and
-  // the S3 object still exists.
+  // provided that artifact's data was frozen (completedAt, captured pre-query
+  // on the generate path) AFTER the range fully elapsed and the S3 object
+  // still exists.
   describe("Complete-Artifact reuse", () => {
     it("reuses the Done artifact of an identical past-range request from ANOTHER user (per-site reuse, no second upload)", async () => {
       // Arrange: first admin's request is processed to Done normally.
@@ -529,6 +531,48 @@ describe("auditLogExport processor", () => {
       expect(updatedSecond.status).toBe("Done")
       expect(updatedSecond.objectKey).not.toBe(updatedFirst.objectKey)
       expect(updatedSecond.objectKey).toContain(`/${second.id}/`)
+    })
+
+    it("stamps completedAt with the pre-query instant, not delivery time (query and finish can straddle the range end)", async () => {
+      // Arrange: the midnight race. A current-month job that queries before
+      // SGT midnight is missing the tail of the month; if completedAt were
+      // stamped when the job FINISHES (after upload/email/retries cross the
+      // boundary), the row would satisfy `completedAt >= rangeEnd` and
+      // masquerade as a Complete Artifact forever. The fix stamps completedAt
+      // with an instant captured BEFORE the report query — prove it by making
+      // delivery measurably slower than the query and checking the stamp.
+      const { site } = await setupSite()
+      const admin = await setupUser({ email: "straddle@vendor.com.sg" })
+      await setupAdminPermissions({ userId: admin.id, siteId: site.id })
+      const request = await seedRequest({
+        siteId: site.id,
+        userId: admin.id,
+        reportType: "Access",
+      })
+
+      let uploadStartedAt: Date | undefined
+      mockUploadAuditLogExport.mockImplementationOnce(async () => {
+        uploadStartedAt = new Date()
+        // Real delay so delivery time is measurably after the query instant.
+        await new Promise((resolve) => setTimeout(resolve, 25))
+      })
+
+      // Act
+      await processPendingAuditLogExports()
+
+      // Assert: completedAt is at or before the moment upload began (the
+      // pre-query freeze instant), and strictly before the post-delivery
+      // updatedAt stamp — never the delivery-time clock.
+      const updated = await getRequest(request.id)
+      expect(updated.status).toBe("Done")
+      expect(updated.completedAt).not.toBeNull()
+      expect(uploadStartedAt).toBeDefined()
+      expect(updated.completedAt!.getTime()).toBeLessThanOrEqual(
+        uploadStartedAt!.getTime(),
+      )
+      expect(updated.completedAt!.getTime()).toBeLessThan(
+        updated.updatedAt.getTime(),
+      )
     })
 
     it("does NOT reuse a Failed row even if it carries an objectKey and a qualifying completedAt", async () => {

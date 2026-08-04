@@ -395,9 +395,14 @@ export const processAuditLogExportRequest = async (
 
     // Step 3: Complete-Artifact reuse (ADR docs/adr/0005). A Done row for the
     // same (site, range, report type) whose `completedAt` is at or after the
-    // range's exclusive end instant was generated AFTER the range had fully
-    // elapsed; audit records are append-only, so its artifact can never go
-    // stale and re-delivering it is safe. A Done row completed BEFORE the
+    // range's exclusive end instant holds data frozen AFTER the range had
+    // fully elapsed; audit records are append-only, so its artifact can never
+    // go stale and re-delivering it is safe. This is sound only because the
+    // generate path stamps `completedAt` with an instant captured BEFORE its
+    // report query runs (see Step 4/6) — stamping at finish time would let a
+    // current-month job query an incomplete day, cross SGT midnight (or spend
+    // time in retries) during upload/email, and then advertise a permanently
+    // incomplete CSV as complete. A row whose data was frozen BEFORE the
     // range end (an in-progress-month snapshot, whose clamped range carries a
     // future end) is a point-in-time snapshot and never reused. Reuse is
     // PER-SITE — the artifact is a function of (site, range, type) only, so a
@@ -419,6 +424,11 @@ export const processAuditLogExportRequest = async (
       .executeTakeFirst()
 
     let objectKey = completeArtifact?.objectKey ?? null
+    // The instant this row's data was frozen — captured immediately before
+    // the report query on the generate path. Stays null on the reuse path (no
+    // query of its own), where delivery time is a sound completeness stamp
+    // because reuse only ever hands out an already-complete artifact.
+    let queriedAt: Date | null = null
     if (objectKey !== null) {
       // The artifact row may outlive the S3 object (e.g. a future lifecycle
       // policy): verify the object still exists before promising it. Only a
@@ -437,6 +447,11 @@ export const processAuditLogExportRequest = async (
     // `Both` requests were fanned out into two rows at request time, so one
     // row is always exactly one report.
     if (objectKey === null) {
+      // The CSV's contents are frozen the moment the report query runs, so
+      // the completeness instant is captured HERE — before querying — not
+      // when the job finishes. This is what makes the reuse predicate above
+      // sound.
+      queriedAt = new Date()
       const rows =
         report.kind === "Access"
           ? await getAccessReportRows({
@@ -472,15 +487,18 @@ export const processAuditLogExportRequest = async (
       link: { label: report.label, url },
     })
 
-    // Step 6: mark Done. `completedAt` is set on BOTH paths (reuse and
-    // generate): it is what a later request compares against `rangeEnd` to
-    // decide whether THIS row holds a Complete Artifact.
+    // Step 6: mark Done. `completedAt` is what a later request compares
+    // against `rangeEnd` to decide whether THIS row holds a Complete
+    // Artifact, so on the generate path it carries the pre-query freeze
+    // instant (`queriedAt`), NOT the time this update runs — the two can
+    // straddle the range end (SGT midnight, retries). The reuse path ran no
+    // query, so delivery time is used there.
     await db
       .updateTable("AuditLogExportRequest")
       .set({
         status: AuditLogExportStatus.Done,
         objectKey,
-        completedAt: new Date(),
+        completedAt: queriedAt ?? new Date(),
         errorMessage: null,
         updatedAt: new Date(),
       })
