@@ -103,17 +103,17 @@ describe("auditLogExportReady template", () => {
     )
   })
 
-  it("escapes HTML in the site name", () => {
-    // Act: the site name is interpolated into the subject
+  it("keeps the site name unescaped in the subject", () => {
+    // Act: the site name is interpolated into the subject, which isn't HTML
     const template = templates.auditLogExportReady({
       ...baseData,
       siteName: `Evil <b>&</b> Co`,
       link: { label: "access", url: "https://s3.example/x" },
     })
 
-    // Assert: special chars escaped, no raw injection
-    expect(template.subject).toContain("Evil &lt;b&gt;&amp;&lt;/b&gt; Co")
-    expect(template.subject).not.toContain("<b>&</b>")
+    // Assert: the raw site name renders as-is; escaped entities never leak in
+    expect(template.subject).toContain("Evil <b>&</b> Co")
+    expect(template.subject).not.toContain("&lt;b&gt;&amp;&lt;/b&gt;")
   })
 
   it("escapes a multi-parameter signed URL exactly once", () => {
@@ -163,15 +163,16 @@ describe("auditLogExportFailed template", () => {
     expect(template.body).toContain("support@isomer.gov.sg")
   })
 
-  it("escapes HTML in the site name", () => {
+  it("keeps the site name unescaped in the subject but escapes it in the body", () => {
     // Act
     const template = templates.auditLogExportFailed({
       ...data,
       siteName: `Evil <b>&</b> Co`,
     })
 
-    // Assert
-    expect(template.subject).toContain("Evil &lt;b&gt;&amp;&lt;/b&gt; Co")
+    // Assert: the subject isn't HTML, so the raw site name renders as-is;
+    // the body is HTML, so it stays escaped there.
+    expect(template.subject).toContain("Evil <b>&</b> Co")
     expect(template.body).not.toContain("<b>&</b>")
   })
 })
