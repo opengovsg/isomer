@@ -1729,34 +1729,41 @@ describe("resource.service", () => {
     })
 
     it("continues to match resources by title", async () => {
+      // Arrange
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         title: "Speech by Minister",
         permalink: "unrelated-path",
-      })
+      });
 
-      const result = await searchPages(site.id, "minister")
+      // Act
+      const result = await searchPages(site.id, "minister");
 
-      expect(result.resources.map(({ id }) => id)).toEqual([page.id])
+      // Assert
+      expect(result.resources.map(({ id }) => id)).toEqual([page.id]);
     })
 
     it("matches an exact permalink", async () => {
+      // Arrange
       const { site, page } = await setupPageResource({
         resourceType: ResourceType.Page,
         title: "Annual publications",
         permalink: "annual-reports",
-      })
+      });
 
-      const result = await searchPages(site.id, "annual-reports")
+      // Act
+      const result = await searchPages(site.id, "annual-reports");
 
-      expect(result.resources.map(({ id }) => id)).toEqual([page.id])
+      // Assert
+      expect(result.resources.map(({ id }) => id)).toEqual([page.id]);
     })
 
     it("matches a partial full path", async () => {
+      // Arrange
       const { site, folder } = await setupFolder({
         title: "Department information",
         permalink: "departments",
-      })
+      });
       const { page } = await setupPageResource({
         siteId: site.id,
         parentId: folder.id,
@@ -1765,16 +1772,19 @@ describe("resource.service", () => {
         permalink: "contact-us",
       })
 
-      const result = await searchPages(site.id, "departments/cont")
+      // Act
+      const result = await searchPages(site.id, "departments/cont");
 
-      expect(result.resources.map(({ id }) => id)).toEqual([page.id])
+      // Assert
+      expect(result.resources.map(({ id }) => id)).toEqual([page.id]);
     })
 
     it("matches paths case-insensitively", async () => {
+      // Arrange
       const { site, folder } = await setupFolder({
         title: "Department information",
         permalink: "departments",
-      })
+      });
       const { page } = await setupPageResource({
         siteId: site.id,
         parentId: folder.id,
@@ -1783,16 +1793,19 @@ describe("resource.service", () => {
         permalink: "contact-us",
       })
 
-      const result = await searchPages(site.id, "/DEPARTMENTS/CONTACT-US")
+      // Act
+      const result = await searchPages(site.id, "/DEPARTMENTS/CONTACT-US");
 
-      expect(result.resources.map(({ id }) => id)).toEqual([page.id])
+      // Assert
+      expect(result.resources.map(({ id }) => id)).toEqual([page.id]);
     })
 
     it("excludes resources with unrelated paths", async () => {
+      // Arrange
       const { site, folder } = await setupFolder({
         title: "Department information",
         permalink: "departments",
-      })
+      });
       await setupPageResource({
         siteId: site.id,
         parentId: folder.id,
@@ -1801,9 +1814,11 @@ describe("resource.service", () => {
         permalink: "contact-us",
       })
 
-      const result = await searchPages(site.id, "services/payments")
+      // Act
+      const result = await searchPages(site.id, "services/payments");
 
-      expect(result.resources).toEqual([])
+      // Assert
+      expect(result.resources).toEqual([]);
       expect(result.totalCount).toBe(0)
     })
   })
