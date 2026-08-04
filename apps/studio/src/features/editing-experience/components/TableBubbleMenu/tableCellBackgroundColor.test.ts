@@ -247,9 +247,10 @@ describe("setSelectedBodyCellsBackgroundColor", () => {
     } as unknown as Editor
 
     // Act
-    setSelectedBodyCellsBackgroundColor(editor, "blue")
+    const changed = setSelectedBodyCellsBackgroundColor(editor, "blue")
 
     // Assert
+    expect(changed).toBe(true)
     expect(dispatched).toBeDefined()
     expect(readCellColors(dispatched?.doc ?? doc)).toEqual([
       { type: "tableHeader", backgroundColor: null },
@@ -280,12 +281,41 @@ describe("setSelectedBodyCellsBackgroundColor", () => {
     } as unknown as Editor
 
     // Act
-    setSelectedBodyCellsBackgroundColor(editor, null)
+    const changed = setSelectedBodyCellsBackgroundColor(editor, null)
 
     // Assert
+    expect(changed).toBe(true)
     expect(readCellColors(dispatched?.doc ?? doc)).toEqual([
       { type: "tableCell", backgroundColor: null },
       { type: "tableCell", backgroundColor: null },
     ])
+  })
+
+  it("returns false without dispatching when the colour is already applied", () => {
+    // Arrange
+    const doc = createTableDoc([
+      [
+        { type: "tableCell", backgroundColor: "blue" },
+        { type: "tableCell", backgroundColor: "blue" },
+      ],
+    ])
+    const selection = selectCells(doc, 0, 1)
+    const state = EditorState.create({ doc, selection })
+    let dispatched: Transaction | undefined
+    const editor = {
+      state,
+      view: {
+        dispatch: (transaction: Transaction) => {
+          dispatched = transaction
+        },
+      },
+    } as unknown as Editor
+
+    // Act
+    const changed = setSelectedBodyCellsBackgroundColor(editor, "blue")
+
+    // Assert
+    expect(changed).toBe(false)
+    expect(dispatched).toBeUndefined()
   })
 })

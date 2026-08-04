@@ -53,9 +53,9 @@ export const getUniformBodyCellBackgroundColor = (
 export const setSelectedBodyCellsBackgroundColor = (
   editor: Editor,
   color: TableCellBackgroundColorToken | null,
-): void => {
+): boolean => {
   const { selection } = editor.state
-  if (!(selection instanceof CellSelection)) return
+  if (!(selection instanceof CellSelection)) return false
 
   const transaction = editor.state.tr
   selection.forEachCell((node, pos) => {
@@ -68,7 +68,8 @@ export const setSelectedBodyCellsBackgroundColor = (
     })
   })
 
-  if (transaction.docChanged) {
-    editor.view.dispatch(transaction)
-  }
+  if (!transaction.docChanged) return false
+
+  editor.view.dispatch(transaction)
+  return true
 }

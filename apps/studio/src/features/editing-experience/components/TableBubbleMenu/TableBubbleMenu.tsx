@@ -947,10 +947,11 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       kind === "row" ||
       kind === "column" ||
       kind === "single-cell" ||
-      kind === "merged-cell") &&
+      kind === "merged-cell" ||
+      kind === "table") &&
     hasBodyCell &&
     selection instanceof CellSelection
-  // Single-cell body selections only expose colour — skip the leading divider.
+  // Single-cell still shows Clear contents above colour — skip the divider only.
   const hasSelectionActions = kind !== "none" && kind !== "single-cell"
 
   return (
@@ -994,8 +995,9 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
               <BackgroundColourSection
                 selection={selection}
                 onSetColor={(color) => {
-                  skipNextSelectionResetRef.current = true
-                  setSelectedBodyCellsBackgroundColor(editor, color)
+                  if (setSelectedBodyCellsBackgroundColor(editor, color)) {
+                    skipNextSelectionResetRef.current = true
+                  }
                 }}
               />
             </>

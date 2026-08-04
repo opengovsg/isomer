@@ -566,6 +566,7 @@ describe("TableBubbleMenu", () => {
 
     expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Delete table")).toBeTruthy()
+    expect(await findByText("Background colour")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
     expect(queryByText("Delete row")).toBeNull()
   })
@@ -612,6 +613,34 @@ describe("TableBubbleMenu", () => {
       ).not.toBeNull()
     })
     expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
+  })
+
+  it("deactivates the menu after a new selection when clicking the already-active swatch", async () => {
+    // Arrange
+    const { editor, findByRole, findByText, queryByText, container } =
+      await renderHarness()
+    selectCells(editor, 3, 5)
+    await activateTableBubbleMenu(findByRole)
+    const blueSwatch = await findByRole("button", { name: "Blue" })
+    act(() => {
+      blueSwatch.click()
+    })
+    await waitFor(() => {
+      expect(
+        container.querySelector("td[data-background-color='blue']"),
+      ).not.toBeNull()
+    })
+
+    // Act — no-op re-click, then select a different body block
+    act(() => {
+      blueSwatch.click()
+    })
+    selectCells(editor, 6, 8)
+
+    // Assert — activation resets on the new selection
+    const trigger = await findByRole("button", { name: "Table actions" })
+    expect(trigger).toHaveAttribute("aria-pressed", "false")
+    expect(queryByText("Delete row")).toBeNull()
   })
 
   it("hides Background colour for a header row selection", async () => {

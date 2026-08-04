@@ -23,7 +23,8 @@ export const TABLE_CELL_BACKGROUND_COLORS: Record<
 export const isTableCellBackgroundColorToken = (
   value: unknown,
 ): value is TableCellBackgroundColorToken =>
-  typeof value === "string" && value in TABLE_CELL_BACKGROUND_COLORS
+  typeof value === "string" &&
+  Object.hasOwn(TABLE_CELL_BACKGROUND_COLORS, value)
 
 export const getTableCellBackgroundColorHex = (
   value: unknown,
