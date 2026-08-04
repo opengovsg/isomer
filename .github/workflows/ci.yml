@@ -75,6 +75,26 @@ jobs:
       - name: Format
         run: pnpm run format
 
+  supply-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Verify registry signatures
+        run: pnpm audit signatures
+
+      - name: Generate SBOM
+        run: pnpm sbom --sbom-format cyclonedx --prod > sbom.cdx.json
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom
+          path: sbom.cdx.json
+          retention-days: 90
+
   typecheck:
     runs-on: ubuntu-latest
     steps:
