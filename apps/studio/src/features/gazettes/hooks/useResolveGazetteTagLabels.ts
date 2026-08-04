@@ -9,18 +9,15 @@ interface GazetteTagLabels {
 }
 
 /**
- * Resolves a gazette's category and subcategory uuids to their human-readable
- * labels via the collection's tagCategories, surfacing a toast and returning
- * `undefined` when either id can't be resolved (e.g. stale tagCategories after
- * the collection's options changed underneath an open form).
+ * Resolve category and subcategory ids to labels from the collection taxonomy.
  *
- * Shared by CreateGazetteModal and ModifyGazetteModal, which both need labels
- * for two things: the `categoryLabel` the server cross-checks against
- * `categoryId`, and the `{year}/{category}/{subcategory}/{file}` S3 key.
+ * Returns `undefined` and shows a toast when either id no longer exists in the
+ * current options. Create and modify flows both need the resolved labels for
+ * the server validation step and for the `{year}/{category}/{subcategory}/{file}`
+ * S3 key.
  *
- * Resolve-or-abort, deliberately — falling back to the raw uuid would write an
- * S3 key that doesn't match the taxonomy and can't be read back by the
- * ingestion job's ref parsing.
+ * Do not fall back to raw uuids here. That would write an S3 key the ingestion
+ * job cannot map back to the taxonomy.
  */
 export const useResolveGazetteTagLabels = (): ((args: {
   categoryId: string
@@ -37,7 +34,7 @@ export const useResolveGazetteTagLabels = (): ((args: {
       toast({
         status: "error",
         title:
-          "Unable to resolve category or subcategory — please refresh and try again",
+          "Unable to resolve category or subcategory. Refresh and try again.",
         ...BRIEF_TOAST_SETTINGS,
       })
       return undefined

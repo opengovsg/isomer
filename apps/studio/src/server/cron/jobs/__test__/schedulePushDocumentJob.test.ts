@@ -14,14 +14,13 @@ import * as gazetteService from "~/server/modules/gazette/gazette.service"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
 
-// algolia.ts constructs the Algolia client at module load via
-// algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
-// not set in the test environment, so the import throws "appId is missing"
-// before any test runs. Mock the whole module to prevent this.
+// algolia.ts builds the Algolia client at module load. In tests the required
+// env vars are missing, so import-time setup throws "appId is missing". Mock
+// the module before anything imports it.
 vi.mock("~/lib/algolia")
 
-// Mock createGrowthBookContext so tests can control the flag without hitting
-// the remote GrowthBook CDN.
+// Mock createGrowthBookContext so the tests can control the flag without
+// calling GrowthBook.
 vi.mock("~/server/context", async (importOriginal) => {
   const actual = await importOriginal<typeof serverContextType>()
   return {
@@ -37,8 +36,8 @@ import { schedulePushDocumentJobHandler } from "../schedulePushDocumentJob"
 
 const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
 
-// fetch's first argument can be string | URL | Request; URL has a
-// well-defined toString, but Request needs a property pull.
+// fetch accepts string, URL, or Request. URL has `toString()`, while Request
+// needs `input.url`.
 const urlToString = (input: Parameters<typeof fetch>[0]): string =>
   typeof input === "string"
     ? input
@@ -46,9 +45,9 @@ const urlToString = (input: Parameters<typeof fetch>[0]): string =>
       ? input.toString()
       : input.url
 
-// Replace the document blob's content with a shape the worker accepts.
-// The worker's Zod parse inspects `page.ref` and `page.tagged`, so we cast
-// around the broader BlobJsonContent typing for the sake of the fixture.
+// Replace the document blob's content with the shape the worker expects.
+// The fixture only needs `page.ref` and `page.tagged`, so we cast around the
+// wider BlobJsonContent type.
 const setBlobContentForPushDocument = async (
   blobId: bigint | string,
   ref: string,
@@ -83,7 +82,7 @@ const seedDocumentReadyForIngestion = async ({
     permalink: parentTitle.toLowerCase().replace(/\s+/g, "-"),
   })
 
-  // IndexPage resource — the handler queries for this to derive subcategory.
+  // The handler reads the IndexPage resource to resolve the subcategory.
   const { page: indexPage, blob: indexBlob } = await setupPageResource({
     resourceType: ResourceType.IndexPage,
     siteId: site.id,
@@ -92,9 +91,8 @@ const seedDocumentReadyForIngestion = async ({
     permalink: "index",
   })
 
-  // Set the IndexPage blob content to the expected shape: two tagCategories,
-  // one for category and one for subcategory, each with a `label` used to
-  // disambiguate which resolved option is which.
+  // Give the IndexPage blob the expected shape: one tagCategory for category
+  // and one for subcategory, each with the label the resolver looks for.
   await db
     .updateTable("Blob")
     .set({
@@ -117,9 +115,7 @@ const seedDocumentReadyForIngestion = async ({
     .where("id", "=", String(indexBlob.id))
     .execute()
 
-  // A published Version for the IndexPage. Publishing sets
-  // publishedVersionId on the Resource (see version.service.ts), and the
-  // handler resolves the index page blob through it.
+  // The handler reads the IndexPage blob through its published Version.
   const indexVersion = await db
     .insertInto("Version")
     .values({
@@ -152,8 +148,7 @@ const seedDocumentReadyForIngestion = async ({
     description,
   )
 
-  // A published Version pointing at the same blob — the dispatcher reads
-  // the latest Version per resource.
+  // The dispatcher reads the latest published Version per resource.
   await db
     .insertInto("Version")
     .values({
@@ -167,7 +162,7 @@ const seedDocumentReadyForIngestion = async ({
   return { resourceId: child.id, parentTitle, ref }
 }
 
-/** Build a mock GrowthBook instance where isOn returns the given value. */
+/** Build a mock GrowthBook instance with a fixed `isOn` result. */
 const makeMockGb = (isOn: boolean) => ({
   isOn: vi.fn().mockReturnValue(isOn),
   destroy: vi.fn(),
@@ -178,11 +173,8 @@ describe("schedulePushDocumentJobHandler", async () => {
   let user: User
 
   beforeEach(async () => {
-    // clearAllMocks resets call counts / return-value overrides on the
-    // module-level vi.mock("~/lib/algolia") auto-mock (which restoreAllMocks
-    // would destroy, breaking vi.mocked(algoliaLib.*) calls below).
-    // restoreAllMocks then cleans up the vi.spyOn stubs re-registered each
-    // tick so they don't bleed across tests.
+    // `clearAllMocks` resets the module-level algolia mock without removing it.
+    // `restoreAllMocks` then cleans up the per-test spies.
     vi.clearAllMocks()
     vi.restoreAllMocks()
     MockDate.set(FIXED_NOW)
@@ -202,23 +194,22 @@ describe("schedulePushDocumentJobHandler", async () => {
       isDeleted: false,
     })
 
-    // Stub heavy I/O so unit-style runs don't touch S3 or hit the
-    // SearchSG endpoint.
+    // Stub the heavy I/O so the test does not touch S3 or SearchSG.
     vi.spyOn(s3Lib, "getBlob").mockResolvedValue(new Uint8Array([1, 2, 3]))
     vi.spyOn(s3Lib, "setAssetAsPublished").mockResolvedValue(undefined)
     vi.spyOn(gazetteService, "parseFullTextFromPDF").mockResolvedValue(
       "parsed pdf text",
     )
 
-    // Default: flag OFF → Algolia path.
+    // Default to the Algolia path.
     vi.mocked(serverContext.createGrowthBookContext).mockResolvedValue(
       makeMockGb(false) as never,
     )
 
-    // Mock saveObjectsToSearchIndex (auto-mocked by vi.mock("~/lib/algolia")).
+    // `saveObjectsToSearchIndex` comes from the auto-mocked algolia module.
     vi.mocked(algoliaLib.saveObjectsToSearchIndex).mockResolvedValue(undefined)
 
-    // Two sequential fetches: auth token, then ingest POST.
+    // The worker fetches an auth token first, then posts the ingest request.
     vi.spyOn(global, "fetch").mockImplementation(
       // eslint-disable-next-line @typescript-eslint/require-await
       async (input: Parameters<typeof fetch>[0]) => {

@@ -90,25 +90,20 @@ const loadCollectionTagCategoriesForCategoryInput = async ({
   return tagCategories
 }
 
-// Blob.content adheres to the PrismaJson.BlobJsonContent contract shared with
-// the components package. We deliberately do NOT add gazette-only fields like
-// `fileSize` here — the file size is read from S3 at list time instead, since
-// the page is bounded to ~25 rows and S3 HEAD scales to thousands of QPS.
+// Blob.content follows the shared PrismaJson.BlobJsonContent contract. Keep
+// gazette-only fields like `fileSize` out of it and read size from S3 at list
+// time instead. The page is capped at about 25 rows, so the extra HEADs are fine.
 //
-// `categoryId` and `subcategoryId` are composed into a single `tagged` array
-// on write — the persisted shape has no standalone `category` key, matching
-// the generic tagCategories/tagged model used elsewhere. Both ids are
-// validated against the collection taxonomy before we get here, so `tagged`
-// always holds exactly one Category option and one Sub-category option.
+// `categoryId` and `subcategoryId` are written as one `tagged` array. There is
+// no standalone `category` key in storage. Both ids are validated against the
+// collection taxonomy before we get here, so `tagged` always contains one
+// Category option and one Sub-category option.
 //
-// Readers must resolve these by option-uuid membership, never by index:
-// nothing about this array's order is part of the contract.
+// Readers must resolve these by option id membership, not by index.
 //
-// NOTE: `category` is stripped from the base page because gazettes no longer
-// persist it. The key is still required by LinkRefPageSchema in
-// @opengovsg/isomer-components and still emitted by createCollectionLinkJson;
-// both are being deprecated in a downstream PR, at which point this strip and
-// the omission below can go away.
+// Strip `category` from the base page because gazettes no longer persist it.
+// The shared schema still requires that key today, and
+// `createCollectionLinkJson` still emits it.
 const buildGazetteBlobContent = ({
   ref,
   categoryId,
@@ -188,10 +183,8 @@ export const gazetteRouter = router({
             END`,
           "asc",
         )
-        // 2. Category priority from blob content — matches by uuid
-        // containment against `tagged` since category is no longer a plain
-        // string field. Falls through to the `else` bucket (harmlessly) if a
-        // category's uuid is unresolved, e.g. the tagCategory isn't seeded.
+        // 2. Category priority from blob content. Match by id containment in
+        // `tagged` because category is no longer a plain string field.
         .orderBy((eb) => {
           const content = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`
           return eb
@@ -214,7 +207,7 @@ export const gazetteRouter = router({
         .orderBy("Version.publishedAt", (ob) => ob.desc())
         // 5. Scheuled date descending
         .orderBy("Resource.scheduledAt", (ob) => ob.desc())
-        // 6. Toppan file ID descending — the last path segment of page.ref.
+        // 6. Toppan file ID descending. This is the last path segment of page.ref.
         //    e.g. "/2026/Government Gazette/Advertisements/26adv6175b.pdf"
         //    -> "26adv6175b.pdf". Strip everything up to the final slash so we
         //    sort on the file ID, not the full path.
@@ -237,11 +230,9 @@ export const gazetteRouter = router({
         ])
         .execute()
 
-      // Fetch each gazette's file size from S3 in parallel. The page is
-      // bounded to ~25 rows per request and S3 HEAD scales to thousands of
-      // QPS, so the N HEADs are fine — keeping the size out of the blob
-      // preserves the PrismaJson.BlobJsonContent contract with the
-      // components package.
+      // Fetch each gazette's file size from S3 in parallel. The page size is
+      // small enough that the extra HEADs are fine, and this keeps file size
+      // out of the shared BlobJsonContent shape.
       return Promise.all(
         results.map(async (result) => {
           const ref = (result.content as { page?: { ref?: string } } | null)

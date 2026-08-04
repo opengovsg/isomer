@@ -29,10 +29,9 @@ import { GazetteFormFields } from "../GazetteModal"
 
 interface ModifyGazetteInitialData {
   title: string
-  // Option uuids, or `null` when `page.tagged` held no uuid matching the
-  // collection's taxonomy — see GazetteTableData. An unresolved value seeds the
-  // form empty, so the required-field validation forces a re-pick rather than
-  // letting an unrecognised tag round-trip back into the blob.
+  // Option ids, or `null` when `page.tagged` held nothing from the collection
+  // taxonomy. In that case the form starts empty and requires the user to pick
+  // a valid value instead of writing the old tag back unchanged.
   category: string | null
   subcategory: string | null
   notificationNumber?: string

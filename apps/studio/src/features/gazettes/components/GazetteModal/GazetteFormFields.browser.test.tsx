@@ -31,16 +31,15 @@ const TAG_CATEGORIES = [
     options: [
       // Allowed under Government Gazette.
       { id: "sub-tenders-uuid", label: "Tenders" },
-      // Allowed only under Legislative Supplements — must never be offered
-      // while Government Gazette is the selected category.
+      // This belongs under Legislative Supplements, so it should not appear
+      // while Government Gazette is selected.
       { id: "sub-acts-uuid", label: "Acts Supplement" },
     ],
   },
 ]
 
 // GazetteSubcategoriesProvider reads the collection taxonomy over trpc. Stub the
-// single procedure it calls so these tests exercise the *real* context logic
-// (option→label maps, getSubcategoriesForCategory) rather than a mocked context.
+// one procedure it calls so these tests still use the real context logic.
 vi.mock("~/utils/trpc", () => ({
   trpc: {
     collection: {
@@ -100,12 +99,9 @@ afterEach(() => {
   cleanup()
 })
 
-// Regression guard for the pre-cutover masking behaviour: the category label
-// used to fall back to the raw uuid (`categoryMap[category] ?? category`), which
-// fed an unrecognised string into getSubcategoriesForCategory. That silently
-// produced an EMPTY Subcategory dropdown with nothing on screen to explain why —
-// the exact symptom of a gazette written before the tagCategories cutover. The
-// form must now name the problem instead.
+// Before the cutover, an unknown category id could fall back to the raw uuid.
+// That left the Subcategory dropdown empty with no hint about the real problem.
+// The form should now show the issue plainly instead.
 describe("GazetteFormFields category resolution", () => {
   it("flags a category uuid that is not one of the collection's options", async () => {
     renderFields(UNRESOLVED_CATEGORY_ID)
@@ -137,8 +133,7 @@ describe("GazetteFormFields category resolution", () => {
     await waitFor(() => {
       expect(screen.queryByText("Tenders")).not.toBeNull()
     })
-    // Pairing rules still applied: Acts Supplement belongs to a different
-    // category, so it must not be selectable here.
+    // Acts Supplement belongs to a different category, so it should not appear.
     expect(screen.queryByText("Acts Supplement")).toBeNull()
   })
 

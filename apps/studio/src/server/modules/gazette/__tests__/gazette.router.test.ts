@@ -122,10 +122,9 @@ describe("gazette.router", async () => {
 
   afterEach(() => {
     MockDate.reset()
-    // Restore vi.spyOn-installed spies so call history doesn't bleed across
-    // tests — vitest reuses an existing spy when spyOn is called on an
-    // already-spied method, which would otherwise let test 1's calls show up
-    // in test 2's mock.calls[0].
+    // Restore spies between tests. Vitest can reuse an existing spy when
+    // `spyOn` is called twice, which lets one test's call history leak into
+    // the next one.
     vi.restoreAllMocks()
   })
 
@@ -261,8 +260,7 @@ describe("gazette.router", async () => {
       })
 
       // Assert
-      // Resource was inserted with the past scheduledAt straight from the
-      // input — no future-only validation, no rewrite to null.
+      // The past `scheduledAt` value is stored as-is.
       const resource = await db
         .selectFrom("Resource")
         .where("id", "=", String(gazetteId))
@@ -273,10 +271,8 @@ describe("gazette.router", async () => {
       expect(resource.scheduledAt).toEqual(PAST_DATE)
       expect(resource.scheduledBy).toBe(user.id)
 
-      // Blob carries the gazette metadata. Note we deliberately do NOT
-      // store fileSize here — it stays a runtime S3 HEAD lookup so the
-      // BlobJsonContent contract with the components package isn't
-      // polluted with feature-specific fields.
+      // The blob stores gazette metadata, but not `fileSize`. We still read
+      // that from S3 at runtime so the shared BlobJsonContent shape stays clean.
       const blob = await db
         .selectFrom("Blob")
         .where("id", "=", resource.draftBlobId)
@@ -285,7 +281,7 @@ describe("gazette.router", async () => {
       const page = (blob.content as { page?: { ref?: string } } | null)?.page
       expect(page?.ref).toBe("/1/abc/notice-123.pdf")
 
-      // Both audit entries (resource create + schedule publish) emitted.
+      // Both audit entries were written.
       const auditLogs = await db.selectFrom("AuditLog").selectAll().execute()
       expect(auditLogs).toHaveLength(2)
     })
@@ -344,12 +340,9 @@ describe("gazette.router", async () => {
       )
     })
 
-    // Guards the pre-cutover failure mode: `tagged` used to be a positional
-    // array whose first element was "the subcategory", so a caller echoing the
-    // read shape ([categoryId, subcategoryId]) back at the server put a
-    // Category uuid in the subcategory slot. The wire contract is now two named
-    // ids, but a Category uuid can still be *sent* as subcategoryId — it has to
-    // be rejected, not persisted as a second category entry.
+    // Before the cutover, callers could treat `tagged` like a positional array
+    // and send a category id where the subcategory id belonged. The server
+    // should reject that input instead of persisting a second category entry.
     it("rejects a category uuid supplied as the subcategory id", async () => {
       // Arrange
       const { site, collection } = await seedToppanWithCollection()
@@ -423,8 +416,8 @@ describe("gazette.router", async () => {
         scheduledAt: PAST_DATE,
       })
 
-      // Assert: exactly one Category option and one Sub-category option, and
-      // no standalone `category` key — the whole point of the cutover.
+      // Store exactly one Category id and one Sub-category id, with no
+      // standalone `category` key.
       const resource = await db
         .selectFrom("Resource")
         .where("id", "=", String(gazetteId))
@@ -449,8 +442,7 @@ describe("gazette.router", async () => {
       // Arrange
       const { site, collection } = await seedToppanWithCollection()
 
-      // Act & Assert: Acts Supplement is a valid Sub-category option, but only
-      // under Legislative Supplements — not Government Gazette.
+      // Acts Supplement is valid, but only under Legislative Supplements.
       await expect(
         caller.create({
           siteId: site.id,

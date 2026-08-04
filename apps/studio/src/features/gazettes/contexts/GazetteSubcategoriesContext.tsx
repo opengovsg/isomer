@@ -14,11 +14,11 @@ interface GazetteSubcategoriesContextValue {
   subcategories: { label: string; value: string }[]
   subcategoryMap: Record<string, string>
   /**
-   * `categoryLabel` is the *resolved* label for the selected category uuid, or
-   * `undefined` when the uuid isn't one of this collection's Category options.
-   * Callers must not coerce an unresolved uuid into this parameter — doing so
-   * silently yields an empty list, which renders as an empty dropdown with no
-   * indication that the category itself is the problem.
+   * `categoryLabel` is the resolved label for the selected category id, or
+   * `undefined` when the id is not one of this collection's Category options.
+   * Callers must not pass an unresolved id through here. That would return an
+   * empty list and make the dropdown look broken when the real problem is the
+   * category itself.
    */
   getSubcategoriesForCategory: (categoryLabel: string | undefined) => {
     label: string

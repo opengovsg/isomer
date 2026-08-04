@@ -12,11 +12,10 @@ export interface GazetteTableData {
   notificationNo: string | null
   title: string
   /**
-   * Category / Sub-category option uuids resolved out of `page.tagged` by
-   * option-uuid membership. `null` means `tagged` held no uuid matching the
-   * collection's taxonomy — a row that predates the tagCategories cutover and
-   * has not been backfilled. Deliberately nullable rather than `""` so the
-   * unresolved case has to be handled at every render site.
+   * Category / Sub-category option ids resolved from `page.tagged`.
+   * `null` means `tagged` held no id from the collection taxonomy, usually
+   * because the row has not been backfilled since the tagCategories cutover.
+   * Keep this nullable so every render site handles the unresolved case.
    */
   category: string | null
   subcategory: string | null

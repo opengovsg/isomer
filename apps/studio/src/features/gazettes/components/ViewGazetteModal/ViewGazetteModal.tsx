@@ -31,8 +31,8 @@ import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategor
 
 interface ViewGazetteData {
   title: string
-  // Option uuids, or `null` when `page.tagged` held no uuid matching the
-  // collection's taxonomy — see GazetteTableData.
+  // Option ids, or `null` when `page.tagged` held nothing from the collection
+  // taxonomy. See `GazetteTableData`.
   category: string | null
   subcategory: string | null
   notificationNumber?: string
@@ -67,9 +67,9 @@ export const ViewGazetteModal = ({
       ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
     : false
 
-  // Unresolved tags surface as an explicit "Unknown" rather than a blank or a
-  // raw uuid — this modal is read-only, so it is the one place a Toppan user
-  // can notice that a published gazette still carries the pre-cutover shape.
+  // Show "Unknown" instead of a blank value or raw uuid. This modal is read
+  // only, so it is the clearest place to show that an older gazette still uses
+  // the pre-cutover tag shape.
   const subcategoryLabel = data.subcategory
     ? (subcategoryMap[data.subcategory] ?? GAZETTE_UNRESOLVED_TAG_LABEL)
     : GAZETTE_UNRESOLVED_TAG_LABEL

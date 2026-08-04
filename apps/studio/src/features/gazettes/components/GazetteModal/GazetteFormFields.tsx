@@ -29,18 +29,16 @@ interface GazetteFormFieldsProps {
   control: Control<GazetteFormData>
   errors: FieldErrors<GazetteFormData>
   setValue: UseFormSetValue<GazetteFormData>
-  // Display-only metadata for an already-uploaded file. Used by the modify
-  // modal so the Attachment renders "already attached" without us having to
-  // re-download the actual PDF.
+  // Display-only metadata for an uploaded file. The modify modal uses this so
+  // Attachment can show the existing PDF without downloading it again.
   initialFileName?: string
   initialFileSize?: number
   onFileChange?: (file: File | undefined) => void
 }
 
-// Build a synthetic File with the right name + size for display purposes.
-// `defineProperty` is used instead of a `Proxy` because it mutates the real
-// File rather than wrapping it, so any built-in method (e.g. `.slice()`) that
-// reads `this.size` still resolves correctly without proxy method-rebinding.
+// Build a synthetic File with the right name and size for display.
+// `defineProperty` updates the real File instance, so built-in methods like
+// `.slice()` still read `this.size` correctly.
 const buildPlaceholderFile = (name: string, size?: number): File => {
   const file = new File([], name, { type: "application/pdf" })
   if (size !== undefined) {
@@ -66,10 +64,9 @@ export const GazetteFormFields = ({
   const { categories, categoryMap, getSubcategoriesForCategory } =
     useGazetteSubcategoriesContext()
   const category = useWatch({ control, name: "category" })
-  // No `?? category` fallback: an unresolved uuid is not a label, and passing
-  // one to getSubcategoriesForCategory yields an empty Subcategory dropdown
-  // with nothing to explain why. A gazette written before the tagCategories
-  // cutover lands here, so say so instead of rendering a dead dropdown.
+  // Do not fall back to the raw id here. An unresolved id is not a label, and
+  // passing it through would leave the Subcategory dropdown empty with no clue
+  // why. Show the problem instead.
   const categoryLabel = categoryMap[category]
   const isCategoryUnresolved = !!category && !categoryLabel
 

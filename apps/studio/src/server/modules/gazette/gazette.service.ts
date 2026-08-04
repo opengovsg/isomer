@@ -114,10 +114,8 @@ export const findCollectionLinkWithFilename = async ({
   return query.executeTakeFirst()
 }
 
-// NOTE: Identical to the one in assets.service.ts
-// just that we swap the bucket.
-// Not adding the prop because we want to keep it separate -
-// we want to isolate gazette stuff as much as possible
+// Same shape as the assets helper, but this uses the gazette bucket. Keep it
+// separate so gazette-specific behavior stays local to this module.
 export const getPresignedPutUrl = async ({
   key,
   fileSize,
@@ -197,11 +195,9 @@ export const copyFileWithNewName = async ({
   return newKey
 }
 
-// Taken as is from egazette codebase.
-// Instantiates a fresh PdfReader per call — the cron handler parses PDFs
-// concurrently via Promise.all and pdfreader is built on pdf2json whose
-// underlying state is not safe to share across overlapping parseBuffer
-// invocations.
+// Mirrors the egazette parser behavior. Create a fresh PdfReader per call
+// because the cron handler parses PDFs concurrently and pdfreader is not safe
+// to share across overlapping `parseBuffer` calls.
 export const parseFullTextFromPDF = async (pdfBuffer: Uint8Array) => {
   const pdfReader = new PdfReader({})
   const data: string[] = await new Promise((resolve, reject) => {
@@ -374,24 +370,17 @@ export const buildGazetteSearchRecords = ({
 }: BuildGazetteSearchRecordsParams): SearchRecord[] => {
   if (!parsedText) return []
 
-  // Split parsedText into chunks of up to 7 000 characters, ending on a
-  // whitespace boundary where possible. This keeps each Algolia record well
-  // below the ~10 KB record-size limit.
+  // Split `parsedText` into chunks of up to 7,000 characters, preferably on a
+  // whitespace boundary. This keeps each Algolia record under the size limit.
   //
-  // The regex matches up to 7 000 characters followed by whitespace OR
-  // end-of-string. The `g` flag advances through the string chunk by chunk.
-  // We use a while-loop (not matchAll/split) to mirror egazette's own
-  // chunking logic exactly.
+  // The regex matches up to 7,000 characters followed by whitespace or the end
+  // of the string. A while loop keeps the behavior aligned with egazette.
   //
-  // WHY end on whitespace: splitting mid-word fragments search tokens across
-  // two records and hurts recall; whitespace-aligned splits are semantically
-  // cleaner and egazette uses the same boundary.
+  // Breaking on whitespace avoids splitting search tokens across records.
   //
-  // NOTE: a contiguous run of non-whitespace characters longer than 7000 chars
-  // causes the regex to skip the leading portion of that run (it begins matching
-  // at the first position from which it can consume up to 7000 chars ending at
-  // the string boundary). Same behavior as egazette; gazette PDFs are
-  // whitespace-delimited prose, so this does not arise in practice.
+  // A single non-whitespace run longer than 7,000 characters would skip its
+  // leading portion. That matches egazette's current behavior, and gazette PDFs
+  // are plain prose so this is not expected in practice.
   const CHUNK_REGEX = /.{1,7000}(?:\s|$)/g
 
   const chunks: string[] = []
@@ -608,11 +597,10 @@ export const assertGazetteCategoryInput = ({
   }
 }
 
-// Unlike category, the client only submits a subcategory id (no label to
-// cross-check). Confirm the id is a real Sub-category option *and* that its
-// label is allowed for the already-validated categoryLabel — the form filters
-// by the same mapping, but direct callers can otherwise persist mismatched
-// pairs (e.g. Government Gazette + Acts Supplement).
+// Unlike category, the client only sends a subcategory id. Check that it is a
+// real Sub-category option and that its label is valid for the chosen
+// categoryLabel. The form filters by the same mapping, but direct callers still
+// need server-side protection.
 export const assertGazetteSubcategoryInput = ({
   subcategoryId,
   categoryId,
@@ -624,12 +612,10 @@ export const assertGazetteSubcategoryInput = ({
   categoryLabel: string
   tagCategories: GazetteTagCategory[]
 }): void => {
-  // Completes the `page.tagged` invariant: the persisted array is exactly
-  // [categoryId, subcategoryId], so it holds one Category option and one
-  // Sub-category option — provided the two ids differ. Equal ids would need
-  // one uuid to be an option under *both* tagCategories (a malformed
-  // taxonomy), which would otherwise pass both asserts and persist a
-  // duplicate entry that `resolveGazetteTagLabels` reads as both labels.
+  // Keep the `page.tagged` invariant intact: one category id and one
+  // subcategory id. Equal ids would mean one option appears in both
+  // tagCategories, which is malformed taxonomy data and would confuse
+  // `resolveGazetteTagLabels`.
   if (subcategoryId === categoryId) {
     throw new TRPCError({
       code: "BAD_REQUEST",

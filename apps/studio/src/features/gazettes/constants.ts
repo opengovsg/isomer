@@ -1,10 +1,10 @@
-// Single source of truth for the gazette category *labels*. These are the
-// labels the collection's "Category" tagCategory options are expected to carry,
-// and what `getAllowedSubcategoryLabelsForCategory` keys off.
+// Single source of truth for gazette category labels. These labels must match
+// the collection's "Category" tagCategory options, and
+// `getAllowedSubcategoryLabelsForCategory` keys off them.
 //
-// The Category form field is driven by the collection taxonomy (uuid values,
-// resolved via GazetteSubcategoriesContext), not by this object — a gazette's
-// category lives in `page.tagged` as an option uuid.
+// The form field itself is driven by collection taxonomy ids resolved through
+// `GazetteSubcategoriesContext`. A gazette's category is stored in
+// `page.tagged` as an option id.
 export const GazetteCategories = {
   GovernmentGazettes: "Government Gazette",
   LegislativeSupplements: "Legislative Supplements",
@@ -16,14 +16,11 @@ export const GAZETTE_CATEGORY_LABEL = "Category"
 export const GAZETTE_SUBCATEGORY_LABEL = "Sub-category"
 
 /**
- * Rendered in place of a category/subcategory label when a gazette's
- * `page.tagged` holds no uuid matching the collection's Category /
- * Sub-category options — i.e. the row predates the tagCategories cutover and
- * has not been backfilled yet.
+ * Shown when `page.tagged` contains no id matching the collection's Category
+ * or Sub-category options.
  *
- * Shown explicitly rather than falling back to a blank cell or the raw uuid:
- * a blank reads as "this gazette has no category" and a uuid reads as noise,
- * so both hide stragglers from the people best placed to report them.
+ * We show this instead of a blank value or raw uuid so old rows still stand
+ * out and can be backfilled.
  */
 export const GAZETTE_UNRESOLVED_TAG_LABEL = "Unknown"
 
@@ -76,8 +73,8 @@ export const otherSupplementsSubcategoriesKeys = Object.values(
 
 /**
  * Allowed subcategory labels for a top-level gazette category.
- * Shared by the Studio form filter and server create/update validation so
- * pairing rules stay in one place.
+ * Shared by the Studio form filter and the server validation so the pairing
+ * rules live in one place.
  */
 export const getAllowedSubcategoryLabelsForCategory = (
   category: string,
