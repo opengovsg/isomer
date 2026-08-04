@@ -1,15 +1,7 @@
 import type { TableCellBackgroundColorToken } from "@opengovsg/isomer-components"
 import type { Editor } from "@tiptap/react"
 import type { MutableRefObject, ReactElement, ReactNode } from "react"
-import {
-  Box,
-  Divider,
-  Flex,
-  Icon,
-  Portal,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { Box, Flex, Icon, Portal, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
 import {
   TABLE_CELL_BACKGROUND_COLORS,
@@ -274,10 +266,6 @@ const ActionGroup = ({ children }: { children: ReactNode }) => (
   <VStack align="stretch" gap="0" w="100%">
     {children}
   </VStack>
-)
-
-const ActionDivider = () => (
-  <Divider borderColor="base.divider.medium" my="0.25rem" opacity={1} />
 )
 
 const colourSwatchLabel = (color: string) =>
@@ -1025,7 +1013,6 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
           <TableSelectionActions editor={editor} kind={kind} />
           {canSetBackgroundColour && (
             <>
-              {hasSelectionActions && <ActionDivider />}
               <BackgroundColourSection
                 selection={selection}
                 onSetColor={(color) => {
