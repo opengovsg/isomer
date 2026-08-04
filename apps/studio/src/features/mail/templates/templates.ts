@@ -299,7 +299,7 @@ const auditLogExportReadyTemplate = (
   const downloadLink = `<a href="${link.url}">${getDownloadLinkLabel(link.label, month)}</a>`
 
   return {
-    subject: `[Isomer] ${logName} logs for ${month} for your site (${siteName}) is ready`,
+    subject: `[Isomer] ${logName} logs for ${month} for your site (${unescapeHtml(siteName)}) is ready`,
     body: `<p>Hi ${recipientEmail},</p>
 <p>You requested for audit logs for your site(s) for ${month}. This link will expire after ${AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS} days.</p>
 <p>${downloadLink}</p>
@@ -317,10 +317,11 @@ const auditLogExportFailedTemplate = (
   const { recipientEmail, siteName, month } = data
 
   return {
-    subject: `[Isomer Studio] Your audit log export for ${siteName} (${month}) could not be generated`,
+    subject: `[Isomer Studio] Your audit log export for ${unescapeHtml(siteName)} (${month}) could not be generated`,
     body: `<p>Hi ${recipientEmail},</p>
 <p>We're sorry — we couldn't generate your audit log export for ${siteName} (${month}).</p>
 <p>Please try again later. If the problem persists, contact <a href="${ISOMER_SUPPORT_LINK}">${ISOMER_SUPPORT_EMAIL}</a>.</p>
+<br/>
 <p>Best,</p>
 <p>Isomer team</p>`,
   }

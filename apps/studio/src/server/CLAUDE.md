@@ -40,7 +40,7 @@ Never write your own auth middleware in a router. If you need a new auth shape, 
 - Define the Zod schema in `apps/studio/src/schemas/<area>.ts` and import it in the router.
 - Routers should not declare ad-hoc inline schemas. If a schema is router-internal and tiny, keep it inline; otherwise lift it.
 
-### Permission checks belong in the router 
+### Permission checks belong in the router
 
 - Routers wire input → service. The router performs the permission check (`bulkValidateUserPermissionsForResources` and friends) **before** mutating and calling services.
 - Do not gate purely on the existence of a session — that only proves the caller is logged in, not authorised for the resource.
