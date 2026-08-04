@@ -17,6 +17,7 @@ import {
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { addDays } from "date-fns"
+import { AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS } from "~/constants/misc"
 import { env } from "~/env.mjs"
 
 const DELETE_TAG = "deletedAt"
@@ -30,6 +31,14 @@ export const isR2Configured = !!(
   env.R2_ACCESS_KEY_ID &&
   env.R2_SECRET_ACCESS_KEY
 )
+
+// Signed download URLs for audit log exports are valid for
+// AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS (shared with the email copy via
+// ~/constants/misc), matching the object lifecycle on the bucket. Exposed so
+// the orchestrator (next layer) can sign URLs against the same bucket with a
+// consistent expiry.
+export const AUDIT_LOG_EXPORT_URL_EXPIRY_SECONDS =
+  60 * 60 * 24 * AUDIT_LOG_EXPORT_URL_EXPIRY_DAYS
 
 const storage = new S3Client(
   isR2Configured
@@ -83,10 +92,11 @@ export const generateSignedPutUrl = async ({
   )
 }
 
-export const generateSignedGetUrl = async ({
-  Bucket,
-  Key,
-}: Pick<GetObjectCommandInput, "Bucket" | "Key">): Promise<string> => {
+export const generateSignedGetUrl = async (
+  { Bucket, Key }: Pick<GetObjectCommandInput, "Bucket" | "Key">,
+  // Default kept at 5 minutes so all existing callers are unchanged.
+  expiresIn: number = 60 * 5,
+): Promise<string> => {
   return getSignedUrl(
     storage,
     new GetObjectCommand({
@@ -94,7 +104,7 @@ export const generateSignedGetUrl = async ({
       Key,
     }),
     {
-      expiresIn: 60 * 5, // 5 minutes
+      expiresIn,
     },
   )
 }
@@ -319,4 +329,39 @@ export const putObjectDirect = async (
   >,
 ): Promise<void> => {
   await storage.send(new PutObjectCommand(props))
+}
+
+// Resolves the private studio assets bucket. Audit-log CSV exports live in it
+// under the `audit-log-exports/` key prefix — there is no dedicated audit
+// bucket. Throws a clear error if the env var is unset, so misconfiguration
+// fails loudly at call time rather than silently uploading to `undefined`.
+// Exposed so the orchestrator (next layer) can build keys / sign URLs against
+// the same bucket.
+export const getStudioAssetsBucketName = (): string => {
+  const bucket = env.S3_STUDIO_ASSETS_BUCKET_NAME
+  if (!bucket) {
+    throw new Error("S3_STUDIO_ASSETS_BUCKET_NAME is not configured")
+  }
+  return bucket
+}
+
+// Uploads a generated audit-log CSV export to the private studio assets
+// bucket. The download disposition uses the key's basename as the filename so
+// the browser saves a sensibly-named .csv rather than the full object key.
+export const uploadAuditLogExport = async ({
+  key,
+  body,
+}: {
+  key: string
+  body: PutObjectCommandInput["Body"]
+}): Promise<void> => {
+  const Bucket = getStudioAssetsBucketName()
+  const filename = key.split("/").pop() ?? key
+  await putObjectDirect({
+    Bucket,
+    Key: key,
+    Body: body,
+    ContentType: "text/csv",
+    ContentDisposition: `attachment; filename="${filename}"`,
+  })
 }
