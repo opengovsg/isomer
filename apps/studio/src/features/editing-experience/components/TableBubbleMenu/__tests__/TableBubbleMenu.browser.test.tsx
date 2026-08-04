@@ -318,19 +318,21 @@ describe("TableBubbleMenu", () => {
   })
 
   it("duplicates a body row immediately below with the same cell content", async () => {
+    // Arrange
     const { editor, findByText, findByRole } = await renderHarness()
-
     // First body row: cells 3–5 ("Row 1, A/B/C")
     selectCells(editor, 3, 5)
     expect(tableRowCount(editor)).toBe(3)
     expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
     await activateTableBubbleMenu(findByRole)
 
+    // Act
     const duplicate = await findByText("Duplicate row")
     act(() => {
       duplicate.click()
     })
 
+    // Assert
     expect(tableRowCount(editor)).toBe(4)
     expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
     expect(rowTextsAt(editor, 2)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
@@ -338,18 +340,20 @@ describe("TableBubbleMenu", () => {
   })
 
   it("duplicates a multi-row selection as a contiguous block", async () => {
+    // Arrange
     const { editor, findByText, findByRole } = await renderHarness()
-
     // Both body rows: cells 3–8
     selectCells(editor, 3, 8)
     expect(tableRowCount(editor)).toBe(3)
     await activateTableBubbleMenu(findByRole)
 
+    // Act
     const duplicate = await findByText("Duplicate row")
     act(() => {
       duplicate.click()
     })
 
+    // Assert
     expect(tableRowCount(editor)).toBe(5)
     expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
     expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
@@ -358,19 +362,21 @@ describe("TableBubbleMenu", () => {
   })
 
   it("duplicates a column immediately to the right with the same cell content", async () => {
+    // Arrange
     const { editor, findByText, findByRole } = await renderHarness()
-
     // Column B: header cell 1 + body cells 4 and 7
     selectCells(editor, 1, 7)
     expect(tableColumnCount(editor)).toBe(3)
     expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
     await activateTableBubbleMenu(findByRole)
 
+    // Act
     const duplicate = await findByText("Duplicate column")
     act(() => {
       duplicate.click()
     })
 
+    // Assert
     expect(tableColumnCount(editor)).toBe(4)
     expect(firstRowTexts(editor)).toEqual([
       "Column A",
@@ -387,18 +393,20 @@ describe("TableBubbleMenu", () => {
   })
 
   it("duplicates a multi-column selection as a contiguous block", async () => {
+    // Arrange
     const { editor, findByText, findByRole } = await renderHarness()
-
     // Columns A+B
     selectCells(editor, 0, 7)
     expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
     await activateTableBubbleMenu(findByRole)
 
+    // Act
     const duplicate = await findByText("Duplicate column")
     act(() => {
       duplicate.click()
     })
 
+    // Assert
     expect(tableColumnCount(editor)).toBe(5)
     expect(firstRowTexts(editor)).toEqual([
       "Column A",

@@ -35,8 +35,9 @@ const OverflowListPopoverContent = ({
 
   useEffect(() => {
     if (!isOpen) return
-    const handlePointerDown = (event: MouseEvent) => {
-      const target = event.target as Node
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target
+      if (!(target instanceof Node)) return
       if (
         triggerRef.current?.contains(target) ||
         contentRef.current?.contains(target)
@@ -45,8 +46,8 @@ const OverflowListPopoverContent = ({
       }
       onClose()
     }
-    document.addEventListener("mousedown", handlePointerDown)
-    return () => document.removeEventListener("mousedown", handlePointerDown)
+    document.addEventListener("pointerdown", handlePointerDown)
+    return () => document.removeEventListener("pointerdown", handlePointerDown)
   }, [isOpen, onClose])
 
   return (
