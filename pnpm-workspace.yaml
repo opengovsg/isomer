@@ -164,7 +164,7 @@ catalog:
   sass: ^1.100.0
   superjson: ^2.2.1
   tailwind-merge: ^2.4.0
-  tailwind-variants: ^3.2.2
+  tailwind-variants: ^3.3.0
   tailwindcss-react-aria-components: ^1.1.4
   tiptap-text-direction: ^0.5.0
   transliteration: ^2.6.1
