@@ -169,9 +169,11 @@ $max-depth: 13;
       text-align: left;
     }
 
-    // Brand inverse token resolves via CSS var; force light text for contrast.
+    // Brand inverse token resolves via CSS var (injected from site theme on
+    // the edit page). Light text keeps contrast on the dark brand fill.
     td[data-background-color="brand.canvas.inverse"],
     th[data-background-color="brand.canvas.inverse"] {
+      background-color: var(--color-brand-canvas-inverse);
       color: #ffffff;
     }
   }
