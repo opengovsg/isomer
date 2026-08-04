@@ -92,6 +92,27 @@ export const resourceHandlers = {
         return []
       })
     },
+    // Ancestors of a collection item sitting in `/resources/circulars`, root-first.
+    nestedCollection: () => {
+      return trpcMsw.resource.getAncestryStack.query(() => {
+        return [
+          {
+            id: "10",
+            parentId: null,
+            title: "Resources",
+            permalink: "resources",
+            type: "Folder",
+          },
+          {
+            id: "11",
+            parentId: "10",
+            title: "Circulars",
+            permalink: "circulars",
+            type: "Collection",
+          },
+        ]
+      })
+    },
   },
   getBatchAncestryWithSelf: {
     default: () => {
