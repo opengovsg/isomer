@@ -42,7 +42,7 @@ export const getTagGroupsFromTagged = ({
       continue
     }
 
-    const group: TagGroup = { id, category: label, selected }
+    const group: TagGroup = { id, label, selected }
 
     if (
       resolveTagCategoryDisplay(display) === TAG_CATEGORY_DISPLAY_OPTIONS.Pills

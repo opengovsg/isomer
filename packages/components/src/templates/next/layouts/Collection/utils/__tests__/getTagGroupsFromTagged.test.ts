@@ -70,14 +70,14 @@ describe("getTagGroupsFromTagged", () => {
 
     // Assert
     expect(result.pillTags).toEqual([
-      { id: "topic-1", category: "Topic", selected: ["Health"] },
+      { id: "topic-1", label: "Topic", selected: ["Health"] },
     ])
     expect(result.plaintextTags).toEqual([
-      { id: "cat-1", category: "Category", selected: ["Guides"] },
+      { id: "cat-1", label: "Category", selected: ["Guides"] },
     ])
     expect(result.allTags).toEqual([
-      { id: "topic-1", category: "Topic", selected: ["Health"] },
-      { id: "cat-1", category: "Category", selected: ["Guides"] },
+      { id: "topic-1", label: "Topic", selected: ["Health"] },
+      { id: "cat-1", label: "Category", selected: ["Guides"] },
     ])
   })
 
@@ -99,11 +99,11 @@ describe("getTagGroupsFromTagged", () => {
 
     // Assert
     expect(result.pillTags).toEqual([
-      { id: "topic-1", category: "Topic", selected: ["Health"] },
+      { id: "topic-1", label: "Topic", selected: ["Health"] },
     ])
     expect(result.plaintextTags).toEqual([])
     expect(result.allTags).toEqual([
-      { id: "topic-1", category: "Topic", selected: ["Health"] },
+      { id: "topic-1", label: "Topic", selected: ["Health"] },
     ])
   })
 
@@ -158,10 +158,10 @@ describe("getTagGroupsFromTagged", () => {
 
     // Assert
     expect(result.plaintextTags).toEqual([
-      { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
+      { id: "cat-1", label: "Category", selected: ["Guides", "Articles"] },
     ])
     expect(result.allTags).toEqual([
-      { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
+      { id: "cat-1", label: "Category", selected: ["Guides", "Articles"] },
     ])
   })
 })

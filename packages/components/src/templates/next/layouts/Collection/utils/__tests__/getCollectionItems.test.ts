@@ -361,7 +361,7 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.plaintextTags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Guides"] },
+        { id: "cat-1", label: "Category", selected: ["Guides"] },
       ])
     })
 
@@ -381,7 +381,7 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.plaintextTags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
+        { id: "cat-1", label: "Category", selected: ["Guides", "Articles"] },
       ])
     })
 
@@ -456,11 +456,11 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.tags).toEqual([
-        { id: "topic-1", category: "Topic", selected: ["Health"] },
-        { id: "cat-1", category: "Category", selected: ["Guides"] },
+        { id: "topic-1", label: "Topic", selected: ["Health"] },
+        { id: "cat-1", label: "Category", selected: ["Guides"] },
       ])
       expect(result[0]!.pillTags).toEqual([
-        { id: "topic-1", category: "Topic", selected: ["Health"] },
+        { id: "topic-1", label: "Topic", selected: ["Health"] },
       ])
     })
 
@@ -505,7 +505,7 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.pillTags).toEqual([
-        { id: "topic-1", category: "Topic", selected: ["Health"] },
+        { id: "topic-1", label: "Topic", selected: ["Health"] },
       ])
       expect(result[0]!.plaintextTags).toEqual([])
     })
@@ -534,7 +534,7 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.tags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Guides"] },
+        { id: "cat-1", label: "Category", selected: ["Guides"] },
       ])
       expect(result[0]!.pillTags).toEqual([])
     })

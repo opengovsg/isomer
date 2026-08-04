@@ -21,16 +21,16 @@ export const getTagFilters = (
 
   items.forEach(({ tags }) => {
     if (tags) {
-      tags.forEach(({ selected: selectedLabels, category }) => {
-        if (!tagCategoryLabels.has(category)) {
-          tagCategoryLabels.set(category, new Map())
+      tags.forEach(({ selected: selectedLabels, label }) => {
+        if (!tagCategoryLabels.has(label)) {
+          tagCategoryLabels.set(label, new Map())
         }
-        const categoryMap = tagCategoryLabels.get(category) ?? new Map()
-        selectedLabels.forEach((label) => {
-          if (!categoryMap.has(label)) {
-            categoryMap.set(label, 0)
+        const categoryMap = tagCategoryLabels.get(label) ?? new Map()
+        selectedLabels.forEach((optionLabel) => {
+          if (!categoryMap.has(optionLabel)) {
+            categoryMap.set(optionLabel, 0)
           }
-          categoryMap.set(label, (categoryMap.get(label) ?? 0) + 1)
+          categoryMap.set(optionLabel, (categoryMap.get(optionLabel) ?? 0) + 1)
         })
       })
     }

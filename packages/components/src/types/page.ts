@@ -384,10 +384,12 @@ type BasePageAdditionalProps = BaseItemAdditionalProps & {
 
 // NOTE: derived from `tagCategories` + `tagged` at render time (see
 // `getTagGroupsFromTagged`), not a JSON schema field itself.
-export interface TagGroup {
-  id: string
-  category: string
-  selected: string[]
+// `selected` is the resolved option labels (not option ids).
+export type TagGroup = Pick<
+  Static<typeof TagCategorySchema>,
+  "id" | "label"
+> & {
+  selected: Static<typeof TagCategorySchema>["options"][number]["label"][]
 }
 
 export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &

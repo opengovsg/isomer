@@ -34,7 +34,7 @@ const generateArgs = ({
   return {
     date: new Date("2023-12-02"),
     plaintextTags: [
-      { id: "story-cat-1", category: "Category", selected: ["Research"] },
+      { id: "story-cat-1", label: "Category", selected: ["Research"] },
     ],
     title:
       "A journal on microscopic plastic and their correlation to the number of staycations enjoyed per millennials between the ages of 30-42, substantiated by research from IDK university",
@@ -120,7 +120,7 @@ export const TagsWithImage: Story = {
     pillTags: [
       {
         id: "story-long-1",
-        category: "long",
+        label: "long",
         selected: [
           "This is a very long tag that should be reflowed on smaller screens maybe",
         ],
@@ -137,7 +137,7 @@ export const TagsWithoutImage: Story = {
     pillTags: [
       {
         id: "story-very-long-1",
-        category: "very long",
+        label: "very long",
         selected: [
           "This is a second long link that should eat into the image area so that we can see how it looks",
         ],
@@ -152,13 +152,13 @@ export const MultiplePlaintextTags: Story = {
     description:
       "Each `plaintextTags` entry (e.g. Research, Guides) is rendered as plain text under the title, separated by a dot, and `pillTags` should never contain an entry for those same groups.",
     plaintextTags: [
-      { id: "story-cat-1", category: "Category", selected: ["Research"] },
-      { id: "story-region-1", category: "Region", selected: ["Guides"] },
+      { id: "story-cat-1", label: "Category", selected: ["Research"] },
+      { id: "story-region-1", label: "Region", selected: ["Guides"] },
     ],
     pillTags: [
       {
         id: "story-topic-1",
-        category: "Topic",
+        label: "Topic",
         selected: ["Health"],
       },
     ],

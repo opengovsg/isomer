@@ -22,7 +22,7 @@ describe("getAvailableFilters", () => {
     const items: ProcessedCollectionCardProps[] = [
       {
         title: "Item 1",
-        tags: [{ selected: ["Guides"], category: "Category" }],
+        tags: [{ selected: ["Guides"], label: "Category" }],
         date: new Date("2023-01-01"),
       } as ProcessedCollectionCardProps,
     ]
@@ -55,7 +55,7 @@ describe("getAvailableFilters", () => {
     const items: ProcessedCollectionCardProps[] = [
       {
         title: "Item 1",
-        tags: [{ selected: ["Guides"], category: "Category" }],
+        tags: [{ selected: ["Guides"], label: "Category" }],
         date: new Date("2023-01-01"),
       } as ProcessedCollectionCardProps,
     ]

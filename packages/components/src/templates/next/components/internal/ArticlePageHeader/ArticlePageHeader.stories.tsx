@@ -37,7 +37,7 @@ const ARTICLE = {
   plaintextTags: [
     {
       id: "story-cat-1",
-      category: "Category",
+      label: "Category",
       selected: ["NParks Happenings"],
     },
   ],
@@ -65,10 +65,10 @@ export const MultiplePlaintextGroups: Story = {
     plaintextTags: [
       {
         id: "story-cat-1",
-        category: "Category",
+        label: "Category",
         selected: ["NParks Happenings"],
       },
-      { id: "story-region-1", category: "Region", selected: ["Wildlife"] },
+      { id: "story-region-1", label: "Region", selected: ["Wildlife"] },
     ],
   },
 }
@@ -82,7 +82,7 @@ export const ArticleWithTags: Story = {
     pillTags: [
       {
         id: "story-tags-1",
-        category: "Tags",
+        label: "Tags",
         selected: ["NParks Happenings", "Wild dinosaur"],
       },
     ],
