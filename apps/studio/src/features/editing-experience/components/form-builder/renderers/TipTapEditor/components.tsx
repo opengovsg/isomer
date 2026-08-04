@@ -66,22 +66,18 @@ interface EditorProps {
   menubar: EditorMenuBar
   editor: TiptapEditor
   isNested?: boolean
-  /**
-   * Mount the contextual table bubble menu. Only set on editors whose
-   * extensions include tables (`TiptapTextEditor`, `TiptapAccordionEditor`).
-   */
-  showTableExtras?: boolean
 }
-export const Editor = ({
-  editor,
-  menubar,
-  isNested,
-  showTableExtras,
-}: EditorProps) => {
+
+const editorHasTableSupport = (editor: TiptapEditor) =>
+  editor.extensionManager.extensions.some((ext) => ext.name === "table")
+
+export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
+  const hasTableSupport = editorHasTableSupport(editor)
+
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
-      {showTableExtras && <TableBubbleMenu editor={editor} />}
+      {hasTableSupport && <TableBubbleMenu editor={editor} />}
       <EditorContentWrapper editor={editor} />
     </EditorContainer>
   )
