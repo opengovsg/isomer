@@ -19,6 +19,7 @@ import {
   Link,
   useToast,
 } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { useState } from "react"
 import { BiBulb, BiPlus, BiRightArrowAlt, BiSearch } from "react-icons/bi"
 import { REDIRECT_MESSAGES } from "~/constants/redirect"
@@ -131,6 +132,12 @@ export const AddRedirectCard = ({
       { siteId, source, destination },
       {
         onSuccess: () => {
+          posthog.capture("redirect_created", {
+            site_id: siteId,
+            destination_type: destination.startsWith("/")
+              ? "internal"
+              : "external",
+          })
           reset()
           toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
         },
