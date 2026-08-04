@@ -43,6 +43,9 @@ export const createCollectionLinkJson = ({}: {
     version: "0.1.0",
   } satisfies UnwrapTagged<PrismaJson.BlobJsonContent>
 }
+// NOTE: also used by prisma/scripts/publish-collection-index-pages to build the
+// blob it publishes for never-published collection index pages, so changes here
+// change what that backfill writes.
 export const createCollectionIndexJson = (title: string) => {
   return {
     layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
