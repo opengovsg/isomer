@@ -135,22 +135,6 @@ const server = z
         path: ["NEXT_PUBLIC_DANGEROUSLY_SKIP_SINGPASS"],
       })
     }
-    // PostHog is required in staging/production so we always have telemetry
-    // for the environments that matter; everywhere else it's opt-in, and
-    // instrumentation-client.ts treats it as a no-op when unset.
-    if (
-      (data.NEXT_PUBLIC_APP_ENV === "production" ||
-        data.NEXT_PUBLIC_APP_ENV === "staging") &&
-      (!data.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN ||
-        !data.NEXT_PUBLIC_POSTHOG_HOST)
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          "NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN and NEXT_PUBLIC_POSTHOG_HOST are required in staging and production",
-        path: ["NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN"],
-      })
-    }
   })
 
 /**

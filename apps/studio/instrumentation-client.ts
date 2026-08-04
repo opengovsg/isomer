@@ -4,9 +4,8 @@ import { env } from "~/env.mjs"
 const posthogProjectToken = env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
 const posthogHost = env.NEXT_PUBLIC_POSTHOG_HOST
 
-// env.mjs enforces that both vars are set in staging/production, so a missing
-// value here just means analytics is unconfigured for this environment (dev,
-// test, preview, ...) — treat it as a no-op rather than blocking app boot.
+// NOTE: Since this is an analytics tracker,
+// if we are missing the env vars, just no-op
 if (posthogProjectToken && posthogHost) {
   posthog.init(posthogProjectToken, {
     api_host: posthogHost,
