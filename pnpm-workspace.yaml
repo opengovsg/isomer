@@ -74,7 +74,7 @@ catalog:
   date-fns: ^4.4.0
   dotenv: ^16.4.5
   dotenv-cli: ^11.0.0
-  jsdom: ^29.1.1
+  jsdom: ^30.0.1
   isomorphic-dompurify: ^3.20.0
   mockdate: ^3.0.5
   msw: ^2.15.0
