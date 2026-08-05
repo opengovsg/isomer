@@ -277,7 +277,7 @@ describe("getFilteredItems", () => {
       {
         title: "Unrelated title",
         description: undefined,
-      } as ProcessedCollectionCardProps,
+      } as unknown as ProcessedCollectionCardProps,
       {
         title: "Another page",
         description: "Contains management (FM) guidance",
