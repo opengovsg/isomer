@@ -56,9 +56,11 @@ vi.mock("~/utils/trpc", () => {
             },
           },
         })
-        // Echo each requested id back as a single-item ancestry stack so the
-        // combined result mirrors the requested ids, unless the chunk
-        // contains an id marked to simulate an error.
+        // Echo each requested id back as a root -> self ancestry stack (the
+        // real endpoint orders stacks root-first, self-last) so the combined
+        // result mirrors the requested ids and tests catch code that
+        // incorrectly assumes the requested resource is at index 0, unless
+        // the chunk contains an id marked to simulate an error.
         return queries.map((query) => {
           if (
             query.input.resourceIds.some((id) =>
@@ -72,11 +74,18 @@ vi.mock("~/utils/trpc", () => {
             isError: false,
             data: query.input.resourceIds.map((id) => [
               {
+                id: `root-of-${id}`,
+                title: `root-of-${id}`,
+                permalink: `root-of-${id}`,
+                type: ResourceType.Folder,
+                parentId: null,
+              } satisfies ResourceItemContent,
+              {
                 id,
                 title: id,
                 permalink: id,
                 type: ResourceType.Page,
-                parentId: null,
+                parentId: `root-of-${id}`,
               } satisfies ResourceItemContent,
             ]),
           }
@@ -140,6 +149,12 @@ describe("useResourceQuery", () => {
     // Assert
     expect(batchAncestryInputsSpy).toHaveBeenCalledTimes(1)
     expect(result.current.resourceItemsWithAncestryStack).toHaveLength(10)
+    // Each browsed id must resolve to its own stack (keyed by the last,
+    // "self" element), not get lost behind its root ancestor's id.
+    const ids = result.current.resourceItemsWithAncestryStack?.map(
+      (stack) => stack[stack.length - 1]?.id,
+    )
+    expect(ids).toEqual(Array.from({ length: 10 }, (_, i) => String(i)))
   })
 
   it("issues exactly one ancestry request per Load-more rather than re-querying all loaded pages", () => {

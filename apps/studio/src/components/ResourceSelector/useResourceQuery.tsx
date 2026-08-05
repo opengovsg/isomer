@@ -4,6 +4,8 @@ import { useRef } from "react"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import { trpc } from "~/utils/trpc"
 
+import { lastResourceItemInAncestryStack } from "./utils"
+
 interface UseResourceQueryProps {
   siteId: number
   moveDest: ResourceItemContent | undefined
@@ -88,7 +90,10 @@ export const useResourceQuery = ({
   if (!isFetchingAncestry && !hasAncestryError && !useResourceIdsFromSearch) {
     for (const query of ancestryQueries) {
       for (const stack of query.data ?? []) {
-        if (stack[0]) ancestryCacheRef.current.set(stack[0].id, stack)
+        // Stacks are ordered root → ... → self, so the resource the stack
+        // was requested for is the last element, not the first.
+        const self = lastResourceItemInAncestryStack(stack)
+        if (self) ancestryCacheRef.current.set(self.id, stack)
       }
     }
   }
