@@ -9,7 +9,7 @@ import {
   type Transaction,
 } from "~/server/modules/database"
 
-import type { PublishedIndexBlob, SkipReason, TitleSource } from "./helpers"
+import type { PublishedIndexBlob, TitleSource } from "./helpers"
 import { chunk, classifyRow } from "./helpers"
 import { findNeverPublishedCollectionIndexPages } from "./query"
 
@@ -172,7 +172,7 @@ export interface SkippedRow {
   siteId: number
   siteName: string
   parentPermalink: string
-  reason: SkipReason
+  reason: string
 }
 
 export interface BackfillReport {
@@ -285,16 +285,6 @@ export const runBackfill = async ({
 
   for (const row of rows) {
     const outcome = classifyRow(row)
-    if (outcome.kind === "skip") {
-      skippedRows.push({
-        resourceId: row.resourceId,
-        siteId: row.siteId,
-        siteName: row.siteName,
-        parentPermalink: row.parentPermalink,
-        reason: outcome.reason,
-      })
-      continue
-    }
     if (outcome.variantFlip) variantFlipCount += 1
     toPublish.push({
       row,

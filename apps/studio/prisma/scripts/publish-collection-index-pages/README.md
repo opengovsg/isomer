@@ -47,15 +47,15 @@ For each `IndexPage` with `publishedVersionId IS NULL` whose parent is a `Collec
 
 1. Reads the draft blob.
 2. Builds a canonical blob: `createCollectionIndexJson(title)` plus `page.tagCategories` carried over
-   verbatim. Title precedence is draft blob `page.title` → `Resource.title` → parent title.
+   verbatim from the draft. `title` is resolved like the site build's dangling-directory stub:
+   Collection `Resource.title` → IndexPage `Resource.title` → permalink slug (draft `page.title` is
+   not read).
 3. Inserts that as a **new** `Blob` and a **new** `Version`, sets `Resource.publishedVersionId` and
    `state = Published`.
 
-A row is skipped only for `no-title` (nothing sensible to write). `page.tagCategories` is carried
+`page.tagCategories` is carried
 over wholesale, with no shape validation — the app's own save path is what enforces the schema, so a
-draft blob that made it into the DB is trusted as-is. Everything else is published — a malformed or
-wrong-layout draft is not a reason to withhold a correct index page, since we fall back to
-`Resource.title` and write the canonical template regardless. Skipped rows are listed in the report.
+draft blob that made it into the DB is trusted as-is.
 
 `draftBlobId` is **never touched** — the existing draft survives, so in-progress editor work is
 preserved and the dashboard keeps showing the page as having unpublished changes (that badge is
@@ -66,9 +66,13 @@ driven by `draftBlobId`, not `state`).
 Leaving it `Draft` while `publishedVersionId` is set would be a combination that exists nowhere else
 and would keep those queries excluding a page the build now does publish.
 
-### Carried over
+### Carried over from the draft
 
-`page.title` and `page.tagCategories`. Nothing else.
+`page.tagCategories` only.
+
+### Resolved at publish time (not from draft)
+
+`page.title` — Collection `Resource.title`, then IndexPage `Resource.title`, then permalink slug.
 
 ### Deliberately discarded
 

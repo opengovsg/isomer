@@ -19,33 +19,30 @@ export type PublishedIndexBlob = Omit<CollectionIndexTemplate, "page"> & {
 }
 
 /** Where `page.title` came from. Recorded in the report. */
-export type TitleSource = "blob" | "resource" | "parent"
-
-export type SkipReason = "no-title"
+export type TitleSource = "parent" | "resource" | "permalink"
 
 /** The subset of a query row that classification reads. */
 export interface ClassifiableRow {
   resourceTitle: string
   parentTitle: string
+  parentPermalink: string
   draftContent: unknown
   /** `variant` from the sibling CollectionMeta's published blob, if any. */
   collectionMetaVariant: unknown
 }
 
-export type Outcome =
-  | {
-      kind: "publish"
-      next: PublishedIndexBlob
-      titleSource: TitleSource
-      tagCategoryCount: number
-      /**
-       * True when this collection renders 2-column today (via the build stub's
-       * `variant`) but will render 1-column once we publish a blob that omits
-       * `variant`. Counted in the report so the blast radius is visible.
-       */
-      variantFlip: boolean
-    }
-  | { kind: "skip"; reason: SkipReason }
+export type Outcome = {
+  kind: "publish"
+  next: PublishedIndexBlob
+  titleSource: TitleSource
+  tagCategoryCount: number
+  /**
+   * True when this collection renders 2-column today (via the build stub's
+   * `variant`) but will render 1-column once we publish a blob that omits
+   * `variant`. Counted in the report so the blast radius is visible.
+   */
+  variantFlip: boolean
+}
 
 // ---------------------------------------------------------------------------
 // Readers — the draft blob is untrusted input
@@ -77,23 +74,35 @@ export const readTagCategories = (
 }
 
 /**
- * Title precedence: draft blob `page.title` -> `Resource.title` -> `parent.title`.
+ * Title for `page.title` in the published blob. Mirrors the site build's
+ * dangling-directory stub (`tooling/build/scripts/publishing/index.ts`), which
+ * uses the Collection `Resource.title`, not the unpublished draft blob.
  *
- * NOTE: `Resource.title` is arguably the fresher value — `folder.router.ts` syncs
- * it onto the IndexPage when a Collection is renamed but never updates the blob,
- * so blob `page.title` can be stale. We honour the blob by decision.
+ * Precedence: parent.title -> IndexPage Resource.title -> permalink slug title.
+ * Draft `page.title` is intentionally ignored — it can be stale after renames
+ * and is not what the live stub reads today.
  */
+const titleFromPermalink = (permalink: string): string => {
+  const pageName = permalink.replace(/-/g, " ")
+  return pageName.charAt(0).toUpperCase() + pageName.slice(1)
+}
+
 export const resolveTitle = (
-  row: Pick<ClassifiableRow, "resourceTitle" | "parentTitle" | "draftContent">,
-): { title: string; source: TitleSource } | undefined => {
-  const blobTitle = readPage(row.draftContent)?.title
-  if (nonEmptyString(blobTitle))
-    return { title: blobTitle.trim(), source: "blob" }
-  if (nonEmptyString(row.resourceTitle))
-    return { title: row.resourceTitle.trim(), source: "resource" }
+  row: Pick<
+    ClassifiableRow,
+    "resourceTitle" | "parentTitle" | "parentPermalink"
+  >,
+): { title: string; source: TitleSource } => {
   if (nonEmptyString(row.parentTitle))
     return { title: row.parentTitle.trim(), source: "parent" }
-  return undefined
+  if (nonEmptyString(row.resourceTitle))
+    return { title: row.resourceTitle.trim(), source: "resource" }
+  if (nonEmptyString(row.parentPermalink))
+    return {
+      title: titleFromPermalink(row.parentPermalink.trim()),
+      source: "permalink",
+    }
+  return { title: "", source: "parent" }
 }
 
 // ---------------------------------------------------------------------------
@@ -101,8 +110,8 @@ export const resolveTitle = (
 // ---------------------------------------------------------------------------
 
 /**
- * The canonical creation template plus the only two things carried over from the
- * draft: `page.title` (already resolved) and `page.tagCategories`.
+ * The canonical creation template plus `page.tagCategories` from the draft.
+ * `page.title` comes from {@link resolveTitle}, not the draft blob.
  *
  * `tagCategories` is OMITTED when absent or empty, so the no-filters output is
  * identical to a fresh `createCollectionIndexJson(title)`. Absent and `[]` are
@@ -122,9 +131,7 @@ export const buildPublishedIndexBlob = ({
 
 export const classifyRow = (row: ClassifiableRow): Outcome => {
   const tagCategories = readTagCategories(row.draftContent)
-
   const resolved = resolveTitle(row)
-  if (!resolved) return { kind: "skip", reason: "no-title" }
 
   // Our template omits `variant`, so the schema default ("collection", 1-column)
   // applies. The build's stub sources `variant` from the sibling CollectionMeta,

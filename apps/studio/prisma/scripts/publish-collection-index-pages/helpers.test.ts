@@ -38,6 +38,7 @@ const draftBlob = (
 const row = (overrides: Partial<ClassifiableRow> = {}): ClassifiableRow => ({
   resourceTitle: "Newsroom",
   parentTitle: "Newsroom",
+  parentPermalink: "newsroom",
   draftContent: draftBlob(),
   collectionMetaVariant: null,
   ...overrides,
@@ -121,46 +122,45 @@ describe("readTagCategories", () => {
 })
 
 describe("resolveTitle", () => {
-  it("prefers the draft blob page.title, trimmed", () => {
+  it("prefers Collection Resource.title over stale draft blob page.title", () => {
     expect(
       resolveTitle({
-        resourceTitle: "Resource name",
-        parentTitle: "Parent name",
-        draftContent: draftBlob({ title: "  Blob name  " }),
+        resourceTitle: "Index title",
+        parentTitle: "Current collection name",
+        parentPermalink: "newsroom",
+        draftContent: draftBlob({ title: "Stale blob title" }),
       }),
-    ).toEqual({ title: "Blob name", source: "blob" })
+    ).toEqual({ title: "Current collection name", source: "parent" })
   })
 
-  it.each([
-    ["absent", undefined],
-    ["blank", "   "],
-    ["a number", 42],
-    ["null", null],
-    ["an object", { a: 1 }],
-  ])(
-    "falls back to Resource.title when the blob title is %s",
-    (_name, title) => {
-      expect(
-        resolveTitle({
-          resourceTitle: "Resource name",
-          parentTitle: "Parent name",
-          draftContent: draftBlob({ title }),
-        }),
-      ).toEqual({ title: "Resource name", source: "resource" })
-    },
-  )
+  it("falls back to IndexPage Resource.title when parent.title is blank", () => {
+    expect(
+      resolveTitle({
+        resourceTitle: "Index title",
+        parentTitle: "   ",
+        parentPermalink: "newsroom",
+      }),
+    ).toEqual({ title: "Index title", source: "resource" })
+  })
 
-  it("falls back to parent.title, then gives up", () => {
-    const base = { draftContent: draftBlob({ title: "" }) }
+  it("falls back to a permalink-derived title when both Resource titles are blank", () => {
     expect(
-      resolveTitle({ ...base, resourceTitle: " ", parentTitle: "P" }),
-    ).toEqual({
-      title: "P",
-      source: "parent",
-    })
+      resolveTitle({
+        resourceTitle: "",
+        parentTitle: " ",
+        parentPermalink: "press-releases",
+      }),
+    ).toEqual({ title: "Press releases", source: "permalink" })
+  })
+
+  it("returns an empty title when nothing is available", () => {
     expect(
-      resolveTitle({ ...base, resourceTitle: "", parentTitle: " " }),
-    ).toBeUndefined()
+      resolveTitle({
+        resourceTitle: "",
+        parentTitle: "",
+        parentPermalink: "",
+      }),
+    ).toEqual({ title: "", source: "parent" })
   })
 })
 
@@ -204,19 +204,22 @@ describe("classifyRow", () => {
     expect(outcome.next.content).toStrictEqual([])
     expect("meta" in outcome.next).toBe(false)
     expect(outcome.tagCategoryCount).toBe(1)
-    expect(outcome.titleSource).toBe("blob")
+    expect(outcome.titleSource).toBe("parent")
   })
 
-  it("skips when no title source has a value", () => {
-    expect(
+  it("still publishes when every title source is empty", () => {
+    const outcome = expectPublish(
       classifyRow(
         row({
           resourceTitle: "",
           parentTitle: "",
-          draftContent: draftBlob({ title: "" }),
+          parentPermalink: "",
+          draftContent: draftBlob({ title: "Ignored blob title" }),
         }),
       ),
-    ).toEqual({ kind: "skip", reason: "no-title" })
+    )
+    expect(outcome.titleSource).toBe("parent")
+    expect(outcome.next.page.title).toBe("")
   })
 
   it.each([
@@ -224,10 +227,8 @@ describe("classifyRow", () => {
     ["draftContent is null", null],
     ["page is absent", { layout: "collection", content: [] }],
   ])("still publishes a clean blob when %s", (_name, draftContent) => {
-    // A malformed draft is not a reason to withhold a correct index page — we fall
-    // back to Resource.title and publish the canonical template.
     const outcome = expectPublish(classifyRow(row({ draftContent })))
-    expect(outcome.titleSource).toBe("resource")
+    expect(outcome.titleSource).toBe("parent")
     expect(outcome.next.page.title).toBe("Newsroom")
   })
 
