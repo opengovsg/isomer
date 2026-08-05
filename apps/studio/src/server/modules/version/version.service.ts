@@ -27,6 +27,19 @@ const getVersionById = ({ versionId }: { versionId: string }) =>
     .select(defaultVersionSelect)
     .executeTakeFirstOrThrow()
 
+// Latest `Version` for a resource, even if not currently published —
+// unlike `Resource.publishedVersionId`, this still finds history after unpublish.
+export const getLatestVersionByResourceId = (
+  db: SafeKysely,
+  { resourceId }: { resourceId: string },
+) =>
+  db
+    .selectFrom("Version")
+    .where("Version.resourceId", "=", resourceId)
+    .orderBy("Version.versionNum", "desc")
+    .select(defaultVersionSelect)
+    .executeTakeFirst()
+
 const createVersion = async (
   db: SafeKysely,
   props: {
