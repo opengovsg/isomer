@@ -76,6 +76,15 @@ export const applyResourceOrderBy = <O>(
       return query
         .orderBy(sql`lower("Resource"."title")`, "asc")
         .orderBy("Resource.id", "asc")
+    case "permalink-asc":
+      // CollectionLink permalinks are random UUIDs and hidden in the CMS, so
+      // sort links by title and pages by permalink in one combined list.
+      return query
+        .orderBy(
+          sql`lower(CASE WHEN "Resource"."type" = ${ResourceType.CollectionLink} THEN "Resource"."title" ELSE "Resource"."permalink" END)`,
+          "asc",
+        )
+        .orderBy("Resource.id", "asc")
     case "updated-desc":
     default:
       return query
