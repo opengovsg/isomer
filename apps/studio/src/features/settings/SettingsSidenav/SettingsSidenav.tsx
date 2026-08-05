@@ -70,7 +70,7 @@ export const SettingsSidenav = ({ onSidenavClose }: SettingsSidenavProps) => {
           ? [
               {
                 label: "Logs",
-                href: `/sites/${siteId}/settings/audit`,
+                href: `/sites/${siteId}/settings/audit-log`,
               },
             ]
           : []),

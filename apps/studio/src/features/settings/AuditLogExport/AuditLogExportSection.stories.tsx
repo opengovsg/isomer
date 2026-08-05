@@ -37,7 +37,7 @@ const meta: Meta<typeof AuditLogExportSection> = {
     nextjs: {
       router: {
         query: { siteId: "1" },
-        pathname: "/sites/[siteId]/settings/audit",
+        pathname: "/sites/[siteId]/settings/audit-log",
       },
     },
   },
