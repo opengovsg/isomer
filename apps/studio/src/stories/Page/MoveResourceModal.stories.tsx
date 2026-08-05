@@ -16,6 +16,7 @@ const SHARED_HANDLERS = [
   pageHandlers.updateSettings.collection(),
   pageHandlers.getPermalinkTree.withParent(),
   resourceHandlers.getChildrenOf.default(),
+  resourceHandlers.getFolderChildrenOf.default(),
   resourceHandlers.getWithFullPermalink.default(),
   resourceHandlers.getAncestryStack.default(),
   resourceHandlers.getMetadataById.content(),

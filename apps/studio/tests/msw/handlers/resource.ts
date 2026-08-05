@@ -45,6 +45,33 @@ export const resourceHandlers = {
       )
     },
   },
+  getFolderChildrenOf: {
+    // Ids match `getBatchAncestryWithSelf.foldersOnly()` so the resource
+    // picker's ancestry cache resolves these items by id.
+    default: () => {
+      return trpcMsw.resource.getFolderChildrenOf.query(() => {
+        return {
+          items: [
+            {
+              id: "1",
+              title: "Folder 1",
+              permalink: "folder-1",
+              type: "Folder",
+              parentId: null,
+            },
+            {
+              id: "2",
+              title: "Folder 2",
+              permalink: "folder-2",
+              type: "Folder",
+              parentId: null,
+            },
+          ],
+          nextOffset: null,
+        }
+      })
+    },
+  },
   getRolesFor: {
     admin: () => {
       return trpcMsw.resource.getRolesFor.query(() => {
