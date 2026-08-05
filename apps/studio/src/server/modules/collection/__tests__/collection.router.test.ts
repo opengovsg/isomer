@@ -222,7 +222,7 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(3)
+      await assertAuditLogRows(4)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -256,7 +256,7 @@ describe("collection.router", async () => {
       })
       expect(result).toMatchObject({ id: actualCollection.id })
       expect(auditSpy).toHaveBeenCalled()
-      await assertAuditLogRows(3)
+      await assertAuditLogRows(4)
       const auditEntry = await db
         .selectFrom("AuditLog")
         .where("eventType", "=", "ResourceCreate")
@@ -264,6 +264,35 @@ describe("collection.router", async () => {
         .executeTakeFirstOrThrow()
       expect(auditEntry.delta.after!).toMatchObject(result)
       expect(auditEntry.userId).toBe(session.userId)
+    })
+
+    it("should create a published index page for the collection", async () => {
+      // Arrange
+      const permalinkToUse = "published-index-collection"
+      const { site } = await setupSite()
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = await caller.create({
+        collectionTitle: "Published Index Collection",
+        siteId: site.id,
+        permalink: permalinkToUse,
+      })
+
+      // Assert
+      const indexPage = await db
+        .selectFrom("Resource")
+        .where("Resource.parentId", "=", result.id)
+        .where("Resource.type", "=", ResourceType.IndexPage)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+
+      expect(indexPage.state).toBe(ResourceState.Published)
+      expect(indexPage.publishedVersionId).not.toBeNull()
+      expect(indexPage.draftBlobId).toBeNull()
     })
 
     it("should create a nested collection if `parentFolderId` is provided and the user is an admin", async () => {
@@ -290,7 +319,7 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
-      await assertAuditLogRows(3)
+      await assertAuditLogRows(4)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")
@@ -325,7 +354,7 @@ describe("collection.router", async () => {
       })
       expect(actualCollection.parentId).toEqual(parent.id)
       expect(result).toMatchObject({ id: actualCollection.id })
-      await assertAuditLogRows(3)
+      await assertAuditLogRows(4)
       expect(auditSpy).toHaveBeenCalled()
       const auditEntry = await db
         .selectFrom("AuditLog")

@@ -31,6 +31,7 @@ import {
   defaultResourceSelect,
   getBlobOfResource,
   getSiteResourceById,
+  publishPageResource,
   publishResource,
   updateBlobById,
 } from "../resource/resource.service"
@@ -178,13 +179,18 @@ export const collectionRouter = router({
             eventType: AuditLogEvent.ResourceCreate,
           })
 
-          return collection
+          return { collection, indexPage }
         })
 
-        // TODO: Create the index page for the collection and publish it
-        await publishResource(user.id, result, ctx.logger)
+        await publishPageResource({
+          logger: ctx.logger,
+          siteId,
+          resourceId: result.indexPage.id,
+          userId: user.id,
+        })
+        await publishResource(user.id, result.collection, ctx.logger)
 
-        return pick(result, defaultCollectionSelect)
+        return pick(result.collection, defaultCollectionSelect)
       },
     ),
   createCollectionPage: protectedProcedure
