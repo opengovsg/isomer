@@ -154,8 +154,7 @@ where r."type" = 'IndexPage'
 
 One file per run, in `.out/` (gitignored), named `<timestamp>-<scope>.report.json`. It holds the
 totals, `variantFlipCount`, every skipped row with its reason, and `publishedRows` — the rollback
-data. In apply mode the report is rewritten after every committed batch, so a mid-run failure still
-leaves rollback IDs on disk for rows already published.
+data. In apply mode the report is written after the transaction commits.
 
 ## Rollback
 
@@ -178,10 +177,9 @@ The original draft blob was never modified, so there is nothing to restore.
   either. The report's `publishedRows` plus the PR record is the trail.
 - **No redirects.** `publishResource` special-cases IndexPage for redirect backfill, but no permalink
   changes here — the collection URL already resolves via the stub.
-- **Chunked writes.** One transaction per 100 rows rather than one for the whole run: a global run
-  would otherwise hold `Blob`/`Version` row locks for its whole duration. Safe to interrupt — a
-  partial run is resumable because published rows drop out of the target predicate, and the report
-  is flushed after each batch so rollback IDs for committed rows are already on disk.
+- **One transaction.** Apply mode publishes every row in a single transaction — a mid-run failure
+  rolls back all writes for that run. Re-run apply to resume; rows already published drop out of the
+  target query.
 - **Idempotency is structural.** Setting `publishedVersionId` removes the row from the target query,
   so a second run selects zero rows. `publishNewBlobVersion` also re-asserts
   `publishedVersionId IS NULL` inside its transaction to cover the concurrent case.

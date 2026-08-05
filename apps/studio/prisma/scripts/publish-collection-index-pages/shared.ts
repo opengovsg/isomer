@@ -10,13 +10,10 @@ import {
 } from "~/server/modules/database"
 
 import type { PublishedIndexBlob, TitleSource } from "./helpers"
-import { chunk, classifyRow } from "./helpers"
+import { classifyRow } from "./helpers"
 import { findNeverPublishedCollectionIndexPages } from "./query"
 
 export type Mode = "dry-run" | "apply"
-
-/** Rows per write transaction. See the comment on `chunk`. */
-const BATCH_SIZE = 100
 
 // ---------------------------------------------------------------------------
 // DB verification
@@ -253,8 +250,6 @@ export const runBackfill = async ({
   publisherId,
   outDir = defaultOutDir(),
   at = new Date(),
-  batchSize = BATCH_SIZE,
-  onAfterBatch,
 }: {
   mode: Mode
   siteId?: number
@@ -263,10 +258,6 @@ export const runBackfill = async ({
   outDir?: string
   /** Injected so callers (and tests) control the run timestamp. */
   at?: Date
-  /** Override for tests — production always uses `BATCH_SIZE`. */
-  batchSize?: number
-  /** Test hook — fires after each batch commits and the report is flushed. */
-  onAfterBatch?: (batchIndex: number) => void | Promise<void>
 }): Promise<{ report: BackfillReport; path: string }> => {
   if (mode === "apply" && !publisherId) {
     throw new Error("apply mode requires a publisherId")
@@ -314,41 +305,28 @@ export const runBackfill = async ({
     publishedRows,
   })
 
-  // `publisherId &&` narrows it to string. The guard at the top already threw for
-  // apply-without-publisherId, so this can never silently skip the write.
-  //
-  // Flush the report after every committed batch so a mid-run failure still
-  // leaves `publishedRows` on disk for rollback.
   if (mode === "apply" && publisherId) {
-    const batches = chunk(toPublish, batchSize)
-    for (const [index, batch] of batches.entries()) {
-      await db.transaction().execute(async (tx) => {
-        for (const { row, next, titleSource, tagCategoryCount } of batch) {
-          const result = await publishNewBlobVersion(tx, {
-            resourceId: row.resourceId,
-            siteId: row.siteId,
-            content: next,
-            publisherId,
-          })
-          if ("skipped" in result) {
-            alreadyPublished += 1
-            continue
-          }
-          publishedRows.push({
-            resourceId: row.resourceId,
-            siteId: row.siteId,
-            titleSource,
-            tagCategoryCount,
-            ...result,
-          })
+    await db.transaction().execute(async (tx) => {
+      for (const { row, next, titleSource, tagCategoryCount } of toPublish) {
+        const result = await publishNewBlobVersion(tx, {
+          resourceId: row.resourceId,
+          siteId: row.siteId,
+          content: next,
+          publisherId,
+        })
+        if ("skipped" in result) {
+          alreadyPublished += 1
+          continue
         }
-      })
-      writeReport(path, buildReport())
-      console.log(
-        `[batch ${index + 1}/${batches.length}] published ${publishedRows.length}/${toPublish.length}`,
-      )
-      await onAfterBatch?.(index)
-    }
+        publishedRows.push({
+          resourceId: row.resourceId,
+          siteId: row.siteId,
+          titleSource,
+          tagCategoryCount,
+          ...result,
+        })
+      }
+    })
   }
 
   const report = buildReport()

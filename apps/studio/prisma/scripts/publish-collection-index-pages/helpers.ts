@@ -152,18 +152,3 @@ export const classifyRow = (row: ClassifiableRow): Outcome => {
     variantFlip,
   }
 }
-
-/**
- * Splits rows into fixed-size batches. The write path uses one transaction per
- * batch rather than one for the whole run: an all-sites run would otherwise hold
- * row locks for its full duration. Safe to interrupt — published rows drop out of
- * the target predicate, so a partial run is resumable by re-running.
- */
-export const chunk = <T>(items: T[], size: number): T[][] => {
-  if (size < 1) throw new Error(`chunk size must be >= 1, got ${size}`)
-  const batches: T[][] = []
-  for (let i = 0; i < items.length; i += size) {
-    batches.push(items.slice(i, i + size))
-  }
-  return batches
-}

@@ -474,49 +474,6 @@ describe("runBackfill dry-run", () => {
     expect(written.scope).toBe(`site-${SITE_A}`)
     expect(written.publishedRows[0]?.previousState).toBe(ResourceState.Draft)
   })
-
-  it("keeps publishedRows on disk if a later batch fails", async () => {
-    const first = await seedTarget({ siteId: SITE_A, permalink: "first" })
-    const second = await seedTarget({ siteId: SITE_A, permalink: "second" })
-    const path = join(
-      outDir,
-      `2026-08-04T12-00-00-000Z-site-${SITE_A}.report.json`,
-    )
-
-    await expect(
-      runBackfill({
-        mode: "apply",
-        siteId: SITE_A,
-        publisherId,
-        outDir,
-        at: AT,
-        batchSize: 1,
-        onAfterBatch: async (batchIndex) => {
-          if (batchIndex !== 0) return
-          const flushed = JSON.parse(readFileSync(path, "utf-8")) as {
-            publishedRows: { resourceId: string }[]
-          }
-          const publishedId = flushed.publishedRows[0]?.resourceId
-          const remaining = [first, second].find(
-            (seed) => seed.indexPage.id !== publishedId,
-          )
-          await db
-            .deleteFrom("Resource")
-            .where("id", "=", remaining!.indexPage.id)
-            .execute()
-        },
-      }),
-    ).rejects.toThrow(/not found/)
-
-    const written = JSON.parse(readFileSync(path, "utf-8")) as {
-      publishedRows: { resourceId: string }[]
-    }
-    expect(written.publishedRows).toHaveLength(1)
-    expect(
-      (await getResource(written.publishedRows[0]!.resourceId))
-        .publishedVersionId,
-    ).not.toBeNull()
-  })
 })
 
 describe("verifyIsomerAdminByEmail", () => {

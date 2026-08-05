@@ -4,7 +4,6 @@ import { createCollectionIndexJson } from "~/server/modules/collection/collectio
 import type { ClassifiableRow, TagCategories } from "./helpers"
 import {
   buildPublishedIndexBlob,
-  chunk,
   classifyRow,
   readTagCategories,
   resolveTitle,
@@ -253,25 +252,5 @@ describe("classifyRow", () => {
         ),
       ).variantFlip,
     ).toBe(false)
-  })
-})
-
-describe("chunk", () => {
-  const range = (n: number) => Array.from({ length: n }, (_, i) => i)
-
-  it.each([
-    [0, 0],
-    [1, 1],
-    [100, 1],
-    [101, 2],
-    [250, 3],
-  ])("splits %i items into %i batches of 100", (count, expectedBatches) => {
-    const batches = chunk(range(count), 100)
-    expect(batches).toHaveLength(expectedBatches)
-    expect(batches.flat()).toEqual(range(count))
-  })
-
-  it("throws on a size below 1", () => {
-    expect(() => chunk([1, 2, 3], 0)).toThrow(/chunk size must be >= 1/)
   })
 })
