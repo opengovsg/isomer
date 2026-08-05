@@ -13,7 +13,7 @@ import {
 } from "@tiptap/pm/tables"
 import { useEditorState } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
-import { memo, useCallback, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   BiDownArrowAlt,
   BiLeftArrowAlt,
@@ -41,7 +41,10 @@ import {
   selectionIncludesHeaderRow,
   type SelectionKind,
 } from "./TableBubbleMenu.utils"
-import { useTableBubbleMenuTriggerCorner } from "./useTableBubbleMenuTriggerCorner"
+import {
+  getEditorScrollParent,
+  useTableBubbleMenuTriggerCorner,
+} from "./useTableBubbleMenuTriggerCorner"
 
 export interface TableBubbleMenuProps {
   editor: Editor
@@ -502,11 +505,32 @@ const TABLE_BUBBLE_MENU_UPDATE_DELAY = 0
 // anchors inside EditorContent and the menu gets clipped above the selection).
 // Do NOT appendTo document.body — TipTap's blur handler treats any body focus
 // target as "inside the menu" via parentNode.contains and hangs FocusLock.
+//
+// `scrollTarget` is deliberately omitted here and merged in per-editor via
+// `useTableBubbleMenuOptions` below — BubbleMenu defaults it to `window`,
+// which never fires while the user scrolls inside EditorContentWrapper's own
+// `overflow: auto`, leaving the menu stuck at a stale position over the
+// table.
 const TABLE_BUBBLE_MENU_OPTIONS = {
   strategy: "fixed" as const,
   placement: "top" as const,
   offset: 8,
 }
+
+// `editor.view.dom` isn't reparented into its final, attached position until
+// after mount, so this only resolves correctly once `kind` has changed at
+// least once (i.e. the user has made a table selection) — which always
+// precedes the menu ever being shown. `kind` isn't read inside the memo body;
+// it exists purely to force that later recompute.
+const useTableBubbleMenuOptions = (editor: Editor, kind: SelectionKind) =>
+  useMemo(
+    () => ({
+      ...TABLE_BUBBLE_MENU_OPTIONS,
+      scrollTarget: getEditorScrollParent(editor.view),
+    }),
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+    [editor, kind],
+  )
 
 // Stable explicit plugin key so we can nudge TipTap's show/hide when
 // `tableEditingKey` flips without a selection/doc change (mouseup only clears
@@ -688,6 +712,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
     (isFocused || isTriggerFocused || isTriggerFocusedRef.current)
 
   const corner = useTableBubbleMenuTriggerCorner(editor, showTrigger)
+  const tableBubbleMenuOptions = useTableBubbleMenuOptions(editor, kind)
 
   const resetActivation = useCallback(() => {
     setActivation(false)
@@ -800,7 +825,7 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
         pluginKey={TABLE_BUBBLE_MENU_PLUGIN_KEY}
         shouldShow={shouldShowActions}
         updateDelay={TABLE_BUBBLE_MENU_UPDATE_DELAY}
-        options={TABLE_BUBBLE_MENU_OPTIONS}
+        options={tableBubbleMenuOptions}
       >
         <VStack
           ref={menuRef}

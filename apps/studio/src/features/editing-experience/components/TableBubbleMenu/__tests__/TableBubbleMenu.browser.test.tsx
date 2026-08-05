@@ -733,6 +733,64 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete row")).toBeNull()
   })
 
+  it("repositions the menu when the editor's own scroll container scrolls (not just window)", async () => {
+    // EditorContentWrapper (the real production wrapper) has its own
+    // `overflowY: auto` — scrolling *inside* it must reposition the menu,
+    // not just scrolling the window.
+    let editor: Editor | undefined
+
+    const ScrollingHarness = () => {
+      const e = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+      if (e) editor = e
+      return (
+        <div
+          data-testid="scroll-parent"
+          style={{ height: "80px", overflowY: "auto" }}
+        >
+          <div style={{ height: "600px" }} />
+          {e && <TableBubbleMenu editor={e} />}
+          {e && <EditorContent editor={e} />}
+        </div>
+      )
+    }
+
+    const { findByRole, findByText, container } = render(
+      <ThemeProvider theme={theme}>
+        <ScrollingHarness />
+      </ThemeProvider>,
+    )
+    await waitFor(() => {
+      if (!editor) throw new Error("editor not ready")
+    })
+    const readyEditor = editor!
+
+    selectCells(readyEditor, 3, 5)
+    await activateTableBubbleMenu(findByRole)
+    await findByText("Delete row")
+
+    const menuEl = container.querySelector("[data-table-bubble-menu]")
+      ?.parentElement as HTMLElement | null
+    expect(menuEl).not.toBeNull()
+
+    await waitFor(() => {
+      expect(menuEl?.style.top).not.toBe("")
+    })
+    const initialTop = menuEl?.style.top
+
+    const scrollParent = container.querySelector(
+      '[data-testid="scroll-parent"]',
+    ) as HTMLElement
+
+    act(() => {
+      scrollParent.scrollTop = 300
+      scrollParent.dispatchEvent(new Event("scroll"))
+    })
+
+    await waitFor(() => {
+      expect(menuEl?.style.top).not.toBe(initialTop)
+    })
+  })
+
   it("keeps one trigger and deactivates when selection moves to another table", async () => {
     const { editor, findByRole, findByText, findAllByRole, queryByText } =
       await renderHarness(TWO_TABLES_CONTENT)
