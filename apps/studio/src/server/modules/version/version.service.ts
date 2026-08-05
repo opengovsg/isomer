@@ -37,6 +37,7 @@ export const getLatestVersionByResourceId = (
     .selectFrom("Version")
     .where("Version.resourceId", "=", resourceId)
     .orderBy("Version.versionNum", "desc")
+    .orderBy("Version.id", "desc")
     .select(defaultVersionSelect)
     .executeTakeFirst()
 

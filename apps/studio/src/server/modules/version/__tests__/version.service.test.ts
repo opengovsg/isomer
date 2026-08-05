@@ -98,6 +98,40 @@ describe("version.service", () => {
       expect(result?.versionNum).toBe(3)
     })
 
+    it("should deterministically break ties on `id` when versionNum is duplicated", async () => {
+      // Arrange — no DB constraint prevents duplicate versionNums today, so
+      // this must resolve deterministically rather than depend on scan order.
+      const user = await setupUser({})
+      const { page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: user.id,
+      })
+
+      // Insert a second row with the SAME versionNum as the one
+      // setupPageResource already created.
+      const duplicateBlob = await setupBlob()
+      const duplicateVersion = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: page.id,
+          blobId: duplicateBlob.id,
+          publishedBy: user.id,
+        })
+        .returning(["id", "versionNum"])
+        .executeTakeFirstOrThrow()
+
+      // Act
+      const result = await getLatestVersionByResourceId(db, {
+        resourceId: page.id,
+      })
+
+      // Assert — the later-inserted (higher `id`) row wins the tie
+      expect(result?.id).toBe(duplicateVersion.id)
+      expect(result?.versionNum).toBe(1)
+    })
+
     it("should return the latest historical `Version` even if the resource is currently archived (publishedVersionId is null)", async () => {
       // Arrange: simulate a resource that was published before, then archived.
       const user = await setupUser({})
