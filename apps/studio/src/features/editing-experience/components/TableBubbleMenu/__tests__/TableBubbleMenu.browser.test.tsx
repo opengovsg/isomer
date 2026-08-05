@@ -486,7 +486,7 @@ describe("TableBubbleMenu", () => {
   )
 
   it("deactivates when tabbing from the trigger through menu controls to outside", async () => {
-    const { editor, findByRole, findByText, queryByText } =
+    const { editor, findByRole, findByText, queryByText, queryByRole } =
       await renderHarness()
     selectCells(editor, 3, 5)
     await activateTableBubbleMenu(findByRole)
@@ -512,7 +512,11 @@ describe("TableBubbleMenu", () => {
       }
 
       expect(document.activeElement).toBe(outside)
-      expect(trigger).toHaveAttribute("aria-pressed", "false")
+      // Focus has left the trigger, the menu, and the editor entirely, so
+      // both the action list and the now-irrelevant pencil trigger hide.
+      await waitFor(() => {
+        expect(queryByRole("button", { name: "Table actions" })).toBeNull()
+      })
       await waitFor(() => {
         expect(queryByText("Delete row")).toBeNull()
       })

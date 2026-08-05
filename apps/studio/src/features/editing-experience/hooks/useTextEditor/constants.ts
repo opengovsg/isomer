@@ -110,6 +110,9 @@ export const PROSE_EXTENSIONS: Extensions = [
   Subscript,
 ]
 
+// Mirrors the selector TableBubbleMenu puts on its portaled trigger button.
+const TABLE_BUBBLE_MENU_TRIGGER_SELECTOR = "[data-table-bubble-menu-trigger]"
+
 export const IsomerTable = Table.extend({
   // Higher than TipTap's default keymap so Mod-a is handled here first.
   priority: 101,
@@ -121,10 +124,25 @@ export const IsomerTable = Table.extend({
     }
   },
   addKeyboardShortcuts() {
+    const parentShortcuts = this.parent?.() ?? {}
     return {
-      ...this.parent?.(),
+      ...parentShortcuts,
       "Mod-a": () =>
         selectTableCellContent(this.editor) || this.editor.commands.selectAll(),
+      // The base extension's Tab always calls goToNextCell, which keeps
+      // keyboard focus trapped inside the table. When the bubble menu's
+      // trigger is showing (an actionable multi-cell selection), send focus
+      // there instead so the trigger stays keyboard-reachable.
+      Tab: ({ editor }) => {
+        const trigger = document.querySelector<HTMLElement>(
+          TABLE_BUBBLE_MENU_TRIGGER_SELECTOR,
+        )
+        if (trigger) {
+          trigger.focus()
+          return true
+        }
+        return parentShortcuts.Tab?.({ editor }) ?? false
+      },
     }
   },
   addProseMirrorPlugins() {
