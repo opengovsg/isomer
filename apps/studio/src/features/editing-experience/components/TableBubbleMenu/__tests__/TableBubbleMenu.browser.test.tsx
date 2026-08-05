@@ -6,7 +6,7 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { act, cleanup, render, waitFor } from "@testing-library/react"
 import { tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { userEvent } from "vitest/browser"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
@@ -185,7 +185,9 @@ const Harness = ({
   data?: JSONContent
 }) => {
   const editor = useTextEditor({ data, handleChange: () => null })
-  if (editor) onReady(editor)
+  useEffect(() => {
+    if (editor) onReady(editor)
+  }, [editor, onReady])
   return (
     <>
       {editor && showMenu && <TableBubbleMenu editor={editor} />}
@@ -741,7 +743,9 @@ describe("TableBubbleMenu", () => {
 
     const ScrollingHarness = () => {
       const e = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
-      if (e) editor = e
+      useEffect(() => {
+        if (e) editor = e
+      }, [e])
       return (
         <div
           data-testid="scroll-parent"
