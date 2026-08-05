@@ -32,6 +32,7 @@ import {
   isValidExternalDestination,
   normalizeRedirectPath,
   normalizeRedirectSource,
+  redirectKind,
   redirectRowSchema,
 } from "~/schemas/redirect"
 import { getReferenceLink } from "~/utils/link"
@@ -46,6 +47,7 @@ import { AuditLogEvent, db } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import {
   getDescendantResourceIds,
+  getPublishedDescendantResourceIds,
   getResourceByFullPermalink,
   getResourceFullPermalinks,
   getResourceIdByPermalink,
@@ -270,8 +272,12 @@ export const resolveRedirectReferences = async ({
   })
 }
 
-const getByUser = async (byUserId: string) =>
-  db
+// Takes the caller's executor (tx when called inside an open transaction) so a
+// callsite mid-transaction doesn't open a second connection against the global
+// pool — that second connection can block indefinitely behind locks the open
+// transaction itself holds, hanging until the outer transaction commits.
+const getByUser = async (dbInstance: SafeKysely, byUserId: string) =>
+  dbInstance
     .selectFrom("User")
     .selectAll()
     .where("id", "=", byUserId)
@@ -294,6 +300,68 @@ const getLiveRedirectBySource = (
     .where("source", "=", source)
     .where("deletedAt", "is", null)
     .executeTakeFirst()
+
+// Redirect sources that would intercept a request to `permalink`, most specific
+// first: the exact path, then each ancestor wildcard ("/a/b/*", then "/a/*") —
+// mirroring the edge resolver's deepest-first prefix walk. The root wildcard is
+// impossible (the schema rejects it), so the shallowest candidate is a
+// single-segment "/seg/*". Deduped: when `permalink` is itself already a
+// wildcard source, the exact-path entry and the first ancestor produced by the
+// loop are the same string. Exported for unit testing.
+export const shadowingSourceCandidates = (permalink: string): string[] => {
+  const source = normalizeRedirectSource(permalink)
+  const segments = source.split("/").filter((segment) => segment.length > 0)
+  const candidates = [source]
+  for (let depth = segments.length - 1; depth >= 1; depth--) {
+    candidates.push(`/${segments.slice(0, depth).join("/")}/*`)
+  }
+  return [...new Set(candidates)]
+}
+
+// First hit in `candidates` (most-specific first) that `bySource` has, so exact
+// beats wildcard and deeper wildcard beats shallower. `excludeDestination` skips
+// only an EXACT match pointing back at the resource itself (the reclaim case) —
+// a wildcard points at the containing folder, so it stays a real shadow.
+const resolveShadowingMatch = <
+  T extends { source: string; destination: string },
+>(
+  candidates: string[],
+  bySource: Map<string, T>,
+  excludeDestination?: string,
+): T | null => {
+  const [exactSource, ...wildcardCandidates] = candidates
+  const exactMatch = exactSource ? bySource.get(exactSource) : undefined
+  if (exactMatch && exactMatch.destination !== excludeDestination) {
+    return exactMatch
+  }
+  for (const candidate of wildcardCandidates) {
+    const match = bySource.get(candidate)
+    if (match) return match
+  }
+  return null
+}
+
+// Finds the live redirect that would shadow `permalink` — see
+// resolveShadowingMatch for the precedence/exclusion semantics.
+const findShadowingRedirect = async (
+  dbInstance: SafeKysely,
+  {
+    siteId,
+    permalink,
+    excludeDestination,
+  }: { siteId: number; permalink: string; excludeDestination?: string },
+) => {
+  const candidates = shadowingSourceCandidates(permalink)
+  const rows = await dbInstance
+    .selectFrom("Redirect")
+    .selectAll()
+    .where("siteId", "=", siteId)
+    .where("source", "in", candidates)
+    .where("deletedAt", "is", null)
+    .execute()
+  const bySource = new Map(rows.map((row) => [row.source, row]))
+  return resolveShadowingMatch(candidates, bySource, excludeDestination)
+}
 
 // Resolves a stored destination to a comparable/displayable path: a reference
 // to the page's current permalink, a literal path normalised, an external URL
@@ -369,6 +437,93 @@ const getChainedRedirect = async (
   return { redirect, normalizedDestination, target, isLoop }
 }
 
+// True when a live (published) page already sits at `source` — the exact path
+// for an exact source, or anywhere at or beneath the prefix for a wildcard
+// source. A wildcard like "/news/*" must block on a live page at "/news"
+// itself OR nested under it (e.g. "/news/story"): the edge resolver's
+// prefix-walk would intercept every one of those paths and redirect them away
+// instead of serving them. Resolves a folder/collection to its index page (via
+// getResourceByFullPermalink), so a live container itself also counts.
+const hasLivePageAtSource = async (
+  siteId: number,
+  source: string,
+): Promise<boolean> => {
+  if (redirectKind(source) !== "wildcard") {
+    const pageAtSource = await getResourceByFullPermalink({
+      siteId,
+      fullPermalink: source,
+    })
+    return !!pageAtSource && pageAtSource.publishedVersionId !== null
+  }
+
+  const prefix = source.slice(0, -2) // strip trailing "/*"
+  const segments = prefix.split("/").filter(Boolean)
+  // The root wildcard ("/*") is already rejected by the schema, so this can't
+  // be empty in practice — guarded anyway since an empty prefix has no single
+  // resource to resolve below.
+  if (segments.length === 0) {
+    return false
+  }
+
+  // Walk the exact segment chain to the resource sitting AT the prefix (not
+  // resolved to an index page — its subtree is walked next), mirroring
+  // getResourceByFullPermalink's own segment walk.
+  const candidates = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.permalink", "in", segments)
+    .where("Resource.type", "not in", [
+      ResourceType.IndexPage,
+      ResourceType.FolderMeta,
+      ResourceType.CollectionMeta,
+    ])
+    .select(["id", "permalink", "parentId"])
+    .execute()
+  let parentId: string | null = null
+  let current: (typeof candidates)[number] | undefined
+  for (const segment of segments) {
+    current = candidates.find(
+      (candidate) =>
+        candidate.permalink === segment && candidate.parentId === parentId,
+    )
+    if (!current) {
+      // Nothing lives at the prefix, so nothing can be published under it.
+      return false
+    }
+    parentId = String(current.id)
+  }
+  if (!current) {
+    return false
+  }
+
+  // The prefix resource itself or anything nested beneath it being published
+  // is enough to shadow — walk its subtree for the first published hit rather
+  // than materialising every descendant.
+  const published = await db
+    .withRecursive("subtree", (eb) =>
+      eb
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.id", "=", current.id)
+        .select("Resource.id")
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain
+        // with a cycle can't drive the recursion forever.
+        .union((fb) =>
+          fb
+            .selectFrom("Resource")
+            .innerJoin("subtree", "subtree.id", "Resource.parentId")
+            .where("Resource.siteId", "=", siteId)
+            .select("Resource.id"),
+        ),
+    )
+    .selectFrom("subtree")
+    .innerJoin("Resource", "Resource.id", "subtree.id")
+    .where("Resource.publishedVersionId", "is not", null)
+    .select("Resource.id")
+    .executeTakeFirst()
+  return published !== undefined
+}
+
 // Preflight for redirect.create: returns blocking errors without mutating.
 // Advisory only — create re-enforces every error. Destination-liveness is no
 // longer warned here; the table flags not-yet-published destinations instead.
@@ -389,16 +544,9 @@ export const validateRedirect = async ({
     })
   }
 
-  // A redirect whose source is a published page's live URL would shadow that
-  // page, so block it. Resolves a folder/collection to its index page, so a
-  // live container is caught too. Only published resources block — an
-  // unpublished page isn't live yet, and publishing it later is guarded on the
-  // page side.
-  const pageAtSource = await getResourceByFullPermalink({
-    siteId,
-    fullPermalink: source,
-  })
-  if (pageAtSource && pageAtSource.publishedVersionId !== null) {
+  // A redirect whose source would shadow a published page — either the exact
+  // page or, for a wildcard, anything at/under its prefix — is blocked.
+  if (await hasLivePageAtSource(siteId, source)) {
     errors.push({
       code: RedirectValidationCode.SourceIsExistingPage,
       message: REDIRECT_MESSAGES.sourceIsExistingPage,
@@ -465,23 +613,15 @@ export const createRedirect = async ({
   byUserId: string
   logger: Logger<string>
 }) => {
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(db, byUserId)
 
   const created = await db
     .transaction()
     .execute(async (tx) => {
-      // Bound the wait for the lock so a stalled holder can't block this write
-      // indefinitely; the wait aborts as a retryable CONFLICT (see the .catch).
-      await sql`SET LOCAL lock_timeout = ${sql.lit(REDIRECT_LOCK_TIMEOUT_MS)}`.execute(
-        tx,
-      )
-      // Serialise redirect writes for this site (the same lock bulkCreateRedirects
-      // takes), so a single create and a concurrent bulk create can't each miss
-      // the other's uncommitted row in the loop/shadow guards below and both
-      // publish a loop. Released automatically at commit/rollback.
-      await sql`SELECT pg_advisory_xact_lock(${REDIRECT_WRITE_LOCK_NAMESPACE}, ${siteId})`.execute(
-        tx,
-      )
+      // So a single create and a concurrent bulk create can't each miss the
+      // other's uncommitted row in the loop/shadow guards below and both publish
+      // a loop. The timed-out wait aborts as a CONFLICT (see the .catch).
+      await acquireRedirectWriteLock(tx, siteId)
 
       // Reject creating over a live redirect. A soft-deleted row for the same
       // source still holds the (siteId, source) unique constraint and is revived
@@ -518,15 +658,12 @@ export const createRedirect = async ({
       }
 
       // Re-enforce the source-vs-published-page guard (a published page or live
-      // folder/collection at this URL would be shadowed). A page publish doesn't
-      // take the redirect lock, so this plain read can still race one going live
-      // — accepted, since a redirect shadowing a page is recoverable by deleting
+      // folder/collection at this URL — or, for a wildcard, anywhere at/under
+      // its prefix — would be shadowed). A page publish doesn't take the
+      // redirect lock, so this plain read can still race one going live —
+      // accepted, since a redirect shadowing a page is recoverable by deleting
       // it. PRECONDITION_FAILED keeps it distinct from the already-exists CONFLICT.
-      const pageAtSource = await getResourceByFullPermalink({
-        siteId,
-        fullPermalink: source,
-      })
-      if (pageAtSource && pageAtSource.publishedVersionId !== null) {
+      if (await hasLivePageAtSource(siteId, source)) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: REDIRECT_MESSAGES.sourceIsExistingPage,
@@ -641,6 +778,22 @@ const rethrowLockTimeoutAsConflict = (error: unknown): never => {
     })
   }
   throw error
+}
+
+// Taken by every redirect mutation path before its check-then-write, so a
+// concurrent write can't land on a source another path already read past — the
+// unique constraint only catches two writes racing to the SAME source. Callers
+// turn a timed-out wait into a CONFLICT via rethrowLockTimeoutAsConflict.
+const acquireRedirectWriteLock = async (
+  tx: Transaction<DB>,
+  siteId: number,
+): Promise<void> => {
+  await sql`SET LOCAL lock_timeout = ${sql.lit(REDIRECT_LOCK_TIMEOUT_MS)}`.execute(
+    tx,
+  )
+  await sql`SELECT pg_advisory_xact_lock(${REDIRECT_WRITE_LOCK_NAMESPACE}, ${siteId})`.execute(
+    tx,
+  )
 }
 
 // Thrown inside the bulk insert when a source stopped being publishable between
@@ -909,7 +1062,11 @@ const runBulkValidation = async (
     }
   }
 
-  // 4) Source shadows a live published page or container.
+  // 4) Source shadows a live published page or container — an exact source
+  // checks the literal path, a wildcard checks anywhere at/under its prefix
+  // (the same distinction hasLivePageAtSource makes for a single create).
+  // Batched across the whole file (one lookup for every exact source, one for
+  // every wildcard prefix's subtree) rather than a query per row.
   const sourcesToCheck = [
     ...new Set(
       rows.flatMap((row) =>
@@ -919,11 +1076,20 @@ const runBulkValidation = async (
       ),
     ),
   ]
-  if (sourcesToCheck.length > 0) {
-    const idByPermalink = await getResourceIdsByPermalinks(
-      siteId,
-      sourcesToCheck,
-    )
+  const exactSources: string[] = []
+  const wildcardPrefixBySource = new Map<string, string>()
+  for (const source of sourcesToCheck) {
+    if (redirectKind(source) === "wildcard") {
+      wildcardPrefixBySource.set(source, source.slice(0, -2))
+    } else {
+      exactSources.push(source)
+    }
+  }
+
+  const shadowedSources = new Set<string>()
+
+  if (exactSources.length > 0) {
+    const idByPermalink = await getResourceIdsByPermalinks(siteId, exactSources)
     const resourceIds = [...idByPermalink.values()].filter(
       (id): id is number => id !== null,
     )
@@ -931,14 +1097,75 @@ const runBulkValidation = async (
       siteId,
       resourceIds,
     )
-    for (const row of rows) {
-      if (row.error !== null || row.normalizedSource === null) {
-        continue
-      }
-      const resourceId = idByPermalink.get(row.normalizedSource) ?? null
+    for (const source of exactSources) {
+      const resourceId = idByPermalink.get(source) ?? null
       if (resourceId !== null && publishedState.get(resourceId)) {
-        row.error = REDIRECT_MESSAGES.sourceIsExistingPage
+        shadowedSources.add(source)
       }
+    }
+  }
+
+  const wildcardPrefixes = [...new Set(wildcardPrefixBySource.values())]
+  if (wildcardPrefixes.length > 0) {
+    // Resolve every wildcard's prefix to the (raw, non-index-page-substituted)
+    // resource sitting at that path, same as getResourceIdsByPermalinks
+    // resolves any other permalink — reused rather than re-walking segments.
+    const rootIdByPrefix = await getResourceIdsByPermalinks(
+      siteId,
+      wildcardPrefixes,
+    )
+    const rootIds = [...new Set(rootIdByPrefix.values())]
+      .filter((id): id is number => id !== null)
+      .map(String)
+    if (rootIds.length > 0) {
+      // One recursive walk covering every wildcard root at once, carrying each
+      // row's root id through the recursion so a published hit anywhere in a
+      // root's subtree (including the root itself) can be attributed back to
+      // it — the multi-root analogue of hasLivePageAtSource's single-prefix
+      // walk.
+      const shadowedRoots = await db
+        .withRecursive("subtree", (eb) =>
+          eb
+            .selectFrom("Resource")
+            .where("Resource.siteId", "=", siteId)
+            .where("Resource.id", "in", rootIds)
+            .select(["Resource.id as rootId", "Resource.id"])
+            .union((fb) =>
+              fb
+                .selectFrom("Resource")
+                .innerJoin("subtree", "subtree.id", "Resource.parentId")
+                .where("Resource.siteId", "=", siteId)
+                .select(["subtree.rootId", "Resource.id"]),
+            ),
+        )
+        .selectFrom("subtree")
+        .innerJoin("Resource", "Resource.id", "subtree.id")
+        .where("Resource.publishedVersionId", "is not", null)
+        .select("subtree.rootId")
+        .distinct()
+        .execute()
+      const shadowedRootIds = new Set(
+        shadowedRoots.map((row) => String(row.rootId)),
+      )
+      for (const [source, prefix] of wildcardPrefixBySource) {
+        const rootId = rootIdByPrefix.get(prefix)
+        if (
+          rootId !== null &&
+          rootId !== undefined &&
+          shadowedRootIds.has(String(rootId))
+        ) {
+          shadowedSources.add(source)
+        }
+      }
+    }
+  }
+
+  for (const row of rows) {
+    if (row.error !== null || row.normalizedSource === null) {
+      continue
+    }
+    if (shadowedSources.has(row.normalizedSource)) {
+      row.error = REDIRECT_MESSAGES.sourceIsExistingPage
     }
   }
 
@@ -1046,7 +1273,7 @@ export const bulkCreateRedirects = async ({
   byUserId: string
   logger: Logger<string>
 }): Promise<BulkCreateRedirectsResult> => {
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(db, byUserId)
 
   const { fileError, rows } = await runBulkValidation(siteId, csv)
   if (fileError !== null || rows.some((row) => row.error !== null)) {
@@ -1079,20 +1306,13 @@ export const bulkCreateRedirects = async ({
 
   try {
     const created = await db.transaction().execute(async (tx) => {
-      // Bound the wait for the lock so a stalled holder can't block this write
-      // indefinitely; the wait aborts as a retryable CONFLICT (see the catch).
-      await sql`SET LOCAL lock_timeout = ${sql.lit(REDIRECT_LOCK_TIMEOUT_MS)}`.execute(
-        tx,
-      )
-      // Serialise redirect writes for this site: two concurrent bulk creates
-      // could otherwise each miss the other's uncommitted rows in the rechecks
-      // below (READ COMMITTED doesn't see them) and both publish — e.g. one
-      // inserting /a -> /b while the other inserts /b -> /a, forming a loop. The
-      // xact lock makes the later transaction wait, so its recheck sees the
-      // committed rows and aborts. Released automatically at commit/rollback.
-      await sql`SELECT pg_advisory_xact_lock(${REDIRECT_WRITE_LOCK_NAMESPACE}, ${siteId})`.execute(
-        tx,
-      )
+      // Two concurrent bulk creates could otherwise each miss the other's
+      // uncommitted rows in the rechecks below (READ COMMITTED doesn't see them)
+      // and both publish — e.g. one inserting /a -> /b while the other inserts
+      // /b -> /a, forming a loop. The xact lock makes the later transaction
+      // wait, so its recheck sees the committed rows and aborts. The timed-out
+      // wait aborts as a CONFLICT (see the catch).
+      await acquireRedirectWriteLock(tx, siteId)
 
       // Re-read every existing row (live or soft-deleted) for these sources
       // first, so each audit entry's `before` is the real committed row. Chunked
@@ -1292,19 +1512,27 @@ export const createRedirectForPermalinkChange = async (
     oldFullPermalink,
     resourceId,
     byUserId,
+    wildcard = false,
   }: {
     siteId: number
     oldFullPermalink: string
     resourceId: string
     byUserId: string
+    // When true, store a trailing-"/*" wildcard covering the old subtree (used
+    // by folder/collection moves so one rule redirects every descendant). The
+    // destination reference resolves to the resource's new permalink and the
+    // edge resolver appends the matched remainder.
+    wildcard?: boolean
   },
 ) => {
-  const source = normalizeRedirectSource(oldFullPermalink)
+  const source = normalizeRedirectSource(
+    wildcard ? `${oldFullPermalink}/*` : oldFullPermalink,
+  )
   const destination = getReferenceLink({
     siteId: String(siteId),
     resourceId: String(resourceId),
   })
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(tx, byUserId)
 
   const existing = await tx
     .selectFrom("Redirect")
@@ -1359,20 +1587,190 @@ export const assertPermalinkNotShadowed = async (
     siteId: String(siteId),
     resourceId: String(resourceId),
   })
-  const shadowing = await tx
-    .selectFrom("Redirect")
-    .select("Redirect.id")
-    .where("Redirect.siteId", "=", siteId)
-    .where("Redirect.source", "=", normalizeRedirectSource(newFullPermalink))
-    .where("Redirect.destination", "!=", reference)
-    .where("Redirect.deletedAt", "is", null)
-    .executeTakeFirst()
+  const shadowing = await findShadowingRedirect(tx, {
+    siteId,
+    permalink: newFullPermalink,
+    excludeDestination: reference,
+  })
   if (shadowing) {
     throw new TRPCError({
       code: "CONFLICT",
-      message: `A redirect already exists at ${newFullPermalink}. Remove it on the Redirections page first.`,
+      message: `A redirect at ${shadowing.source} already covers ${newFullPermalink}. Remove it on the Redirections page first.`,
     })
   }
+}
+
+// Folder analogue of the root guard above: a move/rename relocates every
+// descendant, so each published descendant's NEW full permalink must also be
+// clear of an existing redirect. Runs AFTER Resource.permalink is updated in the
+// same transaction, so reading the descendants' permalinks through `tx` yields
+// their new paths. Each is checked with its own resourceId excluded, so a
+// redirect pointing back at that same descendant (a reclaim) doesn't count as a
+// shadow — matching assertPermalinkNotShadowed's per-resource semantics. That
+// reclaimed redirect is a live self-loop otherwise, so it's cleared the same
+// way the single-resource path does via clearReclaimedRedirect.
+//
+// Batched into a constant number of queries regardless of descendant count —
+// one candidate lookup, one soft-delete, one audit insert (each chunked, like
+// the bulk-upload path) — rather than looping assertPermalinkNotShadowed +
+// clearReclaimedRedirect per descendant. A folder with hundreds of published
+// descendants would otherwise run thousands of sequential round trips inside
+// this one transaction, holding its locks far longer than needed.
+const assertDescendantsNotShadowed = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    resourceId,
+    byUserId,
+  }: { siteId: number; resourceId: string; byUserId: string },
+) => {
+  const descendantIds = await getPublishedDescendantResourceIds(tx, {
+    siteId,
+    resourceId,
+  })
+  if (descendantIds.length === 0) {
+    return
+  }
+  const permalinks = await getResourceFullPermalinks(
+    siteId,
+    descendantIds.map(Number),
+    tx,
+  )
+  const descendants = descendantIds.flatMap((descendantId) => {
+    const newFullPermalink = permalinks.get(Number(descendantId))
+    if (newFullPermalink === undefined) {
+      return []
+    }
+    return [
+      {
+        newFullPermalink,
+        reference: getReferenceLink({
+          siteId: String(siteId),
+          resourceId: String(descendantId),
+        }),
+        candidates: shadowingSourceCandidates(newFullPermalink),
+      },
+    ]
+  })
+  if (descendants.length === 0) {
+    return
+  }
+
+  // Most candidates have no row at all, so `rows` is expected to be far shorter
+  // than `allCandidates`. Keying by `source` is unambiguous: @@unique([siteId,
+  // source]) allows only one row per source, even across soft-deletes.
+  const allCandidates = [
+    ...new Set(descendants.flatMap(({ candidates }) => candidates)),
+  ]
+  const rows = (
+    await Promise.all(
+      chunk(allCandidates, BULK_REDIRECT_INSERT_CHUNK_SIZE).map((batch) =>
+        tx
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", siteId)
+          .where("source", "in", batch)
+          .where("deletedAt", "is", null)
+          .execute(),
+      ),
+    )
+  ).flat()
+  const bySource = new Map(rows.map((row) => [row.source, row]))
+
+  for (const { newFullPermalink, reference, candidates } of descendants) {
+    const shadowing = resolveShadowingMatch(candidates, bySource, reference)
+    if (shadowing) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: `A redirect at ${shadowing.source} already covers ${newFullPermalink}. Remove it on the Redirections page first.`,
+      })
+    }
+  }
+
+  // A descendant reclaiming its own URL (its exact-source redirect points back
+  // at itself) is a self-loop otherwise — soft-delete every one in one update
+  // plus one audit insert, instead of a select+update+insert per descendant.
+  const reclaimed = descendants.flatMap(({ candidates, reference }) => {
+    const exactSource = candidates[0]
+    const match = exactSource ? bySource.get(exactSource) : undefined
+    return match && match.destination === reference ? [match] : []
+  })
+  if (reclaimed.length === 0) {
+    return
+  }
+  const byUser = await getByUser(tx, byUserId)
+  const reclaimedIds = reclaimed.map((row) => row.id)
+  const afterRows = (
+    await Promise.all(
+      chunk(reclaimedIds, BULK_REDIRECT_INSERT_CHUNK_SIZE).map((batch) =>
+        tx
+          .updateTable("Redirect")
+          .set({ deletedAt: dbNow })
+          .where("id", "in", batch)
+          .returningAll()
+          .execute(),
+      ),
+    )
+  ).flat()
+  const beforeById = new Map(reclaimed.map((row) => [row.id, row]))
+  const auditValues = afterRows.flatMap((after) => {
+    const before = beforeById.get(after.id)
+    return before
+      ? [
+          {
+            siteId,
+            eventType: AuditLogEvent.RedirectDelete,
+            delta: { before, after },
+            userId: byUser.id,
+            metadata: {},
+          },
+        ]
+      : []
+  })
+  for (const batch of chunk(auditValues, BULK_REDIRECT_INSERT_CHUNK_SIZE)) {
+    await tx.insertInto("AuditLog").values(batch).execute()
+  }
+}
+
+// Soft-deletes the live redirect at `source` whose destination is `reference`
+// (the resource reclaiming its own URL), audits the delete, and returns the
+// updated row — or null when there is nothing to reclaim. Shared by the exact
+// (page) and wildcard (folder) reclaim paths so both delete + audit identically.
+const softDeleteReclaimedRedirect = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    source,
+    reference,
+    byUserId,
+  }: { siteId: number; source: string; reference: string; byUserId: string },
+) => {
+  const reclaimed = await tx
+    .selectFrom("Redirect")
+    .selectAll()
+    .where("siteId", "=", siteId)
+    .where("source", "=", source)
+    .where("destination", "=", reference)
+    .where("deletedAt", "is", null)
+    .executeTakeFirst()
+  if (!reclaimed) {
+    return null
+  }
+
+  const byUser = await getByUser(tx, byUserId)
+  const after = await tx
+    .updateTable("Redirect")
+    .set({ deletedAt: dbNow })
+    .where("id", "=", reclaimed.id)
+    .returningAll()
+    .executeTakeFirstOrThrow()
+  await logRedirectEvent(tx, {
+    siteId,
+    by: byUser,
+    eventType: AuditLogEvent.RedirectDelete,
+    delta: { before: reclaimed, after },
+  })
+  return after
 }
 
 // When a permalink change lands a page on a path whose redirect points back at
@@ -1392,40 +1790,47 @@ export const clearReclaimedRedirect = async (
     resourceId: string
     byUserId: string
   },
-) => {
-  const source = normalizeRedirectSource(newFullPermalink)
-  const reference = getReferenceLink({
-    siteId: String(siteId),
-    resourceId: String(resourceId),
-  })
-
-  const reclaimed = await tx
-    .selectFrom("Redirect")
-    .selectAll()
-    .where("siteId", "=", siteId)
-    .where("source", "=", source)
-    .where("destination", "=", reference)
-    .where("deletedAt", "is", null)
-    .executeTakeFirst()
-  if (!reclaimed) {
-    return null
-  }
-
-  const byUser = await getByUser(byUserId)
-  const after = await tx
-    .updateTable("Redirect")
-    .set({ deletedAt: dbNow })
-    .where("id", "=", reclaimed.id)
-    .returningAll()
-    .executeTakeFirstOrThrow()
-  await logRedirectEvent(tx, {
+) =>
+  softDeleteReclaimedRedirect(tx, {
     siteId,
-    by: byUser,
-    eventType: AuditLogEvent.RedirectDelete,
-    delta: { before: reclaimed, after },
+    source: normalizeRedirectSource(newFullPermalink),
+    reference: getReferenceLink({
+      siteId: String(siteId),
+      resourceId: String(resourceId),
+    }),
+    byUserId,
   })
-  return after
-}
+
+// Folder analogue of clearReclaimedRedirect. A folder move that lands back on a
+// path this same folder previously vacated finds its own "/new/*" -> folder
+// wildcard (minted by the earlier move) still live. That is a reclaim — the
+// subtree serves directly again — not a shadow, so soft-delete it. Must run
+// BEFORE assertDescendantsNotShadowed, otherwise the descendant guard sees the
+// wildcard (whose destination is the folder, not the descendant) and wrongly
+// blocks the move.
+const clearReclaimedFolderWildcard = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    newFullPermalink,
+    resourceId,
+    byUserId,
+  }: {
+    siteId: number
+    newFullPermalink: string
+    resourceId: string
+    byUserId: string
+  },
+) =>
+  softDeleteReclaimedRedirect(tx, {
+    siteId,
+    source: normalizeRedirectSource(`${newFullPermalink}/*`),
+    reference: getReferenceLink({
+      siteId: String(siteId),
+      resourceId: String(resourceId),
+    }),
+    byUserId,
+  })
 
 // Single entry point both permalink-change flows (move and rename) call to keep
 // redirects consistent. Owns the ordering the flows depend on so they can't
@@ -1458,6 +1863,8 @@ export const applyPermalinkChangeRedirects = async (
     return
   }
 
+  await acquireRedirectWriteLock(tx, siteId).catch(rethrowLockTimeoutAsConflict)
+
   // A published page must not land on a path a live redirect already points
   // elsewhere from — it would be shadowed (mirror of the publish-block). The
   // throw rolls back the enclosing move/rename.
@@ -1486,6 +1893,77 @@ export const applyPermalinkChangeRedirects = async (
   }
 }
 
+// Folder/collection variant of applyPermalinkChangeRedirects. A folder has no URL
+// of its own to redirect, but its move/rename changes every descendant's URL, so
+// one wildcard redirect ("/old-folder/*" -> the folder reference) preserves them
+// all at once. `hasLiveContent` is the folder analogue of a page's `isPublished`
+// — true when at least one descendant is published — so we don't mint redirects
+// for a subtree that was never reachable. Runs in the caller's transaction and
+// publishes nothing.
+export const applyFolderPermalinkChangeRedirects = async (
+  tx: Transaction<DB>,
+  {
+    siteId,
+    oldFullPermalink,
+    newFullPermalink,
+    resourceId,
+    hasLiveContent,
+    shouldCreateRedirect,
+    byUserId,
+  }: {
+    siteId: number
+    oldFullPermalink: string
+    newFullPermalink: string
+    resourceId: string
+    hasLiveContent: boolean
+    shouldCreateRedirect: boolean
+    byUserId: string
+  },
+) => {
+  if (oldFullPermalink === newFullPermalink) {
+    return
+  }
+  await acquireRedirectWriteLock(tx, siteId).catch(rethrowLockTimeoutAsConflict)
+  // Mirror the page guard: a live folder must not land on a path a redirect
+  // already covers (exact or wildcard). Throwing rolls back the enclosing move.
+  // A folder move relocates every descendant too, so the root permalink alone
+  // is not enough — each published descendant's NEW URL must also be clear of an
+  // existing redirect, or the relocated page would be shadowed away.
+  if (hasLiveContent) {
+    // Reclaim this folder's own "/new/*" wildcard first (left by an earlier move
+    // that vacated this path), so a move back onto it clears the redirect
+    // instead of tripping the descendant guard below on the folder's own
+    // wildcard.
+    await clearReclaimedFolderWildcard(tx, {
+      siteId,
+      newFullPermalink,
+      resourceId,
+      byUserId,
+    })
+    await assertPermalinkNotShadowed(tx, {
+      siteId,
+      newFullPermalink,
+      resourceId,
+    })
+    await assertDescendantsNotShadowed(tx, { siteId, resourceId, byUserId })
+  }
+  await clearReclaimedRedirect(tx, {
+    siteId,
+    newFullPermalink,
+    resourceId,
+    byUserId,
+  })
+  if (shouldCreateRedirect && hasLiveContent) {
+    await createRedirectForPermalinkChange(tx, {
+      siteId,
+      oldFullPermalink,
+      resourceId,
+      byUserId,
+      wildcard: true,
+    })
+  }
+}
+
 export const deleteRedirect = async ({
   siteId,
   id,
@@ -1495,7 +1973,7 @@ export const deleteRedirect = async ({
   byUserId: string
   logger: Logger<string>
 }): Promise<void> => {
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(db, byUserId)
 
   await db.transaction().execute(async (tx) => {
     const before = await tx
@@ -1547,6 +2025,12 @@ export const deleteRedirect = async ({
 // `destinationResourceId` is the referenced resource (null for literal/external
 // destinations) so the caller can tell whether the redirect points back at the
 // page being edited (which would be reclaimed on save, not a real warning).
+//
+// NOTE: despite the name, this returns the highest-precedence redirect that
+// would INTERCEPT `source` (via findShadowingRedirect) — an exact-source match
+// OR the deepest matching ancestor wildcard ("/news/*" for "/news/2024") — not
+// strictly a redirect whose stored source equals `source`. Callers must not
+// assume exact-match semantics.
 export const getRedirectBySource = async ({
   siteId,
   source,
@@ -1554,9 +2038,9 @@ export const getRedirectBySource = async ({
   destination: string
   destinationResourceId: number | null
 } | null> => {
-  const redirect = await getLiveRedirectBySource(db, {
+  const redirect = await findShadowingRedirect(db, {
     siteId,
-    source: normalizeRedirectSource(source),
+    permalink: source,
   })
   if (!redirect) {
     return null
@@ -1643,7 +2127,7 @@ export const softDeleteRedirectsPointingToResource = async (
     return []
   }
 
-  const byUser = await getByUser(byUserId)
+  const byUser = await getByUser(tx, byUserId)
   // Soft-delete the whole set in one statement, then emit a per-redirect audit
   // entry (mirroring deleteRedirect) by pairing each before-row with its
   // committed after-row.

@@ -17,6 +17,7 @@ import {
   TouchableTooltip,
   useToast,
 } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { BiChevronDown, BiTimeFive } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { Can } from "~/features/permissions"
@@ -59,6 +60,7 @@ const SuspendablePublishButton = ({
       ])
     },
     onSuccess: () => {
+      posthog.capture("page_published", { site_id: siteId })
       fireContentEditSurveyEvent(PUBLISHED_AFTER_EDITING_EVENT)
       toast({
         status: "success",

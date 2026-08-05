@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
+  buildManifest,
   normalizeSource,
   parseUploadCliArgs,
+  partitionRedirects,
   resolveConcurrency,
   resolveUploadConfig,
 } from "../uploadRedirects"
@@ -114,5 +116,71 @@ describe("normalizeSource", () => {
   it("rejects malformed percent-encoding", () => {
     // Arrange / Act / Assert — a lone "%" is not a valid escape sequence
     expect(normalizeSource("/foo%bar")).toBeNull()
+  })
+})
+
+describe("partitionRedirects", () => {
+  it("splits exact from wildcard by source shape", () => {
+    const { exact, manifestEntries } = partitionRedirects([
+      { source: "/faq", destination: "/faqs" },
+      { source: "/news/*", destination: "/newsroom" },
+      { source: "/promotions/*", destination: "https://x.gov.sg/g" },
+    ])
+    expect(exact.map((r) => r.source)).toEqual(["/faq"])
+    expect(manifestEntries.map((r) => r.source)).toEqual([
+      "/news/*",
+      "/promotions/*",
+    ])
+  })
+
+  it("returns empty arrays when all rows are exact", () => {
+    const { exact, manifestEntries } = partitionRedirects([
+      { source: "/a", destination: "/b" },
+    ])
+    expect(exact).toHaveLength(1)
+    expect(manifestEntries).toHaveLength(0)
+  })
+
+  it("returns empty arrays when input is empty", () => {
+    const { exact, manifestEntries } = partitionRedirects([])
+    expect(exact).toHaveLength(0)
+    expect(manifestEntries).toHaveLength(0)
+  })
+})
+
+describe("buildManifest", () => {
+  it("produces a versioned flat map keyed by source", () => {
+    expect(
+      buildManifest([
+        { source: "/news/*", destination: "/newsroom" },
+        { source: "/promotions/*", destination: "https://x.gov.sg/g" },
+      ]),
+    ).toEqual({
+      version: 1,
+      redirects: {
+        "/news/*": "/newsroom",
+        "/promotions/*": "https://x.gov.sg/g",
+      },
+    })
+  })
+
+  it("returns an empty redirects map for an empty input", () => {
+    expect(buildManifest([])).toEqual({ version: 1, redirects: {} })
+  })
+
+  describe("duplicate sources", () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it("keeps the first destination and warns instead of silently overwriting", () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined)
+      const result = buildManifest([
+        { source: "/news/*", destination: "/newsroom" },
+        { source: "/news/*", destination: "/second-wins-if-not-guarded" },
+      ])
+      expect(result.redirects["/news/*"]).toBe("/newsroom")
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("/news/*"))
+    })
   })
 })
