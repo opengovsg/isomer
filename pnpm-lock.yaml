@@ -1118,6 +1118,9 @@ importers:
       npm-run-all2:
         specifier: 'catalog:'
         version: 9.0.2
+      pg-cursor:
+        specifier: catalog:pg
+        version: 2.21.0(pg@8.22.0)
       playwright:
         specifier: catalog:playwright
         version: 1.62.1

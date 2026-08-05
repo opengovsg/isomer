@@ -106,17 +106,17 @@ export const AuditLogExportSection = ({
       | typeof AuditLogExportRequestedReportType.Activity,
   ) => {
     const next = toggleReportType(reportType, toggled)
+    if (!next) return
     // `reportType` is never bound to a native input via `register`/`Controller`
     // (it's driven entirely by this checkbox cluster), so `resetField` is a
     // no-op for it — RHF only resets fields it finds in its internal registry.
     // `setValue` has no such guard, so use it for both the set and clear cases.
     // The schema requires `reportType` (so "Select a report type" fires), so
     // RHF's inferred type excludes `undefined` — but clearing the last
-    // selection must still set it to unset, same widening as the `watch`
-    // above (line 77).
-    form.setValue("reportType", next!, {
-      shouldValidate: true,
-    })
+    // selection must still set it to unset (the same widening as the `watch`
+    // above), hence the cast: `undefined` is a legitimate runtime value here,
+    // not a value we are asserting away.
+    form.setValue("reportType", next, { shouldValidate: true })
   }
 
   const { mutate: createExportRequest, isPending } =

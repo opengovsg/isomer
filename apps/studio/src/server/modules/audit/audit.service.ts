@@ -1,5 +1,3 @@
-import type { AuditLogExportRequestedReportType } from "~/schemas/audit"
-
 import type {
   AuditLogEvent,
   AuditLogExportReportType,

@@ -227,13 +227,15 @@ describe("audit.router", async () => {
       })
       expect(rows).toHaveLength(2)
 
-      // ONE event per ask — not one per fanned-out half — and the delta keeps
-      // the user's vocabulary ("Both"), not the storage fan-out.
+      // ONE event per fanned-out half — never a "Both" event, which would be
+      // ambiguous about exactly which reports were produced (review feedback
+      // on #2832). Each event's delta names a concrete DB report type.
       const events = await getExportCreateEvents({ siteId: site.id })
-      expect(events).toHaveLength(1)
-      expect(events[0]).toMatchObject({
-        delta: { before: null, after: { reportType: "Both" } },
-      })
+      expect(events).toHaveLength(2)
+      const eventReportTypes = events.map(
+        (event) => (event.delta.after as { reportType: string }).reportType,
+      )
+      expect(eventReportTypes.sort()).toEqual(["Access", "Activity"])
     })
 
     it("should throw FORBIDDEN when the caller is only an Editor", async () => {
