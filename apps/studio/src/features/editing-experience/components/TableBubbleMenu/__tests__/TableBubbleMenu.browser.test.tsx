@@ -6,40 +6,58 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { act, cleanup, render, waitFor } from "@testing-library/react"
 import { tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
-import { afterEach, describe, expect, it } from "vitest"
+import { useState } from "react"
+import { afterEach, describe, expect, it, vi } from "vitest"
+import { userEvent } from "vitest/browser"
 import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor"
 import { theme } from "~/theme"
 
 import { TableBubbleMenu } from "../TableBubbleMenu"
 
-const SEED_CONTENT: JSONContent = {
-  type: "prose",
+const createSeedTable = (caption: string): JSONContent => ({
+  type: "table",
+  attrs: { caption },
   content: [
     {
-      type: "table",
-      attrs: { caption: "Test table" },
-      content: [
-        {
-          type: "tableRow",
-          content: ["Column A", "Column B", "Column C"].map((text) => ({
-            type: "tableHeader",
-            content: [{ type: "paragraph", content: [{ type: "text", text }] }],
-          })),
-        },
-        ...[1, 2].map((row) => ({
-          type: "tableRow",
-          content: ["A", "B", "C"].map((col) => ({
-            type: "tableCell",
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: `Row ${row}, ${col}` }],
-              },
-            ],
-          })),
-        })),
-      ],
+      type: "tableRow",
+      content: ["Column A", "Column B", "Column C"].map((text) => ({
+        type: "tableHeader",
+        content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+      })),
     },
+    ...[1, 2].map((row) => ({
+      type: "tableRow",
+      content: ["A", "B", "C"].map((col) => ({
+        type: "tableCell",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: `Row ${row}, ${col}` }],
+          },
+        ],
+      })),
+    })),
+  ],
+})
+
+const SEED_TABLE = createSeedTable("Test table")
+
+const SEED_CONTENT: JSONContent = {
+  type: "prose",
+  content: [SEED_TABLE],
+}
+
+// Two identical 3x3 tables (9 cells each) separated by a paragraph. The
+// second table's first body row is cells 12..14 in reading order.
+const TWO_TABLES_CONTENT: JSONContent = {
+  type: "prose",
+  content: [
+    createSeedTable("Test table"),
+    {
+      type: "paragraph",
+      content: [{ type: "text", text: "Between tables" }],
+    },
+    createSeedTable("Second table"),
   ],
 }
 
@@ -90,29 +108,120 @@ const activateTableBubbleMenu = async (
   })
 }
 
-const Harness = ({ onReady }: { onReady: (editor: Editor) => void }) => {
-  const editor = useTextEditor({ data: SEED_CONTENT, handleChange: () => null })
+const findTableBubbleMenuPluginKey = (editor: Editor) => {
+  for (const candidate of editor.state.plugins) {
+    if (!("key" in candidate)) {
+      continue
+    }
+    const keyName = candidate.key
+    if (typeof keyName !== "string" || !keyName.startsWith("tableBubbleMenu")) {
+      continue
+    }
+    const pluginKey = candidate.spec.key
+    if (pluginKey === undefined) {
+      throw new Error("tableBubbleMenu plugin missing spec.key")
+    }
+    return pluginKey
+  }
+  throw new Error("tableBubbleMenu plugin not registered")
+}
+
+const tabToTableActionsTrigger = async (
+  editor: Editor,
+  findByRole: (role: string, options: { name: string }) => Promise<HTMLElement>,
+  { expectInactive = true }: { expectInactive?: boolean } = {},
+) => {
+  const trigger = await findByRole("button", { name: "Table actions" })
+  expect(editor.view.dom.contains(document.activeElement)).toBe(true)
+
+  for (
+    let tabs = 0;
+    tabs < 10 && document.activeElement !== trigger;
+    tabs += 1
+  ) {
+    await userEvent.tab()
+  }
+
+  expect(document.activeElement).toBe(trigger)
+  if (expectInactive) {
+    expect(trigger).toHaveAttribute("aria-pressed", "false")
+  }
+  return trigger
+}
+
+const expectKeyboardActivationOpensMenu = async ({
+  editor,
+  findByRole,
+  findByText,
+  queryByText,
+  activationKey,
+}: {
+  editor: Editor
+  findByRole: (role: string, options: { name: string }) => Promise<HTMLElement>
+  findByText: (text: string) => Promise<HTMLElement>
+  queryByText: (text: string) => HTMLElement | null
+  activationKey: "{Enter}" | "{Space}"
+}) => {
+  selectCells(editor, 3, 5)
+  const trigger = await tabToTableActionsTrigger(editor, findByRole)
+
+  expect(trigger).toBeTruthy()
+  expect(document.activeElement).toBe(trigger)
+  expect(queryByText("Delete row")).toBeNull()
+
+  await userEvent.keyboard(activationKey)
+
+  expect(editor.view.dom.contains(document.activeElement)).toBe(true)
+  expect(await findByText("Delete row")).toBeTruthy()
+}
+
+const Harness = ({
+  onReady,
+  showMenu = true,
+  data = SEED_CONTENT,
+}: {
+  onReady: (editor: Editor) => void
+  showMenu?: boolean
+  data?: JSONContent
+}) => {
+  const editor = useTextEditor({ data, handleChange: () => null })
   if (editor) onReady(editor)
   return (
     <>
-      {editor && <TableBubbleMenu editor={editor} />}
+      {editor && showMenu && <TableBubbleMenu editor={editor} />}
       {editor && <EditorContent editor={editor} />}
     </>
   )
 }
 
-const renderHarness = async () => {
+const renderHarness = async (data: JSONContent = SEED_CONTENT) => {
   let editor: Editor | undefined
+  let setShowMenu: ((showMenu: boolean) => void) | undefined
+
+  const ControlledHarness = () => {
+    const [showMenu, setShowMenuState] = useState(true)
+    setShowMenu = setShowMenuState
+    return (
+      <Harness onReady={(e) => (editor = e)} showMenu={showMenu} data={data} />
+    )
+  }
+
   const utils = render(
     <ThemeProvider theme={theme}>
-      <Harness onReady={(e) => (editor = e)} />
+      <ControlledHarness />
     </ThemeProvider>,
   )
   await waitFor(() => {
-    if (!editor) throw new Error("editor not ready")
+    if (!editor || !setShowMenu) throw new Error("editor not ready")
   })
   // Non-null by the waitFor above.
-  return { ...utils, editor: editor! }
+  return {
+    ...utils,
+    editor: editor!,
+    setShowMenu: (showMenu: boolean) => {
+      setShowMenu!(showMenu)
+    },
+  }
 }
 
 // First-row cell text contents in left-to-right order — used to assert
@@ -357,6 +466,61 @@ describe("TableBubbleMenu", () => {
     expect(queryByRole("button", { name: "Table actions" })).toBeNull()
   })
 
+  it.each([
+    { activationKey: "{Enter}" as const, label: "Enter" },
+    { activationKey: "{Space}" as const, label: "Space" },
+  ])(
+    "keeps the trigger mounted when tabbing to it and opens the menu with $label",
+    async ({ activationKey }) => {
+      const { editor, findByRole, findByText, queryByText } =
+        await renderHarness()
+
+      await expectKeyboardActivationOpensMenu({
+        editor,
+        findByRole,
+        findByText,
+        queryByText,
+        activationKey,
+      })
+    },
+  )
+
+  it("deactivates when tabbing from the trigger through menu controls to outside", async () => {
+    const { editor, findByRole, findByText, queryByText } =
+      await renderHarness()
+    selectCells(editor, 3, 5)
+    await activateTableBubbleMenu(findByRole)
+    expect(await findByText("Delete row")).toBeTruthy()
+
+    const trigger = await tabToTableActionsTrigger(editor, findByRole, {
+      expectInactive: false,
+    })
+    expect(trigger).toHaveAttribute("aria-pressed", "true")
+
+    const outside = document.createElement("button")
+    outside.type = "button"
+    outside.textContent = "outside"
+    document.body.appendChild(outside)
+
+    try {
+      for (
+        let tabs = 0;
+        tabs < 30 && document.activeElement !== outside;
+        tabs += 1
+      ) {
+        await userEvent.tab()
+      }
+
+      expect(document.activeElement).toBe(outside)
+      expect(trigger).toHaveAttribute("aria-pressed", "false")
+      await waitFor(() => {
+        expect(queryByText("Delete row")).toBeNull()
+      })
+    } finally {
+      outside.remove()
+    }
+  })
+
   it("shows the pencil trigger without the action menu until it is activated", async () => {
     const { editor, findByRole, findByText, queryByText } =
       await renderHarness()
@@ -488,6 +652,31 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete row")).toBeNull()
   })
 
+  it("does not dispatch queued drag synchronization after unmount", async () => {
+    const { editor, setShowMenu } = await renderHarness()
+    selectCells(editor, 3, 5)
+    const bubbleMenuPluginKey = findTableBubbleMenuPluginKey(editor)
+
+    act(() => {
+      editor.view.dispatch(
+        editor.state.tr.setMeta(tableEditingKey, nthCellPos(editor, 3)),
+      )
+      setShowMenu(false)
+    })
+
+    const dispatch = vi.spyOn(editor.view, "dispatch")
+    try {
+      await Promise.resolve()
+      const bubbleMenuDispatches = dispatch.mock.calls.filter(
+        ([transaction]) =>
+          transaction.getMeta(bubbleMenuPluginKey) !== undefined,
+      )
+      expect(bubbleMenuDispatches).toHaveLength(0)
+    } finally {
+      dispatch.mockRestore()
+    }
+  })
+
   it("stays hidden while a cell drag-select is in progress, then shows after it commits", async () => {
     // prosemirror-tables sets `tableEditingKey` for the duration of a cell
     // drag (mousemove) and clears it on mouseup. The menu must not appear for
@@ -519,5 +708,40 @@ describe("TableBubbleMenu", () => {
     })
     await activateTableBubbleMenu(findByRole)
     expect(await findByText("Merge cells")).toBeTruthy()
+  })
+
+  it("starts deactivated after remounting with the same editor", async () => {
+    const { editor, findByRole, findByText, queryByText, setShowMenu } =
+      await renderHarness()
+    selectCells(editor, 3, 5)
+    await activateTableBubbleMenu(findByRole)
+    expect(await findByText("Delete row")).toBeTruthy()
+
+    act(() => {
+      setShowMenu(false)
+    })
+    act(() => {
+      setShowMenu(true)
+    })
+
+    const trigger = await findByRole("button", { name: "Table actions" })
+    expect(trigger).toHaveAttribute("aria-pressed", "false")
+    expect(queryByText("Delete row")).toBeNull()
+  })
+
+  it("keeps one trigger and deactivates when selection moves to another table", async () => {
+    const { editor, findByRole, findByText, findAllByRole, queryByText } =
+      await renderHarness(TWO_TABLES_CONTENT)
+
+    selectCells(editor, 3, 5) // first table, first body row
+    await activateTableBubbleMenu(findByRole)
+    expect(await findByText("Delete row")).toBeTruthy()
+
+    selectCells(editor, 12, 14) // second table, first body row
+
+    const triggers = await findAllByRole("button", { name: "Table actions" })
+    expect(triggers).toHaveLength(1)
+    expect(triggers[0]).toHaveAttribute("aria-pressed", "false")
+    expect(queryByText("Delete row")).toBeNull()
   })
 })
