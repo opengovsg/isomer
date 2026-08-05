@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  getTableCellBackgroundColorHex,
+  getTableCellBackgroundColorCss,
   isTableCellBackgroundColorToken,
 } from "../tableCellBackgroundColor"
 
@@ -15,8 +15,8 @@ describe("isTableCellBackgroundColorToken", () => {
   })
 })
 
-describe("getTableCellBackgroundColorHex", () => {
+describe("getTableCellBackgroundColorCss", () => {
   it("returns undefined for inherited object property names", () => {
-    expect(getTableCellBackgroundColorHex("toString")).toBeUndefined()
+    expect(getTableCellBackgroundColorCss("toString")).toBeUndefined()
   })
 })
