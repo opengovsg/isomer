@@ -17,6 +17,12 @@ const childrenState = vi.hoisted<{
   pages: { items: { id: string }[]; nextOffset: number | null }[]
 }>(() => ({ pages: [] }))
 
+// Ids in this set make their containing chunk's ancestry query report as
+// errored (data: undefined, isError: true) instead of echoing success.
+const ancestryErrorState = vi.hoisted<{ erroringIds: Set<string> }>(() => ({
+  erroringIds: new Set(),
+}))
+
 vi.mock("~/utils/trpc", () => {
   const useInfiniteQuery = () => ({
     data: { pages: childrenState.pages },
@@ -51,19 +57,30 @@ vi.mock("~/utils/trpc", () => {
           },
         })
         // Echo each requested id back as a single-item ancestry stack so the
-        // combined result mirrors the requested ids.
-        return queries.map((query) => ({
-          isLoading: false,
-          data: query.input.resourceIds.map((id) => [
-            {
-              id,
-              title: id,
-              permalink: id,
-              type: ResourceType.Page,
-              parentId: null,
-            } satisfies ResourceItemContent,
-          ]),
-        }))
+        // combined result mirrors the requested ids, unless the chunk
+        // contains an id marked to simulate an error.
+        return queries.map((query) => {
+          if (
+            query.input.resourceIds.some((id) =>
+              ancestryErrorState.erroringIds.has(id),
+            )
+          ) {
+            return { isLoading: false, isError: true, data: undefined }
+          }
+          return {
+            isLoading: false,
+            isError: false,
+            data: query.input.resourceIds.map((id) => [
+              {
+                id,
+                title: id,
+                permalink: id,
+                type: ResourceType.Page,
+                parentId: null,
+              } satisfies ResourceItemContent,
+            ]),
+          }
+        })
       },
     },
   }
@@ -88,6 +105,7 @@ describe("useResourceQuery", () => {
   beforeEach(() => {
     batchAncestryInputsSpy.mockClear()
     childrenState.pages = []
+    ancestryErrorState.erroringIds.clear()
   })
 
   it("splits ancestry requests into chunks within MAX_BATCH_RESOURCE_IDS when more children are loaded", () => {
@@ -148,5 +166,21 @@ describe("useResourceQuery", () => {
     expect(result.current.resourceItemsWithAncestryStack).toHaveLength(
       MAX_BATCH_RESOURCE_IDS * 2,
     )
+  })
+
+  it("leaves the combined result unresolved rather than silently dropping resources when an ancestry chunk errors", () => {
+    // Arrange - two chunks; the second chunk's ids will error out
+    childrenState.pages = [
+      makePage(0, MAX_BATCH_RESOURCE_IDS, MAX_BATCH_RESOURCE_IDS),
+      makePage(MAX_BATCH_RESOURCE_IDS, MAX_BATCH_RESOURCE_IDS, null),
+    ]
+    ancestryErrorState.erroringIds.add(String(MAX_BATCH_RESOURCE_IDS))
+
+    // Act
+    const { result } = renderHook(() => useResourceQuery(defaultProps))
+
+    // Assert - `undefined` (still "loading") rather than a 25-item partial
+    // result masquerading as the complete list.
+    expect(result.current.resourceItemsWithAncestryStack).toBeUndefined()
   })
 })
