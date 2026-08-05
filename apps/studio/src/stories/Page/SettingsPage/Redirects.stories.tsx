@@ -109,6 +109,10 @@ export const AlreadyExistsError: Story = {
 const VALID_CSV =
   "When someone visits,Redirect them to\n/old-one,/new-one\n/old-two,https://www.example.gov.sg"
 
+// Distinct contents, so swapping it in genuinely changes what would be published.
+const SWAPPED_CSV =
+  "When someone visits,Redirect them to\n/other-old,/other-new"
+
 // Processing holds its spinner for a deliberate minimum duration, so anything
 // asserted after "Process redirects" needs longer than the 1s default.
 const AFTER_PROCESSING = { timeout: 10000 }
@@ -207,6 +211,64 @@ export const BulkUploadReadyToPublish: Story = {
     await expect(
       screen.getByRole("button", { name: "Publish 2 redirects" }),
     ).toBeVisible()
+  },
+}
+
+// Regression: the chip's remove button stays live while processing, so the file
+// can be swapped mid-process. The first run's verdicts must not open the review
+// screen for a file that is no longer attached — otherwise the editor reviews one
+// batch and publishes another.
+//
+// Validation is held open so the swap lands before the response rather than
+// racing the client's own minimum duration, which would make this flaky on a
+// slow machine.
+export const BulkUploadFileSwappedWhileProcessing: Story = {
+  parameters: {
+    growthbook: [createAdvancedRedirectsEnabledGbParameters(true)],
+    msw: {
+      handlers: [
+        redirectHandlers.list.default(),
+        redirectHandlers.count.default(),
+        redirectHandlers.bulkValidate.allValid({ wait: 3000 }),
+        redirectHandlers.bulkCreate.success(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const { body, screen } = await openBulkUploadModal(canvasElement)
+    await pickFileInModal(
+      body,
+      new File([VALID_CSV], "first.csv", { type: "text/csv" }),
+    )
+    const processButton = await screen.findByRole("button", {
+      name: "Process redirects",
+    })
+    await waitFor(() => expect(processButton).toBeEnabled())
+    await userEvent.click(processButton, { pointerEventsCheck: 0 })
+
+    // Still inside the floor: drop the file being processed and attach another.
+    await userEvent.click(screen.getByRole("button", { name: "Remove file" }), {
+      pointerEventsCheck: 0,
+    })
+    await pickFileInModal(
+      body,
+      new File([SWAPPED_CSV], "second.csv", { type: "text/csv" }),
+    )
+
+    // Once the floor elapses the spinner clears, and the stale verdicts are
+    // dropped: the modal stays on the upload step with the newly attached file
+    // instead of showing the first file's review screen.
+    await waitFor(
+      () =>
+        expect(
+          screen.getByRole("button", { name: "Process redirects" }),
+        ).toBeEnabled(),
+      AFTER_PROCESSING,
+    )
+    await expect(screen.queryByText(/good to go/)).toBeNull()
+    await expect(screen.queryByRole("button", { name: /^Publish/ })).toBeNull()
+    await expect(screen.getByText("second.csv")).toBeVisible()
   },
 }
 

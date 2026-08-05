@@ -109,6 +109,10 @@ export const BulkUploadRedirectsModal = ({
   // / not a csv), shown inline under the chip before the user can process.
   const [fileError, setFileError] = useState<string | null>(null)
   const [validation, setValidation] = useState<BulkValidation | null>(null)
+  // The csv those verdicts were computed from. Publishing sends this rather than
+  // whatever is in the picker now, so the batch that gets created is always the
+  // one the editor reviewed on the success screen.
+  const [reviewedCsv, setReviewedCsv] = useState<string | null>(null)
   const [showSlowMessage, setShowSlowMessage] = useState(false)
   // Covers the validation request plus MIN_PROCESSING_MS, so the button keeps
   // its spinner for the whole visible wait rather than the request alone.
@@ -119,18 +123,29 @@ export const BulkUploadRedirectsModal = ({
   // the handler drop the stale read instead of committing A's contents while the
   // chip shows B.
   const latestFileRef = useRef<File | null>(null)
+  // Mirrors `csv` for the same reason, but for `handleProcess`: the csv it reads
+  // is the one captured when it started, so it can't tell on its own whether the
+  // file has since been swapped or removed. Every write goes through `applyCsv`
+  // so the ref and the state can't drift apart.
+  const latestCsvRef = useRef<string | null>(null)
   // react-dropzone reports a rejected file through onRejection and then calls
   // onChange(undefined) in the same event. Set while handling the rejection so
   // that trailing reset can't wipe the chip and message we just put up; the next
   // onChange(undefined) consumes it, so removing the file still clears.
   const hasPendingRejectionRef = useRef(false)
 
+  const applyCsv = (next: string | null) => {
+    latestCsvRef.current = next
+    setCsv(next)
+  }
+
   const resetState = () => {
     setStage("upload")
     setFile(null)
-    setCsv(null)
+    applyCsv(null)
     setFileError(null)
     setValidation(null)
+    setReviewedCsv(null)
     setShowSlowMessage(false)
     setIsProcessing(false)
     latestFileRef.current = null
@@ -168,7 +183,7 @@ export const BulkUploadRedirectsModal = ({
       }
       latestFileRef.current = null
       setFile(null)
-      setCsv(null)
+      applyCsv(null)
       setFileError(null)
       return
     }
@@ -178,18 +193,18 @@ export const BulkUploadRedirectsModal = ({
     // Clear the previous file's parsed csv and error synchronously, so nothing
     // stale is shown or processed during the async read below (Process stays
     // disabled until the new csv is parsed).
-    setCsv(null)
+    applyCsv(null)
     setFileError(null)
     try {
       const text = await selected.text()
       // A newer file was picked while this one was being read — drop the stale
       // result so the parsed csv can't disagree with the chip.
       if (latestFileRef.current !== selected) return
-      setCsv(text)
+      applyCsv(text)
       setFileError(parseRedirectCsv(text).fileError ?? null)
     } catch {
       if (latestFileRef.current !== selected) return
-      setCsv(null)
+      applyCsv(null)
       setFileError("We couldn't read this file. Upload a valid .csv file.")
     }
   }
@@ -207,7 +222,7 @@ export const BulkUploadRedirectsModal = ({
     // overwrite this message when it resolves.
     latestFileRef.current = rejection.file
     setFile(rejection.file)
-    setCsv(null)
+    applyCsv(null)
     setFileError(rejectionMessage(rejection))
   }
 
@@ -215,15 +230,20 @@ export const BulkUploadRedirectsModal = ({
   // "re-upload the file with fixes"), so the corrected file can be dropped in.
   const enterErrorsStage = (result: BulkValidation) => {
     setValidation(result)
+    setReviewedCsv(null)
     setFile(null)
-    setCsv(null)
+    applyCsv(null)
     setFileError(null)
     hasPendingRejectionRef.current = false
     setStage("errors")
   }
 
   const handleProcess = async () => {
-    if (!csv) return
+    // Pin the csv this run is about. The picker stays live while we wait — the
+    // chip's remove button is never disabled — so the editor can swap in another
+    // file before these verdicts come back.
+    const processedCsv = csv
+    if (!processedCsv) return
     // Validation is quick, so the Process button's inline spinner is enough —
     // no full-screen stage. Stay put so a failure keeps the file.
     setIsProcessing(true)
@@ -232,17 +252,24 @@ export const BulkUploadRedirectsModal = ({
     const loadingFloor = new Promise<void>((resolve) =>
       setTimeout(resolve, MIN_PROCESSING_MS),
     )
+    // The file on screen moved on while this ran (swapped, removed, or the modal
+    // was closed and reopened), so these verdicts describe something the editor
+    // is no longer looking at. Drop them and leave the picker as they left it.
+    const isStale = () => latestCsvRef.current !== processedCsv
     try {
-      const result = await validate(csv)
+      const result = await validate(processedCsv)
       await loadingFloor
+      if (isStale()) return
       if (result.fileError !== null || result.errorCount > 0) {
         enterErrorsStage(result)
         return
       }
       setValidation(result)
+      setReviewedCsv(processedCsv)
       setStage("success")
     } catch {
       await loadingFloor
+      if (isStale()) return
       toast({
         title: "We couldn't check your redirects",
         description: "Please try again.",
@@ -254,12 +281,14 @@ export const BulkUploadRedirectsModal = ({
   }
 
   const handlePublish = async () => {
-    if (!csv) return
+    // Publish exactly what the success screen reviewed, never the current picker
+    // contents, so the created batch can't differ from the listed redirects.
+    if (!reviewedCsv) return
     // Creating the batch and republishing the site is the slow step, so switch
     // to the full-screen spinner once the user commits.
     setStage("publishing")
     try {
-      const result = await publish({ siteId, csv })
+      const result = await publish({ siteId, csv: reviewedCsv })
       if (result.ok) {
         toast({
           title: `${result.publishedCount} redirect${result.publishedCount === 1 ? "" : "s"} published`,
