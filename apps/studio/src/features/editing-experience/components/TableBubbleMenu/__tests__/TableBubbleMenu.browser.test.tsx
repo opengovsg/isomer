@@ -417,6 +417,65 @@ describe("TableBubbleMenu", () => {
     ])
   })
 
+  it("clears every cell in a selected row without removing the row", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 3, 5)
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    await activateTableBubbleMenu(findByRole)
+
+    const clearRow = await findByText("Clear contents")
+    act(() => {
+      clearRow.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(rowTextsAt(editor, 1)).toEqual(["", "", ""])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+  })
+
+  it("clears every cell in a selected column without removing the column", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 1, 7)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    await activateTableBubbleMenu(findByRole)
+
+    const clearColumn = await findByText("Clear contents")
+    act(() => {
+      clearColumn.click()
+    })
+
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "", "Column C"])
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "", "Row 2, C"])
+  })
+
+  it("clears header row content while keeping the header row", async () => {
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+
+    selectCells(editor, 0, 2)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
+    await activateTableBubbleMenu(findByRole)
+
+    const clearRow = await findByText("Clear contents")
+    act(() => {
+      clearRow.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["", "", ""])
+
+    // Header axes withhold Delete row even after clearing.
+    selectCells(editor, 0, 2)
+    await activateTableBubbleMenu(findByRole)
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(queryByText("Delete row")).toBeNull()
+  })
+
   it("withholds Delete and Move when selection includes header row", async () => {
     const { editor, findByText, findByRole, queryByText, queryByRole } =
       await renderHarness()
@@ -474,16 +533,67 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Move right")).toBeNull()
   })
 
-  it("shows only Merge cells for an irregular multi-cell selection", async () => {
+  it("shows Clear contents and Merge cells for an irregular multi-cell selection", async () => {
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
 
     selectCells(editor, 3, 7) // an irregular 2x2-ish block, not a full row/column
     await activateTableBubbleMenu(findByRole)
 
+    expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
     expect(queryByText("Delete row")).toBeNull()
     expect(queryByText("Delete column")).toBeNull()
+  })
+
+  it("clears every cell in a multi-cell block without removing cells", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 3, 7)
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+    await activateTableBubbleMenu(findByRole)
+
+    const clearBlock = await findByText("Clear contents")
+    act(() => {
+      clearBlock.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(rowTextsAt(editor, 1)).toEqual(["", "", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["", "", "Row 2, C"])
+  })
+
+  it("shows Clear contents and Delete table for a whole-table selection", async () => {
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+
+    selectCells(editor, 0, 8)
+    await activateTableBubbleMenu(findByRole)
+
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(await findByText("Delete table")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
+    expect(queryByText("Delete row")).toBeNull()
+  })
+
+  it("clears every cell in a whole-table selection without removing the table", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 0, 8)
+    await activateTableBubbleMenu(findByRole)
+
+    const clearTable = await findByText("Clear contents")
+    act(() => {
+      clearTable.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["", "", ""])
+    expect(rowTextsAt(editor, 1)).toEqual(["", "", ""])
+    expect(rowTextsAt(editor, 2)).toEqual(["", "", ""])
   })
 
   it("shows no menu content for a plain cursor outside any selection", async () => {
@@ -516,12 +626,17 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete row")).toBeNull()
   })
 
-  it("shows Split cell for a single cell that came from a merge, and nothing for an ordinary single cell", async () => {
-    const { editor, findByText, findByRole, queryByText, queryByRole } =
+  it("shows Clear contents for a single cell, and Clear plus Split for a merged single cell", async () => {
+    const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
 
-    // Merge two adjacent body cells into one, then re-select just that
-    // resulting cell — the only single-cell case with a bubble menu.
+    selectCells(editor, 6, 6)
+    await activateTableBubbleMenu(findByRole)
+
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(queryByText("Split cell")).toBeNull()
+    expect(queryByText("Merge cells")).toBeNull()
+
     selectCells(editor, 3, 4)
     act(() => {
       editor.chain().focus().mergeCells().run()
@@ -529,14 +644,25 @@ describe("TableBubbleMenu", () => {
     selectCells(editor, 3, 3)
     await activateTableBubbleMenu(findByRole)
 
+    expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Split cell")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
+  })
 
-    // An ordinary (never-merged) single cell still shows no menu at all.
+  it("clears a single selected cell without removing the cell", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
     selectCells(editor, 6, 6)
-    expect(queryByText("Split cell")).toBeNull()
-    expect(queryByText("Merge cells")).toBeNull()
-    expect(queryByRole("button", { name: "Table actions" })).toBeNull()
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+
+    await activateTableBubbleMenu(findByRole)
+    const clearCell = await findByText("Clear contents")
+    act(() => {
+      clearCell.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(rowTextsAt(editor, 2)).toEqual(["", "Row 2, B", "Row 2, C"])
   })
 
   it("does not show Superscript/Subscript when the text cursor is inside a cell", async () => {
