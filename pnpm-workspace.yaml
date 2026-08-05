@@ -210,6 +210,7 @@ catalogs:
     pg: ^8.22.0
     pg-cursor: ^2.21.0
     "@types/pg": ^8.15.4
+    "@types/pg-cursor": ^2.7.2
   prisma:
     "@prisma/adapter-pg": 7.9.1
     "@prisma/client": 7.9.1
