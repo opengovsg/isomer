@@ -983,8 +983,6 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       kind === "merged-cell") &&
     selection instanceof CellSelection &&
     selectionCanSetBackgroundColour(selection)
-  // Single-cell selections only expose colour — skip the leading divider.
-  const hasSelectionActions = kind !== "none" && kind !== "single-cell"
 
   return (
     <>
