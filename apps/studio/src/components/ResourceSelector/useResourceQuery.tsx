@@ -47,7 +47,7 @@ export const useResourceQuery = ({
   // Accumulated ancestry results for browse mode, keyed by resource id.
   // Storing in a ref means each Load-more triggers at most one new ancestry
   // request for the new page's items; prior pages are served from this cache
-  // rather than being re-queried on every render or remount.
+  // rather than being re-queried on every render within the same mount.
   const ancestryCacheRef = useRef<Map<string, ResourceItemContent[]>>(new Map())
 
   const allBrowseIds = pages
@@ -76,11 +76,16 @@ export const useResourceQuery = ({
   )
 
   const isFetchingAncestry = ancestryQueries.some((query) => query.isLoading)
+  // A chunk that errored out has `data === undefined`, same shape as a chunk
+  // still loading. Without this check, `query.data ?? []` below would treat
+  // the failed chunk as a successful empty response and silently omit its
+  // resources instead of leaving the combined result unresolved.
+  const hasAncestryError = ancestryQueries.some((query) => query.isError)
 
   // Merge completed query results into the cache so subsequent renders (and
   // subsequent Load-more clicks) don't re-query the same ids. The mutation is
   // idempotent (same id → same stack), so repeating it is safe.
-  if (!isFetchingAncestry && !useResourceIdsFromSearch) {
+  if (!isFetchingAncestry && !hasAncestryError && !useResourceIdsFromSearch) {
     for (const query of ancestryQueries) {
       for (const stack of query.data ?? []) {
         if (stack[0]) ancestryCacheRef.current.set(stack[0].id, stack)
@@ -89,7 +94,7 @@ export const useResourceQuery = ({
   }
 
   const resourceItemsWithAncestryStack =
-    isLoadingChildren || isFetchingAncestry
+    isLoadingChildren || isFetchingAncestry || hasAncestryError
       ? undefined
       : useResourceIdsFromSearch
         ? ancestryQueries.flatMap((query) => query.data ?? [])
