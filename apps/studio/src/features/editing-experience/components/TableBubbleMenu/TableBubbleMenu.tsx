@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react"
-import type { ReactElement, ReactNode } from "react"
+import type { MutableRefObject, ReactElement, ReactNode } from "react"
 import { Flex, Icon, Portal, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
 import { PluginKey } from "@tiptap/pm/state"
@@ -13,8 +13,9 @@ import {
 } from "@tiptap/pm/tables"
 import { useEditorState } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react/menus"
-import { memo, useCallback, useEffect, useState } from "react"
+import { memo, useCallback, useEffect, useRef, useState } from "react"
 import {
+  BiCopy,
   BiDownArrowAlt,
   BiLeftArrowAlt,
   BiPencil,
@@ -33,6 +34,10 @@ import {
   IconSplitCell,
 } from "~/components/icons"
 
+import {
+  duplicateSelectedColumns,
+  duplicateSelectedRows,
+} from "./TableBubbleMenu.duplicate"
 import {
   getColumnMovePlan,
   getRowMovePlan,
@@ -144,6 +149,10 @@ const moveRow = (editor: Editor, direction: "up" | "down") => {
     )
     view.dispatch(tr)
   })
+  // Unlike every sibling action, this dispatches its own transaction instead
+  // of `.chain().focus()...run()` — restore focus explicitly so a real
+  // mousedown-triggered blur doesn't strand it on the button.
+  editor.commands.focus()
 }
 
 const moveColumn = (editor: Editor, direction: "left" | "right") => {
@@ -186,6 +195,10 @@ const moveColumn = (editor: Editor, direction: "left" | "right") => {
     )
     view.dispatch(tr)
   })
+  // Unlike every sibling action, this dispatches its own transaction instead
+  // of `.chain().focus()...run()` — restore focus explicitly so a real
+  // mousedown-triggered blur doesn't strand it on the button.
+  editor.commands.focus()
 }
 
 const ActionButton = ({
@@ -202,6 +215,9 @@ const ActionButton = ({
     variant="clear"
     colorScheme="neutral"
     onClick={onClick}
+    // TipTap toolbar pattern: preventDefault on mousedown so the click does
+    // not steal focus (and thus CellSelection) from the editor.
+    onMouseDown={(event) => event.preventDefault()}
     w="100%"
     h="auto"
     minH="unset"
@@ -302,6 +318,11 @@ const RowSelectionActions = ({
           icon={<IconAddRowBelow boxSize="1rem" />}
           onClick={() => editor.chain().focus().addRowAfter().run()}
         />
+        <ActionButton
+          label="Duplicate row"
+          icon={<BiCopy fontSize="1rem" />}
+          onClick={() => duplicateSelectedRows(editor)}
+        />
         {canMoveUp && (
           <ActionButton
             label="Move up"
@@ -364,6 +385,11 @@ const ColumnSelectionActions = ({
           label="Add column right"
           icon={<IconAddColRight boxSize="1rem" />}
           onClick={() => editor.chain().focus().addColumnAfter().run()}
+        />
+        <ActionButton
+          label="Duplicate column"
+          icon={<BiCopy fontSize="1rem" />}
+          onClick={() => duplicateSelectedColumns(editor)}
         />
         {canMoveLeft && (
           <ActionButton
@@ -444,13 +470,15 @@ const TableSelectionActions = ({
   }
 }
 
-// Stable module-level reference. `useTextEditor` runs with
-// `shouldRerenderOnTransaction: true`, so every transaction re-renders every
-// editor consumer, including this component. If `shouldShow` were a fresh
-// inline closure on each render, TipTap's BubbleMenu would treat it as changed
-// props and re-register its plugin, which dispatches a transaction — which
-// triggers another re-render, forever. Keeping this function reference stable
-// across renders is what breaks that loop. See
+// `useTextEditor` runs with `shouldRerenderOnTransaction: true`, so every
+// transaction re-renders every editor consumer, including this component. If
+// the `shouldShow` prop passed to `<BubbleMenu>` were a fresh closure on each
+// render, TipTap's BubbleMenu would treat it as changed props and re-register
+// its plugin, which dispatches a transaction — which triggers another
+// re-render, forever. The prop must keep the same function identity across
+// renders (below, `TableBubbleMenu`'s `shouldShow` is a `useCallback` with no
+// deps) — that's what breaks the loop. This helper is a plain module-level
+// function for the same reason: no per-render identity to keep stable. See
 // .scratch/rte-table-ux/issues/06-prototype-bubble-menu-content-layout.md.
 //
 // Only CellSelections that have table actions (row/column/table/merge/split)
@@ -495,28 +523,6 @@ const shouldShowTableBubbleMenu = ({
   return view.hasFocus() || isChildOfMenu || isTableBubbleMenuTriggerFocused()
 }
 
-const tableBubbleMenuActivation = new WeakMap<Editor, boolean>()
-
-const setTableBubbleMenuActivated = (editor: Editor, activated: boolean) => {
-  tableBubbleMenuActivation.set(editor, activated)
-}
-
-const isTableBubbleMenuActivated = (editor: Editor): boolean =>
-  tableBubbleMenuActivation.get(editor) ?? false
-
-// Stable module-level reference — see `shouldShowTableBubbleMenu` above.
-const shouldShowTableBubbleMenuActions = ({
-  editor,
-  view,
-  element,
-}: {
-  editor: Editor
-  view: Editor["view"]
-  element: HTMLElement
-}) =>
-  shouldShowTableBubbleMenu({ editor, view, element }) &&
-  isTableBubbleMenuActivated(editor)
-
 // Immediate show/hide once `shouldShow` flips — TipTap's default 250ms delay
 // would keep a stale menu visible into the start of a drag, then lag the
 // post-mouseup reveal. Drag gating is handled by `tableEditingKey` above.
@@ -542,11 +548,8 @@ const TABLE_BUBBLE_MENU_PLUGIN_KEY = new PluginKey("tableBubbleMenu")
 // `updatePosition` no-ops while `!isVisible` — so a bare `show` meta leaves
 // the menu unpositioned (often effectively invisible). Show first, then
 // position.
-const revealTableBubbleMenuActions = (editor: Editor) => {
-  if (
-    !isTableBubbleMenuActivated(editor) ||
-    !hasActionableTableSelection(editor, editor.view)
-  ) {
+const revealTableBubbleMenuActions = (editor: Editor, isActivated: boolean) => {
+  if (!isActivated || !hasActionableTableSelection(editor, editor.view)) {
     editor.view.dispatch(
       editor.state.tr.setMeta(TABLE_BUBBLE_MENU_PLUGIN_KEY, "hide"),
     )
@@ -560,7 +563,10 @@ const revealTableBubbleMenuActions = (editor: Editor) => {
   )
 }
 
-const useTableBubbleMenuDragSync = (editor: Editor) => {
+const useTableBubbleMenuDragSync = (
+  editor: Editor,
+  isActivatedRef: MutableRefObject<boolean>,
+) => {
   useEffect(() => {
     const onTransaction = ({
       transaction,
@@ -577,14 +583,14 @@ const useTableBubbleMenuDragSync = (editor: Editor) => {
           )
           return
         }
-        revealTableBubbleMenuActions(editor)
+        revealTableBubbleMenuActions(editor, isActivatedRef.current)
       })
     }
     editor.on("transaction", onTransaction)
     return () => {
       editor.off("transaction", onTransaction)
     }
-  }, [editor])
+  }, [editor, isActivatedRef])
 }
 
 const TableBubbleMenuTrigger = ({
@@ -603,6 +609,11 @@ const TableBubbleMenuTrigger = ({
       aria-label="Table actions"
       aria-pressed={isActivated}
       data-table-bubble-menu-trigger
+      // Exempts this portaled button from Chakra Modal's FocusLock (e.g.
+      // Table Settings): react-focus-lock lets focus move freely to/from any
+      // element bearing this attribute instead of pulling it back into the
+      // modal.
+      data-no-focus-lock
       position="fixed"
       left={`${corner.x}px`}
       top={`${corner.y}px`}
@@ -667,12 +678,22 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
 
   const corner = useTableBubbleMenuTriggerCorner(editor, showTrigger)
 
-  const [isActivated, setIsActivated] = useState(false)
+  // Single source of truth for activation: `isActivatedRef` is what
+  // `shouldShow`/drag-sync read (they need a value that's always current,
+  // not one captured at some past render), and `isActivated` is only for
+  // triggering a re-render of the trigger button's appearance. `setActivated`
+  // keeps both in step from one call, so there's no second call site to
+  // forget.
+  const isActivatedRef = useRef(false)
+  const [isActivated, setIsActivatedState] = useState(false)
+  const setActivated = useCallback((value: boolean) => {
+    isActivatedRef.current = value
+    setIsActivatedState(value)
+  }, [])
 
   const resetActivation = useCallback(() => {
-    setIsActivated(false)
-    setTableBubbleMenuActivated(editor, false)
-  }, [editor])
+    setActivated(false)
+  }, [setActivated])
 
   // A new CellSelection deactivates the menu so the pencil trigger reappears
   // without the action list until the user clicks again.
@@ -709,22 +730,40 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
   }, [editor, resetActivation])
 
   const toggleMenu = useCallback(() => {
-    if (isActivated) {
+    if (isActivatedRef.current) {
       deactivateMenu()
       return
     }
-    setIsActivated(true)
-    setTableBubbleMenuActivated(editor, true)
+    setActivated(true)
     // Clicking the portaled trigger blurs the editor; refocus so BubbleMenu's
     // own blur handler and shouldShow keep the action menu visible.
     editor.commands.focus()
-    revealTableBubbleMenuActions(editor)
-  }, [deactivateMenu, editor, isActivated])
+    revealTableBubbleMenuActions(editor, true)
+  }, [deactivateMenu, editor, setActivated])
+
+  // Stable across renders (see `shouldShowTableBubbleMenu` above for why that
+  // matters) without a module-level store: closing over `isActivatedRef`
+  // instead of a WeakMap keyed by editor scopes activation to this component
+  // instance, so a second mount for the same editor can't clobber it.
+  const shouldShow = useCallback(
+    ({
+      editor: shouldShowEditor,
+      view,
+      element,
+    }: {
+      editor: Editor
+      view: Editor["view"]
+      element: HTMLElement
+    }) =>
+      shouldShowTableBubbleMenu({ editor: shouldShowEditor, view, element }) &&
+      isActivatedRef.current,
+    [],
+  )
 
   // TipTap early-returns when selection/doc are unchanged, so mouseup's
   // meta-only `tableEditingKey: -1` never re-runs `shouldShow`. After that
   // (or an explicit hide while selecting) force hide/reveal.
-  useTableBubbleMenuDragSync(editor)
+  useTableBubbleMenuDragSync(editor, isActivatedRef)
 
   return (
     <>
@@ -738,9 +777,13 @@ export const TableBubbleMenu = memo(function TableBubbleMenu({
       <BubbleMenu
         editor={editor}
         pluginKey={TABLE_BUBBLE_MENU_PLUGIN_KEY}
-        shouldShow={shouldShowTableBubbleMenuActions}
+        shouldShow={shouldShow}
         updateDelay={TABLE_BUBBLE_MENU_UPDATE_DELAY}
         options={TABLE_BUBBLE_MENU_OPTIONS}
+        // Forwarded onto BubbleMenuPlugin's own tabIndex=0 element. Exempts
+        // it from Chakra Modal's FocusLock (e.g. Table Settings) so the
+        // trap can stay enabled without the two fighting over focus.
+        data-no-focus-lock
       >
         <VStack
           align="stretch"
