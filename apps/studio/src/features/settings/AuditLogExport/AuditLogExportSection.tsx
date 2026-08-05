@@ -16,6 +16,7 @@ import {
   SingleSelect,
   useToast,
 } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { useContext, useMemo } from "react"
 import { Controller } from "react-hook-form"
 import { BiCheckShield, BiHelpCircle, BiInfoCircle } from "react-icons/bi"
@@ -121,7 +122,22 @@ export const AuditLogExportSection = ({
 
   const { mutate: createExportRequest, isPending } =
     trpc.audit.createExportRequest.useMutation({
-      onSuccess: () => {
+      onSuccess: (_data, { reportType: requestedReportType, month }) => {
+        // `Both` fans out into two DB rows server-side (see auditLogExport.service.ts),
+        // so mirror that here with one event per log type actually requested.
+        if (
+          requestedReportType === AuditLogExportRequestedReportType.Access ||
+          requestedReportType === AuditLogExportRequestedReportType.Both
+        ) {
+          posthog.capture("user_access_log_requested", { site_id: siteId })
+        }
+        if (
+          requestedReportType === AuditLogExportRequestedReportType.Activity ||
+          requestedReportType === AuditLogExportRequestedReportType.Both
+        ) {
+          posthog.capture("audit_log_requested", { site_id: siteId, month })
+        }
+
         form.reset()
         toast({
           title: "Export requested",
