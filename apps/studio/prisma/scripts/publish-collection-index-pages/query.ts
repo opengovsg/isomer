@@ -22,9 +22,20 @@ export interface TargetRow {
  *   where "type" = 'IndexPage'
  *     and "publishedVersionId" is null
  *     and "parentId" in (select id from "Resource" where "type" = 'Collection')
+ *     and exists (
+ *       select 1 from "Resource" child
+ *       where child."parentId" = "Resource"."parentId"
+ *         and child."type" in ('CollectionPage', 'CollectionLink')
+ *         and child."publishedVersionId" is not null
+ *     )
  *
  * The parent IN-subquery becomes an innerJoin: `Resource.id` is the PK so there is
  * no fan-out, and the join hands us the parent's title/permalink for free.
+ *
+ * The EXISTS guard mirrors live-site behaviour: a collection only surfaces on the
+ * public site when at least one child is published (via the build's dangling-
+ * directory stub) or the index page itself is published. Empty collections stay
+ * off the live site and are excluded here too.
  *
  * One pass, no N+1 — deliberately NOT using `getBlobOfResource`, which costs a
  * round trip per resource AND falls through to the published blob, which is
@@ -50,6 +61,20 @@ export const findNeverPublishedCollectionIndexPages = async ({
     .where("r.type", "=", ResourceType.IndexPage)
     .where("r.publishedVersionId", "is", null)
     .where("parent.type", "=", ResourceType.Collection)
+    .where((eb) =>
+      eb.exists(
+        eb
+          .selectFrom("Resource as child")
+          .whereRef("child.parentId", "=", "r.parentId")
+          .whereRef("child.siteId", "=", "r.siteId")
+          .where("child.type", "in", [
+            ResourceType.CollectionPage,
+            ResourceType.CollectionLink,
+          ])
+          .where("child.publishedVersionId", "is not", null)
+          .select(eb.lit(1).as("one")),
+      ),
+    )
     // A ternary rather than `$if`: it narrows `siteId` properly, so the optional
     // filter needs no non-null assertion.
     .where((eb) =>

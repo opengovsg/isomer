@@ -14,6 +14,7 @@ import {
 import { resetTables } from "../../../../tests/integration/helpers/db"
 import {
   setupCollection,
+  setupCollectionPage,
   setupPageResource,
   setupFolder,
   setupIsomerAdmin,
@@ -59,12 +60,15 @@ const seedTarget = async ({
   permalink = "test-collection",
   title = "Newsroom",
   blobContent = collectionIndexBlob(),
+  withPublishedChild = true,
 }: {
   siteId: number
   permalink?: string
   title?: string
   /** Deliberately loose: these tests seed malformed drafts on purpose. */
   blobContent?: unknown
+  /** When true, seeds a published CollectionPage so the row is eligible. */
+  withPublishedChild?: boolean
 }) => {
   const { collection } = await setupCollection({ siteId, permalink, title })
   const draftBlob = await db
@@ -87,6 +91,16 @@ const seedTarget = async ({
     })
     .returningAll()
     .executeTakeFirstOrThrow()
+
+  if (withPublishedChild) {
+    await setupCollectionPage({
+      siteId,
+      parentId: collection.id,
+      state: ResourceState.Published,
+      userId: publisherId,
+      permalink: "test-article",
+    })
+  }
 
   return { collection, indexPage, draftBlob }
 }
@@ -196,8 +210,42 @@ describe("findNeverPublishedCollectionIndexPages", () => {
     expect(await findNeverPublishedCollectionIndexPages()).toHaveLength(0)
   })
 
+  it("excludes a never-published IndexPage when no child is published", async () => {
+    await seedTarget({ siteId: SITE_A, withPublishedChild: false })
+    expect(await findNeverPublishedCollectionIndexPages()).toHaveLength(0)
+  })
+
+  it("includes a never-published IndexPage when a child CollectionPage is published", async () => {
+    const { indexPage } = await seedTarget({ siteId: SITE_A })
+    const rows = await findNeverPublishedCollectionIndexPages()
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.resourceId).toBe(indexPage.id)
+  })
+
+  it("excludes when only draft CollectionPage children exist", async () => {
+    const { collection } = await setupCollection({ siteId: SITE_A })
+    await setupCollectionPage({
+      siteId: SITE_A,
+      parentId: collection.id,
+      permalink: "draft-only",
+    })
+    await seedTarget({
+      siteId: SITE_A,
+      permalink: "with-draft-sibling",
+      withPublishedChild: false,
+    })
+    expect(await findNeverPublishedCollectionIndexPages()).toHaveLength(0)
+  })
+
   it("surfaces a row with a null draftBlobId rather than dropping it", async () => {
     const { collection } = await setupCollection({ siteId: SITE_A })
+    await setupCollectionPage({
+      siteId: SITE_A,
+      parentId: collection.id,
+      state: ResourceState.Published,
+      userId: publisherId,
+      permalink: "published-child",
+    })
     await db
       .insertInto("Resource")
       .values({

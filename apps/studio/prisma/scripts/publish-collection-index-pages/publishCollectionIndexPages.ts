@@ -1,6 +1,8 @@
 /**
  * Publishes a canonical index page for every Collection IndexPage that has never
- * been published, so the site build can resolve collection item categories again.
+ * been published **and** has at least one published child page/link, so the site
+ * build can resolve collection item categories again without taking empty
+ * collections live.
  *
  * See README.md for the why, the accepted risks, and the rollback procedure.
  *

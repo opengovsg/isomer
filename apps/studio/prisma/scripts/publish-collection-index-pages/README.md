@@ -41,7 +41,9 @@ Version whose blob carries the `tagCategories`.
 
 ## What it does
 
-For each `IndexPage` with `publishedVersionId IS NULL` whose parent is a `Collection`:
+For each `IndexPage` with `publishedVersionId IS NULL` whose parent is a `Collection`
+**and** that collection has at least one published `CollectionPage` or
+`CollectionLink` child:
 
 1. Reads the draft blob.
 2. Builds a canonical blob: `createCollectionIndexJson(title)` plus `page.tagCategories` carried over
@@ -124,7 +126,14 @@ select count(*) from "Resource" r
 join "Resource" p on p.id = r."parentId"
 where r."type" = 'IndexPage'
   and r."publishedVersionId" is null
-  and p."type" = 'Collection';
+  and p."type" = 'Collection'
+  and exists (
+    select 1 from "Resource" child
+    where child."parentId" = r."parentId"
+      and child."siteId" = r."siteId"
+      and child."type" in ('CollectionPage', 'CollectionLink')
+      and child."publishedVersionId" is not null
+  );
 
 -- Premise check: no PUBLISHED collection index blob should be missing tagCategories.
 -- A non-zero count means the target set above is too narrow for the problem.
