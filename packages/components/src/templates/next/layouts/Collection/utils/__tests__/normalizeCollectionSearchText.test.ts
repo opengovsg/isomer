@@ -63,6 +63,50 @@ describe("normalizeCollectionSearchText", () => {
     expect(result).toBe("management(fm)")
   })
 
+  it("removes zero-width non-joiners", () => {
+    // Arrange
+    const text = "MANAGEMENT\u200c(FM)"
+
+    // Act
+    const result = normalizeCollectionSearchText(text)
+
+    // Assert
+    expect(result).toBe("management(fm)")
+  })
+
+  it("removes bidi isolate format characters", () => {
+    // Arrange
+    const text = "MANAGEMENT\u2066(FM)\u2069"
+
+    // Act
+    const result = normalizeCollectionSearchText(text)
+
+    // Assert
+    expect(result).toBe("management(fm)")
+  })
+
+  it("collapses tab and newline characters to a single space", () => {
+    // Arrange
+    const text = "Guide\tto\nIsomer"
+
+    // Act
+    const result = normalizeCollectionSearchText(text)
+
+    // Assert
+    expect(result).toBe("guide to isomer")
+  })
+
+  it("collapses U+0085 next line (Unicode White_Space but not ECMAScript \\s)", () => {
+    // Arrange
+    const text = "Guide\u0085to Isomer"
+
+    // Act
+    const result = normalizeCollectionSearchText(text)
+
+    // Assert
+    expect(result).toBe("guide to isomer")
+  })
+
   it("treats missing space before parentheses as equivalent to spaced text", () => {
     // Arrange
     const withSpace = normalizeCollectionSearchText("MANAGEMENT (FM)")

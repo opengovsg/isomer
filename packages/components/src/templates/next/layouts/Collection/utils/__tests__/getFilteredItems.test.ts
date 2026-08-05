@@ -270,4 +270,24 @@ describe("getFilteredItems", () => {
     // Assert
     expect(result).toEqual([items[0]])
   })
+
+  it("matches via description when title does not match and description is missing", () => {
+    // Arrange
+    const items: ProcessedCollectionCardProps[] = [
+      {
+        title: "Unrelated title",
+        description: undefined,
+      } as ProcessedCollectionCardProps,
+      {
+        title: "Another page",
+        description: "Contains management (FM) guidance",
+      } as ProcessedCollectionCardProps,
+    ]
+
+    // Act
+    const result = getFilteredItems(items, [], "management (FM)")
+
+    // Assert
+    expect(result).toEqual([items[1]])
+  })
 })
