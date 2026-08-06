@@ -86,14 +86,14 @@ describe("ExportAccessLogsButton", () => {
     ).toBeNull()
   })
 
-  it("is disabled for non-admins", () => {
+  it("renders nothing for non-admins — exporting access logs is admin-only", () => {
     // Arrange / Act
     renderWith(editorAbility)
 
     // Assert
-    const button = screen.getByRole("button", { name: "Export access logs" })
-    expect((button as HTMLButtonElement).disabled).toBe(true)
-    fireEvent.click(button)
+    expect(
+      screen.queryByRole("button", { name: "Export access logs" }),
+    ).toBeNull()
     expect(mutate).not.toHaveBeenCalled()
   })
 })
