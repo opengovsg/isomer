@@ -1,6 +1,8 @@
 import { TRPCError } from "@trpc/server"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
+import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
+import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -14,7 +16,9 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { createCallerFactory } from "~/server/trpc"
+import { getReferenceLink } from "~/utils/link"
 
 import { AuditLogEvent, db, ResourceState, ResourceType } from "../../database"
 import { folderRouter } from "../folder.router"
@@ -561,7 +565,11 @@ describe("folder.router", async () => {
         userId: session.userId,
         siteId: site.id,
       })
-      await db.updateTable("Resource").set({ parentId: page.id }).execute()
+      await db
+        .updateTable("Resource")
+        .set({ parentId: page.id })
+        .where("id", "=", folder.id)
+        .execute()
       const permalink = "tempora-link"
 
       // Act
@@ -735,6 +743,261 @@ describe("folder.router", async () => {
       expect(auditLogs).toBeDefined()
       expect(auditLogs?.userId).toEqual(session.userId)
       expect(auditLogs?.eventType).toEqual(AuditLogEvent.ResourceUpdate)
+    })
+
+    describe("redirects on rename", () => {
+      const enableAdvancedRedirects = () => {
+        mockGrowthBook.setForcedFeatures(
+          new Map([
+            ...mockFeatureFlags,
+            [IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY, true],
+          ]),
+        )
+      }
+
+      afterEach(() => {
+        // Restore the baseline forced features so the flag doesn't leak.
+        mockGrowthBook.setForcedFeatures(mockFeatureFlags)
+      })
+
+      // Sets up a root folder with one published child page, plus admin
+      // permissions on the site. Returns the ids needed to rename it.
+      const setupFolderWithPublishedChild = async ({
+        folderPermalink = "old-folder",
+        childPermalink = "child",
+      }: { folderPermalink?: string; childPermalink?: string } = {}) => {
+        const { site, folder } = await setupFolder({
+          permalink: folderPermalink,
+        })
+        const { page: child } = await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: childPermalink,
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+        return { site, folder, child }
+      }
+
+      it("blocks the rename when a published descendant would land under an existing redirect", async () => {
+        // Arrange — a published child sits at /old-folder/child. Renaming the
+        // folder to /new-folder would move it to /new-folder/child, where an
+        // existing exact redirect (pointing elsewhere) already lives and would
+        // shadow the relocated page.
+        enableAdvancedRedirects()
+        const { site, folder } = await setupFolderWithPublishedChild()
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-folder/child",
+            destination: "/somewhere-else",
+          })
+          .execute()
+
+        // Act
+        const result = caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+
+        // Assert — the move is rejected and rolled back (folder keeps its old
+        // permalink), rather than silently shadowing the descendant.
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "CONFLICT" }),
+        )
+        const unchanged = await db
+          .selectFrom("Resource")
+          .select("permalink")
+          .where("id", "=", folder.id)
+          .executeTakeFirstOrThrow()
+        expect(unchanged.permalink).toBe("old-folder")
+      })
+
+      it("creates a wildcard redirect from the OLD path when a published descendant exists", async () => {
+        // Arrange
+        enableAdvancedRedirects()
+        const { site, folder } = await setupFolderWithPublishedChild()
+
+        // Act
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+
+        // Assert — the wildcard source is the folder's OLD full permalink
+        // (captured before Resource.permalink was rewritten), pointing back at
+        // the folder as a reference so it follows future renames.
+        const redirect = await db
+          .selectFrom("Redirect")
+          .select(["source", "destination", "deletedAt"])
+          .where("siteId", "=", site.id)
+          .executeTakeFirstOrThrow()
+        expect(redirect.source).toBe("/old-folder/*")
+        expect(redirect.destination).toBe(
+          getReferenceLink({
+            siteId: String(site.id),
+            resourceId: folder.id,
+          }),
+        )
+        expect(redirect.deletedAt).toBeNull()
+      })
+
+      it("does not create a redirect when the advanced flag is off", async () => {
+        // Arrange — flag left at its (off) baseline.
+        const { site, folder } = await setupFolderWithPublishedChild()
+
+        // Act
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+
+        // Assert
+        const redirects = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .execute()
+        expect(redirects).toHaveLength(0)
+      })
+
+      it("still blocks the rename when a descendant would be shadowed, even with the advanced flag off", async () => {
+        // Arrange — flag left at its (off) baseline. Only redirect CREATION is
+        // gated behind the flag; validating against an already-existing
+        // redirect must not be.
+        const { site, folder } = await setupFolderWithPublishedChild()
+        await db
+          .insertInto("Redirect")
+          .values({
+            siteId: site.id,
+            source: "/new-folder/child",
+            destination: "/somewhere-else",
+          })
+          .execute()
+
+        // Act
+        const result = caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+
+        // Assert
+        await expect(result).rejects.toThrow(
+          expect.objectContaining({ code: "CONFLICT" }),
+        )
+        const unchanged = await db
+          .selectFrom("Resource")
+          .select("permalink")
+          .where("id", "=", folder.id)
+          .executeTakeFirstOrThrow()
+        expect(unchanged.permalink).toBe("old-folder")
+      })
+
+      it("does not create a redirect when the folder has no published descendant", async () => {
+        // Arrange — the only child is a draft, so nothing is live to preserve.
+        enableAdvancedRedirects()
+        const { site, folder } = await setupFolder({ permalink: "old-folder" })
+        await setupPageResource({
+          siteId: site.id,
+          parentId: folder.id,
+          resourceType: ResourceType.Page,
+          permalink: "child",
+          state: ResourceState.Draft,
+        })
+        await setupAdminPermissions({ userId: session.userId, siteId: site.id })
+
+        // Act
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+
+        // Assert
+        const redirects = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .execute()
+        expect(redirects).toHaveLength(0)
+      })
+
+      it("does not create a redirect when shouldCreateRedirect is false", async () => {
+        // Arrange
+        enableAdvancedRedirects()
+        const { site, folder } = await setupFolderWithPublishedChild()
+
+        // Act
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+          shouldCreateRedirect: false,
+        })
+
+        // Assert
+        const redirects = await db
+          .selectFrom("Redirect")
+          .selectAll()
+          .where("siteId", "=", site.id)
+          .execute()
+        expect(redirects).toHaveLength(0)
+      })
+
+      it("allows moving a folder back to its old path, reclaiming its own wildcard", async () => {
+        // Arrange — first move /old-folder -> /new-folder creates the wildcard
+        // /old-folder/* -> folder.
+        enableAdvancedRedirects()
+        const { site, folder } = await setupFolderWithPublishedChild()
+        await caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "new folder",
+          permalink: "new-folder",
+        })
+        const folderRef = getReferenceLink({
+          siteId: String(site.id),
+          resourceId: folder.id,
+        })
+
+        // Act — roll back /new-folder -> /old-folder. The folder's own
+        // /old-folder/* wildcard from the first move must be reclaimed, not
+        // treated as a descendant shadow that blocks the move.
+        const result = caller.editFolder({
+          siteId: String(site.id),
+          resourceId: folder.id,
+          title: "old folder",
+          permalink: "old-folder",
+        })
+
+        // Assert — the rollback succeeds and the folder is back at /old-folder.
+        await expect(result).resolves.toMatchObject({ permalink: "old-folder" })
+
+        // The old-folder wildcard is reclaimed (no live redirect at /old-folder/*),
+        // and a fresh /new-folder/* wildcard preserves the vacated path.
+        const live = await db
+          .selectFrom("Redirect")
+          .select(["source", "destination"])
+          .where("siteId", "=", site.id)
+          .where("deletedAt", "is", null)
+          .execute()
+        expect(live).toEqual([
+          { source: "/new-folder/*", destination: folderRef },
+        ])
+      })
     })
   })
 

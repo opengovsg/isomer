@@ -62,7 +62,11 @@ export const getParentSchema = z.object({
   resourceId: bigIntSchema,
 })
 
-export const resourceOrderByOptions = ["updated-desc", "title-asc"] as const
+export const resourceOrderByOptions = [
+  "updated-desc",
+  "title-asc",
+  "permalink-asc",
+] as const
 
 export type ResourceOrderByOption = (typeof resourceOrderByOptions)[number]
 

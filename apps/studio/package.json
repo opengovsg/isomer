@@ -146,6 +146,8 @@
     "papaparse": "catalog:",
     "pdfreader": "^3.0.8",
     "pg": "catalog:",
+    "posthog-js": "catalog:",
+    "posthog-node": "catalog:",
     "rate-limiter-flexible": "catalog:",
     "react": "catalog:react",
     "react-dom": "catalog:react",

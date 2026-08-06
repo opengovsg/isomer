@@ -105,6 +105,18 @@ on:
         description: "Intercom app ID"
         required: false
         type: string
+      posthog-host: 
+        description: "Posthog host"
+        required: false
+        type: string
+      posthog-assets-host: 
+        description: "Posthog assets host"
+        required: false
+        type: string
+      posthog-project-token: 
+        description: "Posthog project token"
+        required: false
+        type: string
     secrets:
       SLACK_BOT_TOKEN:
         description: "Slack bot token with permissions to post messages"
@@ -206,6 +218,9 @@ jobs:
             NEXT_PUBLIC_S3_ASSETS_BUCKET_NAME=${{ inputs.app-s3-assets-bucket-name }}
             NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY=${{ inputs.app-growthbook-client-key }}
             NEXT_PUBLIC_INTERCOM_APP_ID=${{ inputs.app-intercom-app-id }}
+            NEXT_PUBLIC_POSTHOG_ASSETS_HOST=${{ inputs.posthog-assets-host }}
+            NEXT_PUBLIC_POSTHOG_HOST=${{ inputs.posthog-host }}
+            NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN=${{ inputs.posthog-project-token }}
             DD_GIT_REPOSITORY_URL=https://github.com/${{ github.repository }}
             DD_GIT_COMMIT_SHA=${{ github.sha }}
 

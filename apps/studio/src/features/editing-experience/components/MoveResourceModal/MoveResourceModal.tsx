@@ -19,6 +19,7 @@ import { ResourceSelector } from "~/components/ResourceSelector/ResourceSelector
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
+import { useIsAdvancedRedirectsEnabled } from "~/hooks/useIsAdvancedRedirectsEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { normalizeRedirectPath } from "~/schemas/redirect"
@@ -128,11 +129,20 @@ const MoveResourceContent = withSuspense(
       { enabled: !!curResourceId },
     )
 
+    const isAdvancedRedirectsEnabled = useIsAdvancedRedirectsEnabled()
+
     // Only published Page/CollectionPage have a live URL worth preserving — the
     // server skips redirect creation for unpublished pages, so don't offer it.
-    const isRedirectableType =
+    const isPageRedirectable =
       (type === ResourceType.Page || type === ResourceType.CollectionPage) &&
       publishedVersionId !== null
+    // A Folder/Collection preserves its subtree with one wildcard redirect. It
+    // has no publishedVersionId of its own, so the server decides (on published
+    // descendants); here we only gate on the advanced-redirects flag.
+    const isFolderRedirect =
+      (type === ResourceType.Folder || type === ResourceType.Collection) &&
+      isAdvancedRedirectsEnabled
+    const isRedirectableType = isPageRedirectable || isFolderRedirect
     const oldFullPermalink = normalizeRedirectPath(movedFullPermalink)
     const newFullPermalink = normalizeRedirectPath(
       `${curResourceId && destination ? destination.fullPermalink : ""}/${movedSlug}`,
@@ -178,7 +188,9 @@ const MoveResourceContent = withSuspense(
                   p="1rem"
                 >
                   <Text textStyle="body-2" color="base.content.strong">
-                    The page URL will change to {newFullPermalink}.
+                    {isFolderRedirect
+                      ? `The URL will change to ${newFullPermalink}, and every page under it will move too.`
+                      : `The page URL will change to ${newFullPermalink}.`}
                   </Text>
                 </Box>
                 {showRedirectOption && (
@@ -204,8 +216,9 @@ const MoveResourceContent = withSuspense(
                       }
                     >
                       <Text textStyle="body-2" color="base.content.strong">
-                        Check this box to automatically redirect visitors from{" "}
-                        {oldFullPermalink} to this new URL.
+                        {isFolderRedirect
+                          ? `Check this box to redirect visitors from everything under ${oldFullPermalink}/ to the new location.`
+                          : `Check this box to automatically redirect visitors from ${oldFullPermalink} to this new URL.`}
                       </Text>
                     </Checkbox>
                   </>

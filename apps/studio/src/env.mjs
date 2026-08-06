@@ -46,6 +46,9 @@ const client = z
     NEXT_PUBLIC_APP_VERSION: z.string().default("0.0.0"),
     NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY: z.string().optional(),
     NEXT_PUBLIC_INTERCOM_APP_ID: z.string().optional(),
+    NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: z.string().optional(),
+    NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional(),
+    NEXT_PUBLIC_POSTHOG_ASSETS_HOST: z.string().url().optional(),
   })
   .extend(s3Schema.shape)
   .extend(cronHeartbeatSchema.shape)
@@ -185,6 +188,14 @@ const processEnv = {
     process.env.NEXT_PUBLIC_APP_VERSION ??
     process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  // The reusable AWS deploy workflow always forwards these as Docker
+  // build-args, so an unset input arrives here as "" rather than absent —
+  // normalize to undefined so `.optional()` in the schema still applies.
+  NEXT_PUBLIC_POSTHOG_ASSETS_HOST:
+    process.env.NEXT_PUBLIC_POSTHOG_ASSETS_HOST || undefined,
+  NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST || undefined,
+  NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN:
+    process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN || undefined,
   NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY:
     process.env.NEXT_PUBLIC_GROWTHBOOK_CLIENT_KEY,
   NEXT_PUBLIC_INTERCOM_APP_ID: process.env.NEXT_PUBLIC_INTERCOM_APP_ID,
