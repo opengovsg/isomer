@@ -2,8 +2,6 @@ import { TRPCError } from "@trpc/server"
 import { omit, pick } from "lodash-es"
 import { auth } from "tests/integration/helpers/auth"
 import { resetTables } from "tests/integration/helpers/db"
-import { mockFeatureFlags } from "tests/integration/helpers/growthbook/mockFeatureFlags"
-import { mockGrowthBook } from "tests/integration/helpers/growthbook/mockInstance"
 import {
   applyAuthedSession,
   applySession,
@@ -25,7 +23,6 @@ import {
   setUpWhitelist,
 } from "tests/integration/helpers/seed"
 import { USER_VIEWABLE_RESOURCE_TYPES } from "~/constants/resources"
-import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { MAX_BATCH_RESOURCE_IDS } from "~/schemas/resource"
 import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
@@ -2081,20 +2078,6 @@ describe("resource.router", async () => {
       })
 
       describe("folder/collection", () => {
-        const enableAdvancedRedirects = () => {
-          mockGrowthBook.setForcedFeatures(
-            new Map([
-              ...mockFeatureFlags,
-              [IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY, true],
-            ]),
-          )
-        }
-
-        afterEach(() => {
-          // Restore the baseline forced features so the flag doesn't leak.
-          mockGrowthBook.setForcedFeatures(mockFeatureFlags)
-        })
-
         // A folder ("/dest/src-folder") with one published child page,
         // alongside a sibling destination folder ("/dest") to move it into.
         const setupMoveWithPublishedChild = async () => {
@@ -2116,7 +2099,6 @@ describe("resource.router", async () => {
         }
 
         it("creates a wildcard redirect from the old path for a published folder", async () => {
-          enableAdvancedRedirects()
           const { site, sourceFolder, destinationFolder } =
             await setupMoveWithPublishedChild()
 
@@ -2135,24 +2117,7 @@ describe("resource.router", async () => {
           )
         })
 
-        it("does not create a redirect when the advanced flag is off", async () => {
-          // Arrange — flag left at its (off) baseline.
-          const { site, sourceFolder, destinationFolder } =
-            await setupMoveWithPublishedChild()
-
-          await caller.move({
-            siteId: site.id,
-            movedResourceId: sourceFolder.id,
-            destinationResourceId: destinationFolder.id,
-            shouldCreateRedirect: true,
-          })
-
-          expect(await liveRedirects(site.id)).toHaveLength(0)
-        })
-
-        it("still blocks the move when a descendant would be shadowed, even with the flag off", async () => {
-          // Only redirect CREATION is gated behind the flag; validating
-          // against an already-existing redirect must not be.
+        it("still blocks the move when a descendant would be shadowed, even when shouldCreateRedirect is false", async () => {
           const { site, rootPage, sourceFolder, destinationFolder } =
             await setupMoveWithPublishedChild()
           await db

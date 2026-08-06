@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
-import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   createFolderSchema,
   editFolderSchema,
@@ -307,9 +306,6 @@ export const folderRouter = router({
           // them with one wildcard redirect ("/old-folder/*"). oldFullPermalink
           // was captured pre-update; only the last path segment changed, so swap
           // it to derive the new full permalink without re-walking the tree.
-          // Shadow validation always runs on a permalink change; only redirect
-          // creation is gated behind the flag (dark-launched until the edge
-          // resolver ships).
           if (permalinkChanged && oldFullPermalink !== null) {
             const newFullPermalink =
               oldFullPermalink.slice(0, oldFullPermalink.lastIndexOf("/") + 1) +
@@ -323,9 +319,7 @@ export const folderRouter = router({
                 siteId: Number(siteId),
                 resourceId,
               }),
-              shouldCreateRedirect:
-                shouldCreateRedirect &&
-                ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY),
+              shouldCreateRedirect,
               byUserId: user.id,
             })
           }

@@ -19,7 +19,6 @@ import { ResourceSelector } from "~/components/ResourceSelector/ResourceSelector
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { usePermissions } from "~/features/permissions"
 import { withSuspense } from "~/hocs/withSuspense"
-import { useIsAdvancedRedirectsEnabled } from "~/hooks/useIsAdvancedRedirectsEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
 import { normalizeRedirectPath } from "~/schemas/redirect"
@@ -129,19 +128,16 @@ const MoveResourceContent = withSuspense(
       { enabled: !!curResourceId },
     )
 
-    const isAdvancedRedirectsEnabled = useIsAdvancedRedirectsEnabled()
-
     // Only published Page/CollectionPage have a live URL worth preserving — the
     // server skips redirect creation for unpublished pages, so don't offer it.
     const isPageRedirectable =
       (type === ResourceType.Page || type === ResourceType.CollectionPage) &&
       publishedVersionId !== null
     // A Folder/Collection preserves its subtree with one wildcard redirect. It
-    // has no publishedVersionId of its own, so the server decides (on published
-    // descendants); here we only gate on the advanced-redirects flag.
+    // has no publishedVersionId of its own, so the server decides based on
+    // published descendants.
     const isFolderRedirect =
-      (type === ResourceType.Folder || type === ResourceType.Collection) &&
-      isAdvancedRedirectsEnabled
+      type === ResourceType.Folder || type === ResourceType.Collection
     const isRedirectableType = isPageRedirectable || isFolderRedirect
     const oldFullPermalink = normalizeRedirectPath(movedFullPermalink)
     const newFullPermalink = normalizeRedirectPath(

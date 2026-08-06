@@ -27,7 +27,6 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
-import { useIsAdvancedRedirectsEnabled } from "~/hooks/useIsAdvancedRedirectsEnabled"
 import { useZodForm } from "~/lib/form"
 import { normalizeRedirectSource, redirectKind } from "~/schemas/redirect"
 
@@ -84,7 +83,6 @@ export const AddRedirectCard = ({
   })
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { mutate: createRedirect, isPending } = useCreateRedirect()
-  const isAdvancedRedirectsEnabled = useIsAdvancedRedirectsEnabled()
   const {
     isOpen: isPageModalOpen,
     onOpen: onPageModalOpen,
@@ -105,10 +103,7 @@ export const AddRedirectCard = ({
 
   // Live preview: /old/* + /dest → /old/example → /dest/example
   const wildcardPreview =
-    isAdvancedRedirectsEnabled &&
-    kind === "wildcard" &&
-    normalizedSource &&
-    destination
+    kind === "wildcard" && normalizedSource && destination
       ? buildWildcardPreview(normalizedSource, destination)
       : null
 
@@ -190,37 +185,35 @@ export const AddRedirectCard = ({
         effect on your live site.
       </Text>
 
-      {isAdvancedRedirectsEnabled && (
-        <Flex
-          align="center"
-          gap="0.5rem"
-          bg="utility.feedback.info-subtle"
-          borderRadius="4px"
-          p="0.75rem"
-          mb="1.25rem"
-        >
-          <Icon
-            as={BiBulb}
-            boxSize="1.25rem"
-            color="base.content.default"
-            flexShrink={0}
-          />
-          <Text textStyle="subhead-2" color="base.content.default">
-            Have more than 10 redirects to add? You can{" "}
-            <Link
-              as="button"
-              type="button"
-              variant="inline"
-              textStyle="subhead-2"
-              color="interaction.links.default"
-              onClick={onBulkUploadOpen}
-            >
-              bulk upload with a .csv instead
-            </Link>
-            .
-          </Text>
-        </Flex>
-      )}
+      <Flex
+        align="center"
+        gap="0.5rem"
+        bg="utility.feedback.info-subtle"
+        borderRadius="4px"
+        p="0.75rem"
+        mb="1.25rem"
+      >
+        <Icon
+          as={BiBulb}
+          boxSize="1.25rem"
+          color="base.content.default"
+          flexShrink={0}
+        />
+        <Text textStyle="subhead-2" color="base.content.default">
+          Have more than 10 redirects to add? You can{" "}
+          <Link
+            as="button"
+            type="button"
+            variant="inline"
+            textStyle="subhead-2"
+            color="interaction.links.default"
+            onClick={onBulkUploadOpen}
+          >
+            bulk upload with a .csv instead
+          </Link>
+          .
+        </Text>
+      </Flex>
 
       <HStack as="form" align="flex-start" onSubmit={handleSubmit(onSubmit)}>
         <FormControl
@@ -238,18 +231,14 @@ export const AddRedirectCard = ({
               /
             </InputLeftAddon>
             <Input
-              placeholder={
-                isAdvancedRedirectsEnabled
-                  ? "redirect-from or path/*"
-                  : "redirect-from"
-              }
+              placeholder="redirect-from or path/*"
               {...register("source", {
                 onChange: clearFieldFeedback("source"),
               })}
             />
           </InputGroup>
           <FormErrorMessage>{errors.source?.message}</FormErrorMessage>
-          {isAdvancedRedirectsEnabled && !errors.source && (
+          {!errors.source && (
             <FormHelperText fontSize="xs" color="base.content.medium">
               {wildcardPreview
                 ? `e.g. ${wildcardPreview}`
@@ -361,13 +350,11 @@ export const AddRedirectCard = ({
         }
       />
 
-      {isAdvancedRedirectsEnabled && (
-        <BulkUploadRedirectsModal
-          siteId={siteId}
-          isOpen={isBulkUploadOpen}
-          onClose={onBulkUploadClose}
-        />
-      )}
+      <BulkUploadRedirectsModal
+        siteId={siteId}
+        isOpen={isBulkUploadOpen}
+        onClose={onBulkUploadClose}
+      />
     </Box>
   )
 }
