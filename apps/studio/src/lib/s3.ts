@@ -230,6 +230,24 @@ export const setAssetAsPublished = async ({
   return
 }
 
+// A HeadObject error means "object is genuinely absent" only for a real
+// not-found: AWS SDK v3 surfaces this as an error named "NotFound"/"NoSuchKey"
+// or an HTTP 404. Every other failure (throttling, network blips, auth) is
+// transient/operational and MUST propagate — swallowing it as `null` would let
+// callers mistake a present object for a missing one.
+const isNotFoundError = (error: unknown): boolean => {
+  if (typeof error !== "object" || error === null) return false
+  const { name, $metadata } = error as {
+    name?: unknown
+    $metadata?: { httpStatusCode?: unknown }
+  }
+  return (
+    name === "NotFound" ||
+    name === "NoSuchKey" ||
+    $metadata?.httpStatusCode === 404
+  )
+}
+
 export const getFileSize = async ({
   Key,
   Bucket,
@@ -237,8 +255,11 @@ export const getFileSize = async ({
   try {
     const response = await storage.send(new HeadObjectCommand({ Bucket, Key }))
     return response.ContentLength ?? null
-  } catch {
-    return null
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return null
+    }
+    throw error
   }
 }
 

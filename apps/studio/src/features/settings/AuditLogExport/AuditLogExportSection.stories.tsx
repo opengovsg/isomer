@@ -95,30 +95,42 @@ export const Submitting: Story = {
   },
 }
 
-// Error state — a duplicate request already in flight surfaces a toast.
-export const Conflict: Story = {
-  parameters: {
-    msw: {
-      handlers: [
-        ...COMMON_HANDLERS,
-        auditHandlers.createExportRequest.conflict(),
-      ],
-    },
-  },
+// A duplicate request cannot fail: the server accepts it idempotently
+// (ADR docs/adr/0005), so submitting twice shows the same success toast.
+export const DuplicateRequestSucceeds: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(
-      await canvas.findByRole("checkbox", { name: /Audit logs/ }),
-    )
-    await userEvent.click(
-      await canvas.findByRole("button", { name: "Export log" }),
-    )
+    const submitOnce = async () => {
+      await userEvent.click(
+        await canvas.findByRole("checkbox", { name: /Audit logs/ }),
+      )
+      await userEvent.click(
+        await canvas.findByRole("button", { name: "Export log" }),
+      )
+    }
+
+    // Ask once, then ask again for the same logs. Neither can fail: the
+    // service accepts duplicates idempotently (ADR docs/adr/0005), so both
+    // resolve with the success toast rather than an error.
+    await submitOnce()
+    // The form resets on success; wait for that before re-selecting.
     await waitFor(async () =>
       expect(
-        await within(document.body).findByText(
-          "An export for this period and report type is already being generated",
-        ),
-      ).toBeVisible(),
+        await canvas.findByRole("button", {
+          name: "Select log types to export",
+        }),
+      ).toBeDisabled(),
     )
+    await submitOnce()
+
+    // Both asks resolve with the success toast — no error surface exists for
+    // duplicates any more. (findAllByText: the two toasts may coexist.)
+    await waitFor(async () => {
+      const toasts = await within(document.body).findAllByText(
+        "Export requested",
+      )
+      await expect(toasts.length).toBeGreaterThanOrEqual(1)
+      await expect(toasts[0]).toBeVisible()
+    })
   },
 }

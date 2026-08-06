@@ -1,5 +1,6 @@
 import {
   GetObjectTaggingCommand,
+  HeadObjectCommand,
   PutObjectTaggingCommand,
 } from "@aws-sdk/client-s3"
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -20,7 +21,7 @@ vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
 })
 
 // Imported after the mock is registered so the module-level S3Client is mocked.
-const { deleteFile } = await import("../s3")
+const { deleteFile, getFileSize } = await import("../s3")
 
 const DELETE_TAG = "deletedAt"
 
@@ -72,5 +73,80 @@ describe("deleteFile", () => {
         ([command]) => command instanceof PutObjectTaggingCommand,
       ),
     ).toBe(false)
+  })
+})
+
+describe("getFileSize", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("returns the ContentLength of an existing object", async () => {
+    // Arrange
+    sendMock.mockResolvedValueOnce({ ContentLength: 4096 })
+
+    // Act
+    const size = await getFileSize({ Key: "a/b.csv", Bucket: "test-bucket" })
+
+    // Assert
+    expect(size).toBe(4096)
+    expect(sendMock.mock.calls[0]?.[0]).toBeInstanceOf(HeadObjectCommand)
+  })
+
+  it("returns null when the object is genuinely absent (NotFound)", async () => {
+    // Arrange: AWS SDK v3 surfaces a missing object as a NotFound error.
+    sendMock.mockRejectedValueOnce(
+      Object.assign(new Error("Not Found"), {
+        name: "NotFound",
+        $metadata: { httpStatusCode: 404 },
+      }),
+    )
+
+    // Act
+    const size = await getFileSize({ Key: "gone.csv", Bucket: "test-bucket" })
+
+    // Assert
+    expect(size).toBeNull()
+  })
+
+  it("returns null for a NoSuchKey error", async () => {
+    // Arrange
+    sendMock.mockRejectedValueOnce(
+      Object.assign(new Error("No such key"), { name: "NoSuchKey" }),
+    )
+
+    // Act
+    const size = await getFileSize({ Key: "gone.csv", Bucket: "test-bucket" })
+
+    // Assert
+    expect(size).toBeNull()
+  })
+
+  it("returns null on any error carrying a 404 http status code", async () => {
+    // Arrange: a generic error whose only not-found signal is the status code.
+    sendMock.mockRejectedValueOnce(
+      Object.assign(new Error("nope"), { $metadata: { httpStatusCode: 404 } }),
+    )
+
+    // Act
+    const size = await getFileSize({ Key: "gone.csv", Bucket: "test-bucket" })
+
+    // Assert
+    expect(size).toBeNull()
+  })
+
+  it("rethrows a transient (non-404) error instead of reporting the object as gone", async () => {
+    // Arrange: a throttling error must NOT be swallowed as null — callers rely
+    // on null meaning "genuinely absent", not "we couldn't tell".
+    const transientError = Object.assign(new Error("SlowDown"), {
+      name: "SlowDown",
+      $metadata: { httpStatusCode: 503 },
+    })
+    sendMock.mockRejectedValueOnce(transientError)
+
+    // Act + Assert
+    await expect(
+      getFileSize({ Key: "present.csv", Bucket: "test-bucket" }),
+    ).rejects.toBe(transientError)
   })
 })

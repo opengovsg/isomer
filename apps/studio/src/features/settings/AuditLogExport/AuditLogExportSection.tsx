@@ -98,7 +98,11 @@ export const AuditLogExportSection = ({
     // (it's driven entirely by this checkbox cluster), so `resetField` is a
     // no-op for it — RHF only resets fields it finds in its internal registry.
     // `setValue` has no such guard, so use it for both the set and clear cases.
-    form.setValue("reportType", next, { shouldValidate: true })
+    // The form type (drawn from the submission schema) requires a concrete
+    // report type, but the field is legitimately undefined until a card is
+    // picked — same widening as the `reportType` read above.
+    // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
+    form.setValue("reportType", next!, { shouldValidate: true })
   }
 
   const { mutate: createExportRequest, isPending } =
@@ -113,8 +117,9 @@ export const AuditLogExportSection = ({
         })
       },
       // The server returns typed, user-facing messages for the expected
-      // rejections (future month, duplicate in flight, not an admin). Surface
-      // those directly; fall back to a generic message for anything else.
+      // rejections (future month, not an admin). Duplicate requests never
+      // fail — they are accepted idempotently. Surface server messages
+      // directly; fall back to a generic message for anything else.
       onError: (error) => {
         if (error.data?.code === "FORBIDDEN") {
           toast({
