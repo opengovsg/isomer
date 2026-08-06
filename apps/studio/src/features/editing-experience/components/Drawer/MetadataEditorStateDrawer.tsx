@@ -8,6 +8,7 @@ import {
   ISOMER_USABLE_PAGE_LAYOUTS,
 } from "@opengovsg/isomer-components"
 import { isEmpty, isEqual } from "lodash-es"
+import posthog from "posthog-js"
 import { useCallback, useMemo } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
@@ -64,6 +65,7 @@ export default function MetadataEditorStateDrawer(): JSX.Element {
   const utils = trpc.useUtils()
   const { mutate, isPending } = trpc.page.updatePageBlob.useMutation({
     onSuccess: () => {
+      posthog.capture("page_changes_saved", { site_id: siteId })
       void Promise.all([
         utils.page.readPageAndBlob.invalidate({ pageId, siteId }),
         utils.page.readPage.invalidate({ pageId, siteId }),

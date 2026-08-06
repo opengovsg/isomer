@@ -2,6 +2,8 @@ import type { IconType } from "react-icons"
 import { Center, Flex, Icon, Text } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { isEmpty } from "lodash-es"
+import { useRouter } from "next/router"
+import posthog from "posthog-js"
 
 import { useBuilderErrors } from "../editing-experience/components/form-builder/ErrorProvider"
 import { Can } from "../permissions"
@@ -22,6 +24,7 @@ export const SettingsHeader = ({
 }: SettingsHeaderProps) => {
   const { errors } = useBuilderErrors()
   const isDisabled = !isEmpty(errors)
+  const router = useRouter()
 
   return (
     <Flex justifyContent="space-between" w="100%">
@@ -45,7 +48,13 @@ export const SettingsHeader = ({
         <Button
           type="submit"
           isLoading={isLoading}
-          onClick={onClick}
+          onClick={() => {
+            posthog.capture("settings_saved", {
+              site_id: router.query.siteId,
+              settings_section: router.pathname.split("/").pop(),
+            })
+            onClick()
+          }}
           isDisabled={isDisabledProp || isDisabled}
           size="xs"
         >

@@ -1,5 +1,6 @@
 import type {
   AuditLogEvent,
+  AuditLogExportReportType,
   Blob,
   DB,
   Footer,
@@ -383,6 +384,38 @@ export const logPermissionEvent: AuditLogger<PermissionEventLogProps> = async (
       ipAddress: ip,
       siteId,
       metadata,
+    })
+    .execute()
+}
+
+interface AuditLogExportCreateDelta {
+  before: null
+  after: {
+    auditLogDateRange: string
+    reportType: AuditLogExportReportType
+  }
+}
+
+interface AuditLogExportEventLogProps {
+  eventType: Extract<AuditLogEvent, "AuditLogExportCreate">
+  delta: AuditLogExportCreateDelta
+  by: User
+  ip?: string
+  siteId: Site["id"]
+}
+
+export const logAuditLogExportEvent: AuditLogger<
+  AuditLogExportEventLogProps
+> = async (tx, { eventType, delta, by, ip, siteId }) => {
+  await tx
+    .insertInto("AuditLog")
+    .values({
+      siteId,
+      eventType,
+      delta,
+      userId: by.id,
+      ipAddress: ip,
+      metadata: {},
     })
     .execute()
 }

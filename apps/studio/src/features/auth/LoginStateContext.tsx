@@ -55,6 +55,11 @@ const PostHogIdentity = () => {
   const { data: user } = trpc.me.get.useQuery(undefined, {
     enabled: hasLoginStateFlag,
   })
+  // Site-wide (siteId, role) pairs for cohorting users in PostHog by the
+  // permissions they hold — see `site.list` for how roles are resolved.
+  const { data: sites } = trpc.site.list.useQuery(undefined, {
+    enabled: hasLoginStateFlag,
+  })
   const identifiedUserId = useRef<string | undefined>(undefined)
 
   useEffect(() => {
@@ -67,7 +72,7 @@ const PostHogIdentity = () => {
       return
     }
 
-    if (!user || identifiedUserId.current === user.id) return
+    if (!user || !sites || identifiedUserId.current === user.id) return
 
     void withPosthog((posthog) => {
       if (identifiedUserId.current && identifiedUserId.current !== user.id) {
@@ -77,10 +82,11 @@ const PostHogIdentity = () => {
       posthog.identify(user.id, {
         email: user.email,
         ...(user.name ? { name: user.name } : {}),
+        site_roles: sites.map((site) => `${site.id}:${site.role}`),
       })
       identifiedUserId.current = user.id
     })
-  }, [user, hasLoginStateFlag])
+  }, [user, sites, hasLoginStateFlag])
 
   return null
 }

@@ -19,7 +19,7 @@ import {
 } from "tests/integration/helpers/seed"
 import * as searchSgService from "~/server/modules/searchsg/searchsg.service"
 import { createCallerFactory } from "~/server/trpc"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import type { User } from "../../database"
 import { AuditLogEvent, db, jsonb, ResourceType } from "../../database"
@@ -185,6 +185,7 @@ describe("site.router", async () => {
         {
           id: site.id,
           config: site.config,
+          role: RoleType.Editor,
         },
       ])
     })
@@ -206,6 +207,7 @@ describe("site.router", async () => {
         {
           id: site1.id,
           config: site1.config,
+          role: RoleType.Editor,
         },
       ])
     })
@@ -242,6 +244,7 @@ describe("site.router", async () => {
         {
           id: site2.id,
           config: site2.config,
+          role: RoleType.Editor,
         },
       ])
     })
@@ -262,8 +265,37 @@ describe("site.router", async () => {
       expect(result).toEqual(
         [site1, site2]
           .sort((a, b) => a.id - b.id)
-          .map((site) => ({ id: site.id, config: site.config })),
+          .map((site) => ({
+            id: site.id,
+            config: site.config,
+            role: RoleType.Admin,
+          })),
       )
+    })
+
+    it("should return the Admin role even if the user also has an explicit lower role on the site", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupIsomerAdmin({
+        userId: session.userId!,
+        role: IsomerAdminRole.Core,
+      })
+
+      // Act
+      const result = await caller.list()
+
+      // Assert
+      expect(result).toEqual([
+        {
+          id: site.id,
+          config: site.config,
+          role: RoleType.Admin,
+        },
+      ])
     })
   })
 

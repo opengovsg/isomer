@@ -207,7 +207,12 @@ export const AddRedirectCard = ({
             variant="inline"
             textStyle="subhead-2"
             color="interaction.links.default"
-            onClick={onBulkUploadOpen}
+            onClick={() => {
+              posthog.capture("redirect_bulk_upload_modal_opened", {
+                site_id: siteId,
+              })
+              onBulkUploadOpen()
+            }}
           >
             bulk upload with a .csv instead
           </Link>

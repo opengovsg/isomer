@@ -12,11 +12,11 @@
     "ajv": "catalog:",
     "dotenv": "catalog:",
     "dotenv-cli": "catalog:",
-    "pg": "catalog:",
+    "pg": "catalog:pg",
     "tsx": "catalog:"
   },
   "devDependencies": {
     "@isomer/tsconfig": "workspace:*",
-    "@types/pg": "catalog:"
+    "@types/pg": "catalog:pg"
   }
 }
