@@ -1,5 +1,6 @@
 import { Portal, useDisclosure } from "@chakra-ui/react"
 import { Button, Menu } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { BiData, BiFileBlank, BiFolder, BiHomeAlt } from "react-icons/bi"
 import { z } from "zod"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -107,9 +108,27 @@ const SitePage: NextPageWithLayout = () => {
         title="Home"
         buttons={
           <HomepageMenuButton
-            onPageCreateModalOpen={onPageCreateModalOpen}
-            onFolderCreateModalOpen={onFolderCreateModalOpen}
-            onCollectionCreateModalOpen={onCollectionCreateModalOpen}
+            onPageCreateModalOpen={() => {
+              posthog.capture("page_create_modal_opened", {
+                site_id: siteId,
+                parent_type: "site",
+              })
+              onPageCreateModalOpen()
+            }}
+            onFolderCreateModalOpen={() => {
+              posthog.capture("folder_create_modal_opened", {
+                site_id: siteId,
+                parent_type: "site",
+              })
+              onFolderCreateModalOpen()
+            }}
+            onCollectionCreateModalOpen={() => {
+              posthog.capture("collection_create_modal_opened", {
+                site_id: siteId,
+                parent_type: "site",
+              })
+              onCollectionCreateModalOpen()
+            }}
           />
         }
       >
