@@ -28,6 +28,23 @@ describe("getMonthOptions", () => {
 
     expect(options[0]).toEqual({ value: "2026-07", label: "July 2026" })
   })
+
+  it("caps the option count when maxMonths is smaller than the full window", () => {
+    // A site younger than the standard window only offers its own age's worth
+    // of months (see getMaxExportableMonths).
+    const options = getMonthOptions(new Date("2026-06-30T08:00:00.000Z"), 3)
+
+    expect(options).toHaveLength(3)
+    expect(options[0]).toEqual({ value: "2026-06", label: "June 2026" })
+    expect(options.at(-1)).toEqual({ value: "2026-04", label: "April 2026" })
+  })
+
+  it("still returns at least the current month if maxMonths is 0 or negative", () => {
+    const options = getMonthOptions(new Date("2026-06-30T08:00:00.000Z"), 0)
+
+    expect(options).toHaveLength(1)
+    expect(options[0]).toEqual({ value: "2026-06", label: "June 2026" })
+  })
 })
 
 describe("toggleReportType", () => {

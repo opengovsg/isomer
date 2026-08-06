@@ -2,6 +2,13 @@ import { MOCK_STORY_DATE } from "../constants"
 import { trpcMsw } from "../mockTrpc"
 
 export const auditHandlers = {
+  // How many months back the export picker may offer for this site. Defaults
+  // to the standard full window; stories that want to demonstrate a young
+  // site can override with a smaller `maxMonths`.
+  getExportWindow: {
+    default: (maxMonths = 12) =>
+      trpcMsw.audit.getExportWindow.query(() => ({ maxMonths })),
+  },
   createExportRequest: {
     // Accepts the request and returns the inserted Pending rows, the way the
     // service does on the happy path: one row for Access/Activity, two for

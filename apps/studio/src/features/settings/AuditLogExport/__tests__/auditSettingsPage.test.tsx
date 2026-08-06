@@ -4,7 +4,7 @@ import { ThemeProvider } from "@opengovsg/design-system-react"
 import { render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { UserManagementContext } from "~/features/users"
-import AuditLogExportSettingsPage from "~/pages/sites/[siteId]/settings/audit"
+import AuditLogExportSettingsPage from "~/pages/sites/[siteId]/settings/audit-log"
 import { buildUserManagementPermissions } from "~/server/modules/permissions/permissions.util"
 import { theme } from "~/theme"
 import { RoleType } from "~prisma/generated/generatedEnums"
@@ -36,6 +36,18 @@ vi.mock("next/router", () => ({
   }),
 }))
 
+// The page is additionally gated on the `is-audit-log-enabled` GrowthBook
+// flag, and defers to `gb.ready` so a slow flag fetch never bounces an admin.
+// Drive both per-test; `useFeatureValue` mirrors the real hook's behaviour of
+// returning the fallback until features are loaded.
+let isGbReady = true
+let isAuditLogFlagOn = true
+vi.mock("@growthbook/growthbook-react", () => ({
+  useGrowthBook: () => ({ ready: isGbReady }),
+  useFeatureValue: (_key: string, fallback: boolean) =>
+    isGbReady ? isAuditLogFlagOn : fallback,
+}))
+
 // The page reads `getRolesFor` only for its loading signal; the ability itself
 // comes from `UserManagementContext`. Drive `isPending` per-test.
 let isRolesPending = false
@@ -47,6 +59,9 @@ vi.mock("~/utils/trpc", () => ({
       },
     },
     audit: {
+      getExportWindow: {
+        useQuery: () => ({ data: { maxMonths: 12 } }),
+      },
       createExportRequest: {
         useMutation: () => ({ mutate: vi.fn(), isPending: false }),
       },
@@ -72,6 +87,8 @@ describe("AuditLogExportSettingsPage", () => {
   beforeEach(() => {
     replace.mockClear()
     isRolesPending = false
+    isGbReady = true
+    isAuditLogFlagOn = true
   })
 
   it("renders the export section for admins", () => {
@@ -102,6 +119,33 @@ describe("AuditLogExportSettingsPage", () => {
     renderWith(editorAbility)
 
     // Assert
+    expect(replace).not.toHaveBeenCalled()
+    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
+  })
+
+  it("redirects admins away when the is-audit-log-enabled flag is off", async () => {
+    // Arrange
+    isAuditLogFlagOn = false
+
+    // Act
+    renderWith(adminAbility)
+
+    // Assert: gated identically to the non-admin path
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`),
+    )
+    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
+  })
+
+  it("does not redirect while GrowthBook features are still loading", () => {
+    // Arrange: flags unfetched — `useFeatureValue` still returns its `false`
+    // fallback, which must NOT be mistaken for the flag being off.
+    isGbReady = false
+
+    // Act
+    renderWith(adminAbility)
+
+    // Assert: spinner, no bounce
     expect(replace).not.toHaveBeenCalled()
     expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
   })

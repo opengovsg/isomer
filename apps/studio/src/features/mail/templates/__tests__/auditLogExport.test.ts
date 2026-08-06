@@ -7,6 +7,8 @@ describe("auditLogExportReady template", () => {
     recipientEmail: "test@example.com",
     siteName: "Test Site",
     month: "June 2026",
+    // 2.5 MB with ONE_MB_IN_BYTES = 1_000_000, so the label reads "2.50MB".
+    sizeInBytes: 2_500_000,
   }
 
   it("maps the access label to its display text and keeps its signed URL", () => {
@@ -18,7 +20,7 @@ describe("auditLogExportReady template", () => {
 
     // Assert: the label renders its mapped text against its own signed URL
     expect(template.body).toContain(
-      `<a href="https://s3.example/access?sig=abc">Download access review logs for June 2026 [.csv]</a>`,
+      `<a href="https://s3.example/access?sig=abc">Download access review logs for June 2026 [.csv, 2.50MB]</a>`,
     )
   })
 
@@ -31,7 +33,7 @@ describe("auditLogExportReady template", () => {
 
     // Assert: the label renders its mapped text against its own signed URL
     expect(template.body).toContain(
-      `<a href="https://s3.example/audit?sig=def">Download audit review logs for June 2026 [.csv]</a>`,
+      `<a href="https://s3.example/audit?sig=def">Download audit review logs for June 2026 [.csv, 2.50MB]</a>`,
     )
   })
 
@@ -48,8 +50,22 @@ describe("auditLogExportReady template", () => {
     ).length
     expect(hrefCount).toBe(1)
     expect(template.body).toContain(
-      `<a href="https://s3.example/only?sig=1">Download access review logs for June 2026 [.csv]</a>`,
+      `<a href="https://s3.example/only?sig=1">Download access review logs for June 2026 [.csv, 2.50MB]</a>`,
     )
+  })
+
+  it("renders a placeholder size when sizeInBytes is unknown", () => {
+    // Act: the reuse path can deliver an artifact whose size was never
+    // measured — the template must not render "NaN" or crash.
+    const template = templates.auditLogExportReady({
+      ...baseData,
+      sizeInBytes: null,
+      link: { label: "access", url: "https://s3.example/nosize" },
+    })
+
+    // Assert
+    expect(template.body).toContain("[.csv, -MB]")
+    expect(template.body).not.toContain("NaN")
   })
 
   it("uses an access-logs subject for an access report", () => {

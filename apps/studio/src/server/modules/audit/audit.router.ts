@@ -1,12 +1,31 @@
 import { TRPCError } from "@trpc/server"
-import { createAuditLogExportRequestSchema } from "~/schemas/audit"
+import {
+  createAuditLogExportRequestSchema,
+  getAuditLogExportWindowSchema,
+} from "~/schemas/audit"
 import getIP from "~/utils/getClientIp"
 
 import { protectedProcedure, router } from "../../trpc"
 import { validateUserIsSiteAdmin } from "../permissions/permissions.service"
-import { createAuditLogExportRequest } from "./auditLogExport.service"
+import {
+  createAuditLogExportRequest,
+  getAuditLogExportWindow,
+} from "./auditLogExport.service"
 
 export const auditRouter = router({
+  // How many months back the export picker may offer for this site — see
+  // `getAuditLogExportWindow`. Same Site Admin gate as creating an export,
+  // since this is purely a read used to size that same form.
+  getExportWindow: protectedProcedure
+    .input(getAuditLogExportWindowSchema)
+    .query(async ({ ctx, input: { siteId } }) => {
+      await validateUserIsSiteAdmin({
+        siteId,
+        userId: ctx.user.id,
+      })
+
+      return getAuditLogExportWindow(siteId)
+    }),
   createExportRequest: protectedProcedure
     .input(createAuditLogExportRequestSchema)
     // Rate-limited because each accepted request eventually triggers downstream

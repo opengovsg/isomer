@@ -1,5 +1,7 @@
+import { subMonths } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getCurrentSingaporeMonth } from "~/schemas/audit"
+import { getCurrentSingaporeMonth, type IsoMonth } from "~/schemas/audit"
 
 // This file deliberately mocks the DB (unlike the sibling integration tests) so
 // it can drive the ONE code path that a real-Postgres test cannot deterministic-
@@ -18,8 +20,10 @@ import { getCurrentSingaporeMonth } from "~/schemas/audit"
 //
 // It also pins the `Both` fan-out contract (TWO inserts — Access + Activity —
 // through the SAME transaction) and the audit trail contract: EVERY ask
-// records exactly one AuditLogExportCreate event in that transaction, even
-// when all halves were idempotent-accepted and nothing was inserted.
+// records one AuditLogExportCreate event PER fanned-out report type in that
+// transaction — never a single ambiguous "Both" event (review feedback on
+// #2832) — even when all halves were idempotent-accepted and nothing was
+// inserted.
 
 const { mockDb, mockValidatePermissions } = vi.hoisted(() => ({
   mockDb: { transaction: vi.fn() },
@@ -52,6 +56,15 @@ const { createAuditLogExportRequest } =
   await import("../auditLogExport.service")
 
 const VALID_MONTH = getCurrentSingaporeMonth()
+// A month inside the export window but distinct from the current one, so
+// tests can tell apart a range built from the REQUESTED month (Activity)
+// from one always pinned to the CURRENT month (Access) — see
+// createAuditLogExportRequest's per-report-type range comment.
+const PAST_MONTH = formatInTimeZone(
+  subMonths(new Date(), 1),
+  "Asia/Singapore",
+  "yyyy-MM",
+) as IsoMonth
 
 // The requesting user, as the service's in-transaction `User` lookup returns
 // it (the actor of the AuditLogExportCreate event).
@@ -197,33 +210,37 @@ const useTx = (tx: ReturnType<typeof makeTx>) => {
   })
 }
 
-// The one AuditLogExportCreate event every ask must record, shaped per the
-// audit.service.ts pattern: actor = requesting user, delta.after carries the
-// REQUESTED report type (possibly "Both").
-const expectExportCreateEvent = (
+// The AuditLogExportCreate events every ask must record: ONE per fanned-out
+// DB report type, never a "Both" event — which would be ambiguous about
+// exactly which reports were produced (review feedback on #2832). Shaped per
+// the audit.service.ts pattern: actor = requesting user, delta.after carries
+// the concrete DB report type.
+const expectExportCreateEvents = (
   tx: ReturnType<typeof makeTx>,
-  requestedReportType: string,
+  expectedReportTypes: string[],
   ipAddress?: string,
 ) => {
-  expect(tx.auditLogValues).toHaveLength(1)
-  expect(tx.auditLogValues[0]).toMatchObject({
-    eventType: "AuditLogExportCreate",
-    userId: FAKE_USER.id,
-    siteId: 1,
-    // The requester IP threaded from the router is recorded on the event,
-    // matching sibling resource/permission/login events.
-    ipAddress,
-    delta: {
-      before: null,
-      after: { reportType: requestedReportType },
-    },
-  })
-  const delta = tx.auditLogValues[0]?.delta as {
-    after: { auditLogDateRange: string }
-  }
-  expect(delta.after.auditLogDateRange).toMatch(
-    /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
+  expect(tx.auditLogValues).toHaveLength(expectedReportTypes.length)
+  const loggedReportTypes = tx.auditLogValues.map(
+    (value) =>
+      (value.delta as { after: { reportType: string } }).after.reportType,
   )
+  expect(loggedReportTypes.sort()).toEqual([...expectedReportTypes].sort())
+  for (const value of tx.auditLogValues) {
+    expect(value).toMatchObject({
+      eventType: "AuditLogExportCreate",
+      userId: FAKE_USER.id,
+      siteId: 1,
+      // The requester IP threaded from the router is recorded on the event,
+      // matching sibling resource/permission/login events.
+      ipAddress,
+      delta: { before: null },
+    })
+    const delta = value.delta as { after: { auditLogDateRange: string } }
+    expect(delta.after.auditLogDateRange).toMatch(
+      /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
+    )
+  }
 }
 
 describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
@@ -257,7 +274,7 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     // requester IP.
     expect(result).toEqual([winnerRow])
     expect(tx.insertedValues).toHaveLength(0)
-    expectExportCreateEvent(tx, "Access", "203.0.113.7")
+    expectExportCreateEvents(tx, ["Access"], "203.0.113.7")
   })
 
   it("re-throws a non-conflict INSERT error unchanged", async () => {
@@ -298,8 +315,10 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
       reportType: "Both",
     })
 
-    // Assert: one transaction, two rows — one per concrete DB report type,
-    // sharing the same (siteId, userId, auditLogDateRange).
+    // Assert: one transaction, two rows — one per concrete DB report type.
+    // Both happen to share the same auditLogDateRange here because the
+    // requested month IS the current month; see the next test for what
+    // happens when it isn't.
     expect(mockDb.transaction).toHaveBeenCalledTimes(1)
     expect(tx.insertedValues).toHaveLength(2)
     expect(tx.insertedValues.map((v) => v.reportType)).toEqual([
@@ -320,7 +339,38 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     // The service returns every row backing the ask, and the event records
     // the REQUESTED type ("Both"), not the fanned-out halves.
     expect(result).toHaveLength(2)
-    expectExportCreateEvent(tx, "Both")
+    expectExportCreateEvents(tx, ["Access", "Activity"])
+  })
+
+  it("pins Access to the current month even when a past month is requested for Activity", async () => {
+    // Arrange: a Both request for a past month. The Access card has no month
+    // picker in the UI at all, so its export must reflect CURRENT access
+    // regardless of whatever past month was picked for Activity.
+    const tx = makeTx({
+      selects: [undefined, undefined],
+      inserts: [{ outcome: "inserted" }, { outcome: "inserted" }],
+    })
+    useTx(tx)
+
+    // Act
+    await createAuditLogExportRequest({
+      siteId: 1,
+      userId: "user-1",
+      month: PAST_MONTH,
+      reportType: "Both",
+    })
+
+    // Assert: Activity's range starts in the requested (past) month; Access's
+    // starts in the current month instead — the two rows do NOT share a range.
+    const activityRange = tx.insertedValues.find(
+      (v) => v.reportType === "Activity",
+    )?.auditLogDateRange
+    const accessRange = tx.insertedValues.find(
+      (v) => v.reportType === "Access",
+    )?.auditLogDateRange
+    expect(activityRange).toMatch(new RegExp(`^\\[${PAST_MONTH}-01,`))
+    expect(accessRange).toMatch(new RegExp(`^\\[${VALID_MONTH}-01,`))
+    expect(accessRange).not.toBe(activityRange)
   })
 
   it("accepts a Both request whose second half loses its race, committing the first half AND the winner's half", async () => {
@@ -348,7 +398,7 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     expect(result[1]).toEqual(winnerRow)
     expect(tx.insertedValues).toHaveLength(1)
     expect(tx.insertedValues[0]).toMatchObject({ reportType: "Activity" })
-    expectExportCreateEvent(tx, "Both")
+    expectExportCreateEvents(tx, ["Access", "Activity"])
   })
 
   it("idempotent-accepts an in-flight duplicate from the fast-path SELECT without attempting any insert", async () => {
@@ -370,6 +420,6 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     // crucially — the pure idempotent-accept still records the ask's event.
     expect(result).toEqual([existingRow])
     expect(tx.insertedValues).toHaveLength(0)
-    expectExportCreateEvent(tx, "Activity")
+    expectExportCreateEvents(tx, ["Activity"])
   })
 })

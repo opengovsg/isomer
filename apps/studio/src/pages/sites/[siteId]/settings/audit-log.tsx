@@ -1,5 +1,6 @@
 import type { NextPageWithLayout } from "~/lib/types"
 import { Stack } from "@chakra-ui/react"
+import { useFeatureValue, useGrowthBook } from "@growthbook/growthbook-react"
 import { useRouter } from "next/router"
 import { useContext, useEffect } from "react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
@@ -9,6 +10,7 @@ import { AuditLogExportSection } from "~/features/settings/AuditLogExport"
 import { getAgencySettingsHref } from "~/features/settings/constants"
 import { UserManagementContext } from "~/features/users"
 import { useQueryParse } from "~/hooks/useQueryParse"
+import { IS_AUDIT_LOG_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { SiteSettingsLayout } from "~/templates/layouts/SiteSettingsLayout"
 import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
@@ -28,18 +30,38 @@ const AuditLogExportSettingsPage: NextPageWithLayout = () => {
     resourceId: null,
   })
 
-  // Audit log export is admin-only. The sidenav hides the entry from
-  // non-admins, but the route is still reachable directly (e.g. a shared
-  // link). Redirect them to the default settings page rather than showing a
-  // blank pane, mirroring how `/settings` redirects. Server-side authorization
-  // is enforced independently by the mutation.
+  // Feature-flagged alongside the admin gate. GrowthBook loads features
+  // asynchronously, so wait for `gb.ready` before acting on the flag —
+  // otherwise an admin visiting during the flag fetch would be bounced by the
+  // `false` fallback. The `useFeatureValue` subscription re-renders this page
+  // when features arrive, at which point `gb.ready` reads true.
+  const gb = useGrowthBook()
+  const isGbReady = gb.ready
+  const isAuditLogEnabled = useFeatureValue<boolean>(
+    IS_AUDIT_LOG_ENABLED_FEATURE_KEY,
+    false,
+  )
+
+  // Audit log export is admin-only and feature-flagged. The sidenav hides the
+  // entry, but the route is still reachable directly (e.g. a shared link).
+  // Redirect to the default settings page rather than showing a blank pane,
+  // mirroring how `/settings` redirects. Server-side authorization is
+  // enforced independently by the mutation.
   useEffect(() => {
-    if (!isRolesPending && !canManageUsers) {
+    if (isRolesPending || !isGbReady) return
+    if (!canManageUsers || !isAuditLogEnabled) {
       void router.replace(getAgencySettingsHref(siteId))
     }
-  }, [isRolesPending, canManageUsers, router, siteId])
+  }, [
+    isRolesPending,
+    isGbReady,
+    canManageUsers,
+    isAuditLogEnabled,
+    router,
+    siteId,
+  ])
 
-  if (isRolesPending || !canManageUsers) {
+  if (isRolesPending || !isGbReady || !canManageUsers || !isAuditLogEnabled) {
     return <FullscreenSpinner />
   }
 
