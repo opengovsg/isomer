@@ -1618,6 +1618,10 @@ export const pageHandlers = {
       trpcMsw.page.getFullPermalink.query(() => {
         return "/collection"
       }),
+    nestedCollectionLink: () =>
+      trpcMsw.page.getFullPermalink.query(() => {
+        return "/resources/circulars/my-link"
+      }),
     index: () =>
       trpcMsw.page.getFullPermalink.query(() => {
         return "parent"

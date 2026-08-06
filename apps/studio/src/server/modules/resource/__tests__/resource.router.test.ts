@@ -2778,6 +2778,95 @@ describe("resource.router", async () => {
       expect(result.map((r) => r.title)).toEqual(["apple", "Banana", "cherry"])
     })
 
+    it("should sort by permalink ascending when orderBy is permalink-asc", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Zulu",
+        permalink: "charlie",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Alpha",
+        permalink: "alpha",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        resourceType: "Page",
+        title: "Mike",
+        permalink: "bravo",
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        orderBy: "permalink-asc",
+      })
+
+      // Assert
+      expect(result.map((r) => r.permalink)).toEqual([
+        "alpha",
+        "bravo",
+        "charlie",
+      ])
+    })
+
+    it("should sort folder children by permalink ascending when orderBy is permalink-asc", async () => {
+      // Arrange
+      const { folder, site } = await setupFolder({
+        permalink: "parent-folder",
+        title: "Parent folder",
+      })
+      await setupEditorPermissions({
+        siteId: site.id,
+        userId: session.userId,
+      })
+
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: "Page",
+        title: "Zulu",
+        permalink: "charlie",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: "Page",
+        title: "Alpha",
+        permalink: "alpha",
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: "Page",
+        title: "Mike",
+        permalink: "bravo",
+      })
+
+      // Act
+      const result = await caller.listWithoutRoot({
+        siteId: site.id,
+        resourceId: Number(folder.id),
+        orderBy: "permalink-asc",
+      })
+
+      // Assert
+      expect(result.map((r) => r.permalink)).toEqual([
+        "alpha",
+        "bravo",
+        "charlie",
+      ])
+    })
+
     it("should throw 403 if user does not have read access to site", async () => {
       // Arrange
       const { site } = await setupSite()

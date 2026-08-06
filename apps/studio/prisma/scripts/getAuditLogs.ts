@@ -154,6 +154,7 @@ const SITES_WITH_AUDIT_LOGS = [
   397, // rp.edu.sg
   406, // svc.gov.sg
   409, // hsa.gov.sg
+  467, // ura.gov.sg
   484, // hpb.gov.sg
   492, // oneservice.gov.sg
   511, // skyrisegreenery.nparks.gov.sg
