@@ -124,7 +124,12 @@ const SuspendablePublishButton = ({
                     isDisabled={!isChangesPendingPublish}
                     isLoading={isPending}
                     borderRightRadius={0}
-                    onClick={() => publishNowDisclosure.onOpen()}
+                    onClick={() => {
+                      posthog.capture("publish_modal_opened", {
+                        site_id: siteId,
+                      })
+                      publishNowDisclosure.onOpen()
+                    }}
                     {...rest}
                   >
                     Publish
@@ -147,7 +152,12 @@ const SuspendablePublishButton = ({
                       />
                       <MenuList>
                         <MenuItem
-                          onClick={scheduledPublishingDisclosure.onOpen}
+                          onClick={() => {
+                            posthog.capture("scheduled_publish_modal_opened", {
+                              site_id: siteId,
+                            })
+                            scheduledPublishingDisclosure.onOpen()
+                          }}
                         >
                           <HStack spacing="0.5rem" alignItems="center">
                             <Icon as={BiTimeFive} boxSize="1rem" />
