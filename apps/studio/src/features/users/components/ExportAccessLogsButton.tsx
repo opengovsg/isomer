@@ -1,5 +1,5 @@
 import type { ButtonProps } from "@chakra-ui/react"
-import { Button, Tooltip } from "@chakra-ui/react"
+import { Button } from "@chakra-ui/react"
 import { useFeatureValue } from "@growthbook/growthbook-react"
 import { useContext } from "react"
 import { BiDownload } from "react-icons/bi"
@@ -39,14 +39,17 @@ export const ExportAccessLogsButton = ({
   const { mutate: createExportRequest, isPending } =
     useCreateAuditLogExportRequest({ siteId })
 
-  if (!isAuditLogEnabled) return null
+  // Exporting access logs is admin-only: the button is not rendered at all
+  // for other roles (unlike AddNewUserButton's disabled-with-tooltip, there
+  // is nothing a non-admin can do to unlock it on this page). The server
+  // enforces the same rule independently on the mutation.
+  if (!isAuditLogEnabled || !canManageUsers) return null
 
-  const button = (
+  return (
     <Button
       variant="outline"
       leftIcon={<BiDownload />}
       isLoading={isPending}
-      isDisabled={!canManageUsers}
       onClick={() =>
         createExportRequest({
           siteId,
@@ -59,14 +62,4 @@ export const ExportAccessLogsButton = ({
       Export access logs
     </Button>
   )
-
-  if (!canManageUsers) {
-    return (
-      <Tooltip label="Only admins can export access logs." placement="bottom">
-        {button}
-      </Tooltip>
-    )
-  }
-
-  return button
 }
