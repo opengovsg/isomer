@@ -14,20 +14,17 @@ import {
   FormErrorMessage,
   Link,
   SingleSelect,
-  useToast,
 } from "@opengovsg/design-system-react"
-import posthog from "posthog-js"
 import { useContext, useMemo } from "react"
 import { Controller } from "react-hook-form"
 import { BiCheckShield, BiHelpCircle, BiInfoCircle } from "react-icons/bi"
-import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
-import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UserManagementContext } from "~/features/users"
 import { useZodForm } from "~/lib/form"
 import { AuditLogExportRequestedReportType } from "~/schemas/audit"
 import { trpc } from "~/utils/trpc"
 
 import { auditLogExportFormSchema } from "./schema"
+import { useCreateAuditLogExportRequest } from "./useCreateAuditLogExportRequest"
 import { getMonthOptions, toggleReportType } from "./utils"
 
 interface AuditLogExportSectionProps {
@@ -49,8 +46,6 @@ export const AuditLogExportSection = ({
 }: AuditLogExportSectionProps): JSX.Element | null => {
   const ability = useContext(UserManagementContext)
   const canManageUsers = ability.can("manage", "UserManagement")
-
-  const toast = useToast(BRIEF_TOAST_SETTINGS)
 
   // How many months back the picker may offer — the standard window, or fewer
   // for a site younger than that (see `getAuditLogExportWindow`). Falls back
@@ -116,54 +111,12 @@ export const AuditLogExportSection = ({
     form.setValue("reportType", next, { shouldValidate: true })
   }
 
+  // Shared with the user-management "Export access logs" button: success and
+  // error toasts plus the per-log-type PostHog captures live in the hook.
   const { mutate: createExportRequest, isPending } =
-    trpc.audit.createExportRequest.useMutation({
-      onSuccess: (_data, { reportType: requestedReportType, month }) => {
-        // `Both` fans out into two DB rows server-side (see auditLogExport.service.ts),
-        // so mirror that here with one event per log type actually requested.
-        if (
-          requestedReportType === AuditLogExportRequestedReportType.Access ||
-          requestedReportType === AuditLogExportRequestedReportType.Both
-        ) {
-          posthog.capture("user_access_log_requested", { site_id: siteId })
-        }
-        if (
-          requestedReportType === AuditLogExportRequestedReportType.Activity ||
-          requestedReportType === AuditLogExportRequestedReportType.Both
-        ) {
-          posthog.capture("audit_log_requested", { site_id: siteId, month })
-        }
-
-        form.reset()
-        toast({
-          title: "Export requested",
-          description:
-            "Your export is being generated. We'll email you a download link when it's ready.",
-          status: "success",
-        })
-      },
-      // The server returns typed, user-facing messages for the expected
-      // rejections (future month, not an admin). Duplicate requests never
-      // fail — they are accepted idempotently. Surface server messages
-      // directly; fall back to a generic message for anything else.
-      onError: (error) => {
-        if (error.data?.code === "FORBIDDEN") {
-          toast({
-            title: "You don't have permission to export audit logs",
-            description: "Only site admins can request an audit log export.",
-            status: "error",
-          })
-          return
-        }
-
-        toast({
-          title: "Couldn't request export",
-          description:
-            error.message ||
-            `If this persists, please report this issue at ${ISOMER_SUPPORT_EMAIL}`,
-          status: "error",
-        })
-      },
+    useCreateAuditLogExportRequest({
+      siteId,
+      onSuccess: () => form.reset(),
     })
 
   if (!canManageUsers) return null
