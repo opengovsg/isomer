@@ -1,10 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { userEvent, within } from "storybook/test"
+import { expect, userEvent, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { resourceHandlers } from "tests/msw/handlers/resource"
 import { sitesHandlers } from "tests/msw/handlers/sites"
 import { userHandlers } from "tests/msw/handlers/user"
 import UsersPage from "~/pages/sites/[siteId]/users"
+import { createAuditLogEnabledGbParameters } from "~/stories/utils/growthbook"
 
 import { ADMIN_HANDLERS } from "../handlers"
 
@@ -113,5 +114,47 @@ export const NoUsers: Story = {
         userHandlers.count.noUsers(),
       ],
     },
+  },
+}
+
+// With the is-audit-log-enabled flag on, an admin also sees the "Export
+// access logs" button beside "Add new user". The other stories leave the flag
+// off (its default), so they double as coverage for the hidden state.
+export const AdminWithAuditLogExport: Story = {
+  parameters: {
+    growthbook: [createAuditLogEnabledGbParameters(true)],
+    msw: {
+      handlers: [
+        ...ADMIN_HANDLERS,
+        resourceHandlers.getRolesFor.admin(),
+        userHandlers.list.users(),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await expect(
+      await screen.findByRole("button", { name: "Export access logs" }),
+    ).toBeEnabled()
+  },
+}
+
+// Editors see the button too, but disabled: exporting is admin-only.
+export const EditorWithAuditLogExport: Story = {
+  parameters: {
+    growthbook: [createAuditLogEnabledGbParameters(true)],
+    msw: {
+      handlers: [
+        ...ADMIN_HANDLERS,
+        resourceHandlers.getRolesFor.editor(),
+        userHandlers.list.users(),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement)
+    await expect(
+      await screen.findByRole("button", { name: "Export access logs" }),
+    ).toBeDisabled()
   },
 }
