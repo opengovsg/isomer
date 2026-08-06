@@ -71,29 +71,68 @@ export const getOrphanPages = async ({
   octokit,
   useStagingBranch = false,
 }: GetRepoContentsParams) => {
-  // Get all pages in the "pages" folder
-  const { data } = await octokit.repos.getContent({
-    owner: "isomerpages",
-    repo: site,
+  // Get all pages in the "pages" folder, including those in nested folders
+  const orphanPages = await getMarkdownFilesInFolder({
+    site,
     path: "pages",
-    ref: useStagingBranch ? "staging" : "master",
+    octokit,
+    useStagingBranch,
   });
-
-  if (!Array.isArray(data)) {
-    console.error("Unexpected data returned from GitHub API in getOrphanPages");
-    return [];
-  }
-
-  // Filter out pages in the "pages" folder
-  const orphanPages = data
-    .filter((item) => item.type === "file" && item.name.endsWith(".md"))
-    .map((item) => item.path);
 
   return [
     ...orphanPages,
     // Add index.md at the root
     "index.md",
   ];
+};
+
+// This function recursively collects all Markdown files within a folder
+const getMarkdownFilesInFolder = async ({
+  site,
+  path,
+  octokit,
+  useStagingBranch = false,
+}: GetRepoPathContentsParams): Promise<string[]> => {
+  let data;
+
+  try {
+    ({ data } = await octokit.repos.getContent({
+      owner: "isomerpages",
+      repo: site,
+      path,
+      ref: useStagingBranch ? "staging" : "master",
+    }));
+  } catch (error) {
+    // Likely a missing folder
+    console.error(`Error reading folder contents at ${path}:`, error);
+    return [];
+  }
+
+  if (!Array.isArray(data)) {
+    console.error(
+      `Unexpected data returned from GitHub API in getMarkdownFilesInFolder for ${path}`
+    );
+    return [];
+  }
+
+  const files = data
+    .filter((item) => item.type === "file" && item.name.endsWith(".md"))
+    .map((item) => item.path);
+
+  // Recurse into any subfolders
+  const subfolders = data.filter((item) => item.type === "dir");
+  const nestedFiles = await Promise.all(
+    subfolders.map((item) =>
+      getMarkdownFilesInFolder({
+        site,
+        path: item.path,
+        octokit,
+        useStagingBranch,
+      })
+    )
+  );
+
+  return [...files, ...nestedFiles.flat()];
 };
 
 interface GetRepoPathContentsParams {
