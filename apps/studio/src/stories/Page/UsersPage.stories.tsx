@@ -46,9 +46,12 @@ export const Admin: Story = {
 export const Publisher: Story = {
   parameters: {
     msw: {
+      // The role override must come before the `ADMIN_HANDLERS` spread: MSW
+      // resolves the *first* matching handler in the array, and ADMIN_HANDLERS
+      // already registers its own `getRolesFor` (Admin) handler.
       handlers: [
-        ...ADMIN_HANDLERS,
         resourceHandlers.getRolesFor.publisher(),
+        ...ADMIN_HANDLERS,
         userHandlers.list.users(),
       ],
     },
@@ -58,9 +61,10 @@ export const Publisher: Story = {
 export const Editor: Story = {
   parameters: {
     msw: {
+      // See the ordering note on the Publisher story above.
       handlers: [
-        ...ADMIN_HANDLERS,
         resourceHandlers.getRolesFor.editor(),
+        ...ADMIN_HANDLERS,
         userHandlers.list.users(),
       ],
     },
@@ -145,9 +149,12 @@ export const EditorWithAuditLogExport: Story = {
   parameters: {
     growthbook: [createAuditLogEnabledGbParameters(true)],
     msw: {
+      // See the ordering note on the Publisher story above — without this,
+      // ADMIN_HANDLERS' own Admin role handler wins and the button (wrongly)
+      // shows.
       handlers: [
-        ...ADMIN_HANDLERS,
         resourceHandlers.getRolesFor.editor(),
+        ...ADMIN_HANDLERS,
         userHandlers.list.users(),
       ],
     },
