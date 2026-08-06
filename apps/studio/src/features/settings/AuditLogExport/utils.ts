@@ -23,21 +23,21 @@ const toMonthLabel = (date: Date): string =>
 // The two selectable cards map onto the report types the server accepts:
 // "User access review logs" -> Access, "Audit logs" -> Activity, and both
 // together -> Both. Toggling one card moves between those states; clearing
-// the last selection returns undefined so the form can fall back to its
-// empty (submit-disabled) state.
+// the last selection returns null (the schema's typed "unset" sentinel) so
+// the form can fall back to its empty (submit-disabled) state.
 export const toggleReportType = (
-  current: AuditLogExportRequestedReportType | undefined,
+  current: AuditLogExportRequestedReportType | null,
   toggled:
     | typeof AuditLogExportRequestedReportType.Access
     | typeof AuditLogExportRequestedReportType.Activity,
-): AuditLogExportRequestedReportType | undefined => {
+): AuditLogExportRequestedReportType | null => {
   const { Access, Activity, Both } = AuditLogExportRequestedReportType
   const other = toggled === Access ? Activity : Access
   const isToggledOn = current === toggled || current === Both
   const isOtherOn = current === other || current === Both
 
   if (!isToggledOn) return isOtherOn ? Both : toggled
-  return isOtherOn ? other : undefined
+  return isOtherOn ? other : null
 }
 
 // Build the list of selectable months, newest first: the current (partial)

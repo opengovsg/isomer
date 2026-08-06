@@ -50,8 +50,8 @@ describe("getMonthOptions", () => {
 describe("toggleReportType", () => {
   it("selects a type from the empty state", () => {
     // Arrange / Act / Assert
-    expect(toggleReportType(undefined, Access)).toBe(Access)
-    expect(toggleReportType(undefined, Activity)).toBe(Activity)
+    expect(toggleReportType(null, Access)).toBe(Access)
+    expect(toggleReportType(null, Activity)).toBe(Activity)
   })
 
   it("combines the two selections into Both", () => {
@@ -66,9 +66,9 @@ describe("toggleReportType", () => {
     expect(toggleReportType(Both, Activity)).toBe(Access)
   })
 
-  it("clears the last remaining selection back to undefined", () => {
+  it("clears the last remaining selection back to null", () => {
     // Arrange / Act / Assert
-    expect(toggleReportType(Access, Access)).toBeUndefined()
-    expect(toggleReportType(Activity, Activity)).toBeUndefined()
+    expect(toggleReportType(Access, Access)).toBeNull()
+    expect(toggleReportType(Activity, Activity)).toBeNull()
   })
 })

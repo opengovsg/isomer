@@ -24,12 +24,10 @@ import { ISOMER_SUPPORT_EMAIL } from "~/constants/misc"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { UserManagementContext } from "~/features/users"
 import { useZodForm } from "~/lib/form"
-import {
-  AuditLogExportRequestedReportType,
-  createAuditLogExportRequestSchema,
-} from "~/schemas/audit"
+import { AuditLogExportRequestedReportType } from "~/schemas/audit"
 import { trpc } from "~/utils/trpc"
 
+import { auditLogExportFormSchema } from "./schema"
 import { getMonthOptions, toggleReportType } from "./utils"
 
 interface AuditLogExportSectionProps {
@@ -75,19 +73,23 @@ export const AuditLogExportSection = ({
     return [{ ...current, label: CURRENT_MONTH_LABEL }, ...options.slice(1)]
   }, [exportWindow?.maxMonths])
 
-  // Form state lives in react-hook-form, validated by the same zod schema the
-  // tRPC procedure uses (minus `siteId`, which comes from props), so client
-  // and server validation cannot drift.
+  // Form state lives in react-hook-form, validated by a schema built on the
+  // same one the tRPC procedure uses (minus `siteId`, which comes from
+  // props), so client and server validation cannot drift — except that the
+  // form's `reportType` also accepts `null` (see schema.ts) as its "unset"
+  // state, which the server-facing schema must never allow.
   const form = useZodForm({
-    schema: createAuditLogExportRequestSchema.omit({ siteId: true }),
-    defaultValues: { month: monthOptions[0]?.value ?? "" },
+    schema: auditLogExportFormSchema,
+    defaultValues: {
+      month: monthOptions[0]?.value ?? "",
+      // `null` until the user picks at least one log type — this also keeps
+      // the submit button disabled below, mirroring the design's initial
+      // empty state.
+      reportType: null,
+    },
   })
 
-  // `reportType` has no default value, so it is undefined until the user picks
-  // at least one log type — widen the watched type accordingly. An undefined
-  // reportType keeps the submit button disabled, mirroring the design's
-  // initial empty state.
-  const reportType: AuditLogExportRequestedReportType | undefined =
+  const reportType: AuditLogExportRequestedReportType | null =
     form.watch("reportType")
   const isAccessSelected =
     reportType === AuditLogExportRequestedReportType.Access ||
@@ -107,16 +109,10 @@ export const AuditLogExportSection = ({
       | typeof AuditLogExportRequestedReportType.Activity,
   ) => {
     const next = toggleReportType(reportType, toggled)
-    if (!next) return
     // `reportType` is never bound to a native input via `register`/`Controller`
     // (it's driven entirely by this checkbox cluster), so `resetField` is a
     // no-op for it — RHF only resets fields it finds in its internal registry.
     // `setValue` has no such guard, so use it for both the set and clear cases.
-    // The schema requires `reportType` (so "Select a report type" fires), so
-    // RHF's inferred type excludes `undefined` — but clearing the last
-    // selection must still set it to unset (the same widening as the `watch`
-    // above), hence the cast: `undefined` is a legitimate runtime value here,
-    // not a value we are asserting away.
     form.setValue("reportType", next, { shouldValidate: true })
   }
 
