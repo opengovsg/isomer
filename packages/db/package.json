@@ -25,13 +25,15 @@
   "dependencies": {
     "@prisma/client": "catalog:prisma",
     "kysely": "catalog:",
-    "pg": "catalog:"
+    "pg": "catalog:pg",
+    "pg-cursor": "catalog:pg"
   },
   "devDependencies": {
     "@isomer/oxlint-config": "workspace:*",
     "@isomer/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@types/pg": "catalog:",
+    "@types/pg": "catalog:pg",
+    "@types/pg-cursor": "catalog:pg",
     "@typescript/native-preview": "catalog:",
     "dotenv-cli": "catalog:",
     "prisma": "catalog:prisma",
