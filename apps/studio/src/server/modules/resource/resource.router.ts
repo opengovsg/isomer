@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server"
 import { jsonObjectFrom } from "kysely/helpers/postgres"
 import { get } from "lodash-es"
 import { USER_LINKABLE_RESOURCE_TYPES } from "~/constants/resources"
-import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   countResourceSchema,
   deleteResourceSchema,
@@ -572,9 +571,7 @@ export const resourceRouter = router({
             // A Folder/Collection has no URL of its own, but the move changes
             // every descendant's URL — preserve them with one wildcard redirect
             // ("/old-folder/*"), and validate no descendant lands on a URL an
-            // existing redirect already covers. Shadow validation always runs on
-            // a move; only redirect creation is gated behind the advanced-
-            // redirects flag so it stays dark until the edge resolver ships.
+            // existing redirect already covers.
             if (
               (toMove.type === ResourceType.Folder ||
                 toMove.type === ResourceType.Collection) &&
@@ -585,9 +582,7 @@ export const resourceRouter = router({
                 oldFullPermalink,
                 newFullPermalink,
                 resourceId: movedResourceId,
-                shouldCreateRedirect:
-                  shouldCreateRedirect &&
-                  ctx.gb.isOn(IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY),
+                shouldCreateRedirect,
                 hasLiveContent: await hasPublishedDescendant(tx, {
                   siteId,
                   resourceId: movedResourceId,

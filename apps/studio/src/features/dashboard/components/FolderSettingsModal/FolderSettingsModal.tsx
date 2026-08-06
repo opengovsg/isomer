@@ -29,7 +29,6 @@ import { Controller } from "react-hook-form"
 import { BiLink } from "react-icons/bi"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { generateResourceUrl } from "~/features/editing-experience/components/utils"
-import { useIsAdvancedRedirectsEnabled } from "~/hooks/useIsAdvancedRedirectsEnabled"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useZodForm } from "~/lib/form"
 import { sitePageSchema } from "~/pages/sites/[siteId]"
@@ -108,7 +107,6 @@ const SuspendableModalContent = ({
       siteId,
       resourceId: Number(folderId),
     })
-  const isAdvancedRedirectsEnabled = useIsAdvancedRedirectsEnabled()
   const { register, handleSubmit, watch, control, formState } = useZodForm({
     mode: "onChange",
     defaultValues: {
@@ -243,7 +241,7 @@ const SuspendableModalContent = ({
                 characters left
               </FormHelperText>
             </FormControl>
-            {isAdvancedRedirectsEnabled && permalink !== originalPermalink && (
+            {permalink !== originalPermalink && (
               <FormControl>
                 <Controller
                   control={control}
