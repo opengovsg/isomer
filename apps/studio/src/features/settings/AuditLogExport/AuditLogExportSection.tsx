@@ -343,7 +343,7 @@ const LogTypeCard = ({
       {/* The revealed content sits outside the checkbox label so interacting
           with it (e.g. opening the month dropdown) does not toggle selection. */}
       {isSelected && children && (
-        <Box mt="0.75rem" pl="3rem" pr="1rem" pb="1rem">
+        <Box mt="0.75rem" pl="3.25rem" pr="1rem" pb="1rem">
           {children}
         </Box>
       )}
