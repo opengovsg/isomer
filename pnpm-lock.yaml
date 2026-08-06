@@ -31,6 +31,9 @@ catalogs:
     '@aws-sdk/credential-providers':
       specifier: ^3.1092.0
       version: 3.1096.0
+    '@aws-sdk/lib-storage':
+      specifier: ^3.1092.0
+      version: 3.1095.0
     '@aws-sdk/s3-request-presigner':
       specifier: ^3.1092.0
       version: 3.1096.0
@@ -413,6 +416,9 @@ catalogs:
     '@types/pg':
       specifier: ^8.15.4
       version: 8.20.0
+    '@types/pg-cursor':
+      specifier: ^2.7.2
+      version: 2.7.2
     pg:
       specifier: ^8.22.0
       version: 8.22.0
@@ -673,6 +679,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: catalog:aws-sdk
         version: 3.1096.0
+      '@aws-sdk/lib-storage':
+        specifier: catalog:aws-sdk
+        version: 3.1095.0(@aws-sdk/client-s3@3.1096.0)
       '@aws-sdk/s3-request-presigner':
         specifier: catalog:aws-sdk
         version: 3.1096.0
@@ -931,9 +940,6 @@ importers:
       pg:
         specifier: catalog:pg
         version: 8.22.0
-      pg-cursor:
-        specifier: catalog:pg
-        version: 2.21.0(pg@8.22.0)
       posthog-js:
         specifier: 'catalog:'
         version: 1.408.1
@@ -1375,6 +1381,9 @@ importers:
       pg:
         specifier: catalog:pg
         version: 8.22.0
+      pg-cursor:
+        specifier: catalog:pg
+        version: 2.21.0(pg@8.22.0)
     devDependencies:
       '@isomer/oxlint-config':
         specifier: workspace:*
@@ -1388,6 +1397,9 @@ importers:
       '@types/pg':
         specifier: catalog:pg
         version: 8.20.0
+      '@types/pg-cursor':
+        specifier: catalog:pg
+        version: 2.7.2
       '@typescript/native-preview':
         specifier: 'catalog:'
         version: 7.0.0-dev.20260707.2
@@ -2041,6 +2053,9 @@ packages:
   '@aws-sdk/core@3.977.1':
     resolution: {integrity: sha512-KVtQRtc00ES/y+Sc3vYXeP6pCIcNlBJCZOwvqSy8ZpVGmbM5+IG+AfhuTKQ2oXmIVqZJewaGMMpzPkywC6xg0w==}
     engines: {node: '>=20.0.0'}
+    deprecated: |-
+      Deprecated due to Document number parsing bug in JSON, see
+        https://github.com/aws/aws-sdk-js-v3/issues/8246. Newer version available.
 
   '@aws-sdk/credential-provider-cognito-identity@3.972.61':
     resolution: {integrity: sha512-/tusuLzQ+b3s4Uj/EZR8y6i2kxB06xlEMmNphzfeOORIqnYyOZ2p5HF0vs9jDCIpPLJtyXVEvpHMuD2t6q5IEg==}
@@ -2081,6 +2096,12 @@ packages:
   '@aws-sdk/credential-providers@3.1096.0':
     resolution: {integrity: sha512-/n5dcVr37jhxbFqTDL+x9hTSlNKNcsPCTP2qeIva75Tcy3GXvGiYsPAiwnWfxIE97RWIG2AEeDpBulsS41de+A==}
     engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/lib-storage@3.1095.0':
+    resolution: {integrity: sha512-Z8JGw3YVrUd5JEmOeOs5+YzwxZxJXXwOXqZ7l9oNk4uw+JS/QLxgMr3HB6wYam0ksO6O6u1BQz+gW6PkJ3+RNw==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      '@aws-sdk/client-s3': ^3.1095.0
 
   '@aws-sdk/middleware-sdk-s3@3.972.67':
     resolution: {integrity: sha512-aB1ahF9z4J5r8YK1QodwNX/P8XSKBFtnjf7h72XCs0BP3rtThOiXeA3Lm+Z+8tiN9Iwl5otsGeHaXmQoQ5MVfA==}
@@ -6740,6 +6761,9 @@ packages:
   '@types/parse-json@4.0.2':
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
 
+  '@types/pg-cursor@2.7.2':
+    resolution: {integrity: sha512-m3xT8bVFCvx98LuzbvXyuCdT/Hjdd/v8ml4jL4K1QF70Y8clOfCFdgoaEB1FWdcSwcpoFYZTJQaMD9/GQ27efQ==}
+
   '@types/pg@8.20.0':
     resolution: {integrity: sha512-bEPFOaMAHTEP1EzpvHTbmwR8UsFyHSKsRisLIHVMXnpNefSbGA1bD6CVy+qKjGSqmZqNqBDV2azOBo8TgkcVow==}
 
@@ -7518,6 +7542,9 @@ packages:
 
   buffer-xor@1.0.3:
     resolution: {integrity: sha512-571s0T7nZWK6vB67HI5dyUF7wXiNcfaPPPTl6zYCNApANjIvYJTg7hlud/+cJpdAhS7dVzqMLmfhfHR3rAcOjQ==}
+
+  buffer@5.6.0:
+    resolution: {integrity: sha512-/gDYp/UtU0eA1ys8bOs9J6a+E/KWIY+DZ+Q2WESNUA0jFRsJOc0SNUO6xJ5SGA1xueg3NL65W6s+NY5l9cunuw==}
 
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
@@ -12977,6 +13004,16 @@ snapshots:
       '@smithy/types': 4.16.1
       tslib: 2.8.1
 
+  '@aws-sdk/lib-storage@3.1095.0(@aws-sdk/client-s3@3.1096.0)':
+    dependencies:
+      '@aws-sdk/client-s3': 3.1096.0
+      '@smithy/core': 3.31.0
+      '@smithy/types': 4.16.1
+      buffer: 5.6.0
+      events: 3.3.0
+      stream-browserify: 3.0.0
+      tslib: 2.8.1
+
   '@aws-sdk/middleware-sdk-s3@3.972.67':
     dependencies:
       '@aws-sdk/core': 3.977.1
@@ -17555,6 +17592,11 @@ snapshots:
 
   '@types/parse-json@4.0.2': {}
 
+  '@types/pg-cursor@2.7.2':
+    dependencies:
+      '@types/node': 26.1.2
+      '@types/pg': 8.20.0
+
   '@types/pg@8.20.0':
     dependencies:
       '@types/node': 26.1.2
@@ -18531,6 +18573,11 @@ snapshots:
       '@types/node': 26.1.2
 
   buffer-xor@1.0.3: {}
+
+  buffer@5.6.0:
+    dependencies:
+      base64-js: 1.5.1
+      ieee754: 1.2.1
 
   buffer@5.7.1:
     dependencies:
