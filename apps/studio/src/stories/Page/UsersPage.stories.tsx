@@ -139,7 +139,8 @@ export const AdminWithAuditLogExport: Story = {
   },
 }
 
-// Editors see the button too, but disabled: exporting is admin-only.
+// Exporting access logs is admin-only: even with the flag on, editors never
+// see the button at all.
 export const EditorWithAuditLogExport: Story = {
   parameters: {
     growthbook: [createAuditLogEnabledGbParameters(true)],
@@ -153,8 +154,10 @@ export const EditorWithAuditLogExport: Story = {
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement)
+    // Anchor on the page having rendered before asserting the absence.
+    await screen.findByRole("button", { name: "Add new user" })
     await expect(
-      await screen.findByRole("button", { name: "Export access logs" }),
-    ).toBeDisabled()
+      screen.queryByRole("button", { name: "Export access logs" }),
+    ).toBeNull()
   },
 }
