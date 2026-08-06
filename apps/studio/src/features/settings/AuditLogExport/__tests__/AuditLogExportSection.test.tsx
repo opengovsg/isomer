@@ -12,12 +12,31 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { AuditLogExportSection } from "../AuditLogExportSection"
 import { getMonthOptions } from "../utils"
 
+// PostHog capture calls run inside the mutation's onSuccess — mock the client
+// so they can be asserted on instead of hitting an uninitialised instance.
+const { posthogCapture } = vi.hoisted(() => ({ posthogCapture: vi.fn() }))
+vi.mock("posthog-js", () => ({
+  default: { capture: posthogCapture },
+}))
+
 // Capture what the component passes to the mutation so we can assert on the
-// submitted payload and drive the onError branch ourselves.
+// submitted payload and drive the onSuccess/onError branches ourselves.
+// react-query invokes onSuccess(data, variables, context), and the component
+// destructures the variables — so the harness must pass them too.
 const mutate = vi.fn()
 let capturedOptions:
-  | { onSuccess?: () => void; onError?: (error: unknown) => void }
+  | {
+      onSuccess?: (data: unknown, variables: unknown) => void
+      onError?: (error: unknown) => void
+    }
   | undefined
+
+// Replays the component's own submitted payload back through onSuccess, the
+// way react-query would after a successful mutation.
+const fireOnSuccessForLastMutation = () => {
+  const variables: unknown = mutate.mock.lastCall?.[0]
+  capturedOptions?.onSuccess?.(undefined, variables)
+}
 
 vi.mock("~/utils/trpc", () => ({
   trpc: {
@@ -55,6 +74,7 @@ const renderWith = (ability: UserManagementAbility) =>
 describe("AuditLogExportSection", () => {
   beforeEach(() => {
     mutate.mockClear()
+    posthogCapture.mockClear()
     capturedOptions = undefined
   })
 
@@ -131,13 +151,21 @@ describe("AuditLogExportSection", () => {
 
     // Success resets the form (see the section's onSuccess), returning the
     // disabled call-to-action; wait for that before asking again.
-    capturedOptions?.onSuccess?.()
+    fireOnSuccessForLastMutation()
     await waitFor(() =>
       expect(
         screen.queryByRole("button", {
           name: "Select log types to export",
         }),
       ).not.toBeNull(),
+    )
+
+    // The success handler also reports the requested log type to PostHog —
+    // an Audit-logs (Activity) ask emits exactly the audit event.
+    expect(posthogCapture).toHaveBeenCalledTimes(1)
+    expect(posthogCapture).toHaveBeenCalledWith(
+      "audit_log_requested",
+      expect.objectContaining({ site_id: 42 }),
     )
 
     // Ask again, identically.
