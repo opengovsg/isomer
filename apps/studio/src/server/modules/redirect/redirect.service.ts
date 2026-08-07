@@ -131,10 +131,18 @@ const resolveDestinationForStorage = async (
   }
 }
 
-// Batch publish-state for a set of resource ids. A Page/CollectionPage is live
-// when it has a published version; a Folder/Collection is served by its
-// IndexPage, so it's live when that index page is published (mirrors
-// getResourceByFullPermalink's container handling).
+const isContainerType = (type: ResourceType) =>
+  type === ResourceType.Folder || type === ResourceType.Collection
+
+// Batch publish-state for a set of resource ids: is there a page rendering at
+// this resource's own URL? A Page/CollectionPage is live when it has a
+// published version; a Folder/Collection is served by its IndexPage, so it's
+// live when that index page is published (mirrors getResourceByFullPermalink's
+// container handling).
+//
+// This is the question the source-shadowing guards ask — a redirect may only be
+// refused when a page really renders at that URL. It is deliberately NOT the
+// question the destination warning asks; see getDestinationLiveStateByResourceIds.
 const getPublishedStateByResourceIds = async (
   siteId: number,
   resourceIds: number[],
@@ -152,10 +160,7 @@ const getPublishedStateByResourceIds = async (
     .execute()
 
   const containerIds = resources
-    .filter(
-      (r) =>
-        r.type === ResourceType.Folder || r.type === ResourceType.Collection,
-    )
+    .filter((r) => isContainerType(r.type))
     .map((r) => String(r.id))
   const publishedByContainerId = new Map<string, boolean>()
   if (containerIds.length > 0) {
@@ -175,17 +180,115 @@ const getPublishedStateByResourceIds = async (
   }
 
   for (const resource of resources) {
-    const isContainer =
-      resource.type === ResourceType.Folder ||
-      resource.type === ResourceType.Collection
     result.set(
       Number(resource.id),
-      isContainer
+      isContainerType(resource.type)
         ? (publishedByContainerId.get(String(resource.id)) ?? false)
         : resource.publishedVersionId !== null,
     )
   }
   return result
+}
+
+// Which of the given containers hold at least one published page, directly or
+// nested below. Only asked about containers the caller already knows have no
+// published index page, so it runs on the narrow case rather than every row.
+const getContainerIdsHoldingPublishedPages = async (
+  siteId: number,
+  containerIds: string[],
+): Promise<Set<string>> => {
+  if (containerIds.length === 0) {
+    return new Set()
+  }
+  // `rootId` carries the container each row descends from down the recursion,
+  // so one walk answers every container at once. A resource's parent chain is
+  // intrinsic to its id, so no row can be attributed to the wrong root.
+  const rows = await db
+    .withRecursive("Descendant", (eb) =>
+      eb
+        // Base case: the containers' direct children
+        .selectFrom("Resource")
+        .where("Resource.siteId", "=", siteId)
+        .where("Resource.parentId", "in", containerIds)
+        .select([
+          "Resource.id",
+          "Resource.parentId as rootId",
+          "Resource.publishedVersionId",
+        ])
+        .unionAll((fb) =>
+          fb
+            // Recursive case: walk down into each child's own children
+            .selectFrom("Resource")
+            .innerJoin("Descendant", "Descendant.id", "Resource.parentId")
+            .where("Resource.siteId", "=", siteId)
+            .select([
+              "Resource.id",
+              "Descendant.rootId",
+              "Resource.publishedVersionId",
+            ]),
+        ),
+    )
+    .selectFrom("Descendant")
+    .where("Descendant.publishedVersionId", "is not", null)
+    .select("Descendant.rootId")
+    .distinct()
+    .execute()
+
+  return new Set(
+    rows.flatMap(({ rootId }) => (rootId === null ? [] : [String(rootId)])),
+  )
+}
+
+// Batch liveness for redirect *destinations*: does this destination lead
+// anywhere on the published site? Same as getPublishedStateByResourceIds except
+// that a container also counts as live when it holds published pages but its
+// own index page is still a draft — index pages are created as drafts and are
+// rarely published by hand, so gating on the index page alone flags a section
+// full of live pages as leading nowhere.
+//
+// Only the table's advisory warning uses this. The shadowing guards must keep
+// the stricter "a page renders at this exact URL" reading, or a redirect at a
+// draft-index folder would be refused as hiding a page that isn't there.
+const getDestinationLiveStateByResourceIds = async (
+  siteId: number,
+  resourceIds: number[],
+): Promise<Map<number, boolean>> => {
+  const state = await getPublishedStateByResourceIds(siteId, resourceIds)
+  if (state.size === 0) {
+    return state
+  }
+
+  // Only containers can be revived by their contents, and only those the index
+  // page check already ruled out — so the recursive walk sees the smallest set
+  // that could still change the answer, usually none at all.
+  const notLiveIds = [...state.entries()].flatMap(([id, isLive]) =>
+    isLive ? [] : [String(id)],
+  )
+  if (notLiveIds.length === 0) {
+    return state
+  }
+  const undecided = await db
+    .selectFrom("Resource")
+    .where("Resource.siteId", "=", siteId)
+    .where("Resource.id", "in", notLiveIds)
+    .where("Resource.type", "in", [
+      ResourceType.Folder,
+      ResourceType.Collection,
+    ])
+    .select("Resource.id")
+    .execute()
+  if (undecided.length === 0) {
+    return state
+  }
+
+  const liveContainerIds = await getContainerIdsHoldingPublishedPages(
+    siteId,
+    undecided.map((r) => String(r.id)),
+  )
+  for (const containerId of liveContainerIds) {
+    state.set(Number(containerId), true)
+  }
+  return state
 }
 
 // Strips a "?query"/"#fragment" off a path, leaving the bare path before the
@@ -249,7 +352,7 @@ export const resolveRedirectReferences = async ({
     .filter((id): id is number => id !== null)
   const [permalinks, publishedState] = await Promise.all([
     getResourceFullPermalinks(siteId, resourceIds),
-    getPublishedStateByResourceIds(siteId, resourceIds),
+    getDestinationLiveStateByResourceIds(siteId, resourceIds),
   ])
 
   return parsed.map(({ reference, kind, resourceId }) => {

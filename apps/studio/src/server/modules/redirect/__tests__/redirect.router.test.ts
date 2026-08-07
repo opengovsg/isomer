@@ -1510,9 +1510,9 @@ describe("redirect.router", async () => {
       ])
     })
 
-    it("should warn for a folder whose index page is not published", async () => {
-      // Arrange — a folder with an unpublished IndexPage has no live page at its
-      // URL, so it warns.
+    it("should warn for a folder with nothing published inside it", async () => {
+      // Arrange — an unpublished IndexPage and no published pages beneath it, so
+      // the folder has no live content at all.
       await setupPageResource({
         siteId,
         resourceType: ResourceType.RootPage,
@@ -1528,6 +1528,12 @@ describe("redirect.router", async () => {
         resourceType: ResourceType.IndexPage,
         parentId: folder.id,
       })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "draft-child",
+      })
 
       // Act
       const result = await caller.resolveReferences({
@@ -1538,6 +1544,88 @@ describe("redirect.router", async () => {
       // Assert
       expect(result).toEqual([
         { reference: "/folder", permalink: null, warn: true },
+      ])
+    })
+
+    it("should not warn for a folder whose index page is unpublished but which holds a published page", async () => {
+      // Arrange — index pages are created as drafts and rarely published by
+      // hand, so a folder of published pages must not read as leading nowhere.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "live-child",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/folder"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/folder", permalink: null, warn: false },
+      ])
+    })
+
+    it("should not warn for a folder whose published page sits in a nested subfolder", async () => {
+      // Arrange — the walk is recursive, so live content any depth down counts.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId,
+        permalink: "subfolder",
+        parentId: folder.id,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: subfolder.id,
+        permalink: "live-grandchild",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/folder"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/folder", permalink: null, warn: false },
       ])
     })
   })

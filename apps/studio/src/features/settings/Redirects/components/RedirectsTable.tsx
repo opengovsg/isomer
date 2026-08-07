@@ -17,7 +17,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { useEffect, useMemo, useState } from "react"
+import { useContext, useEffect, useMemo, useState } from "react"
 import {
   BiDownArrowAlt,
   BiSolidErrorCircle,
@@ -32,6 +32,7 @@ import {
   BRIEF_TOAST_SETTINGS,
   SETTINGS_TOAST_MESSAGES,
 } from "~/constants/toast"
+import { UserManagementContext } from "~/features/users"
 import { useIsTruncated } from "~/hooks/useIsTruncated"
 import { useTablePagination } from "~/hooks/useTablePagination"
 
@@ -64,6 +65,16 @@ const MISSING_PAGE_LABEL = "Page no longer exists"
 // specific segment visible ("/promo/really-long…/end.html") instead of losing
 // the tail to a plain end-ellipsis.
 const TRUNCATION_TAIL_LENGTH = 10
+
+// Body rows are pinned to this height so they don't depend on which columns are
+// rendered. The delete IconButton (2.5rem) is what sets the row height for a
+// site admin; without that column, rows for everyone else would come out ~20px
+// shorter. That's 2.5rem plus the theme's 0.5rem vertical cell padding top and
+// bottom — and one more pixel for the collapsed row border, which the cell's
+// border-box height has to cover too. Without that pixel the button no longer
+// fits and the delete cell alone grows 1px, putting the two views back out of
+// step.
+const ROW_HEIGHT = "calc(3.5rem + 1px)"
 
 const splitForMiddleTruncation = (value: string) => {
   const splitAt = Math.max(0, value.length - TRUNCATION_TAIL_LENGTH)
@@ -281,9 +292,13 @@ function SourceCell({ source }: { source: string }): JSX.Element {
   )
 }
 
+// The delete column is only built for a user who may actually delete — deleting
+// is site-admin-only server-side, so showing the button to anyone else only
+// yields a FORBIDDEN toast.
 const getColumns = (
   onDeleteClick: (row: RedirectRow) => void,
   infoByDestination: Map<string, ResolvedDestination>,
+  canDelete: boolean,
 ) => [
   columnsHelper.accessor("source", {
     minSize: 250,
@@ -330,26 +345,36 @@ const getColumns = (
       </Text>
     ),
   }),
-  columnsHelper.display({
-    id: "delete",
-    size: 80,
-    enableSorting: false,
-    header: () => (
-      <TableHeader textStyle="subhead-2" color="base.content.medium">
-        <VisuallyHidden>Actions</VisuallyHidden>
-      </TableHeader>
-    ),
-    cell: ({ row }) => (
-      <IconButton
-        aria-label={`Delete redirect for ${row.original.source}`}
-        icon={<BiTrash />}
-        variant="clear"
-        colorScheme="critical"
-        size="sm"
-        onClick={() => onDeleteClick(row.original)}
-      />
-    ),
-  }),
+  ...(canDelete
+    ? [
+        columnsHelper.display({
+          id: "delete",
+          size: 80,
+          enableSorting: false,
+          header: () => (
+            <TableHeader textStyle="subhead-2" color="base.content.medium">
+              <VisuallyHidden>Actions</VisuallyHidden>
+            </TableHeader>
+          ),
+          // The button is inline-flex, so on a text baseline it claims a hair
+          // more than its own 2.5rem and rounds the row up past ROW_HEIGHT.
+          // A flex wrapper takes it out of the line box, keeping this row
+          // exactly as tall as one without the column.
+          cell: ({ row }) => (
+            <Box display="flex" alignItems="center" h="2.5rem">
+              <IconButton
+                aria-label={`Delete redirect for ${row.original.source}`}
+                icon={<BiTrash />}
+                variant="clear"
+                colorScheme="critical"
+                size="sm"
+                onClick={() => onDeleteClick(row.original)}
+              />
+            </Box>
+          ),
+        }),
+      ]
+    : []),
 ]
 
 interface RedirectsTableProps {
@@ -359,6 +384,11 @@ interface RedirectsTableProps {
 export const RedirectsTable = ({
   siteId,
 }: RedirectsTableProps): JSX.Element => {
+  // Same site-admin ability that gates the add-redirect card (see index.tsx) —
+  // read here rather than passed down so the table owns which columns it can
+  // render.
+  const ability = useContext(UserManagementContext)
+  const canDelete = ability.can("manage", "UserManagement")
   const toast = useToast(BRIEF_TOAST_SETTINGS)
   const { mutate: deleteRedirect, isPending } = useDeleteRedirect()
   // Newest redirects first, matching the design's default sort on "Added"
@@ -421,8 +451,8 @@ export const RedirectsTable = ({
   }, [resolvedDestinations])
 
   const columns = useMemo(
-    () => getColumns(setRedirectToDelete, infoByDestination),
-    [infoByDestination],
+    () => getColumns(setRedirectToDelete, infoByDestination, canDelete),
+    [infoByDestination, canDelete],
   )
 
   // Changing the sort order reshuffles rows across pages, so jump back to
@@ -477,9 +507,16 @@ export const RedirectsTable = ({
         pagination
         totalRowCount={totalRowCount}
         isFetching={isLoading || isCountLoading}
-        emptyPlaceholder={<RedirectsEmptyPlaceholder />}
+        emptyPlaceholder={
+          <RedirectsEmptyPlaceholder colSpan={columns.length} />
+        }
         instance={tableInstance}
-        sx={{ tableLayout: "fixed" }}
+        sx={{
+          tableLayout: "fixed",
+          // The empty-state cell spans every column and sets its own height, so
+          // it's left out — it's the only body cell carrying a colspan.
+          "tbody td:not([colspan])": { height: ROW_HEIGHT },
+        }}
       />
       <DeleteRedirectModal
         redirect={redirectToDelete}
