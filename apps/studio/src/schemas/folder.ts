@@ -49,7 +49,7 @@ export const baseEditFolderSchema = baseFolderSchema.extend({
     }),
   // When the permalink changes, preserve the old URLs of everything under this
   // folder with a wildcard redirect. Defaults true (matches the move flow); the
-  // UI only surfaces the choice behind the advanced-redirects flag.
+  // UI only surfaces the choice when the permalink actually changes.
   shouldCreateRedirect: z.boolean().optional().default(true),
 })
 
