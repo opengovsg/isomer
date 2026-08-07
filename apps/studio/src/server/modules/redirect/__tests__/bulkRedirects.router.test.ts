@@ -172,6 +172,40 @@ describe("redirect.router bulk upload", async () => {
       expect(errorFor(result, "/shadowed")).toBeTruthy()
     })
 
+    it("allows an exact source at a folder whose index page is still a draft", async () => {
+      // Arrange — nothing renders at "/folder" until its IndexPage is
+      // published, so a redirect there shadows nothing, even though the folder
+      // holds a published page.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({ siteId, permalink: "folder" })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "live-child",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.bulkValidate({
+        siteId,
+        csv: csvOf([["/folder", "/somewhere"]]),
+      })
+
+      // Assert
+      expect(errorFor(result, "/folder")).toBeNull()
+    })
+
     it("flags a wildcard source whose prefix is itself a live published page", async () => {
       // Arrange
       await seedPublishedPageAtRoot("news")
