@@ -192,8 +192,8 @@ catalogs:
       specifier: ^1.11.21
       version: 1.11.21
     dd-trace:
-      specifier: ^6.2.0
-      version: 6.4.0
+      specifier: ^6.7.0
+      version: 6.8.0
     dotenv:
       specifier: ^16.4.5
       version: 16.6.1
@@ -888,7 +888,7 @@ importers:
         version: 3.2.0(date-fns@4.4.0)
       dd-trace:
         specifier: 'catalog:'
-        version: 6.4.0(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0))
+        version: 6.8.0(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0))
       exponential-backoff:
         specifier: 'catalog:'
         version: 3.1.3
@@ -1432,7 +1432,7 @@ importers:
     dependencies:
       dd-trace:
         specifier: 'catalog:'
-        version: 6.4.0(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0))
+        version: 6.8.0(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0))
       nanoid:
         specifier: 'catalog:'
         version: 6.0.0
@@ -3626,8 +3626,8 @@ packages:
       '@datadog/browser-logs':
         optional: true
 
-  '@datadog/flagging-core@1.2.1':
-    resolution: {integrity: sha512-qeDkki9fFlqyoZBrn7tneT6pZ04EKKvf3xxisYw1a74zbJihvQui/ARUsjXCurRpzpFqGGTJw/oz+HnXaKhcdw==}
+  '@datadog/flagging-core@2.0.2':
+    resolution: {integrity: sha512-2+oWyqz/EMNXtsgyW3NtueFgL0TciWInyMg/6bEUZhfr7UgPzCQ88Nag9FGoPCig19F/tHXE5hLiQccjkRUMWQ==}
 
   '@datadog/js-core@0.0.7':
     resolution: {integrity: sha512-zthB0nZQ+spdeueG7doqdIxY1BVeOvCPqBDJjm2hyZNuci/wErLzfg/OW/3SvzPGeg8QJryMWIGgPyyw8owqkw==}
@@ -3646,14 +3646,14 @@ packages:
     resolution: {integrity: sha512-7AEWt0ZLr/ogR/9if1DmFBDTg3y67xM+gdhXUXKs+UQMxK0lnjrOHgN7fkpEmUG1uL+EkX2BDE3ENDlQ23J7OQ==}
     engines: {node: '>=16'}
 
-  '@datadog/openfeature-node-server@2.0.0':
-    resolution: {integrity: sha512-Ummu/Bd7ZJpCCNdFnZUt/JI+L1+8OMK53+MyIXbS7dCt4JXWWwelbpzSGqmC2jWbWQ/mTo4hEfnFw3kYOINbXA==}
+  '@datadog/openfeature-node-server@2.0.2':
+    resolution: {integrity: sha512-647eJuiOVzCEk50His94wjSlOgJCbHIJv4cAW425eW3GqQJC2Y73qGBYV1/s9oBsAmsUNa90tc+ETunfUH2hKQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@openfeature/server-sdk': '>=1.15.1'
 
-  '@datadog/pprof@5.15.1':
-    resolution: {integrity: sha512-4mI750tX6okNROS4YKvGQjyAQ+VqfzDqzysCytOJhL2E2ktK/q4M0PtC7j70tiirGb/fO9fjma3IMNSRLYX+xQ==}
+  '@datadog/pprof@5.17.0':
+    resolution: {integrity: sha512-BuedZ4vHzmQkitMMdIhVLQ+nPpHl7WRwcuumJeXt0ylhwGGwt7Kf+4CoS1tDB0FljJXi4izweFfFFTirrijP5w==}
     engines: {node: '>=16'}
 
   '@datadog/wasm-js-rewriter@5.0.1':
@@ -8124,8 +8124,8 @@ packages:
     resolution: {integrity: sha512-TyyeGcjx0YeThAI9fTFtgsvj5qd4R+aGfVmXiUhevbgzWFDr7IK4tv4YjE6jaGzLHQTchk4h7DHdr5q4WGgaZw==}
     engines: {node: '>=12.17'}
 
-  dd-trace@6.4.0:
-    resolution: {integrity: sha512-aRcf+OXejmPmOz5mTg5zkBTAONv+JwHeszdu/sxPEuZvkBYfjHod5XChgSV0rEDwOWvSbe0kaLPdWM/umIftsw==}
+  dd-trace@6.8.0:
+    resolution: {integrity: sha512-fTuAc8PNoLOmYM310pxPq/O1BzC9SSWkb5gj5B3YcotR9MNlHTg6TzNveSwuRp2x3N97vcX6W75XnCqtwfkJ7g==}
     engines: {node: '>=22'}
 
   debug@4.4.3:
@@ -9118,8 +9118,8 @@ packages:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
     engines: {node: '>=6'}
 
-  import-in-the-middle@3.3.1:
-    resolution: {integrity: sha512-0rymlHSFLwZ0ixx8DaQkoIyZojJPY2a0K2nEYslhKJ6jIYO/m0IcCb7iQsFPmS7WmKwISZiIrv5Icstrw/CmqA==}
+  import-in-the-middle@3.3.3:
+    resolution: {integrity: sha512-AiohS3H80sXO6owEltjGX+glb7qXaDhBoJb9XcQVH4UI207xu/bDLUcadVKp7Qe576reg9yr/PXZjV5qx8gfbA==}
     engines: {node: '>=18'}
 
   import-lazy@4.0.0:
@@ -11676,6 +11676,10 @@ packages:
 
   source-map@0.7.6:
     resolution: {integrity: sha512-i5uvt8C3ikiWeNZSVZNWcfZPItFQOsYTUAOkcUPGd8DqDy1uOUikjt5dG+uRlwyvR108Fb9DOd4GvXfT0N2/uQ==}
+    engines: {node: '>= 12'}
+
+  source-map@0.8.0:
+    resolution: {integrity: sha512-d8EqvL+k/SOXCreS/SUzg2ciyHqBBLcN/yuRjFsbvVhHTE2pgei7oAhmPM7kWFbkX6OSMQfUq4KbkF3au9lhYQ==}
     engines: {node: '>= 12'}
 
   space-separated-tokens@2.0.2:
@@ -14870,7 +14874,7 @@ snapshots:
       '@datadog/browser-rum-core': 7.6.1
       '@datadog/js-core': 0.0.7
 
-  '@datadog/flagging-core@1.2.1':
+  '@datadog/flagging-core@2.0.2':
     dependencies:
       spark-md5: 3.0.2
     optional: true
@@ -14896,17 +14900,17 @@ snapshots:
       node-gyp-build: 3.9.0
     optional: true
 
-  '@datadog/openfeature-node-server@2.0.0(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0))':
+  '@datadog/openfeature-node-server@2.0.2(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0))':
     dependencies:
-      '@datadog/flagging-core': 1.2.1
+      '@datadog/flagging-core': 2.0.2
       '@openfeature/server-sdk': 1.21.0(@openfeature/core@1.10.0)
     optional: true
 
-  '@datadog/pprof@5.15.1':
+  '@datadog/pprof@5.17.0':
     dependencies:
       node-gyp-build: 4.8.4
       pprof-format: 2.2.1
-      source-map: 0.7.6
+      source-map: 0.8.0
     optional: true
 
   '@datadog/wasm-js-rewriter@5.0.1':
@@ -19182,18 +19186,18 @@ snapshots:
 
   dc-polyfill@0.1.11: {}
 
-  dd-trace@6.4.0(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0)):
+  dd-trace@6.8.0(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0)):
     dependencies:
       dc-polyfill: 0.1.11
-      import-in-the-middle: 3.3.1
+      import-in-the-middle: 3.3.3
       opentracing: 0.14.7
     optionalDependencies:
       '@datadog/libdatadog': 0.9.4
       '@datadog/native-appsec': 11.0.1
       '@datadog/native-iast-taint-tracking': 4.2.0
       '@datadog/native-metrics': 3.1.2
-      '@datadog/openfeature-node-server': 2.0.0(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0))
-      '@datadog/pprof': 5.15.1
+      '@datadog/openfeature-node-server': 2.0.2(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0))
+      '@datadog/pprof': 5.17.0
       '@datadog/wasm-js-rewriter': 5.0.1
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/api-logs': 0.214.0
@@ -20350,7 +20354,7 @@ snapshots:
       parent-module: 1.0.1
       resolve-from: 4.0.0
 
-  import-in-the-middle@3.3.1:
+  import-in-the-middle@3.3.3:
     dependencies:
       cjs-module-lexer: 2.2.0
       es-module-lexer: 2.3.0
@@ -23299,6 +23303,9 @@ snapshots:
   source-map@0.6.1: {}
 
   source-map@0.7.6: {}
+
+  source-map@0.8.0:
+    optional: true
 
   space-separated-tokens@2.0.2: {}
 
