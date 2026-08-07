@@ -440,17 +440,7 @@ export const collectionRouter = router({
     .input(editLinkSchema)
     .mutation(
       async ({
-        input: {
-          date,
-          category,
-          linkId,
-          siteId,
-          description,
-          ref,
-          image,
-          tags,
-          tagged,
-        },
+        input: { date, linkId, siteId, description, ref, image, tagged },
         ctx,
       }) => {
         // Things that aren't working yet:
@@ -499,9 +489,7 @@ export const collectionRouter = router({
                 description,
                 ref,
                 date,
-                category,
                 image,
-                tags,
                 tagged,
               },
             },
@@ -539,14 +527,12 @@ export const collectionRouter = router({
         return getCollectionTagsForResource({
           siteId,
           collectionId,
-          isPublishedOnly: true,
         })
       }
       if (resourceId !== undefined) {
         return getCollectionTagsForResource({
           siteId,
           resourceId,
-          isPublishedOnly: true,
         })
       }
       throw new TRPCError({

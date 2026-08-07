@@ -121,7 +121,7 @@ export const createCollectionLink = async ({
     .values({
       content: jsonb({
         layout: "link",
-        page: { ref, summary: "", category: "", date: "01/01/2026" },
+        page: { ref, summary: "", date: "01/01/2026" },
         content: [],
         version: "0.1.0",
       }),
@@ -159,7 +159,6 @@ export const createCollectionPage = async ({
         layout: "article",
         page: {
           date: "01/01/2026",
-          category: "Feature Articles",
           articlePageHeader: { summary: "E2E test summary" },
         },
         content: [],

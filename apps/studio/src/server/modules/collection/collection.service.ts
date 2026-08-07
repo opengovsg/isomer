@@ -15,9 +15,6 @@ export const createCollectionPageJson = ({}: {
     layout: "article",
     page: {
       date: format(new Date(), "dd/MM/yyyy"),
-      // TODO: this is actually supposed to be passed from the frontend
-      // which is not done at present
-      category: "Feature Articles",
       articlePageHeader: {
         summary: "A concise summary of the main points regarding this article.",
       },
@@ -35,7 +32,6 @@ export const createCollectionLinkJson = ({}: {
     page: {
       ref: "",
       summary: "",
-      category: "",
       date: format(new Date(), "dd/MM/yyyy"),
     },
     content: [],
@@ -100,7 +96,7 @@ export const getCollectionTagsForResource = async ({
 
   return isPublishedOnly
     ? (row.publishedContent?.page.tagCategories ?? [])
-    : (row.publishedContent?.page.tagCategories ??
-        row.draftContent?.page.tagCategories ??
+    : (row.draftContent?.page.tagCategories ??
+        row.publishedContent?.page.tagCategories ??
         [])
 }
