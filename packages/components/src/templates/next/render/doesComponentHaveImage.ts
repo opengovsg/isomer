@@ -10,6 +10,7 @@ export const doesComponentHaveImage = ({
   // TODO: Do separate optimization for them to improve lighthouse SEO score
   switch (component.type) {
     case "accordion":
+    case "button":
     case "keystatistics":
     case "callout":
     case "infobar":
@@ -19,6 +20,7 @@ export const doesComponentHaveImage = ({
     case "antiscambanner":
     case "contactinformation":
     case "dynamiccomponentlist": // The content are fetched, so they eager load has no impact
+    case "linkhub":
       return false
     case "image":
     case "infopic":

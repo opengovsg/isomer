@@ -8,6 +8,7 @@ import {
   BiHash,
   BiImage,
   BiImages,
+  BiLink,
   BiListUl,
   BiLogoSpotify,
   BiMap,
@@ -38,6 +39,7 @@ export const TYPE_TO_ICON: Record<
   infopic: InfopicIcon,
   keystatistics: BiHash,
   contentpic: ContentpicIcon,
+  button: BiPointer,
   callout: BiSolidQuoteAltLeft,
   infocards: InfocardsIcon,
   infobar: BiPointer,
@@ -57,6 +59,7 @@ export const TYPE_TO_ICON: Record<
   contactinformation: BiPhoneCall,
   dynamiccomponentlist: BiListUl,
   childrenpages: BiListUl,
+  linkhub: BiLink,
 }
 
 export const PUBLISHED_AFTER_EDITING_EVENT = "published-after-editing"
