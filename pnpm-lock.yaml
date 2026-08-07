@@ -81,8 +81,8 @@ catalogs:
       specifier: ^0.4.0
       version: 0.4.0
     '@datadog/browser-rum':
-      specifier: ^7.6.0
-      version: 7.6.1
+      specifier: ^7.7.0
+      version: 7.8.0
     '@fontsource/ibm-plex-mono':
       specifier: ^5.3.0
       version: 5.3.0
@@ -708,7 +708,7 @@ importers:
         version: 2.2.2(react@18.3.1)
       '@datadog/browser-rum':
         specifier: 'catalog:'
-        version: 7.6.1
+        version: 7.8.0
       '@fontsource/ibm-plex-mono':
         specifier: 'catalog:'
         version: 5.3.0
@@ -3612,16 +3612,16 @@ packages:
     peerDependencies:
       postcss: ^8.4
 
-  '@datadog/browser-core@7.6.1':
-    resolution: {integrity: sha512-xfExkTuolUYO/OXOVX+8NY3qi0BQAD9D+FWG85VzkI+921HBpVuo79YRnKtIJlTIplSyJaBKF48voX6he9kpXw==}
+  '@datadog/browser-core@7.8.0':
+    resolution: {integrity: sha512-FBNiMgq9FI+4Br8yfWaVX7dpg81TRtkknpFIZ2TcVBtKJPYbBnbXNDr1lFSR2vz5ROvHROGb1qK+BF/maNLewg==}
 
-  '@datadog/browser-rum-core@7.6.1':
-    resolution: {integrity: sha512-Dlk8ZRPZ/yjFKUq/swbWPHFg21YYzMPQEwNgdX9fmwWb4Z/Tpd8Tfjehe3Z7cy4SYYHwV8NuwjvseTaYHM4w7g==}
+  '@datadog/browser-rum-core@7.8.0':
+    resolution: {integrity: sha512-h1C8eEoXfj+mB2BSAQ/7QuexpTwBVSlaiykBKwcHXXKXBjEkJzh4gNEpKVn30j9mznAe+SxXm8A0RMRjd1WQ2g==}
 
-  '@datadog/browser-rum@7.6.1':
-    resolution: {integrity: sha512-nNaAlRqW5estVXfayl+WSWyTGtue5l0VPyEJGHWsok2zd9BwlGZ62i1XgON9Mi/cP5U9IlUeRKfOkhq5DWcfNg==}
+  '@datadog/browser-rum@7.8.0':
+    resolution: {integrity: sha512-LNnVzkWDoka+dR3qHxPu5iCVeMqzLpEA4ojjOFmTUCHJulnVwNQFzkym7KnBWy7ZGsfhBPGBth/Tq1A7K5IMlg==}
     peerDependencies:
-      '@datadog/browser-logs': 7.6.1
+      '@datadog/browser-logs': 7.8.0
     peerDependenciesMeta:
       '@datadog/browser-logs':
         optional: true
@@ -3629,8 +3629,8 @@ packages:
   '@datadog/flagging-core@2.0.2':
     resolution: {integrity: sha512-2+oWyqz/EMNXtsgyW3NtueFgL0TciWInyMg/6bEUZhfr7UgPzCQ88Nag9FGoPCig19F/tHXE5hLiQccjkRUMWQ==}
 
-  '@datadog/js-core@0.0.7':
-    resolution: {integrity: sha512-zthB0nZQ+spdeueG7doqdIxY1BVeOvCPqBDJjm2hyZNuci/wErLzfg/OW/3SvzPGeg8QJryMWIGgPyyw8owqkw==}
+  '@datadog/js-core@0.0.9':
+    resolution: {integrity: sha512-sxHo6K0BHTvEeFznz5b7zRYuHP52s0sRhJgb2iP9+9E2KvgS7LwMkqyC+aTa1xJ4Hz4MLTY2BBxD2gyFG9kKgA==}
 
   '@datadog/libdatadog@0.9.4':
     resolution: {integrity: sha512-55wHHAuhHOOrBGoWV+fRuEDypN6PMJZq4LTOwExnhoDMvVcZKtqYT05xea/toRs0o75+A1IeNAQHsRLbJMf5oA==}
@@ -14868,27 +14868,27 @@ snapshots:
     dependencies:
       postcss: 8.5.23
 
-  '@datadog/browser-core@7.6.1':
+  '@datadog/browser-core@7.8.0':
     dependencies:
-      '@datadog/js-core': 0.0.7
+      '@datadog/js-core': 0.0.9
 
-  '@datadog/browser-rum-core@7.6.1':
+  '@datadog/browser-rum-core@7.8.0':
     dependencies:
-      '@datadog/browser-core': 7.6.1
-      '@datadog/js-core': 0.0.7
+      '@datadog/browser-core': 7.8.0
+      '@datadog/js-core': 0.0.9
 
-  '@datadog/browser-rum@7.6.1':
+  '@datadog/browser-rum@7.8.0':
     dependencies:
-      '@datadog/browser-core': 7.6.1
-      '@datadog/browser-rum-core': 7.6.1
-      '@datadog/js-core': 0.0.7
+      '@datadog/browser-core': 7.8.0
+      '@datadog/browser-rum-core': 7.8.0
+      '@datadog/js-core': 0.0.9
 
   '@datadog/flagging-core@2.0.2':
     dependencies:
       spark-md5: 3.0.2
     optional: true
 
-  '@datadog/js-core@0.0.7': {}
+  '@datadog/js-core@0.0.9': {}
 
   '@datadog/libdatadog@0.9.4':
     optional: true
