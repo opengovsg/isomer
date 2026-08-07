@@ -15,6 +15,8 @@ import {
 } from "~/utils/validation"
 
 import {
+  DEFAULT_TAG_CATEGORY_DISPLAY,
+  DEFAULT_TAG_CATEGORY_IS_REQUIRED,
   TAG_CATEGORY_DISPLAY_OPTIONS,
   type TagCategoryDisplay,
 } from "./constants"
@@ -47,41 +49,35 @@ const TagCategorySchema = Type.Composite([
     id: TagCategoryUuidSchema,
   }),
   Type.Object({
-    // Optional for backward compatibility. Missing/`undefined` must be read as `false`.
-    // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
-    // same default to legacy rows that omit this key. New filters set `isRequired: true` in
-    // the tag-categories JsonForms control when adding an item.
-    isRequired: Type.Optional(
-      Type.Boolean({
-        title: "This filter is required",
-        description:
-          "Every item must have at least one option selected from this filter.",
-      }),
-    ),
+    // Required in schema (Studio JsonForms). Legacy published blobs may still
+    // omit it — runtime/publish must read via `?? DEFAULT_TAG_CATEGORY_IS_REQUIRED`.
+    // Schema `default` + AJV useDefaults backfills on edit in Studio.
+    isRequired: Type.Boolean({
+      title: "This filter is required",
+      description:
+        "Every item must have at least one option selected from this filter.",
+      default: DEFAULT_TAG_CATEGORY_IS_REQUIRED,
+    }),
   }),
   Type.Object({
-    // Optional for backward compatibility. Missing/`undefined` must be read as
-    // `DEFAULT_TAG_CATEGORY_DISPLAY` via `resolveTagCategoryDisplay`.
-    // Omit JSON Schema `default`: Studio AJV runs with useDefaults, which would apply the
-    // same default to legacy rows that omit this key. New filters set
-    // `display: DEFAULT_TAG_CATEGORY_DISPLAY` in the tag-categories JsonForms control
-    // when adding an item.
-    display: Type.Optional(
-      Type.Unsafe<TagCategoryDisplay>({
-        oneOf: [
-          {
-            const: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
-            image: "tagcategory/pills",
-          },
-          {
-            const: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
-            image: "tagcategory/plaintext",
-          },
-        ],
-        title: "Show as",
-        format: "image-radio",
-      }),
-    ),
+    // Required in schema (Studio JsonForms). Legacy published blobs may still
+    // omit it — runtime/publish must read via `resolveTagCategoryDisplay`.
+    // Schema `default` + AJV useDefaults backfills on edit in Studio.
+    display: Type.Unsafe<TagCategoryDisplay>({
+      oneOf: [
+        {
+          const: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
+          image: "tagcategory/pills",
+        },
+        {
+          const: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
+          image: "tagcategory/plaintext",
+        },
+      ],
+      title: "Show as",
+      format: "image-radio",
+      default: DEFAULT_TAG_CATEGORY_DISPLAY,
+    }),
   }),
   Type.Object({
     options: Type.Array(
@@ -125,14 +121,17 @@ const TaggedSchema = Type.Optional(
   }),
 )
 
-const categorySchemaObject = Type.Object({
-  category: Type.String({
-    title: "Article category",
-    format: "hidden", // We will properly deprecate this key during the post-launch cleanup. Hiding it in Studio UI in the meantime.
-    description:
-      "The category is used for filtering in the parent collection page",
-  }),
-})
+// DEPRECATED: legacy `page.category` — migrated to a "Category" tag group in
+// `tagCategories`/`tagged`. Do not re-add; see
+// docs/adr/0003-merge-category-into-tag-category.md.
+// const categorySchemaObject = Type.Object({
+//   category: Type.String({
+//     title: "Article category",
+//     format: "hidden",
+//     description:
+//       "The category is used for filtering in the parent collection page",
+//   }),
+// })
 
 const dateSchemaObject = Type.Object({
   date: Type.Optional(
@@ -144,7 +143,8 @@ const dateSchemaObject = Type.Object({
 })
 
 const BaseRefPageSchema = Type.Composite([
-  categorySchemaObject,
+  // DEPRECATED: do not re-add; see docs/adr/0003-merge-category-into-tag-category.md
+  // categorySchemaObject
   Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   imageSchemaObject,
@@ -167,29 +167,31 @@ const BaseRefPageSchema = Type.Composite([
   }),
 ])
 
-// NOTE: old tag schema that we should migrate away
-// because we sit on the `tag` key,
-// we cannot reuse it for our new tags
-const TagSchema = Type.Object({
-  selected: Type.Array(Type.String()),
-  category: Type.String(),
-})
-const TagsSchema = Type.Object(
-  {
-    tags: Type.Optional(Type.Array(TagSchema, { format: "hidden" })),
-  },
-  // NOTE: we need to hide this because it's not supposed to be visible to our end user
-  { format: "hidden" },
-)
+// DEPRECATED: legacy `page.tags` ({ category, selected[] }) — migrated to
+// `tagCategories`/`tagged`. Do not re-add; see
+// docs/adr/0003-merge-category-into-tag-category.md.
+// const TagSchema = Type.Object({
+//   selected: Type.Array(Type.String()),
+//   category: Type.String(),
+// })
+// const TagsSchema = Type.Object(
+//   {
+//     tags: Type.Optional(Type.Array(TagSchema, { format: "hidden" })),
+//   },
+//   { format: "hidden" },
+// )
 
 export const ArticlePagePageSchema = Type.Composite([
-  categorySchemaObject,
+  // categorySchemaObject // DEPRECATED — do not re-add; see
+  // docs/adr/0003-merge-category-into-tag-category.md
   Type.Object({ tagged: TaggedSchema }),
   dateSchemaObject,
   Type.Object({
     articlePageHeader: ArticlePageHeaderSchema,
   }),
   imageSchemaObject,
+  // TagsSchema // DEPRECATED — do not re-add; see
+  // docs/adr/0003-merge-category-into-tag-category.md
 ])
 
 export const COLLECTION_VARIANT_OPTIONS = {
@@ -335,7 +337,6 @@ export const CollectionPagePageSchema = Type.Intersect([
     ),
   }),
   TagCategoriesSchema,
-  TagsSchema,
 ])
 
 export const ContentPagePageSchema = Type.Composite([
@@ -385,23 +386,18 @@ type BasePageAdditionalProps = BaseItemAdditionalProps & {
   language?: "en"
 }
 
-interface ArticlePageAdditionalProps {
-  tags?: CollectionPagePageProps["tags"]
-}
-
 // NOTE: derived from `tagCategories` + `tagged` at render time (see
-// `getPillAndPlaintextTags`), not a JSON schema field itself. `id` is the tag
-// category's uuid, used as a stable React key — optional since the legacy
-// `tags` fallback predates tag category uuids.
-export interface TagGroup {
-  id?: string
-  category: string
-  selected: string[]
+// `getTagGroupsFromTagged`), not a JSON schema field itself.
+// `selected` is the resolved option labels (not option ids).
+export type TagGroup = Pick<
+  Static<typeof TagCategorySchema>,
+  "id" | "label"
+> & {
+  selected: Static<typeof TagCategorySchema>["options"][number]["label"][]
 }
 
 export type ArticlePagePageProps = Static<typeof ArticlePagePageSchema> &
-  BasePageAdditionalProps &
-  ArticlePageAdditionalProps
+  BasePageAdditionalProps
 export type CollectionPagePageProps = Static<typeof CollectionPagePageSchema> &
   BasePageAdditionalProps
 export type ContentPagePageProps = Static<typeof ContentPagePageSchema> &

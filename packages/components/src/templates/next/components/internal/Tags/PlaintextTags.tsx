@@ -14,8 +14,8 @@ export const PlaintextTags = ({ tags = [], className }: PlaintextTagsProps) => {
 
   return (
     <div className={twMerge("flex flex-wrap items-center gap-2", className)}>
-      {tags.map(({ id, category, selected }, index) => (
-        <Fragment key={id ?? category}>
+      {tags.map(({ id, label, selected }, index) => (
+        <Fragment key={id ?? label}>
           {index > 0 && <TagSeparator />}
           <span>{selected.join(", ")}</span>
         </Fragment>

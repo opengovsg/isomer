@@ -20,11 +20,11 @@ export const PillTags = ({
     return null
   }
 
-  const rows = tags.map(({ id, category, selected }) => (
-    <div key={id ?? category} className={className}>
-      <p className="prose-label-sm">{category}</p>
-      {selected.map((label) => (
-        <Tag key={label}>{label}</Tag>
+  const rows = tags.map(({ id, label, selected }) => (
+    <div key={id ?? label} className={className}>
+      <p className="prose-label-sm">{label}</p>
+      {selected.map((optionLabel) => (
+        <Tag key={optionLabel}>{optionLabel}</Tag>
       ))}
     </div>
   ))

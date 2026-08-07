@@ -12,15 +12,15 @@ describe("getTagFilters", () => {
       {
         title: "Item 1",
         tags: [
-          { selected: ["Brain", "Heart"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { selected: ["Brain", "Heart"], label: "Body parts" },
+          { selected: ["Acute"], label: "Condition" },
         ],
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
         tags: [
-          { selected: ["Brain"], category: "Body parts" },
-          { selected: ["Chronic"], category: "Condition" },
+          { selected: ["Brain"], label: "Body parts" },
+          { selected: ["Chronic"], label: "Condition" },
         ],
       } as ProcessedCollectionCardProps,
     ]
@@ -57,8 +57,8 @@ describe("getTagFilters", () => {
       {
         title: "Item 1",
         tags: [
-          { selected: ["Brain"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { selected: ["Brain"], label: "Body parts" },
+          { selected: ["Acute"], label: "Condition" },
         ],
       } as ProcessedCollectionCardProps,
     ]
@@ -67,12 +67,14 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Acute", id: "o-1" }],
       },
       {
         label: "Body parts",
         id: "b-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Brain", id: "o-2" }],
       },
@@ -98,21 +100,21 @@ describe("getTagFilters", () => {
     ])
   })
 
-  it("orders items within a category by options order; unlisted come first", () => {
+  it("orders items within a category by options order; unlisted come last", () => {
     // Arrange
     const items: ProcessedCollectionCardProps[] = [
       {
         title: "Item 1",
         tags: [
-          { selected: ["Brain", "Arm"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { selected: ["Brain", "Arm"], label: "Body parts" },
+          { selected: ["Acute"], label: "Condition" },
         ],
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
         tags: [
-          { selected: ["Heart"], category: "Body parts" },
-          { selected: ["Chronic"], category: "Condition" },
+          { selected: ["Heart"], label: "Body parts" },
+          { selected: ["Chronic"], label: "Condition" },
         ],
       } as ProcessedCollectionCardProps,
     ]
@@ -121,6 +123,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
@@ -131,6 +134,7 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Chronic", id: "c-chronic" },
@@ -149,9 +153,9 @@ describe("getTagFilters", () => {
         label: "Body parts",
         display: "pills",
         items: [
-          { id: "Arm", label: "Arm", count: 1 }, // Unlisted; comes first
           { id: "Heart", label: "Heart", count: 1 },
           { id: "Brain", label: "Brain", count: 1 },
+          { id: "Arm", label: "Arm", count: 1 }, // Unlisted; comes last
         ],
       },
       {
@@ -171,15 +175,15 @@ describe("getTagFilters", () => {
     const items: ProcessedCollectionCardProps[] = [
       {
         title: "Item 1",
-        tags: [{ selected: ["Banana"], category: "Fruits" }],
+        tags: [{ selected: ["Banana"], label: "Fruits" }],
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
-        tags: [{ selected: ["Apple"], category: "Fruits" }],
+        tags: [{ selected: ["Apple"], label: "Fruits" }],
       } as ProcessedCollectionCardProps,
       {
         title: "Item 3",
-        tags: [{ selected: ["Banana"], category: "Fruits" }],
+        tags: [{ selected: ["Banana"], label: "Fruits" }],
       } as ProcessedCollectionCardProps,
     ]
 
@@ -233,16 +237,16 @@ describe("getTagFilters", () => {
       {
         title: "Item 1",
         tags: [
-          { selected: ["Brain"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
-          { selected: ["Red"], category: "Color" },
+          { selected: ["Brain"], label: "Body parts" },
+          { selected: ["Acute"], label: "Condition" },
+          { selected: ["Red"], label: "Color" },
         ],
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
         tags: [
-          { selected: ["Heart"], category: "Body parts" },
-          { selected: ["Blue"], category: "Color" },
+          { selected: ["Heart"], label: "Body parts" },
+          { selected: ["Blue"], label: "Color" },
         ],
       } as ProcessedCollectionCardProps,
     ]
@@ -251,6 +255,7 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Acute", id: "c-acute" },
@@ -260,6 +265,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
@@ -307,8 +313,8 @@ describe("getTagFilters", () => {
       {
         title: "Item 1",
         tags: [
-          { selected: ["Brain", "Heart"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { selected: ["Brain", "Heart"], label: "Body parts" },
+          { selected: ["Acute"], label: "Condition" },
         ],
       } as ProcessedCollectionCardProps,
     ]
@@ -317,12 +323,14 @@ describe("getTagFilters", () => {
       {
         label: "Condition",
         id: "c-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [], // Empty options array
       },
       {
         label: "Body parts",
         id: "b-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },
@@ -360,22 +368,22 @@ describe("getTagFilters", () => {
       {
         title: "Item 1",
         tags: [
-          { selected: ["Brain", "Heart"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { selected: ["Brain", "Heart"], label: "Body parts" },
+          { selected: ["Acute"], label: "Condition" },
         ],
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
         tags: [
-          { selected: ["Brain"], category: "Body parts" },
-          { selected: ["Acute", "Chronic"], category: "Condition" },
+          { selected: ["Brain"], label: "Body parts" },
+          { selected: ["Acute", "Chronic"], label: "Condition" },
         ],
       } as ProcessedCollectionCardProps,
       {
         title: "Item 3",
         tags: [
-          { selected: ["Heart"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
+          { selected: ["Heart"], label: "Body parts" },
+          { selected: ["Acute"], label: "Condition" },
         ],
       } as ProcessedCollectionCardProps,
     ]
@@ -411,7 +419,7 @@ describe("getTagFilters", () => {
     const items: ProcessedCollectionCardProps[] = [
       {
         title: "Item 1",
-        tags: [{ selected: ["Brain"], category: "Body parts" }],
+        tags: [{ selected: ["Brain"], label: "Body parts" }],
       } as ProcessedCollectionCardProps,
       {
         title: "Item 2",
@@ -438,7 +446,7 @@ describe("getTagFilters", () => {
       {
         title: "Item 4",
         tags: [
-          { selected: [], category: "Body parts" }, // Empty selected array
+          { selected: [], label: "Body parts" }, // Empty selected array
         ],
         id: "item4",
         description: "Description 4",
@@ -470,9 +478,9 @@ describe("getTagFilters", () => {
       {
         title: "Item 1",
         tags: [
-          { selected: ["Brain", "Heart"], category: "Body parts" },
-          { selected: ["Acute"], category: "Condition" },
-          { selected: ["Red"], category: "Color" },
+          { selected: ["Brain", "Heart"], label: "Body parts" },
+          { selected: ["Acute"], label: "Condition" },
+          { selected: ["Red"], label: "Color" },
         ],
       } as ProcessedCollectionCardProps,
     ]
@@ -481,6 +489,7 @@ describe("getTagFilters", () => {
       {
         label: "Body parts",
         id: "b-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [
           { label: "Heart", id: "bp-heart" },

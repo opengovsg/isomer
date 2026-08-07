@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest"
 
 import {
   DEFAULT_TAG_CATEGORY_DISPLAY,
+  DEFAULT_TAG_CATEGORY_IS_REQUIRED,
   resolveTagCategoryDisplay,
+  resolveTagCategoryIsRequired,
   TAG_CATEGORY_DISPLAY_OPTIONS,
 } from "../constants"
 
@@ -23,5 +25,19 @@ describe("resolveTagCategoryDisplay", () => {
     expect(
       resolveTagCategoryDisplay(TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext),
     ).toBe(TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext)
+  })
+})
+
+describe("resolveTagCategoryIsRequired", () => {
+  it("defaults missing isRequired to true for legacy tag categories", () => {
+    expect(resolveTagCategoryIsRequired(undefined)).toBe(
+      DEFAULT_TAG_CATEGORY_IS_REQUIRED,
+    )
+    expect(resolveTagCategoryIsRequired(undefined)).toBe(true)
+  })
+
+  it("returns the stored isRequired when present", () => {
+    expect(resolveTagCategoryIsRequired(true)).toBe(true)
+    expect(resolveTagCategoryIsRequired(false)).toBe(false)
   })
 })

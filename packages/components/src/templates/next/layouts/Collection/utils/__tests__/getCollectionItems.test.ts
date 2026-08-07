@@ -331,12 +331,14 @@ describe("getCollectionItems", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [
           { label: "Guides", id: "cat-opt-1" },
@@ -361,7 +363,7 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.plaintextTags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Guides"] },
+        { id: "cat-1", label: "Category", selected: ["Guides"] },
       ])
     })
 
@@ -381,7 +383,7 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.plaintextTags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Guides", "Articles"] },
+        { id: "cat-1", label: "Category", selected: ["Guides", "Articles"] },
       ])
     })
 
@@ -426,12 +428,14 @@ describe("getCollectionItems", () => {
       {
         label: "Topic",
         id: "topic-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Pills,
         options: [{ label: "Health", id: "topic-opt-1" }],
       },
       {
         label: "Category",
         id: "cat-1",
+        isRequired: true,
         display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
         options: [
           { label: "Guides", id: "cat-opt-1" },
@@ -456,11 +460,11 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.tags).toEqual([
-        { id: "topic-1", category: "Topic", selected: ["Health"] },
-        { id: "cat-1", category: "Category", selected: ["Guides"] },
+        { id: "topic-1", label: "Topic", selected: ["Health"] },
+        { id: "cat-1", label: "Category", selected: ["Guides"] },
       ])
       expect(result[0]!.pillTags).toEqual([
-        { id: "topic-1", category: "Topic", selected: ["Health"] },
+        { id: "topic-1", label: "Topic", selected: ["Health"] },
       ])
     })
 
@@ -483,14 +487,14 @@ describe("getCollectionItems", () => {
     })
 
     it("treats legacy tag categories without display as pills in pillTags", () => {
-      // Arrange
+      // Arrange — legacy published blobs may omit schema-required fields
       const legacyTagCategories = [
         {
           label: "Topic",
           id: "topic-1",
           options: [{ label: "Health", id: "topic-opt-1" }],
         },
-      ] satisfies CollectionPageSchemaType["page"]["tagCategories"]
+      ] as CollectionPageSchemaType["page"]["tagCategories"]
       const site = createSiteWithChildren([
         createArticleChild({ tagged: ["topic-opt-1"] }),
       ])
@@ -505,7 +509,7 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.pillTags).toEqual([
-        { id: "topic-1", category: "Topic", selected: ["Health"] },
+        { id: "topic-1", label: "Topic", selected: ["Health"] },
       ])
       expect(result[0]!.plaintextTags).toEqual([])
     })
@@ -516,6 +520,7 @@ describe("getCollectionItems", () => {
         {
           label: "Category",
           id: "cat-1",
+          isRequired: true,
           display: TAG_CATEGORY_DISPLAY_OPTIONS.Plaintext,
           options: [{ label: "Guides", id: "cat-opt-1" }],
         },
@@ -534,7 +539,7 @@ describe("getCollectionItems", () => {
       // Assert
       expect(result).toHaveLength(1)
       expect(result[0]!.tags).toEqual([
-        { id: "cat-1", category: "Category", selected: ["Guides"] },
+        { id: "cat-1", label: "Category", selected: ["Guides"] },
       ])
       expect(result[0]!.pillTags).toEqual([])
     })

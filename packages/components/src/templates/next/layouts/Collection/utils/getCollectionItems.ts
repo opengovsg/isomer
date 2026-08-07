@@ -4,8 +4,7 @@ import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
-import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
-import { getTagsFromTagged } from "./getTagsFromTagged"
+import { getTagGroupsFromTagged } from "./getTagGroupsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
 
 interface GetItemImageProps {
@@ -121,10 +120,10 @@ export const getCollectionItems = ({
         ? getParsedDate(item.date)
         : undefined
     const image = getItemImage({ showThumbnail, item, site })
-    const { pillTags, plaintextTags } = getPillAndPlaintextTags(
-      item.tagged,
+    const { pillTags, plaintextTags, allTags } = getTagGroupsFromTagged({
+      tagged: item.tagged,
       tagCategories,
-    )
+    })
 
     const baseItem = {
       type: "collectionCard" as const,
@@ -137,12 +136,7 @@ export const getCollectionItems = ({
       image,
       isContainNeeded: image?.isContainNeeded || false,
       site,
-      // NOTE: `tags` no longer falls back to the legacy `item.tags` field — Collection
-      // Items are expected to carry `tagged` + the parent's `tagCategories` going forward.
-      tags:
-        tagCategories && item.tagged
-          ? getTagsFromTagged(item.tagged, tagCategories)
-          : undefined,
+      tags: allTags,
       pillTags,
     }
 
