@@ -24,6 +24,10 @@
     "./templates/next": {
       "import": "./dist/esm/templates/next/index.js",
       "default": "./dist/esm/templates/next/index.js"
+    },
+    "./build-utils": {
+      "import": "./dist/esm/build-utils/index.js",
+      "default": "./dist/esm/build-utils/index.js"
     }
   },
   "publishConfig": {
