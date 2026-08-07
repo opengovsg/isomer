@@ -1,0 +1,99 @@
+name: Deploy publisher script
+
+# tooling/build/scripts/publisher.sh is fetched from S3 by our CodeBuild
+# static-site publishers so the build pipeline does not have to rely on GitHub
+# being reachable. The script used to be copied to S3 by hand whenever it
+# changed; this workflow does that automatically as part of the release process
+# so the S3 copy never drifts from the released source.
+#
+# The upload is idempotent: the script is only re-uploaded when its contents
+# differ from the object currently in S3. It is uploaded with a no-store
+# Cache-Control header so CloudFront (or any cache in front of the bucket)
+# always serves the latest version to CodeBuild.
+#
+# Required configuration on the `production` GitHub Environment:
+#   Variables:
+#     PUBLISHER_SCRIPT_S3_DEPLOY_ROLE_ARN  IAM role assumed via OIDC, with
+#                                          s3:GetObject and s3:PutObject on the
+#                                          bucket/key below.
+#     PUBLISHER_SCRIPT_S3_BUCKET           Bucket CodeBuild reads publisher.sh from.
+#     PUBLISHER_SCRIPT_S3_KEY              (optional) Destination object key.
+#                                          Defaults to "publisher.sh".
+
+concurrency:
+  group: deploy-publisher-script
+  cancel-in-progress: false
+
+on:
+  release:
+    types:
+      - released
+  # Allow re-syncing the script to S3 on demand without cutting a release.
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy_publisher_script:
+    name: Upload publisher.sh to S3
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      AWS_REGION: "ap-southeast-1"
+      PUBLISHER_SCRIPT_PATH: "tooling/build/scripts/publisher.sh"
+      ROLE_ARN: ${{ vars.PUBLISHER_SCRIPT_S3_DEPLOY_ROLE_ARN }}
+      S3_BUCKET: ${{ vars.PUBLISHER_SCRIPT_S3_BUCKET }}
+      S3_KEY: ${{ vars.PUBLISHER_SCRIPT_S3_KEY || 'publisher.sh' }}
+    steps:
+      - name: Validate configuration
+        run: |
+          if [ -z "$ROLE_ARN" ]; then
+            echo "::error::PUBLISHER_SCRIPT_S3_DEPLOY_ROLE_ARN is not set on the production environment"
+            exit 1
+          fi
+          if [ -z "$S3_BUCKET" ]; then
+            echo "::error::PUBLISHER_SCRIPT_S3_BUCKET is not set on the production environment"
+            exit 1
+          fi
+
+      - name: Checkout source code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@254c19bd240aabef8777f48595e9d2d7b972184b # v6.2.1
+        with:
+          role-to-assume: ${{ env.ROLE_ARN }}
+          role-session-name: github-action-publisher-script-deploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload publisher.sh to S3 if it changed
+        run: |
+          set -euo pipefail
+
+          DEST="s3://${S3_BUCKET}/${S3_KEY}"
+          LOCAL_HASH="$(sha256sum "$PUBLISHER_SCRIPT_PATH" | awk '{print $1}')"
+          echo "Local publisher.sh sha256:  $LOCAL_HASH"
+
+          REMOTE_HASH=""
+          if aws s3 cp "$DEST" ./publisher.remote.sh --only-show-errors 2>/dev/null; then
+            REMOTE_HASH="$(sha256sum ./publisher.remote.sh | awk '{print $1}')"
+            echo "Remote publisher.sh sha256: $REMOTE_HASH"
+          else
+            echo "No existing publisher.sh found at $DEST"
+          fi
+
+          if [ "$LOCAL_HASH" = "$REMOTE_HASH" ]; then
+            echo "publisher.sh is unchanged; nothing to upload."
+            exit 0
+          fi
+
+          # Upload with no-store so CloudFront (and any HTTP cache in front of the
+          # bucket) never serves a stale copy to CodeBuild: consumers always get
+          # the version that was just uploaded.
+          echo "Uploading publisher.sh to $DEST ..."
+          aws s3 cp "$PUBLISHER_SCRIPT_PATH" "$DEST" \
+            --only-show-errors \
+            --cache-control "no-cache, no-store, must-revalidate"
+          echo "Uploaded publisher.sh to $DEST"
