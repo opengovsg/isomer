@@ -45,6 +45,33 @@ export const resourceHandlers = {
       )
     },
   },
+  getFolderChildrenOf: {
+    // Ids match `getBatchAncestryWithSelf.foldersOnly()` so the resource
+    // picker's ancestry cache resolves these items by id.
+    default: () => {
+      return trpcMsw.resource.getFolderChildrenOf.query(() => {
+        return {
+          items: [
+            {
+              id: "1",
+              title: "Folder 1",
+              permalink: "folder-1",
+              type: "Folder",
+              parentId: null,
+            },
+            {
+              id: "2",
+              title: "Folder 2",
+              permalink: "folder-2",
+              type: "Folder",
+              parentId: null,
+            },
+          ],
+          nextOffset: null,
+        }
+      })
+    },
+  },
   getRolesFor: {
     admin: () => {
       return trpcMsw.resource.getRolesFor.query(() => {
@@ -115,38 +142,36 @@ export const resourceHandlers = {
     },
   },
   getBatchAncestryWithSelf: {
+    // Resolves each requested id back to its underlying DEFAULT_PAGE_ITEMS
+    // entry (getChildrenOf.default() encodes ids as `${parentId}-${title}-${itemId}`)
+    // so the picker shows the item actually being browsed, not an unrelated
+    // fixed response.
     default: () => {
-      return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
-        return [
-          [
-            {
-              parentId: null,
-              id: "1",
-              title: "Collection 1",
-              permalink: "collection-1",
-              type: "Collection",
-            },
-          ],
-          [
-            {
-              parentId: null,
-              id: "2",
-              title: "Folder 1",
-              permalink: "folder-1",
-              type: "Folder",
-            },
-          ],
-          [
-            {
-              parentId: null,
-              id: "3",
-              title: "Page 1",
-              permalink: "page-1",
-              type: "Page",
-            },
-          ],
-        ]
-      })
+      return trpcMsw.resource.getBatchAncestryWithSelf.query(
+        ({ input: { resourceIds } }) => {
+          return resourceIds.flatMap((resourceId) => {
+            const item = DEFAULT_PAGE_ITEMS.find((item) =>
+              resourceId.endsWith(`-${item.title}-${item.id}`),
+            )
+            if (!item) return []
+            return [
+              [
+                {
+                  id: resourceId,
+                  title: item.title,
+                  permalink: item.permalink,
+                  type: item.type as
+                    | "Page"
+                    | "Folder"
+                    | "Collection"
+                    | "CollectionPage",
+                  parentId: item.parentId,
+                },
+              ],
+            ]
+          })
+        },
+      )
     },
     foldersOnly: () => {
       return trpcMsw.resource.getBatchAncestryWithSelf.query(() => {
