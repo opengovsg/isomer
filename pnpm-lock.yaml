@@ -225,7 +225,7 @@ catalogs:
       specifier: ^3.20.0
       version: 3.21.0
     jose:
-      specifier: ^6.2.4
+      specifier: ^6.2.5
       version: 6.2.8
     jotai:
       specifier: ^2.20.2
