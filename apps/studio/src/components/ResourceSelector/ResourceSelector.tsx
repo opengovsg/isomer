@@ -105,7 +105,7 @@ const SuspensableResourceSelector = ({
 
   const {
     isResourceIdHighlighted,
-    isResourceItemDisabled,
+    getResourceItemDisabledReason,
     hasParentInStack,
     handleClickBackButton,
     handleClickResourceItem,
@@ -153,7 +153,7 @@ const SuspensableResourceSelector = ({
         <SuspendableContent
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
           isResourceIdHighlighted={isResourceIdHighlighted}
-          isResourceItemDisabled={isResourceItemDisabled}
+          getResourceItemDisabledReason={getResourceItemDisabledReason}
           hasAdditionalLeftPadding={hasAdditionalLeftPadding}
           handleClickResourceItem={handleClickResourceItem}
           isSearchQueryEmpty={isSearchQueryEmpty}
@@ -166,7 +166,7 @@ const SuspensableResourceSelector = ({
   }, [
     resourceItemsWithAncestryStack,
     isResourceIdHighlighted,
-    isResourceItemDisabled,
+    getResourceItemDisabledReason,
     hasAdditionalLeftPadding,
     handleClickResourceItem,
     isSearchQueryEmpty,
