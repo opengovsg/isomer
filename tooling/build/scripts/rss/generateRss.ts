@@ -21,7 +21,7 @@ const RFC_822_FORMAT = "EEE, dd MMM yyyy HH:mm:ss xx"
 
 // Cap emitted items so a large collection never produces an unbounded feed; the
 // full archive stays browsable on the collection page.
-export const MAX_FEED_ITEMS = 50
+export const MAX_FEED_ITEMS = 200
 
 type CollectionFeedItem = ReturnType<typeof getCollectionItems>[number]
 type FeedTagCategories = Parameters<
