@@ -19,8 +19,6 @@ import { Controller, useWatch } from "react-hook-form"
 import { TimeSelect } from "~/components/Select/TimeSelect"
 import { MAX_FILE_SIZE_BYTES } from "~/lib/fileUpload"
 
-import type { GazettesCategory } from "../../types"
-import { GAZETTE_CATEGORIES } from "../../constants"
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 import { toFileId } from "../../utils/toFileId"
 
@@ -31,18 +29,16 @@ interface GazetteFormFieldsProps {
   control: Control<GazetteFormData>
   errors: FieldErrors<GazetteFormData>
   setValue: UseFormSetValue<GazetteFormData>
-  // Display-only metadata for an already-uploaded file. Used by the modify
-  // modal so the Attachment renders "already attached" without us having to
-  // re-download the actual PDF.
+  // Display-only metadata for an uploaded file. The modify modal uses this so
+  // Attachment can show the existing PDF without downloading it again.
   initialFileName?: string
   initialFileSize?: number
   onFileChange?: (file: File | undefined) => void
 }
 
-// Build a synthetic File with the right name + size for display purposes.
-// `defineProperty` is used instead of a `Proxy` because it mutates the real
-// File rather than wrapping it, so any built-in method (e.g. `.slice()`) that
-// reads `this.size` still resolves correctly without proxy method-rebinding.
+// Build a synthetic File with the right name and size for display.
+// `defineProperty` updates the real File instance, so built-in methods like
+// `.slice()` still read `this.size` correctly.
 const buildPlaceholderFile = (name: string, size?: number): File => {
   const file = new File([], name, { type: "application/pdf" })
   if (size !== undefined) {
@@ -65,8 +61,14 @@ export const GazetteFormFields = ({
       ? buildPlaceholderFile(initialFileName, initialFileSize)
       : undefined,
   )
-  const { getSubcategoriesForCategory } = useGazetteSubcategoriesContext()
+  const { categories, categoryMap, getSubcategoriesForCategory } =
+    useGazetteSubcategoriesContext()
   const category = useWatch({ control, name: "category" })
+  // Do not fall back to the raw id here. An unresolved id is not a label, and
+  // passing it through would leave the Subcategory dropdown empty with no clue
+  // why. Show the problem instead.
+  const categoryLabel = categoryMap[category]
+  const isCategoryUnresolved = !!category && !categoryLabel
 
   return (
     <VStack alignItems="flex-start" spacing="0.75rem">
@@ -80,7 +82,10 @@ export const GazetteFormFields = ({
         )}
       </FormControl>
 
-      <FormControl isRequired isInvalid={!!errors.category}>
+      <FormControl
+        isRequired
+        isInvalid={!!errors.category || isCategoryUnresolved}
+      >
         <FormLabel color="base.content.strong" mb="0.5rem">
           Category
         </FormLabel>
@@ -95,13 +100,20 @@ export const GazetteFormFields = ({
                 setValue("subcategory", "", { shouldValidate: true })
               }}
               name="category"
-              items={GAZETTE_CATEGORIES}
+              items={categories}
               isClearable={false}
             />
           )}
         />
-        {errors.category?.message && (
+        {errors.category?.message ? (
           <FormErrorMessage>{errors.category.message}</FormErrorMessage>
+        ) : (
+          isCategoryUnresolved && (
+            <FormErrorMessage>
+              This gazette's category is not one of this collection's options.
+              Pick a category to continue.
+            </FormErrorMessage>
+          )
         )}
       </FormControl>
 
@@ -116,7 +128,7 @@ export const GazetteFormFields = ({
             <SingleSelect
               value={value}
               name="subcategory"
-              items={getSubcategoriesForCategory(category as GazettesCategory)}
+              items={getSubcategoriesForCategory(categoryLabel)}
               isClearable={false}
               onChange={onChange}
             />

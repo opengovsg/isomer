@@ -4,6 +4,10 @@ import filenamify from "filenamify"
 import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazette"
 import { env } from "~/env.mjs"
 import {
+  GAZETTE_CATEGORY_LABEL,
+  GazetteCategories,
+} from "~/features/gazettes/constants"
+import {
   sendGazetteDeletionEmail,
   sendScheduledPageEmail,
 } from "~/features/mail/service"
@@ -22,7 +26,10 @@ import { protectedProcedure, router } from "~/server/trpc"
 
 import { validateUserPermissionsForAsset } from "../asset/asset.service"
 import { logResourceEvent } from "../audit/audit.service"
-import { createCollectionLinkJson } from "../collection/collection.service"
+import {
+  createCollectionLinkJson,
+  getCollectionTagsForResource,
+} from "../collection/collection.service"
 import { AuditLogEvent, db, jsonb, ResourceType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
 import { bulkValidateUserPermissionsForResources } from "../permissions/permissions.service"
@@ -33,6 +40,8 @@ import {
   updatePageById,
 } from "../resource/resource.service"
 import {
+  assertGazetteCategoryInput,
+  assertGazetteSubcategoryInput,
   findCollectionLinkWithFilename,
   hasDuplicateNotificationNumber,
   assertGazetteAccess,
@@ -43,37 +52,75 @@ import {
   markFileAsDeleted,
   removeGazetteFromAlgolia,
   removeGazetteFromSearchIndex,
+  taggedContains,
 } from "./gazette.service"
 
 interface GazetteBlobInputs {
   ref: string
-  category: string
+  categoryId: string
   date: string
   description?: string
-  tagged: string[]
+  subcategoryId: string
 }
 
-// Blob.content adheres to the PrismaJson.BlobJsonContent contract shared with
-// the components package. We deliberately do NOT add gazette-only fields like
-// `fileSize` here — the file size is read from S3 at list time instead, since
-// the page is bounded to ~25 rows and S3 HEAD scales to thousands of QPS.
+const loadCollectionTagCategoriesForCategoryInput = async ({
+  siteId,
+  collectionId,
+  categoryId,
+  categoryLabel,
+  subcategoryId,
+}: {
+  siteId: number
+  collectionId: number
+  categoryId: string
+  categoryLabel: string
+  subcategoryId: string
+}) => {
+  const tagCategories = await getCollectionTagsForResource({
+    collectionId,
+    siteId,
+  })
+  assertGazetteCategoryInput({ categoryId, categoryLabel, tagCategories })
+  assertGazetteSubcategoryInput({
+    subcategoryId,
+    categoryId,
+    categoryLabel,
+    tagCategories,
+  })
+  return tagCategories
+}
+
+// Blob.content follows the shared PrismaJson.BlobJsonContent contract. Keep
+// gazette-only fields like `fileSize` out of it and read size from S3 at list
+// time instead. The page is capped at about 25 rows, so the extra HEADs are fine.
+//
+// `categoryId` and `subcategoryId` are written as one `tagged` array. There is
+// no standalone `category` key in storage. Both ids are validated against the
+// collection taxonomy before we get here, so `tagged` always contains one
+// Category option and one Sub-category option.
+//
+// Readers must resolve these by option id membership, not by index.
+//
+// Strip `category` from the base page because gazettes no longer persist it.
+// The shared schema still requires that key today, and
+// `createCollectionLinkJson` still emits it.
 const buildGazetteBlobContent = ({
   ref,
-  category,
+  categoryId,
   date,
   description,
-  tagged,
+  subcategoryId,
 }: GazetteBlobInputs) => {
   const base = createCollectionLinkJson({ type: ResourceType.CollectionLink })
+  const { category: _category, ...basePage } = base.page
   return {
     ...base,
     page: {
-      ...base.page,
+      ...basePage,
       ref,
-      category,
       date,
       description,
-      tagged,
+      tagged: [categoryId, subcategoryId],
     },
   }
 }
@@ -88,6 +135,26 @@ export const gazetteRouter = router({
         action: "read",
         userId: ctx.user.id,
       })
+
+      const collectionTagCategories = await getCollectionTagsForResource({
+        collectionId,
+        siteId,
+      })
+      const categoryTagCategory = collectionTagCategories.find(
+        (tagCategory) => tagCategory.label === GAZETTE_CATEGORY_LABEL,
+      )
+      const categoryIdByLabel = Object.fromEntries(
+        (categoryTagCategory?.options ?? []).map((option) => [
+          option.label,
+          option.id,
+        ]),
+      )
+      const governmentGazetteId =
+        categoryIdByLabel[GazetteCategories.GovernmentGazettes]
+      const legislativeSupplementsId =
+        categoryIdByLabel[GazetteCategories.LegislativeSupplements]
+      const otherSupplementsId =
+        categoryIdByLabel[GazetteCategories.OtherSupplements]
 
       const results = await db
         .selectFrom("Resource")
@@ -116,16 +183,17 @@ export const gazetteRouter = router({
             END`,
           "asc",
         )
-        // 2. Category priority from blob content
+        // 2. Category priority from blob content. Match by id containment in
+        // `tagged` because category is no longer a plain string field.
         .orderBy((eb) => {
-          const categoryExpr = sql<string>`COALESCE("DraftBlob"."content", "PublishedBlob"."content")->'page'->>'category'`
+          const content = sql`COALESCE("DraftBlob"."content", "PublishedBlob"."content")`
           return eb
             .case()
-            .when(categoryExpr, "=", "Government Gazette")
+            .when(taggedContains(content, governmentGazetteId))
             .then(1)
-            .when(categoryExpr, "=", "Legislative Supplements")
+            .when(taggedContains(content, legislativeSupplementsId))
             .then(2)
-            .when(categoryExpr, "=", "Other Supplements")
+            .when(taggedContains(content, otherSupplementsId))
             .then(3)
             .else(4)
             .end()
@@ -139,7 +207,7 @@ export const gazetteRouter = router({
         .orderBy("Version.publishedAt", (ob) => ob.desc())
         // 5. Scheuled date descending
         .orderBy("Resource.scheduledAt", (ob) => ob.desc())
-        // 6. Toppan file ID descending — the last path segment of page.ref.
+        // 6. Toppan file ID descending. This is the last path segment of page.ref.
         //    e.g. "/2026/Government Gazette/Advertisements/26adv6175b.pdf"
         //    -> "26adv6175b.pdf". Strip everything up to the final slash so we
         //    sort on the file ID, not the full path.
@@ -162,11 +230,9 @@ export const gazetteRouter = router({
         ])
         .execute()
 
-      // Fetch each gazette's file size from S3 in parallel. The page is
-      // bounded to ~25 rows per request and S3 HEAD scales to thousands of
-      // QPS, so the N HEADs are fine — keeping the size out of the blob
-      // preserves the PrismaJson.BlobJsonContent contract with the
-      // components package.
+      // Fetch each gazette's file size from S3 in parallel. The page size is
+      // small enough that the extra HEADs are fine, and this keeps file size
+      // out of the shared BlobJsonContent shape.
       return Promise.all(
         results.map(async (result) => {
           const ref = (result.content as { page?: { ref?: string } } | null)
@@ -207,10 +273,11 @@ export const gazetteRouter = router({
           title,
           permalink,
           ref,
-          category,
+          categoryId,
+          categoryLabel,
           date,
           description,
-          tagged,
+          subcategoryId,
           scheduledAt,
         },
       }) => {
@@ -228,12 +295,22 @@ export const gazetteRouter = router({
           .selectAll()
           .executeTakeFirstOrThrow(() => new TRPCError({ code: "BAD_REQUEST" }))
 
+        const tagCategories = await loadCollectionTagCategoriesForCategoryInput(
+          {
+            siteId,
+            collectionId,
+            categoryId,
+            categoryLabel,
+            subcategoryId,
+          },
+        )
+
         const blobContent = buildGazetteBlobContent({
           ref,
-          category,
+          categoryId,
           date,
           description,
-          tagged,
+          subcategoryId,
         })
 
         const created = await db.transaction().execute(async (tx) => {
@@ -265,8 +342,9 @@ export const gazetteRouter = router({
               parentId: String(collectionId),
               notificationNumber: description,
               publishDate: date,
-              category,
-              subCategory: tagged[0] ?? "",
+              categoryId,
+              subcategoryId,
+              tagCategories,
             }))
           ) {
             throw new TRPCError({
@@ -382,10 +460,11 @@ export const gazetteRouter = router({
           title,
           newRef,
           desiredFileName,
-          category,
+          categoryId,
+          categoryLabel,
           date,
           description,
-          tagged,
+          subcategoryId,
           scheduledAt,
         },
       }) => {
@@ -419,6 +498,16 @@ export const gazetteRouter = router({
                 message: "Gazette not found",
               }),
           )
+
+        const tagCategories = await loadCollectionTagCategoriesForCategoryInput(
+          {
+            siteId,
+            collectionId: Number(existingResource.parentId),
+            categoryId,
+            categoryLabel,
+            subcategoryId,
+          },
+        )
 
         const existingBlob = await getBlobOfResource({
           db,
@@ -482,10 +571,10 @@ export const gazetteRouter = router({
 
         const newBlobContent = buildGazetteBlobContent({
           ref: finalRef,
-          category,
+          categoryId,
           date,
           description,
-          tagged,
+          subcategoryId,
         })
 
         const { resource: updatedResource, scheduledAtChanged } = await db
@@ -519,8 +608,9 @@ export const gazetteRouter = router({
                 parentId: existingResource.parentId,
                 notificationNumber: description,
                 publishDate: date,
-                category,
-                subCategory: tagged[0] ?? "",
+                categoryId,
+                subcategoryId,
+                tagCategories,
                 excludeId: String(gazetteId),
               }))
             ) {

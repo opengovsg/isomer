@@ -1,10 +1,15 @@
-import type { Kysely, Transaction } from "kysely"
+import type { Kysely, RawBuilder, Transaction } from "kysely"
 import { TRPCError } from "@trpc/server"
 import filenamify from "filenamify"
 import { PdfReader } from "pdfreader"
 import { TOPPAN_EMAIL_DOMAIN } from "~/constants/toppan"
 import { env } from "~/env.mjs"
-import { GazetteCategories } from "~/features/gazettes/constants"
+import {
+  GAZETTE_CATEGORY_LABEL,
+  GAZETTE_SUBCATEGORY_LABEL,
+  GazetteCategories,
+  getAllowedSubcategoryLabelsForCategory,
+} from "~/features/gazettes/constants"
 import { deleteObjectsFromSearchIndexByFilter } from "~/lib/algolia"
 import { createBaseLogger } from "~/lib/logger"
 import {
@@ -109,10 +114,8 @@ export const findCollectionLinkWithFilename = async ({
   return query.executeTakeFirst()
 }
 
-// NOTE: Identical to the one in assets.service.ts
-// just that we swap the bucket.
-// Not adding the prop because we want to keep it separate -
-// we want to isolate gazette stuff as much as possible
+// Same shape as the assets helper, but this uses the gazette bucket. Keep it
+// separate so gazette-specific behavior stays local to this module.
 export const getPresignedPutUrl = async ({
   key,
   fileSize,
@@ -192,11 +195,9 @@ export const copyFileWithNewName = async ({
   return newKey
 }
 
-// Taken as is from egazette codebase.
-// Instantiates a fresh PdfReader per call — the cron handler parses PDFs
-// concurrently via Promise.all and pdfreader is built on pdf2json whose
-// underlying state is not safe to share across overlapping parseBuffer
-// invocations.
+// Mirrors the egazette parser behavior. Create a fresh PdfReader per call
+// because the cron handler parses PDFs concurrently and pdfreader is not safe
+// to share across overlapping `parseBuffer` calls.
 export const parseFullTextFromPDF = async (pdfBuffer: Uint8Array) => {
   const pdfReader = new PdfReader({})
   const data: string[] = await new Promise((resolve, reject) => {
@@ -369,24 +370,17 @@ export const buildGazetteSearchRecords = ({
 }: BuildGazetteSearchRecordsParams): SearchRecord[] => {
   if (!parsedText) return []
 
-  // Split parsedText into chunks of up to 7 000 characters, ending on a
-  // whitespace boundary where possible. This keeps each Algolia record well
-  // below the ~10 KB record-size limit.
+  // Split `parsedText` into chunks of up to 7,000 characters, preferably on a
+  // whitespace boundary. This keeps each Algolia record under the size limit.
   //
-  // The regex matches up to 7 000 characters followed by whitespace OR
-  // end-of-string. The `g` flag advances through the string chunk by chunk.
-  // We use a while-loop (not matchAll/split) to mirror egazette's own
-  // chunking logic exactly.
+  // The regex matches up to 7,000 characters followed by whitespace or the end
+  // of the string. A while loop keeps the behavior aligned with egazette.
   //
-  // WHY end on whitespace: splitting mid-word fragments search tokens across
-  // two records and hurts recall; whitespace-aligned splits are semantically
-  // cleaner and egazette uses the same boundary.
+  // Breaking on whitespace avoids splitting search tokens across records.
   //
-  // NOTE: a contiguous run of non-whitespace characters longer than 7000 chars
-  // causes the regex to skip the leading portion of that run (it begins matching
-  // at the first position from which it can consume up to 7000 chars ending at
-  // the string boundary). Same behavior as egazette; gazette PDFs are
-  // whitespace-delimited prose, so this does not arise in practice.
+  // A single non-whitespace run longer than 7,000 characters would skip its
+  // leading portion. That matches egazette's current behavior, and gazette PDFs
+  // are plain prose so this is not expected in practice.
   const CHUNK_REGEX = /.{1,7000}(?:\s|$)/g
 
   const chunks: string[] = []
@@ -496,6 +490,159 @@ export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
   )
 }
 
+export interface GazetteTagCategoryOption {
+  id: string
+  label: string
+}
+
+export interface GazetteTagCategory {
+  label: string
+  options: GazetteTagCategoryOption[]
+}
+
+/**
+ * Builds a jsonb-containment predicate matching a resource whose
+ * `page.tagged` array contains the given option uuid. `content` is the
+ * COALESCE(DraftBlob.content, PublishedBlob.content) sql fragment shared by
+ * gazette queries — pass the same fragment used to build the rest of the
+ * query so the predicate composes into it. `id` may be `undefined` (e.g. an
+ * option that couldn't be resolved) — the predicate then harmlessly matches
+ * nothing rather than throwing.
+ */
+export const taggedContains = (
+  content: RawBuilder<unknown>,
+  id: string | undefined,
+): RawBuilder<boolean> =>
+  sql<boolean>`${content}->'page'->'tagged' @> ${JSON.stringify([id ?? null])}::jsonb`
+
+/**
+ * Resolves the human-readable category and subcategory labels for a gazette
+ * item's `tagged` uuids by matching each against the tagCategory whose
+ * `label` is `GAZETTE_CATEGORY_LABEL` / `GAZETTE_SUBCATEGORY_LABEL`.
+ * Matches by option-uuid membership, not by array position, since `tagged`
+ * holds one uuid per tagCategory in no particular order.
+ */
+export const resolveGazetteTagLabels = ({
+  tagged,
+  tagCategories,
+}: {
+  tagged: string[]
+  tagCategories: GazetteTagCategory[]
+}): { categoryLabel?: string; subcategoryLabel?: string } => {
+  const categoryTagCategory = tagCategories.find(
+    (tagCategory) => tagCategory.label === GAZETTE_CATEGORY_LABEL,
+  )
+  const subcategoryTagCategory = tagCategories.find(
+    (tagCategory) => tagCategory.label === GAZETTE_SUBCATEGORY_LABEL,
+  )
+
+  const categoryLabel = categoryTagCategory?.options.find((option) =>
+    tagged.includes(option.id),
+  )?.label
+  const subcategoryLabel = subcategoryTagCategory?.options.find((option) =>
+    tagged.includes(option.id),
+  )?.label
+
+  return { categoryLabel, subcategoryLabel }
+}
+
+const resolveGazetteOptionLabel = (
+  optionId: string,
+  tagCategories: GazetteTagCategory[],
+  tagCategoryLabel: string,
+): string | undefined => {
+  const tagCategory = tagCategories.find(
+    (candidate) => candidate.label === tagCategoryLabel,
+  )
+  return tagCategory?.options.find((option) => option.id === optionId)?.label
+}
+
+export const resolveGazetteCategoryLabel = (
+  categoryId: string,
+  tagCategories: GazetteTagCategory[],
+): string | undefined =>
+  resolveGazetteOptionLabel(categoryId, tagCategories, GAZETTE_CATEGORY_LABEL)
+
+export const resolveGazetteSubcategoryLabel = (
+  subcategoryId: string,
+  tagCategories: GazetteTagCategory[],
+): string | undefined =>
+  resolveGazetteOptionLabel(
+    subcategoryId,
+    tagCategories,
+    GAZETTE_SUBCATEGORY_LABEL,
+  )
+
+export const assertGazetteCategoryInput = ({
+  categoryId,
+  categoryLabel,
+  tagCategories,
+}: {
+  categoryId: string
+  categoryLabel: string
+  tagCategories: GazetteTagCategory[]
+}): void => {
+  const resolvedLabel = resolveGazetteCategoryLabel(categoryId, tagCategories)
+  if (!resolvedLabel) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Category is not a valid option for this collection",
+    })
+  }
+  if (resolvedLabel !== categoryLabel) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Category label does not match the selected category",
+    })
+  }
+}
+
+// Unlike category, the client only sends a subcategory id. Check that it is a
+// real Sub-category option and that its label is valid for the chosen
+// categoryLabel. The form filters by the same mapping, but direct callers still
+// need server-side protection.
+export const assertGazetteSubcategoryInput = ({
+  subcategoryId,
+  categoryId,
+  categoryLabel,
+  tagCategories,
+}: {
+  subcategoryId: string
+  categoryId: string
+  categoryLabel: string
+  tagCategories: GazetteTagCategory[]
+}): void => {
+  // Keep the `page.tagged` invariant intact: one category id and one
+  // subcategory id. Equal ids would mean one option appears in both
+  // tagCategories, which is malformed taxonomy data and would confuse
+  // `resolveGazetteTagLabels`.
+  if (subcategoryId === categoryId) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Category and subcategory must be different tag options",
+    })
+  }
+
+  const resolvedLabel = resolveGazetteSubcategoryLabel(
+    subcategoryId,
+    tagCategories,
+  )
+  if (!resolvedLabel) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Subcategory is not a valid option for this collection",
+    })
+  }
+
+  const allowedLabels = getAllowedSubcategoryLabelsForCategory(categoryLabel)
+  if (!allowedLabels.includes(resolvedLabel)) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Subcategory is not valid for the selected category",
+    })
+  }
+}
+
 /**
  * Detects whether another gazette in the same collection already uses the
  * given notification number. A gazette is a duplicate when it shares the
@@ -504,7 +651,8 @@ export const pushDocumentsForIngestion = async (documents: PushDocument[]) => {
  * numbers are unique within the category, not the subcategory.
  *
  * Gazette metadata lives in the resource's draft (or published) blob:
- * `content.page.{description,category,date,tagged}`. `date` is stored as a
+ * `content.page.{description,date,tagged}`, where `tagged` holds one uuid
+ * per tagCategory (category + subcategory). `date` is stored as a
  * "dd/MM/yyyy" string, so the year is its third "/"-delimited segment.
  * Deleted gazettes are hard-deleted, so no soft-delete filter is needed.
  */
@@ -514,8 +662,9 @@ export const hasDuplicateNotificationNumber = async ({
   parentId,
   notificationNumber,
   publishDate,
-  category,
-  subCategory,
+  categoryId,
+  subcategoryId,
+  tagCategories,
   excludeId,
 }: {
   trx?: Kysely<DB> | Transaction<DB>
@@ -523,11 +672,17 @@ export const hasDuplicateNotificationNumber = async ({
   parentId: string | null
   notificationNumber: string
   publishDate: string
-  category: string
-  subCategory: string
+  categoryId: string
+  subcategoryId: string
+  tagCategories: GazetteTagCategory[]
   excludeId?: string
 }): Promise<boolean> => {
-  const isGovernmentGazette = category === GazetteCategories.GovernmentGazettes
+  const resolvedCategoryLabel = resolveGazetteCategoryLabel(
+    categoryId,
+    tagCategories,
+  )
+  const isGovernmentGazette =
+    resolvedCategoryLabel === GazetteCategories.GovernmentGazettes
   // publishDate is a "dd/MM/yyyy" string — the year is the last segment.
   const publishYear = publishDate.split("/").at(-1)
 
@@ -544,7 +699,7 @@ export const hasDuplicateNotificationNumber = async ({
     .where(
       sql<boolean>`${content}->'page'->>'description' = ${notificationNumber}`,
     )
-    .where(sql<boolean>`${content}->'page'->>'category' = ${category}`)
+    .where(taggedContains(content, categoryId))
     .where(
       sql<boolean>`split_part(${content}->'page'->>'date', '/', 3) = ${publishYear}`,
     )
@@ -552,9 +707,7 @@ export const hasDuplicateNotificationNumber = async ({
 
   // Government gazettes are unique within category, not subcategory.
   if (!isGovernmentGazette) {
-    query = query.where(
-      sql<boolean>`${content}->'page'->'tagged'->>0 = ${subCategory}`,
-    )
+    query = query.where(taggedContains(content, subcategoryId))
   }
 
   if (excludeId) {

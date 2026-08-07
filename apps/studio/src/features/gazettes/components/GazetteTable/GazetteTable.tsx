@@ -15,6 +15,7 @@ import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 
 import type { GazetteTableData } from "./types"
+import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 import { ModifyGazetteModal } from "../ModifyGazetteModal/ModifyGazetteModal"
 import { ViewGazetteModal } from "../ViewGazetteModal"
 import { CategoryCell } from "./CategoryCell"
@@ -89,6 +90,7 @@ export const GazetteTable = ({
   collectionId: number
 }): JSX.Element => {
   const columns = useMemo(() => getColumns(siteId), [siteId])
+  const { categoryMap, subcategoryMap } = useGazetteSubcategoriesContext()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const {
     isOpen: isViewOpen,
@@ -127,18 +129,24 @@ export const GazetteTable = ({
     data:
       resources?.map((resource) => {
         const page = resource.content?.page as {
-          category?: string
           description?: string
           ref?: string
           tagged?: string[]
         }
+        const tagged = page?.tagged ?? []
+        // Resolved by option-uuid membership, never by index: `tagged` holds
+        // one uuid per tagCategory in no guaranteed order, so `tagged[0]` is
+        // the category for post-cutover rows and the subcategory for legacy
+        // ones. `null` when neither matches — see GazetteTableData.
+        const categoryId = tagged.find((id) => categoryMap[id]) ?? null
+        const subcategoryId = tagged.find((id) => subcategoryMap[id]) ?? null
 
         return {
           id: resource.id,
           title: resource.title,
           notificationNo: page?.description ?? null,
-          category: page?.category ?? "",
-          subcategory: page?.tagged?.[0] ?? "",
+          category: categoryId,
+          subcategory: subcategoryId,
           status: resource.state === "Published" ? "published" : "scheduled",
           fileId: page?.ref?.split("/").pop() ?? "",
           fileKey: page?.ref ?? null,

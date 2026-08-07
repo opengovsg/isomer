@@ -5,19 +5,22 @@ import MockDate from "mockdate"
 import { resetTables } from "tests/integration/helpers/db"
 import { applyAuthedSession } from "tests/integration/helpers/iron-session"
 import { setupPageResource, setupUser } from "tests/integration/helpers/seed"
+import {
+  GAZETTE_CATEGORY_LABEL,
+  GAZETTE_SUBCATEGORY_LABEL,
+} from "~/features/gazettes/constants"
 import * as s3Lib from "~/lib/s3"
 import * as gazetteService from "~/server/modules/gazette/gazette.service"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 import { db } from "~server/db"
 
-// algolia.ts constructs the Algolia client at module load via
-// algoliasearch(env.ALGOLIA_APP_ID, env.ALGOLIA_API_KEY). Those env vars are
-// not set in the test environment, so the import throws "appId is missing"
-// before any test runs. Mock the whole module to prevent this.
+// algolia.ts builds the Algolia client at module load. In tests the required
+// env vars are missing, so import-time setup throws "appId is missing". Mock
+// the module before anything imports it.
 vi.mock("~/lib/algolia")
 
-// Mock createGrowthBookContext so tests can control the flag without hitting
-// the remote GrowthBook CDN.
+// Mock createGrowthBookContext so the tests can control the flag without
+// calling GrowthBook.
 vi.mock("~/server/context", async (importOriginal) => {
   const actual = await importOriginal<typeof serverContextType>()
   return {
@@ -33,8 +36,8 @@ import { schedulePushDocumentJobHandler } from "../schedulePushDocumentJob"
 
 const FIXED_NOW = new Date("2024-01-01T00:00:00.000Z")
 
-// fetch's first argument can be string | URL | Request; URL has a
-// well-defined toString, but Request needs a property pull.
+// fetch accepts string, URL, or Request. URL has `toString()`, while Request
+// needs `input.url`.
 const urlToString = (input: Parameters<typeof fetch>[0]): string =>
   typeof input === "string"
     ? input
@@ -42,21 +45,19 @@ const urlToString = (input: Parameters<typeof fetch>[0]): string =>
       ? input.toString()
       : input.url
 
-// Replace the document blob's content with a shape the worker accepts.
-// The worker's Zod parse inspects `page.ref`, `page.category`, and
-// `page.tagged`, so we cast around the broader BlobJsonContent typing for
-// the sake of the fixture.
+// Replace the document blob's content with the shape the worker expects.
+// The fixture only needs `page.ref` and `page.tagged`, so we cast around the
+// wider BlobJsonContent type.
 const setBlobContentForPushDocument = async (
   blobId: bigint | string,
   ref: string,
-  category: string,
   tagged: string[] = [],
   description?: string,
 ) => {
   await db
     .updateTable("Blob")
     .set({
-      content: { page: { ref, category, tagged, description } } as never,
+      content: { page: { ref, tagged, description } } as never,
     })
     .where("id", "=", String(blobId))
     .execute()
@@ -81,7 +82,7 @@ const seedDocumentReadyForIngestion = async ({
     permalink: parentTitle.toLowerCase().replace(/\s+/g, "-"),
   })
 
-  // IndexPage resource — the handler queries for this to derive subcategory.
+  // The handler reads the IndexPage resource to resolve the subcategory.
   const { page: indexPage, blob: indexBlob } = await setupPageResource({
     resourceType: ResourceType.IndexPage,
     siteId: site.id,
@@ -90,7 +91,8 @@ const seedDocumentReadyForIngestion = async ({
     permalink: "index",
   })
 
-  // Set the IndexPage blob content to the expected shape.
+  // Give the IndexPage blob the expected shape: one tagCategory for category
+  // and one for subcategory, each with the label the resolver looks for.
   await db
     .updateTable("Blob")
     .set({
@@ -99,6 +101,11 @@ const seedDocumentReadyForIngestion = async ({
         page: {
           tagCategories: [
             {
+              label: GAZETTE_CATEGORY_LABEL,
+              options: [{ id: "cat-1", label: category }],
+            },
+            {
+              label: GAZETTE_SUBCATEGORY_LABEL,
               options: [{ id: "tag-1", label: "Public" }],
             },
           ],
@@ -108,9 +115,7 @@ const seedDocumentReadyForIngestion = async ({
     .where("id", "=", String(indexBlob.id))
     .execute()
 
-  // A published Version for the IndexPage. Publishing sets
-  // publishedVersionId on the Resource (see version.service.ts), and the
-  // handler resolves the index page blob through it.
+  // The handler reads the IndexPage blob through its published Version.
   const indexVersion = await db
     .insertInto("Version")
     .values({
@@ -139,13 +144,11 @@ const seedDocumentReadyForIngestion = async ({
   await setBlobContentForPushDocument(
     blob.id,
     ref,
-    category,
-    ["tag-1"],
+    ["cat-1", "tag-1"],
     description,
   )
 
-  // A published Version pointing at the same blob — the dispatcher reads
-  // the latest Version per resource.
+  // The dispatcher reads the latest published Version per resource.
   await db
     .insertInto("Version")
     .values({
@@ -159,7 +162,7 @@ const seedDocumentReadyForIngestion = async ({
   return { resourceId: child.id, parentTitle, ref }
 }
 
-/** Build a mock GrowthBook instance where isOn returns the given value. */
+/** Build a mock GrowthBook instance with a fixed `isOn` result. */
 const makeMockGb = (isOn: boolean) => ({
   isOn: vi.fn().mockReturnValue(isOn),
   destroy: vi.fn(),
@@ -170,11 +173,8 @@ describe("schedulePushDocumentJobHandler", async () => {
   let user: User
 
   beforeEach(async () => {
-    // clearAllMocks resets call counts / return-value overrides on the
-    // module-level vi.mock("~/lib/algolia") auto-mock (which restoreAllMocks
-    // would destroy, breaking vi.mocked(algoliaLib.*) calls below).
-    // restoreAllMocks then cleans up the vi.spyOn stubs re-registered each
-    // tick so they don't bleed across tests.
+    // `clearAllMocks` resets the module-level algolia mock without removing it.
+    // `restoreAllMocks` then cleans up the per-test spies.
     vi.clearAllMocks()
     vi.restoreAllMocks()
     MockDate.set(FIXED_NOW)
@@ -194,23 +194,22 @@ describe("schedulePushDocumentJobHandler", async () => {
       isDeleted: false,
     })
 
-    // Stub heavy I/O so unit-style runs don't touch S3 or hit the
-    // SearchSG endpoint.
+    // Stub the heavy I/O so the test does not touch S3 or SearchSG.
     vi.spyOn(s3Lib, "getBlob").mockResolvedValue(new Uint8Array([1, 2, 3]))
     vi.spyOn(s3Lib, "setAssetAsPublished").mockResolvedValue(undefined)
     vi.spyOn(gazetteService, "parseFullTextFromPDF").mockResolvedValue(
       "parsed pdf text",
     )
 
-    // Default: flag OFF → Algolia path.
+    // Default to the Algolia path.
     vi.mocked(serverContext.createGrowthBookContext).mockResolvedValue(
       makeMockGb(false) as never,
     )
 
-    // Mock saveObjectsToSearchIndex (auto-mocked by vi.mock("~/lib/algolia")).
+    // `saveObjectsToSearchIndex` comes from the auto-mocked algolia module.
     vi.mocked(algoliaLib.saveObjectsToSearchIndex).mockResolvedValue(undefined)
 
-    // Two sequential fetches: auth token, then ingest POST.
+    // The worker fetches an auth token first, then posts the ingest request.
     vi.spyOn(global, "fetch").mockImplementation(
       // eslint-disable-next-line @typescript-eslint/require-await
       async (input: Parameters<typeof fetch>[0]) => {
@@ -522,12 +521,10 @@ describe("schedulePushDocumentJobHandler", async () => {
         .values({ content: {} as never })
         .returning("id")
         .executeTakeFirstOrThrow()
-      await setBlobContentForPushDocument(
-        draftBlob.id,
-        draftRef,
-        "Government Gazettes",
-        ["tag-1"],
-      )
+      await setBlobContentForPushDocument(draftBlob.id, draftRef, [
+        "cat-1",
+        "tag-1",
+      ])
       await db
         .updateTable("Resource")
         .set({ publishedVersionId: version.id, draftBlobId: draftBlob.id })
@@ -702,6 +699,59 @@ describe("schedulePushDocumentJobHandler", async () => {
       // S3 + PDF parser were each invoked exactly once.
       expect(s3Lib.getBlob).toHaveBeenCalledTimes(1)
       expect(gazetteService.parseFullTextFromPDF).toHaveBeenCalledTimes(1)
+    })
+
+    // Strict cutover guard: the S3 ref here is deliberately WELL-FORMED
+    // (`/{year}/{category}/{subcategory}/{file}.pdf`), so the removed
+    // resolveGazetteLabelsFromRef fallback would have happily derived
+    // "Government Gazette" / "Advertisements" from it and ingested the row with
+    // labels that were never in `page.tagged`. Tagged uuids are now the only
+    // source of truth, so an unresolvable row must be skipped regardless of how
+    // parseable its object key looks.
+    it("skips rows whose tagged uuids do not resolve, even when the S3 ref would have yielded labels", async () => {
+      // Arrange
+      const wellFormedRef = "/2026/Government Gazette/Advertisements/notice.pdf"
+      const { resourceId } = await seedDocumentReadyForIngestion({
+        parentTitle: "Notices",
+        ref: wellFormedRef,
+        category: "Government Gazettes",
+        publishedBy: user.id,
+      })
+
+      const { draftBlobId } = await db
+        .selectFrom("Resource")
+        .where("id", "=", String(resourceId))
+        .select("draftBlobId")
+        .executeTakeFirstOrThrow()
+
+      await setBlobContentForPushDocument(
+        draftBlobId!,
+        wellFormedRef,
+        ["missing-cat", "missing-sub"],
+        "1234",
+      )
+
+      await db
+        .insertInto("PushDocumentJob")
+        .values({
+          resourceId: String(resourceId),
+          scheduledAt: FIXED_NOW,
+          scheduledBy: user.id,
+        })
+        .execute()
+
+      // Act
+      await schedulePushDocumentJobHandler()
+
+      // Assert — no documents were pushed to SearchSG.
+      expect(global.fetch).not.toHaveBeenCalled()
+
+      // Row still cleaned up.
+      const remaining = await db
+        .selectFrom("PushDocumentJob")
+        .selectAll()
+        .execute()
+      expect(remaining).toHaveLength(0)
     })
 
     it("skips rows scheduled for the future", async () => {

@@ -1,20 +1,28 @@
-// Single source of truth for gazette category values. The SingleSelect items
-// (`GAZETTE_CATEGORIES`) and the `GazettesCategory` union (see ./types) are both
-// derived from this, so a category only ever needs to be declared once here.
+// Single source of truth for gazette category labels. These labels must match
+// the collection's "Category" tagCategory options, and
+// `getAllowedSubcategoryLabelsForCategory` keys off them.
+//
+// The form field itself is driven by collection taxonomy ids resolved through
+// `GazetteSubcategoriesContext`. A gazette's category is stored in
+// `page.tagged` as an option id.
 export const GazetteCategories = {
   GovernmentGazettes: "Government Gazette",
   LegislativeSupplements: "Legislative Supplements",
   OtherSupplements: "Other Supplements",
 } as const
 
-// SingleSelect items — label and value are identical for gazette categories.
-export const GAZETTE_CATEGORIES: { label: string; value: string }[] =
-  Object.values(GazetteCategories).map((category) => ({
-    label: category,
-    value: category,
-  }))
+export const GAZETTE_CATEGORY_LABEL = "Category"
 
 export const GAZETTE_SUBCATEGORY_LABEL = "Sub-category"
+
+/**
+ * Shown when `page.tagged` contains no id matching the collection's Category
+ * or Sub-category options.
+ *
+ * We show this instead of a blank value or raw uuid so old rows still stand
+ * out and can be backfilled.
+ */
+export const GAZETTE_UNRESOLVED_TAG_LABEL = "Unknown"
 
 export const governmentGazetteSubcategories = {
   NOTICES_UNDER_OTHER_ACTS: "Notices under other Acts",
@@ -62,3 +70,23 @@ export const otherSupplementsSubcategories = {
 export const otherSupplementsSubcategoriesKeys = Object.values(
   otherSupplementsSubcategories,
 )
+
+/**
+ * Allowed subcategory labels for a top-level gazette category.
+ * Shared by the Studio form filter and the server validation so the pairing
+ * rules live in one place.
+ */
+export const getAllowedSubcategoryLabelsForCategory = (
+  category: string,
+): readonly string[] => {
+  switch (category) {
+    case GazetteCategories.GovernmentGazettes:
+      return governmentGazetteSubcategoriesKeys
+    case GazetteCategories.LegislativeSupplements:
+      return legislativeSupplementsSubcategoriesKeys
+    case GazetteCategories.OtherSupplements:
+      return otherSupplementsSubcategoriesKeys
+    default:
+      return []
+  }
+}

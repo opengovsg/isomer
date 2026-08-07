@@ -16,12 +16,14 @@ import { format, parse } from "date-fns"
 import posthog from "posthog-js"
 import { useState } from "react"
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
+import { GazetteCategories } from "~/features/gazettes/constants"
 import { useUploadGazetteMutation } from "~/hooks/useUploadGazetteMutation"
 import { useZodForm } from "~/lib/form"
 import { createGazetteSchema } from "~/schemas/gazette"
 import { trpc } from "~/utils/trpc"
 
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
+import { useResolveGazetteTagLabels } from "../../hooks/useResolveGazetteTagLabels"
 import { GazetteFormFields } from "../GazetteModal"
 
 type CreateGazetteModalProps = Pick<
@@ -58,7 +60,8 @@ const CreateGazetteModalContent = ({
 }: Pick<CreateGazetteModalProps, "onClose" | "siteId" | "collectionId">) => {
   const [file, setFile] = useState<File | undefined>()
   const toast = useToast()
-  const { subcategoryMap } = useGazetteSubcategoriesContext()
+  const { categories } = useGazetteSubcategoriesContext()
+  const resolveTagLabels = useResolveGazetteTagLabels()
 
   const {
     register,
@@ -69,7 +72,10 @@ const CreateGazetteModalContent = ({
   } = useZodForm({
     defaultValues: {
       title: "",
-      category: "Government Gazette",
+      category:
+        categories.find(
+          ({ label }) => label === GazetteCategories.GovernmentGazettes,
+        )?.value ?? "",
       subcategory: "",
       notificationNumber: "",
       publishDate: new Date(),
@@ -103,6 +109,15 @@ const CreateGazetteModalContent = ({
       return
     }
 
+    const labels = resolveTagLabels({
+      categoryId: data.category,
+      subcategoryId: data.subcategory,
+    })
+    if (!labels) {
+      return
+    }
+    const { categoryLabel, subcategoryLabel } = labels
+
     const scheduledAt = parse(data.publishTime, "HH:mm", data.publishDate)
 
     try {
@@ -111,8 +126,8 @@ const CreateGazetteModalContent = ({
         fileName: data.fileId,
         scheduledAt,
         year: data.publishDate.getFullYear(),
-        category: data.category,
-        subcategory: subcategoryMap[data.subcategory] ?? data.subcategory,
+        category: categoryLabel,
+        subcategory: subcategoryLabel,
       })
 
       await createGazette({
@@ -121,10 +136,11 @@ const CreateGazetteModalContent = ({
         title: data.title,
         permalink: crypto.randomUUID(),
         ref,
-        category: data.category,
+        categoryId: data.category,
+        categoryLabel,
         date: format(data.publishDate, "dd/MM/yyyy"),
         description: data.notificationNumber,
-        tagged: [data.subcategory],
+        subcategoryId: data.subcategory,
         scheduledAt,
       })
 

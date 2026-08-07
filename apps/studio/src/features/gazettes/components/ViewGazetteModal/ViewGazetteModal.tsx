@@ -26,12 +26,15 @@ import { ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES } from "~/constants/gazet
 import { BRIEF_TOAST_SETTINGS } from "~/constants/toast"
 import { trpc } from "~/utils/trpc"
 
+import { GAZETTE_UNRESOLVED_TAG_LABEL } from "../../constants"
 import { useGazetteSubcategoriesContext } from "../../contexts/GazetteSubcategoriesContext"
 
 interface ViewGazetteData {
   title: string
-  category: string
-  subcategory: string
+  // Option ids, or `null` when `page.tagged` held nothing from the collection
+  // taxonomy. See `GazetteTableData`.
+  category: string | null
+  subcategory: string | null
   notificationNumber?: string
   fileId: string
   publishedAt: Date | null
@@ -57,14 +60,22 @@ export const ViewGazetteModal = ({
   data,
   initialView = "view",
 }: ViewGazetteModalProps): JSX.Element => {
-  const { subcategoryMap } = useGazetteSubcategoriesContext()
+  const { categoryMap, subcategoryMap } = useGazetteSubcategoriesContext()
 
   const canDelete = data.publishedAt
     ? differenceInMinutes(new Date(), data.publishedAt) <=
       ALLOWED_GAZETTE_DELETION_TIMEFRAME_IN_MINUTES
     : false
 
-  const subcategoryLabel = subcategoryMap[data.subcategory] ?? data.subcategory
+  // Show "Unknown" instead of a blank value or raw uuid. This modal is read
+  // only, so it is the clearest place to show that an older gazette still uses
+  // the pre-cutover tag shape.
+  const subcategoryLabel = data.subcategory
+    ? (subcategoryMap[data.subcategory] ?? GAZETTE_UNRESOLVED_TAG_LABEL)
+    : GAZETTE_UNRESOLVED_TAG_LABEL
+  const categoryLabel = data.category
+    ? (categoryMap[data.category] ?? GAZETTE_UNRESOLVED_TAG_LABEL)
+    : GAZETTE_UNRESOLVED_TAG_LABEL
 
   const [view, setView] = useState<ModalView>(initialView)
   const [isConfirmed, setIsConfirmed] = useState(false)
@@ -120,7 +131,7 @@ export const ViewGazetteModal = ({
                 <DataField label="Title" value={data.title} />
 
                 <HStack spacing="2.5rem" w="100%" alignItems="flex-start">
-                  <DataField label="Category" value={data.category} />
+                  <DataField label="Category" value={categoryLabel} />
                   <DataField label="Subcategory" value={subcategoryLabel} />
                 </HStack>
 
@@ -187,7 +198,7 @@ export const ViewGazetteModal = ({
                   <DeleteDataField label="Title" value={data.title} />
                   <DeleteDataField
                     label="Category / Subcategory"
-                    value={`${data.category} / ${subcategoryLabel}`}
+                    value={`${categoryLabel} / ${subcategoryLabel}`}
                   />
                   {data.notificationNumber && (
                     <DeleteDataField
