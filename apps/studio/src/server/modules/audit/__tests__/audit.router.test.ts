@@ -9,6 +9,7 @@ import {
 import {
   setupAdminPermissions,
   setupEditorPermissions,
+  setupIsomerAdmin,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
@@ -74,6 +75,7 @@ describe("audit.router", async () => {
     await resetTables(
       "AuditLogExportRequest",
       "AuditLog",
+      "IsomerAdmin",
       "ResourcePermission",
       "Site",
       "User",
@@ -152,6 +154,28 @@ describe("audit.router", async () => {
           before: null,
           after: { auditLogDateRange, reportType: "Access" },
         },
+      })
+    })
+
+    it("should allow an Isomer Admin without a site permission to request an export", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupIsomerAdmin({ userId: session.userId! })
+
+      // Act
+      const result = await caller.createExportRequest({
+        siteId: site.id,
+        month: VALID_MONTH,
+        reportType: "Access",
+      })
+
+      // Assert
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({
+        siteId: site.id,
+        userId: session.userId,
+        reportType: "Access",
+        status: "Pending",
       })
     })
 

@@ -24,6 +24,7 @@ import {
   isActiveIsomerAdmin,
   validatePermissionsForManagingUsers,
   validateUserIsIsomerAdmin,
+  validateUserIsSiteAdmin,
 } from "../permissions.service"
 import { CRUD_ACTIONS } from "../permissions.type"
 import {
@@ -1550,6 +1551,43 @@ describe("validateUserIsIsomerAdmin", () => {
           "You do not have sufficient permissions to perform this action",
       }),
     )
+  })
+})
+
+describe("validateUserIsSiteAdmin", () => {
+  beforeEach(async () => {
+    await resetTables("IsomerAdmin", "ResourcePermission", "User", "Site")
+  })
+
+  it("should allow a Site Admin", async () => {
+    const user = await setupUser({ email: "site-admin@example.com" })
+    const { site } = await setupSite()
+    await setupAdminPermissions({ userId: user.id, siteId: site.id })
+
+    await expect(
+      validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
+    ).resolves.toBe(true)
+  })
+
+  it("should allow an active Isomer Admin without a site permission", async () => {
+    const user = await setupUser({ email: "isomer-admin@example.com" })
+    const { site } = await setupSite()
+    await setupIsomerAdmin({ userId: user.id })
+
+    await expect(
+      validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
+    ).resolves.toBe(true)
+  })
+
+  it("should reject an expired Isomer Admin without a site permission", async () => {
+    const user = await setupUser({ email: "expired-admin@example.com" })
+    const { site } = await setupSite()
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
+
+    await expect(
+      validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" })
   })
 })
 
