@@ -1,7 +1,11 @@
 import type { FallbackProps } from "react-error-boundary"
 import { type TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc"
 import { useRouter } from "next/router"
+import { useEffect } from "react"
+import { SIGN_IN } from "~/lib/routes"
+import { callbackUrlSchema } from "~/schemas/url"
 import { trpc } from "~/utils/trpc"
+import { appendWithRedirect } from "~/utils/url"
 
 import { FullscreenSpinner } from "../FullscreenSpinner"
 import { DefaultNotFound } from "./DefaultNotFound"
@@ -13,9 +17,26 @@ const UnauthorizedError = ({
 }: Pick<FallbackProps, "resetErrorBoundary">) => {
   const utils = trpc.useUtils()
   const router = useRouter()
-  void utils.invalidate()
-  void router.push("/")
-  resetErrorBoundary()
+
+  useEffect(() => {
+    const { pathname, search, hash } = window.location
+
+    void utils.invalidate()
+
+    if (pathname === SIGN_IN) {
+      resetErrorBoundary()
+      return
+    }
+
+    const callbackUrl = encodeURIComponent(`${pathname}${search}${hash}`)
+
+    void router
+      .replace(
+        callbackUrlSchema.parse(appendWithRedirect(SIGN_IN, callbackUrl)),
+      )
+      .catch(() => undefined)
+      .then(() => resetErrorBoundary())
+  }, [resetErrorBoundary, router, utils])
 
   return <FullscreenSpinner />
 }
