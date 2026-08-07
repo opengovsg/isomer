@@ -1,39 +1,10 @@
-import { readdirSync, readFileSync, statSync } from "node:fs"
-import { dirname, join } from "node:path"
-import { fileURLToPath } from "node:url"
-import { Client } from "pg"
 import { GenericContainer, Wait } from "testcontainers"
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
-const prismaMigrationDir = join(
-  __dirname,
-  "..",
-  "..",
-  "..",
-  "..",
-  "..",
-  "packages",
-  "db",
-  "prisma",
-  "migrations",
-)
+import { applyMigrations } from "@isomer/db/testing"
 
 const DB_USERNAME = "root"
 const DB_PASSWORD = "root"
 const DB_NAME = "test"
-
-// Running migrations manually; dd-trace intercepts `exec` usage and prevents runs
-const applyMigrations = async (client: Client) => {
-  const directory = readdirSync(prismaMigrationDir).sort()
-  for (const file of directory) {
-    const name = `${prismaMigrationDir}/${file}`
-    if (statSync(name).isDirectory()) {
-      const migration = readFileSync(`${name}/migration.sql`, "utf8")
-      await client.query(migration)
-    }
-  }
-}
 
 export default async () => {
   const container = await new GenericContainer("postgres:15-alpine")
@@ -47,21 +18,19 @@ export default async () => {
     .withWaitStrategy(Wait.forListeningPorts())
     .start()
 
-  const client = new Client({
-    host: container.getHost(),
-    port: container.getMappedPort(5432),
-    user: DB_USERNAME,
-    password: DB_PASSWORD,
-    database: DB_NAME,
-  })
-  await client.connect()
-  await applyMigrations(client)
-  await client.end()
+  const host = container.getHost()
+  const port = container.getMappedPort(5432)
+
+  // Apply @isomer/db's migrations via the shared helper, which owns the
+  // migrations path + the read-`.sql` (dd-trace-safe) apply loop.
+  await applyMigrations(
+    `postgres://${DB_USERNAME}:${DB_PASSWORD}@${host}:${port}/${DB_NAME}`,
+  )
 
   // Test workers fork off this process after global setup, so plain env
   // assignments are visible to the test files
-  process.env.TEST_DB_HOST = container.getHost()
-  process.env.TEST_DB_PORT = String(container.getMappedPort(5432))
+  process.env.TEST_DB_HOST = host
+  process.env.TEST_DB_PORT = String(port)
   process.env.TEST_DB_USERNAME = DB_USERNAME
   process.env.TEST_DB_PASSWORD = DB_PASSWORD
   process.env.TEST_DB_NAME = DB_NAME
