@@ -73,6 +73,7 @@ export {
   type ZendeskProps,
 } from "./Zendesk"
 export type { ImageClientProps } from "./Image"
+export type { PolyglotProps } from "./Polyglot"
 export {
   SearchableTableSchema,
   type SearchableTableProps,
