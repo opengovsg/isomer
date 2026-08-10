@@ -255,8 +255,8 @@ catalogs:
       specifier: ^2.0.1
       version: 2.0.1
     nanoid:
-      specifier: ^6.0.1
-      version: 6.0.1
+      specifier: ^3.3.17
+      version: 3.3.18
     next:
       specifier: 16.2.11
       version: 16.2.11
@@ -924,7 +924,7 @@ importers:
         version: 4.18.1
       nanoid:
         specifier: 'catalog:'
-        version: 6.0.1
+        version: 3.3.18
       next:
         specifier: 'catalog:'
         version: 16.2.11(patch_hash=96c056d3c2fe2195b5487aa4adf46a46a96f6dc0e872c060e5563e3c74b51409)(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.102.0)
@@ -1435,7 +1435,7 @@ importers:
         version: 6.8.0(@openfeature/server-sdk@1.21.0(@openfeature/core@1.10.0))
       nanoid:
         specifier: 'catalog:'
-        version: 6.0.1
+        version: 3.3.18
       pino:
         specifier: 'catalog:'
         version: 10.3.1
@@ -10095,19 +10095,9 @@ packages:
   nan@2.26.2:
     resolution: {integrity: sha512-0tTvBTYkt3tdGw22nrAy50x7gpbGCCFH3AFcyS5WiUu7Eu4vWlri1woE6qHBSfy11vksDqkiwjOnlR7WV8G1Hw==}
 
-  nanoid@3.3.16:
-    resolution: {integrity: sha512-bzlKTyNJ7+LdGIIwy8ijFpIqEQIvafahV7eYykJ8Cvh42EdJeODoJ6gUJXpQJvej1BddH8OqTXZNE/KfbWAu8Q==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
   nanoid@3.3.18:
     resolution: {integrity: sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
-  nanoid@6.0.1:
-    resolution: {integrity: sha512-3wVS3i51pE2pi1k5FFL/95BGfVS0kSsvDVuGXHOtxox/TywUmtgq+3qiTOTbs9J7KfHaXPiN171k/A6dBnaXFw==}
-    engines: {node: ^22 || ^24 || >=26}
     hasBin: true
 
   natural-compare@1.4.0:
@@ -16094,7 +16084,7 @@ snapshots:
       inter-ui: 3.19.3
       libphonenumber-js: 1.12.41
       lodash: 4.18.1
-      nanoid: 3.3.16
+      nanoid: 3.3.18
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-dropzone: 11.7.1(react@18.3.1)
@@ -21610,11 +21600,7 @@ snapshots:
   nan@2.26.2:
     optional: true
 
-  nanoid@3.3.16: {}
-
   nanoid@3.3.18: {}
-
-  nanoid@6.0.1: {}
 
   natural-compare@1.4.0: {}
 
@@ -22581,13 +22567,13 @@ snapshots:
 
   postcss@8.4.31:
     dependencies:
-      nanoid: 3.3.16
+      nanoid: 3.3.18
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
   postcss@8.5.23:
     dependencies:
-      nanoid: 3.3.16
+      nanoid: 3.3.18
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
