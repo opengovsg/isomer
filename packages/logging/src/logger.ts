@@ -82,7 +82,7 @@ class PinoLogger {
     return PinoLogger.getInstance(nodeEnv, appEnvLabel).child({
       path,
       clientIp,
-      id: nanoid<string>(),
+      id: nanoid(),
       trace_id: traceId,
     })
   }
