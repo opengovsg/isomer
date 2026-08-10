@@ -19,12 +19,18 @@ const HEAD_SHA = requireEnv("HEAD_SHA")
 const BUCKET_GLOBS = {
   // Only paths that can actually appear in a real diff: everything else that
   // was here previously (dist/, .next/, storybook-static/, *.tsbuildinfo,
-  // next-env.d.ts, preview-tw.css, packages/db/prisma/generated/) is already
-  // gitignored, so it can't show up here short of a force-add — in which
-  // case it's arguably worth surfacing, not hiding. These two generated dirs
-  // are the exception: verified with `git check-ignore` that neither is
-  // actually covered by .gitignore, despite living next to dirs that are.
-  ignore: ["pnpm-lock.yaml", "packages/db/src/generated/**", "apps/studio/src/theme/generated/**"],
+  // next-env.d.ts, packages/db/prisma/generated/) is already gitignored, so it
+  // can't show up here short of a force-add — in which case it's arguably worth
+  // surfacing, not hiding. These generated dirs are the exception: verified with
+  // `git check-ignore` that they are not covered by .gitignore, despite living
+  // next to dirs that are. preview-tw.css is also generated at build time but
+  // stays out of .gitignore so oxfmt can format it during build:preview-tw.
+  ignore: [
+    "pnpm-lock.yaml",
+    "packages/db/src/generated/**",
+    "apps/studio/src/theme/generated/**",
+    "apps/studio/public/assets/css/preview-tw.css",
+  ],
   doc: [".claude/skills/**", "**/*.md", "**/*.mdx"],
   test: [
     "**/__tests__/**",
