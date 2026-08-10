@@ -137,7 +137,7 @@ catalog:
   interweave: ^13.1.0
   interweave-ssr: ^2.0.0
   iron-session: ^8.0.4
-  jose: ^6.2.5
+  jose: ^6.2.8
   jotai: ^2.20.2
   js-md5: ^0.9.2
   kysely: ^0.29.4
