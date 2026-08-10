@@ -9,7 +9,7 @@
   "scripts": {
     "build": "SKIP_ENV_VALIDATION=true next build",
     "build-storybook": "storybook build",
-    "build:preview-tw": "NODE_ENV=production pnpm exec tailwindcss build -i src/styles/tailwind.css -o public/assets/css/preview-tw.css && cp public/assets/css/preview-tw.css /tmp/preview-tw.css && oxfmt --write /tmp/preview-tw.css && cp /tmp/preview-tw.css public/assets/css/preview-tw.css",
+    "build:preview-tw": "NODE_ENV=production pnpm exec tailwindcss build -i src/styles/tailwind.css -o public/assets/css/preview-tw.css",
     "build:theme": "pnpm exec chakra-cli tokens src/theme/index.ts",
     "clean": "git clean -xdf .next .turbo node_modules build",
     "db:connect": "bash ./scripts/connectRds.sh prod",
