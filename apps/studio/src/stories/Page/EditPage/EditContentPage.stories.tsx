@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { expect, userEvent, within } from "storybook/test"
+import type { Editor } from "@tiptap/react"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import { meHandlers } from "tests/msw/handlers/me"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -53,6 +54,43 @@ const meta: Meta<typeof EditPage> = {
 
 export default meta
 type Story = StoryObj<typeof EditPage>
+
+/** TipTap BubbleMenu portals into the story iframe body. */
+function withinPortals(canvasElement: HTMLElement) {
+  return within(canvasElement.ownerDocument.body)
+}
+
+// Document position at the start of the nth table cell (tableCell /
+// tableHeader), 0-indexed in reading order. Used to forge a CellSelection
+// in play functions — Storybook can't drive a real mouse drag across cells.
+const nthCellPos = (editor: Editor, index: number): number => {
+  let seen = 0
+  let found: number | null = null
+  editor.state.doc.descendants((node, pos) => {
+    if (found !== null) return false
+    if (node.type.name === "tableCell" || node.type.name === "tableHeader") {
+      if (seen === index) {
+        found = pos
+        return false
+      }
+      seen += 1
+    }
+    return true
+  })
+  if (found === null) {
+    throw new Error(`Could not find cell at index ${index}`)
+  }
+  return found
+}
+
+const getEditorFromCanvas = (canvasElement: HTMLElement): Editor => {
+  const proseMirrorEl = canvasElement.querySelector<
+    HTMLElement & { editor?: Editor }
+  >(".ProseMirror")
+  const editor = proseMirrorEl?.editor
+  if (!editor) throw new Error("Editor did not mount")
+  return editor
+}
 
 export const Default: Story = {}
 export const Wordbreak: Story = {
@@ -204,5 +242,48 @@ export const ActiveTableToolbar: Story = {
     await expect(
       canvas.getAllByRole("button", { name: /more options/i }),
     ).toHaveLength(1)
+  },
+}
+
+// Navigate into a text block, insert a table, select a body row — the
+// contextual TableBubbleMenu should appear with row actions.
+export const TableBubbleMenu: Story = {
+  play: async (context) => {
+    const { canvasElement } = context
+    const canvas = within(canvasElement)
+    await AddTextBlock.play?.(context)
+
+    // Clicking "Table" only opens the size-picker popover — a cell still
+    // needs to be picked to actually insert a table (see TableSizePicker.tsx).
+    await userEvent.click(canvas.getByRole("button", { name: /^table$/i }))
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /^3 by 3 table$/i }),
+    )
+
+    await waitFor(() =>
+      expect(canvasElement.querySelector("table")).toBeTruthy(),
+    )
+
+    const editor = getEditorFromCanvas(canvasElement)
+    // Default insertTable is 3x3 with a header row; cells 3–5 are the first body row.
+    editor
+      .chain()
+      .focus()
+      .setCellSelection({
+        anchorCell: nthCellPos(editor, 3),
+        headCell: nthCellPos(editor, 5),
+      })
+      .run()
+
+    const portals = withinPortals(canvasElement)
+    // Row/column actions live behind the portaled pencil trigger — click to open.
+    await userEvent.click(
+      await portals.findByRole("button", { name: "Table actions" }),
+    )
+
+    await waitFor(() =>
+      expect(portals.getByText("Delete row")).toBeInTheDocument(),
+    )
+    await expect(portals.getByText("Add row above")).toBeInTheDocument()
   },
 }
