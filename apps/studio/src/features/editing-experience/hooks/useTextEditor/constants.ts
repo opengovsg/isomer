@@ -2,8 +2,9 @@ import type { Level } from "@tiptap/extension-heading"
 import type { Extensions } from "@tiptap/react"
 import type { Editor } from "@tiptap/react"
 import {
-  getTableCellBackgroundColorCss,
+  getTableCellBackgroundColorCssForKind,
   isTableCellBackgroundColorToken,
+  isTableCellBrandBackgroundColorToken,
 } from "@opengovsg/isomer-components"
 import { Bold } from "@tiptap/extension-bold"
 import { BulletList } from "@tiptap/extension-bullet-list"
@@ -40,6 +41,10 @@ import {
   createTableSelectionBorderPlugin,
   getHtmlWithRelativeReferenceLinks,
 } from "../../utils"
+import {
+  wrapHeaderToggleCommand,
+  type HeaderToggleCommand,
+} from "./clearTableCellBackgroundOnKindChange"
 import { selectTableCellContent } from "./selectTableCellContent"
 
 export { TableRow } from "@tiptap/extension-table-row"
@@ -125,12 +130,22 @@ export const IsomerTable = Table.extend({
   // Higher than TipTap's default keymap so Mod-a is handled here first.
   priority: 101,
   addCommands() {
+    const parent = this.parent?.()
+    const parentToggleHeaderRow = parent?.toggleHeaderRow
+    const parentToggleHeaderColumn = parent?.toggleHeaderColumn
+
     return {
-      ...this.parent?.(),
+      ...parent,
       focusTableBubbleMenuTrigger:
         () =>
         ({ editor }: { editor: Editor }) =>
           runTableBubbleMenuFocusTrigger(editor),
+      toggleHeaderRow: wrapHeaderToggleCommand(
+        parentToggleHeaderRow?.() as HeaderToggleCommand | undefined,
+      ),
+      toggleHeaderColumn: wrapHeaderToggleCommand(
+        parentToggleHeaderColumn?.() as HeaderToggleCommand | undefined,
+      ),
     }
   },
   addAttributes() {
@@ -174,31 +189,40 @@ export const IsomerTable = Table.extend({
   },
 })
 
-const tableCellBackgroundColorAttribute = {
+const createTableCellBackgroundColorAttribute = (isHeader: boolean) => ({
   default: null as string | null,
   parseHTML: (element: HTMLElement) => {
     const value = element.getAttribute("data-background-color")
     return isTableCellBackgroundColorToken(value) ? value : null
   },
   renderHTML: (attributes: Record<string, unknown>) => {
-    if (!isTableCellBackgroundColorToken(attributes.backgroundColor)) {
+    const css = getTableCellBackgroundColorCssForKind(
+      attributes.backgroundColor,
+      { isHeader },
+    )
+    if (!css || !isTableCellBackgroundColorToken(attributes.backgroundColor)) {
       return {}
     }
-    const css = getTableCellBackgroundColorCss(attributes.backgroundColor)
-    if (!css) return {}
+
+    const style =
+      isHeader &&
+      isTableCellBrandBackgroundColorToken(attributes.backgroundColor)
+        ? `background-color: ${css}; color: #ffffff`
+        : `background-color: ${css}`
+
     return {
       "data-background-color": attributes.backgroundColor,
-      style: `background-color: ${css}`,
+      style,
     }
   },
-}
+})
 
 export const IsomerTableCell = TableCell.extend({
   content: "(paragraph|list)+",
   addAttributes() {
     return {
       ...this.parent?.(),
-      backgroundColor: tableCellBackgroundColorAttribute,
+      backgroundColor: createTableCellBackgroundColorAttribute(false),
     }
   },
 })
@@ -208,7 +232,7 @@ export const IsomerTableHeader = TableHeader.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
-      backgroundColor: tableCellBackgroundColorAttribute,
+      backgroundColor: createTableCellBackgroundColorAttribute(true),
     }
   },
 })

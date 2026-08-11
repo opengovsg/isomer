@@ -170,10 +170,12 @@ const Harness = ({
   onReady,
   showMenu = true,
   data = SEED_CONTENT,
+  brandCanvasInverseColor,
 }: {
   onReady: (editor: Editor) => void
   showMenu?: boolean
   data?: JSONContent
+  brandCanvasInverseColor?: string
 }) => {
   const editor = useTextEditor({ data, handleChange: () => null })
   useEffect(() => {
@@ -181,13 +183,21 @@ const Harness = ({
   }, [editor, onReady])
   return (
     <>
-      {editor && showMenu && <TableBubbleMenu editor={editor} />}
+      {editor && showMenu && (
+        <TableBubbleMenu
+          editor={editor}
+          brandCanvasInverseColor={brandCanvasInverseColor}
+        />
+      )}
       {editor && <EditorContent editor={editor} />}
     </>
   )
 }
 
-const renderHarness = async (data: JSONContent = SEED_CONTENT) => {
+const renderHarness = async (
+  data: JSONContent = SEED_CONTENT,
+  brandCanvasInverseColor?: string,
+) => {
   let editor: Editor | undefined
   let setShowMenu: ((showMenu: boolean) => void) | undefined
 
@@ -195,7 +205,12 @@ const renderHarness = async (data: JSONContent = SEED_CONTENT) => {
     const [showMenu, setShowMenuState] = useState(true)
     setShowMenu = setShowMenuState
     return (
-      <Harness onReady={(e) => (editor = e)} showMenu={showMenu} data={data} />
+      <Harness
+        onReady={(e) => (editor = e)}
+        showMenu={showMenu}
+        data={data}
+        brandCanvasInverseColor={brandCanvasInverseColor}
+      />
     )
   }
 
@@ -783,6 +798,31 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Move right")).toBeNull()
   })
 
+  it("shows Clear contents for a single cell, and Clear plus Split for a merged single cell", async () => {
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+
+    selectCells(editor, 6, 6)
+    await activateTableBubbleMenu(findByRole)
+
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(queryByText("Split cell")).toBeNull()
+    expect(queryByText("Merge cells")).toBeNull()
+
+    selectCells(editor, 3, 4)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    selectCells(editor, 3, 3)
+
+    // Act
+    await activateTableBubbleMenu(findByRole)
+
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(await findByText("Split cell")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
+  })
+
   it("shows Clear contents and Merge cells for an irregular multi-cell selection", async () => {
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
@@ -845,6 +885,114 @@ describe("TableBubbleMenu", () => {
     expect(firstRowTexts(editor)).toEqual(["", "", ""])
     expect(rowTextsAt(editor, 1)).toEqual(["", "", ""])
     expect(rowTextsAt(editor, 2)).toEqual(["", "", ""])
+  })
+
+  it("applies a background colour from the inline swatches and closes the menu", async () => {
+    // Arrange
+    const {
+      editor,
+      findByRole,
+      findByText,
+      queryByRole,
+      queryByText,
+      container,
+    } = await renderHarness()
+    selectCells(editor, 3, 7)
+    await activateTableBubbleMenu(findByRole)
+
+    // Act — label is plain text; swatches sit underneath and are immediately
+    // available (no navigate-away submenu).
+    expect(await findByText("Set background color")).toBeTruthy()
+    expect(await findByText("Merge cells")).toBeTruthy()
+    const blueSwatch = await findByRole("button", { name: "Blue" })
+    act(() => {
+      blueSwatch.click()
+    })
+
+    // Assert — colour applied; action panel closes (pencil trigger stays)
+    await waitFor(() => {
+      expect(
+        container.querySelector(
+          "td.selectedCell[data-background-color='blue']",
+        ),
+      ).not.toBeNull()
+    })
+    const trigger = await findByRole("button", { name: "Table actions" })
+    expect(trigger).toHaveAttribute("aria-pressed", "false")
+    expect(queryByRole("button", { name: "Blue" })).toBeNull()
+    expect(queryByText("Set background color")).toBeNull()
+  })
+
+  it("shows Set background color with brand swatch for a full header row selection", async () => {
+    // Arrange
+    const { editor, findByText, findByRole, queryByRole } =
+      await renderHarness()
+
+    // Act — cells 0–2 are the entire first row (kind: header-row)
+    selectCells(editor, 0, 2)
+    await activateTableBubbleMenu(findByRole)
+    await findByText("Add row above")
+
+    // Assert — headers only offer None + brand (site canvas.inverse)
+    expect(await findByText("Set background color")).toBeTruthy()
+    expect(await findByRole("button", { name: "Brand" })).toBeTruthy()
+    expect(queryByRole("button", { name: "Blue" })).toBeNull()
+  })
+
+  it("Brand swatch fill uses the site brand colour passed from theme", async () => {
+    const { editor, findByRole, findByText } = await renderHarness(
+      SEED_CONTENT,
+      "#123456",
+    )
+    selectCells(editor, 0, 2)
+    await activateTableBubbleMenu(findByRole)
+    await findByText("Set background color")
+
+    const brandSwatch = await findByRole("button", { name: "Brand" })
+    const fill = brandSwatch.querySelector("span")
+
+    expect(fill).not.toBeNull()
+    expect(getComputedStyle(fill!).backgroundColor).toBe("rgb(18, 52, 86)")
+  })
+
+  it("hides Set background color for a mixed header and body selection", async () => {
+    // Arrange — leftmost column spans header + body cells
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+
+    // Act
+    selectCells(editor, 0, 6)
+    await activateTableBubbleMenu(findByRole)
+    await findByText("Add column left")
+
+    // Assert
+    expect(queryByText("Set background color")).toBeNull()
+  })
+
+  it("clears background colour when toggling header row off", async () => {
+    const { editor, findByText, findByRole, queryByRole, container } =
+      await renderHarness()
+    selectCells(editor, 0, 0)
+    await activateTableBubbleMenu(findByRole)
+    await findByText("Set background color")
+    const brandSwatch = await findByRole("button", { name: "Brand" })
+    act(() => {
+      brandSwatch.click()
+    })
+    act(() => {
+      editor.chain().focus().toggleHeaderRow().run()
+    })
+    selectCells(editor, 0, 0)
+    await activateTableBubbleMenu(findByRole)
+
+    expect(await findByText("Set background color")).toBeTruthy()
+    expect(await findByRole("button", { name: "Blue" })).toBeTruthy()
+    expect(queryByRole("button", { name: "Brand" })).toBeNull()
+    expect(
+      container.querySelector(
+        "td.selectedCell[data-background-color='brand.canvas.inverse']",
+      ),
+    ).toBeNull()
   })
 
   it("shows no menu content for a plain cursor outside any selection", async () => {
@@ -941,31 +1089,6 @@ describe("TableBubbleMenu", () => {
     // Assert
     expect(trigger).toHaveAttribute("aria-pressed", "false")
     expect(queryByText("Delete row")).toBeNull()
-  })
-
-  it("shows Clear contents for a single cell, and Clear plus Split for a merged single cell", async () => {
-    const { editor, findByText, findByRole, queryByText } =
-      await renderHarness()
-
-    selectCells(editor, 6, 6)
-    await activateTableBubbleMenu(findByRole)
-
-    expect(await findByText("Clear contents")).toBeTruthy()
-    expect(queryByText("Split cell")).toBeNull()
-    expect(queryByText("Merge cells")).toBeNull()
-
-    selectCells(editor, 3, 4)
-    act(() => {
-      editor.chain().focus().mergeCells().run()
-    })
-    selectCells(editor, 3, 3)
-
-    // Act
-    await activateTableBubbleMenu(findByRole)
-
-    expect(await findByText("Clear contents")).toBeTruthy()
-    expect(await findByText("Split cell")).toBeTruthy()
-    expect(queryByText("Merge cells")).toBeNull()
   })
 
   it("clears a single selected cell without removing the cell", async () => {
