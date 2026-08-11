@@ -4812,14 +4812,14 @@ packages:
       '@openfeature/core': ^1.10.0
 
   '@opengovsg/design-system-react@1.34.0':
-    resolution: {integrity: sha512-ceNcFsHq7wSBlvfexFbjzAKehWRQyzmT40jhbVmnPZiI8xwOqB3o6Hb2VuKXRiU3yRIDx/4DI20nr5ZlGstNHw==, tarball: https://npm.pkg.github.com/download/@opengovsg/design-system-react/1.34.0/d029e0ec2ab44883840ebb79cc2c3106ed91f91a}
+    resolution: {integrity: sha512-ceNcFsHq7wSBlvfexFbjzAKehWRQyzmT40jhbVmnPZiI8xwOqB3o6Hb2VuKXRiU3yRIDx/4DI20nr5ZlGstNHw==}
     peerDependencies:
       '@chakra-ui/react': ^2.10.5
       react: ^18.2.0
       react-dom: ^18.2.0
 
   '@opengovsg/validators@1.4.1':
-    resolution: {integrity: sha512-Wnn8M8WsMLS8x3zf9pALUUBn2NILMGcBO03K0xzmGqw4FmJe/NwPA39Pnkeni4eGv5UKdQlbCk7TiRZGuwvF2w==, tarball: https://npm.pkg.github.com/download/@opengovsg/validators/1.4.1/4beed28b09c629f74e6c668e227521aea83862a2}
+    resolution: {integrity: sha512-Wnn8M8WsMLS8x3zf9pALUUBn2NILMGcBO03K0xzmGqw4FmJe/NwPA39Pnkeni4eGv5UKdQlbCk7TiRZGuwvF2w==}
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
