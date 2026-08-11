@@ -62,8 +62,7 @@ const PageEditingView = () => {
   useLeftEditorSurveyTracker()
   const { siteId } = useEditorDrawerContext()
   // TipTap lives outside the preview iframe, so brand CSS vars must be set
-  // here too — header brand fills and the Brand colour swatch both resolve
-  // `var(--color-brand-canvas-inverse)`.
+  // here too — header brand fills resolve `var(--color-brand-canvas-inverse)`.
   const themeCssVars = useSiteThemeCssVars({ siteId })
 
   return (
