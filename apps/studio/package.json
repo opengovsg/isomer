@@ -85,7 +85,7 @@
     "@jsonforms/react": "catalog:jsonforms",
     "@opengovsg/design-system-react": "catalog:",
     "@opengovsg/isomer-components": "workspace:*",
-    "@opengovsg/starter-kitty-validators": "catalog:",
+    "@opengovsg/validators": "catalog:",
     "@paralleldrive/cuid2": "catalog:",
     "@prisma/adapter-pg": "catalog:prisma",
     "@sinclair/typebox": "catalog:",

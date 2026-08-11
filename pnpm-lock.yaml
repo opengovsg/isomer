@@ -110,7 +110,7 @@ catalogs:
     '@opengovsg/design-system-react':
       specifier: ^1.31.0
       version: 1.34.0
-    '@opengovsg/starter-kitty-validators':
+    '@opengovsg/validators':
       specifier: ^1.4.1
       version: 1.4.1
     '@paralleldrive/cuid2':
@@ -754,7 +754,7 @@ importers:
       '@opengovsg/isomer-components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@opengovsg/starter-kitty-validators':
+      '@opengovsg/validators':
         specifier: 'catalog:'
         version: 1.4.1(zod@4.4.3)
       '@paralleldrive/cuid2':
@@ -4812,17 +4812,14 @@ packages:
       '@openfeature/core': ^1.10.0
 
   '@opengovsg/design-system-react@1.34.0':
-    resolution: {integrity: sha512-ceNcFsHq7wSBlvfexFbjzAKehWRQyzmT40jhbVmnPZiI8xwOqB3o6Hb2VuKXRiU3yRIDx/4DI20nr5ZlGstNHw==}
+    resolution: {integrity: sha512-ceNcFsHq7wSBlvfexFbjzAKehWRQyzmT40jhbVmnPZiI8xwOqB3o6Hb2VuKXRiU3yRIDx/4DI20nr5ZlGstNHw==, tarball: https://npm.pkg.github.com/download/@opengovsg/design-system-react/1.34.0/d029e0ec2ab44883840ebb79cc2c3106ed91f91a}
     peerDependencies:
       '@chakra-ui/react': ^2.10.5
       react: ^18.2.0
       react-dom: ^18.2.0
 
-  '@opengovsg/starter-kitty-validators@1.4.1':
-    resolution: {integrity: sha512-fq6+ytBixRhnmSSfXpJU14Yi9xzRNXKmsbxHns13OtVZRknBTTjjvlPe4JLve+K0sLaYqgGijKsh11aDzsSe7A==}
-    deprecated: |-
-      Renamed to @opengovsg/validators. Please
-        migrate: npm i @opengovsg/validators
+  '@opengovsg/validators@1.4.1':
+    resolution: {integrity: sha512-Wnn8M8WsMLS8x3zf9pALUUBn2NILMGcBO03K0xzmGqw4FmJe/NwPA39Pnkeni4eGv5UKdQlbCk7TiRZGuwvF2w==, tarball: https://npm.pkg.github.com/download/@opengovsg/validators/1.4.1/4beed28b09c629f74e6c668e227521aea83862a2}
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
@@ -16111,7 +16108,7 @@ snapshots:
       - prop-types
       - supports-color
 
-  '@opengovsg/starter-kitty-validators@1.4.1(zod@4.4.3)':
+  '@opengovsg/validators@1.4.1(zod@4.4.3)':
     dependencies:
       email-addresses: 5.0.0
       zod: 4.4.3
