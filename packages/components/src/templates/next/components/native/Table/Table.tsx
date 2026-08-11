@@ -1,5 +1,9 @@
 import type { TableProps } from "~/interfaces"
 import { useId } from "react"
+import {
+  getTableCellBackgroundColorCssForKind,
+  isTableCellBrandBackgroundColorToken,
+} from "~/constants/tableCellBackgroundColor"
 import { tv } from "~/lib/tv"
 
 import { BaseParagraph } from "../../internal/BaseParagraph"
@@ -25,6 +29,9 @@ const tableCellStyles = tv({
     isHeader: {
       true: "bg-base-canvas-backdrop [&_ol]:prose-label-md-medium [&_p]:prose-label-md-medium",
       false: "bg-base-canvas-alt [&_ol]:prose-body-sm [&_p]:prose-body-sm",
+    },
+    isBrandInverse: {
+      true: "text-base-content-inverse [&_ol]:text-base-content-inverse [&_ol]:marker:text-base-content-inverse [&_p]:text-base-content-inverse [&_ul]:text-base-content-inverse [&_ul]:marker:text-base-content-inverse",
     },
   },
 })
@@ -60,14 +67,30 @@ export const Table = ({ attrs: { caption }, content, site }: TableProps) => {
               return (
                 <tr key={index} className="text-left">
                   {row.content.map((cell, cellIndex) => {
+                    const isHeader = cell.type === "tableHeader"
+                    const backgroundColor =
+                      getTableCellBackgroundColorCssForKind(
+                        cell.attrs?.backgroundColor,
+                        { isHeader },
+                      )
+                    const isBrandInverse =
+                      isHeader &&
+                      isTableCellBrandBackgroundColorToken(
+                        cell.attrs?.backgroundColor,
+                      )
+
                     return (
                       <TableCellTag
                         key={cellIndex}
                         colSpan={normalizeColspan(cell.attrs?.colspan)}
                         rowSpan={normalizeRowspan(cell.attrs?.rowspan)}
                         className={tableCellStyles({
-                          isHeader: cell.type === "tableHeader",
+                          isHeader,
+                          isBrandInverse,
                         })}
+                        style={
+                          backgroundColor ? { backgroundColor } : undefined
+                        }
                       >
                         {cell.content.map((cellContent, index) => {
                           switch (cellContent.type) {
