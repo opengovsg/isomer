@@ -5,6 +5,7 @@ import type { EditorMenuBar } from "~/components/PageEditor/MenuBar/MenuBar"
 import { Box, VStack } from "@chakra-ui/react"
 import { EditorContent } from "@tiptap/react"
 import { useMemo } from "react"
+import { TableBubbleMenu } from "~/features/editing-experience/components/TableBubbleMenu/TableBubbleMenu"
 
 const EditorContainer = ({
   children,
@@ -66,10 +67,16 @@ interface EditorProps {
   editor: TiptapEditor
   isNested?: boolean
 }
+
 export const Editor = ({ editor, menubar, isNested }: EditorProps) => {
+  const isTableEditor = editor.extensionManager.extensions.some(
+    (ext) => ext.name === "table",
+  )
+
   return (
     <EditorContainer isNested={isNested}>
       {menubar({ editor })}
+      {isTableEditor && <TableBubbleMenu editor={editor} />}
       <EditorContentWrapper editor={editor} />
     </EditorContainer>
   )
