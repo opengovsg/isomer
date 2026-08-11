@@ -4,6 +4,7 @@ import { Flex, Text, VStack } from "@chakra-ui/react"
 import { Button, Switch } from "@opengovsg/design-system-react"
 import { moveTableColumn, moveTableRow, selectedRect } from "@tiptap/pm/tables"
 import {
+  BiCopy,
   BiDownArrowAlt,
   BiLeftArrowAlt,
   BiRightArrowAlt,
@@ -26,6 +27,10 @@ import type {
   TableMoveAxis,
   TableMovePlan,
 } from "./TableBubbleMenu.types"
+import {
+  duplicateSelectedColumns,
+  duplicateSelectedRows,
+} from "./TableBubbleMenu.duplicate"
 import {
   getColumnMovePlan,
   getRowMovePlan,
@@ -168,6 +173,13 @@ const RowSelectionActions = ({
         icon={<IconAddRowBelow boxSize="1rem" />}
         onClick={() => editor.chain().focus().addRowAfter().run()}
       />
+      {!includesHeader && (
+        <ActionButton
+          label="Duplicate row"
+          icon={<BiCopy fontSize="1rem" />}
+          onClick={() => duplicateSelectedRows(editor)}
+        />
+      )}
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -233,6 +245,13 @@ const ColumnSelectionActions = ({
         icon={<IconAddColRight boxSize="1rem" />}
         onClick={() => editor.chain().focus().addColumnAfter().run()}
       />
+      {!includesHeader && (
+        <ActionButton
+          label="Duplicate column"
+          icon={<BiCopy fontSize="1rem" />}
+          onClick={() => duplicateSelectedColumns(editor)}
+        />
+      )}
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
