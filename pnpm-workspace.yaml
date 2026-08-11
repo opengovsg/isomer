@@ -100,7 +100,7 @@ catalog:
   sherif: ^1.12.0
   start-server-and-test: ^3.0.11
   tailwindcss: ^3.4.4
-  testcontainers: ^12.0.3
+  testcontainers: ^12.1.0
   tsc-alias: ^1.9.0
   "@typescript/native-preview": 7.0.0-dev.20260707.2
   type-fest: ^5.8.0
