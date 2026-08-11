@@ -239,8 +239,9 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 }
 
+// Any CellSelection (including a single cell) has at least Clear contents.
 export const isActionableTableSelectionKind = (kind: SelectionKind) =>
-  kind !== "none" && kind !== "single-cell"
+  kind !== "none"
 
 export const isEditorModalOpen = () =>
   document.querySelector('[role="dialog"][aria-modal="true"]') != null

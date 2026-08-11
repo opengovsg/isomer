@@ -4,7 +4,7 @@
 import type { Editor, JSONContent } from "@tiptap/react"
 import { ThemeProvider } from "@opengovsg/design-system-react"
 import { act, cleanup, render, waitFor } from "@testing-library/react"
-import { tableEditingKey } from "@tiptap/pm/tables"
+import { CellSelection, tableEditingKey } from "@tiptap/pm/tables"
 import { EditorContent } from "@tiptap/react"
 import { useEffect, useState } from "react"
 import { afterEach, describe, expect, it } from "vitest"
@@ -13,6 +13,7 @@ import { useTextEditor } from "~/features/editing-experience/hooks/useTextEditor
 import { theme } from "~/theme"
 
 import { TableBubbleMenu } from "../TableBubbleMenu"
+import { clearSelectedCells } from "../TableBubbleMenu.clear"
 import {
   duplicateSelectedColumns,
   duplicateSelectedRows,
@@ -272,6 +273,76 @@ const rowCellCount = (editor: Editor, rowIndex: number): number => {
     return false
   })
   return count
+}
+
+const columnCellTypesAt = (editor: Editor, colIndex: number): string[] => {
+  const types: string[] = []
+  let foundTable = false
+  editor.state.doc.descendants((node) => {
+    if (foundTable) return false
+    if (node.type.name !== "table") return true
+    foundTable = true
+    for (let row = 0; row < node.childCount; row++) {
+      types.push(node.child(row).child(colIndex).type.name)
+    }
+    return false
+  })
+  return types
+}
+
+const cellIndexAtPos = (editor: Editor, cellPos: number): number => {
+  let seen = 0
+  let found = -1
+  editor.state.doc.descendants((node, pos) => {
+    if (found !== -1) return false
+    if (node.type.name === "tableCell" || node.type.name === "tableHeader") {
+      if (pos === cellPos) {
+        found = seen
+        return false
+      }
+      seen += 1
+    }
+    return true
+  })
+  if (found === -1)
+    throw new Error(`Could not find cell at position ${cellPos}`)
+  return found
+}
+
+const cellSelectionIndices = (
+  editor: Editor,
+): { start: number; end: number } | null => {
+  const { selection } = editor.state
+  if (!(selection instanceof CellSelection)) return null
+  const anchor = cellIndexAtPos(editor, selection.$anchorCell.pos)
+  const head = cellIndexAtPos(editor, selection.$headCell.pos)
+  return { start: Math.min(anchor, head), end: Math.max(anchor, head) }
+}
+
+const cellBlockCountAt = (editor: Editor, cellIndex: number): number => {
+  const cell = editor.state.doc.nodeAt(nthCellPos(editor, cellIndex))
+  return cell?.childCount ?? 0
+}
+
+const insertParagraphInCell = (
+  editor: Editor,
+  cellIndex: number,
+  text: string,
+) => {
+  const cellPos = nthCellPos(editor, cellIndex)
+  const cell = editor.state.doc.nodeAt(cellPos)
+  if (!cell) throw new Error(`Could not find cell at index ${cellIndex}`)
+  const insertPos = cellPos + cell.nodeSize - 1
+  act(() => {
+    editor
+      .chain()
+      .focus()
+      .insertContentAt(insertPos, {
+        type: "paragraph",
+        content: [{ type: "text", text }],
+      })
+      .run()
+  })
 }
 
 describe("TableBubbleMenu", () => {
@@ -548,6 +619,65 @@ describe("TableBubbleMenu", () => {
     expect(tableColumnCount(editor)).toBe(3)
   })
 
+  it("clears every cell in a selected row without removing the row", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 3, 5)
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    await activateTableBubbleMenu(findByRole)
+
+    const clearRow = await findByText("Clear contents")
+    act(() => {
+      clearRow.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(rowTextsAt(editor, 1)).toEqual(["", "", ""])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+  })
+
+  it("clears every cell in a selected column without removing the column", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 1, 7)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    await activateTableBubbleMenu(findByRole)
+
+    const clearColumn = await findByText("Clear contents")
+    act(() => {
+      clearColumn.click()
+    })
+
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "", "Column C"])
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "", "Row 2, C"])
+  })
+
+  it("clears header row content while keeping the header row", async () => {
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+
+    selectCells(editor, 0, 2)
+    expect(firstRowTexts(editor)).toEqual(["Column A", "Column B", "Column C"])
+    await activateTableBubbleMenu(findByRole)
+
+    const clearRow = await findByText("Clear contents")
+    act(() => {
+      clearRow.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["", "", ""])
+
+    // Header axes withhold Delete row even after clearing.
+    selectCells(editor, 0, 2)
+    await activateTableBubbleMenu(findByRole)
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(queryByText("Delete row")).toBeNull()
+  })
+
   it("withholds Add above, Delete and Move when selection includes header row", async () => {
     const { editor, findByText, findByRole, queryByText, queryByRole } =
       await renderHarness()
@@ -646,8 +776,7 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Move right")).toBeNull()
   })
 
-  it("shows only Merge cells for an irregular multi-cell selection", async () => {
-    // Arrange
+  it("shows Clear contents and Merge cells for an irregular multi-cell selection", async () => {
     const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
     selectCells(editor, 3, 7) // irregular 2x2-ish block, not a full row/column
@@ -655,10 +784,60 @@ describe("TableBubbleMenu", () => {
     // Act
     await activateTableBubbleMenu(findByRole)
 
-    // Assert
+    expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Merge cells")).toBeTruthy()
     expect(queryByText("Delete row")).toBeNull()
     expect(queryByText("Delete column")).toBeNull()
+  })
+
+  it("clears every cell in a multi-cell block without removing cells", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 3, 7)
+    expect(rowTextsAt(editor, 1)).toEqual(["Row 1, A", "Row 1, B", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
+    await activateTableBubbleMenu(findByRole)
+
+    const clearBlock = await findByText("Clear contents")
+    act(() => {
+      clearBlock.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(rowTextsAt(editor, 1)).toEqual(["", "", "Row 1, C"])
+    expect(rowTextsAt(editor, 2)).toEqual(["", "", "Row 2, C"])
+  })
+
+  it("shows Clear contents and Delete table for a whole-table selection", async () => {
+    const { editor, findByText, findByRole, queryByText } =
+      await renderHarness()
+
+    selectCells(editor, 0, 8)
+    await activateTableBubbleMenu(findByRole)
+
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(await findByText("Delete table")).toBeTruthy()
+    expect(queryByText("Merge cells")).toBeNull()
+    expect(queryByText("Delete row")).toBeNull()
+  })
+
+  it("clears every cell in a whole-table selection without removing the table", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
+    selectCells(editor, 0, 8)
+    await activateTableBubbleMenu(findByRole)
+
+    const clearTable = await findByText("Clear contents")
+    act(() => {
+      clearTable.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["", "", ""])
+    expect(rowTextsAt(editor, 1)).toEqual(["", "", ""])
+    expect(rowTextsAt(editor, 2)).toEqual(["", "", ""])
   })
 
   it("shows no menu content for a plain cursor outside any selection", async () => {
@@ -757,11 +936,17 @@ describe("TableBubbleMenu", () => {
     expect(queryByText("Delete row")).toBeNull()
   })
 
-  it("shows Split cell for a single cell that came from a merge, and nothing for an ordinary single cell", async () => {
-    const { editor, findByText, findByRole, queryByText, queryByRole } =
+  it("shows Clear contents for a single cell, and Clear plus Split for a merged single cell", async () => {
+    const { editor, findByText, findByRole, queryByText } =
       await renderHarness()
 
-    // Arrange: merge two adjacent body cells, then re-select the result
+    selectCells(editor, 6, 6)
+    await activateTableBubbleMenu(findByRole)
+
+    expect(await findByText("Clear contents")).toBeTruthy()
+    expect(queryByText("Split cell")).toBeNull()
+    expect(queryByText("Merge cells")).toBeNull()
+
     selectCells(editor, 3, 4)
     act(() => {
       editor.chain().focus().mergeCells().run()
@@ -771,17 +956,107 @@ describe("TableBubbleMenu", () => {
     // Act
     await activateTableBubbleMenu(findByRole)
 
-    // Assert: merged single cell
+    expect(await findByText("Clear contents")).toBeTruthy()
     expect(await findByText("Split cell")).toBeTruthy()
     expect(queryByText("Merge cells")).toBeNull()
+  })
 
-    // Arrange / Act: ordinary single cell
+  it("clears a single selected cell without removing the cell", async () => {
+    const { editor, findByText, findByRole } = await renderHarness()
+
     selectCells(editor, 6, 6)
+    expect(rowTextsAt(editor, 2)).toEqual(["Row 2, A", "Row 2, B", "Row 2, C"])
 
-    // Assert: no menu
-    expect(queryByText("Split cell")).toBeNull()
-    expect(queryByText("Merge cells")).toBeNull()
-    expect(queryByRole("button", { name: "Table actions" })).toBeNull()
+    await activateTableBubbleMenu(findByRole)
+    const clearCell = await findByText("Clear contents")
+    act(() => {
+      clearCell.click()
+    })
+
+    expect(tableRowCount(editor)).toBe(3)
+    expect(rowTextsAt(editor, 2)).toEqual(["", "Row 2, B", "Row 2, C"])
+  })
+
+  it("clears a merged cell without splitting it", async () => {
+    const { editor } = await renderHarness()
+
+    selectCells(editor, 3, 4)
+    act(() => {
+      editor.chain().focus().mergeCells().run()
+    })
+    expect(rowCellCount(editor, 1)).toBe(2)
+    const mergedCell = editor.state.doc.nodeAt(nthCellPos(editor, 3))
+    expect(mergedCell?.attrs.colspan).toBe(2)
+
+    selectCells(editor, 3, 3)
+    act(() => {
+      clearSelectedCells(editor)
+    })
+
+    expect(rowCellCount(editor, 1)).toBe(2)
+    expect(rowTextsAt(editor, 1)).toEqual(["", "Row 1, C"])
+    const clearedMergedCell = editor.state.doc.nodeAt(nthCellPos(editor, 3))
+    expect(clearedMergedCell?.attrs.colspan).toBe(2)
+    expect(clearedMergedCell?.attrs.rowspan).toBe(1)
+  })
+
+  it("keeps the cell selection after clearing", async () => {
+    const { editor } = await renderHarness()
+
+    selectCells(editor, 3, 5)
+    expect(cellSelectionIndices(editor)).toEqual({ start: 3, end: 5 })
+
+    act(() => {
+      clearSelectedCells(editor)
+    })
+
+    expect(cellSelectionIndices(editor)).toEqual({ start: 3, end: 5 })
+    expect(rowTextsAt(editor, 1)).toEqual(["", "", ""])
+  })
+
+  it("clears header column content while preserving header column cells", async () => {
+    const { editor } = await renderHarness()
+
+    act(() => {
+      editor.chain().focus().toggleHeaderColumn().run()
+    })
+    selectCells(editor, 0, 6)
+    expect(columnCellTypesAt(editor, 0)).toEqual([
+      "tableHeader",
+      "tableHeader",
+      "tableHeader",
+    ])
+
+    act(() => {
+      clearSelectedCells(editor)
+    })
+
+    expect(tableColumnCount(editor)).toBe(3)
+    expect(firstRowTexts(editor)).toEqual(["", "Column B", "Column C"])
+    expect(rowTextsAt(editor, 1)).toEqual(["", "Row 1, B", "Row 1, C"])
+    expect(columnCellTypesAt(editor, 0)).toEqual([
+      "tableHeader",
+      "tableHeader",
+      "tableHeader",
+    ])
+  })
+
+  it("replaces multi-paragraph cell content with a single empty paragraph", async () => {
+    const { editor } = await renderHarness()
+
+    selectCells(editor, 6, 6)
+    insertParagraphInCell(editor, 6, "Second paragraph")
+    expect(cellBlockCountAt(editor, 6)).toBe(2)
+    expect(rowTextsAt(editor, 2)[0]).toContain("Row 2, A")
+    expect(rowTextsAt(editor, 2)[0]).toContain("Second paragraph")
+
+    selectCells(editor, 6, 6)
+    act(() => {
+      clearSelectedCells(editor)
+    })
+
+    expect(cellBlockCountAt(editor, 6)).toBe(1)
+    expect(rowTextsAt(editor, 2)).toEqual(["", "Row 2, B", "Row 2, C"])
   })
 
   it("hides when focus moves outside the editor (e.g. Table Settings modal)", async () => {
