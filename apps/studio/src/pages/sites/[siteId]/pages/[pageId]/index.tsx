@@ -1,7 +1,10 @@
 import type { NextPageWithLayout } from "~/lib/types"
 import { Grid, GridItem } from "@chakra-ui/react"
 import { PermissionsBoundary } from "~/components/AuthWrappers"
-import { EditorDrawerProvider } from "~/contexts/EditorDrawerContext"
+import {
+  EditorDrawerProvider,
+  useEditorDrawerContext,
+} from "~/contexts/EditorDrawerContext"
 import { EditPageDrawer } from "~/features/editing-experience/components/Drawer/EditPageDrawer"
 import { EditPagePreview } from "~/features/editing-experience/components/preview/EditPagePreview"
 import {
@@ -9,6 +12,7 @@ import {
   useLeftEditorSurveyTracker,
 } from "~/features/editing-experience/hooks/useContentEditSurvey"
 import { pageSchema } from "~/features/editing-experience/schema"
+import { useSiteThemeCssVars } from "~/features/preview/hooks/useSiteThemeCssVars"
 import { useQueryParse } from "~/hooks/useQueryParse"
 import { useResourceLocalViewHistory } from "~/hooks/useResourceLocalViewHistory"
 import { PageEditingLayout } from "~/templates/layouts/PageEditingLayout"
@@ -56,9 +60,19 @@ const EditPage: NextPageWithLayout = () => {
 const PageEditingView = () => {
   useContentEditTracker()
   useLeftEditorSurveyTracker()
+  const { siteId } = useEditorDrawerContext()
+  // TipTap lives outside the preview iframe, so brand CSS vars must be set
+  // here too — header brand fills resolve `var(--color-brand-canvas-inverse)`.
+  const themeCssVars = useSiteThemeCssVars({ siteId })
 
   return (
-    <Grid h="full" w="100%" templateColumns="repeat(3, 1fr)" gap={0}>
+    <Grid
+      h="full"
+      w="100%"
+      templateColumns="repeat(3, 1fr)"
+      gap={0}
+      style={themeCssVars}
+    >
       <GridItem colSpan={1} overflow="auto" minW="28rem">
         <EditPageDrawer />
       </GridItem>

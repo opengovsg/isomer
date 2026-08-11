@@ -114,3 +114,6 @@ export const useEditorDrawerContext = () => {
 
   return editorDrawerContext
 }
+
+export const useOptionalEditorDrawerSiteId = (): number | undefined =>
+  useContext(EditorDrawerContext)?.siteId
