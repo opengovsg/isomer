@@ -54,7 +54,7 @@ export const CollectionResults = ({
   if (totalCount === 0) {
     return (
       <p className="prose-body-base py-32 text-center text-base-content">
-        There are no articles here.
+        There are no items here.
       </p>
     )
   }
@@ -98,8 +98,7 @@ export const CollectionResults = ({
       ) : (
         <div className="flex flex-col gap-1 py-32 text-center text-content">
           <p className="prose-body-base">
-            We couldn’t find any articles. Try different search terms or
-            filters.
+            We couldn’t find any items. Try different search terms or filters.
           </p>
           <button
             className="prose-headline-base-medium mx-auto w-fit text-link underline-offset-4 hover:underline"
