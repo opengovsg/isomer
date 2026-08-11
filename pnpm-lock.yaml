@@ -4819,7 +4819,7 @@ packages:
       react-dom: ^18.2.0
 
   '@opengovsg/validators@1.4.1':
-    resolution: {integrity: sha512-Wnn8M8WsMLS8x3zf9pALUUBn2NILMGcBO03K0xzmGqw4FmJe/NwPA39Pnkeni4eGv5UKdQlbCk7TiRZGuwvF2w==}
+    resolution: {integrity: sha512-jynSts9f51gG2CP3vApgtIVx/GTE/5DanWDN7UnISyjDIfjT1mpoit43Mxl9UAxh5UwjLrfcJxKJHQHPj7A9QA==}
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
