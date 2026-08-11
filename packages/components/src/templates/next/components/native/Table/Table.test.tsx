@@ -271,3 +271,77 @@ describe("Table colgroup", () => {
     expect(html).not.toContain('rowspan="64"')
   })
 })
+
+describe("Table backgroundColor by cell kind", () => {
+  it("paints Brand on header and palette on body; ignores the reverse", () => {
+    const html = renderToStaticMarkup(
+      <Table
+        type="table"
+        site={generateSiteConfig()}
+        attrs={{ caption: "Colours by kind" }}
+        content={[
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableHeader",
+                attrs: { backgroundColor: "brand.canvas.inverse" },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Brand header" }],
+                  },
+                ],
+              },
+              {
+                type: "tableHeader",
+                attrs: { backgroundColor: "blue" },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Blue header" }],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableCell",
+                attrs: { backgroundColor: "brand.canvas.inverse" },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Brand body" }],
+                  },
+                ],
+              },
+              {
+                type: "tableCell",
+                attrs: { backgroundColor: "blue" },
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Blue body" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    )
+
+    const openTags = [...html.matchAll(/<(th|td)\b[^>]*>/g)].map((m) => m[0])
+    const [thBrand, thBlue, tdBrand, tdBlue] = openTags
+
+    expect(thBrand).toContain(
+      "background-color:var(--color-brand-canvas-inverse)",
+    )
+    expect(thBlue).not.toContain("background-color:")
+    expect(tdBrand).not.toContain("background-color:")
+    expect(tdBlue).toContain("background-color:#EBECF7")
+  })
+})

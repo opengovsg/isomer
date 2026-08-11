@@ -2003,6 +2003,213 @@ export const NestedColumns: Story = {
   },
 }
 
+export const WithBackgroundColors: Story = {
+  args: {
+    attrs: {
+      caption:
+        "Body cells: every palette colour (pink–purple) or no colour. Header cells: no colour or brand.canvas.inverse.",
+    },
+    content: [
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Pink" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Yellow" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Green" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Blue" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Purple" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "No colour" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "pink" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "pink" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "yellow" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "yellow" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "green" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "green" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "blue" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "blue" }],
+              },
+              {
+                type: "orderedList",
+                content: [
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "First step" }],
+                      },
+                    ],
+                  },
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "Second step" }],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            attrs: { backgroundColor: "purple" },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "purple" }],
+              },
+            ],
+          },
+          {
+            type: "tableCell",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "no colour" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            attrs: { colspan: 3 },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "No colour" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            attrs: { colspan: 3 },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Brand" }],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "tableRow",
+        content: [
+          {
+            type: "tableHeader",
+            attrs: { colspan: 3 },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Default header" }],
+              },
+            ],
+          },
+          {
+            type: "tableHeader",
+            attrs: { backgroundColor: "brand.canvas.inverse", colspan: 3 },
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "brand.canvas.inverse" }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+}
+
 export const ListInTable: Story = {
   args: {
     attrs: {
