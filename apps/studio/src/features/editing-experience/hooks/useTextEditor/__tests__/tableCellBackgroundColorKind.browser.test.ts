@@ -171,7 +171,7 @@ describe("TipTap table cell backgroundColor", () => {
     expect(th.getAttribute("style")).toContain(
       "background-color: var(--color-brand-canvas-inverse)",
     )
-    expect(th.getAttribute("style")).toContain("color: #ffffff")
+    expect(th.getAttribute("style")).toContain("color: rgb(255, 255, 255)") // its #ffffff but the browser normalizes it to rgb(255, 255, 255)
     expect(getComputedStyle(th).color).toBe("rgb(255, 255, 255)")
   })
 
