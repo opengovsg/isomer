@@ -166,7 +166,7 @@ const config = {
     "@isomer/logging",
     "@isomer/pgboss",
     "@sinclair/typebox",
-    "@opengovsg/starter-kitty-validators",
+    "@opengovsg/validators",
   ],
   images: {
     remotePatterns: env.NEXT_PUBLIC_S3_ASSETS_DOMAIN_NAME
