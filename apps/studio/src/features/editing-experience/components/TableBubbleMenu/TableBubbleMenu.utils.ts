@@ -265,9 +265,9 @@ export const detectTableSelectionKind = (editor: Editor): SelectionKind => {
   })
 }
 
-// Ordinary single-cell text cursors show no bubble menu.
+// Any CellSelection (including a single cell) has at least Clear contents.
 export const isActionableTableSelectionKind = (kind: SelectionKind) =>
-  kind !== "none" && kind !== "single-cell"
+  kind !== "none"
 
 // Hide the menu while a Chakra/modal dialog has focus.
 export const isEditorModalOpen = () =>
