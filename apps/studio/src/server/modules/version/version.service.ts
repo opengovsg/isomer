@@ -4,7 +4,6 @@ import { ResourceState } from "~prisma/generated/generatedEnums"
 import { type DB } from "~prisma/generated/generatedTypes"
 
 import type { SafeKysely, Transaction } from "../database"
-import { db } from "../database"
 import { getPageById, updatePageById } from "../resource/resource.service"
 
 interface Version {
@@ -20,12 +19,25 @@ const defaultVersionSelect: SelectExpression<DB, "Version">[] = [
   "Version.publishedAt",
 ]
 
-const getVersionById = ({ versionId }: { versionId: string }) =>
-  db
+/**
+ * Get the most recent Version for a resource, by versionNum, regardless of
+ * whether it is the resource's currently published version. This must be
+ * keyed off Version history rather than Resource.publishedVersionId, since
+ * the latter is cleared on unpublish but the version history is not.
+ */
+const getLatestVersionByResourceId = ({
+  tx,
+  resourceId,
+}: {
+  tx: SafeKysely
+  resourceId: string
+}) =>
+  tx
     .selectFrom("Version")
-    .where("Version.id", "=", versionId)
+    .where("Version.resourceId", "=", resourceId)
     .select(defaultVersionSelect)
-    .executeTakeFirstOrThrow()
+    .orderBy("Version.versionNum", "desc")
+    .executeTakeFirst()
 
 const createVersion = async (
   db: SafeKysely,
@@ -88,11 +100,13 @@ export const incrementVersion = async ({
 
   let newVersionNum = 1
   let previousVersion: Version | null = null
-  if (page.publishedVersionId) {
-    previousVersion = await getVersionById({
-      versionId: page.publishedVersionId,
-    })
-    newVersionNum = previousVersion.versionNum + 1
+  const latestVersion = await getLatestVersionByResourceId({
+    tx,
+    resourceId,
+  })
+  if (latestVersion) {
+    previousVersion = latestVersion
+    newVersionNum = latestVersion.versionNum + 1
   }
 
   // Create the new version
