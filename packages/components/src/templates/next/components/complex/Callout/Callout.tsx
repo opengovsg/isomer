@@ -40,7 +40,7 @@ const calloutStyles = tv({
       warning: {
         container: "border-utility-feedback-warning",
         iconWrapper: "bg-utility-feedback-warning",
-        icon: "text-white",
+        icon: "text-base-content-default",
         content: "bg-utility-feedback-warning-subtle",
       },
       urgent: {
