@@ -70,6 +70,7 @@
     "@chakra-ui/theme-tools": "catalog:chakra",
     "@chakra-ui/utils": "catalog:chakra",
     "@datadog/browser-rum": "catalog:",
+    "@floating-ui/dom": "catalog:",
     "@fontsource/ibm-plex-mono": "catalog:",
     "@formkit/auto-animate": "catalog:",
     "@growthbook/growthbook": "catalog:growthbook",
