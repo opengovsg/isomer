@@ -1,5 +1,6 @@
 import type { Level } from "@tiptap/extension-heading"
 import type { Extensions } from "@tiptap/react"
+import type { Editor } from "@tiptap/react"
 import { Bold } from "@tiptap/extension-bold"
 import { BulletList } from "@tiptap/extension-bullet-list"
 import { Document } from "@tiptap/extension-document"
@@ -25,6 +26,10 @@ import { Underline } from "@tiptap/extension-underline"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { textblockTypeInputRule } from "@tiptap/react"
 
+import {
+  focusTableBubbleMenuTrigger,
+  runTableBubbleMenuFocusTrigger,
+} from "../../components/TableBubbleMenu/tableBubbleMenuFocus"
 import {
   createTableSelectionBorderPlugin,
   getHtmlWithRelativeReferenceLinks,
@@ -113,6 +118,15 @@ export const PROSE_EXTENSIONS: Extensions = [
 export const IsomerTable = Table.extend({
   // Higher than TipTap's default keymap so Mod-a is handled here first.
   priority: 101,
+  addCommands() {
+    return {
+      ...this.parent?.(),
+      focusTableBubbleMenuTrigger:
+        () =>
+        ({ editor }: { editor: Editor }) =>
+          runTableBubbleMenuFocusTrigger(editor),
+    }
+  },
   addAttributes() {
     return {
       caption: {
@@ -121,10 +135,21 @@ export const IsomerTable = Table.extend({
     }
   },
   addKeyboardShortcuts() {
+    const parentShortcuts = this.parent?.() ?? {}
     return {
-      ...this.parent?.(),
+      ...parentShortcuts,
       "Mod-a": () =>
         selectTableCellContent(this.editor) || this.editor.commands.selectAll(),
+      // The base extension's Tab always calls goToNextCell, which keeps
+      // keyboard focus trapped inside the table. When the bubble menu's
+      // trigger is showing (an actionable multi-cell selection), send focus
+      // there instead so the trigger stays keyboard-reachable.
+      Tab: ({ editor }) => {
+        if (focusTableBubbleMenuTrigger(editor)) {
+          return true
+        }
+        return parentShortcuts.Tab?.({ editor }) ?? false
+      },
     }
   },
   addProseMirrorPlugins() {
