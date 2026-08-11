@@ -64,9 +64,7 @@ export const CollectionResults = ({
       <div className="flex w-full flex-col justify-between gap-x-6 gap-y-2 md:flex-row">
         <div className="flex h-full w-full items-center gap-3">
           <p className="prose-headline-lg-regular text-base-content-medium">
-            {appliedFilters.length > 0 || searchValue !== ""
-              ? `${filteredCount} article${filteredCount === 1 ? "" : "s"}`
-              : `${filteredCount} article${filteredCount === 1 ? "" : "s"}`}
+            {`${filteredCount} item${filteredCount === 1 ? "" : "s"}`}
             {searchValue !== "" && (
               <>
                 {" "}
