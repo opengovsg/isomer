@@ -333,3 +333,29 @@ export const validateUserIsIsomerAdmin = async ({
     })
   }
 }
+
+interface ValidateUserIsSiteAdminProps {
+  userId: string
+  siteId: number
+}
+export const validateUserIsSiteAdmin = async ({
+  userId,
+  siteId,
+}: ValidateUserIsSiteAdminProps) => {
+  const _ = await db
+    .selectFrom("ResourcePermission")
+    .where("role", "=", "Admin")
+    .where("ResourcePermission.userId", "=", userId)
+    .where("ResourcePermission.siteId", "=", siteId)
+    .where("ResourcePermission.deletedAt", "is", null)
+    .select(["role"])
+    .executeTakeFirstOrThrow(() => {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message:
+          "You do not have sufficient permissions to perform this action",
+      })
+    })
+
+  return true
+}

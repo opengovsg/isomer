@@ -14,10 +14,12 @@ import {
 import {
   Button,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   Link,
   useToast,
 } from "@opengovsg/design-system-react"
+import posthog from "posthog-js"
 import { useState } from "react"
 import { BiBulb, BiPlus, BiRightArrowAlt, BiSearch } from "react-icons/bi"
 import { REDIRECT_MESSAGES } from "~/constants/redirect"
@@ -27,11 +29,38 @@ import {
 } from "~/constants/toast"
 import { useIsAdvancedRedirectsEnabled } from "~/hooks/useIsAdvancedRedirectsEnabled"
 import { useZodForm } from "~/lib/form"
+import { normalizeRedirectSource, redirectKind } from "~/schemas/redirect"
 
 import { useCreateRedirect } from "../api"
 import { addRedirectSchema, type AddRedirectInput } from "../types"
 import { BulkUploadRedirectsModal } from "./BulkUploadRedirectsModal"
 import { SelectDestinationPageModal } from "./SelectDestinationPageModal"
+
+const safeNormalize = (raw: string): string | null => {
+  try {
+    return normalizeRedirectSource(raw)
+  } catch {
+    return null
+  }
+}
+
+// Renders how a wildcard carries the matched remainder onto the destination,
+// e.g. "/old/*" + "/dest" -> "/old/example → /dest/example". The destination is
+// trimmed first so the preview matches the value the schema submits (it trims),
+// rather than reflecting stray leading/trailing whitespace as the user types.
+// Returns null for a non-wildcard source instead of trusting the caller's
+// `kind === "wildcard"` check, so the "/*" strip below can never run on a
+// source that doesn't have it.
+const buildWildcardPreview = (
+  normalizedSource: string,
+  destination: string,
+): string | null => {
+  if (!normalizedSource.endsWith("/*")) return null
+  const prefix = normalizedSource.slice(0, -2) // strip trailing "/*"
+  const trimmed = destination.trim()
+  const base = trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed
+  return `${prefix}/example → ${base}/example`
+}
 
 interface AddRedirectCardProps {
   siteId: number
@@ -70,6 +99,19 @@ export const AddRedirectCard = ({
   const [source, destination] = watch(["source", "destination"])
   const isAddDisabled = !source?.trim() || !destination?.trim()
 
+  const trimmedSource = source?.trim()
+  const normalizedSource = trimmedSource ? safeNormalize(trimmedSource) : null
+  const kind = normalizedSource ? redirectKind(normalizedSource) : "exact"
+
+  // Live preview: /old/* + /dest → /old/example → /dest/example
+  const wildcardPreview =
+    isAdvancedRedirectsEnabled &&
+    kind === "wildcard" &&
+    normalizedSource &&
+    destination
+      ? buildWildcardPreview(normalizedSource, destination)
+      : null
+
   // The "Redirect to a page on your site..." dropdown only surfaces while the
   // destination field is focused (per the design).
   const [isDestinationFocused, setIsDestinationFocused] = useState(false)
@@ -90,6 +132,12 @@ export const AddRedirectCard = ({
       { siteId, source, destination },
       {
         onSuccess: () => {
+          posthog.capture("redirect_created", {
+            site_id: siteId,
+            destination_type: destination.startsWith("/")
+              ? "internal"
+              : "external",
+          })
           reset()
           toast({ ...SETTINGS_TOAST_MESSAGES.success, status: "success" })
         },
@@ -165,7 +213,12 @@ export const AddRedirectCard = ({
               variant="inline"
               textStyle="subhead-2"
               color="interaction.links.default"
-              onClick={onBulkUploadOpen}
+              onClick={() => {
+                posthog.capture("redirect_bulk_upload_modal_opened", {
+                  site_id: siteId,
+                })
+                onBulkUploadOpen()
+              }}
             >
               bulk upload with a .csv instead
             </Link>
@@ -190,13 +243,24 @@ export const AddRedirectCard = ({
               /
             </InputLeftAddon>
             <Input
-              placeholder="redirect-from"
+              placeholder={
+                isAdvancedRedirectsEnabled
+                  ? "redirect-from or path/*"
+                  : "redirect-from"
+              }
               {...register("source", {
                 onChange: clearFieldFeedback("source"),
               })}
             />
           </InputGroup>
           <FormErrorMessage>{errors.source?.message}</FormErrorMessage>
+          {isAdvancedRedirectsEnabled && !errors.source && (
+            <FormHelperText fontSize="xs" color="base.content.medium">
+              {wildcardPreview
+                ? `e.g. ${wildcardPreview}`
+                : "Add /* at the end to redirect a whole section (e.g. /old-news/*)."}
+            </FormHelperText>
+          )}
         </FormControl>
 
         <Box flexShrink={0}>
