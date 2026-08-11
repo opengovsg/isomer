@@ -10,6 +10,7 @@ import {
   BiRightArrowAlt,
   BiTrash,
   BiUpArrowAlt,
+  BiX,
 } from "react-icons/bi"
 import {
   IconAddColLeft,
@@ -27,6 +28,7 @@ import type {
   TableMoveAxis,
   TableMovePlan,
 } from "./TableBubbleMenu.types"
+import { clearSelectedCells } from "./TableBubbleMenu.clear"
 import {
   duplicateSelectedColumns,
   duplicateSelectedRows,
@@ -180,6 +182,11 @@ const RowSelectionActions = ({
           onClick={() => duplicateSelectedRows(editor)}
         />
       )}
+      <ActionButton
+        label="Clear contents"
+        icon={<BiX fontSize="1rem" />}
+        onClick={() => clearSelectedCells(editor)}
+      />
       {rowMoveUpPlan && !includesHeader && (
         <ActionButton
           label="Move up"
@@ -252,6 +259,11 @@ const ColumnSelectionActions = ({
           onClick={() => duplicateSelectedColumns(editor)}
         />
       )}
+      <ActionButton
+        label="Clear contents"
+        icon={<BiX fontSize="1rem" />}
+        onClick={() => clearSelectedCells(editor)}
+      />
       {columnMoveLeftPlan && !includesHeader && (
         <ActionButton
           label="Move left"
@@ -295,27 +307,58 @@ export const TableBubbleMenuActions = ({
       return <ColumnSelectionActions editor={editor} rect={rect} />
     case "table":
       return (
-        <ActionButton
-          label="Delete table"
-          icon={<BiTrash fontSize="1rem" />}
-          onClick={() => editor.chain().focus().deleteTable().run()}
-        />
+        <ActionGroup>
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={() => clearSelectedCells(editor)}
+          />
+          <ActionButton
+            label="Delete table"
+            icon={<BiTrash fontSize="1rem" />}
+            onClick={() => editor.chain().focus().deleteTable().run()}
+          />
+        </ActionGroup>
       )
     case "multi-cell":
       return (
-        <ActionButton
-          label="Merge cells"
-          icon={<IconMergeCells boxSize="1rem" />}
-          onClick={() => editor.chain().focus().mergeCells().run()}
-        />
+        <ActionGroup>
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={() => clearSelectedCells(editor)}
+          />
+          <ActionButton
+            label="Merge cells"
+            icon={<IconMergeCells boxSize="1rem" />}
+            onClick={() => editor.chain().focus().mergeCells().run()}
+          />
+        </ActionGroup>
+      )
+    case "single-cell":
+      return (
+        <ActionGroup>
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={() => clearSelectedCells(editor)}
+          />
+        </ActionGroup>
       )
     case "merged-cell":
       return (
-        <ActionButton
-          label="Split cell"
-          icon={<IconSplitCell boxSize="1rem" />}
-          onClick={() => editor.chain().focus().splitCell().run()}
-        />
+        <ActionGroup>
+          <ActionButton
+            label="Clear contents"
+            icon={<BiX fontSize="1rem" />}
+            onClick={() => clearSelectedCells(editor)}
+          />
+          <ActionButton
+            label="Split cell"
+            icon={<IconSplitCell boxSize="1rem" />}
+            onClick={() => editor.chain().focus().splitCell().run()}
+          />
+        </ActionGroup>
       )
     default:
       return null
