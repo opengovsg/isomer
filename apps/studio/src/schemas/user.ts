@@ -1,4 +1,4 @@
-import { createEmailSchema } from "@opengovsg/starter-kitty-validators/email"
+import { createEmailSchema } from "@opengovsg/validators/email"
 import { z } from "zod"
 import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 

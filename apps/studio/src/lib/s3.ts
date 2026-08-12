@@ -5,6 +5,7 @@ import type {
   PutObjectCommandInput,
   PutObjectTaggingCommandInput,
 } from "@aws-sdk/client-s3"
+import type { Readable } from "node:stream"
 import {
   CopyObjectCommand,
   GetObjectCommand,
@@ -15,6 +16,7 @@ import {
   PutObjectTaggingCommand,
   S3Client,
 } from "@aws-sdk/client-s3"
+import { Upload } from "@aws-sdk/lib-storage"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { addDays } from "date-fns"
 import { env } from "~/env.mjs"
@@ -83,10 +85,11 @@ export const generateSignedPutUrl = async ({
   )
 }
 
-export const generateSignedGetUrl = async ({
-  Bucket,
-  Key,
-}: Pick<GetObjectCommandInput, "Bucket" | "Key">): Promise<string> => {
+export const generateSignedGetUrl = async (
+  { Bucket, Key }: Pick<GetObjectCommandInput, "Bucket" | "Key">,
+  // Default kept at 5 minutes so all existing callers are unchanged.
+  expiresIn: number = 60 * 5,
+): Promise<string> => {
   return getSignedUrl(
     storage,
     new GetObjectCommand({
@@ -94,7 +97,7 @@ export const generateSignedGetUrl = async ({
       Key,
     }),
     {
-      expiresIn: 60 * 5, // 5 minutes
+      expiresIn,
     },
   )
 }
@@ -220,6 +223,24 @@ export const setAssetAsPublished = async ({
   return
 }
 
+// A HeadObject error means "object is genuinely absent" only for a real
+// not-found: AWS SDK v3 surfaces this as an error named "NotFound"/"NoSuchKey"
+// or an HTTP 404. Every other failure (throttling, network blips, auth) is
+// transient/operational and MUST propagate — swallowing it as `null` would let
+// callers mistake a present object for a missing one.
+const isNotFoundError = (error: unknown): boolean => {
+  if (typeof error !== "object" || error === null) return false
+  const { name, $metadata } = error as {
+    name?: unknown
+    $metadata?: { httpStatusCode?: unknown }
+  }
+  return (
+    name === "NotFound" ||
+    name === "NoSuchKey" ||
+    $metadata?.httpStatusCode === 404
+  )
+}
+
 export const getFileSize = async ({
   Key,
   Bucket,
@@ -227,8 +248,11 @@ export const getFileSize = async ({
   try {
     const response = await storage.send(new HeadObjectCommand({ Bucket, Key }))
     return response.ContentLength ?? null
-  } catch {
-    return null
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return null
+    }
+    throw error
   }
 }
 
@@ -319,4 +343,53 @@ export const putObjectDirect = async (
   >,
 ): Promise<void> => {
   await storage.send(new PutObjectCommand(props))
+}
+
+// Resolves the private studio assets bucket — a dedicated bucket for
+// Studio-generated artifacts (provisioned in isomer-next-infra, published to
+// the env via SSM), separate from the public-facing website assets bucket; it
+// has no CDN or public access point in front of it. Audit-log CSV exports
+// live in it under the `audit-log-exports/` key prefix (see ADR 0007).
+// Throws a clear error if the env var is unset, so misconfiguration fails
+// loudly at call time rather than silently uploading to `undefined`. Exposed
+// so the orchestrator (next layer) can build keys / sign URLs against the
+// same bucket.
+export const getStudioAssetsBucketName = (): string => {
+  const bucket = env.S3_STUDIO_ASSETS_BUCKET_NAME
+  if (!bucket) {
+    throw new Error("S3_STUDIO_ASSETS_BUCKET_NAME is not configured")
+  }
+  return bucket
+}
+
+// Uploads a generated audit-log CSV export to the private studio assets
+// bucket. The download disposition uses the key's basename as the filename so
+// the browser saves a sensibly-named .csv rather than the full object key.
+//
+// `body` is streamed (the fulfilment path pipes a Postgres cursor through CSV
+// serialisation straight into here), so we use lib-storage's `Upload` rather
+// than a one-shot `PutObjectCommand`: it consumes a `Readable` without
+// buffering the whole file, switching to a multipart upload automatically once
+// the stream exceeds a single part and falling back to a single `PutObject`
+// for small bodies. A plain string body is still accepted.
+export const uploadAuditLogExport = async ({
+  key,
+  body,
+}: {
+  key: string
+  body: Readable | string
+}): Promise<void> => {
+  const Bucket = getStudioAssetsBucketName()
+  const filename = key.split("/").pop() ?? key
+  const upload = new Upload({
+    client: storage,
+    params: {
+      Bucket,
+      Key: key,
+      Body: body,
+      ContentType: "text/csv",
+      ContentDisposition: `attachment; filename="${filename}"`,
+    },
+  })
+  await upload.done()
 }

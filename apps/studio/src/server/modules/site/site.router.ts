@@ -21,7 +21,7 @@ import {
 } from "~/schemas/site"
 import { protectedProcedure, router } from "~/server/trpc"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
+import { IsomerAdminRole, RoleType } from "~prisma/generated/generatedEnums"
 
 import { logConfigEvent, logPublishEvent } from "../audit/audit.service"
 import { publishSite } from "../aws/codebuild.service"
@@ -49,24 +49,30 @@ import {
 
 export const siteRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
-    // Isomer admins can see all sites
+    // Isomer admins can see all sites, with an implicit Admin role
+    // regardless of any explicit roles they have on the site
     const isIsomerAdmin = await isActiveIsomerAdmin(ctx.user.id)
     if (isIsomerAdmin) {
-      return db
+      const sites = await db
         .selectFrom("Site")
         .select(["Site.id", "Site.config"])
         .orderBy("Site.id", "asc")
         .execute()
+      return sites.map((site) => ({ ...site, role: RoleType.Admin }))
     }
 
-    // NOTE: Any role should be able to read site
+    // NOTE: Any role should be able to read site.
+    // We only consider site-wide permissions (resourceId is null) here
+    // because there's no granular resource role, mirroring
+    // `getResourcePermission` in the permissions module.
     return db
       .selectFrom("Site")
       .innerJoin("ResourcePermission", "Site.id", "ResourcePermission.siteId")
       .where("ResourcePermission.deletedAt", "is", null)
+      .where("ResourcePermission.resourceId", "is", null)
       .where("ResourcePermission.userId", "=", ctx.user.id)
-      .select(["Site.id", "Site.config"])
-      .groupBy(["Site.id", "Site.config"])
+      .select(["Site.id", "Site.config", "ResourcePermission.role"])
+      .orderBy("Site.id", "asc")
       .execute()
   }),
   listAllSites: protectedProcedure.query(async ({ ctx }) => {

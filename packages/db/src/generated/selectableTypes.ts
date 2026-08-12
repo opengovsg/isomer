@@ -3,6 +3,7 @@ import { type Selectable } from "kysely"
 
 import type * as T from "./generatedTypes"
 export type AuditLog = Selectable<T.AuditLog>
+export type AuditLogExportRequest = Selectable<T.AuditLogExportRequest>
 export type Blob = Selectable<T.Blob>
 export type CodeBuildJobs = Selectable<T.CodeBuildJobs>
 export type Footer = Selectable<T.Footer>
