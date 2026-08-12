@@ -13,6 +13,7 @@ import {
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
+import { MAX_REDIRECT_REFERENCES } from "~/schemas/redirect"
 import { createCallerFactory } from "~/server/trpc"
 import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
 
@@ -1235,6 +1236,45 @@ describe("redirect.router", async () => {
       await expect(result).rejects.toMatchObject({ code: "FORBIDDEN" })
     })
 
+    it("should reject a batch larger than the reference cap before any lookup", async () => {
+      // Arrange — the fan-out of per-destination liveness lookups is bounded by
+      // this cap, so it is the control that keeps one request from turning into
+      // an unbounded pile of queries. Rejection happens in the input schema,
+      // before the procedure body runs.
+      const references = Array.from(
+        { length: MAX_REDIRECT_REFERENCES + 1 },
+        (_, index) => `[resource:${siteId}:${index + 1}]`,
+      )
+
+      // Act
+      const result = caller.resolveReferences({ siteId, references })
+
+      // Assert
+      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+      await expect(result).rejects.toThrow(/Too many references/)
+    })
+
+    it("should resolve a batch right at the reference cap", async () => {
+      // Arrange — the boundary the cap admits, every entry unresolvable so each
+      // one takes the liveness path rather than short-circuiting.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const references = Array.from(
+        { length: MAX_REDIRECT_REFERENCES },
+        (_, index) => `/missing-${index}`,
+      )
+
+      // Act
+      const result = await caller.resolveReferences({ siteId, references })
+
+      // Assert
+      expect(result).toHaveLength(MAX_REDIRECT_REFERENCES)
+      expect(result.every(({ warn }) => warn)).toBe(true)
+    })
+
     it("should resolve a reference to the page's current permalink", async () => {
       // Arrange
       const { page } = await setupPageResource({
@@ -1510,9 +1550,9 @@ describe("redirect.router", async () => {
       ])
     })
 
-    it("should warn for a folder whose index page is not published", async () => {
-      // Arrange — a folder with an unpublished IndexPage has no live page at its
-      // URL, so it warns.
+    it("should warn for a folder with nothing published inside it", async () => {
+      // Arrange — an unpublished IndexPage and no published pages beneath it, so
+      // the folder has no live content at all.
       await setupPageResource({
         siteId,
         resourceType: ResourceType.RootPage,
@@ -1528,6 +1568,12 @@ describe("redirect.router", async () => {
         resourceType: ResourceType.IndexPage,
         parentId: folder.id,
       })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "draft-child",
+      })
 
       // Act
       const result = await caller.resolveReferences({
@@ -1538,6 +1584,88 @@ describe("redirect.router", async () => {
       // Assert
       expect(result).toEqual([
         { reference: "/folder", permalink: null, warn: true },
+      ])
+    })
+
+    it("should not warn for a folder whose index page is unpublished but which holds a published page", async () => {
+      // Arrange — index pages are created as drafts and rarely published by
+      // hand, so a folder of published pages must not read as leading nowhere.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: folder.id,
+        permalink: "live-child",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/folder"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/folder", permalink: null, warn: false },
+      ])
+    })
+
+    it("should not warn for a folder whose published page sits in a nested subfolder", async () => {
+      // Arrange — the walk is recursive, so live content any depth down counts.
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.RootPage,
+        parentId: null,
+      })
+      const { folder } = await setupFolder({
+        siteId,
+        permalink: "folder",
+        parentId: null,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.IndexPage,
+        parentId: folder.id,
+      })
+      const { folder: subfolder } = await setupFolder({
+        siteId,
+        permalink: "subfolder",
+        parentId: folder.id,
+      })
+      await setupPageResource({
+        siteId,
+        resourceType: ResourceType.Page,
+        parentId: subfolder.id,
+        permalink: "live-grandchild",
+        state: ResourceState.Published,
+        userId,
+      })
+
+      // Act
+      const result = await caller.resolveReferences({
+        siteId,
+        references: ["/folder"],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        { reference: "/folder", permalink: null, warn: false },
       ])
     })
 

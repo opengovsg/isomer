@@ -52,6 +52,7 @@ import {
   getResourceFullPermalinks,
   getResourceIdByPermalink,
   getResourceIdsByPermalinks,
+  hasPublishedDescendant,
 } from "../resource/resource.service"
 
 // Sort field → column. `publishedAt` maps to `createdAt`; `satisfies` keeps the
@@ -131,10 +132,18 @@ const resolveDestinationForStorage = async (
   }
 }
 
-// Batch publish-state for a set of resource ids. A Page/CollectionPage is live
-// when it has a published version; a Folder/Collection is served by its
-// IndexPage, so it's live when that index page is published (mirrors
-// getResourceByFullPermalink's container handling).
+const isContainerType = (type: ResourceType) =>
+  type === ResourceType.Folder || type === ResourceType.Collection
+
+// Batch publish-state for a set of resource ids: is there a page rendering at
+// this resource's own URL? A Page/CollectionPage is live when it has a
+// published version; a Folder/Collection is served by its IndexPage, so it's
+// live when that index page is published (mirrors getResourceByFullPermalink's
+// container handling).
+//
+// This is the question the source-shadowing guards ask — a redirect may only be
+// refused when a page really renders at that URL. It is deliberately NOT the
+// question the destination warning asks; see getDestinationLiveStateByResourceIds.
 const getPublishedStateByResourceIds = async (
   siteId: number,
   resourceIds: number[],
@@ -152,10 +161,7 @@ const getPublishedStateByResourceIds = async (
     .execute()
 
   const containerIds = resources
-    .filter(
-      (r) =>
-        r.type === ResourceType.Folder || r.type === ResourceType.Collection,
-    )
+    .filter((r) => isContainerType(r.type))
     .map((r) => String(r.id))
   const publishedByContainerId = new Map<string, boolean>()
   if (containerIds.length > 0) {
@@ -175,17 +181,75 @@ const getPublishedStateByResourceIds = async (
   }
 
   for (const resource of resources) {
-    const isContainer =
-      resource.type === ResourceType.Folder ||
-      resource.type === ResourceType.Collection
     result.set(
       Number(resource.id),
-      isContainer
+      isContainerType(resource.type)
         ? (publishedByContainerId.get(String(resource.id)) ?? false)
         : resource.publishedVersionId !== null,
     )
   }
   return result
+}
+
+// How many destination-liveness lookups may be in flight at once. Each is a
+// short-circuiting subtree existence check, so a small window keeps a single
+// request off the connection pool while still overlapping the round-trips.
+const LIVENESS_LOOKUP_CONCURRENCY = 5
+
+// Batch liveness for redirect *destinations*: does this destination lead
+// anywhere on the published site? Same as getPublishedStateByResourceIds except
+// that a container also counts as live when it holds published pages but its
+// own index page is still a draft — index pages are created as drafts and are
+// rarely published by hand, so gating on the index page alone flags a section
+// full of live pages as leading nowhere.
+//
+// Only the table's advisory warning uses this. The shadowing guards must keep
+// the stricter "a page renders at this exact URL" reading, or a redirect at a
+// draft-index folder would be refused as hiding a page that isn't there.
+const getDestinationLiveStateByResourceIds = async (
+  siteId: number,
+  resourceIds: number[],
+): Promise<Map<number, boolean>> => {
+  const state = await getPublishedStateByResourceIds(siteId, resourceIds)
+  if (state.size === 0) {
+    return state
+  }
+
+  // Only a resource the index-page check already ruled out can be revived by
+  // its contents, so this asks about the smallest set that could still change
+  // the answer — usually none. Non-containers are left in: a page has no
+  // children, so the check simply comes back false for them, and filtering
+  // them out first would cost a query to learn their types.
+  const undecidedIds = [...state.entries()].flatMap(([id, isLive]) =>
+    isLive ? [] : [id],
+  )
+
+  // A request may carry up to MAX_REDIRECT_REFERENCES destinations, and a
+  // caller can make every one of them undecided by pointing at unpublished
+  // resources. Run the lookups a few at a time so one request can't put its
+  // whole batch on the connection pool at once — the table only ever has a
+  // page's worth in flight, so this costs it nothing.
+  for (const batch of chunk(undecidedIds, LIVENESS_LOOKUP_CONCURRENCY)) {
+    const revived = await Promise.all(
+      batch.map(async (id) => ({
+        id,
+        // Reuses the resource module's existing subtree walk rather than a
+        // second one here: it stops at the first published row instead of
+        // materialising the subtree, and its CTE is a `union` so a malformed
+        // parent chain with a cycle terminates instead of recursing forever.
+        isLive: await hasPublishedDescendant(db, {
+          siteId,
+          resourceId: String(id),
+        }),
+      })),
+    )
+    for (const { id, isLive } of revived) {
+      if (isLive) {
+        state.set(id, true)
+      }
+    }
+  }
+  return state
 }
 
 // Strips a "?query"/"#fragment" off a path, leaving the bare path before the
@@ -249,7 +313,7 @@ export const resolveRedirectReferences = async ({
     .filter((id): id is number => id !== null)
   const [permalinks, publishedState] = await Promise.all([
     getResourceFullPermalinks(siteId, resourceIds),
-    getPublishedStateByResourceIds(siteId, resourceIds),
+    getDestinationLiveStateByResourceIds(siteId, resourceIds),
   ])
 
   return parsed.map(({ reference, kind, resourceId }) => {
