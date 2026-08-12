@@ -2974,6 +2974,82 @@ describe("resource.router", async () => {
       expect(result).toEqual(page)
     })
 
+    it("should block deleting a page that is still published", async () => {
+      // Arrange
+      const { page, site } = await setupPageResource({
+        resourceType: "Page",
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      const auditSpy = vitest.spyOn(auditService, "logResourceEvent")
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: page.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This page must be unpublished before it can be deleted",
+        }),
+      )
+      expect(auditSpy).not.toHaveBeenCalled()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should still allow deleting a published folder (no unpublish path yet)", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      const blob = await setupBlob()
+      const version = await db
+        .insertInto("Version")
+        .values({
+          versionNum: 1,
+          resourceId: folder.id,
+          blobId: blob.id,
+          publishedBy: session.userId as string,
+        })
+        .returning("id")
+        .executeTakeFirstOrThrow()
+      await db
+        .updateTable("Resource")
+        .where("id", "=", folder.id)
+        .set({
+          state: ResourceState.Published,
+          publishedVersionId: version.id,
+        })
+        .execute()
+
+      // Act
+      const result = await caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      expect(result).toBeDefined()
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).toBeUndefined()
+    })
+
     it("should soft-delete redirects pointing to the deleted page", async () => {
       // Arrange — a live redirect whose destination references the page
       const { page, site } = await setupPageResource({ resourceType: "Page" })
