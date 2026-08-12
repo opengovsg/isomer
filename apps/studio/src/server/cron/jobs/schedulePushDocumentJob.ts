@@ -22,6 +22,11 @@ const SEARCHSG_CONTENT_LENGTH = 50000
 
 const logger = createBaseLogger({ path: "cron:schedulePushDocumentJob" })
 
+interface ProcessedJob {
+  jobId: string
+  scheduledAt: Date
+}
+
 const pushDocumentContentSchema = z.object({
   page: z.object({
     ref: z.string(),
@@ -186,6 +191,7 @@ export const schedulePushDocumentJobHandler = async () => {
         "Resource.title",
         "Resource.id as resourceId",
         "Resource.parentId",
+        "PushDocumentJob.id as jobId",
         "PushDocumentJob.scheduledAt",
       ])
       .execute()
@@ -193,7 +199,14 @@ export const schedulePushDocumentJobHandler = async () => {
     if (useSearchSg) {
       // --- SearchSG path (flag ON) ---
       const documentPromises = scheduledResources.map(
-        async ({ scheduledAt, resourceId, title, parentId, content }) => {
+        async ({
+          jobId,
+          scheduledAt,
+          resourceId,
+          title,
+          parentId,
+          content,
+        }) => {
           try {
             const extracted = await extractResourceData({
               resourceId,
@@ -206,16 +219,20 @@ export const schedulePushDocumentJobHandler = async () => {
               extracted
 
             return {
-              // SearchSG dedupes on documentId, so derive a stable id from the
-              // S3 key + resourceId. Re-uploads of the same key produce the
-              // same id, avoiding duplicate search hits.
-              documentId: generateDocumentId(ref, String(resourceId)),
-              content: pdfTextContent.slice(0, SEARCHSG_CONTENT_LENGTH),
-              title,
-              url: encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`),
-              date: scheduledAt.toISOString(),
-              categories: subcategoryLabel ? [subcategoryLabel] : [],
-              contentType: parsedPage.category,
+              jobId,
+              scheduledAt,
+              document: {
+                // SearchSG dedupes on documentId, so derive a stable id from the
+                // S3 key + resourceId. Re-uploads of the same key produce the
+                // same id, avoiding duplicate search hits.
+                documentId: generateDocumentId(ref, String(resourceId)),
+                content: pdfTextContent.slice(0, SEARCHSG_CONTENT_LENGTH),
+                title,
+                url: encodeURI(`https://${env.S3_GAZETTE_DOMAIN_NAME}${ref}`),
+                date: scheduledAt.toISOString(),
+                categories: subcategoryLabel ? [subcategoryLabel] : [],
+                contentType: parsedPage.category,
+              },
             }
           } catch (error) {
             logger.error({ error, resourceId }, "Failed to process document")
@@ -225,12 +242,14 @@ export const schedulePushDocumentJobHandler = async () => {
       )
 
       const resolvedDocuments = await Promise.all(documentPromises)
-      const documents = resolvedDocuments.filter(
-        (document): document is PushDocument => document !== null,
+      const processedDocuments = resolvedDocuments.filter(
+        (result): result is ProcessedJob & { document: PushDocument } =>
+          result !== null,
       )
+      const documents = processedDocuments.map(({ document }) => document)
 
       await pushDocumentsForIngestion(documents)
-      await deleteProcessedJobs(scheduledAtCutoff)
+      await deleteProcessedJobs(processedDocuments)
       logger.info(
         { count: documents.length, documents },
         "Completed schedule push document job (SearchSG)",
@@ -238,11 +257,13 @@ export const schedulePushDocumentJobHandler = async () => {
     } else {
       // --- Algolia path (flag OFF, default) ---
       let savedCount = 0
+      const processedJobs: ProcessedJob[] = []
       // NOTE: This is deliberate done using a `for .. await` loop
       // to avoid running into rate-limits with Algolia. DO NOT
       // change this to a `map` as it might cause the publish to fail
       // due to the records not being ingested by Algolia
       for (const {
+        jobId,
         scheduledAt,
         resourceId,
         title,
@@ -285,6 +306,7 @@ export const schedulePushDocumentJobHandler = async () => {
           }
 
           await saveObjectsToSearchIndex(records)
+          processedJobs.push({ jobId, scheduledAt })
           savedCount++
           logger.info({ resourceId, count: records.length }, "Saved to Algolia")
         } catch (error) {
@@ -295,7 +317,7 @@ export const schedulePushDocumentJobHandler = async () => {
         }
       }
 
-      await deleteProcessedJobs(scheduledAtCutoff)
+      await deleteProcessedJobs(processedJobs)
       logger.info(
         { count: savedCount, attempted: scheduledResources.length },
         "Completed schedule push document job (Algolia)",
@@ -306,12 +328,19 @@ export const schedulePushDocumentJobHandler = async () => {
   }
 }
 
-// Drop every job whose scheduledAt has passed, regardless of per-row push
-// outcome — failed rows are logged above and not retried in-band, matching
-// the existing schedule-publishing semantics.
-const deleteProcessedJobs = async (scheduledAtCutoff: Date) => {
+const deleteProcessedJobs = async (jobs: ProcessedJob[]) => {
+  if (jobs.length === 0) return
+
+  // A user can reschedule the same row while external ingestion is in flight.
+  // Match the selected timestamp as well as the id so the updated job survives.
   await db
     .deleteFrom("PushDocumentJob")
-    .where("scheduledAt", "<=", scheduledAtCutoff)
+    .where((eb) =>
+      eb.or(
+        jobs.map(({ jobId, scheduledAt }) =>
+          eb.and([eb("id", "=", jobId), eb("scheduledAt", "=", scheduledAt)]),
+        ),
+      ),
+    )
     .execute()
 }
