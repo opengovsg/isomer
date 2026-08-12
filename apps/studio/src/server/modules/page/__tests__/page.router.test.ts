@@ -14,6 +14,7 @@ import {
 } from "tests/integration/helpers/iron-session"
 import {
   setupAdminPermissions,
+  setupBlob,
   setupCollection,
   setupEditorPermissions,
   setupFolder,
@@ -2310,6 +2311,112 @@ describe("page.router", async () => {
         .where("source", "=", "/old-url")
         .executeTakeFirstOrThrow()
       expect(redirect.destination).toEqual(`[resource:${site.id}:${folder.id}]`)
+    })
+  })
+
+  describe("unpublishPage", () => {
+    it("should throw 401 if not logged in", async () => {
+      const unauthedSession = applySession()
+      const unauthedCaller = createCaller(createMockRequest(unauthedSession))
+
+      const result = unauthedCaller.unpublishPage({ siteId: 1, pageId: 1 })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have unpublish access to the page", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupEditorPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw if the page is not currently published", async () => {
+      // Arrange
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "This page is not currently published",
+        }),
+      )
+    })
+
+    it("should unpublish a live page while retaining its draft", async () => {
+      // Arrange — a published page with a pending draft
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const draftBlob = await setupBlob()
+      await db
+        .updateTable("Resource")
+        .where("id", "=", page.id)
+        .set({ draftBlobId: draftBlob.id })
+        .execute()
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — DB (Resource)
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+      expect(updated.state).toEqual(ResourceState.Draft)
+      expect(updated.draftBlobId).toEqual(draftBlob.id)
+
+      // Assert — DB (AuditLog)
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Unpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs.length).toEqual(1)
     })
   })
 
