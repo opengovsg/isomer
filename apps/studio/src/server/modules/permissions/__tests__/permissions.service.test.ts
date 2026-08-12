@@ -1560,31 +1560,37 @@ describe("validateUserIsSiteAdmin", () => {
   })
 
   it("should allow a Site Admin", async () => {
+    // Arrange
     const user = await setupUser({ email: "site-admin@example.com" })
     const { site } = await setupSite()
     await setupAdminPermissions({ userId: user.id, siteId: site.id })
 
+    // Act & Assert
     await expect(
       validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
     ).resolves.toBe(true)
   })
 
   it("should allow an active Isomer Admin without a site permission", async () => {
+    // Arrange
     const user = await setupUser({ email: "isomer-admin@example.com" })
     const { site } = await setupSite()
     await setupIsomerAdmin({ userId: user.id })
 
+    // Act & Assert
     await expect(
       validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
     ).resolves.toBe(true)
   })
 
   it("should reject an expired Isomer Admin without a site permission", async () => {
+    // Arrange
     const user = await setupUser({ email: "expired-admin@example.com" })
     const { site } = await setupSite()
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
     await setupIsomerAdmin({ userId: user.id, expiry: yesterday })
 
+    // Act & Assert
     await expect(
       validateUserIsSiteAdmin({ userId: user.id, siteId: site.id }),
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
