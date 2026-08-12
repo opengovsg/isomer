@@ -37,6 +37,7 @@ const getLatestVersionByResourceId = ({
     .where("Version.resourceId", "=", resourceId)
     .select(defaultVersionSelect)
     .orderBy("Version.versionNum", "desc")
+    .limit(1)
     .executeTakeFirst()
 
 const createVersion = async (
