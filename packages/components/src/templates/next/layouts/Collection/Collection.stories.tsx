@@ -231,7 +231,7 @@ export const YearFilterSelectNotSpecified: Story = {
     const screen = within(canvasElement)
     await userEvent.click(screen.getByText(/Not specified/i))
 
-    const resultsHeader = await screen.findAllByText(/3 articles/)
+    const resultsHeader = await screen.findAllByText(/3 items/)
     await expect(resultsHeader.length).toBe(1)
   },
 }
