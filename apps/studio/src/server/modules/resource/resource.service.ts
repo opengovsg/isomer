@@ -964,7 +964,10 @@ export const getResourceFullPermalinks = async (
         .where("Resource.siteId", "=", siteId)
         .where("Resource.id", "in", resourceIds.map(String))
         .select(["Resource.id", "Resource.permalink", "Resource.parentId"])
-        .unionAll((fb) =>
+        // `union` (not `unionAll`) dedupes rows so a malformed parent chain
+        // with a cycle can't drive the recursion forever, matching
+        // getResourcePermalinkTree and withResourceSubtree above.
+        .union((fb) =>
           fb
             // Recursive case: walk up to each node's parent
             .selectFrom("Resource")
@@ -999,12 +1002,17 @@ export const getResourceFullPermalinks = async (
   const result = new Map<number, string>()
   for (const resourceId of resourceIds) {
     const segments: string[] = []
+    // The query above terminates on a cyclic chain, but the walk it feeds would
+    // still loop between the cycle's members forever — stop at the first id
+    // seen twice.
+    const visited = new Set<string>()
     let currentId: string | null = String(resourceId)
     while (currentId !== null) {
       const node = nodeById.get(currentId)
-      if (node === undefined) {
+      if (node === undefined || visited.has(currentId)) {
         break
       }
+      visited.add(currentId)
       segments.push(node.permalink)
       currentId = node.parentId
     }
