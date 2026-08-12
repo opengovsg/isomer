@@ -32,6 +32,7 @@ import {
   publishPageSchema,
   readPageOutputSchema,
   reorderBlobSchema,
+  unpublishPageSchema,
   updatePageBlobSchema,
   updatePageMetaSchema,
 } from "~/schemas/page"
@@ -62,6 +63,7 @@ import {
   getResourcePermalinkTree,
   publishPageResource,
   publishResource,
+  unpublishPageResource,
   updateBlobById,
   updatePageById,
 } from "../resource/resource.service"
@@ -667,6 +669,27 @@ export const pageRouter = router({
             publisherEmail: user.email,
           })
         }
+      },
+    ),
+
+  unpublishPage: protectedProcedure
+    .input(unpublishPageSchema)
+    .mutation(
+      async ({ ctx: { user, gb, logger }, input: { siteId, pageId } }) => {
+        await bulkValidateUserPermissionsForResources({
+          siteId,
+          action: "unpublish",
+          userId: user.id,
+        })
+        await unpublishPageResource({
+          logger,
+          siteId,
+          resourceId: String(pageId),
+          userId: user.id,
+          sitePublish: {
+            enableCodebuildJobs: gb.isOn(ENABLE_CODEBUILD_JOBS),
+          },
+        })
       },
     ),
 
