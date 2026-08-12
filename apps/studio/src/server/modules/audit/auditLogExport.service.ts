@@ -26,7 +26,8 @@ import { AuditLogExportStatus } from "~prisma/generated/generatedEnums"
 
 import type { BaseLogger } from "@isomer/logging"
 
-import { AuditLogExportReportType, db } from "../database"
+import { AuditLogExportReportType, db, RoleType } from "../database"
+import { getResourcePermission } from "../permissions/permissions.service"
 import { logAuditLogExportEvent } from "./audit.service"
 import {
   accessReportQuery,
@@ -405,22 +406,20 @@ export const processAuditLogExportRequest = async (
     .select(["id", "name", "config"])
     .executeTakeFirstOrThrow()
 
-  const user = await db
-    .selectFrom("User")
-    .innerJoin("ResourcePermission", "ResourcePermission.userId", "User.id")
-    .where("User.id", "=", request.userId)
-    .where("User.deletedAt", "is", null)
-    .where("ResourcePermission.userId", "=", request.userId)
-    .where("ResourcePermission.role", "=", "Admin")
-    .where("ResourcePermission.siteId", "=", site.id)
-    .where("ResourcePermission.deletedAt", "is", null)
-    .select(["User.id", "User.email"])
-    .executeTakeFirst()
+  const [user, roles] = await Promise.all([
+    db
+      .selectFrom("User")
+      .where("User.id", "=", request.userId)
+      .where("User.deletedAt", "is", null)
+      .select(["User.id", "User.email"])
+      .executeTakeFirst(),
+    getResourcePermission({ userId: request.userId, siteId: site.id }),
+  ])
+  const isAdmin = roles.some(({ role }) => role === RoleType.Admin)
 
-  // NOTE: Early return - this is technically not a failure
-  // because it means that the user has been removed from the site
-  // as an admin between the job creation and fulfillment time
-  if (!user) {
+  // NOTE: Early return - the requester no longer exists or lost their
+  // effective Admin access between request creation and fulfillment.
+  if (!user || !isAdmin) {
     logger.warn(
       { requestId, userId: request.userId },
       "User no longer exists or is not an admin",

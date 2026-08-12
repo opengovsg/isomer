@@ -1,6 +1,7 @@
 import { resetTables } from "tests/integration/helpers/db"
 import {
   setupAdminPermissions,
+  setupIsomerAdmin,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
@@ -145,6 +146,7 @@ describe("auditLogExport processor", () => {
   beforeEach(async () => {
     await resetTables(
       "AuditLogExportRequest",
+      "IsomerAdmin",
       "ResourcePermission",
       "User",
       "Site",
@@ -217,6 +219,28 @@ describe("auditLogExport processor", () => {
     // requests compare against the range end to qualify this row for reuse.
     // Its value is captured BEFORE the report query, not at delivery.
     expect(updated.completedAt).not.toBeNull()
+  })
+
+  it("processes an Isomer Admin request without a site permission", async () => {
+    // Arrange
+    const { site } = await setupSite()
+    const admin = await setupUser({ email: "isomer-admin@open.gov.sg" })
+    await setupIsomerAdmin({ userId: admin.id })
+    const request = await seedRequest({
+      siteId: site.id,
+      userId: admin.id,
+      reportType: "Access",
+    })
+
+    // Act
+    await processPendingAuditLogExports()
+
+    // Assert
+    expect(mockUploadAuditLogExport).toHaveBeenCalledTimes(1)
+    expect(mockSendAuditLogExportReadyEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ recipientEmail: admin.email }),
+    )
+    expect((await getRequest(request.id)).status).toBe("Done")
   })
 
   it("marks the row Done BEFORE sending the ready email, so the emailed token is already live", async () => {

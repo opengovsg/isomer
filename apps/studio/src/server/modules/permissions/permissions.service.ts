@@ -342,20 +342,17 @@ export const validateUserIsSiteAdmin = async ({
   userId,
   siteId,
 }: ValidateUserIsSiteAdminProps) => {
-  const _ = await db
-    .selectFrom("ResourcePermission")
-    .where("role", "=", "Admin")
-    .where("ResourcePermission.userId", "=", userId)
-    .where("ResourcePermission.siteId", "=", siteId)
-    .where("ResourcePermission.deletedAt", "is", null)
-    .select(["role"])
-    .executeTakeFirstOrThrow(() => {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message:
-          "You do not have sufficient permissions to perform this action",
-      })
+  // Use the shared permission lookup so platform-level Isomer Admins inherit
+  // every capability guarded as Site Admin-only. This also keeps expiry and
+  // soft-deletion handling consistent with the rest of the permission system.
+  const roles = await getResourcePermission({ userId, siteId })
+
+  if (!roles.some(({ role }) => role === RoleType.Admin)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You do not have sufficient permissions to perform this action",
     })
+  }
 
   return true
 }
