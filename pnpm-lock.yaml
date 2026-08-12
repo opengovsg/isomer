@@ -282,8 +282,8 @@ catalogs:
       specifier: ^5.5.4
       version: 5.5.4
     pg-boss:
-      specifier: ^12.26.3
-      version: 12.26.4
+      specifier: ^12.27.0
+      version: 12.27.0
     pino:
       specifier: ^10.3.1
       version: 10.3.1
@@ -1469,7 +1469,7 @@ importers:
         version: link:../logging
       pg-boss:
         specifier: 'catalog:'
-        version: 12.26.4
+        version: 12.27.0
       vitest:
         specifier: catalog:vitest
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.1.2)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-istanbul@4.1.10)(happy-dom@20.10.6)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.15.0(@types/node@26.1.2)(typescript@6.0.3))(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.102.0)(terser@5.46.1)(tsx@4.23.11)(yaml@2.8.3))
@@ -8027,10 +8027,9 @@ packages:
   create-hmac@1.1.7:
     resolution: {integrity: sha512-MJG9liiZ+ogc4TzUwuvbER1JRdgvUFSB5+VR/g5h82fGaIRWMWddtKBHi7/sVhfjQZ6SehlyhvQYrcYkaUIpLg==}
 
-  cron-parser@5.6.2:
-    resolution: {integrity: sha512-yJ/G1LVir6CnlkLI40CsampPLKl1SprGGlUagWtGJxewytRVYezv5xVyzzbT+Pvzx+VIRvZVF7/a0eEMTxdnTA==}
+  cron-parser@5.8.1:
+    resolution: {integrity: sha512-fVw5nGEkTVmiPKo3fY0j28Thq6jR00VKWyL22llWrsbII4sDHI+8Kx1kcL+QzGQJfCfk64bbMotrgTZRpzYpLQ==}
     engines: {node: '>=18'}
-    deprecated: 'Published tarball was built from a stale dist/ and is missing the fixes from #414 and #415 — its contents are effectively v5.6.1. Upgrade to v5.7.0.'
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -10508,8 +10507,8 @@ packages:
   performance-now@2.1.0:
     resolution: {integrity: sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==}
 
-  pg-boss@12.26.4:
-    resolution: {integrity: sha512-CLcn6WKhmBbSNTMckx5wKeqlMDryIN/X71zQFOLc0okjDsQwtSym2O2bvB5iSIxvlVF6sHrVld8NZ7QrQuYaVg==}
+  pg-boss@12.27.0:
+    resolution: {integrity: sha512-DawcUffyDVJvxGYvaoc7B+G1yY86dJtvugVYMAt+CtO6Lg+RSyQuAU7IRfNyhqi0Bo/JeaxLqhqIy5+twpmYlg==}
     engines: {node: '>=22.12.0'}
     hasBin: true
 
@@ -19281,7 +19280,7 @@ snapshots:
       safe-buffer: 5.2.1
       sha.js: 2.4.12
 
-  cron-parser@5.6.2:
+  cron-parser@5.8.1:
     dependencies:
       luxon: 3.7.2
 
@@ -22115,9 +22114,9 @@ snapshots:
 
   performance-now@2.1.0: {}
 
-  pg-boss@12.26.4:
+  pg-boss@12.27.0:
     dependencies:
-      cron-parser: 5.6.2
+      cron-parser: 5.8.1
       pg: 8.22.0
       serialize-error: 13.0.1
     transitivePeerDependencies:
