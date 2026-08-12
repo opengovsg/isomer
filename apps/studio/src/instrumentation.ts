@@ -11,8 +11,7 @@ export async function register() {
     // oxlint-disable-next-line node/no-process-env
     initTracer({ service: process.env.DD_SERVICE ?? "isomer-next" })
 
-    // Skip cron on Vercel preview (serverless — no persistent process)
-    if (env.NEXT_PUBLIC_APP_ENV !== "preview") {
+    if (env.ENABLE_CRON_WORKERS) {
       // Import only if runtime is nodejs. This avoids running it on the browser, build time etc.
       const { initializeCronJobs, stopCronJobs } = await import("~/server/cron")
       await initializeCronJobs()
@@ -24,6 +23,8 @@ export async function register() {
       }
       process.on("SIGTERM", gracefulShutdown)
       process.on("SIGINT", gracefulShutdown)
+    } else {
+      console.log("Cron workers are disabled")
     }
   }
 }

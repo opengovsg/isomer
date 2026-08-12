@@ -6,6 +6,7 @@ import { type BaseLogger, pino } from "@isomer/logging"
 
 import type { GlobalWithPgBoss } from ".."
 import { registerPgbossJob } from ".."
+import { env } from "../env"
 
 const logger: BaseLogger = pino({ level: "silent" })
 
@@ -17,9 +18,27 @@ describe("client", () => {
     globalForPgboss.registeredPgbossJobs = new Set<string>()
   })
   afterEach(() => {
+    env.ENABLE_CRON_WORKERS = true
     vi.restoreAllMocks()
   })
   describe("registerPgbossJob", () => {
+    it("does not start PgBoss or register a job when cron workers are disabled", async () => {
+      env.ENABLE_CRON_WORKERS = false
+      const handler = vi.fn().mockResolvedValue(undefined)
+
+      const { stop } = await registerPgbossJob(
+        logger,
+        "disabled-job",
+        "* * * * *",
+        handler,
+      )
+
+      expect(globalForPgboss.pgBoss).toBeUndefined()
+      expect(globalForPgboss.registeredPgbossJobs).toEqual(new Set())
+      expect(handler).not.toHaveBeenCalled()
+      expect(stop()).toBeUndefined()
+    })
+
     it("creates queue, registers worker, and schedules job", async () => {
       const handler = vi.fn().mockResolvedValue(undefined)
 
