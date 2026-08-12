@@ -414,7 +414,7 @@ catalogs:
       version: 3.8.0
   pg:
     '@types/pg':
-      specifier: ^8.20.3
+      specifier: ^8.20.4
       version: 8.21.0
     '@types/pg-cursor':
       specifier: ^2.7.2
@@ -6827,9 +6827,6 @@ packages:
 
   '@types/pg-cursor@2.7.2':
     resolution: {integrity: sha512-m3xT8bVFCvx98LuzbvXyuCdT/Hjdd/v8ml4jL4K1QF70Y8clOfCFdgoaEB1FWdcSwcpoFYZTJQaMD9/GQ27efQ==}
-
-  '@types/pg@8.20.0':
-    resolution: {integrity: sha512-bEPFOaMAHTEP1EzpvHTbmwR8UsFyHSKsRisLIHVMXnpNefSbGA1bD6CVy+qKjGSqmZqNqBDV2azOBo8TgkcVow==}
 
   '@types/pg@8.21.0':
     resolution: {integrity: sha512-AYdtudzabjLZgVgRZmAnU8bAnVUXzuJX2IYHeSIiIHm68olD+LgQYCGWdtcNYnP0uq9c4S4NibVG3Ni7VbKW7Q==}
@@ -16567,7 +16564,7 @@ snapshots:
   '@prisma/adapter-pg@7.9.1':
     dependencies:
       '@prisma/driver-adapter-utils': 7.9.1
-      '@types/pg': 8.20.0
+      '@types/pg': 8.21.0
       pg: 8.22.0
       postgres-array: 3.0.4
     transitivePeerDependencies:
@@ -17817,13 +17814,7 @@ snapshots:
   '@types/pg-cursor@2.7.2':
     dependencies:
       '@types/node': 26.1.2
-      '@types/pg': 8.20.0
-
-  '@types/pg@8.20.0':
-    dependencies:
-      '@types/node': 26.1.2
-      pg-protocol: 1.15.0
-      pg-types: 2.2.0
+      '@types/pg': 8.21.0
 
   '@types/pg@8.21.0':
     dependencies:
