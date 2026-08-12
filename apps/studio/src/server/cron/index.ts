@@ -1,3 +1,5 @@
+import { env } from "~/env.mjs"
+
 import { createBaseLogger } from "../../lib/logger"
 import { auditLogExportJob } from "./jobs/auditLogExportJob"
 import { deactivateInactiveUsersJob } from "./jobs/deactivateInactiveUsersJob"
@@ -11,6 +13,11 @@ const logger = createBaseLogger({ path: "cron:index" })
 const cronJobs: { stop: () => void }[] = []
 
 export const initializeCronJobs = async () => {
+  if (!env.ENABLE_CRON_WORKERS) {
+    logger.info("Cron workers are disabled. Skipping initialization.")
+    return
+  }
+
   logger.info("Initializing cron jobs...")
 
   // Initialize and track all cron jobs
