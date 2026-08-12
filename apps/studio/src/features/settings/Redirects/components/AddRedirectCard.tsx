@@ -32,6 +32,7 @@ import { useZodForm } from "~/lib/form"
 import { normalizeRedirectSource, redirectKind } from "~/schemas/redirect"
 
 import { useCreateRedirect } from "../api"
+import { WILDCARD_HINT } from "../constants"
 import { addRedirectSchema, type AddRedirectInput } from "../types"
 import { BulkUploadRedirectsModal } from "./BulkUploadRedirectsModal"
 import { SelectDestinationPageModal } from "./SelectDestinationPageModal"
@@ -254,11 +255,17 @@ export const AddRedirectCard = ({
             />
           </InputGroup>
           <FormErrorMessage>{errors.source?.message}</FormErrorMessage>
+          {/* The design system's helper text sits flush against the field
+              (theme sets `mt: 0`), which reads as part of the input when placed
+              below it — space it off the box. This has to go through `sx`, not
+              an `mt` prop: the design system's wrapper merges the theme's
+              helperText styles into `sx`, and Chakra's `sx` outranks style
+              props, so an `mt` prop is silently dropped. Colour and font size
+              come from the theme (base.content.medium, body-2) for the same
+              reason. */}
           {isAdvancedRedirectsEnabled && !errors.source && (
-            <FormHelperText fontSize="xs" color="base.content.medium">
-              {wildcardPreview
-                ? `e.g. ${wildcardPreview}`
-                : "Add /* at the end to redirect a whole section (e.g. /old-news/*)."}
+            <FormHelperText sx={{ mt: "0.75rem" }}>
+              {wildcardPreview ? `e.g. ${wildcardPreview}` : WILDCARD_HINT}
             </FormHelperText>
           )}
         </FormControl>
