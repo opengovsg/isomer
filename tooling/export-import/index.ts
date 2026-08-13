@@ -74,7 +74,10 @@ const unstudioifySite = async (sourceSiteId: number) => {
   const allJsonFiles = fs
     .readdirSync(path.join(process.cwd(), "temp"), { recursive: true })
     .filter(
-      (file) => (file as string).endsWith(".json") && file !== "sitemap.json"
+      (file) =>
+        (file as string).endsWith(".json") &&
+        file !== "sitemap.json" &&
+        file !== "redirects.json"
     ) as string[];
 
   for (const file of allJsonFiles) {
@@ -225,6 +228,10 @@ const main = async () => {
   await execFile("mv", [
     path.join(exportDir, "sitemap.json"),
     path.join(tempDir, "sitemap.json"),
+  ]);
+  await execFile("mv", [
+    path.join(exportDir, "redirects.json"),
+    path.join(tempDir, "redirects.json"),
   ]);
 
   // Step 2: Export the assets from the S3 bucket
