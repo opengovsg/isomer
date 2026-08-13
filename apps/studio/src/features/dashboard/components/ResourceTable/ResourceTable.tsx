@@ -1,4 +1,7 @@
-import type { ResourceOrderByOption } from "~/schemas/resource"
+import type {
+  ResourceLiveStatus,
+  ResourceOrderByOption,
+} from "~/schemas/resource"
 import { HStack, Text } from "@chakra-ui/react"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
@@ -15,6 +18,7 @@ import { useTablePagination } from "~/hooks/useTablePagination"
 import { trpc } from "~/utils/trpc"
 
 import type { ResourceTableData } from "./types"
+import { ResourceLiveStatusMenu } from "./ResourceLiveStatusMenu"
 import { ResourceSortMenu } from "./ResourceSortMenu"
 import { ResourceTableMenu } from "./ResourceTableMenu"
 import { TitleCell } from "./TitleCell"
@@ -64,6 +68,9 @@ export const ResourceTable = ({
 }: ResourceTableProps): JSX.Element => {
   const [sortOption, setSortOption] =
     useState<ResourceOrderByOption>("updated-desc")
+  const [liveStatusOption, setLiveStatusOption] = useState<
+    "all" | ResourceLiveStatus
+  >("all")
 
   const columns = useMemo(
     () => getColumns({ siteId, resourceId }),
@@ -89,6 +96,7 @@ export const ResourceTable = ({
         siteId,
         resourceId,
         orderBy: sortOption,
+        liveStatus: liveStatusOption === "all" ? undefined : liveStatusOption,
         limit,
         offset: skip,
       },
@@ -124,13 +132,22 @@ export const ResourceTable = ({
           {totalCount} {totalCount === 1 ? "item" : "items"}
         </Text>
 
-        <ResourceSortMenu
-          value={sortOption}
-          onChange={(option) => {
-            setSortOption(option)
-            onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
-          }}
-        />
+        <HStack>
+          <ResourceLiveStatusMenu
+            value={liveStatusOption}
+            onChange={(option) => {
+              setLiveStatusOption(option)
+              onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
+            }}
+          />
+          <ResourceSortMenu
+            value={sortOption}
+            onChange={(option) => {
+              setSortOption(option)
+              onPaginationChange((old) => ({ ...old, pageIndex: 0 }))
+            }}
+          />
+        </HStack>
       </HStack>
 
       <Datatable

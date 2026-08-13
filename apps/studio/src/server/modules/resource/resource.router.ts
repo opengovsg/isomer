@@ -663,7 +663,7 @@ export const resourceRouter = router({
     .query(
       async ({
         ctx,
-        input: { siteId, resourceId, offset, limit, orderBy },
+        input: { siteId, resourceId, offset, limit, orderBy, liveStatus },
       }) => {
         await bulkValidateUserPermissionsForResources({
           action: "read",
@@ -684,6 +684,14 @@ export const resourceRouter = router({
           query = query.where("Resource.parentId", "=", String(resourceId))
         } else {
           query = query.where("Resource.parentId", "is", null)
+        }
+
+        if (liveStatus) {
+          query = query.where(
+            "Resource.publishedVersionId",
+            liveStatus === "live" ? "is not" : "is",
+            null,
+          )
         }
 
         query = applyResourceOrderBy(query, orderBy)
