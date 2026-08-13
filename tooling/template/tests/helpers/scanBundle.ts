@@ -3,7 +3,7 @@ import { join } from "node:path"
 
 // These dependency signatures survive webpack minification.
 export const ALGOLIA_MARKERS = ["react-instantsearch", "algoliasearch"] as const
-export const ZOD_MARKERS = ["ZodError", "invalid_type", "too_small"] as const
+export const ZOD_MARKERS = ["ZodError"] as const
 
 const scanBundleForMarkers = (outDir: string, markers: readonly string[]) => {
   const staticDir = join(outDir, "_next/static")

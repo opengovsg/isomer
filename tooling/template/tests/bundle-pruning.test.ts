@@ -14,9 +14,11 @@ import {
 
 describe("template (bundle pruning)", () => {
   let originalConfig: string
+  let defaultOutDir: string
 
   beforeAll(() => {
     originalConfig = readTemplateConfig()
+    defaultOutDir = buildTemplate()
   })
 
   afterEach(() => {
@@ -24,22 +26,16 @@ describe("template (bundle pruning)", () => {
   })
 
   it("excludes Algolia search deps for non-egazette sites", () => {
-    // Arrange
-    const outDir = buildTemplate()
-
-    // Act
-    const result = scanBundleForAlgolia(outDir)
+    // Arrange (default template built in beforeAll) / Act
+    const result = scanBundleForAlgolia(defaultOutDir)
 
     // Assert
     expect(result.matchedMarkers, result.matchedMarkers.join(", ")).toEqual([])
   })
 
   it("excludes zod from the client bundle", () => {
-    // Arrange
-    const outDir = buildTemplate()
-
-    // Act
-    const result = scanBundleForZod(outDir)
+    // Arrange (default template built in beforeAll) / Act
+    const result = scanBundleForZod(defaultOutDir)
 
     // Assert
     expect(result.matchedMarkers, result.matchedMarkers.join(", ")).toEqual([])
