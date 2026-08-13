@@ -290,5 +290,5 @@ catalogs:
     "@vitejs/plugin-react": ^6.0.5
     "@vitest/browser-playwright": ^4.1.9
     "@vitest/coverage-istanbul": ^4.1.10
-    vite: ^8.2.0
+    vite: ^8.2.1
     vitest: ^4.1.10
