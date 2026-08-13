@@ -6,7 +6,11 @@ import {
   withTemplateConfig,
   writeTemplateConfig,
 } from "./helpers/buildTemplate"
-import { ALGOLIA_MARKERS, scanBundleForAlgolia } from "./helpers/scanBundle"
+import {
+  ALGOLIA_MARKERS,
+  scanBundleForAlgolia,
+  scanBundleForZod,
+} from "./helpers/scanBundle"
 
 describe("template (bundle pruning)", () => {
   let originalConfig: string
@@ -25,6 +29,17 @@ describe("template (bundle pruning)", () => {
 
     // Act
     const result = scanBundleForAlgolia(outDir)
+
+    // Assert
+    expect(result.matchedMarkers, result.matchedMarkers.join(", ")).toEqual([])
+  })
+
+  it("excludes zod from the client bundle", () => {
+    // Arrange
+    const outDir = buildTemplate()
+
+    // Act
+    const result = scanBundleForZod(outDir)
 
     // Assert
     expect(result.matchedMarkers, result.matchedMarkers.join(", ")).toEqual([])

@@ -1,5 +1,4 @@
 import type { TagCategoryDisplay } from "~/types/constants"
-import { z } from "zod"
 
 export interface FilterItem {
   id: string
@@ -24,9 +23,20 @@ export interface AppliedFilter {
   items: AppliedFilterItem[]
 }
 
-export const appliedFiltersSchema = z.array(
-  z.object({ id: z.string(), items: z.array(z.object({ id: z.string() })) }),
-)
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value)
+
+export const isAppliedFilters = (value: unknown): value is AppliedFilter[] =>
+  Array.isArray(value) &&
+  value.every(
+    (filter) =>
+      isRecord(filter) &&
+      typeof filter.id === "string" &&
+      Array.isArray(filter.items) &&
+      filter.items.every(
+        (item) => isRecord(item) && typeof item.id === "string",
+      ),
+  )
 
 export interface FilterProps {
   filters: Filter[]

@@ -1,10 +1,11 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 
-// Package names survive in webpack chunk module paths even after minification.
+// These dependency signatures survive webpack minification.
 export const ALGOLIA_MARKERS = ["react-instantsearch", "algoliasearch"] as const
+export const ZOD_MARKERS = ["ZodError", "invalid_type", "too_small"] as const
 
-export const scanBundleForAlgolia = (outDir: string) => {
+const scanBundleForMarkers = (outDir: string, markers: readonly string[]) => {
   const staticDir = join(outDir, "_next/static")
   if (!existsSync(staticDir)) {
     throw new Error(
@@ -19,7 +20,7 @@ export const scanBundleForAlgolia = (outDir: string) => {
   const matchedMarkers = new Set<string>()
   for (const file of jsFiles) {
     const content = readFileSync(file, "utf-8")
-    for (const marker of ALGOLIA_MARKERS) {
+    for (const marker of markers) {
       if (content.includes(marker)) {
         matchedMarkers.add(marker)
       }
@@ -27,7 +28,13 @@ export const scanBundleForAlgolia = (outDir: string) => {
   }
 
   return {
-    found: ALGOLIA_MARKERS.every((marker) => matchedMarkers.has(marker)),
+    found: markers.every((marker) => matchedMarkers.has(marker)),
     matchedMarkers: [...matchedMarkers],
   }
 }
+
+export const scanBundleForAlgolia = (outDir: string) =>
+  scanBundleForMarkers(outDir, ALGOLIA_MARKERS)
+
+export const scanBundleForZod = (outDir: string) =>
+  scanBundleForMarkers(outDir, ZOD_MARKERS)
