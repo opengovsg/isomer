@@ -90,7 +90,6 @@ export const publishPageSchema = z.object({
   siteId: z.number().min(1),
 })
 
-// TODO: siteId should be taken from user's context (not input)
 export const unpublishPageSchema = z.object({
   pageId: z.number().min(1),
   siteId: z.number().min(1),
