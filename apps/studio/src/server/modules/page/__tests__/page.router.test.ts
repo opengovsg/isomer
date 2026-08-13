@@ -2418,6 +2418,48 @@ describe("page.router", async () => {
         .execute()
       expect(auditLogs.length).toEqual(1)
     })
+
+    it("should backfill a draft from the published content when there is no pending draft", async () => {
+      // Arrange — a published page with no pending draft (draftBlobId is
+      // null, as setupPageResource leaves it after publishing)
+      const { site, page, blob } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+      const before = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(before.draftBlobId).toBeNull()
+
+      // Act
+      await caller.unpublishPage({ siteId: site.id, pageId: Number(page.id) })
+
+      // Assert — a new draft Blob was created with the published content,
+      // rather than reusing the Version's Blob
+      const updated = await db
+        .selectFrom("Resource")
+        .where("id", "=", page.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updated.publishedVersionId).toBeNull()
+      expect(updated.state).toEqual(ResourceState.Draft)
+      expect(updated.draftBlobId).not.toBeNull()
+      expect(updated.draftBlobId).not.toEqual(blob.id)
+
+      const draftBlob = await db
+        .selectFrom("Blob")
+        .where("id", "=", updated.draftBlobId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(draftBlob.content).toEqual(blob.content)
+    })
   })
 
   describe("updateMeta", () => {
