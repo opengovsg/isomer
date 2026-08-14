@@ -3008,32 +3008,55 @@ describe("resource.router", async () => {
       expect(actual).not.toBeUndefined()
     })
 
-    it("should still allow deleting a published folder (no unpublish path yet)", async () => {
+    it("should block deleting a folder whose IndexPage is still published", async () => {
+      // Arrange — the folder's own row never carries a publishedVersionId;
+      // it's the child IndexPage that's actually live.
+      const { site, folder } = await setupFolder({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+
+      // Act
+      const result = caller.delete({
+        resourceId: folder.id,
+        siteId: site.id,
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This page must be unpublished before it can be deleted",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
+    })
+
+    it("should allow deleting a folder whose IndexPage is not published", async () => {
       // Arrange
       const { site, folder } = await setupFolder({})
       await setupAdminPermissions({
         userId: session.userId,
         siteId: site.id,
       })
-      const blob = await setupBlob()
-      const version = await db
-        .insertInto("Version")
-        .values({
-          versionNum: 1,
-          resourceId: folder.id,
-          blobId: blob.id,
-          publishedBy: session.userId as string,
-        })
-        .returning("id")
-        .executeTakeFirstOrThrow()
-      await db
-        .updateTable("Resource")
-        .where("id", "=", folder.id)
-        .set({
-          state: ResourceState.Published,
-          publishedVersionId: version.id,
-        })
-        .execute()
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
 
       // Act
       const result = await caller.delete({
@@ -3048,6 +3071,38 @@ describe("resource.router", async () => {
         .where("id", "=", folder.id)
         .executeTakeFirst()
       expect(actual).toBeUndefined()
+    })
+
+    it("should block deleting a collection whose IndexPage is still published", async () => {
+      const { site, collection } = await setupCollection({})
+      await setupAdminPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+      await setupPageResource({
+        siteId: site.id,
+        parentId: collection.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+
+      const result = caller.delete({
+        resourceId: collection.id,
+        siteId: site.id,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This page must be unpublished before it can be deleted",
+        }),
+      )
+      const actual = await db
+        .selectFrom("Resource")
+        .where("id", "=", collection.id)
+        .executeTakeFirst()
+      expect(actual).not.toBeUndefined()
     })
 
     it("should soft-delete redirects pointing to the deleted page", async () => {

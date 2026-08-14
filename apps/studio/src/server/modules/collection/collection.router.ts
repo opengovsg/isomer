@@ -2,6 +2,7 @@ import type { UnwrapTagged } from "type-fest"
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { ENABLE_CODEBUILD_JOBS } from "~/lib/growthbook"
 import {
   countTagOptionsUsageSchema,
   createCollectionSchema,
@@ -10,6 +11,7 @@ import {
   getCollectionTagsSchema,
   readCollectionSchema,
   readLinkSchema,
+  unpublishCollectionSchema,
 } from "~/schemas/collection"
 import { readFolderSchema } from "~/schemas/folder"
 import { createCollectionPageSchema } from "~/schemas/page"
@@ -32,6 +34,7 @@ import {
   getBlobOfResource,
   getSiteResourceById,
   publishResource,
+  unpublishPageResource,
   updateBlobById,
 } from "../resource/resource.service"
 import { validateUserPermissionsForSite } from "../site/site.service"
@@ -66,6 +69,26 @@ export const collectionRouter = router({
       }
       return resource
     }),
+  unpublishCollection: protectedProcedure
+    .input(unpublishCollectionSchema)
+    .mutation(
+      async ({ ctx: { user, gb, logger }, input: { siteId, resourceId } }) => {
+        await bulkValidateUserPermissionsForResources({
+          siteId,
+          action: "unpublish",
+          userId: user.id,
+        })
+        await unpublishPageResource({
+          logger,
+          siteId,
+          resourceId: String(resourceId),
+          userId: user.id,
+          sitePublish: {
+            enableCodebuildJobs: gb.isOn(ENABLE_CODEBUILD_JOBS),
+          },
+        })
+      },
+    ),
   create: protectedProcedure
     .input(createCollectionSchema)
     .mutation(

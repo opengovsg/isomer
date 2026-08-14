@@ -1376,6 +1376,12 @@ export const unpublishPageResource = async ({
   userId,
   sitePublish,
 }: UnpublishPageResourceArgs) => {
+  // For a Folder/Collection `resourceId`, this is resolved to the child
+  // IndexPage once `fullResource` is fetched below — that's the resource
+  // actually being unpublished. Declared here so the post-transaction
+  // `publishSite` call below can reference the correct id.
+  let targetResourceId = resourceId
+
   await db.transaction().execute(async (tx) => {
     const fullResource = await getFullPageById(tx, {
       resourceId: Number(resourceId),
@@ -1416,9 +1422,11 @@ export const unpublishPageResource = async ({
           .executeTakeFirstOrThrow()
       ).id
 
+    targetResourceId = fullResource.id
+
     await updatePageById(
       {
-        id: Number(resourceId),
+        id: Number(targetResourceId),
         siteId,
         publishedVersionId: null,
         draftBlobId,
@@ -1446,7 +1454,7 @@ export const unpublishPageResource = async ({
       siteId,
       codebuildJob: sitePublish.enableCodebuildJobs
         ? {
-            resourceWithUserIds: [{ resourceId, userId }],
+            resourceWithUserIds: [{ resourceId: targetResourceId, userId }],
             isScheduled: false,
           }
         : undefined,

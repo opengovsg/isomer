@@ -754,17 +754,25 @@ export const resourceRouter = router({
         }
 
         // A live page must be unpublished before it can be deleted, so its
-        // removal is always preceded by an audited Unpublish event.
-        // TODO: Folders and Collections have no unpublish path yet (open
-        // design item), so they're exempt from this guard for now — deleting
-        // a published folder/collection today skips the Unpublish audit
-        // event that pages get. Revisit once folder/collection unpublish is
-        // designed.
-        if (
-          before.publishedVersionId !== null &&
-          before.type !== ResourceType.Folder &&
-          before.type !== ResourceType.Collection
-        ) {
+        // removal is always preceded by an audited Unpublish event. Folder
+        // and Collection rows never carry their own publishedVersionId —
+        // their live content is their child IndexPage's — so check that
+        // instead of the container's own (always-null) field.
+        const isLive =
+          before.type === ResourceType.Folder ||
+          before.type === ResourceType.Collection
+            ? (
+                await tx
+                  .selectFrom("Resource")
+                  .where("Resource.parentId", "=", resourceId)
+                  .where("Resource.siteId", "=", Number(siteId))
+                  .where("Resource.type", "=", ResourceType.IndexPage)
+                  .select("Resource.publishedVersionId")
+                  .executeTakeFirst()
+              )?.publishedVersionId != null
+            : before.publishedVersionId !== null
+
+        if (isLive) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "This page must be unpublished before it can be deleted",
