@@ -199,6 +199,8 @@ type DisplayableAuditLogEvent = Exclude<
   | "PermissionUpdate"
   | "SchedulePublish"
   | "CancelSchedulePublish"
+  | "ScheduleUnpublish"
+  | "CancelScheduleUnpublish"
 >
 
 const AUDIT_LOGS_EVENTS_QUERIES: Record<
