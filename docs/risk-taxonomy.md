@@ -18,8 +18,10 @@ Match top-down — the first matching glob wins for that file. The PR's tier is 
 
 ### `risk:high`
 
-- `apps/studio/prisma/migrations/**`
-- `apps/studio/prisma/schema.prisma`
+- `packages/db/prisma/migrations/**`
+- `packages/db/prisma/schema.prisma`
+- `packages/db/prisma/custom/**`
+- `packages/db/prisma.config.ts`
 - `apps/studio/src/server/modules/auth/**`
 - `apps/studio/src/server/modules/permissions/**`
 - `apps/studio/src/server/modules/audit/**`
@@ -70,6 +72,7 @@ Server-side logic, data contracts, and shared libraries — things where a bug c
 - `packages/components/src/templates/**`
 - `packages/components/src/schemas/**`
 - `packages/components/src/engine/**`
+- `packages/db/src/**`, `packages/db/prisma/generate.cts`
 - `packages/pgboss/**`, `packages/redis/**`, `packages/logging/**`, `packages/validators/**` — exception: removing/renaming a pgboss job handler or changing its payload type triggers the reversibility modifier and bumps to risk:high
 
 ### `risk:low`
