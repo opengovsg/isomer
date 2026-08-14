@@ -354,6 +354,7 @@ describe("email template HTML escaping", () => {
     type: ResourceType.Page,
     scheduledAt: null,
     scheduledBy: null,
+    scheduledAction: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   } satisfies Resource

@@ -9,6 +9,7 @@ import {
   ResourceState,
   ResourceType,
   RoleType,
+  ScheduledAction,
 } from "~prisma/generated/generatedEnums"
 import { db, jsonb } from "~server/db"
 
@@ -271,6 +272,10 @@ interface SetupPageResourceProps {
   title?: string
   scheduledAt?: Date | null
   scheduledBy?: string | null
+  // Defaults to Publish when scheduledAt is set, matching the assumption the
+  // pre-scheduledAction migration backfill made — most callers scheduling a
+  // page mean "scheduled to publish" unless they say otherwise.
+  scheduledAction?: ScheduledAction | null
 }
 
 export const setupPageResource = async ({
@@ -284,6 +289,7 @@ export const setupPageResource = async ({
   title,
   scheduledAt = null,
   scheduledBy = null,
+  scheduledAction = scheduledAt ? ScheduledAction.Publish : null,
 }: SetupPageResourceProps) => {
   const { site, navbar, footer } = await setupSite(siteIdProp, !!siteIdProp)
   const blob = await setupBlob(blobIdProp)
@@ -298,6 +304,7 @@ export const setupPageResource = async ({
       publishedVersionId: null,
       scheduledAt,
       scheduledBy,
+      scheduledAction,
       draftBlobId: blob.id,
       type: resourceType,
       state,

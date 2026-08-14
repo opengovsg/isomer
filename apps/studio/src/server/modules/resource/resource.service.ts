@@ -64,6 +64,7 @@ export const defaultResourceSelect = [
   "Resource.updatedAt",
   "Resource.scheduledAt",
   "Resource.scheduledBy",
+  "Resource.scheduledAction",
 ] satisfies SelectExpression<DB, "Resource">[]
 
 // Shared by any query listing rows from the `Resource` table (e.g. folder/root
@@ -231,6 +232,7 @@ export const updatePageById = (
       | "title"
       | "scheduledAt"
       | "scheduledBy"
+      | "scheduledAction"
       | "publishedVersionId"
       | "draftBlobId"
     >

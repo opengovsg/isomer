@@ -8,10 +8,11 @@ import {
 import { createBaseLogger } from "~/lib/logger"
 import { createGrowthBookContext } from "~/server/context"
 import { publishSite } from "~/server/modules/aws/codebuild.service"
-import { db } from "~/server/modules/database"
+import { db, ScheduledAction } from "~/server/modules/database"
 import {
   defaultResourceSelect,
   publishPageResource,
+  unpublishPageResource,
 } from "~/server/modules/resource/resource.service"
 
 import { registerPgbossJob } from "@isomer/pgboss"
@@ -100,26 +101,46 @@ export const publishScheduledResources = async (
       )
       continue
     }
+    const isUnpublish = resource.scheduledAction === ScheduledAction.Unpublish
     try {
-      // publish the resources WITHOUT publishing the site yet
-      await publishPageResource({
-        logger,
-        resourceId,
-        siteId,
-        userId: scheduledBy,
-      })
-      logger.info(`Successfully published page for resource: ${resourceId}`)
+      // publish/unpublish the resource WITHOUT publishing the site yet
+      if (isUnpublish) {
+        await unpublishPageResource({
+          logger,
+          resourceId,
+          siteId,
+          userId: scheduledBy,
+        })
+        logger.info(`Successfully unpublished page for resource: ${resourceId}`)
+      } else {
+        await publishPageResource({
+          logger,
+          resourceId,
+          siteId,
+          userId: scheduledBy,
+        })
+        logger.info(`Successfully published page for resource: ${resourceId}`)
+      }
       // Group resources by siteId for site publishing later
       siteResourcesMap[siteId] = siteResourcesMap[siteId] ?? []
       siteResourcesMap[siteId].push({ ...resource, scheduledBy })
     } catch (error) {
       logger.error(
         { error },
-        `Failed to publish page for resource: ${resourceId}`,
+        `Failed to ${isUnpublish ? "unpublish" : "publish"} page for resource: ${resourceId}`,
       )
       if (resource.userDeletedAt || !resource.email) {
         logger.warn(
-          `Resource ${resourceId} is missing user email information or deleted, cannot send failed publish email`,
+          `Resource ${resourceId} is missing user email information or deleted, cannot send failed ${isUnpublish ? "unpublish" : "publish"} email`,
+        )
+        continue
+      }
+      if (isUnpublish) {
+        // TODO: no failed-unpublish email template exists yet — tracked as a
+        // follow-up to the notifications work. Sending the publish-failure
+        // template here would be actively misleading, so skip for now.
+        logger.warn(
+          `Scheduled unpublish failed for resource: ${resourceId}, but no failed-unpublish email template exists yet — skipping email`,
         )
         continue
       }
@@ -174,6 +195,14 @@ export const publishScheduledSites = async (
           )
           continue
         }
+        if (resource.scheduledAction === ScheduledAction.Unpublish) {
+          // TODO: no failed-unpublish email template exists yet — see the
+          // matching TODO in publishScheduledResources.
+          logger.warn(
+            `Site publish failed for siteId: ${siteId} while processing a scheduled unpublish for resource: ${resource.id}, but no failed-unpublish email template exists yet — skipping email`,
+          )
+          continue
+        }
         try {
           await sendFailedPublishEmail({
             recipientEmail: resource.email,
@@ -205,7 +234,7 @@ const resetScheduledAtForPublishedResources = async (
 ) => {
   await db
     .updateTable("Resource")
-    .set({ scheduledAt: null, scheduledBy: null })
+    .set({ scheduledAt: null, scheduledBy: null, scheduledAction: null })
     .where("scheduledAt", "<=", scheduledAtCutoff)
     .execute()
 }
