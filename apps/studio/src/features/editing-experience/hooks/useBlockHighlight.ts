@@ -51,16 +51,31 @@ export const useBlockHighlight = ({
       return
     }
 
-    const scrollX = iframeDocument.defaultView?.scrollX ?? 0
-    const scrollY = iframeDocument.defaultView?.scrollY ?? 0
-    const domRect = blockEl.getBoundingClientRect()
+    const updateRect = () => {
+      const scrollX = iframeDocument.defaultView?.scrollX ?? 0
+      const scrollY = iframeDocument.defaultView?.scrollY ?? 0
+      const domRect = blockEl.getBoundingClientRect()
 
-    setRect({
-      top: domRect.top + scrollY,
-      left: domRect.left + scrollX,
-      width: domRect.width,
-      height: domRect.height,
-    })
+      setRect({
+        top: domRect.top + scrollY,
+        left: domRect.left + scrollX,
+        width: domRect.width,
+        height: domRect.height,
+      })
+    }
+
+    updateRect()
+
+    // Interacting with the block itself (e.g. expanding an Accordion) can
+    // change its size without the hover target ever changing, so the rect
+    // would otherwise go stale until the next mouseover/mouseout. Watch the
+    // hovered block directly rather than re-querying on every layout change.
+    const resizeObserver = new ResizeObserver(updateRect)
+    resizeObserver.observe(blockEl)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
   }, [hoveredBlockIndex, iframeDocument])
 
   const block =
