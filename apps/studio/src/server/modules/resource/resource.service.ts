@@ -1361,6 +1361,114 @@ export const publishPageResource = async ({
     })
 }
 
+interface UnpublishPageResourceArgs {
+  logger: Logger<string>
+  userId: string
+  siteId: number
+  resourceId: string
+  sitePublish?: {
+    enableCodebuildJobs: boolean
+  }
+}
+
+/**
+ * Takes a live page back to not-live. The draft (if any) and the Version
+ * history are left untouched — only `publishedVersionId` is cleared (and
+ * `state` flipped back to Draft, since several queries key "is this resource
+ * currently live" off `state` rather than `publishedVersionId`).
+ */
+export const unpublishPageResource = async ({
+  logger,
+  siteId,
+  resourceId,
+  userId,
+  sitePublish,
+}: UnpublishPageResourceArgs) => {
+  // For a Folder/Collection `resourceId`, this is resolved to the child
+  // IndexPage once `fullResource` is fetched below — that's the resource
+  // actually being unpublished. Declared here so the post-transaction
+  // `publishSite` call below can reference the correct id.
+  let targetResourceId = resourceId
+
+  await db.transaction().execute(async (tx) => {
+    const fullResource = await getFullPageById(tx, {
+      resourceId: Number(resourceId),
+      siteId,
+    })
+
+    if (!fullResource) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message:
+          "Please ensure you are attempting to unpublish a page that exists",
+      })
+    }
+
+    if (!fullResource.publishedVersionId) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: "This page is not currently published",
+      })
+    }
+
+    const previousVersionId = fullResource.publishedVersionId
+
+    // If there's no pending draft, `fullResource.content` came from the
+    // published Version's Blob (see getFullPageById). Clone it into a new
+    // Blob for draftBlobId rather than pointing straight at the same row —
+    // that Blob is still referenced by the (now-unpublished) Version, and
+    // future draft edits update a draftBlobId's Blob in place
+    // (see updateBlobById), which would otherwise corrupt that Version's
+    // historical content.
+    const draftBlobId =
+      fullResource.draftBlobId ??
+      (
+        await tx
+          .insertInto("Blob")
+          .values({ content: jsonb(fullResource.content) })
+          .returning("Blob.id")
+          .executeTakeFirstOrThrow()
+      ).id
+
+    targetResourceId = fullResource.id
+
+    await updatePageById(
+      {
+        id: Number(targetResourceId),
+        siteId,
+        publishedVersionId: null,
+        draftBlobId,
+        state: ResourceState.Draft,
+      },
+      tx,
+    )
+
+    await logPublishEvent(tx, {
+      siteId,
+      by: await getUserById(userId),
+      delta: {
+        before: { versionId: previousVersionId },
+        after: null,
+      },
+      eventType: AuditLogEvent.Unpublish,
+      metadata: fullResource,
+    })
+  })
+
+  // Trigger a rebuild of the site so the unpublished page's output is
+  // removed from the live site, same as resource deletion does today.
+  if (sitePublish)
+    await publishSite(logger, {
+      siteId,
+      codebuildJob: sitePublish.enableCodebuildJobs
+        ? {
+            resourceWithUserIds: [{ resourceId: targetResourceId, userId }],
+            isScheduled: false,
+          }
+        : undefined,
+    })
+}
+
 /**
  * NOTE: The distinction here between `publishResource` and `publishPageResource` is that
  * this should be used for publishes that do not incur a change to `Blob.content`

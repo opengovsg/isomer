@@ -13,6 +13,7 @@ import {
   setupEditorPermissions,
   setupFolder,
   setupPageResource,
+  setupPublisherPermissions,
   setupSite,
   setupUser,
 } from "tests/integration/helpers/seed"
@@ -436,6 +437,116 @@ describe("folder.router", async () => {
         .where("id", "=", folder.id)
         .executeTakeFirst()
       expect(result).toEqual(expected)
+    })
+  })
+
+  describe("unpublishFolder", () => {
+    it("should throw 401 if not logged in", async () => {
+      const result = unauthedCaller.unpublishFolder({
+        siteId: 1,
+        resourceId: 1,
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({ code: "UNAUTHORIZED" }),
+      )
+    })
+
+    it("should throw 403 if user does not have unpublish access", async () => {
+      const { site, folder } = await setupFolder()
+      await setupEditorPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = caller.unpublishFolder({
+        siteId: site.id,
+        resourceId: Number(folder.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "You do not have sufficient permissions to perform this action",
+        }),
+      )
+    })
+
+    it("should throw if the folder's IndexPage is not currently published", async () => {
+      const { site, folder } = await setupFolder()
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Draft,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = caller.unpublishFolder({
+        siteId: site.id,
+        resourceId: Number(folder.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "This page is not currently published",
+        }),
+      )
+    })
+
+    it("should unpublish the folder's IndexPage, leaving the folder's own row untouched", async () => {
+      // Arrange
+      const { site, folder } = await setupFolder()
+      const { page: indexPage } = await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      // Act
+      await caller.unpublishFolder({
+        siteId: site.id,
+        resourceId: Number(folder.id),
+      })
+
+      // Assert — the IndexPage is unpublished
+      const updatedIndexPage = await db
+        .selectFrom("Resource")
+        .where("id", "=", indexPage.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedIndexPage.publishedVersionId).toBeNull()
+      expect(updatedIndexPage.state).toEqual(ResourceState.Draft)
+      expect(updatedIndexPage.draftBlobId).not.toBeNull()
+
+      // Assert — the Folder's own row is untouched (it never had a
+      // publishedVersionId to begin with)
+      const updatedFolder = await db
+        .selectFrom("Resource")
+        .where("id", "=", folder.id)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      expect(updatedFolder.publishedVersionId).toBeNull()
+      expect(updatedFolder.state).toEqual(ResourceState.Draft)
+
+      // Assert — audited against the IndexPage, not the folder
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Unpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs.length).toEqual(1)
     })
   })
 

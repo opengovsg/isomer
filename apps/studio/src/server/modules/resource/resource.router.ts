@@ -753,6 +753,28 @@ export const resourceRouter = router({
           })
         }
 
+        // A live page must be unpublished before it can be deleted, so its
+        // removal is always preceded by an audited Unpublish event. Folder
+        // and Collection rows never carry their own publishedVersionId —
+        // and `parentId` is `onDelete: Cascade`, so deleting a container also
+        // wipes every descendant — so check the whole subtree for anything
+        // still live, not just the container's own (always-null) field.
+        const isLive =
+          before.type === ResourceType.Folder ||
+          before.type === ResourceType.Collection
+            ? await hasPublishedDescendant(tx, {
+                siteId: Number(siteId),
+                resourceId,
+              })
+            : before.publishedVersionId !== null
+
+        if (isLive) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "This page must be unpublished before it can be deleted",
+          })
+        }
+
         await logResourceEvent(tx, {
           siteId,
           delta: {
