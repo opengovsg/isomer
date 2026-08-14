@@ -1,12 +1,14 @@
 import { TRPCError } from "@trpc/server"
 import { get, pick } from "lodash-es"
 import { INDEX_PAGE_PERMALINK } from "~/constants/sitemap"
+import { ENABLE_CODEBUILD_JOBS } from "~/lib/growthbook"
 import {
   createFolderSchema,
   editFolderSchema,
   getIndexpageSchema,
   listChildPagesSchema,
   readFolderSchema,
+  unpublishFolderSchema,
 } from "~/schemas/folder"
 import { protectedProcedure, router } from "~/server/trpc"
 
@@ -26,6 +28,7 @@ import {
   getResourceFullPermalink,
   hasPublishedDescendant,
   publishResource,
+  unpublishPageResource,
 } from "../resource/resource.service"
 import { defaultFolderSelect } from "./folder.select"
 
@@ -200,6 +203,26 @@ export const folderRouter = router({
 
       return data
     }),
+  unpublishFolder: protectedProcedure
+    .input(unpublishFolderSchema)
+    .mutation(
+      async ({ ctx: { user, gb, logger }, input: { siteId, resourceId } }) => {
+        await bulkValidateUserPermissionsForResources({
+          siteId,
+          action: "unpublish",
+          userId: user.id,
+        })
+        await unpublishPageResource({
+          logger,
+          siteId,
+          resourceId: String(resourceId),
+          userId: user.id,
+          sitePublish: {
+            enableCodebuildJobs: gb.isOn(ENABLE_CODEBUILD_JOBS),
+          },
+        })
+      },
+    ),
   editFolder: protectedProcedure
     .input(editFolderSchema)
     .mutation(
