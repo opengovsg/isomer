@@ -74,7 +74,11 @@ const SuspendableEditPagePreview = (): JSX.Element => {
       while (node && node.parentElement !== container) {
         node = node.parentElement
       }
-      if (!(node instanceof HTMLElement)) return null
+      // NOTE: Deliberately not `instanceof HTMLElement` — react-frame-component
+      // portals content into the iframe's own document, so DOM nodes there are
+      // instances of the iframe's own HTMLElement global, not this window's.
+      // `instanceof` checks against the parent realm's class silently fail.
+      if (!node) return null
 
       const index = Array.prototype.indexOf.call(container.children, node)
       return index === -1 ? null : index
