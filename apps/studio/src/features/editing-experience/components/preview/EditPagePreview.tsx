@@ -1,7 +1,7 @@
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box } from "@chakra-ui/react"
 import { merge } from "lodash-es"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useBlockFlashHighlight } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
@@ -40,6 +40,7 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     permalink,
     title,
     hoveredBlockIndex,
+    setHoveredBlockIndex,
     flashBlockIndex,
     setFlashBlockIndex,
     iframeDocument,
@@ -57,6 +58,53 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     },
     [setIframeDocument],
   )
+
+  useEffect(() => {
+    if (!iframeDocument) return
+
+    // Resolve which block (if any) a mouse event target belongs to by
+    // walking up to the direct child of the shared content-blocks container.
+    const resolveBlockIndex = (target: EventTarget | null): number | null => {
+      const container = iframeDocument.querySelector(
+        "[data-isomer-content-blocks]",
+      )
+      if (!container) return null
+
+      let node = target as Node | null
+      while (node && node.parentElement !== container) {
+        node = node.parentElement
+      }
+      if (!(node instanceof HTMLElement)) return null
+
+      const index = Array.prototype.indexOf.call(container.children, node)
+      return index === -1 ? null : index
+    }
+
+    const handleMouseOver = (event: MouseEvent) => {
+      const index = resolveBlockIndex(event.target)
+      if (index !== null) setHoveredBlockIndex(index)
+    }
+
+    const handleMouseOut = (event: MouseEvent) => {
+      const container = iframeDocument.querySelector(
+        "[data-isomer-content-blocks]",
+      )
+      if (!container) return
+
+      const related = event.relatedTarget as Node | null
+      if (!related || !container.contains(related)) {
+        setHoveredBlockIndex(null)
+      }
+    }
+
+    iframeDocument.addEventListener("mouseover", handleMouseOver)
+    iframeDocument.addEventListener("mouseout", handleMouseOut)
+
+    return () => {
+      iframeDocument.removeEventListener("mouseover", handleMouseOver)
+      iframeDocument.removeEventListener("mouseout", handleMouseOut)
+    }
+  }, [iframeDocument, setHoveredBlockIndex])
 
   const { rect: highlightRect, label: highlightLabel } = useBlockHighlight({
     iframeDocument,
