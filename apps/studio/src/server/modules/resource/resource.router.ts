@@ -756,20 +756,16 @@ export const resourceRouter = router({
         // A live page must be unpublished before it can be deleted, so its
         // removal is always preceded by an audited Unpublish event. Folder
         // and Collection rows never carry their own publishedVersionId —
-        // their live content is their child IndexPage's — so check that
-        // instead of the container's own (always-null) field.
+        // and `parentId` is `onDelete: Cascade`, so deleting a container also
+        // wipes every descendant — so check the whole subtree for anything
+        // still live, not just the container's own (always-null) field.
         const isLive =
           before.type === ResourceType.Folder ||
           before.type === ResourceType.Collection
-            ? (
-                await tx
-                  .selectFrom("Resource")
-                  .where("Resource.parentId", "=", resourceId)
-                  .where("Resource.siteId", "=", Number(siteId))
-                  .where("Resource.type", "=", ResourceType.IndexPage)
-                  .select("Resource.publishedVersionId")
-                  .executeTakeFirst()
-              )?.publishedVersionId != null
+            ? await hasPublishedDescendant(tx, {
+                siteId: Number(siteId),
+                resourceId,
+              })
             : before.publishedVersionId !== null
 
         if (isLive) {
