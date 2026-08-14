@@ -1,5 +1,6 @@
 import type { ContactInformationUIProps } from "~/interfaces"
 import { tv } from "~/lib/tv"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 
 import { BaseParagraph } from "../../../internal/BaseParagraph"
 import { LinkButton } from "../../../internal/LinkButton"
@@ -36,6 +37,7 @@ export const DefaultContactInformationUI = ({
   label,
   isLoading,
   acceptHtmlTags = false,
+  headingLevel,
 }: ContactInformationUIProps) => {
   const compoundStyles = createDefaultContactInformationStyles({
     isLoading,
@@ -43,6 +45,8 @@ export const DefaultContactInformationUI = ({
   const contactMethodStyles = createDefaultContactMethodStyles({
     isLoading,
   })
+  const TitleTag = getHeadingTag(headingLevel)
+  const OtherInformationTitleTag = getHeadingTag(headingLevel + 1)
 
   const filteredMethods = filterContactMethods({
     methods,
@@ -56,7 +60,9 @@ export const DefaultContactInformationUI = ({
       <div className={compoundStyles.container()}>
         <div className={compoundStyles.titleAndDescriptionContainer()}>
           {(title || isLoading) && (
-            <h2 className={compoundStyles.title()}>{isLoading ? "" : title}</h2>
+            <TitleTag className={compoundStyles.title()}>
+              {isLoading ? "" : title}
+            </TitleTag>
           )}
           {(!!description || isLoading) &&
             (acceptHtmlTags ? (
@@ -95,9 +101,11 @@ export const DefaultContactInformationUI = ({
           !!otherInformation.value &&
           otherInformation.value.trim() !== "" && (
             <div className={compoundStyles.otherInformationContainer()}>
-              <h3 className={compoundStyles.otherInformationTitle()}>
+              <OtherInformationTitleTag
+                className={compoundStyles.otherInformationTitle()}
+              >
                 {otherInformation.label ?? "Other Information"}
-              </h3>
+              </OtherInformationTitleTag>
               {acceptHtmlTags ? (
                 <BaseParagraph
                   content={otherInformation.value}
