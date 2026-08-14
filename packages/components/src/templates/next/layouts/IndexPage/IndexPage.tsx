@@ -64,12 +64,14 @@ export const IndexPageLayout = ({
           {tableOfContents.length > 1 && (
             <TableOfContents items={tableOfContents} />
           )}
-          {renderPageContent({
-            content: transformedContent,
-            layout,
-            site,
-            permalink: page.permalink,
-          })}
+          <div data-isomer-content-blocks>
+            {renderPageContent({
+              content: transformedContent,
+              layout,
+              site,
+              permalink: page.permalink,
+            })}
+          </div>
         </div>
       </div>
     </Skeleton>
