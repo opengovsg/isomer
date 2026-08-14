@@ -2887,6 +2887,119 @@ describe("resource.router", async () => {
     })
 
     it.skip("should throw 403 if user does not have read access to the resource", async () => {})
+
+    describe("liveStatus filter", () => {
+      const setupLiveAndNotLivePages = async () => {
+        const { site } = await setupSite()
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        const { page: livePage } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          title: "Live page",
+          permalink: "live-page",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        const { page: notLivePage } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          title: "Not live page",
+          permalink: "not-live-page",
+        })
+
+        return { site, livePage, notLivePage }
+      }
+
+      it("should return both live and not-live resources when liveStatus is not provided", async () => {
+        // Arrange
+        const { site, livePage, notLivePage } = await setupLiveAndNotLivePages()
+
+        // Act
+        const result = await caller.listWithoutRoot({ siteId: site.id })
+
+        // Assert
+        expect(result.map((r) => r.id).sort()).toEqual(
+          [livePage.id, notLivePage.id].sort(),
+        )
+      })
+
+      it("should only return live resources when liveStatus is 'live'", async () => {
+        // Arrange
+        const { site, livePage } = await setupLiveAndNotLivePages()
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          liveStatus: "live",
+        })
+
+        // Assert
+        expect(result.map((r) => r.id)).toEqual([livePage.id])
+        expect(result.every((r) => r.publishedVersionId !== null)).toBe(true)
+      })
+
+      it("should only return not-live resources when liveStatus is 'notLive'", async () => {
+        // Arrange
+        const { site, notLivePage } = await setupLiveAndNotLivePages()
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          liveStatus: "notLive",
+        })
+
+        // Assert
+        expect(result.map((r) => r.id)).toEqual([notLivePage.id])
+        expect(result.every((r) => r.publishedVersionId === null)).toBe(true)
+      })
+
+      it("should compose with orderBy when filtering by liveStatus", async () => {
+        // Arrange
+        const { site } = await setupSite()
+        await setupEditorPermissions({
+          siteId: site.id,
+          userId: session.userId,
+        })
+
+        const { page: zulu } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          title: "Zulu",
+          permalink: "zulu",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        const { page: alpha } = await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          title: "Alpha",
+          permalink: "alpha",
+          state: ResourceState.Published,
+          userId: session.userId,
+        })
+        // Not-live page should be excluded even though it sorts first
+        await setupPageResource({
+          siteId: site.id,
+          resourceType: "Page",
+          title: "0-not-live",
+          permalink: "0-not-live",
+        })
+
+        // Act
+        const result = await caller.listWithoutRoot({
+          siteId: site.id,
+          liveStatus: "live",
+          orderBy: "title-asc",
+        })
+
+        // Assert
+        expect(result.map((r) => r.id)).toEqual([alpha.id, zulu.id])
+      })
+    })
   })
 
   describe("delete", () => {

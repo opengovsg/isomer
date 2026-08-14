@@ -70,11 +70,16 @@ export const resourceOrderByOptions = [
 
 export type ResourceOrderByOption = (typeof resourceOrderByOptions)[number]
 
+export const resourceLiveStatusOptions = ["live", "notLive"] as const
+
+export type ResourceLiveStatus = (typeof resourceLiveStatusOptions)[number]
+
 export const listResourceSchema = z
   .object({
     siteId: z.number(),
     resourceId: z.number().optional(),
     orderBy: z.enum(resourceOrderByOptions).optional().default("updated-desc"),
+    liveStatus: z.enum(resourceLiveStatusOptions).optional(),
   })
   .merge(offsetPaginationSchema)
 
