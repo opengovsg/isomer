@@ -34,6 +34,11 @@ export const readFolderSchema = z
   })
   .merge(offsetPaginationSchema)
 
+export const unpublishFolderSchema = z.object({
+  resourceId: z.number().min(1),
+  siteId: z.number().min(1),
+})
+
 const baseFolderSchema = z.object({
   resourceId: z.string(),
   siteId: z.string(),
