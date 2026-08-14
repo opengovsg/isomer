@@ -3,7 +3,11 @@ import { schema } from "@opengovsg/isomer-components"
 import { z } from "zod"
 import { ajv } from "~/utils/ajv"
 import { safeJsonParse } from "~/utils/safeJsonParse"
-import { ResourceState, ResourceType } from "~prisma/generated/generatedEnums"
+import {
+  ResourceState,
+  ResourceType,
+  ScheduledAction,
+} from "~prisma/generated/generatedEnums"
 
 import { generateBasePermalinkSchema } from "./common"
 
@@ -169,6 +173,7 @@ export const readPageOutputSchema = z.object({
   type: z.nativeEnum(ResourceType),
   scheduledAt: z.date().nullable(),
   scheduledBy: z.string().nullable(),
+  scheduledAction: z.nativeEnum(ScheduledAction).nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })
