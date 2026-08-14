@@ -37,6 +37,7 @@ interface RenderComponentProps {
   site: IsomerSiteProps
   shouldLazyLoad?: boolean
   permalink: string
+  headingLevel: number
 }
 
 export const renderComponent = ({
