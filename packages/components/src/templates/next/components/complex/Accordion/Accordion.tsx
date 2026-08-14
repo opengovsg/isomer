@@ -26,7 +26,12 @@ const accordionStyles = createAccordionStyles()
 interface AccordionProps
   extends BaseAccordionProps, VariantProps<typeof createAccordionStyles> {}
 
-export const Accordion = ({ summary, details, site }: AccordionProps) => {
+export const Accordion = ({
+  summary,
+  details,
+  site,
+  headingLevel,
+}: AccordionProps) => {
   return (
     <details className={accordionStyles.details()}>
       <summary className={summaryStyle()}>
@@ -42,7 +47,10 @@ export const Accordion = ({ summary, details, site }: AccordionProps) => {
       </summary>
 
       <div className={accordionStyles.content()}>
-        <Prose {...details} site={site} />
+        {/* The accordion's expandable body is treated as nested one level
+            deeper than the accordion itself, even though its own "title" is
+            a <summary>, not a heading. */}
+        <Prose {...details} site={site} headingLevel={headingLevel + 1} />
       </div>
     </details>
   )

@@ -1,82 +1,76 @@
 import type { HeadingProps } from "~/interfaces"
+import { getHeadingTag } from "~/utils/getHeadingTag"
 import { getTextAsHtml } from "~/utils/getTextAsHtml"
 
+// `level` only selects the visual style/font size below — it no longer
+// determines the rendered tag. The tag comes from `headingLevel`, computed
+// by the renderer from this heading's actual position in the page, so a
+// page's heading outline never skips a level regardless of what style an
+// author picks.
 export const Heading = ({
   attrs: { id, level, dir },
   content,
   site,
+  headingLevel,
 }: Omit<HeadingProps, "type">) => {
+  const Tag = getHeadingTag(headingLevel)
+  const textContent = getTextAsHtml({
+    site,
+    content,
+    shouldHideEmptyHardBreak: true,
+  })
+
   if (level === 2) {
     return (
-      <h2
+      <Tag
         id={id}
         className="prose-display-sm text-base-content-strong [&:not(:first-child)]:mt-14"
         dir={dir ?? undefined}
       >
-        {getTextAsHtml({
-          site,
-          content,
-          shouldHideEmptyHardBreak: true,
-        })}
-      </h2>
+        {textContent}
+      </Tag>
     )
   }
   if (level === 3) {
     return (
-      <h3
+      <Tag
         id={id}
         className="prose-display-xs text-base-content-strong [&:not(:first-child)]:mt-9"
         dir={dir ?? undefined}
       >
-        {getTextAsHtml({
-          site,
-          content,
-          shouldHideEmptyHardBreak: true,
-        })}
-      </h3>
+        {textContent}
+      </Tag>
     )
   }
   if (level === 4) {
     return (
-      <h4
+      <Tag
         id={id}
         className="prose-title-md-semibold text-base-content-strong [&:not(:first-child)]:mt-8"
         dir={dir ?? undefined}
       >
-        {getTextAsHtml({
-          site,
-          content,
-          shouldHideEmptyHardBreak: true,
-        })}
-      </h4>
+        {textContent}
+      </Tag>
     )
   }
   if (level === 5) {
     return (
-      <h5
+      <Tag
         id={id}
         className="prose-headline-lg-semibold text-base-content-strong [&:not(:first-child)]:mt-7"
         dir={dir ?? undefined}
       >
-        {getTextAsHtml({
-          site,
-          content,
-          shouldHideEmptyHardBreak: true,
-        })}
-      </h5>
+        {textContent}
+      </Tag>
     )
   }
   return (
-    <h6
+    <Tag
       id={id}
       className="prose-headline-base-semibold text-base-content-strong [&:not(:first-child)]:mt-6"
       dir={dir ?? undefined}
     >
-      {getTextAsHtml({
-        site,
-        content,
-        shouldHideEmptyHardBreak: true,
-      })}
-    </h6>
+      {textContent}
+    </Tag>
   )
 }
