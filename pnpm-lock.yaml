@@ -222,8 +222,8 @@ catalogs:
       specifier: ^8.0.4
       version: 8.0.4
     isomorphic-dompurify:
-      specifier: ^3.20.0
-      version: 3.21.0
+      specifier: ^3.22.0
+      version: 3.22.0
     jose:
       specifier: ^6.2.8
       version: 6.2.8
@@ -906,7 +906,7 @@ importers:
         version: 8.0.4
       isomorphic-dompurify:
         specifier: 'catalog:'
-        version: 3.21.0(@noble/hashes@2.2.0)
+        version: 3.22.0(@noble/hashes@2.2.0)
       jose:
         specifier: 'catalog:'
         version: 6.2.8
@@ -1232,7 +1232,7 @@ importers:
         version: 2.0.0
       isomorphic-dompurify:
         specifier: 'catalog:'
-        version: 3.21.0(@noble/hashes@2.2.0)
+        version: 3.22.0(@noble/hashes@2.2.0)
       js-md5:
         specifier: 'catalog:'
         version: 0.9.2
@@ -1898,7 +1898,7 @@ importers:
         version: link:../../packages/components
       isomorphic-dompurify:
         specifier: 'catalog:'
-        version: 3.21.0(@noble/hashes@2.2.0)
+        version: 3.22.0(@noble/hashes@2.2.0)
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@2.2.0)
@@ -9448,8 +9448,8 @@ packages:
     resolution: {integrity: sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg==}
     engines: {node: '>=0.10.0'}
 
-  isomorphic-dompurify@3.21.0:
-    resolution: {integrity: sha512-Bg5mqtMnMdBBwz7MjvH3oAuLOA/j0xtawVkcAZsOpVhOsfaLYwnAvhEvz94f8585Q6LCnnNr2XNApbXlB0J3GQ==}
+  isomorphic-dompurify@3.22.0:
+    resolution: {integrity: sha512-cz/BkSODnQir4IV2quqbuEHhAGz4MAYGvhoemsxuwMpY/oZbRHlNjPLPyIQ0fdULiwDPUE+OHPwWb6XTEiNk1A==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
   istanbul-lib-coverage@3.2.2:
@@ -20861,7 +20861,7 @@ snapshots:
 
   isobject@3.0.1: {}
 
-  isomorphic-dompurify@3.21.0(@noble/hashes@2.2.0):
+  isomorphic-dompurify@3.22.0(@noble/hashes@2.2.0):
     dependencies:
       dompurify: 3.4.12
       jsdom: 30.0.1(@noble/hashes@2.2.0)
