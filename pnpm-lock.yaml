@@ -78,8 +78,8 @@ catalogs:
       version: 2.2.2
   default:
     '@1password/sdk':
-      specifier: ^0.4.1
-      version: 0.4.1
+      specifier: ^0.5.0
+      version: 0.5.0
     '@datadog/browser-rum':
       specifier: ^7.7.0
       version: 7.8.0
@@ -1536,7 +1536,7 @@ importers:
     dependencies:
       '@1password/sdk':
         specifier: 'catalog:'
-        version: 0.4.1
+        version: 0.5.0
       dotenv:
         specifier: 'catalog:'
         version: 16.6.1
@@ -1950,11 +1950,11 @@ importers:
 
 packages:
 
-  '@1password/sdk-core@0.4.1':
-    resolution: {integrity: sha512-7yGBbzcwje+BQ+BO+RVCEo0qZq97pz93+T3ouF6L2hskCD+dvtXF39s0MBr1yVEMTZ8y5gqMruFEexQqbkiDhA==}
+  '@1password/sdk-core@0.5.0':
+    resolution: {integrity: sha512-9g7LWOKRKdePZ85evVgE9xEom3DAg3hRIyQdOwLPvpL/F7KpDXmUHMi72rsqJxKaDbWApXmrYjDExMSPqUg7xw==}
 
-  '@1password/sdk@0.4.1':
-    resolution: {integrity: sha512-wsa2XozG5O2aKGmxEMT+A8kUvhk68FnGIP1r9qlY139SMVSuptH74ulTo1DR5wBlL+iBg3hsW+IpYOXO3EKQwA==}
+  '@1password/sdk@0.5.0':
+    resolution: {integrity: sha512-k6kov3pcA7PRg2tev9CgTfEf/3JSyAp11BPQNCEsqAD32QbqM032OXC1rfjyC8Ba0sfH+NHYZxcifUZToyGyYA==}
 
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
@@ -12804,11 +12804,11 @@ packages:
 
 snapshots:
 
-  '@1password/sdk-core@0.4.1': {}
+  '@1password/sdk-core@0.5.0': {}
 
-  '@1password/sdk@0.4.1':
+  '@1password/sdk@0.5.0':
     dependencies:
-      '@1password/sdk-core': 0.4.1
+      '@1password/sdk-core': 0.5.0
 
   '@adobe/css-tools@4.4.4': {}
 
