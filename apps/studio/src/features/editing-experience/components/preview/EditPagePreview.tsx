@@ -1,7 +1,9 @@
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box } from "@chakra-ui/react"
+import { getComponentSchema } from "@opengovsg/isomer-components"
 import { merge } from "lodash-es"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
@@ -91,6 +93,28 @@ const SuspendableEditPagePreview = (): JSX.Element => {
         overlay.style.pointerEvents = "none"
         overlay.style.zIndex = "9999"
 
+        const block = previewPageState.content[hoveredBlockIndex]
+        if (block) {
+          const blockComponentName =
+            block.type === "prose"
+              ? PROSE_COMPONENT_NAME
+              : (getComponentSchema({ component: block.type }).title ??
+                "Unknown")
+
+          const label = iframeDocument.createElement("div")
+          label.textContent = blockComponentName
+          label.style.position = "absolute"
+          label.style.top = "0"
+          label.style.right = "0"
+          label.style.padding = "2px 8px"
+          label.style.fontSize = "12px"
+          label.style.lineHeight = "1.5"
+          label.style.color = "white"
+          label.style.backgroundColor = "#2164DA"
+          label.style.borderRadius = "0 0 0 6px"
+          overlay.appendChild(label)
+        }
+
         iframeDocument.body.appendChild(overlay)
         overlayElRef.current = overlay
       }
@@ -100,7 +124,7 @@ const SuspendableEditPagePreview = (): JSX.Element => {
       overlayElRef.current?.remove()
       overlayElRef.current = null
     }
-  }, [hoveredBlockIndex, iframeDocument])
+  }, [hoveredBlockIndex, iframeDocument, previewPageState])
 
   return (
     <ViewportContainer siteId={siteId} callback={handleIframeMount}>
