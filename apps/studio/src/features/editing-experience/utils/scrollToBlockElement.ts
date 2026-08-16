@@ -1,9 +1,18 @@
+import type { IsomerSchema } from "@opengovsg/isomer-components"
+
 import { getBlockElement } from "./getBlockElement"
 
-export const scrollToBlockElement = (
-  iframeDocument: Document | null,
-  index: number | null,
-): void => {
-  const blockEl = getBlockElement(iframeDocument, index)
+interface ScrollToBlockElementParams {
+  iframeDocument: Document | null
+  content: IsomerSchema["content"]
+  index: number | null
+}
+
+export const scrollToBlockElement = ({
+  iframeDocument,
+  content,
+  index,
+}: ScrollToBlockElementParams): void => {
+  const blockEl = getBlockElement(iframeDocument, content, index)
   blockEl?.scrollIntoView({ behavior: "smooth", block: "nearest" })
 }
