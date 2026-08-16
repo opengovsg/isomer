@@ -45,6 +45,7 @@ import { IsomerAdminRole, ResourceType } from "~prisma/generated/generatedEnums"
 
 import { TYPE_TO_ICON } from "../../constants"
 import { pageSchema } from "../../schema"
+import { getDrawerStateForBlock } from "../../utils/getDrawerStateForBlock"
 import { getIsHeroFirstBlock } from "../../utils/getIsHeroFirstBlock"
 import { ActivateRawJsonEditorMode } from "../ActivateRawJsonEditorMode"
 import { BaseBlock } from "../Block/BaseBlock"
@@ -626,16 +627,17 @@ export default function RootStateDrawer() {
                                         draggableId={`${block.type}-${index}`}
                                         index={index}
                                         onClick={() => {
-                                          // TODO: we should automatically do this probably?
-                                          const nextState =
+                                          const savedBlock =
                                             savedPageState.content[index]
-                                              ?.type === "prose"
-                                              ? "nativeEditor"
-                                              : "complexEditor"
                                           // NOTE: SNAPSHOT
-                                          selectBlock(index, {
-                                            state: nextState,
-                                          })
+                                          selectBlock(
+                                            index,
+                                            savedBlock
+                                              ? getDrawerStateForBlock(
+                                                  savedBlock,
+                                                )
+                                              : { state: "complexEditor" },
+                                          )
                                         }}
                                         invalidProps={
                                           invalidBlockIndexes.has(index)
