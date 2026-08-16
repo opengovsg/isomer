@@ -6,19 +6,31 @@ import { type DrawerState } from "~/types/editorDrawer"
 // Marks a block as active, switches the drawer to its editor, and scrolls
 // the preview to it — the combination every "click a block" handler needs.
 export const useSelectBlock = () => {
-  const { setCurrActiveIdx, setDrawerState, iframeDocument, previewPageState } =
-    useEditorDrawerContext()
+  const {
+    setCurrActiveIdx,
+    setDrawerState,
+    setFlashBlockIndex,
+    iframeDocument,
+    previewPageState,
+  } = useEditorDrawerContext()
 
   return useCallback(
     (index: number, drawerState: DrawerState) => {
       setCurrActiveIdx(index)
       setDrawerState(drawerState)
+      setFlashBlockIndex(index)
       scrollToBlockElement({
         iframeDocument,
         content: previewPageState.content,
         index,
       })
     },
-    [setCurrActiveIdx, setDrawerState, iframeDocument, previewPageState],
+    [
+      setCurrActiveIdx,
+      setDrawerState,
+      setFlashBlockIndex,
+      iframeDocument,
+      previewPageState,
+    ],
   )
 }

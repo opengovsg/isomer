@@ -11,6 +11,11 @@ import { type DrawerState } from "~/types/editorDrawer"
 interface PreviewInteractionState {
   hoveredBlockIndex: number | null
   setHoveredBlockIndex: Dispatch<SetStateAction<number | null>>
+  // Block to flash-highlight in the preview after a click-to-scroll — decoupled
+  // from `hoveredBlockIndex` since selecting a block can unmount its hover
+  // source (e.g. switching drawer state) well before the scroll settles.
+  flashBlockIndex: number | null
+  setFlashBlockIndex: Dispatch<SetStateAction<number | null>>
   iframeDocument: Document | null
   setIframeDocument: Dispatch<SetStateAction<Document | null>>
 }
@@ -74,6 +79,7 @@ export function EditorDrawerProvider({
   const [hoveredBlockIndex, setHoveredBlockIndex] = useState<number | null>(
     null,
   )
+  const [flashBlockIndex, setFlashBlockIndex] = useState<number | null>(null)
   const [iframeDocument, setIframeDocument] = useState<Document | null>(null)
 
   const setPreviewPageState = useCallback(
@@ -108,6 +114,8 @@ export function EditorDrawerProvider({
         setAddedBlockIndex,
         hoveredBlockIndex,
         setHoveredBlockIndex,
+        flashBlockIndex,
+        setFlashBlockIndex,
         iframeDocument,
         setIframeDocument,
         type,
