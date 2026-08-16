@@ -1,11 +1,14 @@
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box } from "@chakra-ui/react"
 import { merge } from "lodash-es"
-import { useCallback, useEffect } from "react"
+import { useCallback } from "react"
 import { createPortal } from "react-dom"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useBlockFlashHighlight } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
 import { useBlockHighlight } from "~/features/editing-experience/hooks/useBlockHighlight"
+import { usePreviewHoverDetection } from "~/features/editing-experience/hooks/usePreviewHoverDetection"
+import { useSelectBlock } from "~/features/editing-experience/hooks/useSelectBlock"
+import { getDrawerStateForBlock } from "~/features/editing-experience/utils/getDrawerStateForBlock"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
@@ -59,62 +62,22 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     [setIframeDocument],
   )
 
-  useEffect(() => {
-    if (!iframeDocument) return
-
-    // Resolve which block (if any) a mouse event target belongs to by
-    // walking up to the direct child of the shared content-blocks container.
-    const resolveBlockIndex = (target: EventTarget | null): number | null => {
-      const container = iframeDocument.querySelector(
-        "[data-isomer-content-blocks]",
-      )
-      if (!container) return null
-
-      let node = target as Node | null
-      while (node && node.parentElement !== container) {
-        node = node.parentElement
-      }
-      // NOTE: Deliberately not `instanceof HTMLElement` — react-frame-component
-      // portals content into the iframe's own document, so DOM nodes there are
-      // instances of the iframe's own HTMLElement global, not this window's.
-      // `instanceof` checks against the parent realm's class silently fail.
-      if (!node) return null
-
-      const index = Array.prototype.indexOf.call(container.children, node)
-      return index === -1 ? null : index
-    }
-
-    const handleMouseOver = (event: MouseEvent) => {
-      const index = resolveBlockIndex(event.target)
-      if (index !== null) setHoveredBlockIndex(index)
-    }
-
-    const handleMouseOut = (event: MouseEvent) => {
-      const container = iframeDocument.querySelector(
-        "[data-isomer-content-blocks]",
-      )
-      if (!container) return
-
-      const related = event.relatedTarget as Node | null
-      if (!related || !container.contains(related)) {
-        setHoveredBlockIndex(null)
-      }
-    }
-
-    iframeDocument.addEventListener("mouseover", handleMouseOver)
-    iframeDocument.addEventListener("mouseout", handleMouseOut)
-
-    return () => {
-      iframeDocument.removeEventListener("mouseover", handleMouseOver)
-      iframeDocument.removeEventListener("mouseout", handleMouseOut)
-    }
-  }, [iframeDocument, setHoveredBlockIndex])
+  usePreviewHoverDetection(iframeDocument, setHoveredBlockIndex)
 
   const { rect: highlightRect, label: highlightLabel } = useBlockHighlight({
     iframeDocument,
     hoveredBlockIndex,
     content: previewPageState.content,
   })
+
+  const selectBlock = useSelectBlock()
+
+  const handleEditClick = useCallback(() => {
+    if (hoveredBlockIndex === null) return
+    const block = previewPageState.content[hoveredBlockIndex]
+    if (!block) return
+    selectBlock(hoveredBlockIndex, getDrawerStateForBlock(block))
+  }, [hoveredBlockIndex, previewPageState.content, selectBlock])
 
   const { rect: flashRect, label: flashLabel } = useBlockHighlight({
     iframeDocument,
@@ -150,7 +113,11 @@ const SuspendableEditPagePreview = (): JSX.Element => {
       {iframeDocument &&
         highlightRect &&
         createPortal(
-          <BlockHighlightOverlay {...highlightRect} label={highlightLabel} />,
+          <BlockHighlightOverlay
+            {...highlightRect}
+            label={highlightLabel}
+            onEditClick={handleEditClick}
+          />,
           iframeDocument.body,
         )}
       {/* Deliberately rendered even when it overlaps the hover overlay above
