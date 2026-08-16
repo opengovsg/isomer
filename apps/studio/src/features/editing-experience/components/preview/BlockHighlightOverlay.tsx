@@ -14,13 +14,8 @@ interface BlockHighlightOverlayProps {
   // after a click-to-scroll, as opposed to the hover highlight which just
   // tracks the cursor at full opacity.
   isFading?: boolean
-  // Renders an "Edit" button beside the label. Sits inside the box's
-  // top-right corner (rather than fully outside it) since the hover overlay
-  // only stays mounted while the cursor stays within the block's own DOM
-  // bounds — anything positioned outside that area would cause a
-  // `mouseout` the moment the cursor reaches it, clearing the highlight
-  // (and the button) before it could be clicked. Accepted trade-off: this
-  // can shadow a sliver of the block's own interactive content in that corner.
+  // Edit button, placed inside the top-right corner rather than outside it —
+  // outside would sit past the block's DOM bounds and trigger a mouseout.
   onEditClick?: () => void
 }
 

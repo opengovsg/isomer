@@ -62,7 +62,11 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     [setIframeDocument],
   )
 
-  usePreviewHoverDetection(iframeDocument, setHoveredBlockIndex)
+  usePreviewHoverDetection(
+    iframeDocument,
+    previewPageState.content,
+    setHoveredBlockIndex,
+  )
 
   const { rect: highlightRect, label: highlightLabel } = useBlockHighlight({
     iframeDocument,

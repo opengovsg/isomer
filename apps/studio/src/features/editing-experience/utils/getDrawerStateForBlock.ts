@@ -1,8 +1,7 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
 import type { DrawerState } from "~/types/editorDrawer"
 
-// Mirrors the block-type -> editor-drawer-state mapping every "click a block"
-// entry point needs (sidebar row click, preview edit button, ...).
+// Shared block-type -> editor-drawer-state mapping for every click-a-block entry point.
 export const getDrawerStateForBlock = (
   block: IsomerSchema["content"][number],
 ): DrawerState => {
