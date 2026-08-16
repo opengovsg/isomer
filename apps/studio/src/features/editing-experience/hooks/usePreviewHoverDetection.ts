@@ -1,10 +1,12 @@
+import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { useEffect } from "react"
+import { CONTENT_BLOCKS_SELECTOR } from "~/features/editing-experience/constants"
+import { getContentIndexFromDomIndex } from "~/features/editing-experience/utils/getBlockElement"
 
-const CONTENT_BLOCKS_SELECTOR = "[data-isomer-content-blocks]"
-
-// Resolve which block (if any) a mouse event target belongs to by walking up
-// to the direct child of the shared content-blocks container.
-const resolveBlockIndex = (
+// Walks up to the direct child of the content-blocks container and returns
+// its DOM position — a raw DOM index, not a `content` array index (hidden
+// childrenpages blocks aren't rendered; see getBlockElement.ts for the map).
+const resolveDomBlockIndex = (
   container: Element,
   target: EventTarget | null,
 ): number | null => {
@@ -12,59 +14,53 @@ const resolveBlockIndex = (
   while (node && node.parentElement !== container) {
     node = node.parentElement
   }
-  // NOTE: Deliberately not `instanceof HTMLElement` — react-frame-component
-  // portals content into the iframe's own document, so DOM nodes there are
-  // instances of the iframe's own HTMLElement global, not this window's.
-  // `instanceof` checks against the parent realm's class silently fail.
+  // Not `instanceof HTMLElement`: react-frame-component portals into the
+  // iframe's own document, whose nodes belong to a different realm.
   if (!node) return null
 
   const index = Array.prototype.indexOf.call(container.children, node)
   return index === -1 ? null : index
 }
 
-// Tracks which block the cursor is over inside the preview iframe, so the
-// sidebar can mirror the highlight (the reverse of hovering a sidebar row to
-// highlight the preview). Hand-rolled rather than usehooks-ts's
-// `useEventListener`: that hook only re-subscribes when its `element` ref's
-// *identity* changes, not when `.current` does — since `iframeDocument`
-// starts `null` and is only set once the iframe finishes mounting, it would
-// permanently miss the real target and fall back to `window`.
+// Tracks which block the cursor is over inside the preview iframe (the
+// reverse of hovering a sidebar row). Hand-rolled instead of usehooks-ts's
+// `useEventListener`, which only re-subscribes on `element` ref identity
+// change, not `.current` change — misses `iframeDocument` going null -> set.
 export const usePreviewHoverDetection = (
   iframeDocument: Document | null,
+  content: IsomerSchema["content"],
   setHoveredBlockIndex: (index: number | null) => void,
 ): void => {
   useEffect(() => {
     if (!iframeDocument) return
 
+    // Cached across events rather than re-queried per mouseover/mouseout.
+    let container = iframeDocument.querySelector(CONTENT_BLOCKS_SELECTOR)
+
     const handleMouseOver = (event: MouseEvent) => {
-      const container = iframeDocument.querySelector(CONTENT_BLOCKS_SELECTOR)
+      container ??= iframeDocument.querySelector(CONTENT_BLOCKS_SELECTOR)
       if (!container) return
 
-      const index = resolveBlockIndex(container, event.target)
-      if (index !== null) setHoveredBlockIndex(index)
+      const domIndex = resolveDomBlockIndex(container, event.target)
+      if (domIndex === null) return
+
+      const contentIndex = getContentIndexFromDomIndex(content, domIndex)
+      if (contentIndex !== null) setHoveredBlockIndex(contentIndex)
     }
 
     const handleMouseOut = (event: MouseEvent) => {
-      const container = iframeDocument.querySelector(CONTENT_BLOCKS_SELECTOR)
+      container ??= iframeDocument.querySelector(CONTENT_BLOCKS_SELECTOR)
       if (!container) return
 
       const related = event.relatedTarget as Node | null
       if (related && container.contains(related)) return
 
-      // The hover toolbar (Edit button + label pill) is portaled directly
-      // into `iframeDocument.body` as a sibling of the content-blocks
-      // container, not a descendant of it — see BlockHighlightOverlay.tsx.
-      // Moving the cursor onto the toolbar therefore fires `mouseout` on the
-      // block with `relatedTarget` outside `container`, which would clear
-      // the highlight and unmount the toolbar out from under the cursor.
-      // That exposes the block underneath again, the browser re-runs hit
-      // testing, and a synthetic `mouseover` fires without real cursor
-      // movement — restarting the cycle as an infinite flicker loop. Treat
-      // entering the toolbar the same as staying within the block.
-      // NOTE: Deliberately not `instanceof Element` — see the note above
-      // about react-frame-component portaling into the iframe's own
-      // document; `instanceof` against the parent realm's class silently
-      // fails here too.
+      // The hover toolbar is portaled as a sibling of `container`, not a
+      // descendant, so moving onto it fires mouseout with `relatedTarget`
+      // outside `container` — that would unmount the toolbar mid-hover and
+      // loop (block reappears -> synthetic mouseover -> repeat). Treat
+      // entering the toolbar as staying within the block.
+      // Not `instanceof Element` — see the cross-realm note above.
       const relatedElement = event.relatedTarget as Element | null
       const enteredToolbar = relatedElement?.closest?.(
         "[data-isomer-preview-toolbar]",
@@ -81,5 +77,5 @@ export const usePreviewHoverDetection = (
       iframeDocument.removeEventListener("mouseover", handleMouseOver)
       iframeDocument.removeEventListener("mouseout", handleMouseOut)
     }
-  }, [iframeDocument, setHoveredBlockIndex])
+  }, [iframeDocument, content, setHoveredBlockIndex])
 }
