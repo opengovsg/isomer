@@ -4,6 +4,7 @@ import { merge } from "lodash-es"
 import { useCallback } from "react"
 import { createPortal } from "react-dom"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
+import { useBlockFlashHighlight } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
 import { useBlockHighlight } from "~/features/editing-experience/hooks/useBlockHighlight"
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
@@ -39,6 +40,8 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     permalink,
     title,
     hoveredBlockIndex,
+    flashBlockIndex,
+    setFlashBlockIndex,
     iframeDocument,
     setIframeDocument,
   } = useEditorDrawerContext()
@@ -61,6 +64,22 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     content: previewPageState.content,
   })
 
+  const { rect: flashRect, label: flashLabel } = useBlockHighlight({
+    iframeDocument,
+    hoveredBlockIndex: flashBlockIndex,
+    content: previewPageState.content,
+  })
+
+  const handleFlashEnd = useCallback(
+    () => setFlashBlockIndex(null),
+    [setFlashBlockIndex],
+  )
+
+  const { isFading: isFlashFading } = useBlockFlashHighlight({
+    flashBlockIndex,
+    onFlashEnd: handleFlashEnd,
+  })
+
   return (
     <ViewportContainer siteId={siteId} callback={handleIframeMount}>
       <PreviewWithCustomSitemap
@@ -80,6 +99,22 @@ const SuspendableEditPagePreview = (): JSX.Element => {
         highlightRect &&
         createPortal(
           <BlockHighlightOverlay {...highlightRect} label={highlightLabel} />,
+          iframeDocument.body,
+        )}
+      {/* Deliberately rendered even when it overlaps the hover overlay above
+      (e.g. clicking a block you're already hovering) — the flash's hold/fade
+      timer starts at click time regardless of render state, so gating this
+      on hover would let the timer run out before the block stops being
+      hovered, cutting the flash short or skipping it entirely. Overlapping
+      the identical hover overlay is visually a no-op. */}
+      {iframeDocument &&
+        flashRect &&
+        createPortal(
+          <BlockHighlightOverlay
+            {...flashRect}
+            label={flashLabel}
+            isFading={isFlashFading}
+          />,
           iframeDocument.body,
         )}
     </ViewportContainer>
