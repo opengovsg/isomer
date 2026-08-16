@@ -6,10 +6,22 @@ import { createContext, useCallback, useContext, useState } from "react"
 import { flushSync } from "react-dom"
 import { type DrawerState } from "~/types/editorDrawer"
 
-interface DrawerContextType extends Pick<
-  EditorDrawerProviderProps,
-  "type" | "permalink" | "siteId" | "pageId" | "updatedAt" | "title"
-> {
+// Preview-iframe interaction state: which block is hovered/active in the
+// editor, and a reference to the preview iframe's document to act on it.
+interface PreviewInteractionState {
+  hoveredBlockIndex: number | null
+  setHoveredBlockIndex: Dispatch<SetStateAction<number | null>>
+  iframeDocument: Document | null
+  setIframeDocument: Dispatch<SetStateAction<Document | null>>
+}
+
+interface DrawerContextType
+  extends
+    PreviewInteractionState,
+    Pick<
+      EditorDrawerProviderProps,
+      "type" | "permalink" | "siteId" | "pageId" | "updatedAt" | "title"
+    > {
   currActiveIdx: number
   setCurrActiveIdx: (currActiveIdx: number) => void
   drawerState: DrawerState
@@ -22,8 +34,6 @@ interface DrawerContextType extends Pick<
   setModifiedAssets: Dispatch<SetStateAction<ModifiedAsset[]>>
   addedBlockIndex: number | null
   setAddedBlockIndex: Dispatch<SetStateAction<number | null>>
-  hoveredBlockIndex: number | null
-  setHoveredBlockIndex: Dispatch<SetStateAction<number | null>>
 }
 const EditorDrawerContext = createContext<DrawerContextType | null>(null)
 
@@ -64,6 +74,7 @@ export function EditorDrawerProvider({
   const [hoveredBlockIndex, setHoveredBlockIndex] = useState<number | null>(
     null,
   )
+  const [iframeDocument, setIframeDocument] = useState<Document | null>(null)
 
   const setPreviewPageState = useCallback(
     (previewPageState: SetStateAction<IsomerSchema>) => {
@@ -97,6 +108,8 @@ export function EditorDrawerProvider({
         setAddedBlockIndex,
         hoveredBlockIndex,
         setHoveredBlockIndex,
+        iframeDocument,
+        setIframeDocument,
         type,
         permalink,
         siteId,
