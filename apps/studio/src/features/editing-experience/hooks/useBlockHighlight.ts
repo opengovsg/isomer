@@ -2,6 +2,7 @@ import type { IsomerSchema } from "@opengovsg/isomer-components"
 import { getComponentSchema } from "@opengovsg/isomer-components"
 import { useEffect, useState } from "react"
 import { PROSE_COMPONENT_NAME } from "~/constants/formBuilder"
+import { getBlockElement } from "~/features/editing-experience/utils/getBlockElement"
 
 interface HighlightRect {
   top: number
@@ -36,15 +37,7 @@ export const useBlockHighlight = ({
       return
     }
 
-    // Blocks aren't individually wrapped (that broke the `first:mt-*`-style
-    // spacing most block components use), so instead we index directly
-    // into the children of the shared content container.
-    const contentBlocksContainer = iframeDocument.querySelector(
-      "[data-isomer-content-blocks]",
-    )
-    const blockEl = contentBlocksContainer?.children[hoveredBlockIndex] as
-      | HTMLElement
-      | undefined
+    const blockEl = getBlockElement(iframeDocument, hoveredBlockIndex)
 
     if (!blockEl) {
       setRect(null)

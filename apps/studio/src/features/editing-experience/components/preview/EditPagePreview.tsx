@@ -1,7 +1,7 @@
 import type { IframeCallbackFnProps } from "~/types/dom"
 import { Box } from "@chakra-ui/react"
 import { merge } from "lodash-es"
-import { useCallback, useState } from "react"
+import { useCallback } from "react"
 import { createPortal } from "react-dom"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useBlockHighlight } from "~/features/editing-experience/hooks/useBlockHighlight"
@@ -39,6 +39,8 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     permalink,
     title,
     hoveredBlockIndex,
+    iframeDocument,
+    setIframeDocument,
   } = useEditorDrawerContext()
 
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
@@ -46,13 +48,11 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     resourceId: pageId,
   })
 
-  const [iframeDocument, setIframeDocument] = useState<Document | null>(null)
-
   const handleIframeMount = useCallback(
     ({ document }: IframeCallbackFnProps) => {
       setIframeDocument(document ?? null)
     },
-    [],
+    [setIframeDocument],
   )
 
   const { rect: highlightRect, label: highlightLabel } = useBlockHighlight({
