@@ -1,4 +1,5 @@
 import type { IsomerSchema } from "@opengovsg/isomer-components"
+import { CONTENT_BLOCKS_SELECTOR } from "~/features/editing-experience/constants"
 
 // packages/components' renderPageContent filters out hidden childrenpages
 // blocks before rendering, so a hidden childrenpages block never reaches the
@@ -30,10 +31,25 @@ export const getBlockElement = (
     .filter((b) => !isHiddenChildrenPagesBlock(b)).length
 
   const contentBlocksContainer = iframeDocument.querySelector(
-    "[data-isomer-content-blocks]",
+    CONTENT_BLOCKS_SELECTOR,
   )
 
   return contentBlocksContainer?.children[visibleIndex] as
     | HTMLElement
     | undefined
+}
+
+// Inverse of getBlockElement: DOM child index -> `content` array index.
+export const getContentIndexFromDomIndex = (
+  content: IsomerSchema["content"],
+  domIndex: number,
+): number | null => {
+  let visibleIndex = 0
+  for (let i = 0; i < content.length; i++) {
+    const block = content[i]
+    if (!block || isHiddenChildrenPagesBlock(block)) continue
+    if (visibleIndex === domIndex) return i
+    visibleIndex++
+  }
+  return null
 }
