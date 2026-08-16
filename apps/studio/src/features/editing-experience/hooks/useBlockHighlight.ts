@@ -37,7 +37,7 @@ export const useBlockHighlight = ({
       return
     }
 
-    const blockEl = getBlockElement(iframeDocument, hoveredBlockIndex)
+    const blockEl = getBlockElement(iframeDocument, content, hoveredBlockIndex)
 
     if (!blockEl) {
       setRect(null)
@@ -69,7 +69,7 @@ export const useBlockHighlight = ({
     return () => {
       resizeObserver.disconnect()
     }
-  }, [hoveredBlockIndex, iframeDocument])
+  }, [hoveredBlockIndex, iframeDocument, content])
 
   const block =
     hoveredBlockIndex !== null ? content[hoveredBlockIndex] : undefined
