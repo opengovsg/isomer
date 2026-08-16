@@ -90,13 +90,22 @@ export default function CollectionEditorStateDrawer(): JSX.Element {
     }
   }, [drawerStateType, canManageFilters])
 
-  const metadataSchema = getScopedSchema({
-    layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
-    scope: "page",
-    ...schemaFields,
-  })
-  const validateFn =
-    ajv.compile<Static<ReturnType<typeof getLayoutPageSchema>>>(metadataSchema)
+  const metadataSchema = useMemo(
+    () =>
+      getScopedSchema({
+        layout: ISOMER_USABLE_PAGE_LAYOUTS.Collection,
+        scope: "page",
+        ...schemaFields,
+      }),
+    [schemaFields],
+  )
+  const validateFn = useMemo(
+    () =>
+      ajv.compile<Static<ReturnType<typeof getLayoutPageSchema>>>(
+        metadataSchema,
+      ),
+    [metadataSchema],
+  )
 
   const handleSaveChanges = useCallback(() => {
     const hadNoTagsBefore = !(savedPageState.page as CollectionPagePageProps)
