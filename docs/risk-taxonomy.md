@@ -98,8 +98,8 @@ There is no bot that submits an actual GitHub APPROVE review — the `pr-review`
 
 1. The PR touches no file outside the `risk:low` globs.
 2. CI is green (lint, typecheck, build, tests).
-3. Code review (human, since there is no automated code-review skill) surfaces no blocking issues.
-4. Security review (human, since there is no automated security-review skill) surfaces no blocking issues.
+3. Any automated code-review findings, including GitHub Copilot findings when a review runs, are resolved or explicitly dismissed as non-blocking.
+4. Human code and security review surfaces no blocking issues.
 5. The PR does not change `package.json` scripts, `engines`, `pnpm.overrides`, or workspace dependencies.
 6. No reversibility modifier applies (external side-effects, row mutations, pgboss handler removal/rename/payload change, S3 object deletions).
 

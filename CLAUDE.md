@@ -24,7 +24,7 @@ pnpm dev:e2e          # Start dev server + run E2E tests
 # From apps/studio
 pnpm test:unit        # Run Vitest unit tests
 pnpm test:watch       # Watch mode for unit tests
-pnpm exec playwright test tests/e2e/specific.test.ts       # Run single E2E test
+pnpm exec playwright test tests/e2e/smoke.test.ts          # Run single E2E test
 pnpm test:unit -- src/path/to/test.test.ts                 # Run single unit test
 ```
 
