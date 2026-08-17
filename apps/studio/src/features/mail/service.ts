@@ -10,6 +10,7 @@ import type {
   CancelSchedulePageTemplateData,
   EmailTemplate,
   FailedPublishTemplateData,
+  FailedUnpublishTemplateData,
   GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
@@ -115,6 +116,16 @@ export async function sendFailedPublishEmail(
     data,
     template: templates.failedPublish(data),
     emailType: "failed publish",
+  })
+}
+
+export async function sendFailedUnpublishEmail(
+  data: FailedUnpublishTemplateData,
+): Promise<void> {
+  await sendEmailWithTemplate({
+    data,
+    template: templates.failedUnpublish(data),
+    emailType: "failed unpublish",
   })
 }
 
