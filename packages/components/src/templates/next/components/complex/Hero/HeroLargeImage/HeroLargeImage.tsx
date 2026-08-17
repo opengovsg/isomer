@@ -13,6 +13,7 @@ export const HeroLargeImage = ({
   secondaryButtonLabel,
   secondaryButtonUrl,
   backgroundUrl,
+  imageFit,
   site,
 }: HeroLargeImageProps) => {
   return (
@@ -62,6 +63,7 @@ export const HeroLargeImage = ({
       <ImageContainer
         imageSrc={backgroundUrl}
         imageAlt=""
+        imageFit={imageFit}
         assetsBaseUrl={site.assetsBaseUrl}
       />
     </section>
