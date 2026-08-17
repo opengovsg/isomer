@@ -1,7 +1,8 @@
 import type { IframeCallbackFnProps } from "~/types/dom"
-import { Box } from "@chakra-ui/react"
-import { merge } from "lodash-es"
-import { useCallback } from "react"
+import type { DrawerState } from "~/types/editorDrawer"
+import { Box, useDisclosure } from "@chakra-ui/react"
+import { isEqual, merge } from "lodash-es"
+import { useCallback, useState } from "react"
 import { createPortal } from "react-dom"
 import { useEditorDrawerContext } from "~/contexts/EditorDrawerContext"
 import { useBlockFlashHighlight } from "~/features/editing-experience/hooks/useBlockFlashHighlight"
@@ -12,10 +13,16 @@ import { getDrawerStateForBlock } from "~/features/editing-experience/utils/getD
 import { withSuspense } from "~/hocs/withSuspense"
 import { trpc } from "~/utils/trpc"
 
+import { DiscardChangesModal } from "../DiscardChangesModal"
 import { BlockHighlightOverlay } from "./BlockHighlightOverlay"
 import { LoadingPreview } from "./LoadingPreview"
 import PreviewWithCustomSitemap from "./PreviewWithCustomSitemap"
 import { ViewportContainer } from "./ViewportContainer"
+
+interface PendingBlockSelection {
+  index: number
+  drawerState: DrawerState
+}
 
 const LoadingState = (): JSX.Element => {
   return (
@@ -37,6 +44,9 @@ const LoadingState = (): JSX.Element => {
 const SuspendableEditPagePreview = (): JSX.Element => {
   const {
     previewPageState,
+    setPreviewPageState,
+    savedPageState,
+    currActiveIdx,
     pageId,
     updatedAt,
     siteId,
@@ -49,6 +59,14 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     iframeDocument,
     setIframeDocument,
   } = useEditorDrawerContext()
+
+  const {
+    isOpen: isDiscardChangesModalOpen,
+    onOpen: onDiscardChangesModalOpen,
+    onClose: onDiscardChangesModalClose,
+  } = useDisclosure()
+  const [pendingBlockSelection, setPendingBlockSelection] =
+    useState<PendingBlockSelection | null>(null)
 
   const [siteMap] = trpc.site.getLocalisedSitemap.useSuspenseQuery({
     siteId,
@@ -80,8 +98,49 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     if (hoveredBlockIndex === null) return
     const block = previewPageState.content[hoveredBlockIndex]
     if (!block) return
-    selectBlock(hoveredBlockIndex, getDrawerStateForBlock(block))
-  }, [hoveredBlockIndex, previewPageState.content, selectBlock])
+    const nextDrawerState = getDrawerStateForBlock(block)
+
+    const hasUnsavedChanges = !isEqual(previewPageState, savedPageState)
+    if (hasUnsavedChanges && hoveredBlockIndex !== currActiveIdx) {
+      setPendingBlockSelection({
+        index: hoveredBlockIndex,
+        drawerState: nextDrawerState,
+      })
+      onDiscardChangesModalOpen()
+      return
+    }
+    selectBlock(hoveredBlockIndex, nextDrawerState)
+  }, [
+    hoveredBlockIndex,
+    previewPageState,
+    savedPageState,
+    currActiveIdx,
+    selectBlock,
+    onDiscardChangesModalOpen,
+  ])
+
+  const handleDiscardChangesModalClose = useCallback(() => {
+    setPendingBlockSelection(null)
+    onDiscardChangesModalClose()
+  }, [onDiscardChangesModalClose])
+
+  const handleDiscardChanges = useCallback(() => {
+    setPreviewPageState(savedPageState)
+    onDiscardChangesModalClose()
+    if (pendingBlockSelection) {
+      selectBlock(
+        pendingBlockSelection.index,
+        pendingBlockSelection.drawerState,
+      )
+      setPendingBlockSelection(null)
+    }
+  }, [
+    savedPageState,
+    setPreviewPageState,
+    onDiscardChangesModalClose,
+    pendingBlockSelection,
+    selectBlock,
+  ])
 
   const { rect: flashRect, label: flashLabel } = useBlockHighlight({
     iframeDocument,
@@ -140,6 +199,11 @@ const SuspendableEditPagePreview = (): JSX.Element => {
           />,
           iframeDocument.body,
         )}
+      <DiscardChangesModal
+        isOpen={isDiscardChangesModalOpen}
+        onClose={handleDiscardChangesModalClose}
+        onDiscard={handleDiscardChanges}
+      />
     </ViewportContainer>
   )
 }
