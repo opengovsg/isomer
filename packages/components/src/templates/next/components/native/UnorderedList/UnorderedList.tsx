@@ -15,8 +15,11 @@ const getUnorderedListType = (level?: number) => {
 
 export const UnorderedList = ({ content, level, site }: UnorderedListProps) => {
   return (
+    // `mt-3` matches the item rhythm (`my-3` on ListItem) so a nested sublist
+    // sits in the same vertical rhythm as its siblings. Above a top-level list
+    // the preceding block's bottom margin collapses over this and wins.
     <ul
-      className={`mt-6 ps-9 marker:text-base-content ${getUnorderedListType(level)}`}
+      className={`mt-3 ps-9 marker:text-base-content ${getUnorderedListType(level)}`}
     >
       {content.map((item, index) => (
         <ListItem key={index} {...item} level={level} site={site} />
