@@ -63,7 +63,7 @@ export const ImageContainer = ({
     <div
       className={
         imageFit === IMAGE_FIT.Content
-          ? "relative w-full px-6 md:px-10"
+          ? "relative w-full md:px-10"
           : "relative w-full"
       }
     >
@@ -74,7 +74,7 @@ export const ImageContainer = ({
         width="100%"
         className={
           imageFit === IMAGE_FIT.Content
-            ? "mx-auto block h-auto max-h-[31.25rem] w-auto max-w-full rounded-lg"
+            ? "aspect-square max-h-[60rem] w-full object-cover object-center md:mx-auto md:block md:aspect-auto md:h-auto md:max-h-[31.25rem] md:w-auto md:max-w-full md:rounded-lg"
             : "aspect-square max-h-[60rem] w-full object-cover object-center md:aspect-[2/1]"
         }
         assetsBaseUrl={assetsBaseUrl}
