@@ -143,6 +143,31 @@ export const AdminWithAuditLogExport: Story = {
   },
 }
 
+// Clicking "Export access logs" opens the scope-picker modal rather than
+// firing the export immediately.
+export const AdminOpensExportAccessLogsModal: Story = {
+  parameters: {
+    growthbook: [createAuditLogEnabledGbParameters(true)],
+    msw: {
+      handlers: [
+        ...ADMIN_HANDLERS,
+        resourceHandlers.getRolesFor.admin(),
+        userHandlers.list.users(),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body)
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Export access logs" }),
+    )
+    await expect(await screen.findByText("Export access history")).toBeVisible()
+    await expect(
+      screen.getByRole("radio", { name: "All sites I have Admin access to" }),
+    ).toBeChecked()
+  },
+}
+
 // Exporting access logs is admin-only: even with the flag on, editors never
 // see the button at all.
 export const EditorWithAuditLogExport: Story = {
