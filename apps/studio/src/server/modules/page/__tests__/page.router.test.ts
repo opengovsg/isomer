@@ -2379,6 +2379,60 @@ describe("page.router", async () => {
       )
     })
 
+    it("should throw 404 if the page does not exist", async () => {
+      // Arrange
+      const { site } = await setupSite()
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: 99999, // does not exist
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page does not exist",
+        }),
+      )
+    })
+
+    it("should throw 404 if pageId refers to a Folder", async () => {
+      // Arrange — unpublishPage is a page-only contract; Folder ids belong
+      // to the dedicated unpublishFolder mutation
+      const { site, folder } = await setupFolder({})
+      await setupPageResource({
+        siteId: site.id,
+        parentId: folder.id,
+        resourceType: ResourceType.IndexPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(folder.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page does not exist",
+        }),
+      )
+    })
+
     it("should unpublish a live page while retaining its draft", async () => {
       // Arrange — a published page with a pending draft
       const { site, page } = await setupPageResource({
