@@ -681,6 +681,29 @@ export const pageRouter = router({
           action: "unpublish",
           userId: user.id,
         })
+
+        // Folder/Collection ids belong to the dedicated unpublishFolder/
+        // unpublishCollection mutations — reject them here so this endpoint
+        // can't be used to unpublish a container's IndexPage under a page-only
+        // contract (getFullPageById would otherwise silently resolve it).
+        const page = await db
+          .selectFrom("Resource")
+          .where("Resource.id", "=", String(pageId))
+          .where("Resource.siteId", "=", siteId)
+          .where("Resource.type", "not in", [
+            ResourceType.Folder,
+            ResourceType.Collection,
+          ])
+          .select("Resource.id")
+          .executeTakeFirst()
+
+        if (!page) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "This page does not exist",
+          })
+        }
+
         await unpublishPageResource({
           logger,
           siteId,
