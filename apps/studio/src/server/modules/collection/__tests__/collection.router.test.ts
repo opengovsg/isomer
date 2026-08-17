@@ -26,7 +26,13 @@ import * as auditService from "~/server/modules/audit/audit.service"
 import { createCallerFactory } from "~/server/trpc"
 
 import { assertAuditLogRows } from "../../audit/__tests__/utils"
-import { db, jsonb, ResourceState, ResourceType } from "../../database"
+import {
+  AuditLogEvent,
+  db,
+  jsonb,
+  ResourceState,
+  ResourceType,
+} from "../../database"
 import { getBlobOfResource } from "../../resource/resource.service"
 import { collectionRouter } from "../collection.router"
 import {
@@ -1270,6 +1276,52 @@ describe("collection.router", async () => {
       )
     })
 
+    it("should throw 404 if resourceId does not exist", async () => {
+      const { site } = await setupSite()
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = caller.unpublishCollection({
+        siteId: site.id,
+        resourceId: 99999, // does not exist
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This collection does not exist",
+        }),
+      )
+    })
+
+    it("should throw 404 if resourceId is not a Collection", async () => {
+      // Arrange — unpublishCollection is a collection-only contract; a plain
+      // page's id belongs to the unpublishPage mutation
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = caller.unpublishCollection({
+        siteId: site.id,
+        resourceId: Number(page.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This collection does not exist",
+        }),
+      )
+    })
+
     it("should throw if the collection's IndexPage is not currently published", async () => {
       const { site, collection } = await setupCollection()
       await setupPageResource({
@@ -1335,6 +1387,14 @@ describe("collection.router", async () => {
         .executeTakeFirstOrThrow()
       expect(updatedCollection.publishedVersionId).toBeNull()
       expect(updatedCollection.state).toEqual(ResourceState.Draft)
+
+      // Assert — audited against the IndexPage, not the collection
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", AuditLogEvent.Unpublish)
+        .selectAll()
+        .execute()
+      expect(auditLogs.length).toEqual(1)
     })
   })
 

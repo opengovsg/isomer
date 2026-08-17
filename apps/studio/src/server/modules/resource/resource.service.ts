@@ -1420,7 +1420,7 @@ export const unpublishPageResource = async ({
       })
     }
 
-    if (!fullResource.publishedVersionId) {
+    if (fullResource.publishedVersionId === null) {
       throw new TRPCError({
         code: "PRECONDITION_FAILED",
         message: "This page is not currently published",

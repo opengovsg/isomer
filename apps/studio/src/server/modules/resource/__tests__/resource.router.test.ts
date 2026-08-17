@@ -3094,7 +3094,8 @@ describe("resource.router", async () => {
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
-          message: "This page must be unpublished before it can be deleted",
+          message:
+            "This folder has live pages inside it — unpublish them before deleting",
         }),
       )
       const actual = await db
@@ -3166,7 +3167,8 @@ describe("resource.router", async () => {
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
-          message: "This page must be unpublished before it can be deleted",
+          message:
+            "This folder has live pages inside it — unpublish them before deleting",
         }),
       )
       const actualFolder = await db
@@ -3218,7 +3220,8 @@ describe("resource.router", async () => {
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
-          message: "This page must be unpublished before it can be deleted",
+          message:
+            "This folder has live pages inside it — unpublish them before deleting",
         }),
       )
       const actualNestedPage = await db
@@ -3250,7 +3253,8 @@ describe("resource.router", async () => {
       await expect(result).rejects.toThrow(
         new TRPCError({
           code: "BAD_REQUEST",
-          message: "This page must be unpublished before it can be deleted",
+          message:
+            "This collection has live pages inside it — unpublish them before deleting",
         }),
       )
       const actual = await db
