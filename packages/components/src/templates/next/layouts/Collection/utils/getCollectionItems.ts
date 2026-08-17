@@ -4,6 +4,8 @@ import type { CollectionPagePageProps } from "~/types/page"
 import { getParsedDate } from "~/utils/getParsedDate"
 import { getSitemapAsArray } from "~/utils/getSitemapAsArray"
 
+import { getTodayInSingapore } from "./getDateFilterStatus"
+import { getDateFilterValues } from "./getDateFilterValues"
 import { getPillAndPlaintextTags } from "./getPillAndPlaintextTags"
 import { getTagsFromTagged } from "./getTagsFromTagged"
 import { sortCollectionItems } from "./sortCollectionItems"
@@ -115,6 +117,8 @@ export const getCollectionItems = ({
         item.layout === "article",
     )
 
+  const today = getTodayInSingapore()
+
   const transformedItems = items.map((item) => {
     const date =
       showDate !== false && item.date !== undefined && item.date !== ""
@@ -124,6 +128,11 @@ export const getCollectionItems = ({
     const { pillTags, plaintextTags } = getPillAndPlaintextTags(
       item.tagged,
       tagCategories,
+    )
+    const { dateTagged, dateFilterCards } = getDateFilterValues(
+      item.dateTagged,
+      tagCategories,
+      today,
     )
 
     const baseItem = {
@@ -144,6 +153,8 @@ export const getCollectionItems = ({
           ? getTagsFromTagged(item.tagged, tagCategories)
           : undefined,
       pillTags,
+      dateTagged,
+      dateFilterCards,
     }
 
     if (item.layout === "file") {

@@ -4,6 +4,8 @@ import { isExternalUrl } from "~/utils/isExternalUrl"
 import { ImageClient } from "../ImageClient"
 import { Link } from "../Link"
 import { PillTags, PlaintextTags } from "../Tags"
+import { EventDateFilterDates } from "./EventDateFilterDates"
+import { EventStatusPill } from "./EventStatusPill"
 import { Title } from "./Title"
 
 export const CollectionCard = ({
@@ -19,6 +21,7 @@ export const CollectionCard = ({
   pillTags,
   formattedDate,
   headingLevel,
+  dateFilterCards,
 }: CollectionCardProps & {
   shouldShowDate?: boolean
   siteAssetsBaseUrl: string | undefined
@@ -38,11 +41,21 @@ export const CollectionCard = ({
         </p>
       )}
       <div className="flex flex-grow flex-col gap-3 text-base-content md:gap-2">
+        {dateFilterCards && dateFilterCards.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            {dateFilterCards.map(({ id, status, statusLabel }) => (
+              <EventStatusPill key={id} status={status} label={statusLabel} />
+            ))}
+          </div>
+        )}
         <Title
           title={itemTitle}
           isExternalLink={isExternalLink}
           headingLevel={headingLevel}
         />
+        {dateFilterCards && dateFilterCards.length > 0 && (
+          <EventDateFilterDates entries={dateFilterCards} />
+        )}
         <PillTags
           tags={pillTags}
           className="flex w-full flex-wrap items-center gap-2"

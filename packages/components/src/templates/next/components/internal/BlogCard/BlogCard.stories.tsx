@@ -172,3 +172,18 @@ export const MultiplePlaintextTags: Story = {
     await expect(screen.queryByText("Category")).not.toBeInTheDocument()
   },
 }
+
+export const WithDateFilter: Story = {
+  args: generateArgs({
+    title: "Annual Community Charity Run 2026",
+    dateFilterCards: [
+      {
+        id: "event-date",
+        label: "Event Date",
+        status: "ONGOING",
+        statusLabel: "Ongoing",
+        dateText: "27 Sep - 29 Sep 2026",
+      },
+    ],
+  }),
+}

@@ -11,6 +11,7 @@ import { groupFocusVisibleHighlight } from "~/utils/tailwind"
 import type { FilterProps } from "../../../types/Filter"
 import { Button } from "../Button"
 import { Checkbox, CheckboxGroup } from "../Checkbox"
+import { DateRangeFilterInput } from "./DateRangeFilterInput"
 import { FilterDrawer } from "./FilterDrawer"
 
 const filterSectionLabelStyle = tv({
@@ -52,6 +53,7 @@ export const Filter = ({
   filters,
   appliedFilters,
   handleFilterToggle,
+  handleDateRangeChange,
   handleClearFilter,
   setAppliedFilters,
 }: FilterProps) => {
@@ -94,6 +96,7 @@ export const Filter = ({
         isOpen={mobileFiltersOpen}
         onOpen={setMobileFiltersOpen}
         handleFilterToggle={handleFilterToggle}
+        handleDateRangeChange={handleDateRangeChange}
         setAppliedFilters={setAppliedFilters}
       />
       <aside className="hidden lg:block">
@@ -111,7 +114,7 @@ export const Filter = ({
             </Button>
           )}
         </div>
-        {filters.map(({ id, label, items }) => (
+        {filters.map(({ id, label, items, type }) => (
           <CheckboxGroup
             className="border-b border-b-divider-medium py-4"
             key={id}
@@ -123,7 +126,7 @@ export const Filter = ({
               onToggle={() => updateFilterToggle(id)}
             />
 
-            <div className={showFilter[id] ? "flex flex-col" : "hidden"}>
+            <div className={showFilter[id] ? "flex flex-col gap-2" : "hidden"}>
               {items.map(({ id: itemId, label: itemLabel, count }) => (
                 <Checkbox
                   key={itemId}
@@ -134,6 +137,14 @@ export const Filter = ({
                   {itemLabel} ({count.toLocaleString()})
                 </Checkbox>
               ))}
+              {type === "date" && (
+                <DateRangeFilterInput
+                  value={
+                    appliedFilters.find((filter) => filter.id === id)?.dateRange
+                  }
+                  onChange={(dateRange) => handleDateRangeChange(id, dateRange)}
+                />
+              )}
             </div>
           </CheckboxGroup>
         ))}
