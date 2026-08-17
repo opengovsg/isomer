@@ -16,7 +16,6 @@ import {
 } from "~/lib/s3"
 import {
   AUDIT_LOG_EXPORT_MAX_MONTHS,
-  AuditLogExportRequestedReportType,
   type CreateAuditLogExportRequestInput,
   getCurrentSingaporeMonth,
   validateIsMonthInPastYear,
@@ -52,27 +51,8 @@ type CreateAuditLogExportRequestProps = CreateAuditLogExportRequestInput & {
 // idempotently (the existing row is returned) while one of these exists.
 const IN_FLIGHT_STATUSES = ["Pending", "Processing"] as const
 
-// Fan-out from the requested (input) report type to the DB rows to insert.
-// `Both` is UX vocabulary only (see schemas/audit.ts): it becomes TWO
-// AuditLogExportRequest rows — one Access, one Activity — each fulfilled as an
-// independent job. The DB enum has no `Both` member.
-const REPORT_TYPES_BY_REQUESTED_TYPE: Record<
-  AuditLogExportRequestedReportType,
-  readonly AuditLogExportReportType[]
-> = {
-  [AuditLogExportRequestedReportType.Access]: [AuditLogExportReportType.Access],
-  [AuditLogExportRequestedReportType.Activity]: [
-    AuditLogExportReportType.Activity,
-  ],
-  [AuditLogExportRequestedReportType.Both]: [
-    AuditLogExportReportType.Activity,
-    AuditLogExportReportType.Access,
-  ],
-}
-
-// The single report each row produces. `Both` is fanned out into two rows at
-// request time (see REPORT_TYPES_BY_REQUESTED_TYPE), so every row here maps to
-// exactly one report — one CSV, one download link, one email.
+// The single report each row produces — one CSV, one download link, one
+// email.
 const REPORT_BY_TYPE = {
   [AuditLogExportReportType.Access]: {
     kind: AuditLogExportReportType.Access,
@@ -105,74 +85,54 @@ export const createAuditLogExportRequest = async ({
   }
 
   // The month picker is the user-facing input, but it only ever applies to
-  // Activity ("Audit logs") — the Access ("User access review logs") card
-  // renders no month picker at all, so an Access export must always reflect
-  // CURRENT access, never whatever past month was picked for Activity in a
-  // "Both" ask. Both are stored as the same half-open SGT calendar-date range
-  // shape (see getMonthDateRange — a current-month request is clamped to
-  // today + 1); Access's range is simply always the current month's.
+  // Activity ("Audit logs") — an Access export always reflects the CURRENT
+  // month regardless of what's picked, since its own surface
+  // (ExportAccessLogsButton) never shows a month picker at all.
   const now = new Date()
-  const auditLogDateRangeByReportType: Record<
-    AuditLogExportReportType,
-    string
-  > = {
-    [AuditLogExportReportType.Access]: getMonthDateRange(
-      getCurrentSingaporeMonth(),
-      now,
-    ),
-    [AuditLogExportReportType.Activity]: getMonthDateRange(month, now),
-  }
-
-  // The concrete DB report types this request fans out to: one row for
-  // Access/Activity, two rows for Both.
-  const reportTypes = REPORT_TYPES_BY_REQUESTED_TYPE[reportType]
+  const auditLogDateRange =
+    reportType === AuditLogExportReportType.Access
+      ? getMonthDateRange(getCurrentSingaporeMonth(), now)
+      : getMonthDateRange(month, now)
 
   // Asking is ALWAYS safe (ADR docs/adr/0005): a duplicate ask is accepted
   // idempotently, never rejected. The PARTIAL UNIQUE INDEX on (siteId, userId,
   // auditLogDateRange, reportType) WHERE status IN ('Pending','Processing')
   // (defined in the PR #2603 migration) is now purely a RACE GUARD — it is
   // what lets two concurrent identical asks resolve to ONE in-flight row
-  // instead of two, not a reason to error. Per fanned-out report type:
+  // instead of two, not a reason to error.
   //
   //   1. Fast path: an in-flight row for the same (site, user, range, type)
   //      already exists → use it, insert nothing.
   //   2. Otherwise INSERT ... ON CONFLICT DO NOTHING targeting that partial
   //      index. Losing the race between the SELECT and the INSERT therefore
-  //      cannot raise a unique-violation (which would abort the whole
-  //      Postgres transaction and roll back the other fan-out half); the
-  //      insert simply returns no row, and we SELECT the winner's in-flight
-  //      row and use that instead. Any other insert error still rethrows.
+  //      cannot raise a unique-violation; the insert simply returns no row,
+  //      and we SELECT the winner's in-flight row and use that instead. Any
+  //      other insert error still rethrows.
   //
-  // Every ask — including one where all halves were idempotent-accepted — is
-  // recorded as ONE AuditLogExportCreate audit event in the same transaction,
+  // Recorded as ONE AuditLogExportCreate audit event in the same transaction,
   // so agencies can always see who asked to export their logs.
   return db.transaction().execute(async (tx) => {
-    const rows = []
-    for (const dbReportType of reportTypes) {
-      const auditLogDateRange = auditLogDateRangeByReportType[dbReportType]
-      const inFlightRowQuery = tx
-        .selectFrom("AuditLogExportRequest")
-        .where("siteId", "=", siteId)
-        .where("userId", "=", userId)
-        .where("auditLogDateRange", "=", auditLogDateRange)
-        .where("reportType", "=", dbReportType)
-        .where("status", "in", IN_FLIGHT_STATUSES)
-        .selectAll()
+    const inFlightRowQuery = tx
+      .selectFrom("AuditLogExportRequest")
+      .where("siteId", "=", siteId)
+      .where("userId", "=", userId)
+      .where("auditLogDateRange", "=", auditLogDateRange)
+      .where("reportType", "=", reportType)
+      .where("status", "in", IN_FLIGHT_STATUSES)
+      .selectAll()
 
-      // Fast path: idempotent-accept the common (non-racing) duplicate.
-      const existing = await inFlightRowQuery.executeTakeFirst()
-      if (existing) {
-        rows.push(existing)
-        continue
-      }
+    // Fast path: idempotent-accept the common (non-racing) duplicate.
+    const existing = await inFlightRowQuery.executeTakeFirst()
 
-      const inserted = await tx
+    const row =
+      existing ??
+      (await tx
         .insertInto("AuditLogExportRequest")
         .values({
           siteId,
           userId,
           auditLogDateRange,
-          reportType: dbReportType,
+          reportType,
           status: AuditLogExportStatus.Pending,
           attempts: 0,
         })
@@ -185,49 +145,31 @@ export const createAuditLogExportRequest = async ({
             .doNothing(),
         )
         .returningAll()
-        .executeTakeFirst()
-
-      if (inserted) {
-        rows.push(inserted)
-        continue
-      }
-
+        .executeTakeFirst()) ??
       // Race-loser path: a concurrent identical ask inserted its in-flight
       // row between our SELECT and INSERT, so DO NOTHING swallowed ours.
       // The winner's row is committed and visible by now — use it.
-      rows.push(await inFlightRowQuery.executeTakeFirstOrThrow())
-    }
+      (await inFlightRowQuery.executeTakeFirstOrThrow())
 
-    // ONE event per ask, not one per fanned-out row: the delta keeps the
-    // user's requested vocabulary ("Both" included), never the DB fan-out.
     const requestedBy = await tx
       .selectFrom("User")
       .where("id", "=", userId)
       .selectAll()
       .executeTakeFirstOrThrow()
-    await Promise.all(
-      reportTypes.map((reportType) => {
-        return logAuditLogExportEvent(tx, {
-          eventType: "AuditLogExportCreate",
-          by: requestedBy,
-          siteId,
-          ip,
-          delta: {
-            before: null,
-            after: {
-              auditLogDateRange: auditLogDateRangeByReportType[reportType],
-              reportType,
-            },
-          },
-        })
-      }),
-    )
+    await logAuditLogExportEvent(tx, {
+      eventType: "AuditLogExportCreate",
+      by: requestedBy,
+      siteId,
+      ip,
+      delta: {
+        before: null,
+        after: { auditLogDateRange, reportType },
+      },
+    })
 
-    // Return every row backing this ask (one for Access/Activity, two for
-    // Both) — existing in-flight rows and fresh inserts alike. The UI ignores
-    // the payload, so the array shape is chosen purely to reflect the fan-out
-    // honestly.
-    return rows
+    // Returned as a single-element array so existing callers can keep
+    // treating the result as "every row backing this ask".
+    return [row]
   })
 }
 
@@ -443,8 +385,7 @@ export const processAuditLogExportRequest = async (
   try {
     // Step 3 + 4: run the row's single report query, serialise to CSV
     // (always — header-only CSV for zero rows), upload, and sign a download
-    // URL. `Both` requests were fanned out into two rows at request time, so
-    // one row is always exactly one report.
+    // URL. Every row is exactly one report.
     const report = REPORT_BY_TYPE[request.reportType]
     const bucket = getStudioAssetsBucketName()
 
@@ -507,9 +448,7 @@ export const processAuditLogExportRequest = async (
     // Step 4: no reusable artifact — run the row's single report query and
     // stream it straight to S3: Postgres cursor → CSV transform → multipart
     // upload, so a large export never buffers fully in memory. An empty result
-    // yields an empty object (matching the former buffered behaviour). `Both`
-    // requests were fanned out into two rows at request time, so one row is
-    // always exactly one report.
+    // yields an empty object (matching the former buffered behaviour).
     if (objectKey === null) {
       // The CSV's contents are frozen the moment the report query's cursor
       // starts reading, so the completeness instant is captured HERE —
@@ -595,9 +534,7 @@ export const processAuditLogExportRequest = async (
       "Audit log export CSV ready for delivery",
     )
 
-    // Step 6: one ready email with the single download link. A "Both" user
-    // request is two independent rows, so it yields two independent emails —
-    // no cross-job coordination.
+    // Step 6: one ready email with the single download link.
     await sendAuditLogExportReadyEmail({
       recipientEmail,
       siteName,
