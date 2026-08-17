@@ -25,18 +25,9 @@ export const useCreateAuditLogExportRequest = ({
 
   return trpc.audit.createExportRequest.useMutation({
     onSuccess: (_data, { reportType: requestedReportType, month }) => {
-      // `Both` fans out into two DB rows server-side (see auditLogExport.service.ts),
-      // so mirror that here with one event per log type actually requested.
-      if (
-        requestedReportType === AuditLogExportRequestedReportType.Access ||
-        requestedReportType === AuditLogExportRequestedReportType.Both
-      ) {
+      if (requestedReportType === AuditLogExportRequestedReportType.Access) {
         posthog.capture("user_access_log_requested", { site_id: siteId })
-      }
-      if (
-        requestedReportType === AuditLogExportRequestedReportType.Activity ||
-        requestedReportType === AuditLogExportRequestedReportType.Both
-      ) {
+      } else {
         posthog.capture("audit_log_requested", { site_id: siteId, month })
       }
 

@@ -12,18 +12,14 @@ import { getCurrentSingaporeMonth, type IsoMonth } from "~/schemas/audit"
 // are accepted IDEMPOTENTLY (ADR docs/adr/0005): losing that race must resolve
 // to the winner's in-flight row, never to an error. The INSERT targets the
 // partial unique index with ON CONFLICT DO NOTHING — a raised unique-violation
-// would abort the whole Postgres transaction and roll back the other fan-out
-// half, so the losing insert instead returns NO ROW and the service selects
-// the winner's row. Vitest isolates module mocks per test file, so mocking
-// `../database` here does not affect the real-DB integration tests in
-// audit.router.test.ts.
+// would abort the whole Postgres transaction, so the losing insert instead
+// returns NO ROW and the service selects the winner's row. Vitest isolates
+// module mocks per test file, so mocking `../database` here does not affect
+// the real-DB integration tests in audit.router.test.ts.
 //
-// It also pins the `Both` fan-out contract (TWO inserts — Access + Activity —
-// through the SAME transaction) and the audit trail contract: EVERY ask
-// records one AuditLogExportCreate event PER fanned-out report type in that
-// transaction — never a single ambiguous "Both" event (review feedback on
-// #2832) — even when all halves were idempotent-accepted and nothing was
-// inserted.
+// It also pins the audit trail contract: every ask records one
+// AuditLogExportCreate event in the same transaction, even when the ask was
+// idempotent-accepted and nothing was inserted.
 
 const { mockDb, mockValidatePermissions } = vi.hoisted(() => ({
   mockDb: { transaction: vi.fn() },
@@ -210,40 +206,35 @@ const useTx = (tx: ReturnType<typeof makeTx>) => {
   })
 }
 
-// The AuditLogExportCreate events every ask must record: ONE per fanned-out
-// DB report type, never a "Both" event — which would be ambiguous about
-// exactly which reports were produced (review feedback on #2832). Shaped per
-// the audit.service.ts pattern: actor = requesting user, delta.after carries
-// the concrete DB report type.
-const expectExportCreateEvents = (
+// The AuditLogExportCreate event every ask must record. Shaped per the
+// audit.service.ts pattern: actor = requesting user, delta.after carries the
+// report type.
+const expectExportCreateEvent = (
   tx: ReturnType<typeof makeTx>,
-  expectedReportTypes: string[],
+  expectedReportType: string,
   ipAddress?: string,
 ) => {
-  expect(tx.auditLogValues).toHaveLength(expectedReportTypes.length)
-  const loggedReportTypes = tx.auditLogValues.map(
-    (value) =>
-      (value.delta as { after: { reportType: string } }).after.reportType,
+  expect(tx.auditLogValues).toHaveLength(1)
+  const [value] = tx.auditLogValues
+  expect(value).toMatchObject({
+    eventType: "AuditLogExportCreate",
+    userId: FAKE_USER.id,
+    siteId: 1,
+    // The requester IP threaded from the router is recorded on the event,
+    // matching sibling resource/permission/login events.
+    ipAddress,
+    delta: {
+      before: null,
+      after: { reportType: expectedReportType },
+    },
+  })
+  const delta = value?.delta as { after: { auditLogDateRange: string } }
+  expect(delta.after.auditLogDateRange).toMatch(
+    /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
   )
-  expect(loggedReportTypes.sort()).toEqual([...expectedReportTypes].sort())
-  for (const value of tx.auditLogValues) {
-    expect(value).toMatchObject({
-      eventType: "AuditLogExportCreate",
-      userId: FAKE_USER.id,
-      siteId: 1,
-      // The requester IP threaded from the router is recorded on the event,
-      // matching sibling resource/permission/login events.
-      ipAddress,
-      delta: { before: null },
-    })
-    const delta = value.delta as { after: { auditLogDateRange: string } }
-    expect(delta.after.auditLogDateRange).toMatch(
-      /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
-    )
-  }
 }
 
-describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
+describe("createAuditLogExportRequest — idempotent accept", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockValidatePermissions.mockResolvedValue(undefined)
@@ -274,7 +265,7 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     // requester IP.
     expect(result).toEqual([winnerRow])
     expect(tx.insertedValues).toHaveLength(0)
-    expectExportCreateEvents(tx, ["Access"], "203.0.113.7")
+    expectExportCreateEvent(tx, "Access", "203.0.113.7")
   })
 
   it("re-throws a non-conflict INSERT error unchanged", async () => {
@@ -299,108 +290,6 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     await expect(result).rejects.toBe(otherError)
   })
 
-  it("fans a Both request out into exactly two inserts (Activity + Access) in one transaction", async () => {
-    // Arrange: no in-flight rows; both inserts succeed.
-    const tx = makeTx({
-      selects: [undefined, undefined],
-      inserts: [{ outcome: "inserted" }, { outcome: "inserted" }],
-    })
-    useTx(tx)
-
-    // Act
-    const result = await createAuditLogExportRequest({
-      siteId: 1,
-      userId: "user-1",
-      month: VALID_MONTH,
-      reportType: "Both",
-    })
-
-    // Assert: one transaction, two rows — one per concrete DB report type.
-    // Both happen to share the same auditLogDateRange here because the
-    // requested month IS the current month; see the next test for what
-    // happens when it isn't.
-    expect(mockDb.transaction).toHaveBeenCalledTimes(1)
-    expect(tx.insertedValues).toHaveLength(2)
-    expect(tx.insertedValues.map((v) => v.reportType)).toEqual([
-      "Activity",
-      "Access",
-    ])
-    for (const values of tx.insertedValues) {
-      expect(values).toMatchObject({
-        siteId: 1,
-        userId: "user-1",
-        status: "Pending",
-        attempts: 0,
-      })
-      expect(values.auditLogDateRange).toMatch(
-        /^\[\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}\)$/,
-      )
-    }
-    // The service returns every row backing the ask, and the event records
-    // the REQUESTED type ("Both"), not the fanned-out halves.
-    expect(result).toHaveLength(2)
-    expectExportCreateEvents(tx, ["Access", "Activity"])
-  })
-
-  it("pins Access to the current month even when a past month is requested for Activity", async () => {
-    // Arrange: a Both request for a past month. The Access card has no month
-    // picker in the UI at all, so its export must reflect CURRENT access
-    // regardless of whatever past month was picked for Activity.
-    const tx = makeTx({
-      selects: [undefined, undefined],
-      inserts: [{ outcome: "inserted" }, { outcome: "inserted" }],
-    })
-    useTx(tx)
-
-    // Act
-    await createAuditLogExportRequest({
-      siteId: 1,
-      userId: "user-1",
-      month: PAST_MONTH,
-      reportType: "Both",
-    })
-
-    // Assert: Activity's range starts in the requested (past) month; Access's
-    // starts in the current month instead — the two rows do NOT share a range.
-    const activityRange = tx.insertedValues.find(
-      (v) => v.reportType === "Activity",
-    )?.auditLogDateRange
-    const accessRange = tx.insertedValues.find(
-      (v) => v.reportType === "Access",
-    )?.auditLogDateRange
-    expect(activityRange).toMatch(new RegExp(`^\\[${PAST_MONTH}-01,`))
-    expect(accessRange).toMatch(new RegExp(`^\\[${VALID_MONTH}-01,`))
-    expect(accessRange).not.toBe(activityRange)
-  })
-
-  it("accepts a Both request whose second half loses its race, committing the first half AND the winner's half", async () => {
-    // Arrange: the Activity insert wins; the Access insert loses a race
-    // against a concurrent in-flight Access request, whose row the
-    // follow-up SELECT then returns. (Both fans out as [Activity, Access].)
-    const winnerRow = { id: "winner-access", reportType: "Access" }
-    const tx = makeTx({
-      selects: [undefined, undefined, winnerRow],
-      inserts: [{ outcome: "inserted" }, { outcome: "conflict" }],
-    })
-    useTx(tx)
-
-    // Act
-    const result = await createAuditLogExportRequest({
-      siteId: 1,
-      userId: "user-1",
-      month: VALID_MONTH,
-      reportType: "Both",
-    })
-
-    // Assert: no all-or-nothing rollback any more — the ask resolves with our
-    // freshly inserted Activity row plus the winner's Access row.
-    expect(result).toHaveLength(2)
-    expect(result[1]).toEqual(winnerRow)
-    expect(tx.insertedValues).toHaveLength(1)
-    expect(tx.insertedValues[0]).toMatchObject({ reportType: "Activity" })
-    expectExportCreateEvents(tx, ["Access", "Activity"])
-  })
-
   it("idempotent-accepts an in-flight duplicate from the fast-path SELECT without attempting any insert", async () => {
     // Arrange: the SELECT already sees an in-flight row for the same
     // (siteId, userId, range, reportType).
@@ -420,6 +309,6 @@ describe("createAuditLogExportRequest — idempotent accept + fan-out", () => {
     // crucially — the pure idempotent-accept still records the ask's event.
     expect(result).toEqual([existingRow])
     expect(tx.insertedValues).toHaveLength(0)
-    expectExportCreateEvents(tx, ["Activity"])
+    expectExportCreateEvent(tx, "Activity")
   })
 })
