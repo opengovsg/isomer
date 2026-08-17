@@ -1,7 +1,5 @@
-import { subMonths } from "date-fns"
-import { formatInTimeZone } from "date-fns-tz"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { getCurrentSingaporeMonth, type IsoMonth } from "~/schemas/audit"
+import { getCurrentSingaporeMonth } from "~/schemas/audit"
 
 // This file deliberately mocks the DB (unlike the sibling integration tests) so
 // it can drive the ONE code path that a real-Postgres test cannot deterministic-
@@ -52,15 +50,6 @@ const { createAuditLogExportRequest } =
   await import("../auditLogExport.service")
 
 const VALID_MONTH = getCurrentSingaporeMonth()
-// A month inside the export window but distinct from the current one, so
-// tests can tell apart a range built from the REQUESTED month (Activity)
-// from one always pinned to the CURRENT month (Access) — see
-// createAuditLogExportRequest's per-report-type range comment.
-const PAST_MONTH = formatInTimeZone(
-  subMonths(new Date(), 1),
-  "Asia/Singapore",
-  "yyyy-MM",
-) as IsoMonth
 
 // The requesting user, as the service's in-transaction `User` lookup returns
 // it (the actor of the AuditLogExportCreate event).

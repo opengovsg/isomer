@@ -17,7 +17,7 @@ const CURRENT_MONTH = getCurrentSingaporeMonth()
 const VALID_INPUT = {
   siteId: 1,
   month: CURRENT_MONTH,
-  reportType: AuditLogExportRequestedReportType.Both,
+  reportType: AuditLogExportRequestedReportType.Activity,
 }
 
 describe("createAuditLogExportRequestSchema", () => {
@@ -93,7 +93,6 @@ describe("createAuditLogExportRequestSchema", () => {
     it.each([
       AuditLogExportRequestedReportType.Access,
       AuditLogExportRequestedReportType.Activity,
-      AuditLogExportRequestedReportType.Both,
     ])("should accept the valid report type %s", (reportType) => {
       // Arrange / Act
       const result = createAuditLogExportRequestSchema.safeParse({
@@ -110,6 +109,17 @@ describe("createAuditLogExportRequestSchema", () => {
       const result = createAuditLogExportRequestSchema.safeParse({
         ...VALID_INPUT,
         reportType: "users",
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
+    })
+
+    it("should reject 'Both' — the combined-request flow has been removed", () => {
+      // Arrange / Act
+      const result = createAuditLogExportRequestSchema.safeParse({
+        ...VALID_INPUT,
+        reportType: "Both",
       })
 
       // Assert
