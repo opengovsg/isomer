@@ -165,3 +165,25 @@ export const WithTags: Story = {
     await userEvent.click(button)
   },
 }
+
+// Shows the date filter's date picker within the collection item's metadata
+// drawer, when the parent collection index page has a date filter enabled.
+export const WithDateFilter: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        pageHandlers.getCollectionTags.withDateFilter(),
+        sitesHandlers.getLocalisedSitemap.collection(),
+        ...COMMON_HANDLERS,
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = await canvas.findByRole("button", {
+      name: /article page header/i,
+    })
+
+    await userEvent.click(button)
+  },
+}
