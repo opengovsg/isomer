@@ -36,6 +36,11 @@ export interface FailedPublishTemplateData extends BaseEmailTemplateData {
   resource: Resource // the resource that failed to be published
 }
 
+export interface FailedUnpublishTemplateData extends BaseEmailTemplateData {
+  isScheduled: boolean // whether the unpublish was scheduled or manual
+  resource: Resource // the resource that failed to be unpublished
+}
+
 export interface CancelSchedulePageTemplateData extends BaseEmailTemplateData {
   resource: Resource
 }

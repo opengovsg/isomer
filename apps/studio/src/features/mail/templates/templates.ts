@@ -21,6 +21,7 @@ import type {
   EmailTemplate,
   EmailTemplateFunction,
   FailedPublishTemplateData,
+  FailedUnpublishTemplateData,
   GazetteDeletionEmailTemplateData,
   InvitationEmailTemplateData,
   LoginAlertEmailTemplateData,
@@ -168,6 +169,33 @@ const failedPublishTemplate = (
         body: `<p>Hi ${recipientEmail},</p>
         <p>We couldn’t publish the page ${resource.title} that you tried to publish.</p>
         <p>Please log in to Isomer Studio at ${studioResourceUrl} and try publishing the page again.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
+      }
+  }
+}
+
+const failedUnpublishTemplate = (
+  data: FailedUnpublishTemplateData,
+): EmailTemplate => {
+  const { recipientEmail, isScheduled, resource } = data
+  const studioResourceUrl = getStudioResourceUrl(resource)
+  switch (isScheduled) {
+    case true:
+      return {
+        subject: `[Isomer Studio] We couldn’t unpublish your page that was scheduled`,
+        body: `<p>Hi ${recipientEmail},</p>
+        <p>We couldn’t unpublish the page ${resource.title} that you scheduled.</p>
+        <p>Please log in to Isomer Studio at ${studioResourceUrl} and try unpublishing the page again.</p>
+        <p>Best,</p>
+        <p>Isomer team</p>`,
+      }
+    case false:
+      return {
+        subject: `[Isomer Studio] We couldn’t unpublish your page`,
+        body: `<p>Hi ${recipientEmail},</p>
+        <p>We couldn’t unpublish the page ${resource.title} that you tried to unpublish.</p>
+        <p>Please log in to Isomer Studio at ${studioResourceUrl} and try unpublishing the page again.</p>
         <p>Best,</p>
         <p>Isomer team</p>`,
       }
@@ -340,6 +368,8 @@ const _templates = {
     cancelSchedulePageTemplate satisfies EmailTemplateFunction<CancelSchedulePageTemplateData>,
   failedPublish:
     failedPublishTemplate satisfies EmailTemplateFunction<FailedPublishTemplateData>,
+  failedUnpublish:
+    failedUnpublishTemplate satisfies EmailTemplateFunction<FailedUnpublishTemplateData>,
   successfulPublish:
     successfulPublishTemplate satisfies EmailTemplateFunction<SuccessfulPublishTemplateData>,
   schedulePage:
