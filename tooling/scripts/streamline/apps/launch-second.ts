@@ -80,7 +80,7 @@ export const siteLaunchSecondWindow = async () => {
   )
   const isPulumiUpDone = await confirm({
     message:
-      "Please run `pulumi up` inside isomer-next-infra to launch the site. Have you done so?",
+      "Please run `pulumi up` inside isomer-next-infra to launch the site (WAIT FOR 10-30 MINUTES IF IT IS A LARGE BATCH). Have you done so?",
     default: true,
   })
 
@@ -92,7 +92,11 @@ export const siteLaunchSecondWindow = async () => {
 
   // Step 3: Call the AWS API to update the origin path of the CloudFront
   // distributions and to perform an invalidation
-  for (const site of siteLaunchSites) {
+  console.log(
+    `Updating CloudFront origin paths for ${siteLaunchSites.length} sites...`,
+  )
+  for (const [index, site] of siteLaunchSites.entries()) {
+    const progress = `[${index + 1}/${siteLaunchSites.length}]`
     const distribution = distributions.find((distribution) =>
       distribution.Origins?.Items?.some((origin) =>
         origin.OriginPath?.includes(`/${site.siteName}/`),
@@ -106,22 +110,33 @@ export const siteLaunchSecondWindow = async () => {
       continue
     }
 
+    console.log(
+      `${progress} Updating origin path of distribution ${distribution.Id}...`,
+    )
     await updateCloudFrontDistributionOriginPath(distribution.Id, site.siteName)
 
+    console.log(
+      `${progress} Creating invalidation for distribution ${distribution.Id}...`,
+    )
     await createCloudFrontInvalidation(distribution.Id)
   }
 
   // Step 4: Verify that the site is up and accessible by checking for the
   // existence of `/sitemap.json`, which is a file that is specific to Isomer
   // Next sites
-  for (const site of siteLaunchSites) {
-    const url = `https://${site.isomerDomain}/sitemap.json`
+  console.log(`Verifying that ${siteLaunchSites.length} sites are live...`)
+  for (const [index, site] of siteLaunchSites.entries()) {
+    const progress = `[${index + 1}/${siteLaunchSites.length}]`
+    const url = `https://${site.isomerDomain}`
+    const sitemapUrl = `${url}/sitemap.json`
+    console.log(`${progress} Checking: ${url}`)
+
     try {
-      await fetchWithRetry(url)
-      console.log(`Site is live and accessible at: ${url}`)
+      await fetchWithRetry(sitemapUrl)
+      console.log(`${progress} Site is live and accessible at: ${url}`)
       successfulSites.push(site)
     } catch (error) {
-      console.error(`Site is not accessible at: ${url}`)
+      console.error(`${progress} Site is not accessible at: ${url}`)
 
       // TODO: Prompt user to investigate and retry later
       continue
