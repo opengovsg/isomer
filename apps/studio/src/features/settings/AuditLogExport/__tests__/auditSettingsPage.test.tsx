@@ -96,7 +96,7 @@ describe("AuditLogExportSettingsPage", () => {
     renderWith(adminAbility)
 
     // Assert
-    expect(screen.queryByRole("heading", { name: "Logs" })).not.toBeNull()
+    expect(screen.queryByRole("heading", { name: "Audit logs" })).not.toBeNull()
     expect(replace).not.toHaveBeenCalled()
   })
 
@@ -108,7 +108,7 @@ describe("AuditLogExportSettingsPage", () => {
     await waitFor(() =>
       expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`),
     )
-    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
+    expect(screen.queryByRole("heading", { name: "Audit logs" })).toBeNull()
   })
 
   it("does not redirect while roles are still loading", () => {
@@ -120,7 +120,7 @@ describe("AuditLogExportSettingsPage", () => {
 
     // Assert
     expect(replace).not.toHaveBeenCalled()
-    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
+    expect(screen.queryByRole("heading", { name: "Audit logs" })).toBeNull()
   })
 
   it("redirects admins away when the is-audit-log-enabled flag is off", async () => {
@@ -134,7 +134,7 @@ describe("AuditLogExportSettingsPage", () => {
     await waitFor(() =>
       expect(replace).toHaveBeenCalledWith(`/sites/${SITE_ID}/settings/agency`),
     )
-    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
+    expect(screen.queryByRole("heading", { name: "Audit logs" })).toBeNull()
   })
 
   it("does not redirect while GrowthBook features are still loading", () => {
@@ -147,6 +147,6 @@ describe("AuditLogExportSettingsPage", () => {
 
     // Assert: spinner, no bounce
     expect(replace).not.toHaveBeenCalled()
-    expect(screen.queryByRole("heading", { name: "Logs" })).toBeNull()
+    expect(screen.queryByRole("heading", { name: "Audit logs" })).toBeNull()
   })
 })

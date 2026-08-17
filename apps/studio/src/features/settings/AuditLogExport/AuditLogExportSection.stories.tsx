@@ -46,35 +46,19 @@ const meta: Meta<typeof AuditLogExportSection> = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-// Admin, initial empty state: no log type picked, so the submit button is the
-// disabled "Select log types to export" call-to-action.
+// Admin, initial state: the current (partial) month is preselected, so the
+// submit is immediately the enabled "Export logs" call-to-action.
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await waitFor(async () =>
       expect(
-        await canvas.findByRole("button", {
-          name: "Select log types to export",
-        }),
-      ).toBeDisabled(),
-    )
-  },
-}
-
-// Selecting the "Audit logs" card reveals its month picker and enables the
-// submit button as "Export log".
-export const Selected: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await userEvent.click(
-      await canvas.findByRole("checkbox", { name: /Audit logs/ }),
-    )
-    await waitFor(async () =>
-      expect(
-        await canvas.findByRole("button", { name: "Export log" }),
+        await canvas.findByRole("button", { name: "Export logs" }),
       ).toBeEnabled(),
     )
-    await expect(canvas.getByText("For the month of")).toBeVisible()
+    await expect(
+      canvas.getByRole("link", { name: "User management" }),
+    ).toBeVisible()
   },
 }
 
@@ -90,10 +74,7 @@ export const Submitting: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(
-      await canvas.findByRole("checkbox", { name: /Audit logs/ }),
-    )
-    const button = await canvas.findByRole("button", { name: "Export log" })
+    const button = await canvas.findByRole("button", { name: "Export logs" })
     await userEvent.click(button)
     await waitFor(() => expect(button).toBeDisabled())
   },
@@ -106,10 +87,7 @@ export const DuplicateRequestSucceeds: Story = {
     const canvas = within(canvasElement)
     const submitOnce = async () => {
       await userEvent.click(
-        await canvas.findByRole("checkbox", { name: /Audit logs/ }),
-      )
-      await userEvent.click(
-        await canvas.findByRole("button", { name: "Export log" }),
+        await canvas.findByRole("button", { name: "Export logs" }),
       )
     }
 
@@ -117,14 +95,6 @@ export const DuplicateRequestSucceeds: Story = {
     // service accepts duplicates idempotently (ADR docs/adr/0005), so both
     // resolve with the success toast rather than an error.
     await submitOnce()
-    // The form resets on success; wait for that before re-selecting.
-    await waitFor(async () =>
-      expect(
-        await canvas.findByRole("button", {
-          name: "Select log types to export",
-        }),
-      ).toBeDisabled(),
-    )
     await submitOnce()
 
     // Both asks resolve with the success toast — no error surface exists for
