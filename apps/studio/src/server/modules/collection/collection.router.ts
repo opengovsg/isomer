@@ -78,6 +78,24 @@ export const collectionRouter = router({
           action: "unpublish",
           userId: user.id,
         })
+
+        // Reject non-Collection ids so this endpoint can't be used to
+        // unpublish an arbitrary page under a collection-only contract
+        // (getFullPageById would otherwise operate on whatever resource id
+        // it's given).
+        const collection = await getSiteResourceById({
+          siteId,
+          resourceId: String(resourceId),
+          type: ResourceType.Collection,
+        })
+
+        if (!collection) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "This collection does not exist",
+          })
+        }
+
         await unpublishPageResource({
           logger,
           siteId,

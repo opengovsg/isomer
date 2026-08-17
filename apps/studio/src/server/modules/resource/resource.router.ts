@@ -759,19 +759,23 @@ export const resourceRouter = router({
         // and `parentId` is `onDelete: Cascade`, so deleting a container also
         // wipes every descendant — so check the whole subtree for anything
         // still live, not just the container's own (always-null) field.
-        const isLive =
+        const isContainer =
           before.type === ResourceType.Folder ||
           before.type === ResourceType.Collection
-            ? await hasPublishedDescendant(tx, {
-                siteId: Number(siteId),
-                resourceId,
-              })
-            : before.publishedVersionId !== null
+
+        const isLive = isContainer
+          ? await hasPublishedDescendant(tx, {
+              siteId: Number(siteId),
+              resourceId,
+            })
+          : before.publishedVersionId !== null
 
         if (isLive) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "This page must be unpublished before it can be deleted",
+            message: isContainer
+              ? `This ${before.type === ResourceType.Folder ? "folder" : "collection"} has live pages inside it — unpublish them before deleting`
+              : "This page must be unpublished before it can be deleted",
           })
         }
 

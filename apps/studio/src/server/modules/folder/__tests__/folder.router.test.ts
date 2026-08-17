@@ -473,6 +473,52 @@ describe("folder.router", async () => {
       )
     })
 
+    it("should throw 404 if resourceId does not exist", async () => {
+      const { site } = await setupSite()
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = caller.unpublishFolder({
+        siteId: site.id,
+        resourceId: 99999, // does not exist
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This folder does not exist",
+        }),
+      )
+    })
+
+    it("should throw 404 if resourceId is not a Folder", async () => {
+      // Arrange — unpublishFolder is a folder-only contract; a plain page's
+      // id belongs to the unpublishPage mutation
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.Page,
+        state: ResourceState.Published,
+        userId: session.userId,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId,
+        siteId: site.id,
+      })
+
+      const result = caller.unpublishFolder({
+        siteId: site.id,
+        resourceId: Number(page.id),
+      })
+
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This folder does not exist",
+        }),
+      )
+    })
+
     it("should throw if the folder's IndexPage is not currently published", async () => {
       const { site, folder } = await setupFolder()
       await setupPageResource({

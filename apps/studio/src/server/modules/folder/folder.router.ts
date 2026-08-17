@@ -29,6 +29,7 @@ import { bulkValidateUserPermissionsForResources } from "../permissions/permissi
 import { applyFolderPermalinkChangeRedirects } from "../redirect/redirect.service"
 import {
   getResourceFullPermalink,
+  getSiteResourceById,
   hasPublishedDescendant,
   publishResource,
   unpublishPageResource,
@@ -215,6 +216,23 @@ export const folderRouter = router({
           action: "unpublish",
           userId: user.id,
         })
+
+        // Reject non-Folder ids so this endpoint can't be used to unpublish
+        // an arbitrary page under a folder-only contract (getFullPageById
+        // would otherwise operate on whatever resource id it's given).
+        const folder = await getSiteResourceById({
+          siteId,
+          resourceId: String(resourceId),
+          type: ResourceType.Folder,
+        })
+
+        if (!folder) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "This folder does not exist",
+          })
+        }
+
         await unpublishPageResource({
           logger,
           siteId,
