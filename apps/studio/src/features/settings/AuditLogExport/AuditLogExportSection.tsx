@@ -13,6 +13,7 @@ import {
   Button,
   FormErrorMessage,
   Infobox,
+  Radio,
   SingleSelect,
   TouchableTooltip,
 } from "@opengovsg/design-system-react"
@@ -22,7 +23,10 @@ import { Controller } from "react-hook-form"
 import { BiCheckShield, BiInfoCircle, BiSolidHelpCircle } from "react-icons/bi"
 import { UserManagementContext } from "~/features/users"
 import { useZodForm } from "~/lib/form"
-import { AuditLogExportRequestedReportType } from "~/schemas/audit"
+import {
+  AuditLogExportRequestedReportType,
+  AuditLogExportScope,
+} from "~/schemas/audit"
 import { trpc } from "~/utils/trpc"
 
 import { auditLogExportFormSchema } from "./schema"
@@ -63,6 +67,9 @@ export const AuditLogExportSection = ({
     schema: auditLogExportFormSchema,
     defaultValues: {
       month: monthOptions[0]?.value ?? "",
+      // Defaults to the narrower scope — exporting across every admin site is
+      // an explicit, opt-in choice rather than the pre-selected default.
+      scope: AuditLogExportScope.Site,
     },
   })
 
@@ -83,9 +90,12 @@ export const AuditLogExportSection = ({
 
   // This section only ever requests the Activity log — the Access (user
   // review) log moved to its own one-click button on the Users page, which
-  // the Infobox below links out to.
-  const onSubmit = form.handleSubmit(({ month }) =>
+  // the Infobox below links out to. `siteId` is always sent regardless of
+  // scope; the server ignores it and resolves the site list itself when
+  // `scope` is "allSites" (see audit.router.ts).
+  const onSubmit = form.handleSubmit(({ month, scope }) =>
     createExportRequest({
+      scope,
       siteId,
       month,
       reportType: AuditLogExportRequestedReportType.Activity,
@@ -188,6 +198,40 @@ export const AuditLogExportSection = ({
               </Text>
             </HStack>
           )}
+        </Box>
+
+        <Box w="full">
+          <Text textStyle="subhead-2" color="base.content.strong" mb="0.5rem">
+            Export audit logs for
+          </Text>
+          <Controller
+            control={form.control}
+            name="scope"
+            render={({ field }) => (
+              <Radio.RadioGroup
+                display="flex"
+                flexDir="column"
+                gap="0.5rem"
+                onChange={field.onChange}
+                value={field.value}
+              >
+                <Radio
+                  value={AuditLogExportScope.AllSites}
+                  allowDeselect={false}
+                  size="sm"
+                >
+                  All sites I have Admin access to
+                </Radio>
+                <Radio
+                  value={AuditLogExportScope.Site}
+                  allowDeselect={false}
+                  size="sm"
+                >
+                  This site only
+                </Radio>
+              </Radio.RadioGroup>
+            )}
+          />
         </Box>
 
         <Button type="submit" isLoading={isPending}>

@@ -38,7 +38,15 @@ import {
 } from "./auditLogExport.query"
 import { sealAuditLogExportToken } from "./auditLogExportToken"
 
-type CreateAuditLogExportRequestProps = CreateAuditLogExportRequestInput & {
+// This function is always called for exactly one concrete site — "scope"
+// (single site vs. every admin site) is a router-level concept resolved into
+// a list of siteIds before this is ever called (see audit.router.ts), so
+// `siteId` here is a definite number and `scope` doesn't apply.
+type CreateAuditLogExportRequestProps = Omit<
+  CreateAuditLogExportRequestInput,
+  "scope" | "siteId"
+> & {
+  siteId: number
   userId: string
   // Requester IP, resolved by the router (getIP(ctx.req)) and recorded on the
   // AuditLogExportCreate event, matching sibling resource/permission/login

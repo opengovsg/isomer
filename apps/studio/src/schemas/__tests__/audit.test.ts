@@ -4,7 +4,9 @@ import type { IsoMonth } from "../audit"
 import {
   AUDIT_LOG_EXPORT_MAX_MONTHS,
   AuditLogExportRequestedReportType,
+  AuditLogExportScope,
   createAuditLogExportRequestSchema,
+  createAuditLogExportRequestServerSchema,
   getCurrentSingaporeMonth,
   getEarliestExportableMonth,
 } from "../audit"
@@ -15,6 +17,7 @@ import {
 const CURRENT_MONTH = getCurrentSingaporeMonth()
 
 const VALID_INPUT = {
+  scope: AuditLogExportScope.Site,
   siteId: 1,
   month: CURRENT_MONTH,
   reportType: AuditLogExportRequestedReportType.Activity,
@@ -124,6 +127,84 @@ describe("createAuditLogExportRequestSchema", () => {
 
       // Assert
       expect(result.success).toBe(false)
+    })
+  })
+
+  describe("scope", () => {
+    it.each([AuditLogExportScope.Site, AuditLogExportScope.AllSites])(
+      "should accept the valid scope %s",
+      (scope) => {
+        // Arrange / Act
+        const result = createAuditLogExportRequestSchema.safeParse({
+          ...VALID_INPUT,
+          scope,
+        })
+
+        // Assert
+        expect(result.success).toBe(true)
+      },
+    )
+
+    it("should reject an invalid scope", () => {
+      // Arrange / Act
+      const result = createAuditLogExportRequestSchema.safeParse({
+        ...VALID_INPUT,
+        scope: "everySite",
+      })
+
+      // Assert
+      expect(result.success).toBe(false)
+    })
+
+    it("accepts scope 'allSites' without a siteId on the plain object schema — client forms never need to supply one", () => {
+      // Arrange
+      const { siteId: _siteId, ...withoutSiteId } = VALID_INPUT
+
+      // Act
+      const result = createAuditLogExportRequestSchema.safeParse({
+        ...withoutSiteId,
+        scope: AuditLogExportScope.AllSites,
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
+    })
+  })
+
+  describe("createAuditLogExportRequestServerSchema", () => {
+    it("accepts scope 'site' with a siteId", () => {
+      // Arrange / Act
+      const result =
+        createAuditLogExportRequestServerSchema.safeParse(VALID_INPUT)
+
+      // Assert
+      expect(result.success).toBe(true)
+    })
+
+    it("rejects scope 'site' without a siteId", () => {
+      // Arrange
+      const { siteId: _siteId, ...withoutSiteId } = VALID_INPUT
+
+      // Act
+      const result =
+        createAuditLogExportRequestServerSchema.safeParse(withoutSiteId)
+
+      // Assert
+      expect(result.success).toBe(false)
+    })
+
+    it("accepts scope 'allSites' without a siteId — resolved server-side from the caller's own Admin access", () => {
+      // Arrange
+      const { siteId: _siteId, ...withoutSiteId } = VALID_INPUT
+
+      // Act
+      const result = createAuditLogExportRequestServerSchema.safeParse({
+        ...withoutSiteId,
+        scope: AuditLogExportScope.AllSites,
+      })
+
+      // Assert
+      expect(result.success).toBe(true)
     })
   })
 

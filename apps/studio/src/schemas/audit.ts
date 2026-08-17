@@ -53,6 +53,17 @@ export const validateIsMonthInPastYear = (
 export const AuditLogExportRequestedReportType = AuditLogExportReportType
 export type AuditLogExportRequestedReportType = AuditLogExportReportType
 
+// Which site(s) a request covers. `AllSites` is resolved server-side into
+// every site the caller may Admin (see `getAdminSiteIds`) and fanned out into
+// one independent export per site — mirroring how the removed `Both` report
+// type used to fan out into one row per report type.
+export const AuditLogExportScope = {
+  Site: "site",
+  AllSites: "allSites",
+} as const
+export type AuditLogExportScope =
+  (typeof AuditLogExportScope)[keyof typeof AuditLogExportScope]
+
 // A calendar month in ISO `yyyy-MM` form, e.g. "2026-03". This is the shape
 // every month value in the audit-export flow is passed around in (picker →
 // zod input → service → query layer), so it gets a real type rather than a
@@ -129,6 +140,15 @@ export const getAuditLogExportWindowSchema = z.object({
 })
 
 export const createAuditLogExportRequestSchema = z.object({
+  scope: z.enum(AuditLogExportScope, {
+    message: "Select which sites to export",
+  }),
+  // Required when `scope` is "site"; ignored when `scope` is "allSites" (the
+  // site list is resolved server-side from the caller's own Admin access —
+  // see `createAuditLogExportRequestServerSchema` — never trusted from client
+  // input). Optionality lives here, on the plain object, so this schema stays
+  // composable via `.omit()`/`.extend()` for client-side forms.
+  //
   // Accept a real number or a numeric form string (a native input yields e.g.
   // "1"), then convert to the numeric site ID the database and service contract
   // use. The union guards against JS numeric coercion quirks — a bare
@@ -141,7 +161,8 @@ export const createAuditLogExportRequestSchema = z.object({
         .number()
         .int({ message: "Select a valid site" })
         .positive({ message: "Select a valid site" }),
-    ),
+    )
+    .optional(),
   month: z
     .string()
     .regex(MONTH_REGEX, {
@@ -171,6 +192,17 @@ export const createAuditLogExportRequestSchema = z.object({
     message: "Select a report type",
   }),
 })
+
+// Server-only: enforces that `siteId` is present when `scope` is "site". Kept
+// separate from the plain object above (which client-side forms compose via
+// `.omit()`/`.extend()`, e.g. features/settings/AuditLogExport/schema.ts)
+// because `.refine()` no longer returns an object schema.
+export const createAuditLogExportRequestServerSchema =
+  createAuditLogExportRequestSchema.refine(
+    (input) =>
+      input.scope !== AuditLogExportScope.Site || input.siteId !== undefined,
+    { message: "Select a valid site", path: ["siteId"] },
+  )
 
 export type CreateAuditLogExportRequestInput = z.infer<
   typeof createAuditLogExportRequestSchema

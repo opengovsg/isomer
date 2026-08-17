@@ -62,6 +62,27 @@ export const Default: Story = {
   },
 }
 
+// Picking "All sites I have Admin access to" still submits successfully —
+// the server resolves the concrete site list itself.
+export const AllSitesScopeSelected: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(
+      await canvas.findByRole("radio", {
+        name: "All sites I have Admin access to",
+      }),
+    )
+    await userEvent.click(
+      await canvas.findByRole("button", { name: "Export logs" }),
+    )
+    await waitFor(async () =>
+      expect(
+        await within(document.body).findByText("Export requested"),
+      ).toBeVisible(),
+    )
+  },
+}
+
 // Submitting state — the mutation hangs so the button shows its loading spinner.
 export const Submitting: Story = {
   parameters: {
