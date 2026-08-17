@@ -338,6 +338,8 @@ export const activityReportQuery = ({
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.ResourceDelete])
         .when("al.eventType", "=", AuditLogEvent.Publish)
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.Publish])
+        .when("al.eventType", "=", AuditLogEvent.Unpublish)
+        .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.Unpublish])
         .when("al.eventType", "=", AuditLogEvent.NavbarUpdate)
         .then(AUDIT_LOGS_EVENTS_QUERIES[AuditLogEvent.NavbarUpdate])
         .when("al.eventType", "=", AuditLogEvent.FooterUpdate)
