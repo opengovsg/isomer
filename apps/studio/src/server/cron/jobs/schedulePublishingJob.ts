@@ -1,6 +1,9 @@
 import type { Resource } from "~/server/modules/database"
 import { env } from "~/env.mjs"
-import { sendFailedPublishEmail } from "~/features/mail/service"
+import {
+  sendFailedPublishEmail,
+  sendFailedUnpublishEmail,
+} from "~/features/mail/service"
 import {
   ENABLE_CODEBUILD_JOBS,
   ENABLE_EMAILS_FOR_SCHEDULED_PUBLISHES_FEATURE_KEY,
@@ -135,31 +138,41 @@ export const publishScheduledResources = async (
         )
         continue
       }
-      if (isUnpublish) {
-        // TODO: no failed-unpublish email template exists yet — tracked as a
-        // follow-up to the notifications work. Sending the publish-failure
-        // template here would be actively misleading, so skip for now.
-        logger.warn(
-          `Scheduled unpublish failed for resource: ${resourceId}, but no failed-unpublish email template exists yet — skipping email`,
-        )
+      if (!enableEmailsForScheduledPublishes) {
         continue
       }
-      if (enableEmailsForScheduledPublishes) {
+      if (isUnpublish) {
         try {
-          await sendFailedPublishEmail({
+          await sendFailedUnpublishEmail({
             recipientEmail: resource.email,
             isScheduled: true,
             resource,
           })
           logger.warn(
-            `Sent failed publish email to ${resource.email} for resource: ${resourceId}`,
+            `Sent failed unpublish email to ${resource.email} for resource: ${resourceId}`,
           )
         } catch (emailError) {
           logger.error(
             { error: emailError },
-            `Failed to send failed publish email to ${resource.email} for resource: ${resourceId}`,
+            `Failed to send failed unpublish email to ${resource.email} for resource: ${resourceId}`,
           )
         }
+        continue
+      }
+      try {
+        await sendFailedPublishEmail({
+          recipientEmail: resource.email,
+          isScheduled: true,
+          resource,
+        })
+        logger.warn(
+          `Sent failed publish email to ${resource.email} for resource: ${resourceId}`,
+        )
+      } catch (emailError) {
+        logger.error(
+          { error: emailError },
+          `Failed to send failed publish email to ${resource.email} for resource: ${resourceId}`,
+        )
       }
     }
   }
@@ -196,11 +209,21 @@ export const publishScheduledSites = async (
           continue
         }
         if (resource.scheduledAction === ScheduledAction.Unpublish) {
-          // TODO: no failed-unpublish email template exists yet — see the
-          // matching TODO in publishScheduledResources.
-          logger.warn(
-            `Site publish failed for siteId: ${siteId} while processing a scheduled unpublish for resource: ${resource.id}, but no failed-unpublish email template exists yet — skipping email`,
-          )
+          try {
+            await sendFailedUnpublishEmail({
+              recipientEmail: resource.email,
+              isScheduled: true,
+              resource,
+            })
+            logger.warn(
+              `Sent failed unpublish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+            )
+          } catch (emailError) {
+            logger.error(
+              { error: emailError },
+              `Failed to send failed unpublish email to ${resource.email} for resource: ${resource.id}, since site publish failed for site ${siteId}`,
+            )
+          }
           continue
         }
         try {
