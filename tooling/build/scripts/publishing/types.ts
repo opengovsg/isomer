@@ -20,6 +20,12 @@ interface Tagged {
   id: string
 }
 
+interface DateTagged {
+  id: string
+  date: string
+  endDate?: string
+}
+
 type TagCategory = Tagged & {
   options: Tagged[]
 }
@@ -52,6 +58,7 @@ export type SitemapEntry = Pick<
   children?: SitemapEntry[]
   tags?: Tag[]
   tagged?: Tagged[]
+  dateTagged?: DateTagged[]
   collectionPagePageProps?: CollectionPagePageProps
 }
 
