@@ -8,6 +8,7 @@ import { UserManagementContext } from "~/features/users"
 import { IS_AUDIT_LOG_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import {
   AuditLogExportRequestedReportType,
+  AuditLogExportScope,
   getCurrentSingaporeMonth,
 } from "~/schemas/audit"
 
@@ -52,6 +53,7 @@ export const ExportAccessLogsButton = ({
       isLoading={isPending}
       onClick={() =>
         createExportRequest({
+          scope: AuditLogExportScope.Site,
           siteId,
           month: getCurrentSingaporeMonth(),
           reportType: AuditLogExportRequestedReportType.Access,

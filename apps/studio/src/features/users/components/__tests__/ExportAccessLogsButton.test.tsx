@@ -66,6 +66,7 @@ describe("ExportAccessLogsButton", () => {
     // pinned to the current Singapore month.
     expect(mutate).toHaveBeenCalledTimes(1)
     expect(mutate).toHaveBeenCalledWith({
+      scope: "site",
       siteId: SITE_ID,
       month: getCurrentSingaporeMonth(),
       reportType: "Access",
