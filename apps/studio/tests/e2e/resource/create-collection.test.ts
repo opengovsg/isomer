@@ -7,7 +7,7 @@ import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { DashboardPO } from "../fixtures/dashboard.po"
 import { createCollectionViaWizard } from "../fixtures/helpers"
 import { seedFolder } from "../fixtures/page-seed"
-import { getResourceByTitle } from "../fixtures/resource.db"
+import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -44,14 +44,14 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const title = UNIQUE_TITLE()
 
     // Act
-    await createCollectionViaWizard(page, {
+    const { collectionId } = await createCollectionViaWizard(page, {
       startUrl: `/sites/${siteId}`,
       title,
       siteId,
     })
 
     // Assert
-    const created = await getResourceByTitle({ siteId, title })
+    const created = await getResource(collectionId)
     expect(created).toBeTruthy()
     expect(created?.type).toBe("Collection")
     expect(created?.parentId).toBeNull()
@@ -113,14 +113,14 @@ test.describe(
       const title = UNIQUE_TITLE()
 
       // Act
-      await createCollectionViaWizard(page, {
+      const { collectionId } = await createCollectionViaWizard(page, {
         startUrl: `/sites/${siteId}/folders/${folderId}`,
         title,
         siteId,
       })
 
       // Assert
-      const created = await getResourceByTitle({ siteId, title })
+      const created = await getResource(collectionId)
       expect(created).toBeTruthy()
       expect(created?.parentId).toBe(folderId)
     })
