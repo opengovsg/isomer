@@ -26,6 +26,7 @@ import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import { moveResourceAtom } from "../../atoms"
+import { useValidateResourceMove } from "../../hooks/useValidateResourceMove"
 
 export const MoveResourceModal = () => {
   // NOTE: This is what we are trying to move
@@ -116,6 +117,13 @@ const MoveResourceContent = withSuspense(
     })
 
     const movedItem = useAtomValue(moveResourceAtom)
+    const { isLoading: isValidMoveLoading, isValidMove } =
+      useValidateResourceMove({
+        sourceId: movedItem?.id,
+        destinationId: curResourceId ?? null,
+      })
+    // movedResourceId: movedItem.id,
+    // destinationResourceId: curResourceId ?? null,
 
     const [shouldCreateRedirect, setShouldCreateRedirect] = useState(true)
     const [{ fullPermalink: movedFullPermalink }] =
@@ -242,9 +250,12 @@ const MoveResourceContent = withSuspense(
               ability.cannot("move", {
                 parentId: curResourceId ?? null,
               }) ||
-              ability.cannot("move", { parentId: movedItem?.parentId ?? null })
+              ability.cannot("move", {
+                parentId: movedItem?.parentId ?? null,
+              }) ||
+              !isValidMove
             }
-            isLoading={isPending}
+            isLoading={isPending || isValidMoveLoading}
             onClick={() =>
               movedItem?.id &&
               mutate({
