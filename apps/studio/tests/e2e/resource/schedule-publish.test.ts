@@ -85,8 +85,15 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       .not.toBeNull()
     const scheduledAtFirst = (await getResource(seededPage.id))?.scheduledAt
 
-    // Act: cancel and reschedule to a different (earlier) quick-select slot
+    // Act: cancel and reschedule to a different (earlier) quick-select slot.
+    // Wait for the cancel's DB write (and its readPage refetch) to fully
+    // settle before reopening — otherwise a query invalidation mid-way can
+    // remount PublishButton's Suspense boundary and silently close the modal
+    // this test just opened.
     await editor.cancelSchedule()
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
+      .toBeNull()
     await editor.openScheduleModal()
     await editor.schedulePublishForToday("9:00 AM")
     await editor.expectScheduledSuccessfully()
