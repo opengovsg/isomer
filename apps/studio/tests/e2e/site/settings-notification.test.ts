@@ -42,4 +42,80 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expect(site.notificationBannerToggle()).toBeChecked()
     await expect(site.notificationTitleField()).toHaveValue(notificationTitle)
   })
+
+  test("admin can disable and remove a published notification", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+    const notificationTitle = "e2e removable notification"
+
+    // Arrange: publish a notification first
+    await site.gotoSettingsSection(siteId, "notification")
+    await site.enableNotificationBanner()
+    await site.expectNotificationTitleFieldVisible()
+    await site.fillNotificationTitle(notificationTitle)
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+    await expectSiteNotificationTitle(siteId).toBe(notificationTitle)
+
+    // Act: turn the banner off and publish the removal
+    await site.notificationBannerToggle().locator("xpath=..").click()
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await expectSiteNotificationTitle(siteId).toBeNull()
+    await site.reloadSettingsSection("notification")
+    await expect(site.notificationBannerToggle()).not.toBeChecked()
+  })
+
+  test("notification title enforces a 150 character limit", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "notification")
+    await site.enableNotificationBanner()
+    await site.expectNotificationTitleFieldVisible()
+
+    // Act
+    await site.fillNotificationTitle("a".repeat(151))
+
+    // Assert
+    await expect(
+      page.getByText("must NOT have more than 150 characters"),
+    ).toBeVisible()
+    await expect(site.publishButton()).toBeDisabled()
+  })
+
+  test("notification content supports rich text formatting", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+    const notificationTitle = "e2e rich text notification"
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "notification")
+    await site.enableNotificationBanner()
+    await site.expectNotificationTitleFieldVisible()
+    await site.fillNotificationTitle(notificationTitle)
+
+    // Act
+    await site.notificationContentEditor().click()
+    await site.notificationContentEditor().fill("Important update")
+    await site.notificationContentEditor().selectText()
+    await site.notificationContentToolbarButton("Bold").click()
+    await site.notificationContentToolbarButton("Italicise").click()
+    await site.notificationContentToolbarButton("Underline").click()
+
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await site.reloadSettingsSection("notification")
+    await expect(site.notificationContentEditor()).toContainText(
+      "Important update",
+    )
+  })
 })

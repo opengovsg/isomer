@@ -4,7 +4,11 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { resetSiteIntegrations } from "../fixtures/reset"
 import { provisionE2ESite } from "../fixtures/site"
-import { expectSiteGtmId } from "../fixtures/site-expect"
+import {
+  expectSiteAskgovId,
+  expectSiteGtmId,
+  expectSiteVicaId,
+} from "../fixtures/site-expect"
 import { SitePO } from "../fixtures/site.po"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -53,5 +57,74 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Assert
     await expect(site.gtmIdField()).toHaveValue("")
     await expectSiteGtmId(siteId).toBeNull()
+  })
+
+  test("invalid GTM ID prevents publishing", async ({ page }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "integrations")
+
+    // Act
+    await site.fillGtmId("not-a-valid-gtm-id")
+
+    // Assert
+    await expect(
+      page.getByText(
+        "Google Tag Manager (GTM) ID is not in the correct format",
+      ),
+    ).toBeVisible()
+    await expect(site.publishButton()).toBeDisabled()
+    await expectSiteGtmId(siteId).toBeNull()
+  })
+
+  test("admin can configure and remove AskGov", async ({ page }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "integrations")
+
+    // Act: enable and configure
+    await site.askgovToggle().click()
+    await site.askgovIdField().fill("e2e-agency")
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await expectSiteAskgovId(siteId).toBe("e2e-agency")
+
+    // Act: remove
+    await site.reloadSettingsSection("integrations")
+    await site.askgovToggle().click()
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await expectSiteAskgovId(siteId).toBeNull()
+  })
+
+  test("admin can configure and remove VICA", async ({ page }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "integrations")
+
+    // Act: enable and configure
+    await site.vicaToggle().click()
+    await site.vicaIdField().fill("e2e-vica-app")
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await expectSiteVicaId(siteId).toBe("e2e-vica-app")
+
+    // Act: remove
+    await site.reloadSettingsSection("integrations")
+    await site.vicaToggle().click()
+    await site.clickPublish()
+    await site.expectChangesPublishedToast()
+
+    // Assert
+    await expectSiteVicaId(siteId).toBeNull()
   })
 })
