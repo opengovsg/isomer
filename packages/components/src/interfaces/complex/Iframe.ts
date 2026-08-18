@@ -1,6 +1,8 @@
 import type { Static } from "@sinclair/typebox"
 import { Type } from "@sinclair/typebox"
 
+import { IsomerString } from "../primitives/IsomerString"
+
 export const IframeSchema = Type.Object(
   {
     type: Type.Literal("iframe", { default: "iframe" }),
@@ -9,7 +11,7 @@ export const IframeSchema = Type.Object(
       description:
         "Paste in an embed code. Refer to the guide to understand how to embed your content.",
     }),
-    title: Type.String({
+    title: IsomerString({
       title: "Description",
       description:
         "Briefly describe what the embedded content is about. This isn’t displayed on the page but is accessible to screen readers.",
