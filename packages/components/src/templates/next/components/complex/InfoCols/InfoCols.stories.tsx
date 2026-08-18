@@ -138,7 +138,7 @@ export const HoverBehaviour: Story = {
       },
       {
         title: "Has Link, No Label, Has Description",
-        description: "Should show a standalone arrow below, next to nothing",
+        description: "Should show the arrow beside the title, not below",
         icon: "bar-chart",
         buttonUrl: "/faq",
       },

@@ -96,7 +96,7 @@ const InfoBoxes = ({
         ({ title, icon, description, buttonUrl, buttonLabel }, idx) => {
           const hasLink = !!buttonUrl
           const isExternalLink = isExternalUrl(buttonUrl)
-          const showTitleArrow = hasLink && !buttonLabel && !description
+          const showTitleArrow = hasLink && !buttonLabel
           return (
             <Link
               href={getReferenceLinkHref(
