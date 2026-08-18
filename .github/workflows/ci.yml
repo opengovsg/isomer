@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       template_or_components: ${{ steps.filter.outputs.template_or_components }}
+      studio_e2e_relevant: ${{ steps.filter.outputs.studio_e2e_relevant }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
@@ -37,6 +38,21 @@ jobs:
             template_or_components:
               - 'packages/components/**'
               - 'tooling/template/**'
+            # Anything the Studio app or its e2e run actually depend on at
+            # runtime, plus the CI config that runs it — so a doc-only PR
+            # skips end-to-end-tests, but editing this workflow still
+            # exercises it.
+            studio_e2e_relevant:
+              - 'apps/studio/**'
+              - 'packages/components/**'
+              - 'packages/db/**'
+              - 'packages/algolia/**'
+              - 'packages/pgboss/**'
+              - 'packages/logging/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/ci.yml'
+              - '.github/actions/**'
   build:
     runs-on: ubuntu-latest
     steps:
@@ -249,9 +265,9 @@ jobs:
 
   end-to-end-tests:
     name: End-to-end tests (${{ matrix.feature }})
-    needs: optimize_ci
+    needs: [optimize_ci, changes]
     runs-on: ubuntu-latest
-    if: needs.optimize_ci.outputs.skip == 'false'
+    if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.studio_e2e_relevant == 'true'
     permissions:
       contents: read
     strategy:
