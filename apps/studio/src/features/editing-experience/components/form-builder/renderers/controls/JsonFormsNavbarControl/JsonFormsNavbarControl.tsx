@@ -13,7 +13,6 @@ import {
   HStack,
   Icon,
   Text,
-  Tooltip,
   VStack,
 } from "@chakra-ui/react"
 import {
@@ -26,6 +25,7 @@ import {
   schemaMatches,
 } from "@jsonforms/core"
 import { useJsonForms, withJsonFormsArrayLayoutProps } from "@jsonforms/react"
+import { Infobox } from "@opengovsg/design-system-react"
 import { get } from "lodash-es"
 import { useCallback, useEffect, useState } from "react"
 import { BiPlusCircle } from "react-icons/bi"
@@ -103,6 +103,8 @@ function JsonFormsNavbarControl({
     },
     [arraySchema.maxItems, ctx, data, path],
   )
+
+  const isOverMaxItems = !!(arraySchema.maxItems && data > arraySchema.maxItems)
 
   const getChildUiSchema = useCallback(
     (subPath: string) =>
@@ -203,10 +205,17 @@ function JsonFormsNavbarControl({
           {data !== 0 && (
             <>
               <HStack w="full" justifyContent="space-between">
-                <Text textStyle="body-2" textColor="base.content.medium">
+                <Text
+                  textStyle="body-2"
+                  textColor={
+                    isOverMaxItems
+                      ? "utility.feedback.critical"
+                      : "base.content.medium"
+                  }
+                >
                   {arraySchema.maxItems ? (
                     <>
-                      {data}/{arraySchema.maxItems} links added
+                      {data}/{arraySchema.maxItems} first-level links added
                     </>
                   ) : (
                     <>
@@ -215,32 +224,28 @@ function JsonFormsNavbarControl({
                   )}
                 </Text>
 
-                <Tooltip
-                  label={
-                    arraySchema.maxItems &&
-                    data >= arraySchema.maxItems &&
-                    `You can only place up to ${arraySchema.maxItems} links on the first level.`
-                  }
-                  hasArrow
+                <Button
+                  variant="clear"
+                  size="xs"
+                  leftIcon={<Icon as={BiPlusCircle} />}
+                  onClick={addItem(
+                    path,
+                    createDefaultValue(schema, rootSchema),
+                  )}
                 >
-                  <Button
-                    variant="clear"
-                    size="xs"
-                    leftIcon={<Icon as={BiPlusCircle} />}
-                    onClick={addItem(
-                      path,
-                      createDefaultValue(schema, rootSchema),
-                    )}
-                    isDisabled={
-                      arraySchema.maxItems
-                        ? data >= arraySchema.maxItems
-                        : false
-                    }
-                  >
-                    Add a link
-                  </Button>
-                </Tooltip>
+                  Add a link
+                </Button>
               </HStack>
+
+              {isOverMaxItems && (
+                <Infobox variant="warning" size="sm" w="full">
+                  <Text textStyle="body-2">
+                    You can only have up to {arraySchema.maxItems} first-level
+                    links. Move the extra links under an existing first-level
+                    link, or remove them, before publishing.
+                  </Text>
+                </Infobox>
+              )}
 
               <Accordion
                 ref={droppableZoneCallbackRef}

@@ -5,12 +5,14 @@ import {
   Box,
   HStack,
   Icon,
+  ListItem,
   Spacer,
   TabList,
   TabPanel,
   TabPanels,
   Text,
   Tooltip,
+  UnorderedList,
   useTheme,
   VStack,
 } from "@chakra-ui/react"
@@ -19,7 +21,7 @@ import {
   NavbarAddonsSchema,
   NavbarItemsSchema,
 } from "@opengovsg/isomer-components"
-import { isEmpty, isEqual } from "lodash-es"
+import { isEqual, uniq } from "lodash-es"
 import { useCallback, useMemo } from "react"
 import { BiDirections } from "react-icons/bi"
 import {
@@ -190,15 +192,36 @@ const PublishButton = ({
   onClick: () => void
 }) => {
   const { errors } = useBuilderErrors()
-  const isSchemaValid = isEmpty(errors)
+  const errorMessages = useMemo(
+    () =>
+      uniq(
+        Object.values(errors)
+          .flat()
+          .map((error) => error.message)
+          .filter((message): message is string => !!message),
+      ),
+    [errors],
+  )
+  const isSchemaValid = errorMessages.length === 0
 
   return (
     <Can do="create" on={{ parentId: null }}>
       <Tooltip
         label={
-          !isSchemaValid
-            ? "There are errors in your navigation bar. Fix them before publishing."
-            : undefined
+          !isSchemaValid ? (
+            <VStack alignItems="start" gap="0.25rem" py="0.25rem">
+              <Text textStyle="caption-2">
+                Fix the following before publishing:
+              </Text>
+              <UnorderedList pl="0.5rem">
+                {errorMessages.map((message) => (
+                  <ListItem key={message} textStyle="caption-2">
+                    {message}
+                  </ListItem>
+                ))}
+              </UnorderedList>
+            </VStack>
+          ) : undefined
         }
         hasArrow
       >
