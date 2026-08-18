@@ -1,5 +1,6 @@
 import type { IsomerSiteConfigProps } from "@opengovsg/isomer-components"
 import type { Notification } from "~/schemas/site"
+import { getAskgovIdFromString } from "@opengovsg/isomer-components"
 import { TRPCError } from "@trpc/server"
 import { ResourceState, ResourceType } from "~/server/modules/database"
 
@@ -43,6 +44,29 @@ export const validateUserPermissionsForSite = async ({
 type SiteSearchConfig = IsomerSiteConfigProps["search"]
 
 const EGAZETTE_ALGOLIA_SEARCH_TYPE = "egazette-algolia"
+
+export const normalizeAskgovConfig = (
+  config: IsomerSiteConfigProps,
+): IsomerSiteConfigProps => {
+  if (!config.askgov) return config
+
+  const agencyId = getAskgovIdFromString(config.askgov["data-agency"])
+
+  if (agencyId === null) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid AskGov ID or URL",
+    })
+  }
+
+  return {
+    ...config,
+    askgov: {
+      ...config.askgov,
+      "data-agency": agencyId,
+    },
+  }
+}
 
 /**
  * The `egazette-algolia` search variant carries Algolia connection details
