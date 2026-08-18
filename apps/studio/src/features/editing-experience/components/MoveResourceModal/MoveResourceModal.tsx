@@ -117,11 +117,14 @@ const MoveResourceContent = withSuspense(
     })
 
     const movedItem = useAtomValue(moveResourceAtom)
-    const { isLoading: isValidMoveLoading, isValidMove } =
-      useValidateResourceMove({
-        sourceId: movedItem?.id,
-        destinationId: curResourceId ?? null,
-      })
+    const {
+      isLoading: isValidMoveLoading,
+      isValidMove,
+      errorMessage,
+    } = useValidateResourceMove({
+      sourceId: movedItem?.id,
+      destinationId: curResourceId ?? null,
+    })
     // movedResourceId: movedItem.id,
     // destinationResourceId: curResourceId ?? null,
 
@@ -183,6 +186,11 @@ const MoveResourceContent = withSuspense(
               existingResource={movedItem ?? undefined}
               onChange={(resourceId) => setCurResourceId(resourceId)}
             />
+            {curResourceId !== undefined && errorMessage && (
+              <Infobox variant="error" size="sm" w="full">
+                {errorMessage}
+              </Infobox>
+            )}
             {showUrlChangeNotice && (
               <VStack alignItems="flex-start" spacing="0.75rem" w="full">
                 <Box
@@ -251,7 +259,7 @@ const MoveResourceContent = withSuspense(
               ability.cannot("move", {
                 parentId: movedItem?.parentId ?? null,
               }) ||
-              !isValidMove
+              isValidMove !== true
             }
             isLoading={isPending || isValidMoveLoading}
             onClick={() =>
