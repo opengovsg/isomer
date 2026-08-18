@@ -51,8 +51,16 @@ export const useValidateResourceMove = ({
     !!destinationResource &&
     isResourceMoveValid(source, destinationResource)
 
+  const errorMessage =
+    isValidMove instanceof Error
+      ? isValidMove.message
+      : !isValidMove
+        ? "Invalid resource move"
+        : undefined
+
   return {
     isLoading: isSourceLoading || isDestinationLoading || isRootPageLoading,
     isValidMove,
+    errorMessage,
   }
 }
