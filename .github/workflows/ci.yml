@@ -262,57 +262,11 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
 
-  build-studio-for-e2e:
-    name: Build Studio (for e2e)
+  e2e-tests:
+    name: E2E tests (${{ matrix.feature }})
     needs: [optimize_ci, changes]
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.studio_e2e_relevant == 'true'
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Setup
-        uses: ./.github/actions/setup
-      - name: Load .env file
-        uses: opengovsg/dotenv@eff1dce037c4c0143cc4180a810511024c2560c0 # v2
-        with:
-          path: apps/studio
-          mode: test
-      - name: Next.js cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: |
-            ${{ github.workspace }}/apps/studio/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-
-      - name: Build Studio app
-        # Loose env mode required for env vars to be passed to the run
-        run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
-        env:
-          # These source maps exist for Datadog RUM error tracking on real
-          # deploys; e2e gets no benefit from them, and generating them is
-          # a meaningful chunk of build time.
-          SKIP_PRODUCTION_SOURCE_MAPS: "true"
-          # This job's build is served via plain `next start`, never
-          # `.next/standalone` — skip the dependency trace + copy that
-          # `output: standalone` requires for Docker/start:standalone deploys.
-          SKIP_STANDALONE_OUTPUT: "true"
-      # Built once here and downloaded by every e2e-tests feature job below,
-      # instead of every job rebuilding independently — experimenting with
-      # trading a bit of upload/download time for one build instead of N.
-      - name: Upload Studio build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: studio-next-build-${{ github.run_id }}
-          path: |
-            apps/studio/.next/**
-            !apps/studio/.next/cache/**
-          retention-days: 1
-
-  e2e-tests:
-    name: E2E tests (${{ matrix.feature }})
-    needs: [optimize_ci, changes, build-studio-for-e2e]
-    runs-on: ubuntu-latest
-    if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.studio_e2e_relevant == 'true' && needs.build-studio-for-e2e.result == 'success'
     permissions:
       contents: read
     strategy:
@@ -349,14 +303,29 @@ jobs:
         with:
           path: apps/studio
           mode: test
-      - name: Download Studio build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - name: Next.js cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          name: studio-next-build-${{ github.run_id }}
-          path: apps/studio/.next
+          path: |
+            ${{ github.workspace }}/apps/studio/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
       - parallel:
           - name: Install Playwright (Chromium)
             run: pnpm --filter isomer-studio exec playwright install chromium
+          - name: Build Studio app
+            # Loose env mode required for env vars to be passed to the run
+            run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
+            env:
+              # These source maps exist for Datadog RUM error tracking on real
+              # deploys; e2e gets no benefit from them, and generating them is
+              # a meaningful chunk of build time.
+              SKIP_PRODUCTION_SOURCE_MAPS: "true"
+              # This job's build is served via plain `next start`, never
+              # `.next/standalone` — skip the dependency trace + copy that
+              # `output: standalone` requires for Docker/start:standalone deploys.
+              SKIP_STANDALONE_OUTPUT: "true"
           - name: Start test containers
             run: pnpm run setup:test
           - name: Configure Datadog Test Visibility
