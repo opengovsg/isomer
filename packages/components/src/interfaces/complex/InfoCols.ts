@@ -5,13 +5,14 @@ import { SUPPORTED_ICON_NAMES } from "~/common/icons"
 import { LINK_HREF_PATTERN } from "~/utils/validation"
 
 import { ICON_PICKER_FORMAT } from "../format"
+import { IsomerString } from "../primitives/IsomerString"
 
 const InfoBoxSchema = Type.Object({
-  title: Type.String({
+  title: IsomerString({
     title: "Title",
   }),
   description: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Description",
     }),
   ),
@@ -31,7 +32,7 @@ const InfoBoxSchema = Type.Object({
     ),
   ),
   buttonLabel: Type.Optional(
-    Type.String({
+    IsomerString({
       title: "Link text",
       maxLength: 50,
       description:
@@ -58,11 +59,11 @@ export const InfoColsSchema = Type.Object(
         format: "hidden",
       }),
     ),
-    title: Type.String({
+    title: IsomerString({
       title: "Title",
     }),
     subtitle: Type.Optional(
-      Type.String({
+      IsomerString({
         title: "Description",
       }),
     ),
