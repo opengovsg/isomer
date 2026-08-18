@@ -79,14 +79,15 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.enableNotificationBanner()
     await site.expectNotificationTitleFieldVisible()
 
-    // Act
+    // Act: the input has a native maxlength=150 (mirroring the schema's
+    // own maxLength: 150), so typing/pasting more than that never reaches
+    // the browser's value — it's truncated before the AJV validator (and
+    // its "must NOT have more than 150 characters" message) ever sees it.
     await site.fillNotificationTitle("a".repeat(151))
 
     // Assert
-    await expect(
-      page.getByText("must NOT have more than 150 characters"),
-    ).toBeVisible()
-    await expect(site.publishButton()).toBeDisabled()
+    await expect(site.notificationTitleField()).toHaveValue("a".repeat(150))
+    await expect(site.publishButton()).toBeEnabled()
   })
 
   test("notification content supports rich text formatting", async ({

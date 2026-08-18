@@ -37,8 +37,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Act: edit an existing link in column 1
     await site.editFooterLinkLabel("About us", column1UpdatedLabel)
 
-    // Act: add a new link to column 2 (empty by default)
+    // Act: add a new link to column 2 (empty by default) — adding just
+    // appends a collapsed "No title" row, so it must be opened before its
+    // fields are editable
     await site.addFooterLinkButtonForColumn("Footer column 2").click()
+    await site.footerLinkButton("No title").click()
     await site.linkLabelField().fill(column2NewLabel)
     await site.setLinkDestinationExternal("example.com/column-two")
     await site.backToFooterButton().click()
@@ -62,8 +65,11 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // Arrange
     await site.gotoSettingsSection(siteId, "footer")
 
-    // Act: adding a social link with an invalid URL is rejected live
+    // Act: adding a social link with an invalid URL is rejected live —
+    // adding just appends a collapsed row (defaulting to "Facebook"), so it
+    // must be opened before its fields are editable
     await site.addSocialMediaLinkButton().click()
+    await site.footerLinkButton("Facebook").click()
     await site.socialMediaLinkField().fill("not-a-url")
     await expect(
       page.getByText("Link is not in the correct format"),
@@ -93,11 +99,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     // exposes "Link something..." when the field is empty).
     await site.gotoSettingsSection(siteId, "footer")
     await expect(page.getByText("Contact and feedback form")).toBeVisible()
-    await page
-      .getByText("Contact us page")
-      .locator("xpath=..")
-      .getByRole("button", { name: "Remove file" })
-      .click()
+    await site.removeLinkButtonByLabel("Contact us page").click()
 
     // Act
     await site.setLinkDestinationExternal("example.com/contact")
@@ -117,14 +119,8 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.gotoSettingsSection(siteId, "footer")
     await expect(page.getByText("Legal pages")).toBeVisible()
 
-    // Act: clear the privacy statement link (its remove button is scoped to
-    // the FormControl sharing the "Privacy statement page" label, since the
-    // "Remove file" aria-label is reused generically by BaseLinkControl)
-    await page
-      .getByText("Privacy statement page")
-      .locator("xpath=..")
-      .getByRole("button", { name: "Remove file" })
-      .click()
+    // Act: clear the privacy statement link
+    await site.removeLinkButtonByLabel("Privacy statement page").click()
 
     // Assert
     await expect(
