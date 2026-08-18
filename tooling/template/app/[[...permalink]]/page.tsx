@@ -6,10 +6,13 @@ import navbar from "@/data/navbar.json"
 import sitemap from "@/sitemap.json"
 import {
   getMetadata,
+  getPageJsonLd,
   getSitemapXml,
   RenderEngine,
   shouldBlockIndexing,
 } from "@opengovsg/isomer-components"
+
+import { serializeForInlineScript } from "@isomer/validators"
 
 export const dynamic = "force-static"
 
@@ -116,30 +119,44 @@ const Page = async (props: DynamicPageProps) => {
   const renderSchema = await getSchema({
     permalink: await getPatchedPermalink(props),
   })
+  const pageJsonLd = getPageJsonLd({
+    ...renderSchema,
+    site: {
+      url: config.site.url,
+    },
+  })
 
   return (
-    <RenderEngine
-      {...renderSchema}
-      site={{
-        ...config.site,
-        environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-        // TODO: fixup all the typing errors
-        // @ts-ignore to fix when types are proper
-        siteMap: sitemap,
-        navbar: navbar,
-        // TODO: fixup all the typing errors
-        // @ts-ignore to fix when types are proper
-        footerItems: footer,
-        lastUpdated,
-        assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
-      }}
-      meta={{
-        // TODO: fixup all the typing errors
-        noIndex: shouldBlockIndexing(
-          process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
-        ),
-      }}
-    />
+    <>
+      <RenderEngine
+        {...renderSchema}
+        site={{
+          ...config.site,
+          environment: process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+          // TODO: fixup all the typing errors
+          // @ts-ignore to fix when types are proper
+          siteMap: sitemap,
+          navbar: navbar,
+          // TODO: fixup all the typing errors
+          // @ts-ignore to fix when types are proper
+          footerItems: footer,
+          lastUpdated,
+          assetsBaseUrl: process.env.NEXT_PUBLIC_ASSETS_BASE_URL,
+        }}
+        meta={{
+          // TODO: fixup all the typing errors
+          noIndex: shouldBlockIndexing(
+            process.env.NEXT_PUBLIC_ISOMER_NEXT_ENVIRONMENT,
+          ),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: serializeForInlineScript(pageJsonLd),
+        }}
+      />
+    </>
   )
 }
 
