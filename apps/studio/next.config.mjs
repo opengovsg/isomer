@@ -159,7 +159,10 @@ const config = {
   // Next resolves them the same from the app root as from the workspace package (pnpm); otherwise
   // Next may bundle jsdom and break __dirname (default-stylesheet.css ENOENT).
   serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
-  productionBrowserSourceMaps: true,
+  // Off only for the e2e CI build (SKIP_PRODUCTION_SOURCE_MAPS=true) — these
+  // maps exist for Datadog RUM error tracking on real deploys, which e2e
+  // gets no benefit from, and generating them is a meaningful chunk of build time.
+  productionBrowserSourceMaps: !env.SKIP_PRODUCTION_SOURCE_MAPS,
   /** We already do typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
   transpilePackages: [
