@@ -239,3 +239,16 @@ export const expectResourceTitle = (resourceId: string) =>
       .executeTakeFirst()
     return row?.title ?? null
   })
+
+/** `source` should already be normalized (see `normalizeRedirectSource`). */
+export const expectRedirectDestination = (siteId: number, source: string) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Redirect")
+      .where("siteId", "=", siteId)
+      .where("source", "=", source)
+      .where("deletedAt", "is", null)
+      .select("destination")
+      .executeTakeFirst()
+    return row?.destination ?? null
+  })
