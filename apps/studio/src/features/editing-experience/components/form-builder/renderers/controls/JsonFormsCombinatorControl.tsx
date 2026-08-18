@@ -18,6 +18,7 @@ import {
 } from "@jsonforms/react"
 import { FormLabel, Radio, SingleSelect } from "@opengovsg/design-system-react"
 import { ARRAY_RADIO_FORMAT } from "@opengovsg/isomer-components"
+import { pick } from "lodash-es"
 import { useEffect, useState } from "react"
 import { JSON_FORMS_RANKING } from "~/constants/formBuilder"
 
@@ -35,15 +36,8 @@ interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
   combinatorType: "oneOf" | "anyOf"
 }
 
-// Switching a combinator branch (e.g. an InfoCards "variant") previously
-// reset every array field (e.g. `cards`) to `[]`, wiping content the editor
-// had already entered. Keep existing array items, dropping only the fields
-// the new variant's item schema no longer has (e.g. image fields when
-// switching to a no-image variant).
-//
-// `oldData` is the block's own content object (or undefined before it's
-// loaded) - never an array or primitive, so it's typed and used as such
-// rather than re-checked here.
+// Keeps existing array items (e.g. `cards`) instead of letting schema
+// defaults reset them to `[]`, dropping only fields the new variant lacks.
 export function keepMatchingArrayFields(
   oldData: Record<string, unknown> | undefined,
   newSchema: JsonSchema7,
@@ -51,8 +45,7 @@ export function keepMatchingArrayFields(
   const preserved: Record<string, unknown> = {}
 
   for (const [key, propSchema] of Object.entries(newSchema.properties ?? {})) {
-    // `items` is always a single schema in this codebase, never the
-    // draft-07 tuple form, though the library types it as either.
+    // Never actually the draft-07 tuple form, just typed as either.
     const itemSchema = propSchema.items as JsonSchema7 | undefined
     const oldItems = oldData?.[key] as Record<string, unknown>[] | undefined
     if (!itemSchema?.properties || !Array.isArray(oldItems)) {
@@ -60,13 +53,7 @@ export function keepMatchingArrayFields(
     }
 
     const allowedKeys = Object.keys(itemSchema.properties)
-    preserved[key] = oldItems.map((item) =>
-      Object.fromEntries(
-        Object.entries(item).filter(([itemKey]) =>
-          allowedKeys.includes(itemKey),
-        ),
-      ),
-    )
+    preserved[key] = oldItems.map((item) => pick(item, allowedKeys))
   }
   return preserved
 }
@@ -127,8 +114,6 @@ function JsonFormsCombinatorControl({
       handleChange(path, {
         ...data,
         ...newData,
-        // `data` is the block's own content object; schemas here are
-        // always the draft-07 shape typebox generates.
         ...keepMatchingArrayFields(
           data as Record<string, unknown> | undefined,
           newSchema as JsonSchema7,
