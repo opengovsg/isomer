@@ -304,15 +304,15 @@ jobs:
         with:
           name: studio-next-build-${{ github.run_id }}
           path: |
-            apps/studio/.next
-            !apps/studio/.next/cache
+            apps/studio/.next/**
+            !apps/studio/.next/cache/**
           retention-days: 1
 
   e2e-tests:
     name: E2E tests (${{ matrix.feature }})
     needs: [optimize_ci, changes, build-studio-for-e2e]
     runs-on: ubuntu-latest
-    if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.studio_e2e_relevant == 'true'
+    if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.studio_e2e_relevant == 'true' && needs.build-studio-for-e2e.result == 'success'
     permissions:
       contents: read
     strategy:
