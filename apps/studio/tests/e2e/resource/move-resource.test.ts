@@ -183,7 +183,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     const dashboard = new DashboardPO(page)
-    await dashboard.gotoSite(siteId)
+    await dashboard.gotoFolder(siteId, sourceFolder.id)
     await dashboard.openResourceMenu(pageTitle)
     await dashboard.clickMove()
     await dashboard.selectMoveDestination(folderTitle)
@@ -219,7 +219,7 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
 
     // Act
     const dashboard = new DashboardPO(page)
-    await dashboard.gotoSite(siteId)
+    await dashboard.gotoFolder(siteId, sourceFolder.id)
     await dashboard.openResourceMenu(pageTitle)
     await dashboard.clickMove()
     await dashboard.selectMoveDestination(folderTitle)
