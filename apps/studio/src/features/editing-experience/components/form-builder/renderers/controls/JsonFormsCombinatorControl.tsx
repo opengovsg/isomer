@@ -1,6 +1,6 @@
 import type {
   CombinatorRendererProps,
-  JsonSchema,
+  JsonSchema7,
   RankedTester,
 } from "@jsonforms/core"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
@@ -40,36 +40,32 @@ interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
 // had already entered. Keep existing array items, dropping only the fields
 // the new variant's item schema no longer has (e.g. image fields when
 // switching to a no-image variant).
+//
+// `oldData` is the block's own content object (or undefined before it's
+// loaded) - never an array or primitive, so it's typed and used as such
+// rather than re-checked here.
 export function keepMatchingArrayFields(
-  oldData: unknown,
-  newSchema: JsonSchema,
+  oldData: Record<string, unknown> | undefined,
+  newSchema: JsonSchema7,
 ): Record<string, unknown> {
-  const oldObject =
-    typeof oldData === "object" && oldData !== null && !Array.isArray(oldData)
-      ? (oldData as Record<string, unknown>)
-      : {}
-
   const preserved: Record<string, unknown> = {}
-  for (const [key, propSchema] of Object.entries(
-    newSchema.properties ?? {},
-  ) as [string, JsonSchema][]) {
-    const itemSchema = Array.isArray(propSchema.items)
-      ? undefined
-      : propSchema.items
-    const oldItems = oldObject[key]
+
+  for (const [key, propSchema] of Object.entries(newSchema.properties ?? {})) {
+    // `items` is always a single schema in this codebase, never the
+    // draft-07 tuple form, though the library types it as either.
+    const itemSchema = propSchema.items as JsonSchema7 | undefined
+    const oldItems = oldData?.[key] as Record<string, unknown>[] | undefined
     if (!itemSchema?.properties || !Array.isArray(oldItems)) {
       continue
     }
 
     const allowedKeys = Object.keys(itemSchema.properties)
-    preserved[key] = oldItems.map((item: unknown) =>
-      typeof item === "object" && item !== null
-        ? Object.fromEntries(
-            Object.entries(item as Record<string, unknown>).filter(
-              ([itemKey]) => allowedKeys.includes(itemKey),
-            ),
-          )
-        : item,
+    preserved[key] = oldItems.map((item) =>
+      Object.fromEntries(
+        Object.entries(item).filter(([itemKey]) =>
+          allowedKeys.includes(itemKey),
+        ),
+      ),
     )
   }
   return preserved
@@ -131,7 +127,12 @@ function JsonFormsCombinatorControl({
       handleChange(path, {
         ...data,
         ...newData,
-        ...keepMatchingArrayFields(data, newSchema),
+        // `data` is the block's own content object; schemas here are
+        // always the draft-07 shape typebox generates.
+        ...keepMatchingArrayFields(
+          data as Record<string, unknown> | undefined,
+          newSchema as JsonSchema7,
+        ),
       })
     }
   }
