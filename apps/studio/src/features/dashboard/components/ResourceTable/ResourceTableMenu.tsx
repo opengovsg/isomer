@@ -90,32 +90,48 @@ export const ResourceTableMenu = ({
             type === ResourceType.Folder ||
             type === ResourceType.Collection) && (
             // TODO: we need to change the resourceid next time when we implement root level permissions
-            <Can do="move" on={{ parentId }}>
-              <MenuItem
-                as="button"
-                onClick={handleMoveResourceClick}
-                icon={<BiFolderOpen fontSize="1rem" />}
-                aria-label={`Move resource to another location for ${title}`}
-              >
-                Move to...
-              </MenuItem>
+            <Can do="move" on={{ parentId }} passThrough>
+              {({ isAllowed }) => (
+                <MenuItem
+                  as="button"
+                  onClick={handleMoveResourceClick}
+                  icon={<BiFolderOpen fontSize="1rem" />}
+                  aria-label={`Move resource to another location for ${title}`}
+                  isDisabled={!isAllowed}
+                  tooltip={
+                    isAllowed
+                      ? undefined
+                      : "You need to be an Admin to move or delete items under Home."
+                  }
+                >
+                  Move to...
+                </MenuItem>
+              )}
             </Can>
           )}
           {resourceType !== ResourceType.RootPage && (
-            <Can do="delete" on={{ parentId }}>
-              <MenuItem
-                onClick={() => {
-                  setResourceModalState({
-                    title,
-                    resourceId,
-                    resourceType,
-                  })
-                }}
-                colorScheme="critical"
-                icon={<BiTrash fontSize="1rem" />}
-              >
-                Delete
-              </MenuItem>
+            <Can do="delete" on={{ parentId }} passThrough>
+              {({ isAllowed }) => (
+                <MenuItem
+                  onClick={() => {
+                    setResourceModalState({
+                      title,
+                      resourceId,
+                      resourceType,
+                    })
+                  }}
+                  colorScheme="critical"
+                  icon={<BiTrash fontSize="1rem" />}
+                  isDisabled={!isAllowed}
+                  tooltip={
+                    isAllowed
+                      ? undefined
+                      : "You need to be an Admin to move or delete items under Home."
+                  }
+                >
+                  Delete
+                </MenuItem>
+              )}
             </Can>
           )}
         </MenuList>
