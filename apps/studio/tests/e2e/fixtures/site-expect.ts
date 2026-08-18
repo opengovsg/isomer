@@ -38,6 +38,32 @@ export const expectSiteGtmId = (siteId: number) =>
     return config?.siteGtmId ?? null
   })
 
+export const expectSiteAskgovId = (siteId: number) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Site")
+      .where("id", "=", siteId)
+      .select("config")
+      .executeTakeFirst()
+    const config = row?.config as IsomerSiteConfigProps & {
+      askgov?: { "data-agency"?: string }
+    }
+    return config?.askgov?.["data-agency"] ?? null
+  })
+
+export const expectSiteVicaId = (siteId: number) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Site")
+      .where("id", "=", siteId)
+      .select("config")
+      .executeTakeFirst()
+    const config = row?.config as IsomerSiteConfigProps & {
+      vica?: { "app-id"?: string }
+    }
+    return config?.vica?.["app-id"] ?? null
+  })
+
 export const expectSiteLogoUrl = (siteId: number) =>
   expect.poll(async () => {
     const row = await db
@@ -47,6 +73,17 @@ export const expectSiteLogoUrl = (siteId: number) =>
       .executeTakeFirst()
     const config = row?.config as IsomerSiteConfigProps
     return config?.logoUrl ?? null
+  })
+
+export const expectSiteFaviconUrl = (siteId: number) =>
+  expect.poll(async () => {
+    const row = await db
+      .selectFrom("Site")
+      .where("id", "=", siteId)
+      .select("config")
+      .executeTakeFirst()
+    const config = row?.config as IsomerSiteConfigProps & { favicon?: string }
+    return config?.favicon ?? null
   })
 
 export const expectSiteNotificationTitle = (siteId: number) =>

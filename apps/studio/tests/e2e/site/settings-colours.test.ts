@@ -45,6 +45,30 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await expect(site.mainBrandColourField()).toHaveValue("b30000")
   })
 
+  test("admin sees the colour swatch preview update immediately, before publishing", async ({
+    page,
+  }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "colours")
+    await expect(site.mainBrandColourSwatch()).toHaveCSS(
+      "background-color",
+      "rgb(0, 64, 95)", // #00405f, the default brand colour
+    )
+
+    // Act
+    await site.setMainBrandColour("336699")
+
+    // Assert: the swatch reflects the unsaved edit immediately
+    await expect(site.mainBrandColourSwatch()).toHaveCSS(
+      "background-color",
+      "rgb(51, 102, 153)", // #336699
+    )
+    // ...while nothing is persisted until Publish
+    await expectSiteThemeBrandColour(siteId).toBe(DEFAULT_BRAND_COLOUR)
+  })
+
   test("admin unpublished colour change is discarded on reload", async ({
     page,
   }) => {
