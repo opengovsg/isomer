@@ -223,7 +223,11 @@ export class DashboardPO {
   }
 
   async uncheckCreateRedirectOnMove() {
-    await this.page.getByRole("checkbox", { name: /redirect/i }).uncheck()
+    // Chakra renders the native checkbox visually hidden behind its styled
+    // label, which intercepts pointer events — click the label's own text
+    // (as `confirmDeleteResource` does for its confirmation checkbox) rather
+    // than the checkbox role directly.
+    await this.page.getByText(/Check this box to.*redirect/i).click()
   }
 
   async confirmMove() {
