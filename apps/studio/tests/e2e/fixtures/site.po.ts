@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test"
+import type { Locator, Page } from "@playwright/test"
 
 export type SettingsSection =
   | "agency"
@@ -58,6 +58,21 @@ export class SitePO {
     await this.page.waitForURL(urlPattern)
   }
 
+  /** UnsavedSettingModal.tsx — shown when navigating away with unsaved settings changes. */
+  unsavedChangesModalHeading() {
+    return this.page.getByText("Leave this page without saving your settings?")
+  }
+
+  /** Stay on the current page, keeping unsaved edits intact. */
+  goBackToEditingButton() {
+    return this.page.getByRole("button", { name: "Go back to editing" })
+  }
+
+  /** Discard unsaved edits and navigate away. */
+  yesLeaveThisPageButton() {
+    return this.page.getByRole("button", { name: "Yes, leave this page" })
+  }
+
   /**
    * The SettingsHeader-rendered Publish button. Settings forms use "Publish"
    * (see src/features/settings/SettingsHeader.tsx). Non-settings surfaces
@@ -72,8 +87,22 @@ export class SitePO {
     return this.page.getByLabel("Site name")
   }
 
+  agencyOwnerField() {
+    return this.page.getByLabel("Website is owned by")
+  }
+
   mainBrandColourField() {
     return this.page.getByLabel("Main brand colour")
+  }
+
+  /**
+   * The round colour swatch rendered next to the main brand colour input
+   * (JsonFormsColourPickerControl.tsx) — updates live as the hex input
+   * changes, before Publish. DOM: Input -> InputGroup (../) -> HStack (../)
+   * -> last child Box is the swatch.
+   */
+  mainBrandColourSwatch() {
+    return this.mainBrandColourField().locator("xpath=../../div[last()]")
   }
 
   gtmIdField() {
@@ -87,6 +116,43 @@ export class SitePO {
 
   notificationTitleField() {
     return this.page.getByLabel("Notification title")
+  }
+
+  /** Tiptap simple-prose content editor toolbar buttons on the notification settings page. */
+  notificationContentToolbarButton(
+    name: "Bold" | "Italicise" | "Underline" | "Link",
+  ) {
+    return this.page.getByRole("button", { name })
+  }
+
+  /** Tiptap simple-prose content editor on the notification settings page (a plain contenteditable div, not a labelled form control). */
+  notificationContentEditor() {
+    return this.page.locator('[contenteditable="true"]')
+  }
+
+  /** AskGov widget toggle (JsonFormsWidgetIntegrationControl) on the integrations settings page. */
+  askgovToggle() {
+    return this.page
+      .locator("div")
+      .filter({ hasText: /^Enable your AskGov widget on this website/ })
+      .last()
+      .getByRole("checkbox")
+  }
+
+  vicaToggle() {
+    return this.page
+      .locator("div")
+      .filter({ hasText: /^Enable your VICA widget on this website/ })
+      .last()
+      .getByRole("checkbox")
+  }
+
+  askgovIdField() {
+    return this.page.getByLabel("AskGov ID")
+  }
+
+  vicaIdField() {
+    return this.page.getByLabel("VICA ID")
   }
 
   /** Logo upload section container on the logos and favicon settings page. */
@@ -108,12 +174,188 @@ export class SitePO {
     return this.page.getByText(filename)
   }
 
+  /** Favicon upload section container on the logos and favicon settings page. */
+  faviconUploadGroup() {
+    return this.page.getByRole("group").filter({ hasText: /^Favicon/ })
+  }
+
+  faviconUploadInput() {
+    return this.faviconUploadGroup().getByTestId("file-upload")
+  }
+
+  /**
+   * The trash IconButton (aria-label "Remove file") shown once a logo or
+   * favicon has been uploaded (AttachmentData.tsx) — clearing it restores the
+   * empty dropzone so a new file can be uploaded in its place.
+   */
+  removeUploadedFileButton(group: Locator) {
+    return group.getByRole("button", { name: "Remove file" })
+  }
+
+  fileUploadErrorText() {
+    return this.page.getByText(/is not allowed|exceeds the size limit/)
+  }
+
   footerLinkButton(name: string) {
+    return this.page.getByRole("button", { name })
+  }
+
+  /** "Add a link" button scoped to a footer column ("Footer column 1"/"Footer column 2") to disambiguate the two identical-looking buttons. */
+  addFooterLinkButtonForColumn(
+    columnHeading: "Footer column 1" | "Footer column 2",
+  ) {
+    return this.page
+      .locator("div")
+      .filter({ hasText: new RegExp(`^${columnHeading}`) })
+      .last()
+      .getByRole("button", { name: "Add a link" })
+  }
+
+  linkLabelField() {
+    return this.page.getByLabel("Link label")
+  }
+
+  backToFooterButton() {
+    return this.page.getByRole("button", { name: "Back to footer" })
+  }
+
+  /** "Add a link" button under the "Social media links" section. */
+  addSocialMediaLinkButton() {
+    return this.page
+      .locator("div")
+      .filter({ hasText: /^Social media links/ })
+      .last()
+      .getByRole("button", { name: "Add a link" })
+  }
+
+  socialMediaTypeSelect() {
+    return this.page.getByLabel("Social media")
+  }
+
+  socialMediaLinkField() {
+    return this.page.getByLabel("Link", { exact: true })
+  }
+
+  /** Deleted-link/error-scoped delete confirmation used by footer link, social-media link modals ("Delete {label}?" / "Delete {Label} link?"). */
+  confirmDeleteButtonNamed(name: RegExp | string) {
     return this.page.getByRole("button", { name })
   }
 
   navbarItemText(name: string) {
     return this.page.getByText(name, { exact: true })
+  }
+
+  /**
+   * "Link something..." button (BaseLinkControl) shown for any unset "link"
+   * format field — navbar items/CTA/utility links, footer links, contact us/
+   * feedback/privacy/terms. Opens the shared LinkEditorModal.
+   */
+  linkSomethingButton() {
+    return this.page.getByRole("button", { name: "Link something..." })
+  }
+
+  linkTypeRadio(type: "Page" | "External" | "File" | "Email") {
+    return this.page.getByRole("radio", { name: type })
+  }
+
+  externalLinkUrlInput() {
+    return this.page.getByPlaceholder("www.isomer.gov.sg")
+  }
+
+  /** "Add link" (new) / "Save link" (editing) submit button in LinkEditorModal. */
+  saveLinkButton() {
+    return this.page.getByRole("button", { name: /^(Add|Save) link$/ })
+  }
+
+  /** Set an unset "link" field (BaseLinkControl) to an external https:// URL. */
+  async setLinkDestinationExternal(urlWithoutProtocol: string) {
+    await this.linkSomethingButton().click()
+    await this.linkTypeRadio("External").click()
+    await this.externalLinkUrlInput().fill(urlWithoutProtocol)
+    await this.saveLinkButton().click()
+  }
+
+  /** Set an unset "link" field (BaseLinkControl) to an internal page, picked from the resource tree by its title. */
+  async setLinkDestinationInternalPage(pageTitle: string) {
+    await this.linkSomethingButton().click()
+    await this.page
+      .getByRole("dialog")
+      .getByRole("button", { name: pageTitle })
+      .click()
+    await this.saveLinkButton().click()
+  }
+
+  /** "Add a link" button on the Menu Links tab (JsonFormsNavbarControl) — same text whether the list is empty (outline variant) or not (clear variant). */
+  addNavbarLinkButton() {
+    return this.page.getByRole("button", { name: "Add a link" }).first()
+  }
+
+  /** "Delete this link" button inside the navbar/footer item edit panel. */
+  deleteThisLinkButton() {
+    return this.page.getByRole("button", { name: "Delete this link" })
+  }
+
+  /**
+   * Confirm-delete button in DeleteGroupModal/DeleteSubItemModal/DeleteLinkModal.
+   * Text is "Delete link" (leaf item) or "Delete links" (group with sub-items)
+   * — unqualified match (no exact) intentionally matches both.
+   */
+  confirmDeleteLinkButton() {
+    return this.page.getByRole("button", { name: "Delete link" })
+  }
+
+  noDontDeleteButton() {
+    return this.page.getByRole("button", { name: "No, don't delete" })
+  }
+
+  backToNavigationBarButton() {
+    return this.page.getByRole("button", { name: "Back to navigation bar" })
+  }
+
+  navbarLinksCountText() {
+    return this.page.getByText(/\d+\/8 links added/)
+  }
+
+  navbarCustomiseTab() {
+    return this.page.getByRole("tab", { name: "Customise" })
+  }
+
+  /** Primary Call-to-Action section's on/off Switch (JsonFormsBoxedGroupControl) — first checkbox on the Customise tab. */
+  ctaToggle() {
+    return this.page.getByRole("checkbox").first()
+  }
+
+  /** Utility links section's on/off Switch — always the last checkbox on the Customise tab, regardless of whether CTA is expanded. */
+  utilityLinksToggle() {
+    return this.page.getByRole("checkbox").last()
+  }
+
+  ctaButtonTextField() {
+    return this.page.getByLabel("Button text")
+  }
+
+  ctaPinOnMobileToggle() {
+    return this.page.getByLabel("Pin Call-to-Action on mobile")
+  }
+
+  addUtilityItemButton() {
+    return this.page.getByRole("button", { name: "Add item" })
+  }
+
+  /**
+   * The chevron toggle (Chakra AccordionButton) that expands a top-level
+   * navbar item's sub-items list. Scoped via the item's `data-id`
+   * (`items.<index>`, see JsonFormsNavbarControl/utils.ts getNavbarItemPath)
+   * rather than accessible name, since the button has no text/aria-label.
+   */
+  navbarExpandItemButton(itemDataId: string) {
+    return this.page
+      .locator(`[data-id="${itemDataId}"] .chakra-accordion__button`)
+      .first()
+  }
+
+  utilityItemNameField() {
+    return this.page.getByLabel("Name of the utility link")
   }
 
   redirectSourceField() {
@@ -170,8 +412,16 @@ export class SitePO {
     await this.notificationTitleField().fill(title)
   }
 
-  async uploadLogo(filePath: string) {
-    await this.logoUploadInput().setInputFiles(filePath)
+  async uploadLogo(
+    file: string | { name: string; mimeType: string; buffer: Buffer },
+  ) {
+    await this.logoUploadInput().setInputFiles(file)
+  }
+
+  async uploadFavicon(
+    file: string | { name: string; mimeType: string; buffer: Buffer },
+  ) {
+    await this.faviconUploadInput().setInputFiles(file)
   }
 
   async editFooterLinkLabel(linkButtonName: string, newLabel: string) {

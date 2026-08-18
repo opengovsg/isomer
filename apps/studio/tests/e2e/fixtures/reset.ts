@@ -146,11 +146,42 @@ export const resetSiteNavbar = (siteId: number) =>
     .where("siteId", "=", siteId)
     .execute()
 
+/** Seed 8 top-level navbar items (the schema's maxItems) for max-limit tests. */
+export const resetSiteNavbarAtMaxItems = (siteId: number) =>
+  db
+    .updateTable("Navbar")
+    .set({
+      content: jsonb({
+        items: Array.from({ length: 8 }, (_, i) => ({
+          name: `Max item ${i + 1}`,
+          url: `/max-item-${i + 1}`,
+        })),
+      }),
+    })
+    .where("siteId", "=", siteId)
+    .execute()
+
 /** Restore footer content to the provisioned-site default. */
 export const resetSiteFooter = (siteId: number) =>
   db
     .updateTable("Footer")
     .set({ content: jsonb(DEFAULT_FOOTER_CONTENT) })
+    .where("siteId", "=", siteId)
+    .execute()
+
+/** Seed footer column 1 with 8 links (the schema's maxItems) for max-limit tests. */
+export const resetSiteFooterColumn1AtMaxItems = (siteId: number) =>
+  db
+    .updateTable("Footer")
+    .set({
+      content: jsonb({
+        ...DEFAULT_FOOTER_CONTENT,
+        siteNavItems: Array.from({ length: 8 }, (_, i) => ({
+          url: `/max-item-${i + 1}`,
+          title: `Max item ${i + 1}`,
+        })),
+      }),
+    })
     .where("siteId", "=", siteId)
     .execute()
 
