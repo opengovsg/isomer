@@ -317,6 +317,11 @@ jobs:
           - name: Build Studio app
             # Loose env mode required for env vars to be passed to the run
             run: pnpm exec turbo build --filter=isomer-studio --env-mode=loose
+            env:
+              # These source maps exist for Datadog RUM error tracking on real
+              # deploys; e2e gets no benefit from them, and generating them is
+              # a meaningful chunk of build time.
+              SKIP_PRODUCTION_SOURCE_MAPS: "true"
           - name: Start test containers
             run: pnpm run setup:test
           - name: Configure Datadog Test Visibility
