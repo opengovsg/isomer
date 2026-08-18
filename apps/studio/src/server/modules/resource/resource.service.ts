@@ -1405,22 +1405,24 @@ export const unpublishPageResource = async ({
 
     const previousVersionId = fullResource.publishedVersionId
 
-    // If there's no pending draft, `fullResource.content` came from the
-    // published Version's Blob (see getFullPageById). Clone it into a new
-    // Blob for draftBlobId rather than pointing straight at the same row —
-    // that Blob is still referenced by the (now-unpublished) Version, and
-    // future draft edits update a draftBlobId's Blob in place
-    // (see updateBlobById), which would otherwise corrupt that Version's
-    // historical content.
-    const draftBlobId =
-      fullResource.draftBlobId ??
-      (
-        await tx
-          .insertInto("Blob")
-          .values({ content: jsonb(fullResource.content) })
-          .returning("Blob.id")
-          .executeTakeFirstOrThrow()
-      ).id
+    let draftBlobId = fullResource.draftBlobId
+
+    if (draftBlobId === null) {
+      // There's no pending draft, so `fullResource.content` came from the
+      // published Version's Blob (see getFullPageById). Clone it into a new
+      // Blob for draftBlobId rather than pointing straight at the same row —
+      // that Blob is still referenced by the (now-unpublished) Version, and
+      // future draft edits update a draftBlobId's Blob in place
+      // (see updateBlobById), which would otherwise corrupt that Version's
+      // historical content.
+      const clonedBlob = await tx
+        .insertInto("Blob")
+        .values({ content: jsonb(fullResource.content) })
+        .returning("Blob.id")
+        .executeTakeFirstOrThrow()
+
+      draftBlobId = clonedBlob.id
+    }
 
     targetResourceId = fullResource.id
 
