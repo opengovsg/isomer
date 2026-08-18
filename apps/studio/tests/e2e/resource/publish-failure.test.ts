@@ -39,7 +39,8 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       })
       .execute()
 
-    // Act: publishing fails on the conflicting redirect
+    // Act: publishing fails on the conflicting redirect. The confirmation
+    // modal only auto-closes on success, so it's still open behind the toast.
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.clickPublish()
     await expect(
@@ -47,6 +48,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
         `Can't publish — a redirect already exists at ${fullPermalink}. Remove it on the Redirections page first.`,
       ),
     ).toBeVisible()
+    await page.getByRole("button", { name: "No, don't publish" }).click()
 
     // Assert: the draft is untouched by the failed attempt
     await editor.expectPublishButtonEnabled()

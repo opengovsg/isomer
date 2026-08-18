@@ -134,17 +134,20 @@ export class PageEditorPO {
     ).toBeVisible()
   }
 
-  /** `slot` picks which of the day's quick-select time presets to use — pass a
-   * different slot than a prior call to reschedule to a distinct time. */
-  async schedulePublishForToday(slot: "first" | "last" = "last") {
+  /** `quickSelectLabel` must match one of QUICK_SELECT_TIMES' rendered labels
+   * exactly (e.g. "9:00 AM", "5:00 PM") — pass a different label than a prior
+   * call to reschedule to a distinct time. Matching by exact label, rather
+   * than position, avoids ambiguity with the (also form-scoped) TimeSelect
+   * control, which renders the same label text once a time is selected. */
+  async schedulePublishForToday(quickSelectLabel = "5:00 PM") {
     await this.page
       .getByRole("button", { name: "Select from date picker." })
       .click()
     await this.page.getByRole("button", { name: "Today" }).click()
-    const timeOption = this.page
+    await this.page
       .locator("form")
-      .getByText(/\d{1,2}:\d{2} (AM|PM)/)
-    await (slot === "first" ? timeOption.first() : timeOption.last()).click()
+      .getByText(quickSelectLabel, { exact: true })
+      .click()
     await this.page.getByRole("button", { name: "Schedule publish" }).click()
   }
 

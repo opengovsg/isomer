@@ -75,10 +75,10 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     const { page: seededPage } = await seedFolderWithPage({ siteId })
     await page.clock.install({ time: new Date("2099-01-01T00:01:00+08:00") })
 
-    // Act: schedule for the last quick-select slot of the day
+    // Act: schedule for the 5:00 PM quick-select slot
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
     await editor.openScheduleModal()
-    await editor.schedulePublishForToday("last")
+    await editor.schedulePublishForToday("5:00 PM")
     await editor.expectScheduledSuccessfully()
     await expect
       .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
@@ -88,7 +88,7 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
     // Act: cancel and reschedule to a different (earlier) quick-select slot
     await editor.cancelSchedule()
     await editor.openScheduleModal()
-    await editor.schedulePublishForToday("first")
+    await editor.schedulePublishForToday("9:00 AM")
     await editor.expectScheduledSuccessfully()
 
     // Assert
