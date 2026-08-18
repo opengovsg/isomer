@@ -16,7 +16,7 @@ import { db } from "~/server/modules/database"
 import { RoleType } from "~/server/modules/database/types"
 import { IsomerAdminRole } from "~prisma/generated/generatedEnums"
 
-import { MAX_DAYS_FROM_LAST_LOGIN } from "../constants"
+import { MAX_DAYS_FROM_LAST_LOGIN, SYSTEM_USER_EMAIL } from "../constants"
 
 // Mock must be at module level to be hoisted correctly
 vi.mock("~/features/mail/service", () => ({
@@ -126,13 +126,16 @@ const setupUserWrapper = async ({
 describe("inactiveUsers.service", () => {
   describe("bulkDeactivateInactiveUsers", () => {
     let site: Site
+    let systemUser: User
 
     beforeEach(async () => {
       vi.clearAllMocks()
-      await resetTables("Site", "User", "ResourcePermission")
+      await resetTables("Site", "User", "ResourcePermission", "AuditLog")
 
       const { site: _site } = await setupSite()
       site = _site
+
+      systemUser = await setupUser({ email: SYSTEM_USER_EMAIL })
     })
 
     it("should successfully deactivate user with permissions", async () => {
@@ -159,6 +162,89 @@ describe("inactiveUsers.service", () => {
         recipientEmail: user.email,
         sitesAndAdmins: expect.any(Array),
       })
+    })
+
+    it("should create a PermissionDelete audit log entry attributed to the system user", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+
+      // Act
+      await bulkDeactivateInactiveUsers()
+
+      // Assert
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(1)
+      expect(auditLogs[0]).toEqual(
+        expect.objectContaining({
+          userId: systemUser.id,
+          siteId: site.id,
+          metadata: { reason: "inactivity" },
+        }),
+      )
+      const delta = auditLogs[0]?.delta as {
+        before: { userId: string; deletedAt: string | null }
+        after: { userId: string; deletedAt: string | null }
+      }
+      expect(delta.before.userId).toBe(user.id)
+      expect(delta.before.deletedAt).toBeNull()
+      expect(delta.after.userId).toBe(user.id)
+      expect(delta.after.deletedAt).not.toBeNull()
+    })
+
+    it("should create one audit log entry per removed permission across multiple sites", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      const { site: otherSite } = await setupSite()
+      await setupAdminPermissions({ siteId: otherSite.id, userId: user.id })
+
+      // Act
+      await bulkDeactivateInactiveUsers()
+
+      // Assert
+      const auditLogs = await db
+        .selectFrom("AuditLog")
+        .where("eventType", "=", "PermissionDelete")
+        .selectAll()
+        .execute()
+      expect(auditLogs).toHaveLength(2)
+      expect(auditLogs.map((log) => log.siteId)).toEqual(
+        expect.arrayContaining([site.id, otherSite.id]),
+      )
+      auditLogs.forEach((log) => expect(log.userId).toBe(systemUser.id))
+    })
+
+    it("should not remove permissions or send emails if the system user does not exist", async () => {
+      // Arrange
+      const user = await setupUserWrapper({
+        siteId: site.id,
+        createdDaysAgo: 91,
+        lastLoginDaysAgo: null,
+      })
+      await db.deleteFrom("User").where("id", "=", systemUser.id).execute()
+
+      // Act
+      await expect(bulkDeactivateInactiveUsers()).rejects.toThrow()
+
+      // Assert
+      const deletedPermissions = await db
+        .selectFrom("ResourcePermission")
+        .where("userId", "=", user.id)
+        .where("deletedAt", "is not", null)
+        .execute()
+      expect(deletedPermissions).toHaveLength(0)
+      expect(sendAccountDeactivationEmail).not.toHaveBeenCalled()
     })
 
     it("should return early when user has no permissions to delete", async () => {

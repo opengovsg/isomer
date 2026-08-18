@@ -6,12 +6,14 @@ import {
   sendAccountDeactivationWarningEmail,
 } from "~/features/mail/service"
 import { createBaseLogger } from "~/lib/logger"
+import { AuditLogEvent } from "~prisma/generated/generatedEnums"
 
 import type { ResourcePermission, Site, User } from "../database"
 import type { BulkSendAccountDeactivationWarningEmailsProps } from "./types"
+import { logPermissionEvent } from "../audit/audit.service"
 import { db, RoleType, sql } from "../database"
 import { PG_ERROR_CODES } from "../database/constants"
-import { MAX_DAYS_FROM_LAST_LOGIN } from "./constants"
+import { MAX_DAYS_FROM_LAST_LOGIN, SYSTEM_USER_EMAIL } from "./constants"
 
 const logger = createBaseLogger({
   path: "server/modules/user/inactiveUsers.service",
@@ -137,13 +139,50 @@ const deactivateUsers = async ({ userIds }: DeactivateUsersProps) => {
       .transaction()
       .setIsolationLevel("serializable") // for idempotency
       .execute(async (tx) => {
-        return tx
+        // Fetch first so a missing system user row fails the job
+        // immediately, even on a run with nothing to deactivate.
+        const systemUser = await tx
+          .selectFrom("User")
+          .where("email", "=", SYSTEM_USER_EMAIL)
+          .selectAll()
+          .executeTakeFirstOrThrow()
+
+        const permissionsToDelete = await tx
+          .selectFrom("ResourcePermission")
+          .where("userId", "in", userIds)
+          .where("deletedAt", "is", null)
+          .selectAll()
+          .execute()
+
+        if (permissionsToDelete.length === 0) return []
+
+        const updated = await tx
           .updateTable("ResourcePermission")
           .where("userId", "in", userIds)
           .where("deletedAt", "is", null)
           .set({ deletedAt: new Date() })
           .returningAll()
           .execute()
+
+        for (const after of updated) {
+          const before = permissionsToDelete.find((p) => p.id === after.id)
+          // Not expected: same tx/isolation level as the read above.
+          if (!before) {
+            throw new Error(
+              `Could not find pre-update state for ResourcePermission ${after.id}`,
+            )
+          }
+
+          await logPermissionEvent(tx, {
+            eventType: AuditLogEvent.PermissionDelete,
+            by: systemUser,
+            delta: { before, after },
+            siteId: after.siteId,
+            metadata: { reason: "inactivity" },
+          })
+        }
+
+        return updated
       })
   } catch (error) {
     if (
