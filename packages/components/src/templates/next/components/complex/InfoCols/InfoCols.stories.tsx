@@ -137,8 +137,13 @@ export const HoverBehaviour: Story = {
         icon: "bar-chart",
       },
       {
-        title: "Has Link, No Label",
-        description: "Should show an arrow even without a button label",
+        title: "Has Link, No Label, Has Description",
+        description: "Should show a standalone arrow below, next to nothing",
+        icon: "bar-chart",
+        buttonUrl: "/faq",
+      },
+      {
+        title: "Has Link, No Label, No Description",
         icon: "bar-chart",
         buttonUrl: "/faq",
       },
