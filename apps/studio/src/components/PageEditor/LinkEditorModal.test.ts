@@ -27,6 +27,14 @@ describe("linkEditorSchema", () => {
     expect(result.success).toBe(false)
   })
 
+  it("does not reject a valid link containing internal whitespace-like characters", () => {
+    const result = linkEditorSchema.safeParse({
+      linkText: "Isomer",
+      linkHref: "https://example.com/foo\tbar\nbaz",
+    })
+    expect(result.success).toBe(true)
+  })
+
   it("rejects a bare https:// scheme with no domain", () => {
     const result = linkEditorSchema.safeParse({
       linkText: "Isomer",
@@ -49,6 +57,12 @@ describe("linkEditorSchema", () => {
     "data:text/html,<script>alert(1)</script>",
     "vbscript:msgbox(1)",
     "  javascript:alert(1)",
+    // Browsers strip internal tabs/newlines/CRs before parsing the URL
+    // scheme, so these are all equivalent to "javascript:alert(1)".
+    "java\tscript:alert(1)",
+    "java\nscript:alert(1)",
+    "java\rscript:alert(1)",
+    "\tjavascript:alert(1)",
   ])("rejects a disallowed href scheme: %s", (linkHref) => {
     const result = linkEditorSchema.safeParse({
       linkText: "Isomer",

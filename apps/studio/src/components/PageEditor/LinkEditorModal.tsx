@@ -51,6 +51,19 @@ import { FileAttachment } from "./FileAttachment"
 // upstream library defaults.
 const DISALLOWED_HREF_SCHEMES = ["javascript:", "data:", "vbscript:"]
 
+// Browsers strip C0 control chars (tabs, newlines, CRs) and various unicode
+// whitespace from URLs before parsing the scheme, so "java\tscript:" is
+// interpreted as "javascript:". Same char class Tiptap's own isAllowedUri
+// uses (borrowed from DOMPurify) — must strip it too or this check is a
+// no-op against that bypass.
+const URL_WHITESPACE_REGEX =
+  /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g
+
+const hasDisallowedHrefScheme = (href: string) => {
+  const normalized = href.replace(URL_WHITESPACE_REGEX, "").toLowerCase()
+  return DISALLOWED_HREF_SCHEMES.some((scheme) => normalized.startsWith(scheme))
+}
+
 export const linkEditorSchema = z.object({
   linkText: z.string().min(1, "Link text cannot be empty."),
   linkHref: z
@@ -63,10 +76,7 @@ export const linkEditorSchema = z.object({
       "Link destination cannot be empty.",
     )
     .refine(
-      (href) =>
-        !DISALLOWED_HREF_SCHEMES.some((scheme) =>
-          href.trim().toLowerCase().startsWith(scheme),
-        ),
+      (href) => !hasDisallowedHrefScheme(href),
       "Link destination is not allowed.",
     ),
 })
