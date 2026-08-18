@@ -1,6 +1,6 @@
 import type { JsonSchema7 } from "@jsonforms/core"
 
-import { mergeDataWithSchema } from "../JsonFormsCombinatorControl"
+import { keepMatchingArrayFields } from "../JsonFormsCombinatorControl"
 
 // Mirrors the shape of the InfoCards oneOf branches (variant const + a
 // `cards` array of objects), simplified to the fields relevant to the merge.
@@ -40,9 +40,7 @@ const withImageVariantSchema: JsonSchema7 = {
   },
 }
 
-const rootSchema: JsonSchema7 = {}
-
-describe("mergeDataWithSchema", () => {
+describe("keepMatchingArrayFields", () => {
   it("keeps existing cards and their shared fields when switching to a variant with more fields", () => {
     const oldData = {
       variant: "cardsWithoutImages",
@@ -52,16 +50,11 @@ describe("mergeDataWithSchema", () => {
       ],
     }
 
-    const merged = mergeDataWithSchema(
-      oldData,
-      withImageVariantSchema,
-      rootSchema,
-    )
+    const preserved = keepMatchingArrayFields(oldData, withImageVariantSchema)
 
     // Fields the new variant adds (imageUrl/imageAlt) are left unset, same
     // as they would be on a freshly added card, rather than being invented.
-    expect(merged).toStrictEqual({
-      variant: "cardsWithImages",
+    expect(preserved).toStrictEqual({
       cards: [
         { title: "Card 1", description: "Desc 1", url: "/a" },
         { title: "Card 2" },
@@ -83,14 +76,9 @@ describe("mergeDataWithSchema", () => {
       ],
     }
 
-    const merged = mergeDataWithSchema(
-      oldData,
-      noImageVariantSchema,
-      rootSchema,
-    )
+    const preserved = keepMatchingArrayFields(oldData, noImageVariantSchema)
 
-    expect(merged).toStrictEqual({
-      variant: "cardsWithoutImages",
+    expect(preserved).toStrictEqual({
       cards: [{ title: "Card 1", description: "Desc 1", url: "/a" }],
     })
   })
@@ -101,24 +89,8 @@ describe("mergeDataWithSchema", () => {
       cards: [{ title: "Only card" }],
     }
 
-    const merged = mergeDataWithSchema(
-      oldData,
-      withImageVariantSchema,
-      rootSchema,
-    ) as { cards: unknown[] }
+    const preserved = keepMatchingArrayFields(oldData, withImageVariantSchema)
 
-    expect(merged.cards).toHaveLength(1)
-  })
-
-  it("always takes the new schema's const value for discriminator fields", () => {
-    const oldData = { variant: "cardsWithImages", cards: [] }
-
-    const merged = mergeDataWithSchema(
-      oldData,
-      noImageVariantSchema,
-      rootSchema,
-    ) as { variant: string }
-
-    expect(merged.variant).toBe("cardsWithoutImages")
+    expect(preserved.cards).toHaveLength(1)
   })
 })

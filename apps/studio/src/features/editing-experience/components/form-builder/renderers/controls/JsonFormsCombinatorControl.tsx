@@ -35,76 +35,44 @@ interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
   combinatorType: "oneOf" | "anyOf"
 }
 
-// When switching between combinator branches (e.g. an InfoCards "variant"),
-// keep field values and array items that are still valid under the newly
-// selected schema instead of resetting everything to schema defaults, so
-// content the editor already entered isn't wiped out by the switch.
-export function mergeDataWithSchema(
+// Switching a combinator branch (e.g. an InfoCards "variant") previously
+// reset every array field (e.g. `cards`) to `[]`, wiping content the editor
+// had already entered. Keep existing array items, dropping only the fields
+// the new variant's item schema no longer has (e.g. image fields when
+// switching to a no-image variant).
+export function keepMatchingArrayFields(
   oldData: unknown,
   newSchema: JsonSchema,
-  rootSchema: JsonSchema,
-): unknown {
-  if (newSchema.type !== "object" || !newSchema.properties) {
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
-    return createDefaultValue(newSchema, rootSchema) as unknown
-  }
-
+): Record<string, unknown> {
   const oldObject =
     typeof oldData === "object" && oldData !== null && !Array.isArray(oldData)
       ? (oldData as Record<string, unknown>)
       : {}
 
-  const merged: Record<string, unknown> = {}
-  for (const [key, propSchema] of Object.entries(newSchema.properties) as [
-    string,
-    JsonSchema,
-  ][]) {
-    // Discriminator/literal fields (e.g. `variant`) always take on the
-    // newly selected schema's value, never the previous branch's value.
-    if (propSchema.const !== undefined) {
-      merged[key] = propSchema.const
+  const preserved: Record<string, unknown> = {}
+  for (const [key, propSchema] of Object.entries(
+    newSchema.properties ?? {},
+  ) as [string, JsonSchema][]) {
+    const itemSchema = Array.isArray(propSchema.items)
+      ? undefined
+      : propSchema.items
+    const oldItems = oldObject[key]
+    if (!itemSchema?.properties || !Array.isArray(oldItems)) {
       continue
     }
 
-    const oldValue = oldObject[key]
-    const itemSchema = Array.isArray(propSchema.items)
-      ? propSchema.items[0]
-      : propSchema.items
-
-    if (propSchema.type === "array" && Array.isArray(oldValue) && itemSchema) {
-      merged[key] = oldValue.map((item) => pickFields(item, itemSchema))
-    } else if (oldValue !== undefined) {
-      merged[key] = oldValue
-    } else if (propSchema.default !== undefined) {
-      // No previous value for this field: fall back to the schema's own
-      // default (if any), same as a freshly added card would get, rather
-      // than inventing one.
-      merged[key] = propSchema.default
-    }
+    const allowedKeys = Object.keys(itemSchema.properties)
+    preserved[key] = oldItems.map((item: unknown) =>
+      typeof item === "object" && item !== null
+        ? Object.fromEntries(
+            Object.entries(item as Record<string, unknown>).filter(
+              ([itemKey]) => allowedKeys.includes(itemKey),
+            ),
+          )
+        : item,
+    )
   }
-  return merged
-}
-
-// Keeps only the keys `itemSchema` still declares, dropping fields specific
-// to the previous variant (e.g. image fields when switching to no-image).
-function pickFields(item: unknown, itemSchema: JsonSchema): unknown {
-  if (
-    itemSchema.type !== "object" ||
-    !itemSchema.properties ||
-    typeof item !== "object" ||
-    item === null
-  ) {
-    return item
-  }
-
-  const oldItem = item as Record<string, unknown>
-  const picked: Record<string, unknown> = {}
-  for (const key of Object.keys(itemSchema.properties)) {
-    if (oldItem[key] !== undefined) {
-      picked[key] = oldItem[key]
-    }
-  }
-  return picked
+  return preserved
 }
 
 function JsonFormsCombinatorControl({
@@ -158,12 +126,12 @@ function JsonFormsCombinatorControl({
     } else if (newSchema.type === "string") {
       handleChange(path, newSchema.const || "")
     } else {
-      const mergedData = mergeDataWithSchema(data, newSchema, rootSchema) as
-        | Record<string, unknown>
-        | undefined
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const newData = createDefaultValue(newSchema, rootSchema)
       handleChange(path, {
         ...data,
-        ...mergedData,
+        ...newData,
+        ...keepMatchingArrayFields(data, newSchema),
       })
     }
   }
