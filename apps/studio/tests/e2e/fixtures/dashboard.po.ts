@@ -79,7 +79,7 @@ export class DashboardPO {
   }
 
   async selectCollectionItemType(type: "Page" | "Link or file") {
-    await this.page.getByRole("radio", { name: new RegExp(`^${type}`) }).click()
+    await this.page.getByText(type, { exact: true }).click()
     await this.page.getByRole("button", { name: "Next: Page details" }).click()
   }
 
