@@ -18,7 +18,7 @@ function discoveredUnits(): string[] {
   return units.sort()
 }
 
-// The end-to-end-tests job's matrix declares one `paths: <space-separated
+// The e2e-tests CI job's matrix declares one `paths: <space-separated
 // tests/e2e/... paths>` line per feature job. Extracted by key rather than a
 // blanket "tests/e2e/" regex, since other steps in the same workflow
 // reference tests/e2e paths too (e.g. the test-results upload path).
@@ -30,12 +30,12 @@ function pathsDeclaredInCi(): string[] {
     .sort()
 }
 
-describe("end-to-end-tests CI matrix", () => {
+describe("e2e-tests CI matrix", () => {
   it("declares every tests/e2e feature directory and root test file exactly once", () => {
     expect(
       pathsDeclaredInCi(),
       "A tests/e2e directory or root test file isn't listed in any `paths:` " +
-        "entry in the end-to-end-tests matrix in .github/workflows/ci.yml, " +
+        "entry in the e2e-tests CI matrix in .github/workflows/ci.yml, " +
         "or is listed more than once. If you added a new " +
         "tests/e2e/<feature> directory, add an entry for it there.",
     ).toEqual(discoveredUnits())

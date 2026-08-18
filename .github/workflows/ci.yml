@@ -40,8 +40,7 @@ jobs:
               - 'tooling/template/**'
             # Anything the Studio app or its e2e run actually depend on at
             # runtime, plus the CI config that runs it — so a doc-only PR
-            # skips end-to-end-tests, but editing this workflow still
-            # exercises it.
+            # skips e2e-tests, but editing this workflow still exercises it.
             studio_e2e_relevant:
               - 'apps/studio/**'
               - 'packages/components/**'
@@ -263,8 +262,8 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }} --import ${{ env.DD_TRACE_ESM_IMPORT }}
           TZ: Asia/Singapore
 
-  end-to-end-tests:
-    name: End-to-end tests (${{ matrix.feature }})
+  e2e-tests:
+    name: E2E tests (${{ matrix.feature }})
     needs: [optimize_ci, changes]
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false' && needs.changes.outputs.studio_e2e_relevant == 'true'
