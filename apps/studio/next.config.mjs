@@ -145,7 +145,12 @@ const ContentSecurityPolicy = `
  */
 /** @type {import("next").NextConfig} */
 const config = {
-  output: "standalone",
+  // Off only for the e2e CI build (SKIP_STANDALONE_OUTPUT=true) — that build
+  // is served via plain `next start`, never `.next/standalone`, so the
+  // dependency trace + node_modules copy standalone output requires is
+  // wasted work there (and triggers Next's "next start doesn't work with
+  // output: standalone" warning).
+  output: env.SKIP_STANDALONE_OUTPUT ? undefined : "standalone",
   // Pin the tracing root so the standalone layout is always
   // `.next/standalone/apps/studio/server.js` (what the Dockerfile and start:standalone expect).
   // Without this, Next infers the workspace root from the outermost lockfile, which varies by
