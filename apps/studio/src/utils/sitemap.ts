@@ -2,7 +2,6 @@ import type {
   ArticlePagePageProps,
   CollectionPagePageProps,
   FileRefPageProps,
-  IsomerComponent,
   IsomerSitemap,
   LinkRefPageProps,
 } from "@opengovsg/isomer-components"
@@ -17,6 +16,13 @@ import {
 } from "~/server/modules/resource/resource.service"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
+// Projected in SQL from the first top-level image block of the page body, so
+// the body itself never has to leave the database
+export interface FirstImage {
+  src: string | null
+  alt: string | null
+}
+
 type ResourceDto = Omit<
   Resource,
   "id" | "parentId" | "publishedVersionId" | "draftBlobId"
@@ -28,7 +34,7 @@ type ResourceDto = Omit<
   category?: string
   tagged?: string | null
   date?: string
-  content?: string
+  firstImage?: FirstImage | null
 }
 
 const parseTagged = (raw: string | null | undefined): string[] | undefined => {
@@ -84,15 +90,10 @@ const getSitemapTreeFromArray = (
   // TODO: Sort the children by the page ordering if the FolderMeta resource exists
   return children.map((resource) => {
     const permalink = `${path}${resource.permalink}`
-    const parsedContent =
-      typeof resource.content === "string" && resource.content !== ""
-        ? (JSON.parse(resource.content) as IsomerComponent[])
-        : undefined
-    const firstImageComponent = Array.isArray(parsedContent)
-      ? parsedContent.find(
-          (item): item is Extract<IsomerComponent, { type: "image" }> =>
-            item.type === "image",
-        )
+    // Null when the body has no image block at all; `src` is null only when a
+    // block exists but omits it
+    const firstImage = resource.firstImage?.src
+      ? { src: resource.firstImage.src, alt: resource.firstImage.alt ?? "" }
       : undefined
 
     if (resource.type === ResourceType.Page) {
@@ -108,12 +109,7 @@ const getSitemapTreeFromArray = (
           src: resource.thumbnail ?? "",
           alt: "",
         },
-        firstImage: firstImageComponent
-          ? {
-              src: firstImageComponent.src,
-              alt: firstImageComponent.alt,
-            }
-          : undefined,
+        firstImage,
       }
     } else if (resource.type === ResourceType.CollectionPage) {
       return {
@@ -131,12 +127,7 @@ const getSitemapTreeFromArray = (
           src: resource.thumbnail ?? "",
           alt: "",
         },
-        firstImage: firstImageComponent
-          ? {
-              src: firstImageComponent.src,
-              alt: firstImageComponent.alt,
-            }
-          : undefined,
+        firstImage,
       }
     } else if (resource.type === ResourceType.CollectionLink) {
       return {
@@ -154,12 +145,7 @@ const getSitemapTreeFromArray = (
           src: resource.thumbnail ?? "",
           alt: "",
         },
-        firstImage: firstImageComponent
-          ? {
-              src: firstImageComponent.src,
-              alt: firstImageComponent.alt,
-            }
-          : undefined,
+        firstImage,
         ref: "/",
       }
     }
@@ -189,12 +175,7 @@ const getSitemapTreeFromArray = (
       image: !!indexPage?.thumbnail
         ? { src: indexPage.thumbnail, alt: "" }
         : undefined,
-      firstImage: firstImageComponent
-        ? {
-            src: firstImageComponent.src,
-            alt: firstImageComponent.alt,
-          }
-        : undefined,
+      firstImage,
       children: getSitemapTreeFromArray(
         resources,
         resource.id,
