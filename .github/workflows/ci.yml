@@ -282,8 +282,8 @@ jobs:
         include:
           - feature: site
             paths: tests/e2e/site
-          - feature: page-resource-collection
-            paths: tests/e2e/page tests/e2e/resource tests/e2e/collection
+          - feature: resource
+            paths: tests/e2e/resource
           - feature: user
             paths: tests/e2e/user
           - feature: godmode
