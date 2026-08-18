@@ -133,6 +133,17 @@ const SuspensableResourceSelector = ({
           hasParentInStack={hasParentInStack}
           handleClickBackButton={handleClickBackButton}
           resourceItemsWithAncestryStack={resourceItemsWithAncestryStack}
+          handleOnClick={() =>
+            handleClickResourceItem([
+              {
+                title: "Home",
+                permalink: "/",
+                type: ResourceType.RootPage,
+                id: null,
+                parentId: null,
+              },
+            ])
+          }
           searchQuery={searchQuery}
           isLoading={isLoading}
         />
@@ -143,6 +154,7 @@ const SuspensableResourceSelector = ({
     hasParentInStack,
     handleClickBackButton,
     resourceItemsWithAncestryStack,
+    handleClickResourceItem,
     searchQuery,
     isLoading,
   ])

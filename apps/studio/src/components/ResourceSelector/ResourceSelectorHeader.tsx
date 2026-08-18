@@ -1,11 +1,19 @@
 import type { ResourceItemContent } from "~/schemas/resource"
 import { Flex, HStack, Spacer, Text } from "@chakra-ui/react"
-import { Link } from "@opengovsg/design-system-react"
+import { Button, Link } from "@opengovsg/design-system-react"
 import { BiHomeAlt, BiLeftArrowAlt } from "react-icons/bi"
 
-const HomeHeader = () => {
+import type { ResourceItemProps } from "./ResourceItem"
+
+const HomeHeader = ({
+  handleOnClick,
+}: Pick<ResourceItemProps, "handleOnClick">) => {
   return (
-    <Flex
+    <Button
+      as={Flex}
+      variant="clear"
+      onClick={handleOnClick}
+      cursor="pointer"
       w="full"
       px="0.75rem"
       py="0.375rem"
@@ -27,7 +35,7 @@ const HomeHeader = () => {
       >
         Home
       </Text>
-    </Flex>
+    </Button>
   )
 }
 
@@ -88,6 +96,7 @@ interface SuspendableHeaderProps {
   resourceItemsWithAncestryStack: ResourceItemContent[][] | undefined
   searchQuery: string
   isLoading: boolean
+  handleOnClick: ResourceItemProps["handleOnClick"]
 }
 export const SuspendableHeader = ({
   isSearchQueryEmpty,
@@ -95,6 +104,7 @@ export const SuspendableHeader = ({
   handleClickBackButton,
   resourceItemsWithAncestryStack,
   searchQuery,
+  handleOnClick,
   isLoading,
 }: SuspendableHeaderProps) => {
   if (isLoading) return <LoadingHeader />
@@ -103,7 +113,7 @@ export const SuspendableHeader = ({
     return <BackButtonHeader handleOnClick={handleClickBackButton} />
 
   if (isSearchQueryEmpty || !resourceItemsWithAncestryStack)
-    return <HomeHeader />
+    return <HomeHeader handleOnClick={handleOnClick} />
 
   return (
     <SearchResultsHeader
