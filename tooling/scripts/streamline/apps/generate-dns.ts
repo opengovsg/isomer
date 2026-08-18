@@ -1,7 +1,6 @@
 import * as dotenv from "dotenv";
 import * as fs from "fs";
 import * as path from "path";
-import { Client } from "pg";
 import { confirm } from "@inquirer/prompts";
 
 import { getACMCertificateValidationRecords } from "../utils/acm";
@@ -15,6 +14,7 @@ import {
   isDomainPointingToIndirectionLayer,
 } from "../utils/dns";
 import { addXlsxSheet, createXlsxBook, writeToXlsxFile } from "../utils/xlsx";
+import { createStudioClient } from "../utils/db";
 
 dotenv.config({
   path: path.join(__dirname, "..", ".env"),
@@ -86,9 +86,7 @@ export const generateDnsRecords = async () => {
     );
   }
 
-  const client = new Client({
-    connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
-  });
+  const client = await createStudioClient();
 
   const output: ReportRow[] = [];
 

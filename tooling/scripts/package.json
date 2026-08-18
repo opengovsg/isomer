@@ -16,6 +16,7 @@
     "@aws-sdk/client-cloudfront": "^3.840.0",
     "@aws-sdk/client-codebuild": "^3.835.0",
     "@aws-sdk/credential-providers": "^3.886.0",
+    "@aws-sdk/rds-signer": "^3.886.0",
     "@inquirer/prompts": "latest",
     "@isomer/prettier-config": "*",
     "@isomer/tsconfig": "*",

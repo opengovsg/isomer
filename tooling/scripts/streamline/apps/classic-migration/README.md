@@ -16,26 +16,17 @@ This script's primary feature is to automatically convert the Markdown content o
 
 This script requires a connection to the Studio production database. Duplicate the `.env.example` file into `.env` and update the values accordingly:
 
-- `DATABASE_URL`: This is the database connection string to the Studio database (but should be localhost since we are using port forwarding).
+- `ISOMER_STUDIO_DB_HOST` / `ISOMER_STUDIO_DB_PORT` / `ISOMER_STUDIO_DB_USER` / `ISOMER_STUDIO_DB_NAME`: RDS writer endpoint, RDS port (`5432`), your IAM DB user, and database name. Streamline mints an IAM auth token against these using `AWS_NEXT_PROFILE`.
+- `ISOMER_STUDIO_DB_TUNNEL_HOST` / `ISOMER_STUDIO_DB_TUNNEL_PORT`: local end of `npm run db:connect` (`127.0.0.1:5433`). TCP goes here, same as TablePlus.
 - `PUBLISHER_USER_ID`: This is the user ID of the user to assign as the publisher of all pages. You can use your own user ID stored inside the production DB User table.
 
-Additionally, you need to set up your SSH keys and `.env.prod` files inside the `.ssh` folder:
-
-1. Create a `.ssh` folder inside this folder.
-2. Create a `.env.prod` (for production) with the following environment variables:
-   1. `SSH_HOST`: This is the IP address or domain name of the bastion host to jump through to access the database.
-   2. `SSH_USER`: This is the user to use when connecting to the bastion host.
-   3. `DB_HOST`: This is the full hostname of the RDS database server, which should be the writer endpoint of the RDS cluster.
-3. Add the SSH private key as `isomer-next-prod-bastion.pem` inside this `.ssh` folder.
-
-Once everything is set up, verify that you are able to connect to the bastion host by connecting to the OGP VPN, then running `npm run jump:prod`. If successful, you should be able to see a shell session started on the bastion host.
+You need a valid SSO session (`aws sso login --profile <AWS_NEXT_PROFILE>`) and an open `npm run db:connect` tunnel from `apps/studio`.
 
 ### Running the script
 
-1. Ensure that you are connected to the OGP VPN
-2. In one terminal instance, run `npm run jump:prod` to create an SSH tunnel to the production RDS database using the bastion host. If successful, you should be able to see a shell session started on the bastion host.
-3. Add the repos that you wish to migrate inside `config.ts`, following the requirements of the `MigrationRequest` type. The documentation of each property is provided in the `types.ts` file.
-4. In a new terminal instance, run `npm run start`.
+1. Run `aws sso login --profile <AWS_NEXT_PROFILE>` if your session has expired
+2. Add the repos that you wish to migrate inside `config.ts`, following the requirements of the `MigrationRequest` type. The documentation of each property is provided in the `types.ts` file.
+3. Run `npm run start`.
 
 ### Converting individual pages only
 
@@ -43,7 +34,7 @@ The full-site migration above converts an entire site. When you only need to con
 
 Unlike the full-site flow, it does not write into Studio. It converts only the pages you list, downloads only the assets those pages actually reference, and writes everything to a conversion output folder for you to paste into Studio and upload to S3 manually.
 
-Prerequisites are the same as the full-site flow (OGP VPN + `npm run jump:prod` tunnel for the resource-map query, and the usual `.env`). Run the streamline menu (`npm run streamline` from `tooling/scripts`) and select Script 7. You will be prompted for:
+Prerequisites are the same as the full-site flow (AWS SSO and the usual `.env`). Run the streamline menu (`npm run streamline` from `tooling/scripts`) and select Script 7. You will be prompted for:
 
 - **Classic GitHub repo name** (under `isomerpages`, e.g. `moe-peircesec`)
 - **Studio site ID** — used both for the `/<site-id>/<uuid>/<filename>` asset structure and to look up the site's existing resources for internal-link resolution

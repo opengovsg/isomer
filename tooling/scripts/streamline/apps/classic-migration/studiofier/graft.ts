@@ -1,10 +1,11 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Client } from "pg";
+import type { Client } from "pg";
 import { confirm, select } from "@inquirer/prompts";
 
 import { GET_RESOURCE_DESCENDANTS_INCLUSIVE } from "./constants";
 import { processDirectory } from "./index";
+import { createStudioClient } from "../../../utils/db";
 
 export interface GraftFolderRequest {
   siteId: number;
@@ -34,9 +35,7 @@ export const graftFolder = async ({
     throw new Error(`Source directory does not exist: ${sourceDir}`);
   }
 
-  const client = new Client({
-    connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
-  });
+  const client = await createStudioClient();
 
   try {
     await client.connect();

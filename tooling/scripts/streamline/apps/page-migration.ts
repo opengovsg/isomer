@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { randomUUID } from "crypto";
-import { Client } from "pg";
+import type { Client } from "pg";
 import { Octokit } from "@octokit/rest";
 import { input, number, select } from "@inquirer/prompts";
 
@@ -16,6 +16,7 @@ import { GET_ALL_RESOURCES_WITH_FULL_PERMALINKS } from "./classic-migration/stud
 import type { Resource } from "./classic-migration/studiofier/types";
 import { EXTRACTED_ASSETS_DIR } from "./classic-migration/converters/google-slides";
 import type { ReportRow } from "./classic-migration/types";
+import { createStudioClient } from "../utils/db";
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
@@ -462,9 +463,7 @@ export const migrateIndividualPages = async () => {
 
   // Step 2: Fetch the Studio resource map for internal link resolution.
   console.log("\nFetching Studio resource map...");
-  const client = new Client({
-    connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
-  });
+  const client = await createStudioClient();
   let resourcesMap: Record<string, Resource> = {};
   try {
     await client.connect();

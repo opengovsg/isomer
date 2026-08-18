@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 import * as dotenv from "dotenv";
-import { Client } from "pg";
+import type { Client } from "pg";
 
 import { Octokit } from "@octokit/rest";
 import { exec } from "child_process";
@@ -12,6 +12,7 @@ import { CONVERSION_OUTPUT_DIR } from "../constants";
 import { EXTRACTED_ASSETS_DIR } from "../converters/google-slides";
 import type { StudiofyRequest } from "../types";
 import { getSiteNameAndUrl } from "../utils";
+import { createStudioClient } from "../../../utils/db";
 
 dotenv.config({
   path: path.join(__dirname, "..", "..", ".env"),
@@ -25,9 +26,7 @@ export const studiofySite = async ({
   repoName: siteName,
   useStagingBranch = false,
 }: StudiofyRequest) => {
-  const client = new Client({
-    connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
-  });
+  const client = await createStudioClient();
 
   try {
     await client.connect();

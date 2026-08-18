@@ -1,10 +1,55 @@
 import path from "path";
+import { Signer } from "@aws-sdk/rds-signer";
+import { fromSSO } from "@aws-sdk/credential-providers";
 import { Client } from "pg";
 import * as dotenv from "dotenv";
 
 dotenv.config({
   path: path.join(__dirname, "..", ".env"),
 });
+
+const requireEnv = (name: string): string => {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required env var ${name}`);
+  }
+  return value;
+};
+
+// RDS IAM tokens expire after 15 minutes and are checked only at connect time.
+export const createStudioClient = async (): Promise<Client> => {
+  const hostname = requireEnv("ISOMER_STUDIO_DB_HOST");
+  const username = requireEnv("ISOMER_STUDIO_DB_USER");
+  const database = requireEnv("ISOMER_STUDIO_DB_NAME");
+  const profile = requireEnv("AWS_NEXT_PROFILE");
+  const port = Number(requireEnv("ISOMER_STUDIO_DB_PORT"));
+  const region = requireEnv("ISOMER_STUDIO_DB_REGION");
+  const tunnelHost = requireEnv("ISOMER_STUDIO_DB_TUNNEL_HOST");
+  const tunnelPort = Number(requireEnv("ISOMER_STUDIO_DB_TUNNEL_PORT"));
+
+  const signer = new Signer({
+    hostname,
+    port,
+    username,
+    region,
+    credentials: fromSSO({ profile }),
+  });
+
+  return new Client({
+    host: tunnelHost,
+    port: tunnelPort,
+    user: username,
+    password: await signer.getAuthToken(),
+    database,
+    ssl: {
+      // IAM requires TLS. Node does not trust the Amazon RDS CA, and the
+      // SSM tunnel presents that cert on localhost, so we encrypt without
+      // verifying the issuer.
+      rejectUnauthorized: false,
+      servername: hostname,
+    },
+  });
+};
 
 // NOTE: Stub type definition as the other fields are not required
 interface SiteRow {
@@ -36,9 +81,7 @@ interface GetSiteConfigResult {
 export const getSiteConfig = async (
   siteId: number,
 ): Promise<GetSiteConfigResult> => {
-  const client = new Client({
-    connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
-  });
+  const client = await createStudioClient();
 
   try {
     await client.connect();
@@ -78,9 +121,7 @@ export const updateSiteConfig = async (
   searchSGClientId: string,
   url: string,
 ) => {
-  const client = new Client({
-    connectionString: process.env.ISOMER_STUDIO_DATABASE_URL,
-  });
+  const client = await createStudioClient();
 
   try {
     await client.connect();
