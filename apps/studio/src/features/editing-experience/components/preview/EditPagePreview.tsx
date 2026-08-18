@@ -1,5 +1,4 @@
 import type { IframeCallbackFnProps } from "~/types/dom"
-import type { DrawerState } from "~/types/editorDrawer"
 import { Box, useDisclosure } from "@chakra-ui/react"
 import { isEqual, merge } from "lodash-es"
 import { useCallback, useState } from "react"
@@ -21,7 +20,6 @@ import { ViewportContainer } from "./ViewportContainer"
 
 interface PendingBlockSelection {
   index: number
-  drawerState: DrawerState
 }
 
 const LoadingState = (): JSX.Element => {
@@ -102,10 +100,7 @@ const SuspendableEditPagePreview = (): JSX.Element => {
 
     const hasUnsavedChanges = !isEqual(previewPageState, savedPageState)
     if (hasUnsavedChanges && hoveredBlockIndex !== currActiveIdx) {
-      setPendingBlockSelection({
-        index: hoveredBlockIndex,
-        drawerState: nextDrawerState,
-      })
+      setPendingBlockSelection({ index: hoveredBlockIndex })
       onDiscardChangesModalOpen()
       return
     }
@@ -128,10 +123,17 @@ const SuspendableEditPagePreview = (): JSX.Element => {
     setPreviewPageState(savedPageState)
     onDiscardChangesModalClose()
     if (pendingBlockSelection) {
-      selectBlock(
-        pendingBlockSelection.index,
-        pendingBlockSelection.drawerState,
-      )
+      // Re-derive the target block from the just-restored saved content —
+      // the pending selection's index came from hovering the discarded
+      // preview, whose structure (and therefore block types/positions) may
+      // no longer match `savedPageState` after add/remove/reorder edits.
+      const restoredBlock = savedPageState.content[pendingBlockSelection.index]
+      if (restoredBlock) {
+        selectBlock(
+          pendingBlockSelection.index,
+          getDrawerStateForBlock(restoredBlock),
+        )
+      }
       setPendingBlockSelection(null)
     }
   }, [
