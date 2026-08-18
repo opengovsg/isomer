@@ -1,12 +1,7 @@
 import { expect, test } from "@playwright/test"
-import { IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY } from "~/lib/growthbook"
 import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
-import {
-  enableGrowthBookFeature,
-  resetGrowthBookPage,
-} from "../fixtures/network"
 import { resetSiteRedirects } from "../fixtures/reset"
 import { provisionE2ESite } from "../fixtures/site"
 import {
@@ -32,12 +27,7 @@ test.beforeAll(async () => {
 })
 
 test.describe("admin", { tag: roleTag("admin") }, () => {
-  test.beforeEach(async ({ page }) => {
-    await enableGrowthBookFeature(
-      page,
-      IS_ADVANCED_REDIRECTS_ENABLED_FEATURE_KEY,
-      true,
-    )
+  test.beforeEach(async () => {
     await ensureUserOnboarded(TEST_EMAILS.admin)
     await resetSiteRedirects(siteId)
   })
@@ -46,7 +36,6 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     const site = new SitePO(page)
 
     // Arrange
-    await resetGrowthBookPage(page)
     await site.gotoSettingsSection(siteId, "redirects")
 
     // Act
