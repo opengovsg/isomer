@@ -66,6 +66,14 @@ export class PageEditorPO {
     await this.page.getByRole("button", { name: "Publish now" }).click()
   }
 
+  async cancelPublishConfirmation() {
+    await this.page
+      .getByRole("button", { name: "Publish", exact: true })
+      .click()
+    await this.page.getByRole("button", { name: "No, don't publish" }).click()
+    await expect(this.page.getByText("Publish this page?")).not.toBeVisible()
+  }
+
   async expectPublishedToast() {
     await this.page
       .getByText("Page published successfully")
@@ -124,16 +132,17 @@ export class PageEditorPO {
     ).toBeVisible()
   }
 
-  async schedulePublishForToday() {
+  /** `slot` picks which of the day's quick-select time presets to use — pass a
+   * different slot than a prior call to reschedule to a distinct time. */
+  async schedulePublishForToday(slot: "first" | "last" = "last") {
     await this.page
       .getByRole("button", { name: "Select from date picker." })
       .click()
     await this.page.getByRole("button", { name: "Today" }).click()
-    await this.page
+    const timeOption = this.page
       .locator("form")
       .getByText(/\d{1,2}:\d{2} (AM|PM)/)
-      .last()
-      .click()
+    await (slot === "first" ? timeOption.first() : timeOption.last()).click()
     await this.page.getByRole("button", { name: "Schedule publish" }).click()
   }
 
@@ -156,6 +165,14 @@ export class PageEditorPO {
       .click()
     await expect(
       this.page.getByText("Schedule cancelled successfully"),
+    ).toBeVisible()
+  }
+
+  async expectScheduledEditingRestrictionBanner() {
+    await expect(
+      this.page.getByText(
+        "This page is scheduled for publishing. To make changes, cancel the schedule first.",
+      ),
     ).toBeVisible()
   }
 }
