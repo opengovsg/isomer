@@ -282,16 +282,12 @@ jobs:
         include:
           - feature: site
             paths: tests/e2e/site
-          - feature: page
-            paths: tests/e2e/page
+          - feature: page-resource-collection
+            paths: tests/e2e/page tests/e2e/resource tests/e2e/collection
           - feature: user
             paths: tests/e2e/user
           - feature: godmode
             paths: tests/e2e/godmode
-          - feature: resource
-            paths: tests/e2e/resource
-          - feature: collection
-            paths: tests/e2e/collection
           - feature: root
             paths: tests/e2e/smoke.test.ts tests/e2e/singpass.test.ts
     steps:
