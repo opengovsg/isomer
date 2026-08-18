@@ -193,4 +193,81 @@ export class UsersPO {
   async expectUserRole(email: string, role: string) {
     await expect(this.userRow(email)).toContainText(role)
   }
+
+  tab(label: "Your users" | "Isomer admins") {
+    return this.page.getByRole("tab", { name: new RegExp(`^${label}`) })
+  }
+
+  async expectTabCount(label: "Your users" | "Isomer admins", count: number) {
+    await expect(this.tab(label).locator(".badge")).toHaveText(String(count))
+  }
+
+  async expectIsomerAdminsEmptyState() {
+    await this.clickIsomerAdminsTab()
+    await expect(this.page.getByText("No users yet")).toBeVisible()
+    await expect(
+      this.page.getByText("Add users to start working with you on this site"),
+    ).not.toBeVisible()
+    await this.expectNoPagination()
+  }
+
+  paginationNav() {
+    return this.page.getByRole("navigation", { name: "Pagination" })
+  }
+
+  async expectNoPagination() {
+    await expect(this.paginationNav()).toHaveCount(0)
+  }
+
+  async expectCurrentPage(pageNumber: number) {
+    await expect(
+      this.paginationNav().getByRole("button", {
+        name: String(pageNumber),
+        exact: true,
+      }),
+    ).toHaveAttribute("aria-current", "page")
+  }
+
+  async expectPreviousPageDisabled() {
+    await expect(
+      this.paginationNav().getByRole("button", { name: "Previous page" }),
+    ).toBeDisabled()
+  }
+
+  async expectNextPageDisabled() {
+    await expect(
+      this.paginationNav().getByRole("button", { name: "Next page" }),
+    ).toBeDisabled()
+  }
+
+  async goToNextPage() {
+    await this.paginationNav()
+      .getByRole("button", { name: "Next page" })
+      .click()
+  }
+
+  async goToPreviousPage() {
+    await this.paginationNav()
+      .getByRole("button", { name: "Previous page" })
+      .click()
+  }
+
+  async expectAddNewUserDisabledExplanation(explanation: string | RegExp) {
+    await this.addNewUserButton().hover()
+    await expect(this.page.getByText(explanation)).toBeVisible()
+  }
+
+  /** Opens the row menu once and asserts every action item is disabled. */
+  async expectAllRowActionsDisabled(email: string) {
+    await this.openUserMenu(email)
+    await expect(
+      this.page.getByRole("menuitem", { name: "Edit user" }),
+    ).toBeDisabled()
+    await expect(
+      this.page.getByRole("menuitem", { name: "Resend invite" }),
+    ).toBeDisabled()
+    await expect(
+      this.page.getByRole("menuitem", { name: "Remove user access" }),
+    ).toBeDisabled()
+  }
 }
