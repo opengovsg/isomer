@@ -682,17 +682,28 @@ export const pageRouter = router({
           userId: user.id,
         })
 
-        // Folder/Collection ids belong to the dedicated unpublishFolder/
-        // unpublishCollection mutations — reject them here so this endpoint
-        // can't be used to unpublish a container's IndexPage under a page-only
-        // contract (getFullPageById would otherwise silently resolve it).
+        // Allow-list rather than deny-list: only these three types are real,
+        // independently unpublishable content pages.
+        // - Folder/Collection ids belong to the dedicated unpublishFolder/
+        //   unpublishCollection mutations (getFullPageById would otherwise
+        //   silently resolve them to their child IndexPage).
+        // - FolderMeta/CollectionMeta are internal ordering metadata, not
+        //   user-facing pages (see their exclusion from listing/move/redirect
+        //   logic elsewhere, e.g. resource.service.ts, redirect.service.ts).
+        // - CollectionLink's draft/published tracking isn't wired up yet
+        //   (see the comment in updateCollectionLink), so its publish state
+        //   isn't meaningfully defined.
+        // - RootPage is publishable but deliberately excluded here as a
+        //   protection, matching the existing delete guard that also refuses
+        //   to touch RootPage (resource.router.ts).
         const page = await db
           .selectFrom("Resource")
           .where("Resource.id", "=", String(pageId))
           .where("Resource.siteId", "=", siteId)
-          .where("Resource.type", "not in", [
-            ResourceType.Folder,
-            ResourceType.Collection,
+          .where("Resource.type", "in", [
+            ResourceType.Page,
+            ResourceType.CollectionPage,
+            ResourceType.IndexPage,
           ])
           .select("Resource.id")
           .executeTakeFirst()
