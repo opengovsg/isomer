@@ -123,7 +123,7 @@ const InfoBoxes = ({
                 </p>
               )}
 
-              {buttonLabel && hasLink && (
+              {hasLink && (
                 <div className={compoundStyles.infoBoxButton()}>
                   {buttonLabel}
                   <BiRightArrowAlt

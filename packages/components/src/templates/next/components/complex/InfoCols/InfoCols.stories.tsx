@@ -136,6 +136,12 @@ export const HoverBehaviour: Story = {
         description: "Should NOT change appearance on hover",
         icon: "bar-chart",
       },
+      {
+        title: "Has Link, No Label",
+        description: "Should show an arrow even without a button label",
+        icon: "bar-chart",
+        buttonUrl: "/faq",
+      },
     ],
   },
 }
