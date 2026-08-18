@@ -45,8 +45,11 @@ export function keepMatchingArrayFields(
   const preserved: Record<string, unknown> = {}
 
   for (const [key, propSchema] of Object.entries(newSchema.properties ?? {})) {
-    // Never actually the draft-07 tuple form, just typed as either.
-    const itemSchema = propSchema.items as JsonSchema7 | undefined
+    // `items` is a tuple-form array only for positional tuple validation,
+    // which none of our schemas use.
+    const itemSchema = Array.isArray(propSchema.items)
+      ? undefined
+      : propSchema.items
     const oldItems = oldData?.[key] as Record<string, unknown>[] | undefined
     if (!itemSchema?.properties || !Array.isArray(oldItems)) {
       continue
