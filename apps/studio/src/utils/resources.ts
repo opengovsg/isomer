@@ -80,3 +80,65 @@ export const getStudioResourceUrl = (resource: Resource): string => {
       return exhaustiveCheck
   }
 }
+
+type BareResource = Pick<
+  Resource,
+  "type" | "id" | "siteId" | "permalink" | "parentId"
+>
+
+// NOTE: Assumes that both source and destination already exist
+export const isResourceMoveValid = (
+  source: BareResource,
+  destination: BareResource,
+) => {
+  // Prevent users from moving the search page (permalink /search, no parent)
+  // This is a special page that is used to display the SearchSG results
+  if (source.permalink === "search" && source.parentId === null) {
+    return new Error("The search page cannot be moved")
+  }
+
+  if (
+    !destination ||
+    // NOTE: we only allow moves to folders/root.
+    // for moves to root, we only allow this for admin
+    (destination.type !== ResourceType.RootPage &&
+      destination.type !== ResourceType.Folder &&
+      destination.type !== ResourceType.Collection)
+  ) {
+    return new Error(
+      "Please ensure that you are trying to move your resource into a valid destination",
+    )
+  }
+
+  if (source.parentId === destination.id) {
+    return new Error("You cannot move a resource to the same folder")
+  }
+
+  // NOTE: If the users are trying to move into a collection,
+  // check that the resource first belongs to a collection
+  if (
+    destination.type !== ResourceType.Collection &&
+    (source.type === ResourceType.CollectionPage ||
+      source.type === ResourceType.CollectionLink)
+  ) {
+    return new Error("Collection items can only be moved to another collection")
+  }
+
+  if (
+    destination.type === ResourceType.Collection &&
+    source.type !== ResourceType.CollectionPage &&
+    source.type !== ResourceType.CollectionLink
+  ) {
+    return new Error("Folder items can only be moved to another folder")
+  }
+
+  if (source.id === destination.id) {
+    return new Error("You cannot move a resource to the same folder")
+  }
+
+  if (source.siteId !== destination.siteId) {
+    return new Error("You cannot move a resource to a different site")
+  }
+
+  return true
+}
