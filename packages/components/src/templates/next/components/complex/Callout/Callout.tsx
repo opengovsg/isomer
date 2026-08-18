@@ -19,8 +19,8 @@ const CALLOUT_CONFIG: Record<
 
 const calloutStyles = tv({
   slots: {
-    container: "rounded-lg border-[1.5px] [&:not(:first-child)]:mt-7",
-    iconWrapper: "flex shrink-0 items-center justify-center px-3 py-4",
+    container:
+      "flex items-start gap-3 rounded-lg border-[1.5px] [&:not(:first-child)]:mt-7",
     icon: "h-6 w-6 flex-shrink-0",
     content:
       "prose-headline-lg-regular min-w-0 flex-1 overflow-x-auto [&>:is(ol,ul):first-child>li:first-child]:mt-0 [&>:is(ol,ul):first-child]:mt-0 [&>:is(ol,ul):last-child>li:last-child]:mb-0",
@@ -32,35 +32,27 @@ const calloutStyles = tv({
           "border-utility-feedback-info bg-utility-feedback-info-subtle",
       },
       goodToKnow: {
-        container: "border-utility-feedback-success",
-        iconWrapper: "bg-utility-feedback-success",
-        icon: "text-white",
-        content: "bg-utility-feedback-success-subtle",
+        container:
+          "border-utility-feedback-success-subtle bg-utility-feedback-success-faint",
+        icon: "text-utility-feedback-success",
       },
       warning: {
-        container: "border-utility-feedback-warning",
-        iconWrapper: "bg-utility-feedback-warning",
-        icon: "text-base-content-default",
-        content: "bg-utility-feedback-warning-subtle",
+        container:
+          "border-utility-feedback-warning-subtle bg-utility-feedback-warning-faint",
+        icon: "text-utility-feedback-warning",
       },
       urgent: {
-        container: "border-utility-feedback-alert",
-        iconWrapper: "bg-utility-feedback-alert",
-        icon: "text-white",
-        content: "bg-utility-feedback-alert-subtle",
+        container:
+          "border-utility-feedback-alert-subtle bg-utility-feedback-alert-faint",
+        icon: "text-utility-feedback-alert",
       },
       note: {
-        container: "border-0 bg-[#EEF0F3]",
+        container: "border-base-divider-medium bg-[#EEF0F3]",
       },
     },
     hasIcon: {
-      true: {
-        container: "flex items-stretch overflow-hidden",
-        content: "px-5 py-4",
-      },
-      false: {
-        container: "flex items-start gap-3 px-5 py-4",
-      },
+      true: { container: "px-4 py-3" },
+      false: { container: "px-5 py-4" },
     },
   },
   defaultVariants: {
@@ -79,11 +71,7 @@ export const Callout = ({
 
   return (
     <div className={styles.container()} role="group" aria-label={label}>
-      {Icon && (
-        <div className={styles.iconWrapper()}>
-          <Icon aria-hidden className={styles.icon()} />
-        </div>
-      )}
+      {Icon && <Icon aria-hidden className={styles.icon()} />}
       <div className={styles.content()} tabIndex={0}>
         <Prose {...content} site={site} />
       </div>

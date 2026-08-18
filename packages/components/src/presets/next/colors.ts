@@ -59,15 +59,18 @@ export const colors = {
       },
       success: {
         DEFAULT: "#009D47",
-        subtle: "#EEF7F2",
+        subtle: "#A5E1CD",
+        faint: "#F6FCFA",
       },
       warning: {
-        DEFAULT: "#F2BA02",
-        subtle: "#FEF9DA",
+        DEFAULT: "#A97C00",
+        subtle: "#FAEBB7",
+        faint: "#FEF9DA",
       },
       alert: {
         DEFAULT: "#E51111",
-        subtle: "#FCEFEF",
+        subtle: "#F8D4D4",
+        faint: "#FFF8F8",
       },
     },
   },
