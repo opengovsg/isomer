@@ -1,0 +1,181 @@
+name: Build and publish site
+
+# Migrated from tooling/build/scripts/publisher.sh, which used to run as the
+# entrypoint of a per-site AWS CodeBuild project. CodeBuild supplied SITE_NAME /
+# S3_BUCKET_NAME / CLOUDFRONT_DISTRIBUTION_ID / S3_CACHE_BUCKET_NAME etc. as
+# project-level env vars; those become workflow_dispatch inputs here. The
+# git-clone-from-scratch step becomes actions/checkout; the S3 pnpm-store/dist
+# tarball caching is otherwise kept as-is.
+on:
+  workflow_dispatch:
+    inputs:
+      aws-region:
+        description: "AWS region to use"
+        required: true
+        default: "ap-southeast-1"
+        type: string
+      aws-account-id:
+        description: "AWS account ID to use"
+        required: true
+        type: string
+      cicd-role:
+        description: "AWS IAM role to assume by GitHub action runner"
+        required: true
+        type: string
+      s3-cache-bucket-name:
+        description: "S3 bucket used to cache the pnpm store and isomer-components dist between builds (same bucket/prefix pattern as the CodeBuild projects)"
+        required: true
+        type: string
+      isomer-build-repo-branch:
+        description: "Git ref (tag or branch) of opengovsg/isomer to build. Leave empty to use the latest release tag."
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      aws-region:
+        description: "AWS region to use"
+        required: false
+        default: "ap-southeast-1"
+        type: string
+      aws-account-id:
+        description: "AWS account ID to use"
+        required: true
+        type: string
+      cicd-role:
+        description: "AWS IAM role to assume by GitHub action runner"
+        required: true
+        type: string
+      s3-cache-bucket-name:
+        description: "S3 bucket used to cache the pnpm store and isomer-components dist between builds (same bucket/prefix pattern as the CodeBuild projects)"
+        required: true
+        type: string
+      isomer-build-repo-branch:
+        description: "Git ref (tag or branch) of opengovsg/isomer to build. Leave empty to use the latest release tag."
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve build ref
+        id: resolve-ref
+        env:
+          REQUESTED_REF: ${{ inputs.isomer-build-repo-branch }}
+        run: |
+          # Assumption: all production builds use release tags. If a ref is passed in
+          # explicitly, treat it as a feature branch for cache-key purposes below.
+          if [ -n "$REQUESTED_REF" ]; then
+            echo "ref=$REQUESTED_REF" >> "$GITHUB_OUTPUT"
+            echo "is_release_tag=false" >> "$GITHUB_OUTPUT"
+          else
+            LATEST_TAG=$(git ls-remote --tags --sort='v:refname' https://github.com/opengovsg/isomer.git | tail -n1 | awk '{print $2}' | sed -E 's|refs/tags/||; s/\^.*$//')
+            echo "ref=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+            echo "is_release_tag=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout ${{ steps.resolve-ref.outputs.ref }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.resolve-ref.outputs.ref }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        with:
+          role-to-assume: ${{ inputs.cicd-role }}
+          role-session-name: github-action-build-components
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Set up pnpm
+        run: |
+          corepack enable
+          corepack install -g pnpm@11.5.1
+
+          # Use a project-local store only in this job so the S3 tarball is self-contained.
+          # Do not set storeDir in pnpm-workspace.yaml: local dev keeps the default global store.
+          pnpm config set store-dir .pnpm-store --location project
+
+      ### Create a cache key for the current build ###
+      - name: Resolve cache key
+        id: cache-key
+        env:
+          RESOLVED_REF: ${{ steps.resolve-ref.outputs.ref }}
+          IS_RELEASE_TAG: ${{ steps.resolve-ref.outputs.is_release_tag }}
+        run: |
+          if [ "$IS_RELEASE_TAG" = "true" ]; then
+            echo "key=$RESOLVED_REF" >> "$GITHUB_OUTPUT"
+          else
+            # Not a release tag, so it's a feature branch - use a combination of branch name
+            # and commit hash E.g. feat-buildsupercoolfeature-1a2b3c4d. This ensures that each
+            # unique feature branch and commit will have its own cache, reducing manual cache
+            # invalidation and human factor when testing on staging.
+            echo "key=$RESOLVED_REF-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Shared S3 dependency cache (same bucket/prefix pattern is used by multiple CodeBuild projects).
+      # pnpm keeps package bytes in a content-addressable store; `store-dir` is set above for this run only.
+      # We archive only `.pnpm-store`; `pnpm install` recreates node_modules from the store + lockfile.
+      - name: Install pnpm dependencies
+        env:
+          S3_CACHE_BUCKET_NAME: ${{ inputs.s3-cache-bucket-name }}
+          UNIQUE_CACHE_KEY: ${{ steps.cache-key.outputs.key }}
+        run: |
+          calculate_duration() {
+            local start_time=$1
+            local end_time
+            end_time=$(date +%s)
+            echo "Time taken: $((end_time - start_time)) seconds"
+          }
+
+          TEMPLATE_DEPS_TGZ="isomer-template-deps.tar.zst"
+          TEMPLATE_DEPS_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$TEMPLATE_DEPS_TGZ"
+          echo "Fetching cached pnpm store..."
+          aws s3 cp --only-show-errors $TEMPLATE_DEPS_CACHE_PATH $TEMPLATE_DEPS_TGZ || true
+          echo "Installing workspace dependencies..."
+          start_time=$(date +%s)
+          pnpm install --frozen-lockfile
+          calculate_duration $start_time
+
+          echo "Caching pnpm store to S3..."
+          start_time=$(date +%s)
+          tar --use-compress-program="zstd -6" -cf $TEMPLATE_DEPS_TGZ .pnpm-store
+          aws s3 cp --only-show-errors $TEMPLATE_DEPS_TGZ $TEMPLATE_DEPS_CACHE_PATH
+          rm $TEMPLATE_DEPS_TGZ
+          echo "Cached pnpm store"
+          calculate_duration $start_time
+
+      # packages/components/dist is gitignored; Next resolves @opengovsg/isomer-components via workspace.
+      # Cache dist separately from .pnpm-store: restoring plain files does not affect the content-addressable store or node_modules linking.
+      - name: Build isomer-components dist
+        env:
+          S3_CACHE_BUCKET_NAME: ${{ inputs.s3-cache-bucket-name }}
+          UNIQUE_CACHE_KEY: ${{ steps.cache-key.outputs.key }}
+        run: |
+          calculate_duration() {
+            local start_time=$1
+            local end_time
+            end_time=$(date +%s)
+            echo "Time taken: $((end_time - start_time)) seconds"
+          }
+
+          COMPONENTS_DIST_TGZ="isomer-components-dist.tar.zst"
+          COMPONENTS_DIST_CACHE_PATH="s3://$S3_CACHE_BUCKET_NAME/$UNIQUE_CACHE_KEY/$COMPONENTS_DIST_TGZ"
+          echo "Fetching cached isomer-components dist..."
+          aws s3 cp --only-show-errors $COMPONENTS_DIST_CACHE_PATH $COMPONENTS_DIST_TGZ || true
+          echo "Building @opengovsg/isomer-components..."
+          start_time=$(date +%s)
+          pnpm --filter @opengovsg/isomer-components run build
+          calculate_duration $start_time
+
+          echo "Caching isomer-components dist to S3..."
+          start_time=$(date +%s)
+          tar --use-compress-program="zstd -6" -cf $COMPONENTS_DIST_TGZ -C packages/components dist
+          aws s3 cp --only-show-errors $COMPONENTS_DIST_TGZ $COMPONENTS_DIST_CACHE_PATH
+          rm $COMPONENTS_DIST_TGZ
+          echo "Cached isomer-components dist"
+          calculate_duration $start_time
