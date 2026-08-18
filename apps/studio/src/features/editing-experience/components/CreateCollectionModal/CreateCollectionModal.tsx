@@ -119,6 +119,7 @@ const CreateCollectionModalContent = ({
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
+      onClose()
     },
   })
 

@@ -114,6 +114,7 @@ const CreateFolderModalContent = ({
         description: err.message,
         ...BRIEF_TOAST_SETTINGS,
       })
+      onClose()
     },
   })
 
