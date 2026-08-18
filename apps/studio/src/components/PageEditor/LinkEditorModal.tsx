@@ -46,6 +46,31 @@ import { AttachmentData } from "../AttachmentData"
 import { ResourceSelector } from "../ResourceSelector"
 import { FileAttachment } from "./FileAttachment"
 
+// Explicit, tested backstop alongside Tiptap's own `isAllowedUri` link-mark
+// guard — keeps the allowlist visible here rather than relying solely on
+// upstream library defaults.
+const DISALLOWED_HREF_SCHEMES = ["javascript:", "data:", "vbscript:"]
+
+export const linkEditorSchema = z.object({
+  linkText: z.string().min(1, "Link text cannot be empty."),
+  linkHref: z
+    .string()
+    .min(1, "Link destination cannot be empty.")
+    // A cleared External/Email field still lands here as a bare scheme
+    // ("https://"/"mailto:"), not "", so `.min(1)` alone won't catch it.
+    .refine(
+      (href) => !["https://", "mailto:"].includes(href),
+      "Link destination cannot be empty.",
+    )
+    .refine(
+      (href) =>
+        !DISALLOWED_HREF_SCHEMES.some((scheme) =>
+          href.trim().toLowerCase().startsWith(scheme),
+        ),
+      "Link destination is not allowed.",
+    ),
+})
+
 interface PageLinkElementProps {
   value: string
   onChange: (value: string) => void
@@ -98,18 +123,7 @@ const LinkEditorModalContent = ({
     formState: { errors },
   } = useZodForm({
     mode: "onChange",
-    schema: z.object({
-      linkText: z.string().min(1, "Link text cannot be empty."),
-      linkHref: z
-        .string()
-        .min(1, "Link destination cannot be empty.")
-        // A cleared External/Email field still lands here as a bare scheme
-        // ("https://"/"mailto:"), not "", so `.min(1)` alone won't catch it.
-        .refine(
-          (href) => !["https://", "mailto:"].includes(href),
-          "Link destination cannot be empty.",
-        ),
-    }),
+    schema: linkEditorSchema,
     defaultValues: {
       linkText: strippedLinkText,
       linkHref,
