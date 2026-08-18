@@ -36,8 +36,8 @@ interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
 }
 
 // When switching between combinator branches (e.g. an InfoCards "variant"),
-// keep any existing field/array-item values that are still valid under the
-// newly selected schema instead of resetting them to schema defaults, so
+// keep field values and array items that are still valid under the newly
+// selected schema instead of resetting everything to schema defaults, so
 // content the editor already entered isn't wiped out by the switch.
 export function mergeDataWithSchema(
   oldData: unknown,
@@ -55,56 +55,56 @@ export function mergeDataWithSchema(
       : {}
 
   const merged: Record<string, unknown> = {}
-  for (const [key, propSchema] of Object.entries(newSchema.properties)) {
-    const value = mergeFieldWithSchema(
-      oldObject[key],
-      propSchema as JsonSchema,
-      rootSchema,
-    )
-    // Omit rather than write `undefined`, so a field that was never filled
-    // in stays absent instead of being materialized as an empty value.
-    if (value !== undefined) {
-      merged[key] = value
+  for (const [key, propSchema] of Object.entries(newSchema.properties) as [
+    string,
+    JsonSchema,
+  ][]) {
+    // Discriminator/literal fields (e.g. `variant`) always take on the
+    // newly selected schema's value, never the previous branch's value.
+    if (propSchema.const !== undefined) {
+      merged[key] = propSchema.const
+      continue
+    }
+
+    const oldValue = oldObject[key]
+    const itemSchema = Array.isArray(propSchema.items)
+      ? propSchema.items[0]
+      : propSchema.items
+
+    if (propSchema.type === "array" && Array.isArray(oldValue) && itemSchema) {
+      merged[key] = oldValue.map((item) => pickFields(item, itemSchema))
+    } else if (oldValue !== undefined) {
+      merged[key] = oldValue
+    } else if (propSchema.default !== undefined) {
+      // No previous value for this field: fall back to the schema's own
+      // default (if any), same as a freshly added card would get, rather
+      // than inventing one.
+      merged[key] = propSchema.default
     }
   }
   return merged
 }
 
-function mergeFieldWithSchema(
-  oldValue: unknown,
-  propSchema: JsonSchema,
-  rootSchema: JsonSchema,
-): unknown {
-  // Discriminator/literal fields (e.g. `variant`) must always take on the
-  // newly selected schema's value, never the previous branch's value.
-  if (propSchema.const !== undefined) {
-    return propSchema.const
+// Keeps only the keys `itemSchema` still declares, dropping fields specific
+// to the previous variant (e.g. image fields when switching to no-image).
+function pickFields(item: unknown, itemSchema: JsonSchema): unknown {
+  if (
+    itemSchema.type !== "object" ||
+    !itemSchema.properties ||
+    typeof item !== "object" ||
+    item === null
+  ) {
+    return item
   }
 
-  if (oldValue !== undefined) {
-    if (propSchema.type === "array" && Array.isArray(oldValue)) {
-      const itemSchema = Array.isArray(propSchema.items)
-        ? propSchema.items[0]
-        : propSchema.items
-      if (!itemSchema) {
-        return oldValue
-      }
-      return oldValue.map((item) =>
-        mergeDataWithSchema(item, itemSchema, rootSchema),
-      )
+  const oldItem = item as Record<string, unknown>
+  const picked: Record<string, unknown> = {}
+  for (const key of Object.keys(itemSchema.properties)) {
+    if (oldItem[key] !== undefined) {
+      picked[key] = oldItem[key]
     }
-
-    if (propSchema.type === "object") {
-      return mergeDataWithSchema(oldValue, propSchema, rootSchema)
-    }
-
-    return oldValue
   }
-
-  // No previous value for this field: fall back to the schema's own default
-  // (if any) rather than inventing one, so a field the editor never touched
-  // stays absent - same as it would be on a freshly added card.
-  return propSchema.default
+  return picked
 }
 
 function JsonFormsCombinatorControl({
