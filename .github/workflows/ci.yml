@@ -282,6 +282,8 @@ jobs:
         include:
           - feature: site
             paths: tests/e2e/site
+          - feature: folder
+            paths: tests/e2e/folder
           - feature: resource
             paths: tests/e2e/resource
           - feature: user
