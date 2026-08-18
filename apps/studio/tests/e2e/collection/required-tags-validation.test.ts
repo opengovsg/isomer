@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test"
 import crypto from "crypto"
 import { db } from "~/server/modules/database"
+import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { storageStateFor, TEST_EMAILS } from "../fixtures/auth"
 import {
@@ -12,9 +13,14 @@ import {
   readBlobContent,
 } from "../fixtures/collection"
 import { CollectionPO } from "../fixtures/collection.po"
-import { getSeedSiteId } from "../fixtures/seed"
+import { provisionE2ESite } from "../fixtures/site"
 
-const siteId = getSeedSiteId()
+let siteId: number
+
+test.beforeAll(async () => {
+  const site = await provisionE2ESite({ roles: [RoleType.Admin] })
+  siteId = site.siteId
+})
 
 const dismissWelcomeModal = (email: string) =>
   db
@@ -38,23 +44,27 @@ test.describe("collection link — required tag categories", () => {
 
   test.beforeEach(async () => {
     await dismissWelcomeModal(TEST_EMAILS.admin)
-    const collection = await createCollectionWithTagCategories([
-      {
-        id: TAG_CATEGORY_ID,
-        label: TAG_CATEGORY_LABEL,
-        isRequired: true,
-        options: [{ id: TAG_OPTION_ID, label: TAG_OPTION_LABEL }],
-      },
-    ])
+    const collection = await createCollectionWithTagCategories(
+      [
+        {
+          id: TAG_CATEGORY_ID,
+          label: TAG_CATEGORY_LABEL,
+          isRequired: true,
+          options: [{ id: TAG_OPTION_ID, label: TAG_OPTION_LABEL }],
+        },
+      ],
+      siteId,
+    )
     collectionId = collection.collectionId
 
     // Save is also gated on a non-empty, valid `ref` — seed one directly so
     // the test isolates the tag-category gate instead of driving the
     // separate link-picker UI.
-    const rootPageId = await getRootPageId()
+    const rootPageId = await getRootPageId(siteId)
     const link = await createCollectionLink({
       collectionId,
       ref: `[resource:${siteId}:${rootPageId}]`,
+      siteId,
     })
     linkId = link.id
   })
@@ -108,17 +118,20 @@ test.describe("collection page — required tag categories", () => {
 
   test.beforeEach(async () => {
     await dismissWelcomeModal(TEST_EMAILS.admin)
-    const collection = await createCollectionWithTagCategories([
-      {
-        id: TAG_CATEGORY_ID,
-        label: TAG_CATEGORY_LABEL,
-        isRequired: true,
-        options: [{ id: TAG_OPTION_ID, label: TAG_OPTION_LABEL }],
-      },
-    ])
+    const collection = await createCollectionWithTagCategories(
+      [
+        {
+          id: TAG_CATEGORY_ID,
+          label: TAG_CATEGORY_LABEL,
+          isRequired: true,
+          options: [{ id: TAG_OPTION_ID, label: TAG_OPTION_LABEL }],
+        },
+      ],
+      siteId,
+    )
     collectionId = collection.collectionId
 
-    const collectionPage = await createCollectionPage({ collectionId })
+    const collectionPage = await createCollectionPage({ collectionId, siteId })
     pageId = collectionPage.id
   })
 
