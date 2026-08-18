@@ -25,7 +25,10 @@ const getMetaDescription = (props: IsomerPageSchemaType) => {
     case ISOMER_PAGE_LAYOUTS.Collection:
       return props.page.subtitle
     case ISOMER_PAGE_LAYOUTS.Homepage:
-      return props.content.find((item) => item.type === "hero")?.subtitle
+      return (
+        props.content.find((item) => item.type === "hero")?.subtitle ||
+        props.site.siteName
+      )
     case ISOMER_PAGE_LAYOUTS.File:
     case ISOMER_PAGE_LAYOUTS.Link:
     case ISOMER_PAGE_LAYOUTS.Search:
