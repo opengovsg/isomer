@@ -47,10 +47,11 @@ export const Accordion = ({
       </summary>
 
       <div className={accordionStyles.content()}>
-        {/* The accordion's expandable body is treated as nested one level
-            deeper than the accordion itself, even though its own "title" is
-            a <summary>, not a heading. */}
-        <Prose {...details} site={site} headingLevel={headingLevel + 1} />
+        {/* The accordion's own "title" is a <summary>, not a heading, so it
+            never consumes `headingLevel` itself — the body stays at the same
+            level rather than nesting one deeper, otherwise a heading inside it
+            would skip a level with no parent heading in between. */}
+        <Prose {...details} site={site} headingLevel={headingLevel} />
       </div>
     </details>
   )

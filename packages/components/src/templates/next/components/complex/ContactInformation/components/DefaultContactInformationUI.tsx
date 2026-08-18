@@ -45,8 +45,14 @@ export const DefaultContactInformationUI = ({
   const contactMethodStyles = createDefaultContactMethodStyles({
     isLoading,
   })
+  const hasTitle = !!title || isLoading
   const TitleTag = getHeadingTag(headingLevel)
-  const OtherInformationTitleTag = getHeadingTag(headingLevel + 1)
+  // "Other Information" only nests one level deeper than the title if the
+  // title actually renders — otherwise it would be a heading with no parent
+  // heading in between, skipping a level.
+  const OtherInformationTitleTag = getHeadingTag(
+    hasTitle ? headingLevel + 1 : headingLevel,
+  )
 
   const filteredMethods = filterContactMethods({
     methods,
