@@ -1,4 +1,8 @@
-import type { CombinatorRendererProps, RankedTester } from "@jsonforms/core"
+import type {
+  CombinatorRendererProps,
+  JsonSchema,
+  RankedTester,
+} from "@jsonforms/core"
 import { Box, FormControl, RadioGroup } from "@chakra-ui/react"
 import {
   createCombinatorRenderInfos,
@@ -29,6 +33,78 @@ export const jsonFormsAnyOfControlTester: RankedTester = rankWith(
 
 interface JsonFormsCombinatorControlProps extends CombinatorRendererProps {
   combinatorType: "oneOf" | "anyOf"
+}
+
+// When switching between combinator branches (e.g. an InfoCards "variant"),
+// keep any existing field/array-item values that are still valid under the
+// newly selected schema instead of resetting them to schema defaults, so
+// content the editor already entered isn't wiped out by the switch.
+export function mergeDataWithSchema(
+  oldData: unknown,
+  newSchema: JsonSchema,
+  rootSchema: JsonSchema,
+): unknown {
+  if (newSchema.type !== "object" || !newSchema.properties) {
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-return
+    return createDefaultValue(newSchema, rootSchema) as unknown
+  }
+
+  const oldObject =
+    typeof oldData === "object" && oldData !== null && !Array.isArray(oldData)
+      ? (oldData as Record<string, unknown>)
+      : {}
+
+  const merged: Record<string, unknown> = {}
+  for (const [key, propSchema] of Object.entries(newSchema.properties)) {
+    const value = mergeFieldWithSchema(
+      oldObject[key],
+      propSchema as JsonSchema,
+      rootSchema,
+    )
+    // Omit rather than write `undefined`, so a field that was never filled
+    // in stays absent instead of being materialized as an empty value.
+    if (value !== undefined) {
+      merged[key] = value
+    }
+  }
+  return merged
+}
+
+function mergeFieldWithSchema(
+  oldValue: unknown,
+  propSchema: JsonSchema,
+  rootSchema: JsonSchema,
+): unknown {
+  // Discriminator/literal fields (e.g. `variant`) must always take on the
+  // newly selected schema's value, never the previous branch's value.
+  if (propSchema.const !== undefined) {
+    return propSchema.const
+  }
+
+  if (oldValue !== undefined) {
+    if (propSchema.type === "array" && Array.isArray(oldValue)) {
+      const itemSchema = Array.isArray(propSchema.items)
+        ? propSchema.items[0]
+        : propSchema.items
+      if (!itemSchema) {
+        return oldValue
+      }
+      return oldValue.map((item) =>
+        mergeDataWithSchema(item, itemSchema, rootSchema),
+      )
+    }
+
+    if (propSchema.type === "object") {
+      return mergeDataWithSchema(oldValue, propSchema, rootSchema)
+    }
+
+    return oldValue
+  }
+
+  // No previous value for this field: fall back to the schema's own default
+  // (if any) rather than inventing one, so a field the editor never touched
+  // stays absent - same as it would be on a freshly added card.
+  return propSchema.default
 }
 
 function JsonFormsCombinatorControl({
@@ -79,18 +155,16 @@ function JsonFormsCombinatorControl({
       renderInfos[options.findIndex((option) => option.value === value)]?.schema
     if (!newSchema) {
       handleChange(path, {})
+    } else if (newSchema.type === "string") {
+      handleChange(path, newSchema.const || "")
     } else {
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const newData = createDefaultValue(newSchema, rootSchema)
-
-      if (newSchema.type === "string") {
-        handleChange(path, newSchema.const || "")
-      } else {
-        handleChange(path, {
-          ...data,
-          ...newData,
-        })
-      }
+      const mergedData = mergeDataWithSchema(data, newSchema, rootSchema) as
+        | Record<string, unknown>
+        | undefined
+      handleChange(path, {
+        ...data,
+        ...mergedData,
+      })
     }
   }
 
