@@ -5,7 +5,7 @@ import { RoleType } from "~prisma/generated/generatedEnums"
 
 import { TEST_EMAILS, roleTag } from "../fixtures/auth"
 import { createFolderViaWizard } from "../fixtures/helpers"
-import { getResourceByTitle } from "../fixtures/resource.db"
+import { getResource } from "../fixtures/resource.db"
 import { provisionE2ESite } from "../fixtures/site"
 import { ensureUserOnboarded } from "../fixtures/user"
 
@@ -35,9 +35,9 @@ test.describe("create folder", { tag: roleTag("admin") }, () => {
     page,
   }) => {
     const title = UNIQUE_TITLE()
-    await createFolderViaWizard(page, { siteId, title })
+    const { folderId } = await createFolderViaWizard(page, { siteId, title })
 
-    const created = await getResourceByTitle({ siteId, title })
+    const created = await getResource(folderId)
     expect(created).toBeTruthy()
     expect(created?.type).toBe("Folder")
   })
