@@ -67,6 +67,60 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
       .poll(async () => (await getResource(seededPage.id))?.scheduledBy)
       .toBeNull()
   })
+
+  test("publisher can reschedule a scheduled publish to a different time", async ({
+    page,
+  }) => {
+    // Arrange
+    const { page: seededPage } = await seedFolderWithPage({ siteId })
+    await page.clock.install({ time: new Date("2099-01-01T00:01:00+08:00") })
+
+    // Act: schedule for the last quick-select slot of the day
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+    await editor.openScheduleModal()
+    await editor.schedulePublishForToday("last")
+    await editor.expectScheduledSuccessfully()
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
+      .not.toBeNull()
+    const scheduledAtFirst = (await getResource(seededPage.id))?.scheduledAt
+
+    // Act: cancel and reschedule to a different (earlier) quick-select slot
+    await editor.cancelSchedule()
+    await editor.openScheduleModal()
+    await editor.schedulePublishForToday("first")
+    await editor.expectScheduledSuccessfully()
+
+    // Assert
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
+      .not.toBeNull()
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
+      .not.toEqual(scheduledAtFirst)
+  })
+
+  test("scheduled status survives reload and blocks further editing", async ({
+    page,
+  }) => {
+    // Arrange
+    const { page: seededPage } = await seedFolderWithPage({ siteId })
+    await page.clock.install({ time: new Date("2099-01-01T00:01:00+08:00") })
+
+    // Act
+    const editor = await openSeededPageEditor(page, siteId, seededPage.id)
+    await editor.openScheduleModal()
+    await editor.schedulePublishForToday()
+    await editor.expectScheduledSuccessfully()
+    await editor.reload()
+
+    // Assert
+    await editor.expectCancelScheduleVisible()
+    await editor.expectScheduledEditingRestrictionBanner()
+    await expect
+      .poll(async () => (await getResource(seededPage.id))?.scheduledAt)
+      .not.toBeNull()
+  })
 })
 
 test.describe("editor", { tag: roleTag("editor") }, () => {
