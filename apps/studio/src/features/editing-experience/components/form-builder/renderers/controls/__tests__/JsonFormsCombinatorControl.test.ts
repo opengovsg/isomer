@@ -42,6 +42,7 @@ const withImageVariantSchema: JsonSchema7 = {
 
 describe("keepMatchingArrayFields", () => {
   it("keeps existing cards and their shared fields when switching to a variant with more fields", () => {
+    // Arrange
     const oldData = {
       variant: "cardsWithoutImages",
       cards: [
@@ -50,8 +51,10 @@ describe("keepMatchingArrayFields", () => {
       ],
     }
 
+    // Act
     const preserved = keepMatchingArrayFields(oldData, withImageVariantSchema)
 
+    // Assert
     // Fields the new variant adds (imageUrl/imageAlt) are left unset, same
     // as they would be on a freshly added card, rather than being invented.
     expect(preserved).toStrictEqual({
@@ -63,6 +66,7 @@ describe("keepMatchingArrayFields", () => {
   })
 
   it("drops fields no longer present in the schema when switching to a variant with fewer fields", () => {
+    // Arrange
     const oldData = {
       variant: "cardsWithImages",
       cards: [
@@ -76,21 +80,26 @@ describe("keepMatchingArrayFields", () => {
       ],
     }
 
+    // Act
     const preserved = keepMatchingArrayFields(oldData, noImageVariantSchema)
 
+    // Assert
     expect(preserved).toStrictEqual({
       cards: [{ title: "Card 1", description: "Desc 1", url: "/a" }],
     })
   })
 
   it("never resets the cards array to empty when switching variants", () => {
+    // Arrange
     const oldData = {
       variant: "cardsWithoutImages",
       cards: [{ title: "Only card" }],
     }
 
+    // Act
     const preserved = keepMatchingArrayFields(oldData, withImageVariantSchema)
 
+    // Assert
     expect(preserved.cards).toHaveLength(1)
   })
 })
