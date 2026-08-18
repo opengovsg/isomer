@@ -83,6 +83,24 @@ export const seedLoggedInEditorOnSite = async ({
   return { email, userId: user.id }
 }
 
+/** Bulk-seed `count` editors on a site (e.g. to force table pagination). */
+export const seedManyEditorsOnSite = async ({
+  siteId,
+  count,
+}: {
+  siteId: number
+  count: number
+}) => {
+  return Promise.all(
+    Array.from({ length: count }, async () => {
+      const email = `e2e-bulk-${crypto.randomUUID().slice(0, 8)}@open.gov.sg`
+      const user = await setupUser({ email, name: "E2E Bulk User" })
+      await setupEditorPermissions({ userId: user.id, siteId })
+      return email
+    }),
+  )
+}
+
 export const seedIsomerAdminOnSite = async ({
   siteId,
   email = uniqueIsomerAdminEmail(),
