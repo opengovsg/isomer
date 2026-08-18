@@ -2433,6 +2433,90 @@ describe("page.router", async () => {
       )
     })
 
+    it("should throw 404 if pageId refers to a Collection", async () => {
+      // Arrange — unpublishPage is a page-only contract; Collection ids
+      // belong to the dedicated unpublishCollection mutation
+      const { site, collection } = await setupCollection()
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(collection.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page does not exist",
+        }),
+      )
+    })
+
+    it("should throw 404 if pageId refers to the RootPage", async () => {
+      // Arrange — RootPage is publishable but deliberately excluded here as
+      // a protection, matching the existing delete guard for RootPage
+      const { site, page } = await setupPageResource({
+        resourceType: ResourceType.RootPage,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page does not exist",
+        }),
+      )
+    })
+
+    it.each([
+      ResourceType.FolderMeta,
+      ResourceType.CollectionMeta,
+      ResourceType.CollectionLink,
+    ])("should throw 404 if pageId refers to a %s", async (resourceType) => {
+      // Arrange — none of these are user-facing content pages with a
+      // meaningfully tracked publish state
+      const { site, page } = await setupPageResource({
+        resourceType,
+        state: ResourceState.Published,
+        userId: session.userId ?? undefined,
+      })
+      await setupPublisherPermissions({
+        userId: session.userId ?? undefined,
+        siteId: site.id,
+      })
+
+      // Act
+      const result = caller.unpublishPage({
+        siteId: site.id,
+        pageId: Number(page.id),
+      })
+
+      // Assert
+      await expect(result).rejects.toThrow(
+        new TRPCError({
+          code: "NOT_FOUND",
+          message: "This page does not exist",
+        }),
+      )
+    })
+
     it("should unpublish a live page while retaining its draft", async () => {
       // Arrange — a published page with a pending draft
       const { site, page } = await setupPageResource({
