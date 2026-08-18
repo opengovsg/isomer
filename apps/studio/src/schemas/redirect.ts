@@ -1,4 +1,3 @@
-import { REFERENCE_LINK_REGEX } from "@opengovsg/isomer-components"
 import { z } from "zod"
 import { RESERVED_SOURCE_PREFIXES } from "~/constants/redirect"
 
@@ -45,6 +44,15 @@ const SOURCE_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9\-._~!$&'()*+,;=:@%/]+$/
 // it. These are stripped (not rejected) — the global flag strips every match.
 // (Source paths use the stricter whitelist above instead.)
 const CONTROL_CHARS_REGEX = /[\x00-\x1f\x7f]/g
+
+// Duplicated from `@opengovsg/isomer-components`'s `REFERENCE_LINK_REGEX`
+// (packages/components/src/utils/getResourceIdFromReferenceLink.ts) rather than
+// imported: that package's only exports are its full `.` and `./templates/next`
+// barrels, and importing either one for this one regex pulls in (and, under a
+// strict ESM loader like Playwright's test transform, crashes on) an unrelated
+// broken deep import inside the Search template chunk. Keep this in sync with
+// the canonical definition if it ever changes.
+const REFERENCE_LINK_REGEX = /\[resource:(\d+):(\d+)\]/
 
 // Anchored form of the shared [resource:siteId:resourceId] reference (the shared
 // regex is unanchored, so a value only counts as a reference when it is exactly
