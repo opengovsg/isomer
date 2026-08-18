@@ -55,10 +55,20 @@ jobs:
       posthog-project-token: "phc_uZuYdUk5MvkoNAzxvh9TXdGXXjSL684XAHBjR5r74Ra8"
 
   build_components:
-    name: Build and publish components 
+    name: Build and publish components
     uses: ./.github/workflows/build-components.yml
     with:
       aws-region: "ap-southeast-1"
       aws-account-id: "058264420411"
       cicd-role: "arn:aws:iam::058264420411:role/isomer-next-infra-stg-deploy-role"
       s3-cache-bucket-name: "isomer-next-infra-stg-sites-cache-bucket-private-c7e5cf4"
+
+  update_publisher:
+    name: Update publisher script
+    needs: build_components
+    uses: ./.github/workflows/update_publisher.yml
+    with:
+      aws-region: "ap-southeast-1"
+      aws-account-id: "058264420411"
+      cicd-role: "arn:aws:iam::058264420411:role/isomer-next-infra-stg-deploy-role"
+      publisher-script-bucket: "isomer-next-infra-stg-assets-private-b18ec1f"
