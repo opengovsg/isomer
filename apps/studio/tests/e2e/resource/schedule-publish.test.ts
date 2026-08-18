@@ -71,9 +71,15 @@ test.describe("publisher", { tag: roleTag("publisher") }, () => {
   test("publisher can reschedule a scheduled publish to a different time", async ({
     page,
   }) => {
-    // Arrange
+    // Arrange. The quick-select presets (00:00/09:00/13:00/17:00) filter to
+    // whichever are still later than "now" in the browser's (UTC, on CI)
+    // wall-clock reading of the frozen instant — an explicit "+08:00" instant
+    // reads as mid-afternoon in UTC, leaving only the 17:00 preset, which is
+    // why other tests in this file (needing only one preset) freeze the clock
+    // that way. This test needs two distinct presets to reschedule between,
+    // so it freezes to an instant that's also early-morning in UTC.
     const { page: seededPage } = await seedFolderWithPage({ siteId })
-    await page.clock.install({ time: new Date("2099-01-01T00:01:00+08:00") })
+    await page.clock.install({ time: new Date("2099-01-01T00:01:00Z") })
 
     // Act: schedule for the 5:00 PM quick-select slot
     const editor = await openSeededPageEditor(page, siteId, seededPage.id)
