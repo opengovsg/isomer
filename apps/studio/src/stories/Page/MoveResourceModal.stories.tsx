@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs"
-import { userEvent, within } from "storybook/test"
+import { expect, userEvent, within } from "storybook/test"
 import { pageHandlers } from "tests/msw/handlers/page"
 import { redirectHandlers } from "tests/msw/handlers/redirect"
 import { resourceHandlers } from "tests/msw/handlers/resource"
@@ -229,5 +229,34 @@ export const CollectionItemInvalidDestination: Story = {
     await within(canvasElement.ownerDocument.body).findByText(
       "Collection items can only be moved to another collection",
     )
+  },
+}
+
+// Clicking the "Home" row sets the site root as the move destination — the
+// row itself should pick up the same selected styling a regular folder row
+// gets once it's the chosen destination.
+export const HomeSelected: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        ...SHARED_HANDLERS,
+        resourceHandlers.getBatchAncestryWithSelf.foldersOnly(),
+      ],
+    },
+  },
+  play: async (context) => {
+    const { canvasElement } = context
+    await Default.play?.(context)
+
+    // Scoped to the dialog: the underlying dashboard page also renders a
+    // "Home" link in its sidebar, so an unscoped query matches more than
+    // one element.
+    const dialog = await within(canvasElement.ownerDocument.body).findByRole(
+      "dialog",
+    )
+    const homeRow = await within(dialog).findByText("Home")
+    await userEvent.click(homeRow)
+
+    await expect(homeRow.closest("[data-selected]")).not.toBeNull()
   },
 }
