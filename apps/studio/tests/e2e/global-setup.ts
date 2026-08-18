@@ -1,9 +1,10 @@
 import type { FullConfig } from "@playwright/test"
 import { chromium } from "@playwright/test"
+import { execFileSync } from "child_process"
 import crypto from "crypto"
 import { db, sql } from "~/server/modules/database"
 
-import { ROLES, storageStateFor, TEST_EMAILS } from "./fixtures/auth"
+import { ROLES, storageStateFor, TEST_EMAILS, type Role } from "./fixtures/auth"
 import { LoginPage } from "./fixtures/login"
 import { seedRolesForE2E } from "./fixtures/seed"
 
@@ -64,13 +65,67 @@ const signInOnce = async (role: keyof typeof TEST_EMAILS, baseURL: string) => {
   await browser.close()
 }
 
+interface JsonReporterSuite {
+  specs?: { tests?: { projectName?: string }[] }[]
+  suites?: JsonReporterSuite[]
+}
+
+const collectProjectNames = (suite: JsonReporterSuite, out: Set<string>) => {
+  for (const spec of suite.specs ?? []) {
+    for (const test of spec.tests ?? []) {
+      if (test.projectName) out.add(test.projectName)
+    }
+  }
+  for (const nested of suite.suites ?? []) collectProjectNames(nested, out)
+}
+
+// CI shards e2e by feature directory (see the e2e-tests matrix in
+// .github/workflows/ci.yml) and passes the paths for this shard via
+// PLAYWRIGHT_TEST_PATHS. Signing in all 6 roles regardless wastes real
+// browser + OTP-login time on roles a given shard's tests never use (e.g.
+// the "root" shard — smoke + singpass — needs none of them). `--list` asks
+// Playwright's own project/grep resolution which roles actually apply,
+// rather than re-deriving it from source (which loop-generated `roleTag`
+// calls make unreliable to parse statically).
+const rolesNeededFor = (paths: string[]): Role[] => {
+  const output = execFileSync(
+    "pnpm",
+    ["exec", "playwright", "test", "--list", "--reporter=json", ...paths],
+    { encoding: "utf8" },
+  )
+  const report = JSON.parse(output) as { suites: JsonReporterSuite[] }
+
+  const projectNames = new Set<string>()
+  report.suites.forEach((suite) => collectProjectNames(suite, projectNames))
+
+  return ROLES.filter((role) => projectNames.has(role))
+}
+
 const globalSetup = async (config: FullConfig) => {
   const baseURL = config.projects[0]?.use.baseURL ?? "http://127.0.0.1:3000"
 
   await resetE2EDatabase()
   await seedRolesForE2E()
 
-  await Promise.all(ROLES.map((role) => signInOnce(role, baseURL)))
+  const testPaths =
+    process.env.PLAYWRIGHT_TEST_PATHS?.split(/\s+/).filter(Boolean) ?? []
+  // Fall back to every role — for a full local run (no PLAYWRIGHT_TEST_PATHS)
+  // and defensively if resolving the shard's roles fails for any reason.
+  // Signing in too many roles is just wasted time; signing in too few
+  // breaks tests, so the fallback direction only ever over-signs-in.
+  let roles: readonly Role[] = ROLES
+  if (testPaths.length > 0) {
+    try {
+      roles = rolesNeededFor(testPaths)
+    } catch (error) {
+      console.warn(
+        "Failed to resolve roles needed for PLAYWRIGHT_TEST_PATHS — signing in all roles instead:",
+        error,
+      )
+    }
+  }
+
+  await Promise.all(roles.map((role) => signInOnce(role, baseURL)))
 }
 
 export default globalSetup
