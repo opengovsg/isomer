@@ -80,7 +80,10 @@ export class SitePO {
    * helper for those rather than overloading this one.
    */
   publishButton() {
-    return this.page.getByRole("button", { name: "Publish" })
+    // exact: true avoids matching unrelated buttons whose accessible name
+    // merely contains "Publish" as a substring, e.g. a navbar item's
+    // "Navbar item Fix errors before publishing" error button.
+    return this.page.getByRole("button", { name: "Publish", exact: true })
   }
 
   siteNameField() {
@@ -130,13 +133,23 @@ export class SitePO {
     return this.page.locator('[contenteditable="true"]')
   }
 
-  /** AskGov widget toggle (JsonFormsWidgetIntegrationControl) on the integrations settings page. */
+  /**
+   * AskGov widget toggle (JsonFormsWidgetIntegrationControl) on the
+   * integrations settings page. `.last()` on the hasText filter resolves to
+   * the innermost matching div, which wraps only the label text — the
+   * Switch is a sibling one level up, so we go up before searching for the
+   * checkbox. Then scoped to the wrapping <label>, not the checkbox input
+   * itself — the input is visually hidden inside the label, so clicking it
+   * directly gets blocked by the label intercepting the pointer event.
+   */
   askgovToggle() {
     return this.page
       .locator("div")
       .filter({ hasText: /^Enable your AskGov widget on this website/ })
       .last()
+      .locator("xpath=..")
       .getByRole("checkbox")
+      .locator("xpath=..")
   }
 
   vicaToggle() {
@@ -144,7 +157,9 @@ export class SitePO {
       .locator("div")
       .filter({ hasText: /^Enable your VICA widget on this website/ })
       .last()
+      .locator("xpath=..")
       .getByRole("checkbox")
+      .locator("xpath=..")
   }
 
   askgovIdField() {
@@ -192,15 +207,42 @@ export class SitePO {
     return group.getByRole("button", { name: "Remove file" })
   }
 
-  fileUploadErrorText() {
-    return this.page.getByText(/is not allowed|exceeds the size limit/)
+  /**
+   * "Remove file" button for a BaseLinkControl field, found by its label
+   * text (e.g. "Contact us page", "Privacy statement page") — the "Remove
+   * file" aria-label is reused generically by BaseLinkControl. Two levels
+   * up from the label: one reaches the <label> element itself, a second
+   * reaches the shared FormControl that also contains the button.
+   */
+  removeLinkButtonByLabel(label: string) {
+    return this.page
+      .getByText(label)
+      .locator("xpath=../..")
+      .getByRole("button", { name: "Remove file" })
+  }
+
+  /**
+   * File upload rejection text, scoped to the given upload group. The toast
+   * notification (rendered as a <span>) is also a descendant of the group,
+   * so scoping alone isn't enough — filter to the <p> the dropzone itself
+   * renders the error into.
+   */
+  fileUploadErrorText(group: Locator) {
+    return group
+      .locator("p")
+      .filter({ hasText: /is not allowed|exceeds the size limit/ })
   }
 
   footerLinkButton(name: string) {
     return this.page.getByRole("button", { name })
   }
 
-  /** "Add a link" button scoped to a footer column ("Footer column 1"/"Footer column 2") to disambiguate the two identical-looking buttons. */
+  /**
+   * "Add a link" button scoped to a footer column ("Footer column 1"/"Footer
+   * column 2") to disambiguate the two identical-looking buttons. `.last()`
+   * on the hasText filter resolves to the innermost div, which wraps only
+   * the column's label/count text — the button is a sibling one level up.
+   */
   addFooterLinkButtonForColumn(
     columnHeading: "Footer column 1" | "Footer column 2",
   ) {
@@ -208,6 +250,7 @@ export class SitePO {
       .locator("div")
       .filter({ hasText: new RegExp(`^${columnHeading}`) })
       .last()
+      .locator("xpath=..")
       .getByRole("button", { name: "Add a link" })
   }
 
@@ -219,12 +262,16 @@ export class SitePO {
     return this.page.getByRole("button", { name: "Back to footer" })
   }
 
-  /** "Add a link" button under the "Social media links" section. */
+  /**
+   * "Add a link" button under the "Social media links" section. See
+   * addFooterLinkButtonForColumn() for why the extra xpath=.. is needed.
+   */
   addSocialMediaLinkButton() {
     return this.page
       .locator("div")
       .filter({ hasText: /^Social media links/ })
       .last()
+      .locator("xpath=..")
       .getByRole("button", { name: "Add a link" })
   }
 
@@ -232,8 +279,13 @@ export class SitePO {
     return this.page.getByLabel("Social media")
   }
 
+  /**
+   * exact: false, since the FormLabel wraps both the field label ("Link")
+   * and its description ("Make sure you are linking an official account")
+   * as one accessible name.
+   */
   socialMediaLinkField() {
-    return this.page.getByLabel("Link", { exact: true })
+    return this.page.getByLabel("Link")
   }
 
   /** Deleted-link/error-scoped delete confirmation used by footer link, social-media link modals ("Delete {label}?" / "Delete {Label} link?"). */
@@ -320,14 +372,19 @@ export class SitePO {
     return this.page.getByRole("tab", { name: "Customise" })
   }
 
-  /** Primary Call-to-Action section's on/off Switch (JsonFormsBoxedGroupControl) — first checkbox on the Customise tab. */
+  /**
+   * Primary Call-to-Action section's on/off Switch (JsonFormsBoxedGroupControl)
+   * — first checkbox on the Customise tab. Scoped to the wrapping <label>
+   * (see askgovToggle() for why — clicking the checkbox input directly gets
+   * blocked by the label intercepting the pointer event).
+   */
   ctaToggle() {
-    return this.page.getByRole("checkbox").first()
+    return this.page.getByRole("checkbox").first().locator("xpath=..")
   }
 
   /** Utility links section's on/off Switch — always the last checkbox on the Customise tab, regardless of whether CTA is expanded. */
   utilityLinksToggle() {
-    return this.page.getByRole("checkbox").last()
+    return this.page.getByRole("checkbox").last().locator("xpath=..")
   }
 
   ctaButtonTextField() {

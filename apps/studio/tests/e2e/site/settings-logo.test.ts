@@ -97,9 +97,16 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       buffer: Buffer.from("fake-pdf"),
     })
 
-    // Assert
-    await expect(site.fileUploadErrorText()).toBeVisible()
-    await expect(site.logoFilenameText("not-an-image.pdf")).not.toBeVisible()
+    // Assert: the rejected filename is echoed inside the error card itself
+    // (expected — it's telling the admin what was rejected), so check that
+    // nothing was actually committed instead of asserting the filename is
+    // absent from the page entirely.
+    await expect(
+      site.fileUploadErrorText(site.faviconUploadGroup()),
+    ).toBeVisible()
+    await expect(
+      site.removeUploadedFileButton(site.faviconUploadGroup()),
+    ).not.toBeVisible()
   })
 
   test("uploading an oversized favicon is rejected", async ({ page }) => {
@@ -115,10 +122,13 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
       buffer: Buffer.alloc(25_000),
     })
 
-    // Assert
-    await expect(page.getByText(/exceeds the size limit/)).toBeVisible()
+    // Assert: see the unsupported-file-type test above for why we check the
+    // "Remove file" button rather than the filename text.
     await expect(
-      site.logoFilenameText("oversized-favicon.png"),
+      site.fileUploadErrorText(site.faviconUploadGroup()),
+    ).toBeVisible()
+    await expect(
+      site.removeUploadedFileButton(site.faviconUploadGroup()),
     ).not.toBeVisible()
   })
 
