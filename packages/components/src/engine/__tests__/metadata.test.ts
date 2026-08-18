@@ -18,6 +18,7 @@ const basePage = {
 describe("getMetadata", () => {
   describe("Homepage", () => {
     it("uses the hero subtitle as the meta description when present", () => {
+      // Arrange
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Homepage,
         site: baseSite,
@@ -25,10 +26,15 @@ describe("getMetadata", () => {
         content: [{ type: "hero", subtitle: "Welcome to our site" }],
       } as unknown as IsomerPageSchemaType
 
-      expect(getMetadata(props).description).toBe("Welcome to our site")
+      // Act
+      const actual = getMetadata(props).description
+
+      // Assert
+      expect(actual).toBe("Welcome to our site")
     })
 
     it("falls back to the site name when the hero subtitle is empty", () => {
+      // Arrange
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Homepage,
         site: baseSite,
@@ -36,10 +42,15 @@ describe("getMetadata", () => {
         content: [{ type: "hero", subtitle: "" }],
       } as unknown as IsomerPageSchemaType
 
-      expect(getMetadata(props).description).toBe(baseSite.siteName)
+      // Act
+      const actual = getMetadata(props).description
+
+      // Assert
+      expect(actual).toBe(baseSite.siteName)
     })
 
     it("falls back to the site name when there is no hero block", () => {
+      // Arrange
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Homepage,
         site: baseSite,
@@ -47,10 +58,15 @@ describe("getMetadata", () => {
         content: [],
       } as unknown as IsomerPageSchemaType
 
-      expect(getMetadata(props).description).toBe(baseSite.siteName)
+      // Act
+      const actual = getMetadata(props).description
+
+      // Assert
+      expect(actual).toBe(baseSite.siteName)
     })
 
     it("uses the overridden meta description when set", () => {
+      // Arrange
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Homepage,
         site: baseSite,
@@ -59,12 +75,17 @@ describe("getMetadata", () => {
         content: [{ type: "hero", subtitle: "Welcome to our site" }],
       } as unknown as IsomerPageSchemaType
 
-      expect(getMetadata(props).description).toBe("Custom description")
+      // Act
+      const actual = getMetadata(props).description
+
+      // Assert
+      expect(actual).toBe("Custom description")
     })
   })
 
   describe("Content", () => {
     it("uses the page summary as the meta description", () => {
+      // Arrange
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Content,
         site: baseSite,
@@ -72,10 +93,15 @@ describe("getMetadata", () => {
         content: [],
       } as unknown as IsomerPageSchemaType
 
-      expect(getMetadata(props).description).toBe("Page summary")
+      // Act
+      const actual = getMetadata(props).description
+
+      // Assert
+      expect(actual).toBe("Page summary")
     })
 
     it("uses the overridden meta description when set", () => {
+      // Arrange
       const props = {
         layout: ISOMER_PAGE_LAYOUTS.Content,
         site: baseSite,
@@ -84,7 +110,11 @@ describe("getMetadata", () => {
         content: [],
       } as unknown as IsomerPageSchemaType
 
-      expect(getMetadata(props).description).toBe("Custom description")
+      // Act
+      const actual = getMetadata(props).description
+
+      // Assert
+      expect(actual).toBe("Custom description")
     })
   })
 })
