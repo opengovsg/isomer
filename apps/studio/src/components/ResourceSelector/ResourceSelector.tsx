@@ -4,6 +4,7 @@ import { Box, Flex, Skeleton, Text, VStack } from "@chakra-ui/react"
 import { Button } from "@opengovsg/design-system-react"
 import { Suspense, useMemo } from "react"
 import { useSearchQuery } from "~/hooks/useSearchQuery"
+import { trpc } from "~/utils/trpc"
 import { ResourceType } from "~prisma/generated/generatedEnums"
 
 import {
@@ -71,6 +72,8 @@ const SuspensableResourceSelector = ({
   const isSearchQueryEmpty: boolean = searchQuery.trim().length === 0
   const hasAdditionalLeftPadding: boolean = isSearchQueryEmpty
 
+  const [rootPage] = trpc.page.getRootPage.useSuspenseQuery({ siteId })
+
   const {
     fullPermalink,
     moveDestPermalink,
@@ -105,6 +108,7 @@ const SuspensableResourceSelector = ({
 
   const {
     isResourceIdHighlighted,
+    isHomeHighlighted,
     isResourceItemDisabled,
     hasParentInStack,
     handleClickBackButton,
@@ -139,13 +143,14 @@ const SuspensableResourceSelector = ({
                 title: "Home",
                 permalink: "/",
                 type: ResourceType.RootPage,
-                id: null,
+                id: rootPage.id,
                 parentId: null,
               },
             ])
           }
           searchQuery={searchQuery}
           isLoading={isLoading}
+          isHomeHighlighted={isHomeHighlighted}
         />
       </Suspense>
     )
@@ -157,6 +162,8 @@ const SuspensableResourceSelector = ({
     handleClickResourceItem,
     searchQuery,
     isLoading,
+    isHomeHighlighted,
+    rootPage.id,
   ])
 
   const renderedContent = useMemo(() => {

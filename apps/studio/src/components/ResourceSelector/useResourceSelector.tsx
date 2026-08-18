@@ -41,6 +41,11 @@ export const useResourceSelector = ({
     [isResourceHighlighted, moveDest?.id],
   )
 
+  const isHomeHighlighted = useMemo(
+    () => isResourceHighlighted && moveDest?.type === ResourceType.RootPage,
+    [isResourceHighlighted, moveDest?.type],
+  )
+
   const { data: nestedChildrenOfExistingResourceResult } =
     trpc.resource.getNestedFolderChildrenOf.useQuery({
       resourceId: String(existingResource?.id),
@@ -148,6 +153,7 @@ export const useResourceSelector = ({
 
   return {
     isResourceIdHighlighted,
+    isHomeHighlighted,
     isResourceItemDisabled,
     hasParentInStack,
     handleClickBackButton,
