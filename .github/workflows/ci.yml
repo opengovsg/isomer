@@ -248,12 +248,17 @@ jobs:
           TZ: Asia/Singapore
 
   end-to-end-tests:
-    name: End-to-end tests
+    name: End-to-end tests (${{ matrix.shard }}/${{ matrix.total_shards }})
     needs: optimize_ci
     runs-on: ubuntu-latest
     if: needs.optimize_ci.outputs.skip == 'false'
     permissions:
       contents: read
+    strategy:
+      fail-fast: false # so all shards run and one shard failing doesn't cancel the rest
+      matrix:
+        shard: [1, 2, 3, 4]
+        total_shards: [4]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup
@@ -287,6 +292,8 @@ jobs:
               api_key: ${{ secrets.DD_API_KEY_GITHUB_ACTIONS }}
       - name: Run Playwright tests
         run: pnpm exec turbo test-ci:e2e --filter=isomer-studio --env-mode=loose
+        env:
+          PLAYWRIGHT_SHARD: ${{ matrix.shard }}/${{ matrix.total_shards }}
 
       - name: Stop test containers
         run: pnpm run teardown
@@ -296,8 +303,8 @@ jobs:
         id: upload-test-results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          # Unique per run so that re-runs from the same PR don't collide.
-          name: e2e-test-results-${{ github.run_id }}
+          # Unique per run+shard so that re-runs and parallel shards don't collide.
+          name: e2e-test-results-${{ github.run_id }}-${{ matrix.shard }}
           path: apps/studio/tests/e2e/test-results
           retention-days: 7
           if-no-files-found: warn
@@ -314,13 +321,15 @@ jobs:
         run: |
           mkdir -p /tmp/e2e-metadata
           echo "${{ github.event.pull_request.number }}" > /tmp/e2e-metadata/pr-number.txt
-          echo "${{ steps.upload-test-results.outputs.artifact-url }}" > /tmp/e2e-metadata/artifact-url.txt
+          echo "${{ steps.upload-test-results.outputs.artifact-url }}" > "/tmp/e2e-metadata/artifact-url-${{ matrix.shard }}.txt"
 
+      # Named per shard: with 4 shards running in parallel, uploading a single
+      # shared "e2e-comment-metadata" name from every matrix job would collide.
       - name: Upload E2E comment metadata
         if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.upload-test-results.outputs.artifact-url != '' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: e2e-comment-metadata
+          name: e2e-comment-metadata-${{ matrix.shard }}
           path: /tmp/e2e-metadata/
           retention-days: 1
           if-no-files-found: error
