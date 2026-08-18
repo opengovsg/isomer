@@ -138,6 +138,7 @@ export const CollectionTable = ({
 
       <Datatable
         pagination
+        isRowLink
         isFetching={isFetching || isCountLoading}
         emptyPlaceholder={
           <EmptyTablePlaceholder
