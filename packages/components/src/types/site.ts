@@ -6,6 +6,7 @@ import {
   AskgovSchema,
   EgazetteAlgoliaSearchSchema,
   generateImageSrcSchema,
+  IsomerString,
   LocalSearchSchema,
   SearchSGSearchSchema,
   VicaSchema,
@@ -17,7 +18,7 @@ import { GTM_ID_STRING_REGEX, NON_EMPTY_STRING_REGEX } from "~/utils/validation"
 import type { IsomerSitemap } from "./sitemap"
 
 export const AgencySettingsSchema = Type.Object({
-  siteName: Type.String({
+  siteName: IsomerString({
     title: "Site name",
     description:
       "This is displayed on browser tabs, the footer, and the Search Results page. It’s also the default meta title of your homepage.",
