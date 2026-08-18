@@ -7,6 +7,7 @@ import {
   isValidMapEmbedUrl,
   LINK_HREF_PATTERN,
   MAPS_EMBED_URL_PATTERN,
+  NO_STYLIZED_UNICODE_REGEX,
   VIDEO_EMBED_URL_PATTERN,
 } from "../validation"
 
@@ -331,6 +332,77 @@ describe("validation", () => {
         // Assert
         expect(result).toBe(false)
       })
+    })
+  })
+
+  describe("NO_STYLIZED_UNICODE_REGEX", () => {
+    it("should allow plain text, other languages, emoji, and flag emoji", () => {
+      // Arrange
+      const testCases = [
+        "Official Unveiling",
+        "海报设计比赛",
+        "Selamat datang ke laman web",
+        "வணக்கம், இது ஒரு சோதனை",
+        "🇸🇬 National Day 2026 🎉",
+        "© 2026 Government of Singapore ® ™",
+        "",
+      ]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(true)
+      })
+    })
+
+    it("should reject Mathematical Alphanumeric Symbols", () => {
+      // Arrange
+      const testCases = [
+        "𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥 𝐔𝐧𝐯𝐞𝐢𝐥𝐢𝐧𝐠 𝐨𝐟 “𝐓𝐚𝐩𝐞𝐬𝐭𝐫𝐲 𝐨𝐟 𝐚 𝐍𝐚𝐭𝐢𝐨𝐧” 𝐌𝐮𝐫𝐚𝐥",
+        "𝓕𝓪𝓷𝓬𝔂 𝓼𝓬𝓻𝓲𝓹𝓽",
+        "some 𝟏𝟐𝟑 digits",
+      ]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(false)
+      })
+    })
+
+    it("should reject circled/squared letter lookalikes", () => {
+      // Arrange
+      const testCases = ["Ⓒⓞⓟⓨ", "①②③", "🅁🄴🅂🄴🅁🅅🄴🄳"]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(false)
+      })
+    })
+
+    it("should reject fullwidth Latin letters and digits", () => {
+      // Arrange / Act
+      const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test(
+        "Ａｄｍｉｎ１２３",
+      )
+
+      // Assert
+      expect(result).toBe(false)
+    })
+
+    it("should allow fullwidth CJK punctuation", () => {
+      // Arrange / Act
+      const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test("你好，世界！")
+
+      // Assert
+      expect(result).toBe(true)
     })
   })
 
