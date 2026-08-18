@@ -208,7 +208,10 @@ export const resourceRouter = router({
     .input(getChildrenSchema)
     .output(getChildrenOutputSchema)
     .query(
-      async ({ ctx, input: { resourceId, siteId, cursor: offset, limit } }) => {
+      async ({
+        ctx,
+        input: { resourceId, siteId, cursor: offset, limit, includeSearchPage },
+      }) => {
         await bulkValidateUserPermissionsForResources({
           action: "read",
           resourceIds: [resourceId],
@@ -249,6 +252,9 @@ export const resourceRouter = router({
 
         if (resourceId === null) {
           query = query.where("parentId", "is", null)
+          if (!includeSearchPage) {
+            query = query.where("Resource.permalink", "!=", "search")
+          }
         } else {
           query = query.where("Resource.parentId", "=", String(resourceId))
         }
@@ -646,7 +652,9 @@ export const resourceRouter = router({
       if (resourceId) {
         query = query.where("Resource.parentId", "=", String(resourceId))
       } else {
-        query = query.where("Resource.parentId", "is", null)
+        query = query
+          .where("Resource.parentId", "is", null)
+          .where("Resource.permalink", "!=", "search")
       }
 
       const result = await query.executeTakeFirst()
@@ -678,7 +686,9 @@ export const resourceRouter = router({
         if (resourceId) {
           query = query.where("Resource.parentId", "=", String(resourceId))
         } else {
-          query = query.where("Resource.parentId", "is", null)
+          query = query
+            .where("Resource.parentId", "is", null)
+            .where("Resource.permalink", "!=", "search")
         }
 
         query = applyResourceOrderBy(query, orderBy)
