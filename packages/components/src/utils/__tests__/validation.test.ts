@@ -345,6 +345,9 @@ describe("validation", () => {
         "வணக்கம், இது ஒரு சோதனை",
         "🇸🇬 National Day 2026 🎉",
         "© 2026 Government of Singapore ® ™",
+        "25℃ / 77℉",
+        "No. 1 → №1",
+        "3ℓ bottle, ℠ ℡ ℹ Å Ω℧ ℮",
         "",
       ]
 
@@ -364,6 +367,19 @@ describe("validation", () => {
         "𝓕𝓪𝓷𝓬𝔂 𝓼𝓬𝓻𝓲𝓹𝓽",
         "some 𝟏𝟐𝟑 digits",
       ]
+
+      testCases.forEach((testCase) => {
+        // Act
+        const result = new RegExp(NO_STYLIZED_UNICODE_REGEX).test(testCase)
+
+        // Assert
+        expect(result).toBe(false)
+      })
+    })
+
+    it("should reject Letterlike Symbols letter lookalikes", () => {
+      // Arrange
+      const testCases = ["ℂℍℕℝℤ", "ℬℰℱℋℐℒℳℛℯℊℴ", "ℎ ⅅⅆⅇⅈⅉ"]
 
       testCases.forEach((testCase) => {
         // Act
