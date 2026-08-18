@@ -45,4 +45,32 @@ test.describe("admin", { tag: roleTag("admin") }, () => {
     await site.reloadSettingsSection("agency")
     await expect(site.siteNameField()).toHaveValue(renamedSiteName)
   })
+
+  test("whitespace-only site name is rejected", async ({ page }) => {
+    const site = new SitePO(page)
+
+    // Arrange
+    await site.gotoSettingsSection(siteId, "agency")
+
+    // Act
+    await site.fillSiteName("   ")
+
+    // Assert
+    await expect(
+      page.getByText("Site name cannot be empty or contain only spaces"),
+    ).toBeVisible()
+    await expect(site.publishButton()).toBeDisabled()
+    await expectSiteName(siteId).toBe(siteName)
+  })
+
+  test("agency owner field is read-only", async ({ page }) => {
+    const site = new SitePO(page)
+
+    // Arrange / Act
+    await site.gotoSettingsSection(siteId, "agency")
+
+    // Assert
+    await expect(site.agencyOwnerField()).toBeVisible()
+    await expect(site.agencyOwnerField()).toBeDisabled()
+  })
 })
