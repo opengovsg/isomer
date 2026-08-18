@@ -3,12 +3,14 @@ import type { LinkTypes } from "~/features/editing-experience/components/LinkEdi
 import {
   Box,
   FormControl,
+  HStack,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spacer,
 } from "@chakra-ui/react"
 import {
   Button,
@@ -71,7 +73,7 @@ const PageLinkElement = ({ value, onChange }: PageLinkElementProps) => {
 
 type LinkEditorModalContentProps = Pick<
   LinkEditorModalProps,
-  "linkText" | "linkHref" | "showLinkText" | "linkTypes" | "onSave"
+  "linkText" | "linkHref" | "showLinkText" | "linkTypes" | "onSave" | "onRemove"
 >
 
 const LinkEditorModalContent = ({
@@ -79,6 +81,7 @@ const LinkEditorModalContent = ({
   linkHref,
   showLinkText = true,
   onSave,
+  onRemove,
   linkTypes,
 }: LinkEditorModalContentProps) => {
   const { strippedLinkText, onUploadedFile, buildFinalLinkTextForSave } =
@@ -96,10 +99,16 @@ const LinkEditorModalContent = ({
   } = useZodForm({
     mode: "onChange",
     schema: z.object({
-      linkText: z.string().min(1),
-      // TODO: Refactor to be required
-      // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
-      linkHref: z.string().min(1).optional(),
+      linkText: z.string().min(1, "Link text cannot be empty."),
+      linkHref: z
+        .string()
+        .min(1, "Link destination cannot be empty.")
+        // A cleared External/Email field still lands here as a bare scheme
+        // ("https://"/"mailto:"), not "", so `.min(1)` alone won't catch it.
+        .refine(
+          (href) => !["https://", "mailto:"].includes(href),
+          "Link destination cannot be empty.",
+        ),
     }),
     defaultValues: {
       linkText: strippedLinkText,
@@ -110,12 +119,8 @@ const LinkEditorModalContent = ({
 
   const isEditingLink = !!linkText && !!linkHref
 
-  const onSubmit = handleSubmit(
-    // TODO: Refactor to not have to check for !!linkHref
-    // Context: quick hack to ensure error message don't shown for empty linkHref for FileAttachment
-    ({ linkText, linkHref }) =>
-      !!linkHref &&
-      onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref),
+  const onSubmit = handleSubmit(({ linkText, linkHref }) =>
+    onSave(buildFinalLinkTextForSave(linkText, linkHref), linkHref),
   )
 
   return (
@@ -169,16 +174,28 @@ const LinkEditorModalContent = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button
-            variant="solid"
-            onClick={onSubmit}
-            // NOTE: Using `isEmpty` here because we trigger `setError`
-            // using `isValid` doesn't trigger the error
-            isDisabled={!isEmpty(errors)}
-            type="submit"
-          >
-            {isEditingLink ? "Save link" : "Add link"}
-          </Button>
+          <HStack w="100%">
+            {isEditingLink && onRemove && (
+              <Button
+                variant="outline"
+                colorScheme="critical"
+                onClick={onRemove}
+              >
+                Remove link
+              </Button>
+            )}
+            <Spacer />
+            <Button
+              variant="solid"
+              onClick={onSubmit}
+              // NOTE: Using `isEmpty` here because we trigger `setError`
+              // using `isValid` doesn't trigger the error
+              isDisabled={!isEmpty(errors)}
+              type="submit"
+            >
+              {isEditingLink ? "Save link" : "Add link"}
+            </Button>
+          </HStack>
         </ModalFooter>
       </form>
     </ModalContent>
@@ -190,6 +207,7 @@ export interface LinkEditorModalProps {
   linkHref?: string
   showLinkText?: boolean
   onSave: (linkText: string, linkHref: string) => void
+  onRemove?: () => void
   isOpen: boolean
   onClose: () => void
   linkTypes: Record<
@@ -207,6 +225,7 @@ export const LinkEditorModal = ({
   showLinkText,
   linkHref,
   onSave,
+  onRemove,
   linkTypes,
 }: LinkEditorModalProps) => (
   <Modal isOpen={isOpen} onClose={onClose}>
@@ -222,6 +241,13 @@ export const LinkEditorModal = ({
           onSave(linkText, linkHref)
           onClose()
         }}
+        onRemove={
+          onRemove &&
+          (() => {
+            onRemove()
+            onClose()
+          })
+        }
       />
     )}
   </Modal>
