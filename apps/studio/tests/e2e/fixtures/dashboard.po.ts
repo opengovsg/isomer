@@ -39,6 +39,10 @@ export class DashboardPO {
     await this.page.getByRole("menuitem", { name: "Folder" }).click()
   }
 
+  async clickCreateCollection() {
+    await this.page.getByRole("menuitem", { name: "Collection" }).click()
+  }
+
   async fillPageWizard(title: string) {
     await this.page
       .getByRole("button", { name: "Next: Page title and URL" })
@@ -53,6 +57,12 @@ export class DashboardPO {
     await expect(this.page.getByText("Folder created!")).toBeVisible()
   }
 
+  async fillCollectionWizard(title: string) {
+    await this.page.getByLabel("Collection name").fill(title)
+    await this.page.getByRole("button", { name: "Create collection" }).click()
+    await expect(this.page.getByText("Collection created!")).toBeVisible()
+  }
+
   async openPageSettings(title: string) {
     await expect(this.page.getByRole("link", { name: title })).toBeVisible()
     await this.openResourceMenu(title)
@@ -62,6 +72,20 @@ export class DashboardPO {
   async expectScheduledBadge(title: string) {
     const row = this.page.getByRole("row").filter({ hasText: title })
     await expect(row.getByText("Scheduled")).toBeVisible()
+  }
+
+  async openAddCollectionItem() {
+    await this.page.getByRole("button", { name: "Add new item" }).click()
+  }
+
+  async selectCollectionItemType(type: "Page" | "Link or file") {
+    await this.page.getByRole("radio", { name: new RegExp(`^${type}`) }).click()
+    await this.page.getByRole("button", { name: "Next: Page details" }).click()
+  }
+
+  async fillCollectionItemWizard(title: string) {
+    await this.page.getByLabel(/Page title|Item title/).fill(title)
+    await this.page.getByRole("button", { name: "Start editing" }).click()
   }
 
   async gotoCollection(siteId: number, collectionId: string) {
@@ -196,6 +220,10 @@ export class DashboardPO {
       this.page.getByRole("dialog").getByText(/Move ".+" to\.\.\./),
     ).toBeVisible()
     await this.page.getByRole("button").filter({ hasText: title }).click()
+  }
+
+  async uncheckCreateRedirectOnMove() {
+    await this.page.getByRole("checkbox", { name: /redirect/i }).uncheck()
   }
 
   async confirmMove() {

@@ -121,6 +121,61 @@ export const createFolderViaWizard = async (
   return { folderId: folder.id }
 }
 
+export const createCollectionViaWizard = async (
+  page: Page,
+  {
+    startUrl,
+    title,
+    siteId,
+  }: { startUrl: string; title: string; siteId: number },
+) => {
+  await page.goto(startUrl)
+
+  const dashboard = new DashboardPO(page)
+  await dashboard.openCreateMenu()
+  await dashboard.clickCreateCollection()
+  await dashboard.fillCollectionWizard(title)
+
+  const collection = await db
+    .selectFrom("Resource")
+    .where("siteId", "=", siteId)
+    .where("title", "=", title)
+    .where("type", "=", ResourceType.Collection)
+    .select("id")
+    .executeTakeFirstOrThrow()
+
+  return { collectionId: collection.id }
+}
+
+export const createCollectionItemViaWizard = async (
+  page: Page,
+  {
+    siteId,
+    collectionId,
+    type,
+    title,
+  }: {
+    siteId: number
+    collectionId: string
+    type: "Page" | "Link or file"
+    title: string
+  },
+) => {
+  const dashboard = new DashboardPO(page)
+  await dashboard.gotoCollection(siteId, collectionId)
+  await dashboard.openAddCollectionItem()
+  await dashboard.selectCollectionItemType(type)
+  await dashboard.fillCollectionItemWizard(title)
+
+  const subpath = type === "Page" ? "pages" : "links"
+  await page.waitForURL(new RegExp(`/sites/${siteId}/${subpath}/\\d+$`))
+  const itemId = page.url().match(new RegExp(`/${subpath}/(\\d+)$`))?.[1]
+  if (!itemId) {
+    throw new Error(`Expected ${subpath} URL after wizard, got ${page.url()}`)
+  }
+  return { itemId }
+}
+
 export const openInviteModal = async (page: Page, siteId: number) => {
   const users = new UsersPO(page)
   await users.goto(siteId)
